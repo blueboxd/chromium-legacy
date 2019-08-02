@@ -263,7 +263,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     blink::mojom::ServiceWorkerRegistrationOptions options(
         scope_url, blink::mojom::ScriptType::kClassic,
         blink::mojom::ServiceWorkerUpdateViaCache::kImports);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ServiceWorkerContextWrapper::RegisterServiceWorker,
@@ -274,7 +274,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
     // Wait for its activation.
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ServiceWorkerActivationObserver::SignalActivation,
                        base::Unretained(service_worker_context),
@@ -293,7 +293,7 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     std::vector<StorageUsageInfo> service_workers;
     base::RunLoop run_loop;
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ServiceWorkerContextWrapper::GetAllOriginsInfo,

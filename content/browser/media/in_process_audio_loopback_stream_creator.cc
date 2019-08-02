@@ -122,17 +122,16 @@ void InProcessAudioLoopbackStreamCreator::CreateLoopbackStream(
   // Deletion of factory_.core() is posted to the IO thread when |factory_| is
   // destroyed, so Unretained is safe below.
   if (loopback_source) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&CreateLoopbackStreamHelper, factory_.core(),
-                       static_cast<WebContentsImpl*>(loopback_source)
-                           ->GetAudioStreamFactory()
-                           ->core(),
-                       params, total_segments, std::move(client)));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&CreateLoopbackStreamHelper, factory_.core(),
+                                  static_cast<WebContentsImpl*>(loopback_source)
+                                      ->GetAudioStreamFactory()
+                                      ->core(),
+                                  params, total_segments, std::move(client)));
     return;
   }
   // A null |frame_of_source_web_contents| requests system-wide loopback.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CreateSystemWideLoopbackStreamHelper, factory_.core(),
                      params, total_segments, std::move(client)));

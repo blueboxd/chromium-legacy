@@ -227,7 +227,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeCopySite];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_SITE_COPY_BUTTON);
-  item.textColor = [UIColor colorNamed:kTintColor];
+  item.textColor = [UIColor colorNamed:kBlueColor];
   // Accessibility label adds the header to the text, so that accessibility
   // users do not have to rely on the visual grouping to understand which part
   // of the credential is being copied.
@@ -245,7 +245,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeCopyUsername];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON);
-  item.textColor = [UIColor colorNamed:kTintColor];
+  item.textColor = [UIColor colorNamed:kBlueColor];
   // Accessibility label adds the header to the text, so that accessibility
   // users do not have to rely on the visual grouping to understand which part
   // of the credential is being copied.
@@ -264,7 +264,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeCopyPassword];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON);
-  item.textColor = [UIColor colorNamed:kTintColor];
+  item.textColor = [UIColor colorNamed:kBlueColor];
   // Accessibility label adds the header to the text, so that accessibility
   // users do not have to rely on the visual grouping to understand which part
   // of the credential is being copied.
@@ -283,7 +283,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeShowHide];
   item.text = [self showHideButtonText];
-  item.textColor = [UIColor colorNamed:kTintColor];
+  item.textColor = [UIColor colorNamed:kBlueColor];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }
@@ -293,7 +293,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeDelete];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON);
-  item.textColor = [UIColor colorNamed:kDestructiveTintColor];
+  item.textColor = [UIColor colorNamed:kRedColor];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }

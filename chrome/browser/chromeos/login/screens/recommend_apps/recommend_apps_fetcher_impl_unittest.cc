@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/base64url.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"

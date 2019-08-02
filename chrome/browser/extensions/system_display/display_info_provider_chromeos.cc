@@ -8,8 +8,8 @@
 #include <cmath>
 
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"

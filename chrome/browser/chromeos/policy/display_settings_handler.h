@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

@@ -152,8 +152,8 @@ const CGFloat kButtonLength = 44;
       self.darkMode, [UIColor colorNamed:kTextfieldPlaceholderColor],
       [UIColor colorNamed:kTextfieldPlaceholderDarkColor]);
   UIColor* buttonTintColor = color::IncognitoDynamicColor(
-      self.darkMode, [UIColor colorNamed:kTintColor],
-      [UIColor colorNamed:kTintDarkColor]);
+      self.darkMode, [UIColor colorNamed:kBlueColor],
+      [UIColor colorNamed:kBlueDarkColor]);
 
   self.inputField.backgroundColor = inputFieldBackground;
   NSString* placeholder = [self.inputField placeholder];

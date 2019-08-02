@@ -14,7 +14,7 @@ Some enterprises use a more sophisticated model where authentication is handled
 by a third-party IdP (identity provider). GAIA supports this model via the
 industry-standard
 [SAML protocol](https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language).
-A domain can be [configured](https://support.google.com/a/answer/6349809) to
+A domain can be [configured](https://support.google.com/a?p=sso) to
 use SAML authentication.
 
 ## Obtaining the user’s password

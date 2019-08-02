@@ -723,9 +723,9 @@ class WebLocalFrame : public WebFrame {
   // checkbox, radio etc.)
   virtual void AdvanceFocusInForm(WebFocusType) = 0;
 
-  // Asks the active WebAutofillClient to show the touch to fill UI for the
-  // currently focused field. Returns whether this request succeeded.
-  virtual bool TryToShowTouchToFillForFocusedElement() = 0;
+  // Returns whether the keyboard should be suppressed for the currently focused
+  // element.
+  virtual bool ShouldSuppressKeyboardForFocusedElement() = 0;
 
   // Performance --------------------------------------------------------
 

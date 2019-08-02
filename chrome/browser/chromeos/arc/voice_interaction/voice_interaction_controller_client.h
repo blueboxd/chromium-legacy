@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/user_manager/user_manager.h"

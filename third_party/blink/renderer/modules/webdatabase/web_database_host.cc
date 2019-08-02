@@ -38,8 +38,9 @@ mojom::blink::WebDatabaseHost& WebDatabaseHost::GetWebDatabaseHost() {
   if (!shared_remote_) {
     DCHECK(pending_remote_);
     shared_remote_ = mojo::SharedRemote<mojom::blink::WebDatabaseHost>(
-        std::move(pending_remote_), base::CreateSequencedTaskRunnerWithTraits(
-                                        {base::WithBaseSyncPrimitives()}));
+        std::move(pending_remote_),
+        base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::WithBaseSyncPrimitives()}));
   }
 
   return *shared_remote_;

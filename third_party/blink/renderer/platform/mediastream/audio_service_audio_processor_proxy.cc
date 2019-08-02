@@ -59,8 +59,9 @@ void AudioServiceAudioProcessorProxy::OnStartDump(base::File dump_file) {
     processor_controls_->StartEchoCancellationDump(std::move(dump_file));
   } else {
     // Post the file close to avoid blocking the main thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::LOWEST, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::LOWEST, base::MayBlock()},
         base::BindOnce([](base::File) {}, std::move(dump_file)));
   }
 }

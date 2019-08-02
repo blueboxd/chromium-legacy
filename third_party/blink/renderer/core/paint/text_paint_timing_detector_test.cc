@@ -138,8 +138,7 @@ class TextPaintTimingDetectorTest
         KURL("http://test.com"));
     mock_callback_manager_ =
         MakeGarbageCollected<MockPaintTimingCallbackManager>();
-    GetTextPaintTimingDetector()->ResetCallbackManagerForTesting(
-        mock_callback_manager_);
+    GetTextPaintTimingDetector()->ResetCallbackManager(mock_callback_manager_);
     UpdateAllLifecyclePhases();
   }
 
@@ -149,7 +148,7 @@ class TextPaintTimingDetectorTest
                                                        ASSERT_NO_EXCEPTION);
     child_frame_mock_callback_manager_ =
         MakeGarbageCollected<MockPaintTimingCallbackManager>();
-    GetChildFrameTextPaintTimingDetector()->ResetCallbackManagerForTesting(
+    GetChildFrameTextPaintTimingDetector()->ResetCallbackManager(
         child_frame_mock_callback_manager_);
     UpdateAllLifecyclePhases();
   }

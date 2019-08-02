@@ -119,10 +119,9 @@ CrossOriginReadBlockingChecker::CrossOriginReadBlockingChecker(
     if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
       // base::Unretained is safe because |blob_io_state_| will be deleted on
       // the IO thread.
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&BlobIOState::StartSniffing,
-                         base::Unretained(blob_io_state_.get())));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(&BlobIOState::StartSniffing,
+                                    base::Unretained(blob_io_state_.get())));
     } else {
       blob_io_state_->StartSniffing();
     }

@@ -548,8 +548,10 @@ bool WebContentsViewMac::DragPromisedFileTo(const base::FilePath& file_path,
         new PromiseFileFinalizer(drag_file_downloader.get()));
   } else {
     // The writer will take care of closing and deletion.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+         base::MayBlock()},
         base::BindOnce(&PromiseWriterHelper, drop_data, std::move(file)));
   }
 

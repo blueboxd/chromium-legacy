@@ -364,7 +364,7 @@ void RenderFrameMessageFilter::DownloadUrl(
     // through and allow it to be interrupted so that the embedder can deal.
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DownloadUrlOnUIThread, std::move(parameters),
                      std::move(blob_data_handle), std::move(blob_url_token)));
@@ -402,7 +402,7 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
 
   params_reply->devtools_frame_token = base::UnguessableToken::Create();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &CreateChildFrameOnUI, render_process_id_, params.parent_routing_id,

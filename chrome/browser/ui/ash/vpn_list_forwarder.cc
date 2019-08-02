@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"

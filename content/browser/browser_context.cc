@@ -273,8 +273,7 @@ class BrowserContextServiceManagerConnectionHolder
         main_thread_task_runner_(std::move(main_thread_task_runner)),
         service_manager_connection_(ServiceManagerConnection::Create(
             std::move(request),
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {BrowserThread::IO}))) {
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO}))) {
     service_manager_connection_->SetDefaultServiceRequestHandler(
         base::BindRepeating(
             &BrowserContextServiceManagerConnectionHolder::OnServiceRequest,
@@ -478,7 +477,7 @@ void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
 
   ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(browser_context);
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
                      base::WrapRefCounted(blob_context), data, length,
@@ -601,7 +600,7 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
                      base::WrapRefCounted(database_tracker)));
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&SaveSessionStateOnIOThread,
                        static_cast<AppCacheServiceImpl*>(
@@ -678,7 +677,7 @@ void BrowserContext::Initialize(BrowserContext* browser_context,
 
     scoped_refptr<FileServiceIOThreadState> file_service_io_thread_state =
         base::MakeRefCounted<FileServiceIOThreadState>(
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
     connection->AddServiceRequestHandler(
         file::mojom::kServiceName,
         base::BindRepeating(

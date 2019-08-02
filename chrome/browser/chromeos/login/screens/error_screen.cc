@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/certificate_manager_dialog.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -27,8 +29,6 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -293,11 +293,11 @@ void ErrorScreen::OnDiagnoseButtonClicked() {
       IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST,
       base::FilePath(extension_misc::kConnectivityDiagnosticsPath));
 
-  OpenApplication(
+  apps::LaunchService::Get(profile)->OpenApplication(
       AppLaunchParams(profile, extension_id,
-                      extensions::LaunchContainer::kLaunchContainerWindow,
+                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
                       WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceChromeInternal));
+                      apps::mojom::AppLaunchSource::kSourceChromeInternal));
   KioskAppManager::Get()->InitSession(profile, extension_id);
 
   LoginDisplayHost::default_host()->Finalize(base::BindOnce(

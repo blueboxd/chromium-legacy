@@ -8,7 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/system/palette/common_palette_tool.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/events/event_handler.h"

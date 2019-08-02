@@ -49,9 +49,8 @@ const char kEnterpriseURL[] = "https://enterprise.test/";
 
 class FakePasswordManagerClient : public StubPasswordManagerClient {
  public:
-  FakePasswordManagerClient()
-      : password_store_(new testing::NiceMock<MockPasswordStore>),
-        is_incognito_(false) {
+  explicit FakePasswordManagerClient(signin::IdentityManager* identity_manager)
+      : identity_manager_(identity_manager) {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
     // Initializes and configures prefs.
     prefs_ = std::make_unique<TestingPrefServiceSimple>();
@@ -74,6 +73,9 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
   MockPasswordStore* GetPasswordStore() const override {
     return password_store_.get();
   }
+  signin::IdentityManager* GetIdentityManager() override {
+    return identity_manager_;
+  }
 
   void set_last_committed_entry_url(const char* url_spec) {
     last_committed_entry_url_ = GURL(url_spec);
@@ -89,8 +91,10 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
 
  private:
   GURL last_committed_entry_url_;
-  scoped_refptr<testing::NiceMock<MockPasswordStore>> password_store_;
-  bool is_incognito_;
+  scoped_refptr<testing::NiceMock<MockPasswordStore>> password_store_ =
+      new testing::NiceMock<MockPasswordStore>;
+  bool is_incognito_ = false;
+  signin::IdentityManager* identity_manager_;
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
@@ -106,7 +110,8 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
   enum class LoginState { NEW, EXISTING };
 
   CredentialsFilterTest()
-      : password_manager_(&client_),
+      : client_(identity_manager()),
+        password_manager_(&client_),
         pending_(SimpleGaiaForm("user@gmail.com")),
         form_manager_(&password_manager_,
                       &client_,
@@ -116,8 +121,6 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
                       &fetcher_),
         filter_(&client_,
                 base::BindRepeating(&SyncUsernameTestBase::sync_service,
-                                    base::Unretained(this)),
-                base::BindRepeating(&SyncUsernameTestBase::identity_manager,
                                     base::Unretained(this))) {
     form_manager_.Init(nullptr);
     fetcher_.Fetch();

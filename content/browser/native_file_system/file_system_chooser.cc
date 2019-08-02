@@ -160,8 +160,10 @@ void FileSystemChooser::MultiFilesSelected(
     // TODO(mek): If we change FileSystemFileHandle to be able to represent a
     // file that doesn't exist on disk, we should be able to get rid of this
     // step and make the whole API slightly more robust.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
+         base::MayBlock()},
         base::BindOnce(
             [](const std::vector<base::FilePath>& files,
                scoped_refptr<base::TaskRunner> callback_runner,

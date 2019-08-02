@@ -49,8 +49,8 @@ GetCreateNetworkFactoryCallbackForSharedWorker() {
 void AllowFileSystemOnIOThreadResponse(base::OnceCallback<void(bool)> callback,
                                        bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), result));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), result));
 }
 
 void AllowFileSystemOnIOThread(const GURL& url,
@@ -240,9 +240,10 @@ void SharedWorkerHost::Start(
   // Send the CreateSharedWorker message.
   factory_ = std::move(factory);
   factory_->CreateSharedWorker(
-      std::move(info), pause_on_start, devtools_worker_token,
-      std::move(renderer_preferences), std::move(preference_watcher_request),
-      std::move(content_settings), service_worker_handle_->TakeProviderInfo(),
+      std::move(info), GetContentClient()->browser()->GetUserAgent(),
+      pause_on_start, devtools_worker_token, std::move(renderer_preferences),
+      std::move(preference_watcher_request), std::move(content_settings),
+      service_worker_handle_->TakeProviderInfo(),
       appcache_handle_
           ? base::make_optional(appcache_handle_->appcache_host_id())
           : base::nullopt,
@@ -256,7 +257,7 @@ void SharedWorkerHost::Start(
   // request endpoint was sent, it can be used, so add it to
   // ServiceWorkerObjectHost.
   if (service_worker_remote_object.is_valid()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,
@@ -303,7 +304,7 @@ void SharedWorkerHost::CreateNetworkFactory(
 void SharedWorkerHost::AllowFileSystem(
     const GURL& url,
     base::OnceCallback<void(bool)> callback) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&AllowFileSystemOnIOThread, url,
                      RenderProcessHost::FromID(worker_process_id_)
@@ -314,7 +315,7 @@ void SharedWorkerHost::AllowFileSystem(
 
 void SharedWorkerHost::AllowIndexedDB(const GURL& url,
                                       base::OnceCallback<void(bool)> callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&AllowIndexedDBOnIOThread, url,
                      RenderProcessHost::FromID(worker_process_id_)
@@ -327,7 +328,7 @@ void SharedWorkerHost::AllowIndexedDB(const GURL& url,
 void SharedWorkerHost::AllowCacheStorage(
     const GURL& url,
     base::OnceCallback<void(bool)> callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&AllowCacheStorageOnIOThread, url,
                      RenderProcessHost::FromID(worker_process_id_)

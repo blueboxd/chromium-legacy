@@ -243,8 +243,12 @@ void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
   DCHECK(initialized_);
 
   // Don't download non-blocking types that have already completed initial sync.
-  to_download.RemoveAll(
-      model_type_registry_->GetInitialSyncDoneNonBlockingTypes());
+  ModelTypeSet to_remove =
+      model_type_registry_->GetInitialSyncDoneNonBlockingTypes();
+  // NIGORI is the exception, because we may want to download it several times
+  // during configuration (see DataTypeManagerImpl::PrepareConfigureParams()).
+  to_remove.Remove(NIGORI);
+  to_download.RemoveAll(to_remove);
 
   DVLOG(1) << "Configuring -"
            << "\n\t"

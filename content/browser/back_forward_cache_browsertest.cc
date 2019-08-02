@@ -809,6 +809,25 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebGL) {
 
   // The page had an active WebGL context when we navigated away,
   // so it shouldn't have been cached.
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DisableBackforwardCacheForTesting) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Disable the BackForwardCache.
+  web_contents()->GetController().back_forward_cache().DisableForTesting();
+
+  // Navigate to a page that would normally be cacheable.
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("a.com", "/title1.html"));
+  RenderFrameDeletedObserver delete_rfh_a(current_frame_host());
+
+  // Navigate away.
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // The page should be deleted (not cached).
   delete_rfh_a.WaitUntilDeleted();
 }
 

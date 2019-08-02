@@ -137,6 +137,7 @@ template("chrome_feature_module") {
             !build_apk_secondary_abi || android_64bit_target_cpu
         _native_need_placeholder =
             build_apk_secondary_abi && _include_32_bit_webview
+        not_needed([ "_include_32_bit_webview" ])
       } else {
         assert(_loadable_modules_32_bit != [])
         not_needed([

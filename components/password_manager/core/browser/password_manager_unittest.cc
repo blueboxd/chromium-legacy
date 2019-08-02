@@ -96,7 +96,10 @@ class MockLeakDetectionCheck : public LeakDetectionCheck {
 
 class MockLeakDetectionRequestFactory : public LeakDetectionRequestFactory {
  public:
-  MOCK_CONST_METHOD0(TryCreateLeakCheck, std::unique_ptr<LeakDetectionCheck>());
+  MOCK_CONST_METHOD2(
+      TryCreateLeakCheck,
+      std::unique_ptr<LeakDetectionCheck>(LeakDetectionDelegateInterface*,
+                                          signin::IdentityManager*));
 };
 
 class MockStoreResultFilter : public StubCredentialsFilter {
@@ -3869,7 +3872,7 @@ TEST_F(PasswordManagerTest, StartLeakDetection) {
   EXPECT_CALL(*check_instance,
               Start(form.origin, base::StringPiece16(form.username_value),
                     base::StringPiece16(form.password_value)));
-  EXPECT_CALL(*weak_factory, TryCreateLeakCheck())
+  EXPECT_CALL(*weak_factory, TryCreateLeakCheck)
       .WillOnce(Return(ByMove(std::move(check_instance))));
 
   // Now the password manager waits for the navigation to complete.

@@ -129,7 +129,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextButtonItem* cameraButtonItem =
       [[TableViewTextButtonItem alloc] initWithType:ItemTypeUseCameraButton];
   cameraButtonItem.buttonBackgroundColor = UIColor.cr_systemBackgroundColor;
-  cameraButtonItem.buttonTextColor = [UIColor colorNamed:kTintColor];
+  cameraButtonItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
   cameraButtonItem.buttonText = l10n_util::GetNSString(
       IDS_IOS_AUTOFILL_ADD_CREDIT_CARD_OPEN_CAMERA_BUTTON_LABEL);
   cameraButtonItem.textAlignment = NSTextAlignmentNatural;

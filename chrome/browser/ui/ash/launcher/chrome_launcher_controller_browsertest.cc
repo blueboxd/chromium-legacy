@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -47,7 +48,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
@@ -216,9 +216,9 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
         service->GetExtensionById(last_loaded_extension_id(), false);
     EXPECT_TRUE(extension);
 
-    OpenApplication(AppLaunchParams(profile(), extension->id(), container,
-                                    disposition,
-                                    extensions::AppLaunchSource::kSourceTest));
+    apps::LaunchService::Get(profile())->OpenApplication(
+        AppLaunchParams(profile(), extension->id(), container, disposition,
+                        apps::mojom::AppLaunchSource::kSourceTest));
     return extension;
   }
 
@@ -1177,11 +1177,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
-  OpenApplication(
+  apps::LaunchService::Get(profile())->OpenApplication(
       AppLaunchParams(profile(), extension->id(),
-                      extensions::LaunchContainer::kLaunchContainerTab,
+                      apps::mojom::LaunchContainer::kLaunchContainerTab,
                       WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceTest));
+                      apps::mojom::AppLaunchSource::kSourceTest));
 
   // A new browser should get detected and one more should be running.
   EXPECT_EQ(NumberOfDetectedLauncherBrowsers(false), 1u);
@@ -1702,9 +1702,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
   AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile(), GetExtensionForAppID(extensions::kWebStoreAppId, profile()),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::AppLaunchSource::kSourceTest);
-  params.container = extensions::LaunchContainer::kLaunchContainerWindow;
-  OpenApplication(params);
+      apps::mojom::AppLaunchSource::kSourceTest);
+  params.container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
+  apps::LaunchService::Get(profile())->OpenApplication(params);
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(id)->status);
 
   // Find the browser which holds our app.

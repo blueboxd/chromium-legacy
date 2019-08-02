@@ -193,13 +193,12 @@ class CORE_EXPORT TextRecordsManager {
 // https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit#heading=h.lvno2v283uls
 class CORE_EXPORT TextPaintTimingDetector final
     : public GarbageCollectedFinalized<TextPaintTimingDetector> {
-  using ReportTimeCallback =
-      WTF::CrossThreadOnceFunction<void(WebWidgetClient::SwapResult,
-                                        base::TimeTicks)>;
   friend class TextPaintTimingDetectorTest;
 
  public:
-  explicit TextPaintTimingDetector(LocalFrameView*, PaintTimingDetector*);
+  explicit TextPaintTimingDetector(LocalFrameView*,
+                                   PaintTimingDetector*,
+                                   PaintTimingCallbackManager*);
   bool ShouldWalkObject(const LayoutBoxModelObject&) const;
   void RecordAggregatedText(const LayoutBoxModelObject& aggregator,
                             const IntRect& aggregated_visual_rect,
@@ -210,17 +209,17 @@ class CORE_EXPORT TextPaintTimingDetector final
   void StopRecordingLargestTextPaint();
   bool IsRecording() const { return is_recording_; }
   inline bool FinishedReportingText() const { return !is_recording_; }
+  void ResetCallbackManager(PaintTimingCallbackManager* manager) {
+    callback_manager_ = manager;
+  }
+  void ReportSwapTime(base::TimeTicks timestamp);
   void Trace(blink::Visitor*);
 
  private:
   friend class LargestContentfulPaintCalculatorTest;
 
-  void ReportSwapTime(WebWidgetClient::SwapResult result,
-                      base::TimeTicks timestamp);
-  void RegisterNotifySwapTime(ReportTimeCallback callback);
-  void ResetCallbackManagerForTesting(PaintTimingCallbackManager* manager) {
-    callback_manager_ = manager;
-  }
+  void RegisterNotifySwapTime(
+      PaintTimingCallbackManager::LocalThreadCallback callback);
 
   TextRecordsManager records_manager_;
 

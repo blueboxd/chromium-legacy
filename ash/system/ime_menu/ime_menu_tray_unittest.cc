@@ -7,7 +7,7 @@
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
-#include "ash/public/interfaces/ime_info.mojom.h"
+#include "ash/public/mojom/ime_info.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/status_area_widget.h"

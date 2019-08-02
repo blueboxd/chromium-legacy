@@ -72,6 +72,8 @@ class IdlCompiler(object):
         self._merge_partial_dictionaries()
         # Merge mixins.
         self._merge_interface_mixins()
+        # Process inheritances.
+        self._process_interface_inheritances()
         # Updates on IRs are finished.  Create API objects.
         self._create_public_objects()
 
@@ -148,6 +150,34 @@ class IdlCompiler(object):
                     [constant.make_copy() for constant in to_merge.constants])
                 new_interface.operations.extend([
                     operation.make_copy() for operation in to_merge.operations
+                ])
+            self._ir_map.add(new_interface)
+
+    def _process_interface_inheritances(self):
+        def is_own_member(member):
+            return 'Unfogeable' in member.extended_attributes
+
+        def create_inheritance_stack(obj, table):
+            if obj.inherited is None:
+                return [obj]
+            return [obj] + create_inheritance_stack(
+                table.get(obj.inherited.identifier, None), table)
+
+        old_interfaces = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.INTERFACE)
+        self._ir_map.move_to_new_phase()
+        for old_interface in old_interfaces.itervalues():
+            new_interface = old_interface.make_copy()
+            inheritance_stack = create_inheritance_stack(
+                old_interface, old_interfaces)
+            for interface in inheritance_stack[1:]:
+                new_interface.attributes.extend([
+                    attribute.make_copy() for attribute in interface.attributes
+                    if is_own_member(attribute)
+                ])
+                new_interface.operations.extend([
+                    operation.make_copy() for operation in interface.operations
+                    if is_own_member(operation)
                 ])
             self._ir_map.add(new_interface)
 

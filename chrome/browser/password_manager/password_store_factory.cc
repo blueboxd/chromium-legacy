@@ -8,10 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/environment.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/rand_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -22,9 +18,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/os_crypt/os_crypt_switches.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_onboarding.h"
@@ -61,8 +55,6 @@ using password_manager::PasswordStore;
 namespace {
 
 #if defined(USE_X11)
-constexpr LocalProfileId kInvalidLocalProfileId =
-    static_cast<LocalProfileId>(0);
 constexpr PasswordStoreX::MigrationToLoginDBStep
     kMigrationToLoginDBNotAttempted = PasswordStoreX::NOT_ATTEMPTED;
 #endif
@@ -127,28 +119,6 @@ PasswordStoreFactory::PasswordStoreFactory()
 }
 
 PasswordStoreFactory::~PasswordStoreFactory() {}
-
-#if defined(USE_X11)
-LocalProfileId PasswordStoreFactory::GetLocalProfileId(
-    PrefService* prefs) const {
-  LocalProfileId id =
-      prefs->GetInteger(password_manager::prefs::kLocalProfileId);
-  if (id == kInvalidLocalProfileId) {
-    // Note that there are many more users than this. Thus, by design, this is
-    // not a unique id. However, it is large enough that it is very unlikely
-    // that it would be repeated twice on a single machine. It is still possible
-    // for that to occur though, so the potential results of it actually
-    // happening should be considered when using this value.
-    static const int kLocalProfileIdMask = (1 << 24) - 1;
-    do {
-      id = base::RandInt(0, kLocalProfileIdMask);
-      // TODO(mdm): scan other profiles to make sure they are not using this id?
-    } while (id == kInvalidLocalProfileId);
-    prefs->SetInteger(password_manager::prefs::kLocalProfileId, id);
-  }
-  return id;
-}
-#endif
 
 scoped_refptr<RefcountedKeyedService>
 PasswordStoreFactory::BuildServiceInstanceFor(
@@ -225,8 +195,6 @@ void PasswordStoreFactory::RegisterProfilePrefs(
 #if defined(USE_X11)
   // Notice that the preprocessor conditions above are exactly those that will
   // result in using PasswordStoreX in BuildServiceInstanceFor().
-  registry->RegisterIntegerPref(password_manager::prefs::kLocalProfileId,
-                                kInvalidLocalProfileId);
   registry->RegisterIntegerPref(
       password_manager::prefs::kMigrationToLoginDBStep,
       kMigrationToLoginDBNotAttempted);

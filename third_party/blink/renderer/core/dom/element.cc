@@ -2661,8 +2661,7 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
   }
 
   if (child_change.ReattachLayoutTree()) {
-    // Don't mark pseudo element which is about to be removed for re-attachment.
-    if (new_style || (old_style && !IsPseudoElement()))
+    if (new_style || old_style)
       SetNeedsReattachLayoutTree();
     return child_change;
   }
@@ -4476,6 +4475,7 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
   if (element->NeedsReattachLayoutTree() &&
       !PseudoElementLayoutObjectIsNeeded(element->GetComputedStyle())) {
     GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
+    GetDocument().GetStyleEngine().PseudoElementRemoved(*this);
   }
 }
 
@@ -4497,6 +4497,7 @@ void Element::UpdatePseudoElement(PseudoId pseudo_id,
         return;
     }
     GetElementRareData()->SetPseudoElement(pseudo_id, nullptr);
+    GetDocument().GetStyleEngine().PseudoElementRemoved(*this);
   }
 }
 

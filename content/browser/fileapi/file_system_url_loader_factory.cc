@@ -656,7 +656,7 @@ CreateFileSystemURLLoaderFactory(
                           file_system_context, storage_domain};
   return std::make_unique<FileSystemURLLoaderFactory>(
       std::move(params),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 }
 
 }  // namespace content

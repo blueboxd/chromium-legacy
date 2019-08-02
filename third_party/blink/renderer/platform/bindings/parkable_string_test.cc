@@ -796,6 +796,7 @@ TEST_F(ParkableStringTest, OnlyOneAgingTask) {
 }
 
 TEST_F(ParkableStringTest, ReportTotalUnparkingTime) {
+  base::ScopedMockElapsedTimersForTest mock_elapsed_timers;
   base::HistogramTester histogram_tester;
 
   // On some platforms, initialization takes time, though it happens when
@@ -811,7 +812,8 @@ TEST_F(ParkableStringTest, ReportTotalUnparkingTime) {
   ParkableString parkable(String(data.data(), data.size()).ReleaseImpl());
 
   ParkAndWait(parkable);
-  for (int i = 0; i < 10; ++i) {
+  const int kNumIterations = 10;
+  for (int i = 0; i < kNumIterations; ++i) {
     parkable.ToString();
     ASSERT_FALSE(parkable.Impl()->is_parked());
     WaitForAging();
@@ -822,16 +824,21 @@ TEST_F(ParkableStringTest, ReportTotalUnparkingTime) {
   const size_t compressed_size = parkable.Impl()->compressed_size();
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  histogram_tester.ExpectTotalCount("Memory.ParkableString.MainThreadTime.5min",
-                                    1);
-  histogram_tester.ExpectBucketCount(
-      "Memory.ParkableString.MainThreadTime.5min", 0, 0);
+
+  // The string is unparked kNumIterations times.
+  histogram_tester.ExpectUniqueSample(
+      "Memory.ParkableString.MainThreadTime.5min",
+      base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds() *
+          kNumIterations,
+      1);
 
   if (base::ThreadTicks::IsSupported()) {
-    histogram_tester.ExpectTotalCount(
-        "Memory.ParkableString.ParkingThreadTime.5min", 1);
-    histogram_tester.ExpectBucketCount(
-        "Memory.ParkableString.ParkingThreadTime.5min", 0, 0);
+    // The string is only compressed once despite the multiple parking/unparking
+    // calls.
+    histogram_tester.ExpectUniqueSample(
+        "Memory.ParkableString.ParkingThreadTime.5min",
+        base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds(),
+        1);
   }
 
   histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb.5min",

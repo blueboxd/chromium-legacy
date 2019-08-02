@@ -64,7 +64,7 @@ void CATransactionGPUCoordinator::RemovePostCommitObserverOnUIThread() {
 
 void CATransactionGPUCoordinator::OnActivateForTransaction() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CATransactionGPUCoordinator::OnActivateForTransactionOnIO,
                      this));
@@ -78,7 +78,7 @@ void CATransactionGPUCoordinator::OnEnterPostCommit() {
   // (and removed from the list of post-commit observers) soon after.
   pending_commit_count_++;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CATransactionGPUCoordinator::OnEnterPostCommitOnIO,
                      this));

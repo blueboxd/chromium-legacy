@@ -9,7 +9,7 @@
 
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/shell.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wm/lock_window_state.h"

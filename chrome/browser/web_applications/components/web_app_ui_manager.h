@@ -10,6 +10,10 @@
 
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
 namespace web_app {
 
 // WebAppUiManagerImpl can be used only in UI code.
@@ -37,6 +41,12 @@ class WebAppUiManager {
 
   virtual bool CanAddAppToQuickLaunchBar() const = 0;
   virtual void AddAppToQuickLaunchBar(const AppId& app_id) = 0;
+
+  virtual bool CanReparentAppTabToWindow(const AppId& app_id,
+                                         bool shortcut_created) const = 0;
+  virtual void ReparentAppTabToWindow(content::WebContents* contents,
+                                      const AppId& app_id,
+                                      bool shortcut_created) = 0;
 };
 
 }  // namespace web_app

@@ -9,12 +9,12 @@
 
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/browser_test_utils.h"
@@ -154,17 +154,20 @@ const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
 }
 
 void PlatformAppBrowserTest::LaunchPlatformApp(const Extension* extension) {
-  OpenApplication(AppLaunchParams(browser()->profile(), extension->id(),
-                                  LaunchContainer::kLaunchContainerNone,
-                                  WindowOpenDisposition::NEW_WINDOW,
-                                  extensions::AppLaunchSource::kSourceTest));
+  apps::LaunchService::Get(browser()->profile())
+      ->OpenApplication(
+          AppLaunchParams(browser()->profile(), extension->id(),
+                          LaunchContainer::kLaunchContainerNone,
+                          WindowOpenDisposition::NEW_WINDOW,
+                          apps::mojom::AppLaunchSource::kSourceTest));
 }
 
 void PlatformAppBrowserTest::LaunchHostedApp(const Extension* extension) {
-  OpenApplication(CreateAppLaunchParamsUserContainer(
-      browser()->profile(), extension,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::AppLaunchSource::kSourceCommandLine));
+  apps::LaunchService::Get(browser()->profile())
+      ->OpenApplication(CreateAppLaunchParamsUserContainer(
+          browser()->profile(), extension,
+          WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          apps::mojom::AppLaunchSource::kSourceCommandLine));
 }
 
 WebContents* PlatformAppBrowserTest::GetFirstAppWindowWebContents() {

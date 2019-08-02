@@ -3331,7 +3331,6 @@
       'Linux Builder': {
         'mixins': [
           'code-coverage',
-          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all'

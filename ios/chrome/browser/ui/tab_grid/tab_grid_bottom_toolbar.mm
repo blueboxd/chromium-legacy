@@ -48,6 +48,15 @@
                                withEvent:event];
 }
 
+// Returns UIToolbar's intrinsicContentSize for compact layout, and CGSizeZero
+// for floating button layout.
+- (CGSize)intrinsicContentSize {
+  if ([self shouldUseCompactLayout]) {
+    return _toolbar.intrinsicContentSize;
+  }
+  return CGSizeZero;
+}
+
 #pragma mark - Public
 
 // TODO(crbug.com/929981): "traitCollectionDidChange:" method won't get called

@@ -56,16 +56,4 @@ void StyleTraversalRoot::ChildrenRemoved(ContainerNode& parent) {
   Clear();
 }
 
-#if DCHECK_IS_ON()
-bool StyleTraversalRoot::IsConnectedToDocument(Node& node) const {
-  if (node.IsDocumentNode())
-    return true;
-  for (Node& parent : NodeTraversal::AncestorsOf(node)) {
-    if (parent.IsDocumentNode())
-      return true;
-  }
-  return false;
-}
-#endif  // DCHECK_IS_ON()
-
 }  // namespace blink

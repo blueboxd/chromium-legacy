@@ -31,7 +31,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/file_stream.h"
 #include "net/base/filename_util.h"
@@ -76,12 +75,6 @@ enum class RequestResult {
 
 // Consistent with the buffer size used in url request data reading.
 const size_t kMaxBufferSizeForValidation = 4096;
-
-content::BrowserThread::ID GetJobThreadID() {
-  return base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)
-             ? content::BrowserThread::UI
-             : content::BrowserThread::IO;
-}
 
 void GetFileSize(const base::FilePath& file_path, int64_t* file_size) {
   bool succeeded = base::GetFileSize(file_path, file_size);
@@ -262,31 +255,14 @@ OfflinePageModel* GetOfflinePageModel(
                       : nullptr;
 }
 
-void NotifyAvailableOfflinePagesOnJobThread(
-    base::WeakPtr<OfflinePageRequestHandler> job,
-    const std::vector<OfflinePageRequestHandler::Candidate>& candidates) {
-  DCHECK_CURRENTLY_ON(GetJobThreadID());
-
-  if (job)
-    job->OnOfflinePagesAvailable(candidates);
-}
-
 // Notifies OfflinePageRequestHandler about all the matched offline pages.
 void NotifyAvailableOfflinePagesOnUI(
     base::WeakPtr<OfflinePageRequestHandler> job,
     const std::vector<OfflinePageRequestHandler::Candidate>& candidates) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)) {
-    NotifyAvailableOfflinePagesOnJobThread(job, candidates);
-  } else {
-    // Delegates to IO thread since OfflinePageRequestHandler should only be
-    // accessed from IO thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&NotifyAvailableOfflinePagesOnJobThread, job,
-                       candidates));
-  }
+  if (job)
+    job->OnOfflinePagesAvailable(candidates);
 }
 
 // Failed to find an offline page.
@@ -487,7 +463,7 @@ OfflinePageRequestHandler::OfflinePageRequestHandler(
       network_state_(NetworkState::CONNECTED_NETWORK),
       candidate_index_(0),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(GetJobThreadID());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::string offline_header_value;
   extra_request_headers.GetHeader(kOfflinePageHeader, &offline_header_value);
   // Note that |offline_header| will be empty if parsing from the header value
@@ -499,7 +475,7 @@ OfflinePageRequestHandler::~OfflinePageRequestHandler() {}
 
 OfflinePageRequestHandler::NetworkState
 OfflinePageRequestHandler::GetNetworkState() const {
-  DCHECK_CURRENTLY_ON(GetJobThreadID());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (offline_header_.reason == OfflinePageHeader::Reason::NET_ERROR)
     return OfflinePageRequestHandler::NetworkState::FLAKY_NETWORK;

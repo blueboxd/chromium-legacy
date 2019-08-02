@@ -208,15 +208,15 @@ void BookmarkAppInstallFinalizer::CreateOsShortcuts(
 bool BookmarkAppInstallFinalizer::CanReparentTab(const web_app::AppId& app_id,
                                                  bool shortcut_created) const {
   const Extension* app = GetExtensionById(profile_, app_id);
-  return CanBookmarkAppReparentTab(profile_, app, shortcut_created);
-}
+  // Reparent the web contents into its own window only if that is the
+  // app's launch type.
+  if (!app ||
+      extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile_),
+                                app) != extensions::LAUNCH_TYPE_WINDOW) {
+    return false;
+  }
 
-void BookmarkAppInstallFinalizer::ReparentTab(
-    const web_app::AppId& app_id,
-    content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  DCHECK(!profile_->IsOffTheRecord());
-  BookmarkAppReparentTab(web_contents, app_id);
+  return InstallFinalizer::CanReparentTab(app_id, shortcut_created);
 }
 
 bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {

@@ -127,6 +127,33 @@ void* MediaStreamAudioSource::GetClassIdentifier() const {
   return nullptr;
 }
 
+bool MediaStreamAudioSource::HasSameReconfigurableSettings(
+    const blink::AudioProcessingProperties& selected_properties) const {
+  base::Optional<blink::AudioProcessingProperties> configured_properties =
+      GetAudioProcessingProperties();
+  if (!configured_properties)
+    return false;
+
+  return selected_properties.HasSameReconfigurableSettings(
+      *configured_properties);
+}
+
+bool MediaStreamAudioSource::HasSameNonReconfigurableSettings(
+    MediaStreamAudioSource* other_source) const {
+  if (!other_source)
+    return false;
+
+  base::Optional<blink::AudioProcessingProperties> others_properties =
+      other_source->GetAudioProcessingProperties();
+  base::Optional<blink::AudioProcessingProperties> this_properties =
+      GetAudioProcessingProperties();
+
+  if (!others_properties || !this_properties)
+    return false;
+
+  return this_properties->HasSameNonReconfigurableSettings(*others_properties);
+}
+
 void MediaStreamAudioSource::DoChangeSource(
     const MediaStreamDevice& new_device) {
   DCHECK(task_runner_->BelongsToCurrentThread());

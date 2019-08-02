@@ -143,10 +143,15 @@ using AudioDeviceCaptureCapabilities =
 //    Moreover, the echo_cancellation constraint influences most other
 //    audio-processing properties for which no explicit value is provided in
 //    their corresponding constraints.
+// |is_reconfiguration_allowed| indicates whether it is possible to reconfigure
+// settings on an open audio track.
+// TODO(crbug.com/796964): remove |is_reconfiguration_allowed| when both
+// getUserMedia and applyConstraints code paths allow for reconfiguration.
 BLINK_MODULES_EXPORT blink::AudioCaptureSettings SelectSettingsAudioCapture(
     const AudioDeviceCaptureCapabilities& capabilities,
     const blink::WebMediaConstraints& constraints,
-    bool should_disable_hardware_noise_suppression);
+    bool should_disable_hardware_noise_suppression,
+    bool is_reconfiguration_allowed = false);
 
 // This variant of SelectSettings takes an existing MediaStreamAudioSource
 // as input in order to determine settings that are compatible with it.

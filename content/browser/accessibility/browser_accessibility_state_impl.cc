@@ -79,14 +79,15 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   // gives us better numbers.
 
   // Some things can be done on another thread safely.
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostDelayedTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &BrowserAccessibilityStateImpl::UpdateHistogramsOnOtherThread, this),
       base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
 
   // Other things must be done on the UI thread (e.g. to access PrefService).
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BrowserAccessibilityStateImpl::UpdateHistogramsOnUIThread,
                      this),

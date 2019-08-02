@@ -30,7 +30,7 @@ void RunOrPostTaskIfNotOnUiThread(const base::Location& from_here,
     return;
   }
 
-  base::PostTaskWithTraits(from_here, {BrowserThread::UI}, std::move(task));
+  base::PostTask(from_here, {BrowserThread::UI}, std::move(task));
 }
 
 void AddErrorMessageToConsoleOnUI(

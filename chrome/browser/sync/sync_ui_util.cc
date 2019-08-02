@@ -260,12 +260,16 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
   const syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
+  // If there is no SyncService (probably because sync is disabled from the
+  // command line), then there's no error to show.
+  if (!service)
+    return NO_SYNC_ERROR;
+
   // The order or priority is going to be: 1. Unrecoverable errors.
   // 2. Auth errors. 3. Outdated client errors. 4. Passphrase errors.
   // Note that an unrecoverable error is sometimes caused by the Chrome client
   // being outdated; that case is handled separately below.
-  if (service && service->HasUnrecoverableError() &&
-      !service->RequiresClientUpgrade()) {
+  if (service->HasUnrecoverableError() && !service->RequiresClientUpgrade()) {
     // Display different messages and buttons for managed accounts.
     if (!signin_util::IsUserSignoutAllowedForProfile(profile)) {
       // For a managed user, the user is directed to the signout
@@ -294,28 +298,25 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     return AUTH_ERROR;
   }
 
-  // Check for sync errors if the sync service is enabled.
-  if (service) {
-    // Check if the Chrome client needs to be updated.
-    if (service->RequiresClientUpgrade()) {
-      *content_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE;
-      *button_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON;
-      return UPGRADE_CLIENT_ERROR;
-    }
+  // Check if the Chrome client needs to be updated.
+  if (service->RequiresClientUpgrade()) {
+    *content_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_MESSAGE;
+    *button_string_id = IDS_SYNC_ERROR_USER_MENU_UPGRADE_BUTTON;
+    return UPGRADE_CLIENT_ERROR;
+  }
 
-    // Check for a sync passphrase error.
-    if (ShouldShowPassphraseError(service)) {
-      *content_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_MESSAGE;
-      *button_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON;
-      return PASSPHRASE_ERROR;
-    }
+  // Check for a sync passphrase error.
+  if (ShouldShowPassphraseError(service)) {
+    *content_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_MESSAGE;
+    *button_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON;
+    return PASSPHRASE_ERROR;
+  }
 
-    // Check for a sync confirmation error.
-    if (ShouldRequestSyncConfirmation(service)) {
-      *content_string_id = IDS_SYNC_SETTINGS_NOT_CONFIRMED;
-      *button_string_id = IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON;
-      return SETTINGS_UNCONFIRMED_ERROR;
-    }
+  // Check for a sync confirmation error.
+  if (ShouldRequestSyncConfirmation(service)) {
+    *content_string_id = IDS_SYNC_SETTINGS_NOT_CONFIRMED;
+    *button_string_id = IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON;
+    return SETTINGS_UNCONFIRMED_ERROR;
   }
 
   // There is no error.

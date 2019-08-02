@@ -191,7 +191,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DeleteIdleSession) {
 
   // Client 1 now deletes client 0's tabs. This frees the memory of sessions1.
   DeleteForeignSession(1, sessions1[0]->session_tag);
-  ASSERT_TRUE(GetClient(1)->HasUnsyncedItems());
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
   EXPECT_FALSE(GetSessionData(1, &sessions1));
 }
@@ -212,7 +211,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DeleteActiveSession) {
 
   // Client 1 now deletes client 0's tabs. This frees the memory of sessions1.
   DeleteForeignSession(1, sessions1[0]->session_tag);
-  ASSERT_TRUE(GetClient(1)->HasUnsyncedItems());
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
   ASSERT_FALSE(GetSessionData(1, &sessions1));
 

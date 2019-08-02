@@ -548,9 +548,6 @@ extern const char kEnableWebAuthenticationPINSupportDescription[];
 extern const char kEnableWebUsbName[];
 extern const char kEnableWebUsbDescription[];
 
-extern const char kEnableIncognitoWindowCounterName[];
-extern const char kEnableIncognitoWindowCounterDescription[];
-
 extern const char kEnableWasmBaselineName[];
 extern const char kEnableWasmBaselineDescription[];
 

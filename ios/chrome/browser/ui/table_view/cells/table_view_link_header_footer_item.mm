@@ -72,7 +72,7 @@ const CGFloat kVerticalPadding = 8;
     _textView.adjustsFontForContentSizeCategory = YES;
     _textView.translatesAutoresizingMaskIntoConstraints = NO;
     _textView.linkTextAttributes =
-        @{NSForegroundColorAttributeName : [UIColor colorNamed:kTintColor]};
+        @{NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor]};
 
     [self.contentView addSubview:_textView];
 

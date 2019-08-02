@@ -14,7 +14,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"                                  // mash-ok
 #include "ash/wm/overview/overview_controller.h"        // mash-ok
 #include "ash/wm/splitview/split_view_controller.h"     // mash-ok

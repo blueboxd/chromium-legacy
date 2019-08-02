@@ -1042,8 +1042,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     googleServicesItem.image =
         [UIImage imageNamed:kSyncAndGoogleServicesSyncOnImageName];
   } else if (!IsTransientSyncError(syncSetupService->GetSyncServiceState())) {
-    googleServicesItem.detailTextColor =
-        [UIColor colorNamed:kDestructiveTintColor];
+    googleServicesItem.detailTextColor = [UIColor colorNamed:kRedColor];
     googleServicesItem.detailText =
         GetSyncErrorDescriptionForSyncSetupService(syncSetupService);
     googleServicesItem.image =

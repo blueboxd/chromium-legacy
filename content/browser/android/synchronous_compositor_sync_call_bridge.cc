@@ -56,12 +56,11 @@ bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
   frame_futures_.pop_front();
 
   if (compositor_frame) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&SynchronousCompositorSyncCallBridge::
-                           ProcessFrameMetadataOnUIThread,
-                       this, metadata_version,
-                       compositor_frame->metadata.Clone()));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&SynchronousCompositorSyncCallBridge::
+                                      ProcessFrameMetadataOnUIThread,
+                                  this, metadata_version,
+                                  compositor_frame->metadata.Clone()));
     frame_ptr->frame.reset(new viz::CompositorFrame);
     *frame_ptr->frame = std::move(*compositor_frame);
   }

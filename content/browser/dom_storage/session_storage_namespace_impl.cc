@@ -114,8 +114,8 @@ SessionStorageNamespaceImpl::~SessionStorageNamespaceImpl() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     // If this fails to post then that's fine, as the mojo state should
     // already be destructed.
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             deleteNamespaceRunner.Release());
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   deleteNamespaceRunner.Release());
   }
 }
 

@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/permission_bubble/permission_bubble_browser_test_util.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -61,11 +61,12 @@ Browser* PermissionBubbleBrowserTest::OpenExtensionAppWindow() {
 
   AppLaunchParams params(
       browser()->profile(), extension->id(),
-      extensions::LaunchContainer::kLaunchContainerPanelDeprecated,
+      apps::mojom::LaunchContainer::kLaunchContainerPanelDeprecated,
       WindowOpenDisposition::NEW_WINDOW,
-      extensions::AppLaunchSource::kSourceTest);
+      apps::mojom::AppLaunchSource::kSourceTest);
 
-  content::WebContents* app_window = OpenApplication(params);
+  content::WebContents* app_window =
+      apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
   CHECK(app_window);
 
   Browser* app_browser = chrome::FindBrowserWithWebContents(app_window);

@@ -117,8 +117,8 @@ constexpr size_t BlobBytesProvider::kMaxConsolidatedItemSizeInBytes;
 // static
 BlobBytesProvider* BlobBytesProvider::CreateAndBind(
     mojom::blink::BytesProviderRequest request) {
-  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  auto task_runner = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   auto provider = base::WrapUnique(new BlobBytesProvider(task_runner));
   auto* result = provider.get();
   // TODO(mek): Consider binding BytesProvider on the IPC thread instead, only

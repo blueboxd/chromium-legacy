@@ -9,11 +9,11 @@ public_headers = [
   "//net/proxy_resolution/proxy_resolve_dns_operation.h",
 ]
 traits_headers = [
-  "//services/proxy_resolver/public/cpp/mojo_host_struct_traits.h",
+  "//services/proxy_resolver/public/cpp/mojo_host_mojom_traits.h",
   "//services/proxy_resolver/public/cpp/proxy_resolver_mojom_traits.h",
 ]
 sources = [
-  "//services/proxy_resolver/public/cpp/mojo_host_struct_traits.cc",
+  "//services/proxy_resolver/public/cpp/mojo_host_mojom_traits.cc",
   "//services/proxy_resolver/public/cpp/proxy_resolver_mojom_traits.cc",
 ]
 type_mappings = [

@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import shutil
+import tempfile
+
 from contrib.oilpan import oilpan_gc_times
 
 from telemetry import decorators
@@ -92,7 +95,11 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   _GC_REASONS = ['precise', 'conservative', 'idle']
 
   def setUp(self):
-    self._options = options_for_unittests.GetCopy()
+    self._options = options_for_unittests.GetRunOptions(
+        output_dir=tempfile.mkdtemp())
+
+  def tearDowmn(self):
+    shutil.rmtree(self._options.output_dir)
 
   # Disable for accessing private API of _OilpanGCTimesBase.
   # pylint: disable=protected-access
@@ -148,10 +155,11 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('all')
   def testForSmoothness(self):
-    ps = self.CreateStorySetFromFileInUnittestDataDir(
+    story_set = self.CreateStorySetFromFileInUnittestDataDir(
         'create_many_objects.html')
     measurement = oilpan_gc_times.OilpanGCTimesForSmoothness()
-    results = self.RunMeasurement(measurement, ps, options=self._options)
+    results = self.RunMeasurement(
+        measurement, story_set, run_options=self._options)
     self.assertFalse(results.had_failures)
 
     gc_events = []
@@ -162,10 +170,11 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('all')
   def testForBlinkPerf(self):
-    ps = self.CreateStorySetFromFileInUnittestDataDir(
+    story_set = self.CreateStorySetFromFileInUnittestDataDir(
         'create_many_objects.html')
     measurement = oilpan_gc_times.OilpanGCTimesForBlinkPerf()
-    results = self.RunMeasurement(measurement, ps, options=self._options)
+    results = self.RunMeasurement(
+        measurement, story_set, run_options=self._options)
     self.assertFalse(results.had_failures)
 
     gc_events = []

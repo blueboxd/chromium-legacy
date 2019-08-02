@@ -26,11 +26,11 @@ class LargestContentfulPaintCalculatorTest : public RenderingTest {
 
     mock_text_callback_manager_ =
         MakeGarbageCollected<MockPaintTimingCallbackManager>();
-    GetTextPaintTimingDetector()->ResetCallbackManagerForTesting(
+    GetTextPaintTimingDetector()->ResetCallbackManager(
         mock_text_callback_manager_);
     mock_image_callback_manager_ =
         MakeGarbageCollected<MockPaintTimingCallbackManager>();
-    GetImagePaintTimingDetector()->ResetCallbackManagerForTesting(
+    GetImagePaintTimingDetector()->ResetCallbackManager(
         mock_image_callback_manager_);
   }
 

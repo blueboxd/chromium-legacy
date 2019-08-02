@@ -167,7 +167,7 @@ class LoginHandlerDelegate {
     auto continue_after_inteceptor_io =
         base::BindOnce(&LoginHandlerDelegate::ContinueAfterInterceptorIO,
                        weak_factory_.GetWeakPtr());
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&DevToolsURLLoaderInterceptor::HandleAuthRequest,
                        request_id_.child_id, routing_id_,
@@ -188,7 +188,7 @@ class LoginHandlerDelegate {
       bool use_fallback,
       const base::Optional<net::AuthCredentials>& auth_credentials) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&LoginHandlerDelegate::ContinueAfterInterceptorUI,
                        std::move(self_weak), use_fallback, auth_credentials));
@@ -364,7 +364,7 @@ void OnAuthRequiredContinuationForWindowId(
     std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
     return;
   }
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&GetWebContentsFromRegistry, window_id),
       base::BindOnce(&OnAuthRequiredContinuation, process_id, routing_id,
@@ -405,7 +405,7 @@ void OnCertificateRequestedContinuation(
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CreateSSLClientAuthDelegateOnIO,
                      std::move(client_cert_responder_info),
@@ -488,7 +488,7 @@ void NetworkServiceClient::OnAuthRequired(
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
   if (window_id) {
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&GetIsMainFrameFromRegistry, *window_id),
         base::BindOnce(&OnAuthRequiredContinuationForWindowId, *window_id,
@@ -512,7 +512,7 @@ void NetworkServiceClient::OnCertificateRequested(
     network::mojom::ClientCertificateResponderPtr cert_responder) {
   // Use |window_id| if it's provided.
   if (window_id) {
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&GetWebContentsFromRegistry, *window_id),
         base::BindOnce(&OnCertificateRequestedContinuation, process_id,
@@ -555,8 +555,9 @@ void NetworkServiceClient::OnFileUploadRequested(
     bool async,
     const std::vector<base::FilePath>& file_paths,
     OnFileUploadRequestedCallback callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&HandleFileUploadRequest, process_id, async, file_paths,
                      std::move(callback),
                      base::SequencedTaskRunnerHandle::Get()));

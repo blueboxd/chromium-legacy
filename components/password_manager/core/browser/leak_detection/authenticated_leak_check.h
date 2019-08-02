@@ -7,17 +7,30 @@
 
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 
+namespace signin {
+class IdentityManager;
+}  // namespace signin
+
 namespace password_manager {
+
+class LeakDetectionDelegateInterface;
 
 // Performs a leak-check for {username, password} for Chrome signed-in users.
 class AuthenticatedLeakCheck : public LeakDetectionCheck {
  public:
-  AuthenticatedLeakCheck();
+  AuthenticatedLeakCheck(LeakDetectionDelegateInterface* delegate,
+                         signin::IdentityManager* identity_manager);
   ~AuthenticatedLeakCheck() override;
 
   void Start(const GURL& url,
              base::StringPiece16 username,
              base::StringPiece16 password) override;
+
+ private:
+  // Delegate for the instance. Should outlive |this|.
+  LeakDetectionDelegateInterface* delegate_;
+  // Identity manager for the profile.
+  signin::IdentityManager* identity_manager_;
 };
 
 }  // namespace password_manager

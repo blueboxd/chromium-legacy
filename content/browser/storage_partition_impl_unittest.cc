@@ -558,10 +558,9 @@ class RemovePluginPrivateDataTester {
 
     // AwaitCompletionHelper and MessageLoop don't work on a
     // SequencedTaskRunner, so post a task on the IO thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&AwaitCompletionHelper::Notify,
-                       base::Unretained(await_completion)));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&AwaitCompletionHelper::Notify,
+                                  base::Unretained(await_completion)));
   }
 
   // We don't own this pointer.
@@ -729,8 +728,7 @@ class StoragePartitionImplTest : public testing::Test {
     if (!quota_manager_.get()) {
       quota_manager_ = new MockQuotaManager(
           browser_context_->IsOffTheRecord(), browser_context_->GetPath(),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
-              .get(),
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(),
           browser_context_->GetSpecialStoragePolicy());
     }
     return quota_manager_.get();

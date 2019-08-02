@@ -217,9 +217,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void UpdateRendererPreferencesForWorker(
       content::BrowserContext* browser_context,
       blink::mojom::RendererPreferences* out_prefs) override;
-  bool AllowAppCacheOnIO(const GURL& manifest_url,
-                         const GURL& first_party,
-                         content::ResourceContext* context) override;
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
                      content::BrowserContext* context) override;
@@ -236,8 +233,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                          content::BrowserContext* context,
                          int render_process_id,
                          int render_frame_id) override;
-  bool AllowSignedExchangeOnIO(
-      content::ResourceContext* resource_context) override;
   bool AllowSignedExchange(content::BrowserContext* browser_context) override;
   void AllowWorkerFileSystem(
       const GURL& url,
@@ -442,13 +437,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   base::FilePath GetLoggingFileName(
       const base::CommandLine& command_line) override;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-  CreateURLLoaderThrottlesOnIO(
-      const network::ResourceRequest& request,
-      content::ResourceContext* resource_context,
-      const base::RepeatingCallback<content::WebContents*()>& wc_getter,
-      content::NavigationUIData* navigation_ui_data,
-      int frame_tree_node_id) override;
-  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const network::ResourceRequest& request,
       content::BrowserContext* browser_context,
@@ -545,8 +533,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::URLLoaderFactoryPtr* out_factory) override;
   std::unique_ptr<content::OverlayWindow> CreateWindowForPictureInPicture(
       content::PictureInPictureWindowController* controller) override;
-  bool IsSafeRedirectTargetOnIO(const GURL& url,
-                                content::ResourceContext* context) override;
   bool IsSafeRedirectTarget(const GURL& url,
                             content::BrowserContext* context) override;
   void RegisterRendererPreferenceWatcher(

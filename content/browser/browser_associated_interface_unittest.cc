@@ -167,9 +167,8 @@ class TestClientRunner {
 TEST_F(BrowserAssociatedInterfaceTest, Basic) {
   TestBrowserThreadBundle browser_threads_;
   mojo::MessagePipe pipe;
-  ProxyRunner proxy(
-      std::move(pipe.handle0), true,
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+  ProxyRunner proxy(std::move(pipe.handle0), true,
+                    base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
   AddFilterToChannel(new TestDriverMessageFilter, proxy.channel());
 
   TestClientRunner client(std::move(pipe.handle1));

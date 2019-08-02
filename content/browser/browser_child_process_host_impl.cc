@@ -187,7 +187,7 @@ BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
   g_child_process_list.Get().remove(this);
 
   if (notify_child_disconnected_) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NotifyProcessHostDisconnected, data_.Duplicate()));
   }
@@ -417,14 +417,14 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   early_exit_watcher_.StopWatching();
 #endif
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&NotifyProcessHostConnected, data_.Duplicate()));
 
   delegate_->OnChannelConnected(peer_pid);
 
   if (IsProcessLaunched()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NotifyProcessLaunchedAndConnected, data_.Duplicate()));
   }
@@ -476,7 +476,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
         GetTerminationInfo(true /* known_dead */);
 #if defined(OS_ANDROID)
     delegate_->OnProcessCrashed(info.exit_code);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NotifyProcessKilled, data_.Duplicate(), info));
 #else  // OS_ANDROID
@@ -484,7 +484,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
       case base::TERMINATION_STATUS_ABNORMAL_TERMINATION: {
         delegate_->OnProcessCrashed(info.exit_code);
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {BrowserThread::UI},
             base::BindOnce(&NotifyProcessCrashed, data_.Duplicate(), info));
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed2",
@@ -497,7 +497,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
 #endif
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED: {
         delegate_->OnProcessCrashed(info.exit_code);
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {BrowserThread::UI},
             base::BindOnce(&NotifyProcessKilled, data_.Duplicate(), info));
         // Report that this child process was killed.
@@ -641,7 +641,7 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   delegate_->OnProcessLaunched();
 
   if (is_channel_connected_) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NotifyProcessLaunchedAndConnected, data_.Duplicate()));
   }

@@ -10,22 +10,19 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation.AnimationListener;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.ui.widget.ChromeImageView;
-import org.chromium.ui.widget.RippleBackgroundHelper;
 
 /**
  * View class for a bubble used in gesture navigation UI that consists of an icon
  * and an optional text.
  */
 public class NavigationBubble extends LinearLayout {
-    private final RippleBackgroundHelper mRippleBackgroundHelper;
-
-    private ChromeImageView mIcon;
+    private ImageView mIcon;
     private TextView mText;
     private AnimationListener mListener;
 
@@ -45,19 +42,12 @@ public class NavigationBubble extends LinearLayout {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
-
-        // Reset icon and background. Height is used as corner radius to ensure we have a circle.
-        mRippleBackgroundHelper = new RippleBackgroundHelper(this,
-                R.color.navigation_bubble_background_color, R.color.navigation_bubble_ripple_color,
-                getResources().getDimensionPixelSize(R.dimen.navigation_bubble_default_height),
-                R.color.navigation_bubble_stroke_color, R.dimen.navigation_bubble_border_width,
-                getResources().getDimensionPixelSize(R.dimen.navigation_bubble_bg_vertical_inset));
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mIcon = findViewById(R.id.navigation_bubble_icon);
+        mIcon = findViewById(R.id.navigation_bubble_arrow);
         mText = findViewById(R.id.navigation_bubble_text);
     }
 
@@ -104,14 +94,6 @@ public class NavigationBubble extends LinearLayout {
         super.onAnimationEnd();
         if (mListener != null) {
             mListener.onAnimationEnd(getAnimation());
-        }
-    }
-
-    @Override
-    protected void drawableStateChanged() {
-        super.drawableStateChanged();
-        if (mRippleBackgroundHelper != null) {
-            mRippleBackgroundHelper.onDrawableStateChanged();
         }
     }
 

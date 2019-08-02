@@ -236,8 +236,8 @@ enum BlockStatusHistogram {
 void OnVideoMemoryUsageStats(
     GpuDataManager::VideoMemoryUsageStatsCallback callback,
     const gpu::VideoMemoryUsageStats& stats) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), stats));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), stats));
 }
 
 void RequestVideoMemoryUsageStats(
@@ -254,7 +254,7 @@ void UpdateDxDiagNodeOnIO(const gpu::DxDiagNode& dx_diagnostics) {
   // This function is called on the IO thread, but GPUInfo on GpuDataManagerImpl
   // should be updated on the UI thread since it can call into functions that
   // expect to run in the UI thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           [](const gpu::DxDiagNode& dx_diagnostics) {
@@ -268,7 +268,7 @@ void UpdateDx12VulkanInfoOnIO(
   // This function is called on the IO thread, but GPUInfo on GpuDataManagerImpl
   // should be updated on the UI thread since it can call into functions that
   // expect to run in the UI thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           [](const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
@@ -419,9 +419,8 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
         base::BindOnce(&UpdateDx12VulkanInfoOnIO));
   });
 
-  base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                                  std::move(task),
-                                  base::TimeDelta::FromMilliseconds(15000));
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::IO}, std::move(task),
+                        base::TimeDelta::FromMilliseconds(15000));
 #else
   NOTREACHED();
 #endif

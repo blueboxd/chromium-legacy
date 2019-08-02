@@ -44,6 +44,9 @@ class BLINK_MODULES_EXPORT LocalMediaStreamAudioSource
   // MediaStreamAudioSource implementation.
   void ChangeSourceImpl(const MediaStreamDevice& new_device) final;
 
+  base::Optional<blink::AudioProcessingProperties>
+  GetAudioProcessingProperties() const final;
+
  private:
   // MediaStreamAudioSource implementation.
   bool EnsureSourceIsStarted() final;

@@ -17,7 +17,7 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/logging.h"

@@ -9,7 +9,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"

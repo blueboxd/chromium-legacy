@@ -181,6 +181,11 @@ WebViewPasswordManagerClient::GetMetricsRecorder() {
   return nullptr;
 }
 
+signin::IdentityManager* WebViewPasswordManagerClient::GetIdentityManager() {
+  NOTREACHED();
+  return nullptr;
+}
+
 void WebViewPasswordManagerClient::PromptUserToEnableAutosignin() {
   // TODO(crbug.com/435048): Implement this method.
 }

@@ -350,8 +350,9 @@ base::FilePath StoragePartitionImplMap::GetStoragePartitionPath(
 StoragePartitionImplMap::StoragePartitionImplMap(
     BrowserContext* browser_context)
     : browser_context_(browser_context),
-      file_access_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
+      file_access_runner_(
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::BEST_EFFORT})),
       resource_context_initialized_(false) {}
 
 StoragePartitionImplMap::~StoragePartitionImplMap() {
@@ -435,8 +436,9 @@ void StoragePartitionImplMap::AsyncObliterate(
   base::FilePath domain_root = browser_context_->GetPath().Append(
       GetStoragePartitionDomainPath(partition_domain));
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BlockingObliteratePath, browser_context_->GetPath(),
                      domain_root, paths_to_keep,
                      base::ThreadTaskRunnerHandle::Get(), on_gc_required));
@@ -499,7 +501,7 @@ void StoragePartitionImplMap::PostCreateInitialization(
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &ChromeAppCacheService::InitializeOnLoaderThread,
@@ -514,14 +516,14 @@ void StoragePartitionImplMap::PostCreateInitialization(
     partition->GetCacheStorageContext()->SetBlobParametersForCache(
         ChromeBlobStorageContext::GetFor(browser_context_));
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ServiceWorkerContextWrapper::InitializeResourceContext,
                        partition->GetServiceWorkerContext(),
                        browser_context_->GetResourceContext()));
 
     if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&PrefetchURLLoaderService::InitializeResourceContext,
                          partition->GetPrefetchURLLoaderService(),
@@ -530,10 +532,9 @@ void StoragePartitionImplMap::PostCreateInitialization(
                              browser_context_))));
     }
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&BackgroundFetchContext::InitializeOnIOThread,
-                       partition->GetBackgroundFetchContext()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&BackgroundFetchContext::InitializeOnIOThread,
+                                  partition->GetBackgroundFetchContext()));
 
     // We do not call InitializeURLRequestContext() for media contexts because,
     // other than the HTTP cache, the media contexts share the same backing

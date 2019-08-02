@@ -1082,3 +1082,37 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   EXPECT_EQ(1, samples.front().count);
   EXPECT_LE(min_percent, samples.front().min);
 }
+
+IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
+                       DisallowedAdFrames_NotMeasured) {
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  ResetConfiguration(subresource_filter::Configuration(
+      subresource_filter::mojom::ActivationLevel::kEnabled,
+      subresource_filter::ActivationScope::ALL_SITES));
+
+  // cross_site_iframe_factory loads URLs like:
+  // http://b.com:40919/cross_site_iframe_factory.html?b()
+  SetRulesetToDisallowURLsWithPathSuffix("b()");
+  const GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b,c,d)"));
+
+  auto waiter = CreatePageLoadMetricsTestWaiter();
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // One favicon resource and 2 resources for frames a,c,d
+  waiter->AddPageExpectation(
+      page_load_metrics::PageLoadMetricsTestWaiter::TimingField::kLoadEvent);
+  waiter->Wait();
+
+  // Navigate away to force the histogram recording.
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // Check that adframes are not included in UKM's or UMA metrics.
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::AdFrameLoad::kEntryName);
+  EXPECT_EQ(0u, entries.size());
+  histogram_tester.ExpectTotalCount(
+      "PageLoad.Clients.Ads.Bytes.AdFrames.Aggregate.Total", 0);
+}

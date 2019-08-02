@@ -72,7 +72,7 @@ TEST_F(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
   browser_main_loop.CreateThreads();
   EXPECT_GE(base::ThreadPoolInstance::Get()
                 ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
-                    {base::TaskPriority::USER_VISIBLE}),
+                    {base::ThreadPool(), base::TaskPriority::USER_VISIBLE}),
             base::SysInfo::NumberOfProcessors() - 1);
   browser_main_loop.ShutdownThreadsAndCleanUp();
 }
@@ -94,9 +94,8 @@ TEST_F(BrowserMainLoopTest,
   StrickMockTask task;
 
   // No task should run because IO thread has not been initialized yet.
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, task.Get());
-  base::CreateTaskRunnerWithTraits({BrowserThread::IO})
-      ->PostTask(FROM_HERE, task.Get());
+  base::PostTask(FROM_HERE, {BrowserThread::IO}, task.Get());
+  base::CreateTaskRunner({BrowserThread::IO})->PostTask(FROM_HERE, task.Get());
 
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
 

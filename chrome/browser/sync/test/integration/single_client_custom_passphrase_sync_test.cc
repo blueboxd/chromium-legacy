@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base64.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
@@ -447,6 +448,63 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
   override_features.InitAndDisableFeature(switches::kSyncUSSNigori);
   const KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(),
                                 "hunter2"};
+  InjectEncryptedServerBookmark(
+      "some bookmark", GURL("http://example.com/doesnt-matter"), key_params);
+  ASSERT_TRUE(SetupClients());
+
+  EXPECT_TRUE(WaitForPassphraseRequiredState(/*desired_state=*/false));
+  EXPECT_TRUE(WaitForClientBookmarkWithTitle("some bookmark"));
+}
+
+// TODO(https://crbug.com/952074): re-enable once flakiness is addressed.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_PRE_ShouldLoadDirectoryCustomPassphraseInUSSMode \
+  DISABLED_PRE_ShouldLoadDirectoryCustomPassphraseInUSSMode
+#else
+#define MAYBE_PRE_ShouldLoadDirectoryCustomPassphraseInUSSMode \
+  PRE_ShouldLoadDirectoryCustomPassphraseInUSSMode
+#endif
+
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
+                       MAYBE_PRE_ShouldLoadDirectoryCustomPassphraseInUSSMode) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitWithFeatures(
+      /*enabled_features=*/{switches::kSyncUseScryptForNewCustomPassphrases},
+      /*disabled_features=*/{switches::kSyncUSSNigori});
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(WaitForNigori(PassphraseType::KEYSTORE_PASSPHRASE));
+  GetSyncService()->GetUserSettings()->SetEncryptionPassphrase("hunter2");
+  ASSERT_TRUE(WaitForNigori(PassphraseType::CUSTOM_PASSPHRASE));
+}
+
+// TODO(https://crbug.com/952074): re-enable once flakiness is addressed.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_ShouldLoadDirectoryCustomPassphraseInUSSMode \
+  DISABLED_ShouldLoadDirectoryCustomPassphraseInUSSMode
+#else
+#define MAYBE_ShouldLoadDirectoryCustomPassphraseInUSSMode \
+  ShouldLoadDirectoryCustomPassphraseInUSSMode
+#endif
+
+IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
+                       MAYBE_ShouldLoadDirectoryCustomPassphraseInUSSMode) {
+  // We should be able to decrypt bookmarks with passphrase, which was set when
+  // kSyncUSSNigori was disabled, without providing it again once kSyncUSSNigori
+  // is enabled.
+  base::test::ScopedFeatureList override_features;
+  override_features.InitWithFeatures(
+      /*enabled_features=*/{switches::kSyncUSSBookmarks,
+                            switches::kSyncUSSPasswords,
+                            switches::kSyncUSSAutofillWalletMetadata,
+                            switches::kSyncUSSNigori},
+      /*disabled_features=*/{});
+  NigoriSpecifics nigori;
+  ASSERT_TRUE(GetServerNigori(GetFakeServer(), &nigori));
+  std::string decoded_scrypt_salt;
+  ASSERT_TRUE(base::Base64Decode(nigori.custom_passphrase_key_derivation_salt(),
+                                 &decoded_scrypt_salt));
+  const KeyParams key_params = {
+      KeyDerivationParams::CreateForScrypt(decoded_scrypt_salt), "hunter2"};
   InjectEncryptedServerBookmark(
       "some bookmark", GURL("http://example.com/doesnt-matter"), key_params);
   ASSERT_TRUE(SetupClients());

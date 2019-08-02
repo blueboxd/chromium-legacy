@@ -54,9 +54,8 @@ class DragDownloadFileTest : public ContentBrowserTest {
   ~DragDownloadFileTest() override {}
 
   void Succeed() {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }
 
   void FailFast() {

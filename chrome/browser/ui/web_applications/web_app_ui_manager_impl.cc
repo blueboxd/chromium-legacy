@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
@@ -105,6 +107,26 @@ void WebAppUiManagerImpl::AddAppToQuickLaunchBar(const AppId& app_id) {
     controller->UpdateV1AppState(app_id);
   }
 #endif  // defined(OS_CHROMEOS)
+}
+
+bool WebAppUiManagerImpl::CanReparentAppTabToWindow(
+    const AppId& app_id,
+    bool shortcut_created) const {
+#if defined(OS_MACOSX)
+  // On macOS it is only possible to reparent the window when the shortcut (app
+  // shim) was created. See https://crbug.com/915571.
+  return shortcut_created;
+#else
+  return true;
+#endif
+}
+
+void WebAppUiManagerImpl::ReparentAppTabToWindow(content::WebContents* contents,
+                                                 const AppId& app_id,
+                                                 bool shortcut_created) {
+  DCHECK(CanReparentAppTabToWindow(app_id, shortcut_created));
+  // Reparent the tab into an app window immediately.
+  ReparentWebContentsIntoAppBrowser(contents, app_id);
 }
 
 void WebAppUiManagerImpl::OnBrowserAdded(Browser* browser) {

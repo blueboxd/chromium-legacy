@@ -36,9 +36,9 @@
   cell.textLabel.textColor = UIColor.cr_labelColor;
 
   cell.detailTextLabel.text = self.detailText;
-  cell.detailTextLabel.textColor =
-      self.shouldDisplayError ? [UIColor colorNamed:kDestructiveTintColor]
-                              : UIColor.cr_secondaryLabelColor;
+  cell.detailTextLabel.textColor = self.shouldDisplayError
+                                       ? [UIColor colorNamed:kRedColor]
+                                       : UIColor.cr_secondaryLabelColor;
 }
 
 #pragma mark - Helper methods

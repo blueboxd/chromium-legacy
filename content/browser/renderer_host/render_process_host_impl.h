@@ -672,7 +672,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
     registry->AddInterface(
         base::Bind(&InterfaceGetter<CallbackType>::GetInterfaceOnUIThread,
                    instance_weak_factory_->GetWeakPtr(), callback),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
+        base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
   }
 
   // Callback to unblock process shutdown after waiting for unload handlers to

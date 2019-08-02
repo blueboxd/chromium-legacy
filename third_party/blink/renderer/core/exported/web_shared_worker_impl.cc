@@ -193,6 +193,7 @@ void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(
 void WebSharedWorkerImpl::StartWorkerContext(
     const WebURL& script_request_url,
     const WebString& name,
+    const WebString& user_agent,
     const WebString& content_security_policy,
     mojom::ContentSecurityPolicyType policy_type,
     mojom::IPAddressSpace creation_address_space,
@@ -204,6 +205,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
   DCHECK(IsMainThread());
   script_request_url_ = script_request_url;
   name_ = name;
+  user_agent_ = user_agent;
   creation_address_space_ = creation_address_space;
   // Chrome doesn't use interface versioning.
   content_settings_info_ = mojom::blink::WorkerContentSettingsProxyPtrInfo(
@@ -286,8 +288,7 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
   // worker script fetch on the worker thread.
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       script_request_url_, script_type,
-      OffMainThreadWorkerScriptFetchOption::kEnabled, name_,
-      shadow_page_->GetDocument()->UserAgent(),
+      OffMainThreadWorkerScriptFetchOption::kEnabled, name_, user_agent_,
       std::move(web_worker_fetch_context), Vector<CSPHeaderAndType>(),
       outside_settings_object->GetReferrerPolicy(),
       outside_settings_object->GetSecurityOrigin(), starter_secure_context,

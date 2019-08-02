@@ -235,10 +235,9 @@ void MidiHost::SendData(uint32_t port,
 template <typename Method, typename... Params>
 void MidiHost::CallClient(Method method, Params... params) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&MidiHost::CallClient<Method, Params...>, AsWeakPtr(),
-                       method, std::move(params)...));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&MidiHost::CallClient<Method, Params...>,
+                                  AsWeakPtr(), method, std::move(params)...));
     return;
   }
   (midi_client_.get()->*method)(std::move(params)...);

@@ -9,7 +9,7 @@
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/virtual_keyboard_controller.h"
-#include "ash/public/interfaces/ime_info.mojom.h"
+#include "ash/public/mojom/ime_info.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"

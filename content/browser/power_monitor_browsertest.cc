@@ -147,10 +147,9 @@ class PowerMonitorTest : public ContentBrowserTest {
   void StartUtilityProcess(mojom::PowerMonitorTestPtr* power_monitor_test,
                            base::Closure utility_bound_closure) {
     utility_bound_closure_ = std::move(utility_bound_closure);
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&StartUtilityProcessOnIOThread,
-                       mojo::MakeRequest(power_monitor_test)));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&StartUtilityProcessOnIOThread,
+                                  mojo::MakeRequest(power_monitor_test)));
   }
 
   void set_renderer_bound_closure(base::Closure closure) {
@@ -247,10 +246,9 @@ IN_PROC_BROWSER_TEST_F(PowerMonitorTest, TestGpuProcess) {
   EXPECT_EQ(1, request_count_from_gpu());
 
   mojom::PowerMonitorTestPtr power_monitor_gpu;
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&BindInterfaceForGpuOnIOThread,
-                     mojo::MakeRequest(&power_monitor_gpu)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&BindInterfaceForGpuOnIOThread,
+                                mojo::MakeRequest(&power_monitor_gpu)));
 
   // Ensure that the PowerMonitorTestImpl instance has been created and is
   // observing power state changes in the child process before simulating a

@@ -171,21 +171,20 @@ TEST_F(JankMonitorTest, JankUIThread) {
 
   // Post a janky task to the UI thread. Number of callback calls should be
   // incremented by 1.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindLambdaForTesting(janky_task));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindLambdaForTesting(janky_task));
   RunAllThreadsUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 
   // Post a non janky task. Number of callback calls should remain the same.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::DoNothing());
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, base::DoNothing());
   RunAllThreadsUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 
   // Post a janky task again. Monitor thread timer should fire again. Number of
   // callback calls should be incremented by 1 again.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindLambdaForTesting(janky_task));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindLambdaForTesting(janky_task));
   RunAllThreadsUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 }
@@ -208,8 +207,8 @@ TEST_F(JankMonitorTest, JankIOThread) {
 
   // Post a janky task to the IO thread. This should increment the number of
   // callback calls by 1.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindLambdaForTesting(janky_task));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindLambdaForTesting(janky_task));
   RunAllThreadsUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 }
@@ -235,8 +234,8 @@ TEST_F(JankMonitorTest, JankUIThreadReentrant) {
       // The callback shouldn't be called.
       VALIDATE_TEST_OBSERVER_CALLS();
     };
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindLambdaForTesting(nested_janky_task));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindLambdaForTesting(nested_janky_task));
     // Spin a nested run loop to run |nested_janky_task|.
     base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
     expected_jank_stopped_++;
@@ -244,8 +243,8 @@ TEST_F(JankMonitorTest, JankUIThreadReentrant) {
 
   // Post a janky task to the UI thread. Number of callback calls should be
   // incremented by 1.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindLambdaForTesting(janky_task));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindLambdaForTesting(janky_task));
   RunAllThreadsUntilIdle();
   VALIDATE_TEST_OBSERVER_CALLS();
 }
@@ -272,8 +271,8 @@ TEST_F(JankMonitorTest, JankUIAndIOThread) {
 
       // Monitor should observe that the jank has started.
     };
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindLambdaForTesting(janky_task_io));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindLambdaForTesting(janky_task_io));
     RunAllThreadsUntilIdle();
     // TestJankMonitor::OnJankStopped() shouldn't be called.
     VALIDATE_TEST_OBSERVER_CALLS();
@@ -281,8 +280,8 @@ TEST_F(JankMonitorTest, JankUIAndIOThread) {
     FastForwardAllThreadsByMs(500);
     expected_jank_stopped_++;
   };
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindLambdaForTesting(janky_task_ui));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindLambdaForTesting(janky_task_ui));
   RunAllThreadsUntilIdle();
   // Expect that TestJankMonitor::OnJankStopped() was called.
   VALIDATE_TEST_OBSERVER_CALLS();
@@ -292,8 +291,8 @@ TEST_F(JankMonitorTest, JankUIAndIOThread) {
 // timer on new activity.
 TEST_F(JankMonitorTest, StartStopTimer) {
   // Activity on the UI thread - timer should be running.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(base::DoNothing::Once()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(base::DoNothing::Once()));
   RunAllThreadsUntilIdle();
   EXPECT_TRUE(monitor_->timer_running());
 
@@ -303,8 +302,8 @@ TEST_F(JankMonitorTest, StartStopTimer) {
   EXPECT_FALSE(monitor_->timer_running());
 
   // Activity on IO thread - timer should be restarted.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(base::DoNothing::Once()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(base::DoNothing::Once()));
   RunAllThreadsUntilIdle();
   EXPECT_TRUE(monitor_->timer_running());
 

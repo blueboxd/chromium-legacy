@@ -139,4 +139,20 @@ void LocalMediaStreamAudioSource::ChangeSourceImpl(
   EnsureSourceIsStarted();
 }
 
+using EchoCancellationType =
+    blink::AudioProcessingProperties::EchoCancellationType;
+
+base::Optional<blink::AudioProcessingProperties>
+LocalMediaStreamAudioSource::GetAudioProcessingProperties() const {
+  blink::AudioProcessingProperties properties;
+  properties.DisableDefaultProperties();
+
+  if (device().input.effects() & media::AudioParameters::ECHO_CANCELLER) {
+    properties.echo_cancellation_type =
+        EchoCancellationType::kEchoCancellationSystem;
+  }
+
+  return properties;
+}
+
 }  // namespace blink

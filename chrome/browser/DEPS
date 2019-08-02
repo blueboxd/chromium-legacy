@@ -330,7 +330,7 @@ include_rules = [
   "+third_party/widevine/cdm/widevine_cdm_common.h",
 
   # Code under //ash runs out-of-process in mash so it must be accessed via mojo
-  # interfaces in //ash/public/interfaces. See //ash/README.md.
+  # interfaces in //ash/public/mojom. See //ash/README.md.
   "-ash",
   "+ash/public",
   "+ash/keyboard/ui/public",

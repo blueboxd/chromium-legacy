@@ -82,12 +82,13 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
 
     if (!client_task_runner.get()) {
       client_task_runner =
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO});
     }
 
     if (!background_task_runner.get()) {
-      background_task_runner = base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), net::GetCookieStoreBackgroundSequencePriority(),
+      background_task_runner = base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           net::GetCookieStoreBackgroundSequencePriority(),
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
     }
 

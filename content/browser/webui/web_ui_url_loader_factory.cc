@@ -133,8 +133,8 @@ void DataAvailable(scoped_refptr<network::ResourceResponse> headers,
   // Since the bytes are from the memory mapped resource file, copying the
   // data can lead to disk access. Needs to be posted to a SequencedTaskRunner
   // as Mojo requires a SequencedTaskRunnerHandle in scope.
-  base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::USER_BLOCKING, base::MayBlock(),
+  base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
       ->PostTask(FROM_HERE,
                  base::BindOnce(ReadData, headers, replacements, gzipped,
@@ -273,7 +273,7 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
     }
 
     if (request.url.host_piece() == kChromeUIBlobInternalsHost) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&StartBlobInternalsURLLoader, request,
                          client.PassInterface(),
@@ -292,7 +292,7 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
     // from frames can happen while the RFH is changed for a cross-process
     // navigation. The URLDataSources just need the WebContents; the specific
     // frame doesn't matter.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &StartURLLoader, request, render_frame_host_->GetFrameTreeNodeId(),

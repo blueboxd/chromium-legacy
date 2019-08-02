@@ -186,7 +186,7 @@ TEST_F(ChildProcessTaskPortProviderTest, DISABLED_DeadTaskPort) {
   ASSERT_TRUE(base::mac::CreateMachPort(&receive_right, &send_right));
 
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunner({});
+      base::CreateSequencedTaskRunner({base::ThreadPool()});
 
   MockChildProcess child_process;
   EXPECT_CALL(child_process, GetTaskPort(_))

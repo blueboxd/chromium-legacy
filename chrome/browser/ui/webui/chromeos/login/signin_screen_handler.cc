@@ -13,7 +13,7 @@
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/wallpaper_types.h"
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/location.h"

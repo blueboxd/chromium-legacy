@@ -9,7 +9,6 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_feature_list_creator.h"
-#include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "base/feature_list.h"
@@ -20,7 +19,6 @@
 #include "content/public/browser/network_service_instance.h"
 #include "net/log/net_log.h"
 #include "services/network/network_service.h"
-#include "services/network/public/cpp/features.h"
 
 namespace android_webview {
 
@@ -66,8 +64,6 @@ class AwBrowserProcess {
   // Constructs HttpAuthDynamicParams based on |local_state_|.
   network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams();
 
-  AwURLRequestContextGetter* GetAwURLRequestContext();
-
   void PreMainMessageLoopRun();
 
  private:
@@ -75,8 +71,6 @@ class AwBrowserProcess {
   void CreateSafeBrowsingWhitelistManager();
 
   void OnAuthPrefsChanged();
-
-  void CreateURLRequestContextGetter();
 
   // If non-null, this object holds a pref store that will be taken by
   // AwBrowserProcess to create the |local_state_|.
@@ -104,8 +98,6 @@ class AwBrowserProcess {
   // Accessed on UI and IO threads.
   std::unique_ptr<AwSafeBrowsingWhitelistManager>
       safe_browsing_whitelist_manager_;
-
-  scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserProcess);
 };

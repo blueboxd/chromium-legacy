@@ -128,7 +128,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(
         std::make_unique<DataSaverSiteBreakdownMetricsObserver>());
     std::unique_ptr<AdsPageLoadMetricsObserver> ads_observer =
-        AdsPageLoadMetricsObserver::CreateIfNeeded();
+        AdsPageLoadMetricsObserver::CreateIfNeeded(tracker->GetWebContents());
     if (ads_observer)
       tracker->AddObserver(std::move(ads_observer));
 

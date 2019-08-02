@@ -10,7 +10,6 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/network/public/cpp/features.h"
 
 using content::BrowserThread;
 
@@ -48,18 +47,13 @@ AwBrowserProcess::~AwBrowserProcess() {
 }
 
 void AwBrowserProcess::PreMainMessageLoopRun() {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    pref_change_registrar_.Init(local_state());
-    auto auth_pref_callback = base::BindRepeating(
-        &AwBrowserProcess::OnAuthPrefsChanged, base::Unretained(this));
-    pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
-    pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
-                               auth_pref_callback);
-  }
+  pref_change_registrar_.Init(local_state());
+  auto auth_pref_callback = base::BindRepeating(
+      &AwBrowserProcess::OnAuthPrefsChanged, base::Unretained(this));
+  pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
+  pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
+                             auth_pref_callback);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    CreateURLRequestContextGetter();
-  }
   InitSafeBrowsing();
 }
 
@@ -178,36 +172,6 @@ AwBrowserProcess::CreateHttpAuthDynamicParams() {
 void AwBrowserProcess::OnAuthPrefsChanged() {
   content::GetNetworkService()->ConfigureHttpAuthPrefs(
       CreateHttpAuthDynamicParams());
-}
-
-namespace {
-std::unique_ptr<net::ProxyConfigServiceAndroid> CreateProxyConfigService() {
-  std::unique_ptr<net::ProxyConfigServiceAndroid> config_service_android =
-      std::make_unique<net::ProxyConfigServiceAndroid>(
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
-          base::ThreadTaskRunnerHandle::Get());
-
-  config_service_android->set_exclude_pac_url(true);
-  return config_service_android;
-}
-}  // namespace
-
-// Default profile reuses global URLRequestGetter
-void AwBrowserProcess::CreateURLRequestContextGetter() {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  base::FilePath cache_path;
-  if (!base::PathService::Get(base::DIR_CACHE, &cache_path)) {
-    NOTREACHED() << "Failed to get app cache directory for Android WebView";
-  }
-  cache_path =
-      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
-
-  url_request_context_getter_ = new AwURLRequestContextGetter(
-      cache_path, CreateProxyConfigService(), local_state(), new net::NetLog());
-}
-
-AwURLRequestContextGetter* AwBrowserProcess::GetAwURLRequestContext() {
-  return url_request_context_getter_.get();
 }
 
 }  // namespace android_webview

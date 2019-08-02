@@ -38,6 +38,10 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
+
 namespace blink {
 
 class WebSocketHandleImpl
@@ -45,7 +49,7 @@ class WebSocketHandleImpl
       public network::mojom::blink::WebSocketHandshakeClient,
       public network::mojom::blink::WebSocketClient {
  public:
-  WebSocketHandleImpl();
+  explicit WebSocketHandleImpl(scoped_refptr<base::SingleThreadTaskRunner>);
   ~WebSocketHandleImpl() override;
 
   void Connect(mojom::blink::WebSocketConnectorPtr,
@@ -53,8 +57,7 @@ class WebSocketHandleImpl
                const Vector<String>& protocols,
                const KURL& site_for_cookies,
                const String& user_agent_override,
-               WebSocketChannelImpl*,
-               base::SingleThreadTaskRunner*) override;
+               WebSocketChannelImpl*) override;
   void Send(bool fin, MessageType, const char* data, wtf_size_t) override;
   void AddReceiveFlowControlQuota(int64_t quota) override;
   void Close(uint16_t code, const String& reason) override;
@@ -82,11 +85,12 @@ class WebSocketHandleImpl
                      uint16_t code,
                      const String& reason) override;
   void OnClosingHandshake() override;
-  void OnFailChannel(const String& reason) override;
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   WeakPersistent<WebSocketChannelImpl> channel_;
 
   network::mojom::blink::WebSocketPtr websocket_;
+  network::mojom::blink::WebSocketClientRequest pending_client_receiver_;
   mojo::Binding<network::mojom::blink::WebSocketHandshakeClient>
       handshake_client_binding_;
   mojo::Binding<network::mojom::blink::WebSocketClient> client_binding_;

@@ -23,11 +23,11 @@ class BrowserThreadPostTaskBeforeInitBrowserTest : public ContentBrowserTest {
   void SetUp() override {
     // This should fail because the ThreadPool + TaskExecutor weren't created
     // yet.
-    EXPECT_DCHECK_DEATH(base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                                                 base::DoNothing()));
+    EXPECT_DCHECK_DEATH(
+        base::PostTask(FROM_HERE, {BrowserThread::IO}, base::DoNothing()));
 
     // Obtaining a TaskRunner should also fail.
-    EXPECT_DCHECK_DEATH(base::CreateTaskRunnerWithTraits({BrowserThread::IO}));
+    EXPECT_DCHECK_DEATH(base::CreateTaskRunner({BrowserThread::IO}));
 
     ContentBrowserTest::SetUp();
   }

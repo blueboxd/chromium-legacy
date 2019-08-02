@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/interfaces/status_area_widget_test_api.test-mojom.h"
+#include "ash/public/mojom/status_area_widget_test_api.test-mojom.h"
 #include "ash/system/status_area_widget_test_api.h"
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"

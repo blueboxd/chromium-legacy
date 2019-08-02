@@ -101,6 +101,27 @@ bool AudioProcessingProperties::EchoCancellationIsWebRtcProvided() const {
   return echo_cancellation_type == EchoCancellationType::kEchoCancellationAec3;
 }
 
+bool AudioProcessingProperties::HasSameReconfigurableSettings(
+    const AudioProcessingProperties& other) const {
+  return echo_cancellation_type == other.echo_cancellation_type;
+}
+
+bool AudioProcessingProperties::HasSameNonReconfigurableSettings(
+    const AudioProcessingProperties& other) const {
+  return disable_hw_noise_suppression == other.disable_hw_noise_suppression &&
+         goog_audio_mirroring == other.goog_audio_mirroring &&
+         goog_auto_gain_control == other.goog_auto_gain_control &&
+         goog_experimental_echo_cancellation ==
+             other.goog_experimental_echo_cancellation &&
+         goog_typing_noise_detection == other.goog_typing_noise_detection &&
+         goog_noise_suppression == other.goog_noise_suppression &&
+         goog_experimental_noise_suppression ==
+             other.goog_experimental_noise_suppression &&
+         goog_highpass_filter == other.goog_highpass_filter &&
+         goog_experimental_auto_gain_control ==
+             other.goog_experimental_auto_gain_control;
+}
+
 media::AudioProcessingSettings
 AudioProcessingProperties::ToAudioProcessingSettings() const {
   media::AudioProcessingSettings out;

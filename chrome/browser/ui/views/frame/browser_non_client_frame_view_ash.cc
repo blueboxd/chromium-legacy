@@ -17,7 +17,7 @@
 #include "ash/public/cpp/touch_uma.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"

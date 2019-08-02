@@ -33,6 +33,6 @@
     <color name="photo_picker_special_tile_bg_color">@color/modern_grey_800</color>
 
     <!-- History Navigation UI colors -->
-    <color name="navigation_bubble_ripple_color">@android:color/white</color>
+    <color name="navigation_bubble_background_color">@android:color/white</color>
 
 </resources>

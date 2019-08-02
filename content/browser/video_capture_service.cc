@@ -21,10 +21,9 @@
 #include "services/video_capture/video_capture_service_impl.h"
 
 #if defined(OS_WIN)
-#define CREATE_IN_PROCESS_TASK_RUNNER base::CreateCOMSTATaskRunnerWithTraits
+#define CREATE_IN_PROCESS_TASK_RUNNER base::CreateCOMSTATaskRunner
 #else
-#define CREATE_IN_PROCESS_TASK_RUNNER \
-  base::CreateSingleThreadTaskRunnerWithTraits
+#define CREATE_IN_PROCESS_TASK_RUNNER base::CreateSingleThreadTaskRunner
 #endif
 
 namespace content {
@@ -37,7 +36,7 @@ void BindInProcessInstance(
     mojo::PendingReceiver<video_capture::mojom::VideoCaptureService> receiver) {
   static base::NoDestructor<video_capture::VideoCaptureServiceImpl> service(
       std::move(receiver),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
 }
 
 mojo::Remote<video_capture::mojom::VideoCaptureService>& GetUIThreadRemote() {
@@ -80,7 +79,7 @@ video_capture::mojom::VideoCaptureService& GetVideoCaptureService() {
         storage;
     auto& remote = storage->GetOrCreateValue();
     if (!remote.is_bound()) {
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI})
           ->PostTask(FROM_HERE,
                      base::BindOnce(&BindProxyRemoteOnUIThread,
                                     remote.BindNewPipeAndPassReceiver()));
@@ -96,8 +95,9 @@ video_capture::mojom::VideoCaptureService& GetVideoCaptureService() {
     auto receiver = remote.BindNewPipeAndPassReceiver();
     if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
       auto dedicated_task_runner = CREATE_IN_PROCESS_TASK_RUNNER(
-          base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
-                            base::TaskPriority::BEST_EFFORT}),
+          base::TaskTraits{base::ThreadPool(), base::MayBlock(),
+                           base::WithBaseSyncPrimitives(),
+                           base::TaskPriority::BEST_EFFORT},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED);
       dedicated_task_runner->PostTask(
           FROM_HERE,

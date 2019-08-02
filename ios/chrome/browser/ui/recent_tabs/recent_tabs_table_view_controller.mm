@@ -229,7 +229,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   if (self.styler.tintColor) {
     historyItem.textColor = self.styler.tintColor;
   } else {
-    historyItem.textColor = [UIColor colorNamed:kTintColor];
+    historyItem.textColor = [UIColor colorNamed:kBlueColor];
   }
   historyItem.accessibilityIdentifier =
       kRecentTabsShowFullHistoryCellAccessibilityIdentifier;

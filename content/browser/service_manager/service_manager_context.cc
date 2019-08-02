@@ -636,9 +636,9 @@ ServiceManagerContext::ServiceManagerContext(
 #if defined(OS_LINUX)
   RegisterInProcessService(
       font_service::mojom::kServiceName,
-      base::CreateSequencedTaskRunnerWithTraits(
-          base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
-                            base::TaskPriority::USER_BLOCKING})),
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::WithBaseSyncPrimitives(),
+                                       base::TaskPriority::USER_BLOCKING}),
       base::BindRepeating(&CreateFontService));
 #endif
 
@@ -650,13 +650,13 @@ ServiceManagerContext::ServiceManagerContext(
   GetContentClient()->browser()->WillStartServiceManager();
 
   if (base::FeatureList::IsEnabled(features::kTracingServiceInProcess)) {
-    RegisterInProcessService(
-        tracing::mojom::kServiceName,
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-             base::WithBaseSyncPrimitives(),
-             base::TaskPriority::USER_BLOCKING}),
-        base::BindRepeating(&CreateTracingService));
+    RegisterInProcessService(tracing::mojom::kServiceName,
+                             base::CreateSequencedTaskRunner(
+                                 {base::ThreadPool(), base::MayBlock(),
+                                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+                                  base::WithBaseSyncPrimitives(),
+                                  base::TaskPriority::USER_BLOCKING}),
+                             base::BindRepeating(&CreateTracingService));
   }
 
   if (IsInProcessNetworkService()) {
@@ -722,8 +722,9 @@ void ServiceManagerContext::RunServiceInstance(
     // thread affinity on the clients. We therefore require a single-thread
     // runner.
     scoped_refptr<base::SingleThreadTaskRunner> device_blocking_task_runner =
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+        base::CreateSingleThreadTaskRunner({base::ThreadPool(),
+                                            base::MayBlock(),
+                                            base::TaskPriority::BEST_EFFORT});
 #if defined(OS_ANDROID)
     JNIEnv* env = base::android::AttachCurrentThread();
     base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate;

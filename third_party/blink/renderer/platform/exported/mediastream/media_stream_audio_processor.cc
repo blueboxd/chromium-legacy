@@ -385,8 +385,9 @@ void MediaStreamAudioProcessor::OnStartDump(base::File dump_file) {
                                      std::move(dump_file), worker_queue_.get());
   } else {
     // Post the file close to avoid blocking the main thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::LOWEST, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::LOWEST, base::MayBlock()},
         base::BindOnce([](base::File) {}, std::move(dump_file)));
   }
 }

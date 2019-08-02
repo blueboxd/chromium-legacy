@@ -58,6 +58,7 @@ using blink::TrackControls;
 using blink::WebMediaStreamSource;
 using blink::mojom::MediaStreamRequestResult;
 using blink::mojom::MediaStreamType;
+using blink::mojom::StreamSelectionStrategy;
 using EchoCancellationType =
     blink::AudioProcessingProperties::EchoCancellationType;
 
@@ -525,6 +526,10 @@ void UserMediaProcessor::SelectAudioDeviceSettings(
         audio_input_capabilities) {
   blink::AudioDeviceCaptureCapabilities capabilities;
   for (const auto& device : audio_input_capabilities) {
+    // Find the first occurrence of blink::MediaStreamAudioSource that matches
+    // the same device ID as |device|. If more than one exists, any such source
+    // will contain the same non-reconfigurable settings that limit the
+    // associated capabilities.
     blink::MediaStreamAudioSource* audio_source = nullptr;
     auto it =
         std::find_if(local_sources_.begin(), local_sources_.end(),
@@ -562,7 +567,8 @@ void UserMediaProcessor::SelectAudioSettings(
   DCHECK(current_request_info_->stream_controls()->audio.requested);
   auto settings = SelectSettingsAudioCapture(
       capabilities, web_request.AudioConstraints(),
-      web_request.ShouldDisableHardwareNoiseSuppression());
+      web_request.ShouldDisableHardwareNoiseSuppression(),
+      true /* is_reconfiguration_allowed */);
   if (!settings.HasValue()) {
     blink::WebString failed_constraint_name =
         blink::WebString::FromASCII(settings.failed_constraint_name());
@@ -589,12 +595,51 @@ void UserMediaProcessor::SelectAudioSettings(
   SetupVideoInput();
 }
 
+base::Optional<base::UnguessableToken>
+UserMediaProcessor::DetermineExistingAudioSessionId() {
+  DCHECK(current_request_info_->web_request().Audio());
+
+  auto settings = current_request_info_->audio_capture_settings();
+  auto device_id = settings.device_id();
+
+  // Create a copy of the blink::WebMediaStreamSource objects that are
+  // associated to the same audio device capture based on its device ID.
+  std::vector<blink::WebMediaStreamSource> matching_sources;
+  std::copy_if(local_sources_.begin(), local_sources_.end(),
+               std::back_inserter(matching_sources),
+               [&device_id](const blink::WebMediaStreamSource& web_source) {
+                 DCHECK(!web_source.IsNull());
+                 return web_source.Id().Utf8() == device_id;
+               });
+
+  // Return the session ID associated to the source that has the same settings
+  // that have been previously selected, if one exists.
+  if (!matching_sources.empty()) {
+    for (auto& matching_source : matching_sources) {
+      blink::MediaStreamAudioSource* audio_source =
+          static_cast<blink::MediaStreamAudioSource*>(
+              matching_source.GetPlatformSource());
+      if (audio_source->HasSameReconfigurableSettings(
+              settings.audio_processing_properties())) {
+        return audio_source->device().session_id();
+      }
+    }
+  }
+
+  return base::nullopt;
+}
+
 void UserMediaProcessor::SetupVideoInput() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
 
   if (!current_request_info_->web_request().Video()) {
-    GenerateStreamForCurrentRequestInfo();
+    base::Optional<base::UnguessableToken> audio_session_id =
+        DetermineExistingAudioSessionId();
+    GenerateStreamForCurrentRequestInfo(
+        audio_session_id, audio_session_id.has_value()
+                              ? StreamSelectionStrategy::SEARCH_BY_SESSION_ID
+                              : StreamSelectionStrategy::FORCE_NEW_STREAM);
     return;
   }
 
@@ -693,7 +738,9 @@ void UserMediaProcessor::SelectVideoContentSettings() {
   GenerateStreamForCurrentRequestInfo();
 }
 
-void UserMediaProcessor::GenerateStreamForCurrentRequestInfo() {
+void UserMediaProcessor::GenerateStreamForCurrentRequestInfo(
+    base::Optional<base::UnguessableToken> requested_audio_capture_session_id,
+    blink::mojom::StreamSelectionStrategy strategy) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
   blink::WebRtcLogMessage(base::StringPrintf(
@@ -709,6 +756,8 @@ void UserMediaProcessor::GenerateStreamForCurrentRequestInfo() {
       current_request_info_->request_id(),
       *current_request_info_->stream_controls(),
       current_request_info_->is_processing_user_gesture(),
+      blink::mojom::StreamSelectionInfo::New(
+          strategy, requested_audio_capture_session_id),
       base::BindOnce(&UserMediaProcessor::OnStreamGenerated,
                      weak_factory_.GetWeakPtr(),
                      current_request_info_->request_id()));
@@ -987,6 +1036,21 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
       CreateAudioSource(device, std::move(source_ready));
   audio_source->SetStopCallback(base::Bind(
       &UserMediaProcessor::OnLocalSourceStopped, weak_factory_.GetWeakPtr()));
+
+#if DCHECK_IS_ON()
+  for (const auto& local_source : local_sources_) {
+    blink::WebPlatformMediaStreamSource* platform_source =
+        static_cast<blink::WebPlatformMediaStreamSource*>(
+            local_source.GetPlatformSource());
+    DCHECK(platform_source);
+    if (platform_source->device().id == audio_source->device().id) {
+      blink::MediaStreamAudioSource* audio_platform_source =
+          static_cast<blink::MediaStreamAudioSource*>(platform_source);
+      DCHECK(audio_source->HasSameNonReconfigurableSettings(
+          audio_platform_source));
+    }
+  }
+#endif  // DCHECK_IS_ON()
 
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.echo_cancellation = {true, false};

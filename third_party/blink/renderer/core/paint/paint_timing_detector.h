@@ -25,9 +25,6 @@ class PropertyTreeState;
 class TextPaintTimingDetector;
 struct WebFloatRect;
 
-using ReportTimeCallback =
-    WTF::CrossThreadOnceFunction<void(WebWidgetClient::SwapResult,
-                                      base::TimeTicks)>;
 // |PaintTimingCallbackManager| is an interface between
 // |ImagePaintTimingDetector|/|TextPaintTimingDetector| and |ChromeClient|.
 // As |ChromeClient| is shared among the paint-timing-detecters, it
@@ -39,21 +36,71 @@ using ReportTimeCallback =
 // without having to popping the |TextPaintTimingDetector|'s.
 class PaintTimingCallbackManager : public GarbageCollectedMixin {
  public:
-  virtual void RegisterCallback(LocalFrame&, ReportTimeCallback) = 0;
+  using LocalThreadCallback = base::OnceCallback<void(base::TimeTicks)>;
+  using CallbackQueue = std::queue<LocalThreadCallback>;
+
+  virtual void RegisterCallback(
+      PaintTimingCallbackManager::LocalThreadCallback) = 0;
 };
 
-using ReportTimeCallback =
-    WTF::CrossThreadOnceFunction<void(WebWidgetClient::SwapResult,
-                                      base::TimeTicks)>;
-
-class PaintTimingCallbackManagerImpl
-    : public GarbageCollected<PaintTimingCallbackManagerImpl>,
+// This class is responsible for managing the swap-time callback for Largest
+// Image Paint and Largest Text Paint. In frames where both text and image are
+// painted, Largest Image Paint and Largest Text Paint need to assign the same
+// paint-time for their records. In this case, |PaintTimeCallbackManager|
+// requests a swap-time callback and share the swap-time with LIP and LTP.
+// Otherwise LIP and LTP would have to request their own swap-time callbacks.
+// An extra benefit of this design is that |LargestContentfulPaintCalculator|
+// can thus hook to the end of the LIP and LTP's record assignments.
+//
+// |GarbageCollectedFinalized| inheritance is required by the swap-time callback
+// registration.
+class PaintTimingCallbackManagerImpl final
+    : public GarbageCollectedFinalized<PaintTimingCallbackManagerImpl>,
       public PaintTimingCallbackManager {
   USING_GARBAGE_COLLECTED_MIXIN(PaintTimingCallbackManagerImpl);
 
  public:
-  void RegisterCallback(LocalFrame&, ReportTimeCallback) override;
-  void Trace(Visitor* visitor) override {}
+  PaintTimingCallbackManagerImpl(LocalFrameView* frame_view)
+      : frame_view_(frame_view),
+        frame_callbacks_(
+            std::make_unique<std::queue<
+                PaintTimingCallbackManager::LocalThreadCallback>>()) {}
+  ~PaintTimingCallbackManagerImpl() { frame_callbacks_.reset(); }
+
+  // Instead of registering the callback right away, this impl of the interface
+  // combine the callback into |frame_callbacks_| before registering a separate
+  // swap-time callback for the combined callbacks. When the swap-time callback
+  // is invoked, the swap-time is then assigned to each callback of
+  // |frame_callbacks_|.
+  void RegisterCallback(
+      PaintTimingCallbackManager::LocalThreadCallback callback) override {
+    frame_callbacks_->push(std::move(callback));
+  }
+
+  void RegisterPaintTimeCallbackForCombinedCallbacks();
+
+  inline size_t CountCallbacks() { return frame_callbacks_->size(); }
+
+  void ReportPaintTime(
+      std::unique_ptr<std::queue<
+          PaintTimingCallbackManager::LocalThreadCallback>> frame_callbacks,
+      WebWidgetClient::SwapResult,
+      base::TimeTicks paint_time);
+
+  void Trace(Visitor* visitor) override;
+
+ private:
+  Member<LocalFrameView> frame_view_;
+  // |frame_callbacks_| stores the callbacks of |TextPaintTimingDetector| and
+  // |ImagePaintTimingDetector| in an (animated) frame. It is passed as an
+  // argument of a swap-time callback which once is invoked, invokes every
+  // callback in |frame_callbacks_|. This hierarchical callback design is to
+  // reduce the need of calling ChromeClient to register swap-time callbacks for
+  // both detectos.
+  // Although |frame_callbacks_| intends to store callbacks
+  // of a frame, it occasionally has to do that for more than one frame, when it
+  // fails to register a swap-time callback.
+  std::unique_ptr<PaintTimingCallbackManager::CallbackQueue> frame_callbacks_;
 };
 
 // PaintTimingDetector contains some of paint metric detectors,
@@ -136,6 +183,8 @@ class CORE_EXPORT PaintTimingDetector
   Member<ImagePaintTimingDetector> image_paint_timing_detector_;
 
   Member<LargestContentfulPaintCalculator> largest_contentful_paint_calculator_;
+
+  Member<PaintTimingCallbackManagerImpl> callback_manager_;
 
   // Largest image information.
   base::TimeTicks largest_image_paint_time_;

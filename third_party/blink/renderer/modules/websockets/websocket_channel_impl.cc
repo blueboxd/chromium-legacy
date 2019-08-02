@@ -179,7 +179,8 @@ WebSocketChannelImpl* WebSocketChannelImpl::Create(
     std::unique_ptr<SourceLocation> location) {
   auto* channel = MakeGarbageCollected<WebSocketChannelImpl>(
       execution_context, client, std::move(location),
-      std::make_unique<WebSocketHandleImpl>());
+      std::make_unique<WebSocketHandleImpl>(
+          execution_context->GetTaskRunner(TaskType::kNetworking)));
   channel->handshake_throttle_ =
       channel->GetBaseFetchContext()->CreateWebSocketHandshakeThrottle();
   return channel;
@@ -260,11 +261,9 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
     // a mojo connection error.
     mojo::MakeRequest(&connector);
   }
-  handle_->Connect(
-      std::move(connector), url, protocols,
-      GetBaseFetchContext()->GetSiteForCookies(),
-      execution_context_->UserAgent(), this,
-      execution_context_->GetTaskRunner(TaskType::kNetworking).get());
+  handle_->Connect(std::move(connector), url, protocols,
+                   GetBaseFetchContext()->GetSiteForCookies(),
+                   execution_context_->UserAgent(), this);
 
   if (handshake_throttle_) {
     // The use of WrapWeakPersistent is safe and motivated by the fact that if

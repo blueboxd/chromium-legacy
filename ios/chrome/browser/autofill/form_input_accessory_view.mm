@@ -133,7 +133,7 @@ constexpr CGFloat ManualFillSeparatorHeight = 0.5;
     return;
   }
 
-  self.tintColor = [UIColor colorNamed:kTintColor];
+  self.tintColor = [UIColor colorNamed:kBlueColor];
   self.translatesAutoresizingMaskIntoConstraints = NO;
   UIView* leadingViewContainer = [[UIView alloc] init];
   leadingViewContainer.translatesAutoresizingMaskIntoConstraints = NO;

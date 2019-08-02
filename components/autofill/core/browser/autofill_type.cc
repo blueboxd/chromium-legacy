@@ -94,6 +94,9 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
     case PROBABLY_NEW_PASSWORD:
     case NOT_NEW_PASSWORD:
     case CONFIRMATION_PASSWORD:
+    case NOT_PASSWORD:
+    case SINGLE_USERNAME:
+    case NOT_USERNAME:
       return PASSWORD_FIELD;
 
     case NO_SERVER_DATA:
@@ -123,9 +126,9 @@ FieldTypeGroup GroupTypeOfServerFieldType(ServerFieldType field_type) {
 
     case UNKNOWN_TYPE:
       return NO_GROUP;
-    default:
-      return NO_GROUP;
   }
+  NOTREACHED();
+  return NO_GROUP;
 }
 
 FieldTypeGroup GroupTypeOfHtmlFieldType(HtmlFieldType field_type,
@@ -193,9 +196,9 @@ FieldTypeGroup GroupTypeOfHtmlFieldType(HtmlFieldType field_type,
     case HTML_TYPE_UNSPECIFIED:
     case HTML_TYPE_UNRECOGNIZED:
       return NO_GROUP;
-    default:
-      return NO_GROUP;
   }
+  NOTREACHED();
+  return NO_GROUP;
 }
 
 AutofillType::AutofillType(ServerFieldType field_type)

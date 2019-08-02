@@ -530,6 +530,7 @@ source_set("unit_tests") {
     sources += [
       "hsts_query_unittest.cc",
       "http_credentials_cleaner_unittest.cc",
+      "leak_detection_delegate_unittest.cc",
     ]
   }
   if (password_reuse_detection_support) {

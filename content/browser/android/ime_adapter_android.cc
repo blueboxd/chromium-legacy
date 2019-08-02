@@ -184,9 +184,10 @@ void ImeAdapterAndroid::UpdateState(const TextInputState& state) {
       ConvertUTF16ToJavaString(env, state.value);
   Java_ImeAdapterImpl_updateState(
       env, obj, static_cast<int>(state.type), state.flags, state.mode,
-      static_cast<int>(state.action), state.show_ime_if_needed, jstring_text,
-      state.selection_start, state.selection_end, state.composition_start,
-      state.composition_end, state.reply_to_request);
+      static_cast<int>(state.action), state.show_ime_if_needed,
+      state.always_hide_ime, jstring_text, state.selection_start,
+      state.selection_end, state.composition_start, state.composition_end,
+      state.reply_to_request);
 }
 
 void ImeAdapterAndroid::UpdateOnTouchDown() {

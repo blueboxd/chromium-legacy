@@ -27,11 +27,11 @@ namespace worker_pool {
 // (e.g. FrameScheduler for main thread tasks).
 PLATFORM_EXPORT void PostTask(const base::Location&, CrossThreadOnceClosure);
 
-PLATFORM_EXPORT void PostTaskWithTraits(const base::Location&,
-                                        const base::TaskTraits&,
-                                        CrossThreadOnceClosure);
+PLATFORM_EXPORT void PostTask(const base::Location&,
+                              const base::TaskTraits&,
+                              CrossThreadOnceClosure);
 
-// TODO(altimin): Expose CreateSequencedTaskRunnerWithTraits when the
+// TODO(altimin): Expose CreateSequencedTaskRunner when the
 // need arises.
 
 }  // namespace worker_pool

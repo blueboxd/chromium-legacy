@@ -41,9 +41,6 @@ class BrowsingDataAppCacheHelper
   virtual ~BrowsingDataAppCacheHelper();
 
  private:
-  void StartFetchingOnLoaderThread(FetchCallback completion_callback);
-  void DeleteAppCachesOnLoaderThread(const url::Origin& origin);
-
   // Owned by the profile.
   content::AppCacheService* appcache_service_;
 

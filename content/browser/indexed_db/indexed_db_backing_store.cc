@@ -1597,7 +1597,7 @@ bool IndexedDBBackingStore::WriteBlobFile(
     DCHECK(descriptor.blob());
     scoped_refptr<LocalWriteClosure> write_closure(
         new LocalWriteClosure(chained_blob_writer, task_runner_.get()));
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &LocalWriteClosure::WriteBlobToFileOnIOThread, write_closure, path,

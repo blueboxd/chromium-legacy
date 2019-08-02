@@ -6,7 +6,7 @@
 
 #include "ash/display/cros_display_config.h"
 #include "ash/display/touch_calibrator_controller.h"
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/touch/ash_touch_transform_controller.h"

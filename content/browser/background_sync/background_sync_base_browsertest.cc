@@ -51,7 +51,7 @@ bool BackgroundSyncBaseBrowserTest::RegistrationPending(
       base::Unretained(this), run_loop.QuitClosure(),
       base::ThreadTaskRunnerHandle::Get(), &is_pending);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BackgroundSyncBaseBrowserTest::RegistrationPendingOnIOThread,
@@ -182,7 +182,7 @@ void BackgroundSyncBaseBrowserTest::SetMaxSyncAttempts(int max_sync_attempts) {
   StoragePartitionImpl* storage = GetStorage();
   BackgroundSyncContextImpl* sync_context = storage->GetBackgroundSyncContext();
 
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BackgroundSyncBaseBrowserTest::SetMaxSyncAttemptsOnIOThread,

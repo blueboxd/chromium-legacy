@@ -309,12 +309,12 @@ void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceParams(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params,
     bool was_within_same_document) {
-  if (GetNavigationHandle() && !GetNavigationHandle()->GetResponseHeaders()) {
+  if (navigation_request() && !navigation_request()->GetResponseHeaders()) {
     scoped_refptr<net::HttpResponseHeaders> response_headers =
         new net::HttpResponseHeaders(std::string());
     response_headers->AddHeader(std::string("Content-Type: ") +
                                 params->contents_mime_type);
-    GetNavigationHandle()->set_response_headers_for_testing(response_headers);
+    navigation_request()->set_response_headers_for_testing(response_headers);
   }
 
   if (was_within_same_document) {

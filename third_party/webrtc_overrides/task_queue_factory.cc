@@ -19,7 +19,7 @@ namespace {
 class WebrtcTaskQueue final : public webrtc::TaskQueueBase {
  public:
   explicit WebrtcTaskQueue(const base::TaskTraits& traits)
-      : task_runner_(base::CreateSequencedTaskRunnerWithTraits(traits)),
+      : task_runner_(base::CreateSequencedTaskRunner(traits)),
         is_active_(new base::RefCountedData<bool>(true)) {
     DCHECK(task_runner_);
   }
@@ -102,19 +102,21 @@ base::TaskTraits TaskQueuePriority2Traits(
   switch (priority) {
     case webrtc::TaskQueueFactory::Priority::HIGH:
 #if defined(OS_ANDROID)
-      return {base::WithBaseSyncPrimitives(), base::TaskPriority::HIGHEST};
+      return {base::ThreadPool(), base::WithBaseSyncPrimitives(),
+              base::TaskPriority::HIGHEST};
 #else
-      return {base::TaskPriority::HIGHEST};
+      return {base::ThreadPool(), base::TaskPriority::HIGHEST};
 #endif
       break;
     case webrtc::TaskQueueFactory::Priority::LOW:
-      return {base::MayBlock(), base::TaskPriority::BEST_EFFORT};
+      return {base::ThreadPool(), base::MayBlock(),
+              base::TaskPriority::BEST_EFFORT};
     case webrtc::TaskQueueFactory::Priority::NORMAL:
     default:
 #if defined(OS_ANDROID)
-      return {base::WithBaseSyncPrimitives()};
+      return {base::ThreadPool(), base::WithBaseSyncPrimitives()};
 #else
-      return {};
+      return {base::ThreadPool()};
 #endif
   }
 }

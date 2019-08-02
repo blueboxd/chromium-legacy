@@ -3871,9 +3871,9 @@ class CursorMessageFilter : public content::BrowserMessageFilter {
 
   bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() == WidgetHostMsg_SetCursor::ID) {
-      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                               base::BindOnce(&CursorMessageFilter::OnSetCursor,
-                                              this, message.routing_id()));
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&CursorMessageFilter::OnSetCursor, this,
+                                    message.routing_id()));
     }
     return false;
   }

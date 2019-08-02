@@ -10,7 +10,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"

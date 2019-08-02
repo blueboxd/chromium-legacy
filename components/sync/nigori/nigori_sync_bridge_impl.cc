@@ -361,13 +361,52 @@ std::string PackExplicitPassphraseKey(const Encryptor& encryptor,
   return encoded_key;
 }
 
+// Unpacks explicit passphrase keys. Returns serialized sync_pb::NigoriKey if
+// successful. If |packed_key| is empty or decoding/decryption errors occur.
+// Should be aligned with Directory implementation (
+// Cryptographer::UnpackBootstrapToken()) unless it is removed.
+std::string UnpackExplicitPassphraseKey(const Encryptor& encryptor,
+                                        const std::string& packed_key) {
+  if (packed_key.empty()) {
+    return std::string();
+  }
+
+  std::string decoded_key;
+  if (!base::Base64Decode(packed_key, &decoded_key)) {
+    DLOG(ERROR) << "Failed to decode explicit passphrase key.";
+    return std::string();
+  }
+
+  std::string decrypted_key;
+  if (!encryptor.DecryptString(decoded_key, &decrypted_key)) {
+    DLOG(ERROR) << "Failed to decrypt expliciti passphrase key.";
+    return std::string();
+  }
+  return decrypted_key;
+}
+
+bool CanDecryptWithSerializedNigoriKey(
+    const std::string& serialized_key,
+    const sync_pb::EncryptedData& encrypted_data) {
+  if (serialized_key.empty()) {
+    return false;
+  }
+  Cryptographer cryptographer;
+  cryptographer.ImportNigoriKey(serialized_key);
+  return cryptographer.CanDecrypt(encrypted_data);
+}
+
 }  // namespace
 
 NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
     std::unique_ptr<NigoriLocalChangeProcessor> processor,
-    const Encryptor* encryptor)
+    const Encryptor* encryptor,
+    const std::string& packed_explicit_passphrase_key)
     : encryptor_(encryptor),
       processor_(std::move(processor)),
+      serialized_explicit_passphrase_key_(
+          UnpackExplicitPassphraseKey(*encryptor,
+                                      packed_explicit_passphrase_key)),
       passphrase_type_(NigoriSpecifics::UNKNOWN),
       encrypt_everything_(false) {
   DCHECK(encryptor);
@@ -752,9 +791,18 @@ void NigoriSyncBridgeImpl::UpdateCryptographerFromExplicitPassphraseNigori(
   NOTIMPLEMENTED();
   DCHECK(!encryption_keybag.blob().empty());
   if (!cryptographer_.CanDecrypt(encryption_keybag)) {
-    // This will lead to OnPassphraseRequired() call later.
-    cryptographer_.SetPendingKeys(encryption_keybag);
-    return;
+    // Historically, prior to USS, key derived from explicit passphrase was
+    // stored in prefs and effectively we do migration here.
+    if (CanDecryptWithSerializedNigoriKey(serialized_explicit_passphrase_key_,
+                                          encryption_keybag)) {
+      // ImportNigoriKey() will set default key from
+      // |serialized_explicit_passphrase_key_|.
+      cryptographer_.ImportNigoriKey(serialized_explicit_passphrase_key_);
+    } else {
+      // This will lead to OnPassphraseRequired() call later.
+      cryptographer_.SetPendingKeys(encryption_keybag);
+      return;
+    }
   }
   // |cryptographer_| can already have explicit passphrase, in that case it
   // should be able to decrypt |encryption_keybag|. We need to take keys from
@@ -821,6 +869,12 @@ void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {
 
 const Cryptographer& NigoriSyncBridgeImpl::GetCryptographerForTesting() const {
   return cryptographer_;
+}
+
+std::string NigoriSyncBridgeImpl::PackExplicitPassphraseKeyForTesting(
+    const Encryptor& encryptor,
+    const Cryptographer& cryptographer) {
+  return PackExplicitPassphraseKey(encryptor, cryptographer);
 }
 
 base::Time NigoriSyncBridgeImpl::GetExplicitPassphraseTime() const {

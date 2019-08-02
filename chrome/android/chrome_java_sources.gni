@@ -1392,6 +1392,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/services/AndroidEduOwnerCheckCallback.java",
   "java/src/org/chromium/chrome/browser/services/GoogleServicesManager.java",
   "java/src/org/chromium/chrome/browser/services/gcm/ChromeGcmListenerService.java",
+  "java/src/org/chromium/chrome/browser/services/gcm/GCMBackgroundService.java",
   "java/src/org/chromium/chrome/browser/services/gcm/GCMBackgroundTask.java",
   "java/src/org/chromium/chrome/browser/services/gcm/GcmUma.java",
   "java/src/org/chromium/chrome/browser/services/gcm/InvalidationGcmUpstreamSender.java",

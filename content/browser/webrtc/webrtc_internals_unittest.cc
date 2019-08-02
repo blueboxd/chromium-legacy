@@ -172,7 +172,7 @@ TEST_F(WebRtcInternalsTest, AddRemoveObserver) {
   webrtc_internals.OnAddPeerConnection(0, 3, 4, kUrl, kRtcConfiguration,
                                        kContraints);
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, loop.QuitClosure());
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, loop.QuitClosure());
   loop.Run();
 
   EXPECT_EQ("", observer.command());
@@ -188,7 +188,7 @@ TEST_F(WebRtcInternalsTest, EnsureNoLogWhenNoObserver) {
   webrtc_internals.OnAddPeerConnection(0, 3, 4, kUrl, kRtcConfiguration,
                                        kContraints);
   webrtc_internals.OnUpdatePeerConnection(3, 4, "update_type", "update_value");
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, loop.QuitClosure());
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, loop.QuitClosure());
   loop.Run();
 
   // Make sure we don't have a log entry since there was no observer.
@@ -217,7 +217,7 @@ TEST_F(WebRtcInternalsTest, EnsureLogIsRemovedWhenObserverIsRemoved) {
   webrtc_internals.OnAddPeerConnection(0, 3, 4, kUrl, kRtcConfiguration,
                                        kContraints);
   webrtc_internals.OnUpdatePeerConnection(3, 4, "update_type", "update_value");
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, loop.QuitClosure());
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, loop.QuitClosure());
   loop.Run();
 
   // Make sure we have a log entry since there was an observer.

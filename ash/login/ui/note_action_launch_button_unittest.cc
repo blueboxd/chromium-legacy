@@ -9,7 +9,7 @@
 
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/views_utils.h"
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/shell.h"
 #include "ash/tray_action/test_tray_action_client.h"
 #include "base/macros.h"

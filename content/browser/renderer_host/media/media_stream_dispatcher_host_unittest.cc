@@ -107,6 +107,9 @@ class MockMediaStreamDispatcherHost
     quit_closures_.push(quit_closure);
     MediaStreamDispatcherHost::GenerateStream(
         page_request_id, controls, false,
+        blink::mojom::StreamSelectionInfo::New(
+            blink::mojom::StreamSelectionStrategy::SEARCH_BY_DEVICE_ID,
+            base::nullopt),
         base::BindOnce(&MockMediaStreamDispatcherHost::OnStreamGenerated,
                        base::Unretained(this), page_request_id));
   }

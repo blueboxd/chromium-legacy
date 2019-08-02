@@ -232,7 +232,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     // request endpoint was sent, it can be used, so add it to
     // ServiceWorkerObjectHost.
     if (service_worker_remote_object) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,

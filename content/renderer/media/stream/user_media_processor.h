@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_dispatcher_eventhandler.h"
@@ -276,7 +277,13 @@ class CONTENT_EXPORT UserMediaProcessor
       const blink::VideoCaptureSettings& settings);
   void SelectVideoContentSettings();
 
-  void GenerateStreamForCurrentRequestInfo();
+  base::Optional<base::UnguessableToken> DetermineExistingAudioSessionId();
+
+  void GenerateStreamForCurrentRequestInfo(
+      base::Optional<base::UnguessableToken>
+          requested_audio_capture_session_id = base::nullopt,
+      blink::mojom::StreamSelectionStrategy strategy =
+          blink::mojom::StreamSelectionStrategy::SEARCH_BY_DEVICE_ID);
 
   // UserMediaProcessor owns blink::WebMediaStreamDeviceObserver instead of
   // RenderFrameImpl (or RenderFrameObserver) to ensure tear-down occurs in the

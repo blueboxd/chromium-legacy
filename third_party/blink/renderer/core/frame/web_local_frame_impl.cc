@@ -2491,7 +2491,7 @@ void WebLocalFrameImpl::AdvanceFocusInForm(WebFocusType focus_type) {
   next_element->focus();
 }
 
-bool WebLocalFrameImpl::TryToShowTouchToFillForFocusedElement() {
+bool WebLocalFrameImpl::ShouldSuppressKeyboardForFocusedElement() {
   if (!autofill_client_)
     return false;
 
@@ -2499,7 +2499,7 @@ bool WebLocalFrameImpl::TryToShowTouchToFillForFocusedElement() {
   auto* focused_form_control_element = ToHTMLFormControlElementOrNull(
       GetFrame()->GetDocument()->FocusedElement());
   return focused_form_control_element &&
-         autofill_client_->TryToShowTouchToFill(focused_form_control_element);
+         autofill_client_->ShouldSuppressKeyboard(focused_form_control_element);
 }
 
 void WebLocalFrameImpl::PerformMediaPlayerAction(

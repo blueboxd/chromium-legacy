@@ -143,12 +143,10 @@ PasswordGenerationAgent::PasswordGenerationAgent(
     PasswordAutofillAgent* password_agent,
     blink::AssociatedInterfaceRegistry* registry)
     : content::RenderFrameObserver(render_frame),
-      enabled_(password_generation::IsPasswordGenerationEnabled()),
       mark_generation_element_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kShowAutofillSignatures)),
       password_agent_(password_agent) {
-  LogBoolean(Logger::STRING_GENERATION_RENDERER_ENABLED, enabled_);
   registry->AddInterface(base::BindRepeating(
       &PasswordGenerationAgent::BindPendingReceiver, base::Unretained(this)));
   password_agent_->SetPasswordGenerationAgent(this);

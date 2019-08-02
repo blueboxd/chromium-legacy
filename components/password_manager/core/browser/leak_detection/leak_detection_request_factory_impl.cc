@@ -13,10 +13,12 @@ LeakDetectionRequestFactoryImpl::LeakDetectionRequestFactoryImpl() = default;
 LeakDetectionRequestFactoryImpl::~LeakDetectionRequestFactoryImpl() = default;
 
 std::unique_ptr<LeakDetectionCheck>
-LeakDetectionRequestFactoryImpl::TryCreateLeakCheck() const {
+LeakDetectionRequestFactoryImpl::TryCreateLeakCheck(
+    LeakDetectionDelegateInterface* delegate,
+    signin::IdentityManager* identity_manager) const {
   if (!base::FeatureList::IsEnabled(features::kLeakDetection))
     return nullptr;
-  return std::make_unique<AuthenticatedLeakCheck>();
+  return std::make_unique<AuthenticatedLeakCheck>(delegate, identity_manager);
 }
 
 }  // namespace password_manager

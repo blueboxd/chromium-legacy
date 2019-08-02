@@ -23,8 +23,8 @@ void OnSocketCreated(base::OnceCallback<void(int, int)> callback,
   int port = 0;
   if (local_addr)
     port = local_addr->port();
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(std::move(callback), result, port));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(std::move(callback), result, port));
 }
 
 void CreateSocketOnUiThread(
@@ -54,7 +54,7 @@ void VizDevToolsConnector::ConnectVizDevTools() {
       switches::kEnableVizDevTools, kVizDevToolsDefaultPort);
   // Jump to the UI thread to get the network context, create the socket, then
   // jump back to the IO thread to complete the callback.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &CreateSocketOnUiThread, std::move(server_socket_request), port,

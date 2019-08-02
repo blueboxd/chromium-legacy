@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_IME_CONTROLLER_CLIENT_H_
 #define CHROME_BROWSER_UI_ASH_IME_CONTROLLER_CLIENT_H_
 
-#include "ash/public/interfaces/ime_controller.mojom.h"
-#include "ash/public/interfaces/ime_info.mojom.h"
+#include "ash/public/mojom/ime_controller.mojom.h"
+#include "ash/public/mojom/ime_info.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"

@@ -55,11 +55,10 @@ scoped_refptr<BlobRegistryWrapper> BlobRegistryWrapper::Create(
     scoped_refptr<ChromeBlobStorageContext> blob_storage_context,
     scoped_refptr<storage::FileSystemContext> file_system_context) {
   scoped_refptr<BlobRegistryWrapper> result(new BlobRegistryWrapper());
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&BlobRegistryWrapper::InitializeOnIOThread, result,
-                     std::move(blob_storage_context),
-                     std::move(file_system_context)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&BlobRegistryWrapper::InitializeOnIOThread,
+                                result, std::move(blob_storage_context),
+                                std::move(file_system_context)));
   return result;
 }
 

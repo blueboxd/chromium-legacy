@@ -68,7 +68,7 @@ ServiceWorkerGlobalScopeProxy::Create(WebEmbeddedWorkerImpl& embedded_worker,
 }
 
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
-  DCHECK(IsMainThread());
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
   // Verify that the proxy has been detached.
   DCHECK(!embedded_worker_);
 }
@@ -312,19 +312,18 @@ ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(
     : embedded_worker_(&embedded_worker),
       client_(&client),
       worker_global_scope_(nullptr) {
-  DCHECK(IsMainThread());
   DETACH_FROM_THREAD(worker_thread_checker_);
   parent_task_runner_ = Thread::Current()->GetTaskRunner();
 }
 
 void ServiceWorkerGlobalScopeProxy::Detach() {
-  DCHECK(IsMainThread());
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
   embedded_worker_ = nullptr;
   client_ = nullptr;
 }
 
 void ServiceWorkerGlobalScopeProxy::TerminateWorkerContext() {
-  DCHECK(IsMainThread());
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
   embedded_worker_->TerminateWorkerContext();
 }
 

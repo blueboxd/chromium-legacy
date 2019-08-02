@@ -62,6 +62,9 @@ class WebServiceWorkerContextClient;
 // An instance of this class is supposed to outlive until
 // workerThreadTerminated() is called by its corresponding
 // WorkerGlobalScope.
+//
+// TODO(bashi): Update the above comment and method comments once we move
+// creation of this class off the main thread.
 class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
                                             public WorkerReportingProxy {
  public:

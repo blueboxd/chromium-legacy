@@ -2365,6 +2365,13 @@ enum WebFeature {
   kContentIndexAdd = 2983,
   kContentIndexDelete = 2984,
   kContentIndexGet = 2985,
+  kV8SpeechGrammar_Constructor = 2986,
+  kV8SpeechGrammarList_AddFromString_Method = 2987,
+  kV8SpeechGrammarList_Constructor = 2988,
+  kV8SpeechGrammarList_Item_Method = 2989,
+  kV8SpeechRecognition_Constructor = 2990,
+  kV8SpeechRecognition_Grammars_AttributeGetter = 2991,
+  kV8SpeechRecognition_Grammars_AttributeSetter = 2992,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

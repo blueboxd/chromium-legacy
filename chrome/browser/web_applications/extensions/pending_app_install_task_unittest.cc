@@ -218,6 +218,7 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
   }
 
   void ReparentTab(const AppId& app_id,
+                   bool shortcut_created,
                    content::WebContents* web_contents) override {
     ++num_reparent_tab_calls_;
   }

@@ -8,8 +8,8 @@
 #error "This file requires ARC support."
 #endif
 
+#pragma mark - Element Colors
 NSString* const kBackgroundColor = @"background_color";
-NSString* const kDestructiveTintColor = @"destructive_tint_color";
 NSString* const kDisabledTintColor = @"disabled_tint_color";
 NSString* const kMDCInkColor = @"mdc_ink_color";
 NSString* const kScrimBackgroundColor = @"scrim_background_color";
@@ -18,7 +18,11 @@ NSString* const kTextPrimaryColor = @"text_primary_color";
 NSString* const kTextSecondaryColor = @"text_secondary_color";
 NSString* const kTextfieldBackgroundColor = @"textfield_background_color";
 NSString* const kTextfieldPlaceholderColor = @"textfield_placeholder_color";
-NSString* const kTintColor = @"tint_color";
+
+#pragma mark - Standard Colors
+NSString* const kBlueColor = @"blue_color";
+NSString* const kGreenColor = @"green_color";
+NSString* const kRedColor = @"red_color";
 
 // Temporary for iOS 12
 NSString* const kBackgroundDarkColor = @"background_dark_color";
@@ -27,4 +31,7 @@ NSString* const kTextfieldBackgroundDarkColor =
     @"textfield_background_dark_color";
 NSString* const kTextfieldPlaceholderDarkColor =
     @"textfield_placeholder_dark_color";
-NSString* const kTintDarkColor = @"tint_dark_color";
+
+NSString* const kBlueDarkColor = @"blue_dark_color";
+NSString* const kGreenDarkColor = @"green_dark_color";
+NSString* const kRedDarkColor = @"red_dark_color";

@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -27,7 +28,7 @@
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/camera/camera_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
@@ -167,10 +168,10 @@ void OpenChromeCameraApp(Profile* profile, int event_flags) {
     AppListClientImpl* controller = AppListClientImpl::GetInstance();
     AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
         profile, extension, event_flags,
-        extensions::AppLaunchSource::kSourceAppLauncher,
+        apps::mojom::AppLaunchSource::kSourceAppLauncher,
         controller->GetAppListDisplayId());
     params.launch_id = ash::ShelfID(extension->id()).launch_id;
-    OpenApplication(params);
+    apps::LaunchService::Get(profile)->OpenApplication(params);
     VLOG(1) << "Launched CCA.";
   } else {
     LOG(ERROR) << "CCA not found on device";

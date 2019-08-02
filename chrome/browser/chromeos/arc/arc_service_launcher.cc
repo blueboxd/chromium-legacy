@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/default_scale_factor_retriever.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"

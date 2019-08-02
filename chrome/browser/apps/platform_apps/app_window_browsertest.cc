@@ -4,11 +4,11 @@
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/test_utils.h"
@@ -238,11 +238,12 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest,
       test_data_dir_.AppendASCII("platform_apps").AppendASCII("window_api"));
   EXPECT_TRUE(extension);
 
-  OpenApplication(
-      AppLaunchParams(browser()->profile(), extension->id(),
-                      extensions::LaunchContainer::kLaunchContainerNone,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceTest));
+  apps::LaunchService::Get(browser()->profile())
+      ->OpenApplication(
+          AppLaunchParams(browser()->profile(), extension->id(),
+                          apps::mojom::LaunchContainer::kLaunchContainerNone,
+                          WindowOpenDisposition::NEW_WINDOW,
+                          apps::mojom::AppLaunchSource::kSourceTest));
 
   ExtensionTestMessageListener geometry_listener("ListenGeometryChange", true);
 

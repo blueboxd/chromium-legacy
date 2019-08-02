@@ -547,7 +547,7 @@ NSString* const kMessageTextViewBulletRTLFormat = @"\u202E%@\u202C";
 - (UIButton*)actionButton {
   if (!_actionButton) {
     _actionButton = [[MDCFlatButton alloc] init];
-    [_actionButton setBackgroundColor:[UIColor colorNamed:kTintColor]
+    [_actionButton setBackgroundColor:[UIColor colorNamed:kBlueColor]
                              forState:UIControlStateNormal];
     [_actionButton setBackgroundColor:[UIColor colorNamed:kDisabledTintColor]
                              forState:UIControlStateDisabled];

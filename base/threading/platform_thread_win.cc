@@ -16,6 +16,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time_override.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
@@ -218,9 +219,13 @@ void PlatformThread::YieldCurrentThread() {
 void PlatformThread::Sleep(TimeDelta duration) {
   // When measured with a high resolution clock, Sleep() sometimes returns much
   // too early. We may need to call it repeatedly to get the desired duration.
-  TimeTicks end = TimeTicks::Now() + duration;
-  for (TimeTicks now = TimeTicks::Now(); now < end; now = TimeTicks::Now())
+  // PlatformThread::Sleep doesn't support mock-time, so this always uses
+  // real-time.
+  const TimeTicks end = subtle::TimeTicksNowIgnoringOverride() + duration;
+  for (TimeTicks now = subtle::TimeTicksNowIgnoringOverride(); now < end;
+       now = subtle::TimeTicksNowIgnoringOverride()) {
     ::Sleep(static_cast<DWORD>((end - now).InMillisecondsRoundedUp()));
+  }
 }
 
 // static

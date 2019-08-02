@@ -24,7 +24,7 @@ namespace content {
 BundledExchangesReader::SharedFile::SharedFile(const base::FilePath& file_path)
     : file_path_(file_path) {
   base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(
           [](const base::FilePath& file_path) -> std::unique_ptr<base::File> {
             return std::make_unique<base::File>(
@@ -55,8 +55,9 @@ base::File* BundledExchangesReader::SharedFile::operator->() {
 BundledExchangesReader::SharedFile::~SharedFile() {
   // Move the last reference to |file_| that leads an internal blocking call
   // that is not permitted here.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce([](std::unique_ptr<base::File> file) {},
                      std::move(file_)));
 }
@@ -69,7 +70,7 @@ void BundledExchangesReader::SharedFile::SetFile(
     return;
 
   base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(
           [](base::File* file) -> base::File { return file->Duplicate(); },
           file_.get()),

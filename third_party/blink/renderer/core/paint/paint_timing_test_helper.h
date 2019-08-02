@@ -4,7 +4,6 @@
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 namespace blink {
 
-using CallbackQueue = std::queue<WebWidgetClient::ReportTimeCallback>;
 // |MockPaintTimingCallbackManager| is used to mock
 // |ChromeClient::NotifySwapTime()|'s swap-time queueing and invoking for
 // unit-tests. Find more details in |PaintTimingCallbackManager|.
@@ -15,14 +14,13 @@ class MockPaintTimingCallbackManager final
 
  public:
   ~MockPaintTimingCallbackManager() {}
-  void RegisterCallback(LocalFrame& frame,
-                        ReportTimeCallback callback) override {
-    callback_queue_.push(ConvertToBaseOnceCallback(std::move(callback)));
+  void RegisterCallback(
+      PaintTimingCallbackManager::LocalThreadCallback callback) override {
+    callback_queue_.push(std::move(callback));
   }
   void InvokeSwapTimeCallback(base::TimeTicks swap_time) {
     DCHECK_GT(callback_queue_.size(), 0UL);
-    std::move(callback_queue_.front())
-        .Run(WebWidgetClient::SwapResult::kDidSwap, swap_time);
+    std::move(callback_queue_.front()).Run(swap_time);
     callback_queue_.pop();
   }
 
@@ -31,7 +29,7 @@ class MockPaintTimingCallbackManager final
   void Trace(Visitor* visitor) override {}
 
  private:
-  CallbackQueue callback_queue_;
+  PaintTimingCallbackManager::CallbackQueue callback_queue_;
 };
 }  // namespace blink
 

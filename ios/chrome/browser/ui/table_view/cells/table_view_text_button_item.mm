@@ -73,7 +73,7 @@ const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
   cell.button.accessibilityIdentifier = self.buttonAccessibilityIdentifier;
   cell.button.backgroundColor = self.buttonBackgroundColor
                                     ? self.buttonBackgroundColor
-                                    : [UIColor colorNamed:kTintColor];
+                                    : [UIColor colorNamed:kBlueColor];
   cell.button.enabled = self.enabled;
   if (!self.enabled) {
     cell.button.backgroundColor = [cell.button.backgroundColor

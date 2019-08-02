@@ -7,9 +7,14 @@
 [
     RuntimeEnabled=WebGPU
 ] interface GPURenderPassEncoder {
+    // GPUProgrammablePassEncoder methods
     void setBindGroup(unsigned long index,
                       GPUBindGroup bindGroup,
                       optional sequence<unsigned long long> dynamicOffsets = []);
+    void pushDebugGroup(DOMString groupLabel);
+    void popDebugGroup();
+    void insertDebugMarker(DOMString markerLabel);
+
     void setPipeline(GPURenderPipeline pipeline);
 
     void setBlendColor(GPUColor color);

@@ -28,9 +28,8 @@ void RunDeliverCallback(
     const PushMessagingRouter::DeliverMessageCallback& deliver_message_callback,
     blink::mojom::PushDeliveryStatus delivery_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(deliver_message_callback, delivery_status));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(deliver_message_callback, delivery_status));
 }
 
 }  // namespace
@@ -53,7 +52,7 @@ void PushMessagingRouter::DeliverMessage(
       base::WrapRefCounted<DevToolsBackgroundServicesContextImpl>(
           service_worker_context->storage_partition()
               ->GetDevToolsBackgroundServicesContext());
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PushMessagingRouter::FindServiceWorkerRegistration,
                      std::move(service_worker_context),

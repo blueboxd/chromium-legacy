@@ -89,8 +89,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
     : force_keep_session_state_(false),
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+      task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
            base::TaskPriority::USER_VISIBLE,
            // BLOCK_SHUTDOWN to support clearing session-only storage.
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),

@@ -7,14 +7,14 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -92,11 +92,11 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
       NetworkTypePattern::Physical(), false,
       chromeos::network_handler::ErrorCallback());
 
-  OpenApplication(AppLaunchParams(
+  apps::LaunchService::Get(profile)->OpenApplication(AppLaunchParams(
       profile, extension_id,
-      extensions::LaunchContainer::kLaunchContainerWindow,
+      apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_WINDOW,
-      extensions::AppLaunchSource::kSourceChromeInternal, true));
+      apps::mojom::AppLaunchSource::kSourceChromeInternal, true));
   KioskAppManager::Get()->InitSession(profile, extension_id);
 
   session_manager::SessionManager::Get()->SessionStarted();

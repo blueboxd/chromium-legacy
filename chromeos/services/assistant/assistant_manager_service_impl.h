@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chromeos/assistant/internal/action/cros_action_module.h"

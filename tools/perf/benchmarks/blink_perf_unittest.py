@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os
+import shutil
+import tempfile
 import unittest
 
 from telemetry import decorators
@@ -24,10 +26,14 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
       '..', '..', '..', 'third_party', 'blink', 'perf_tests',
       'resources')
   def setUp(self):
-    self._options = options_for_unittests.GetCopy()
+    self._options = options_for_unittests.GetRunOptions(
+        output_dir=tempfile.mkdtemp())
     # pylint: disable=protected-access
     self._measurement = blink_perf._BlinkPerfMeasurement()
     # pylint: enable=protected-access
+
+  def tearDown(self):
+    shutil.rmtree(self._options.output_dir)
 
   def _CreateStorySetForTestFile(self, test_file_name):
     story_set = story.StorySet(base_dir=self._BLINK_PERF_TEST_DATA_DIR,
@@ -41,9 +47,10 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     return story_set
 
   def testBlinkPerfTracingMetricsForMeasureTime(self):
-    results = self.RunMeasurement(measurement=self._measurement,
-        ps=self._CreateStorySetForTestFile('append-child-measure-time.html'),
-        options=self._options)
+    results = self.RunMeasurement(
+        self._measurement,
+        self._CreateStorySetForTestFile('append-child-measure-time.html'),
+        run_options=self._options)
     self.assertFalse(results.had_failures)
     self.assertEquals(len(list(results.IterRunsWithTraces())), 1)
 
@@ -62,10 +69,11 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     self.assertGreater(update_layout_trees[0].mean, 0.001)
 
   def testBlinkPerfTracingMetricsForMeasureFrameTime(self):
-    results = self.RunMeasurement(measurement=self._measurement,
-        ps=self._CreateStorySetForTestFile(
+    results = self.RunMeasurement(
+        self._measurement,
+        self._CreateStorySetForTestFile(
             'color-changes-measure-frame-time.html'),
-        options=self._options)
+        run_options=self._options)
     self.assertFalse(results.had_failures)
     self.assertEquals(len(list(results.IterRunsWithTraces())), 1)
 
@@ -85,10 +93,11 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     self.assertGreater(frame_view_painttrees[0].mean, 0.001)
 
   def testBlinkPerfTracingMetricsForMeasurePageLoadTime(self):
-    results = self.RunMeasurement(measurement=self._measurement,
-        ps=self._CreateStorySetForTestFile(
+    results = self.RunMeasurement(
+        self._measurement,
+        self._CreateStorySetForTestFile(
             'simple-html-measure-page-load-time.html'),
-        options=self._options)
+        run_options=self._options)
     self.assertFalse(results.had_failures)
     self.assertEquals(len(list(results.IterRunsWithTraces())), 1)
 
@@ -109,10 +118,10 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('mac')  # Flaky on mac: crbug.com/960554
   def testBlinkPerfTracingMetricsForMeasureAsync(self):
-    results = self.RunMeasurement(measurement=self._measurement,
-        ps=self._CreateStorySetForTestFile(
-            'simple-blob-measure-async.html'),
-        options=self._options)
+    results = self.RunMeasurement(
+        self._measurement,
+        self._CreateStorySetForTestFile('simple-blob-measure-async.html'),
+        run_options=self._options)
     self.assertFalse(results.had_failures)
     self.assertEquals(len(list(results.IterRunsWithTraces())), 1)
 
@@ -147,19 +156,19 @@ class BlinkPerfTest(page_test_test_case.PageTestTestCase):
     self.assertGreater(read_data[0].mean, 0.001)
 
   def testBlinkPerfLifecycleMethods(self):
-    results = self.RunMeasurement(measurement=self._measurement,
-        ps=self._CreateStorySetForTestFile(
-            'lifecycle-methods.html'),
-        options=self._options)
+    results = self.RunMeasurement(
+        self._measurement,
+        self._CreateStorySetForTestFile('lifecycle-methods.html'),
+        run_options=self._options)
     self.assertFalse(results.had_failures)
     self.assertEquals(len(list(results.IterRunsWithTraces())), 0)
 
   def testExtraChromeCategories(self):
     self._options.extra_chrome_categories = 'cc,blink'
-    results = self.RunMeasurement(measurement=self._measurement,
-        ps=self._CreateStorySetForTestFile(
-            'lifecycle-methods.html'),
-        options=self._options)
+    results = self.RunMeasurement(
+        self._measurement,
+        self._CreateStorySetForTestFile('lifecycle-methods.html'),
+        run_options=self._options)
     self.assertFalse(results.had_failures)
     self.assertEquals(len(list(results.IterRunsWithTraces())), 1)
 

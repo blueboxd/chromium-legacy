@@ -96,9 +96,10 @@ class BASE_EXPORT WaitableEvent {
   //   delete e;
   void Wait();
 
-  // Wait up until wait_delta has passed for the event to be signaled.  Returns
-  // true if the event was signaled. Handles spurious wakeups and guarantees
-  // that |wait_delta| will have elapsed if this returns false.
+  // Wait up until wait_delta has passed for the event to be signaled
+  // (real-time; ignores time overrides).  Returns true if the event was
+  // signaled. Handles spurious wakeups and guarantees that |wait_delta| will
+  // have elapsed if this returns false.
   //
   // TimedWait can synchronise its own destruction like |Wait|.
   bool TimedWait(const TimeDelta& wait_delta);

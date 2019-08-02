@@ -87,27 +87,26 @@ class ScopedTaskEnvironment {
     // Delayed tasks and Time/TimeTicks::Now() use the real-time system clock.
     SYSTEM_TIME,
 
-    // Delayed tasks use a mock clock which only advances (in increments to the
-    // soonest delay) when reaching idle during a FastForward*() call to this
-    // ScopedTaskEnvironment. Or when RunLoop::Run() goes idle on the main
-    // thread with no tasks remaining in the thread pool.
-    // Note: this does not affect threads outside this ScopedTaskEnvironment's
-    // purview (notably: independent base::Thread's).
+    // Delayed tasks use a mock clock which only advances when reaching "idle"
+    // during RunLoop::Run() call on the main thread or a FastForward*() call to
+    // this ScopedTaskEnvironment. "idle" is defined as the main thread and
+    // thread pool being out of ready tasks. When idle, time advances to the
+    // soonest delay -- between main thread and thread pool delayed tasks --
+    // according to the semantics of the current Run*() or FastForward*().
+    //
+    // This also mocks Time/TimeTicks::Now() with the same mock clock.
+    //
+    // Warning some platform APIs are still real-time, e.g.:
+    //   * PlatformThread::Sleep
+    //   * WaitableEvent::TimedWait
+    //   * ConditionVariable::TimedWait
+    //   * Delayed tasks on unmanaged base::Thread's and other custom task
+    //     runners.
     MOCK_TIME,
 
-    // Mock Time/TimeTicks::Now() with the same mock clock used for delayed
-    // tasks. This is useful when a delayed task under test needs to check the
-    // amount of time that has passed since a previous sample of Now() (e.g.
-    // cache expiry).
-    //
-    // Warning some platform APIs are still real-time, and don't interact with
-    // MOCK_TIME as expected, e.g.:
-    //   PlatformThread::Sleep
-    //   WaitableEvent::TimedWait
-    //   ConditionVariable::TimedWait
-    //
-    // TODO(crbug.com/905412): Make MOCK_TIME always mock Time/TimeTicks::Now().
-    MOCK_TIME_AND_NOW,
+    // TODO(gab): MOCK_TIME is now equivalent to MOCK_TIME_AND_NOW. Mass migrate
+    // users of MOCK_TIME_AND_NOW to MOCK_TIME.
+    MOCK_TIME_AND_NOW = MOCK_TIME,
 
     // TODO(gab): Consider making MOCK_TIME the default mode.
     DEFAULT = SYSTEM_TIME

@@ -189,9 +189,8 @@ HistogramSynchronizer* HistogramSynchronizer::GetInstance() {
 // static
 void HistogramSynchronizer::FetchHistograms() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&HistogramSynchronizer::FetchHistograms));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&HistogramSynchronizer::FetchHistograms));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -249,7 +248,7 @@ void HistogramSynchronizer::RegisterAndNotifyAllProcesses(
 
   // Post a task that would be called after waiting for wait_time.  This acts
   // as a watchdog, to cancel the requests for non-responsive processes.
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&RequestContext::Unregister, sequence_number), wait_time);
 }

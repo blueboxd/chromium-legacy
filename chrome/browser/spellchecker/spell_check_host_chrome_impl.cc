@@ -104,8 +104,10 @@ void SpellCheckHostChromeImpl::CallSpellingService(
   // a response is received (including an error) from the remote Spelling
   // service, calls CallSpellingServiceDone.
   auto* host = content::RenderProcessHost::FromID(render_process_id_);
-  if (!host)
+  if (!host) {
+    std::move(callback).Run(false, std::vector<SpellCheckResult>());
     return;
+  }
   client_.RequestTextCheck(
       host->GetBrowserContext(), SpellingServiceClient::SPELLCHECK, text,
       base::BindOnce(&SpellCheckHostChromeImpl::CallSpellingServiceDone,

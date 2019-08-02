@@ -26,6 +26,10 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace IPC {
 
 scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner();

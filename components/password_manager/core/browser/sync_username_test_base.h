@@ -38,7 +38,7 @@ class SyncUsernameTestBase : public testing::Test {
 
   const syncer::SyncService* sync_service() const { return &sync_service_; }
 
-  const signin::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return identity_test_env_.identity_manager();
   }
 

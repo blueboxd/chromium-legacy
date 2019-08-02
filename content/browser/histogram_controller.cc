@@ -44,7 +44,7 @@ void HistogramController::OnHistogramDataCollected(
     int sequence_number,
     const std::vector<std::string>& pickled_histograms) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&HistogramController::OnHistogramDataCollected,
                        base::Unretained(this), sequence_number,
@@ -168,11 +168,10 @@ void HistogramController::GetHistogramDataFromChildProcesses(
       ++pending_processes;
     }
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&HistogramController::OnPendingProcesses,
-                     base::Unretained(this), sequence_number, pending_processes,
-                     true));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&HistogramController::OnPendingProcesses,
+                                base::Unretained(this), sequence_number,
+                                pending_processes, true));
 }
 
 void HistogramController::GetHistogramData(int sequence_number) {
@@ -193,7 +192,7 @@ void HistogramController::GetHistogramData(int sequence_number) {
   }
   OnPendingProcesses(sequence_number, pending_processes, false);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&HistogramController::GetHistogramDataFromChildProcesses,
                      base::Unretained(this), sequence_number));

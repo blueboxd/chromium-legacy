@@ -56,6 +56,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
  public:
   EmbeddedSharedWorkerStub(
       blink::mojom::SharedWorkerInfoPtr info,
+      const std::string& user_agent,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
       const blink::mojom::RendererPreferences& renderer_preferences,
@@ -98,7 +99,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
 
   mojo::Binding<blink::mojom::SharedWorker> binding_;
   blink::mojom::SharedWorkerHostPtr host_;
-  const std::string name_;
   bool running_ = false;
   GURL url_;
   blink::mojom::RendererPreferences renderer_preferences_;

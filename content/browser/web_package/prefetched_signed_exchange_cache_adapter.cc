@@ -21,10 +21,9 @@ void AbortAndDeleteBlobBuilder(
     return;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&storage::BlobBuilderFromStream::Abort,
-                     std::move(blob_builder)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&storage::BlobBuilderFromStream::Abort,
+                                std::move(blob_builder)));
 }
 
 }  // namespace
@@ -86,7 +85,7 @@ void PrefetchedSignedExchangeCacheAdapter::OnStartLoadingResponseBody(
   }
   blob_is_streaming_ = true;
   if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &PrefetchedSignedExchangeCacheAdapter::CreateBlobBuilderFromStream,

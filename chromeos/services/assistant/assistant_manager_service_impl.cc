@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/feature_list.h"

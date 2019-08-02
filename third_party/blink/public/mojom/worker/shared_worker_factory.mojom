@@ -32,6 +32,7 @@ interface SharedWorkerFactory {
   // |interface_provider| instead of receiving plumbing it here.
   CreateSharedWorker(
       SharedWorkerInfo info,
+      string user_agent,
       bool pause_on_start,
       mojo_base.mojom.UnguessableToken devtools_worker_token,
       RendererPreferences renderer_preferences,

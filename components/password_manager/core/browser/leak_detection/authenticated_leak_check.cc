@@ -6,11 +6,19 @@
 
 namespace password_manager {
 
-AuthenticatedLeakCheck::AuthenticatedLeakCheck() = default;
+AuthenticatedLeakCheck::AuthenticatedLeakCheck(
+    LeakDetectionDelegateInterface* delegate,
+    signin::IdentityManager* identity_manager)
+    : delegate_(delegate), identity_manager_(identity_manager) {}
+
 AuthenticatedLeakCheck::~AuthenticatedLeakCheck() = default;
 
 void AuthenticatedLeakCheck::Start(const GURL& url,
                                    base::StringPiece16 username,
-                                   base::StringPiece16 password) {}
+                                   base::StringPiece16 password) {
+  // TODO(crbug.com/986298): get the access token here.
+  std::ignore = delegate_;
+  std::ignore = identity_manager_;
+}
 
 }  // namespace password_manager

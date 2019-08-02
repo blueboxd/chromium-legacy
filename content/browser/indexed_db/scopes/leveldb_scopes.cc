@@ -184,12 +184,12 @@ void LevelDBScopes::StartRecoveryAndCleanupTasks(TaskRunnerMode mode) {
   // reasonably soon.
   switch (mode) {
     case TaskRunnerMode::kNewCleanupAndRevertSequences:
-      revert_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+      revert_runner_ = base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::USER_BLOCKING});
-      cleanup_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+      cleanup_runner_ = base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::USER_VISIBLE});
       break;

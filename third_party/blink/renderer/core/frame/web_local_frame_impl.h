@@ -304,7 +304,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                             WebString& clip_html,
                             WebRect& clip_rect) override;
   void AdvanceFocusInForm(WebFocusType) override;
-  bool TryToShowTouchToFillForFocusedElement() override;
+  bool ShouldSuppressKeyboardForFocusedElement() override;
   void PerformMediaPlayerAction(const WebPoint&,
                                 const WebMediaPlayerAction&) override;
   void OnPortalActivated(const base::UnguessableToken& portal_token,

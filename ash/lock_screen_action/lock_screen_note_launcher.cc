@@ -4,7 +4,7 @@
 
 #include "ash/lock_screen_action/lock_screen_note_launcher.h"
 
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/shell.h"
 #include "ash/tray_action/tray_action.h"
 #include "base/bind.h"

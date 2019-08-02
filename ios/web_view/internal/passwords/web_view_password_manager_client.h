@@ -100,6 +100,7 @@ class WebViewPasswordManagerClient
   ukm::SourceId GetUkmSourceId() override;
   password_manager::PasswordManagerMetricsRecorder* GetMetricsRecorder()
       override;
+  signin::IdentityManager* GetIdentityManager() override;
   bool IsIsolationForPasswordSitesEnabled() const override;
   bool IsNewTabPage() const override;
 

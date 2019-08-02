@@ -21,6 +21,7 @@
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -32,7 +33,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -320,9 +321,10 @@ void ExtensionAppShimHandler::Delegate::LaunchApp(
   extensions::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
   if (extension->is_hosted_app()) {
-    OpenApplication(CreateAppLaunchParamsUserContainer(
-        profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        extensions::AppLaunchSource::kSourceCommandLine));
+    apps::LaunchService::Get(profile)->OpenApplication(
+        CreateAppLaunchParamsUserContainer(
+            profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+            apps::mojom::AppLaunchSource::kSourceCommandLine));
     return;
   }
   if (files.empty()) {

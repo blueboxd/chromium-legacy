@@ -14,7 +14,6 @@
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -329,8 +328,7 @@ UIImage* DefaultFaviconImage() {
   _activityIndicator =
       [[MDCActivityIndicator alloc] initWithFrame:faviconFrame];
   [_activityIndicator setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [_activityIndicator
-      setCycleColors:@[ [[MDCPalette cr_bluePalette] tint500] ]];
+  [_activityIndicator setCycleColors:@[ [UIColor colorNamed:kBlueColor] ]];
   [_activityIndicator setRadius:ui::AlignValueToUpperPixel(kFaviconSize / 2)];
   [self addSubview:_activityIndicator];
 }

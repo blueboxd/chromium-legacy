@@ -54,9 +54,8 @@ void SetupAccessibilityDisplayOptionsNotifier() {
 }  // namespace
 
 void BrowserAccessibilityStateImpl::PlatformInitialize() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&SetupAccessibilityDisplayOptionsNotifier));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&SetupAccessibilityDisplayOptionsNotifier));
 }
 
 void BrowserAccessibilityStateImpl::

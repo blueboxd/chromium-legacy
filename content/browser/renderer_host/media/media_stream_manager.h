@@ -54,7 +54,7 @@
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
 namespace media {
 class AudioSystem;
@@ -176,16 +176,18 @@ class CONTENT_EXPORT MediaStreamManager
   // to determine where the infobar will appear to the user. |device_stopped_cb|
   // is set to receive device stopped notifications. |device_change_cb| is set
   // to receive device changed notifications.
-  void GenerateStream(int render_process_id,
-                      int render_frame_id,
-                      int requester_id,
-                      int page_request_id,
-                      const blink::StreamControls& controls,
-                      MediaDeviceSaltAndOrigin salt_and_origin,
-                      bool user_gesture,
-                      GenerateStreamCallback generate_stream_cb,
-                      DeviceStoppedCallback device_stopped_cb,
-                      DeviceChangedCallback device_changed_cb);
+  void GenerateStream(
+      int render_process_id,
+      int render_frame_id,
+      int requester_id,
+      int page_request_id,
+      const blink::StreamControls& controls,
+      MediaDeviceSaltAndOrigin salt_and_origin,
+      bool user_gesture,
+      blink::mojom::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
+      GenerateStreamCallback generate_stream_cb,
+      DeviceStoppedCallback device_stopped_cb,
+      DeviceChangedCallback device_changed_cb);
 
   // Cancel an open request identified by |page_request_id| for the given frame.
   // Must be called on the IO thread.

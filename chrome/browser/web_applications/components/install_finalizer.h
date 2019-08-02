@@ -64,10 +64,10 @@ class InstallFinalizer {
   virtual bool CanAddAppToQuickLaunchBar() const;
   virtual void AddAppToQuickLaunchBar(const AppId& app_id);
 
-  virtual bool CanReparentTab(const AppId& app_id,
-                              bool shortcut_created) const = 0;
+  virtual bool CanReparentTab(const AppId& app_id, bool shortcut_created) const;
   virtual void ReparentTab(const AppId& app_id,
-                           content::WebContents* web_contents) = 0;
+                           bool shortcut_created,
+                           content::WebContents* web_contents);
 
   virtual bool CanRevealAppShim() const = 0;
   virtual void RevealAppShim(const AppId& app_id) = 0;

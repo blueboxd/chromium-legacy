@@ -178,9 +178,7 @@
     <color name="payments_section_chevron">#B2B2B2</color>
 
     <!-- History Navigation UI colors -->
-    <color name="navigation_bubble_stroke_color">@color/hairline_stroke_color</color>
     <color name="navigation_bubble_background_color">@color/default_bg_color_elev_4</color>
-    <color name="navigation_bubble_ripple_color">@color/modern_grey_800</color>
 
     <!-- Other colors -->
     <color name="media_viewer_bg">#000000</color>

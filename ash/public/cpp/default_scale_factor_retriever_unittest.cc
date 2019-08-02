@@ -4,7 +4,7 @@
 
 #include "ash/public/cpp/default_scale_factor_retriever.h"
 
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"

@@ -40,7 +40,8 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
  public:
   // |encryptor| must be not null and must outlive this object.
   NigoriSyncBridgeImpl(std::unique_ptr<NigoriLocalChangeProcessor> processor,
-                       const Encryptor* encryptor);
+                       const Encryptor* encryptor,
+                       const std::string& packed_explicit_passphrase_key);
   ~NigoriSyncBridgeImpl() override;
 
   // SyncEncryptionHandler implementation.
@@ -74,6 +75,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // tests and decide whether this method should be a part of
   // SyncEncryptionHandler interface.
   const Cryptographer& GetCryptographerForTesting() const;
+  static std::string PackExplicitPassphraseKeyForTesting(
+      const Encryptor& encryptor,
+      const Cryptographer& cryptographer);
 
  private:
   base::Optional<ModelError> UpdateLocalState(
@@ -101,6 +105,11 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   const Encryptor* const encryptor_;
 
   const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
+
+  // Stores serialized sync_pb::NigoriKey derived from explicit passphrase and
+  // loaded from the prefs. Empty if prefs doesn't contain this key or in case
+  // of decryption/decoding errors.
+  const std::string serialized_explicit_passphrase_key_;
 
   // Base64 encoded keystore keys. The last element is the current keystore
   // key. These keys are not a part of Nigori node and are persisted

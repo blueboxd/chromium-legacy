@@ -51,10 +51,9 @@ FilterRendererExposedInterfaces(
   service_manager::mojom::InterfaceProviderPtr provider;
   auto filtered_request = mojo::MakeRequest(&provider);
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&FilterInterfacesImpl, spec, process_id,
-                       std::move(request), std::move(provider)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&FilterInterfacesImpl, spec, process_id,
+                                  std::move(request), std::move(provider)));
   } else {
     FilterInterfacesImpl(spec, process_id, std::move(request),
                          std::move(provider));

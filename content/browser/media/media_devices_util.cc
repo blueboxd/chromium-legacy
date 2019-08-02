@@ -120,7 +120,7 @@ void GetDefaultMediaDeviceID(
     }
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::Bind(&GetDefaultMediaDeviceIDOnUIThread, device_type,
                  render_process_id, render_frame_id),

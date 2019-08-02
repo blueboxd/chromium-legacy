@@ -66,7 +66,7 @@ void RunOrPostTask(const base::Location& from_here,
     return;
   }
 
-  base::PostTaskWithTraits(from_here, {thread_id}, std::move(task));
+  base::PostTask(from_here, {thread_id}, std::move(task));
 }
 
 }  // namespace
@@ -199,7 +199,7 @@ void WorkerScriptFetchInitiator::Start(
   // 2. (IO thread) ResourceContext destructs.
   // Since |storage_partition| is alive, we must be before step 1, so this
   // task we post to the IO thread must run before step 2.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &WorkerScriptFetchInitiator::CreateScriptLoaderOnIO,

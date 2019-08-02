@@ -8,14 +8,14 @@
 #include "base/hash/sha1.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -492,11 +492,11 @@ void WallpaperControllerClient::OpenWallpaperPicker() {
   if (!extension)
     return;
 
-  OpenApplication(
+  apps::LaunchService::Get(profile)->OpenApplication(
       AppLaunchParams(profile, extension->id(),
-                      extensions::LaunchContainer::kLaunchContainerWindow,
+                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
                       WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceChromeInternal));
+                      apps::mojom::AppLaunchSource::kSourceChromeInternal));
 }
 
 bool WallpaperControllerClient::ShouldShowUserNamesOnLogin() const {

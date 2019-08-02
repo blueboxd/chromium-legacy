@@ -14,7 +14,7 @@
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"
 #include "ash/wm/wm_event.h"
 #include "base/base64.h"

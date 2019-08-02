@@ -27,6 +27,11 @@ class TestWebAppUiManager : public WebAppUiManager {
   void MigrateOSAttributes(const AppId& from, const AppId& to) override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
+  bool CanReparentAppTabToWindow(const AppId& app_id,
+                                 bool shortcut_created) const override;
+  void ReparentAppTabToWindow(content::WebContents* contents,
+                              const AppId& app_id,
+                              bool shortcut_created) override;
 
  private:
   std::map<AppId, size_t> app_id_to_num_windows_map_;

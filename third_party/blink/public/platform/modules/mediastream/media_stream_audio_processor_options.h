@@ -66,6 +66,12 @@ struct BLINK_PLATFORM_EXPORT AudioProcessingProperties {
   // Returns whether WebRTC-provided echo cancellation is enabled.
   bool EchoCancellationIsWebRtcProvided() const;
 
+  bool HasSameReconfigurableSettings(
+      const AudioProcessingProperties& other) const;
+
+  bool HasSameNonReconfigurableSettings(
+      const AudioProcessingProperties& other) const;
+
   // Converts this struct to an equivalent media::AudioProcessingSettings.
   // TODO(https://crbug.com/878757): Eliminate this class in favor of the media
   // one.

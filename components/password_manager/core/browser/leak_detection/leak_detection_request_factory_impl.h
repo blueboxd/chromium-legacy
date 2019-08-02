@@ -19,7 +19,9 @@ class LeakDetectionRequestFactoryImpl : public LeakDetectionRequestFactory {
   LeakDetectionRequestFactoryImpl();
   ~LeakDetectionRequestFactoryImpl() override;
 
-  std::unique_ptr<LeakDetectionCheck> TryCreateLeakCheck() const override;
+  std::unique_ptr<LeakDetectionCheck> TryCreateLeakCheck(
+      LeakDetectionDelegateInterface* delegate,
+      signin::IdentityManager* identity_manager) const override;
 };
 
 }  // namespace password_manager

@@ -15,7 +15,7 @@ namespace content {
 
 CookieStoreContext::CookieStoreContext()
     : base::RefCountedDeleteOnSequence<CookieStoreContext>(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})) {}
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO})) {}
 
 CookieStoreContext::~CookieStoreContext() {
   // The destructor must be called on the IO thread, because it runs
@@ -33,7 +33,7 @@ void CookieStoreContext::Initialize(
   initialize_called_ = true;
 #endif  // DCHECK_IS_ON()
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &CookieStoreContext::InitializeOnIOThread, this,
@@ -60,7 +60,7 @@ void CookieStoreContext::ListenToCookieChanges(
   network_context->GetCookieManager(
       mojo::MakeRequest(&cookie_manager_ptr_info));
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &CookieStoreContext::ListenToCookieChangesOnIOThread, this,
@@ -82,10 +82,9 @@ void CookieStoreContext::CreateService(blink::mojom::CookieStoreRequest request,
   DCHECK(initialize_called_) << __func__ << " called before Initialize()";
 #endif  // DCHECK_IS_ON()
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&CookieStoreContext::CreateServiceOnIOThread, this,
-                     std::move(request), origin));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&CookieStoreContext::CreateServiceOnIOThread,
+                                this, std::move(request), origin));
 }
 
 void CookieStoreContext::InitializeOnIOThread(

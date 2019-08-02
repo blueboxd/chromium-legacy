@@ -27,6 +27,17 @@ TEST(ElapsedTimerTest, Simple) {
   EXPECT_GE(timer.Elapsed(), 2 * kSleepDuration);
 }
 
+TEST(ElapsedTimerTest, Mocked) {
+  ScopedMockElapsedTimersForTest mock_elapsed_timer;
+
+  ElapsedTimer timer;
+  EXPECT_EQ(timer.Elapsed(), ScopedMockElapsedTimersForTest::kMockElapsedTime);
+
+  // Real-time doesn't matter.
+  PlatformThread::Sleep(kSleepDuration);
+  EXPECT_EQ(timer.Elapsed(), ScopedMockElapsedTimersForTest::kMockElapsedTime);
+}
+
 class ElapsedThreadTimerTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -71,6 +82,20 @@ TEST_F(ElapsedThreadTimerTest, DoesNotCountSleep) {
   PlatformThread::Sleep(kSleepDuration);
   // Sleep time is not accounted for.
   EXPECT_LT(timer.Elapsed(), kSleepDuration);
+}
+
+TEST_F(ElapsedThreadTimerTest, Mocked) {
+  if (!ThreadTicks::IsSupported())
+    return;
+
+  ScopedMockElapsedTimersForTest mock_elapsed_timer;
+
+  ElapsedThreadTimer timer;
+  EXPECT_EQ(timer.Elapsed(), ScopedMockElapsedTimersForTest::kMockElapsedTime);
+
+  // Real-time doesn't matter.
+  PlatformThread::Sleep(kSleepDuration);
+  EXPECT_EQ(timer.Elapsed(), ScopedMockElapsedTimersForTest::kMockElapsedTime);
 }
 
 }  // namespace base

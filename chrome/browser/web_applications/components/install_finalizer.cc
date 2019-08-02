@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 
+#include "base/logging.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 
 namespace web_app {
@@ -18,6 +19,19 @@ bool InstallFinalizer::CanAddAppToQuickLaunchBar() const {
 
 void InstallFinalizer::AddAppToQuickLaunchBar(const AppId& app_id) {
   ui_manager().AddAppToQuickLaunchBar(app_id);
+}
+
+bool InstallFinalizer::CanReparentTab(const AppId& app_id,
+                                      bool shortcut_created) const {
+  return ui_manager().CanReparentAppTabToWindow(app_id, shortcut_created);
+}
+
+void InstallFinalizer::ReparentTab(const AppId& app_id,
+                                   bool shortcut_created,
+                                   content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  return ui_manager().ReparentAppTabToWindow(web_contents, app_id,
+                                             shortcut_created);
 }
 
 }  // namespace web_app

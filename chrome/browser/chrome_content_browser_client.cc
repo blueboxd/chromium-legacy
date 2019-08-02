@@ -384,7 +384,7 @@
 #include "services/audio/public/mojom/constants.mojom.h"
 #elif defined(OS_CHROMEOS)
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "chrome/browser/ash_service_registry.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
@@ -2349,17 +2349,6 @@ void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(
       out_prefs, Profile::FromBrowserContext(browser_context));
 }
 
-bool ChromeContentBrowserClient::AllowAppCacheOnIO(
-    const GURL& manifest_url,
-    const GURL& first_party,
-    content::ResourceContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI));
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  return io_data->GetCookieSettings()->IsCookieAccessAllowed(manifest_url,
-                                                             first_party);
-}
-
 bool ChromeContentBrowserClient::AllowAppCache(
     const GURL& manifest_url,
     const GURL& first_party,
@@ -2437,18 +2426,6 @@ bool ChromeContentBrowserClient::AllowSharedWorker(
       render_process_id, render_frame_id, worker_url, name, constructor_origin,
       !allow);
   return allow;
-}
-
-bool ChromeContentBrowserClient::AllowSignedExchangeOnIO(
-    content::ResourceContext* resource_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI));
-  // Null-check safe_browsing_service_ as in unit tests |resource_context| is a
-  // MockResourceContext and the cast doesn't work.
-  if (!safe_browsing_service_)
-    return false;
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  return io_data->signed_exchange_enabled()->GetValue();
 }
 
 bool ChromeContentBrowserClient::AllowSignedExchange(
@@ -4544,11 +4521,10 @@ base::FilePath ChromeContentBrowserClient::GetLoggingFileName(
 
 namespace {
 // TODO(jam): move this to a separate file.
-template <class HandlerRegistry>
 class ProtocolHandlerThrottle : public blink::URLLoaderThrottle {
  public:
   explicit ProtocolHandlerThrottle(
-      const HandlerRegistry& protocol_handler_registry)
+      ProtocolHandlerRegistry* protocol_handler_registry)
       : protocol_handler_registry_(protocol_handler_registry) {}
   ~ProtocolHandlerThrottle() override = default;
 
@@ -4574,120 +4550,9 @@ class ProtocolHandlerThrottle : public blink::URLLoaderThrottle {
       *url = translated_url;
   }
 
-  HandlerRegistry protocol_handler_registry_;
+  ProtocolHandlerRegistry* protocol_handler_registry_;
 };
 }  // namespace
-
-std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-ChromeContentBrowserClient::CreateURLLoaderThrottlesOnIO(
-    const network::ResourceRequest& request,
-    content::ResourceContext* resource_context,
-    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
-    content::NavigationUIData* navigation_ui_data,
-    int frame_tree_node_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(falken): Uncomment out the DCHECK when PlzWorker is moved to the UI
-  // thread.
-  // DCHECK(!base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI));
-
-  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
-
-  ProfileIOData* io_data = nullptr;
-  // Only set |io_data| if needed, as in unit tests |resource_context| is a
-  // MockResourceContext and the cast doesn't work.
-  if (safe_browsing_service_ ||
-      data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    io_data = ProfileIOData::FromResourceContext(resource_context);
-  }
-
-  ChromeNavigationUIData* chrome_navigation_ui_data =
-      static_cast<ChromeNavigationUIData*>(navigation_ui_data);
-  if (chrome_navigation_ui_data && io_data &&
-      io_data->data_reduction_proxy_io_data() &&
-      data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    if (!data_reduction_proxy_throttle_manager_) {
-      data_reduction_proxy_throttle_manager_ = std::unique_ptr<
-          data_reduction_proxy::DataReductionProxyThrottleManager,
-          base::OnTaskRunnerDeleter>(
-          new data_reduction_proxy::DataReductionProxyThrottleManager(
-              io_data->data_reduction_proxy_io_data(),
-              io_data->data_reduction_proxy_io_data()->CreateThrottleConfig()),
-          base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
-    }
-    net::HttpRequestHeaders headers;
-    data_reduction_proxy::DataReductionProxyRequestOptions* request_options =
-        io_data->data_reduction_proxy_io_data()->request_options();
-    uint64_t page_id =
-        base::FeatureList::IsEnabled(
-            data_reduction_proxy::features::
-                kDataReductionProxyPopulatePreviewsPageIDToPingback)
-            ? chrome_navigation_ui_data->data_reduction_proxy_page_id()
-            : request_options->GeneratePageId();
-    request_options->AddPageIDRequestHeader(&headers, page_id);
-    result.push_back(std::make_unique<
-                     data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
-        headers, data_reduction_proxy_throttle_manager_.get()));
-  }
-
-#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
-  if (io_data && safe_browsing_service_) {
-    bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
-        request.url, io_data->safe_browsing_whitelist_domains());
-    if (!matches_enterprise_whitelist) {
-      result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
-          base::BindOnce(
-              &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
-              base::Unretained(this)),
-          wc_getter, frame_tree_node_id, resource_context));
-    }
-  }
-#endif
-
-  if (chrome_navigation_ui_data &&
-      chrome_navigation_ui_data->prerender_mode() != prerender::NO_PRERENDER) {
-    result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
-        chrome_navigation_ui_data->prerender_mode(),
-        chrome_navigation_ui_data->prerender_histogram_prefix(),
-        base::BindOnce(GetPrerenderCanceller, wc_getter),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
-  }
-
-  if (io_data) {
-    bool is_off_the_record = io_data->IsOffTheRecord();
-    bool is_signed_in =
-        !is_off_the_record &&
-        !io_data->google_services_account_id()->GetValue().empty();
-
-    chrome::mojom::DynamicParams dynamic_params = {
-        io_data->force_google_safesearch()->GetValue(),
-        io_data->force_youtube_restrict()->GetValue(),
-        io_data->allowed_domains_for_apps()->GetValue(),
-        variations::VariationsHttpHeaderProvider::GetInstance()
-            ->GetClientDataHeader(is_signed_in)};
-    result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
-        is_off_the_record, std::move(dynamic_params)));
-
-    result.push_back(
-        std::make_unique<ProtocolHandlerThrottle<
-            scoped_refptr<ProtocolHandlerRegistry::IOThreadDelegate>>>(
-            io_data->protocol_handler_registry_io_thread_delegate()));
-  }
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
-      resource_context, request.resource_type, frame_tree_node_id));
-#endif
-
-  auto delegate =
-      std::make_unique<signin::HeaderModificationDelegateOnIOThreadImpl>(
-          resource_context);
-  auto signin_throttle = signin::URLLoaderThrottle::MaybeCreate(
-      std::move(delegate), navigation_ui_data, wc_getter);
-  if (signin_throttle)
-    result.push_back(std::move(signin_throttle));
-
-  return result;
-}
 
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 ChromeContentBrowserClient::CreateURLLoaderThrottles(
@@ -4767,10 +4632,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
       is_off_the_record, std::move(dynamic_params)));
 
-  result.push_back(
-      std::make_unique<ProtocolHandlerThrottle<ProtocolHandlerRegistry*>>(
-          ProtocolHandlerRegistryFactory::GetForBrowserContext(
-              browser_context)));
+  result.push_back(std::make_unique<ProtocolHandlerThrottle>(
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)));
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
@@ -5293,24 +5156,6 @@ ChromeContentBrowserClient::CreateWindowForPictureInPicture(
   // chrome/browser/ui/views code either from here or from other code in
   // chrome/browser.
   return content::OverlayWindow::Create(controller);
-}
-
-bool ChromeContentBrowserClient::IsSafeRedirectTargetOnIO(
-    const GURL& url,
-    content::ResourceContext* context) {
-  DCHECK(!base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI));
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
-    ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-    const Extension* extension =
-        io_data->GetExtensionInfoMap()->extensions().GetByID(url.host());
-    if (!extension)
-      return false;
-    return extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
-        extension, url.path());
-  }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-  return true;
 }
 
 bool ChromeContentBrowserClient::IsSafeRedirectTarget(

@@ -499,7 +499,8 @@ TEST_P(PaintArtifactCompositorTest, FlattensInheritedTransform) {
         CreateTransform(*transform1, TransformationMatrix().Rotate3d(0, 45, 0));
     TransformPaintPropertyNode::State transform3_state{
         TransformationMatrix().Rotate3d(0, 45, 0)};
-    transform3_state.flattens_inherited_transform = transform_is_flattened;
+    transform3_state.flags.flattens_inherited_transform =
+        transform_is_flattened;
     auto transform3 = TransformPaintPropertyNode::Create(
         *transform2, std::move(transform3_state));
 
@@ -552,7 +553,8 @@ TEST_P(PaintArtifactCompositorTest, FlattensInheritedTransformWithAlias) {
     auto transform2 = TransformPaintPropertyNode::CreateAlias(*real_transform2);
     TransformPaintPropertyNode::State transform3_state{
         TransformationMatrix().Rotate3d(0, 45, 0)};
-    transform3_state.flattens_inherited_transform = transform_is_flattened;
+    transform3_state.flags.flattens_inherited_transform =
+        transform_is_flattened;
     auto real_transform3 = TransformPaintPropertyNode::Create(
         *transform2, std::move(transform3_state));
     auto transform3 = TransformPaintPropertyNode::CreateAlias(*real_transform3);
@@ -4032,7 +4034,7 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
   TransformationMatrix matrix;
   matrix.Scale(2);
   TransformPaintPropertyNode::State transform_state{matrix};
-  transform_state.in_subtree_of_page_scale = false;
+  transform_state.flags.in_subtree_of_page_scale = false;
   transform_state.compositor_element_id =
       CompositorElementIdFromUniqueObjectId(1);
 
@@ -4058,12 +4060,12 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
 // the page scale transform node or ancestors, and is set on descendants.
 TEST_P(PaintArtifactCompositorTest, InSubtreeOfPageScale) {
   TransformPaintPropertyNode::State ancestor_transform_state;
-  ancestor_transform_state.in_subtree_of_page_scale = false;
+  ancestor_transform_state.flags.in_subtree_of_page_scale = false;
   auto ancestor_transform = TransformPaintPropertyNode::Create(
       TransformPaintPropertyNode::Root(), std::move(ancestor_transform_state));
 
   TransformPaintPropertyNode::State page_scale_transform_state;
-  page_scale_transform_state.in_subtree_of_page_scale = false;
+  page_scale_transform_state.flags.in_subtree_of_page_scale = false;
   page_scale_transform_state.compositor_element_id =
       CompositorElementIdFromUniqueObjectId(1);
   auto page_scale_transform = TransformPaintPropertyNode::Create(
@@ -4072,7 +4074,7 @@ TEST_P(PaintArtifactCompositorTest, InSubtreeOfPageScale) {
   TransformPaintPropertyNode::State descendant_transform_state;
   descendant_transform_state.compositor_element_id =
       CompositorElementIdFromUniqueObjectId(2);
-  descendant_transform_state.in_subtree_of_page_scale = true;
+  descendant_transform_state.flags.in_subtree_of_page_scale = true;
   descendant_transform_state.direct_compositing_reasons =
       CompositingReason::kWillChangeTransform;
   auto descendant_transform = TransformPaintPropertyNode::Create(
@@ -4111,7 +4113,7 @@ TEST_P(PaintArtifactCompositorTest, ViewportPageScale) {
   TransformationMatrix matrix;
   matrix.Scale(2);
   TransformPaintPropertyNode::State transform_state{matrix};
-  transform_state.in_subtree_of_page_scale = false;
+  transform_state.flags.in_subtree_of_page_scale = false;
   transform_state.compositor_element_id =
       CompositorElementIdFromUniqueObjectId(1);
   auto scale_transform_node = TransformPaintPropertyNode::Create(

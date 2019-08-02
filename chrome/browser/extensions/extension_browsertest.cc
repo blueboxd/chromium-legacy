@@ -23,6 +23,8 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -40,7 +42,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
@@ -428,7 +429,7 @@ const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
       profile(), app->id(), LaunchContainer::kLaunchContainerNone,
       WindowOpenDisposition::NEW_WINDOW, AppLaunchSource::kSourceTest);
   params.command_line = *base::CommandLine::ForCurrentProcess();
-  OpenApplication(params);
+  apps::LaunchService::Get(profile())->OpenApplication(params);
   app_loaded_observer.Wait();
 
   return app;

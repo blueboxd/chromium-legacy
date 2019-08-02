@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -24,8 +26,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -257,10 +257,11 @@ void ChromeManagementAPIDelegate::LaunchAppFunctionDelegate(
   // returned.
   extensions::LaunchContainer launch_container =
       GetLaunchContainer(extensions::ExtensionPrefs::Get(context), extension);
-  OpenApplication(AppLaunchParams(
-      Profile::FromBrowserContext(context), extension->id(), launch_container,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::AppLaunchSource::kSourceManagementApi));
+  Profile* profile = Profile::FromBrowserContext(context);
+  apps::LaunchService::Get(profile)->OpenApplication(
+      AppLaunchParams(profile, extension->id(), launch_container,
+                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                      apps::mojom::AppLaunchSource::kSourceManagementApi));
 
 #if defined(OS_CHROMEOS)
   chromeos::DemoSession::RecordAppLaunchSourceIfInDemoMode(

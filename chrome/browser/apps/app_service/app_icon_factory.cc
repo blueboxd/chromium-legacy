@@ -160,65 +160,6 @@ void RunCallbackWithCompressedDataFromExtension(
                      std::move(callback)));
 }
 
-// Like RunCallbackWithCompressedData, but calls "fallback(callback)" if the
-// data is empty.
-void RunCallbackWithCompressedDataWithFallback(
-    int size_hint_in_dip,
-    bool is_placeholder_icon,
-    apps::IconEffects icon_effects,
-    apps::mojom::Publisher::LoadIconCallback callback,
-    base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)> fallback,
-    std::vector<uint8_t> data) {
-  if (data.empty()) {
-    std::move(fallback).Run(std::move(callback));
-    return;
-  }
-  constexpr int default_icon_resource = 0;
-  RunCallbackWithCompressedData(size_hint_in_dip, default_icon_resource,
-                                is_placeholder_icon, icon_effects,
-                                std::move(callback), std::move(data));
-}
-
-// Runs |callback| passing an IconValuePtr with an uncompressed image: a
-// SkBitmap.
-void RunCallbackWithUncompressedSkBitmap(
-    int size_hint_in_dip,
-    bool is_placeholder_icon,
-    apps::IconEffects icon_effects,
-    apps::mojom::Publisher::LoadIconCallback callback,
-    const SkBitmap& bitmap) {
-  apps::mojom::IconValuePtr iv = apps::mojom::IconValue::New();
-  iv->icon_compression = apps::mojom::IconCompression::kUncompressed;
-  iv->uncompressed = gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 0.0f));
-  iv->is_placeholder_icon = is_placeholder_icon;
-  if (icon_effects && !iv->uncompressed.isNull()) {
-    ApplyIconEffects(icon_effects, size_hint_in_dip, &iv->uncompressed);
-  }
-  std::move(callback).Run(std::move(iv));
-}
-
-// Runs |callback| after converting (in a separate sandboxed process) from a
-// std::vector<uint8_t> to a SkBitmap. It calls "fallback(callback)" if the
-// data is empty.
-void RunCallbackWithCompressedDataToUncompressWithFallback(
-    int size_hint_in_dip,
-    bool is_placeholder_icon,
-    apps::IconEffects icon_effects,
-    apps::mojom::Publisher::LoadIconCallback callback,
-    base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)> fallback,
-    std::vector<uint8_t> data) {
-  if (data.empty()) {
-    std::move(fallback).Run(std::move(callback));
-    return;
-  }
-  data_decoder::DecodeImage(
-      content::GetSystemConnector(), data,
-      data_decoder::mojom::ImageCodec::DEFAULT, false,
-      data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
-      base::BindOnce(&RunCallbackWithUncompressedSkBitmap, size_hint_in_dip,
-                     is_placeholder_icon, icon_effects, std::move(callback)));
-}
-
 // Runs |callback| passing an IconValuePtr with an uncompressed image: an
 // ImageSkia.
 //
@@ -263,6 +204,53 @@ void RunCallbackWithUncompressedImage(
   RunCallbackWithUncompressedImageSkia(
       size_hint_in_dip, default_icon_resource, is_placeholder_icon,
       icon_effects, std::move(callback), image.AsImageSkia());
+}
+
+// Runs |callback| passing an IconValuePtr with an uncompressed image: a
+// SkBitmap.
+void RunCallbackWithUncompressedSkBitmap(
+    int size_hint_in_dip,
+    bool is_placeholder_icon,
+    apps::IconEffects icon_effects,
+    apps::mojom::Publisher::LoadIconCallback callback,
+    const SkBitmap& bitmap) {
+  constexpr int default_icon_resource = 0;
+  gfx::ImageSkia image = gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 0.0f));
+  RunCallbackWithUncompressedImageSkia(size_hint_in_dip, default_icon_resource,
+                                       is_placeholder_icon, icon_effects,
+                                       std::move(callback), image);
+}
+
+// Runs |callback| after converting (in a separate sandboxed process) from a
+// std::vector<uint8_t> to a SkBitmap. It calls "fallback(callback)" if the
+// data is empty.
+void RunCallbackWithFallback(
+    int size_hint_in_dip,
+    bool is_placeholder_icon,
+    apps::IconEffects icon_effects,
+    apps::mojom::IconCompression icon_compression,
+    apps::mojom::Publisher::LoadIconCallback callback,
+    base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)> fallback,
+    std::vector<uint8_t> data) {
+  if (data.empty()) {
+    std::move(fallback).Run(std::move(callback));
+    return;
+  }
+
+  if (icon_compression == apps::mojom::IconCompression::kCompressed) {
+    constexpr int default_icon_resource = 0;
+    RunCallbackWithCompressedData(size_hint_in_dip, default_icon_resource,
+                                  is_placeholder_icon, icon_effects,
+                                  std::move(callback), std::move(data));
+    return;
+  }
+
+  data_decoder::DecodeImage(
+      content::GetSystemConnector(), data,
+      data_decoder::mojom::ImageCodec::DEFAULT, false,
+      data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
+      base::BindOnce(&RunCallbackWithUncompressedSkBitmap, size_hint_in_dip,
+                     is_placeholder_icon, icon_effects, std::move(callback)));
 }
 
 }  // namespace
@@ -334,23 +322,13 @@ void LoadIconFromFileWithFallback(
     case apps::mojom::IconCompression::kUnknown:
       break;
 
-    case apps::mojom::IconCompression::kUncompressed: {
-      base::PostTaskWithTraitsAndReplyWithResult(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-          base::BindOnce(&ReadFileAsCompressedData, path),
-          base::BindOnce(&RunCallbackWithCompressedDataToUncompressWithFallback,
-                         size_hint_in_dip, is_placeholder_icon, icon_effects,
-                         std::move(callback), std::move(fallback)));
-
-      return;
-    }
-
+    case apps::mojom::IconCompression::kUncompressed:
     case apps::mojom::IconCompression::kCompressed: {
       base::PostTaskWithTraitsAndReplyWithResult(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&ReadFileAsCompressedData, path),
-          base::BindOnce(&RunCallbackWithCompressedDataWithFallback,
-                         size_hint_in_dip, is_placeholder_icon, icon_effects,
+          base::BindOnce(&RunCallbackWithFallback, size_hint_in_dip,
+                         is_placeholder_icon, icon_effects, icon_compression,
                          std::move(callback), std::move(fallback)));
       return;
     }

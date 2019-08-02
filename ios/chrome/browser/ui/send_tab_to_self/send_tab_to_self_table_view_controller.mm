@@ -176,7 +176,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       l10n_util::GetNSString(IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ACTION);
   self.sendToDevice.buttonTextColor =
       [UIColor colorNamed:kSolidButtonTextColor];
-  self.sendToDevice.buttonBackgroundColor = [UIColor colorNamed:kTintColor];
+  self.sendToDevice.buttonBackgroundColor = [UIColor colorNamed:kBlueColor];
   self.sendToDevice.boldButtonText = NO;
   self.sendToDevice.accessibilityIdentifier = kSendTabToSelfModalSendButton;
   [model addItem:self.sendToDevice

@@ -13,7 +13,7 @@
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"

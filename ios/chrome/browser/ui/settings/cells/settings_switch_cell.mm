@@ -81,7 +81,7 @@ const CGFloat kIconImageSize = 28;
 
     _switchView = [[UISwitch alloc] initWithFrame:CGRectZero];
     _switchView.translatesAutoresizingMaskIntoConstraints = NO;
-    _switchView.onTintColor = [UIColor colorNamed:kTintColor];
+    _switchView.onTintColor = [UIColor colorNamed:kBlueColor];
     [_switchView
         setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
                                         forAxis:

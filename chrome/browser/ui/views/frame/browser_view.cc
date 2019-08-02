@@ -1401,7 +1401,7 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
   return bubble;
 }
 
-ClickToCallDialog* BrowserView::ShowClickToCallDialog(
+SharingDialog* BrowserView::ShowClickToCallDialog(
     content::WebContents* web_contents,
     ClickToCallSharingDialogController* controller) {
   auto* dialog_view = new ClickToCallDialogView(

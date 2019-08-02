@@ -47,9 +47,9 @@ RenderWidgetHelper::~RenderWidgetHelper() {
 void RenderWidgetHelper::Init(int render_process_id) {
   render_process_id_ = render_process_id;
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(&AddWidgetHelper, render_process_id_,
-                                          base::WrapRefCounted(this)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&AddWidgetHelper, render_process_id_,
+                                base::WrapRefCounted(this)));
 }
 
 int RenderWidgetHelper::GetNextRoutingID() {
@@ -70,17 +70,16 @@ void RenderWidgetHelper::CreateNewWidget(int opener_id,
                                          int* route_id) {
   *route_id = GetNextRoutingID();
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&RenderWidgetHelper::OnCreateWidgetOnUI, this, opener_id,
-                     *route_id, widget.PassInterface()));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&RenderWidgetHelper::OnCreateWidgetOnUI, this,
+                                opener_id, *route_id, widget.PassInterface()));
 }
 
 void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
                                                    mojom::WidgetPtr widget,
                                                    int* route_id) {
   *route_id = GetNextRoutingID();
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&RenderWidgetHelper::OnCreateFullscreenWidgetOnUI, this,
                      opener_id, *route_id, widget.PassInterface()));

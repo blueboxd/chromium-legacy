@@ -19,7 +19,6 @@
 #include "components/safe_browsing/ping_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 using content::BrowserThread;

@@ -114,8 +114,8 @@ PluginServiceImpl::~PluginServiceImpl() {
 }
 
 void PluginServiceImpl::Init() {
-  plugin_list_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  plugin_list_task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   // Setup the sequence checker right after setting up the task runner.
@@ -274,9 +274,9 @@ void PluginServiceImpl::OpenChannelToPpapiBroker(
     int render_frame_id,
     const base::FilePath& path,
     PpapiPluginProcessHost::BrokerClient* client) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&PluginServiceImpl::RecordBrokerUsage,
-                                          render_process_id, render_frame_id));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&PluginServiceImpl::RecordBrokerUsage,
+                                render_process_id, render_frame_id));
 
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(
       render_process_id, path);

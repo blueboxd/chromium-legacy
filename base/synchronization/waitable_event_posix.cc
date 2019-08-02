@@ -17,6 +17,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/time/time_override.h"
 
 // -----------------------------------------------------------------------------
 // A WaitableEvent on POSIX is implemented as a wait-list. Currently we don't
@@ -196,14 +197,16 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
   // again before unlocking it.
 
   // TimeTicks takes care of overflow but we special case is_max() nonetheless
-  // to avoid invoking Now() unnecessarily (same for the increment step of the
-  // for loop if the condition variable returns early).
-  // Ref: https://crbug.com/910524#c7
+  // to avoid invoking TimeTicksNowIgnoringOverride() unnecessarily (same for
+  // the increment step of the for loop if the condition variable returns
+  // early). Ref: https://crbug.com/910524#c7
   const TimeTicks end_time =
-      wait_delta.is_max() ? TimeTicks::Max() : TimeTicks::Now() + wait_delta;
+      wait_delta.is_max() ? TimeTicks::Max()
+                          : subtle::TimeTicksNowIgnoringOverride() + wait_delta;
   for (TimeDelta remaining = wait_delta; remaining > TimeDelta() && !sw.fired();
-       remaining = end_time.is_max() ? TimeDelta::Max()
-                                     : end_time - TimeTicks::Now()) {
+       remaining = end_time.is_max()
+                       ? TimeDelta::Max()
+                       : end_time - subtle::TimeTicksNowIgnoringOverride()) {
     if (end_time.is_max())
       sw.cv()->Wait();
     else

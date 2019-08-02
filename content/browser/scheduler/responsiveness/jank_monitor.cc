@@ -172,7 +172,7 @@ void JankMonitor::StopTimerIfIdle() {
 
 scoped_refptr<base::SequencedTaskRunner>
 JankMonitor::CreateMonitorTaskRunner() {
-  return base::CreateSequencedTaskRunnerWithTraits({});
+  return base::CreateSequencedTaskRunner({base::ThreadPool()});
 }
 
 std::unique_ptr<MetricSource> JankMonitor::CreateMetricSource () {

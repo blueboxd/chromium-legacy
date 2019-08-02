@@ -7,8 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
+// Element Colors
+
 extern NSString* const kBackgroundColor;
-extern NSString* const kDestructiveTintColor;
 extern NSString* const kDisabledTintColor;
 extern NSString* const kMDCInkColor;
 extern NSString* const kScrimBackgroundColor;
@@ -17,7 +18,17 @@ extern NSString* const kTextPrimaryColor;
 extern NSString* const kTextSecondaryColor;
 extern NSString* const kTextfieldBackgroundColor;
 extern NSString* const kTextfieldPlaceholderColor;
-extern NSString* const kTintColor;
+
+// Standard Colors
+
+// Standard blue color. This is most commonly used for the tint color on
+// standard buttons and controls.
+extern NSString* const kBlueColor;
+// Standard green color.
+extern NSString* const kGreenColor;
+// Standard red color. This is most commonly used for the tint color on
+// destructive controls.
+extern NSString* const kRedColor;
 
 // Temporary colors for iOS 12. Because overridePreferredInterfaceStyle isn't
 // available in iOS 12, any views that should always be dark (e.g. incognito)
@@ -27,6 +38,9 @@ extern NSString* const kBackgroundDarkColor;
 extern NSString* const kTextPrimaryDarkColor;
 extern NSString* const kTextfieldBackgroundDarkColor;
 extern NSString* const kTextfieldPlaceholderDarkColor;
-extern NSString* const kTintDarkColor;
+
+extern NSString* const kBlueDarkColor;
+extern NSString* const kGreenDarkColor;
+extern NSString* const kRedDarkColor;
 
 #endif  // IOS_CHROME_COMMON_COLORS_SEMANTIC_COLOR_NAMES_H_

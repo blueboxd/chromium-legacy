@@ -105,7 +105,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
     UIButton* primaryButton;
     UIEdgeInsets primaryButtonInsets;
     primaryButton = [[UIButton alloc] init];
-    primaryButton.backgroundColor = [UIColor colorNamed:kTintColor];
+    primaryButton.backgroundColor = [UIColor colorNamed:kBlueColor];
     [primaryButton.titleLabel
         setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
     primaryButton.layer.cornerRadius = kButtonCornerRadius;
@@ -130,7 +130,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
     secondaryButton = [[UIButton alloc] init];
     [secondaryButton.titleLabel
         setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]];
-    [secondaryButton setTitleColor:[UIColor colorNamed:kTintColor]
+    [secondaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
                           forState:UIControlStateNormal];
     _secondaryButton = secondaryButton;
     DCHECK(_secondaryButton);

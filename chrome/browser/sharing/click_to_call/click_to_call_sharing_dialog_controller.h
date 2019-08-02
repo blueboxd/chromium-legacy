@@ -19,7 +19,7 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-class ClickToCallDialog;
+class SharingDialog;
 class SharingDeviceInfo;
 
 class ClickToCallSharingDialogController
@@ -45,14 +45,14 @@ class ClickToCallSharingDialogController
   void OnAppChosen(const App& app) override;
 
   // Called by the ClickToCallDialogView when it is being closed.
-  void OnDialogClosed(ClickToCallDialog* dialog);
+  void OnDialogClosed(SharingDialog* dialog);
 
   // Called by the ClickToCallDialogView when the help text got clicked.
   void OnHelpTextClicked();
 
   // Returns the currently open ClickToCallDialog or nullptr if there is no
   // dialog open.
-  ClickToCallDialog* GetDialog() const;
+  SharingDialog* GetDialog() const;
 
   bool is_loading() const { return is_loading_; }
 
@@ -82,7 +82,7 @@ class ClickToCallSharingDialogController
   SharingService* sharing_service_ = nullptr;
 
   GURL phone_url_;
-  ClickToCallDialog* dialog_ = nullptr;
+  SharingDialog* dialog_ = nullptr;
   bool is_loading_ = false;
   bool send_failed_ = false;
   bool hide_default_handler_ = false;

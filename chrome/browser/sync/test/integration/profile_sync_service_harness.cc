@@ -340,18 +340,6 @@ bool ProfileSyncServiceHarness::StartSyncService() {
   return true;
 }
 
-bool ProfileSyncServiceHarness::HasUnsyncedItems() {
-  base::RunLoop loop;
-  bool result = false;
-  service()->HasUnsyncedItemsForTest(
-      base::BindLambdaForTesting([&](bool has_unsynced_items) {
-        result = has_unsynced_items;
-        loop.Quit();
-      }));
-  loop.Run();
-  return result;
-}
-
 bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
     ProfileSyncServiceHarness* partner) {
   std::vector<ProfileSyncServiceHarness*> harnesses;

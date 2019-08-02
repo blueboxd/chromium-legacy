@@ -724,10 +724,9 @@ class RenderProcessHostIsReadyObserver : public RenderProcessHostObserver {
 
  private:
   void PostTask() {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&RenderProcessHostIsReadyObserver::CallTask,
-                       weak_factory_.GetWeakPtr()));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&RenderProcessHostIsReadyObserver::CallTask,
+                                  weak_factory_.GetWeakPtr()));
   }
 
   void CallTask() {
@@ -1159,7 +1158,7 @@ void AddCorbExceptionForPluginOnUIThread(int process_id) {
 void AddCorbExceptionForPluginOnIOThread(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&AddCorbExceptionForPluginOnUIThread, process_id));
 }
@@ -1526,10 +1525,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   if (!GetBrowserContext()->IsOffTheRecord() &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&CacheShaderInfo, GetID(),
-                       storage_partition_impl_->GetPath()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&CacheShaderInfo, GetID(),
+                                  storage_partition_impl_->GetPath()));
   }
 
   // This instance of PushMessagingManager is only used from clients bound to
@@ -1548,7 +1546,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(id);
   gpu_client_.reset(new viz::GpuClient(
       std::make_unique<BrowserGpuClientDelegate>(), id, tracing_id,
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO})));
 }
 
 // static
@@ -1610,8 +1608,8 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(&RemoveShaderInfo, GetID()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&RemoveShaderInfo, GetID()));
   }
 
   if (cleanup_corb_exception_for_plugin_upon_destruction_)
@@ -1698,7 +1696,7 @@ bool RenderProcessHostImpl::Init() {
     // on separate threads.
     in_process_renderer_.reset(
         g_renderer_main_thread_factory(InProcessChildThreadParams(
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
             &mojo_invitation_, child_connection_->service_token())));
 
     base::Thread::Options options;
@@ -1760,7 +1758,7 @@ void RenderProcessHostImpl::EnableSendQueue() {
 
 void RenderProcessHostImpl::InitializeChannelProxy() {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
   // Acquire a Connector which will route connections to a new instance of the
   // renderer service.
@@ -1949,7 +1947,7 @@ void RenderProcessHostImpl::ForceCrash() {
 void RenderProcessHostImpl::BindFileSystemManager(
     blink::mojom::FileSystemManagerRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&FileSystemManagerImpl::BindRequest,
                      base::Unretained(file_system_manager_impl_.get()),
@@ -1969,7 +1967,7 @@ void RenderProcessHostImpl::DelayProcessShutdownForUnload(
     return;
 
   IncrementKeepAliveRefCount();
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &RenderProcessHostImpl::CancelProcessShutdownDelayForUnload,
@@ -2042,11 +2040,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&RenderProcessHostImpl::BindWebDatabaseHostImpl,
                           base::Unretained(this)));
 
-  registry->AddInterface(
-      base::BindRepeating(&MimeRegistryImpl::Create),
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-           base::TaskPriority::USER_BLOCKING}));
+  registry->AddInterface(base::BindRepeating(&MimeRegistryImpl::Create),
+                         base::CreateSequencedTaskRunner(
+                             {base::ThreadPool(), base::MayBlock(),
+                              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+                              base::TaskPriority::USER_BLOCKING}));
 #if BUILDFLAG(USE_MINIKIN_HYPHENATION)
   registry->AddInterface(
       base::BindRepeating(&hyphenation::HyphenationImpl::Create),
@@ -2098,8 +2096,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   registry->AddInterface(
       base::BindRepeating(&FileUtilitiesHostImpl::Create, GetID()),
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::USER_VISIBLE}));
 
   registry->AddInterface(base::BindRepeating(
       &RenderProcessHostImpl::CreateMediaStreamTrackMetricsHost,
@@ -3384,7 +3382,7 @@ void RenderProcessHostImpl::Cleanup() {
     return;
 
   if (is_initialized_) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&WebRtcLog::ClearLogMessageCallback, GetID()));
   }
@@ -3445,7 +3443,7 @@ void RenderProcessHostImpl::Cleanup() {
     // that destroys the ResourceContext. Therefore the ClearResourceContext
     // task must be posted now to ensure it gets ahead of the destruction of
     // the ResourceContext in the IOThread sequence.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&RenderFrameMessageFilter::ClearResourceContext,
                        render_frame_message_filter_));

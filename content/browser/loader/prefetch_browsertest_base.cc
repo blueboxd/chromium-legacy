@@ -63,7 +63,7 @@ void PrefetchBrowserTestBase::SetUpOnMainThread() {
             &PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled,
             base::Unretained(this)));
   } else {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &PrefetchURLLoaderService::RegisterPrefetchLoaderCallbackForTest,

@@ -10,8 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/cast_config_controller.h"
-#include "ash/public/interfaces/ime_controller.mojom.h"
-#include "ash/public/interfaces/ime_info.mojom.h"
+#include "ash/public/mojom/ime_controller.mojom.h"
+#include "ash/public/mojom/ime_info.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding_set.h"

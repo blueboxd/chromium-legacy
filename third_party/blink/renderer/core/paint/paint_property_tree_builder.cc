@@ -482,9 +482,9 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
   if (paint_offset_translation) {
     TransformPaintPropertyNode::State state{
         FloatSize(ToIntSize(*paint_offset_translation))};
-    state.flattens_inherited_transform =
+    state.flags.flattens_inherited_transform =
         context_.current.should_flatten_inherited_transform;
-    state.affected_by_outer_viewport_bounds_delta =
+    state.flags.affected_by_outer_viewport_bounds_delta =
         IsAffectedByOuterViewportBoundsDelta();
     state.direct_compositing_reasons =
         full_context_.direct_compositing_reasons &
@@ -747,13 +747,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
           // animations. This is currently a cyclic dependency but we could
           // calculate most of the compositable animation reasons up front to
           // only consider animations which are candidates for compositing.
-          state.animation_is_axis_aligned =
+          state.flags.animation_is_axis_aligned =
               ActiveTransformAnimationIsAxisAligned(
                   object_, full_context_.direct_compositing_reasons);
         }
       }
 
-      state.flattens_inherited_transform =
+      state.flags.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
 
       if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
@@ -1690,7 +1690,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
               TransformationMatrix().ApplyPerspective(style.Perspective()),
               PerspectiveOrigin(ToLayoutBox(object_)) +
                   FloatSize(context_.current.paint_offset))};
-      state.flattens_inherited_transform =
+      state.flags.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
       if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
@@ -1756,7 +1756,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
     if (!content_to_parent_space.IsIdentity()) {
       TransformPaintPropertyNode::State state{
           TransformationMatrix(content_to_parent_space)};
-      state.flattens_inherited_transform =
+      state.flags.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
       OnUpdate(properties_->UpdateReplacedContentTransform(
           *context_.current.transform, std::move(state)));
@@ -1947,7 +1947,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       FloatPoint scroll_position = FloatPoint(box.ScrollOrigin()) +
                                    box.GetScrollableArea()->GetScrollOffset();
       TransformPaintPropertyNode::State state{-ToFloatSize(scroll_position)};
-      state.flattens_inherited_transform =
+      state.flags.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
       state.direct_compositing_reasons =
           full_context_.direct_compositing_reasons &

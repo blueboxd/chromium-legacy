@@ -244,8 +244,8 @@ void CacheStorageCacheEntryHandler::DiskCacheBlobEntry::DidReadOnSequence(
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     std::move(callback).Run(result);
   } else {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(std::move(callback), result));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(std::move(callback), result));
   }
 }
 
@@ -399,12 +399,11 @@ CacheStorageCacheEntryHandler::CreateBlobWithSideData(
                            disk_cache_index, side_data_disk_cache_index,
                            blob->uuid, MakeRequest(&blob->blob));
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&FinalizeBlobOnIOThread, blob_context_,
-                       std::move(blob_entry), disk_cache_index,
-                       side_data_disk_cache_index, blob->uuid,
-                       MakeRequest(&blob->blob)));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&FinalizeBlobOnIOThread, blob_context_,
+                                  std::move(blob_entry), disk_cache_index,
+                                  side_data_disk_cache_index, blob->uuid,
+                                  MakeRequest(&blob->blob)));
   }
 
   return blob;

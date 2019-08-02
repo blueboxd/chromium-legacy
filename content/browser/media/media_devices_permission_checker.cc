@@ -117,7 +117,7 @@ void MediaDevicesPermissionChecker::CheckPermission(
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CheckSinglePermissionOnUIThread, device_type,
                      render_process_id, render_frame_id),
@@ -137,7 +137,7 @@ void MediaDevicesPermissionChecker::CheckPermissions(
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DoCheckPermissionsOnUIThread, requested,
                      render_process_id, render_frame_id),

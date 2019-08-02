@@ -96,7 +96,7 @@ void ImageCaptureImpl::GetPhotoState(const std::string& source_id,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           media::BindToCurrentLoop(std::move(callback)),
           mojo::CreateEmptyPhotoState());
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&GetPhotoStateOnIOThread, source_id,
                      BrowserMainLoop::GetInstance()->media_stream_manager(),
@@ -114,7 +114,7 @@ void ImageCaptureImpl::SetOptions(const std::string& source_id,
   SetOptionsCallback scoped_callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           media::BindToCurrentLoop(std::move(callback)), false);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&SetOptionsOnIOThread, source_id,
                      BrowserMainLoop::GetInstance()->media_stream_manager(),
@@ -132,7 +132,7 @@ void ImageCaptureImpl::TakePhoto(const std::string& source_id,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           media::BindToCurrentLoop(std::move(callback)),
           media::mojom::Blob::New());
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&TakePhotoOnIOThread, source_id,
                      BrowserMainLoop::GetInstance()->media_stream_manager(),

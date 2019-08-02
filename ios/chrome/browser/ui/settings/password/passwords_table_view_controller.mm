@@ -438,7 +438,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   TableViewTextItem* exportPasswordsItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeExportPasswordsButton];
   exportPasswordsItem.text = l10n_util::GetNSString(IDS_IOS_EXPORT_PASSWORDS);
-  exportPasswordsItem.textColor = [UIColor colorNamed:kTintColor];
+  exportPasswordsItem.textColor = [UIColor colorNamed:kBlueColor];
   exportPasswordsItem.accessibilityIdentifier = @"exportPasswordsItem_button";
   exportPasswordsItem.accessibilityTraits = UIAccessibilityTraitButton;
   return exportPasswordsItem;
@@ -734,7 +734,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 - (void)setExportPasswordsButtonEnabled:(BOOL)enabled {
   if (enabled) {
     DCHECK(exportReady_ && !self.editing);
-    exportPasswordsItem_.textColor = [UIColor colorNamed:kTintColor];
+    exportPasswordsItem_.textColor = [UIColor colorNamed:kBlueColor];
     exportPasswordsItem_.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
   } else {
     exportPasswordsItem_.textColor = UIColor.cr_labelColor;

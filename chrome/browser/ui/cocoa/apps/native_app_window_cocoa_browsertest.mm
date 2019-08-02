@@ -13,15 +13,15 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/test/app_shim_host_manager_test_api_mac.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -62,11 +62,11 @@ class NativeAppWindowCocoaBrowserTest : public PlatformAppBrowserTest {
       content::WindowedNotificationObserver app_loaded_observer(
           content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
           content::NotificationService::AllSources());
-      OpenApplication(
+      apps::LaunchService::Get(profile())->OpenApplication(
           AppLaunchParams(profile(), app_->id(),
-                          extensions::LaunchContainer::kLaunchContainerNone,
+                          apps::mojom::LaunchContainer::kLaunchContainerNone,
                           WindowOpenDisposition::NEW_WINDOW,
-                          extensions::AppLaunchSource::kSourceTest));
+                          apps::mojom::AppLaunchSource::kSourceTest));
       app_loaded_observer.Wait();
     }
   }

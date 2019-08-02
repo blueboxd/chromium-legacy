@@ -194,11 +194,6 @@ const base::Feature kAutofillUseImprovedLabelDisambiguation{
     "AutofillUseImprovedLabelDisambiguation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether password generation is offered automatically on fields
-// perceived as eligible for generation.
-const base::Feature kAutomaticPasswordGeneration = {
-    "AutomaticPasswordGeneration", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_ANDROID)
 // Controls whether the Autofill manual fallback for Addresses and Payments is
 // present on Android.

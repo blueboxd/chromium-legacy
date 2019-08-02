@@ -208,12 +208,13 @@ void Platform::InitializeCommon(Platform* platform,
   Thread::SetMainThread(std::move(main_thread));
 
   ProcessHeap::Init();
-  MemoryPressureListenerRegistry::Initialize();
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       BlinkGCMemoryDumpProvider::Instance(), "BlinkGC",
       base::ThreadTaskRunnerHandle::Get());
 
   ThreadState::AttachMainThread();
+
+  MemoryPressureListenerRegistry::Initialize();
 
   // font_family_names are used by platform/fonts and are initialized by core.
   // In case core is not available (like on PPAPI plugins), we need to init

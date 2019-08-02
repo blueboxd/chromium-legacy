@@ -32,7 +32,7 @@
 #include "extensions/common/extension_set.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"

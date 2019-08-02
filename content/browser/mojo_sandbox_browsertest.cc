@@ -29,7 +29,7 @@ class MojoSandboxTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&MojoSandboxTest::StartUtilityProcessOnIoThread,
                        base::Unretained(this)),
@@ -39,7 +39,7 @@ class MojoSandboxTest : public ContentBrowserTest {
 
   void TearDownOnMainThread() override {
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&MojoSandboxTest::StopUtilityProcessOnIoThread,
                        base::Unretained(this)),

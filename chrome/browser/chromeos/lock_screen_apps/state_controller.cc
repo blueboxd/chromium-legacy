@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/stylus_utils.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"

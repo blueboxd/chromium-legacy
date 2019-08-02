@@ -6,7 +6,7 @@
 #include <utility>
 
 #include "ash/public/cpp/assistant/assistant_state_proxy.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {

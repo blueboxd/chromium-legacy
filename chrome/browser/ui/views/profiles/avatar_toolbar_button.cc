@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -70,7 +69,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
       profile_observer_(this),
       identity_manager_observer_(this),
       weak_ptr_factory_(this) {
-  if (IsIncognitoCounterActive())
+  if (IsIncognito())
     browser_list_observer_.Add(BrowserList::GetInstance());
 
   profile_observer_.Add(
@@ -96,16 +95,11 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   Init();
 
 #if defined(OS_CHROMEOS)
-  // On CrOS the avatar toolbar button should only show as badging for Incognito
-  // and Guest sessions. It should not be instantiated for regular profiles and
-  // it should not be enabled as there's no profile switcher to trigger / show,
-  // unless incognito window counter is available.
+  // On CrOS this button should only show as badging for Incognito and Guest
+  // sessions. It's only enabled for Incognito where a menu is available for
+  // closing all Incognito windows.
   DCHECK(!profile_->IsRegularProfile());
-  SetEnabled(IsIncognitoCounterActive());
-#else
-  // The profile switcher is only available outside incognito or if incognito
-  // window counter is enabled.
-  SetEnabled(!IsIncognito() || IsIncognitoCounterActive());
+  SetEnabled(IsIncognito());
 #endif  // !defined(OS_CHROMEOS)
 
   if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
@@ -147,21 +141,13 @@ void AvatarToolbarButton::UpdateText() {
     const SkColor text_color = GetThemeProvider()->GetColor(
         ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
     SetEnabledTextColors(text_color);
-    // TODO(pbos): Remove this call once the incognito chip always triggers a
-    // menu.
-    if (!IsIncognitoCounterActive())
-      SetTextColor(STATE_DISABLED, text_color);
   }
 
   if (IsIncognito()) {
     int incognito_window_count =
         BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
-    if (IsIncognitoCounterActive()) {
-      SetAccessibleName(l10n_util::GetPluralStringFUTF16(
-          IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE, incognito_window_count));
-    } else {
-      incognito_window_count = 1;
-    }
+    SetAccessibleName(l10n_util::GetPluralStringFUTF16(
+        IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE, incognito_window_count));
     text = l10n_util::GetPluralStringFUTF16(IDS_AVATAR_BUTTON_INCOGNITO,
                                             incognito_window_count);
   } else if (!suppress_avatar_button_state_ &&
@@ -205,9 +191,6 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
   // TODO(bsep): Other toolbar buttons have ToolbarView as a listener and let it
   // call ExecuteCommandWithDisposition on their behalf. Unfortunately, it's not
   // possible to plumb IsKeyEvent through, so this has to be a special case.
-  if (IsIncognito() && !IsIncognitoCounterActive())
-    return;
-
   browser_->window()->ShowAvatarBubbleFromAvatarButton(
       BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT, signin::ManageAccountsParams(),
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
@@ -327,11 +310,6 @@ void AvatarToolbarButton::ResetUserEmailToShow() {
 
 bool AvatarToolbarButton::IsIncognito() const {
   return profile_->IsIncognitoProfile();
-}
-
-bool AvatarToolbarButton::IsIncognitoCounterActive() const {
-  return IsIncognito() &&
-         base::FeatureList::IsEnabled(features::kEnableIncognitoWindowCounter);
 }
 
 bool AvatarToolbarButton::ShouldShowGenericIcon() const {

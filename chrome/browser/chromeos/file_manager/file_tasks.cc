@@ -18,6 +18,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -32,7 +34,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
@@ -430,10 +431,10 @@ bool ExecuteFileTask(Profile* profile,
       AppLaunchParams params(extension_task_profile, task.app_id,
                              launch_container,
                              WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             extensions::AppLaunchSource::kSourceFileHandler);
+                             apps::mojom::AppLaunchSource::kSourceFileHandler);
       params.override_url = GURL(task.action_id);
       params.launch_files = std::move(paths);
-      OpenApplication(params);
+      apps::LaunchService::Get(extension_task_profile)->OpenApplication(params);
     }
     if (!done.is_null())
       std::move(done).Run(

@@ -33,7 +33,7 @@ _CONFIG = [
             'base::AdoptRef',
             'base::AutoReset',
             'base::Contains',
-            'base::CreateSequencedTaskRunnerWithTraits',
+            'base::CreateSequencedTaskRunner',
             'base::DefaultTickClock',
             'base::ElapsedTimer',
             'base::File',
@@ -182,6 +182,7 @@ _CONFIG = [
             'base::TaskPriority',
             'base::TaskShutdownBehavior',
             'base::WithBaseSyncPrimitives',
+            'base::ThreadPool',
 
             # Byte order
             'base::ByteSwap',

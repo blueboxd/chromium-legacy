@@ -5,17 +5,10 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_GFX_TASK_QUEUE_WEB_VIEW_H_
 #define ANDROID_WEBVIEW_BROWSER_GFX_TASK_QUEUE_WEB_VIEW_H_
 
-#include <stddef.h>
-
-#include <memory>
-#include <utility>
-
-#include "base/containers/queue.h"
-#include "base/lazy_instance.h"
+#include "base/callback.h"
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
-#include "base/threading/thread_local.h"
-#include "base/time/time.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/single_thread_task_runner.h"
 
 namespace android_webview {
 
@@ -25,12 +18,7 @@ class ScopedAllowGL {
   ScopedAllowGL();
   ~ScopedAllowGL();
 
-  static bool IsAllowed();
-
  private:
-  static base::LazyInstance<base::ThreadLocalBoolean>::DestructorAtExit
-      allow_gl;
-
   DISALLOW_COPY_AND_ASSIGN(ScopedAllowGL);
 };
 
@@ -41,40 +29,38 @@ class TaskQueueWebView {
  public:
   // Static method that makes sure this is only one copy of this class.
   static TaskQueueWebView* GetInstance();
-  ~TaskQueueWebView();
+
+  // Methods only used when kVizForWebView is enabled, ie client is the viz
+  // thread.
+  virtual void InitializeVizThread(
+      const scoped_refptr<base::SingleThreadTaskRunner>& viz_task_runner) = 0;
+  // The calling OnceClosure unblocks the render thread, and disallows further
+  // calls to ScheduleTask.
+  using VizTask = base::OnceCallback<void(base::OnceClosure)>;
+  virtual void ScheduleOnVizAndBlock(VizTask viz_task) = 0;
 
   // Called by TaskForwardingSequence. |out_of_order| indicates if task should
   // be run ahead of already enqueued tasks.
-  void ScheduleTask(base::OnceClosure task, bool out_of_order);
+  virtual void ScheduleTask(base::OnceClosure task, bool out_of_order) = 0;
+
+  // Called by TaskForwardingSequence.
+  virtual void ScheduleOrRetainTask(base::OnceClosure task) = 0;
 
   // Called by DeferredGpuCommandService to schedule delayed tasks.
-  void ScheduleIdleTask(base::OnceClosure task);
+  // This should not be called when kVizForWebView is enabled.
+  virtual void ScheduleIdleTask(base::OnceClosure task) = 0;
 
   // Called by both DeferredGpuCommandService and
   // SkiaOutputSurfaceDisplayContext to post task to client thread.
-  void ScheduleClientTask(base::OnceClosure task);
+  virtual void ScheduleClientTask(base::OnceClosure task) = 0;
 
-  // Called by ScopedAllowGL and ScheduleTask().
-  void RunAllTasks();
-  void RunTasks();
+ protected:
+  friend ScopedAllowGL;
 
- private:
-  static TaskQueueWebView* CreateTaskQueueWebView();
-  TaskQueueWebView();
+  virtual ~TaskQueueWebView() = default;
 
-  // Flush the idle queue until it is empty.
-  void PerformAllIdleWork();
-
-  // All access to task queue should happen on a single thread.
-  THREAD_CHECKER(task_queue_thread_checker_);
-  base::circular_deque<base::OnceClosure> tasks_;
-  base::queue<std::pair<base::Time, base::OnceClosure>> idle_tasks_;
-  base::queue<base::OnceClosure> client_tasks_;
-
-  bool inside_run_tasks_ = false;
-  bool inside_run_idle_tasks_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskQueueWebView);
+  // Called by ScopedAllowGL.
+  virtual void RunAllTasks() = 0;
 };
 
 }  // namespace android_webview

@@ -170,7 +170,7 @@ ArcApps* ArcApps::CreateForTesting(Profile* profile,
 ArcApps::ArcApps(Profile* profile) : ArcApps(profile, nullptr) {}
 
 ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
-    : binding_(this), profile_(profile), prefs_(nullptr) {
+    : binding_(this), profile_(profile) {
   if (!arc::IsArcAllowedForProfile(profile_) ||
       (arc::ArcServiceManager::Get() == nullptr)) {
     return;
@@ -184,12 +184,13 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
     return;
   }
 
-  prefs_ = ArcAppListPrefs::Get(profile);
-  if (!prefs_) {
+  // Make some observee-observer connections.
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
     return;
   }
-  prefs_->AddObserver(this);
-  prefs_->app_connection_holder()->AddObserver(this);
+  prefs->AddObserver(this);
+  prefs->app_connection_holder()->AddObserver(this);
 
   apps::mojom::PublisherPtr publisher;
   binding_.Bind(mojo::MakeRequest(&publisher));
@@ -204,25 +205,51 @@ ArcApps::~ArcApps() {
     std::move(pending).Run(nullptr);
   }
   pending_load_icon_calls_.clear();
+}
 
-  if (prefs_) {
-    auto* holder = prefs_->app_connection_holder();
+void ArcApps::Shutdown() {
+  // Disconnect the observee-observer connections that we made during the
+  // constructor.
+  //
+  // This isn't entirely correct. The object returned by
+  // ArcAppListPrefs::Get(some_profile) can vary over the lifetime of that
+  // profile. If it changed, we'll try to disconnect from different
+  // ArcAppListPrefs-related objects than the ones we connected to, at the time
+  // of this object's construction.
+  //
+  // Even so, this is probably harmless, assuming that calling
+  // foo->RemoveObserver(bar) is a no-op (and e.g. does not crash) if bar
+  // wasn't observing foo in the first place, and assuming that the dangling
+  // observee-observer connection on the old foo's are never followed again.
+  //
+  // To fix this properly, we would probably need to add something like an
+  // OnArcAppListPrefsWillBeDestroyed method to ArcAppListPrefs::Observer, and
+  // in this class's implementation of that method, disconnect. Furthermore,
+  // when the new ArcAppListPrefs object is created, we'll have to somehow be
+  // notified so we can re-connect this object as an observer.
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (prefs) {
+    auto* holder = prefs->app_connection_holder();
     // The null check is for unit tests. On production, |holder| is always
     // non-null.
     if (holder) {
       holder->RemoveObserver(this);
     }
-    prefs_->RemoveObserver(this);
+    prefs->RemoveObserver(this);
   }
 }
 
 void ArcApps::Connect(apps::mojom::SubscriberPtr subscriber,
                       apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
-  for (const auto& app_id : prefs_->GetAppIds()) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
-    if (app_info) {
-      apps.push_back(Convert(app_id, *app_info));
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (prefs) {
+    for (const auto& app_id : prefs->GetAppIds()) {
+      std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+          prefs->GetApp(app_id);
+      if (app_info) {
+        apps.push_back(Convert(prefs, app_id, *app_info));
+      }
     }
   }
   subscriber->OnApps(std::move(apps));
@@ -303,8 +330,12 @@ void ArcApps::Launch(const std::string& app_id,
 
 void ArcApps::SetPermission(const std::string& app_id,
                             apps::mojom::PermissionPtr permission) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
+  }
   const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      prefs_->GetApp(app_id);
+      prefs->GetApp(app_id);
   if (!app_info) {
     LOG(ERROR) << "SetPermission failed, could not find app with id " << app_id;
     return;
@@ -345,8 +376,12 @@ void ArcApps::Uninstall(const std::string& app_id) {
 }
 
 void ArcApps::OpenNativeSettings(const std::string& app_id) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
+  }
   const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      prefs_->GetApp(app_id);
+      prefs->GetApp(app_id);
   if (!app_info) {
     LOG(ERROR) << "Cannot open native settings for " << app_id
                << ". App is not found.";
@@ -358,7 +393,11 @@ void ArcApps::OpenNativeSettings(const std::string& app_id) {
 }
 
 void ArcApps::OnConnectionReady() {
-  AppConnectionHolder* app_connection_holder = prefs_->app_connection_holder();
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
+  }
+  AppConnectionHolder* app_connection_holder = prefs->app_connection_holder();
   for (auto& pending : pending_load_icon_calls_) {
     std::move(pending).Run(app_connection_holder);
   }
@@ -367,12 +406,18 @@ void ArcApps::OnConnectionReady() {
 
 void ArcApps::OnAppRegistered(const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info) {
-  Publish(Convert(app_id, app_info));
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (prefs) {
+    Publish(Convert(prefs, app_id, app_info));
+  }
 }
 
 void ArcApps::OnAppStatesChanged(const std::string& app_id,
                                  const ArcAppListPrefs::AppInfo& app_info) {
-  Publish(Convert(app_id, app_info));
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (prefs) {
+    Publish(Convert(prefs, app_id, app_info));
+  }
 }
 
 void ArcApps::OnAppRemoved(const std::string& app_id) {
@@ -403,14 +448,19 @@ void ArcApps::OnAppNameUpdated(const std::string& app_id,
 }
 
 void ArcApps::OnAppLastLaunchTimeUpdated(const std::string& app_id) {
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
-  if (app_info) {
-    apps::mojom::AppPtr app = apps::mojom::App::New();
-    app->app_type = apps::mojom::AppType::kArc;
-    app->app_id = app_id;
-    app->last_launch_time = app_info->last_launch_time;
-    Publish(std::move(app));
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
   }
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  if (!app_info) {
+    return;
+  }
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kArc;
+  app->app_id = app_id;
+  app->last_launch_time = app_info->last_launch_time;
+  Publish(std::move(app));
 }
 
 void ArcApps::OnPackageInstalled(
@@ -424,20 +474,28 @@ void ArcApps::OnPackageModified(
 }
 
 void ArcApps::OnPackageListInitialRefreshed() {
-  for (const auto& app_id : prefs_->GetAppIds()) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
+  }
+  for (const auto& app_id : prefs->GetAppIds()) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
     if (app_info) {
-      Publish(Convert(app_id, *app_info));
+      Publish(Convert(prefs, app_id, *app_info));
     }
   }
 }
 
 const base::FilePath ArcApps::GetCachedIconFilePath(const std::string& app_id,
                                                     int32_t size_hint_in_dip) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return base::FilePath();
+  }
   // TODO(crbug.com/826982): process the app_id argument like the private
   // GetAppFromAppOrGroupId function and the ArcAppIcon::mapped_app_id_ field
   // in arc_app_icon.cc?
-  return prefs_->GetIconPath(
+  return prefs->GetIconPath(
       app_id,
       ArcAppIconDescriptor(size_hint_in_dip,
                            apps_util::GetPrimaryDisplayUIScaleFactor()));
@@ -457,22 +515,25 @@ void ArcApps::LoadIconFromVM(const std::string app_id,
     return;
   }
 
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
-  if (app_info) {
-    base::OnceCallback<void(apps::ArcApps::AppConnectionHolder*)> pending =
-        base::BindOnce(&LoadIcon0, icon_compression,
-                       apps_util::ConvertDipToPx(size_hint_in_dip),
-                       app_info->package_name, app_info->activity,
-                       app_info->icon_resource_id, std::move(callback));
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (prefs) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+    if (app_info) {
+      base::OnceCallback<void(apps::ArcApps::AppConnectionHolder*)> pending =
+          base::BindOnce(&LoadIcon0, icon_compression,
+                         apps_util::ConvertDipToPx(size_hint_in_dip),
+                         app_info->package_name, app_info->activity,
+                         app_info->icon_resource_id, std::move(callback));
 
-    AppConnectionHolder* app_connection_holder =
-        prefs_->app_connection_holder();
-    if (app_connection_holder->IsConnected()) {
-      std::move(pending).Run(app_connection_holder);
-    } else {
-      pending_load_icon_calls_.push_back(std::move(pending));
+      AppConnectionHolder* app_connection_holder =
+          prefs->app_connection_holder();
+      if (app_connection_holder->IsConnected()) {
+        std::move(pending).Run(app_connection_holder);
+      } else {
+        pending_load_icon_calls_.push_back(std::move(pending));
+      }
+      return;
     }
-    return;
   }
 
   // On failure, we still run the callback, with the zero IconValue.
@@ -509,7 +570,8 @@ apps::mojom::InstallSource GetInstallSource(const ArcAppListPrefs* prefs,
   return apps::mojom::InstallSource::kUser;
 }
 
-apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
+apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
+                                     const std::string& app_id,
                                      const ArcAppListPrefs::AppInfo& app_info) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
 
@@ -530,7 +592,7 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
   app->last_launch_time = app_info.last_launch_time;
   app->install_time = app_info.install_time;
 
-  app->install_source = GetInstallSource(prefs_, app_info.package_name);
+  app->install_source = GetInstallSource(prefs, app_info.package_name);
 
   app->is_platform_app = apps::mojom::OptionalBool::kFalse;
   app->recommendable = apps::mojom::OptionalBool::kTrue;
@@ -543,7 +605,7 @@ apps::mojom::AppPtr ArcApps::Convert(const std::string& app_id,
   app->show_in_management = show;
 
   std::unique_ptr<ArcAppListPrefs::PackageInfo> package =
-      prefs_->GetPackage(app_info.package_name);
+      prefs->GetPackage(app_info.package_name);
   if (package) {
     UpdateAppPermissions(package->permissions, &app->permissions);
   }
@@ -564,12 +626,15 @@ void ArcApps::ConvertAndPublishPackageApps(
   if (!package_info.permissions.has_value()) {
     return;
   }
-  std::vector<apps::mojom::AppPtr> apps;
-  for (const auto& app_id :
-       prefs_->GetAppsForPackage(package_info.package_name)) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs_->GetApp(app_id);
-    if (app_info) {
-      Publish(Convert(app_id, *app_info));
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (prefs) {
+    for (const auto& app_id :
+         prefs->GetAppsForPackage(package_info.package_name)) {
+      std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+          prefs->GetApp(app_id);
+      if (app_info) {
+        Publish(Convert(prefs, app_id, *app_info));
+      }
     }
   }
 }

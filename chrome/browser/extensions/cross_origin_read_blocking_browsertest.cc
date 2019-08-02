@@ -14,6 +14,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -23,8 +25,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
@@ -997,10 +997,12 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   content::WebContents* app_contents = nullptr;
   {
     content::WebContentsAddedObserver new_contents_observer;
-    OpenApplication(AppLaunchParams(browser()->profile(), app->id(),
-                                    LaunchContainer::kLaunchContainerNone,
-                                    WindowOpenDisposition::NEW_WINDOW,
-                                    extensions::AppLaunchSource::kSourceTest));
+    apps::LaunchService::Get(browser()->profile())
+        ->OpenApplication(
+            AppLaunchParams(browser()->profile(), app->id(),
+                            LaunchContainer::kLaunchContainerNone,
+                            WindowOpenDisposition::NEW_WINDOW,
+                            apps::mojom::AppLaunchSource::kSourceTest));
     app_contents = new_contents_observer.GetWebContents();
   }
   ASSERT_TRUE(content::WaitForLoadStop(app_contents));

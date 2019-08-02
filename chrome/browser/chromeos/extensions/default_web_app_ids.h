@@ -24,6 +24,12 @@ constexpr char kCanvasAppId[] = "ieailfmhaghpphfffooibmlghaeopach";
 // "https://google.com/chromebook/whatsnew/embedded/")).
 constexpr char kReleaseNotesAppId[] = "kddjchdmnnpakappplfnloipgcbioilo";
 
+// Generated as web_app::GenerateAppIdFromURL(GURL("chrome://settings/")).
+constexpr char kSettingsAppId[] = "inogagmajamaleonmanpkpkkigmklfad";
+
+// Generated as web_app::GenerateAppIdFromURL(GURL("chrome://os-settings/")).
+constexpr char kOsSettingsAppId[] = "odknhmnlageboeamepcngndbggdpaobj";
+
 }  // namespace default_web_apps
 }  // namespace chromeos
 

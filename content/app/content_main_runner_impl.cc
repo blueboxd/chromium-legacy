@@ -941,11 +941,11 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
         }
       }
 #endif
+    }
 
-      if (force_in_process) {
-        // This must be called before creating the ServiceManagerContext.
-        ForceInProcessNetworkService(true);
-      }
+    if (force_in_process) {
+      // This must be called before creating the ServiceManagerContext.
+      ForceInProcessNetworkService(true);
     }
 
     discardable_shared_memory_manager_ =

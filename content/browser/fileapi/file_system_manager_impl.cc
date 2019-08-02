@@ -788,7 +788,7 @@ void FileSystemManagerImpl::GetPlatformPathOnFileThread(
           [](base::WeakPtr<FileSystemManagerImpl> file_system_manager,
              GetPlatformPathCallback callback,
              const base::FilePath& platform_path) {
-            base::PostTaskWithTraits(
+            base::PostTask(
                 FROM_HERE, {BrowserThread::IO},
                 base::BindOnce(&FileSystemManagerImpl::DidGetPlatformPath,
                                std::move(file_system_manager),

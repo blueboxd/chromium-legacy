@@ -99,8 +99,7 @@ class WorkerTest : public ContentBrowserTest {
 
   static void QuitUIMessageLoop(base::OnceClosure callback,
                                 bool is_main_frame /* unused */) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             std::move(callback));
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
   }
 
   void NavigateAndWaitForAuth(const GURL& url) {

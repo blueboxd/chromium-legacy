@@ -30,8 +30,7 @@ class ServiceProcessTracker {
  public:
   ServiceProcessTracker()
       : ui_task_runner_(
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})) {
-  }
+            base::CreateSingleThreadTaskRunner({BrowserThread::UI})) {}
   ~ServiceProcessTracker() = default;
 
   ServiceProcessInfo AddProcess(const base::Process& process,
@@ -201,7 +200,7 @@ void ServiceProcessHost::RemoveObserver(Observer* observer) {
 void ServiceProcessHost::Launch(mojo::GenericPendingReceiver receiver,
                                 Options options) {
   DCHECK(receiver.interface_name().has_value());
-  base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
+  base::CreateSingleThreadTaskRunner({BrowserThread::IO})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&LaunchServiceProcessOnIOThread,
                                 std::move(receiver), std::move(options)));

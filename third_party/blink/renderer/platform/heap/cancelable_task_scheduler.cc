@@ -22,10 +22,8 @@ class CancelableTaskScheduler::TaskData {
 
   ~TaskData() {
     // The task runner is responsible for unregistering the task in case the
-    // task hasn't been cancelled. The first check returns true if the task
-    // hasn't been executed, the second returns true if it has.
-    Status previous;
-    if (TryRun(&previous) || previous == kRunning) {
+    // task hasn't been cancelled.
+    if (TryCancel()) {
       scheduler_->UnregisterAndSignal(this);
     }
   }
@@ -33,6 +31,7 @@ class CancelableTaskScheduler::TaskData {
   void Run() {
     if (TryRun()) {
       std::move(task_).Run();
+      scheduler_->UnregisterAndSignal(this);
     }
   }
 
@@ -51,17 +50,11 @@ class CancelableTaskScheduler::TaskData {
   // |kRunning|: The task is currently running and cannot be canceled anymore.
   enum Status : uint8_t { kWaiting, kCancelled, kRunning };
 
-  friend size_t RemoveCancelledTasks(WTF::HashSet<TaskData*>*);
-
-  bool TryRun(Status* previous = nullptr) {
+  bool TryRun() {
     Status expected = kWaiting;
-    const bool success = status_.compare_exchange_strong(
-        expected, kRunning, std::memory_order_acq_rel,
-        std::memory_order_acquire);
-    if (previous) {
-      *previous = expected;
-    }
-    return success;
+    return status_.compare_exchange_strong(expected, kRunning,
+                                           std::memory_order_acq_rel,
+                                           std::memory_order_acquire);
   }
 
   Task task_;
@@ -98,8 +91,8 @@ size_t CancelableTaskScheduler::CancelAndWait() {
 
 std::unique_ptr<CancelableTaskScheduler::TaskData>
 CancelableTaskScheduler::Register(Task task) {
-  base::AutoLock lock(lock_);
   auto task_data = std::make_unique<TaskData>(std::move(task), this);
+  base::AutoLock lock(lock_);
   tasks_.insert(task_data.get());
   return task_data;
 }

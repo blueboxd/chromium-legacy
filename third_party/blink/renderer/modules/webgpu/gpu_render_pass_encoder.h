@@ -30,6 +30,9 @@ class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
   void setBindGroup(uint32_t index,
                     GPUBindGroup* bindGroup,
                     const Vector<uint64_t>& dynamicOffsets);
+  void pushDebugGroup(String groupLabel);
+  void popDebugGroup();
+  void insertDebugMarker(String markerLabel);
   void setPipeline(GPURenderPipeline* pipeline);
 
   void setBlendColor(GPUColor* color);

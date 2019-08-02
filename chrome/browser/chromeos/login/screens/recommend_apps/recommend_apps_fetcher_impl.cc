@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_impl.h"
 
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"

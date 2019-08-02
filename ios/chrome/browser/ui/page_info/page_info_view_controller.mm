@@ -509,9 +509,9 @@ void PageInfoModelBubbleBridge::PerformLayout() {
 
   [button.titleLabel setFont:font];
   [button.titleLabel setTextAlignment:NSTextAlignmentLeft];
-  [button setTitleColor:[UIColor colorNamed:kTintColor]
+  [button setTitleColor:[UIColor colorNamed:kBlueColor]
                forState:UIControlStateNormal];
-  [button setTitleColor:[UIColor colorNamed:kTintColor]
+  [button setTitleColor:[UIColor colorNamed:kBlueColor]
                forState:UIControlStateSelected];
 
   [subviews addObject:button];

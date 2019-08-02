@@ -131,7 +131,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
         GetChromeClient()->GetDeviceEmulationTransform();
     if (!device_emulation_transform.IsIdentity()) {
       TransformPaintPropertyNode::State state{device_emulation_transform};
-      state.in_subtree_of_page_scale = false;
+      state.flags.in_subtree_of_page_scale = false;
       if (!device_emulation_transform_node_) {
         device_emulation_transform_node_ = TransformPaintPropertyNode::Create(
             *transform_parent, std::move(state));
@@ -157,7 +157,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     DCHECK(!transform_parent->IsInSubtreeOfPageScale());
 
     TransformPaintPropertyNode::State state;
-    state.in_subtree_of_page_scale = false;
+    state.flags.in_subtree_of_page_scale = false;
     state.compositor_element_id = GetCompositorOverscrollElasticityElementId();
     // TODO(crbug.com/877794) Should create overscroll elasticity transform node
     // based on settings.
@@ -175,7 +175,7 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
   {
     TransformPaintPropertyNode::State state{
         TransformationMatrix().Scale(Scale())};
-    state.in_subtree_of_page_scale = false;
+    state.flags.in_subtree_of_page_scale = false;
     state.compositor_element_id = GetCompositorElementId();
 
     if (!scale_transform_node_) {

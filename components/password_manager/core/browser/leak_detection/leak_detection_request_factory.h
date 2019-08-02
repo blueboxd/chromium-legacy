@@ -7,9 +7,14 @@
 
 #include <memory>
 
+namespace signin {
+class IdentityManager;
+}  // namespace signin
+
 namespace password_manager {
 
 class LeakDetectionCheck;
+class LeakDetectionDelegateInterface;
 
 // The interface for creating instances of requests for checking if
 // {username, password} pair was leaked in the internet.
@@ -28,7 +33,11 @@ class LeakDetectionRequestFactory {
 
   // The leak check is available only for signed-in users and if the feature is
   // available.
-  virtual std::unique_ptr<LeakDetectionCheck> TryCreateLeakCheck() const = 0;
+  // |delegate| gets the results for the fetch.
+  // |identity_manager| is used to obtain the token.
+  virtual std::unique_ptr<LeakDetectionCheck> TryCreateLeakCheck(
+      LeakDetectionDelegateInterface* delegate,
+      signin::IdentityManager* identity_manager) const = 0;
 };
 
 }  // namespace password_manager

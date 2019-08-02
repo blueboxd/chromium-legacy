@@ -14,6 +14,7 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 // Alphabetical:
+extern const base::Feature kVizForWebView;
 extern const base::Feature kWebViewBrotliSupport;
 extern const base::Feature kWebViewConnectionlessSafeBrowsing;
 extern const base::Feature kWebViewSniffMimeType;

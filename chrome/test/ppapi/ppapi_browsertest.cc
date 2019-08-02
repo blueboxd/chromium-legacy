@@ -14,13 +14,13 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -2182,11 +2182,11 @@ class PackagedAppTest : public extensions::ExtensionBrowserTest {
     ASSERT_TRUE(extension);
 
     AppLaunchParams params(browser()->profile(), extension->id(),
-                           extensions::LaunchContainer::kLaunchContainerNone,
+                           apps::mojom::LaunchContainer::kLaunchContainerNone,
                            WindowOpenDisposition::NEW_WINDOW,
-                           extensions::AppLaunchSource::kSourceTest);
+                           apps::mojom::AppLaunchSource::kSourceTest);
     params.command_line = *base::CommandLine::ForCurrentProcess();
-    OpenApplication(params);
+    apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
   }
 
   void RunTests(const std::string& extension_dirname) {

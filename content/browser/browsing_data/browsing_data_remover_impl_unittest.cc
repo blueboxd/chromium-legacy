@@ -182,7 +182,7 @@ class StoragePartitionRemovalTestStoragePartition
     storage_partition_removal_data_.remove_begin = begin;
     storage_partition_removal_data_.remove_end = end;
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &StoragePartitionRemovalTestStoragePartition::AsyncRunCallback,
@@ -207,7 +207,7 @@ class StoragePartitionRemovalTestStoragePartition
     storage_partition_removal_data_.cookie_deletion_filter =
         std::move(cookie_deletion_filter);
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &StoragePartitionRemovalTestStoragePartition::AsyncRunCallback,

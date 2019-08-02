@@ -30,7 +30,7 @@
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"

@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/shell.h"
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 #include "base/base_switches.h"

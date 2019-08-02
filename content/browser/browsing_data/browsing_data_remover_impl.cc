@@ -239,9 +239,9 @@ void BrowsingDataRemoverImpl::RunNextTask() {
   // after a delay.
   slow_pending_tasks_closure_.Reset(base::BindRepeating(
       &BrowsingDataRemoverImpl::RecordUnfinishedSubTasks, GetWeakPtr()));
-  base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                  slow_pending_tasks_closure_.callback(),
-                                  kSlowTaskTimeout);
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                        slow_pending_tasks_closure_.callback(),
+                        kSlowTaskTimeout);
 
   RemoveImpl(removal_task.delete_begin, removal_task.delete_end,
              removal_task.remove_mask, removal_task.filter_builder.get(),
@@ -585,7 +585,7 @@ void BrowsingDataRemoverImpl::Notify() {
   // Yield to the UI thread before executing the next removal task.
   // TODO(msramek): Consider also adding a backoff if too many tasks
   // are scheduled.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BrowsingDataRemoverImpl::RunNextTask, GetWeakPtr()));
 }

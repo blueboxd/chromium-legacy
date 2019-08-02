@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/public/interfaces/vpn_list.mojom.h"
+#include "ash/public/mojom/vpn_list.mojom.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

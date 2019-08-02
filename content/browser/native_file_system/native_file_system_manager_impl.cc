@@ -142,11 +142,10 @@ void NativeFileSystemManagerImpl::BindRequestFromUIThread(
   }
 
   auto* manager = storage_partition->GetNativeFileSystemManager();
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&NativeFileSystemManagerImpl::BindRequest,
-                     base::Unretained(manager), binding_context,
-                     std::move(request)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&NativeFileSystemManagerImpl::BindRequest,
+                                base::Unretained(manager), binding_context,
+                                std::move(request)));
 }
 
 void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
@@ -179,7 +178,7 @@ void NativeFileSystemManagerImpl::ChooseEntries(
 
   FileSystemChooser::Options options(type, std::move(accepts),
                                      include_accepts_all);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ShowFilePickerOnUIThread, context.origin, context.process_id,
@@ -187,7 +186,7 @@ void NativeFileSystemManagerImpl::ChooseEntries(
           base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
                          weak_factory_.GetWeakPtr(), context, options,
                          std::move(callback)),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO})));
 }
 
 blink::mojom::NativeFileSystemEntryPtr
@@ -406,7 +405,7 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
     return;
   }
   if (result == SensitiveDirectoryResult::kTryAgain) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &ShowFilePickerOnUIThread, binding_context.origin,
@@ -414,7 +413,7 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
             base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
                            weak_factory_.GetWeakPtr(), binding_context, options,
                            std::move(callback)),
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO})));
     return;
   }
 

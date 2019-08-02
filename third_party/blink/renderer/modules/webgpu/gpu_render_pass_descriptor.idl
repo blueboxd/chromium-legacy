@@ -6,7 +6,7 @@
 
 dictionary GPURenderPassDescriptor {
     required sequence<GPURenderPassColorAttachmentDescriptor> colorAttachments;
-    GPURenderPassDepthStencilAttachmentDescriptor depthStencilAttachment = null;
+    GPURenderPassDepthStencilAttachmentDescriptor depthStencilAttachment;
 };
 
 enum GPULoadOp {

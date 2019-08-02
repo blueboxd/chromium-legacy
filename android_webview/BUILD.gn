@@ -593,8 +593,6 @@ source_set("common") {
     "browser/net/aw_network_change_notifier_factory.h",
     "browser/net/aw_proxy_config_monitor.cc",
     "browser/net/aw_proxy_config_monitor.h",
-    "browser/net/aw_url_request_context_getter.cc",
-    "browser/net/aw_url_request_context_getter.h",
     "browser/net/aw_web_resource_request.cc",
     "browser/net/aw_web_resource_request.h",
     "browser/net/aw_web_resource_response.cc",

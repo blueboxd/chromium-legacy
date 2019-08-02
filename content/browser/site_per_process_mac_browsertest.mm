@@ -52,10 +52,9 @@ class TextInputClientMacHelper {
  private:
   void OnResult(const std::string& string, const gfx::Point& point) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&TextInputClientMacHelper::OnResult,
-                         base::Unretained(this), string, point));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(&TextInputClientMacHelper::OnResult,
+                                    base::Unretained(this), string, point));
       return;
     }
     word_ = string;

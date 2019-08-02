@@ -9,7 +9,7 @@
 namespace password_manager {
 
 TEST(AuthenticatedLeakCheck, Create) {
-  AuthenticatedLeakCheck check;
+  AuthenticatedLeakCheck check(nullptr, nullptr);
 }
 
 }  // namespace password_manager

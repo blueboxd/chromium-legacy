@@ -27,6 +27,7 @@
 
 [
     Constructor,
+    Measure,
     NoInterfaceObject
 ] interface SpeechGrammar {
     [URL,CallWith=ScriptState] attribute DOMString src;

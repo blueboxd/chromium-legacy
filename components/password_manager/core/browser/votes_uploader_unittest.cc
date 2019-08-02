@@ -248,14 +248,13 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote) {
       votes_uploader.GeneratePasswordAttributesVote(password_value,
                                                     &form_structure);
       base::Optional<std::pair<PasswordAttribute, bool>> vote =
-          form_structure.get_password_attributes_vote_for_testing();
+          form_structure.get_password_attributes_vote();
       int attribute_index = static_cast<int>(vote->first);
       if (vote->second)
         reported_true[attribute_index]++;
       else
         reported_false[attribute_index]++;
-      size_t reported_length =
-          form_structure.get_password_length_vote_for_testing();
+      size_t reported_length = form_structure.get_password_length_vote();
       if (reported_length == password_value.size()) {
         reported_actual_length++;
       } else {
@@ -305,19 +304,19 @@ TEST_F(VotesUploaderTest, GeneratePasswordSpecialSymbolVote) {
     votes_uploader.GeneratePasswordAttributesVote(password_value,
                                                   &form_structure);
     base::Optional<std::pair<PasswordAttribute, bool>> vote =
-        form_structure.get_password_attributes_vote_for_testing();
+        form_structure.get_password_attributes_vote();
 
     // Continue if the vote is not about special symbols or implies that no
     // special symbols are used.
     if (static_cast<int>(vote->first) != kSpecialSymbolsAttribute ||
         !vote->second) {
-      EXPECT_EQ(form_structure.get_password_symbol_vote_for_testing(), 0);
+      EXPECT_EQ(form_structure.get_password_symbol_vote(), 0);
       continue;
     }
 
     number_of_symbol_votes += 1;
 
-    int symbol = form_structure.get_password_symbol_vote_for_testing();
+    int symbol = form_structure.get_password_symbol_vote();
     if (symbol == '-' || symbol == '!')
       correct_symbol_reported += 1;
     else
@@ -336,10 +335,9 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote_OneCharacterPassword) {
   votes_uploader.GeneratePasswordAttributesVote(ASCIIToUTF16("1"),
                                                 &form_structure);
   base::Optional<std::pair<PasswordAttribute, bool>> vote =
-      form_structure.get_password_attributes_vote_for_testing();
+      form_structure.get_password_attributes_vote();
   EXPECT_TRUE(vote.has_value());
-  size_t reported_length =
-      form_structure.get_password_length_vote_for_testing();
+  size_t reported_length = form_structure.get_password_length_vote();
   EXPECT_EQ(1u, reported_length);
 }
 
@@ -352,7 +350,7 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote_AllAsciiCharacters) {
                         "stuvwxyz!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"),
       &form_structure);
   base::Optional<std::pair<PasswordAttribute, bool>> vote =
-      form_structure.get_password_attributes_vote_for_testing();
+      form_structure.get_password_attributes_vote();
   EXPECT_TRUE(vote.has_value());
 }
 
@@ -369,7 +367,7 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote_NonAsciiPassword) {
     votes_uploader.GeneratePasswordAttributesVote(base::UTF8ToUTF16(password),
                                                   &form_structure);
     base::Optional<std::pair<PasswordAttribute, bool>> vote =
-        form_structure.get_password_attributes_vote_for_testing();
+        form_structure.get_password_attributes_vote();
 
     EXPECT_FALSE(vote.has_value()) << password;
   }

@@ -55,16 +55,16 @@ network::mojom::RestrictedCookieManagerPtr GetRestrictedCookieManagerForContext(
 void ReturnResultOnUIThread(
     base::OnceCallback<void(const std::string&)> callback,
     const std::string& result) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), result));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), result));
 }
 
 void ReturnResultOnUIThreadAndClosePipe(
     network::mojom::RestrictedCookieManagerPtr pipe,
     base::OnceCallback<void(const std::string&)> callback,
     const std::string& result) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), result));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), result));
 }
 
 void OnSyncGetPlatformPathDone(

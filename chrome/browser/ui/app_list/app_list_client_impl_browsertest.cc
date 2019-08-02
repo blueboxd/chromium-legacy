@@ -17,6 +17,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
@@ -35,8 +37,6 @@
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -72,11 +72,11 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, IsExtensionAppOpen) {
     content::WindowedNotificationObserver app_loaded_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
-    OpenApplication(
+    apps::LaunchService::Get(profile())->OpenApplication(
         AppLaunchParams(profile(), extension_app->id(),
-                        extensions::LaunchContainer::kLaunchContainerWindow,
+                        apps::mojom::LaunchContainer::kLaunchContainerWindow,
                         WindowOpenDisposition::NEW_WINDOW,
-                        extensions::AppLaunchSource::kSourceTest));
+                        apps::mojom::AppLaunchSource::kSourceTest));
     app_loaded_observer.Wait();
   }
   EXPECT_TRUE(delegate->IsAppOpen(extension_app->id()));

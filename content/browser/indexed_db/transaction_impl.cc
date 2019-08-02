@@ -161,7 +161,7 @@ void TransactionImpl::Put(
     // |io_helper_| is owned by |this| and this call is synchronized with a
     // WaitableEvent, so |io_helper_| is guaranteed to remain alive throughout
     // the duration of the LoadBlobsOnIOThread() invocation.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&TransactionImpl::IOHelper::LoadBlobsOnIOThread,
                        base::Unretained(io_helper_.get()), std::move(value_ptr),

@@ -15,8 +15,9 @@ from contrib.cluster_telemetry import screenshot
 class ScreenshotUnitTest(page_test_test_case.PageTestTestCase):
 
   def setUp(self):
-    self._options = options_for_unittests.GetCopy()
     self._png_outdir = tempfile.mkdtemp('_png_test')
+    self._options = options_for_unittests.GetRunOptions(
+        output_dir=self._png_outdir)
 
   def tearDown(self):
     shutil.rmtree(self._png_outdir)
@@ -25,12 +26,13 @@ class ScreenshotUnitTest(page_test_test_case.PageTestTestCase):
   def testScreenshot(self):
     # Screenshots for Cluster Telemetry purposes currently only supported on
     # Linux platform.
-    page_set = self.CreateStorySetFromFileInUnittestDataDir(
+    story_set = self.CreateStorySetFromFileInUnittestDataDir(
       'screenshot_test.html')
     measurement = screenshot.Screenshot(self._png_outdir)
-    self.RunMeasurement(measurement, page_set, options=self._options)
+    self.RunMeasurement(measurement, story_set, run_options=self._options)
 
-    path = self._png_outdir + '/' + page_set.stories[0].file_safe_name + '.png'
+    path = os.path.join(
+        self._png_outdir, story_set.stories[0].file_safe_name + '.png')
     self.assertTrue(os.path.exists(path))
     self.assertTrue(os.path.isfile(path))
     self.assertTrue(os.access(path, os.R_OK))

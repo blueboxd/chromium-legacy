@@ -244,7 +244,7 @@ component("cpp") {
   ]
 
   public_deps = [
-    "//ash/public/interfaces",
+    "//ash/public/mojom",
     "//base",
     "//components/arc/common:notifications",
     "//components/session_manager:base",
@@ -262,7 +262,7 @@ source_set("manifest") {
   ]
 
   deps = [
-    "//ash/public/interfaces",
+    "//ash/public/mojom",
     "//base",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/network_config/public/mojom",
@@ -286,7 +286,7 @@ source_set("manifest_for_tests") {
 
   deps = [
     ":manifest",
-    "//ash/public/interfaces:test_interfaces",
+    "//ash/public/mojom:test_interfaces",
     "//base",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",

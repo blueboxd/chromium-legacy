@@ -77,12 +77,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
-  // Record for input buffers.
-  struct InputRecord {
-    InputRecord();
-    // Request fd used for this input buffer if request API is used.
-    base::ScopedFD request_fd;
-  };
 
   // Record for output buffers.
   struct OutputRecord {
@@ -375,8 +369,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   base::Thread device_poll_thread_;
 
   scoped_refptr<V4L2Queue> input_queue_;
-  // Mapping of int index to an input buffer record.
-  std::vector<InputRecord> input_buffer_map_;
   // Set to true by CreateInputBuffers() if the codec driver supports requests
   bool supports_requests_ = false;
   // Stores the media file descriptor if request API is used
@@ -388,6 +380,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   std::map<int32_t, V4L2WritableBufferRef> output_wait_map_;
   // Mapping of int index to an output buffer record.
   std::vector<OutputRecord> output_buffer_map_;
+  // FIFO queue of requests, only used if supports_requests_ == true.
+  std::queue<base::ScopedFD> requests_;
 
   VideoCodecProfile video_profile_;
   uint32_t input_format_fourcc_;

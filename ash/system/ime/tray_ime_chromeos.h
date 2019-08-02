@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "ash/public/interfaces/ime_info.mojom.h"
+#include "ash/public/mojom/ime_info.mojom.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "base/macros.h"
 

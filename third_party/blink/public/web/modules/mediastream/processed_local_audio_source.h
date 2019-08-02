@@ -74,6 +74,9 @@ class BLINK_MODULES_EXPORT ProcessedLocalAudioSource final
     return audio_processing_properties_;
   }
 
+  base::Optional<blink::AudioProcessingProperties>
+  GetAudioProcessingProperties() const final;
+
   // The following accessors are valid after the source is started (when the
   // first track is connected).
   scoped_refptr<webrtc::AudioProcessorInterface> GetAudioProcessor() const;

@@ -634,23 +634,21 @@ class UpdateViewportIntersectionMessageFilter
     // OnUpdateViewportIntersection returns. This additional post on the IO
     // thread guarantees that by the time OnUpdateViewportIntersectionOnUI runs,
     // the message has been handled on the UI thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&UpdateViewportIntersectionMessageFilter::
-                           OnUpdateViewportIntersectionPostOnIO,
-                       this, viewport_intersection, compositing_rect,
-                       occlusion_state));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&UpdateViewportIntersectionMessageFilter::
+                                      OnUpdateViewportIntersectionPostOnIO,
+                                  this, viewport_intersection, compositing_rect,
+                                  occlusion_state));
   }
   void OnUpdateViewportIntersectionPostOnIO(
       const gfx::Rect& viewport_intersection,
       const gfx::Rect& compositing_rect,
       blink::FrameOcclusionState occlusion_state) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&UpdateViewportIntersectionMessageFilter::
-                           OnUpdateViewportIntersectionOnUI,
-                       this, viewport_intersection, compositing_rect,
-                       occlusion_state));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&UpdateViewportIntersectionMessageFilter::
+                                      OnUpdateViewportIntersectionOnUI,
+                                  this, viewport_intersection, compositing_rect,
+                                  occlusion_state));
   }
   void OnUpdateViewportIntersectionOnUI(
       const gfx::Rect& viewport_intersection,
@@ -7932,14 +7930,14 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
                            WindowOpenDisposition disposition,
                            const gfx::Rect& initial_rect,
                            bool user_gesture) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&PendingWidgetMessageFilter::OnReceivedRoutingIDOnUI,
                        this, pending_widget_routing_id));
   }
 
   void OnShowWidget(int routing_id, const gfx::Rect& initial_rect) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&PendingWidgetMessageFilter::OnReceivedRoutingIDOnUI,
                        this, routing_id));
@@ -9835,10 +9833,9 @@ class SetIsInertMessageFilter : public content::BrowserMessageFilter {
   ~SetIsInertMessageFilter() override {}
 
   void OnSetIsInert(bool is_inert) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&SetIsInertMessageFilter::OnSetIsInertOnUI, this,
-                       is_inert));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&SetIsInertMessageFilter::OnSetIsInertOnUI,
+                                  this, is_inert));
   }
   void OnSetIsInertOnUI(bool is_inert) {
     is_inert_ = is_inert;
@@ -14868,6 +14865,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // dies before the response for the navigation comes back, the response will
 // not trigger a process kill and will be allowed to commit in a new process.
 // See https://crbug.com/968259.
+// Note: This test needs to do a browser-initiated navigation because doing
+// a renderer-initiated navigation would lead to the navigation being canceled.
+// This behavior change has been introduced with PerNavigationMojoInterface and
+// is documented here https://crbug.com/988368.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        ProcessDiesBeforeCrossSiteNavigationCompletes) {
   GURL first_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -14878,7 +14879,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Start a cross-site navigation and proceed only up to the request start.
   GURL second_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
   TestNavigationManager delayer(web_contents(), second_url);
-  EXPECT_TRUE(ExecuteScript(shell(), JsReplace("location = $1", second_url)));
+  web_contents()->GetController().LoadURL(
+      second_url, Referrer(), ui::PageTransition::PAGE_TRANSITION_TYPED,
+      std::string());
   EXPECT_TRUE(delayer.WaitForRequestStart());
 
   // Terminate the current a.com process.

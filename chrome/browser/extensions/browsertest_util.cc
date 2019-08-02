@@ -11,12 +11,12 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -86,9 +86,10 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
 }
 
 Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {
-  EXPECT_TRUE(OpenApplication(AppLaunchParams(
-      profile, extension_app->id(), LaunchContainer::kLaunchContainerWindow,
-      WindowOpenDisposition::CURRENT_TAB, AppLaunchSource::kSourceTest)));
+  EXPECT_TRUE(
+      apps::LaunchService::Get(profile)->OpenApplication(AppLaunchParams(
+          profile, extension_app->id(), LaunchContainer::kLaunchContainerWindow,
+          WindowOpenDisposition::CURRENT_TAB, AppLaunchSource::kSourceTest)));
 
   Browser* browser = chrome::FindLastActive();
   bool is_correct_app_browser =
@@ -101,9 +102,11 @@ Browser* LaunchAppBrowser(Profile* profile, const Extension* extension_app) {
 
 Browser* LaunchBrowserForAppInTab(Profile* profile,
                                   const Extension* extension_app) {
-  content::WebContents* web_contents = OpenApplication(AppLaunchParams(
-      profile, extension_app->id(), LaunchContainer::kLaunchContainerTab,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, AppLaunchSource::kSourceTest));
+  content::WebContents* web_contents =
+      apps::LaunchService::Get(profile)->OpenApplication(AppLaunchParams(
+          profile, extension_app->id(), LaunchContainer::kLaunchContainerTab,
+          WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          AppLaunchSource::kSourceTest));
   DCHECK(web_contents);
 
   web_app::WebAppTabHelperBase* tab_helper =

@@ -102,7 +102,8 @@ IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest,
   InstallApp(std::move(install_options));
   base::Optional<AppId> app_id = registrar().FindAppWithUrlInScope(url);
   EXPECT_TRUE(app_id.has_value());
-  EXPECT_EQ("Manifest test app", registrar().GetAppShortName(app_id.value()));
+  EXPECT_TRUE(registrar().GetAppScope(*app_id).has_value());
+  EXPECT_EQ("Manifest test app", registrar().GetAppShortName(*app_id));
 }
 
 IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest,

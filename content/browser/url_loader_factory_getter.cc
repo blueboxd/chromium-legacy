@@ -139,10 +139,9 @@ void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
   HandleNetworkFactoryRequestOnUIThread(
       std::move(pending_network_factory_request), false);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread, this,
-                     network_factory.PassInterface()));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread,
+                                this, network_factory.PassInterface()));
 }
 
 void URLLoaderFactoryGetter::OnStoragePartitionDestroyed() {
@@ -182,7 +181,7 @@ network::mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetURLLoaderFactory(
       is_corb_enabled ? &network_factory_corb_enabled_ : &network_factory_;
   if (factory->encountered_error() || !factory->is_bound()) {
     network::mojom::URLLoaderFactoryPtr network_factory;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread,
@@ -233,7 +232,7 @@ void URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
 void URLLoaderFactoryGetter::FlushNetworkInterfaceOnIOThreadForTesting() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::RunLoop run_loop;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&URLLoaderFactoryGetter::FlushNetworkInterfaceForTesting,
                      this, run_loop.QuitClosure()));

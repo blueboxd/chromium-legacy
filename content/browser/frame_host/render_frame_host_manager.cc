@@ -2941,7 +2941,7 @@ void RenderFrameHostManager::NotifyPrepareForInnerDelegateAttachComplete(
   int32_t routing_id =
       success ? render_frame_host_->GetRoutingID() : MSG_ROUTING_NONE;
   // Invoking the callback asynchronously to meet the APIs promise.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           [](RenderFrameHost::PrepareForInnerWebContentsAttachCallback callback,

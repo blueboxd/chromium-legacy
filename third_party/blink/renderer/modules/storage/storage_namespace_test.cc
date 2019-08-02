@@ -53,7 +53,7 @@ TEST_F(StorageNamespaceTest, BasicStorageAreas) {
 
   mojom::blink::StoragePartitionServicePtr storage_partition_service_ptr;
   PostCrossThreadTask(
-      *base::CreateSequencedTaskRunnerWithTraits({}), FROM_HERE,
+      *base::CreateSequencedTaskRunner({base::ThreadPool()}), FROM_HERE,
       CrossThreadBindOnce(
           [](mojom::blink::StoragePartitionServiceRequest request) {
             mojo::MakeStrongBinding(

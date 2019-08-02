@@ -139,7 +139,7 @@ void CreateInterruptedDownload(
   failed_created_info->url_chain.push_back(params->url());
   failed_created_info->result = reason;
   std::unique_ptr<ByteStreamReader> empty_byte_stream;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &DownloadManager::StartDownload, download_manager,
@@ -301,7 +301,7 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       interrupted_download_cleared_from_history_(0) {
   DCHECK(browser_context);
   download::SetIOTaskRunner(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
   if (!in_progress_manager_) {
     in_progress_manager_ =

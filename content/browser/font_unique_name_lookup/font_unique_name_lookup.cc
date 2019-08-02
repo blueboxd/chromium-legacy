@@ -348,38 +348,35 @@ bool FontUniqueNameLookup::PersistToFile() {
 }
 
 void FontUniqueNameLookup::ScheduleLoadOrUpdateTable() {
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                           base::BindOnce(
-                               [](FontUniqueNameLookup* instance) {
-                                 // Error from LoadFromFile() is ignored:
-                                 // Loading the cache file could be recovered
-                                 // from by rebuilding the font table.
-                                 // UpdateTableIfNeeded() checks whether the
-                                 // internal base::MappedReadOnlyRegion has a
-                                 // size, which it doesn't if the LoadFromFile()
-                                 // failed. If it doesn't have a size, the table
-                                 // is rebuild by calling UpdateTable().
-                                 base::TimeTicks prepare_table_start_time =
-                                     base::TimeTicks::Now();
-                                 bool loaded_from_file =
-                                     instance->LoadFromFile();
-                                 if (loaded_from_file) {
-                                   LogUMALookupTableLoadFromFileDuration(
-                                       base::TimeTicks::Now() -
-                                       prepare_table_start_time);
-                                 }
-                                 if (instance->UpdateTableIfNeeded()) {
-                                   instance->PersistToFile();
-                                 }
-                                 LogUMALookupTableReadyDuration(
-                                     base::TimeTicks::Now() -
-                                     prepare_table_start_time);
-                                 instance->proto_storage_ready_.Signal();
-                                 instance->PostCallbacks();
-                               },
-                               base::Unretained(this)));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(
+          [](FontUniqueNameLookup* instance) {
+            // Error from LoadFromFile() is ignored:
+            // Loading the cache file could be recovered
+            // from by rebuilding the font table.
+            // UpdateTableIfNeeded() checks whether the
+            // internal base::MappedReadOnlyRegion has a
+            // size, which it doesn't if the LoadFromFile()
+            // failed. If it doesn't have a size, the table
+            // is rebuild by calling UpdateTable().
+            base::TimeTicks prepare_table_start_time = base::TimeTicks::Now();
+            bool loaded_from_file = instance->LoadFromFile();
+            if (loaded_from_file) {
+              LogUMALookupTableLoadFromFileDuration(base::TimeTicks::Now() -
+                                                    prepare_table_start_time);
+            }
+            if (instance->UpdateTableIfNeeded()) {
+              instance->PersistToFile();
+            }
+            LogUMALookupTableReadyDuration(base::TimeTicks::Now() -
+                                           prepare_table_start_time);
+            instance->proto_storage_ready_.Signal();
+            instance->PostCallbacks();
+          },
+          base::Unretained(this)));
 }
 
 base::FilePath FontUniqueNameLookup::TableCacheFilePath() {

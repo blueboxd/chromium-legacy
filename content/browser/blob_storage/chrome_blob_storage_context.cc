@@ -118,8 +118,9 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
     // If we're not incognito mode, schedule all of our file tasks to enable
     // disk on the storage context.
     if (!context->IsOffTheRecord() && io_thread_valid) {
-      file_task_runner = base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      file_task_runner = base::CreateTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
       // Removes our old blob directories if they exist.
       BrowserThread::PostBestEffortTask(
@@ -129,7 +130,7 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
     }
 
     if (io_thread_valid) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&ChromeBlobStorageContext::InitializeOnIOThread, blob,
                          std::move(blob_storage_dir),
@@ -149,7 +150,7 @@ void ChromeBlobStorageContext::InitializeOnIOThread(
                                         std::move(file_task_runner)));
   // Signal the BlobMemoryController when it's appropriate to calculate its
   // storage limits.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO, base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&storage::BlobMemoryController::CalculateBlobStorageLimits,
                      context_->mutable_memory_controller()->GetWeakPtr()));
@@ -188,7 +189,7 @@ ChromeBlobStorageContext::URLLoaderFactoryForToken(
     blink::mojom::BlobURLTokenPtr token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   network::mojom::URLLoaderFactoryPtr blob_url_loader_factory_ptr;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> context,
@@ -211,7 +212,7 @@ ChromeBlobStorageContext::URLLoaderFactoryForUrl(
     const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   network::mojom::URLLoaderFactoryPtr blob_url_loader_factory_ptr;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> context,
@@ -233,7 +234,7 @@ blink::mojom::BlobPtr ChromeBlobStorageContext::GetBlobPtr(
     const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   blink::mojom::BlobPtr blob_ptr;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> context,

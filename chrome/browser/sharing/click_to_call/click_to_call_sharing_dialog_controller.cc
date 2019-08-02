@@ -8,8 +8,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
-#include "chrome/browser/sharing/click_to_call/click_to_call_dialog.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
+#include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/shell_integration.h"
@@ -177,8 +177,7 @@ void ClickToCallSharingDialogController::OnAppChosen(const App& app) {
                                                          web_contents_);
 }
 
-void ClickToCallSharingDialogController::OnDialogClosed(
-    ClickToCallDialog* dialog) {
+void ClickToCallSharingDialogController::OnDialogClosed(SharingDialog* dialog) {
   // Ignore already replaced dialogs.
   if (dialog != dialog_)
     return;
@@ -192,7 +191,7 @@ void ClickToCallSharingDialogController::OnHelpTextClicked() {
                    GURL(chrome::kSyncLearnMoreURL));
 }
 
-ClickToCallDialog* ClickToCallSharingDialogController::GetDialog() const {
+SharingDialog* ClickToCallSharingDialogController::GetDialog() const {
   return dialog_;
 }
 

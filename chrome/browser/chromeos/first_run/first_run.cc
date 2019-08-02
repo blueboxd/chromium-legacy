@@ -8,6 +8,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -20,8 +22,6 @@
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -58,11 +58,11 @@ void LaunchDialogForProfile(Profile* profile) {
   if (!extension)
     return;
 
-  OpenApplication(
+  apps::LaunchService::Get(profile)->OpenApplication(
       AppLaunchParams(profile, extension->id(),
-                      extensions::LaunchContainer::kLaunchContainerWindow,
+                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
                       WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceChromeInternal));
+                      apps::mojom::AppLaunchSource::kSourceChromeInternal));
   profile->GetPrefs()->SetBoolean(prefs::kFirstRunTutorialShown, true);
 }
 

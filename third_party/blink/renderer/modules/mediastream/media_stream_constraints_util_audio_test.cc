@@ -172,10 +172,19 @@ class MediaStreamConstraintsUtilAudioTestBase {
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
-  AudioCaptureSettings SelectSettings() {
+  AudioCaptureSettings SelectSettings(
+      bool is_reconfigurable = false,
+      base::Optional<AudioDeviceCaptureCapabilities> capabilities =
+          base::nullopt) {
     blink::WebMediaConstraints constraints =
         constraint_factory_.CreateWebMediaConstraints();
-    return SelectSettingsAudioCapture(capabilities_, constraints, false);
+    if (capabilities) {
+      return SelectSettingsAudioCapture(*capabilities, constraints, false,
+                                        is_reconfigurable);
+    } else {
+      return SelectSettingsAudioCapture(capabilities_, constraints, false,
+                                        is_reconfigurable);
+    }
   }
 
   // When googExperimentalEchoCancellation is not explicitly set, its default
@@ -429,6 +438,8 @@ class MediaStreamConstraintsUtilAudioTestBase {
   const AudioDeviceCaptureCapability* system_echo_canceller_device_ = nullptr;
   const AudioDeviceCaptureCapability* four_channels_device_ = nullptr;
   const AudioDeviceCaptureCapability* variable_latency_device_ = nullptr;
+  std::unique_ptr<ProcessedLocalAudioSource> system_echo_canceller_source_ =
+      nullptr;
   const std::vector<media::Point> kMicPositions = {{8, 8, 8}, {4, 4, 4}};
 
   // TODO(grunell): Store these as separate constants and compare against those
@@ -1494,6 +1505,42 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
       }
     }
   }
+}
+
+TEST_P(MediaStreamConstraintsUtilAudioTest,
+       ReconfigurationSystemEchoCancellation) {
+  // This test is relevant only for device capture, where HW EC can be found.
+  if (!IsDeviceCapture())
+    return;
+
+  // Create a capability that is based on a already opened source with system
+  // echo cancellation enabled.
+  AudioProcessingProperties properties;
+  properties.echo_cancellation_type =
+      EchoCancellationType::kEchoCancellationSystem;
+  std::unique_ptr<ProcessedLocalAudioSource> system_echo_canceller_source =
+      GetProcessedLocalAudioSource(
+          properties, false /* disable_local_echo */,
+          false /* render_to_associated_sink */,
+          media::AudioParameters::PlatformEffectsMask::ECHO_CANCELLER);
+  AudioDeviceCaptureCapabilities capabilities = {
+      AudioDeviceCaptureCapability(system_echo_canceller_source.get())};
+  AudioDeviceCaptureCapability* system_echo_canceller_with_source =
+      &capabilities[0];
+
+  constraint_factory_.Reset();
+  constraint_factory_.basic().device_id.SetExact(blink::WebString::FromASCII(
+      system_echo_canceller_with_source->DeviceID()));
+  constraint_factory_.basic().echo_cancellation.SetExact(true);
+  auto result = SelectSettings(true, capabilities);
+  EXPECT_TRUE(result.HasValue());
+
+  constraint_factory_.Reset();
+  constraint_factory_.basic().device_id.SetExact(blink::WebString::FromASCII(
+      system_echo_canceller_with_source->DeviceID()));
+  constraint_factory_.basic().echo_cancellation.SetExact(false);
+  result = SelectSettings(true, capabilities);
+  EXPECT_FALSE(result.HasValue());
 }
 
 // Test advanced constraints sets that can be satisfied.

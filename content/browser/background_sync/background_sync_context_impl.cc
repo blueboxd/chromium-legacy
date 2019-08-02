@@ -25,7 +25,7 @@ namespace content {
 
 BackgroundSyncContextImpl::BackgroundSyncContextImpl()
     : base::RefCountedDeleteOnSequence<BackgroundSyncContextImpl>(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})) {}
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO})) {}
 
 BackgroundSyncContextImpl::~BackgroundSyncContextImpl() {
   // The destructor must run on the IO thread because it implicitly accesses
@@ -68,7 +68,7 @@ void BackgroundSyncContextImpl::Init(
         devtools_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BackgroundSyncContextImpl::CreateBackgroundSyncManager,
                      this, service_worker_context, devtools_context));
@@ -76,7 +76,7 @@ void BackgroundSyncContextImpl::Init(
 
 void BackgroundSyncContextImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BackgroundSyncContextImpl::ShutdownOnIO, this));
 }
@@ -84,7 +84,7 @@ void BackgroundSyncContextImpl::Shutdown() {
 void BackgroundSyncContextImpl::CreateOneShotSyncService(
     blink::mojom::OneShotBackgroundSyncServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BackgroundSyncContextImpl::CreateOneShotSyncServiceOnIOThread, this,
@@ -94,7 +94,7 @@ void BackgroundSyncContextImpl::CreateOneShotSyncService(
 void BackgroundSyncContextImpl::CreatePeriodicSyncService(
     blink::mojom::PeriodicBackgroundSyncServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BackgroundSyncContextImpl::CreatePeriodicSyncServiceOnIOThread, this,
@@ -146,7 +146,7 @@ void BackgroundSyncContextImpl::GetSoonestWakeupDelta(
     base::OnceCallback<void(base::TimeDelta)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BackgroundSyncContextImpl::GetSoonestWakeupDeltaOnIOThread, this,
@@ -158,7 +158,7 @@ void BackgroundSyncContextImpl::GetSoonestWakeupDelta(
 void BackgroundSyncContextImpl::RevivePeriodicBackgroundSyncRegistrations(
     url::Origin origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BackgroundSyncContextImpl::
                          RevivePeriodicBackgroundSyncRegistrationsOnIOThread,
@@ -201,7 +201,7 @@ void BackgroundSyncContextImpl::FireBackgroundSyncEvents(
     blink::mojom::BackgroundSyncType sync_type,
     base::OnceClosure done_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BackgroundSyncContextImpl::FireBackgroundSyncEventsOnIOThread, this,
@@ -229,8 +229,7 @@ void BackgroundSyncContextImpl::DidFireBackgroundSyncEventsOnIOThread(
     base::OnceClosure done_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           std::move(done_closure));
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(done_closure));
 }
 
 void BackgroundSyncContextImpl::CreateBackgroundSyncManager(

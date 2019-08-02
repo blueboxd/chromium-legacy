@@ -75,9 +75,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   std::string GetApplicationLocale() override;
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   gfx::ImageSkia GetDefaultFavicon() override;
-  bool AllowAppCacheOnIO(const GURL& manifest_url,
-                         const GURL& first_party,
-                         content::ResourceContext* context) override;
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
                      content::BrowserContext* context) override;
@@ -167,13 +164,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   void ExposeInterfacesToMediaService(
       service_manager::BinderRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
-  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-  CreateURLLoaderThrottlesOnIO(
-      const network::ResourceRequest& request,
-      content::ResourceContext* resource_context,
-      const base::RepeatingCallback<content::WebContents*()>& wc_getter,
-      content::NavigationUIData* navigation_ui_data,
-      int frame_tree_node_id) override;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const network::ResourceRequest& request,

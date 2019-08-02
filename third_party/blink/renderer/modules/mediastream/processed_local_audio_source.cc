@@ -125,6 +125,11 @@ ProcessedLocalAudioSource* ProcessedLocalAudioSource::From(
   return nullptr;
 }
 
+base::Optional<blink::AudioProcessingProperties>
+ProcessedLocalAudioSource::GetAudioProcessingProperties() const {
+  return audio_processing_properties_;
+}
+
 void* ProcessedLocalAudioSource::GetClassIdentifier() const {
   return kProcessedLocalAudioSourceIdentifier;
 }

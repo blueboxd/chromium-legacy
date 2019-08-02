@@ -46,8 +46,9 @@ class ConnectionFilterImpl : public ConnectionFilter {
     registry_.AddInterface(base::BindRepeating(&FontCacheDispatcher::Create));
     registry_.AddInterface(
         base::BindRepeating(&DWriteFontProxyImpl::Create),
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::TaskPriority::USER_BLOCKING, base::MayBlock()}));
+        base::CreateSequencedTaskRunner({base::ThreadPool(),
+                                         base::TaskPriority::USER_BLOCKING,
+                                         base::MayBlock()}));
 #elif defined(OS_MACOSX)
     registry_.AddInterface(
         base::BindRepeating(&SandboxSupportMacImpl::BindRequest,
@@ -103,7 +104,7 @@ class ConnectionFilterImpl : public ConnectionFilter {
     auto gpu_client = std::make_unique<viz::GpuClient>(
         std::make_unique<BrowserGpuClientDelegate>(), gpu_client_id,
         gpu_client_tracing_id,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
     gpu_client->SetConnectionErrorHandler(
         base::BindOnce(&ConnectionFilterImpl::OnGpuConnectionClosed,
                        base::Unretained(this), source_info.identity));

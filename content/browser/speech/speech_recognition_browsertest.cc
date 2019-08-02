@@ -60,7 +60,7 @@ class MockAudioSystem : public media::AudioSystem {
 
     // Posting callback to allow current SpeechRecognizerImpl dispatching event
     // to complete before transitioning to the next FSM state.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(std::move(on_params_cb),
                        media::AudioParameters::UnavailableDeviceParams()));
@@ -229,10 +229,9 @@ class SpeechRecognitionBrowserTest : public ContentBrowserTest {
     // AudioCaptureSourcer::Stop() again.
     SpeechRecognizerImpl::SetAudioEnvironmentForTesting(nullptr, nullptr);
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&SpeechRecognitionBrowserTest::SendResponse,
-                       base::Unretained(this)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&SpeechRecognitionBrowserTest::SendResponse,
+                                  base::Unretained(this)));
   }
 
   void SendResponse() {}

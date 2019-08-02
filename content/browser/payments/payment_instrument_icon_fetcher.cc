@@ -39,9 +39,8 @@ void OnIconFetched(
 
   if (bitmap.drawsNothing()) {
     if (icons.empty()) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(std::move(callback), std::string()));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(std::move(callback), std::string()));
     } else {
       // If could not download or decode the chosen image(e.g. not supported,
       // invalid), try it again with remaining icons.
@@ -58,8 +57,8 @@ void OnIconFetched(
       base::StringPiece(reinterpret_cast<const char*>(&bitmap_data[0]),
                         bitmap_data.size()),
       &encoded_data);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(std::move(callback), encoded_data));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(std::move(callback), encoded_data));
 }
 
 void DownloadBestMatchingIcon(
@@ -70,9 +69,8 @@ void DownloadBestMatchingIcon(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (web_contents == nullptr) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(callback), std::string()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(std::move(callback), std::string()));
     return;
   }
 
@@ -87,9 +85,8 @@ void DownloadBestMatchingIcon(
     // developers in advance unlike when fetching or decoding fails. We already
     // checked whether they are valid in renderer side. So, if the icon url is
     // invalid, it's something wrong.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(callback), std::string()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(std::move(callback), std::string()));
     return;
   }
 
@@ -156,10 +153,9 @@ void PaymentInstrumentIconFetcher::Start(
     PaymentInstrumentIconFetcherCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&StartOnUI, scope, std::move(provider_hosts), icons,
-                     std::move(callback)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&StartOnUI, scope, std::move(provider_hosts),
+                                icons, std::move(callback)));
 }
 
 }  // namespace content

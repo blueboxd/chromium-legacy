@@ -1609,10 +1609,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"debug-packed-apps", flag_descriptions::kDebugPackedAppName,
      flag_descriptions::kDebugPackedAppDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kDebugPackedApps)},
-    {"automatic-password-generation",
-     flag_descriptions::kAutomaticPasswordGenerationName,
-     flag_descriptions::kAutomaticPasswordGenerationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutomaticPasswordGeneration)},
     {"new-password-form-parsing",
      flag_descriptions::kNewPasswordFormParsingName,
      flag_descriptions::kNewPasswordFormParsingDescription, kOsAll,
@@ -3631,11 +3627,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFilesystemInIncognitoName,
      flag_descriptions::kEnableFilesystemInIncognitoDescription, kOsAll,
      FEATURE_VALUE_TYPE(storage::features::kEnableFilesystemInIncognito)},
-
-    {"enable-incognito-window-counter",
-     flag_descriptions::kEnableIncognitoWindowCounterName,
-     flag_descriptions::kEnableIncognitoWindowCounterDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kEnableIncognitoWindowCounter)},
 
     {"enable-send-tab-to-self", flag_descriptions::kSendTabToSelfName,
      flag_descriptions::kSendTabToSelfDescription, kOsAll,

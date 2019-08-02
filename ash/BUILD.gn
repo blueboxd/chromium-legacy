@@ -2277,7 +2277,7 @@ static_library("test_support") {
     "//ash/components/fast_ink",
     "//ash/public/cpp",
     "//ash/public/cpp:test_support",
-    "//ash/public/interfaces:test_interfaces",
+    "//ash/public/mojom:test_interfaces",
     "//base",
     "//base:i18n",
     "//base/test:test_support",

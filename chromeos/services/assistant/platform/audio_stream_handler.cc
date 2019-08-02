@@ -4,7 +4,7 @@
 
 #include "chromeos/services/assistant/platform/audio_stream_handler.h"
 
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "chromeos/services/assistant/platform/audio_media_data_source.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"

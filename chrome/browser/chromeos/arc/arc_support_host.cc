@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/consent_auditor/consent_auditor.h"
@@ -127,9 +127,10 @@ void RequestOpenApp(Profile* profile) {
           arc::kPlayStoreAppId);
   DCHECK(extension);
   DCHECK(extensions::util::IsAppLaunchable(arc::kPlayStoreAppId, profile));
-  OpenApplication(CreateAppLaunchParamsUserContainer(
-      profile, extension, WindowOpenDisposition::NEW_WINDOW,
-      extensions::AppLaunchSource::kSourceChromeInternal));
+  apps::LaunchService::Get(profile)->OpenApplication(
+      CreateAppLaunchParamsUserContainer(
+          profile, extension, WindowOpenDisposition::NEW_WINDOW,
+          apps::mojom::AppLaunchSource::kSourceChromeInternal));
 }
 
 std::ostream& operator<<(std::ostream& os, ArcSupportHost::UIPage ui_page) {

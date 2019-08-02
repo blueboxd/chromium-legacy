@@ -10,7 +10,7 @@
 
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"

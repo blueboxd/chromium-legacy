@@ -31,7 +31,7 @@ BackgroundSyncNetworkObserver::BackgroundSyncNetworkObserver(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(connection_changed_callback_);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&GetNetworkConnectionTracker),
       base::BindOnce(

@@ -176,7 +176,7 @@ bool IndexedDBCallbacks::CreateAllBlobs(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   bool result;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> inner_blob_context,

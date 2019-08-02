@@ -247,7 +247,7 @@ class RespondAndDisconnectMockWriter
   }
 
   void TaskY() {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&RespondAndDisconnectMockWriter::TaskZ,
                        scoped_refptr<RespondAndDisconnectMockWriter>(this)));
@@ -801,8 +801,8 @@ class OrderedTaskMockWriter : public MockWriterBase {
   // Posts the quit closure to the UI thread to unblock the serialization Job
   // after receiving the first task complete notification.
   void PostClosure() {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             std::move(first_run_loop_closure_));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   std::move(first_run_loop_closure_));
   }
 
   base::OnceClosure first_run_loop_closure_;

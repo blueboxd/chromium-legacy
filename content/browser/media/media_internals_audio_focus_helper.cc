@@ -68,7 +68,7 @@ void MediaInternalsAudioFocusHelper::OnFocusGained(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&MediaInternalsAudioFocusHelper::SendAudioFocusState,
                      base::Unretained(this)));
@@ -78,7 +78,7 @@ void MediaInternalsAudioFocusHelper::OnFocusLost(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&MediaInternalsAudioFocusHelper::SendAudioFocusState,
                      base::Unretained(this)));

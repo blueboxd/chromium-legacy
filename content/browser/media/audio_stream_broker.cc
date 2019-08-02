@@ -95,8 +95,8 @@ void AudioStreamBroker::NotifyProcessHostOfStartedStream(
     if (auto* process_host = RenderProcessHost::FromID(id))
       process_host->OnMediaStreamAdded();
   };
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(impl, render_process_id));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(impl, render_process_id));
 }
 
 // static
@@ -106,8 +106,8 @@ void AudioStreamBroker::NotifyProcessHostOfStoppedStream(
     if (auto* process_host = RenderProcessHost::FromID(id))
       process_host->OnMediaStreamRemoved();
   };
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(impl, render_process_id));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(impl, render_process_id));
 }
 
 AudioStreamBrokerFactory::AudioStreamBrokerFactory() {}

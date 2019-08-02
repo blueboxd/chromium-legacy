@@ -17,6 +17,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/time/time_override.h"
 
 namespace base {
 
@@ -88,13 +89,14 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
   }
 
   // TimeTicks takes care of overflow but we special case is_max() nonetheless
-  // to avoid invoking Now() unnecessarily.
+  // to avoid invoking TimeTicksNowIgnoringOverride() unnecessarily.
   // WaitForSingleObject(handle_.Get(), INFINITE) doesn't spuriously wakeup so
   // we don't need to worry about is_max() for the increment phase of the loop.
   const TimeTicks end_time =
-      wait_delta.is_max() ? TimeTicks::Max() : TimeTicks::Now() + wait_delta;
+      wait_delta.is_max() ? TimeTicks::Max()
+                          : subtle::TimeTicksNowIgnoringOverride() + wait_delta;
   for (TimeDelta remaining = wait_delta; remaining > TimeDelta();
-       remaining = end_time - TimeTicks::Now()) {
+       remaining = end_time - subtle::TimeTicksNowIgnoringOverride()) {
     // Truncate the timeout to milliseconds, rounded up to avoid spinning
     // (either by returning too early or because a < 1ms timeout on Windows
     // tends to return immediately).

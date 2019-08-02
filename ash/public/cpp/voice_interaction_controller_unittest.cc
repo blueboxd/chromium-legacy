@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -344,7 +344,7 @@ enum AuthenticationState {
 
 - (void)setPrimaryButtonStyling:(MDCButton*)button {
   UIColor* hintColor = UIColor.cr_systemBackgroundColor;
-  UIColor* backgroundColor = [UIColor colorNamed:kTintColor];
+  UIColor* backgroundColor = [UIColor colorNamed:kBlueColor];
   UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
 
 #if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
@@ -370,7 +370,7 @@ enum AuthenticationState {
 - (void)setSecondaryButtonStyling:(MDCButton*)button {
   UIColor* hintColor = UIColor.cr_systemBackgroundColor;
   UIColor* backgroundColor = UIColor.cr_systemBackgroundColor;
-  UIColor* titleColor = [UIColor colorNamed:kTintColor];
+  UIColor* titleColor = [UIColor colorNamed:kBlueColor];
 
 #if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
@@ -1004,7 +1004,7 @@ enum AuthenticationState {
         [[MDCActivityIndicator alloc] initWithFrame:CGRectZero];
     [_activityIndicator setDelegate:self];
     [_activityIndicator setStrokeWidth:3];
-    [_activityIndicator setCycleColors:@[ [UIColor colorNamed:kTintColor] ]];
+    [_activityIndicator setCycleColors:@[ [UIColor colorNamed:kBlueColor] ]];
     [self.view addSubview:_activityIndicator];
   }
 

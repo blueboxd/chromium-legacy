@@ -279,7 +279,7 @@ void RunOrPostTaskIfNecessary(const base::Location& from_here,
     return;
   }
 
-  base::PostTaskWithTraits(from_here, {thread_id}, std::move(task));
+  base::PostTask(from_here, {thread_id}, std::move(task));
 }
 
 }  // namespace
@@ -381,10 +381,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     navigation_ui_data_ = std::move(navigation_ui_data);
     service_worker_navigation_handle_ = service_worker_navigation_handle;
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&NavigationURLLoaderImpl::OnRequestStarted, owner_,
-                       base::TimeTicks::Now()));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&NavigationURLLoaderImpl::OnRequestStarted,
+                                  owner_, base::TimeTicks::Now()));
 
     DCHECK(network_loader_factory_info);
     network_loader_factory_ = network::SharedURLLoaderFactory::Create(
@@ -1074,7 +1073,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // TODO(davidben): This copy could be avoided if ResourceResponse weren't
     // reference counted and the loader stack passed unique ownership of the
     // response. https://crbug.com/416050
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NavigationURLLoaderImpl::OnReceiveRedirect, owner_,
                        redirect_info, response->DeepCopy(), base::Time::Now()));
@@ -1141,7 +1140,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     status_ = status;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NavigationURLLoaderImpl::OnComplete, owner_, status));
   }
@@ -1185,7 +1184,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
             service_worker_provider_host_->UpdateUrls(GURL(), GURL());
           } else if (service_worker_navigation_handle_) {
             DCHECK(NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled());
-            base::PostTaskWithTraits(
+            base::PostTask(
                 FROM_HERE, {BrowserThread::IO},
                 base::BindOnce(
                     [](base::WeakPtr<ServiceWorkerProviderHost> host) {
@@ -1478,10 +1477,10 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
 #if defined(OS_ANDROID)
   non_network_url_loader_factories_[url::kContentScheme] =
-      std::make_unique<ContentURLLoaderFactory>(
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+      std::make_unique<ContentURLLoaderFactory>(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 #endif
 
   std::set<std::string> known_schemes;

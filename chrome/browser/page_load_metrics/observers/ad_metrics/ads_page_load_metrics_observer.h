@@ -31,7 +31,8 @@ class AdsPageLoadMetricsObserver
 
   // Returns a new AdsPageLoadMetricObserver. If the feature is disabled it
   // returns nullptr.
-  static std::unique_ptr<AdsPageLoadMetricsObserver> CreateIfNeeded();
+  static std::unique_ptr<AdsPageLoadMetricsObserver> CreateIfNeeded(
+      content::WebContents* web_contents);
 
   // For a given subframe, returns whether or not the subframe's url would be
   // considering same origin to the main frame's url. |use_parent_origin|
@@ -103,22 +104,9 @@ class AdsPageLoadMetricsObserver
 
  private:
   // subresource_filter::SubresourceFilterObserver:
-  void OnSubframeNavigationEvaluated(
-      content::NavigationHandle* navigation_handle,
-      subresource_filter::LoadPolicy load_policy,
-      bool is_ad_subframe) override;
   void OnAdSubframeDetected(
       content::RenderFrameHost* render_frame_host) override;
   void OnSubresourceFilterGoingAway() override;
-
-  // Determines if the URL of a frame matches the SubresourceFilter block
-  // list. Should only be called once per frame navigation.
-  bool DetectSubresourceFilterAd(FrameTreeNodeId frame_tree_node_id);
-
-  // This should only be called once per frame navigation, as the
-  // SubresourceFilter detector clears its state about detected frames after
-  // each call in order to free up memory.
-  bool DetectAds(content::NavigationHandle* navigation_handle);
 
   // Gets the number of bytes that we may have not attributed to ad
   // resources due to the resource being reported as an ad late.
@@ -165,11 +153,6 @@ class AdsPageLoadMetricsObserver
   // responsible frame is found, the data is an iterator to the end of
   // |ad_frames_data_storage_|.
   std::map<FrameTreeNodeId, std::list<FrameData>::iterator> ad_frames_data_;
-
-  // The set of frames that have yet to finish but that the SubresourceFilter
-  // has reported are ads. Once DetectSubresourceFilterAd is called the id is
-  // removed from the set.
-  std::set<FrameTreeNodeId> unfinished_subresource_ad_frames_;
 
   // When the observer receives report of a document resource loading for a
   // sub-frame before the sub-frame commit occurs, hold onto the resource

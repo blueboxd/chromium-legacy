@@ -77,6 +77,7 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
@@ -431,6 +432,17 @@ class RenderViewImplTest : public RenderViewTest {
     blink::WebView* webview = view()->webview();
     return webview->MainFrameWidget()->Size().width -
            webview->MainFrame()->VisibleContentRect().width;
+  }
+
+  // Closes a view created during the test, i.e. not the |view()|. Checks that
+  // the main frame is detached and deleted, and makes sure the view does not
+  // leak.
+  void CloseRenderWidget(RenderWidget* widget) {
+    WidgetMsg_Close msg(widget->routing_id());
+    widget->OnMessageReceived(msg);
+
+    // WidgetMsg_Close posts a task to do the actual closing. Let that run.
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
@@ -855,6 +867,9 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       ->BeginNavigation(std::move(popup_navigation_info));
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_OpenURL::ID));
+
+  RenderWidget* render_widget = new_view->GetWidget();
+  CloseRenderWidget(render_widget);
 }
 
 class AlwaysForkingRenderViewTest : public RenderViewImplTest {
@@ -1275,6 +1290,59 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
       EXPECT_EQ(test_case->expected_mode, input_mode);
     }
   }
+}
+
+TEST_F(RenderViewImplTest, ShouldSuppressKeyboardIsPropagated) {
+  class TestAutofillClient : public blink::WebAutofillClient {
+   public:
+    TestAutofillClient() = default;
+    ~TestAutofillClient() override = default;
+
+    bool ShouldSuppressKeyboard(const blink::WebFormControlElement&) override {
+      return should_suppress_keyboard_;
+    }
+
+    void SetShouldSuppressKeyboard(bool should_suppress_keyboard) {
+      should_suppress_keyboard_ = should_suppress_keyboard;
+    }
+
+   private:
+    bool should_suppress_keyboard_ = false;
+  };
+
+  // Set-up the fake autofill client.
+  TestAutofillClient client;
+  GetMainFrame()->SetAutofillClient(&client);
+
+  // Load an HTML page consisting of one input fields.
+  LoadHTML(
+      "<html>"
+      "<head>"
+      "</head>"
+      "<body>"
+      "<input id=\"test\" type=\"text\"></input>"
+      "</body>"
+      "</html>");
+
+  // Focus the text field, trigger a state update and check that the right IPC
+  // is sent.
+  ExecuteJavaScriptForTests("document.getElementById('test').focus();");
+  base::RunLoop().RunUntilIdle();
+  view()->GetWidget()->UpdateTextInputState();
+  auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  EXPECT_FALSE(std::get<0>(params).always_hide_ime);
+  render_thread_->sink().ClearMessages();
+
+  // Tell the client to suppress the keyboard. Check whether always_hide_ime is
+  // set correctly.
+  client.SetShouldSuppressKeyboard(true);
+  view()->GetWidget()->UpdateTextInputState();
+  params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  EXPECT_TRUE(std::get<0>(params).always_hide_ime);
+
+  // Explicitly clean-up the autofill client, as otherwise a use-after-free
+  // happens.
+  GetMainFrame()->SetAutofillClient(nullptr);
 }
 
 // Test that our IME backend can compose CJK words.

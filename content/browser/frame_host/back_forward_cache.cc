@@ -93,7 +93,7 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
   if (rfh->GetParent())
     return false;
 
-  if (!IsBackForwardCacheEnabled())
+  if (!IsBackForwardCacheEnabled() || is_disabled_for_testing_)
     return false;
 
   // Note that we check is_loading on the rfh directly, rather than calling
@@ -174,9 +174,17 @@ std::unique_ptr<RenderFrameHostImpl> BackForwardCache::RestoreDocument(
   return rfh;
 }
 
-// Remove all entries from the BackForwardCache.
 void BackForwardCache::Flush() {
   render_frame_hosts_.clear();
+}
+
+void BackForwardCache::DisableForTesting() {
+  is_disabled_for_testing_ = true;
+
+  // This could happen if a test populated some pages in the cache, then
+  // called DisableForTesting(). This is not something we currently expect tests
+  // to do.
+  DCHECK(render_frame_hosts_.empty());
 }
 
 }  // namespace content

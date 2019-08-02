@@ -15,7 +15,6 @@ class SingleThreadTaskRunner;
 
 namespace net {
 class CookieStore;
-class URLRequestInterceptor;
 }  // namespace net
 
 namespace android_webview {
@@ -30,14 +29,6 @@ void PostTaskToCookieStoreTaskRunner(base::OnceClosure task);
 // The CookieStore is never deleted. May only be called on the
 // CookieStore's TaskRunner.
 net::CookieStore* GetCookieStore();
-
-// Called lazily when the job factory is being constructed.
-std::unique_ptr<net::URLRequestInterceptor>
-CreateAndroidAssetFileRequestInterceptor();
-
-// Called lazily when the job factory is being constructed.
-std::unique_ptr<net::URLRequestInterceptor>
-CreateAndroidContentRequestInterceptor();
 
 }  // namespace android_webview
 

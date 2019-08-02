@@ -39,9 +39,8 @@ enum KeyboardMicAction { kRegister, kDeregister };
 
 void UpdateKeyboardMicRegistration(KeyboardMicAction action) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&UpdateKeyboardMicRegistration, action));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&UpdateKeyboardMicRegistration, action));
     return;
   }
   BrowserMainLoop* browser_main_loop = BrowserMainLoop::GetInstance();

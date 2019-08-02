@@ -44,10 +44,5 @@ void LogPasswordGenerationEvent(PasswordGenerationEvent event) {
                             event, EVENT_ENUM_COUNT);
 }
 
-bool IsPasswordGenerationEnabled() {
-  return base::FeatureList::IsEnabled(
-      autofill::features::kAutomaticPasswordGeneration);
-}
-
 }  // namespace password_generation
 }  // namespace autofill

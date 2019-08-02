@@ -3364,12 +3364,12 @@ class MockAutofillClient : public WebAutofillClient {
   }
   void UserGestureObserved() override { ++user_gesture_notifications_count_; }
 
-  bool TryToShowTouchToFill(const WebFormControlElement&) override {
-    return can_show_touch_to_fill_;
+  bool ShouldSuppressKeyboard(const WebFormControlElement&) override {
+    return should_suppress_keyboard_;
   }
 
-  void SetCanShowTouchToFill(bool can_show_touch_to_fill) {
-    can_show_touch_to_fill_ = can_show_touch_to_fill;
+  void SetShouldSuppressKeyboard(bool should_suppress_keyboard) {
+    should_suppress_keyboard_ = should_suppress_keyboard;
   }
 
   void ClearChangeCounts() { text_changes_ = 0; }
@@ -3384,7 +3384,7 @@ class MockAutofillClient : public WebAutofillClient {
   int text_changes_ = 0;
   int text_changes_from_user_gesture_ = 0;
   int user_gesture_notifications_count_ = 0;
-  bool can_show_touch_to_fill_ = false;
+  bool should_suppress_keyboard_ = false;
 };
 
 TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
@@ -4682,25 +4682,25 @@ TEST_F(WebViewTest, WebSubstringUtilIframe) {
 
 #endif
 
-TEST_F(WebViewTest, PasswordFieldCanBeAutofilled) {
+TEST_F(WebViewTest, ShouldSuppressKeyboardForPasswordField) {
   RegisterMockedHttpURLLoad("input_field_password.html");
   // Pretend client has fill data for all fields it's queried.
   MockAutofillClient client;
-  client.SetCanShowTouchToFill(true);
+  client.SetShouldSuppressKeyboard(true);
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_password.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
   // No field is focused.
-  EXPECT_FALSE(frame->TryToShowTouchToFillForFocusedElement());
+  EXPECT_FALSE(frame->ShouldSuppressKeyboardForFocusedElement());
 
   // Focusing a field should result in treating it autofillable.
   web_view->SetInitialFocus(false);
-  EXPECT_TRUE(frame->TryToShowTouchToFillForFocusedElement());
+  EXPECT_TRUE(frame->ShouldSuppressKeyboardForFocusedElement());
 
   // Pretend that |client| no longer has autofill data available.
-  client.SetCanShowTouchToFill(false);
-  EXPECT_FALSE(frame->TryToShowTouchToFillForFocusedElement());
+  client.SetShouldSuppressKeyboard(false);
+  EXPECT_FALSE(frame->ShouldSuppressKeyboardForFocusedElement());
   frame->SetAutofillClient(nullptr);
 }
 

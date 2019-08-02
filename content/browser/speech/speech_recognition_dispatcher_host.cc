@@ -73,7 +73,7 @@ void SpeechRecognitionDispatcherHost::Start(
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&SpeechRecognitionDispatcherHost::StartRequestOnUI,
                      AsWeakPtr(), render_process_id_, render_frame_id_,
@@ -137,7 +137,7 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
   StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
       browser_context, web_contents->GetSiteInstance());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &SpeechRecognitionDispatcherHost::StartSessionOnIO,

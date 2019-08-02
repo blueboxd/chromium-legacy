@@ -45,7 +45,7 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     done_closure_ =
         base::BindOnce(&UtilityProcessHostBrowserTest::DoneRunning,
                        base::Unretained(this), run_loop.QuitClosure(), crash);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &UtilityProcessHostBrowserTest::RunUtilityProcessOnIOThread,
@@ -95,8 +95,7 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     // If service crashes then this never gets called.
     ASSERT_EQ(false, expect_crash);
     ResetServiceOnIOThread();
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             std::move(done_closure_));
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(done_closure_));
   }
 
   mojom::TestServicePtr service_;
@@ -133,7 +132,7 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     EXPECT_EQ(kTestProcessName, data.metrics_name);
     EXPECT_EQ(false, has_crashed);
     has_crashed = true;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&UtilityProcessHostBrowserTest::ResetServiceOnIOThread,
                        base::Unretained(this)));

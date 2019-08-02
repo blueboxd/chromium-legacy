@@ -1088,9 +1088,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        ErrorPageReplacement) {
   NavigationController& controller = shell()->web_contents()->GetController();
   GURL error_url = embedded_test_server()->GetURL("/close-socket");
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   EXPECT_EQ(1, controller.GetEntryCount());

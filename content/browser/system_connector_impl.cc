@@ -48,10 +48,9 @@ service_manager::Connector* GetSystemConnector() {
 
   if (!storage) {
     mojo::PendingRemote<service_manager::mojom::Connector> remote;
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&BindReceiverOnMainThread,
-                       remote.InitWithNewPipeAndPassReceiver()));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&BindReceiverOnMainThread,
+                                  remote.InitWithNewPipeAndPassReceiver()));
     storage.emplace(std::move(remote));
   }
 

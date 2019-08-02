@@ -910,9 +910,12 @@ void AutofillAgent::SelectFieldOptionsChanged(
                           weak_ptr_factory_.GetWeakPtr(), element));
 }
 
-bool AutofillAgent::TryToShowTouchToFill(const WebFormControlElement& element) {
-  // This is currently only implemented for passwords. Consider supporting other
-  // autofill types in the future as well.
+bool AutofillAgent::ShouldSuppressKeyboard(
+    const WebFormControlElement& element) {
+  // The keyboard should be suppressed if we can show the Touch To Fill UI.
+  //
+  // Note: This is currently only implemented for passwords. Consider supporting
+  // other autofill types in the future as well.
   return IsTouchToFillEnabled() &&
          password_autofill_agent_->TryToShowTouchToFill(element);
 }

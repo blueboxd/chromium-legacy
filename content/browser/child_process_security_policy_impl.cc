@@ -555,15 +555,14 @@ void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
   // successfully executed a task on the IO thread. This should ensure that any
   // pending tasks on the IO thread will have completed before we remove the
   // entry.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          [](ChildProcessSecurityPolicyImpl* policy, int child_id) {
-            DCHECK_CURRENTLY_ON(BrowserThread::IO);
-            base::AutoLock lock(policy->lock_);
-            policy->pending_remove_state_.erase(child_id);
-          },
-          base::Unretained(this), child_id));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(
+                     [](ChildProcessSecurityPolicyImpl* policy, int child_id) {
+                       DCHECK_CURRENTLY_ON(BrowserThread::IO);
+                       base::AutoLock lock(policy->lock_);
+                       policy->pending_remove_state_.erase(child_id);
+                     },
+                     base::Unretained(this), child_id));
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterWebSafeScheme(

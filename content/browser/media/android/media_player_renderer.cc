@@ -95,7 +95,7 @@ void MediaPlayerRenderer::Initialize(media::MediaResource* media_resource,
     return;
   }
 
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&MediaPlayerRenderer::CreateMediaPlayer,
                      weak_factory_.GetWeakPtr(),

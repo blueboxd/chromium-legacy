@@ -11,13 +11,14 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -123,8 +124,18 @@ void MediaStreamDispatcherHost::GenerateStream(
     int32_t page_request_id,
     const blink::StreamControls& controls,
     bool user_gesture,
+    blink::mojom::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
     GenerateStreamCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (audio_stream_selection_info_ptr->strategy ==
+          blink::mojom::StreamSelectionStrategy::SEARCH_BY_SESSION_ID &&
+      (!audio_stream_selection_info_ptr->session_id.has_value() ||
+       audio_stream_selection_info_ptr->session_id->is_empty())) {
+    bad_message::ReceivedBadMessage(
+        render_process_id_, bad_message::MDDH_INVALID_STREAM_SELECTION_INFO);
+    return;
+  }
 
   base::PostTaskAndReplyWithResult(
       base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
@@ -132,13 +143,15 @@ void MediaStreamDispatcherHost::GenerateStream(
                      render_frame_id_),
       base::BindOnce(&MediaStreamDispatcherHost::DoGenerateStream,
                      weak_factory_.GetWeakPtr(), page_request_id, controls,
-                     user_gesture, std::move(callback)));
+                     user_gesture, std::move(audio_stream_selection_info_ptr),
+                     std::move(callback)));
 }
 
 void MediaStreamDispatcherHost::DoGenerateStream(
     int32_t page_request_id,
     const blink::StreamControls& controls,
     bool user_gesture,
+    blink::mojom::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
     GenerateStreamCallback callback,
     MediaDeviceSaltAndOrigin salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -153,7 +166,8 @@ void MediaStreamDispatcherHost::DoGenerateStream(
 
   media_stream_manager_->GenerateStream(
       render_process_id_, render_frame_id_, requester_id_, page_request_id,
-      controls, std::move(salt_and_origin), user_gesture, std::move(callback),
+      controls, std::move(salt_and_origin), user_gesture,
+      std::move(audio_stream_selection_info_ptr), std::move(callback),
       base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceStopped,
                           weak_factory_.GetWeakPtr()),
       base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceChanged,

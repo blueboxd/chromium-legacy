@@ -83,6 +83,6 @@ TEST_F(AccountControlItemTest, ConfigureCellWithErrorAndAccessory) {
   EXPECT_NSEQ(mainText, accountCell.textLabel.text);
   EXPECT_NSEQ(detailText, accountCell.detailTextLabel.text);
   EXPECT_EQ(UITableViewCellAccessoryCheckmark, accountCell.accessoryType);
-  EXPECT_NSEQ([UIColor colorNamed:kDestructiveTintColor],
+  EXPECT_NSEQ([UIColor colorNamed:kRedColor],
               accountCell.detailTextLabel.textColor);
 }

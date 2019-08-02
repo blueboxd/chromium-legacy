@@ -33,14 +33,13 @@ TEST(ScopedDoNotUseUIDefaultQueueFromIO, MAYBE_BadPostFromIO) {
     TestBrowserThreadBundle thread_bundle;
     base::RunLoop run_loop;
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
           ScopedDoNotUseUIDefaultQueueFromIO do_not_post_to_ui_default(
               FROM_HERE);
 
           // Posting to the UI thread with no other traits is prohibited.
-          base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                   base::DoNothing());
+          base::PostTask(FROM_HERE, {BrowserThread::UI}, base::DoNothing());
         }));
 
     run_loop.Run();
@@ -52,26 +51,24 @@ TEST(ScopedDoNotUseUIDefaultQueueFromIO, PostFromIO) {
 
   base::RunLoop run_loop;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
         {
           ScopedDoNotUseUIDefaultQueueFromIO do_not_post_to_ui_default(
               FROM_HERE);
 
           // Posting with non default BrowserTaskType is OK.
-          base::PostTaskWithTraits(
-              FROM_HERE, {BrowserThread::IO, BrowserTaskType::kNavigation},
-              base::DoNothing());
+          base::PostTask(FROM_HERE,
+                         {BrowserThread::IO, BrowserTaskType::kNavigation},
+                         base::DoNothing());
 
           // Posting to the IO thread default queue is OK.
-          base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                                   base::DoNothing());
+          base::PostTask(FROM_HERE, {BrowserThread::IO}, base::DoNothing());
         }
 
         // After |do_not_post_to_ui_default| has gone out of scope it's fine to
         // post to the UI thread's default queue again.
-        base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                 run_loop.QuitClosure());
+        base::PostTask(FROM_HERE, {BrowserThread::UI}, run_loop.QuitClosure());
       }));
 
   run_loop.Run();
@@ -82,13 +79,12 @@ TEST(ScopedDoNotUseUIDefaultQueueFromIO, PostFromUI) {
       TestBrowserThreadBundle::REAL_IO_THREAD);
   base::RunLoop run_loop;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI}, base::BindLambdaForTesting([&]() {
         ScopedDoNotUseUIDefaultQueueFromIO do_not_post_to_ui_default(FROM_HERE);
 
         // It's fine to post from the UI thread.
-        base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                 run_loop.QuitClosure());
+        base::PostTask(FROM_HERE, {BrowserThread::UI}, run_loop.QuitClosure());
       }));
 
   run_loop.Run();

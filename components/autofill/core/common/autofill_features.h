@@ -57,7 +57,6 @@ extern const base::Feature kAutofillTokenPrefixMatching;
 extern const base::Feature kAutofillUploadThrottling;
 extern const base::Feature kAutofillUseApi;
 extern const base::Feature kAutofillUseImprovedLabelDisambiguation;
-extern const base::Feature kAutomaticPasswordGeneration;
 
 #if defined(OS_ANDROID)
 extern const base::Feature kAutofillManualFallbackAndroid;

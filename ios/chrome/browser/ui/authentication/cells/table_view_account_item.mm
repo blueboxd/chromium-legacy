@@ -53,8 +53,8 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   if (self.shouldDisplayError) {
     cell.errorIcon.image = [[UIImage imageNamed:@"settings_error"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    cell.errorIcon.tintColor = [UIColor colorNamed:kDestructiveTintColor];
-    cell.detailTextLabel.textColor = [UIColor colorNamed:kDestructiveTintColor];
+    cell.errorIcon.tintColor = [UIColor colorNamed:kRedColor];
+    cell.detailTextLabel.textColor = [UIColor colorNamed:kRedColor];
   } else {
     cell.errorIcon.image = nil;
     cell.detailTextLabel.textColor = UIColor.cr_secondaryLabelColor;

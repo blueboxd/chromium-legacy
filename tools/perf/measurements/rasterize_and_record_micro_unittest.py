@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import logging
+import shutil
+import tempfile
 
 from telemetry import decorators
 from telemetry.page import legacy_page_test
@@ -22,17 +24,22 @@ class RasterizeAndRecordMicroUnitTest(page_test_test_case.PageTestTestCase):
   """
 
   def setUp(self):
-    self._options = options_for_unittests.GetCopy()
+    self._options = options_for_unittests.GetRunOptions(
+        output_dir=tempfile.mkdtemp())
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
+
+  def tearDown(self):
+    shutil.rmtree(self._options.output_dir)
 
   @decorators.Disabled('win', 'chromeos', 'linux')
   def testRasterizeAndRecordMicro(self):
-    ps = self.CreateStorySetFromFileInUnittestDataDir('blank.html')
+    story_set = self.CreateStorySetFromFileInUnittestDataDir('blank.html')
     measurement = rasterize_and_record_micro.RasterizeAndRecordMicro(
         rasterize_repeat=1, record_repeat=1, start_wait_time=0.0,
         report_detailed_results=True)
     try:
-      results = self.RunMeasurement(measurement, ps, options=self._options)
+      results = self.RunMeasurement(
+          measurement, story_set, run_options=self._options)
     except legacy_page_test.TestNotSupportedOnPlatformError as failure:
       logging.warning(str(failure))
       return

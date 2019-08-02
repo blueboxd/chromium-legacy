@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "components/prefs/pref_change_registrar.h"

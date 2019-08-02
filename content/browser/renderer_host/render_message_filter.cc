@@ -173,9 +173,9 @@ void RenderMessageFilter::SetThreadPriorityOnFileThread(
 void RenderMessageFilter::SetThreadPriority(int32_t ns_tid,
                                             base::ThreadPriority priority) {
   constexpr base::TaskTraits kTraits = {
-      base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, kTraits,
       base::BindOnce(&RenderMessageFilter::SetThreadPriorityOnFileThread, this,
                      static_cast<base::PlatformThreadId>(ns_tid), priority));

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"

@@ -70,7 +70,7 @@ PrefetchedSignedExchangeCache::EntryMap GetCachedExchanges(Shell* shell) {
     }
   } else {
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             [](scoped_refptr<PrefetchedSignedExchangeCache> cache,
@@ -266,7 +266,7 @@ class SignedExchangePrefetchBrowserTest
     scoped_refptr<ChromeBlobStorageContext> blob_context =
         ChromeBlobStorageContext::GetFor(
             shell()->web_contents()->GetBrowserContext());
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&SignedExchangePrefetchBrowserTest::SetBlobLimitsOnIO,
                        blob_context));

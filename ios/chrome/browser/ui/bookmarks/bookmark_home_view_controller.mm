@@ -1518,7 +1518,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(leadingButtonClicked)];
-  self.deleteButton.tintColor = [UIColor colorNamed:kDestructiveTintColor];
+  self.deleteButton.tintColor = [UIColor colorNamed:kRedColor];
   self.deleteButton.enabled = NO;
   self.deleteButton.accessibilityIdentifier =
       kBookmarkHomeLeadingButtonIdentifier;

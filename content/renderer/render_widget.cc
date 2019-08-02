@@ -6,7 +6,6 @@
 
 #include <cmath>
 #include <limits>
-#include <memory>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -128,10 +127,6 @@
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #endif  // defined(OS_POSIX)
-
-#if defined(OS_MACOSX)
-#include "content/renderer/text_input_client_observer.h"
-#endif
 
 using blink::WebImeTextSpan;
 using blink::WebCursorInfo;
@@ -446,34 +441,13 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
                            mojom::WidgetRequest widget_request)
     : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
-      webwidget_internal_(nullptr),
-      delegate_(nullptr),
-      auto_resize_mode_(false),
       is_hidden_(hidden),
       compositor_never_visible_(never_visible),
-      is_fullscreen_granted_(false),
       display_mode_(display_mode),
-      ime_event_guard_(nullptr),
       is_frozen_(is_frozen),
-      text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
-      text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
-      text_input_flags_(0),
       next_previous_flags_(kInvalidNextPreviousFlagsValue),
-      can_compose_inline_(true),
-      composition_range_(gfx::Range::InvalidRange()),
-      pending_window_rect_count_(0),
       screen_info_(screen_info),
-      monitor_composition_info_(false),
-      popup_origin_scale_for_emulation_(0.f),
       frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)),
-      has_host_context_menu_location_(false),
-      has_focus_(false),
-      for_child_local_root_frame_(false),
-#if defined(OS_MACOSX)
-      text_input_client_observer_(new TextInputClientObserver(this)),
-#endif
-      first_update_visual_state_after_hidden_(false),
-      was_shown_time_(base::TimeTicks::Now()),
       widget_binding_(this, std::move(widget_request)) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
@@ -525,13 +499,7 @@ void RenderWidget::InitForChildLocalRoot(
 
 void RenderWidget::CloseForFrame() {
   DCHECK(for_child_local_root_frame_);
-  PrepareForClose();
-
-  // The RenderWidget may be deattached from JS, which in turn may be called
-  // in a re-entrant context. We cannot synchronously destroy the object, so we
-  // post a task to do so later.
-  GetCleanupTaskRunner()->PostNonNestableTask(
-      FROM_HERE, base::BindOnce(&RenderWidget::Close, this));
+  OnClose();
 }
 
 void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
@@ -577,9 +545,8 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
   RenderThread::Get()->AddRoute(routing_id_, this);
-  // Take a reference. This object is either owned by the browser process, or by
-  // RenderFrame. Both will eventually call Close() when they wish to destroy
-  // this object.
+  // Take a reference on behalf of the RenderThread.  This will be balanced
+  // when we receive WidgetMsg_Close.
   AddRef();
 }
 
@@ -712,14 +679,6 @@ bool RenderWidget::ShouldHandleImeEvents() const {
 }
 
 void RenderWidget::OnClose() {
-  // It is always safe to synchronously destroy this object from an IPC message.
-  // That's because the IPC message is asynchronous, which means it can never be
-  // called from a nested context.
-  PrepareForClose();
-  Close();
-}
-
-void RenderWidget::PrepareForClose() {
   DCHECK(RenderThread::IsMainThread());
   if (closing_)
     return;
@@ -747,6 +706,23 @@ void RenderWidget::PrepareForClose() {
     // already-deleted frame.
     CloseWebWidget();
   }
+  // If there is a Send call on the stack, then it could be dangerous to close
+  // now.  Post a task that only gets invoked when there are no nested message
+  // loops.
+  //
+  // The asynchronous Close() takes an owning reference to |this| keeping the
+  // object alive beyond the Release() below. It is the last reference to this
+  // object.
+  //
+  // TODO(https://crbug.com/545684): The actual lifetime for RenderWidget
+  // seems to be single-owner. It is either owned by "IPC" events (popup,
+  // mainframe, and fullscreen), or a RenderFrame. If Close() self-deleting,
+  // all the ref-counting mess could be removed.
+  GetCleanupTaskRunner()->PostNonNestableTask(
+      FROM_HERE, base::BindOnce(&RenderWidget::Close, this));
+
+  // Balances the AddRef taken when we called AddRoute.
+  Release();
 }
 
 void RenderWidget::OnSynchronizeVisualProperties(
@@ -1492,12 +1468,19 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
 
   bool new_can_compose_inline = CanComposeInline();
 
+  // Check whether the keyboard should always be hidden for the currently
+  // focused element.
+  auto* focused_frame = GetFocusedWebLocalFrameInWidget();
+  bool always_hide_ime =
+      focused_frame && focused_frame->ShouldSuppressKeyboardForFocusedElement();
+
   // Only sends text input params if they are changed or if the ime should be
   // shown.
   if (show_virtual_keyboard || reply_to_request ||
       text_input_type_ != new_type || text_input_mode_ != new_mode ||
       text_input_info_ != new_info ||
-      can_compose_inline_ != new_can_compose_inline) {
+      can_compose_inline_ != new_can_compose_inline ||
+      always_hide_ime_ != always_hide_ime) {
     TextInputState params;
     params.type = new_type;
     params.mode = new_mode;
@@ -1531,6 +1514,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     // TODO(changwan): change instances of show_ime_if_needed to
     // show_virtual_keyboard.
     params.show_ime_if_needed = show_virtual_keyboard;
+    params.always_hide_ime = always_hide_ime;
     params.reply_to_request = reply_to_request;
     Send(new WidgetHostMsg_TextInputStateChanged(routing_id(), params));
 
@@ -1538,6 +1522,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     text_input_type_ = new_type;
     text_input_mode_ = new_mode;
     can_compose_inline_ = new_can_compose_inline;
+    always_hide_ime_ = always_hide_ime;
     text_input_flags_ = new_info.flags;
 
 #if defined(OS_ANDROID)
@@ -1952,9 +1937,6 @@ void RenderWidget::Close() {
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
   closed_ = true;
-
-  // Balances the AddRef in Init.
-  Release();
 }
 
 void RenderWidget::CloseWebWidget() {

@@ -27,10 +27,11 @@
 
 [
     Constructor,
+    Measure,
     NoInterfaceObject
 ] interface SpeechGrammarList {
     readonly attribute unsigned long length;
-    getter SpeechGrammar item(unsigned long index);
+    [Measure] getter SpeechGrammar item(unsigned long index);
     [CallWith=ScriptState, Measure] void addFromUri(DOMString src, optional float weight);
-    void addFromString(DOMString string, optional float weight);
+    [Measure] void addFromString(DOMString string, optional float weight);
 };

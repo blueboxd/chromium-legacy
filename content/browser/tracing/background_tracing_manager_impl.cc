@@ -75,7 +75,7 @@ void BackgroundTracingManagerImpl::ActivateForProcess(
       base::BindOnce(&BackgroundTracingAgentClientImpl::Create,
                      child_process_id, std::move(pending_provider));
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BackgroundTracingManagerImpl::AddPendingAgentConstructor,
                      std::move(constructor)));
@@ -325,7 +325,7 @@ void BackgroundTracingManagerImpl::TriggerNamedEvent(
     BackgroundTracingManagerImpl::TriggerHandle handle,
     StartedFinalizingCallback callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&BackgroundTracingManagerImpl::TriggerNamedEvent,
                        base::Unretained(this), handle, std::move(callback)));

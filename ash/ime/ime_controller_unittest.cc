@@ -8,7 +8,7 @@
 
 #include "ash/ime/mode_indicator_observer.h"
 #include "ash/ime/test_ime_controller_client.h"
-#include "ash/public/interfaces/ime_info.mojom.h"
+#include "ash/public/mojom/ime_info.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"

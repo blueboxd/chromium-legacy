@@ -34,7 +34,7 @@ const CGFloat kCheckmarkMagin = 26.;
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
-    self.tintColor = [UIColor colorNamed:kTintColor];
+    self.tintColor = [UIColor colorNamed:kBlueColor];
 
     _identityView = [[IdentityView alloc] initWithFrame:CGRectZero];
     _identityView.translatesAutoresizingMaskIntoConstraints = NO;

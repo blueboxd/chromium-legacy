@@ -302,6 +302,9 @@ class CORE_EXPORT StyleEngine final
 
   void NodeWillBeRemoved(Node&);
   void ChildrenRemoved(ContainerNode& parent);
+  void PseudoElementRemoved(Element& originating_element) {
+    layout_tree_rebuild_root_.ChildrenRemoved(originating_element);
+  }
 
   unsigned StyleForElementCount() const { return style_for_element_count_; }
   void IncStyleForElementCount() { style_for_element_count_++; }

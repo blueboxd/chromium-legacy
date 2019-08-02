@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_deliverer.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
@@ -104,6 +105,25 @@ class BLINK_PLATFORM_EXPORT MediaStreamAudioSource
   // Returns a unique class identifier. Some subclasses override and use this
   // method to provide safe down-casting to their type.
   virtual void* GetClassIdentifier() const;
+
+  // Returns true if the source has audio processing properties and the
+  // reconfigurable settings associated to audio processing match
+  // |selected_properties|; false otherwise.
+  bool HasSameReconfigurableSettings(
+      const blink::AudioProcessingProperties& selected_properties) const;
+
+  // Returns true if |this| and |other_source| have audio processing properties
+  // and the set of settings that cannot be reconfigured associated to these
+  // audio sources match; false otherwise.
+  bool HasSameNonReconfigurableSettings(
+      MediaStreamAudioSource* other_source) const;
+
+  // Returns the audio processing properties associated to this source if any,
+  // or nullopt otherwise.
+  virtual base::Optional<blink::AudioProcessingProperties>
+  GetAudioProcessingProperties() const {
+    return base::nullopt;
+  }
 
  protected:
   // Returns a new MediaStreamAudioTrack. |id| is the blink track's ID in UTF-8.

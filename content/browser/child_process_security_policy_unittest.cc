@@ -1143,7 +1143,7 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
 
   // Post a task that will run on the IO thread before the task that
   // Remove() will post to the IO thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
         // Capture state on the IO thread before Remove() is called.
         io_before_remove = p->CanAccessDataForOrigin(kRendererID, url);
@@ -1166,15 +1166,15 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
   p->Remove(kRendererID);
 
   // Post a task to run after the task Remove() posted on the IO thread.
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindLambdaForTesting([&]() {
-                             io_after_io_task_completed =
-                                 p->CanAccessDataForOrigin(kRendererID, url);
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindLambdaForTesting([&]() {
+                   io_after_io_task_completed =
+                       p->CanAccessDataForOrigin(kRendererID, url);
 
-                             // Tell the UI thread that the task from Remove()
-                             // has completed on the IO thread.
-                             pending_remove_complete_event.Signal();
-                           }));
+                   // Tell the UI thread that the task from Remove()
+                   // has completed on the IO thread.
+                   pending_remove_complete_event.Signal();
+                 }));
 
   // Capture state after Remove() has been called, but before its IO thread
   // task has run. We know the IO thread task hasn't run yet because the
@@ -1198,7 +1198,7 @@ TEST_F(ChildProcessSecurityPolicyTest, RemoveRace_CanAccessDataForOrigin) {
   bool io_after_remove_complete = false;
   base::WaitableEvent after_remove_complete_event;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
         io_after_remove_complete = p->CanAccessDataForOrigin(kRendererID, url);
 
@@ -1267,8 +1267,8 @@ TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin) {
   // Post a task to the IO loop that then posts a task to the UI loop.
   // This should cause the |run_loop| to return after the removal has completed.
   base::RunLoop run_loop;
-  base::PostTaskWithTraitsAndReply(FROM_HERE, {BrowserThread::IO},
-                                   base::DoNothing(), run_loop.QuitClosure());
+  base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
+                         run_loop.QuitClosure());
   run_loop.Run();
 
   // Verify invalid ID is rejected now that Remove() has complted.
@@ -2054,21 +2054,21 @@ TEST_F(ChildProcessSecurityPolicyTest, HasSecurityState) {
 
   // Post a task that will run on the IO thread before the task that
   // Remove() will post to the IO thread.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
-        // Capture state on the IO thread before Remove() is called.
-        io_before_remove = p->HasSecurityState(kRendererID);
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindLambdaForTesting([&]() {
+                   // Capture state on the IO thread before Remove() is called.
+                   io_before_remove = p->HasSecurityState(kRendererID);
 
-        // Tell the UI thread we are ready for Remove() to be called.
-        ready_for_remove_event.Signal();
+                   // Tell the UI thread we are ready for Remove() to be called.
+                   ready_for_remove_event.Signal();
 
-        // Wait for Remove() to be called on the UI thread.
-        remove_called_event.Wait();
+                   // Wait for Remove() to be called on the UI thread.
+                   remove_called_event.Wait();
 
-        // Capture state after Remove() is called, but before its task on
-        // the IO thread runs.
-        io_while_io_task_pending = p->HasSecurityState(kRendererID);
-      }));
+                   // Capture state after Remove() is called, but before its
+                   // task on the IO thread runs.
+                   io_while_io_task_pending = p->HasSecurityState(kRendererID);
+                 }));
 
   ready_for_remove_event.Wait();
 
@@ -2077,7 +2077,7 @@ TEST_F(ChildProcessSecurityPolicyTest, HasSecurityState) {
   p->Remove(kRendererID);
 
   // Post a task to run after the task Remove() posted on the IO thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
         io_after_io_task_completed = p->HasSecurityState(kRendererID);
 
@@ -2108,14 +2108,14 @@ TEST_F(ChildProcessSecurityPolicyTest, HasSecurityState) {
   bool io_after_remove_complete = false;
   base::WaitableEvent after_remove_complete_event;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO}, base::BindLambdaForTesting([&]() {
-        io_after_remove_complete = p->HasSecurityState(kRendererID);
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindLambdaForTesting([&]() {
+                   io_after_remove_complete = p->HasSecurityState(kRendererID);
 
-        // Tell the UI thread that this task has
-        // has completed on the IO thread.
-        after_remove_complete_event.Signal();
-      }));
+                   // Tell the UI thread that this task has
+                   // has completed on the IO thread.
+                   after_remove_complete_event.Signal();
+                 }));
 
   // Wait for the task we just posted to the IO thread to complete.
   after_remove_complete_event.Wait();

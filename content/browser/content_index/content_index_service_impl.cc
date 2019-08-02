@@ -42,7 +42,7 @@ void ContentIndexServiceImpl::Create(
   auto* storage_partition = static_cast<StoragePartitionImpl*>(
       render_process_host->GetStoragePartition());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &CreateOnIO, std::move(request), origin,

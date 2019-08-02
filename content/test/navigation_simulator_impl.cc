@@ -610,8 +610,7 @@ void NavigationSimulatorImpl::Commit() {
         new net::HttpResponseHeaders(std::string());
     response_headers->AddHeader(std::string("Content-Type: ") +
                                 contents_mime_type_);
-    request_->navigation_handle()->set_response_headers_for_testing(
-        response_headers);
+    request_->set_response_headers_for_testing(response_headers);
   }
 
   bool is_cross_process_navigation =
@@ -672,9 +671,8 @@ void NavigationSimulatorImpl::FailWithResponseHeaders(
   if (state_ == INITIALIZATION)
     Start();
 
-  NavigationHandleImpl* handle = request_->navigation_handle();
-  CHECK(!handle->GetResponseHeaders());
-  handle->set_response_headers_for_testing(response_headers);
+  CHECK(!request_->GetResponseHeaders());
+  request_->set_response_headers_for_testing(response_headers);
 
   state_ = FAILED;
 

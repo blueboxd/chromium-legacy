@@ -547,16 +547,16 @@ void WebAppInstallTask::OnShortcutsCreated(
     add_to_quick_launch_bar = install_params_->add_to_quick_launch_bar;
 
   if (add_to_quick_launch_bar &&
-      install_finalizer_->CanAddAppToQuickLaunchBar())
+      install_finalizer_->CanAddAppToQuickLaunchBar()) {
     install_finalizer_->AddAppToQuickLaunchBar(app_id);
+  }
 
-  // TODO(loyso): Reparenting must be implemented in
-  // chrome/browser/ui/web_applications/ UI layer as a post-install step.
   if (!background_installation_) {
     const bool can_reparent_tab =
         install_finalizer_->CanReparentTab(app_id, shortcut_created);
+
     if (can_reparent_tab && web_app_info->open_as_window)
-      install_finalizer_->ReparentTab(app_id, web_contents());
+      install_finalizer_->ReparentTab(app_id, shortcut_created, web_contents());
 
     // TODO(loyso): Make revealing app shim independent from CanReparentTab.
     if (can_reparent_tab && install_finalizer_->CanRevealAppShim())

@@ -40,6 +40,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
@@ -83,8 +85,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -1599,10 +1599,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
 
   // Start the platform app, causing it to open a window.
   run_loop_.reset(new base::RunLoop);
-  OpenApplication(AppLaunchParams(
-      profile, app->id(), extensions::LaunchContainer::kLaunchContainerNone,
+  apps::LaunchService::Get(profile)->OpenApplication(AppLaunchParams(
+      profile, app->id(), apps::mojom::LaunchContainer::kLaunchContainerNone,
       WindowOpenDisposition::NEW_WINDOW,
-      extensions::AppLaunchSource::kSourceTest));
+      apps::mojom::AppLaunchSource::kSourceTest));
   run_loop_->Run();
   EXPECT_EQ(1U, app_window_registry->app_windows().size());
 

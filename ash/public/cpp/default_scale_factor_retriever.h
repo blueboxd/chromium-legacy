@@ -6,7 +6,7 @@
 #define ASH_PUBLIC_CPP_DEFAULT_SCALE_FACTOR_RETRIEVER_H_
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"

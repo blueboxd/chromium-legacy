@@ -233,3 +233,9 @@ function assertTrue(booleanExpression, description) {
     failTest(description);
   }
 }
+
+function assertFalse(booleanExpression, description) {
+  if (!!booleanExpression) {
+    failTest(description);
+  }
+}

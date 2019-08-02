@@ -284,8 +284,8 @@
 
 #if !defined(OS_MACOSX)
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
@@ -3544,11 +3544,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
   // Launch an app that tries to open a fullscreen window.
   TestAddAppWindowObserver add_window_observer(
       extensions::AppWindowRegistry::Get(browser()->profile()));
-  OpenApplication(
-      AppLaunchParams(browser()->profile(), extension->id(),
-                      extensions::LaunchContainer::kLaunchContainerNone,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceTest));
+  apps::LaunchService::Get(browser()->profile())
+      ->OpenApplication(
+          AppLaunchParams(browser()->profile(), extension->id(),
+                          apps::mojom::LaunchContainer::kLaunchContainerNone,
+                          WindowOpenDisposition::NEW_WINDOW,
+                          apps::mojom::AppLaunchSource::kSourceTest));
   extensions::AppWindow* window = add_window_observer.WaitForAppWindow();
   ASSERT_TRUE(window);
 

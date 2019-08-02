@@ -5,7 +5,7 @@
 #ifndef ASH_IME_TEST_IME_CONTROLLER_CLIENT_H_
 #define ASH_IME_TEST_IME_CONTROLLER_CLIENT_H_
 
-#include "ash/public/interfaces/ime_controller.mojom.h"
+#include "ash/public/mojom/ime_controller.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 

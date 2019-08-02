@@ -29,10 +29,11 @@
     ActiveScriptWrappable,
     Constructor,
     ConstructorCallWith=ExecutionContext,
+    Measure,
     NoInterfaceObject
 ] interface SpeechRecognition : EventTarget {
     // recognition parameters
-    attribute SpeechGrammarList grammars;
+    [Measure] attribute SpeechGrammarList grammars;
     attribute DOMString lang;
     attribute boolean continuous;
     attribute boolean interimResults;

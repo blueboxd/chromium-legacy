@@ -476,8 +476,14 @@ void RenderViewImpl::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(RenderThread::IsMainThread());
 
+  // RenderView used to inherit from RenderWidget. Creating a delegate
+  // interface and explicitly passing ownership of ourselves to the
+  // RenderWidget preserves the lifetime semantics. This is a stepping
+  // stone to having RenderWidget creation taken out of the RenderViewImpl
+  // constructor. See the corresponding explicit reset() of the delegate
+  // in the ~RenderWidget(). Also, I hate inheritance.
   render_widget_ = render_widget;
-  GetWidget()->set_delegate(this);
+  GetWidget()->set_delegate(base::WrapUnique(this));
   RenderThread::Get()->AddRoute(routing_id_, this);
 
 #if defined(OS_ANDROID)
@@ -1045,12 +1051,6 @@ RenderViewImpl* RenderViewImpl::Create(
   render_view->Initialize(render_widget.get(), std::move(params),
                           std::move(show_callback), std::move(task_runner));
   return render_view;
-}
-
-void RenderViewImpl::Destroy() {
-  GetWidget()->PrepareForClose();
-  GetWidget()->Close();
-  delete this;
 }
 
 // static

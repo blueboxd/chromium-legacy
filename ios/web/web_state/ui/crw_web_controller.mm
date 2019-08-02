@@ -366,10 +366,17 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         setNativeControllerWebUsageEnabled:_webUsageEnabled];
     if (enabled) {
       // Don't create the web view; let it be lazy created as needed.
+
+      // The gesture is removed when the web usage is disabled. Add it back when
+      // it is enabled again.
+      [_containerView addGestureRecognizer:[self touchTrackingRecognizer]];
     } else {
       self.webStateImpl->ClearTransientContent();
-      _touchTrackingRecognizer.touchTrackingDelegate = nil;
-      _touchTrackingRecognizer = nil;
+      if (_touchTrackingRecognizer) {
+        [_containerView removeGestureRecognizer:_touchTrackingRecognizer];
+        _touchTrackingRecognizer.touchTrackingDelegate = nil;
+        _touchTrackingRecognizer = nil;
+      }
       _currentURLLoadWasTrigerred = NO;
     }
   }

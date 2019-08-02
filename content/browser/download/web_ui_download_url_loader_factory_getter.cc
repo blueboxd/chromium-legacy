@@ -22,7 +22,7 @@ WebUIDownloadURLLoaderFactoryGetter::WebUIDownloadURLLoaderFactoryGetter(
 }
 
 WebUIDownloadURLLoaderFactoryGetter::~WebUIDownloadURLLoaderFactoryGetter() {
-  base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
+  base::CreateSingleThreadTaskRunner({BrowserThread::UI})
       ->DeleteSoon(FROM_HERE, std::move(factory_));
 }
 

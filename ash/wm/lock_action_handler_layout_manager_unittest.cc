@@ -17,7 +17,7 @@
 #include "ash/lock_screen_action/test_lock_screen_action_background_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/test_session_controller_client.h"

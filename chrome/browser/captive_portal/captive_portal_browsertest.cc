@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -67,7 +66,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -83,7 +81,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using captive_portal::CaptivePortalResult;
@@ -157,12 +154,6 @@ const char* const kMockHttpConnectionConnectionClosedErr =
 // Expected title of a tab once an HTTPS load completes, when not behind a
 // captive portal.
 const char* const kInternetConnectedTitle = "Title Of Awesomeness";
-
-BrowserThread::ID GetInterceptorThreadID() {
-  return base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)
-             ? BrowserThread::UI
-             : BrowserThread::IO;
-}
 
 // Creates a server-side redirect for use with the TestServer.
 std::string CreateServerRedirect(const std::string& dest_url) {
@@ -762,11 +753,11 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 
   // Waits for exactly |num_jobs| kMockHttps* requests.
   void WaitForJobs(int num_jobs) {
-    if (BrowserThread::CurrentlyOn(GetInterceptorThreadID())) {
+    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       SetNumJobsToWaitForOnInterceptorThread(num_jobs);
     } else {
       base::PostTaskWithTraits(
-          FROM_HERE, {GetInterceptorThreadID()},
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(
               &CaptivePortalBrowserTest::SetNumJobsToWaitForOnInterceptorThread,
               base::Unretained(this), num_jobs));
@@ -779,7 +770,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   }
 
   void SetNumJobsToWaitForOnInterceptorThread(int num_jobs) {
-    DCHECK_CURRENTLY_ON(GetInterceptorThreadID());
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!num_jobs_to_wait_for_);
 
     int num_ongoing_jobs = static_cast<int>(ongoing_mock_requests_.size());
@@ -800,9 +791,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // failure.  The only way to guarantee this is with an earlier call to
   // WaitForJobs, so makes sure there has been a matching WaitForJobs call.
   void FailJobs(int expected_num_jobs) {
-    if (!BrowserThread::CurrentlyOn(GetInterceptorThreadID())) {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       base::PostTaskWithTraits(
-          FROM_HERE, {GetInterceptorThreadID()},
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&CaptivePortalBrowserTest::FailJobs,
                          base::Unretained(this), expected_num_jobs));
       return;
@@ -821,9 +812,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // |expected_num_jobs| behaves just as in FailJobs.
   void FailJobsWithCertError(int expected_num_jobs,
                              const net::SSLInfo& ssl_info) {
-    if (!BrowserThread::CurrentlyOn(GetInterceptorThreadID())) {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       base::PostTaskWithTraits(
-          FROM_HERE, {GetInterceptorThreadID()},
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&CaptivePortalBrowserTest::FailJobsWithCertError,
                          base::Unretained(this), expected_num_jobs, ssl_info));
       return;
@@ -863,9 +854,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // Abandon all active kMockHttps* requests.  |expected_num_jobs|
   // behaves just as in FailJobs.
   void AbandonJobs(int expected_num_jobs) {
-    if (!BrowserThread::CurrentlyOn(GetInterceptorThreadID())) {
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       base::PostTaskWithTraits(
-          FROM_HERE, {GetInterceptorThreadID()},
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&CaptivePortalBrowserTest::AbandonJobs,
                          base::Unretained(this), expected_num_jobs));
       return;
@@ -898,7 +889,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
  protected:
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  // Only accessed on the |GetInterceptorThreadID()| thread.
+  // Only accessed on the UI thread.
   int num_jobs_to_wait_for_ = 0;
   std::vector<content::URLLoaderInterceptor::RequestParams>
       ongoing_mock_requests_;
@@ -942,7 +933,7 @@ bool CaptivePortalBrowserTest::OnIntercept(
     content::URLLoaderInterceptor::RequestParams* params) {
   if (params->url_request.url.path() == kMockHttpsBadCertPath &&
       intercept_bad_cert_) {
-    CHECK(BrowserThread::CurrentlyOn(GetInterceptorThreadID()));
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ongoing_mock_requests_.emplace_back(std::move(*params));
     return true;
   }
@@ -965,7 +956,7 @@ bool CaptivePortalBrowserTest::OnIntercept(
   if (url_string == kMockHttpsUrl || url_string == kMockHttpsUrl2 ||
       url_string == kMockHttpsQuickTimeoutUrl ||
       params->url_request.url.path() == kRedirectToMockHttpsPath) {
-    CHECK(BrowserThread::CurrentlyOn(GetInterceptorThreadID()));
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (params->url_request.url.path() == kRedirectToMockHttpsPath) {
       net::RedirectInfo redirect_info;
       redirect_info.new_url = GURL(kMockHttpsUrl);

@@ -22,6 +22,8 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -33,8 +35,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/tpm/install_attributes.h"
@@ -570,11 +570,11 @@ void DemoSession::OnExtensionInstalled(content::BrowserContext* browser_context,
     return;
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
-  OpenApplication(
+  apps::LaunchService::Get(profile)->OpenApplication(
       AppLaunchParams(profile, extension->id(),
-                      extensions::LaunchContainer::kLaunchContainerWindow,
+                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
                       WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceChromeInternal));
+                      apps::mojom::AppLaunchSource::kSourceChromeInternal));
 }
 
 void DemoSession::OnAppWindowActivated(extensions::AppWindow* app_window) {

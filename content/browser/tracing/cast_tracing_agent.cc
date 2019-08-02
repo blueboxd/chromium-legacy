@@ -205,8 +205,9 @@ class CastDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
 
   CastDataSource()
       : DataSourceBase(tracing::mojom::kSystemTraceDataSourceName),
-        worker_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        worker_task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
     DETACH_FROM_SEQUENCE(perfetto_sequence_checker_);
   }
@@ -267,8 +268,9 @@ CastTracingAgent::CastTracingAgent()
     : BaseAgent("systemTraceEvents",
                 tracing::mojom::TraceDataType::STRING,
                 base::kNullProcessId),
-      worker_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      worker_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   tracing::PerfettoTracedProcess::Get()->AddDataSource(
       CastDataSource::GetInstance());

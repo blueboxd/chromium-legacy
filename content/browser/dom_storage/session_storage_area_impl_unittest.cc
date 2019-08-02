@@ -69,9 +69,9 @@ class SessionStorageAreaImplTest : public testing::Test {
         test_origin1_(url::Origin::Create(GURL("https://host1.com:1/"))),
         test_origin2_(url::Origin::Create(GURL("https://host2.com:2/"))) {
     auto file_runner =
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
     CreateStrongBindingOnTaskRunner(
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
         &leveldb_service_,
         std::make_unique<leveldb::LevelDBServiceImpl>(std::move(file_runner)));
 

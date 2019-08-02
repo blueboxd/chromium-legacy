@@ -625,11 +625,15 @@
     <dimen name="radio_button_with_description_vertical_padding">10dp</dimen>
 
     <!-- History Navigation UI Item -->
-    <dimen name="navigation_bubble_border_width">1dp</dimen>
-    <dimen name="navigation_bubble_default_height">32dp</dimen>
-    <dimen name="navigation_bubble_bg_vertical_inset">0dp</dimen>
-    <dimen name="navigation_bubble_vertical_padding">4dp</dimen>
-    <dimen name="navigation_bubble_horizontal_padding">8dp</dimen>
-    <dimen name="navigation_bubble_icon_size">20dp</dimen>
-    <dimen name="navigation_bubble_icon_leading_margin">8dp</dimen>
+    <dimen name="navigation_bubble_size">40dp</dimen>
+    <dimen name="navigation_bubble_radius">20dp</dimen>
+    <dimen name="navigation_bubble_shadow_padding">1dp</dimen>
+    <dimen name="navigation_bubble_arrow_size">28dp</dimen>
+    <dimen name="navigation_bubble_start_padding">2dp</dimen>
+    <dimen name="navigation_bubble_top_padding">4dp</dimen>
+    <dimen name="navigation_bubble_bottom_padding">4dp</dimen>
+    <dimen name="navigation_bubble_text_top_padding">3dp</dimen>
+    <dimen name="navigation_bubble_text_bottom_padding">5dp</dimen>
+    <dimen name="navigation_bubble_text_start_padding">2dp</dimen>
+    <dimen name="navigation_bubble_text_end_padding">8dp</dimen>
 </resources>

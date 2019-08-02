@@ -42,6 +42,20 @@ void GPURenderPassEncoder::setBindGroup(
       dynamicOffsets.data());
 }
 
+void GPURenderPassEncoder::pushDebugGroup(String groupLabel) {
+  GetProcs().renderPassEncoderPushDebugGroup(GetHandle(),
+                                             groupLabel.Utf8().data());
+}
+
+void GPURenderPassEncoder::popDebugGroup() {
+  GetProcs().renderPassEncoderPopDebugGroup(GetHandle());
+}
+
+void GPURenderPassEncoder::insertDebugMarker(String markerLabel) {
+  GetProcs().renderPassEncoderInsertDebugMarker(GetHandle(),
+                                                markerLabel.Utf8().data());
+}
+
 void GPURenderPassEncoder::setPipeline(GPURenderPipeline* pipeline) {
   GetProcs().renderPassEncoderSetPipeline(GetHandle(), pipeline->GetHandle());
 }

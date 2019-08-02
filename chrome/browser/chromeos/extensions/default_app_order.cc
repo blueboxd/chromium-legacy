@@ -63,6 +63,8 @@ const char* const kDefaultAppOrder[] = {
     app_list::kDefaultPageBreak1,  // First default page break
     extension_misc::kGoogleMapsAppId,
     app_list::kInternalAppIdSettings,
+    default_web_apps::kSettingsAppId,
+    default_web_apps::kOsSettingsAppId,
     app_list::kInternalAppIdDiscover,
     extension_misc::kGeniusAppId,
     extension_misc::kCalculatorAppId,

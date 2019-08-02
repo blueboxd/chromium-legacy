@@ -262,7 +262,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenPassword"));
   [self animateKeyboardButtonHidden:NO];
   [self resetTintColors];
-  [self.passwordButton setTintColor:[UIColor colorNamed:kTintColor]];
+  [self.passwordButton setTintColor:[UIColor colorNamed:kBlueColor]];
   [self.delegate passwordButtonPressed:sender];
 }
 
@@ -270,7 +270,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenCreditCard"));
   [self animateKeyboardButtonHidden:NO];
   [self resetTintColors];
-  [self.cardsButton setTintColor:[UIColor colorNamed:kTintColor]];
+  [self.cardsButton setTintColor:[UIColor colorNamed:kBlueColor]];
   [self.delegate cardButtonPressed:sender];
 }
 
@@ -278,7 +278,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenProfile"));
   [self animateKeyboardButtonHidden:NO];
   [self resetTintColors];
-  [self.accountButton setTintColor:[UIColor colorNamed:kTintColor]];
+  [self.accountButton setTintColor:[UIColor colorNamed:kBlueColor]];
   [self.delegate accountButtonPressed:sender];
 }
 

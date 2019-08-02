@@ -25,7 +25,7 @@ void PaymentAppContextImpl::Init(
   DCHECK(!did_shutdown_on_io_.IsSet());
 #endif
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PaymentAppContextImpl::CreatePaymentAppDatabaseOnIO, this,
                      service_worker_context));
@@ -38,16 +38,15 @@ void PaymentAppContextImpl::Shutdown() {
   // IO thread. When the last reference to |this| is released, |this| is
   // automatically scheduled for deletion on the UI thread (see
   // content::BrowserThread::DeleteOnUIThread in the header file).
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&PaymentAppContextImpl::ShutdownOnIO, this));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&PaymentAppContextImpl::ShutdownOnIO, this));
 }
 
 void PaymentAppContextImpl::CreatePaymentManager(
     payments::mojom::PaymentManagerRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PaymentAppContextImpl::CreatePaymentManagerOnIO, this,
                      std::move(request)));

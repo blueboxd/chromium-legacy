@@ -10,7 +10,7 @@
 #include "components/feedback/system_logs/system_logs_source.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #endif
 
 namespace system_logs {

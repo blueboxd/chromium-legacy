@@ -181,11 +181,7 @@ void NavigationHandleImpl::SetRequestHeader(const std::string& header_name,
 }
 
 const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {
-  if (response_headers_for_testing_)
-    return response_headers_for_testing_.get();
-  return navigation_request_->response()
-             ? navigation_request_->response()->head.headers.get()
-             : nullptr;
+  return navigation_request_->GetResponseHeaders();
 }
 
 net::HttpResponseInfo::ConnectionInfo

@@ -323,7 +323,7 @@ bool UtilityProcessHost::StartProcess() {
     // support single process mode this way.
     in_process_thread_.reset(
         g_utility_main_thread_factory(InProcessChildThreadParams(
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
             process_->GetInProcessMojoInvitation(),
             process_->child_connection()->service_token())));
     in_process_thread_->Start();

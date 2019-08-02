@@ -42,6 +42,10 @@ namespace features {
 
 // Alphabetical:
 
+// Viz for WebView architecture.
+const base::Feature kVizForWebView{"VizForWebView",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable brotli compression support in WebView.
 const base::Feature kWebViewBrotliSupport{"WebViewBrotliSupport",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

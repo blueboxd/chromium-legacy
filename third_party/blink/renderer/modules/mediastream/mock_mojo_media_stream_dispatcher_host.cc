@@ -26,13 +26,18 @@ void MockMojoMediaStreamDispatcherHost::GenerateStream(
     int32_t request_id,
     const StreamControls& controls,
     bool user_gesture,
+    mojom::blink::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
     GenerateStreamCallback callback) {
   request_id_ = request_id;
   audio_devices_.clear();
   video_devices_.clear();
   ++request_stream_counter_;
 
-  if (controls.audio.requested) {
+  blink::mojom::StreamSelectionStrategy strategy =
+      audio_stream_selection_info_ptr->strategy;
+  if (controls.audio.requested &&
+      (strategy == blink::mojom::StreamSelectionStrategy::SEARCH_BY_DEVICE_ID ||
+       strategy == blink::mojom::StreamSelectionStrategy::FORCE_NEW_STREAM)) {
     MediaStreamDevice audio_device;
     audio_device.id = controls.audio.device_id + session_id_.ToString();
     audio_device.name = "microphone";

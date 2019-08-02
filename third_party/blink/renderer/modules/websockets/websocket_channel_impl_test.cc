@@ -92,8 +92,7 @@ class MockWebSocketHandle : public WebSocketHandle {
                const Vector<String>& protocols,
                const KURL& site_for_cookies,
                const String& user_agent_override,
-               WebSocketChannelImpl* channel,
-               base::SingleThreadTaskRunner*) override {
+               WebSocketChannelImpl* channel) override {
     Connect(url, protocols, site_for_cookies, user_agent_override, channel);
   }
   MOCK_METHOD5(Connect,

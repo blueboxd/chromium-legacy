@@ -9,7 +9,7 @@
 #include "ash/assistant/model/assistant_alarm_timer_model.h"
 #include "ash/assistant/model/assistant_alarm_timer_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding.h"

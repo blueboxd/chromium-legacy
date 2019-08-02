@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -59,9 +60,18 @@ bool IsBackgroundImageContentful(const LayoutObject& object,
 PaintTimingDetector::PaintTimingDetector(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       text_paint_timing_detector_(
-          MakeGarbageCollected<TextPaintTimingDetector>(frame_view, this)),
+          MakeGarbageCollected<TextPaintTimingDetector>(frame_view,
+                                                        this,
+                                                        nullptr /*set later*/)),
       image_paint_timing_detector_(
-          MakeGarbageCollected<ImagePaintTimingDetector>(frame_view)) {}
+          MakeGarbageCollected<ImagePaintTimingDetector>(
+              frame_view,
+              nullptr /*set later*/)),
+      callback_manager_(
+          MakeGarbageCollected<PaintTimingCallbackManagerImpl>(frame_view)) {
+  text_paint_timing_detector_->ResetCallbackManager(callback_manager_.Get());
+  image_paint_timing_detector_->ResetCallbackManager(callback_manager_.Get());
+}
 
 void PaintTimingDetector::NotifyPaintFinished() {
   if (text_paint_timing_detector_) {
@@ -76,6 +86,8 @@ void PaintTimingDetector::NotifyPaintFinished() {
     if (image_paint_timing_detector_->FinishedReportingImages())
       image_paint_timing_detector_ = nullptr;
   }
+  if (callback_manager_->CountCallbacks() > 0)
+    callback_manager_->RegisterPaintTimeCallbackForCombinedCallbacks();
 }
 
 // static
@@ -328,12 +340,42 @@ void PaintTimingDetector::Trace(Visitor* visitor) {
   visitor->Trace(image_paint_timing_detector_);
   visitor->Trace(frame_view_);
   visitor->Trace(largest_contentful_paint_calculator_);
+  visitor->Trace(callback_manager_);
 }
 
-void PaintTimingCallbackManagerImpl::RegisterCallback(
-    LocalFrame& frame,
-    ReportTimeCallback callback) {
-  frame.GetPage()->GetChromeClient().NotifySwapTime(frame, std::move(callback));
+void PaintTimingCallbackManagerImpl::
+    RegisterPaintTimeCallbackForCombinedCallbacks() {
+  DCHECK(!frame_callbacks_->empty());
+  LocalFrame& frame = frame_view_->GetFrame();
+  if (!frame.GetPage())
+    return;
+
+  auto combined_callback = CrossThreadBindOnce(
+      &PaintTimingCallbackManagerImpl::ReportPaintTime,
+      WrapCrossThreadWeakPersistent(this), std::move(frame_callbacks_));
+  frame_callbacks_ =
+      std::make_unique<PaintTimingCallbackManager::CallbackQueue>();
+
+  // |ReportPaintTime| on |layerTreeView| will queue a swap-promise, the
+  // callback is called when the swap for current render frame completes or
+  // fails to happen.
+  frame.GetPage()->GetChromeClient().NotifySwapTime(
+      frame, std::move(combined_callback));
+}
+
+void PaintTimingCallbackManagerImpl::ReportPaintTime(
+    std::unique_ptr<PaintTimingCallbackManager::CallbackQueue> frame_callbacks,
+    WebWidgetClient::SwapResult result,
+    base::TimeTicks paint_time) {
+  while (!frame_callbacks->empty()) {
+    std::move(frame_callbacks->front()).Run(paint_time);
+    frame_callbacks->pop();
+  }
+}
+
+void PaintTimingCallbackManagerImpl::Trace(Visitor* visitor) {
+  visitor->Trace(frame_view_);
+  PaintTimingCallbackManager::Trace(visitor);
 }
 
 }  // namespace blink

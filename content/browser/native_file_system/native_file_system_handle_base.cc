@@ -119,7 +119,7 @@ NativeFileSystemHandleBase::NativeFileSystemHandleBase(
       }
     }
     usage_indicator_tracker_ = base::SequenceBound<UsageIndicatorTracker>(
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+        base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
         context_.process_id, context_.frame_id, bool{is_directory},
         base::FilePath(directory_path));
     UpdateUsage();

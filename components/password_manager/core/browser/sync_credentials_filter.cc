@@ -22,12 +22,11 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 SyncCredentialsFilter::SyncCredentialsFilter(
-    const PasswordManagerClient* client,
-    SyncServiceFactoryFunction sync_service_factory_function,
-    IdentityManagerFactoryFunction identity_manager_factory_function)
+    PasswordManagerClient* client,
+    SyncServiceFactoryFunction sync_service_factory_function)
     : client_(client),
-      sync_service_factory_function_(sync_service_factory_function),
-      identity_manager_factory_function_(identity_manager_factory_function) {}
+      sync_service_factory_function_(std::move(sync_service_factory_function)) {
+}
 
 SyncCredentialsFilter::~SyncCredentialsFilter() {}
 
@@ -37,7 +36,7 @@ bool SyncCredentialsFilter::ShouldSave(
          !form.form_data.is_gaia_with_skip_save_password_form &&
          !sync_util::IsSyncAccountCredential(
              form, sync_service_factory_function_.Run(),
-             identity_manager_factory_function_.Run());
+             client_->GetIdentityManager());
 }
 
 bool SyncCredentialsFilter::ShouldSaveGaiaPasswordHash(
@@ -58,17 +57,15 @@ bool SyncCredentialsFilter::ShouldSaveEnterprisePasswordHash(
 
 bool SyncCredentialsFilter::IsSyncAccountEmail(
     const std::string& username) const {
-  return sync_util::IsSyncAccountEmail(
-      username, identity_manager_factory_function_.Run());
+  return sync_util::IsSyncAccountEmail(username, client_->GetIdentityManager());
 }
 
 void SyncCredentialsFilter::ReportFormLoginSuccess(
     const PasswordFormManagerInterface& form_manager) const {
   if (!form_manager.IsNewLogin() &&
-      sync_util::IsSyncAccountCredential(
-          form_manager.GetPendingCredentials(),
-          sync_service_factory_function_.Run(),
-          identity_manager_factory_function_.Run())) {
+      sync_util::IsSyncAccountCredential(form_manager.GetPendingCredentials(),
+                                         sync_service_factory_function_.Run(),
+                                         client_->GetIdentityManager())) {
     base::RecordAction(base::UserMetricsAction(
         "PasswordManager_SyncCredentialFilledAndLoginSuccessfull"));
   }

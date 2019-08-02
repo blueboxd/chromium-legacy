@@ -16,12 +16,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/api/test/test_api.h"
@@ -298,7 +298,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
                            WindowOpenDisposition::NEW_WINDOW,
                            AppLaunchSource::kSourceTest);
     params.command_line = *base::CommandLine::ForCurrentProcess();
-    OpenApplication(params);
+    apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
   }
 
   if (!catcher.GetNextResult()) {

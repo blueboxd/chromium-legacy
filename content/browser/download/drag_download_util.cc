@@ -98,15 +98,13 @@ PromiseFileFinalizer::PromiseFileFinalizer(
 
 void PromiseFileFinalizer::OnDownloadCompleted(
     const base::FilePath& file_path) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&PromiseFileFinalizer::Cleanup, this));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&PromiseFileFinalizer::Cleanup, this));
 }
 
 void PromiseFileFinalizer::OnDownloadAborted() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&PromiseFileFinalizer::Cleanup, this));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&PromiseFileFinalizer::Cleanup, this));
 }
 
 PromiseFileFinalizer::~PromiseFileFinalizer() {}

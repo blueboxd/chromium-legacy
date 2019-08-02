@@ -192,7 +192,8 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
     base::FilePath base_dir = base_.GetPath();
     file_system_context_ = new FileSystemContext(
         base::ThreadTaskRunnerHandle::Get().get(),
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}).get(),
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
+            .get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
         base::MakeRefCounted<MockSpecialStoragePolicy>().get(), nullptr,
         std::vector<std::unique_ptr<storage::FileSystemBackend>>(),

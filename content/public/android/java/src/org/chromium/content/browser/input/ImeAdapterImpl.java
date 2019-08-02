@@ -402,6 +402,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
      * @param textInputMode Text input mode.
      * @param textInputAction Text input mode action.
      * @param showIfNeeded Whether the keyboard should be shown if it is currently hidden.
+     * @param alwaysHide Whether the keyboard should be unconditionally hidden.
      * @param text The String contents of the field being edited.
      * @param selectionStart The character offset of the selection start, or the caret position if
      *                       there is no selection.
@@ -415,15 +416,16 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
      */
     @CalledByNative
     private void updateState(int textInputType, int textInputFlags, int textInputMode,
-            int textInputAction, boolean showIfNeeded, String text, int selectionStart,
-            int selectionEnd, int compositionStart, int compositionEnd, boolean replyToRequest) {
+            int textInputAction, boolean showIfNeeded, boolean alwaysHide, String text,
+            int selectionStart, int selectionEnd, int compositionStart, int compositionEnd,
+            boolean replyToRequest) {
         TraceEvent.begin("ImeAdapter.updateState");
         try {
             if (DEBUG_LOGS) {
                 Log.i(TAG,
-                        "updateState: type [%d->%d], flags [%d], mode[%d], action[%d] show [%b], ",
+                        "updateState: type [%d->%d], flags [%d], mode[%d], action[%d], show [%b], hide [%b]",
                         mTextInputType, textInputType, textInputFlags, textInputMode,
-                        textInputAction, showIfNeeded);
+                        textInputAction, showIfNeeded, alwaysHide);
             }
             boolean needsRestart = false;
             boolean hide = false;
@@ -475,7 +477,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
             mLastCompositionStart = compositionStart;
             mLastCompositionEnd = compositionEnd;
 
-            if (hide) {
+            if (hide || alwaysHide) {
                 hideKeyboard();
             } else {
                 if (needsRestart) restartInput();

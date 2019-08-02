@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/interfaces/ime_controller.mojom.h"
+#include "ash/public/mojom/ime_controller.mojom.h"
 
 namespace ash {
 

@@ -134,10 +134,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewImageItem* textImageItem2 =
       [[TableViewImageItem alloc] initWithType:ItemTypeTextAccessoryImage];
   textImageItem2.title = @"Image item without image, and disabled";
-  textImageItem2.textColor = [UIColor colorNamed:kDestructiveTintColor];
+  textImageItem2.textColor = [UIColor colorNamed:kRedColor];
   textImageItem2.detailText =
       @"Very very very long detail text for the image cell without image";
-  textImageItem2.detailTextColor = [UIColor colorNamed:kDestructiveTintColor];
+  textImageItem2.detailTextColor = [UIColor colorNamed:kRedColor];
   textImageItem2.enabled = NO;
   [model addItem:textImageItem2 toSectionWithIdentifier:SectionIdentifierText];
 

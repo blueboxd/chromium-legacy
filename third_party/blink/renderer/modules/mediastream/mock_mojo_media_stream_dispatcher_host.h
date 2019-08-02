@@ -24,10 +24,12 @@ class MockMojoMediaStreamDispatcherHost
 
   mojom::blink::MediaStreamDispatcherHostPtr CreateInterfacePtrAndBind();
 
-  void GenerateStream(int32_t request_id,
-                      const StreamControls& controls,
-                      bool user_gesture,
-                      GenerateStreamCallback callback) override;
+  void GenerateStream(
+      int32_t request_id,
+      const StreamControls& controls,
+      bool user_gesture,
+      mojom::blink::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
+      GenerateStreamCallback callback) override;
   void CancelRequest(int32_t request_id) override;
   void StopStreamDevice(
       const WTF::String& device_id,

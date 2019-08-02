@@ -195,7 +195,7 @@ void SpeechRecognitionManagerImpl::FrameDeletionObserver::ContentsObserver::
     RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   auto iters = observed_frames_.equal_range(render_frame_host);
   for (auto it = iters.first; it != iters.second; ++it) {
-    base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
+    base::CreateSingleThreadTaskRunner({BrowserThread::IO})
         ->PostTask(FROM_HERE,
                    base::BindOnce(parent_observer_->frame_deleted_callback_,
                                   it->second));
@@ -302,7 +302,7 @@ int SpeechRecognitionManagerImpl::CreateSession(
 
   // The deletion observer is owned by this class, so it's safe to use
   // Unretained.
-  base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
+  base::CreateSingleThreadTaskRunner({BrowserThread::UI})
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&SpeechRecognitionManagerImpl::FrameDeletionObserver::
@@ -412,7 +412,7 @@ void SpeechRecognitionManagerImpl::AbortSession(int session_id) {
 
   // The deletion observer is owned by this class, so it's safe to use
   // Unretained.
-  base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
+  base::CreateSingleThreadTaskRunner({BrowserThread::UI})
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&SpeechRecognitionManagerImpl::FrameDeletionObserver::

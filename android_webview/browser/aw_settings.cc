@@ -25,7 +25,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/web_preferences.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 using base::android::ConvertJavaStringToUTF16;
@@ -253,8 +252,7 @@ void AwSettings::UpdateRendererPreferencesLocked(
   if (update_prefs && host)
     host->SyncRendererPrefs();
 
-  if (update_prefs &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (update_prefs) {
     // make sure to update accept languages when the network service is enabled
     AwBrowserContext* aw_browser_context =
         AwBrowserContext::FromWebContents(web_contents());

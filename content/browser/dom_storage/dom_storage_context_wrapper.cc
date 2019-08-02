@@ -111,15 +111,17 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
     data_path = profile_path.Append(local_partition_path);
 
   scoped_refptr<base::SequencedTaskRunner> primary_sequence =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   scoped_refptr<base::SequencedTaskRunner> commit_sequence =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   auto mojo_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
   base::FilePath legacy_localstorage_path =
       data_path.empty() ? data_path

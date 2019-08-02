@@ -19,6 +19,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/time/time_override.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -153,11 +154,12 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
   }
 
   // TimeTicks takes care of overflow but we special case is_max() nonetheless
-  // to avoid invoking Now() unnecessarily (same for the increment step of the
-  // for loop if the condition variable returns early).
-  // Ref: https://crbug.com/910524#c7
+  // to avoid invoking TimeTicksNowIgnoringOverride() unnecessarily (same for
+  // the increment step of the for loop if the condition variable returns
+  // early). Ref: https://crbug.com/910524#c7
   const TimeTicks end_time =
-      wait_delta.is_max() ? TimeTicks::Max() : TimeTicks::Now() + wait_delta;
+      wait_delta.is_max() ? TimeTicks::Max()
+                          : subtle::TimeTicksNowIgnoringOverride() + wait_delta;
   // Fake |kr| value to boostrap the for loop.
   kern_return_t kr = MACH_RCV_INTERRUPTED;
   for (mach_msg_timeout_t timeout = wait_delta.is_max()
@@ -173,8 +175,8 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
            end_time.is_max()
                ? MACH_MSG_TIMEOUT_NONE
                : std::max<int64_t>(
-                     0,
-                     (end_time - TimeTicks::Now()).InMillisecondsRoundedUp())) {
+                     0, (end_time - subtle::TimeTicksNowIgnoringOverride())
+                            .InMillisecondsRoundedUp())) {
     kr = mach_msg(&msg.header, options, 0, rcv_size, receive_right_->Name(),
                   timeout, MACH_PORT_NULL);
   }

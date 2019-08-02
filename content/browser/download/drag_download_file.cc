@@ -214,7 +214,7 @@ DragDownloadFile::~DragDownloadFile() {
   // the UI thread so that it calls RemoveObserver on the right thread, and so
   // that this task will run after the InitiateDownload task runs on the UI
   // thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DragDownloadFileUI::Delete, base::Unretained(drag_ui_)));
   drag_ui_ = nullptr;
@@ -231,7 +231,7 @@ void DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
   observer_ = observer;
   DCHECK(observer_.get());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DragDownloadFileUI::InitiateDownload,
                      base::Unretained(drag_ui_), std::move(file_), file_path_));
@@ -247,9 +247,9 @@ bool DragDownloadFile::Wait() {
 void DragDownloadFile::Stop() {
   CheckThread();
   if (drag_ui_) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(&DragDownloadFileUI::Cancel,
-                                            base::Unretained(drag_ui_)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&DragDownloadFileUI::Cancel,
+                                  base::Unretained(drag_ui_)));
   }
 }
 

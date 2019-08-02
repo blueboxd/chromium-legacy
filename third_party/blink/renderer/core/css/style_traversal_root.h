@@ -71,10 +71,6 @@ class CORE_EXPORT StyleTraversalRoot {
  private:
   friend class StyleTraversalRootTestImpl;
 
-#if DCHECK_IS_ON()
-  bool IsConnectedToDocument(Node&) const;
-#endif  // DCHECK_IS_ON()
-
   // The current root for dirty nodes.
   Member<Node> root_node_;
 

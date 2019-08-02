@@ -179,11 +179,10 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
                 std::move(request), std::move(client));
           }
         };
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(connect_on_io_thread,
-                       std::move(frame_sink_manager_request),
-                       frame_sink_manager_client.PassInterface()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(connect_on_io_thread,
+                                  std::move(frame_sink_manager_request),
+                                  frame_sink_manager_client.PassInterface()));
   } else {
     DCHECK(!viz_compositor_thread_);
 

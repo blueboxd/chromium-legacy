@@ -1517,15 +1517,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
   // a chance to get the second stall onto the IO thread queue after the cancel
   // message created by Shutdown and before the notification callback
   // created by the IO thread in canceling the request.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&base::PlatformThread::Sleep,
-                     base::TimeDelta::FromMilliseconds(25)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&base::PlatformThread::Sleep,
+                                base::TimeDelta::FromMilliseconds(25)));
   DownloadManagerForShell(shell())->Shutdown();
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&base::PlatformThread::Sleep,
-                     base::TimeDelta::FromMilliseconds(25)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&base::PlatformThread::Sleep,
+                                base::TimeDelta::FromMilliseconds(25)));
 }
 
 // Try to shutdown just after we release the download file, by delaying

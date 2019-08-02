@@ -66,8 +66,9 @@ void HyphenationImpl::Create(blink::mojom::HyphenationRequest request) {
 // static
 scoped_refptr<base::SequencedTaskRunner> HyphenationImpl::GetTaskRunner() {
   static base::NoDestructor<scoped_refptr<base::SequencedTaskRunner>> runner(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
            base::TaskPriority::USER_BLOCKING}));
   return *runner;
 }

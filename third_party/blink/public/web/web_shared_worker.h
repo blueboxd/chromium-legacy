@@ -71,6 +71,7 @@ class BLINK_EXPORT WebSharedWorker {
   virtual void StartWorkerContext(
       const WebURL& script_url,
       const WebString& name,
+      const WebString& user_agent,
       const WebString& content_security_policy,
       mojom::ContentSecurityPolicyType,
       mojom::IPAddressSpace,

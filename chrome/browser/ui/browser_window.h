@@ -32,7 +32,7 @@
 #endif
 
 class Browser;
-class ClickToCallDialog;
+class SharingDialog;
 class ClickToCallSharingDialogController;
 class DownloadShelf;
 class ExclusiveAccessContext;
@@ -332,7 +332,7 @@ class BrowserWindow : public ui::BaseWindow {
   virtual bool IsToolbarShowing() const = 0;
 
   // Shows the Click to Call dialog.
-  virtual ClickToCallDialog* ShowClickToCallDialog(
+  virtual SharingDialog* ShowClickToCallDialog(
       content::WebContents* contents,
       ClickToCallSharingDialogController* controller) = 0;
 

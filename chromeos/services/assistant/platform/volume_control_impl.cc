@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 
 namespace chromeos {

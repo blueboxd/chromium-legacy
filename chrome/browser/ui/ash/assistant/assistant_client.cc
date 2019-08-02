@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

@@ -235,24 +235,23 @@ class ResponsivenessWatcherRealIOThreadTest : public testing::Test {
 
 TEST_F(ResponsivenessWatcherRealIOThreadTest, MessageLoopObserver) {
   // Post a do-nothing task onto the UI thread.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce([]() {}));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce([]() {}));
 
   // Post a do-nothing task onto the IO thread.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce([]() {}));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce([]() {}));
 
   // Post a task onto the IO thread that hops back to the UI thread. This
   // guarantees that both of the do-nothing tasks have already been processed.
   base::RunLoop run_loop;
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(
-                               [](base::OnceClosure quit_closure) {
-                                 base::PostTaskWithTraits(
-                                     FROM_HERE, {content::BrowserThread::UI},
-                                     std::move(quit_closure));
-                               },
-                               run_loop.QuitClosure()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(
+                     [](base::OnceClosure quit_closure) {
+                       base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                                      std::move(quit_closure));
+                     },
+                     run_loop.QuitClosure()));
   run_loop.Run();
 
   ASSERT_GE(watcher_->NumTasksOnUIThread(), 1);

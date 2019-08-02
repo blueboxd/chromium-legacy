@@ -1560,13 +1560,13 @@ void FormStructure::ApplyRationalizationsToFieldAndLog(
 }
 
 void FormStructure::RationalizeAddressLineFields(
-    SectionedFieldsIndexes& sections_of_address_indexes,
+    SectionedFieldsIndexes* sections_of_address_indexes,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   // The rationalization happens within sections.
-  for (sections_of_address_indexes.Reset();
-       !sections_of_address_indexes.IsFinished();
-       sections_of_address_indexes.WalkForwardToTheNextSection()) {
-    auto current_section = sections_of_address_indexes.CurrentSection();
+  for (sections_of_address_indexes->Reset();
+       !sections_of_address_indexes->IsFinished();
+       sections_of_address_indexes->WalkForwardToTheNextSection()) {
+    auto current_section = sections_of_address_indexes->CurrentSection();
 
     // The rationalization only applies to sections that have 2 or 3 visible
     // street address predictions.
@@ -1689,8 +1689,8 @@ bool FormStructure::FieldShouldBeRationalizedToCountry(size_t upper_index) {
 }
 
 void FormStructure::RationalizeAddressStateCountry(
-    SectionedFieldsIndexes& sections_of_state_indexes,
-    SectionedFieldsIndexes& sections_of_country_indexes,
+    SectionedFieldsIndexes* sections_of_state_indexes,
+    SectionedFieldsIndexes* sections_of_country_indexes,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   // Walk on the sections of state and country indexes simultaneously. If they
   // both point to the same section, it means that that section includes both
@@ -1701,24 +1701,24 @@ void FormStructure::RationalizeAddressStateCountry(
   // the pointer that points to the earlier section forward. Stop when both
   // sections of indexes are processed. (This resembles the merge in the merge
   // sort.)
-  sections_of_state_indexes.Reset();
-  sections_of_country_indexes.Reset();
+  sections_of_state_indexes->Reset();
+  sections_of_country_indexes->Reset();
 
-  while (!sections_of_state_indexes.IsFinished() ||
-         !sections_of_country_indexes.IsFinished()) {
+  while (!sections_of_state_indexes->IsFinished() ||
+         !sections_of_country_indexes->IsFinished()) {
     auto current_section_of_state_indexes =
-        sections_of_state_indexes.CurrentSection();
+        sections_of_state_indexes->CurrentSection();
     auto current_section_of_country_indexes =
-        sections_of_country_indexes.CurrentSection();
+        sections_of_country_indexes->CurrentSection();
     // If there are still sections left with both country and state type, and
     // state and country current sections are equal, then that section has both
     // state and country. No rationalization needed.
-    if (!sections_of_state_indexes.IsFinished() &&
-        !sections_of_country_indexes.IsFinished() &&
-        fields_[sections_of_state_indexes.CurrentIndex()]->section ==
-            fields_[sections_of_country_indexes.CurrentIndex()]->section) {
-      sections_of_state_indexes.WalkForwardToTheNextSection();
-      sections_of_country_indexes.WalkForwardToTheNextSection();
+    if (!sections_of_state_indexes->IsFinished() &&
+        !sections_of_country_indexes->IsFinished() &&
+        fields_[sections_of_state_indexes->CurrentIndex()]->section ==
+            fields_[sections_of_country_indexes->CurrentIndex()]->section) {
+      sections_of_state_indexes->WalkForwardToTheNextSection();
+      sections_of_country_indexes->WalkForwardToTheNextSection();
       continue;
     }
 
@@ -1732,14 +1732,14 @@ void FormStructure::RationalizeAddressStateCountry(
         upper_index = current_section_of_state_indexes[0];
         lower_index = current_section_of_state_indexes[1];
       }
-      sections_of_state_indexes.WalkForwardToTheNextSection();
+      sections_of_state_indexes->WalkForwardToTheNextSection();
     } else {
       // We only rationalize when we have exactly two visible fields of a kind.
       if (current_section_of_country_indexes.size() == 2) {
         upper_index = current_section_of_country_indexes[0];
         lower_index = current_section_of_country_indexes[1];
       }
-      sections_of_country_indexes.WalkForwardToTheNextSection();
+      sections_of_country_indexes->WalkForwardToTheNextSection();
     }
 
     // This is when upper and lower indexes are not changed, meaning that there
@@ -1799,13 +1799,13 @@ void FormStructure::RationalizeRepeatedFields(
   }
 
   RationalizeAddressLineFields(
-      sectioned_field_indexes_by_type[ADDRESS_HOME_STREET_ADDRESS],
+      &(sectioned_field_indexes_by_type[ADDRESS_HOME_STREET_ADDRESS]),
       form_interactions_ukm_logger);
   // Since the billing types are mapped to the non-billing ones, no need to
   // take care of ADDRESS_BILLING_STATE and .. .
   RationalizeAddressStateCountry(
-      sectioned_field_indexes_by_type[ADDRESS_HOME_STATE],
-      sectioned_field_indexes_by_type[ADDRESS_HOME_COUNTRY],
+      &(sectioned_field_indexes_by_type[ADDRESS_HOME_STATE]),
+      &(sectioned_field_indexes_by_type[ADDRESS_HOME_COUNTRY]),
       form_interactions_ukm_logger);
 }
 

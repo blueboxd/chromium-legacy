@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_app_setup_controller.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -44,9 +44,7 @@ AndroidSmsAppManagerImpl::PwaDelegate::~PwaDelegate() = default;
 
 content::WebContents* AndroidSmsAppManagerImpl::PwaDelegate::OpenApp(
     const AppLaunchParams& params) {
-  // Note: OpenApplications() is not namespaced and is defined in
-  // application_launch.h.
-  return OpenApplication(params);
+  return apps::LaunchService::Get(params.profile)->OpenApplication(params);
 }
 
 bool AndroidSmsAppManagerImpl::PwaDelegate::TransferItemAttributes(

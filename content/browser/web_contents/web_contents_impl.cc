@@ -4149,7 +4149,7 @@ int WebContentsImpl::DownloadImage(
     // Android), the downloader service will be invalid. Pre-Mojo, this would
     // hang the callback indefinitely since the IPC would be dropped. Now,
     // respond with a 400 HTTP error code to indicate that something went wrong.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WebContentsImpl::OnDidDownloadImage,
                        weak_factory_.GetWeakPtr(), std::move(callback),

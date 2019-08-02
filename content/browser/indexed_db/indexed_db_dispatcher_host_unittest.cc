@@ -184,7 +184,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
         quota_manager_(base::MakeRefCounted<MockQuotaManager>(
             false /*is_incognito*/,
             browser_context_.GetPath(),
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
             special_storage_policy_)),
         context_impl_(base::MakeRefCounted<IndexedDBContextImpl>(
             CreateAndReturnTempDir(&temp_dir_),

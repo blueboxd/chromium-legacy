@@ -39,6 +39,20 @@ void GPUComputePassEncoder::setBindGroup(
       dynamicOffsets.data());
 }
 
+void GPUComputePassEncoder::pushDebugGroup(String groupLabel) {
+  GetProcs().computePassEncoderPushDebugGroup(GetHandle(),
+                                              groupLabel.Utf8().data());
+}
+
+void GPUComputePassEncoder::popDebugGroup() {
+  GetProcs().computePassEncoderPopDebugGroup(GetHandle());
+}
+
+void GPUComputePassEncoder::insertDebugMarker(String markerLabel) {
+  GetProcs().computePassEncoderInsertDebugMarker(GetHandle(),
+                                                 markerLabel.Utf8().data());
+}
+
 void GPUComputePassEncoder::setPipeline(GPUComputePipeline* pipeline) {
   GetProcs().computePassEncoderSetPipeline(GetHandle(), pipeline->GetHandle());
 }

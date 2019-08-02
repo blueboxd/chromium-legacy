@@ -42,6 +42,11 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   void MigrateOSAttributes(const AppId& from, const AppId& to) override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
+  bool CanReparentAppTabToWindow(const AppId& app_id,
+                                 bool shortcut_created) const override;
+  void ReparentAppTabToWindow(content::WebContents* contents,
+                              const AppId& app_id,
+                              bool shortcut_created) override;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;

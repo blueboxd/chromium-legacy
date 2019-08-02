@@ -33,7 +33,7 @@ void MetricSource::SetUp() {
   RegisterMessageLoopObserverUI();
   native_event_observer_ui_ = CreateNativeEventObserver();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&MetricSource::SetUpOnIOThread, base::Unretained(this)));
 }
@@ -47,7 +47,7 @@ void MetricSource::Destroy(base::ScopedClosureRunner on_finish_destroy) {
   message_loop_observer_ui_.reset();
   native_event_observer_ui_.reset();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&MetricSource::TearDownOnIOThread, base::Unretained(this),
                      std::move(on_finish_destroy)));
@@ -108,7 +108,7 @@ void MetricSource::TearDownOnIOThread(
 
   message_loop_observer_io_.reset();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&MetricSource::TearDownOnUIThread, base::Unretained(this),
                      std::move(on_finish_destroy)));

@@ -119,7 +119,7 @@ void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
       context_impl->GetAllOriginsDetails());
   bool is_incognito = context_impl->is_incognito();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&IndexedDBInternalsUI::OnOriginsReady,
                      base::Unretained(this), std::move(info_list),
@@ -261,11 +261,10 @@ void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
   zip::ZipWithFilterCallback(context->data_path(), zip_path,
                              base::Bind(AllowWhitelistedPaths, paths));
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&IndexedDBInternalsUI::OnDownloadDataReady,
-                     base::Unretained(this), partition_path, origin, temp_path,
-                     zip_path, connection_count));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&IndexedDBInternalsUI::OnDownloadDataReady,
+                                base::Unretained(this), partition_path, origin,
+                                temp_path, zip_path, connection_count));
 }
 
 void IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread(
@@ -281,11 +280,10 @@ void IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread(
   context->ForceClose(origin, IndexedDBContextImpl::FORCE_CLOSE_INTERNALS_PAGE);
   size_t connection_count = context->GetConnectionCount(origin);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&IndexedDBInternalsUI::OnForcedSchemaDowngrade,
-                     base::Unretained(this), partition_path, origin,
-                     connection_count));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&IndexedDBInternalsUI::OnForcedSchemaDowngrade,
+                                base::Unretained(this), partition_path, origin,
+                                connection_count));
 }
 
 void IndexedDBInternalsUI::ForceSchemaDowngradeOriginOnIndexedDBThread(
@@ -303,11 +301,10 @@ void IndexedDBInternalsUI::ForceSchemaDowngradeOriginOnIndexedDBThread(
       origin, IndexedDBContextImpl::FORCE_SCHEMA_DOWNGRADE_INTERNALS_PAGE);
   size_t connection_count = context->GetConnectionCount(origin);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&IndexedDBInternalsUI::OnForcedSchemaDowngrade,
-                     base::Unretained(this), partition_path, origin,
-                     connection_count));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&IndexedDBInternalsUI::OnForcedSchemaDowngrade,
+                                base::Unretained(this), partition_path, origin,
+                                connection_count));
 }
 
 void IndexedDBInternalsUI::OnForcedClose(const base::FilePath& partition_path,
@@ -415,11 +412,12 @@ void FileDeleter::OnDownloadUpdated(download::DownloadItem* item) {
 }
 
 FileDeleter::~FileDeleter() {
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                          std::move(temp_dir_), true));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                     std::move(temp_dir_), true));
 }
 
 void IndexedDBInternalsUI::OnDownloadStarted(

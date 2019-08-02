@@ -417,14 +417,16 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Server predictions";
     case SavePasswordProgressLogger::STRING_FORM_VOTES:
       return "Form votes";
+    case SavePasswordProgressLogger::STRING_FIRSTUSE_FORM_VOTE:
+      return "FirstUse vote";
+    case SavePasswordProgressLogger::STRING_PASSWORD_FORM_VOTE:
+      return "PasswordForm vote";
     case SavePasswordProgressLogger::STRING_REUSE_FOUND:
       return "Password reused from ";
     case SavePasswordProgressLogger::STRING_GENERATION_DISABLED_SAVING_DISABLED:
       return "Generation disabled: saving disabled";
     case SavePasswordProgressLogger::STRING_GENERATION_DISABLED_NO_SYNC:
       return "Generation disabled: no sync";
-    case STRING_GENERATION_RENDERER_ENABLED:
-      return "Generation renderer enabled";
     case STRING_GENERATION_RENDERER_INVALID_PASSWORD_FORM:
       return "Generation invalid PasswordForm";
     case STRING_GENERATION_RENDERER_POSSIBLE_ACCOUNT_CREATION_FORMS:
@@ -484,6 +486,31 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "HttpAuthManager::DetachObserver";
     case SavePasswordProgressLogger::STRING_SHOW_ONBOARDING:
       return "Show onboarding experience and offer to save password";
+    case STRING_LEAK_DETECTION_FINISHED:
+      return "Leak detection finished with result";
+    case STRING_LEAK_DETECTION_SIGNED_OUT_ERROR:
+      return "Leak detection failed: signed out";
+    case SavePasswordProgressLogger::
+        STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_LOWERCASE:
+      return "Uploading password requirements vote for using lowercase letters";
+    case SavePasswordProgressLogger::
+        STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_UPPERCASE:
+      return "Uploading password requirements vote for using lowercase letters";
+    case SavePasswordProgressLogger::
+        STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_NUMERICS:
+      return "Uploading password requirements vote for using numbers";
+    case SavePasswordProgressLogger::
+        STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_SPECIAL_SYMBOL:
+      return "Uploading password requirements vote for using special symbols";
+    case SavePasswordProgressLogger::
+        STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_SPECIFIC_SPECIAL_SYMBOL:
+      return "Used specific special symbol";
+    case SavePasswordProgressLogger::
+        STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_PASSWORD_LENGTH:
+      return "Uploading password requirements vote for password length";
+    case SavePasswordProgressLogger::
+        STRING_PASSWORD_REQUIREMENTS_VOTE_NO_PASSWORD_ATTRIBUTES:
+      return "No password requirements attributed set";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

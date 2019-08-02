@@ -7,9 +7,9 @@ credentials. Admins manage sessions and push policies to users and devices from
 their AD servers using group policy. There is no need to synchronize users to
 Google.
 
-[Google Chrome Enterprise Help article](https://support.google.com/chrome/a/answer/7497916)
+[Google Chrome Enterprise Help article](https://support.google.com/chrome/a?p=ad)
 
-[Troubleshoot Active Directory](https://support.google.com/chrome/a/answer/7497305)
+[Troubleshoot Active Directory](https://support.google.com/chrome/a?p=troubleshoot_ad)
 
 [TOC]
 
@@ -73,7 +73,7 @@ the content area.
 
 Moreover, users may sign up for a Play Store account from within their user
 session, see step 5 of the
-[Help article](https://support.google.com/chrome/a/answer/7497916).
+[Help article](https://support.google.com/chrome/a?p=ad).
 For this purpose, DM Server creates a LaForge account for the user. A LaForge
 account is a shadow Gaia account with scope limited to the Play Store. To prove
 the user's identity, a SAML flow is employed with DM Server as service provider

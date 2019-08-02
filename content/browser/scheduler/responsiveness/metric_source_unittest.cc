@@ -22,8 +22,10 @@ namespace {
 class FakeDelegate : public MetricSource::Delegate {
  public:
   FakeDelegate()
-      : set_up_on_io_thread_(false), tear_down_on_io_thread_(false),
-        will_run_task_on_io_thread_(0), did_run_task_on_io_thread_(0) {}
+      : set_up_on_io_thread_(false),
+        tear_down_on_io_thread_(false),
+        will_run_task_on_io_thread_(0),
+        did_run_task_on_io_thread_(0) {}
   ~FakeDelegate() override = default;
 
   void SetUpOnIOThread() override { set_up_on_io_thread_ = true; }
@@ -153,14 +155,12 @@ TEST_F(ResponsivenessMetricSourceTest, RunTasks) {
   test_browser_thread_bundle_.RunIOThreadUntilIdle();
   test_browser_thread_bundle_.RunUntilIdle();
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::DoNothing());
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, base::DoNothing());
   test_browser_thread_bundle_.RunUntilIdle();
   EXPECT_GT(delegate->will_run_task_on_ui_thread(), 0);
   EXPECT_GT(delegate->did_run_task_on_ui_thread(), 0);
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::DoNothing());
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO}, base::DoNothing());
   test_browser_thread_bundle_.RunUntilIdle();
   EXPECT_GT(delegate->will_run_task_on_io_thread(), 0);
   EXPECT_GT(delegate->did_run_task_on_io_thread(), 0);

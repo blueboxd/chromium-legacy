@@ -78,9 +78,9 @@ class TracingControllerTestEndpoint
     scoped_refptr<base::RefCountedString> chunk_ptr =
         base::RefCountedString::TakeString(&trace_);
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(done_callback_, std::move(metadata),
-                                            base::RetainedRef(chunk_ptr)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(done_callback_, std::move(metadata),
+                                  base::RetainedRef(chunk_ptr)));
   }
 
  protected:

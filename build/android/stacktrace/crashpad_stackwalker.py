@@ -46,6 +46,8 @@ def _CreateSymbolsDir(build_path, dynamic_library_names):
         build_path,
         '--binary',
         unstripped_library_path,
+        '--platform',
+        'android',
     ]
     return_code = subprocess.call(cmd)
     if return_code != 0:

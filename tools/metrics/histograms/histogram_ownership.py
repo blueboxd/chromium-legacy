@@ -7,14 +7,13 @@
 histograms.
 """
 
+import extract_histograms
 import os
 import sys
 import xml.etree.ElementTree
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import path_util
-
-DUMMY_OWNER = "Please list the metric's owners. Add more owner tags as needed."
 
 def main():
   tree = xml.etree.ElementTree.parse(path_util.GetHistogramsFile())
@@ -42,7 +41,7 @@ def main():
         continue
       if node.tag != 'owner':
         continue
-      if node.text == DUMMY_OWNER:
+      if node.text == extract_histograms.OWNER_PLACEHOLDER:
         continue
       assert '@' in node.text
       owners.append(node.text)

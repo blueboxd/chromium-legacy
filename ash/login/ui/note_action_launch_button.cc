@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/strings/grit/ash_strings.h"

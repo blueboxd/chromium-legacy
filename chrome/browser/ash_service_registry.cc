@@ -5,7 +5,7 @@
 #include "chrome/browser/ash_service_registry.h"
 
 #include "ash/ash_service.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 
 namespace ash_service_registry {

@@ -179,10 +179,9 @@ class FileSystemURLLoaderFactoryTest
   bool IsIncognito() { return GetParam() == TestMode::kIncognito; }
 
   void SetUpOnMainThread() override {
-    io_task_runner_ =
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+    io_task_runner_ = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
     blocking_task_runner_ =
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
 
     special_storage_policy_ = new MockSpecialStoragePolicy;
 

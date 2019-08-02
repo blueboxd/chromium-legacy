@@ -771,8 +771,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
     // Cycle UI and IO loop once to ensure OnChannelClosing() has been delivered
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             media::BindToCurrentLoop(run_loop.QuitClosure()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   media::BindToCurrentLoop(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -871,8 +871,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
     // Cycle UI and IO loop once to ensure OnChannelClosing() has been delivered
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             media::BindToCurrentLoop(run_loop.QuitClosure()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   media::BindToCurrentLoop(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -937,8 +937,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
     // Cycle UI and IO loop once to ensure OnChannelClosing() has been delivered
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             media::BindToCurrentLoop(run_loop.QuitClosure()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   media::BindToCurrentLoop(run_loop.QuitClosure()));
     run_loop.Run();
   }
 

@@ -39,10 +39,9 @@ class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
     scoped_refptr<base::RefCountedString> str =
         base::RefCountedString::TakeString(&tmp);
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(completion_callback_, std::move(metadata),
-                       base::RetainedRef(str)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(completion_callback_, std::move(metadata),
+                                  base::RetainedRef(str)));
   }
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
@@ -65,8 +64,8 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
                                  base::TaskPriority write_priority)
       : file_path_(trace_file_path),
         completion_callback_(callback),
-        may_block_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), write_priority})) {}
+        may_block_task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(), write_priority})) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     may_block_task_runner_->PostTask(
@@ -111,7 +110,7 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
       file_ = nullptr;
     }
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&FileTraceDataEndpoint::FinalizeOnUIThread, this));
   }
@@ -133,10 +132,10 @@ class CompressedTraceDataEndpoint
                               bool compress_with_background_priority)
       : endpoint_(endpoint),
         already_tried_open_(false),
-        background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {compress_with_background_priority
-                 ? base::TaskPriority::BEST_EFFORT
-                 : base::TaskPriority::USER_VISIBLE})) {}
+        background_task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), compress_with_background_priority
+                                     ? base::TaskPriority::BEST_EFFORT
+                                     : base::TaskPriority::USER_VISIBLE})) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     background_task_runner_->PostTask(

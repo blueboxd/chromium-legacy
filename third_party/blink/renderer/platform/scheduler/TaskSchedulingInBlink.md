@@ -155,7 +155,7 @@ worker_pool::PostTask, which uses a thread pool
 behind the scenes.
 
 Do not create your own dedicated thread if you need ordering for your tasks,
-use worker_pool::CreateTaskRunnerWithTraits instead —
+use worker_pool::CreateTaskRunner instead —
 this creates a sequence (virtual thread which can run tasks in order on
 any of the threads in the thread pool).
 (Note: this doesn't exist yet because we haven't encountered a use case in Blink

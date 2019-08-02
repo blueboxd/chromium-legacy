@@ -11,7 +11,7 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/model/assistant_screen_context_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
-#include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/gfx/geometry/rect.h"

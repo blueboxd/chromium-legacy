@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PLATFORM_VOLUME_CONTROL_IMPL_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PLATFORM_VOLUME_CONTROL_IMPL_H_
 
-#include "ash/public/interfaces/assistant_volume_control.mojom.h"
+#include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "base/macros.h"
 #include "libassistant/shared/public/platform_audio_output.h"
 #include "mojo/public/cpp/bindings/binding.h"

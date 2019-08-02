@@ -9,7 +9,7 @@
 #include "ash/assistant/model/assistant_cache_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
 
 namespace ash {

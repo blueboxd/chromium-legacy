@@ -67,7 +67,7 @@ void BackgroundStartupTracingObserver::OnScenarioActivated(
   const BackgroundTracingRule* startup_rule = FindStartupRuleInConfig(*config);
   DCHECK(startup_rule);
   // Post task to avoid reentrancy.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &BackgroundTracingManagerImpl::OnRuleTriggered,

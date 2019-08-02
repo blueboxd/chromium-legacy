@@ -66,12 +66,11 @@ class LoaderBrowserTest : public ContentBrowserTest,
  protected:
   void SetUpOnMainThread() override {
     base::FilePath path = GetTestFilePath("", "");
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&net::URLRequestMockHTTPJob::AddUrlHandlers, path));
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
@@ -285,8 +284,8 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
   if (request.relative_url != relative_url)
     return nullptr;
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           crash_network_service_callback);
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 crash_network_service_callback);
 
   return std::make_unique<net::test_server::HungResponse>();
 }

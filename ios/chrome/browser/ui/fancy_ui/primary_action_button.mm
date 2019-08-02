@@ -38,7 +38,7 @@
 
   UIColor* hintColor = UIColor.cr_systemBackgroundColor;
   UIColor* inkColor = [UIColor colorWithWhite:1 alpha:0.2f];
-  UIColor* backgroundColor = [UIColor colorNamed:kTintColor];
+  UIColor* backgroundColor = [UIColor colorNamed:kBlueColor];
   UIColor* disabledColor = [UIColor colorNamed:kDisabledTintColor];
   UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
 

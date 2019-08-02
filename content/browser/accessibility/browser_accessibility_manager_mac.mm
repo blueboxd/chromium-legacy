@@ -336,7 +336,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       // Use native VoiceOver support for live regions.
       base::scoped_nsobject<BrowserAccessibilityCocoa> retained_node(
           [native_node retain]);
-      base::PostDelayedTaskWithTraits(
+      base::PostDelayedTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(
               [](base::scoped_nsobject<BrowserAccessibilityCocoa> node) {

@@ -21,8 +21,10 @@ const uint16_t kAbnormalShutdownOpCode = 1006;
 
 }  // namespace
 
-WebSocketHandleImpl::WebSocketHandleImpl()
-    : channel_(nullptr),
+WebSocketHandleImpl::WebSocketHandleImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)),
+      channel_(nullptr),
       handshake_client_binding_(this),
       client_binding_(this) {
   NETWORK_DVLOG(1) << this << " created";
@@ -40,25 +42,21 @@ void WebSocketHandleImpl::Connect(mojom::blink::WebSocketConnectorPtr connector,
                                   const Vector<String>& protocols,
                                   const KURL& site_for_cookies,
                                   const String& user_agent_override,
-                                  WebSocketChannelImpl* channel,
-                                  base::SingleThreadTaskRunner* task_runner) {
+                                  WebSocketChannelImpl* channel) {
   NETWORK_DVLOG(1) << this << " connect(" << url.GetString() << ")";
 
   DCHECK(!channel_);
   DCHECK(channel);
   channel_ = channel;
 
-  // Here we detect mojo connection errors on |client_binding_|. See also
-  // CreateWebSocket in //network/services/public/mojom/network_context.mojom.
-  network::mojom::blink::WebSocketHandshakeClientPtr handshake_client_proxy;
   Vector<network::mojom::blink::HttpHeaderPtr> additional_headers;
+  network::mojom::blink::WebSocketHandshakeClientPtr handshake_client_proxy;
   handshake_client_binding_.Bind(
-      mojo::MakeRequest(&handshake_client_proxy, task_runner), task_runner);
-  network::mojom::blink::WebSocketClientPtr client_proxy;
-  client_binding_.Bind(mojo::MakeRequest(&client_proxy, task_runner),
-                       task_runner);
-  client_binding_.set_connection_error_with_reason_handler(WTF::Bind(
+      mojo::MakeRequest(&handshake_client_proxy, task_runner_), task_runner_);
+  handshake_client_binding_.set_connection_error_with_reason_handler(WTF::Bind(
       &WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this)));
+  network::mojom::blink::WebSocketClientPtr client_proxy;
+  pending_client_receiver_ = mojo::MakeRequest(&client_proxy);
 
   connector->Connect(url, protocols, site_for_cookies, user_agent_override,
                      std::move(handshake_client_proxy),
@@ -121,19 +119,12 @@ void WebSocketHandleImpl::Disconnect() {
 
 void WebSocketHandleImpl::OnConnectionError(uint32_t custom_reason,
                                             const std::string& description) {
-  // Our connection to the WebSocket was dropped. This could be due to
-  // exceeding the maximum number of concurrent websockets from this process.
-  // This handler is sufficient to detect all mojo connection errors, as
-  // any error will result in the data connection being dropped.
-  // By detecting the errors on this channel, we ensure that any FailChannel
-  // messages from the network service will be processed first.
   NETWORK_DVLOG(1) << " OnConnectionError( reason: " << custom_reason
                    << ", description:" << description;
-  OnFailChannel("Unknown reason");
-}
-
-void WebSocketHandleImpl::OnFailChannel(const String& message) {
-  NETWORK_DVLOG(1) << this << " OnFailChannel(" << message << ")";
+  String message = "Unknown reason";
+  if (custom_reason == network::mojom::blink::WebSocket::kInternalFailure) {
+    message = String::FromUTF8(description.c_str(), description.size());
+  }
 
   WebSocketChannelImpl* channel = channel_;
   Disconnect();
@@ -168,6 +159,12 @@ void WebSocketHandleImpl::OnConnectionEstablished(
 
   if (!channel_)
     return;
+
+  // From now on, we will detect mojo errors via |client_binding_|.
+  handshake_client_binding_.Close();
+  client_binding_.Bind(std::move(pending_client_receiver_), task_runner_);
+  client_binding_.set_connection_error_with_reason_handler(WTF::Bind(
+      &WebSocketHandleImpl::OnConnectionError, WTF::Unretained(this)));
 
   DCHECK(!websocket_);
   websocket_ = std::move(websocket);

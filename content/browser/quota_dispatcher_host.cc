@@ -53,7 +53,7 @@ void QuotaDispatcherHost::CreateForWorker(
   // one provided by QuotaDispatcher.
 
   // Bind on the IO thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BindConnectorOnIOThread, host->GetID(), MSG_ROUTING_NONE,
@@ -67,7 +67,7 @@ void QuotaDispatcherHost::CreateForFrame(
     int render_frame_id,
     blink::mojom::QuotaDispatcherHostRequest request) {
   // Bind on the IO thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BindConnectorOnIOThread, host->GetID(), render_frame_id,

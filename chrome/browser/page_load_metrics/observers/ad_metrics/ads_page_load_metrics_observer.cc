@@ -16,6 +16,8 @@
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/resource_tracker.h"
+#include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/subresource_filter/core/common/common_features.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/global_request_id.h"
@@ -60,8 +62,9 @@ using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
 
 // static
 std::unique_ptr<AdsPageLoadMetricsObserver>
-AdsPageLoadMetricsObserver::CreateIfNeeded() {
-  if (!base::FeatureList::IsEnabled(subresource_filter::kAdTagging))
+AdsPageLoadMetricsObserver::CreateIfNeeded(content::WebContents* web_contents) {
+  if (!base::FeatureList::IsEnabled(subresource_filter::kAdTagging) ||
+      !ChromeSubresourceFilterClient::FromWebContents(web_contents))
     return nullptr;
   return std::make_unique<AdsPageLoadMetricsObserver>();
 }
@@ -247,16 +250,24 @@ void AdsPageLoadMetricsObserver::ReadyToCommitNextNavigation(
 void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  // If the AdsPageLoadMetricsObserver is created, this does not return nullptr.
+  auto* client = ChromeSubresourceFilterClient::FromWebContents(
+      navigation_handle->GetWebContents());
+  // AdsPageLoadMetricsObserver is not created unless there is a
+  // ChromeSubresourceFilterClient
+  DCHECK(client);
   FrameTreeNodeId frame_tree_node_id = navigation_handle->GetFrameTreeNodeId();
-  bool is_adframe = DetectAds(navigation_handle);
 
   // NOTE: Frame look-up only used for determining cross-origin status, not
   // granting security permissions.
-  content::RenderFrameHost* ad_host = FindFrameMaybeUnsafe(navigation_handle);
+  content::RenderFrameHost* frame_host =
+      FindFrameMaybeUnsafe(navigation_handle);
 
-  RecordAdFrameData(frame_tree_node_id, is_adframe, ad_host,
+  bool is_adframe = client->GetThrottleManager()->IsFrameTaggedAsAd(frame_host);
+
+  RecordAdFrameData(frame_tree_node_id, is_adframe, frame_host,
                     /*frame_navigated=*/true);
-  ProcessOngoingNavigationResource(ad_host);
+  ProcessOngoingNavigationResource(frame_host);
 }
 
 void AdsPageLoadMetricsObserver::FrameReceivedFirstUserActivation(
@@ -302,20 +313,6 @@ void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
     ProcessResourceForPage(rfh->GetProcess()->GetID(), resource);
     ProcessResourceForFrame(rfh->GetFrameTreeNodeId(),
                             rfh->GetProcess()->GetID(), resource);
-  }
-}
-
-void AdsPageLoadMetricsObserver::OnSubframeNavigationEvaluated(
-    content::NavigationHandle* navigation_handle,
-    subresource_filter::LoadPolicy load_policy,
-    bool is_ad_subframe) {
-  // We don't track DISALLOW frames because their resources won't be loaded
-  // and therefore would provide bad histogram data. Note that WOULD_DISALLOW
-  // is only seen in dry runs.
-  if (is_ad_subframe &&
-      load_policy != subresource_filter::LoadPolicy::DISALLOW) {
-    unfinished_subresource_ad_frames_.insert(
-        navigation_handle->GetFrameTreeNodeId());
   }
 }
 
@@ -415,16 +412,6 @@ void AdsPageLoadMetricsObserver::OnAdSubframeDetected(
 
 void AdsPageLoadMetricsObserver::OnSubresourceFilterGoingAway() {
   subresource_observer_.RemoveAll();
-}
-
-bool AdsPageLoadMetricsObserver::DetectSubresourceFilterAd(
-    FrameTreeNodeId frame_tree_node_id) {
-  return unfinished_subresource_ad_frames_.erase(frame_tree_node_id);
-}
-
-bool AdsPageLoadMetricsObserver::DetectAds(
-    content::NavigationHandle* navigation_handle) {
-  return DetectSubresourceFilterAd(navigation_handle->GetFrameTreeNodeId());
 }
 
 int AdsPageLoadMetricsObserver::GetUnaccountedAdBytes(

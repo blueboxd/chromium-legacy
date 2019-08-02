@@ -918,11 +918,6 @@ const char kEnableWebAuthenticationPINSupportDescription[] =
     "Enable the use of PINs with the Web Authentication API and compatible "
     "security keys.";
 
-const char kEnableIncognitoWindowCounterName[] = "Incognito Window Counter";
-const char kEnableIncognitoWindowCounterDescription[] =
-    "Shows the count of Incognito windows next to the Incognito icon on the "
-    "toolbar.";
-
 const char kEnableWasmBaselineName[] = "WebAssembly baseline compiler";
 const char kEnableWasmBaselineDescription[] =
     "Enables WebAssembly baseline compilation and tier up.";

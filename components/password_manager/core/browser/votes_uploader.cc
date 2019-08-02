@@ -5,8 +5,8 @@
 #include "components/password_manager/core/browser/votes_uploader.h"
 
 #include <ctype.h>
-
 #include <algorithm>
+#include <iostream>
 #include <utility>
 #include "base/hash/hash.h"
 #include "base/logging.h"
@@ -36,6 +36,7 @@ using autofill::ServerFieldTypeSet;
 using autofill::ValueElementPair;
 
 using Logger = autofill::SavePasswordProgressLogger;
+using StringID = autofill::SavePasswordProgressLogger::StringID;
 
 namespace password_manager {
 
@@ -342,7 +343,7 @@ bool VotesUploader::UploadPasswordVote(
 
   if (password_manager_util::IsLoggingActive(client_)) {
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
-    logger.LogFormStructure(Logger::STRING_FORM_VOTES, form_structure);
+    logger.LogFormStructure(Logger::STRING_PASSWORD_FORM_VOTE, form_structure);
   }
 
   // Annotate the form with the source language of the page.
@@ -397,11 +398,6 @@ void VotesUploader::UploadFirstLoginVotes(
   // sure to receive them.
   form_structure.set_upload_required(UPLOAD_REQUIRED);
 
-  if (password_manager_util::IsLoggingActive(client_)) {
-    BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
-    logger.LogFormStructure(Logger::STRING_FORM_VOTES, form_structure);
-  }
-
   // Annotate the form with the source language of the page.
   form_structure.set_page_language(client_->GetPageLanguage());
 
@@ -411,6 +407,11 @@ void VotesUploader::UploadFirstLoginVotes(
 
   SetInitialHashValueOfUsernameField(
       form_to_upload.username_element_renderer_id, &form_structure);
+
+  if (password_manager_util::IsLoggingActive(client_)) {
+    BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
+    logger.LogFormStructure(Logger::STRING_FIRSTUSE_FORM_VOTE, form_structure);
+  }
 
   download_manager->StartUploadRequest(
       form_structure, false /* was_autofilled */, available_field_types,

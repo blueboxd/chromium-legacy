@@ -27,6 +27,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
@@ -52,8 +54,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -1328,11 +1328,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
   const Extension* extension_app = GetExtension();
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  WebContents* app_window = OpenApplication(
-      AppLaunchParams(browser()->profile(), extension_app->id(),
-                      extensions::LaunchContainer::kLaunchContainerWindow,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceTest));
+  WebContents* app_window =
+      apps::LaunchService::Get(browser()->profile())
+          ->OpenApplication(AppLaunchParams(
+              browser()->profile(), extension_app->id(),
+              apps::mojom::LaunchContainer::kLaunchContainerWindow,
+              WindowOpenDisposition::NEW_WINDOW,
+              apps::mojom::AppLaunchSource::kSourceTest));
   ASSERT_TRUE(app_window);
 
   DevToolsWindow* devtools_window =
@@ -1498,11 +1500,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   ASSERT_TRUE(extension_app);
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  WebContents* app_window = OpenApplication(
-      AppLaunchParams(browser()->profile(), extension_app->id(),
-                      extensions::LaunchContainer::kLaunchContainerWindow,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceTest));
+  WebContents* app_window =
+      apps::LaunchService::Get(browser()->profile())
+          ->OpenApplication(AppLaunchParams(
+              browser()->profile(), extension_app->id(),
+              apps::mojom::LaunchContainer::kLaunchContainerWindow,
+              WindowOpenDisposition::NEW_WINDOW,
+              apps::mojom::AppLaunchSource::kSourceTest));
   ASSERT_TRUE(app_window);
 
   // Apps launched in a window from the NTP have an extensions tab helper with

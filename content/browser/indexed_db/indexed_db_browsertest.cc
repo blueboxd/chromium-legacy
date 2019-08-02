@@ -155,10 +155,9 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   static void SetTempQuota(int per_host_quota_kilobytes,
                            scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&IndexedDBBrowserTest::SetTempQuota,
-                         per_host_quota_kilobytes, qm));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(&IndexedDBBrowserTest::SetTempQuota,
+                                    per_host_quota_kilobytes, qm));
       return;
     }
     DCHECK_CURRENTLY_ON(BrowserThread::IO);

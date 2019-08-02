@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 
+#include <utility>
+
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -20,6 +22,10 @@
 #include "components/password_manager/core/browser/password_manager.h"
 
 using autofill::AutofillUploadContents;
+using autofill::FieldPropertiesFlags;
+using autofill::FormStructure;
+using autofill::PasswordAttribute;
+using autofill::ServerFieldType;
 using base::NumberToString;
 
 namespace password_manager {
@@ -98,7 +104,7 @@ BrowserSavePasswordProgressLogger::~BrowserSavePasswordProgressLogger() {}
 void BrowserSavePasswordProgressLogger::LogFormSignatures(
     SavePasswordProgressLogger::StringID label,
     const autofill::PasswordForm& form) {
-  autofill::FormStructure form_structure(form.form_data);
+  FormStructure form_structure(form.form_data);
   std::string message = GetStringFromID(label) + ": {\n";
   message += GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
              FormSignatureToDebugString(form_structure.form_signature()) + "\n";
@@ -117,7 +123,7 @@ void BrowserSavePasswordProgressLogger::LogFormSignatures(
 
 void BrowserSavePasswordProgressLogger::LogFormStructure(
     StringID label,
-    const autofill::FormStructure& form_structure) {
+    const FormStructure& form_structure) {
   std::string message = GetStringFromID(label) + ": {\n";
   message += GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
              FormSignatureToDebugString(form_structure.form_signature()) + "\n";
@@ -126,6 +132,7 @@ void BrowserSavePasswordProgressLogger::LogFormStructure(
   message += GetStringFromID(STRING_ACTION) + ": " +
              ScrubURL(form_structure.target_url()) + "\n";
   message += FormStructureToFieldsLogString(form_structure);
+  message += FormStructurePasswordAttributesLogString(form_structure);
   message += "}";
   SendLog(message);
 }
@@ -143,8 +150,59 @@ void BrowserSavePasswordProgressLogger::LogSuccessiveOrigins(
   SendLog(message);
 }
 
+std::string
+BrowserSavePasswordProgressLogger::FormStructurePasswordAttributesLogString(
+    const FormStructure& form) {
+  const base::Optional<std::pair<PasswordAttribute, bool>> attribute_vote =
+      form.get_password_attributes_vote();
+  if (!attribute_vote.has_value())
+    return std::string();
+  std::string message;
+  const PasswordAttribute attribute = std::get<0>(attribute_vote.value());
+  const bool attribute_value = std::get<1>(attribute_vote.value());
+
+  switch (attribute) {
+    case PasswordAttribute::kHasLowercaseLetter:
+      message += BinaryPasswordAttributeLogString(
+          STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_LOWERCASE, attribute_value);
+      break;
+
+    case PasswordAttribute::kHasUppercaseLetter:
+      message += BinaryPasswordAttributeLogString(
+          STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_UPPERCASE, attribute_value);
+      break;
+
+    case PasswordAttribute::kHasNumeric:
+      message += BinaryPasswordAttributeLogString(
+          STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_NUMERICS, attribute_value);
+      break;
+
+    case PasswordAttribute::kHasSpecialSymbol:
+      message += BinaryPasswordAttributeLogString(
+          STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_SPECIAL_SYMBOL,
+          attribute_value);
+      if (attribute_value) {
+        std::string voted_symbol(
+            1, static_cast<char>(form.get_password_symbol_vote()));
+        message += PasswordAttributeLogString(
+            STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_SPECIFIC_SPECIAL_SYMBOL,
+            voted_symbol);
+      }
+      break;
+
+    case PasswordAttribute::kPasswordAttributesCount:
+      break;
+  }
+  std::string password_length =
+      base::NumberToString(form.get_password_length_vote());
+  message += PasswordAttributeLogString(
+      STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_PASSWORD_LENGTH, password_length);
+
+  return message;
+}
+
 std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
-    const autofill::FormStructure& form_structure) {
+    const FormStructure& form_structure) {
   std::string result;
   result += GetStringFromID(STRING_FIELDS) + ": " + "\n";
   for (const auto& field : form_structure) {
@@ -166,7 +224,7 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
           autofill::AutofillType::ServerFieldTypeToString(field->server_type());
     }
 
-    for (autofill::ServerFieldType type : field->possible_types())
+    for (ServerFieldType type : field->possible_types())
       field_info +=
           ", VOTE: " + autofill::AutofillType::ServerFieldTypeToString(type);
 
@@ -175,31 +233,36 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
 
     if (field->properties_mask) {
       field_info += ", properties=";
-      field_info +=
-          (field->properties_mask & autofill::FieldPropertiesFlags::USER_TYPED)
-              ? "T"
-              : "_";
+      field_info += (field->properties_mask & FieldPropertiesFlags::USER_TYPED)
+                        ? "T"
+                        : "_";
       field_info += (field->properties_mask &
-                     autofill::FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD)
+                     FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD)
                         ? "Ap"
                         : "__";
       field_info += (field->properties_mask &
-                     autofill::FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER)
+                     FieldPropertiesFlags::AUTOFILLED_ON_USER_TRIGGER)
                         ? "Au"
                         : "__";
-      field_info +=
-          (field->properties_mask & autofill::FieldPropertiesFlags::HAD_FOCUS)
-              ? "F"
-              : "_";
-      field_info +=
-          (field->properties_mask & autofill::FieldPropertiesFlags::KNOWN_VALUE)
-              ? "K"
-              : "_";
+      field_info += (field->properties_mask & FieldPropertiesFlags::HAD_FOCUS)
+                        ? "F"
+                        : "_";
+      field_info += (field->properties_mask & FieldPropertiesFlags::KNOWN_VALUE)
+                        ? "K"
+                        : "_";
+    }
+
+    if (field->initial_value_hash().has_value()) {
+      field_info += ", initial value hash=";
+      field_info += field->initial_value_hash().value();
     }
 
     std::string generation = GenerationTypeToString(field->generation_type());
     if (!generation.empty())
       field_info += ", GENERATION_EVENT: " + generation;
+
+    if (field->generated_password_changed())
+      field_info += ", generated password changed";
 
     result += field_info + "\n";
   }
@@ -269,6 +332,19 @@ void BrowserSavePasswordProgressLogger::LogFormData(
 
 void BrowserSavePasswordProgressLogger::SendLog(const std::string& log) {
   log_manager_->LogTextMessage(log);
+}
+
+std::string BrowserSavePasswordProgressLogger::PasswordAttributeLogString(
+    StringID string_id,
+    const std::string& attribute_value) {
+  return GetStringFromID(string_id) + ": " + attribute_value + "\n";
+}
+
+std::string BrowserSavePasswordProgressLogger::BinaryPasswordAttributeLogString(
+    StringID string_id,
+    bool attribute_value) {
+  return PasswordAttributeLogString(string_id,
+                                    (attribute_value ? "yes" : "no"));
 }
 
 }  // namespace password_manager

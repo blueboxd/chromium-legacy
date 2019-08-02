@@ -9,7 +9,7 @@ module arc.mojom;
 import "components/arc/common/gfx.mojom";
 
 // There is another copy of the VoiceInteractionState definition in
-// //ash/public/interfaces/voice_interaction_controller.mojom
+// //ash/public/mojom/voice_interaction_controller.mojom
 // Please also update the other one if you change it.
 // The duplicate definition is because we do not use extensible widely
 // (crbug.com/731893).

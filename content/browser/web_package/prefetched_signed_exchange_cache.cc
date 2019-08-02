@@ -263,7 +263,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     }
 
     if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &InnerResponseURLLoader::CreateMojoBlobReader,
@@ -681,7 +681,7 @@ void PrefetchedSignedExchangeCache::RecordHistograms() {
   BrowserThread::ID thread_id =
       NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID();
   if (!BrowserThread::CurrentlyOn(thread_id)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {thread_id},
         base::BindOnce(&PrefetchedSignedExchangeCache::RecordHistograms, this));
     return;

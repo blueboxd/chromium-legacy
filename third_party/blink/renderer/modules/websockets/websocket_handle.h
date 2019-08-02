@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_HANDLE_H_
 
 #include <stdint.h>
-#include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -66,8 +65,7 @@ class WebSocketHandle {
                        const Vector<String>& protocols,
                        const KURL& site_for_cookies,
                        const String& user_agent_override,
-                       WebSocketChannelImpl*,
-                       base::SingleThreadTaskRunner*) = 0;
+                       WebSocketChannelImpl*) = 0;
   virtual void Send(bool fin, MessageType, const char* data, wtf_size_t) = 0;
   virtual void AddReceiveFlowControlQuota(int64_t quota) = 0;
   virtual void Close(uint16_t code, const String& reason) = 0;

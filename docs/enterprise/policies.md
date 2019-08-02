@@ -35,7 +35,7 @@ On these systems it is also possible to set machine-wide cloud-based policies.
 ** Chrome OS **
 
 Chrome OS devices can be either cloud-managed or Active Directory managed
-([AdManagement](https://support.google.com/chrome/a/answer/7497916?hl=en)).
+([AdManagement](https://support.google.com/chrome/a?p=ad)).
 
 The cloud source is usually called DMServer (device management server).
 Organization admins can configure both device and cloud policies using

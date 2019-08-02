@@ -77,7 +77,8 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
     scoped_refptr<net::SQLitePersistentCookieStore> sqlite_store(
         new net::SQLitePersistentCookieStore(
             temp_dir_.GetPath().Append(kTestCookiesFilename),
-            base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
+            base::CreateSequencedTaskRunner(
+                {base::ThreadPool(), base::MayBlock()}),
             background_task_runner_, true, nullptr));
     store_ = new QuotaPolicyCookieStore(sqlite_store.get(), storage_policy);
     Load(cookies);
@@ -111,7 +112,7 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
 
   TestBrowserThreadBundle bundle_;
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::WaitableEvent loaded_event_;
   base::WaitableEvent destroy_event_;
   base::ScopedTempDir temp_dir_;

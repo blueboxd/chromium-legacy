@@ -32,8 +32,17 @@ class CONTENT_EXPORT SameSiteDataRemoverImpl {
   // have been deleted.
   void DeleteSameSiteNoneCookies(base::OnceClosure closure);
 
+  // Clears additional storage for domains that have cookies with SameSite value
+  // NO_RESTRICTION from the StoragePartition. Storage is cleared based on the
+  // domains of the cookies deleted in DeleteSameSiteNoneCookies().
+  void ClearStoragePartitionData(base::OnceClosure closure);
+
+  // For testing purposes only.
+  void OverrideStoragePartitionForTesting(StoragePartition* storage_partition);
+
  private:
   BrowserContext* browser_context_;
+  StoragePartition* storage_partition_;
   std::set<std::string> same_site_none_domains_;
 
   DISALLOW_COPY_AND_ASSIGN(SameSiteDataRemoverImpl);

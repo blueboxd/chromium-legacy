@@ -454,7 +454,7 @@ void WebRTCInternals::SendUpdate(const char* command,
   pending_updates_.push(PendingUpdate(command, std::move(value)));
 
   if (queue_was_empty) {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WebRTCInternals::ProcessPendingUpdates,
                        weak_factory_.GetWeakPtr()),

@@ -158,7 +158,7 @@ void ForwardingAudioStreamFactory::Core::AddLoopbackSink(
     AudioStreamBroker::LoopbackSink* sink) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   loopback_sinks_.insert(sink);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ForwardingAudioStreamFactory::LoopbackStreamStarted,
                      owner_));
@@ -168,7 +168,7 @@ void ForwardingAudioStreamFactory::Core::RemoveLoopbackSink(
     AudioStreamBroker::LoopbackSink* sink) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   loopback_sinks_.erase(sink);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ForwardingAudioStreamFactory::LoopbackStreamStopped,
                      owner_));
@@ -219,7 +219,7 @@ ForwardingAudioStreamFactory::~ForwardingAudioStreamFactory() {
   // as it doesn't post in case it is already executed on the right thread. That
   // causes issues in unit tests where the UI thread and the IO thread are the
   // same.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce([](std::unique_ptr<Core>) {}, std::move(core_)));
 }
@@ -241,7 +241,7 @@ void ForwardingAudioStreamFactory::SetMuted(bool muted) {
 
     // Unretained is safe since the destruction of |core_| will be posted to the
     // IO thread later.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&Core::SetMuted, base::Unretained(core_.get()), muted));
   }
@@ -259,12 +259,11 @@ void ForwardingAudioStreamFactory::FrameDeleted(
 
   // Unretained is safe since the destruction of |core_| will be posted to the
   // IO thread later.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&Core::CleanupStreamsBelongingTo,
-                     base::Unretained(core_.get()),
-                     render_frame_host->GetProcess()->GetID(),
-                     render_frame_host->GetRoutingID()));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&Core::CleanupStreamsBelongingTo,
+                                base::Unretained(core_.get()),
+                                render_frame_host->GetProcess()->GetID(),
+                                render_frame_host->GetRoutingID()));
 }
 
 void ForwardingAudioStreamFactory::Core::CleanupStreamsBelongingTo(

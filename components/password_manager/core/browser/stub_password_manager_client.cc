@@ -112,6 +112,10 @@ StubPasswordManagerClient::GetMetricsRecorder() {
   return base::OptionalOrNullptr(metrics_recorder_);
 }
 
+signin::IdentityManager* StubPasswordManagerClient::GetIdentityManager() {
+  return nullptr;
+}
+
 bool StubPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   return false;
 }

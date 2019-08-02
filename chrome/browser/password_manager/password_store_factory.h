@@ -13,20 +13,11 @@
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/service_access_type.h"
 
-class PrefService;
 class Profile;
 
 namespace password_manager {
 class PasswordStore;
 }
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-// Local profile ids are used to associate resources stored outside the profile
-// directory, like saved passwords in GNOME Keyring / KWallet, with a profile.
-// With high probability, they are unique on the local machine. They are almost
-// certainly not unique globally, by design. Do not send them over the network.
-typedef int LocalProfileId;
-#endif
 
 // Singleton that owns all PasswordStores and associates them with
 // Profiles.
@@ -48,10 +39,6 @@ class PasswordStoreFactory
 
   PasswordStoreFactory();
   ~PasswordStoreFactory() override;
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-  LocalProfileId GetLocalProfileId(PrefService* prefs) const;
-#endif
 
   // RefcountedBrowserContextKeyedServiceFactory:
   scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(

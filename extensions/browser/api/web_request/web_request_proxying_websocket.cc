@@ -378,9 +378,9 @@ void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
   // best.
   network::mojom::WebSocketHandshakeClientPtr handshake_client;
   binding_as_handshake_client_.Bind(mojo::MakeRequest(&handshake_client));
-  binding_as_handshake_client_.set_connection_error_handler(
-      base::BindOnce(&WebRequestProxyingWebSocket::OnError,
-                     base::Unretained(this), net::ERR_FAILED));
+  binding_as_handshake_client_.set_connection_error_with_reason_handler(
+      base::BindOnce(&WebRequestProxyingWebSocket::OnMojoConnectionError,
+                     base::Unretained(this)));
   network::mojom::AuthenticationHandlerPtr auth_handler;
   binding_as_auth_handler_.Bind(mojo::MakeRequest(&auth_handler));
   network::mojom::TrustedHeaderClientPtr trusted_header_client;
@@ -482,6 +482,14 @@ void WebRequestProxyingWebSocket::OnError(int error_code) {
 
   // Deletes |this|.
   proxies_->RemoveProxy(this);
+}
+
+void WebRequestProxyingWebSocket::OnMojoConnectionError(
+    uint32_t custom_reason,
+    const std::string& description) {
+  forwarding_handshake_client_.ResetWithReason(custom_reason, description);
+  OnError(net::ERR_FAILED);
+  // Deletes |this|.
 }
 
 }  // namespace extensions

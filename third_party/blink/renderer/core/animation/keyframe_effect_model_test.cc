@@ -39,8 +39,7 @@
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
-#include "third_party/blink/renderer/core/css/property_definition.h"
-#include "third_party/blink/renderer/core/css/property_registration.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -140,13 +139,8 @@ const PropertySpecificKeyframeVector& ConstructEffectAndGetKeyframes(
     const String& zero_value,
     const String& one_value,
     ExceptionState& exception_state) {
-  PropertyDefinition* property_definition = PropertyDefinition::Create();
-  property_definition->setName(property_name);
-  property_definition->setSyntax(type);
-  property_definition->setInitialValue(zero_value);
-  property_definition->setInherits(false);
-  PropertyRegistration::registerProperty(document, property_definition,
-                                         exception_state);
+  css_test_helpers::RegisterProperty(*document, property_name, type, zero_value,
+                                     false);
 
   StringKeyframeVector keyframes =
       KeyframesAtZeroAndOne(property_name, zero_value, one_value);

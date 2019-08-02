@@ -484,9 +484,8 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, FailedNavigation) {
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL error_url(embedded_test_server()->GetURL("/close-socket"));
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
     NavigateToURL(shell(), error_url);
     EXPECT_EQ(error_url, observer.last_navigation_url());
     NavigationEntry* entry =

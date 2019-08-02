@@ -1530,6 +1530,9 @@
     </service>
     <service
         android:exported="false"
+        android:name="org.chromium.chrome.browser.services.gcm.GCMBackgroundService"/>
+    <service
+        android:exported="false"
         android:name="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender"/>
     <service
         android:exported="false"

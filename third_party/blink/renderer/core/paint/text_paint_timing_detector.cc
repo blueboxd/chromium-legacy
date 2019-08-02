@@ -33,9 +33,10 @@ bool LargeTextFirst(const base::WeakPtr<TextRecord>& a,
 
 TextPaintTimingDetector::TextPaintTimingDetector(
     LocalFrameView* frame_view,
-    PaintTimingDetector* paint_timing_detector)
+    PaintTimingDetector* paint_timing_detector,
+    PaintTimingCallbackManager* callback_manager)
     : records_manager_(frame_view, paint_timing_detector),
-      callback_manager_(MakeGarbageCollected<PaintTimingCallbackManagerImpl>()),
+      callback_manager_(callback_manager),
       frame_view_(frame_view) {}
 
 void LargestTextPaintManager::PopulateTraceValue(
@@ -110,9 +111,8 @@ void TextPaintTimingDetector::OnPaintFinished() {
     if (!awaiting_swap_promise_) {
       // |WrapCrossThreadWeakPersistent| guarantees that when |this| is killed,
       // the callback function will not be invoked.
-      RegisterNotifySwapTime(
-          CrossThreadBindOnce(&TextPaintTimingDetector::ReportSwapTime,
-                              WrapCrossThreadWeakPersistent(this)));
+      RegisterNotifySwapTime(WTF::Bind(&TextPaintTimingDetector::ReportSwapTime,
+                                       WrapCrossThreadWeakPersistent(this)));
     }
   }
 }
@@ -131,18 +131,12 @@ void TextPaintTimingDetector::LayoutObjectWillBeDestroyed(
 }
 
 void TextPaintTimingDetector::RegisterNotifySwapTime(
-    ReportTimeCallback callback) {
-  // ReportSwapTime on layerTreeView will queue a swap-promise, the callback is
-  // called when the swap for current render frame completes or fails to happen.
-  LocalFrame& frame = frame_view_->GetFrame();
-  if (!frame.GetPage())
-    return;
-  callback_manager_->RegisterCallback(frame, std::move(callback));
+    PaintTimingCallbackManager::LocalThreadCallback callback) {
+  callback_manager_->RegisterCallback(std::move(callback));
   awaiting_swap_promise_ = true;
 }
 
-void TextPaintTimingDetector::ReportSwapTime(WebWidgetClient::SwapResult result,
-                                             base::TimeTicks timestamp) {
+void TextPaintTimingDetector::ReportSwapTime(base::TimeTicks timestamp) {
   if (!is_recording_)
     return;
   if (!records_manager_.HasTextElementTiming()) {

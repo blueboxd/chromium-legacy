@@ -51,7 +51,7 @@ static const CGFloat kButtonVerticalMargin = 12;
 #pragma mark - Private
 
 - (void)initializeStyling {
-  [self setTitleColor:[UIColor colorNamed:kTintColor]
+  [self setTitleColor:[UIColor colorNamed:kBlueColor]
              forState:UIControlStateNormal];
   self.translatesAutoresizingMaskIntoConstraints = NO;
   self.titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];

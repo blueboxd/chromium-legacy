@@ -14,6 +14,7 @@ fuzzable_proto_library("proto") {
 source_set("leak_detection_interface_headers") {
   sources = [
     "leak_detection_check.h",
+    "leak_detection_delegate_interface.h",
     "leak_detection_request_factory.h",
   ]
   deps = [

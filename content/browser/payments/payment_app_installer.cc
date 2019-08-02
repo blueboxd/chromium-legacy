@@ -138,7 +138,7 @@ class SelfDeleteInstaller
     scoped_refptr<PaymentAppContextImpl> payment_app_context =
         partition->GetPaymentAppContext();
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&SelfDeleteInstaller::SetPaymentAppInfoOnIO, this,
                        payment_app_context, registration_id_, scope_.spec(),
@@ -163,7 +163,7 @@ class SelfDeleteInstaller
   void OnSetPaymentAppInfo(payments::mojom::PaymentHandlerStatus status) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SelfDeleteInstaller::FinishInstallation, this,
                        status == payments::mojom::PaymentHandlerStatus::SUCCESS

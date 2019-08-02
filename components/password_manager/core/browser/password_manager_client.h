@@ -35,6 +35,10 @@ namespace favicon {
 class FaviconService;
 }
 
+namespace signin {
+class IdentityManager;
+}  // namespace signin
+
 class GURL;
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -301,6 +305,9 @@ class PasswordManagerClient {
 
   // Returns the favicon service used to retrieve icons for an origin.
   virtual favicon::FaviconService* GetFaviconService();
+
+  // Returns the identity manager for profile.
+  virtual signin::IdentityManager* GetIdentityManager() = 0;
 
   // Whether the primary account of the current profile is under Advanced
   // Protection - a type of Google Account that helps protect our most at-risk

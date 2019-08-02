@@ -334,7 +334,7 @@ TEST_F(PasswordsTableViewControllerTest,
 
   CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 2, 0);
 
-  EXPECT_NSEQ([UIColor colorNamed:kTintColor], exportButton.textColor);
+  EXPECT_NSEQ([UIColor colorNamed:kBlueColor], exportButton.textColor);
   EXPECT_FALSE(exportButton.accessibilityTraits &
                UIAccessibilityTraitNotEnabled);
 }
@@ -371,7 +371,7 @@ TEST_F(PasswordsTableViewControllerTest,
   [passwords_controller setEditing:YES animated:NO];
   [passwords_controller setEditing:NO animated:NO];
 
-  EXPECT_NSEQ([UIColor colorNamed:kTintColor], exportButton.textColor);
+  EXPECT_NSEQ([UIColor colorNamed:kBlueColor], exportButton.textColor);
   EXPECT_FALSE(exportButton.accessibilityTraits &
                UIAccessibilityTraitNotEnabled);
 }

@@ -50,6 +50,9 @@ class ArcApps : public KeyedService,
  private:
   ArcApps(Profile* profile, apps::AppServiceProxy* proxy);
 
+  // KeyedService overrides.
+  void Shutdown() override;
+
   // apps::mojom::Publisher overrides.
   void Connect(apps::mojom::SubscriberPtr subscriber,
                apps::mojom::ConnectOptionsPtr opts) override;
@@ -101,7 +104,8 @@ class ArcApps : public KeyedService,
                          IconEffects icon_effects,
                          LoadIconCallback callback);
 
-  apps::mojom::AppPtr Convert(const std::string& app_id,
+  apps::mojom::AppPtr Convert(ArcAppListPrefs* prefs,
+                              const std::string& app_id,
                               const ArcAppListPrefs::AppInfo& app_info);
   void Publish(apps::mojom::AppPtr app);
   void ConvertAndPublishPackageApps(
@@ -111,7 +115,6 @@ class ArcApps : public KeyedService,
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* profile_;
-  ArcAppListPrefs* prefs_;
 
   std::vector<base::OnceCallback<void(AppConnectionHolder*)>>
       pending_load_icon_calls_;

@@ -1065,7 +1065,12 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
 #if !defined(ADDRESS_SANITIZER)
     static_assert(5 == kCrashIovSize - 1, "kCrashIovSize should equal 6");
 #else
-    iov[6].iov_base = const_cast<char*>(g_asan_report_str);
+    if (g_asan_report_str != nullptr) {
+      iov[6].iov_base = const_cast<char*>(g_asan_report_str);
+    } else {
+      static char empty_asan_report[kMaxAsanReportSize + 1];
+      iov[6].iov_base = empty_asan_report;
+    }
     iov[6].iov_len = kMaxAsanReportSize + 1;
     static_assert(6 == kCrashIovSize - 1, "kCrashIovSize should equal 7");
 #endif

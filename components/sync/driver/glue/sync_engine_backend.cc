@@ -349,7 +349,8 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
         NIGORI, std::make_unique<ForwardingModelTypeControllerDelegate>(
                     nigori_processor->GetControllerDelegate().get()));
     sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
-        std::move(nigori_processor), &encryptor_);
+        std::move(nigori_processor), &encryptor_,
+        params.restored_key_for_bootstrapping);
   } else {
     sync_encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
         &user_share_, &encryptor_, params.restored_key_for_bootstrapping,

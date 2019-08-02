@@ -4182,13 +4182,13 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     registry_->AddInterface(
         base::Bind(&MediaDevicesDispatcherHost::Create, GetProcess()->GetID(),
                    GetRoutingID(), base::Unretained(media_stream_manager)),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
     registry_->AddInterface(
         base::BindRepeating(&MediaStreamDispatcherHost::Create,
                             GetProcess()->GetID(), GetRoutingID(),
                             base::Unretained(media_stream_manager)),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
   }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -4262,7 +4262,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::BindRepeating(SpeechRecognitionDispatcherHost::Create,
                           GetProcess()->GetID(), routing_id_),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
   file_system_manager_.reset(new FileSystemManagerImpl(
       GetProcess()->GetID(),
@@ -4271,7 +4271,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::BindRepeating(&FileSystemManagerImpl::BindRequest,
                           base::Unretained(file_system_manager_.get())),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
   registry_->AddInterface(base::BindRepeating(
       &BackgroundFetchServiceImpl::CreateForFrame, GetProcess(), routing_id_));
@@ -4981,8 +4981,9 @@ void RenderFrameHostImpl::CommitNavigation(
     if (common_params.url.SchemeIs(url::kContentScheme)) {
       // Only content:// URLs can load content:// subresources
       auto content_factory = std::make_unique<ContentURLLoaderFactory>(
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::MayBlock(),
+               base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
       non_network_url_loader_factories_.emplace(url::kContentScheme,
                                                 std::move(content_factory));
@@ -5102,7 +5103,7 @@ void RenderFrameHostImpl::CommitNavigation(
             std::move(factory_bundle_for_prefetch),
             EnsurePrefetchedSignedExchangeCache());
       } else {
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {BrowserThread::IO},
             base::BindOnce(
                 &PrefetchURLLoaderService::GetFactory,
@@ -5178,7 +5179,7 @@ void RenderFrameHostImpl::CommitNavigation(
     // it until its request endpoint is sent. Now that the request endpoint was
     // sent, it can be used, so add it to ServiceWorkerObjectHost.
     if (remote_object.is_valid()) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,
@@ -6199,11 +6200,10 @@ void RenderFrameHostImpl::GetPushMessaging(
             ->GetServiceWorkerContext()));
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&PushMessagingManager::AddPushMessagingReceiver,
-                     push_messaging_manager_->AsWeakPtr(),
-                     std::move(receiver)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&PushMessagingManager::AddPushMessagingReceiver,
+                                push_messaging_manager_->AsWeakPtr(),
+                                std::move(receiver)));
 }
 
 void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
@@ -6234,7 +6234,7 @@ void RenderFrameHostImpl::RegisterAppCacheHost(
         std::move(host_receiver), std::move(frontend_remote), host_id,
         routing_id_, GetProcess()->GetID(), mojo::GetBadMessageCallback());
   } else {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&AppCacheServiceImpl::RegisterHostForFrame,
                        appcache_service_impl->AsWeakPtr(),

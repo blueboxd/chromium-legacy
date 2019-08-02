@@ -85,10 +85,10 @@ const CGFloat kButtonPadding = 16;
   self = [super initWithFrame:frame];
   if (self) {
     _activityIndicator = [[MDCActivityIndicator alloc] init];
-    _activityIndicator.cycleColors = @[ [UIColor colorNamed:kTintColor] ];
+    _activityIndicator.cycleColors = @[ [UIColor colorNamed:kBlueColor] ];
     _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
     _button = [UIButton buttonWithType:UIButtonTypeSystem];
-    _button.tintColor = [UIColor colorNamed:kTintColor];
+    _button.tintColor = [UIColor colorNamed:kBlueColor];
     _button.translatesAutoresizingMaskIntoConstraints = NO;
     _button.titleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];

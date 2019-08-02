@@ -318,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, CreateTransferBuffer) {
   // channel on the IO thread, which then notifies the main thread about the
   // error state.
   base::RunLoop wait_for_io_run_loop;
-  base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
+  base::CreateSingleThreadTaskRunner({BrowserThread::IO})
       ->PostTask(FROM_HERE, wait_for_io_run_loop.QuitClosure());
   // Waits for the IO thread to run.
   wait_for_io_run_loop.Run();

@@ -4,9 +4,11 @@
 
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/renderer/core/animation/animatable.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
-#include "third_party/blink/renderer/core/css/property_definition.h"
-#include "third_party/blink/renderer/core/css/property_registration.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
@@ -48,16 +50,10 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   //   initialValue: '0%',
   //   inherits: false
   // })
-  DummyExceptionStateForTesting exception_state;
-  PropertyDefinition* property_definition = PropertyDefinition::Create();
-  property_definition->setName("--x");
-  property_definition->setSyntax("<percentage>");
-  property_definition->setInitialValue("0%");
-  property_definition->setInherits(false);
-  PropertyRegistration::registerProperty(&GetDocument(), property_definition,
-                                         exception_state);
-  EXPECT_FALSE(exception_state.HadException());
+  css_test_helpers::RegisterProperty(GetDocument(), "--x", "<percentage>", "0%",
+                                     false);
 
+  DummyExceptionStateForTesting exception_state;
   // target.style.setProperty('--x', '100%');
   target->style()->setProperty(&GetDocument(), "--x", "100%", g_empty_string,
                                exception_state);

@@ -16,7 +16,9 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_util.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -41,11 +43,24 @@ void OnGetAllCookies(base::OnceClosure closure,
   }
 }
 
+bool DoesOriginMatchDomain(const std::set<std::string>& same_site_none_domains,
+                           const url::Origin& origin,
+                           storage::SpecialStoragePolicy* policy) {
+  for (const std::string& domain : same_site_none_domains) {
+    if (net::cookie_util::IsDomainMatch(domain, origin.host())) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 SameSiteDataRemoverImpl::SameSiteDataRemoverImpl(
     BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+    : browser_context_(browser_context),
+      storage_partition_(
+          BrowserContext::GetDefaultStoragePartition(browser_context_)) {
   DCHECK(browser_context_);
 }
 
@@ -56,15 +71,34 @@ SameSiteDataRemoverImpl::GetDeletedDomainsForTesting() {
   return same_site_none_domains_;
 }
 
+void SameSiteDataRemoverImpl::OverrideStoragePartitionForTesting(
+    StoragePartition* storage_partition) {
+  storage_partition_ = storage_partition;
+}
+
 void SameSiteDataRemoverImpl::DeleteSameSiteNoneCookies(
     base::OnceClosure closure) {
   same_site_none_domains_.clear();
-  StoragePartition* storage_partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context_);
-  auto* cookie_manager = storage_partition->GetCookieManagerForBrowserProcess();
+  auto* cookie_manager =
+      storage_partition_->GetCookieManagerForBrowserProcess();
   cookie_manager->GetAllCookies(
       base::BindOnce(&OnGetAllCookies, std::move(closure), cookie_manager,
                      &same_site_none_domains_));
+}
+
+void SameSiteDataRemoverImpl::ClearStoragePartitionData(
+    base::OnceClosure closure) {
+  const uint32_t storage_partition_removal_mask =
+      content::StoragePartition::REMOVE_DATA_MASK_ALL &
+      ~content::StoragePartition::REMOVE_DATA_MASK_COOKIES;
+  const uint32_t quota_storage_removal_mask =
+      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL;
+  // TODO(crbug.com/987177): Figure out how to handle protected storage.
+
+  storage_partition_->ClearData(
+      storage_partition_removal_mask, quota_storage_removal_mask,
+      base::BindRepeating(&DoesOriginMatchDomain, same_site_none_domains_),
+      nullptr, false, base::Time(), base::Time::Max(), std::move(closure));
 }
 
 }  // namespace content

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
@@ -253,7 +253,7 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
   // The app will be created for the currently active profile.
   AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
       profile_, extension, event_flags,
-      extensions::AppLaunchSource::kSourceAppLauncher, display_id);
+      apps::mojom::AppLaunchSource::kSourceAppLauncher, display_id);
   if ((source == ash::LAUNCH_FROM_APP_LIST ||
        source == ash::LAUNCH_FROM_APP_LIST_SEARCH) &&
       app_id == extensions::kWebStoreAppId) {
@@ -267,7 +267,7 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
   }
   params.launch_id = id.launch_id;
 
-  OpenApplication(params);
+  apps::LaunchService::Get(profile_)->OpenApplication(params);
 }
 
 ArcAppListPrefs* LauncherControllerHelper::GetArcAppListPrefs() const {

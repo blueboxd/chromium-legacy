@@ -6,6 +6,7 @@
 
 #include <linux/media.h>
 #include <linux/videodev2.h>
+#include <poll.h>
 #include <sys/ioctl.h>
 
 #include "base/logging.h"
@@ -128,8 +129,19 @@ V4L2RequestDecodeSurface::Create(V4L2WritableBufferRef input_buffer,
                                  V4L2WritableBufferRef output_buffer,
                                  scoped_refptr<VideoFrame> frame,
                                  int request_fd) {
-  // First reinit the request to make sure we can use it for a new submission.
-  int ret = HANDLE_EINTR(ioctl(request_fd, MEDIA_REQUEST_IOC_REINIT));
+  constexpr int kPollTimeoutMs = 500;
+  int ret;
+  struct pollfd poll_fd = {request_fd, POLLPRI, 0};
+
+  // First poll the request to ensure its previous task is done
+  ret = poll(&poll_fd, 1, kPollTimeoutMs);
+  if (ret != 1) {
+    VPLOGF(1) << "Failed to poll request: ";
+    return base::nullopt;
+  }
+
+  // Then reinit the request to make sure we can use it for a new submission.
+  ret = HANDLE_EINTR(ioctl(request_fd, MEDIA_REQUEST_IOC_REINIT));
   if (ret < 0) {
     VPLOGF(1) << "Failed to reinit request: ";
     return base::nullopt;

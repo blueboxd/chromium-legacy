@@ -41,6 +41,7 @@ namespace content {
 
 EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::mojom::SharedWorkerInfoPtr info,
+    const std::string& user_agent,
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
     const blink::mojom::RendererPreferences& renderer_preferences,
@@ -58,7 +59,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     service_manager::mojom::InterfaceProviderPtr interface_provider)
     : binding_(this, std::move(request)),
       host_(std::move(host)),
-      name_(info->name),
       url_(info->url),
       renderer_preferences_(renderer_preferences),
       preference_watcher_request_(std::move(preference_watcher_request)) {
@@ -115,7 +115,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   }
 
   impl_->StartWorkerContext(
-      url_, blink::WebString::FromUTF8(name_),
+      url_, blink::WebString::FromUTF8(info->name),
+      blink::WebString::FromUTF8(user_agent),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
       devtools_worker_token,

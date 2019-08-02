@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_VPN_LIST_FORWARDER_H_
 #define CHROME_BROWSER_UI_ASH_VPN_LIST_FORWARDER_H_
 
-#include "ash/public/interfaces/vpn_list.mojom.h"
+#include "ash/public/mojom/vpn_list.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/arc/arc_vpn_provider_manager.h"

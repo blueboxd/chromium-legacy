@@ -11,12 +11,14 @@
 #include "ash/public/cpp/arc_custom_tab.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
+#include "chrome/browser/chromeos/arc/intent_helper/custom_tab_session_impl.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
@@ -36,7 +38,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
@@ -51,9 +52,6 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"
-#include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/user_agent.h"
@@ -66,9 +64,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gfx/native_widget_types.h"
 #include "url/url_constants.h"
 
 using arc::mojom::ChromePage;
@@ -159,152 +154,49 @@ std::string GetPathAndQuery(const GURL& url) {
   return result;
 }
 
-// Implementation of CustomTabSession interface.
-class CustomTabSessionImpl
-    : public arc::mojom::CustomTabSession,
-      public web_modal::WebContentsModalDialogHost,
-      public web_modal::WebContentsModalDialogManagerDelegate {
- public:
-  static arc::mojom::CustomTabSessionPtr Create(
-      Profile* profile,
-      const GURL& url,
-      std::unique_ptr<ash::ArcCustomTab> custom_tab) {
-    if (!custom_tab)
-      return nullptr;
+// Creates a web contents for an ARC Custom Tab using the given profile and url.
+std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
+    Profile* profile,
+    const GURL& url) {
+  scoped_refptr<content::SiteInstance> site_instance =
+      tab_util::GetSiteInstanceForNewTab(profile, url);
+  content::WebContents::CreateParams create_params(profile, site_instance);
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContents::Create(create_params);
 
-    // This object will be deleted when the mojo connection is closed.
-    auto* tab = new CustomTabSessionImpl(profile, url, std::move(custom_tab));
-    arc::mojom::CustomTabSessionPtr ptr;
-    tab->Bind(&ptr);
-    return ptr;
+  // Use the same version number as browser_commands.cc
+  // TODO(hashimoto): Get the actual Android version from the container.
+  constexpr char kOsOverrideForTabletSite[] = "Linux; Android 9; Chrome tablet";
+  // Override the user agent to request mobile version web sites.
+  const std::string product =
+      version_info::GetProductNameAndVersionForUserAgent();
+  const std::string user_agent = content::BuildUserAgentFromOSAndProduct(
+      kOsOverrideForTabletSite, product);
+  web_contents->SetUserAgentOverride(user_agent,
+                                     false /*override_in_new_tabs=*/);
+
+  content::NavigationController::LoadURLParams load_url_params(url);
+  load_url_params.source_site_instance = site_instance;
+  load_url_params.override_user_agent =
+      content::NavigationController::UA_OVERRIDE_TRUE;
+  web_contents->GetController().LoadURLWithParams(load_url_params);
+
+  // Add a flag to remember this tab originated in the ARC context.
+  web_contents->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
+                            std::make_unique<arc::ArcWebContentsData>());
+
+  return web_contents;
+}
+
+// Returns an ARC window with the given task ID.
+aura::Window* GetArcWindow(int32_t task_id) {
+  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
+    if (arc::GetWindowTaskId(window) == task_id)
+      return window;
   }
 
-  // web_modal::WebContentsModalDialogManagerDelegate:
-  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
-      override {
-    return this;
-  }
-
-  // web_modal::WebContentsModalDialogHost:
-  gfx::NativeView GetHostView() const override {
-    return custom_tab_->GetHostView();
-  }
-
-  gfx::Point GetDialogPosition(const gfx::Size& size) override {
-    return web_contents_->GetViewBounds().origin();
-  }
-
-  gfx::Size GetMaximumDialogSize() override {
-    return web_contents_->GetViewBounds().size();
-  }
-
-  void AddObserver(web_modal::ModalDialogHostObserver* observer) override {
-  }
-
-  void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override {
-  }
-
-  // arc::mojom::CustomTabSession:
-  void OnOpenInChromeClicked() override { forwarded_to_normal_tab_ = true; }
-
- private:
-  CustomTabSessionImpl(Profile* profile,
-                       const GURL& url,
-                       std::unique_ptr<ash::ArcCustomTab> custom_tab)
-      : binding_(this),
-        custom_tab_(std::move(custom_tab)),
-        web_contents_(CreateWebContents(profile, url)),
-        weak_ptr_factory_(this) {
-    aura::Window* window = web_contents_->GetNativeView();
-    custom_tab_->Attach(window);
-    window->Show();
-  }
-
-  ~CustomTabSessionImpl() override {
-    // Keep in sync with ArcCustomTabsSessionEndReason in
-    // //tools/metrics/histograms/enums.xml.
-    enum class SessionEndReason {
-      CLOSED = 0,
-      FORWARDED_TO_NORMAL_TAB = 1,
-      kMaxValue = FORWARDED_TO_NORMAL_TAB,
-    } session_end_reason = forwarded_to_normal_tab_
-                               ? SessionEndReason::FORWARDED_TO_NORMAL_TAB
-                               : SessionEndReason::CLOSED;
-    UMA_HISTOGRAM_ENUMERATION("Arc.CustomTabs.SessionEndReason",
-                              session_end_reason);
-    auto elapsed = lifetime_timer_.Elapsed();
-    UMA_HISTOGRAM_LONG_TIMES("Arc.CustomTabs.SessionLifetime2.All", elapsed);
-    switch (session_end_reason) {
-      case SessionEndReason::CLOSED:
-        UMA_HISTOGRAM_LONG_TIMES("Arc.CustomTabs.SessionLifetime2.Closed",
-                                 elapsed);
-        break;
-      case SessionEndReason::FORWARDED_TO_NORMAL_TAB:
-        UMA_HISTOGRAM_LONG_TIMES(
-            "Arc.CustomTabs.SessionLifetime2.ForwardedToNormalTab", elapsed);
-        break;
-    }
-  }
-
-  void Bind(arc::mojom::CustomTabSessionPtr* ptr) {
-    binding_.Bind(mojo::MakeRequest(ptr));
-    binding_.set_connection_error_handler(base::BindOnce(
-        &CustomTabSessionImpl::Close, weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // Deletes this object when the mojo connection is closed.
-  void Close() { delete this; }
-
-  std::unique_ptr<content::WebContents> CreateWebContents(Profile* profile,
-                                                          const GURL& url) {
-    scoped_refptr<content::SiteInstance> site_instance =
-        tab_util::GetSiteInstanceForNewTab(profile, url);
-    content::WebContents::CreateParams create_params(profile, site_instance);
-    std::unique_ptr<content::WebContents> web_contents =
-        content::WebContents::Create(create_params);
-
-    // Use the same version number as browser_commands.cc
-    // TODO(hashimoto): Get the actual Android version from the container.
-    constexpr char kOsOverrideForTabletSite[] =
-        "Linux; Android 9; Chrome tablet";
-    // Override the user agent to request mobile version web sites.
-    const std::string product =
-        version_info::GetProductNameAndVersionForUserAgent();
-    const std::string user_agent = content::BuildUserAgentFromOSAndProduct(
-        kOsOverrideForTabletSite, product);
-    web_contents->SetUserAgentOverride(user_agent,
-                                       false /*override_in_new_tabs=*/);
-
-    content::NavigationController::LoadURLParams load_url_params(url);
-    load_url_params.source_site_instance = site_instance;
-    load_url_params.override_user_agent =
-        content::NavigationController::UA_OVERRIDE_TRUE;
-    web_contents->GetController().LoadURLWithParams(load_url_params);
-
-    // Add a flag to remember this tab originated in the ARC context.
-    web_contents->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
-                              std::make_unique<arc::ArcWebContentsData>());
-
-    // Attach any required WebContents helpers. Browser tabs automatically get
-    // them attached in TabHelpers::AttachTabHelpers.
-    web_modal::WebContentsModalDialogManager::CreateForWebContents(
-        web_contents.get());
-    web_modal::WebContentsModalDialogManager::FromWebContents(
-        web_contents.get())
-        ->SetDelegate(this);
-
-    return web_contents;
-  }
-
-  mojo::Binding<arc::mojom::CustomTabSession> binding_;
-  std::unique_ptr<ash::ArcCustomTab> custom_tab_;
-  std::unique_ptr<content::WebContents> web_contents_;
-  base::ElapsedTimer lifetime_timer_;
-  bool forwarded_to_normal_tab_ = false;
-  base::WeakPtrFactory<CustomTabSessionImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomTabSessionImpl);
-};
+  return nullptr;
+}
 
 }  // namespace
 
@@ -418,9 +310,10 @@ void ChromeNewWindowClient::OpenFileManager() {
 
   const extensions::Extension* const extension =
       service->GetInstalledExtension(kFileManagerAppId);
-  OpenApplication(CreateAppLaunchParamsUserContainer(
-      profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::AppLaunchSource::kSourceKeyboard));
+  apps::LaunchService::Get(profile)->OpenApplication(
+      CreateAppLaunchParamsUserContainer(
+          profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          apps::mojom::AppLaunchSource::kSourceKeyboard));
 }
 
 void ChromeNewWindowClient::OpenCrosh() {
@@ -543,9 +436,10 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
 
   AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile, extension, WindowOpenDisposition::NEW_WINDOW,
-      extensions::AppLaunchSource::kSourceArc);
+      apps::mojom::AppLaunchSource::kSourceArc);
   params.override_url = url;
-  content::WebContents* tab = OpenApplication(params);
+  content::WebContents* tab =
+      apps::LaunchService::Get(profile)->OpenApplication(params);
   if (!tab)
     return;
 
@@ -563,24 +457,18 @@ void ChromeNewWindowClient::OpenArcCustomTab(
   GURL url_to_open = ConvertArcUrlToExternalFileUrlIfNeeded(url);
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
-  aura::Window* arc_window = nullptr;
-  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
-    if (arc::GetWindowTaskId(window) == task_id) {
-      arc_window = window;
-      break;
-    }
-  }
+  aura::Window* arc_window = GetArcWindow(task_id);
   if (!arc_window) {
     LOG(ERROR) << "No ARC window with the specified task ID " << task_id;
-    std::move(callback).Run(
-        CustomTabSessionImpl::Create(profile, url, nullptr));
+    std::move(callback).Run(nullptr);
     return;
   }
 
   auto custom_tab =
       ash::ArcCustomTab::Create(arc_window, surface_id, top_margin);
-  std::move(callback).Run(
-      CustomTabSessionImpl::Create(profile, url, std::move(custom_tab)));
+  auto web_contents = CreateArcCustomTabWebContents(profile, url);
+  std::move(callback).Run(CustomTabSessionImpl::Create(std::move(web_contents),
+                                                       std::move(custom_tab)));
 }
 
 content::WebContents* ChromeNewWindowClient::OpenUrlImpl(

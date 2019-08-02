@@ -28,7 +28,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/mru_window_tracker.h"

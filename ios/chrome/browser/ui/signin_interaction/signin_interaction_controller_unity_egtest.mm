@@ -240,6 +240,8 @@ void SignOutFromSettings() {
       [OpenNewTabCommand commandWithURLFromChrome:GURL("about:blank")];
   [chrome_test_util::DispatcherForActiveBrowserViewController()
       openURLInNewTab:command];
+  // Wait until the page is opened.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Re-open the sign-in screen. If it wasn't correctly dismissed previously,
   // this will fail.

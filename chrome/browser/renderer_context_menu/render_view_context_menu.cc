@@ -153,10 +153,10 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -2615,11 +2615,11 @@ void RenderViewContextMenu::ExecOpenBookmarkApp() {
 
   AppLaunchParams launch_params(
       GetProfile(), pwa->id(),
-      extensions::LaunchContainer::kLaunchContainerWindow,
+      apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::CURRENT_TAB,
-      extensions::AppLaunchSource::kSourceContextMenu);
+      apps::mojom::AppLaunchSource::kSourceContextMenu);
   launch_params.override_url = params_.link_url;
-  OpenApplication(launch_params);
+  apps::LaunchService::Get(GetProfile())->OpenApplication(launch_params);
 }
 
 void RenderViewContextMenu::ExecProtocolHandler(int event_flags,

@@ -28,6 +28,9 @@ class GPUComputePassEncoder : public DawnObject<DawnComputePassEncoder> {
   void setBindGroup(uint32_t index,
                     GPUBindGroup* bindGroup,
                     const Vector<uint64_t>& dynamicOffsets);
+  void pushDebugGroup(String groupLabel);
+  void popDebugGroup();
+  void insertDebugMarker(String markerLabel);
   void setPipeline(GPUComputePipeline* pipeline);
   void dispatch(uint32_t x, uint32_t y, uint32_t z);
   void dispatchIndirect(GPUBuffer* indirectBuffer, uint64_t indirectOffset);

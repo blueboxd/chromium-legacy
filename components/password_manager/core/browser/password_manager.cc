@@ -399,7 +399,12 @@ void PasswordManager::RegisterLocalPrefs(PrefRegistrySimple* registry) {
 }
 
 PasswordManager::PasswordManager(PasswordManagerClient* client)
-    : client_(client) {
+    : client_(client)
+#if !defined(OS_IOS)
+      ,
+      leak_delegate_(client)
+#endif  // !defined(OS_IOS)
+{
   DCHECK(client_);
 }
 

@@ -8,9 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "chrome/browser/sharing/click_to_call/click_to_call_dialog.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
+#include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -23,7 +23,7 @@ class View;
 class Browser;
 class HoverButton;
 
-class ClickToCallDialogView : public ClickToCallDialog,
+class ClickToCallDialogView : public SharingDialog,
                               public views::ButtonListener,
                               public views::StyledLabelListener,
                               public LocationBarBubbleDelegateView {

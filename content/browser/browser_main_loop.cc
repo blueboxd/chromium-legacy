@@ -445,8 +445,8 @@ class HDRProxy {
 
   static void RequestHDRStatus() {
     // The request must be sent to the GPU process from the IO thread.
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(&HDRProxy::RequestOnIOThread));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&HDRProxy::RequestOnIOThread));
   }
 
  private:
@@ -463,8 +463,8 @@ class HDRProxy {
     }
   }
   static void GotResultOnIOThread(bool hdr_enabled) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(&HDRProxy::GotResult, hdr_enabled));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&HDRProxy::GotResult, hdr_enabled));
   }
   static void GotResult(bool hdr_enabled) {
     display::win::ScreenWin::SetHDREnabled(hdr_enabled);
@@ -718,7 +718,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 
   {
     base::SetRecordActionTaskRunner(
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
+        base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
   }
 
   // TODO(boliu): kSingleProcess check is a temporary workaround for
@@ -859,7 +859,7 @@ void BrowserMainLoop::CreateStartupTasks() {
 
   startup_task_runner_ = std::make_unique<StartupTaskRunner>(
       base::BindOnce(&BrowserStartupComplete),
-      base::CreateSingleThreadTaskRunnerWithTraits(
+      base::CreateSingleThreadTaskRunner(
           {BrowserThread::UI, BrowserTaskType::kBootstrap}));
 #else
   startup_task_runner_ = std::make_unique<StartupTaskRunner>(
@@ -1013,7 +1013,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // Teardown may start in PostMainMessageLoopRun, and during teardown we
   // need to be able to perform IO.
   base::ThreadRestrictions::SetIOAllowed(true);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed), true));
@@ -1024,7 +1024,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   // no persistent work is being done after ThreadPoolInstance::Shutdown() in
   // order to move towards atomic shutdown.
   base::ThreadRestrictions::SetWaitAllowed(true);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           base::IgnoreResult(&base::ThreadRestrictions::SetWaitAllowed), true));
@@ -1213,15 +1213,14 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // BrowserGpuChannelHostFactory below, since that depends on an initialized
   // ShaderCacheFactory.
   InitShaderCacheFactorySingleton(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
   // Initialize the FontRenderParams on IO thread. This needs to be initialized
   // before gpu process initialization below.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &viz::GpuHostImpl::InitFontRenderParams,
-          gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&viz::GpuHostImpl::InitFontRenderParams,
+                                gfx::GetFontRenderParams(
+                                    gfx::FontRenderParamsQuery(), nullptr)));
 
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;
@@ -1377,7 +1376,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       !established_gpu_channel && always_uses_gpu) {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
                          TRACE_EVENT_SCOPE_THREAD);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(base::IgnoreResult(&GpuProcessHost::Get),
                        GPU_PROCESS_KIND_SANDBOXED, true /* force_create */));
@@ -1548,7 +1547,7 @@ void BrowserMainLoop::InitializeAudio() {
 
   if (base::FeatureList::IsEnabled(features::kAudioServiceLaunchOnStartup)) {
     // Schedule the audio service startup on the main thread.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::BindOnce([]() {

@@ -846,32 +846,29 @@
     }).catch(failTest);
   }
 
-  function getUserMediaEchoCancellationOnAndOff() {
-    var stream;
-    navigator.mediaDevices.getUserMedia({
-      audio: {
-        deviceId: {exact: "default"},
-        echoCancellation: {exact: true}
-      }
-    }).then(s => {
-      stream = s;
-      assertTrue(stream.getAudioTracks()[0].getSettings().echoCancellation);
-      // Chromium's current implementation does not support tracks from the
-      // same source to have different echo cancellation settings. This
-      // getUserMedia() call is expected to fail.
-      navigator.mediaDevices.getUserMedia({
-        audio: {
-          deviceId: {exact: "default"},
-          echoCancellation: {exact: false}
-        }
-      }).then(
-          s => failTest("Unexpected accepted promise from getUserMedia()"),
-          e => {
-            assertEquals(e.name, "OverconstrainedError");
-            stream.getAudioTracks()[0].stop();
-            reportTestSuccess();
-          });
-    }).catch(failTest);
+  async function getUserMediaEchoCancellationOnAndOff() {
+    try {
+      var streams;
+
+      streams = await navigator.mediaDevices.getUserMedia({
+          audio: {
+              deviceId: {exact: "default"},
+              echoCancellation: {exact: true}
+          }
+      });
+      assertTrue(streams.getAudioTracks()[0].getSettings().echoCancellation);
+
+      streams = await navigator.mediaDevices.getUserMedia({
+          audio: {
+              deviceId: {exact: "default"},
+              echoCancellation: {exact: false}
+          }
+      });
+      assertFalse(streams.getAudioTracks()[0].getSettings().echoCancellation);
+      reportTestSuccess();
+    } catch(err) {
+      failTest('getUserMedia() failed, error: ' + err.message);
+    }
   }
 
   var resolveTrackEndedAfterServiceCrash;

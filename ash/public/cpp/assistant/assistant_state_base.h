@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/macros.h"
 #include "base/optional.h"
 

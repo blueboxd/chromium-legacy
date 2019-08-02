@@ -205,7 +205,7 @@ autofill::SaveCardBubbleView* TestBrowserWindow::ShowSaveCreditCardBubble(
   return nullptr;
 }
 
-ClickToCallDialog* TestBrowserWindow::ShowClickToCallDialog(
+SharingDialog* TestBrowserWindow::ShowClickToCallDialog(
     content::WebContents* web_contents,
     ClickToCallSharingDialogController* controller) {
   return nullptr;

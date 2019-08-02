@@ -46,7 +46,7 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread {
   static void ResetGlobalsForTesting(BrowserThread::ID identifier);
 
   // Exposed for BrowserTaskExecutor. Other code should use
-  // base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI/IO}).
+  // base::CreateSingleThreadTaskRunner({BrowserThread::UI/IO}).
   using BrowserThread::GetTaskRunnerForThread;
 
  private:

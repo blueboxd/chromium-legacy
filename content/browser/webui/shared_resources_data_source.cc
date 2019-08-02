@@ -385,7 +385,7 @@ SharedResourcesDataSource::TaskRunnerForRequestPath(const std::string& path) {
   // TODO (rbpotter): Remove this once the OOBE Polymer 2 migration is complete.
 #if defined(OS_CHROMEOS)
   if (UsingMultiplePolymerVersions())
-    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+    return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
 #endif  // defined(OS_CHROMEOS)
 
   int idr = GetIdrForPath(path);
@@ -393,7 +393,7 @@ SharedResourcesDataSource::TaskRunnerForRequestPath(const std::string& path) {
       idr == IDR_WEBUI_CSS_TEXT_DEFAULTS_MD) {
     // Use UI thread to load CSS since its construction touches non-thread-safe
     // gfx::Font names in ui::ResourceBundle.
-    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+    return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   }
 
   return nullptr;

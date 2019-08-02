@@ -175,7 +175,7 @@ void ContentIndexDatabase::DidAddEntry(
 
   std::vector<ContentIndexEntry> entries;
   entries.push_back(std::move(entry));
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ContentIndexDatabase::NotifyProviderContentAdded,
                      weak_ptr_factory_ui_.GetWeakPtr(), std::move(entries)));
@@ -209,7 +209,7 @@ void ContentIndexDatabase::DidDeleteEntry(
 
   std::move(callback).Run(blink::mojom::ContentIndexError::NONE);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ContentIndexDatabase::NotifyProviderContentDeleted,
                      weak_ptr_factory_ui_.GetWeakPtr(),
@@ -293,7 +293,7 @@ void ContentIndexDatabase::DidGetSerializedIcon(
 
   DCHECK_EQ(data.size(), 1u);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DeserializeIcon, std::make_unique<std::string>(data[0]),
                      std::move(icon_callback)));

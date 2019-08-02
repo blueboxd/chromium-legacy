@@ -186,7 +186,7 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
         g_network_service_ptr->set_connection_error_handler(
             base::BindOnce(&OnNetworkServiceCrash));
       } else {
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {BrowserThread::IO},
             base::BindOnce(CreateNetworkServiceOnIO,
                            mojo::MakeRequest(g_network_service_ptr)));
@@ -304,7 +304,7 @@ void GetNetworkConnectionTrackerFromUIThread(
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetNetworkConnectionTracker), std::move(callback));
 }

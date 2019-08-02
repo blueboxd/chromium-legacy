@@ -4,7 +4,7 @@
 
 """Functions for extracting email addresses from OWNERS files."""
 
-import histogram_ownership
+import extract_histograms
 import os
 import re
 
@@ -196,7 +196,7 @@ def ExpandHistogramsOWNERS(histograms):
       is_email = email_pattern.match(owner_text)
 
       is_primary_owner = (is_email or
-          owner_text == histogram_ownership.DUMMY_OWNER)
+          owner_text == extract_histograms.OWNER_PLACEHOLDER)
       if index == 0 and not is_primary_owner:
         raise Error('The histogram {} must have a primary owner, i.e. an '
                     'individual\'s email address.'

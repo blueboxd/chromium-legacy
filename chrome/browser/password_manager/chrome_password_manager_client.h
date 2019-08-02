@@ -138,6 +138,7 @@ class ChromePasswordManagerClient
   password_manager::PasswordRequirementsService*
   GetPasswordRequirementsService() override;
   favicon::FaviconService* GetFaviconService() override;
+  signin::IdentityManager* GetIdentityManager() override;
   bool IsUnderAdvancedProtection() const override;
   void UpdateFormManagers() override;
   void NavigateToManagePasswordsPage(

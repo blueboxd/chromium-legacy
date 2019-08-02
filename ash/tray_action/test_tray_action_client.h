@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 

@@ -7,7 +7,7 @@
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/public/cpp/voice_interaction_controller.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/palette/mock_palette_tool_delegate.h"
 #include "ash/system/palette/palette_ids.h"

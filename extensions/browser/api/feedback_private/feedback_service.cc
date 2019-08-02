@@ -17,8 +17,8 @@
 #include "net/base/network_change_notifier.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/assistant_controller.mojom.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "extensions/browser/api/feedback_private/log_source_access_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #endif  // defined(OS_CHROMEOS)

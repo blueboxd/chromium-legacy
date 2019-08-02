@@ -54,7 +54,7 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnUI) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_2.Get());
   }));
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, task_1.Get());
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, task_1.Get());
 
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
 
@@ -68,10 +68,10 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIO) {
   StrictMockTask task_1;
   StrictMockTask task_2;
   EXPECT_CALL(task_1, Run).WillOnce(testing::Invoke([&]() {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, task_2.Get());
+    base::PostTask(FROM_HERE, {BrowserThread::IO}, task_2.Get());
   }));
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, task_1.Get());
+  base::PostTask(FROM_HERE, {BrowserThread::IO}, task_1.Get());
 
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
 
@@ -87,15 +87,15 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIOIsReentrant) {
   StrictMockTask task_3;
 
   EXPECT_CALL(task_1, Run).WillOnce(Invoke([&]() {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, task_2.Get());
+    base::PostTask(FROM_HERE, {BrowserThread::IO}, task_2.Get());
     BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
         BrowserThread::IO);
   }));
   EXPECT_CALL(task_2, Run).WillOnce(Invoke([&]() {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, task_3.Get());
+    base::PostTask(FROM_HERE, {BrowserThread::IO}, task_3.Get());
   }));
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, task_1.Get());
+  base::PostTask(FROM_HERE, {BrowserThread::IO}, task_1.Get());
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
 
   // Cleanup pending tasks, as TestBrowserThreadBundle will run them.
@@ -200,15 +200,15 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
   StrictMockTask user_visible;
   StrictMockTask user_blocking;
 
-  base::PostTaskWithTraits(FROM_HERE,
-                           {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-                           best_effort.Get());
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-      user_visible.Get());
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
-      user_blocking.Get());
+  base::PostTask(FROM_HERE,
+                 {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+                 best_effort.Get());
+  base::PostTask(FROM_HERE,
+                 {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+                 user_visible.Get());
+  base::PostTask(FROM_HERE,
+                 {BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
+                 user_blocking.Get());
 
   EXPECT_CALL(user_visible, Run);
   EXPECT_CALL(user_blocking, Run);
@@ -218,7 +218,7 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
 
 TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
        BestEffortTasksRunAfterStartup) {
-  auto ui_best_effort_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+  auto ui_best_effort_runner = base::CreateSingleThreadTaskRunner(
       {BrowserThread::UI, base::TaskPriority::BEST_EFFORT});
 
   StrictMockTask best_effort;
@@ -226,12 +226,12 @@ TEST_F(BrowserTaskExecutorWithCustomSchedulerTest,
   ui_best_effort_runner->PostTask(FROM_HERE, best_effort.Get());
   ui_best_effort_runner->PostDelayedTask(
       FROM_HERE, best_effort.Get(), base::TimeDelta::FromMilliseconds(100));
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
       best_effort.Get(), base::TimeDelta::FromMilliseconds(100));
-  base::PostTaskWithTraits(FROM_HERE,
-                           {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-                           best_effort.Get());
+  base::PostTask(FROM_HERE,
+                 {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+                 best_effort.Get());
   scoped_task_environment_.RunUntilIdle();
 
   BrowserTaskExecutor::EnableAllQueues();

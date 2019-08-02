@@ -57,10 +57,9 @@ class SynchronousCompositorControlHost
       scoped_refptr<SynchronousCompositorSyncCallBridge> bridge,
       int process_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&CreateOnIOThread, std::move(receiver),
-                       std::move(bridge), process_id));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&CreateOnIOThread, std::move(receiver),
+                                  std::move(bridge), process_id));
   }
 
   static void CreateOnIOThread(

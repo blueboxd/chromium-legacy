@@ -533,7 +533,7 @@ void SignedExchangeHandler::OnCertReceived(
   //   property, or
   const std::string& stapled_ocsp_response = unverified_cert_chain_->ocsp();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&VerifyCert, certificate, url, stapled_ocsp_response,
                      sct_list_from_cert_cbor, frame_tree_node_id_getter_,

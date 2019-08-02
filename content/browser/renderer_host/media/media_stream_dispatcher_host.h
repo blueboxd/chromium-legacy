@@ -53,10 +53,12 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void CancelAllRequests();
 
   // mojom::MediaStreamDispatcherHost implementation
-  void GenerateStream(int32_t request_id,
-                      const blink::StreamControls& controls,
-                      bool user_gesture,
-                      GenerateStreamCallback callback) override;
+  void GenerateStream(
+      int32_t request_id,
+      const blink::StreamControls& controls,
+      bool user_gesture,
+      blink::mojom::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
+      GenerateStreamCallback callback) override;
   void CancelRequest(int32_t request_id) override;
   void StopStreamDevice(
       const std::string& device_id,
@@ -72,11 +74,13 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
       bool is_secure) override;
   void OnStreamStarted(const std::string& label) override;
 
-  void DoGenerateStream(int32_t request_id,
-                        const blink::StreamControls& controls,
-                        bool user_gesture,
-                        GenerateStreamCallback callback,
-                        MediaDeviceSaltAndOrigin salt_and_origin);
+  void DoGenerateStream(
+      int32_t request_id,
+      const blink::StreamControls& controls,
+      bool user_gesture,
+      blink::mojom::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
+      GenerateStreamCallback callback,
+      MediaDeviceSaltAndOrigin salt_and_origin);
   void DoOpenDevice(int32_t request_id,
                     const std::string& device_id,
                     blink::mojom::MediaStreamType type,

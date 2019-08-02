@@ -509,7 +509,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void CreateEmbedderRendererService(
       service_manager::mojom::ServiceRequest service_request) override;
   void CreateView(mojom::CreateViewParamsPtr params) override;
-  void DestroyView(int32_t view_id) override;
   void CreateFrame(mojom::CreateFrameParamsPtr params) override;
   void CreateFrameProxy(
       int32_t routing_id,

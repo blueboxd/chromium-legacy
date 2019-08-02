@@ -52,7 +52,7 @@ const CGFloat kButtonInactiveAlpha = 0.38;
 
 - (void)setAccepted:(BOOL)accepted animated:(BOOL)animated {
   void (^changeTintColor)() = ^{
-    self.tintColor = accepted ? [UIColor colorNamed:kTintColor]
+    self.tintColor = accepted ? [UIColor colorNamed:kBlueColor]
                               : [UIColor colorWithWhite:0
                                                   alpha:kButtonInactiveAlpha];
   };

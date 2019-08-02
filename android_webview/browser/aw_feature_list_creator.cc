@@ -14,7 +14,6 @@
 #include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_variations_seed_bridge.h"
-#include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"

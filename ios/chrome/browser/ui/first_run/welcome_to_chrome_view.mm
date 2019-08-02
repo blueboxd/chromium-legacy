@@ -296,7 +296,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
     UIImage* selectedImage = [[UIImage imageNamed:kCheckBoxCheckedImageName]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [_checkBoxButton setImage:selectedImage forState:UIControlStateSelected];
-    _checkBoxButton.tintColor = [UIColor colorNamed:kTintColor];
+    _checkBoxButton.tintColor = [UIColor colorNamed:kBlueColor];
   }
   return _checkBoxButton;
 }
@@ -441,7 +441,7 @@ const char kPrivacyNoticeUrl[] = "internal://privacy-notice";
                                         url:GURL(kTermsOfServiceUrl)];
   [_TOSLabelLinkController addLinkWithRange:privacyLinkTextRange
                                         url:GURL(kPrivacyNoticeUrl)];
-  [_TOSLabelLinkController setLinkColor:[UIColor colorNamed:kTintColor]];
+  [_TOSLabelLinkController setLinkColor:[UIColor colorNamed:kBlueColor]];
 
   CGSize TOSLabelSize = [self.TOSLabel sizeThatFits:containerSize];
   CGFloat TOSLabelTopPadding = kTOSLabelTopPadding[[self heightSizeClassIdiom]];

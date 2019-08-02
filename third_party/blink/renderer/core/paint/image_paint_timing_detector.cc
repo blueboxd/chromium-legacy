@@ -60,10 +60,10 @@ static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
   return a->insertion_index < b->insertion_index;
 }
 
-ImagePaintTimingDetector::ImagePaintTimingDetector(LocalFrameView* frame_view)
-    : frame_view_(frame_view),
-      callback_manager_(
-          MakeGarbageCollected<PaintTimingCallbackManagerImpl>()) {}
+ImagePaintTimingDetector::ImagePaintTimingDetector(
+    LocalFrameView* frame_view,
+    PaintTimingCallbackManager* callback_manager)
+    : frame_view_(frame_view), callback_manager_(callback_manager) {}
 
 void ImagePaintTimingDetector::PopulateTraceValue(
     TracedValue& value,
@@ -171,22 +171,15 @@ void ImagePaintTimingDetector::NotifyImageRemoved(
 }
 
 void ImagePaintTimingDetector::RegisterNotifySwapTime() {
-  auto callback = CrossThreadBindOnce(&ImagePaintTimingDetector::ReportSwapTime,
-                                      WrapCrossThreadWeakPersistent(this),
-                                      last_registered_frame_index_);
-  // ReportSwapTime on layerTreeView will queue a swap-promise, the callback is
-  // called when the swap for current render frame completes or fails to happen.
-  LocalFrame& frame = frame_view_->GetFrame();
-  if (!frame.GetPage())
-    return;
-
-  callback_manager_->RegisterCallback(frame, std::move(callback));
+  auto callback = WTF::Bind(&ImagePaintTimingDetector::ReportSwapTime,
+                            WrapCrossThreadWeakPersistent(this),
+                            last_registered_frame_index_);
+  callback_manager_->RegisterCallback(std::move(callback));
   num_pending_swap_callbacks_++;
 }
 
 void ImagePaintTimingDetector::ReportSwapTime(
     unsigned last_queued_frame_index,
-    WebWidgetClient::SwapResult result,
     base::TimeTicks timestamp) {
   if (!is_recording_)
     return;

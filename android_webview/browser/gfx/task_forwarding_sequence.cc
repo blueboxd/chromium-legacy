@@ -50,7 +50,12 @@ void TaskForwardingSequence::ScheduleTask(
 void TaskForwardingSequence::ScheduleOrRetainTask(
     base::OnceClosure task,
     std::vector<gpu::SyncToken> sync_token_fences) {
-  ScheduleTask(std::move(task), std::move(sync_token_fences));
+  uint32_t order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber();
+  // Use a weak ptr because the task executor holds the tasks, and the
+  // sequence will be destroyed before the task executor.
+  task_queue_->ScheduleOrRetainTask(base::BindOnce(
+      &TaskForwardingSequence::RunTask, weak_ptr_factory_.GetWeakPtr(),
+      std::move(task), std::move(sync_token_fences), order_num));
 }
 
 // Should not be called because tasks aren't reposted to wait for sync tokens,

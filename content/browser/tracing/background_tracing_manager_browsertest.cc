@@ -221,11 +221,11 @@ class TestTraceReceiverHelper {
     file_contents_.assign(output_str.data(), bytes_written);
 
     // Post the callbacks.
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(std::move(done_callback), true));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(std::move(done_callback), true));
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             wait_for_trace_received_.QuitWhenIdleClosure());
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   wait_for_trace_received_.QuitWhenIdleClosure());
   }
 
  private:

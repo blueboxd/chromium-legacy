@@ -176,7 +176,7 @@ class ImagePaintTimingDetectorTest
         MakeGarbageCollected<MockPaintTimingCallbackManager>();
     GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        ->ResetCallbackManagerForTesting(mock_callback_manager_);
+        ->ResetCallbackManager(mock_callback_manager_);
     UpdateAllLifecyclePhases();
   }
 
@@ -188,7 +188,7 @@ class ImagePaintTimingDetectorTest
         MakeGarbageCollected<MockPaintTimingCallbackManager>();
     GetChildPaintTimingDetector()
         .GetImagePaintTimingDetector()
-        ->ResetCallbackManagerForTesting(child_mock_callback_manager_);
+        ->ResetCallbackManager(child_mock_callback_manager_);
     UpdateAllLifecyclePhases();
   }
 
@@ -263,7 +263,7 @@ class ImagePaintTimingDetectorTest
     return original_image_resource;
   }
 
-  CallbackQueue callback_queue_;
+  PaintTimingCallbackManager::CallbackQueue callback_queue_;
   Persistent<MockPaintTimingCallbackManager> mock_callback_manager_;
   Persistent<MockPaintTimingCallbackManager> child_mock_callback_manager_;
 };

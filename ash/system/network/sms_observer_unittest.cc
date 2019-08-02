@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/vpn_list.mojom.h"
+#include "ash/public/mojom/vpn_list.mojom.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"

@@ -203,7 +203,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
   friend class ImagePaintTimingDetectorTest;
 
  public:
-  ImagePaintTimingDetector(LocalFrameView*);
+  ImagePaintTimingDetector(LocalFrameView*, PaintTimingCallbackManager*);
   void RecordImage(const LayoutObject&,
                    const IntSize& intrinsic_size,
                    const ImageResourceContent&,
@@ -222,6 +222,10 @@ class CORE_EXPORT ImagePaintTimingDetector final
   inline bool FinishedReportingImages() const {
     return !is_recording_ && num_pending_swap_callbacks_ == 0;
   }
+  void ResetCallbackManager(PaintTimingCallbackManager* manager) {
+    callback_manager_ = manager;
+  }
+  void ReportSwapTime(unsigned last_queued_frame_index, base::TimeTicks);
 
   void Trace(blink::Visitor*);
 
@@ -231,13 +235,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   ImageRecord* FindLargestPaintCandidate() const;
 
   void PopulateTraceValue(TracedValue&, const ImageRecord& first_image_paint);
-  // This is provided for unit test to force invoking swap promise callback.
-  void ReportSwapTime(unsigned last_queued_frame_index,
-                      WebWidgetClient::SwapResult,
-                      base::TimeTicks);
-  void ResetCallbackManagerForTesting(PaintTimingCallbackManager* manager) {
-    callback_manager_ = manager;
-  }
   void RegisterNotifySwapTime();
   void ReportCandidateToTrace(ImageRecord&);
   void ReportNoCandidateToTrace();

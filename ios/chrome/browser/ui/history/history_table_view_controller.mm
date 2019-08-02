@@ -1102,8 +1102,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                                         action:@selector(openPrivacySettings)];
     _clearBrowsingDataButton.accessibilityIdentifier =
         kHistoryToolbarClearBrowsingButtonIdentifier;
-    _clearBrowsingDataButton.tintColor =
-        [UIColor colorNamed:kDestructiveTintColor];
+    _clearBrowsingDataButton.tintColor = [UIColor colorNamed:kRedColor];
   }
   return _clearBrowsingDataButton;
 }
@@ -1119,7 +1118,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                action:@selector(deleteSelectedItemsFromHistory)];
     _deleteButton.accessibilityIdentifier =
         kHistoryToolbarDeleteButtonIdentifier;
-    _deleteButton.tintColor = [UIColor colorNamed:kDestructiveTintColor];
+    _deleteButton.tintColor = [UIColor colorNamed:kRedColor];
   }
   return _deleteButton;
 }

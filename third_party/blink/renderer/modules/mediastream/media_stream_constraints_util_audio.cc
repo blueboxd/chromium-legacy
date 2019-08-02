@@ -307,7 +307,8 @@ class EchoCancellationContainer {
                             bool has_active_source,
                             bool is_device_capture,
                             media::AudioParameters device_parameters,
-                            AudioProcessingProperties properties)
+                            AudioProcessingProperties properties,
+                            bool is_reconfiguration_allowed)
       : ec_mode_allowed_values_(EchoCancellationTypeSet({allowed_values})),
         device_parameters_(device_parameters),
         is_device_capture_(is_device_capture) {
@@ -322,6 +323,15 @@ class EchoCancellationContainer {
                  EchoCancellationType::kEchoCancellationDisabled}));
       }
 #endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
+      return;
+    }
+
+    // If HW echo cancellation is used, reconfiguration is not supported and
+    // only the current values are allowed. Otherwise, allow all possible values
+    // for echo cancellation.
+    if (is_reconfiguration_allowed &&
+        properties.echo_cancellation_type !=
+            EchoCancellationType::kEchoCancellationSystem) {
       return;
     }
 
@@ -551,7 +561,8 @@ class ProcessingBasedContainer {
   static ProcessingBasedContainer CreateRemoteApmProcessedContainer(
       const SourceInfo& source_info,
       bool is_device_capture,
-      const media::AudioParameters& device_parameters) {
+      const media::AudioParameters& device_parameters,
+      bool is_reconfiguration_allowed) {
     return ProcessingBasedContainer(
         ProcessingType::kApmProcessed,
         {EchoCancellationType::kEchoCancellationAec3,
@@ -568,7 +579,8 @@ class ProcessingBasedContainer {
             device_parameters.channels()), /* channels_range */
         IntRangeSet::FromValue(
             device_parameters.sample_rate()), /* sample_rate_range */
-        source_info, is_device_capture, device_parameters);
+        source_info, is_device_capture, device_parameters,
+        is_reconfiguration_allowed);
   }
 
   // Creates an instance of ProcessingBasedContainer for the WebRTC processed
@@ -579,7 +591,8 @@ class ProcessingBasedContainer {
   static ProcessingBasedContainer CreateApmProcessedContainer(
       const SourceInfo& source_info,
       bool is_device_capture,
-      const media::AudioParameters& device_parameters) {
+      const media::AudioParameters& device_parameters,
+      bool is_reconfiguration_allowed) {
     return ProcessingBasedContainer(
         ProcessingType::kApmProcessed,
         {EchoCancellationType::kEchoCancellationAec3,
@@ -595,7 +608,8 @@ class ProcessingBasedContainer {
         IntRangeSet::FromValue(1),               /* channels_range */
         IntRangeSet::FromValue(
             blink::kAudioProcessingSampleRate), /* sample_rate_range */
-        source_info, is_device_capture, device_parameters);
+        source_info, is_device_capture, device_parameters,
+        is_reconfiguration_allowed);
   }
 
   // Creates an instance of ProcessingBasedContainer for the processed source
@@ -606,7 +620,8 @@ class ProcessingBasedContainer {
   static ProcessingBasedContainer CreateNoApmProcessedContainer(
       const SourceInfo& source_info,
       bool is_device_capture,
-      const media::AudioParameters& device_parameters) {
+      const media::AudioParameters& device_parameters,
+      bool is_reconfiguration_allowed) {
     return ProcessingBasedContainer(
         ProcessingType::kNoApmProcessed,
         {EchoCancellationType::kEchoCancellationDisabled},
@@ -622,7 +637,8 @@ class ProcessingBasedContainer {
             device_parameters.channels()), /* channels_range */
         IntRangeSet::FromValue(
             device_parameters.sample_rate()), /* sample_rate_range */
-        source_info, is_device_capture, device_parameters);
+        source_info, is_device_capture, device_parameters,
+        is_reconfiguration_allowed);
   }
 
   // Creates an instance of ProcessingBasedContainer for the unprocessed source
@@ -632,7 +648,8 @@ class ProcessingBasedContainer {
   static ProcessingBasedContainer CreateUnprocessedContainer(
       const SourceInfo& source_info,
       bool is_device_capture,
-      const media::AudioParameters& device_parameters) {
+      const media::AudioParameters& device_parameters,
+      bool is_reconfiguration_allowed) {
     return ProcessingBasedContainer(
         ProcessingType::kUnprocessed,
         {EchoCancellationType::kEchoCancellationDisabled},
@@ -648,7 +665,8 @@ class ProcessingBasedContainer {
             device_parameters.channels()), /* channels_range */
         IntRangeSet::FromValue(
             device_parameters.sample_rate()), /* sample_rate_range */
-        source_info, is_device_capture, device_parameters);
+        source_info, is_device_capture, device_parameters,
+        is_reconfiguration_allowed);
   }
 
   const char* ApplyConstraintSet(const ConstraintSet& constraint_set) {
@@ -838,7 +856,8 @@ class ProcessingBasedContainer {
       IntRangeSet sample_rate_range,
       SourceInfo source_info,
       bool is_device_capture,
-      media::AudioParameters device_parameters)
+      media::AudioParameters device_parameters,
+      bool is_reconfiguration_allowed)
       : processing_type_(processing_type),
         sample_size_container_(sample_size_range),
         channels_container_(channels_range),
@@ -855,7 +874,8 @@ class ProcessingBasedContainer {
     }
     echo_cancellation_container_ = EchoCancellationContainer(
         echo_cancellation_types, source_info.HasActiveSource(),
-        is_device_capture, device_parameters, source_info.properties());
+        is_device_capture, device_parameters, source_info.properties(),
+        is_reconfiguration_allowed);
 
     boolean_containers_[kGoogAudioMirroring] =
         BooleanContainer(goog_audio_mirroring_set);
@@ -951,7 +971,8 @@ constexpr ProcessingBasedContainer::BooleanPropertyContainerInfo
 class DeviceContainer {
  public:
   DeviceContainer(const AudioDeviceCaptureCapability& capability,
-                  bool is_device_capture)
+                  bool is_device_capture,
+                  bool is_reconfiguration_allowed)
       : device_parameters_(capability.Parameters()) {
     if (!capability.DeviceID().empty()) {
       device_id_container_ =
@@ -971,33 +992,37 @@ class DeviceContainer {
     // Three variations of the processing-based container. Each variant is
     // associated to a different type of audio processing configuration, namely
     // unprocessed, processed by WebRTC, or processed by other means.
-    if (source_info.type() == SourceType::kNone ||
+    if (is_reconfiguration_allowed || source_info.type() == SourceType::kNone ||
         source_info.type() == SourceType::kUnprocessed) {
       processing_based_containers_.push_back(
           ProcessingBasedContainer::CreateUnprocessedContainer(
-              source_info, is_device_capture, device_parameters_));
+              source_info, is_device_capture, device_parameters_,
+              is_reconfiguration_allowed));
     }
-    if (source_info.type() == SourceType::kNone ||
+    if (is_reconfiguration_allowed || source_info.type() == SourceType::kNone ||
         source_info.type() == SourceType::kNoApmProcessed) {
       processing_based_containers_.push_back(
           ProcessingBasedContainer::CreateNoApmProcessedContainer(
-              source_info, is_device_capture, device_parameters_));
+              source_info, is_device_capture, device_parameters_,
+              is_reconfiguration_allowed));
     }
-    if (source_info.type() == SourceType::kNone ||
+    if (is_reconfiguration_allowed || source_info.type() == SourceType::kNone ||
         source_info.type() == SourceType::kApmProcessed) {
       if (IsApmInAudioServiceEnabled()) {
         processing_based_containers_.push_back(
             ProcessingBasedContainer::CreateRemoteApmProcessedContainer(
-                source_info, is_device_capture, device_parameters_));
+                source_info, is_device_capture, device_parameters_,
+                is_reconfiguration_allowed));
       } else {
         processing_based_containers_.push_back(
             ProcessingBasedContainer::CreateApmProcessedContainer(
-                source_info, is_device_capture, device_parameters_));
+                source_info, is_device_capture, device_parameters_,
+                is_reconfiguration_allowed));
       }
     }
 
 #if DCHECK_IS_ON()
-    if (source_info.type() == SourceType::kNone)
+    if (is_reconfiguration_allowed || source_info.type() == SourceType::kNone)
       DCHECK_EQ(processing_based_containers_.size(), 3u);
     else
       DCHECK_EQ(processing_based_containers_.size(), 1u);
@@ -1188,6 +1213,7 @@ class DeviceContainer {
       channels = source_parameters.channels();
       sample_rate = source_parameters.sample_rate();
       latency = source_parameters.GetBufferDuration().InSecondsF();
+      properties = *(source->GetAudioProcessingProperties());
 
       if (!processed_source) {
         source_type = SourceType::kUnprocessed;
@@ -1236,10 +1262,12 @@ class CandidatesContainer {
  public:
   CandidatesContainer(const AudioDeviceCaptureCapabilities& capabilities,
                       std::string& media_stream_source,
-                      std::string& default_device_id)
+                      std::string& default_device_id,
+                      bool is_reconfiguration_allowed)
       : default_device_id_(default_device_id) {
     for (const auto& capability : capabilities) {
-      devices_.emplace_back(capability, media_stream_source.empty());
+      devices_.emplace_back(capability, media_stream_source.empty(),
+                            is_reconfiguration_allowed);
       DCHECK(!devices_.back().IsEmpty());
     }
   }
@@ -1343,7 +1371,8 @@ const media::AudioParameters& AudioDeviceCaptureCapability::Parameters() const {
 AudioCaptureSettings SelectSettingsAudioCapture(
     const AudioDeviceCaptureCapabilities& capabilities,
     const blink::WebMediaConstraints& constraints,
-    bool should_disable_hardware_noise_suppression) {
+    bool should_disable_hardware_noise_suppression,
+    bool is_reconfiguration_allowed) {
   if (capabilities.empty())
     return AudioCaptureSettings();
 
@@ -1354,7 +1383,7 @@ AudioCaptureSettings SelectSettingsAudioCapture(
     default_device_id = capabilities.begin()->DeviceID();
 
   CandidatesContainer candidates(capabilities, media_stream_source,
-                                 default_device_id);
+                                 default_device_id, is_reconfiguration_allowed);
   DCHECK(!candidates.IsEmpty());
 
   auto* failed_constraint_name =

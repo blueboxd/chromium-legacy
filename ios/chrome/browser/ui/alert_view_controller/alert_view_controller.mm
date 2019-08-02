@@ -387,13 +387,13 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
     UIColor* textColor = nil;
     if (action.style == UIAlertActionStyleDefault) {
       font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-      textColor = [UIColor colorNamed:kTintColor];
+      textColor = [UIColor colorNamed:kBlueColor];
     } else if (action.style == UIAlertActionStyleCancel) {
       font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-      textColor = [UIColor colorNamed:kTintColor];
+      textColor = [UIColor colorNamed:kBlueColor];
     } else {  // Style is UIAlertActionStyleDestructive
       font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-      textColor = [UIColor colorNamed:kDestructiveTintColor];
+      textColor = [UIColor colorNamed:kRedColor];
     }
     button.titleLabel.font = font;
     button.titleLabel.adjustsFontForContentSizeCategory = YES;

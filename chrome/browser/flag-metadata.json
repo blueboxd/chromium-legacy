@@ -346,11 +346,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "automatic-password-generation",
-    "owners": [ "ioanap", "fhorschig" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "background-task-component-update",
     "owners": [ "sorin", "waffles", "tiborg" ],
     "expiry_milestone": 76
@@ -2277,7 +2272,7 @@
   {
     "name": "manual-password-generation-android",
     "owners": [ "ioanap" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 78
   },
   {
     "name": "media-router-cast-allow-all-ips",

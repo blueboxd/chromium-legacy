@@ -557,6 +557,8 @@ void TaskQueueImpl::MoveReadyDelayedTasksToWorkQueue(LazyNow* lazy_now) {
   while (!main_thread_only().delayed_incoming_queue.empty()) {
     Task* task =
         const_cast<Task*>(&main_thread_only().delayed_incoming_queue.top());
+    // TODO(crbug.com/990245): Remove after the crash has been resolved.
+    sequence_manager_->RecordCrashKeys(*task);
     if (!task->task || task->task.IsCancelled()) {
       main_thread_only().delayed_incoming_queue.pop();
       continue;

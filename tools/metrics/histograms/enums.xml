@@ -2484,6 +2484,57 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="Not allowed"/>
 </enum>
 
+<enum name="ArcExternalProtocolAction">
+  <int value="0" label="other App accepted and persisted"/>
+  <int value="1" label="other App accepted and not persisted"/>
+  <int value="2" label="other App rejected"/>
+  <int value="3" label="bitcoin:// App accepted and persisted"/>
+  <int value="4" label="bitcoin:// App accepted and not persisted"/>
+  <int value="5" label="bitcoin:// App rejected"/>
+  <int value="6" label="geo:// App accepted and persisted"/>
+  <int value="7" label="geo:// App accepted and not persisted"/>
+  <int value="8" label="geo:// App rejected"/>
+  <int value="9" label="im:// App accepted and persisted"/>
+  <int value="10" label="im:// App accepted and not persisted"/>
+  <int value="11" label="im:// App rejected"/>
+  <int value="12" label="irc:// App accepted and persisted"/>
+  <int value="13" label="irc:// App accepted and not persisted"/>
+  <int value="14" label="irc:// App rejected"/>
+  <int value="15" label="magnet:// App accepted and persisted"/>
+  <int value="16" label="magnet:// App accepted and not persisted"/>
+  <int value="17" label="magnet:// App rejected"/>
+  <int value="18" label="mailto:// App accepted and persisted"/>
+  <int value="19" label="mailto:// App accepted and not persisted"/>
+  <int value="20" label="mailto:// App rejected"/>
+  <int value="21" label="mms:// App accepted and persisted"/>
+  <int value="22" label="mms:// App accepted and not persisted"/>
+  <int value="23" label="mms:// App rejected"/>
+  <int value="24" label="sip:// App accepted and persisted"/>
+  <int value="25" label="sip:// App accepted and not persisted"/>
+  <int value="26" label="sip:// App rejected"/>
+  <int value="27" label="skype:// App accepted and persisted"/>
+  <int value="28" label="skype:// App accepted and not persisted"/>
+  <int value="29" label="skype:// App rejected"/>
+  <int value="30" label="sms:// App accepted and persisted"/>
+  <int value="31" label="sms:// App accepted and not persisted"/>
+  <int value="32" label="sms:// App rejected"/>
+  <int value="33" label="spotify:// App accepted and persisted"/>
+  <int value="34" label="spotify:// App accepted and not persisted"/>
+  <int value="35" label="spotify:// App rejected"/>
+  <int value="36" label="ssh:// App accepted and persisted"/>
+  <int value="37" label="ssh:// App accepted and not persisted"/>
+  <int value="38" label="ssh:// App rejected"/>
+  <int value="39" label="tel:// App accepted and persisted"/>
+  <int value="40" label="tel:// App accepted and not persisted"/>
+  <int value="41" label="tel:// App rejected"/>
+  <int value="42" label="telnet:// App accepted and persisted"/>
+  <int value="43" label="telnet:// App accepted and not persisted"/>
+  <int value="44" label="telnet:// App rejected"/>
+  <int value="45" label="webcal:// App accepted and persisted"/>
+  <int value="46" label="webcal:// App accepted and not persisted"/>
+  <int value="47" label="webcal:// App rejected"/>
+</enum>
+
 <enum name="ArcIntentHandlerAction">
   <summary>Defines Arc intent handler actions</summary>
   <int value="0" label="Error after showing picker"/>
@@ -4933,6 +4984,7 @@ Unknown properties are collapsed to zero. -->
   <int value="215" label="RFHI_BEGIN_NAVIGATION_NON_WEBBY_TRANSITION"/>
   <int value="216" label="RFH_NO_MATCHING_NAVIGATION_REQUEST_ON_COMMIT"/>
   <int value="217" label="AUTH_INVALID_ICON_URL"/>
+  <int value="218" label="MDDH_INVALID_STREAM_SELECTION_INFO"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -24183,6 +24235,13 @@ Called by update_net_error_codes.py.-->
   <int value="2983" label="ContentIndexAdd"/>
   <int value="2984" label="ContentIndexDelete"/>
   <int value="2985" label="ContentIndexGet"/>
+  <int value="2986" label="V8SpeechGrammar_Constructor"/>
+  <int value="2987" label="V8SpeechGrammarList_AddFromString_Method"/>
+  <int value="2988" label="V8SpeechGrammarList_Constructor"/>
+  <int value="2989" label="V8SpeechGrammarList_Item_Method"/>
+  <int value="2990" label="V8SpeechRecognition_Constructor"/>
+  <int value="2991" label="V8SpeechRecognition_Grammars_AttributeGetter"/>
+  <int value="2992" label="V8SpeechRecognition_Grammars_AttributeSetter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

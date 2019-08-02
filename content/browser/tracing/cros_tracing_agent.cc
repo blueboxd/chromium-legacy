@@ -55,7 +55,8 @@ class CrOSSystemTracingSession {
       return;
     }
     debug_daemon_->SetStopAgentTracingTaskRunner(
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
+        base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock()}));
     debug_daemon_->StartAgentTracing(
         trace_config,
         base::BindOnce(&CrOSSystemTracingSession::StartTracingCallbackProxy,
@@ -110,16 +111,15 @@ class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
   void StartTracing(
       tracing::PerfettoProducer* perfetto_producer,
       const perfetto::DataSourceConfig& data_source_config) override {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&CrOSDataSource::StartTracingOnUI,
-                       base::Unretained(this), perfetto_producer,
-                       data_source_config));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&CrOSDataSource::StartTracingOnUI,
+                                  base::Unretained(this), perfetto_producer,
+                                  data_source_config));
   }
 
   // Called from the tracing::PerfettoProducer on its sequence.
   void StopTracing(base::OnceClosure stop_complete_callback) override {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CrOSDataSource::StopTracingOnUI, base::Unretained(this),
                        std::move(stop_complete_callback)));
@@ -192,7 +192,7 @@ class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
     }
 
     // Destruction and reset of fields should happen on the UI thread.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CrOSDataSource::OnTraceDataOnUI, base::Unretained(this),
                        std::move(stop_complete_callback)));

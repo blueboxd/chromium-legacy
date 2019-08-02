@@ -49,12 +49,26 @@ class CONTENT_EXPORT BackForwardCache {
   // Remove all entries from the BackForwardCache.
   void Flush();
 
+  // Disables the BackForwardCache so that no documents will be stored/served.
+  // This allows tests to "force" not using the BackForwardCache, this can be
+  // useful when:
+  // * Tests rely on a new document being loaded.
+  // * Tests want to test this case specifically.
+  // Note: It's preferable to make tests BackForwardCache compatible
+  // when feasible, rather than using this method. Also please consider whether
+  // you actually should have 2 tests, one with the document cached
+  // (BackForwardCache enabled), and one without.
+  void DisableForTesting();
+
  private:
   // Contains the set of stored RenderFrameHost.
   // Invariant:
   // - Ordered from the most recently used to the last recently used.
   // - Once the list is full, the least recently used document is evicted.
   std::list<std::unique_ptr<RenderFrameHostImpl>> render_frame_hosts_;
+
+  // Whether the BackforwardCached has been disabled for testing.
+  bool is_disabled_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardCache);
 };

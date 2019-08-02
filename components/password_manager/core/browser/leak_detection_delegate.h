@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
 
 namespace autofill {
@@ -16,12 +17,13 @@ struct PasswordForm;
 namespace password_manager {
 
 class LeakDetectionCheck;
+class PasswordManagerClient;
 
 // The helper class that incapsulates the requests and their processing.
-class LeakDetectionDelegate {
+class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
  public:
-  LeakDetectionDelegate();
-  ~LeakDetectionDelegate();
+  explicit LeakDetectionDelegate(PasswordManagerClient* client);
+  ~LeakDetectionDelegate() override;
 
   // Not copyable or movable
   LeakDetectionDelegate(const LeakDetectionDelegate&) = delete;
@@ -33,11 +35,20 @@ class LeakDetectionDelegate {
   void set_leak_factory(std::unique_ptr<LeakDetectionRequestFactory> factory) {
     leak_factory_ = std::move(factory);
   }
+
+  LeakDetectionCheck* leak_check() const { return leak_check_.get(); }
 #endif  // defined(UNIT_TEST)
 
   void StartLeakCheck(const autofill::PasswordForm& form);
 
  private:
+  // LeakDetectionDelegateInterface:
+  void OnLeakDetectionDone(bool leaked,
+                           const GURL& url,
+                           base::StringPiece16 username) override;
+  void OnError(LeakDetectionError error) override;
+
+  PasswordManagerClient* client_;
   // The factory that creates objects for performing a leak check up.
   std::unique_ptr<LeakDetectionRequestFactory> leak_factory_;
 

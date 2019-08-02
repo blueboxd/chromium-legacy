@@ -214,7 +214,7 @@ void SignedExchangeReporter::ReportResultAndFinish(
     report_->elapsed_time = base::TimeTicks::Now() - request_start_;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ReportResultOnUI, std::move(frame_tree_node_id_getter_),
                      std::move(report_)));

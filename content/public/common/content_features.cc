@@ -342,7 +342,7 @@ const base::Feature kPeriodicBackgroundSync{"PeriodicBackgroundSync",
 
 // Whether we should use the navigation_client mojo interface for navigations.
 const base::Feature kPerNavigationMojoInterface = {
-    "PerNavigationMojoInterface", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PerNavigationMojoInterface", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If Pepper 3D Image Chromium is allowed, this feature controls whether it is
 // enabled.

@@ -24,8 +24,7 @@ void SandboxSupportMacImpl::BindRequest(
 }
 
 void SandboxSupportMacImpl::GetSystemColors(GetSystemColorsCallback callback) {
-  auto task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+  auto task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   base::PostTaskAndReplyWithResult(
       task_runner.get(), FROM_HERE,
       base::BindOnce(&ThemeHelperMac::DuplicateReadOnlyColorMapRegion,

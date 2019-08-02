@@ -93,6 +93,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void StartWorkerContext(
       const WebURL&,
       const WebString& name,
+      const WebString& user_agent,
       const WebString& content_security_policy,
       mojom::ContentSecurityPolicyType,
       mojom::IPAddressSpace,
@@ -152,6 +153,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
 
   WebURL script_request_url_;
   WebString name_;
+  WebString user_agent_;
   mojom::IPAddressSpace creation_address_space_;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo

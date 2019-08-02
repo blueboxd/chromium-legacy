@@ -180,11 +180,6 @@ interface Renderer {
   // Tells the renderer to create a new view.
   CreateView(CreateViewParams params);
 
-  // Tells the renderer to destroy an existing view. This method must be called
-  // exactly once for each invocation of CreateView. |view_id| is synonymous
-  // with |routing_id|.
-  DestroyView(int32 view_id);
-
   // Tells the renderer to create a new RenderFrame.
   CreateFrame(CreateFrameParams params);
 

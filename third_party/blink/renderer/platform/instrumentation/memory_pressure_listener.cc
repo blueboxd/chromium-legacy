@@ -51,6 +51,10 @@ bool MemoryPressureListenerRegistry::IsCurrentlyLowMemory() {
 void MemoryPressureListenerRegistry::Initialize() {
   is_low_end_device_ = ::base::SysInfo::IsLowEndDevice();
   ApproximatedDeviceMemory::Initialize();
+  // Make sure the instance of MemoryPressureListenerRegistry is created on
+  // the main thread. Otherwise we might try to create the instance on a
+  // thread which doesn't have ThreadState (e.g., the IO thread).
+  MemoryPressureListenerRegistry::Instance();
 }
 
 // static

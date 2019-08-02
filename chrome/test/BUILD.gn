@@ -1367,7 +1367,7 @@ if (!is_android) {
       deps += [
         "//ash:test_support",
         "//ash/keyboard/ui:test_support",
-        "//ash/public/interfaces:test_interfaces",
+        "//ash/public/mojom:test_interfaces",
         "//chrome/browser/chromeos:arc_test_support",
         "//chrome/browser/chromeos:test_support",
         "//chrome/browser/media/router:test_support",

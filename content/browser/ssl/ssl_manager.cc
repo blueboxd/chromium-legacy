@@ -169,7 +169,7 @@ void SSLManager::OnSSLCertificateError(
 
   // TODO(jam): remove the logic to call this from IO thread once the
   // network service code path is the only one.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&HandleSSLErrorOnUI, web_contents_getter, delegate,
                      BrowserThread::IO, is_main_frame_request, url, net_error,

@@ -107,6 +107,8 @@ class WebRequestProxyingWebSocket
   void PauseIncomingMethodCallProcessing();
   void ResumeIncomingMethodCallProcessing();
   void OnError(int result);
+  void OnMojoConnectionError(uint32_t custom_reason,
+                             const std::string& description);
 
   WebSocketFactory factory_;
   content::BrowserContext* const browser_context_;

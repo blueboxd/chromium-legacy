@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -36,7 +37,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
@@ -526,11 +526,11 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
     AppLaunchParams params(
         profile, extension_id,
         disposition == WindowOpenDisposition::NEW_WINDOW
-            ? extensions::LaunchContainer::kLaunchContainerWindow
-            : extensions::LaunchContainer::kLaunchContainerTab,
-        disposition, extensions::AppLaunchSource::kSourceNewTabPage);
+            ? apps::mojom::LaunchContainer::kLaunchContainerWindow
+            : apps::mojom::LaunchContainer::kLaunchContainerTab,
+        disposition, apps::mojom::AppLaunchSource::kSourceNewTabPage);
     params.override_url = override_url;
-    OpenApplication(params);
+    apps::LaunchService::Get(profile)->OpenApplication(params);
   } else {
     // To give a more "launchy" experience when using the NTP launcher, we close
     // it automatically.
@@ -546,7 +546,8 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
                      : WindowOpenDisposition::NEW_FOREGROUND_TAB,
         extensions::AppLaunchSource::kSourceNewTabPage);
     params.override_url = override_url;
-    WebContents* new_contents = OpenApplication(params);
+    WebContents* new_contents =
+        apps::LaunchService::Get(profile)->OpenApplication(params);
 
     // This will also destroy the handler, so do not perform any actions after.
     if (new_contents != old_contents && browser &&

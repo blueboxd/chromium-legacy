@@ -83,7 +83,7 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
 
   static void SetLowQuota(scoped_refptr<QuotaManager> qm) {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&FileSystemBrowserTestWithLowQuota::SetLowQuota, qm));
       return;

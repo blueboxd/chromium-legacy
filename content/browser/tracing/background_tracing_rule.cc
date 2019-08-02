@@ -260,7 +260,7 @@ class HistogramRule : public BackgroundTracingRule,
     if (histogram_name != histogram_name_)
       return;
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &BackgroundTracingManagerImpl::OnRuleTriggered,
@@ -269,7 +269,7 @@ class HistogramRule : public BackgroundTracingRule,
   }
 
   void AbortTracing() {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &BackgroundTracingManagerImpl::AbortScenario,

@@ -182,7 +182,7 @@ TEST_P(OriginPolicyThrottleTest, RunRequestEndToEnd) {
       ->SetOriginPolicyManagerForBrowserProcessForTesting(
           test_origin_policy_manager.GetPtr());
 
-  nav_handle->set_response_headers_for_testing(headers);
+  nav_handle->navigation_request()->set_response_headers_for_testing(headers);
   navigation->ReadyToCommit();
   EXPECT_TRUE(navigation->IsDeferred());
   OriginPolicyThrottle* policy_throttle = static_cast<OriginPolicyThrottle*>(
@@ -239,7 +239,7 @@ TEST_P(OriginPolicyThrottleTest, AddExceptionEndToEnd) {
       "HTTP/1.1 200 OK\nSec-Origin-Policy: policy=policy-1\n\n";
   auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(raw_headers));
-  nav_handle->set_response_headers_for_testing(headers);
+  nav_handle->navigation_request()->set_response_headers_for_testing(headers);
   navigation->ReadyToCommit();
 
   // The policy manager has to be called even though this is an exception

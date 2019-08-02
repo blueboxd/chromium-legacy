@@ -91,10 +91,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   }
 #endif
 
- protected:
-  // Use to force enable during testing.
-  void set_enabled(bool enabled) { enabled_ = enabled; }
-
  private:
   // Contains information about generation status for an element for the
   // lifetime of the possible interaction.
@@ -167,9 +163,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Contains correspondence between generaiton enabled element and data for
   // generation.
   std::map<uint32_t, PasswordFormGenerationData> generation_enabled_fields_;
-
-  // If this feature is enabled. Controlled by Finch.
-  bool enabled_;
 
   // True iff the generation element should be marked with special HTML
   // attribute (only for experimental purposes).

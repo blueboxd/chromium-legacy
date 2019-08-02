@@ -39,9 +39,9 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
 
   void DetachLater(base::TimeDelta timeout) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&Context::Detach, AsWeakPtr()), timeout);
+    base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                          base::BindOnce(&Context::Detach, AsWeakPtr()),
+                          timeout);
   }
 
   void AddBinding(std::unique_ptr<mojom::KeepAliveHandle> impl,

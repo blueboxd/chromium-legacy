@@ -454,7 +454,7 @@ void BindDiscardableMemoryRequestOnIO(
 void BindDiscardableMemoryRequestOnUI(
     discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &BindDiscardableMemoryRequestOnIO, std::move(request),
@@ -466,8 +466,7 @@ void BindDiscardableMemoryRequestOnUI(
 class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
  public:
   explicit ConnectionFilterImpl(int gpu_process_id) {
-    auto task_runner =
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+    auto task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
     registry_.AddInterface(base::BindRepeating(&FieldTrialRecorder::Create),
                            task_runner);
 #if defined(OS_ANDROID)
@@ -564,7 +563,7 @@ GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind, bool force_create) {
 // static
 void GpuProcessHost::GetHasGpuProcess(base::OnceCallback<void(bool)> callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&GpuProcessHost::GetHasGpuProcess, std::move(callback)));
     return;
@@ -588,9 +587,9 @@ void GpuProcessHost::CallOnIO(
 #if !defined(OS_WIN)
   DCHECK_NE(kind, GPU_PROCESS_KIND_UNSANDBOXED_NO_GL);
 #endif
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(&RunCallbackOnIO, kind, force_create,
-                                          std::move(callback)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&RunCallbackOnIO, kind, force_create,
+                                std::move(callback)));
 }
 
 void GpuProcessHost::BindInterface(
@@ -793,7 +792,7 @@ GpuProcessHost::~GpuProcessHost() {
         NOTREACHED();
         break;
     }
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, message));
   }
@@ -868,7 +867,7 @@ bool GpuProcessHost::Init() {
   params.deadline_to_synchronize_surfaces =
       switches::GetDeadlineToSynchronizeSurfaces();
   params.main_thread_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   gpu_host_ = std::make_unique<viz::GpuHostImpl>(
       this, std::move(viz_main_pending_remote), std::move(params));
 
@@ -1029,11 +1028,10 @@ void GpuProcessHost::DisableGpuCompositing() {
 #else
   // TODO(crbug.com/819474): The switch from GPU to software compositing should
   // be handled here instead of by ImageTransportFactory.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI}, base::BindOnce([]() {
-        if (auto* factory = ImageTransportFactory::GetInstance())
-          factory->DisableGpuCompositing();
-      }));
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, base::BindOnce([]() {
+                   if (auto* factory = ImageTransportFactory::GetInstance())
+                     factory->DisableGpuCompositing();
+                 }));
 #endif
 }
 
@@ -1049,7 +1047,7 @@ void GpuProcessHost::RecordLogMessage(int32_t severity,
 
 void GpuProcessHost::BindDiscardableMemoryRequest(
     discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BindDiscardableMemoryRequestOnUI, std::move(request)));
 }

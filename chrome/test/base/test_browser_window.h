@@ -120,7 +120,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsTabStripEditable() const override;
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
-  ClickToCallDialog* ShowClickToCallDialog(
+  SharingDialog* ShowClickToCallDialog(
       content::WebContents* contents,
       ClickToCallSharingDialogController* controller) override;
   void ShowUpdateChromeDialog() override {}

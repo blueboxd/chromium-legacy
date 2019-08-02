@@ -98,7 +98,7 @@ base::LazyInstance<StoragePartitionImpl::CreateNetworkFactoryCallback>::Leaky
 void OnClearedCookies(base::OnceClosure callback, uint32_t num_deleted) {
   // The final callback needs to happen from UI thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&OnClearedCookies, std::move(callback), num_deleted));
     return;
@@ -144,9 +144,8 @@ void PerformQuotaManagerStorageCleanup(
 
 void ClearedShaderCache(base::OnceClosure callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&ClearedShaderCache, std::move(callback)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&ClearedShaderCache, std::move(callback)));
     return;
   }
   std::move(callback).Run();
@@ -461,10 +460,9 @@ void OnServiceWorkerCookiesReadOnIO(
   std::unique_ptr<std::vector<GlobalFrameRoutingId>> host_ids =
       service_worker_context->GetProviderHostIds(url.GetOrigin());
   if (!host_ids->empty()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(ReportCookiesReadOnUI, *host_ids, url, site_for_cookies,
-                       cookie_list));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(ReportCookiesReadOnUI, *host_ids, url,
+                                  site_for_cookies, cookie_list));
   }
 }
 
@@ -479,10 +477,9 @@ void OnServiceWorkerCookiesChangedOnIO(
   std::unique_ptr<std::vector<GlobalFrameRoutingId>> host_ids =
       service_worker_context->GetProviderHostIds(url.GetOrigin());
   if (!host_ids->empty()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(ReportCookiesChangedOnUI, *host_ids, url,
-                       site_for_cookies, cookie_list));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(ReportCookiesChangedOnUI, *host_ids, url,
+                                  site_for_cookies, cookie_list));
   }
 }
 
@@ -784,7 +781,7 @@ StoragePartitionImpl::~StoragePartitionImpl() {
     if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
       GetAppCacheService()->Shutdown();
     } else {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&ChromeAppCacheService::Shutdown, appcache_service_));
     }
@@ -821,7 +818,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   // that utilizes the QuotaManager.
   partition->quota_manager_ = new storage::QuotaManager(
       in_memory, partition_path,
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}).get(),
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(),
       context->GetSpecialStoragePolicy(),
       base::BindRepeating(&StoragePartitionImpl::GetQuotaSettings,
                           partition->weak_factory_.GetWeakPtr()));
@@ -1229,11 +1226,10 @@ void StoragePartitionImpl::OnCookiesChanged(
     const std::vector<net::CookieWithStatus>& cookie_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_service_worker) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&OnServiceWorkerCookiesChangedOnIO,
-                       service_worker_context_, url, site_for_cookies,
-                       std::move(cookie_list)));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&OnServiceWorkerCookiesChangedOnIO,
+                                  service_worker_context_, url,
+                                  site_for_cookies, std::move(cookie_list)));
   } else {
     std::vector<GlobalFrameRoutingId> destination;
     destination.emplace_back(process_id, routing_id);
@@ -1250,7 +1246,7 @@ void StoragePartitionImpl::OnCookiesRead(
     const std::vector<net::CookieWithStatus>& cookie_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (is_service_worker) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&OnServiceWorkerCookiesReadOnIO, service_worker_context_,
                        url, site_for_cookies, std::move(cookie_list)));
@@ -1431,10 +1427,9 @@ StoragePartitionImpl::DataDeletionHelper::CreateTaskCompletionClosure(
 
 void StoragePartitionImpl::DataDeletionHelper::OnTaskComplete(int tracing_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&DataDeletionHelper::OnTaskComplete,
-                       base::Unretained(this), tracing_id));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&DataDeletionHelper::OnTaskComplete,
+                                  base::Unretained(this), tracing_id));
     return;
   }
   DCHECK_GT(task_count_, 0);
@@ -1494,7 +1489,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
       remove_mask_ & REMOVE_DATA_MASK_FILE_SYSTEMS ||
       remove_mask_ & REMOVE_DATA_MASK_SERVICE_WORKERS ||
       remove_mask_ & REMOVE_DATA_MASK_CACHE_STORAGE) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &DataDeletionHelper::ClearQuotaManagedDataOnIOThread,
@@ -1527,11 +1522,10 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   }
 
   if (remove_mask_ & REMOVE_DATA_MASK_SHADER_CACHE) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ClearShaderCacheOnIOThread, path, begin, end,
-            CreateTaskCompletionClosure(TracingDataType::kShaderCache)));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&ClearShaderCacheOnIOThread, path, begin, end,
+                                  CreateTaskCompletionClosure(
+                                      TracingDataType::kShaderCache)));
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

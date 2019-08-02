@@ -8,9 +8,14 @@ group("resources") {
   deps = [
     ":background_color",
     ":background_dark_color",
-    ":destructive_tint_color",
+    ":blue_color",
+    ":blue_dark_color",
     ":disabled_tint_color",
+    ":green_color",
+    ":green_dark_color",
     ":mdc_ink_color",
+    ":red_color",
+    ":red_dark_color",
     ":scrim_background_color",
     ":solid_button_text_color",
     ":text_primary_color",
@@ -20,8 +25,6 @@ group("resources") {
     ":textfield_background_dark_color",
     ":textfield_placeholder_color",
     ":textfield_placeholder_dark_color",
-    ":tint_color",
-    ":tint_dark_color",
   ]
 }
 
@@ -37,15 +40,45 @@ colorset("background_dark_color") {
   ]
 }
 
-colorset("destructive_tint_color") {
+colorset("blue_color") {
   sources = [
-    "destructive_tint_color.colorset/Contents.json",
+    "blue_color.colorset/Contents.json",
+  ]
+}
+
+colorset("blue_dark_color") {
+  sources = [
+    "blue_dark_color.colorset/Contents.json",
   ]
 }
 
 colorset("disabled_tint_color") {
   sources = [
     "disabled_tint_color.colorset/Contents.json",
+  ]
+}
+
+colorset("green_color") {
+  sources = [
+    "green_color.colorset/Contents.json",
+  ]
+}
+
+colorset("green_dark_color") {
+  sources = [
+    "green_dark_color.colorset/Contents.json",
+  ]
+}
+
+colorset("red_color") {
+  sources = [
+    "red_color.colorset/Contents.json",
+  ]
+}
+
+colorset("red_dark_color") {
+  sources = [
+    "red_dark_color.colorset/Contents.json",
   ]
 }
 
@@ -106,17 +139,5 @@ colorset("textfield_background_color") {
 colorset("textfield_background_dark_color") {
   sources = [
     "textfield_background_dark_color.colorset/Contents.json",
-  ]
-}
-
-colorset("tint_color") {
-  sources = [
-    "tint_color.colorset/Contents.json",
-  ]
-}
-
-colorset("tint_dark_color") {
-  sources = [
-    "tint_dark_color.colorset/Contents.json",
   ]
 }

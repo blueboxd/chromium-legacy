@@ -122,15 +122,9 @@ void WebAppInstallFinalizer::CreateOsShortcuts(
 
 bool WebAppInstallFinalizer::CanReparentTab(const AppId& app_id,
                                             bool shortcut_created) const {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
-  return true;
-}
-
-void WebAppInstallFinalizer::ReparentTab(const AppId& app_id,
-                                         content::WebContents* web_contents) {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
+  // TODO(loyso): Return false here if the app's launch container is not
+  // kWindow.
+  return InstallFinalizer::CanReparentTab(app_id, shortcut_created);
 }
 
 bool WebAppInstallFinalizer::CanRevealAppShim() const {

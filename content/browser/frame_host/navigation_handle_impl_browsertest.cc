@@ -101,8 +101,7 @@ class TestNavigationThrottle : public NavigationThrottle {
              navigation_handle_impl->request_context_type());
     request_context_type_ = navigation_handle_impl->request_context_type();
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             did_call_will_start_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_start_);
     return will_start_result_;
   }
 
@@ -112,8 +111,7 @@ class TestNavigationThrottle : public NavigationThrottle {
     CHECK_EQ(request_context_type_,
              navigation_handle_impl->request_context_type());
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             did_call_will_redirect_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_redirect_);
     return will_redirect_result_;
   }
 
@@ -123,8 +121,7 @@ class TestNavigationThrottle : public NavigationThrottle {
     CHECK_EQ(request_context_type_,
              navigation_handle_impl->request_context_type());
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             did_call_will_fail_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_fail_);
     return will_fail_result_;
   }
 
@@ -134,8 +131,7 @@ class TestNavigationThrottle : public NavigationThrottle {
     CHECK_EQ(request_context_type_,
              navigation_handle_impl->request_context_type());
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             did_call_will_process_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, did_call_will_process_);
     return will_process_result_;
   }
 
@@ -1891,9 +1887,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ErrorPageNetworkError) {
   GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   GURL error_url(embedded_test_server()->GetURL("/close-socket"));
   EXPECT_NE(start_url.host(), error_url.host());
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
 
   {
     NavigationHandleObserver observer(shell()->web_contents(), start_url);

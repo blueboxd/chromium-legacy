@@ -93,6 +93,7 @@ bool TestInstallFinalizer::CanReparentTab(const AppId& app_id,
 }
 
 void TestInstallFinalizer::ReparentTab(const AppId& app_id,
+                                       bool shortcut_created,
                                        content::WebContents* web_contents) {
   ++num_reparent_tab_calls_;
 }

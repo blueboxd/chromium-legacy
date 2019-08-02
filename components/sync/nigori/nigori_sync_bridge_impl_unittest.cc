@@ -114,6 +114,88 @@ KeyParams ScryptKeyParams(const std::string& key) {
   return {KeyDerivationParams::CreateForScrypt("some_constant_salt"), key};
 }
 
+std::string PackKeyAsExplicitPassphrase(const KeyParams& key_params,
+                                        const Encryptor& encryptor) {
+  Cryptographer cryptographer;
+  cryptographer.AddKey(key_params);
+  return NigoriSyncBridgeImpl::PackExplicitPassphraseKeyForTesting(
+      encryptor, cryptographer);
+}
+
+// Builds NigoriSpecifics with following fields:
+// 1. encryption_keybag contains all keys derived from |keybag_keys_params|
+// and encrypted with a key derived from |keybag_decryptor_params|.
+// keystore_decryptor_token is always saved in encryption_keybag, even if it
+// is not derived from any params in |keybag_keys_params|.
+// 2. keystore_decryptor_token contains the key derived from
+// |keybag_decryptor_params| and encrypted with a key derived from
+// |keystore_key_params|.
+// 3. passphrase_type is KEYSTORE_PASSHPRASE.
+// 4. Other fields are default.
+sync_pb::NigoriSpecifics BuildKeystoreNigoriSpecifics(
+    const std::vector<KeyParams>& keybag_keys_params,
+    const KeyParams& keystore_decryptor_params,
+    const KeyParams& keystore_key_params) {
+  sync_pb::NigoriSpecifics specifics;
+
+  Cryptographer cryptographer;
+  cryptographer.AddKey(keystore_decryptor_params);
+  for (const KeyParams& key_params : keybag_keys_params) {
+    cryptographer.AddNonDefaultKey(key_params);
+  }
+  EXPECT_TRUE(cryptographer.GetKeys(specifics.mutable_encryption_keybag()));
+
+  std::string serialized_keystore_decryptor =
+      cryptographer.GetDefaultNigoriKeyData();
+  Cryptographer keystore_cryptographer;
+  keystore_cryptographer.AddKey(keystore_key_params);
+  EXPECT_TRUE(keystore_cryptographer.EncryptString(
+      serialized_keystore_decryptor,
+      specifics.mutable_keystore_decryptor_token()));
+
+  specifics.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
+  return specifics;
+}
+
+// Builds NigoriSpecifics with following fields:
+// 1. encryption_keybag contains keys derived from |passphrase_key_params|
+// and |*old_key_params| (if |old_key_params| isn't nullopt). Encrypted with
+// key derived from |passphrase_key_params|.
+// 2. custom_passphrase_time is current time.
+// 3. passphrase_type is CUSTOM_PASSPHRASE.
+// 4. encrypt_everything is true.
+// 5. Other fields are default.
+sync_pb::NigoriSpecifics BuildCustomPassphraseNigoriSpecifics(
+    const KeyParams& passphrase_key_params,
+    const base::Optional<KeyParams>& old_key_params = base::nullopt) {
+  sync_pb::NigoriSpecifics specifics;
+
+  Cryptographer cryptographer;
+  cryptographer.AddKey(passphrase_key_params);
+  if (old_key_params) {
+    cryptographer.AddNonDefaultKey(*old_key_params);
+  }
+  EXPECT_TRUE(cryptographer.GetKeys(specifics.mutable_encryption_keybag()));
+
+  specifics.set_custom_passphrase_key_derivation_method(
+      EnumKeyDerivationMethodToProto(
+          passphrase_key_params.derivation_params.method()));
+  if (passphrase_key_params.derivation_params.method() ==
+      KeyDerivationMethod::SCRYPT_8192_8_11) {
+    // Persist the salt used for key derivation in Nigori if we're using
+    // scrypt.
+    std::string encoded_salt;
+    base::Base64Encode(passphrase_key_params.derivation_params.scrypt_salt(),
+                       &encoded_salt);
+    specifics.set_custom_passphrase_key_derivation_salt(encoded_salt);
+  }
+  specifics.set_custom_passphrase_time(TimeToProtoTime(base::Time::Now()));
+  specifics.set_passphrase_type(sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE);
+  specifics.set_encrypt_everything(true);
+
+  return specifics;
+}
+
 class MockNigoriLocalChangeProcessor : public NigoriLocalChangeProcessor {
  public:
   MockNigoriLocalChangeProcessor() = default;
@@ -153,8 +235,9 @@ class NigoriSyncBridgeImplTest : public testing::Test {
     auto processor =
         std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
     processor_ = processor.get();
-    bridge_ = std::make_unique<NigoriSyncBridgeImpl>(std::move(processor),
-                                                     &encryptor_);
+    bridge_ = std::make_unique<NigoriSyncBridgeImpl>(
+        std::move(processor), &encryptor_,
+        /*packed_explicit_passphrase_key=*/std::string());
     bridge_->AddObserver(&observer_);
   }
 
@@ -163,81 +246,6 @@ class NigoriSyncBridgeImplTest : public testing::Test {
   NigoriSyncBridgeImpl* bridge() { return bridge_.get(); }
   MockNigoriLocalChangeProcessor* processor() { return processor_; }
   MockObserver* observer() { return &observer_; }
-
-  // Builds NigoriSpecifics with following fields:
-  // 1. encryption_keybag contains all keys derived from |keybag_keys_params|
-  // and encrypted with a key derived from |keybag_decryptor_params|.
-  // keystore_decryptor_token is always saved in encryption_keybag, even if it
-  // is not derived from any params in |keybag_keys_params|.
-  // 2. keystore_decryptor_token contains the key derived from
-  // |keybag_decryptor_params| and encrypted with a key derived from
-  // |keystore_key_params|.
-  // 3. passphrase_type is KEYSTORE_PASSHPRASE.
-  // 4. Other fields are default.
-  sync_pb::NigoriSpecifics BuildKeystoreNigoriSpecifics(
-      const std::vector<KeyParams>& keybag_keys_params,
-      const KeyParams& keystore_decryptor_params,
-      const KeyParams& keystore_key_params) {
-    sync_pb::NigoriSpecifics specifics;
-
-    Cryptographer cryptographer;
-    cryptographer.AddKey(keystore_decryptor_params);
-    for (const KeyParams& key_params : keybag_keys_params) {
-      cryptographer.AddNonDefaultKey(key_params);
-    }
-    EXPECT_TRUE(cryptographer.GetKeys(specifics.mutable_encryption_keybag()));
-
-    std::string serialized_keystore_decryptor =
-        cryptographer.GetDefaultNigoriKeyData();
-    Cryptographer keystore_cryptographer;
-    keystore_cryptographer.AddKey(keystore_key_params);
-    EXPECT_TRUE(keystore_cryptographer.EncryptString(
-        serialized_keystore_decryptor,
-        specifics.mutable_keystore_decryptor_token()));
-
-    specifics.set_passphrase_type(
-        sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
-    return specifics;
-  }
-
-  // Builds NigoriSpecifics with following fields:
-  // 1. encryption_keybag contains keys derived from |passphrase_key_params|
-  // and |*old_key_params| (if |old_key_params| isn't nullopt). Encrypted with
-  // key derived from |passphrase_key_params|.
-  // 2. custom_passphrase_time is current time.
-  // 3. passphrase_type is CUSTOM_PASSPHRASE.
-  // 4. encrypt_everything is true.
-  // 5. Other fields are default.
-  sync_pb::NigoriSpecifics BuildCustomPassphraseNigoriSpecifics(
-      const KeyParams& passphrase_key_params,
-      const base::Optional<KeyParams>& old_key_params = base::nullopt) {
-    sync_pb::NigoriSpecifics specifics;
-
-    Cryptographer cryptographer;
-    cryptographer.AddKey(passphrase_key_params);
-    if (old_key_params) {
-      cryptographer.AddNonDefaultKey(*old_key_params);
-    }
-    EXPECT_TRUE(cryptographer.GetKeys(specifics.mutable_encryption_keybag()));
-
-    specifics.set_custom_passphrase_key_derivation_method(
-        EnumKeyDerivationMethodToProto(
-            passphrase_key_params.derivation_params.method()));
-    if (passphrase_key_params.derivation_params.method() ==
-        KeyDerivationMethod::SCRYPT_8192_8_11) {
-      // Persist the salt used for key derivation in Nigori if we're using
-      // scrypt.
-      std::string encoded_salt;
-      base::Base64Encode(passphrase_key_params.derivation_params.scrypt_salt(),
-                         &encoded_salt);
-      specifics.set_custom_passphrase_key_derivation_salt(encoded_salt);
-    }
-    specifics.set_custom_passphrase_time(TimeToProtoTime(base::Time::Now()));
-    specifics.set_passphrase_type(sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE);
-    specifics.set_encrypt_everything(true);
-
-    return specifics;
-  }
 
  private:
   const FakeEncryptor encryptor_;
@@ -558,13 +566,43 @@ TEST_F(NigoriSyncBridgeImplTest,
 TEST_F(NigoriSyncBridgeImplTest, ShouldNotAllowCustomPassphraseChange) {
   EntityData entity_data;
   *entity_data.specifics.mutable_nigori() =
-      BuildCustomPassphraseNigoriSpecifics(Pbkdf2KeyParams("passphrase"), {});
+      BuildCustomPassphraseNigoriSpecifics(Pbkdf2KeyParams("passphrase"));
   ASSERT_TRUE(bridge()->SetKeystoreKeys({"keystore_key"}));
   ASSERT_THAT(bridge()->MergeSyncData(std::move(entity_data)),
               Eq(base::nullopt));
 
   EXPECT_CALL(*observer(), OnPassphraseAccepted()).Times(0);
   bridge()->SetEncryptionPassphrase("new_passphrase");
+}
+
+// Tests that we can use packed explicit passphrase key passed to bridge to
+// decrypt custom passphrase NigoriSpecifics.
+TEST(NigoriSyncBridgeImplTestWithPackedExplicitPassphrase,
+     ShouldDecryptWithExplicitPassphraseFromPrefs) {
+  const KeyParams kKeyParams = Pbkdf2KeyParams("passphrase");
+
+  const FakeEncryptor encryptor;
+  auto processor =
+      std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
+  auto bridge = std::make_unique<NigoriSyncBridgeImpl>(
+      std::move(processor), &encryptor,
+      PackKeyAsExplicitPassphrase(kKeyParams, encryptor));
+  testing::NiceMock<MockObserver> observer;
+  bridge->AddObserver(&observer);
+
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() =
+      BuildCustomPassphraseNigoriSpecifics(kKeyParams);
+  ASSERT_TRUE(bridge->SetKeystoreKeys({"keystore_key"}));
+
+  EXPECT_CALL(observer, OnCryptographerStateChanged(NotNull()));
+  EXPECT_CALL(observer, OnPassphraseRequired(_, _, _)).Times(0);
+  ASSERT_THAT(bridge->MergeSyncData(std::move(entity_data)), Eq(base::nullopt));
+
+  const Cryptographer& cryptographer = bridge->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer, CanDecryptWith(kKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeyParams));
+  bridge->RemoveObserver(&observer);
 }
 
 }  // namespace

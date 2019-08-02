@@ -105,6 +105,11 @@ void ChromeIdentityService::GetHostedDomainForIdentity(
     ChromeIdentity* identity,
     GetHostedDomainCallback callback) {}
 
+NSString* ChromeIdentityService::GetCachedHostedDomainForIdentity(
+    ChromeIdentity* identity) {
+  return nil;
+}
+
 MDMDeviceStatus ChromeIdentityService::GetMDMDeviceStatus(
     NSDictionary* user_info) {
   return 0;

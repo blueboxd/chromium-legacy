@@ -374,6 +374,7 @@ void TestWebContents::SetHttpResponseHeaders(
     NavigationHandle* navigation_handle,
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
   static_cast<NavigationHandleImpl*>(navigation_handle)
+      ->navigation_request()
       ->set_response_headers_for_testing(response_headers);
 }
 

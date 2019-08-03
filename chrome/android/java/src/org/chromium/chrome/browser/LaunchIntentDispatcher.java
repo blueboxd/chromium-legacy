@@ -198,7 +198,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // Check if we should launch a WebApk to handle the intent.
         // For NoTouchMode, prefer to launch PWAs instead of the browser on view intents.
-        if (FeatureUtilities.isNoTouchModeEnabled() && url != null
+        if (!mIsCustomTabIntent && FeatureUtilities.isNoTouchModeEnabled() && url != null
                 && Intent.ACTION_VIEW.equals(mIntent.getAction())) {
             String packageName = WebApkValidator.queryFirstWebApkPackage(
                     ContextUtils.getApplicationContext(), url);

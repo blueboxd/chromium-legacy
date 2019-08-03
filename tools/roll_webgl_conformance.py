@@ -37,7 +37,11 @@ extra_trybots = [
   },
   {
     "mastername": "luci.chromium.try",
-    "buildernames": ["win-angle-rel"]
+    "buildernames": ["win-angle-rel-32"]
+  },
+  {
+    "mastername": "luci.chromium.try",
+    "buildernames": ["win-angle-rel-64"]
   },
 ]
 

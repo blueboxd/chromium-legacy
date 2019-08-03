@@ -37,7 +37,8 @@ def BuildForArch(arch):
   Run('scripts/fx', '--dir', build_dir, 'set', 'terminal.qemu-'+ arch,
       '--with=//topaz/packages/sdk:topaz', '--with-base=//sdk/bundles:tools',
       '--args=is_debug=false', '--args=build_sdk_archives=true')
-  Run('scripts/fx', 'build', 'topaz/public/sdk:fuchsia_dart', 'sdk')
+  Run('scripts/fx', 'build', 'topaz/public/sdk:fuchsia_dart', 'sdk',
+      'build/images')
 
 
 def main(args):

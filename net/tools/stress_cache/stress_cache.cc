@@ -25,6 +25,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -306,7 +307,7 @@ void StressTheCache(int iteration) {
 
   base::Thread cache_thread("CacheThread");
   if (!cache_thread.StartWithOptions(
-          base::Thread::Options(base::MessagePump::Type::IO, 0)))
+          base::Thread::Options(base::MessagePumpType::IO, 0)))
     return;
 
   g_data = new Data();
@@ -429,7 +430,7 @@ int main(int argc, const char* argv[]) {
 
   // Some time for the memory manager to flush stuff.
   base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(3));
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
 
   char* end;
   long int iteration = strtol(argv[1], &end, 0);

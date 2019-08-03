@@ -1531,6 +1531,10 @@ const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";
 
+const char kForceWebContentsDarkModeName[] = "Force Dark Mode for Web Contents";
+const char kForceWebContentsDarkModeDescription[] =
+    "Automatically render all web contents using a dark theme.";
+
 const char kPeriodicBackgroundSyncName[] = "Periodic Background Sync";
 const char kPeriodicBackgroundSyncDescription[] =
     "If enabled, web apps can periodically sync content in the background.";
@@ -2132,10 +2136,6 @@ const char kAndroidAutofillAccessibilityDescription[] =
 const char kAndroidSurfaceControl[] = "Use Android SurfaceControl";
 const char kAndroidSurfaceControlDescription[] =
     "Use the SurfaceControl API for supporting overlays on Android";
-
-const char kAndroidWebContentsDarkMode[] = "Android web contents dark mode";
-const char kAndroidWebContentsDarkModeDescription[] =
-    "Enable dark mode on web contents in Android";
 
 const char kAppNotificationStatusMessagingName[] =
     "App notification status messaging";

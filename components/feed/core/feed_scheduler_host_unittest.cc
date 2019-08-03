@@ -654,6 +654,22 @@ TEST_F(FeedSchedulerHostTest, OnFixedTimerActiveSuggestionsConsumer) {
   EXPECT_EQ(3, refresh_call_count());
 }
 
+TEST_F(FeedSchedulerHostTest, OnFixedTimerThrottlingDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedContentSuggestions,
+      {{kThrottleBackgroundFetches.name, "false"}});
+
+  // Every call to OnFixedTimer() should cause a fetch.
+  scheduler()->OnFixedTimer(base::OnceClosure());
+  EXPECT_EQ(1, refresh_call_count());
+  scheduler()->OnReceiveNewContent(test_clock()->Now());
+
+  scheduler()->OnFixedTimer(base::OnceClosure());
+  EXPECT_EQ(2, refresh_call_count());
+  scheduler()->OnReceiveNewContent(test_clock()->Now());
+}
+
 TEST_F(FeedSchedulerHostTest, ScheduleFixedTimerWakeUpOnSuccess) {
   // First wake up scheduled during Initialize().
   EXPECT_EQ(1U, schedule_wake_up_times().size());

@@ -28,20 +28,16 @@ class URLLoaderFactoryBundleInfo;
 
 namespace network {
 class SharedURLLoaderFactory;
-class SharedURLLoaderFactoryInfo;
 }  // namespace network
 
 namespace content {
 
 class AppCacheNavigationHandleCore;
 class BrowserContext;
-class ResourceContext;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
-class ServiceWorkerNavigationHandleCore;
 class ServiceWorkerObjectHost;
 class StoragePartitionImpl;
-class URLLoaderFactoryGetter;
 struct SubresourceLoaderParams;
 
 // PlzWorker:
@@ -78,12 +74,6 @@ class WorkerScriptFetchInitiator {
       const std::string& storage_domain,
       CompletionCallback callback);
 
-  // Returns the BrowserThread::ID that the WorkerScriptLoaderFactory will be
-  // running on.
-  // TODO(crbug.com/824840): Remove this when non-NavigationLoaderOnUI code is
-  // removed.
-  static BrowserThread::ID GetLoaderThreadID();
-
  private:
   // Creates a loader factory bundle. Must be called on the UI thread.
   static std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CreateFactoryBundle(
@@ -98,24 +88,6 @@ class WorkerScriptFetchInitiator {
   static void AddAdditionalRequestHeaders(
       network::ResourceRequest* resource_request,
       BrowserContext* browser_context);
-
-  static void CreateScriptLoaderOnIO(
-      int worker_process_id,
-      std::unique_ptr<network::ResourceRequest> resource_request,
-      scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          factory_bundle_for_browser_info,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factories,
-      ResourceContext* resource_context,
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      ServiceWorkerNavigationHandleCore* service_worker_handle_core,
-      AppCacheNavigationHandleCore* appcache_handle_core,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          blob_url_loader_factory_info,
-      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_override_info,
-      CompletionCallback callback);
 
   static void CreateScriptLoaderOnUI(
       int worker_process_id,

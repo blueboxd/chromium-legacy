@@ -176,6 +176,8 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
 #if !defined(OS_ANDROID)
     {CONTENT_SETTINGS_TYPE_SERIAL_GUARD, IDS_PAGE_INFO_TYPE_SERIAL},
 #endif
+    {CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+     IDS_PAGE_INFO_TYPE_NATIVE_FILE_SYSTEM_WRITE},
     {CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
      IDS_PAGE_INFO_TYPE_BLUETOOTH_SCANNING},
   };
@@ -578,6 +580,9 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
 #endif
     case CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
       icon = &vector_icons::kBluetoothScanningIcon;
+      break;
+    case CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD:
+      icon = &kSaveOriginalFileIcon;
       break;
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are

@@ -41,7 +41,7 @@ struct ConnectionManager::DumpProcessesForTracingTracking
 
 struct ConnectionManager::Connection {
   Connection(CompleteCallback complete_cb,
-             mojom::ProfilingClientPtr client,
+             mojo::PendingRemote<mojom::ProfilingClient> client,
              mojom::ProcessType process_type,
              uint32_t sampling_rate,
              mojom::StackMode stack_mode)
@@ -49,7 +49,7 @@ struct ConnectionManager::Connection {
         process_type(process_type),
         stack_mode(stack_mode),
         sampling_rate(sampling_rate) {
-    this->client.set_connection_error_handler(std::move(complete_cb));
+    this->client.set_disconnect_handler(std::move(complete_cb));
   }
 
   bool HeapDumpNeedsVmRegions() {
@@ -58,7 +58,7 @@ struct ConnectionManager::Connection {
            stack_mode == mojom::StackMode::MIXED;
   }
 
-  mojom::ProfilingClientPtr client;
+  mojo::Remote<mojom::ProfilingClient> client;
   mojom::ProcessType process_type;
   mojom::StackMode stack_mode;
 
@@ -78,10 +78,11 @@ ConnectionManager::ConnectionManager() {
 }
 ConnectionManager::~ConnectionManager() = default;
 
-void ConnectionManager::OnNewConnection(base::ProcessId pid,
-                                        mojom::ProfilingClientPtr client,
-                                        mojom::ProcessType process_type,
-                                        mojom::ProfilingParamsPtr params) {
+void ConnectionManager::OnNewConnection(
+    base::ProcessId pid,
+    mojo::PendingRemote<mojom::ProfilingClient> client,
+    mojom::ProcessType process_type,
+    mojom::ProfilingParamsPtr params) {
   base::AutoLock lock(connections_lock_);
 
   // Attempting to start profiling on an already profiled processs should have

@@ -17,7 +17,7 @@ mojom("cros_camera") {
   deps = [
     "//components/chromeos_camera/common",
     "//media/capture/mojom:image_capture",
-    "//media/mojo/interfaces",
+    "//media/mojo/mojom",
   ]
 
   # TODO(https://crbug.com/968369): Change to use new names.

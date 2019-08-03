@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -37,8 +38,12 @@ class ProfileActivityMetricsRecorder
   ProfileActivityMetricsRecorder();
   ~ProfileActivityMetricsRecorder() override;
 
+  void OnUserAction(const std::string& action);
+
   Profile* last_active_profile_ = nullptr;
   base::TimeTicks profile_session_start_;
+
+  base::ActionCallback action_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileActivityMetricsRecorder);
 };

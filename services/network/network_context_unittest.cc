@@ -330,8 +330,7 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
   DISALLOW_COPY_AND_ASSIGN(TestProxyLookupClient);
 };
 
-class NetworkContextTest : public testing::Test,
-                           public net::SSLConfigService::Observer {
+class NetworkContextTest : public testing::Test {
  public:
   NetworkContextTest()
       : scoped_task_environment_(
@@ -371,8 +370,6 @@ class NetworkContextTest : public testing::Test,
   mojom::NetworkService* network_service() const {
     return network_service_.get();
   }
-
-  void OnSSLConfigChanged() override { ++ssl_config_changed_count_; }
 
   // Looks up a value with the given name from the NetworkContext's
   // TransportSocketPool info dictionary.
@@ -436,7 +433,6 @@ class NetworkContextTest : public testing::Test,
   // Stores the NetworkContextPtr of the most recently created NetworkContext.
   // Not strictly needed, but seems best to mimic real-world usage.
   mojom::NetworkContextPtr network_context_ptr_;
-  int ssl_config_changed_count_ = 0;
 };
 
 TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {

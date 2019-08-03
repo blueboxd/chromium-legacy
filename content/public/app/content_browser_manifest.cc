@@ -154,6 +154,8 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("audio", "stream_factory")
           .RequireCapability("audio", "testing_api")
           .RequireCapability("content_gpu", "browser")
+          .RequireCapability("resource_coordinator", "app")
+          .RequireCapability("resource_coordinator", "heap_profiler_helper")
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:shared_worker", "renderer",
               std::set<const char*>{

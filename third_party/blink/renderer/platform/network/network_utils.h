@@ -14,7 +14,6 @@
 namespace blink {
 
 class KURL;
-class SharedBuffer;
 class ResourceResponse;
 
 namespace network_utils {

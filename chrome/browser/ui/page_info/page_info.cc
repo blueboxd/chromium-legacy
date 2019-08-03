@@ -129,6 +129,7 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_USB_GUARD,
 #if !defined(OS_ANDROID)
     CONTENT_SETTINGS_TYPE_SERIAL_GUARD,
+    CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
 #endif
     CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING,
 };
@@ -186,6 +187,10 @@ bool ShouldShowPermission(
   // gets checked there regardless of default setting on Desktop.
   if (info.type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
     return true;
+
+  // The Native File System write permission is desktop only at the moment.
+  if (info.type == CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD)
+    return false;
 #else
   // Flash is shown if the user has ever changed its setting for |site_url|.
   if (info.type == CONTENT_SETTINGS_TYPE_PLUGINS &&
@@ -194,12 +199,17 @@ bool ShouldShowPermission(
                                           std::string(), nullptr) != nullptr) {
     return true;
   }
-#endif
 
-#if !defined(OS_ANDROID)
   // Autoplay is Android-only at the moment.
   if (info.type == CONTENT_SETTINGS_TYPE_AUTOPLAY)
     return false;
+
+  // Only display the Native File System write permission if it's currently
+  // being used.
+  if (info.type == CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD &&
+      web_contents->HasWritableNativeFileSystemHandles()) {
+    return true;
+  }
 #endif
 
   // Show the content setting if it has been changed by the user since the last

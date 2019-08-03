@@ -53,7 +53,7 @@ class GFX_EXPORT PlatformFontSkia : public PlatformFont {
   int GetExpectedTextWidth(int length) override;
   int GetStyle() const override;
   const std::string& GetFontName() const override;
-  std::string GetActualFontNameForTesting() const override;
+  std::string GetActualFontName() const override;
   int GetFontSize() const override;
   const FontRenderParams& GetFontRenderParams() override;
 

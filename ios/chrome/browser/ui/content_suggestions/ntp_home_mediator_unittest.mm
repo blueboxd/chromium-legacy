@@ -147,13 +147,7 @@ class NTPHomeMediatorTest : public PlatformTest {
 // Tests that the consumer has the right value set up.
 TEST_F(NTPHomeMediatorTest, TestConsumerSetup) {
   // Setup.
-  navigation_manager_->set_can_go_forward(true);
-  navigation_manager_->set_can_go_back(false);
-
-  OCMExpect([consumer_ setTabCount:kNumberOfWebStates]);
   OCMExpect([consumer_ setLogoVendor:logo_vendor_]);
-  OCMExpect([consumer_ setCanGoForward:YES]);
-  OCMExpect([consumer_ setCanGoBack:NO]);
   OCMExpect([consumer_ setLogoIsShowing:YES]);
 
   // Action.
@@ -190,63 +184,6 @@ TEST_F(NTPHomeMediatorTest, TestConsumerNotificationUnfocus) {
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kLocationBarResignsFirstResponderNotification
                     object:nil];
-
-  // Test.
-  EXPECT_OCMOCK_VERIFY(consumer_);
-}
-
-// Tests that the consumer is notified when the number of tab increases.
-TEST_F(NTPHomeMediatorTest, TestTabCountInsert) {
-  // Setup.
-  [mediator_ setUp];
-
-  OCMExpect([consumer_ setTabCount:kNumberOfWebStates + 1]);
-
-  // Action.
-  auto web_state = std::make_unique<web::TestWebState>();
-  web_state_list_->InsertWebState(1, std::move(web_state),
-                                  WebStateList::INSERT_FORCE_INDEX,
-                                  WebStateOpener());
-
-  // Test.
-  EXPECT_OCMOCK_VERIFY(consumer_);
-}
-
-// Tests that the consumer is notified when the number of tab decreases.
-TEST_F(NTPHomeMediatorTest, TestTabCountDetach) {
-  // Setup.
-  [mediator_ setUp];
-
-  OCMExpect([consumer_ setTabCount:kNumberOfWebStates - 1]);
-
-  // Action.
-  web_state_list_->DetachWebStateAt(1);
-
-  // Test.
-  EXPECT_OCMOCK_VERIFY(consumer_);
-}
-
-// Tests that the consumer is notified when the active web state changes.
-TEST_F(NTPHomeMediatorTest, TestChangeActiveWebState) {
-  // Setup.
-  [mediator_ setUp];
-  std::unique_ptr<ToolbarTestNavigationManager> navigation_manager =
-      std::make_unique<ToolbarTestNavigationManager>();
-  ToolbarTestNavigationManager* nav = navigation_manager.get();
-  std::unique_ptr<web::TestWebState> web_state =
-      std::make_unique<web::TestWebState>();
-  web_state->SetNavigationManager(std::move(navigation_manager));
-  nav->set_can_go_back(true);
-  nav->set_can_go_forward(false);
-  web_state_list_->InsertWebState(1, std::move(web_state),
-                                  WebStateList::INSERT_FORCE_INDEX,
-                                  WebStateOpener());
-
-  OCMExpect([consumer_ setCanGoForward:NO]);
-  OCMExpect([consumer_ setCanGoBack:YES]);
-
-  // Action.
-  web_state_list_->ActivateWebStateAt(1);
 
   // Test.
   EXPECT_OCMOCK_VERIFY(consumer_);

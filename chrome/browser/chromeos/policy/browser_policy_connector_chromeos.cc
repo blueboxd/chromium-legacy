@@ -43,7 +43,6 @@
 #include "chrome/browser/chromeos/policy/remote_commands/affiliated_remote_commands_invalidator.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
-#include "chrome/browser/chromeos/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -294,7 +293,6 @@ void BrowserPolicyConnectorChromeOS::Shutdown() {
        device_cloud_external_data_policy_handlers_) {
     device_cloud_external_data_policy_handler->Shutdown();
   }
-  chromeos::BulkPrintersCalculatorFactory::Get()->ShutdownForDevice();
 
   ChromeBrowserPolicyConnector::Shutdown();
 }

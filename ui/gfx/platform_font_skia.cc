@@ -123,6 +123,18 @@ bool PlatformFontSkia::InitDefaultFont() {
   Font::Weight weight = Font::Weight::NORMAL;
   FontRenderParams params;
 
+#if defined(OS_WIN)
+  // On windows, the system default font is retrieved by using the GDI API
+  // SystemParametersInfo(...) (see struct NONCLIENTMETRICS). The font
+  // properties need to be converted as close as possible to a skia font.
+  // The style must be kept (see http://crbug/989476).
+  gfx::Font system_font = win::GetDefaultSystemFont();
+  family = system_font.GetFontName();
+  size_pixels = system_font.GetFontSize();
+  style = system_font.GetStyle();
+  weight = system_font.GetWeight();
+#endif  // OS_WIN
+
   // On Linux, SkiaFontDelegate is used to query the native toolkit (e.g.
   // GTK+) for the default UI font.
   const SkiaFontDelegate* delegate = SkiaFontDelegate::instance();
@@ -237,7 +249,7 @@ const std::string& PlatformFontSkia::GetFontName() const {
   return font_family_;
 }
 
-std::string PlatformFontSkia::GetActualFontNameForTesting() const {
+std::string PlatformFontSkia::GetActualFontName() const {
   SkString family_name;
   typeface_->getFamilyName(&family_name);
   return family_name.c_str();

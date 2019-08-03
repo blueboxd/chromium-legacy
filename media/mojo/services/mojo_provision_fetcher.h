@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/provision_fetcher.h"
-#include "media/mojo/interfaces/provision_fetcher.mojom.h"
+#include "media/mojo/mojom/provision_fetcher.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 
 namespace media {

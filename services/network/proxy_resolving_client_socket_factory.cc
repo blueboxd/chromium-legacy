@@ -86,13 +86,8 @@ ProxyResolvingClientSocketFactory::CreateSocket(
           ->GetSession()
           ->http_auth_cache();
   network_session_->http_auth_cache()->UpdateAllFrom(*other_auth_cache);
-  net::SSLConfig ssl_config;
-  // Unconditionally get the |ssl_config| regardless of |use_tls|, because
-  // SSLConfig is used for the proxy even !|use_tls|.
-  request_context_->ssl_config_service()->GetSSLConfig(&ssl_config);
   return std::make_unique<ProxyResolvingClientSocket>(
-      network_session_.get(), common_connect_job_params_.get(), ssl_config, url,
-      use_tls);
+      network_session_.get(), common_connect_job_params_.get(), url, use_tls);
 }
 
 }  // namespace network

@@ -9,5 +9,5 @@
     SecureContext,
     RuntimeEnabled=ContactsManager
 ] interface ContactsManager {
-    [CallWith=ScriptState] Promise<sequence<ContactInfo>> select(sequence<ContactProperty> properties, optional ContactsSelectOptions options);
+    [CallWith=ScriptState, MeasureAs=ContactsManagerSelect] Promise<sequence<ContactInfo>> select(sequence<ContactProperty> properties, optional ContactsSelectOptions options);
 };

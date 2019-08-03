@@ -539,7 +539,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (CRWTouchTrackingRecognizer*)touchTrackingRecognizer {
   if (!_touchTrackingRecognizer) {
     _touchTrackingRecognizer =
-        [[CRWTouchTrackingRecognizer alloc] initWithDelegate:self];
+        [[CRWTouchTrackingRecognizer alloc] initWithTouchTrackingDelegate:self];
   }
   return _touchTrackingRecognizer;
 }

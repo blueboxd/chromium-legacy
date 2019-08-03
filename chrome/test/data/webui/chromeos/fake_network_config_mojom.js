@@ -20,6 +20,8 @@ class FakeNetworkConfig {
         this.onNetworkListChanged.bind(this));
     extensionApi.onDeviceStateListChanged.addListener(
         this.onDeviceStateListChanged.bind(this));
+    extensionApi.onActiveNetworksChanged.addListener(
+        this.onActiveNetworksChanged.bind(this));
   }
 
   onNetworkListChanged(networks) {
@@ -28,6 +30,14 @@ class FakeNetworkConfig {
 
   onDeviceStateListChanged() {
     this.observers_.forEach(o => o.onDeviceStateListChanged());
+  }
+
+  /**
+   * @param {?Array<?chromeos.networkConfig.mojom.NetworkStateProperties>}
+   *     networks
+   */
+  onActiveNetworksChanged(networks) {
+    this.observers_.forEach(o => o.onActiveNetworksChanged(networks));
   }
 
   /**

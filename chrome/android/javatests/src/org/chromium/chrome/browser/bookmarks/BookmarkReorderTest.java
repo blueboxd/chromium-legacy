@@ -557,6 +557,23 @@ public class BookmarkReorderTest extends BookmarkTest {
         onView(withText("Move down")).check(doesNotExist());
     }
 
+    @Test
+    @MediumTest
+    public void testMoveButtonsGoneWithOneBookmark() throws Exception {
+        addFolder(TEST_FOLDER_TITLE);
+        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        openBookmarkManager();
+
+        View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
+                ((BookmarkFolderRow) testFolder).getTitle());
+        View more = testFolder.findViewById(R.id.more);
+        TestThreadUtils.runOnUiThreadBlocking(more::callOnClick);
+
+        onView(withText("Move up")).check(doesNotExist());
+        onView(withText("Move down")).check(doesNotExist());
+    }
+
     @Override
     protected void openBookmarkManager() throws InterruptedException {
         super.openBookmarkManager();

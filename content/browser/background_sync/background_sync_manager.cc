@@ -682,6 +682,7 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
         registration->set_num_attempts(registration_proto.num_attempts());
         registration->set_delay_until(
             base::Time::FromInternalValue(registration_proto.delay_until()));
+        registration->set_origin(registrations->origin);
         if (registration->is_suspended()) {
           suspended_periodic_sync_origins.insert(registration->origin());
         }
@@ -918,7 +919,8 @@ void BackgroundSyncManager::RegisterDidGetDelay(
         DevToolsBackgroundService::kPeriodicBackgroundSync,
         /* event_name= */ "Got next event delay",
         /* instance_id= */ registration.options()->tag,
-        {{"Next Attempt Delay (ms)", GetDelayAsString(delay)}});
+        {{"Next Attempt Delay (ms)",
+          GetDelayAsString(registration.delay_until() - clock_->Now())}});
   }
 
   AddOrUpdateActiveRegistration(
@@ -1979,8 +1981,12 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
 
     std::string event_name = GetSyncEventName(registration->sync_type()) +
                              (succeeded ? " event completed" : " event failed");
+    base::TimeDelta display_delay =
+        registration->sync_type() == BackgroundSyncType::ONE_SHOT
+            ? delay
+            : registration->delay_until() - clock_->Now();
     std::map<std::string, std::string> event_metadata = {
-        {"Next Attempt Delay (ms)", GetDelayAsString(delay)}};
+        {"Next Attempt Delay (ms)", GetDelayAsString(display_delay)}};
     if (!succeeded) {
       event_metadata.emplace("Failure Reason",
                              GetEventStatusString(status_code));

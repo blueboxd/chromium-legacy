@@ -523,6 +523,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gwp_asan_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "headless_browsertests"
       },
       {
@@ -2024,6 +2034,22 @@
           ]
         },
         "test": "gpu_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "gwp_asan_unittests"
       },
       {
         "merge": {
@@ -3832,6 +3858,22 @@
             }
           ]
         },
+        "test": "gwp_asan_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
         "test": "headless_browsertests"
       },
       {
@@ -5446,6 +5488,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gwp_asan_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "headless_browsertests"
       },
       {
@@ -6666,6 +6718,16 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gpu_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gwp_asan_unittests"
       },
       {
         "merge": {

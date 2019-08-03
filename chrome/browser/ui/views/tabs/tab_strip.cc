@@ -1871,6 +1871,11 @@ const TabGroupVisualData* TabStrip::GetVisualDataForGroup(
   return controller_->GetVisualDataForGroup(group);
 }
 
+void TabStrip::SetVisualDataForGroup(TabGroupId group,
+                                     TabGroupVisualData visual_data) {
+  controller_->SetVisualDataForGroup(group, visual_data);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabStrip, views::AccessiblePaneView overrides:
 

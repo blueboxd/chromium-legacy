@@ -78,7 +78,7 @@ void SpdySessionPool::SpdySessionRequest::OnRemovedFromPool() {
 
 SpdySessionPool::SpdySessionPool(
     HostResolver* resolver,
-    SSLConfigService* ssl_config_service,
+    SSLClientContext* ssl_client_context,
     HttpServerProperties* http_server_properties,
     TransportSecurityState* transport_security_state,
     const quic::ParsedQuicVersionVector& quic_supported_versions,
@@ -91,7 +91,7 @@ SpdySessionPool::SpdySessionPool(
     NetworkQualityEstimator* network_quality_estimator)
     : http_server_properties_(http_server_properties),
       transport_security_state_(transport_security_state),
-      ssl_config_service_(ssl_config_service),
+      ssl_client_context_(ssl_client_context),
       resolver_(resolver),
       quic_supported_versions_(quic_supported_versions),
       enable_sending_initial_data_(true),
@@ -105,9 +105,8 @@ SpdySessionPool::SpdySessionPool(
       push_delegate_(nullptr),
       network_quality_estimator_(network_quality_estimator) {
   NetworkChangeNotifier::AddIPAddressObserver(this);
-  if (ssl_config_service_)
-    ssl_config_service_->AddObserver(this);
-  CertDatabase::GetInstance()->AddObserver(this);
+  if (ssl_client_context_)
+    ssl_client_context_->AddObserver(this);
 }
 
 SpdySessionPool::~SpdySessionPool() {
@@ -130,10 +129,9 @@ SpdySessionPool::~SpdySessionPool() {
     RemoveUnavailableSession((*sessions_.begin())->GetWeakPtr());
   }
 
-  if (ssl_config_service_)
-    ssl_config_service_->RemoveObserver(this);
+  if (ssl_client_context_)
+    ssl_client_context_->RemoveObserver(this);
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
-  CertDatabase::GetInstance()->RemoveObserver(this);
 }
 
 base::WeakPtr<SpdySession>
@@ -471,12 +469,9 @@ void SpdySessionPool::OnIPAddressChanged() {
   }
 }
 
-void SpdySessionPool::OnSSLConfigChanged() {
-  CloseCurrentSessions(ERR_NETWORK_CHANGED);
-}
-
-void SpdySessionPool::OnCertDBChanged() {
-  CloseCurrentSessions(ERR_CERT_DATABASE_CHANGED);
+void SpdySessionPool::OnSSLConfigChanged(bool is_cert_database_change) {
+  CloseCurrentSessions(is_cert_database_change ? ERR_CERT_DATABASE_CHANGED
+                                               : ERR_NETWORK_CHANGED);
 }
 
 void SpdySessionPool::RemoveRequestForSpdySession(SpdySessionRequest* request) {
@@ -646,11 +641,12 @@ std::unique_ptr<SpdySession> SpdySessionPool::CreateSession(
 
   return std::make_unique<SpdySession>(
       key, http_server_properties_, transport_security_state_,
-      ssl_config_service_, quic_supported_versions_,
-      enable_sending_initial_data_, enable_ping_based_connection_checking_,
-      support_ietf_format_quic_altsvc_, is_trusted_proxy,
-      session_max_recv_window_size_, initial_settings_, greased_http2_frame_,
-      time_func_, push_delegate_, network_quality_estimator_, net_log);
+      ssl_client_context_ ? ssl_client_context_->ssl_config_service() : nullptr,
+      quic_supported_versions_, enable_sending_initial_data_,
+      enable_ping_based_connection_checking_, support_ietf_format_quic_altsvc_,
+      is_trusted_proxy, session_max_recv_window_size_, initial_settings_,
+      greased_http2_frame_, time_func_, push_delegate_,
+      network_quality_estimator_, net_log);
 }
 
 base::WeakPtr<SpdySession> SpdySessionPool::InsertSession(

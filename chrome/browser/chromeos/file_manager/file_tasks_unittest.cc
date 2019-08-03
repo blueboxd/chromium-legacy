@@ -31,6 +31,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_builder.h"
@@ -565,8 +566,10 @@ TEST_F(FileManagerFileTasksComplexTest, WebAppsCanHandleFiles) {
   graphr.AddFlags(extensions::Extension::InitFromValueFlags::FROM_BOOKMARK);
 
   extension_service_->AddExtension(graphr.Build().get());
-  const extensions::Extension* extension =
-      extension_service_->GetExtensionById(kGraphrId, false);
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(&test_profile_);
+  const extensions::Extension* extension = registry->GetExtensionById(
+      kGraphrId, extensions::ExtensionRegistry::ENABLED);
 
   ASSERT_EQ(extension->GetType(), extensions::Manifest::Type::TYPE_HOSTED_APP);
   ASSERT_TRUE(extension->from_bookmark());

@@ -102,6 +102,8 @@ jumbo_component("wtf") {
     "sanitizers.h",
     "scoped_logger.cc",
     "scoped_logger.h",
+    "shared_buffer.cc",
+    "shared_buffer.h",
     "size_assertions.cc",
     "size_assertions.h",
     "stack_util.cc",
@@ -236,6 +238,7 @@ jumbo_component("wtf") {
 
   public_deps = [
     "//base",
+    "//skia",
     "//third_party/icu",
   ]
 
@@ -307,6 +310,7 @@ jumbo_source_set("wtf_unittests_sources") {
     "pod_tree_test_helpers.cc",
     "pod_tree_test_helpers.h",
     "scoped_logger_test.cc",
+    "shared_buffer_test.cc",
     "testing/run_all_tests.cc",
     "text/atomic_string_test.cc",
     "text/case_map_test.cc",

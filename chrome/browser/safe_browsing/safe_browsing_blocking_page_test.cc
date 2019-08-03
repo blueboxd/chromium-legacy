@@ -1866,7 +1866,6 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   base::test::ScopedFeatureList feature_list;
   std::vector<base::Feature> enable;
   enable.push_back(kCommittedSBInterstitials);
-  enable.push_back(kCheckByURLLoaderThrottle);
   feature_list.InitWithFeatures(enable, std::vector<base::Feature>());
   SetupWarningAndNavigate(browser());
   EXPECT_TRUE(IsShowingInterstitial(

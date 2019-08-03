@@ -356,7 +356,8 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
     std::string type(1, 0x00);
 
     quic::SettingsFrame settings;
-    settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
+    settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
+        kQuicMaxHeaderListSize;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
@@ -808,7 +809,8 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     std::string type(1, 0x00);
 
     quic::SettingsFrame settings;
-    settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
+    settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
+        kQuicMaxHeaderListSize;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
@@ -902,7 +904,8 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
     std::string type(1, 0x00);
 
     quic::SettingsFrame settings;
-    settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
+    settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
+        kQuicMaxHeaderListSize;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
@@ -973,7 +976,8 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     std::string type(1, 0x00);
 
     quic::SettingsFrame settings;
-    settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
+    settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] =
+        kQuicMaxHeaderListSize;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
@@ -1086,6 +1090,26 @@ QuicTestPacketMaker::MakePushPromisePacket(
     bool fin,
     spdy::SpdyHeaderBlock headers,
     size_t* spdy_headers_frame_length) {
+  if (quic::VersionUsesQpack(version_.transport_version)) {
+    std::string encoded_headers =
+        qpack_encoder_.EncodeHeaderList(stream_id, &headers);
+    quic::QuicFrames frames;
+    quic::PushPromiseFrame frame;
+    frame.push_id = promised_stream_id;
+    frame.headers = encoded_headers;
+    std::unique_ptr<char[]> buffer;
+    quic::QuicByteCount frame_length =
+        http_encoder_.SerializePushPromiseFrameWithOnlyPushId(frame, &buffer);
+    std::string push_promise_data(buffer.get(), frame_length);
+    quic::QuicStreamFrame promise_frame =
+        GenerateNextStreamFrame(stream_id, false, push_promise_data);
+    frames.push_back(quic::QuicFrame(promise_frame));
+    quic::QuicStreamFrame headers =
+        GenerateNextStreamFrame(stream_id, false, encoded_headers);
+    frames.push_back(quic::QuicFrame(headers));
+    InitializeHeader(packet_number, should_include_version);
+    return MakeMultipleFramesPacket(header_, frames, nullptr);
+  }
   InitializeHeader(packet_number, should_include_version);
   spdy::SpdySerializedFrame spdy_frame;
   spdy::SpdyPushPromiseIR promise_frame(stream_id, promised_stream_id,
@@ -1298,7 +1322,7 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
   // first.
   std::string type(1, 0x00);
   quic::SettingsFrame settings;
-  settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
+  settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] = kQuicMaxHeaderListSize;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
       http_encoder_.SerializeSettingsFrame(settings, &buffer);
@@ -1343,7 +1367,7 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
   // first.
   std::string type(1, 0x00);
   quic::SettingsFrame settings;
-  settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
+  settings.values[quic::SETTINGS_MAX_HEADER_LIST_SIZE] = kQuicMaxHeaderListSize;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
       http_encoder_.SerializeSettingsFrame(settings, &buffer);
@@ -1598,16 +1622,14 @@ quic::QuicPacketNumberLength QuicTestPacketMaker::GetPacketNumberLength()
 }
 
 quic::QuicConnectionId QuicTestPacketMaker::DestinationConnectionId() const {
-  if (perspective_ == quic::Perspective::IS_SERVER &&
-      GetQuicRestartFlag(quic_do_not_override_connection_id)) {
+  if (perspective_ == quic::Perspective::IS_SERVER) {
     return quic::EmptyQuicConnectionId();
   }
   return connection_id_;
 }
 
 quic::QuicConnectionId QuicTestPacketMaker::SourceConnectionId() const {
-  if (perspective_ == quic::Perspective::IS_CLIENT &&
-      GetQuicRestartFlag(quic_do_not_override_connection_id)) {
+  if (perspective_ == quic::Perspective::IS_CLIENT) {
     return quic::EmptyQuicConnectionId();
   }
   return connection_id_;
@@ -1616,9 +1638,7 @@ quic::QuicConnectionId QuicTestPacketMaker::SourceConnectionId() const {
 quic::QuicConnectionIdIncluded QuicTestPacketMaker::HasDestinationConnectionId()
     const {
   if (!version_.SupportsClientConnectionIds() &&
-      perspective_ == quic::Perspective::IS_SERVER &&
-      (VersionHasIetfInvariantHeader(version_.transport_version) ||
-       GetQuicRestartFlag(quic_do_not_override_connection_id))) {
+      perspective_ == quic::Perspective::IS_SERVER) {
     return quic::CONNECTION_ID_ABSENT;
   }
   return quic::CONNECTION_ID_PRESENT;
@@ -1628,9 +1648,7 @@ quic::QuicConnectionIdIncluded QuicTestPacketMaker::HasSourceConnectionId()
     const {
   if (version_.SupportsClientConnectionIds() ||
       (perspective_ == quic::Perspective::IS_SERVER &&
-       encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE &&
-       (VersionHasIetfInvariantHeader(version_.transport_version) ||
-        GetQuicRestartFlag(quic_do_not_override_connection_id)))) {
+       encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE)) {
     return quic::CONNECTION_ID_PRESENT;
   }
   return quic::CONNECTION_ID_ABSENT;

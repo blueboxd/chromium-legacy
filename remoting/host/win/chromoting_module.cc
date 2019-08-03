@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_executor.h"
@@ -116,8 +117,7 @@ bool ChromotingModule::Run() {
   }
 
   // Arrange to run |main_task_executor| until no components depend on it.
-  base::SingleThreadTaskExecutor main_task_executor(
-      base::MessagePump::Type::UI);
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   base::RunLoop run_loop;
   g_module_task_runner.Get() = new AutoThreadTaskRunner(
       main_task_executor.task_runner(), run_loop.QuitClosure());

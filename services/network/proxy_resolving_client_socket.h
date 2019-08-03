@@ -23,7 +23,6 @@
 #include "net/socket/connect_job.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/stream_socket.h"
-#include "net/ssl/ssl_config_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
@@ -55,7 +54,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
   ProxyResolvingClientSocket(
       net::HttpNetworkSession* network_session,
       const net::CommonConnectJobParams* common_connect_job_params,
-      const net::SSLConfig& ssl_config,
       const GURL& url,
       bool use_tls);
   ~ProxyResolvingClientSocket() override;
@@ -131,7 +129,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocket
   std::unique_ptr<net::ConnectJob> connect_job_;
   std::unique_ptr<net::StreamSocket> socket_;
 
-  const net::SSLConfig ssl_config_;
   std::unique_ptr<net::ProxyResolutionService::Request> proxy_resolve_request_;
   net::ProxyInfo proxy_info_;
   const GURL url_;

@@ -29,3 +29,20 @@ polymer_modulizer("cr_toast") {
   html_file = "cr_toast.html"
   html_type = "dom-module"
 }
+
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [
+    ":cr_toast.m",
+  ]
+}
+
+js_library("cr_toast.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/cr_elements/cr_toast/cr_toast.m.js",
+  ]
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  extra_deps = [ ":cr_toast_module" ]
+}

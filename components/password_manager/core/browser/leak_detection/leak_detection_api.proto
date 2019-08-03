@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package leak_detection;
+package google.internal.identity.passwords.leak.check.v1;
 
 option optimize_for = LITE_RUNTIME;
 

@@ -72,8 +72,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   InterningIndex<const char*> interned_event_categories_;
   InterningIndex<const char*, std::string> interned_event_names_;
   InterningIndex<const char*, std::string> interned_annotation_names_;
-  InterningIndex<std::pair<const char*, const char*>>
+  InterningIndex<std::tuple<const char*, const char*, int>>
       interned_source_locations_;
+  InterningIndex<const char*> interned_log_message_bodies_;
 
   static std::atomic<uint32_t> incremental_state_reset_id_;
 

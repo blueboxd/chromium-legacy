@@ -14,12 +14,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.metrics.WebappSplashUmaCache;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
@@ -44,10 +42,5 @@ public class WebappSplashScreenBackgroundColorTest {
         ColorDrawable background = (ColorDrawable) splashScreen.getBackground();
 
         Assert.assertEquals(Color.GREEN, background.getColor());
-
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_BACKGROUNDCOLOR,
-                        WebappSplashUmaCache.SplashColorStatus.CUSTOM));
     }
 }

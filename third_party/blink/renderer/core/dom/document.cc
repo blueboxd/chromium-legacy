@@ -3552,6 +3552,8 @@ void Document::open(Document* entered_document,
     KURL new_url = entered_document->Url();
     new_url.SetFragmentIdentifier(String());
     SetURL(new_url);
+    if (Loader())
+      Loader()->UpdateUrlForDocumentOpen(new_url);
 
     SetSecurityOrigin(entered_document->GetMutableSecurityOrigin());
     SetReferrerPolicy(entered_document->GetReferrerPolicy());
@@ -7374,6 +7376,8 @@ DocumentLoader* Document::Loader() const {
   if (!frame_)
     return nullptr;
 
+  // TODO(dcheng): remove this check. frame_ is guaranteed to be non-null only
+  // if frame_->GetDocument() == this.
   if (frame_->GetDocument() != this)
     return nullptr;
 

@@ -22,9 +22,9 @@ class MediaControlsProgressViewTest : public views::ViewsTestBase {
   // ViewsTestBase:
   void SetUp() override {
     // Setup a mocked time environment.
-    scoped_task_environment_ = new ScopedTaskEnvironment(
-        ScopedTaskEnvironment::MainThreadType::UI,
-        ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+    scoped_task_environment_ =
+        new ScopedTaskEnvironment(ScopedTaskEnvironment::MainThreadType::UI,
+                                  ScopedTaskEnvironment::TimeSource::MOCK_TIME);
     set_scoped_task_environment(base::WrapUnique(scoped_task_environment_));
 
     ViewsTestBase::SetUp();

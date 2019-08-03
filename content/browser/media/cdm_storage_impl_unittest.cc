@@ -13,7 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
-#include "media/mojo/interfaces/cdm_storage.mojom.h"
+#include "media/mojo/mojom/cdm_storage.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

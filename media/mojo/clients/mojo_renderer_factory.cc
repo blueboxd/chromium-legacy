@@ -9,7 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "media/mojo/clients/mojo_renderer.h"
-#include "media/mojo/interfaces/renderer_extensions.mojom.h"
+#include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "media/renderers/decrypting_renderer.h"
 #include "media/renderers/video_overlay_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

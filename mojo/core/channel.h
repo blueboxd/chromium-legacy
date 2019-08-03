@@ -200,11 +200,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     void SetHandles(std::vector<PlatformHandle> new_handles);
     void SetHandles(std::vector<PlatformHandleInTransit> new_handles);
     std::vector<PlatformHandleInTransit> TakeHandles();
-    // Version of TakeHandles that returns a vector of platform handles suitable
-    // for transfer over an underlying OS mechanism. i.e. file descriptors over
-    // a unix domain socket. Any handle that cannot be transferred this way,
-    // such as Mach ports, will be removed.
-    std::vector<PlatformHandleInTransit> TakeHandlesForTransport();
 
     void SetVersionForTest(uint16_t version_number);
 

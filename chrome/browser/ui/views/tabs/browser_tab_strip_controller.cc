@@ -395,6 +395,12 @@ const TabGroupVisualData* BrowserTabStripController::GetVisualDataForGroup(
   return model_->GetVisualDataForGroup(group);
 }
 
+void BrowserTabStripController::SetVisualDataForGroup(
+    TabGroupId group,
+    TabGroupVisualData visual_data) {
+  model_->SetVisualDataForGroup(group, visual_data);
+}
+
 std::vector<int> BrowserTabStripController::ListTabsInGroup(
     TabGroupId group) const {
   return model_->ListTabsInGroup(group);

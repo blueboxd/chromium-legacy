@@ -25,6 +25,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -94,12 +95,11 @@ void DoLoadExtension(Profile* profile,
                      const std::string& extension_id,
                      const std::string& manifest,
                      const base::FilePath& file_path) {
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(profile);
-  extensions::ExtensionService* extension_service =
-      extension_system->extension_service();
-  DCHECK(extension_service);
-  if (extension_service->GetExtensionById(extension_id, false)) {
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  DCHECK(extension_registry);
+  if (extension_registry->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::ENABLED)) {
     VLOG(1) << "the IME extension(id=\"" << extension_id
             << "\") is already enabled";
     return;
@@ -119,6 +119,11 @@ void DoLoadExtension(Profile* profile,
                           true,          // is_enabled.
                           true);         // is_incognito_enabled.
   DCHECK_EQ(loaded_extension_id, extension_id);
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(profile);
+  extensions::ExtensionService* extension_service =
+      extension_system->extension_service();
+  DCHECK(extension_service);
   if (!extension_service->IsExtensionEnabled(loaded_extension_id)) {
     LOG(ERROR) << "An IME extension(id=\"" << loaded_extension_id
                << "\") is not enabled after loading";

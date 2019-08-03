@@ -119,6 +119,7 @@
 #include "extensions/browser/app_window/app_window_contents.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -320,6 +321,9 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     extension_service_ = extension_system->CreateExtensionService(
         base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
     extension_service_->Init();
+
+    DCHECK(profile());
+    extension_registry_ = extensions::ExtensionRegistry::Get(profile());
 
     bool flush_app_service_mojo_calls = false;
     if (app_service_proxy_connector_) {
@@ -750,8 +754,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
           } else if (app == extensionYoutubeApp_->id()) {
             result += "youtube";
           } else {
-            const auto* extension = extension_service_->GetExtensionById(
-                app, /*include_disabled=*/true);
+            const auto* extension = extension_registry_->GetExtensionById(
+                app, extensions::ExtensionRegistry::COMPATIBILITY);
             if (extension && !extension->name().empty()) {
               std::string name = extension->name();
               name[0] = std::tolower(name[0]);
@@ -803,8 +807,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
               }
             }
             if (!arc_app_found) {
-              const auto* extension = extension_service_->GetExtensionById(
-                  app, /*include_disabled=*/true);
+              const auto* extension = extension_registry_->GetExtensionById(
+                  app, extensions::ExtensionRegistry::COMPATIBILITY);
               if (extension && !extension->name().empty()) {
                 std::string name = extension->name();
                 name[0] = std::toupper(name[0]);
@@ -963,6 +967,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   // |item_delegate_manager_| owns |test_controller_|.
   ash::ShelfItemDelegate* test_controller_ = nullptr;
+
+  extensions::ExtensionRegistry* extension_registry_ = nullptr;
 
   extensions::ExtensionService* extension_service_ = nullptr;
 

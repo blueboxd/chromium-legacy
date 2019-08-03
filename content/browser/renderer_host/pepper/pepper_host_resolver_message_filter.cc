@@ -102,7 +102,7 @@ scoped_refptr<base::TaskRunner>
 PepperHostResolverMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   if (message.type() == PpapiHostMsg_HostResolver_Resolve::ID)
-    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+    return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   return nullptr;
 }
 
@@ -169,7 +169,7 @@ void PepperHostResolverMessageFilter::OnComplete(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   binding_.Close();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperHostResolverMessageFilter::OnLookupFinished, this,
                      result, std::move(resolved_addresses),

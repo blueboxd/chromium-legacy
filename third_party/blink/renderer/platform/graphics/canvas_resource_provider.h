@@ -77,7 +77,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kSharedImage = 5,
     kDirectGpuMemoryBuffer = 6,
     kPassThrough = 7,
-    kMaxValue = kDirectGpuMemoryBuffer,
+    kMaxValue = kPassThrough,
   };
 
   void static RecordTypeToUMA(ResourceProviderType type);

@@ -22,7 +22,7 @@
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "media/audio/audio_system.h"
 #include "media/base/audio_converter.h"
-#include "media/mojo/interfaces/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_logging.mojom.h"
 #include "services/audio/public/cpp/audio_system_factory.h"
 #include "services/audio/public/cpp/device_factory.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"

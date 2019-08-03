@@ -20,8 +20,13 @@ class ASH_EXPORT NewDeskButton
     : public views::LabelButton,
       public OverviewHighlightController::OverviewHighlightableView {
  public:
-  NewDeskButton(views::ButtonListener* listener);
+  explicit NewDeskButton(views::ButtonListener* listener);
   ~NewDeskButton() override = default;
+
+  // Update the button's enable/disable state based on current desks state.
+  void UpdateButtonState();
+
+  void OnButtonPressed();
 
   // LabelButton:
   const char* GetClassName() const override;
@@ -35,7 +40,10 @@ class ASH_EXPORT NewDeskButton
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;
-  gfx::Rect GetHighlightBounds() override;
+  gfx::Rect GetHighlightBoundsInScreen() override;
+  gfx::RoundedCornersF GetRoundedCornersRadii() const override;
+  void MaybeActivateHighlightedView() override;
+  void MaybeCloseHighlightedView() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NewDeskButton);

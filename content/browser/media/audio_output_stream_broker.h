@@ -16,7 +16,7 @@
 #include "content/browser/renderer_host/media/audio_output_stream_observer_impl.h"
 #include "content/common/content_export.h"
 #include "media/base/audio_parameters.h"
-#include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"

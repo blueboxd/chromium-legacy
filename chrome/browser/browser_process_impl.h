@@ -193,7 +193,6 @@ class BrowserProcessImpl : public BrowserProcess,
       override;
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
-  prefs::InProcessPrefServiceFactory* pref_service_factory() const override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -401,7 +400,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   std::unique_ptr<resource_coordinator::ResourceCoordinatorParts>
       resource_coordinator_parts_;
-  std::unique_ptr<prefs::InProcessPrefServiceFactory> pref_service_factory_;
 
   std::unique_ptr<SecureOriginPrefsObserver> secure_origin_prefs_observer_;
   std::unique_ptr<SiteIsolationPrefsObserver> site_isolation_prefs_observer_;

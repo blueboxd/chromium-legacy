@@ -7,10 +7,29 @@ package org.chromium.chrome.features.start_surface;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** The dummy coordinator when feed is not enabled ('src/components/feed/features.gni'). */
 class ExploreSurfaceCoordinator {
-    ExploreSurfaceCoordinator(ChromeActivity activity, ViewGroup parentView,
-            int bottomControlsHeight, PropertyModel containerPropertyModel) {}
+    ExploreSurfaceCoordinator(
+            ChromeActivity activity, ViewGroup parentView, PropertyModel containerPropertyModel) {}
+
+    /**
+     * Gets the {@link FeedSurfaceCreator}.
+     * @return the {@link FeedSurfaceCreator}.
+     */
+    FeedSurfaceCreator getFeedSurfaceCreator() {
+        return null;
+    }
+
+    /** Interface to create {@link FeedSurfaceCoordinator} */
+    interface FeedSurfaceCreator {
+        /**
+         * Creates the {@link FeedSurfaceCoordinator} for the specified mode.
+         * @param isIncognito Whether it is in incognito mode.
+         * @return The {@link FeedSurfaceCoordinator}.
+         */
+        FeedSurfaceCoordinator createFeedSurfaceCoordinator(boolean isIncognito);
+    }
 }

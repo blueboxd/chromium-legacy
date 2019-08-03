@@ -100,12 +100,18 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   bool was_tex_image_bound() const { return was_tex_image_bound_; }
 
   // Whether this image is backed by a texture owner.
+  // We want to check for texture_owner owned by
+  // |codec_buffer_wait_coordinator_| and hence only checking for
+  // |codec_buffer_wait_coordinator_| is enough here.
+  // TODO(vikassoni): Update the method name in future refactorings.
   bool is_texture_owner_backed() const {
-    return !!codec_buffer_wait_coordinator_->texture_owner();
+    return !!codec_buffer_wait_coordinator_;
   }
 
   scoped_refptr<TextureOwner> texture_owner() const {
-    return codec_buffer_wait_coordinator_->texture_owner();
+    return codec_buffer_wait_coordinator_
+               ? codec_buffer_wait_coordinator_->texture_owner()
+               : nullptr;
   }
 
   // Renders this image to the front buffer of its backing surface.

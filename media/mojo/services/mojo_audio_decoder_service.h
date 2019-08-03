@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
-#include "media/mojo/interfaces/audio_decoder.mojom.h"
+#include "media/mojo/mojom/audio_decoder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 
 namespace media {

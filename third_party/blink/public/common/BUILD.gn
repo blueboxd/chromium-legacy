@@ -52,6 +52,7 @@ source_set("headers") {
     "features.h",
     "fetch/fetch_api_request_headers_map.h",
     "fetch/fetch_api_request_headers_mojom_traits.h",
+    "forcedark/forcedark_switches.h",
     "frame/blocked_navigation_types.h",
     "frame/frame_owner_element_type.h",
     "frame/frame_policy.h",
@@ -90,8 +91,8 @@ source_set("headers") {
     "messaging/transferable_message_mojom_traits.h",
     "mime_util/mime_util.h",
     "notifications/notification_constants.h",
-    "notifications/notification_resources.h",
     "notifications/notification_mojom_traits.h",
+    "notifications/notification_resources.h",
     "notifications/platform_notification_data.h",
     "oom_intervention/oom_intervention_types.h",
     "origin_policy/origin_policy.h",
@@ -136,7 +137,7 @@ source_set("headers") {
       "//media/capture:capture_base",
       "//media/capture:capture_lib",
     ]
-    public_deps += [ "//media/mojo/interfaces:interfaces" ]
+    public_deps += [ "//media/mojo/mojom" ]
   }
 
   if (is_android || is_win) {

@@ -15,15 +15,14 @@ static_library("cpp") {
   ]
 
   public_deps = [
-    "//components/services/heap_profiling/public/mojom",
-  ]
-  deps = [
     "//base",
+    "//components/services/heap_profiling/public/mojom",
+    "//mojo/public/cpp/bindings",
+  ]
+
+  deps = [
     "//base:debugging_buildflags",
     "//base/allocator:buildflags",
-    "//services/resource_coordinator/public/mojom:",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/sandbox",
   ]
 }
 
@@ -38,19 +37,5 @@ source_set("unit_tests") {
     "//base/allocator:buildflags",
     "//base/test:test_support",
     "//testing/gtest",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/services/heap_profiling/public/mojom",
-    "//services/resource_coordinator/public/mojom",
-    "//services/service_manager/public/cpp",
   ]
 }

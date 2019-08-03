@@ -15,6 +15,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
@@ -113,9 +114,25 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // Adds an IPC message filter.  A reference will be kept to the filter.
   virtual void AddFilter(IPC::MessageFilter* filter) = 0;
 
-  // Bind an interface exposed by the child process.
+  // Bind an interface exposed by the child process. Requests sent to the child
+  // process via this call are routed through the a ConnectionFilter on the
+  // corresponding ChildThreadImpl.
+  //
+  // DEPRECATED: Use |BindReceiver()| instead.
   virtual void BindInterface(const std::string& interface_name,
                              mojo::ScopedMessagePipeHandle interface_pipe) = 0;
+
+  // Bind an interface exposed by the child process. Whether or not the
+  // interface in |receiver| can be bound depends on the process type and
+  // potentially on the Content embedder.
+  //
+  // Receivers passed to this call arrive in the child process and go through
+  // the following flow, stopping if any step decides to bind the receiver:
+  //
+  //   1. IO thread, ChildProcessImpl::BindReceiver.
+  //   2. IO thread, ContentClient::BindChildProcessInterface.
+  //   3. Main thread, ChildThreadImpl::BindReceiver (virtual).
+  virtual void BindReceiver(mojo::GenericPendingReceiver receiver) = 0;
 
   // Instructs the child process to run an instance of the named service.
   virtual void RunService(

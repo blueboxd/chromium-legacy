@@ -17,7 +17,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/renderer.h"
 #include "media/base/time_delta_interpolator.h"
-#include "media/mojo/interfaces/renderer.mojom.h"
+#include "media/mojo/mojom/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace base {

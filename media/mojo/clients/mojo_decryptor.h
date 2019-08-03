@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/decryptor.h"
-#include "media/mojo/interfaces/decryptor.mojom.h"
+#include "media/mojo/mojom/decryptor.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {

@@ -83,7 +83,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
     // Specifies the type of message pump that will be allocated on the thread.
     // This is ignored if message_pump_factory.is_null() is false.
-    MessagePumpType message_pump_type = MessagePump::Type::DEFAULT;
+    MessagePumpType message_pump_type = MessagePumpType::DEFAULT;
 
     // An unbound TaskEnvironment that will be bound to the thread. Ownership
     // of |task_environment| will be transferred to the thread.

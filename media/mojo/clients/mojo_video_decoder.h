@@ -12,7 +12,7 @@
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/clients/mojo_media_log_service.h"
-#include "media/mojo/interfaces/video_decoder.mojom.h"
+#include "media/mojo/mojom/video_decoder.mojom.h"
 #include "media/video/video_decode_accelerator.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "ui/gfx/color_space.h"

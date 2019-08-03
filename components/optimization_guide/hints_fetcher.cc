@@ -143,6 +143,9 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
 
   if (net_status == net::OK && response_code == net::HTTP_OK &&
       get_hints_response->ParseFromString(get_hints_response_data)) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount",
+        get_hints_response->hints_size());
     std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
   } else {
     std::move(hints_fetched_callback_).Run(base::nullopt);

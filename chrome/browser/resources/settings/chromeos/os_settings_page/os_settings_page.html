@@ -18,17 +18,28 @@
 <link rel="import" href="../../bluetooth_page/bluetooth_page.html">
 <link rel="import" href="../../crostini_page/crostini_page.html">
 <link rel="import" href="../../plugin_vm_page/plugin_vm_page.html">
+<link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../../device_page/device_page.html">
 <link rel="import" href="../../internet_page/internet_page.html">
 <link rel="import" href="../../multidevice_page/multidevice_page.html">
 
 <dom-module id="os-settings-page">
   <template>
-    <style include="settings-page-styles cr-hidden-style">
+    <style include="settings-page-styles cr-hidden-style settings-shared">
       :host([is-subpage-animating]) {
         /* Prevent an unwanted horizontal scrollbar when transitioning back from
          * a sub-page. */
         overflow: hidden;
+      }
+
+      .banner {
+        @apply --cr-card-elevation;
+        align-items: center;
+        background-color: var(--cr-card-background-color);
+        border-radius: var(--cr-card-border-radius);
+        display: flex;
+        margin-bottom: var(--cr-section-vertical-margin);
+        margin-top: var(--cr-section-vertical-margin);
       }
 
       #advancedToggle {
@@ -50,13 +61,13 @@
         font-weight: 600;
       }
 
-      #secondaryUserBanner {
-        @apply --cr-card-elevation;
-        align-items: center;
-        background-color: white;
-        border-radius: 2px;
-        display: flex;
-        margin: 21px 0;
+      #browserSettingsBanner {
+        color: var(--cr-secondary-text-color);
+        font-weight: 500;
+      }
+
+      #openInNewBrowserSettingsIcon {
+        margin-inline-start: 0;
       }
 
       #secondaryUserIcon {
@@ -90,8 +101,24 @@
     </style>
     <template is="dom-if" if="[[showBasicPage_(
         currentRoute_, inSearchMode, hasExpandedSection_)]]">
+      <template is="dom-if"
+          if="[[prefs.settings.cros.show_browser_banner.value]]">
+        <div id="browserSettingsBanner" class="settings-box banner">
+          <div class="start">
+            <span>$i18nRaw{browserSettingsBannerText}</span>
+            <a href="chrome://settings" target="_blank">
+              <iron-icon id="openInNewBrowserSettingsIcon"
+                  icon="cr:open-in-new"></iron-icon>
+            </a>
+          </div>
+          <cr-icon-button class="icon-clear"
+              on-click="onHideBrowserSettingsBannerClick_">
+          </cr-icon-button>
+        </div>
+      </template>
       <div id="basicPage">
-        <div id="secondaryUserBanner" hidden="[[!showSecondaryUserBanner_]]">
+        <div id="secondaryUserBanner" class="banner"
+            hidden="[[!showSecondaryUserBanner_]]">
           <div id="secondaryUserIcon"></div>
           <div class="flex">$i18n{secondaryUserBannerText}</div>
         </div>

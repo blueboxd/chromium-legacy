@@ -12,7 +12,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 
@@ -20,8 +19,6 @@ namespace android_webview {
 
 AwWebSocketHandshakeThrottleProvider::AwWebSocketHandshakeThrottleProvider() {
   DETACH_FROM_THREAD(thread_checker_);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
   content::RenderThread::Get()->GetConnector()->BindInterface(
       content::mojom::kBrowserServiceName,
       mojo::MakeRequest(&safe_browsing_info_));
@@ -52,8 +49,6 @@ AwWebSocketHandshakeThrottleProvider::CreateThrottle(
     int render_frame_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return nullptr;
   if (safe_browsing_info_)
     safe_browsing_.Bind(std::move(safe_browsing_info_), std::move(task_runner));
   return std::make_unique<safe_browsing::WebSocketSBHandshakeThrottle>(

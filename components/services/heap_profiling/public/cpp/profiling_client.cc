@@ -29,8 +29,9 @@ namespace heap_profiling {
 ProfilingClient::ProfilingClient() = default;
 ProfilingClient::~ProfilingClient() = default;
 
-void ProfilingClient::BindToInterface(mojom::ProfilingClientRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void ProfilingClient::BindToInterface(
+    mojo::PendingReceiver<mojom::ProfilingClient> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params) {

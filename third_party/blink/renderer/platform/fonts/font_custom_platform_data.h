@@ -48,7 +48,6 @@ class SkTypeface;
 namespace blink {
 
 class FontPlatformData;
-class SharedBuffer;
 class FontVariationSettings;
 
 class PLATFORM_EXPORT FontCustomPlatformData

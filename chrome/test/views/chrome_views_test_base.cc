@@ -13,7 +13,7 @@ ChromeViewsTestBase::~ChromeViewsTestBase() = default;
 void ChromeViewsTestBase::SetUp() {
   set_scoped_task_environment(
       std::make_unique<content::TestBrowserThreadBundle>(
-          base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW));
+          base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME));
   set_views_delegate(std::make_unique<ChromeTestViewsDelegate>());
   views::ViewsTestBase::SetUp();
 }

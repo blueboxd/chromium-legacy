@@ -197,6 +197,8 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   void HandleTapEvent() override;
   void HandleGestureEndEvent() override;
   bool ShouldIgnoreGestureEvents() override;
+  void OnHighlightedViewActivated() override;
+  void OnHighlightedViewClosed() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

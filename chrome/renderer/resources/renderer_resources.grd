@@ -88,8 +88,8 @@
         <include name="IDR_MOJO_IP_ENDPOINT_MOJOM_JS" file="${mojom_root}\services\network\public\mojom\ip_endpoint.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_ORIGIN_MOJOM_JS" file="${mojom_root}\url\mojom\origin.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_MOJO_URL_MOJOM_JS" file="${mojom_root}\url\mojom\url.mojom.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_MEDIA_REMOTING_JS" file="${mojom_root}\media\mojo\interfaces\mirror_service_remoting.mojom.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_REMOTING_COMMON_JS" file="${mojom_root}\media\mojo\interfaces\remoting_common.mojom.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_MEDIA_REMOTING_JS" file="${mojom_root}\media\mojo\mojom\mirror_service_remoting.mojom.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_REMOTING_COMMON_JS" file="${mojom_root}\media\mojo\mojom\remoting_common.mojom.js" use_base_dir="false" type="BINDATA" />
       </if>
     </includes>
   </release>

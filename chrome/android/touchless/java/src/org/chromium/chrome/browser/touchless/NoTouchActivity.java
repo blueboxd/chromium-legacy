@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
@@ -47,8 +48,6 @@ public class NoTouchActivity extends SingleTabActivity {
 
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs;
-
-    private TouchlessUiCoordinator mUiCoordinator;
 
     /** The class that finishes this activity after a timeout. */
     private ChromeInactivityTracker mInactivityTracker;
@@ -77,9 +76,13 @@ public class NoTouchActivity extends SingleTabActivity {
                 case TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB:
                     if (getActivityTab().getUrl().contentEquals(url)) break;
                     // fall through
-                case TabOpenType.BRING_TAB_TO_FRONT: // fall through
                 case TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB: // fall through
                 case TabOpenType.OPEN_NEW_TAB: // fall through
+                    InterceptNavigationDelegateImpl delegate =
+                            InterceptNavigationDelegateImpl.get(getActivityTab());
+                    if (delegate != null && delegate.shouldIgnoreNewTab(url, false)) return;
+                    // fall through
+                case TabOpenType.BRING_TAB_TO_FRONT: // fall through
                 case TabOpenType.CLOBBER_CURRENT_TAB:
                     // TODO(mthiesse): For now, let's just clobber current tab always. Are the other
                     // tab open types meaningful when we only have a single tab?

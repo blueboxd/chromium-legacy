@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/single_thread_task_runner.h"
@@ -71,7 +72,7 @@ class SequenceManagerTaskEnvironment : public base::Thread::TaskEnvironment {
 
   void BindToCurrentThread(base::TimerSlack timer_slack) override {
     sequence_manager_->BindToMessagePump(
-        base::MessagePump::Create(base::MessagePump::Type::DEFAULT));
+        base::MessagePump::Create(base::MessagePumpType::DEFAULT));
     sequence_manager_->SetTimerSlack(timer_slack);
   }
 

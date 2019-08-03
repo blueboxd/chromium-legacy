@@ -7,15 +7,11 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/common/constants.mojom.h"
 #include "chrome/services/file_util/public/cpp/manifest.h"
 #include "components/services/quarantine/public/cpp/manifest.h"
-#include "components/startup_metric_utils/common/startup_metric.mojom.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/preferences/public/cpp/local_state_manifest.h"
-#include "services/service_manager/public/cpp/manifest_builder.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/manifest.h"
@@ -60,40 +56,10 @@
 #include "services/content/simple_browser/public/cpp/manifest.h"  // nogncheck
 #endif
 
-namespace {
-
-const service_manager::Manifest& GetChromeManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest {
-    service_manager::ManifestBuilder()
-        .WithServiceName(chrome::mojom::kServiceName)
-        .WithDisplayName("Chrome")
-        .WithOptions(
-            service_manager::ManifestOptionsBuilder()
-                .WithExecutionMode(
-                    service_manager::Manifest::ExecutionMode::kInProcessBuiltin)
-                .WithInstanceSharingPolicy(
-                    service_manager::Manifest::InstanceSharingPolicy::
-                        kSharedAcrossGroups)
-                .CanConnectToInstancesWithAnyId(true)
-                .CanRegisterOtherServiceInstances(true)
-                .Build())
-        .ExposeCapability("renderer",
-                          service_manager::Manifest::InterfaceList<
-                              startup_metric_utils::mojom::StartupMetricHost>())
-        .RequireCapability(chrome::mojom::kRendererServiceName, "browser")
-        .Build()
-  };
-  return *manifest;
-}
-
-}  // namespace
-
 const std::vector<service_manager::Manifest>&
 GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
-      GetChromeManifest(),
       GetFileUtilManifest(),
-      prefs::GetLocalStateManifest(),
       quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       GetRemovableStorageWriterManifest(),

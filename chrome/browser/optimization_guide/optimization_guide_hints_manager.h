@@ -16,11 +16,18 @@ namespace base {
 class FilePath;
 }  // namespace base
 
+namespace content {
+class NavigationHandle;
+}  // namespace content
+
 namespace leveldb_proto {
 class ProtoDatabaseProvider;
 }  // namespace leveldb_proto
 
 namespace optimization_guide {
+namespace proto {
+class Hint;
+}  // namespace proto
 class HintCache;
 class HintUpdateData;
 struct HintsComponentInfo;
@@ -51,6 +58,13 @@ class OptimizationGuideHintsManager
   // is called and the corresponding hints have been updated.
   void ListenForNextUpdateForTesting(base::OnceClosure next_update_closure);
 
+  // Loads the hint if available.
+  // |callback| is run when the request has finished regardless of whether there
+  // was actually a hint for that load or not. The callback can be used as a
+  // signal for tests.
+  void LoadHintForNavigation(content::NavigationHandle* navigation_handle,
+                             base::OnceClosure callback);
+
  private:
   // Callback run after the hint cache is fully initialized. At this point, the
   // OptimizationGuideHintsManager is ready to process hints.
@@ -64,7 +78,11 @@ class OptimizationGuideHintsManager
   // Called when the hints have been fully updated with the latest hints from
   // the Component Updater. This is used as a signal during tests.
   void OnComponentHintsUpdated(base::OnceClosure update_closure,
-                               bool hints_updated);
+                               bool hints_updated) const;
+
+  // Called when the request to load a hint has completed.
+  void OnHintLoaded(base::OnceClosure callback,
+                    const optimization_guide::proto::Hint* loaded_hint) const;
 
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* const

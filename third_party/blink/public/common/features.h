@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/forcedark/forcedark_switches.h"
 
 namespace blink {
 namespace features {
@@ -85,6 +86,16 @@ BLINK_COMMON_EXPORT extern const base::Feature kScrollbarInjectScrollGestures;
 BLINK_COMMON_EXPORT extern const base::Feature kAudioWorkletRealtimeThread;
 
 BLINK_COMMON_EXPORT extern const base::Feature kLightweightNoStatePrefetch;
+
+BLINK_COMMON_EXPORT extern const base::Feature kForceWebContentsDarkMode;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<ForceDarkInversionMethod>
+    kForceDarkInversionMethodParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<ForceDarkImageBehavior>
+    kForceDarkImageBehaviorParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kForceDarkTextLightnessThresholdParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kForceDarkBackgroundLightnessThresholdParam;
 
 // Returns true when PlzDedicatedWorker is enabled.
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();

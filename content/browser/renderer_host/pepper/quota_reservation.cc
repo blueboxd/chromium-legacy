@@ -121,7 +121,7 @@ void QuotaReservation::GotReservedQuota(const ReserveQuotaCallback& callback,
     file_sizes[it->first] = it->second->GetMaxWrittenOffset();
 
   if (file_system_context_.get()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(callback, quota_reservation_->remaining_quota(),
                        file_sizes));

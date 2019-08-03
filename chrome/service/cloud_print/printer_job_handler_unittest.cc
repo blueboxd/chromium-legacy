@@ -11,11 +11,11 @@
 #include "base/hash/md5.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/service/cloud_print/cloud_print_service_helpers.h"
@@ -464,7 +464,8 @@ class PrinterJobHandlerTest : public ::testing::Test {
   void BeginTest(int timeout_seconds);
   void MakeJobFetchReturnNoJobs();
 
-  base::MessageLoopForIO loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   base::OnceClosure active_run_loop_quit_closure_;
   TestURLFetcherCallback url_callback_;
   MockPrinterJobHandlerDelegate jobhandler_delegate_;
@@ -765,7 +766,7 @@ TEST_F(PrinterJobHandlerTest, DISABLED_ManyFailureTest) {
                            net::HTTP_INTERNAL_SERVER_ERROR,
                            net::URLRequestStatus::FAILED);
 
-  loop_.task_runner()->PostDelayedTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&net::FakeURLFetcherFactory::SetFakeResponse,
                      base::Unretained(&factory_), TicketURI(1),

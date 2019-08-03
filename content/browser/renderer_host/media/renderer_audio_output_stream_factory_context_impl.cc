@@ -12,7 +12,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
 #include "media/audio/audio_system.h"
-#include "media/mojo/interfaces/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_logging.mojom.h"
 
 namespace content {
 

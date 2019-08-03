@@ -319,23 +319,6 @@ void ChromeTranslateClient::OnLanguageDetermined(
 #endif
 }
 
-void ChromeTranslateClient::OnPageTranslated(
-    const std::string& original_lang,
-    const std::string& translated_lang,
-    translate::TranslateErrors::Type error_type) {
-  // TODO(268984): Remove translate notifications and have the clients be
-  // ContentTranslateDriver::Observer directly instead.
-  DCHECK(web_contents());
-  translate::PageTranslatedDetails details;
-  details.source_language = original_lang;
-  details.target_language = translated_lang;
-  details.error_type = error_type;
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PAGE_TRANSLATED,
-      content::Source<content::WebContents>(web_contents()),
-      content::Details<translate::PageTranslatedDetails>(&details));
-}
-
 // The bubble is implemented only on the desktop platforms.
 #if !defined(OS_ANDROID)
 ShowTranslateBubbleResult ChromeTranslateClient::ShowBubble(

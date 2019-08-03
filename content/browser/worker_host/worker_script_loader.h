@@ -31,7 +31,6 @@ class ThrottlingURLLoader;
 class NavigationLoaderInterceptor;
 class ResourceContext;
 class ServiceWorkerNavigationHandle;
-class ServiceWorkerNavigationHandleCore;
 
 // The URLLoader for loading a shared worker script. Only used for the main
 // script request.
@@ -68,13 +67,9 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       uint32_t options,
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderClientPtr client,
-      base::WeakPtr<ServiceWorkerNavigationHandle>
-          service_worker_handle /* UI */,
-      base::WeakPtr<ServiceWorkerNavigationHandleCore>
-          service_worker_handle_core /* IO */,
+      base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle,
       base::WeakPtr<AppCacheHost> appcache_host,
       const BrowserContextGetter& browser_context_getter,
-      const ResourceContextGetter& resource_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
   ~WorkerScriptLoader() override;
@@ -139,16 +134,13 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
 
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 
-  const int process_id_;
   const int32_t routing_id_;
   const int32_t request_id_;
   const uint32_t options_;
   network::ResourceRequest resource_request_;
   network::mojom::URLLoaderClientPtr client_;
   base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle_;
-  base::WeakPtr<ServiceWorkerNavigationHandleCore> service_worker_handle_core_;
   BrowserContextGetter browser_context_getter_;
-  ResourceContextGetter resource_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 

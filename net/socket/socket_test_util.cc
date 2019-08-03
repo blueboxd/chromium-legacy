@@ -805,8 +805,16 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
         next_ssl_data->next_protos_expected_in_ssl_config.value().end(),
         ssl_config.alpn_protos.begin()));
   }
-  EXPECT_EQ(next_ssl_data->expected_ssl_version_min, ssl_config.version_min);
-  EXPECT_EQ(next_ssl_data->expected_ssl_version_max, ssl_config.version_max);
+
+  // The protocol version used is a combination of the per-socket SSLConfig and
+  // the SSLConfigService.
+  EXPECT_EQ(
+      next_ssl_data->expected_ssl_version_min,
+      ssl_config.version_min_override.value_or(context->config().version_min));
+  EXPECT_EQ(
+      next_ssl_data->expected_ssl_version_max,
+      ssl_config.version_max_override.value_or(context->config().version_max));
+
   if (next_ssl_data->expected_send_client_cert) {
     EXPECT_EQ(*next_ssl_data->expected_send_client_cert,
               ssl_config.send_client_cert);
@@ -2122,8 +2130,7 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
           base::TimeDelta::FromSeconds(10) /* unused_idle_socket_timeout */,
           ProxyServer::Direct(),
           false /* is_for_websockets */,
-          common_connect_job_params,
-          nullptr /* ssl_config_service */),
+          common_connect_job_params),
       client_socket_factory_(common_connect_job_params->client_socket_factory),
       last_request_priority_(DEFAULT_PRIORITY),
       release_count_(0),

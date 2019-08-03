@@ -89,27 +89,6 @@ class ExtensionServiceInterface
                                bool file_ownership_passed,
                                CrxInstaller** out_crx_installer) = 0;
 
-  // DEPRECATED. Use ExtensionRegistry instead.
-  //
-  // Looks up an extension by its ID.
-  //
-  // If |include_disabled| is false then this will only include enabled
-  // extensions. Use instead:
-  //
-  //   ExtensionRegistry::enabled_extensions().GetByID(id).
-  //
-  // If |include_disabled| is true then this will also include disabled and
-  // blacklisted extensions (not terminated extensions). Use instead:
-  //
-  //   ExtensionRegistry::GetExtensionById(
-  //         id, ExtensionRegistry::ENABLED |
-  //             ExtensionRegistry::DISABLED |
-  //             ExtensionRegistry::BLACKLISTED)
-  //
-  // Or don't, because it's probably not something you ever need to know.
-  virtual const Extension* GetExtensionById(const std::string& id,
-                                            bool include_disabled) const = 0;
-
   // DEPRECATED: Use ExtensionRegistry instead.
   //
   // Looks up an extension by ID, regardless of whether it's enabled,
@@ -199,8 +178,6 @@ class ExtensionService : public ExtensionServiceInterface,
   //
   // NOTE: Many of these methods are DEPRECATED. See the interface for details.
   PendingExtensionManager* pending_extension_manager() override;
-  const Extension* GetExtensionById(const std::string& id,
-                                    bool include_disabled) const override;
   const Extension* GetInstalledExtension(const std::string& id) const override;
   bool UpdateExtension(const CRXFileInfo& file,
                        bool file_ownership_passed,

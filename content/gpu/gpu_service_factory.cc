@@ -14,7 +14,7 @@
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 #include "base/bind.h"
-#include "media/mojo/interfaces/constants.mojom.h"      // nogncheck
+#include "media/mojo/mojom/constants.mojom.h"      // nogncheck
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "content/public/gpu/content_gpu_client.h"

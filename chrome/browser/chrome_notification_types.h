@@ -57,12 +57,6 @@ enum NotificationType {
   // the source is Source<WebContents>.
   NOTIFICATION_TAB_LANGUAGE_DETERMINED,
 
-  // Sent when a page has been translated. The source is the tab for that page
-  // (Source<WebContents>) and the details are the language the page was
-  // originally in and the language it was translated to
-  // (std::pair<std::string, std::string>).
-  NOTIFICATION_PAGE_TRANSLATED,
-
   // The user has changed the browser theme. The source is a
   // Source<ThemeService>. There are no details.
   NOTIFICATION_BROWSER_THEME_CHANGED,

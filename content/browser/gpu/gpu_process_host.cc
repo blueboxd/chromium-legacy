@@ -86,7 +86,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/java_interfaces.h"
-#include "media/mojo/interfaces/android_overlay.mojom.h"
+#include "media/mojo/mojom/android_overlay.mojom.h"
 #endif
 
 #if defined(OS_WIN)

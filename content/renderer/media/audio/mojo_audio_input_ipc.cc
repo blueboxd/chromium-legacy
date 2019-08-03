@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "media/audio/audio_device_description.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace content {

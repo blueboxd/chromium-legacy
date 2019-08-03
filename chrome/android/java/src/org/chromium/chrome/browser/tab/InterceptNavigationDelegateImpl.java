@@ -127,7 +127,8 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 .setTab(mTab)
                 .setOpenInNewTab(true)
                 .build();
-        return mExternalNavHandler.shouldOverrideUrlLoading(params)
+        mLastOverrideUrlLoadingResult = mExternalNavHandler.shouldOverrideUrlLoading(params);
+        return mLastOverrideUrlLoadingResult
                 != ExternalNavigationHandler.OverrideUrlLoadingResult.NO_OVERRIDE;
     }
 

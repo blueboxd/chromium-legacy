@@ -281,8 +281,13 @@ void ScrollbarThemeAura::PaintButton(GraphicsContext& gc,
   if (!params.should_paint)
     return;
   DrawingRecorder recorder(gc, scrollbar, display_item_type);
+
+  WebThemeEngine::ExtraParams extra_params;
+  extra_params.scrollbar_button.zoom = scrollbar.EffectiveZoom();
+  extra_params.scrollbar_button.right_to_left =
+      scrollbar.ContainerIsRightToLeft();
   Platform::Current()->ThemeEngine()->Paint(
-      gc.Canvas(), params.part, params.state, WebRect(rect), nullptr,
+      gc.Canvas(), params.part, params.state, WebRect(rect), &extra_params,
       WebColorScheme::
           kLight /* TODO(futhark): pass color scheme to scrollbar parts */);
 }

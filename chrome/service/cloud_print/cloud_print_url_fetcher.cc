@@ -283,8 +283,7 @@ void CloudPrintURLFetcher::StartRequestHelper(
   request_->SetMaxRetriesOn5xx(max_retries);
   delegate_ = delegate;
   SetupRequestHeaders();
-  request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                         net::LOAD_DO_NOT_SAVE_COOKIES);
+  request_->SetAllowCredentials(false);
   if (request_type == net::URLFetcher::POST) {
     request_->SetUploadData(post_data_mime_type, post_data);
     ReportUploadSize(type_, post_data.size());

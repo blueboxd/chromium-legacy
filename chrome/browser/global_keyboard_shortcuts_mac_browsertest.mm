@@ -230,10 +230,10 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, MenuCommandPriority) {
   // this code can't modify it.
   NSMenu* main_menu = [NSApp mainMenu];
   ASSERT_NE(nil, main_menu);
-  NSMenuItem* window_menu = [main_menu itemWithTitle:@"Window"];
-  ASSERT_NE(nil, window_menu);
-  ASSERT_TRUE(window_menu.hasSubmenu);
-  NSMenuItem* next_item = [window_menu.submenu itemWithTag:IDC_SELECT_NEXT_TAB];
+  NSMenuItem* tab_menu = [main_menu itemWithTitle:@"Tab"];
+  ASSERT_NE(nil, tab_menu);
+  ASSERT_TRUE(tab_menu.hasSubmenu);
+  NSMenuItem* next_item = [tab_menu.submenu itemWithTag:IDC_SELECT_NEXT_TAB];
   ASSERT_NE(nil, next_item);
   [next_item setKeyEquivalent:@"2"];
   [next_item setKeyEquivalentModifierMask:NSCommandKeyMask];

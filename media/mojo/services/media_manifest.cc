@@ -6,8 +6,8 @@
 
 #include "base/no_destructor.h"
 #include "media/mojo/buildflags.h"
-#include "media/mojo/interfaces/constants.mojom.h"
-#include "media/mojo/interfaces/media_service.mojom.h"
+#include "media/mojo/mojom/constants.mojom.h"
+#include "media/mojo/mojom/media_service.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 #if defined(IS_CHROMECAST)

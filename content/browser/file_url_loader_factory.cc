@@ -226,7 +226,9 @@ class FileURLDirectoryLoader
   }
 
   void OnConnectionError() {
+    data_producer_.reset();
     binding_.Close();
+    client_.reset();
     MaybeDeleteSelf();
   }
 
@@ -671,7 +673,9 @@ class FileURLLoader : public network::mojom::URLLoader {
   }
 
   void OnConnectionError() {
+    data_producer_.reset();
     binding_.Close();
+    client_.reset();
     MaybeDeleteSelf();
   }
 

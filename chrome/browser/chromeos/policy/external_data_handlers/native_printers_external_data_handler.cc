@@ -19,7 +19,8 @@ namespace {
 base::WeakPtr<chromeos::BulkPrintersCalculator> GetBulkPrintersCalculator(
     const std::string& user_id) {
   return chromeos::BulkPrintersCalculatorFactory::Get()->GetForAccountId(
-      CloudExternalDataPolicyHandler::GetAccountId(user_id));
+      CloudExternalDataPolicyHandler::GetAccountId(user_id),
+      /*create_if_not_exists=*/true);
 }
 
 }  // namespace

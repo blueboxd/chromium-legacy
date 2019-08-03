@@ -81,8 +81,13 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
   if (!dependencies_.io_thread_task_runner)
     io_thread_ = CreateAndStartIOThread();
   if (dependencies_.create_display_compositor) {
-    viz_compositor_thread_runner_ =
-        std::make_unique<VizCompositorThreadRunner>();
+    if (dependencies.viz_compositor_thread_runner) {
+      viz_compositor_thread_runner_ = dependencies.viz_compositor_thread_runner;
+    } else {
+      viz_compositor_thread_runner_impl_ =
+          std::make_unique<VizCompositorThreadRunnerImpl>();
+      viz_compositor_thread_runner_ = viz_compositor_thread_runner_impl_.get();
+    }
     if (delegate_) {
       delegate_->PostCompositorThreadCreated(
           viz_compositor_thread_runner_->task_runner());
@@ -115,11 +120,14 @@ VizMainImpl::~VizMainImpl() {
   // need to process commands from the host as it is shutting down.
   receiver_.reset();
 
-  // If the VizCompositorThread was started then this will block until the
-  // thread has been shutdown. All RootCompositorFrameSinks must be destroyed
-  // before now, otherwise the compositor thread will deadlock waiting for a
-  // response from the blocked GPU thread.
-  viz_compositor_thread_runner_.reset();
+  // If the VizCompositorThread was started and owned by VizMainImpl, then this
+  // will block until the thread has been shutdown. All RootCompositorFrameSinks
+  // must be destroyed before now, otherwise the compositor thread will deadlock
+  // waiting for a response from the blocked GPU thread.
+  // For the non-owned case for Android WebView, Viz does not communicate with
+  // this thread so there is no need to shutdown viz first.
+  viz_compositor_thread_runner_ = nullptr;
+  viz_compositor_thread_runner_impl_.reset();
 
   if (ukm_recorder_)
     ukm::DelegatingUkmRecorder::Get()->RemoveDelegate(ukm_recorder_.get());

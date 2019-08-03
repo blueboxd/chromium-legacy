@@ -65,6 +65,18 @@ void RecordBrowserActivation(Profile* profile) {
   }
 }
 
+void RecordUserAction(Profile* profile) {
+  if (!profile)
+    return;
+
+  int profile_bucket = GetMetricsBucketIndex(profile);
+
+  if (0 <= profile_bucket && profile_bucket <= kMaxProfileBucket) {
+    UMA_HISTOGRAM_EXACT_LINEAR("Profile.UserAction.PerProfile", profile_bucket,
+                               kMaxProfileBucket);
+  }
+}
+
 }  // namespace
 
 // static
@@ -78,16 +90,6 @@ void ProfileActivityMetricsRecorder::CleanupForTesting() {
   DCHECK(g_profile_activity_metrics_recorder);
   delete g_profile_activity_metrics_recorder;
   g_profile_activity_metrics_recorder = nullptr;
-}
-
-ProfileActivityMetricsRecorder::ProfileActivityMetricsRecorder() {
-  BrowserList::AddObserver(this);
-  metrics::DesktopSessionDurationTracker::Get()->AddObserver(this);
-}
-
-ProfileActivityMetricsRecorder::~ProfileActivityMetricsRecorder() {
-  BrowserList::RemoveObserver(this);
-  metrics::DesktopSessionDurationTracker::Get()->RemoveObserver(this);
 }
 
 void ProfileActivityMetricsRecorder::OnBrowserSetLastActive(Browser* browser) {
@@ -111,4 +113,22 @@ void ProfileActivityMetricsRecorder::OnSessionEnded(
   RecordProfileSessionDuration(last_active_profile_,
                                session_end - profile_session_start_);
   last_active_profile_ = nullptr;
+}
+
+ProfileActivityMetricsRecorder::ProfileActivityMetricsRecorder() {
+  BrowserList::AddObserver(this);
+  metrics::DesktopSessionDurationTracker::Get()->AddObserver(this);
+  action_callback_ = base::Bind(&ProfileActivityMetricsRecorder::OnUserAction,
+                                base::Unretained(this));
+  base::AddActionCallback(action_callback_);
+}
+
+ProfileActivityMetricsRecorder::~ProfileActivityMetricsRecorder() {
+  BrowserList::RemoveObserver(this);
+  metrics::DesktopSessionDurationTracker::Get()->RemoveObserver(this);
+  base::RemoveActionCallback(action_callback_);
+}
+
+void ProfileActivityMetricsRecorder::OnUserAction(const std::string& action) {
+  RecordUserAction(last_active_profile_);
 }

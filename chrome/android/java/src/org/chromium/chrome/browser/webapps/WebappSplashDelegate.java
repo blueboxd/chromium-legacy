@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -19,9 +18,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
-import org.chromium.chrome.browser.metrics.WebappSplashUmaCache;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -29,44 +25,26 @@ import org.chromium.webapk.lib.common.WebApkCommonUtils;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
 
 /** Delegate for splash screen for webapps and WebAPKs. */
-public class WebappSplashDelegate implements SplashDelegate, NativeInitObserver {
+public class WebappSplashDelegate implements SplashDelegate {
     public static final int HIDE_ANIMATION_DURATION_MS = 300;
-    public static final String HISTOGRAM_SPLASHSCREEN_DURATION = "Webapp.Splashscreen.Duration";
     public static final String HISTOGRAM_SPLASHSCREEN_HIDES = "Webapp.Splashscreen.Hides";
 
-    private Activity mActivity;
-    private ActivityLifecycleDispatcher mLifecycleDispatcher;
     private TabObserverRegistrar mTabObserverRegistrar;
-
-    /** Whether native was loaded. Native must be loaded in order to record metrics. */
-    private boolean mNativeLoaded;
 
     private WebappInfo mWebappInfo;
 
-    private WebappSplashUmaCache mWebappSplashUmaCache;
-
     private WebApkSplashNetworkErrorObserver mWebApkNetworkErrorObserver;
 
-    public WebappSplashDelegate(Activity activity, ActivityLifecycleDispatcher lifecycleDispatcher,
-            TabObserverRegistrar tabObserverRegistrar, WebappInfo webappInfo) {
-        mActivity = activity;
-        mLifecycleDispatcher = lifecycleDispatcher;
+    public WebappSplashDelegate(
+            Activity activity, TabObserverRegistrar tabObserverRegistrar, WebappInfo webappInfo) {
         mTabObserverRegistrar = tabObserverRegistrar;
         mWebappInfo = webappInfo;
 
-        mLifecycleDispatcher.register(this);
-
         if (mWebappInfo.isForWebApk()) {
             mWebApkNetworkErrorObserver =
-                    new WebApkSplashNetworkErrorObserver(mActivity, mWebappInfo.name());
+                    new WebApkSplashNetworkErrorObserver(activity, mWebappInfo.name());
             mTabObserverRegistrar.registerTabObserver(mWebApkNetworkErrorObserver);
         }
-    }
-
-    @Override
-    public void onFinishNativeInitialization() {
-        mNativeLoaded = true;
-        if (mWebappSplashUmaCache != null) mWebappSplashUmaCache.commitMetrics();
     }
 
     @Override
@@ -88,11 +66,9 @@ public class WebappSplashDelegate implements SplashDelegate, NativeInitObserver 
             tab.removeObserver(mWebApkNetworkErrorObserver);
             mWebApkNetworkErrorObserver = null;
         }
-        mLifecycleDispatcher.unregister(this);
 
-        recordSplashHiddenUma(reason, startTimestamp, endTimestamp);
-
-        mActivity = null;
+        RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_SPLASHSCREEN_HIDES, reason,
+                SplashController.SplashHidesReason.NUM_ENTRIES);
     }
 
     @Override
@@ -142,47 +118,9 @@ public class WebappSplashDelegate implements SplashDelegate, NativeInitObserver 
             selectedIconGenerated = mWebappInfo.isIconGenerated();
             selectedIconAdaptive = mWebappInfo.isIconAdaptive();
         }
-        @SplashLayout.IconClassification
-        int selectedIconClassification = SplashLayout.classifyIcon(
-                context.getResources(), selectedIcon, selectedIconGenerated);
-
         SplashLayout.createLayout(context, splashScreen, selectedIcon, selectedIconAdaptive,
-                selectedIconClassification, mWebappInfo.name(),
+                selectedIconGenerated, mWebappInfo.name(),
                 ColorUtils.shouldUseLightForegroundOnBackground(backgroundColor));
-
-        recordWebApkInfoSplashUma(
-                resources, selectedIconClassification, selectedIcon, (splashImage != null));
-    }
-
-    /**
-     * Records UMA metrics for splash screen built from WebApkInfo.
-     * @param resources
-     * @param selectedIconClassification.
-     * @param selectedIcon The icon used on the splash screen.
-     * @param usingDedicatedIcon Whether the PWA provides different icons for the splash screen and
-     *                           for the app icon.
-     */
-    private void recordWebApkInfoSplashUma(Resources resources,
-            @SplashLayout.IconClassification int selectedIconClassification, Bitmap selectedIcon,
-            boolean usingDedicatedIcon) {
-        mWebappSplashUmaCache = new WebappSplashUmaCache();
-        mWebappSplashUmaCache.recordSplashscreenBackgroundColor(
-                mWebappInfo.hasValidBackgroundColor()
-                        ? WebappSplashUmaCache.SplashColorStatus.CUSTOM
-                        : WebappSplashUmaCache.SplashColorStatus.DEFAULT);
-        mWebappSplashUmaCache.recordSplashscreenThemeColor(mWebappInfo.hasValidThemeColor()
-                        ? WebappSplashUmaCache.SplashColorStatus.CUSTOM
-                        : WebappSplashUmaCache.SplashColorStatus.DEFAULT);
-
-        mWebappSplashUmaCache.recordSplashscreenIconType(
-                selectedIconClassification, usingDedicatedIcon);
-        if (selectedIconClassification != SplashLayout.IconClassification.INVALID) {
-            DisplayMetrics displayMetrics = resources.getDisplayMetrics();
-            mWebappSplashUmaCache.recordSplashscreenIconSize(Math.round(
-                    selectedIcon.getScaledWidth(displayMetrics) / displayMetrics.density));
-        }
-
-        if (mNativeLoaded) mWebappSplashUmaCache.commitMetrics();
     }
 
     /** Builds splash screen using screenshot provided by WebAPK. */
@@ -202,15 +140,5 @@ public class WebappSplashDelegate implements SplashDelegate, NativeInitObserver 
         }
 
         return splashView;
-    }
-
-    /** Called once the splash screen is hidden to record UMA metrics. */
-    private void recordSplashHiddenUma(@SplashController.SplashHidesReason int reason,
-            long startTimestamp, long endTimestamp) {
-        RecordHistogram.recordEnumeratedHistogram(HISTOGRAM_SPLASHSCREEN_HIDES, reason,
-                SplashController.SplashHidesReason.NUM_ENTRIES);
-
-        RecordHistogram.recordMediumTimesHistogram(
-                HISTOGRAM_SPLASHSCREEN_DURATION, endTimestamp - startTimestamp);
     }
 }

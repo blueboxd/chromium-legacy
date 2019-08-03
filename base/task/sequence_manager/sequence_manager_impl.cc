@@ -302,8 +302,8 @@ void SequenceManagerImpl::BindToMessagePump(std::unique_ptr<MessagePump> pump) {
 
   // On Android attach to the native loop when there is one.
 #if defined(OS_ANDROID)
-  if (settings_.message_loop_type == MessagePump::Type::UI ||
-      settings_.message_loop_type == MessagePump::Type::JAVA) {
+  if (settings_.message_loop_type == MessagePumpType::UI ||
+      settings_.message_loop_type == MessagePumpType::JAVA) {
     controller_->AttachToMessagePump();
   }
 #endif
@@ -1035,7 +1035,7 @@ bool SequenceManagerImpl::HasTasks() {
   return false;
 }
 
-MessagePump::Type SequenceManagerImpl::GetType() const {
+MessagePumpType SequenceManagerImpl::GetType() const {
   return settings_.message_loop_type;
 }
 
@@ -1109,7 +1109,7 @@ MessagePump* SequenceManagerImpl::GetMessagePump() const {
   return controller_->GetBoundMessagePump();
 }
 
-bool SequenceManagerImpl::IsType(MessagePump::Type type) const {
+bool SequenceManagerImpl::IsType(MessagePumpType type) const {
   return settings_.message_loop_type == type;
 }
 

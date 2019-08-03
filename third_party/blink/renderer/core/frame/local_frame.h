@@ -99,7 +99,6 @@ class PerformanceMonitor;
 class PluginData;
 class ResourceRequest;
 class ScriptController;
-class SharedBuffer;
 class SmoothScrollSequencer;
 class SpellChecker;
 class TextSuggestionController;

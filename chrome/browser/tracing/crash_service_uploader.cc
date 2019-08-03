@@ -356,8 +356,7 @@ void TraceCrashServiceUploader::CreateAndStartURLLoader(
   resource_request->url = GURL(upload_url);
   resource_request->method = "POST";
   resource_request->enable_upload_progress = true;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);

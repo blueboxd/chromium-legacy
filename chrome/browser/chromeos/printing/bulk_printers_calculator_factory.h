@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -20,40 +19,51 @@ namespace chromeos {
 
 class BulkPrintersCalculator;
 
-// Dispenses BulkPrintersCalculator objects based on account id.  Access to this
-// object should be sequenced.
+// Dispenses BulkPrintersCalculator objects based on account id or for device
+// context.  Access to this object should be sequenced.
 class BulkPrintersCalculatorFactory {
  public:
+  // It never returns nullptr.
   static BulkPrintersCalculatorFactory* Get();
 
+  BulkPrintersCalculatorFactory();
+
   // Returns a WeakPtr to the BulkPrintersCalculator registered for
-  // |account_id|. If an BulkPrintersCalculator does not exist, one will be
-  // created for |account_id|. The returned object remains valid until
-  // RemoveForUserId or Shutdown is called.
+  // |account_id|.
+  // If requested BulkPrintersCalculator does not exist, the output depends on
+  // the given parameter |create_if_not_exists|. If it is true, the object is
+  // created and registered, otherwise nullptr is returned.
+  // The returned object remains valid until RemoveForUserId or Shutdown is
+  // called.
   base::WeakPtr<BulkPrintersCalculator> GetForAccountId(
-      const AccountId& account_id);
+      const AccountId& account_id,
+      bool create_if_not_exists);
 
   // Returns a WeakPtr to the BulkPrintersCalculator registered for |profile|
-  // which could be null if |profile| does not map to a valid AccountId. The
-  // returned object remains valid until RemoveForUserId or Shutdown is called.
-  base::WeakPtr<BulkPrintersCalculator> GetForProfile(Profile* profile);
+  // which could be nullptr if |profile| does not map to a valid AccountId.
+  // If requested BulkPrintersCalculator does not exist, the output depends on
+  // the given parameter |create_if_not_exists|. If it is true, the object is
+  // created and registered, otherwise nullptr is returned.
+  // The returned object remains valid until RemoveForUserId or Shutdown is
+  // called.
+  base::WeakPtr<BulkPrintersCalculator> GetForProfile(
+      Profile* profile,
+      bool create_if_not_exists);
 
   // Returns a WeakPtr to the BulkPrintersCalculator registered for the device.
-  base::WeakPtr<BulkPrintersCalculator> GetForDevice();
+  // If requested BulkPrintersCalculator does not exist, the output depends on
+  // the given parameter |create_if_not_exists|. If it is true, the object is
+  // created and registered, otherwise nullptr is returned.
+  // The returned object remains valid until Shutdown is called.
+  base::WeakPtr<BulkPrintersCalculator> GetForDevice(bool create_if_not_exists);
 
   // Deletes the BulkPrintersCalculator registered for |account_id|.
   void RemoveForUserId(const AccountId& account_id);
 
-  // Tear down all BulkPrintersCalculator created for users/profiles.
-  void ShutdownProfiles();
-
-  // Tear down BulkPrintersCalculator created for the device.
-  void ShutdownForDevice();
+  // Tear down all BulkPrintersCalculator objects.
+  void Shutdown();
 
  private:
-  friend struct base::LazyInstanceTraitsBase<BulkPrintersCalculatorFactory>;
-
-  BulkPrintersCalculatorFactory();
   ~BulkPrintersCalculatorFactory();
 
   std::map<AccountId, std::unique_ptr<BulkPrintersCalculator>>

@@ -28,7 +28,7 @@ void BindContentTranslateDriver(
   if (!translate_client)
     return;
 
-  translate_client->translate_driver().AddBinding(std::move(request));
+  translate_client->translate_driver()->AddBinding(std::move(request));
 }
 
 }  // namespace language

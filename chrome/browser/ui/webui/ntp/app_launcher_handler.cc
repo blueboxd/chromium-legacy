@@ -488,16 +488,17 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
   CHECK(launch_bucket >= 0 &&
         launch_bucket < extension_misc::APP_LAUNCH_BUCKET_BOUNDARY);
 
+  Profile* profile = extension_service_->profile();
+
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id, false);
+      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::ENABLED);
 
   // Prompt the user to re-enable the application if disabled.
   if (!extension) {
     PromptToEnableApp(extension_id);
     return;
   }
-
-  Profile* profile = extension_service_->profile();
 
   WindowOpenDisposition disposition =
       args->GetSize() > 3 ? webui::GetDispositionFromClick(args, 3)
@@ -564,7 +565,9 @@ void AppLauncherHandler::HandleSetLaunchType(const base::ListValue* args) {
   CHECK(args->GetDouble(1, &launch_type));
 
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id, true);
+      extensions::ExtensionRegistry::Get(extension_service_->profile())
+          ->GetExtensionById(extension_id,
+                             extensions::ExtensionRegistry::COMPATIBILITY);
   if (!extension)
     return;
 
@@ -616,7 +619,9 @@ void AppLauncherHandler::HandleCreateAppShortcut(const base::ListValue* args) {
   CHECK(args->GetString(0, &extension_id));
 
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id, true);
+      extensions::ExtensionRegistry::Get(extension_service_->profile())
+          ->GetExtensionById(extension_id,
+                             extensions::ExtensionRegistry::COMPATIBILITY);
   if (!extension)
     return;
 
@@ -632,7 +637,9 @@ void AppLauncherHandler::HandleInstallAppLocally(const base::ListValue* args) {
   CHECK(args->GetString(0, &extension_id));
 
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id, true);
+      extensions::ExtensionRegistry::Get(extension_service_->profile())
+          ->GetExtensionById(extension_id,
+                             extensions::ExtensionRegistry::COMPATIBILITY);
   if (!extension)
     return;
 
@@ -655,7 +662,9 @@ void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
   CHECK(args->GetString(0, &extension_id));
 
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id, true);
+      extensions::ExtensionRegistry::Get(extension_service_->profile())
+          ->GetExtensionById(extension_id,
+                             extensions::ExtensionRegistry::COMPATIBILITY);
   if (!extension)
     return;
 
@@ -863,7 +872,9 @@ void AppLauncherHandler::ExtensionEnableFlowAborted(bool user_initiated) {
   // We record the histograms here because ExtensionUninstallCanceled is also
   // called when the extension uninstall dialog is canceled.
   const Extension* extension =
-      extension_service_->GetExtensionById(extension_id_prompting_, true);
+      extensions::ExtensionRegistry::Get(extension_service_->profile())
+          ->GetExtensionById(extension_id_prompting_,
+                             extensions::ExtensionRegistry::COMPATIBILITY);
   std::string histogram_name = user_initiated ? "ReEnableCancel"
                                               : "ReEnableAbort";
   extensions::ExtensionService::RecordPermissionMessagesHistogram(

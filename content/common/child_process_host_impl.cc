@@ -132,6 +132,10 @@ void ChildProcessHostImpl::BindInterface(
   return delegate_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
+void ChildProcessHostImpl::BindReceiver(mojo::GenericPendingReceiver receiver) {
+  child_process_->BindReceiver(std::move(receiver));
+}
+
 void ChildProcessHostImpl::RunService(
     const std::string& service_name,
     mojo::PendingReceiver<service_manager::mojom::Service> receiver) {

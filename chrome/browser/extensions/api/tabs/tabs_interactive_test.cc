@@ -18,19 +18,10 @@
 
 namespace extensions {
 
-namespace {
-
-// TODO(lazyboy): Move this to some common place for reuse, e.g.
-// ExtensionBrowserTest.
-enum class ContextType {
-  kEventPage,
-  kServiceWorker,
-};
-}  // namespace
-
 namespace keys = tabs_constants;
 namespace utils = extension_function_test_utils;
 
+using ContextType = ExtensionBrowserTest::ContextType;
 using ExtensionTabsTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, GetLastFocusedWindow) {

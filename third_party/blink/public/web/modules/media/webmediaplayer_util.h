@@ -11,7 +11,7 @@
 #include "media/base/eme_constants.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
-#include "media/mojo/interfaces/media_metrics_provider.mojom-shared.h"
+#include "media/mojo/mojom/media_metrics_provider.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
 #include "third_party/blink/public/platform/web_media_player.h"

@@ -210,10 +210,8 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
                                           WindowOpenDisposition disposition) {
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
 
-    extensions::ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile())->extension_service();
-    const Extension* extension =
-        service->GetExtensionById(last_loaded_extension_id(), false);
+    const Extension* extension = extension_registry()->GetExtensionById(
+        last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
     EXPECT_TRUE(extension);
 
     apps::LaunchService::Get(profile())->OpenApplication(
@@ -223,13 +221,11 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
   }
 
   ash::ShelfID CreateShortcut(const char* name) {
-    extensions::ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile())->extension_service();
     LoadExtension(test_data_dir_.AppendASCII(name));
 
     // First get app_id.
-    const Extension* extension =
-        service->GetExtensionById(last_loaded_extension_id(), false);
+    const Extension* extension = extension_registry()->GetExtensionById(
+        last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
     const std::string app_id = extension->id();
 
     // Then create a shortcut.

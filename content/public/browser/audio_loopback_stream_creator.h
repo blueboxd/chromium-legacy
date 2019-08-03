@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
-#include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_input_stream.mojom.h"
 
 namespace media {
 class AudioParameters;

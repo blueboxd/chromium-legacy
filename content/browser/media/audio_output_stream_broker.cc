@@ -14,7 +14,7 @@
 #include "content/public/browser/media_observer.h"
 #include "content/public/common/content_client.h"
 #include "media/audio/audio_logging.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
 
 namespace content {
 

@@ -613,7 +613,8 @@
   "permissions": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   },
   "platformKeys": {
     "dependencies": ["permission:platformKeys"],

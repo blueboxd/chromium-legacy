@@ -120,8 +120,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
     pool_ = std::make_unique<TransportClientSocketPool>(
         kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
         ProxyServer::Direct(), false /* is_for_websockets */,
-        common_connect_job_params_.get(),
-        session_deps_.ssl_config_service.get());
+        common_connect_job_params_.get());
 
     tagging_common_connect_job_params_ =
         std::make_unique<CommonConnectJobParams>(
@@ -131,8 +130,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
     tagging_pool_ = std::make_unique<TransportClientSocketPool>(
         kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
         ProxyServer::Direct(), false /* is_for_websockets */,
-        tagging_common_connect_job_params_.get(),
-        session_deps_.ssl_config_service.get());
+        tagging_common_connect_job_params_.get());
 
     common_connect_job_params_for_real_sockets_ =
         std::make_unique<CommonConnectJobParams>(
@@ -142,8 +140,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
     pool_for_real_sockets_ = std::make_unique<TransportClientSocketPool>(
         kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
         ProxyServer::Direct(), false /* is_for_websockets */,
-        common_connect_job_params_for_real_sockets_.get(),
-        session_deps_.ssl_config_service.get());
+        common_connect_job_params_for_real_sockets_.get());
   }
 
   ~TransportClientSocketPoolTest() override {
@@ -177,12 +174,6 @@ class TransportClientSocketPoolTest : public ::testing::Test,
     return test_base_.requests();
   }
   size_t completion_count() const { return test_base_.completion_count(); }
-
-  std::unique_ptr<SSLConfig> GetSSLConfig() const {
-    std::unique_ptr<SSLConfig> ssl_config = std::make_unique<SSLConfig>();
-    session_deps_.ssl_config_service->GetSSLConfig(ssl_config.get());
-    return ssl_config;
-  }
 
   bool connect_backup_jobs_enabled_;
   TestNetLog net_log_;
@@ -510,8 +501,7 @@ TEST_F(TransportClientSocketPoolTest, ReprioritizeRequests) {
 TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsReprioritized) {
   TransportClientSocketPool pool(
       kMaxSockets, 1, kUnusedIdleSocketTimeout, ProxyServer::Direct(),
-      false /* is_for_websockets */, common_connect_job_params_.get(),
-      nullptr /* ssl_config_service */);
+      false /* is_for_websockets */, common_connect_job_params_.get());
 
   // Creates a job which ignores limits whose priority is MAXIMUM_PRIORITY.
   TestCompletionCallback callback1;
@@ -1022,7 +1012,7 @@ TEST_F(TransportClientSocketPoolTest, SSLCertError) {
 
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
-          GetSSLConfig() /* ssl_config_for_origin */,
+          std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
           nullptr /* ssl_config_for_proxy */);
 
   ClientSocketHandle handle;
@@ -1069,7 +1059,7 @@ TEST_F(TransportClientSocketPoolTest, CloseIdleSocketsOnSSLConfigChange) {
   EXPECT_EQ(1, pool_->IdleSocketCount());
 
   // After an SSL configuration change, we should have 0 idle sockets.
-  session_deps_.ssl_config_service->NotifySSLConfigChange();
+  session_deps_.ssl_config_service->NotifySSLContextConfigChange();
   base::RunLoop().RunUntilIdle();  // Notification happens async.
 
   EXPECT_EQ(0, pool_->IdleSocketCount());
@@ -1291,8 +1281,7 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
       kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
       ProxyServer::FromURI("socks5://foopy",
                            ProxyServer::SCHEME_HTTP /* default_scheme */),
-      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
-      session_deps_.ssl_config_service.get());
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   for (IoMode socket_io_mode : {SYNCHRONOUS, ASYNC}) {
     scoped_refptr<ClientSocketPool::SocketParams> socket_params =
@@ -1335,8 +1324,7 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
       1, 1, kUnusedIdleSocketTimeout,
       ProxyServer::FromURI("https://unresolvable.proxy.name",
                            ProxyServer::SCHEME_HTTP /* default_scheme */),
-      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
-      session_deps_.ssl_config_service.get());
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   // First connection attempt will get an error after creating the SpdyStream.
 
@@ -1370,8 +1358,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
 
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
-          GetSSLConfig() /* ssl_config_for_origin */,
-          GetSSLConfig() /* ssl_config_for_proxy */);
+          std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
+          std::make_unique<SSLConfig>() /* ssl_config_for_proxy */);
 
   ClientSocketPool::GroupId group_id(kEndpoint,
                                      ClientSocketPool::SocketType::kSsl,
@@ -1426,8 +1414,7 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
       1, 1, kUnusedIdleSocketTimeout,
       ProxyServer::FromURI("https://unresolvable.proxy.name",
                            ProxyServer::SCHEME_HTTP /* default_scheme */),
-      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
-      session_deps_.ssl_config_service.get());
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   SpdyTestUtil spdy_util;
   spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(
@@ -1474,8 +1461,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
 
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
-          GetSSLConfig() /* ssl_config_for_origin */,
-          GetSSLConfig() /* ssl_config_for_proxy */);
+          std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
+          std::make_unique<SSLConfig>() /* ssl_config_for_proxy */);
 
   ClientSocketPool::GroupId group_id(kEndpoint,
                                      ClientSocketPool::SocketType::kSsl,
@@ -1548,8 +1535,7 @@ TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
               use_https_proxy ? "https://proxy.test" : "http://proxy.test",
               ProxyServer::SCHEME_HTTP /* default_scheme */),
           false /* is_for_websockets */,
-          tagging_common_connect_job_params_.get(),
-          session_deps_.ssl_config_service.get());
+          tagging_common_connect_job_params_.get());
 
       MockWrite writes[] = {
           MockWrite(ASYNC, 0,
@@ -1571,8 +1557,8 @@ TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
 
       scoped_refptr<ClientSocketPool::SocketParams> socket_params =
           base::MakeRefCounted<ClientSocketPool::SocketParams>(
-              GetSSLConfig() /* ssl_config_for_origin */,
-              GetSSLConfig() /* ssl_config_for_proxy */);
+              std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
+              std::make_unique<SSLConfig>() /* ssl_config_for_proxy */);
 
       int rv = handle.Init(
           ClientSocketPool::GroupId(kEndpoint,
@@ -1734,8 +1720,7 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
       kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
       ProxyServer::FromURI("socks5://proxy",
                            ProxyServer::SCHEME_HTTP /* default_scheme */),
-      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
-      session_deps_.ssl_config_service.get());
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
   SocketTag tag2(getuid(), 0x87654321);
@@ -1908,7 +1893,7 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSockets) {
                                            PrivacyMode::PRIVACY_MODE_DISABLED);
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
-          GetSSLConfig() /* ssl_config_for_origin */,
+          std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
           nullptr /* ssl_config_for_proxy */);
 
   // Test connect jobs that are orphaned and then adopted, appropriately apply
@@ -1971,7 +1956,7 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSocketsFullPool) {
                                            PrivacyMode::PRIVACY_MODE_DISABLED);
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
-          GetSSLConfig() /* ssl_config_for_origin */,
+          std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
           nullptr /* ssl_config_for_proxy */);
 
   // Test that sockets paused by a full underlying socket pool are properly
@@ -2037,8 +2022,7 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyNoTunnel) {
       kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
       ProxyServer::FromURI("http://proxy",
                            ProxyServer::SCHEME_HTTP /* default_scheme */),
-      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
-      session_deps_.ssl_config_service.get());
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   session_deps_.host_resolver->set_synchronous_mode(true);
   SequencedSocketData socket_data;
@@ -2097,8 +2081,7 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
       kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
       ProxyServer::FromURI("http://proxy",
                            ProxyServer::SCHEME_HTTP /* default_scheme */),
-      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
-      session_deps_.ssl_config_service.get());
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
@@ -2125,7 +2108,7 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
 
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
-          GetSSLConfig() /* ssl_config_for_origin */,
+          std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
           nullptr /* ssl_config_for_proxy */);
 
   // Verify requested socket is tagged properly.
@@ -2168,7 +2151,7 @@ class TransportClientSocketPoolMockNowSourceTest
  protected:
   TransportClientSocketPoolMockNowSourceTest()
       : TransportClientSocketPoolTest(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPoolMockNowSourceTest);

@@ -40,7 +40,6 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
-#include "net/ssl/ssl_config_service.h"
 
 namespace base {
 class DictionaryValue;
@@ -72,7 +71,7 @@ struct NetworkTrafficAnnotationTag;
 class NET_EXPORT_PRIVATE TransportClientSocketPool
     : public ClientSocketPool,
       public NetworkChangeNotifier::IPAddressObserver,
-      public SSLConfigService::Observer {
+      public SSLClientContext::Observer {
  public:
   using Flags = uint32_t;
 
@@ -165,8 +164,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       base::TimeDelta unused_idle_socket_timeout,
       const ProxyServer& proxy_server,
       bool is_for_websockets,
-      const CommonConnectJobParams* common_connect_job_params,
-      SSLConfigService* ssl_config_service);
+      const CommonConnectJobParams* common_connect_job_params);
 
   // Creates a socket pool with an alternative ConnectJobFactory, for use in
   // testing.
@@ -179,7 +177,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       base::TimeDelta unused_idle_socket_timeout,
       base::TimeDelta used_idle_socket_timeout,
       std::unique_ptr<ConnectJobFactory> connect_job_factory,
-      SSLConfigService* ssl_config_service,
+      SSLClientContext* ssl_client_context,
       bool connect_backup_jobs_enabled);
 
   ~TransportClientSocketPool() override;
@@ -601,11 +599,11 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       base::TimeDelta unused_idle_socket_timeout,
       base::TimeDelta used_idle_socket_timeout,
       std::unique_ptr<ConnectJobFactory> connect_job_factory,
-      SSLConfigService* ssl_config_service,
+      SSLClientContext* ssl_client_context,
       bool connect_backup_jobs_enabled);
 
-  // SSLConfigService::Observer methods.
-  void OnSSLConfigChanged() override;
+  // SSLClientContext::Observer methods.
+  void OnSSLConfigChanged(bool is_cert_database_change) override;
 
   base::TimeDelta ConnectRetryInterval() const {
     // TODO(mbelshe): Make this tuned dynamically based on measured RTT.
@@ -793,7 +791,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // their idle sockets when it stalls.  Must be empty on destruction.
   std::set<HigherLayeredPool*> higher_pools_;
 
-  SSLConfigService* const ssl_config_service_;
+  SSLClientContext* const ssl_client_context_;
 
   base::WeakPtrFactory<TransportClientSocketPool> weak_factory_{this};
 

@@ -396,14 +396,8 @@ std::vector<uint32_t> GetUsernamePredictions(
   if (!username_detector_cache)
     username_detector_cache = &dummy_cache;
 
-  const std::vector<WebInputElement>& username_predictions_dom =
-      GetPredictionsFieldBasedOnHtmlAttributes(control_elements, form_data,
-                                               username_detector_cache);
-  username_predictions.reserve(username_predictions_dom.size());
-  for (const WebInputElement& element : username_predictions_dom) {
-    username_predictions.push_back(element.UniqueRendererFormControlId());
-  }
-  return username_predictions;
+  return GetPredictionsFieldBasedOnHtmlAttributes(control_elements, form_data,
+                                                  username_detector_cache);
 }
 
 // Get information about a login form encapsulated in a PasswordForm struct.

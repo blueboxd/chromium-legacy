@@ -203,9 +203,9 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
                                     ->GetActiveWebContents()
                                     ->GetBrowserContext())
         ->GetPrefs()
-        ->SetInteger(
-            optimization_guide::prefs::kHintsFetcherTopHostBlacklistState,
-            static_cast<int>(blacklist_state));
+        ->SetInteger(optimization_guide::prefs::
+                         kHintsFetcherDataSaverTopHostBlacklistState,
+                     static_cast<int>(blacklist_state));
   }
 
   void LoadHintsForUrl(const GURL& url) {
@@ -347,7 +347,7 @@ class HintsFetcherWithResponseBrowserTest
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherWithResponseBrowserTest);
 };
 
-// Issues with multiple profiles likely cause the site enagement service-based
+// Issues with multiple profiles likely cause the site engagement service-based
 // tests to flake.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
@@ -385,6 +385,8 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
   histogram_tester->ExpectBucketCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
       1);
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(HintsFetcherDisabledBrowserTest, HintsFetcherDisabled) {
@@ -448,6 +450,10 @@ IN_PROC_BROWSER_TEST_F(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
             1);
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1),
+            1);
 
   LoadHintsForUrl(https_url());
 
@@ -498,10 +504,14 @@ IN_PROC_BROWSER_TEST_P(
     histogram_tester->ExpectBucketCount(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
         1);
+    histogram_tester->ExpectUniqueSample(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
   } else if (response_type == HintsFetcherRemoteResponseType::kUnsuccessful) {
     histogram_tester->ExpectBucketCount(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.Status",
         net::HTTP_NOT_FOUND, 1);
+    histogram_tester->ExpectTotalCount(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 0);
   } else if (response_type == HintsFetcherRemoteResponseType::kMalformed) {
     // A malformed GetHintsResponse will still register as successful fetch with
     // respect to the network.
@@ -511,6 +521,8 @@ IN_PROC_BROWSER_TEST_P(
     histogram_tester->ExpectBucketCount(
         "OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode", net::OK,
         1);
+    histogram_tester->ExpectTotalCount(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 0);
 
     LoadHintsForUrl(https_url());
 
@@ -560,6 +572,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_GE(RetryForHistogramUntilCountReached(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
+            1);
+  EXPECT_GE(RetryForHistogramUntilCountReached(
+                histogram_tester,
+                "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1),
             1);
 
   LoadHintsForUrl(https_url());
@@ -639,6 +655,9 @@ IN_PROC_BROWSER_TEST_F(
                 histogram_tester,
                 "OptimizationGuide.HintsFetcher.GetHintsRequest.Status", 1),
             1);
+  // There should have been 1 hint returned in the response.
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
 
   LoadHintsForUrl(https_url());
 

@@ -75,17 +75,7 @@
 
     'chromium.android.fyi': {
       'Memory Infra Tester': 'android_release_thumb_bot',
-      'NDK Next arm Builder':
-        'android_ndk_next_release_bot_minimal_symbols',
-      'NDK Next arm64 Builder':
-        'android_ndk_next_release_bot_minimal_symbols_arm64',
-      'NDK Next x64 Builder':
-        'android_ndk_next_release_bot_minimal_symbols_x64',
-      'NDK Next x86 Builder':
-        'android_ndk_next_release_bot_minimal_symbols_x86',
-      'x64 Device Tester': 'android_shared_release_bot_x64',
-      'x86 Cloud Tester': 'android_debug_static_bot_x86',
-      'x86 Emulator Tester': 'android_debug_static_bot_x86',
+      'android-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86',
     },
 
     'chromium.chromedriver': {
@@ -407,7 +397,7 @@
       'GPU FYI Win x64 Builder': 'gpu_fyi_tests_release_trybot',
       'GPU FYI Win x64 Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
       'GPU FYI Win x64 dEQP Builder': 'deqp_release_trybot',
-      'GPU FYI XR Win Builder': 'gpu_fyi_tests_release_trybot_x86',
+      'GPU FYI XR Win x64 Builder': 'gpu_fyi_tests_release_trybot',
       'Linux FYI GPU TSAN Release': 'gpu_fyi_tests_release_trybot_tsan',
       'Mac FYI GPU ASAN Release': 'gpu_fyi_tests_release_trybot_asan',
       'Optional Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
@@ -639,6 +629,7 @@
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
       'android-oreo-arm64-rel': 'android_release_trybot_arm64_webview_google',
+      'android-pie-x86-fyi-rel': 'android_release_trybot_x86',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
       'android-binary-size': 'android_binary_size',
@@ -692,8 +683,10 @@
       'linux_angle_ozone_rel_ng': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
       'linux_angle_deqp_rel_ng': 'deqp_release_trybot',
       'mac-angle-rel': 'gpu_fyi_tests_release_trybot',
-      'win-angle-rel': 'gpu_fyi_tests_release_trybot_x86',
-      'win_angle_deqp_rel_ng': 'deqp_release_trybot_x86',
+      'win-angle-rel-32': 'gpu_fyi_tests_release_trybot_x86',
+      'win-angle-rel-64': 'gpu_fyi_tests_release_trybot',
+      'win-angle-deqp-rel-32': 'deqp_release_trybot_x86',
+      'win-angle-deqp-rel-64': 'deqp_release_trybot',
     },
 
     'tryserver.chrome': {
@@ -843,20 +836,20 @@
     },
 
     'tryserver.chromium.win': {
-      'gpu-fyi-try-win-xr-builder': 'gpu_fyi_tests_release_trybot_x86',
-      'gpu-fyi-try-win7-amd-dbg': 'gpu_fyi_tests_debug_trybot_x86',
-      'gpu-fyi-try-win7-amd-dqp': 'deqp_release_trybot_x86',
-      'gpu-fyi-try-win7-amd-rel': 'gpu_fyi_tests_release_trybot_x86',
+      'gpu-fyi-try-win-xr-builder-64': 'gpu_fyi_tests_release_trybot',
+      'gpu-fyi-try-win7-amd-dbg-32': 'gpu_fyi_tests_debug_trybot_x86',
+      'gpu-fyi-try-win7-amd-dqp-32': 'deqp_release_trybot_x86',
+      'gpu-fyi-try-win7-amd-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win7-nvidia-dqp-64': 'deqp_release_trybot',
-      'gpu-fyi-try-win7-nvidia-rel': 'gpu_fyi_tests_release_trybot_x86',
+      'gpu-fyi-try-win7-nvidia-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win7-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
-      'gpu-fyi-try-win10-intel-dqp': 'deqp_release_trybot_x86',
+      'gpu-fyi-try-win10-intel-dqp-64': 'deqp_release_trybot',
       'gpu-fyi-try-win10-intel-exp-64': 'gpu_fyi_tests_release_trybot',
-      'gpu-fyi-try-win10-intel-rel': 'gpu_fyi_tests_release_trybot_x86',
-      'gpu-fyi-try-win10-nvidia-dbg': 'gpu_fyi_tests_debug_trybot_x86',
-      'gpu-fyi-try-win10-nvidia-dqp': 'deqp_release_trybot_x86',
+      'gpu-fyi-try-win10-intel-rel-64': 'gpu_fyi_tests_release_trybot',
+      'gpu-fyi-try-win10-nvidia-dbg-64': 'gpu_fyi_tests_debug_trybot',
+      'gpu-fyi-try-win10-nvidia-dqp-64': 'deqp_release_trybot',
       'gpu-fyi-try-win10-nvidia-exp-64': 'gpu_fyi_tests_release_trybot',
-      'gpu-fyi-try-win10-nvidia-rel': 'gpu_fyi_tests_release_trybot_x86',
+      'gpu-fyi-try-win10-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
       'gpu-try-win10-nvidia-dbg': 'gpu_tests_debug_trybot_x86',
       'gpu-try-win10-nvidia-rel': 'gpu_tests_release_trybot_x86_resource_whitelisting',
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_trybot',
@@ -874,7 +867,7 @@
       'win_chromium_dbg_ng': 'gpu_tests_debug_trybot_x86',
       'win_chromium_x64_rel_ng': 'gpu_tests_release_trybot',
       'win_mojo': 'release_trybot_x86',
-      'win_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot_x86',
+      'win_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
       'win_upload_clang': 'release_bot',
     },
 
@@ -1070,22 +1063,6 @@
       'android', 'jumbo', 'release_bot', 'minimal_symbols',
     ],
 
-    'android_ndk_next_release_bot_minimal_symbols': [
-      'android', 'ndk_next', 'release_bot', 'minimal_symbols', 'strip_debug_info',
-    ],
-
-    'android_ndk_next_release_bot_minimal_symbols_arm64': [
-      'android', 'ndk_next', 'release_bot', 'minimal_symbols', 'arm64', 'strip_debug_info',
-    ],
-
-    'android_ndk_next_release_bot_minimal_symbols_x64': [
-      'android', 'ndk_next', 'release_bot', 'minimal_symbols', 'x64', 'strip_debug_info',
-    ],
-
-    'android_ndk_next_release_bot_minimal_symbols_x86': [
-      'android', 'ndk_next', 'release_bot', 'minimal_symbols', 'x86', 'strip_debug_info',
-    ],
-
     'android_release_bot_minimal_symbols': [
       'android', 'release_bot', 'minimal_symbols',
       'strip_debug_info',
@@ -1099,6 +1076,11 @@
     'android_release_bot_minimal_symbols_arm64_webview_google': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
       'strip_debug_info', 'webview_google',
+    ],
+
+    'android_release_bot_minimal_symbols_x86': [
+      'android', 'release_bot', 'minimal_symbols', 'x86',
+      'strip_debug_info',
     ],
 
     'android_release_thumb_bot': [
@@ -1118,8 +1100,8 @@
       'webview_google',
     ],
 
-    'android_shared_release_bot_x64': [
-      'android_without_codecs', 'shared_release_bot', 'x64', 'dcheck_always_on',
+    'android_release_trybot_x86': [
+      'android', 'release_trybot', 'strip_debug_info', 'x86',
     ],
 
     'android_webview_google_debug_static_bot': [
@@ -2248,12 +2230,6 @@
 
     'msan_no_origins': {
       'gn_args': 'is_msan=true msan_track_origins=0 use_prebuilt_instrumented_libraries=true',
-    },
-
-    'ndk_next': {
-      # GCC is unsupported starting in r13.
-      'mixins': ['clang'],
-      'gn_args': 'android_ndk_version="r13b" android_ndk_major_version=13',
     },
 
     'no_com_init_hooks': {

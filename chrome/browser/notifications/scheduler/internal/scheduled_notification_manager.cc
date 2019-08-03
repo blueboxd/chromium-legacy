@@ -20,6 +20,7 @@
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
+#include "chrome/browser/notifications/scheduler/public/notification_scheduler_constant.h"
 
 namespace notifications {
 namespace {
@@ -70,10 +71,16 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       return;
     }
 
+    if (notification_params->enable_ihnr_buttons) {
+      DCHECK(notification_params->notification_data.buttons.empty());
+      CreateInhrButtonsPair(&notification_params->notification_data.buttons);
+    }
+
     auto entry =
         std::make_unique<NotificationEntry>(notification_params->type, guid);
     entry->notification_data =
         std::move(notification_params->notification_data);
+
     entry->schedule_params = std::move(notification_params->schedule_params);
     auto* entry_ptr = entry.get();
     notifications_[type][guid] = std::move(entry);
@@ -269,6 +276,21 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     if (!notifications_.count(type) || !notifications_[type].count(guid))
       return nullptr;
     return notifications_[type][guid].get();
+  }
+
+  // Create two default buttons {Helpful, Unhelpful} for notification.
+  void CreateInhrButtonsPair(std::vector<NotificationData::Button>* buttons) {
+    buttons->clear();
+    // TODO(hesen): Fill button text field with GRD string resource.
+    NotificationData::Button helpful_button;
+    helpful_button.type = ActionButtonType::kHelpful;
+    helpful_button.id = notifications::kDefaultHelpfulButtonId;
+    buttons->emplace_back(std::move(helpful_button));
+
+    NotificationData::Button unhelpful_button;
+    unhelpful_button.type = ActionButtonType::kUnhelpful;
+    unhelpful_button.id = notifications::kDefaultUnhelpfulButtonId;
+    buttons->emplace_back(std::move(unhelpful_button));
   }
 
   NotificationStore notification_store_;

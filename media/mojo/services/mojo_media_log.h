@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "media/base/media_log.h"
-#include "media/mojo/interfaces/media_log.mojom.h"
+#include "media/mojo/mojom/media_log.mojom.h"
 
 namespace media {
 

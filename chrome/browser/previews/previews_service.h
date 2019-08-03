@@ -42,7 +42,7 @@ class ProtoDatabaseProvider;
 }
 
 class PreviewsOfflineHelper;
-class PreviewsTopHostProvider;
+class DataSaverTopHostProvider;
 
 // Keyed service that owns a previews::PreviewsUIService. PreviewsService lives
 // on the UI thread.
@@ -95,7 +95,7 @@ class PreviewsService : public KeyedService {
  private:
   // The top site provider for use with the Previews Optimization Guide's Hints
   // Fetcher.
-  std::unique_ptr<PreviewsTopHostProvider> top_host_provider_;
+  std::unique_ptr<DataSaverTopHostProvider> top_host_provider_;
 
   // The previews UI thread service.
   std::unique_ptr<previews::PreviewsUIService> previews_ui_service_;

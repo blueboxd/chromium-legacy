@@ -123,8 +123,10 @@
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
+#include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_model_type_controller.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
+#include "chromeos/components/sync_wifi/wifi_configuration_sync_service.h"
 #include "components/arc/arc_util.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -528,6 +530,9 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
                  profile_)
           ->GetSyncBridge()
           ->change_processor()
+          ->GetControllerDelegate();
+    case syncer::WIFI_CONFIGURATIONS:
+      return WifiConfigurationSyncServiceFactory::GetForProfile(profile_)
           ->GetControllerDelegate();
 #endif  // defined(OS_CHROMEOS)
     case syncer::USER_CONSENTS:

@@ -37,7 +37,6 @@
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_cache_factory.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -777,15 +776,8 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   if (GetContentIndexContext())
     GetContentIndexContext()->Shutdown();
 
-  if (GetAppCacheService()) {
-    if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-      GetAppCacheService()->Shutdown();
-    } else {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&ChromeAppCacheService::Shutdown, appcache_service_));
-    }
-  }
+  if (GetAppCacheService())
+    GetAppCacheService()->Shutdown();
 
   if (GetGeneratedCodeCacheContext())
     GetGeneratedCodeCacheContext()->Shutdown();
@@ -913,9 +905,6 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
   partition->blob_registry_ =
       BlobRegistryWrapper::Create(blob_context, partition->filesystem_context_);
-
-  partition->appcache_service_->set_url_loader_factory_getter(
-      partition->url_loader_factory_getter_.get());
 
   partition->prefetch_url_loader_service_ =
       base::MakeRefCounted<PrefetchURLLoaderService>(context);

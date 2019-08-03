@@ -60,7 +60,7 @@ PepperNetworkProxyHost::PepperNetworkProxyHost(BrowserPpapiHostImpl* host,
       waiting_for_ui_thread_data_(true) {
   host->GetRenderFrameIDsForInstance(instance, &render_process_id_,
                                      &render_frame_id_);
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&GetUIThreadDataOnUIThread, render_process_id_,
                      render_frame_id_, host->external_plugin()),

@@ -546,6 +546,7 @@ void Controller::GetOrCheckScripts() {
   if (script_domain_ != url.host()) {
     StopPeriodicScriptChecks();
     script_domain_ = url.host();
+    pending_get_scripts_ = true;
     DVLOG(2) << "GetScripts for " << script_domain_;
     GetService()->GetScriptsForUrl(
         url, *trigger_context_,
@@ -613,6 +614,7 @@ void Controller::OnGetScripts(const GURL& url,
   if (url.host() != script_domain_)
     return;
 
+  pending_get_scripts_ = false;
   if (!result) {
     DVLOG(1) << "Failed to get assistant scripts for " << script_domain_;
     OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
@@ -628,6 +630,12 @@ void Controller::OnGetScripts(const GURL& url,
                  Metrics::DropOutReason::GET_SCRIPTS_UNPARSABLE);
     return;
   }
+  ProcessSupportsScriptResponse(response_proto);
+  GetOrCheckScripts();
+}
+
+void Controller::ProcessSupportsScriptResponse(
+    const SupportsScriptResponseProto& response_proto) {
   if (response_proto.has_client_settings())
     settings_.UpdateFromProto(response_proto.client_settings());
 
@@ -668,8 +676,47 @@ void Controller::OnGetScripts(const GURL& url,
     }
     OnNoRunnableScriptsForPage();
   }
-
   script_tracker()->SetScripts(std::move(scripts));
+}
+
+void Controller::UpdateScriptsFromBundle(
+    const std::string& script_bundle_bytes) {
+  if (script_bundle_bytes.empty())
+    return;
+
+  ScriptBundleProto proto;
+  if (!proto.ParseFromString(script_bundle_bytes)) {
+    DVLOG(3) << __func__ << " Ignored unparseable script bundle";
+    return;
+  }
+
+  // If the bundle isn't meant for the current domain, ignore it.
+  std::string current_domain = GetCurrentURL().host();
+  if (current_domain != proto.domain()) {
+    DVLOG(3) << __func__ << " Ignored script bundle for incorrect domain";
+    return;
+  }
+  ScriptTracker* tracker = script_tracker();
+
+  // Update the set of scripts available for the domain and their preconditions.
+  // Do nothing if the set of scripts is already known.
+  if (script_domain_ == current_domain && !pending_get_scripts_)
+    return;
+
+  script_domain_ = current_domain;
+  ProcessSupportsScriptResponse(proto.supports_scripts());
+
+  // Store initial script actions.
+  for (ScriptActionsProto& actions_proto : *proto.mutable_script_actions()) {
+    auto response_ptr = std::make_unique<ActionsResponseProto>();
+    response_ptr->Swap(actions_proto.mutable_actions());
+    if (!tracker->SetScriptActions(actions_proto.script_path(),
+                                   std::move(response_ptr))) {
+      DVLOG(3) << __func__ << " Ignored actions for unknown script "
+               << actions_proto.script_path();
+    }
+  }
+
   GetOrCheckScripts();
 }
 
@@ -823,8 +870,11 @@ void Controller::InitFromParameters() {
 }
 
 void Controller::Track(std::unique_ptr<TriggerContext> trigger_context,
+                       const std::string& script_bundle_bytes,
                        base::OnceCallback<void()> on_first_check_done) {
   tracking_ = true;
+
+  UpdateScriptsFromBundle(script_bundle_bytes);
 
   if (state_ == AutofillAssistantState::INACTIVE) {
     trigger_context_ = std::move(trigger_context);

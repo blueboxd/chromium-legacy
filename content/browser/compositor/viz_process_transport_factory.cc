@@ -188,7 +188,8 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
 
     // GPU process access is disabled. Start a new thread to run the display
     // compositor in-process and connect HostFrameSinkManager to it.
-    viz_compositor_thread_ = std::make_unique<viz::VizCompositorThreadRunner>();
+    viz_compositor_thread_ =
+        std::make_unique<viz::VizCompositorThreadRunnerImpl>();
 
     viz::mojom::FrameSinkManagerParamsPtr params =
         viz::mojom::FrameSinkManagerParams::New();

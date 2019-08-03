@@ -32,7 +32,6 @@ AppCacheUpdateJob::URLFetcher::URLFetcher(const GURL& url,
       fetch_type_(fetch_type),
       buffer_size_(buffer_size),
       request_(std::make_unique<UpdateURLLoaderRequest>(
-          job->service_->url_loader_factory_getter(),
           job->service_->partition(),
           url,
           buffer_size,
@@ -250,8 +249,7 @@ bool AppCacheUpdateJob::URLFetcher::MaybeRetryRequest() {
 
   result_ = AppCacheUpdateJob::UPDATE_OK;
   request_ = std::make_unique<UpdateURLLoaderRequest>(
-      job_->service_->url_loader_factory_getter(), job_->service_->partition(),
-      url_, buffer_size_, this);
+      job_->service_->partition(), url_, buffer_size_, this);
   Start();
   return true;
 }

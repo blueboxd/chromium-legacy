@@ -124,7 +124,7 @@ def _AdbOatDumpForPackage(device, package_name, out_file):
   device.RunShellCommand(['oatdump',
                           '--oat-file=' + odex_file,
                           '--output=' + out_file],
-                         shell=True, check_return=True)
+                         timeout=120, shell=True, check_return=True)
 
 
 class JavaClass(object):

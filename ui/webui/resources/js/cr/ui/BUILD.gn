@@ -268,3 +268,10 @@ js_library("tree") {
 js_modulizer("modulize") {
   input_files = [ "focus_outline_manager.js" ]
 }
+
+js_library("focus_outline_manager.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_outline_manager.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}

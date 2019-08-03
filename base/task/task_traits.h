@@ -66,8 +66,6 @@ enum class TaskPriority : uint8_t {
   HIGHEST = USER_BLOCKING
 };
 
-using TaskPriorityType = std::underlying_type<TaskPriority>::type;
-
 // Valid shutdown behaviors supported by the thread pool.
 enum class TaskShutdownBehavior : uint8_t {
   // Tasks posted with this mode which have not started executing before

@@ -7,10 +7,10 @@ module content.mojom;
 import "content/common/document_scoped_interface_bundle.mojom";
 import "content/common/native_types.mojom";
 import "ipc/constants.mojom";
+import "mojo/public/mojom/base/generic_pending_receiver.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/network_types.mojom";
-import "services/service_manager/public/mojom/service.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
 import "third_party/blink/public/mojom/service_worker/embedded_worker.mojom";
 import "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom";
@@ -171,12 +171,6 @@ enum RenderProcessState {
 // This should be used for implementing browser-to-renderer control messages
 // which need to retain FIFO with respect to legacy IPC messages.
 interface Renderer {
-  // Tells the renderer to ask its embedder to bind |service_request| to an
-  // embedder-provided renderer-side service implementation. This is required to
-  // ensure that embedder-provided renderer-side service is initialized at the
-  // appropriate time.
-  CreateEmbedderRendererService(service_manager.mojom.Service& service_request);
-
   // Tells the renderer to create a new view.
   CreateView(CreateViewParams params);
 

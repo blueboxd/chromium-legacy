@@ -13,7 +13,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder_config.h"
-#include "media/mojo/interfaces/demuxer_stream.mojom.h"
+#include "media/mojo/mojom/demuxer_stream.mojom.h"
 
 namespace media {
 

@@ -285,9 +285,10 @@ class BASE_EXPORT TaskTracker {
   // blocking tasks. Intentionally leaked.
   // TODO(scheduler-dev): Consider using STATIC_HISTOGRAM_POINTER_GROUP for
   // these.
-  static constexpr auto kNumTaskPriorities =
+  using TaskPriorityType = std::underlying_type<TaskPriority>::type;
+  static constexpr TaskPriorityType kNumTaskPriorities =
       static_cast<TaskPriorityType>(TaskPriority::HIGHEST) + 1;
-  static constexpr TaskPriorityType kNumBlockingModes = 2;
+  static constexpr uint8_t kNumBlockingModes = 2;
   HistogramBase* const task_latency_histograms_[kNumTaskPriorities]
                                                [kNumBlockingModes];
   HistogramBase* const heartbeat_latency_histograms_[kNumTaskPriorities]

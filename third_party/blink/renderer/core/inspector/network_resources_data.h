@@ -46,7 +46,6 @@ class EncodedFormData;
 class ExecutionContext;
 class Resource;
 class ResourceResponse;
-class SharedBuffer;
 class TextResourceDecoder;
 
 class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {

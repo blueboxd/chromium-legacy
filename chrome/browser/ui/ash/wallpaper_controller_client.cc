@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/customization/customization_wallpaper_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -22,11 +21,12 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -482,13 +482,12 @@ void WallpaperControllerClient::ShowWallpaperOnLoginScreen() {
 void WallpaperControllerClient::OpenWallpaperPicker() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
-    return;
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
 
-  const extensions::Extension* extension = service->GetExtensionById(
-      extension_misc::kWallpaperManagerId, false /*include_disabled=*/);
+  const extensions::Extension* extension =
+      registry->GetExtensionById(extension_misc::kWallpaperManagerId,
+                                 extensions::ExtensionRegistry::ENABLED);
   if (!extension)
     return;
 

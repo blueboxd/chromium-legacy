@@ -1011,7 +1011,7 @@ TEST_F(ControllerTest, Track) {
   // Start tracking at example.com, with one script matching
   SetLastCommittedUrl(GURL("http://example.com/"));
 
-  controller_->Track(TriggerContext::CreateEmpty(), base::DoNothing());
+  controller_->Track(TriggerContext::CreateEmpty(), "", base::DoNothing());
   EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
   ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
 
@@ -1059,7 +1059,7 @@ TEST_F(ControllerTest, TrackScriptWithNoUI) {
   // Start tracking at example.com, with one script matching
   SetLastCommittedUrl(GURL("http://example.com/"));
 
-  controller_->Track(TriggerContext::CreateEmpty(), base::DoNothing());
+  controller_->Track(TriggerContext::CreateEmpty(), "", base::DoNothing());
   ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
 
   EXPECT_TRUE(controller_->PerformUserAction(0));
@@ -1084,7 +1084,7 @@ TEST_F(ControllerTest, TrackScriptShowUIOnTell) {
   // Start tracking at example.com, with one script matching
   SetLastCommittedUrl(GURL("http://example.com/"));
 
-  controller_->Track(TriggerContext::CreateEmpty(), base::DoNothing());
+  controller_->Track(TriggerContext::CreateEmpty(), "", base::DoNothing());
   ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
 
   EXPECT_FALSE(controller_->NeedsUI());
@@ -1115,7 +1115,7 @@ TEST_F(ControllerTest, TrackScriptShowUIOnError) {
   // Start tracking at example.com, with one script matching
   SetLastCommittedUrl(GURL("http://example.com/"));
 
-  controller_->Track(TriggerContext::CreateEmpty(), base::DoNothing());
+  controller_->Track(TriggerContext::CreateEmpty(), "", base::DoNothing());
   ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
 
   EXPECT_FALSE(controller_->NeedsUI());
@@ -1145,7 +1145,7 @@ TEST_F(ControllerTest, TrackContinuesAfterScriptError) {
   // Start tracking at example.com, with one script matching
   SetLastCommittedUrl(GURL("http://example.com/"));
 
-  controller_->Track(TriggerContext::CreateEmpty(), base::DoNothing());
+  controller_->Track(TriggerContext::CreateEmpty(), "", base::DoNothing());
   EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
   ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
 
@@ -1177,7 +1177,7 @@ TEST_F(ControllerTest, TrackReportsFirstSetOfScripts) {
 
   SetLastCommittedUrl(GURL("http://example.com/"));
   bool first_check_done = false;
-  controller_->Track(TriggerContext::CreateEmpty(),
+  controller_->Track(TriggerContext::CreateEmpty(), "",
                      base::BindOnce(
                          [](Controller* controller, bool* is_done) {
                            // User actions must have been set when this is
@@ -1205,7 +1205,7 @@ TEST_F(ControllerTest, TrackReportsNoScripts) {
   base::MockCallback<base::OnceCallback<void()>> callback;
 
   EXPECT_CALL(callback, Run());
-  controller_->Track(TriggerContext::CreateEmpty(), callback.Get());
+  controller_->Track(TriggerContext::CreateEmpty(), "", callback.Get());
   EXPECT_EQ(AutofillAssistantState::STOPPED, controller_->GetState());
 }
 
@@ -1222,7 +1222,7 @@ TEST_F(ControllerTest, TrackReportsNoScriptsForNow) {
   base::MockCallback<base::OnceCallback<void()>> callback;
 
   EXPECT_CALL(callback, Run());
-  controller_->Track(TriggerContext::CreateEmpty(), callback.Get());
+  controller_->Track(TriggerContext::CreateEmpty(), "", callback.Get());
   EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
 }
 
@@ -1240,7 +1240,7 @@ TEST_F(ControllerTest, TrackReportsNoScriptsForThePage) {
   base::MockCallback<base::OnceCallback<void()>> callback;
 
   EXPECT_CALL(callback, Run());
-  controller_->Track(TriggerContext::CreateEmpty(), callback.Get());
+  controller_->Track(TriggerContext::CreateEmpty(), "", callback.Get());
   EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
 }
 
@@ -1250,12 +1250,12 @@ TEST_F(ControllerTest, TrackReportsAlreadyDone) {
   SetNextScriptResponse(script_response);
 
   SetLastCommittedUrl(GURL("http://example.com/"));
-  controller_->Track(TriggerContext::CreateEmpty(), base::DoNothing());
+  controller_->Track(TriggerContext::CreateEmpty(), "", base::DoNothing());
   EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
 
   base::MockCallback<base::OnceCallback<void()>> callback;
   EXPECT_CALL(callback, Run());
-  controller_->Track(TriggerContext::CreateEmpty(), callback.Get());
+  controller_->Track(TriggerContext::CreateEmpty(), "", callback.Get());
 }
 
 TEST_F(ControllerTest, TrackThenAutostart) {
@@ -1267,7 +1267,7 @@ TEST_F(ControllerTest, TrackThenAutostart) {
   SetNextScriptResponse(script_response);
 
   SetLastCommittedUrl(GURL("http://example.com/"));
-  controller_->Track(TriggerContext::CreateEmpty(), base::DoNothing());
+  controller_->Track(TriggerContext::CreateEmpty(), "", base::DoNothing());
   EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
   EXPECT_THAT(controller_->GetUserActions(), SizeIs(1));
 
@@ -1298,6 +1298,162 @@ TEST_F(ControllerTest, TrackThenAutostart) {
                                    AutofillAssistantState::TRACKING));
 }
 
+TEST_F(ControllerTest, TrackWithScriptBundle) {
+  ScriptBundleProto bundle;
+  bundle.set_domain("a.example.com");
+  AddRunnableScript(bundle.mutable_supports_scripts(), "script1");
+  AddRunnableScript(bundle.mutable_supports_scripts(), "script2");
+  auto* script1 = bundle.add_script_actions();
+  script1->set_script_path("script1");
+  script1->mutable_actions()->add_actions()->mutable_tell()->set_message(
+      "script1 was here");
+
+  std::string bundle_str;
+  bundle.SerializeToString(&bundle_str);
+
+  // Get the script list from the bundle.
+  SetLastCommittedUrl(GURL("http://a.example.com/"));
+  controller_->Track(TriggerContext::CreateEmpty(), bundle_str,
+                     base::DoNothing());
+  EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
+
+  // Execute script1 from the bundle, but report its result.
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(2));
+  ASSERT_EQ("script1", controller_->GetUserActions()[0].chip().text);
+
+  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, ""));
+
+  EXPECT_TRUE(controller_->PerformUserAction(0));
+
+  EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
+  EXPECT_EQ("script1 was here", controller_->GetStatusMessage());
+
+  // Execute script2 from the server response.
+  ActionsResponseProto script2;
+  script2.add_actions()->mutable_tell()->set_message("script2 was here");
+  SetupActionsForScript("script2", script2);
+  EXPECT_CALL(*mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(RunOnceCallback<4>(true, ""));
+
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(2));
+  ASSERT_EQ("script2", controller_->GetUserActions()[1].chip().text);
+  EXPECT_TRUE(controller_->PerformUserAction(1));
+
+  EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
+  EXPECT_EQ("script2 was here", controller_->GetStatusMessage());
+}
+
+TEST_F(ControllerTest, TrackWithScriptBundleWrongDomain) {
+  ScriptBundleProto bundle;
+  bundle.set_domain("a.example.com");
+  AddRunnableScript(bundle.mutable_supports_scripts(), "domain a");
+  std::string bundle_str;
+  bundle.SerializeToString(&bundle_str);
+
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "domain b");
+  SetNextScriptResponse(script_response);
+
+  // Controller is on domain b, so the bundle is ignored and the scripts
+  // retrieved from the server.
+  SetLastCommittedUrl(GURL("http://b.example.com/"));
+  controller_->Track(TriggerContext::CreateEmpty(), bundle_str,
+                     base::DoNothing());
+
+  EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
+  EXPECT_EQ("domain b", controller_->GetUserActions()[0].chip().text);
+}
+
+TEST_F(ControllerTest, TrackWithScriptBundleAfterSupportsScripts) {
+  ScriptBundleProto bundle;
+  bundle.set_domain("a.example.com");
+  AddRunnableScript(bundle.mutable_supports_scripts(), "script1");
+  auto* script1 = bundle.add_script_actions();
+  script1->set_script_path("script1");
+  script1->mutable_actions()->add_actions()->mutable_tell()->set_message(
+      "script1 was here");
+
+  std::string bundle_str;
+  bundle.SerializeToString(&bundle_str);
+
+  SupportsScriptResponseProto server_script_response;
+  AddRunnableScript(&server_script_response, "script1");
+  AddRunnableScript(&server_script_response, "script2");
+  SetNextScriptResponse(server_script_response);
+
+  // Get the script list from the server
+  SetLastCommittedUrl(GURL("http://a.example.com/"));
+  controller_->Track(TriggerContext::CreateEmpty(), "", base::DoNothing());
+
+  // Provide a bundle
+  controller_->Track(TriggerContext::CreateEmpty(), bundle_str,
+                     base::DoNothing());
+
+  EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
+
+  // The response from the RPC won; we have 2 scripts instead of just one.
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(2));
+
+  // Execute script1 from the server. We can't use script1 actions from the
+  // bundle, since they might not correspond to the preconditions returned by
+  // the server.
+  ASSERT_EQ("script1", controller_->GetUserActions()[0].chip().text);
+
+  EXPECT_CALL(*mock_service_, OnGetActions("script1", _, _, _, _, _));
+  EXPECT_TRUE(controller_->PerformUserAction(0));
+}
+
+TEST_F(ControllerTest, TrackWithScriptBundleDuringSupportsScripts) {
+  // Ask for the the script list from the server. The GetScripts RPC hangs for
+  // now.
+  Service::ResponseCallback get_actions_callback_capture;
+  EXPECT_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))
+      .WillOnce(
+          Invoke([&get_actions_callback_capture](
+                     const GURL& url, const TriggerContext& trigger_context,
+                     Service::ResponseCallback& callback) {
+            get_actions_callback_capture = std::move(callback);
+          }));
+  SetLastCommittedUrl(GURL("http://a.example.com/"));
+  controller_->Track(TriggerContext::CreateEmpty(), "", base::DoNothing());
+
+  // Provide a bundle, which sets the scripts supported for the website.
+  ScriptBundleProto bundle;
+  bundle.set_domain("a.example.com");
+  AddRunnableScript(bundle.mutable_supports_scripts(), "script1");
+  auto* script1 = bundle.add_script_actions();
+  script1->set_script_path("script1");
+  script1->mutable_actions()->add_actions()->mutable_tell()->set_message(
+      "script1 was here");
+  std::string bundle_str;
+  bundle.SerializeToString(&bundle_str);
+  controller_->Track(TriggerContext::CreateEmpty(), bundle_str,
+                     base::DoNothing());
+  EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
+  EXPECT_THAT(controller_->GetUserActions(), SizeIs(1));
+
+  // The server responds, which overrides the scripts supported for the website.
+  // We now have definitions for two scripts.
+  SupportsScriptResponseProto server_script_response;
+  AddRunnableScript(&server_script_response, "script1");
+  AddRunnableScript(&server_script_response, "script2");
+  std::string server_script_response_str;
+  server_script_response.SerializeToString(&server_script_response_str);
+  std::move(get_actions_callback_capture).Run(true, server_script_response_str);
+
+  EXPECT_THAT(controller_->GetUserActions(), SizeIs(2));
+
+  // The initial set of actions for script1 must be fetched from the RPC. The
+  // ones in the bundle must have been discarded when the set of scripts was
+  // updated.
+  ASSERT_EQ("script1", controller_->GetUserActions()[0].chip().text);
+
+  EXPECT_CALL(*mock_service_, OnGetActions("script1", _, _, _, _, _));
+  EXPECT_TRUE(controller_->PerformUserAction(0));
+}
+
 TEST_F(ControllerTest, UnexpectedNavigationDuringPromptAction_Tracking) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "runnable");
@@ -1314,7 +1470,7 @@ TEST_F(ControllerTest, UnexpectedNavigationDuringPromptAction_Tracking) {
   SetupActionsForScript("runnable", runnable_script);
 
   SetLastCommittedUrl(GURL("http://example.com/"));
-  controller_->Track(TriggerContext::CreateEmpty(), base::DoNothing());
+  controller_->Track(TriggerContext::CreateEmpty(), "", base::DoNothing());
   EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
   ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
   EXPECT_EQ(controller_->GetUserActions()[0].chip().text, "runnable");

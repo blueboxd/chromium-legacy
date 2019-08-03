@@ -65,6 +65,7 @@ public class LocationBarPhone extends LocationBarLayout {
         if (mShouldShowSearchEngineLogo) {
             mFirstVisibleFocusedView = findViewById(R.id.location_bar_status);
         }
+        mStatusViewCoordinator.setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
     }
 
     /**

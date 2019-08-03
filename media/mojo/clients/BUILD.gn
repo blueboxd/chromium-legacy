@@ -67,7 +67,7 @@ jumbo_source_set("clients") {
     "//base",
     "//media",
     "//media/mojo:buildflags",
-    "//media/mojo/interfaces",
+    "//media/mojo/mojom",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/mojom",
@@ -112,7 +112,7 @@ source_set("unit_tests") {
     sources += [ "mojo_android_overlay_unittest.cc" ]
 
     deps += [
-      "//media/mojo/interfaces:test_interfaces",
+      "//media/mojo/mojom:test_interfaces",
       "//ui/gfx:test_support",
       "//ui/gl",
     ]

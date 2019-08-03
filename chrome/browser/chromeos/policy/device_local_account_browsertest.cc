@@ -1129,12 +1129,14 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   // Verify that the hosted app was installed.
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  EXPECT_TRUE(extension_service->GetExtensionById(kHostedAppID, true));
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  EXPECT_TRUE(extension_registry->GetExtensionById(
+      kHostedAppID, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Verify that the extension was not installed.
-  EXPECT_FALSE(extension_service->GetExtensionById(kGoodExtensionID, true));
+  EXPECT_FALSE(extension_registry->GetExtensionById(
+      kGoodExtensionID, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Verify that the app was downloaded to the account's extension cache.
   base::FilePath test_dir;
@@ -1213,12 +1215,14 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   // Verify that the hosted app was installed.
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  EXPECT_TRUE(extension_service->GetExtensionById(kHostedAppID, true));
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  EXPECT_TRUE(extension_registry->GetExtensionById(
+      kHostedAppID, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Verify that the extension was not installed.
-  EXPECT_FALSE(extension_service->GetExtensionById(kGoodExtensionID, true));
+  EXPECT_FALSE(extension_registry->GetExtensionById(
+      kGoodExtensionID, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Verify that the app is still in the account's extension cache.
   {
@@ -2301,9 +2305,10 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   // Verify that the app was installed.
   Profile* profile = GetProfileForTest();
   ASSERT_TRUE(profile);
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  EXPECT_TRUE(extension_service->GetExtensionById(kShowManagedStorageID, true));
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  EXPECT_TRUE(extension_registry->GetExtensionById(
+      kShowManagedStorageID, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Wait for the app policy if it hasn't been fetched yet.
   ProfilePolicyConnector* connector = profile->GetProfilePolicyConnector();

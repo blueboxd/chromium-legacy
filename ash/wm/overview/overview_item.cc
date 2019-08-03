@@ -849,6 +849,14 @@ bool OverviewItem::ShouldIgnoreGestureEvents() {
   return IsSlidingOutOverviewFromShelf();
 }
 
+void OverviewItem::OnHighlightedViewActivated() {
+  overview_session_->OnHighlightedItemActivated(this);
+}
+
+void OverviewItem::OnHighlightedViewClosed() {
+  overview_session_->OnHighlightedItemClosed(this);
+}
+
 void OverviewItem::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   DCHECK_EQ(sender, close_button_);

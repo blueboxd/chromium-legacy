@@ -17,7 +17,7 @@
 #include "media/capabilities/video_decode_stats_db.h"
 #include "media/capabilities/video_decode_stats_db_provider.h"
 #include "media/learning/impl/feature_provider.h"
-#include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
+#include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"

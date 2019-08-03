@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread_checker.h"
-#include "media/mojo/interfaces/cdm_storage.mojom.h"
+#include "media/mojo/mojom/cdm_storage.mojom.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "url/origin.h"
 

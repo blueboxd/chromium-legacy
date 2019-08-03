@@ -23,7 +23,6 @@
 #include "chrome/browser/background/background_contents_service_observer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -323,9 +322,10 @@ void DriveFirstRunController::EnableOfflineMode() {
     return;
   }
 
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (!extension_service->GetExtensionById(drive_hosted_app_id_, false)) {
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  if (!extension_registry->GetExtensionById(
+          drive_hosted_app_id_, extensions::ExtensionRegistry::ENABLED)) {
     LOG(WARNING) << "Drive app is not installed.";
     OnOfflineInit(false, OUTCOME_APP_NOT_INSTALLED);
     return;
@@ -403,11 +403,11 @@ void DriveFirstRunController::OnOfflineInit(bool success, UMAOutcome outcome) {
 }
 
 void DriveFirstRunController::ShowNotification() {
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(service);
-  const extensions::Extension* extension =
-      service->GetExtensionById(drive_hosted_app_id_, false);
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  DCHECK(registry);
+  const extensions::Extension* extension = registry->GetExtensionById(
+      drive_hosted_app_id_, extensions::ExtensionRegistry::ENABLED);
   DCHECK(extension);
 
   message_center::RichNotificationData data;

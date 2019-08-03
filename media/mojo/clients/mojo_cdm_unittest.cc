@@ -17,7 +17,7 @@
 #include "media/base/mock_filters.h"
 #include "media/cdm/default_cdm_factory.h"
 #include "media/mojo/clients/mojo_cdm.h"
-#include "media/mojo/interfaces/content_decryption_module.mojom.h"
+#include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/services/mojo_cdm_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

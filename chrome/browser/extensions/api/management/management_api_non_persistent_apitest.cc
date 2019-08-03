@@ -15,13 +15,7 @@
 
 namespace extensions {
 
-namespace {
-enum class ContextType {
-  kEventPage,
-  kServiceWorker,
-};
-
-}  // namespace
+using ContextType = ExtensionBrowserTest::ContextType;
 
 // Tests management API from a non-persistent extension (event page or
 // Service Worker).

@@ -62,6 +62,7 @@ function extractElementInfo(element, contentWindow, opt_styleNames) {
 
   // Get the scroll position of the element.
   result.scrollLeft = element.scrollLeft;
+  result.scrollTop = element.scrollTop;
 
   return result;
 }
@@ -312,7 +313,6 @@ test.util.sync.inputText = (contentWindow, query, text) => {
 
 /**
  * Sets the left scroll position of an element.
- * Used to enable testing of horizontal scrolled areas.
  * @param {Window} contentWindow Window to be tested.
  * @param {string} query Query for the test element.
  * @param {number} position scrollLeft position to set.
@@ -320,6 +320,17 @@ test.util.sync.inputText = (contentWindow, query, text) => {
 test.util.sync.setScrollLeft = (contentWindow, query, position) => {
   const scrollablElement = contentWindow.document.querySelector(query);
   scrollablElement.scrollLeft = position;
+};
+
+/**
+ * Sets the top scroll position of an element.
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} query Query for the test element.
+ * @param {number} position scrollTop position to set.
+ */
+test.util.sync.setScrollTop = (contentWindow, query, position) => {
+  const scrollablElement = contentWindow.document.querySelector(query);
+  scrollablElement.scrollTop = position;
 };
 
 /**

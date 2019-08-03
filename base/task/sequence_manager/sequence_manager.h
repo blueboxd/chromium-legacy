@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
@@ -17,6 +17,9 @@
 #include "base/time/default_tick_clock.h"
 
 namespace base {
+
+class MessagePump;
+
 namespace sequence_manager {
 
 class TimeDomain;
@@ -80,7 +83,7 @@ class BASE_EXPORT SequenceManager {
     // so we are making Settings move-only in preparation.
     Settings(Settings&& move_from) noexcept;
 
-    MessagePump::Type message_loop_type = MessagePump::Type::DEFAULT;
+    MessagePumpType message_loop_type = MessagePumpType::DEFAULT;
     bool randomised_sampling_enabled = false;
     const TickClock* clock = DefaultTickClock::GetInstance();
 
@@ -245,8 +248,8 @@ class BASE_EXPORT SequenceManager::Settings::Builder {
   Builder();
   ~Builder();
 
-  // Sets the MessagePump::Type which is used to create a MessagePump.
-  Builder& SetMessagePumpType(MessagePump::Type message_loop_type);
+  // Sets the MessagePumpType which is used to create a MessagePump.
+  Builder& SetMessagePumpType(MessagePumpType message_loop_type);
 
   Builder& SetRandomisedSamplingEnabled(bool randomised_sampling_enabled);
 

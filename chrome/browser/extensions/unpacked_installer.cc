@@ -26,6 +26,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/path_util.h"
 #include "extensions/browser/policy_check.h"
@@ -168,10 +169,11 @@ void UnpackedInstaller::StartInstallChecks() {
       const std::vector<SharedModuleInfo::ImportInfo>& imports =
           SharedModuleInfo::GetImports(extension());
       std::vector<SharedModuleInfo::ImportInfo>::const_iterator i;
+      ExtensionRegistry* registry = ExtensionRegistry::Get(service->profile());
       for (i = imports.begin(); i != imports.end(); ++i) {
         base::Version version_required(i->minimum_version);
-        const Extension* imported_module =
-            service->GetExtensionById(i->extension_id, true);
+        const Extension* imported_module = registry->GetExtensionById(
+            i->extension_id, ExtensionRegistry::COMPATIBILITY);
         if (!imported_module) {
           ReportExtensionLoadError(kImportMissing);
           return;

@@ -467,7 +467,8 @@ void NGBlockNode::FinishLayout(
     }
   }
 
-  CopyFragmentDataToLayoutBox(constraint_space, *layout_result);
+  CopyFragmentDataToLayoutBox(constraint_space, *layout_result,
+                              To<NGBlockBreakToken>(break_token));
 }
 
 MinMaxSize NGBlockNode::ComputeMinMaxSize(
@@ -683,7 +684,8 @@ String NGBlockNode::ToString() const {
 
 void NGBlockNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space,
-    const NGLayoutResult& layout_result) {
+    const NGLayoutResult& layout_result,
+    const NGBlockBreakToken* previous_break_token) {
   if (UNLIKELY(constraint_space.IsIntermediateLayout()))
     return;
 
@@ -700,18 +702,16 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   // expected to remain the same throughout all subsequent fragments, since
   // legacy layout doesn't support non-uniform fragmentainer widths.
   LayoutUnit intrinsic_content_logical_height;
-  if (LIKELY(IsFirstFragment(constraint_space, physical_fragment))) {
+  if (LIKELY(physical_fragment.IsFirstForNode())) {
     box_->SetSize(LayoutSize(physical_fragment.Size().width,
                              physical_fragment.Size().height));
   } else {
     DCHECK_EQ(box_->LogicalWidth(), fragment_logical_size.inline_size)
         << "Variable fragment inline size not supported";
-    box_->SetLogicalHeight(
-        PreviouslyUsedBlockSpace(constraint_space, physical_fragment) +
-        fragment_logical_size.block_size);
-    // TODO(layout-ng): We should store this on the break token instead of
-    // relying on previously-stored data. Our relayout in NGBlockNode::Layout
-    // will otherwise lead to wrong data.
+    LayoutUnit logical_height = fragment_logical_size.block_size;
+    if (previous_break_token)
+      logical_height += previous_break_token->UsedBlockSize();
+    box_->SetLogicalHeight(logical_height);
     intrinsic_content_logical_height = box_->IntrinsicContentLogicalHeight();
   }
 
@@ -721,8 +721,11 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   NGBoxStrut scrollbars = ComputeScrollbars(constraint_space, *this);
   NGBoxStrut padding = fragment.Padding();
   NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
+  const auto* break_token =
+      To<NGBlockBreakToken>(physical_fragment.BreakToken());
+  bool is_last_fragment = !break_token || break_token->IsFinished();
 
-  if (LIKELY(IsLastFragment(physical_fragment)))
+  if (LIKELY(is_last_fragment))
     intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
   box_->SetIntrinsicContentLogicalHeight(intrinsic_content_logical_height);
 
@@ -739,7 +742,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   auto* block_flow = DynamicTo<LayoutBlockFlow>(box_);
   LayoutMultiColumnFlowThread* flow_thread = GetFlowThread(block_flow);
   if (UNLIKELY(flow_thread)) {
-    PlaceChildrenInFlowThread(constraint_space, physical_fragment);
+    PlaceChildrenInFlowThread(physical_fragment);
   } else {
     PhysicalOffset offset_from_start;
     if (UNLIKELY(constraint_space.HasBlockFragmentation())) {
@@ -750,20 +753,17 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
       // sliced and translated into columns.
 
       // TODO(mstensho): writing modes
-      offset_from_start.top =
-          PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
+      if (previous_break_token)
+        offset_from_start.top = previous_break_token->UsedBlockSize();
     }
-    PlaceChildrenInLayoutBox(constraint_space, physical_fragment,
-                             offset_from_start);
+    PlaceChildrenInLayoutBox(physical_fragment, offset_from_start);
   }
 
   LayoutBlock* block = DynamicTo<LayoutBlock>(box_);
-  if (LIKELY(block && IsLastFragment(physical_fragment))) {
+  if (LIKELY(block && is_last_fragment)) {
     LayoutUnit intrinsic_block_size = layout_result.IntrinsicBlockSize();
-    if (UNLIKELY(constraint_space.HasBlockFragmentation())) {
-      intrinsic_block_size +=
-          PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
-    }
+    if (UNLIKELY(previous_break_token))
+      intrinsic_block_size += previous_break_token->UsedBlockSize();
 
 #if DCHECK_IS_ON()
     block->CheckPositionedObjectsNeedLayout();
@@ -798,7 +798,6 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 }
 
 void NGBlockNode::PlaceChildrenInLayoutBox(
-    const NGConstraintSpace& constraint_space,
     const NGPhysicalBoxFragment& physical_fragment,
     const PhysicalOffset& offset_from_start) {
   LayoutBox* rendered_legend = nullptr;
@@ -809,7 +808,7 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
       continue;
 
     const auto& box_fragment = *To<NGPhysicalBoxFragment>(child_fragment.get());
-    if (IsFirstFragment(constraint_space, box_fragment)) {
+    if (box_fragment.IsFirstForNode()) {
       if (box_fragment.IsRenderedLegend())
         rendered_legend = ToLayoutBox(box_fragment.GetMutableLayoutObject());
       CopyChildFragmentPosition(box_fragment, child_fragment.Offset(),
@@ -835,7 +834,6 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
 }
 
 void NGBlockNode::PlaceChildrenInFlowThread(
-    const NGConstraintSpace& constraint_space,
     const NGPhysicalBoxFragment& physical_fragment) {
   LayoutUnit flowthread_offset;
   for (const auto& child : physical_fragment.Children()) {
@@ -848,9 +846,9 @@ void NGBlockNode::PlaceChildrenInFlowThread(
     // Position each child node in the first column that they occur, relatively
     // to the block-start of the flow thread.
     const auto* column = To<NGPhysicalBoxFragment>(child.get());
-    PlaceChildrenInLayoutBox(constraint_space, *column, offset);
-    const auto* token = To<NGBlockBreakToken>(column->BreakToken());
-    flowthread_offset = token->UsedBlockSize();
+    PlaceChildrenInLayoutBox(*column, offset);
+    if (const auto* token = To<NGBlockBreakToken>(column->BreakToken()))
+      flowthread_offset = token->UsedBlockSize();
   }
 }
 

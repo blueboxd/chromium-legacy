@@ -157,15 +157,14 @@ class PathBuilderPkitsTestDelegate {
           1024, SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
     }
 
-    CertPathBuilder::Result result;
     CertPathBuilder path_builder(
         std::move(target_cert), &trust_store, path_builder_delegate.get(),
         info.time, KeyPurpose::ANY_EKU, info.initial_explicit_policy,
         info.initial_policy_set, info.initial_policy_mapping_inhibit,
-        info.initial_inhibit_any_policy, &result);
+        info.initial_inhibit_any_policy);
     path_builder.AddCertIssuerSource(&cert_issuer_source);
 
-    path_builder.Run();
+    CertPathBuilder::Result result = path_builder.Run();
 
     if (info.should_validate != result.HasValidPath()) {
       for (size_t i = 0; i < result.paths.size(); ++i) {

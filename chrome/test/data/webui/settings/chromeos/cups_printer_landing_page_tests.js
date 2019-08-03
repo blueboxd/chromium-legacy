@@ -65,7 +65,8 @@ function getPrinterEntries(printersElement) {
   const listElement = printersElement.$$('settings-cups-printers-entry-list');
 
   const entryList = listElement.$$('#printerEntryList');
-  return entryList.querySelectorAll('settings-cups-printers-entry');
+  return entryList.querySelectorAll(
+      'settings-cups-printers-entry:not([hidden])');
 }
 
 /**
@@ -88,6 +89,15 @@ function initializeEditDialog(page) {
   editDialog.needsReconfigured_ = false;
 
   return editDialog;
+}
+
+/**
+ * @param {!NetworkingPrivate} api
+ * @param {!Array<crOnc.NetworkStateProperties>} networks
+ */
+function setNetworksForTest(api, networks) {
+  api.resetForTest();
+  api.addNetworksForTest(networks);
 }
 
 /**
@@ -115,6 +125,7 @@ function verifyPrintersList(entryList, printerList) {
     assertEquals(printerInfo.printerName, entryInfo.printerName);
     assertEquals(printerInfo.printerAddress, entryInfo.printerAddress);
     assertEquals(printerInfo.printerId, entryInfo.printerId);
+    assertEquals(entryList.length, printerList.length);
   }
 }
 
@@ -142,6 +153,7 @@ function removeAndVerifyPrinters(
         return cupsPrintersBrowserProxy.whenCalled('getCupsPrintersList');
       })
       .then(function() {
+        entryList = getPrinterEntries(savedPrinters);
         verifyPrintersList(entryList, printerList);
       });
 }
@@ -188,6 +200,18 @@ suite('CupsSavedPrintersTests', function() {
   /** @type {?Array<!CupsPrinterInfo>} */
   let printerList = null;
 
+  /** @type {NetworkingPrivate} */
+  let api_;
+
+  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
+  let mojoApi_;
+
+  suiteSetup(function() {
+    api_ = new chrome.FakeNetworkingPrivate();
+    mojoApi_ = new FakeNetworkConfig(api_);
+    network_config.MojoInterfaceProviderImpl.getInstance().proxy_ = mojoApi_;
+  });
+
   setup(function() {
     printerList = [
       createCupsPrinterInfo('google', '4', 'id4'),
@@ -202,6 +226,16 @@ suite('CupsSavedPrintersTests', function() {
     // initializing the landing page.
     cupsPrintersBrowserProxy.printerList = {printerList: printerList};
     settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
+
+    // Simulate internet connection.
+    api_.resetForTest();
+    setNetworksForTest(api_, [{
+                         GUID: 'wifi1_guid',
+                         Name: 'wifi1',
+                         Type: 'WiFi',
+                         ConnectionState: 'Connected',
+                       }]);
+    api_.enableNetworkType('WiFi');
 
     PolymerTest.clearBody();
     page = document.createElement('settings-cups-printers');
@@ -218,6 +252,7 @@ suite('CupsSavedPrintersTests', function() {
   });
 
   teardown(function() {
+    api_.resetForTest();
     cupsPrintersBrowserProxy.reset();
     page.remove();
     savedPrintersElement = null;
@@ -238,8 +273,6 @@ suite('CupsSavedPrintersTests', function() {
           const printerListEntries = getPrinterEntries(savedPrintersElement);
 
           verifyPrintersList(printerListEntries, printerList);
-
-          assertEquals(printerList.length, printerListEntries.length);
         });
   });
 
@@ -376,11 +409,54 @@ suite('CupsNearbyPrintersTests', function() {
   /** @type {?settings.TestCupsPrintersBrowserProxy} */
   let cupsPrintersBrowserProxy = null;
 
+  /** @type {?NetworkingPrivate} */
+  let api_;
+
+  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
+  let mojoApi_;
+
+  /** @type {!Array<crOnc.NetworkStateProperties>} networks */
+  let activeNetworks_;
+
+  /**
+   * @param {string} guid
+   * @param {string} state
+   */
+  function setNetworkConnectionState(guid, state) {
+    let network = activeNetworks_.find((state) => {
+      return state.GUID == guid;
+    });
+    assertTrue(!!network);
+    network.ConnectionState = state;
+
+    // TODO(jimmyxgong): Remove this hack by moving |networkStateToMojo_| to
+    // onc_mojo.js.
+    mojoApi_.getNetworkState(network.GUID).then(({result}) => {
+      api_.onActiveNetworksChanged.callListeners([result]);
+    });
+  }
+
+  suiteSetup(function() {
+    api_ = new chrome.FakeNetworkingPrivate();
+    mojoApi_ = new FakeNetworkConfig(api_);
+    network_config.MojoInterfaceProviderImpl.getInstance().proxy_ = mojoApi_;
+  });
+
   setup(function() {
     cupsPrintersBrowserProxy =
         new printerBrowserProxy.TestCupsPrintersBrowserProxy;
 
     settings.CupsPrintersBrowserProxyImpl.instance_ = cupsPrintersBrowserProxy;
+
+    // Simulate internet connection.
+    api_.resetForTest();
+    activeNetworks_ = [{
+      GUID: 'wifi1_guid',
+      Name: 'wifi1',
+      Type: 'WiFi',
+      ConnectionState: 'Online',
+    }];
+    setNetworksForTest(api_, activeNetworks_);
 
     PolymerTest.clearBody();
     page = document.createElement('settings-cups-printers');
@@ -391,12 +467,10 @@ suite('CupsNearbyPrintersTests', function() {
     assertTrue(!!page);
 
     Polymer.dom.flush();
-
-    nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
-    assertTrue(!!nearbyPrintersElement);
   });
 
   teardown(function() {
+    api_.resetForTest();
     cupsPrintersBrowserProxy.reset();
     page.remove();
     nearbyPrintersElement = null;
@@ -413,34 +487,38 @@ suite('CupsNearbyPrintersTests', function() {
       createCupsPrinterInfo('test4', '4', 'id4'),
     ];
 
-    return cupsPrintersBrowserProxy.whenCalled('startDiscoveringPrinters')
-        .then(function() {
-          // Assert that no printers have been detected.
-          let nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
-          assertEquals(0, nearbyPrinterEntries.length);
+    return PolymerTest.flushTasks().then(() => {
+      nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
+      assertTrue(!!nearbyPrintersElement);
 
-          // Simuluate finding nearby printers.
-          cr.webUIListenerCallback(
-              'on-nearby-printers-changed', automaticPrinterList,
-              discoveredPrinterList);
+      // Assert that no printers have been detected.
+      let nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
+      assertEquals(0, nearbyPrinterEntries.length);
 
-          Polymer.dom.flush();
+      // Simuluate finding nearby printers.
+      cr.webUIListenerCallback(
+          'on-nearby-printers-changed', automaticPrinterList,
+          discoveredPrinterList);
 
-          nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
+      Polymer.dom.flush();
 
-          const expectedPrinterList =
-              automaticPrinterList.concat(discoveredPrinterList);
-          verifyPrintersList(nearbyPrinterEntries, expectedPrinterList);
-          assertEquals(expectedPrinterList.length, nearbyPrinterEntries.length);
-        });
+      nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
+
+      const expectedPrinterList =
+          automaticPrinterList.concat(discoveredPrinterList);
+      verifyPrintersList(nearbyPrinterEntries, expectedPrinterList);
+    });
   });
 
   test('addingAutomaticPrinterIsSuccessful', function() {
     const automaticPrinterList = [createCupsPrinterInfo('test1', '1', 'id1')];
     const discoveredPrinterList = [];
 
-    return cupsPrintersBrowserProxy.whenCalled('startDiscoveringPrinters')
-        .then(function() {
+    return PolymerTest.flushTasks()
+        .then(() => {
+          nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
+          assertTrue(!!nearbyPrintersElement);
+
           // Assert that no printers are detected.
           let nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
           assertEquals(0, nearbyPrinterEntries.length);
@@ -466,7 +544,7 @@ suite('CupsNearbyPrintersTests', function() {
 
           return cupsPrintersBrowserProxy.whenCalled('addDiscoveredPrinter');
         })
-        .then(function() {
+        .then(() => {
           const expectedToastMessage =
               'Added ' + automaticPrinterList[0].printerName;
           verifyErrorToastMessage(expectedToastMessage, page.$$('#errorToast'));
@@ -479,8 +557,11 @@ suite('CupsNearbyPrintersTests', function() {
 
     let manufacturerDialog = null;
 
-    return cupsPrintersBrowserProxy.whenCalled('startDiscoveringPrinters')
-        .then(function() {
+    return PolymerTest.flushTasks()
+        .then(() => {
+          nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
+          assertTrue(!!nearbyPrintersElement);
+
           // Assert that there are initially no detected printers.
           let nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
           assertEquals(0, nearbyPrinterEntries.length);
@@ -492,8 +573,8 @@ suite('CupsNearbyPrintersTests', function() {
 
           Polymer.dom.flush();
 
-          // Requery and assert that a newly detected discovered printer has the
-          // correct icon button.
+          // Requery and assert that a newly detected discovered printer has
+          // the correct icon button.
           nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
           assertEquals(1, nearbyPrinterEntries.length);
           assertTrue(!!nearbyPrinterEntries[0].$$('.action-button'));
@@ -512,7 +593,7 @@ suite('CupsNearbyPrintersTests', function() {
           return cupsPrintersBrowserProxy.whenCalled(
               'getCupsPrinterManufacturersList');
         })
-        .then(function() {
+        .then(() => {
           const addButton = manufacturerDialog.$$('#addPrinterButton');
           assertTrue(addButton.disabled);
 
@@ -527,12 +608,66 @@ suite('CupsNearbyPrintersTests', function() {
           addButton.click();
           return cupsPrintersBrowserProxy.whenCalled('addCupsPrinter');
         })
-        .then(function() {
+        .then(() => {
           // Assert that the toast notification is shown and has the expected
           // message when adding a discovered printer.
           const expectedToastMessage =
               'Added ' + discoveredPrinterList[0].printerName;
           verifyErrorToastMessage(expectedToastMessage, page.$$('#errorToast'));
+        });
+  });
+
+  test('NetworkConnectedButNoInternet', function() {
+    // Simulate connecting to a network with no internet connection.
+    setNetworkConnectionState('wifi1_guid', 'Connected');
+    return PolymerTest.flushTasks().then(() => {
+      // We require internet to be able to add a new printer. Connecting to
+      // a network without connectivity should be equivalent to not being
+      // connected to a network.
+      assertTrue(!!page.$$('#cloudOffIcon'));
+      assertTrue(!!page.$$('#connectionMessage'));
+    });
+  });
+
+  test('checkNetworkConnection', function() {
+    // Simulate disconnecting from a network.
+    setNetworkConnectionState('wifi1_guid', 'NotConnected');
+    return PolymerTest.flushTasks()
+        .then(() => {
+          // Expect "Check Connection" text to show up when no internet is
+          // connected.
+          assertTrue(!!page.$$('#cloudOffIcon'));
+          assertTrue(!!page.$$('#connectionMessage'));
+
+          // Simulate connecting to a network with connectivity.
+          setNetworkConnectionState('wifi1_guid', 'Online');
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          const automaticPrinterList = [
+            createCupsPrinterInfo('test1', '1', 'id1'),
+            createCupsPrinterInfo('test2', '2', 'id2'),
+          ];
+          const discoveredPrinterList = [
+            createCupsPrinterInfo('test3', '3', 'id3'),
+            createCupsPrinterInfo('test4', '4', 'id4'),
+          ];
+
+          // Simuluate finding nearby printers.
+          cr.webUIListenerCallback(
+              'on-nearby-printers-changed', automaticPrinterList,
+              discoveredPrinterList);
+
+          Polymer.dom.flush();
+
+          nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
+          assertTrue(!!nearbyPrintersElement);
+
+          nearbyPrinterEntries = getPrinterEntries(nearbyPrintersElement);
+
+          const expectedPrinterList =
+              automaticPrinterList.concat(discoveredPrinterList);
+          verifyPrintersList(nearbyPrinterEntries, expectedPrinterList);
         });
   });
 });

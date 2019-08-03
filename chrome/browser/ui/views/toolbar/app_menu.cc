@@ -309,15 +309,6 @@ class AppMenuView : public views::View, public views::ButtonListener {
     node_data->role = ax::mojom::Role::kMenu;
   }
 
-  // Overridden from views::View.
-  void SchedulePaintInRect(const gfx::Rect& r) override {
-    // Normally when the mouse enters/exits a button the buttons invokes
-    // SchedulePaint. As part of the button border (InMenuButtonBackground) is
-    // rendered by the button to the left/right of it SchedulePaint on the the
-    // button may not be enough, so this forces a paint all.
-    View::SchedulePaintInRect(gfx::Rect(size()));
-  }
-
   InMenuButton* CreateAndConfigureButton(
       int string_id,
       InMenuButtonBackground::ButtonType type,

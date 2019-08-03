@@ -1181,6 +1181,10 @@
     "label": "//url:gurl_fuzzer",
     "type": "fuzzer",
   },
+  "gwp_asan_unittests": {
+    "label": "//components/gwp_asan:gwp_asan_unittests",
+    "type": "console_test_launcher",
+  },
   "h264_bitstream_parser_fuzzer": {
     "label": "//third_party/webrtc/test/fuzzers:h264_bitstream_parser_fuzzer",
     "type": "fuzzer",

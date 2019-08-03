@@ -46,7 +46,7 @@ class FtlSignalingConnectorTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   FakeSignalStrategy signal_strategy_{SignalingAddress(kLocalFtlId)};
   base::MockCallback<base::OnceClosure> auth_failed_callback_;
   std::unique_ptr<FtlSignalingConnector> signaling_connector_;

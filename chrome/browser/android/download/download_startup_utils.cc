@@ -7,6 +7,7 @@
 #include <jni.h>
 #include <utility>
 
+#include "base/android/path_utils.h"
 #include "chrome/android/chrome_jni_headers/DownloadStartupUtils_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/download/download_controller.h"
@@ -40,6 +41,9 @@ void DownloadStartupUtils::EnsureDownloadSystemInitialized(
       DownloadControllerBase::Get());
   in_progress_manager->set_intermediate_path_cb(
       base::BindRepeating(&DownloadTargetDeterminer::GetCrDownloadPath));
+  base::FilePath download_dir;
+  base::android::GetDownloadsDirectory(&download_dir);
+  in_progress_manager->set_default_download_dir(download_dir);
   download::SimpleDownloadManagerCoordinator* coordinator =
       SimpleDownloadManagerCoordinatorFactory::GetForKey(profile_key);
   auto* download_provider =

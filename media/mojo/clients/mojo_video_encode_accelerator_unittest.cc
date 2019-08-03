@@ -8,7 +8,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "gpu/config/gpu_info.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
-#include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
+#include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"

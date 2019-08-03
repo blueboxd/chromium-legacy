@@ -21,13 +21,13 @@
 #include "media/mojo/clients/mojo_decryptor.h"
 #include "media/mojo/clients/mojo_demuxer_stream_impl.h"
 #include "media/mojo/common/media_type_converters.h"
-#include "media/mojo/interfaces/cdm_proxy.mojom.h"
-#include "media/mojo/interfaces/constants.mojom.h"
-#include "media/mojo/interfaces/content_decryption_module.mojom.h"
-#include "media/mojo/interfaces/decryptor.mojom.h"
-#include "media/mojo/interfaces/interface_factory.mojom.h"
-#include "media/mojo/interfaces/media_service.mojom.h"
-#include "media/mojo/interfaces/renderer.mojom.h"
+#include "media/mojo/mojom/cdm_proxy.mojom.h"
+#include "media/mojo/mojom/constants.mojom.h"
+#include "media/mojo/mojom/content_decryption_module.mojom.h"
+#include "media/mojo/mojom/decryptor.mojom.h"
+#include "media/mojo/mojom/interface_factory.mojom.h"
+#include "media/mojo/mojom/media_service.mojom.h"
+#include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/media_manifest.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -42,7 +42,7 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"  // nogncheck
-#include "media/mojo/interfaces/cdm_proxy.mojom.h"
+#include "media/mojo/mojom/cdm_proxy.mojom.h"
 #endif
 
 namespace media {

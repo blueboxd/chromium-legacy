@@ -142,16 +142,11 @@ const char kNTPHelpURL[] =
   DCHECK(!_webStateObserver);
   DCHECK(self.suggestionsService);
 
-  [self.consumer setTabCount:self.webStateList->count()];
   self.webState = self.webStateList->GetActiveWebState();
 
   _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
   if (self.webState) {
     self.webState->AddObserver(_webStateObserver.get());
-    web::NavigationManager* navigationManager =
-        self.webState->GetNavigationManager();
-    [self.consumer setCanGoForward:navigationManager->CanGoForward()];
-    [self.consumer setCanGoBack:navigationManager->CanGoBack()];
   }
 
   [self.consumer setLogoVendor:self.logoVendor];
@@ -492,19 +487,6 @@ const char kNTPHelpURL[] =
 
 #pragma mark - WebStateListObserving
 
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index
-           activating:(BOOL)activating {
-  [self.consumer setTabCount:self.webStateList->count()];
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didDetachWebState:(web::WebState*)webState
-              atIndex:(int)atIndex {
-  [self.consumer setTabCount:self.webStateList->count()];
-}
-
 // If the actual webState associated with this mediator were passed in, this
 // would not be necessary.  However, since the active webstate can change when
 // the new tab page is created (and animated in), listen for changes here and
@@ -516,10 +498,6 @@ const char kNTPHelpURL[] =
                      reason:(int)reason {
   if (newWebState) {
     self.webState = newWebState;
-    web::NavigationManager* navigationManager =
-        newWebState->GetNavigationManager();
-    [self.consumer setCanGoForward:navigationManager->CanGoForward()];
-    [self.consumer setCanGoBack:navigationManager->CanGoBack()];
   }
 }
 

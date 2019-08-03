@@ -56,7 +56,6 @@ class ExceptionState;
 class ExecutionContext;
 class MessagePort;
 class ScriptValue;
-class SharedBuffer;
 class StaticBitmapImage;
 class Transferables;
 class UnpackedSerializedScriptValue;

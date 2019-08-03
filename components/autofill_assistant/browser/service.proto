@@ -362,6 +362,10 @@ message ActionsResponseProto {
   // Should stop processing as soon as an action fails.
   repeated ActionProto actions = 3;
 
+  // If true, don't report the result to the server. Setting this to false
+  // implies that the given set of actions is complete.
+  optional bool inhibit_result_report = 6;
+
   // List of scripts to update.
   //
   // The client is expected to update the cache of scripts with this new
@@ -1625,4 +1629,26 @@ message UserActionProto {
 message PopupMessageProto {
   // Message to show in the popup.
   optional string message = 1;
+}
+
+// A set of script definition that can be provided by the caller, when using
+// direct actions, to avoid having to send RPCs to get the data.
+//
+// These definitions are only valid for the given domain. They'll be ignored if
+// data has already been retrieved from the server.
+message ScriptBundleProto {
+  // The domain to which SupportsScriptResponseProto applies. This avoids
+  // having to send the SupportsScript RPC.
+  optional string domain = 1;
+  optional SupportsScriptResponseProto supports_scripts = 2;
+
+  // Optional definition for scripts defined in supports_scripts. This avoids
+  // having to send the GetActions RPC to get the initial set of actions.
+  repeated ScriptActionsProto script_actions = 3;
+}
+
+// Definition of an action.
+message ScriptActionsProto {
+  optional string script_path = 1;
+  optional ActionsResponseProto actions = 2;
 }

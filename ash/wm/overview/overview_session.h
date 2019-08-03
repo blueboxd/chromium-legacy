@@ -235,6 +235,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Returns true if all its window grids don't have any window item.
   bool IsEmpty() const;
 
+  // Handles requests to active or close the currently highlighted |item|.
+  void OnHighlightedItemActivated(OverviewItem* item);
+  void OnHighlightedItemClosed(OverviewItem* item);
+
   // display::DisplayObserver:
   void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -246,6 +250,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // ShelObserver:
   void OnShellDestroying() override;
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;

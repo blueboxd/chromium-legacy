@@ -156,11 +156,11 @@ extern const char kWebKitTextAreasAreResizable[];
 extern const char kWebKitJavascriptCanAccessClipboard[];
 extern const char kWebkitTabsToLinks[];
 extern const char kWebKitAllowRunningInsecureContent[];
+extern const char kWebKitForceDarkModeEnabled[];
 #if defined(OS_ANDROID)
 extern const char kWebKitFontScaleFactor[];
 extern const char kWebKitForceEnableZoom[];
 extern const char kWebKitPasswordEchoEnabled[];
-extern const char kWebKitForceDarkModeEnabled[];
 #endif
 extern const char kSSLErrorOverrideAllowed[];
 extern const char kIncognitoModeAvailability[];
@@ -312,6 +312,7 @@ extern const char kAppReinstallRecommendationEnabled[];
 extern const char kStartupBrowserWindowLaunchSuppressed[];
 extern const char kDeviceWebUsbAllowDevicesForUrls[];
 extern const char kLoginExtensionApiDataForNextLoginAttempt[];
+extern const char kSettingsShowBrowserBanner[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];

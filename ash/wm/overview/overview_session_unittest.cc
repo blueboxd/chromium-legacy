@@ -2793,6 +2793,14 @@ TEST_F(OverviewSessionTest, SelectingWindowWithBackdrop) {
   EXPECT_FALSE(InOverviewSession());
 }
 
+TEST_F(OverviewSessionTest, ShelfAlignmentChangeWhileInOverview) {
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  ToggleOverview();
+  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  EXPECT_FALSE(InOverviewSession());
+}
+
 class OverviewSessionNewLayoutTest : public OverviewSessionTest {
  public:
   OverviewSessionNewLayoutTest() = default;

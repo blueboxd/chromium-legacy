@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "media/mojo/interfaces/media_types.mojom.h"
+#include "media/mojo/mojom/media_types.mojom.h"
 
 namespace media {
 

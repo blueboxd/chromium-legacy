@@ -97,6 +97,16 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // script running at a time.
   bool running() const { return executor_ != nullptr; }
 
+  // Sets a hardcoded set of initial actions for the given script.
+  //
+  // Actions specified here are only valid for the current set of scripts, set
+  // with SetScripts(). Calling SetScripts() clears them.
+  //
+  // If this returns false, the script actions was ignored, as there's was no
+  // definitions passed in the last call to SetScripts().
+  bool SetScriptActions(const std::string& script_path,
+                        std::unique_ptr<ActionsResponseProto> actions);
+
   // Returns a dictionary describing the current execution context, which
   // is intended to be serialized as JSON string. The execution context is
   // useful when analyzing feedback forms and for debugging in general.
@@ -175,6 +185,9 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // List of scripts to replace the currently available scripts. The replacement
   // only occurse when |scripts_update| is not nullptr.
   std::unique_ptr<std::vector<std::unique_ptr<Script>>> scripts_update_;
+
+  // Known initial script actions, passed to the tracker.
+  std::map<std::string, std::unique_ptr<ActionsResponseProto>> script_actions_;
 
   base::WeakPtrFactory<ScriptTracker> weak_ptr_factory_;
 

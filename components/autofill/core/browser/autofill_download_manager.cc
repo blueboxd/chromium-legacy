@@ -847,8 +847,7 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = request_url;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = method;
 
   // Add Chrome experiment state to the request headers.

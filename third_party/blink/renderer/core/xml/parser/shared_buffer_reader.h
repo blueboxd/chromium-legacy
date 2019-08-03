@@ -38,8 +38,6 @@
 
 namespace blink {
 
-class SharedBuffer;
-
 // Allows transfer of data in multiple chunks from a SharedBuffer to a provided
 // buffer.
 class CORE_EXPORT SharedBufferReader {

@@ -29,7 +29,6 @@
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -490,29 +489,13 @@ void StoragePartitionImplMap::PostCreateInitialization(
     InitializeResourceContext(browser_context_);
   }
 
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    partition->GetAppCacheService()->InitializeOnLoaderThread(
-        in_memory ? base::FilePath()
-                  : partition->GetPath().Append(kAppCacheDirname),
-        browser_context_, nullptr /* resource_context */,
-        browser_context_->GetSpecialStoragePolicy());
-  }
+  partition->GetAppCacheService()->Initialize(
+      in_memory ? base::FilePath()
+                : partition->GetPath().Append(kAppCacheDirname),
+      browser_context_, browser_context_->GetSpecialStoragePolicy());
 
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(
-              &ChromeAppCacheService::InitializeOnLoaderThread,
-              partition->GetAppCacheService(),
-              in_memory ? base::FilePath()
-                        : partition->GetPath().Append(kAppCacheDirname),
-              nullptr /* browser_context */,
-              browser_context_->GetResourceContext(),
-              base::RetainedRef(browser_context_->GetSpecialStoragePolicy())));
-    }
-
     partition->GetCacheStorageContext()->SetBlobParametersForCache(
         ChromeBlobStorageContext::GetFor(browser_context_));
 
@@ -521,16 +504,6 @@ void StoragePartitionImplMap::PostCreateInitialization(
         base::BindOnce(&ServiceWorkerContextWrapper::InitializeResourceContext,
                        partition->GetServiceWorkerContext(),
                        browser_context_->GetResourceContext()));
-
-    if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&PrefetchURLLoaderService::InitializeResourceContext,
-                         partition->GetPrefetchURLLoaderService(),
-                         browser_context_->GetResourceContext(),
-                         base::RetainedRef(ChromeBlobStorageContext::GetFor(
-                             browser_context_))));
-    }
 
     base::PostTask(FROM_HERE, {BrowserThread::IO},
                    base::BindOnce(&BackgroundFetchContext::InitializeOnIOThread,

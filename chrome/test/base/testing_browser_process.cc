@@ -426,11 +426,6 @@ TestingBrowserProcess::CachedDefaultWebClientState() {
   return shell_integration::UNKNOWN_DEFAULT;
 }
 
-prefs::InProcessPrefServiceFactory*
-TestingBrowserProcess::pref_service_factory() const {
-  return nullptr;
-}
-
 void TestingBrowserProcess::SetSharedURLLoaderFactory(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory) {
   shared_url_loader_factory_ = shared_url_loader_factory;

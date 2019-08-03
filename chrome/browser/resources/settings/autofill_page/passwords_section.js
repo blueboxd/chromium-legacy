@@ -156,11 +156,14 @@ Polymer({
   },
 
   /**
-   * The element to return focus to, when the currently active dialog is
-   * closed.
-   * @private {?HTMLElement}
+   * A stack of the elements that triggered dialog to open and should therefore
+   * receive focus when that dialog is closed. The bottom of the stack is the
+   * element that triggered the earliest open dialog and top of the stack is the
+   * element that triggered the most recent (i.e. active) dialog. If no dialog
+   * is open, the stack is empty.
+   * @private {!Array<Element>}
    */
-  activeDialogAnchor_: null,
+  activeDialogAnchorStack_: [],
 
   /**
    * @type {PasswordManagerProxy}
@@ -210,7 +213,7 @@ Polymer({
       this.tokenRequestManager_ = new settings.BlockingRequestManager();
     } else {
       this.tokenRequestManager_ = new settings.BlockingRequestManager(
-          () => this.showPasswordPromptDialog_ = true);
+          this.openPasswordPromptDialog_.bind(this));
     }
     // </if>
 
@@ -273,6 +276,12 @@ Polymer({
 
   onPasswordPromptClosed_: function() {
     this.showPasswordPromptDialog_ = false;
+    cr.ui.focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
+  },
+
+  openPasswordPromptDialog_: function() {
+    this.activeDialogAnchorStack_.push(getDeepActiveElement());
+    this.showPasswordPromptDialog_ = true;
   },
   // </if>
 
@@ -290,8 +299,7 @@ Polymer({
   /** @private */
   onPasswordEditDialogClosed_: function() {
     this.showPasswordEditDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
-    this.activeDialogAnchor_ = null;
+    cr.ui.focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
 
     // Trigger a re-evaluation of the activePassword as the visibility state of
     // the password might have changed.
@@ -376,7 +384,7 @@ Polymer({
     this.activePassword =
         /** @type {!PasswordListItemElement} */ (event.detail.listItem);
     menu.showAt(target);
-    this.activeDialogAnchor_ = target;
+    this.activeDialogAnchorStack_.push(target);
   },
 
   /**
@@ -389,7 +397,7 @@ Polymer({
         /** @type {!HTMLElement} */ (this.$$('#exportImportMenuButton'));
 
     menu.showAt(target);
-    this.activeDialogAnchor_ = target;
+    this.activeDialogAnchorStack_.push(target);
   },
 
   /**
@@ -413,8 +421,7 @@ Polymer({
   /** @private */
   onPasswordsExportDialogClosed_: function() {
     this.showPasswordsExportDialog_ = false;
-    cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
-    this.activeDialogAnchor_ = null;
+    cr.ui.focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
   },
 
   /**

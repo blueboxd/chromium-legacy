@@ -273,8 +273,7 @@ void WebRtcEventLogUploaderImpl::StartUpload(const std::string& upload_data) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(kUploadURL);
   resource_request->method = "POST";
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   // Create a new mojo pipe. It's safe to pass this around and use
   // immediately, even though it needs to finish initialization on the UI

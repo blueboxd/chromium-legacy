@@ -44,7 +44,6 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
-#include "extensions/common/manifest_handlers/content_capabilities_handler.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/message_bundle.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -307,7 +306,6 @@ void Dispatcher::DidCreateScriptContext(
                          v8_schema_registry_.get());
 
   bindings_system_->DidCreateScriptContext(context);
-  UpdateBindingsForContext(context);
 
   // Inject custom JS into the platform app context.
   if (IsWithinPlatformApp()) {
@@ -438,7 +436,6 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
                            WorkerThreadDispatcher::GetV8SchemaRegistry());
 
     worker_bindings_system->DidCreateScriptContext(context);
-    worker_bindings_system->UpdateBindingsForContext(context);
 
     // TODO(lazyboy): Get rid of RequireGuestViewModules() as this doesn't seem
     // necessary for Extension SW.
@@ -967,7 +964,7 @@ void Dispatcher::OnLoaded(
   // Update the available bindings for all contexts. These may have changed if
   // an externally_connectable extension was loaded that can connect to an
   // open webpage.
-  UpdateBindings(std::string());
+  UpdateAllBindings();
 }
 
 void Dispatcher::OnMessageInvoke(const std::string& extension_id,
@@ -1110,7 +1107,7 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   // Update the available bindings for the remaining contexts. These may have
   // changed if an externally_connectable extension is unloaded and a webpage
   // is no longer accessible.
-  UpdateBindings("");
+  UpdateAllBindings();
 
   // Invalidates the messages map for the extension in case the extension is
   // reloaded with a new messages map.
@@ -1140,7 +1137,7 @@ void Dispatcher::OnUpdateDefaultPolicyHostRestrictions(
       UpdateOriginPermissions(*extension);
     }
   }
-  UpdateBindings(std::string());
+  UpdateAllBindings();
 }
 
 void Dispatcher::OnUpdatePermissions(
@@ -1166,8 +1163,7 @@ void Dispatcher::OnUpdatePermissions(
                                                 std::move(withheld));
   UpdateOriginPermissions(*extension);
 
-  bindings_system_->OnExtensionPermissionsUpdated(params.extension_id);
-  UpdateBindings(extension->id());
+  UpdateBindingsForExtension(*extension);
 }
 
 void Dispatcher::OnUpdateTabSpecificPermissions(const GURL& visible_url,
@@ -1265,20 +1261,28 @@ void Dispatcher::EnableCustomElementWhiteList() {
   blink::WebCustomElement::AddEmbedderCustomElementName("webviewbrowserplugin");
 }
 
-void Dispatcher::UpdateBindings(const std::string& extension_id) {
-  script_context_set_iterator()->ForEach(
-      extension_id, base::BindRepeating(&Dispatcher::UpdateBindingsForContext,
-                                        // Called synchronously.
-                                        base::Unretained(this)));
+void Dispatcher::UpdateAllBindings() {
+  bindings_system_->UpdateBindings(ExtensionId() /* all contexts */,
+                                   false /* permissions_changed */,
+                                   script_context_set_iterator());
+  // TODO(crbug.com/986416): Can "externally_connectable" affect Service Worker
+  // ScriptContext-s in some way? We'd need to process that here if that is the
+  // case.
 }
 
-void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
-  bindings_system_->UpdateBindingsForContext(context);
-  Feature::Context context_type = context->context_type();
-  if (context_type == Feature::WEB_PAGE_CONTEXT ||
-      context_type == Feature::BLESSED_WEB_PAGE_CONTEXT) {
-    UpdateContentCapabilities(context);
-  }
+void Dispatcher::UpdateBindingsForExtension(const Extension& extension) {
+  bindings_system_->UpdateBindings(extension.id(),
+                                   true /* permissions_changed */,
+                                   script_context_set_iterator());
+
+  // Update Service Worker bindings too, if applicable.
+  if (!BackgroundInfo::IsServiceWorkerBased(&extension))
+    return;
+
+  const bool updated =
+      WorkerThreadDispatcher::Get()->UpdateBindingsForWorkers(extension.id());
+  // TODO(lazyboy): When can this fail?
+  DCHECK(updated) << "Some or all workers failed to update bindings.";
 }
 
 // NOTE: please use the naming convention "foo_natives" for these.
@@ -1304,27 +1308,6 @@ void Dispatcher::RegisterNativeHandlers(
 
   delegate_->RegisterNativeHandlers(this, module_system, bindings_system,
                                     context);
-}
-
-void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {
-  APIPermissionSet permissions;
-  for (const auto& extension :
-       *RendererExtensionRegistry::Get()->GetMainThreadExtensionSet()) {
-    blink::WebLocalFrame* web_frame = context->web_frame();
-    GURL url = context->url();
-    // We allow about:blank pages to take on the privileges of their parents if
-    // they aren't sandboxed.
-    if (web_frame && !web_frame->GetSecurityOrigin().IsUnique())
-      url = ScriptContext::GetEffectiveDocumentURL(web_frame, url, true);
-    const ContentCapabilitiesInfo& info =
-        ContentCapabilitiesInfo::Get(extension.get());
-    if (info.url_patterns.MatchesURL(url)) {
-      APIPermissionSet new_permissions;
-      APIPermissionSet::Union(permissions, info.permissions, &new_permissions);
-      permissions = std::move(new_permissions);
-    }
-  }
-  context->set_content_capabilities(std::move(permissions));
 }
 
 void Dispatcher::PopulateSourceMap() {

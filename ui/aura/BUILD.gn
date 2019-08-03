@@ -246,6 +246,9 @@ jumbo_static_library("test_support") {
   }
 
   if (use_ozone) {
+    if (is_fuchsia) {
+      deps += [ "//ui/ozone" ]
+    }
     sources += [ "test/ui_controls_factory_ozone.cc" ]
   }
 }

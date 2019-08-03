@@ -584,11 +584,9 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
 
   if (IsMinimizedWindowStateType(previous_state_type) ||
       window_state->IsFullscreen() || window_state->IsPinned() ||
-      enter_animation_type() == IMMEDIATE) {
+      window_state->bounds_animation_type() ==
+          WindowState::BoundsChangeAnimationType::IMMEDIATE) {
     window_state->SetBoundsDirect(bounds_in_parent);
-    // Reset the |enter_animation_type_| to DEFAULT if it is IMMEDIATE, which is
-    // set for non-top windows when entering clamshell mode.
-    set_enter_animation_type(DEFAULT);
   } else if (window_state->IsMaximized() ||
              IsMaximizedOrFullscreenOrPinnedWindowStateType(
                  previous_state_type)) {

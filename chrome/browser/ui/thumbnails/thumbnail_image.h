@@ -9,64 +9,73 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "ui/gfx/image/image_skia.h"
 
-// Value type holding thumbnail image data. Data is internally refcounted, so
-// copying this object is inexpensive.
-//
-// Internally, data is stored as a ThumbnailRepresentation, which is optionally
-// compressed and not directly renderable, so that holding a thumbnail from each
-// tab in memory isn't prohibitively expensive. Because of this, and because
-// converting from the uncompressed to the compressed format may be expensive,
-// asynchronous methods for converting to and from ThumbnailImage are provided.
-class ThumbnailImage {
+// Stores compressed thumbnail data for a tab and can vend that data as an
+// uncompressed image to observers.
+class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
  public:
-  // Callback used by AsImageSkiaAsync. The parameter is the retrieved image.
-  using AsImageSkiaCallback = base::OnceCallback<void(gfx::ImageSkia)>;
+  // Observes uncompressed versions of the thumbnail image as they are
+  // available.
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image) = 0;
+  };
 
-  // Callback used by FromSkBitmapAsync. The parameter is the created thumbnail.
-  using CreateThumbnailCallback = base::OnceCallback<void(ThumbnailImage)>;
+  // Represents the endpoint
+  class Delegate {
+   public:
+    // Called whenever the thumbnail starts or stops being observed.
+    // Because updating the thumbnail could be an expensive operation, it's
+    // useful to track when there are no observers. Default behavior is no-op.
+    virtual void ThumbnailImageBeingObservedChanged(bool is_being_observed) = 0;
 
-  ThumbnailImage();
-  ~ThumbnailImage();
-  ThumbnailImage(const ThumbnailImage& other);
-  ThumbnailImage(ThumbnailImage&& other);
-  ThumbnailImage& operator=(const ThumbnailImage& other);
-  ThumbnailImage& operator=(ThumbnailImage&& other);
+   protected:
+    virtual ~Delegate();
 
-  // Retrieves the thumbnail data as a renderable image. May involve image
-  // decoding, so could be expensive. Prefer AsImageSkiaAsync() instead.
-  gfx::ImageSkia AsImageSkia() const;
+   private:
+    friend class ThumbnailImage;
+    ThumbnailImage* thumbnail_ = nullptr;
+  };
 
-  // Retrieves the thumbnail data as a renderable image. May involve image
-  // decoding on a background thread. Callback is called when the operation
-  // completes. Returns false if there is no thumbnail data.
-  bool AsImageSkiaAsync(AsImageSkiaCallback callback) const;
+  explicit ThumbnailImage(Delegate* delegate);
 
-  // Returns whether there is data stored in the thumbnail.
-  bool HasData() const;
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+  bool HasObserver(const Observer* observer) const;
 
-  // Returns the size (in bytes) required to store the internal representation.
-  size_t GetStorageSize() const;
+  // Sets the SkBitmap data and notifies observers with the resulting image.
+  void AssignSkBitmap(SkBitmap bitmap);
 
-  // Does an address comparison on the refcounted backing store of this object.
-  // May return false even if the backing stores contain equivalent image data.
-  bool BackedBySameObjectAs(const ThumbnailImage& other) const;
-
-  // Encodes thumbnail data as ThumbnailRepresentation. May involve an expensive
-  // operation. Prefer FromSkBitmapAsync() instead.
-  static ThumbnailImage FromSkBitmap(SkBitmap bitmap);
-
-  // Converts the bitmap data to the internal ThumbnailRepresentation. May
-  // involve image encoding or compression on a background thread. Callback is
-  // called when the operation completes.
-  static void FromSkBitmapAsync(SkBitmap bitmap,
-                                CreateThumbnailCallback callback);
+  // Requests that a thumbnail image be made available to observers. Does not
+  // guarantee that Observer::OnThumbnailImageAvailable() will be called, or how
+  // long it will take, though in most cases it should happen very quickly.
+  virtual void RequestThumbnailImage();
 
  private:
-  class ThumbnailData;
+  friend class Delegate;
+  friend class base::RefCounted<ThumbnailImage>;
 
-  scoped_refptr<ThumbnailData> image_representation_;
+  virtual ~ThumbnailImage();
+
+  void AssignJPEGData(std::vector<uint8_t> data);
+  bool ConvertJPEGDataToImageSkiaAndNotifyObservers();
+  void NotifyObservers(gfx::ImageSkia image);
+
+  Delegate* delegate_;
+
+  scoped_refptr<base::RefCountedData<std::vector<uint8_t>>> data_;
+
+  base::ObserverList<Observer> observers_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<ThumbnailImage> weak_ptr_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(ThumbnailImage);
 };
 
 #endif  // CHROME_BROWSER_UI_THUMBNAILS_THUMBNAIL_IMAGE_H_

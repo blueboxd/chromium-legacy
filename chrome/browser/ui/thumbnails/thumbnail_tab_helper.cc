@@ -5,110 +5,62 @@
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "media/capture/mojom/video_capture_types.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/scrollbar_size.h"
-
-namespace {
-
-// Determine if two URLs are similar enough that we should not blank the preview
-// image when transitioning between them. This prevents webapps which do all of
-// their work through internal page transitions (and which can transition after
-// the page is loaded) from blanking randomly.
-bool AreSimilarURLs(const GURL& url1, const GURL& url2) {
-  const GURL origin1 = url1.GetOrigin();
-
-  // For non-standard URLs, compare using normal logic.
-  if (origin1.is_empty())
-    return url1.EqualsIgnoringRef(url2);
-
-  // TODO(dfried): make this logic a little smarter; maybe compare the first
-  // element of the path as well?
-  return origin1 == url2.GetOrigin();
-}
-
-}  // namespace
+#include "ui/gfx/skia_util.h"
 
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
-    : view_is_visible_(contents->GetVisibility() ==
-                       content::Visibility::VISIBLE),
-      adapter_(contents),
-      scoped_observer_(this) {
-  scoped_observer_.Add(&adapter_);
+    : content::WebContentsObserver(contents),
+      last_visibility_(web_contents()->GetVisibility()) {}
+
+ThumbnailTabHelper::~ThumbnailTabHelper() {
+  DCHECK(!video_capturer_);
 }
 
-ThumbnailTabHelper::~ThumbnailTabHelper() = default;
-
-void ThumbnailTabHelper::TopLevelNavigationStarted(const GURL& url) {
-  TransitionLoadingState(LoadingState::kNavigationStarted, url);
-}
-
-void ThumbnailTabHelper::TopLevelNavigationEnded(const GURL& url) {
-  TransitionLoadingState(LoadingState::kNavigationFinished, url);
-}
-
-void ThumbnailTabHelper::PageLoadStarted() {
-  TransitionLoadingState(LoadingState::kLoadStarted,
-                         web_contents()->GetVisibleURL());
-}
-
-void ThumbnailTabHelper::PagePainted() {
-  page_painted_ = true;
-}
-
-void ThumbnailTabHelper::PageLoadFinished() {
-  TransitionLoadingState(LoadingState::kLoadFinished,
-                         web_contents()->GetVisibleURL());
-}
-
-void ThumbnailTabHelper::VisibilityChanged(bool visible) {
-  // When the user switches away from a tab, we want to take a snapshot to
-  // capture e.g. its scroll position, so that the preview will look like the
-  // tab did when the user last visited it.
-  const bool was_visible = view_is_visible_;
-  view_is_visible_ = visible;
-  if (was_visible && !visible) {
-    StartThumbnailCapture();
+void ThumbnailTabHelper::ThumbnailImageBeingObservedChanged(
+    bool is_being_observed) {
+  if (is_being_observed) {
+    if (!captured_loaded_thumbnail_since_tab_hidden_)
+      StartVideoCapture();
+  } else {
+    StopVideoCapture();
   }
 }
 
-void ThumbnailTabHelper::StartThumbnailCapture() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Pages that are unloading do not need to be captured.
-  if (adapter_.is_unloading())
-    return;
-
-  // Don't capture if in the process of navigating or haven't started yet.
-  if (loading_state_ == LoadingState::kNone ||
-      loading_state_ == LoadingState::kNavigationStarted) {
-    return;
+bool ThumbnailTabHelper::ShouldKeepUpdatingThumbnail() const {
+  auto* tab_load_tracker = resource_coordinator::TabLoadTracker::Get();
+  if (tab_load_tracker &&
+      tab_load_tracker->GetLoadingState(web_contents()) !=
+          resource_coordinator::TabLoadTracker::LoadingState::LOADED) {
+    return true;
   }
 
-  // Don't capture if there is no current page.
-  if (web_contents()->GetVisibleURL().is_empty())
-    return;
+  return false;
+}
 
-  // Don't capture pages that have not been loading and visible long enough to
-  // actually paint.
-  if (!page_painted_)
-    return;
+void ThumbnailTabHelper::CaptureThumbnailOnTabSwitch() {
+  // Ignore previous requests to capture a thumbnail on tab switch.
+  weak_factory_for_thumbnail_on_tab_hidden_.InvalidateWeakPtrs();
 
-  content::RenderWidgetHostView* const source_view =
-      web_contents()->GetRenderViewHost()->GetWidget()->GetView();
-
-  // If there's no view or the view isn't available right now, don't bother.
-  if (!source_view || !source_view->IsSurfaceAvailableForCopy())
+  // Get the WebContents' main view. Note that during shutdown there may not be
+  // a view to capture.
+  content::RenderWidgetHostView* const source_view = GetView();
+  if (!source_view)
     return;
 
   // Note: this is the size in pixels on-screen, not the size in DIPs.
@@ -127,83 +79,153 @@ void ThumbnailTabHelper::StartThumbnailCapture() {
       thumbnails::GetCanvasCopyInfo(source_size, scale_factor, desired_size);
   source_view->CopyFromSurface(
       copy_info.copy_rect, copy_info.target_size,
-      base::BindOnce(&ThumbnailTabHelper::ProcessCapturedThumbnail,
-                     weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
+      base::BindOnce(&ThumbnailTabHelper::StoreThumbnail,
+                     weak_factory_for_thumbnail_on_tab_hidden_.GetWeakPtr()));
 }
 
-void ThumbnailTabHelper::ProcessCapturedThumbnail(
-    base::TimeTicks start_time,
-    const SkBitmap& bitmap) {
+void ThumbnailTabHelper::StoreThumbnail(const SkBitmap& bitmap) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  const base::TimeTicks finish_time = base::TimeTicks::Now();
-  const base::TimeDelta copy_from_surface_time = finish_time - start_time;
-  UMA_HISTOGRAM_TIMES("Thumbnails.CopyFromSurfaceTime", copy_from_surface_time);
 
   if (bitmap.drawsNothing())
     return;
 
-  // TODO(dfried): Log capture succeeded.
-  ThumbnailImage::FromSkBitmapAsync(
-      bitmap, base::BindOnce(&ThumbnailTabHelper::StoreThumbnail,
-                             weak_factory_.GetWeakPtr(), finish_time));
-}
+  thumbnail_->AssignSkBitmap(bitmap);
 
-void ThumbnailTabHelper::StoreThumbnail(base::TimeTicks start_time,
-                                        ThumbnailImage thumbnail) {
-  DCHECK(thumbnail.HasData());
-  const base::TimeTicks finish_time = base::TimeTicks::Now();
-  const base::TimeDelta process_time = finish_time - start_time;
-  UMA_HISTOGRAM_TIMES("Thumbnails.ProcessBitmapTime", process_time);
-  thumbnail_ = thumbnail;
-
-  NotifyTabPreviewChanged();
-}
-
-void ThumbnailTabHelper::NotifyTabPreviewChanged() {
-  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
-}
-
-void ThumbnailTabHelper::TransitionLoadingState(LoadingState state,
-                                                const GURL& url) {
-  // Because the loading process is unpredictable, and because there are a large
-  // number of events which could be interpreted as navigation of the main frame
-  // or loading, only move the loading progress forward.
-  const bool is_similar_url = AreSimilarURLs(url, current_url_);
-  switch (state) {
-    case LoadingState::kNavigationStarted:
-    case LoadingState::kNavigationFinished:
-      if (!is_similar_url) {
-        current_url_ = url;
-        ClearThumbnail();
-        page_painted_ = false;
-        loading_state_ = state;
-      } else {
-        loading_state_ = std::max(loading_state_, state);
-      }
-      break;
-    case LoadingState::kLoadStarted:
-    case LoadingState::kLoadFinished:
-      if (!is_similar_url &&
-          (loading_state_ == LoadingState::kNavigationStarted ||
-           loading_state_ == LoadingState::kNavigationFinished)) {
-        // This probably refers to an old page, so ignore it.
-        return;
-      }
-      current_url_ = url;
-      loading_state_ = std::max(loading_state_, state);
-      break;
-    case LoadingState::kNone:
-      NOTREACHED();
-      break;
+  // Remember that a thumbnail was captured while the tab was loaded.
+  auto* tab_load_tracker = resource_coordinator::TabLoadTracker::Get();
+  if (tab_load_tracker &&
+      tab_load_tracker->GetLoadingState(web_contents()) ==
+          resource_coordinator::TabLoadTracker::LoadingState::LOADED) {
+    captured_loaded_thumbnail_since_tab_hidden_ = true;
   }
 }
 
-void ThumbnailTabHelper::ClearThumbnail() {
-  if (!thumbnail_.HasData())
+void ThumbnailTabHelper::StartVideoCapture() {
+  if (video_capturer_) {
+    // Already capturing: We're already forcing rendering. Clear the capturer.
+    video_capturer_->Stop();
+    video_capturer_ = nullptr;
+  } else {
+    // *Not* already capturing: Force rendering.
+    web_contents()->IncrementCapturerCount(TabStyle::GetPreviewImageSize());
+  }
+
+  // Get the WebContents' main view.
+  content::RenderWidgetHostView* const source_view = GetView();
+  if (!source_view) {
+    web_contents()->DecrementCapturerCount();
     return;
-  thumbnail_ = ThumbnailImage();
-  NotifyTabPreviewChanged();
+  }
+
+  // Start capturing.
+  const gfx::Size desired_size = TabStyle::GetPreviewImageSize();
+  constexpr int kMaxFrameRate = 5;
+  video_capturer_ = source_view->CreateVideoCapturer();
+  video_capturer_->SetResolutionConstraints(desired_size, desired_size, true);
+  video_capturer_->SetAutoThrottlingEnabled(false);
+  video_capturer_->SetMinSizeChangePeriod(base::TimeDelta());
+  video_capturer_->SetFormat(media::PIXEL_FORMAT_ARGB,
+                             gfx::ColorSpace::CreateREC709());
+  video_capturer_->SetMinCapturePeriod(base::TimeDelta::FromSeconds(1) /
+                                       kMaxFrameRate);
+  video_capturer_->Start(this);
 }
+
+void ThumbnailTabHelper::StopVideoCapture() {
+  if (video_capturer_) {
+    web_contents()->DecrementCapturerCount();
+    video_capturer_->Stop();
+    video_capturer_ = nullptr;
+  }
+}
+
+content::RenderWidgetHostView* ThumbnailTabHelper::GetView() {
+  return web_contents()->GetRenderViewHost()->GetWidget()->GetView();
+}
+
+void ThumbnailTabHelper::OnVisibilityChanged(content::Visibility visibility) {
+  if (last_visibility_ == content::Visibility::VISIBLE &&
+      visibility != content::Visibility::VISIBLE) {
+    captured_loaded_thumbnail_since_tab_hidden_ = false;
+    CaptureThumbnailOnTabSwitch();
+  }
+  last_visibility_ = visibility;
+}
+
+void ThumbnailTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame() && navigation_handle->HasCommitted())
+    captured_loaded_thumbnail_since_tab_hidden_ = false;
+}
+
+void ThumbnailTabHelper::OnFrameCaptured(
+    base::ReadOnlySharedMemoryRegion data,
+    ::media::mojom::VideoFrameInfoPtr info,
+    const gfx::Rect& content_rect,
+    ::viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) {
+  CHECK(video_capturer_);
+
+  if (!ShouldKeepUpdatingThumbnail())
+    StopVideoCapture();
+
+  // Process captured image.
+  if (!data.IsValid()) {
+    callbacks->Done();
+    return;
+  }
+  base::ReadOnlySharedMemoryMapping mapping = data.Map();
+  if (!mapping.IsValid()) {
+    DLOG(ERROR) << "Shared memory mapping failed.";
+    return;
+  }
+  if (mapping.size() <
+      media::VideoFrame::AllocationSize(info->pixel_format, info->coded_size)) {
+    DLOG(ERROR) << "Shared memory size was less than expected.";
+    return;
+  }
+  if (!info->color_space) {
+    DLOG(ERROR) << "Missing mandatory color space info.";
+    return;
+  }
+
+  // The SkBitmap's pixels will be marked as immutable, but the installPixels()
+  // API requires a non-const pointer. So, cast away the const.
+  void* const pixels = const_cast<void*>(mapping.memory());
+
+  // Call installPixels() with a |releaseProc| that: 1) notifies the capturer
+  // that this consumer has finished with the frame, and 2) releases the shared
+  // memory mapping.
+  struct FramePinner {
+    // Keeps the shared memory that backs |frame_| mapped.
+    base::ReadOnlySharedMemoryMapping mapping;
+    // Prevents FrameSinkVideoCapturer from recycling the shared memory that
+    // backs |frame_|.
+    viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr releaser;
+  };
+
+  const gfx::Size desired_size = TabStyle::GetPreviewImageSize();
+  LOG(ERROR) << desired_size.ToString();
+
+  SkBitmap frame;
+  frame.installPixels(
+      SkImageInfo::MakeN32(content_rect.width(), content_rect.height(),
+                           kPremul_SkAlphaType,
+                           info->color_space->ToSkColorSpace()),
+      pixels,
+      media::VideoFrame::RowBytes(media::VideoFrame::kARGBPlane,
+                                  info->pixel_format, info->coded_size.width()),
+      [](void* addr, void* context) {
+        delete static_cast<FramePinner*>(context);
+      },
+      new FramePinner{std::move(mapping), std::move(callbacks)});
+  frame.setImmutable();
+
+  SkBitmap cropped_frame;
+  frame.extractSubset(&cropped_frame, gfx::RectToSkIRect(content_rect));
+
+  StoreThumbnail(cropped_frame);
+}
+
+void ThumbnailTabHelper::OnStopped() {}
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ThumbnailTabHelper)

@@ -69,7 +69,12 @@ class Controller : public ScriptExecutorDelegate,
   //
   // If non-null |on_first_check_done| is called once the result of the first
   // check of script availability are in - whether they're positive or negative.
+  //
+  // If |script_bundle_bytes| is specified, matches the current domain, and no
+  // scripts have been retrieved yet for the current domain, its data will be
+  // used to skip sending RPCs.
   void Track(std::unique_ptr<TriggerContext> trigger_context,
+             const std::string& script_bundle_bytes,
              base::OnceCallback<void()> on_first_check_done);
 
   // Called when autofill assistant should start.
@@ -192,6 +197,15 @@ class Controller : public ScriptExecutorDelegate,
 
   void OnGetScripts(const GURL& url, bool result, const std::string& response);
 
+  // Updates state from the given |SupportsScriptResponseProto|.
+  void ProcessSupportsScriptResponse(
+      const SupportsScriptResponseProto& response);
+
+  // If possible, updates the set of scripts from the given bundle, which should
+  // by a serialized ScriptBundleProto. The bundle is ignored if it is empty or
+  // refers to another domain than the current one.
+  void UpdateScriptsFromBundle(const std::string& script_bundle_bytes);
+
   // Execute |script_path| and, if execution succeeds, enter |end_state| and
   // call |on_success|.
   void ExecuteScript(const std::string& script_path,
@@ -282,7 +296,14 @@ class Controller : public ScriptExecutorDelegate,
   GURL deeplink_url_;
 
   // Domain of the last URL the controller requested scripts from.
+  //
+  // As long as |pending_get_scripts_| is true, the set of scripts for that
+  // domain isn't know. Once |pending_get_scripts_| is false, the set of scripts
+  // in the tracker is the one for that domain.
   std::string script_domain_;
+
+  // If true a RPC to fetch the scripts for |script_domain_| is in progress.
+  bool pending_get_scripts_ = false;
 
   // Whether a task for periodic checks is scheduled.
   bool periodic_script_check_scheduled_ = false;

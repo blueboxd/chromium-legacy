@@ -206,7 +206,15 @@ class TabStripModel {
 
   // User gesture type that triggers ActivateTabAt. kNone indicates that it was
   // not triggered by a user gesture, but by a by-product of some other action.
-  enum class GestureType { kMouse, kTouch, kWheel, kKeyboard, kOther, kNone };
+  enum class GestureType {
+    kMouse,
+    kTouch,
+    kWheel,
+    kKeyboard,
+    kOther,
+    kTabMenu,
+    kNone
+  };
 
   // Encapsulates user gesture information for tab activation
   struct UserGestureDetails {

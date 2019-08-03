@@ -56,6 +56,8 @@ class ASH_EXPORT CaptionContainerView
     virtual void HandleTapEvent() = 0;
     virtual void HandleGestureEndEvent() = 0;
     virtual bool ShouldIgnoreGestureEvents() = 0;
+    virtual void OnHighlightedViewActivated() = 0;
+    virtual void OnHighlightedViewClosed() = 0;
 
    protected:
     virtual ~EventDelegate() {}
@@ -100,7 +102,9 @@ class ASH_EXPORT CaptionContainerView
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;
-  gfx::Rect GetHighlightBounds() override;
+  gfx::Rect GetHighlightBoundsInScreen() override;
+  void MaybeActivateHighlightedView() override;
+  void MaybeCloseHighlightedView() override;
 
   // TODO(sammiequon): Move these to a test api.
   views::View* header_view() { return header_view_; }

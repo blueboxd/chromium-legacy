@@ -148,6 +148,11 @@ class WebThemeEngine {
     WebScrollbarOverlayColorTheme scrollbar_theme;
   };
 
+  struct ScrollbarButtonExtraParams {
+    float zoom;
+    bool right_to_left;
+  };
+
   union ExtraParams {
     ScrollbarTrackExtraParams scrollbar_track;
     ButtonExtraParams button;
@@ -157,6 +162,7 @@ class WebThemeEngine {
     InnerSpinButtonExtraParams inner_spin;
     ProgressBarExtraParams progress_bar;
     ScrollbarThumbExtraParams scrollbar_thumb;
+    ScrollbarButtonExtraParams scrollbar_button;
   };
 
   virtual ~WebThemeEngine() {}

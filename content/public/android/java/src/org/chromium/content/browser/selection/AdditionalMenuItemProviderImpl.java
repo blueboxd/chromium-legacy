@@ -16,6 +16,7 @@ import android.view.View.OnClickListener;
 import android.view.textclassifier.TextClassification;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.DoNotInline;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,10 @@ import java.util.Map;
 // TODO(ctzsm): Add unit tests for this class once this is upstreamed.
 /**
  * Implements AdditionalMenuItemProvider interface.
+ * We prevent inlinings since this uses a number of new Android APIs which would create verification
+ * errors (on older Android versions) which would require a slow re-verification at runtime.
  */
+@DoNotInline
 @SuppressLint("NewApi")
 public class AdditionalMenuItemProviderImpl implements AdditionalMenuItemProvider {
     private static final String TAG = "MenuItemProvider";

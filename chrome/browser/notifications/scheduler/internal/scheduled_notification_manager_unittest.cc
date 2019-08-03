@@ -17,6 +17,7 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
+#include "chrome/browser/notifications/scheduler/public/notification_scheduler_constant.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -182,6 +183,7 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   schedule_params.priority = ScheduleParams::Priority::kHigh;
   auto params = std::make_unique<NotificationParams>(
       SchedulerClientType::kTest1, notification_data, schedule_params);
+  params->enable_ihnr_buttons = true;
   std::string guid = params->guid;
   EXPECT_FALSE(guid.empty());
 
@@ -204,6 +206,13 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   // TODO(xingliu): change these to compare with operator==.
   EXPECT_EQ(base::UTF16ToUTF8(entry->notification_data.title), kTitle);
   EXPECT_EQ(entry->schedule_params.priority, ScheduleParams::Priority::kHigh);
+
+  auto buttons = entry->notification_data.buttons;
+  EXPECT_EQ(buttons.size(), 2u);
+  EXPECT_EQ(buttons[0].id, notifications::kDefaultHelpfulButtonId);
+  EXPECT_EQ(buttons[0].type, ActionButtonType::kHelpful);
+  EXPECT_EQ(buttons[1].id, notifications::kDefaultUnhelpfulButtonId);
+  EXPECT_EQ(buttons[1].type, ActionButtonType::kUnhelpful);
 }
 
 // Test to schedule a notification without guid, we will auto generated one.

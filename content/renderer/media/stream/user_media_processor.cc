@@ -47,7 +47,6 @@
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "ui/gfx/geometry/size.h"
-#include "url/origin.h"
 
 namespace content {
 
@@ -317,8 +316,6 @@ class UserMediaProcessor::RequestInfo
     return request_->is_processing_user_gesture;
   }
 
-  const url::Origin& security_origin() const { return security_origin_; }
-
  private:
   void OnTrackStarted(blink::WebPlatformMediaStreamSource* source,
                       MediaStreamRequestResult result,
@@ -337,7 +334,6 @@ class UserMediaProcessor::RequestInfo
   bool is_video_content_capture_ = false;
   blink::WebMediaStream web_stream_;
   StreamControls stream_controls_;
-  const url::Origin security_origin_;
   ResourcesReady ready_callback_;
   MediaStreamRequestResult request_result_ = MediaStreamRequestResult::OK;
   blink::WebString request_result_name_;
@@ -355,7 +351,6 @@ class UserMediaProcessor::RequestInfo
 UserMediaProcessor::RequestInfo::RequestInfo(
     std::unique_ptr<UserMediaRequestInfo> request)
     : request_(std::move(request)),
-      security_origin_(url::Origin(request_->web_request.GetSecurityOrigin())),
       request_result_name_("") {}
 
 void UserMediaProcessor::RequestInfo::StartAudioTrack(

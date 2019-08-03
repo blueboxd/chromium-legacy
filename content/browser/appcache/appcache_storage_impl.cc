@@ -308,14 +308,10 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
   }
 
   if (storage_->service()->quota_client()) {
-    if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      storage_->service()->quota_client()->NotifyAppCacheReady();
-    } else {
-      base::PostTask(FROM_HERE, {BrowserThread::IO},
-                     base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheReady,
-                                    base::Unretained(
-                                        storage_->service()->quota_client())));
-    }
+    base::PostTask(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheReady,
+                       base::Unretained(storage_->service()->quota_client())));
   }
 }
 

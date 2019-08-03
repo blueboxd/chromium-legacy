@@ -13,7 +13,7 @@
 #include "media/cdm/aes_decryptor.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/clients/mojo_cdm.h"
-#include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "url/origin.h"
 

@@ -212,16 +212,24 @@ void ClientAndroid::ListDirectActions(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jexperiment_ids,
+    const base::android::JavaParamRef<jbyteArray>& jscript_bundle,
     const base::android::JavaParamRef<jobjectArray>& jargument_names,
     const base::android::JavaParamRef<jobjectArray>& jargument_values,
     const base::android::JavaParamRef<jobject>& jcallback) {
   if (!controller_)
     CreateController(nullptr);
 
+  std::string script_bundle_bytes;
+  if (jscript_bundle) {
+    base::android::JavaByteArrayToString(env, jscript_bundle,
+                                         &script_bundle_bytes);
+  }
+
   base::android::ScopedJavaGlobalRef<jobject> scoped_jcallback(env, jcallback);
   controller_->Track(
       CreateTriggerContext(env, jexperiment_ids, jargument_names,
                            jargument_values),
+      script_bundle_bytes,
       base::BindOnce(&ClientAndroid::OnListDirectActions,
                      weak_ptr_factory_.GetWeakPtr(), scoped_jcallback));
 }

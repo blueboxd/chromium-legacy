@@ -386,7 +386,7 @@ jumbo_source_set("browser_sources") {
     "//components/download/public/common:public",
     "//content/public/common:common_sources",
     "//ipc",
-    "//media/mojo/interfaces:remoting",
+    "//media/mojo/mojom:remoting",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/device/public/mojom:usb",

@@ -786,8 +786,12 @@ void InstantService::ApplyCustomBackgroundThemeInfo() {
       pref_service_->GetDictionary(prefs::kNtpCustomBackgroundDict);
   GURL custom_background_url(
       background_info->FindKey(kNtpCustomBackgroundURL)->GetString());
-  std::string collection_id(
-      background_info->FindKey(kNtpCustomBackgroundCollectionId)->GetString());
+
+  std::string collection_id;
+  const base::Value* id_value =
+      background_info->FindKey(kNtpCustomBackgroundCollectionId);
+  if (id_value)
+    collection_id = id_value->GetString();
 
   // Set custom background information in theme info (attributions are
   // optional).
@@ -985,8 +989,11 @@ void InstantService::UpdateCustomBackgroundPrefsWithColor(
 void InstantService::RefreshBackgroundIfNeeded() {
   const base::DictionaryValue* background_info =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);
-  int64_t refresh_timestamp =
-      background_info->FindKey(kNtpCustomBackgroundRefreshTimestamp)->GetInt();
+  int64_t refresh_timestamp = 0;
+  const base::Value* timestamp_value =
+      background_info->FindKey(kNtpCustomBackgroundRefreshTimestamp);
+  if (timestamp_value)
+    refresh_timestamp = timestamp_value->GetInt();
   if (refresh_timestamp == 0)
     return;
 

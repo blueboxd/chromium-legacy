@@ -1247,11 +1247,17 @@ void RecordDownloadSourcePageTransitionType(
       ui::PAGE_TRANSITION_LAST_CORE + 1);
 }
 
-void RecordDownloadHttpResponseCode(int response_code) {
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-      "Download.HttpResponseCode",
-      net::HttpUtil::MapStatusCodeForHistogram(response_code),
-      net::HttpUtil::GetStatusCodesForHistogram());
+void RecordDownloadHttpResponseCode(int response_code,
+                                    bool is_background_mode) {
+  int status_code = net::HttpUtil::MapStatusCodeForHistogram(response_code);
+  std::vector<int> status_codes = net::HttpUtil::GetStatusCodesForHistogram();
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.HttpResponseCode", status_code,
+                                   status_codes);
+  if (is_background_mode) {
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+        "Download.HttpResponseCode.BackgroundDownload", status_code,
+        status_codes);
+  }
 }
 
 void RecordInProgressDBCount(InProgressDBCountTypes type) {
@@ -1292,6 +1298,12 @@ void RecordFirstBackgroundDownloadInterruptReason(
                              reason);
   else
     base::UmaHistogramSparse("MobileDownload.FirstBackground.Reason", reason);
+}
+
+void RecordBackgroundTargetDeterminationResult(
+    BackgroudTargetDeterminationResultTypes type) {
+  base::UmaHistogramEnumeration(
+      "MobileDownload.Background.TargetDeterminationResult", type);
 }
 #endif  // defined(OS_ANDROID)
 

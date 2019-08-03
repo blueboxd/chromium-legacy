@@ -35,7 +35,7 @@ include_rules = [
     "+third_party/blink/renderer/platform/runtime_enabled_features.h",
     "+third_party/blink/renderer/platform/scheduler",
     "+third_party/blink/renderer/platform/scroll",
-    "+third_party/blink/renderer/platform/shared_buffer.h",
+    "+third_party/blink/renderer/platform/wtf/shared_buffer.h",
     "+third_party/blink/renderer/platform/text",
     "+third_party/blink/renderer/platform/timer.h",
     "+third_party/blink/renderer/platform/waitable_event.h",

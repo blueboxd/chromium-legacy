@@ -20,7 +20,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -98,7 +98,7 @@ void TestURLRequestContext::Init() {
   }
   if (!http_server_properties()) {
     context_storage_.set_http_server_properties(
-        std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
+        std::make_unique<HttpServerProperties>());
   }
   // In-memory cookie store.
   if (!cookie_store()) {

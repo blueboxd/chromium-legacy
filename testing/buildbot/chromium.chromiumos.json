@@ -1469,6 +1469,21 @@
             {
               "os": "Ubuntu-16.04"
             }
+          ]
+        },
+        "test": "gwp_asan_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
           ],
           "shards": 3
         },
@@ -2945,6 +2960,21 @@
           ]
         },
         "test": "gpu_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "gwp_asan_unittests"
       },
       {
         "merge": {

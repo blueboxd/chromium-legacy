@@ -22,9 +22,7 @@ SSLConfig::CertAndStatus::CertAndStatus(const CertAndStatus& other) = default;
 SSLConfig::CertAndStatus::~CertAndStatus() = default;
 
 SSLConfig::SSLConfig()
-    : version_min(kDefaultSSLVersionMin),
-      version_max(kDefaultSSLVersionMax),
-      early_data_enabled(false),
+    : early_data_enabled(false),
       false_start_enabled(true),
       require_ecdhe(false),
       ignore_certificate_errors(false),

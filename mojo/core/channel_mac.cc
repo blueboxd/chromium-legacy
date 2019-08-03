@@ -345,20 +345,22 @@ class ChannelMac : public Channel,
     auto* header = buffer.MutableObject<mach_msg_header_t>();
     *header = mach_msg_header_t{};
 
+    std::vector<PlatformHandleInTransit> handles = message->TakeHandles();
+
     // Compute the total size of the message. If the message data are larger
     // than the allocated receive buffer, the data will be transferred out-of-
     // line. The receive buffer is the same size as the send buffer, but there
     // also needs to be room to receive the trailer.
     const size_t mach_header_size =
         sizeof(mach_msg_header_t) + sizeof(mach_msg_body_t) +
-        (message->num_handles() * sizeof(mach_msg_port_descriptor_t));
+        (handles.size() * sizeof(mach_msg_port_descriptor_t));
     const size_t expected_message_size =
         round_msg(mach_header_size + sizeof(uint64_t) +
                   message->data_num_bytes() + sizeof(mach_msg_audit_trailer_t));
     const bool transfer_message_ool =
         expected_message_size >= send_buffer_.size();
 
-    const bool is_complex = message->has_handles() || transfer_message_ool;
+    const bool is_complex = !handles.empty() || transfer_message_ool;
 
     header->msgh_bits = MACH_MSGH_BITS_REMOTE(MACH_MSG_TYPE_COPY_SEND) |
                         (is_complex ? MACH_MSGH_BITS_COMPLEX : 0);
@@ -367,12 +369,11 @@ class ChannelMac : public Channel,
         transfer_message_ool ? kChannelMacOOLMsgId : kChannelMacInlineMsgId;
 
     auto* body = buffer.MutableObject<mach_msg_body_t>();
-    body->msgh_descriptor_count = message->num_handles();
+    body->msgh_descriptor_count = handles.size();
 
-    std::vector<PlatformHandleInTransit> handles = message->TakeHandles();
     auto descriptors =
         buffer.MutableSpan<mach_msg_port_descriptor_t>(handles.size());
-    for (size_t i = 0; i < message->num_handles(); ++i) {
+    for (size_t i = 0; i < handles.size(); ++i) {
       auto* descriptor = &descriptors[i];
       descriptor->pad1 = 0;
       descriptor->pad2 = 0;

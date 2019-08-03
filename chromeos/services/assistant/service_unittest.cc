@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/voice_interaction_controller.h"
-#include "ash/public/interfaces/constants.mojom-forward.h"
+#include "ash/public/mojom/constants.mojom-forward.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"

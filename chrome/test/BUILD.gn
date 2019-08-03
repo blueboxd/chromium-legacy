@@ -878,7 +878,6 @@ if (!is_android) {
       "../browser/interstitials/security_interstitial_page_test_utils.h",
       "../browser/invalidation/deprecated_profile_invalidation_provider_factory_browsertest.cc",
       "../browser/invalidation/profile_invalidation_provider_factory_browsertest.cc",
-      "../browser/io_thread_browsertest.cc",
       "../browser/lifetime/browser_close_manager_browsertest.cc",
       "../browser/lifetime/browser_shutdown_browsertest.cc",
       "../browser/loader/cors_origin_access_list_browsertest.cc",
@@ -955,6 +954,7 @@ if (!is_android) {
       "../browser/net/netinfo_network_quality_estimator_holdback_browsertest.cc",
       "../browser/net/network_connection_tracker_browsertest.cc",
       "../browser/net/network_context_configuration_browsertest.cc",
+      "../browser/net/network_quality_estimator_browsertest.cc",
       "../browser/net/network_quality_estimator_prefs_browsertest.cc",
       "../browser/net/network_quality_netinfo_browsertest.cc",
       "../browser/net/network_quality_tracker_browsertest.cc",
@@ -2838,6 +2838,7 @@ test("unit_tests") {
     "../browser/custom_handlers/protocol_handler_registry_unittest.cc",
     "../browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_unittest.cc",
     "../browser/data_reduction_proxy/data_reduction_proxy_settings_unittest_android.cc",
+    "../browser/data_saver/data_saver_top_host_provider_unittest.cc",
     "../browser/download/chrome_download_manager_delegate_unittest.cc",
     "../browser/download/download_history_unittest.cc",
     "../browser/download/download_item_model_unittest.cc",
@@ -3076,7 +3077,6 @@ test("unit_tests") {
     "../browser/previews/previews_lite_page_url_loader_interceptor_unittest.cc",
     "../browser/previews/previews_offline_helper_unittest.cc",
     "../browser/previews/previews_service_unittest.cc",
-    "../browser/previews/previews_top_host_provider_unittest.cc",
     "../browser/previews/previews_ui_tab_helper_unittest.cc",
     "../browser/process_singleton_win_unittest.cc",
     "../browser/profiles/gaia_info_update_service_unittest.cc",
@@ -4522,6 +4522,7 @@ test("unit_tests") {
       "../browser/safe_browsing/download_protection/download_feedback_unittest.cc",
       "../browser/safe_browsing/download_protection/download_protection_service_unittest.cc",
       "../browser/safe_browsing/download_protection/file_analyzer_unittest.cc",
+      "../browser/safe_browsing/download_protection/multipart_uploader_unittest.cc",
       "../browser/safe_browsing/download_protection/path_sanitizer_unittest.cc",
       "../browser/safe_browsing/download_protection/two_phase_uploader_unittest.cc",
       "../browser/safe_browsing/incident_reporting/binary_integrity_analyzer_mac_unittest.cc",
@@ -4580,11 +4581,6 @@ test("unit_tests") {
       "//components/safe_browsing/renderer:websocket_sb_handshake_throttle_unittest",
       "//components/safe_browsing/triggers:ad_redirect_trigger",
     ]
-
-    # TODO(drubery): Once b/138388200 has been addressed, enable this on Windows.
-    if (!is_win) {
-      sources += [ "../browser/safe_browsing/download_protection/multipart_uploader_unittest.cc" ]
-    }
   } else if (safe_browsing_mode == 2) {
     sources += [ "../browser/safe_browsing/telemetry/android/android_telemetry_service_unittest.cc" ]
     deps += []
@@ -4729,6 +4725,7 @@ test("unit_tests") {
       "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
       "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
       "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
+      "../browser/ui/cocoa/tab_menu_bridge_unittest.mm",
       "../browser/ui/cocoa/test/cocoa_profile_test.h",
       "../browser/ui/cocoa/test/cocoa_profile_test.mm",
       "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",

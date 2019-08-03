@@ -166,12 +166,11 @@ bool VerifyUsingPathBuilder(
   // Verify the chain.
   net::SimplePathBuilderDelegate delegate(
       2048, net::SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
-  net::CertPathBuilder::Result result;
   net::CertPathBuilder path_builder(
       target_cert, ssl_trust_store->GetTrustStore(), &delegate, time,
       net::KeyPurpose::SERVER_AUTH, net::InitialExplicitPolicy::kFalse,
       {net::AnyPolicy()}, net::InitialPolicyMappingInhibit::kFalse,
-      net::InitialAnyPolicyInhibit::kFalse, &result);
+      net::InitialAnyPolicyInhibit::kFalse);
   path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
 
   std::unique_ptr<net::CertIssuerSourceAia> aia_cert_issuer_source;
@@ -182,7 +181,7 @@ bool VerifyUsingPathBuilder(
   }
 
   // Run the path builder.
-  path_builder.Run();
+  net::CertPathBuilder::Result result = path_builder.Run();
 
   // TODO(crbug.com/634443): Display any errors/warnings associated with path
   //                         building that were not part of a particular

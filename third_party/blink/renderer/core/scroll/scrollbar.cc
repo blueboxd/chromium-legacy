@@ -31,18 +31,22 @@
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 
 namespace blink {
 
 Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
                      ScrollbarOrientation orientation,
                      ScrollbarControlSize control_size,
+                     Element* style_source,
                      ChromeClient* chrome_client,
                      ScrollbarTheme* theme)
     : scrollable_area_(scrollable_area),
@@ -67,7 +71,8 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
       elastic_overscroll_(0),
       track_needs_repaint_(true),
       thumb_needs_repaint_(true),
-      injected_gesture_scroll_begin_(false) {
+      injected_gesture_scroll_begin_(false),
+      style_source_(style_source) {
   theme_.RegisterScrollbar(*this);
 
   // FIXME: This is ugly and would not be necessary if we fix cross-platform
@@ -88,6 +93,7 @@ Scrollbar::~Scrollbar() =default;
 void Scrollbar::Trace(blink::Visitor* visitor) {
   visitor->Trace(scrollable_area_);
   visitor->Trace(chrome_client_);
+  visitor->Trace(style_source_);
 }
 
 void Scrollbar::SetFrameRect(const IntRect& frame_rect) {
@@ -782,6 +788,23 @@ void Scrollbar::SetNeedsPaintInvalidation(ScrollbarPart invalid_parts) {
 CompositorElementId Scrollbar::GetElementId() {
   DCHECK(scrollable_area_);
   return scrollable_area_->GetScrollbarElementId(orientation_);
+}
+
+float Scrollbar::EffectiveZoom() const {
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled() && style_source_ &&
+      style_source_->GetLayoutObject()) {
+    return style_source_->GetLayoutObject()->Style()->EffectiveZoom();
+  }
+  return 1.0;
+}
+
+bool Scrollbar::ContainerIsRightToLeft() const {
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled() && style_source_ &&
+      style_source_->GetLayoutObject()) {
+    TextDirection dir = style_source_->GetLayoutObject()->Style()->Direction();
+    return IsRtl(dir);
+  }
+  return false;
 }
 
 STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeDark,

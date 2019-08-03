@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "media/base/renderer_factory.h"
-#include "media/mojo/interfaces/interface_factory.mojom.h"
-#include "media/mojo/interfaces/renderer.mojom.h"
+#include "media/mojo/mojom/interface_factory.mojom.h"
+#include "media/mojo/mojom/renderer.mojom.h"
 
 namespace service_manager {
 class InterfaceProvider;

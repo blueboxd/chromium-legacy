@@ -2012,12 +2012,6 @@ gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
   return gpu_->GetGpuChannel().get();
 }
 
-void RenderThreadImpl::CreateEmbedderRendererService(
-    service_manager::mojom::ServiceRequest service_request) {
-  GetContentClient()->renderer()->CreateRendererService(
-      std::move(service_request));
-}
-
 void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
   CompositorDependencies* compositor_deps = this;
   is_scroll_animator_enabled_ = params->web_preferences.enable_scroll_animator;

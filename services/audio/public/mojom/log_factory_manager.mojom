@@ -4,7 +4,7 @@
 
 module audio.mojom;
 
-import "media/mojo/interfaces/audio_logging.mojom";
+import "media/mojo/mojom/audio_logging.mojom";
 
 // This interface is exposed by the audio service to allow trusted clients
 // (like the browser process) to set a factory for creating audio logs.

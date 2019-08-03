@@ -12,13 +12,12 @@
 #include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/path_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -309,15 +308,16 @@ const std::vector<GURL> AppInfoSummaryPanel::GetLicenseUrls() const {
     return std::vector<GURL>();
 
   std::vector<GURL> license_urls;
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(service);
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  DCHECK(registry);
   const std::vector<extensions::SharedModuleInfo::ImportInfo>& imports =
       extensions::SharedModuleInfo::GetImports(app_);
 
   for (const auto& shared_module : imports) {
-    const extensions::Extension* imported_module =
-        service->GetExtensionById(shared_module.extension_id, true);
+    const extensions::Extension* imported_module = registry->GetExtensionById(
+        shared_module.extension_id,
+        extensions::ExtensionRegistry::COMPATIBILITY);
     DCHECK(imported_module);
 
     GURL about_page = extensions::ManifestURL::GetAboutPage(imported_module);

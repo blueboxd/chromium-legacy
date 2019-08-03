@@ -20,7 +20,7 @@
 #include "media/base/test_helpers.h"
 #include "media/base/waiting.h"
 #include "media/mojo/clients/mojo_audio_decoder.h"
-#include "media/mojo/interfaces/audio_decoder.mojom.h"
+#include "media/mojo/mojom/audio_decoder.mojom.h"
 #include "media/mojo/services/mojo_audio_decoder_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

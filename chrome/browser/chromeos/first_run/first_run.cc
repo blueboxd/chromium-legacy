@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,7 +37,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -48,13 +47,14 @@ namespace first_run {
 namespace {
 
 void LaunchDialogForProfile(Profile* profile) {
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  if (!registry)
     return;
 
   const extensions::Extension* extension =
-      service->GetExtensionById(extension_misc::kFirstRunDialogId, false);
+      registry->GetExtensionById(extension_misc::kFirstRunDialogId,
+                                 extensions::ExtensionRegistry::ENABLED);
   if (!extension)
     return;
 

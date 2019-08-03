@@ -59,7 +59,8 @@ DownloadResponseHandler::DownloadResponseHandler(
     const std::string& request_origin,
     DownloadSource download_source,
     bool ignore_content_length_mismatch,
-    std::vector<GURL> url_chain)
+    std::vector<GURL> url_chain,
+    bool is_background_mode)
     : delegate_(delegate),
       started_(false),
       save_info_(std::move(save_info)),
@@ -77,7 +78,8 @@ DownloadResponseHandler::DownloadResponseHandler(
       ignore_content_length_mismatch_(ignore_content_length_mismatch),
       is_partial_request_(save_info_->offset > 0),
       completed_(false),
-      abort_reason_(DOWNLOAD_INTERRUPT_REASON_NONE) {
+      abort_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
+      is_background_mode_(is_background_mode) {
   if (!is_parallel_request) {
     RecordDownloadCountWithSource(UNTHROTTLED_COUNT, download_source);
   }
@@ -105,7 +107,8 @@ void DownloadResponseHandler::OnReceiveResponse(
     // caused by reason 2. As a result, downloads without strong validators are
     // treated as completed here.
     ignore_content_length_mismatch_ |= !head.headers->HasStrongValidators();
-    RecordDownloadHttpResponseCode(head.headers->response_code());
+    RecordDownloadHttpResponseCode(head.headers->response_code(),
+                                   is_background_mode_);
     RecordDownloadContentDisposition(create_info_->content_disposition);
   }
 
@@ -243,6 +246,11 @@ void DownloadResponseHandler::OnComplete(
   if (reason == DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED) {
     base::UmaHistogramSparse("Download.MapErrorNetworkFailed.NetworkService",
                              std::abs(status.error_code));
+    if (is_background_mode_) {
+      base::UmaHistogramSparse(
+          "Download.MapErrorNetworkFailed.NetworkService.BackgroundDownload",
+          std::abs(status.error_code));
+    }
   }
 
   if (started_) {

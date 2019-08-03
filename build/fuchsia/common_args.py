@@ -91,7 +91,7 @@ def ConfigureLogging(args):
       logging.DEBUG if args.verbose else logging.WARN)
 
 
-def GetDeploymentTargetForArgs(args):
+def GetDeploymentTargetForArgs(args, require_kvm=False):
   """Constructs a deployment target object using parameters taken from
   command line arguments."""
 
@@ -103,9 +103,6 @@ def GetDeploymentTargetForArgs(args):
     system_log_file = None
 
   if not args.device:
-    # KVM is required on x64 test bots.
-    require_kvm = args.test_launcher_bot_mode and args.target_cpu == "x64"
-
     return QemuTarget(output_dir=args.output_directory,
                       target_cpu=args.target_cpu,
                       cpu_cores=args.qemu_cpu_cores,

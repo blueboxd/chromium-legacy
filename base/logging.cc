@@ -10,6 +10,7 @@
 #include "base/pending_task.h"
 #include "base/stl_util.h"
 #include "base/task/common/task_annotator.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -640,6 +641,8 @@ LogMessage::~LogMessage() {
 #endif
   stream_ << std::endl;
   std::string str_newline(stream_.str());
+  TRACE_LOG_MESSAGE(
+      file_, base::StringPiece(str_newline).substr(message_start_), line_);
 
   // Give any log message handler first dibs on the message.
   if (log_message_handler &&

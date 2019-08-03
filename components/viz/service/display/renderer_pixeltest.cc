@@ -2984,13 +2984,6 @@ TYPED_TEST(RendererPixelTestWithBackdropFilter, InvertFilterWithMask) {
   const bool is_gl_renderer =
       std::is_same<TypeParam, GLRenderer>() ||
       std::is_same<TypeParam, cc::GLRendererWithExpandedViewport>();
-  // TODO(984766): If the texture_rectangle feature is not available, then
-  // (currently) mask image readback will break for gl_renderer.
-  if (is_gl_renderer && !this->output_surface_->context_provider()
-                             ->ContextCapabilities()
-                             .texture_rectangle) {
-    return;
-  }
   // TODO(989312): The mask on gl_renderer and software_renderer appears to be
   // offset from the correct location.
   const bool is_software_renderer = std::is_same<TypeParam, SoftwareRenderer>();

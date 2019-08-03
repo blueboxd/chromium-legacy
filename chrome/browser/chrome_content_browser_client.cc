@@ -36,8 +36,6 @@
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
 #include "chrome/app/chrome_content_gpu_overlay_manifest.h"
 #include "chrome/app/chrome_content_renderer_overlay_manifest.h"
-#include "chrome/app/chrome_content_utility_overlay_manifest.h"
-#include "chrome/app/chrome_renderer_manifest.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/after_startup_task_utils.h"
@@ -172,7 +170,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/constants.mojom.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/google_url_loader_throttle.h"
 #include "chrome/common/logging_chrome.h"
@@ -252,13 +249,11 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
-#include "components/services/heap_profiling/heap_profiling_service.h"
-#include "components/services/heap_profiling/public/cpp/settings.h"
-#include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
 #include "components/services/quarantine/quarantine_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
+#include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/url_formatter/url_fixer.h"
@@ -334,8 +329,6 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/preferences/public/cpp/in_process_service_factory.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -390,7 +383,6 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/chrome_content_browser_client_chromeos_part.h"
-#include "chrome/browser/chromeos/chrome_service_name.h"
 #include "chrome/browser/chromeos/drive/fileapi/drivefs_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -604,7 +596,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#include "media/mojo/interfaces/constants.mojom.h"      // nogncheck
+#include "media/mojo/mojom/constants.mojom.h"      // nogncheck
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #endif
 
@@ -1280,8 +1272,6 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
 
   chrome::AddMetricsExtraParts(main_parts.get());
 
-  main_parts->AddParts(ChromeService::GetInstance()->CreateExtraParts());
-
   return main_parts;
 }
 
@@ -1407,8 +1397,7 @@ bool ChromeContentBrowserClient::AllowGpuLaunchRetryOnIOThread() {
 }
 
 void ChromeContentBrowserClient::RenderProcessWillLaunch(
-    content::RenderProcessHost* host,
-    service_manager::mojom::ServiceRequest* service_request) {
+    content::RenderProcessHost* host) {
   int id = host->GetID();
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   host->AddFilter(new ChromeRenderMessageFilter(id, profile));
@@ -1455,17 +1444,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->RenderProcessWillLaunch(host);
-
-  mojo::PendingRemote<service_manager::mojom::Service> service;
-  *service_request = service.InitWithNewPipeAndPassReceiver();
-  service_manager::Identity renderer_identity = host->GetChildIdentity();
-  mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
-  ChromeService::GetInstance()->connector()->RegisterServiceInstance(
-      service_manager::Identity(chrome::mojom::kRendererServiceName,
-                                renderer_identity.instance_group(),
-                                renderer_identity.instance_id(),
-                                base::Token::CreateRandom()),
-      std::move(service), metadata.BindNewPipeAndPassReceiver());
 }
 
 GURL ChromeContentBrowserClient::GetEffectiveURL(
@@ -3117,9 +3095,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->device_scale_adjustment = GetDeviceScaleAdjustment();
   web_prefs->force_enable_zoom =
       prefs->GetBoolean(prefs::kWebKitForceEnableZoom);
+#endif
   web_prefs->force_dark_mode_enabled =
       prefs->GetBoolean(prefs::kWebKitForceDarkModeEnabled);
-#endif
 
 #if defined(OS_ANDROID)
   web_prefs->password_echo_enabled =
@@ -3881,6 +3859,17 @@ void ChromeContentBrowserClient::BindHostReceiverForRenderer(
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 }
 
+void ChromeContentBrowserClient::BindHostReceiverForRendererOnIOThread(
+    int render_process_id,
+    mojo::GenericPendingReceiver* receiver) {
+  if (auto host_receiver =
+          receiver->As<startup_metric_utils::mojom::StartupMetricHost>()) {
+    startup_metric_utils::StartupMetricHostImpl::Create(
+        std::move(host_receiver));
+    return;
+  }
+}
+
 void ChromeContentBrowserClient::WillStartServiceManager() {
 #if defined(OS_WIN)
   if (startup_data_) {
@@ -3906,16 +3895,6 @@ void ChromeContentBrowserClient::RunServiceInstance(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
   const std::string& service_name = identity.name();
-  if (service_name == prefs::mojom::kLocalStateServiceName) {
-    if (!g_browser_process || !g_browser_process->pref_service_factory())
-      return;
-
-    service_manager::Service::RunAsyncUntilTermination(
-        g_browser_process->pref_service_factory()->CreatePrefService(
-            std::move(*receiver)));
-    return;
-  }
-
 #if defined(OS_WIN)
   bool run_quarantine_service_in_process =
       !base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine);
@@ -3981,22 +3960,6 @@ void ChromeContentBrowserClient::RunServiceInstance(
 #endif  // defined(OS_CHROMEOS)
 }
 
-void ChromeContentBrowserClient::RunServiceInstanceOnIOThread(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
-  if (identity.name() == chrome::mojom::kServiceName) {
-    ChromeService::GetInstance()->CreateChromeServiceRequestHandler().Run(
-        std::move(*receiver));
-    return;
-  }
-
-  if (identity.name() == heap_profiling::mojom::kServiceName) {
-    heap_profiling::HeapProfilingService::GetServiceFactory().Run(
-        std::move(*receiver));
-    return;
-  }
-}
-
 base::Optional<service_manager::Manifest>
 ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
@@ -4005,15 +3968,12 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
     return GetChromeContentGpuOverlayManifest();
   if (name == content::mojom::kRendererServiceName)
     return GetChromeContentRendererOverlayManifest();
-  if (name == content::mojom::kUtilityServiceName)
-    return GetChromeContentUtilityOverlayManifest();
   return base::nullopt;
 }
 
 std::vector<service_manager::Manifest>
 ChromeContentBrowserClient::GetExtraServiceManifests() {
   auto manifests = GetChromeBuiltinServiceManifests();
-  manifests.push_back(GetChromeRendererManifest());
 
 #if BUILDFLAG(ENABLE_NACL)
   manifests.push_back(GetNaClLoaderManifest());

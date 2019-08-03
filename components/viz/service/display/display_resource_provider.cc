@@ -253,8 +253,12 @@ GLenum DisplayResourceProvider::GetResourceTextureTarget(ResourceId id) {
 }
 
 gfx::BufferFormat DisplayResourceProvider::GetBufferFormat(ResourceId id) {
+  return BufferFormat(GetResourceFormat(id));
+}
+
+ResourceFormat DisplayResourceProvider::GetResourceFormat(ResourceId id) {
   ChildResource* resource = GetResource(id);
-  return BufferFormat(resource->transferable.format);
+  return resource->transferable.format;
 }
 
 const gfx::ColorSpace& DisplayResourceProvider::GetColorSpace(ResourceId id) {

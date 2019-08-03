@@ -121,6 +121,11 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   });
   GREYAssert(dialogShown, @"PassKit dialog was not shown");
 #elif defined(CHROME_EARL_GREY_2)
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/989816):Enable the test when FB6895185 is fixed.
+    EARL_GREY_TEST_DISABLED(@"PassKit view is not fully rendered.");
+  }
+
   // EG2 test can use XCUIApplication API to check for PassKit dialog UI
   // presentation.
   XCUIApplication* app = [[XCUIApplication alloc] init];

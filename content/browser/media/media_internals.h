@@ -26,7 +26,7 @@
 #include "media/base/media_log.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video_capture_types.h"
-#include "media/mojo/interfaces/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_logging.mojom.h"
 
 namespace media {
 struct MediaLogEvent;

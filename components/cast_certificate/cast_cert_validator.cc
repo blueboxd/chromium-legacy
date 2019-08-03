@@ -303,14 +303,13 @@ CastCertError VerifyDeviceCertUsingCustomTrustStore(
   net::der::GeneralizedTime verification_time;
   if (!net::der::EncodeTimeAsGeneralizedTime(time, &verification_time))
     return CastCertError::ERR_UNEXPECTED;
-  net::CertPathBuilder::Result result;
   net::CertPathBuilder path_builder(
       target_cert.get(), trust_store, &path_builder_delegate, verification_time,
       net::KeyPurpose::CLIENT_AUTH, net::InitialExplicitPolicy::kFalse,
       {net::AnyPolicy()}, net::InitialPolicyMappingInhibit::kFalse,
-      net::InitialAnyPolicyInhibit::kFalse, &result);
+      net::InitialAnyPolicyInhibit::kFalse);
   path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
-  path_builder.Run();
+  net::CertPathBuilder::Result result = path_builder.Run();
   if (!result.HasValidPath())
     return MapToCastError(result);
 

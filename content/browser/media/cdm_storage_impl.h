@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
-#include "media/mojo/interfaces/cdm_storage.mojom.h"
+#include "media/mojo/mojom/cdm_storage.mojom.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding_set.h"
 
 namespace storage {

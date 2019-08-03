@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "net/http/http_server_properties.h"
-#include "net/http/http_server_properties_manager.h"
 
 class PrefRegistrySimple;
 
@@ -17,7 +16,7 @@ namespace network {
 
 // Manages disk storage for a net::HttpServerPropertiesManager.
 class HttpServerPropertiesPrefDelegate
-    : public net::HttpServerPropertiesManager::PrefDelegate {
+    : public net::HttpServerProperties::PrefDelegate {
  public:
   // The created object must be destroyed before |pref_service|.
   explicit HttpServerPropertiesPrefDelegate(PrefService* pref_service);
@@ -25,7 +24,7 @@ class HttpServerPropertiesPrefDelegate
 
   static void RegisterPrefs(PrefRegistrySimple* pref_registry);
 
-  // net::HttpServerPropertiesManager::PrefDelegate implementation.
+  // net::HttpServerProperties::PrefDelegate implementation.
   const base::DictionaryValue* GetServerProperties() const override;
   void SetServerProperties(const base::DictionaryValue& value,
                            base::OnceClosure callback) override;

@@ -1000,8 +1000,6 @@ public class LocationBarLayout extends FrameLayout
                 mShouldShowSearchEngineLogo, mIsSearchEngineGoogle, mSearchEngineUrl);
         mToolbarDataProvider.updateSearchEngineStatusIcon(
                 mShouldShowSearchEngineLogo, mIsSearchEngineGoogle, mSearchEngineUrl);
-
-        mStatusViewCoordinator.setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
     }
 
     @Override

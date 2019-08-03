@@ -216,6 +216,15 @@ static void GetNativeThemeExtraParams(
           NativeThemeScrollbarOverlayColorTheme(
               extra_params->scrollbar_thumb.scrollbar_theme);
       break;
+    case WebThemeEngine::kPartScrollbarDownArrow:
+    case WebThemeEngine::kPartScrollbarLeftArrow:
+    case WebThemeEngine::kPartScrollbarRightArrow:
+    case WebThemeEngine::kPartScrollbarUpArrow:
+      native_theme_extra_params->scrollbar_arrow.zoom =
+          extra_params->scrollbar_button.zoom;
+      native_theme_extra_params->scrollbar_arrow.right_to_left =
+          extra_params->scrollbar_button.right_to_left;
+      break;
     default:
       break;  // Parts that have no extra params get here.
   }

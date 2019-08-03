@@ -202,7 +202,54 @@ class MediaCodecUtil {
       */
     @CalledByNative
     private static boolean canDecode(String mime, boolean isSecure) {
-        // TODO(crbug.com/846120): Investigate if FEATURE_SecurePlayback will work here.
+        // Not supported on blacklisted devices.
+        if (!isDecoderSupportedForDevice(mime)) {
+            Log.e(TAG, "Decoder for type %s is not supported on this device", mime);
+            return false;
+        }
+
+        // MediaCodecInfo.CodecCapabilities.FEATURE_SecurePlayback is available as of
+        // API 21 (LOLLIPOP), which is the same as NewMediaCodecList.
+        MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
+        if (codecListHelper.hasNewMediaCodecList()) {
+            for (MediaCodecInfo info : codecListHelper) {
+                if (info.isEncoder()) continue;
+
+                try {
+                    CodecCapabilities caps = info.getCapabilitiesForType(mime);
+                    if (caps != null) {
+                        // There may be multiple entries in the list for the same family
+                        // (e.g. OMX.qcom.video.decoder.avc and OMX.qcom.video.decoder.avc.secure),
+                        // so return early if this one matches what we're looking for.
+
+                        // If a secure decoder is required, then FEATURE_SecurePlayback must be
+                        // supported.
+                        if (isSecure
+                                && caps.isFeatureSupported(
+                                        CodecCapabilities.FEATURE_SecurePlayback)) {
+                            return true;
+                        }
+
+                        // If a secure decoder is not required, then make sure that
+                        // FEATURE_SecurePlayback is not required. It may work for unsecure
+                        // content, but keep scanning for another codec that supports
+                        // unsecure content directly.
+                        if (!isSecure
+                                && !caps.isFeatureRequired(
+                                        CodecCapabilities.FEATURE_SecurePlayback)) {
+                            return true;
+                        }
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Type is not supported.
+                }
+            }
+
+            // Unable to find a match for |mime|, so not supported.
+            return false;
+        }
+
+        // On older versions of Android attempt to create a decoder for the specified MIME type.
         // TODO(liberato): Should we insist on software here?
         CodecCreationInfo info = createDecoder(mime, isSecure ? CodecType.SECURE : CodecType.ANY);
         if (info == null || info.mediaCodec == null) return false;

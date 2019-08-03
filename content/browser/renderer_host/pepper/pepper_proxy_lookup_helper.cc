@@ -32,7 +32,7 @@ class PepperProxyLookupHelper::UIThreadHelper
       : binding_(this),
         look_up_complete_callback_(std::move(look_up_complete_callback)),
         callback_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&UIThreadHelper::StartLookup, base::Unretained(this),
                        url, std::move(look_up_proxy_for_url_callback)));

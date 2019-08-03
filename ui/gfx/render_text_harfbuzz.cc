@@ -849,8 +849,7 @@ void TextRunHarfBuzz::GetClusterAt(size_t pos,
                << ", rtl: " << font_params.is_rtl << ","
                << " level: '" << font_params.level
                << "', script: " << font_params.script << ","
-               << " font: '" << font_params.font.GetActualFontNameForTesting()
-               << "',"
+               << " font: '" << font_params.font.GetActualFontName() << "',"
                << " glyph_count: " << shape.glyph_count << ", pos: " << pos
                << ","
                << " glyph_to_char: " << glyph_to_char_string;

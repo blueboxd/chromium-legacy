@@ -19,7 +19,7 @@
 #include "base/timer/timer.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 #include "media/remoting/metrics.h"
 #include "media/remoting/rpc_broker.h"
 #include "mojo/public/cpp/system/data_pipe.h"

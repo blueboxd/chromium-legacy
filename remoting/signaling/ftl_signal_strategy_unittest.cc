@@ -237,7 +237,7 @@ class FtlSignalStrategyTest : public testing::Test,
                     const ftl::ChromotingMessage&));
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
   MockOAuthTokenGetter* token_getter_ = nullptr;
   FakeRegistrationManager* registration_manager_ = nullptr;

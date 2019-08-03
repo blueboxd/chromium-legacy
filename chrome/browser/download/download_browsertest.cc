@@ -53,7 +53,6 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/download_test_file_activity_observer.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -115,6 +114,7 @@
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "net/base/filename_util.h"
@@ -2217,10 +2217,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstall) {
   EXPECT_TRUE(VerifyNoDownloads());
 
   // Check that the CRX is not installed.
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(browser()->profile())
-          ->extension_service();
-  ASSERT_FALSE(extension_service->GetExtensionById(kGoodCrxId, false));
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  ASSERT_FALSE(extension_registry->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::ENABLED));
 }
 
 // Download an extension.  Expect a dangerous download warning.
@@ -2254,10 +2254,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
       downloads[0], base::Bind(&WasAutoOpened)).WaitForEvent();
 
   // Check that the extension was not installed.
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(browser()->profile())
-          ->extension_service();
-  ASSERT_FALSE(extension_service->GetExtensionById(kGoodCrxId, false));
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  ASSERT_FALSE(extension_registry->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::ENABLED));
 }
 
 // Download an extension.  Expect a dangerous download warning.
@@ -2294,10 +2294,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
       downloads[0], base::Bind(&WasAutoOpened)).WaitForEvent();
 
   // Check that the extension was installed.
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(browser()->profile())
-          ->extension_service();
-  ASSERT_TRUE(extension_service->GetExtensionById(kGoodCrxId, false));
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  ASSERT_TRUE(extension_registry->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::ENABLED));
 }
 
 // Test installing a CRX that fails integrity checks.
@@ -2322,10 +2322,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
   CheckDownloadStates(1, DownloadItem::COMPLETE);
 
   // Check that the extension was not installed.
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(browser()->profile())
-          ->extension_service();
-  ASSERT_FALSE(extension_service->GetExtensionById(kGoodCrxId, false));
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  ASSERT_FALSE(extension_registry->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::ENABLED));
 }
 
 // Install a large (100kb) theme.
@@ -2361,10 +2361,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
       downloads[0], base::Bind(&WasAutoOpened)).WaitForEvent();
 
   // Check that the extension was installed.
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(browser()->profile())
-          ->extension_service();
-  ASSERT_TRUE(extension_service->GetExtensionById(kLargeThemeCrxId, false));
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  ASSERT_TRUE(extension_registry->GetExtensionById(
+      kLargeThemeCrxId, extensions::ExtensionRegistry::ENABLED));
 }
 
 // Tests for download initiation functions.

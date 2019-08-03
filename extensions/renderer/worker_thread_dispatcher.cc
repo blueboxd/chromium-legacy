@@ -24,6 +24,7 @@
 #include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/service_worker_data.h"
 #include "extensions/renderer/worker_script_context_set.h"
+#include "extensions/renderer/worker_thread_util.h"
 
 namespace extensions {
 
@@ -91,6 +92,16 @@ void WorkerThreadDispatcher::ForwardIPC(int worker_thread_id,
       worker_thread_id, message);
 }
 
+// static
+void WorkerThreadDispatcher::UpdateBindingsOnWorkerThread(
+    const ExtensionId& extension_id) {
+  DCHECK(worker_thread_util::IsWorkerThread());
+  DCHECK(!extension_id.empty());
+  GetBindingsSystem()->UpdateBindings(extension_id,
+                                      true /* permissions_changed */,
+                                      Dispatcher::GetWorkerScriptContextSet());
+}
+
 bool WorkerThreadDispatcher::OnControlMessageReceived(
     const IPC::Message& message) {
   if (HandlesMessageOnWorkerThread(message)) {
@@ -113,6 +124,22 @@ bool WorkerThreadDispatcher::OnControlMessageReceived(
     return true;
   }
   return false;
+}
+
+bool WorkerThreadDispatcher::UpdateBindingsForWorkers(
+    const ExtensionId& extension_id) {
+  bool success = true;
+  base::AutoLock lock(task_runner_map_lock_);
+  for (const auto& task_runner_info : task_runner_map_) {
+    const int worker_thread_id = task_runner_info.first;
+    base::TaskRunner* runner = task_runner_map_[worker_thread_id];
+    bool posted = runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WorkerThreadDispatcher::UpdateBindingsOnWorkerThread,
+                       extension_id));
+    success &= posted;
+  }
+  return success;
 }
 
 void WorkerThreadDispatcher::OnMessageReceivedOnWorkerThread(

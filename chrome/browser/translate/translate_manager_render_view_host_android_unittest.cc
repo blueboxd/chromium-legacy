@@ -56,8 +56,8 @@ class TranslateManagerRenderViewHostAndroidTest
     details.adopted_language = lang;
     ChromeTranslateClient::FromWebContents(web_contents())
         ->translate_driver()
-        .RegisterPage(fake_page_.BindToNewPagePtr(), details,
-                      page_translatable);
+        ->RegisterPage(fake_page_.BindToNewPagePtr(), details,
+                       page_translatable);
   }
 
   InfoBarService* infobar_service() {
@@ -105,7 +105,7 @@ class TranslateManagerRenderViewHostAndroidTest
     ChromeTranslateClient::CreateForWebContents(web_contents());
     ChromeTranslateClient::FromWebContents(web_contents())
         ->translate_driver()
-        .set_translate_max_reload_attempts(0);
+        ->set_translate_max_reload_attempts(0);
   }
 
   void TearDown() override {

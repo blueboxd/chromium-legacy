@@ -326,7 +326,7 @@ const std::string& PlatformFontWin::GetFontName() const {
   return font_ref_->font_name();
 }
 
-std::string PlatformFontWin::GetActualFontNameForTesting() const {
+std::string PlatformFontWin::GetActualFontName() const {
   // With the current implementation on Windows, HFontRef::font_name() returns
   // the font name taken from the HFONT handle, but it's not the name that comes
   // from the font's metadata.  See http://crbug.com/327287

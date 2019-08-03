@@ -164,7 +164,9 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
 
   image_provider_->RequestImage(
       std::move(image_ready_cb), spec,
-      codec_buffer_wait_coordinator_->texture_owner());
+      codec_buffer_wait_coordinator_
+          ? codec_buffer_wait_coordinator_->texture_owner()
+          : nullptr);
 }
 
 // static

@@ -41,8 +41,7 @@ bool CreateAnonymousSharedMemory(const SharedMemoryCreateOptions& options,
   if (!GetShmemTempDir(options.executable, &directory))
     return false;
 
-  fd->reset(base::CreateAndOpenFdForTemporaryFileInDir(directory, path));
-
+  *fd = base::CreateAndOpenFdForTemporaryFileInDir(directory, path);
   if (!fd->is_valid())
     return false;
 

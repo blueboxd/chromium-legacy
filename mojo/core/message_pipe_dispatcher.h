@@ -101,6 +101,7 @@ class MessagePipeDispatcher : public Dispatcher {
   // BeginTransit() and Complete/CancelTransit().
   AtomicFlag in_transit_;
 
+  mutable MojoHandleSignals last_known_satisfied_signals_ = 0;
   bool port_transferred_ = false;
   AtomicFlag port_closed_;
   WatcherSet watchers_;

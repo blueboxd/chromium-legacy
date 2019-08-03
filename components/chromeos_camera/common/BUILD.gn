@@ -11,7 +11,7 @@ mojom("common") {
   ]
 
   public_deps = [
-    "//media/mojo/interfaces",
+    "//media/mojo/mojom",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojom",
   ]

@@ -849,8 +849,8 @@ public class WebappActivity extends SingleTabActivity {
     protected void initSplash() {
         // Splash screen is shown after preInflationStartup() is run and the delegate is set.
         boolean isWindowInitiallyTranslucent = mWebappInfo.isSplashProvidedByWebApk();
-        mSplashController.setConfig(new WebappSplashDelegate(this, getLifecycleDispatcher(),
-                                            mTabObserverRegistrar, mWebappInfo),
+        mSplashController.setConfig(
+                new WebappSplashDelegate(this, mTabObserverRegistrar, mWebappInfo),
                 isWindowInitiallyTranslucent, WebappSplashDelegate.HIDE_ANIMATION_DURATION_MS);
     }
 

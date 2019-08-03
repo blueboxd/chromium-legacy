@@ -485,7 +485,9 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     }
 
     private @Location int getLocationFromPosition(int position) {
-        if (position == getBookmarkItemStartIndex()) {
+        if (position == getBookmarkItemStartIndex() && position == getBookmarkItemEndIndex()) {
+            return Location.SOLO;
+        } else if (position == getBookmarkItemStartIndex()) {
             return Location.TOP;
         } else if (position == getBookmarkItemEndIndex()) {
             return Location.BOTTOM;

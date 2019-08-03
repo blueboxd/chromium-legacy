@@ -20,7 +20,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/routing_token_callback.h"
 #include "media/blink/media_blink_export.h"
-#include "media/mojo/interfaces/media_metrics_provider.mojom.h"
+#include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 

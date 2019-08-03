@@ -45,8 +45,6 @@
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "content/public/common/content_descriptors.h"
-#include "content/public/common/content_switches.h"
-#include "services/service_manager/embedder/switches.h"
 #include "third_party/breakpad/breakpad/src/client/linux/crash_generation/crash_generation_client.h"
 #include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"
 #include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/directory_reader.h"
@@ -63,6 +61,11 @@
 #include "base/debug/leak_annotations.h"
 #endif
 #include "third_party/lss/linux_syscall_support.h"
+
+#if defined(OS_CHROMEOS)
+#include "content/public/common/content_switches.h"      // nogncheck
+#include "services/service_manager/embedder/switches.h"  // nogncheck
+#endif
 
 #if defined(ADDRESS_SANITIZER)
 #include <ucontext.h>  // for getcontext().

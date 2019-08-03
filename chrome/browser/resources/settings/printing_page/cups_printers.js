@@ -108,7 +108,11 @@ Polymer({
    */
   onActiveNetworksChanged: function(networks) {
     this.canAddPrinter_ = networks.some(function(network) {
-      return OncMojo.connectionStateIsConnected(network.connectionState);
+      // Note: Check for kOnline rather than using
+      // OncMojo.connectionStateIsConnected() since the latter could return true
+      // for networks without connectivity (e.g., captive portals).
+      return network.connectionState ==
+          chromeos.networkConfig.mojom.ConnectionStateType.kOnline;
     });
   },
 

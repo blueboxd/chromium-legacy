@@ -12,7 +12,6 @@
 #include "components/link_header_util/link_header_util.h"
 #include "content/browser/loader/cross_origin_read_blocking_checker.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -262,18 +261,12 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
       return;
     }
 
-    if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(
-              &InnerResponseURLLoader::CreateMojoBlobReader,
-              weak_factory_.GetWeakPtr(), std::move(pipe_producer_handle),
-              std::make_unique<storage::BlobDataHandle>(*blob_data_handle_)));
-    } else {
-      CreateMojoBlobReader(
-          weak_factory_.GetWeakPtr(), std::move(pipe_producer_handle),
-          std::make_unique<storage::BlobDataHandle>(*blob_data_handle_));
-    }
+    base::PostTask(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(
+            &InnerResponseURLLoader::CreateMojoBlobReader,
+            weak_factory_.GetWeakPtr(), std::move(pipe_producer_handle),
+            std::make_unique<storage::BlobDataHandle>(*blob_data_handle_)));
 
     client_->OnStartLoadingResponseBody(std::move(pipe_consumer_handle));
   }
@@ -306,8 +299,8 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   static void BlobReaderCompleteOnIO(
       base::WeakPtr<InnerResponseURLLoader> loader,
       net::Error result) {
-    NavigationURLLoaderImpl::RunOrPostTaskOnLoaderThread(
-        FROM_HERE, base::BindOnce(&InnerResponseURLLoader::BlobReaderComplete,
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&InnerResponseURLLoader::BlobReaderComplete,
                                   std::move(loader), result));
   }
 
@@ -634,8 +627,7 @@ PrefetchedSignedExchangeCache::~PrefetchedSignedExchangeCache() = default;
 
 void PrefetchedSignedExchangeCache::Store(
     std::unique_ptr<const Entry> cached_exchange) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (exchanges_.size() > kMaxEntrySize)
     return;
   DCHECK(cached_exchange->outer_url().is_valid());
@@ -655,8 +647,7 @@ void PrefetchedSignedExchangeCache::Store(
 
 std::unique_ptr<NavigationLoaderInterceptor>
 PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const auto it = exchanges_.find(outer_url);
   if (it == exchanges_.end())
     return nullptr;
@@ -672,14 +663,12 @@ PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
 
 const PrefetchedSignedExchangeCache::EntryMap&
 PrefetchedSignedExchangeCache::GetExchanges() {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return exchanges_;
 }
 
 void PrefetchedSignedExchangeCache::RecordHistograms() {
-  BrowserThread::ID thread_id =
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID();
+  BrowserThread::ID thread_id = BrowserThread::UI;
   if (!BrowserThread::CurrentlyOn(thread_id)) {
     base::PostTask(
         FROM_HERE, {thread_id},
@@ -715,8 +704,7 @@ std::vector<PrefetchedSignedExchangeInfo>
 PrefetchedSignedExchangeCache::GetInfoListForNavigation(
     const Entry& main_exchange,
     const base::Time& now) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const url::Origin outer_url_origin =
       url::Origin::Create(main_exchange.outer_url());

@@ -4,6 +4,7 @@
 
 #include "net/ssl/ssl_client_session_cache.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/containers/flat_set.h"
@@ -24,6 +25,27 @@ bool IsTLS13(const SSL_SESSION* session) {
 
 }  // namespace
 
+SSLClientSessionCache::Key::Key() = default;
+SSLClientSessionCache::Key::Key(const Key& other) = default;
+SSLClientSessionCache::Key::Key(Key&& other) = default;
+SSLClientSessionCache::Key::~Key() = default;
+SSLClientSessionCache::Key& SSLClientSessionCache::Key::operator=(
+    const Key& other) = default;
+SSLClientSessionCache::Key& SSLClientSessionCache::Key::operator=(Key&& other) =
+    default;
+
+bool SSLClientSessionCache::Key::operator==(const Key& other) const {
+  return std::tie(server, dest_ip_addr, network_isolation_key, privacy_mode) ==
+         std::tie(other.server, other.dest_ip_addr, other.network_isolation_key,
+                  other.privacy_mode);
+}
+
+bool SSLClientSessionCache::Key::operator<(const Key& other) const {
+  return std::tie(server, dest_ip_addr, network_isolation_key, privacy_mode) <
+         std::tie(other.server, other.dest_ip_addr, other.network_isolation_key,
+                  other.privacy_mode);
+}
+
 SSLClientSessionCache::SSLClientSessionCache(const Config& config)
     : clock_(base::DefaultClock::GetInstance()),
       config_(config),
@@ -31,15 +53,9 @@ SSLClientSessionCache::SSLClientSessionCache(const Config& config)
       lookups_since_flush_(0) {
   memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
       &SSLClientSessionCache::OnMemoryPressure, base::Unretained(this))));
-  CertDatabase::GetInstance()->AddObserver(this);
 }
 
 SSLClientSessionCache::~SSLClientSessionCache() {
-  CertDatabase::GetInstance()->RemoveObserver(this);
-  Flush();
-}
-
-void SSLClientSessionCache::OnCertDBChanged() {
   Flush();
 }
 
@@ -48,7 +64,7 @@ size_t SSLClientSessionCache::size() const {
 }
 
 bssl::UniquePtr<SSL_SESSION> SSLClientSessionCache::Lookup(
-    const std::string& cache_key) {
+    const Key& cache_key) {
   // Expire stale sessions.
   lookups_since_flush_++;
   if (lookups_since_flush_ >= config_.expiration_check_count) {
@@ -79,7 +95,7 @@ bssl::UniquePtr<SSL_SESSION> SSLClientSessionCache::Lookup(
   return session;
 }
 
-void SSLClientSessionCache::Insert(const std::string& cache_key,
+void SSLClientSessionCache::Insert(const Key& cache_key,
                                    bssl::UniquePtr<SSL_SESSION> session) {
   if (IsTLS13(session.get())) {
     base::TimeDelta lifetime =

@@ -28,6 +28,10 @@ namespace media {
 class CdmProxy;
 }
 
+namespace viz {
+class VizCompositorThreadRunner;
+}
+
 namespace content {
 
 // Embedder API for participating in gpu logic.
@@ -53,10 +57,11 @@ class CONTENT_EXPORT ContentGpuClient {
   virtual void PostCompositorThreadCreated(
       base::SingleThreadTaskRunner* task_runner) {}
 
-  // Allows client to supply SyncPointManager and SharedImageManager instance
-  // instead of having content internally create one.
+  // Allows client to supply these object instances instead of having content
+  // internally create one.
   virtual gpu::SyncPointManager* GetSyncPointManager();
   virtual gpu::SharedImageManager* GetSharedImageManager();
+  virtual viz::VizCompositorThreadRunner* GetVizCompositorThreadRunner();
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Creates a media::CdmProxy for the type of Content Decryption Module (CDM)

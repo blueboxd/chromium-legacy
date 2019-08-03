@@ -127,10 +127,8 @@ void FrameSetPainter::PaintBorders(const PaintInfo& paint_info,
 }
 
 void FrameSetPainter::PaintChildren(const PaintInfo& paint_info) {
-  if (layout_frame_set_.PaintBlockedByDisplayLock(
-          DisplayLockContext::kChildren)) {
+  if (paint_info.DescendantPaintingBlocked())
     return;
-  }
 
   // Paint only those children that fit in the grid.
   // Remaining frames are "hidden".

@@ -22,10 +22,11 @@ public interface AutofillAssistantActionHandler {
      *
      * @param userName name of the user to use when sending RPCs. Might be empty.
      * @param experimentIds comma-separated set of experiment ids. Might be empty
+     * @param scriptBundle an optional ScriptBundle proto, base64 encoded. Usually empty.
      * @param arguments extra arguments to include into the RPC. Might be empty.
      * @param callback callback to report the result to
      */
-    void listActions(String userName, String experimentIds, Bundle arguments,
+    void listActions(String userName, String experimentIds, String scriptBundle, Bundle arguments,
             Callback<Set<String>> callback);
 
     /** Performs onboarding and returns the result to the callback. */

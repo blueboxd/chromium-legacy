@@ -410,7 +410,6 @@ void DownloadTargetDeterminer::ReserveVirtualPathDone(
             << " Result:" << static_cast<int>(result);
   DCHECK_EQ(STATE_PROMPT_USER_FOR_DOWNLOAD_PATH, next_state_);
   RecordDownloadPathValidation(result, download_->IsTransient());
-
   if (download_->IsTransient()) {
     DCHECK_EQ(DownloadConfirmationReason::NONE, confirmation_reason_)
         << "Transient download should not ask the user for confirmation.";

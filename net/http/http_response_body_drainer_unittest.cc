@@ -25,7 +25,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_stream.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -233,7 +233,7 @@ class HttpResponseBodyDrainerTest : public TestWithScopedTaskEnvironment {
   HttpResponseBodyDrainerTest()
       : proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults),
-        http_server_properties_(new HttpServerPropertiesImpl()),
+        http_server_properties_(new HttpServerProperties()),
         session_(CreateNetworkSession()),
         mock_stream_(new MockHttpStream(&result_waiter_)),
         drainer_(new HttpResponseBodyDrainer(mock_stream_)) {}
@@ -254,7 +254,7 @@ class HttpResponseBodyDrainerTest : public TestWithScopedTaskEnvironment {
 
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
-  std::unique_ptr<HttpServerPropertiesImpl> http_server_properties_;
+  std::unique_ptr<HttpServerProperties> http_server_properties_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
   MultiLogCTVerifier ct_verifier_;

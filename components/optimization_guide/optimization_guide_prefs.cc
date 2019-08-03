@@ -24,13 +24,13 @@ const char kHintsFetcherLastFetchAttempt[] =
 // for until visited again after DataSaver was enabled. If The hash of the host
 // is in the dictionary, then it is on the blacklist and should not be used, the
 // |value| in the key-value pair is not used.
-const char kHintsFetcherTopHostBlacklist[] =
+const char kHintsFetcherDataSaverTopHostBlacklist[] =
     "optimization_guide.hintsfetcher.top_host_blacklist";
 
 // An integer pref that stores the state of the blacklist for the top host
 // provider for blacklisting hosts after DataSaver is enabled. The state maps to
 // the HintsFetcherTopHostBlacklistState enum.
-const char kHintsFetcherTopHostBlacklistState[] =
+const char kHintsFetcherDataSaverTopHostBlacklistState[] =
     "optimization_guide.hintsfetcher.top_host_blacklist_state";
 
 // A string pref that stores the version of the Optimization Hints component
@@ -46,10 +46,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       kHintsFetcherLastFetchAttempt,
       base::Time().ToDeltaSinceWindowsEpoch().InMicroseconds(),
       PrefRegistry::LOSSY_PREF);
-  registry->RegisterDictionaryPref(kHintsFetcherTopHostBlacklist,
+  registry->RegisterDictionaryPref(kHintsFetcherDataSaverTopHostBlacklist,
                                    PrefRegistry::LOSSY_PREF);
   registry->RegisterIntegerPref(
-      kHintsFetcherTopHostBlacklistState,
+      kHintsFetcherDataSaverTopHostBlacklistState,
       static_cast<int>(HintsFetcherTopHostBlacklistState::kNotInitialized),
       PrefRegistry::LOSSY_PREF);
   registry->RegisterStringPref(kPendingHintsProcessingVersion, "",

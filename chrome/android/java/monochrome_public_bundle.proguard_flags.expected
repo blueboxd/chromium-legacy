@@ -222,10 +222,10 @@
 
 # Never inline classes or methods with this annotation, but allow shrinking and
 # obfuscation.
--keepnames,allowobfuscation @org.chromium.base.annotations.DoNotInline class ** {
-  *;
+-keep,allowobfuscation,allowoptimization @org.chromium.base.annotations.DoNotInline class ** {
+  <methods>;
 }
--keepclassmembernames,allowobfuscation class ** {
+-keepclassmembers,allowobfuscation,allowoptimization class ** {
   @org.chromium.base.annotations.DoNotInline <methods>;
 }
 

@@ -511,7 +511,8 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 - (void)saveSessionImmediately:(BOOL)immediately {
   // Do nothing if there are tabs in the model but no selected tab. This is
   // a transitional state.
-  if (!_webStateList->GetActiveWebState() || !_browserState)
+  if ((!_webStateList->GetActiveWebState() && _webStateList->count()) ||
+      !_browserState)
     return;
   NSString* statePath =
       base::SysUTF8ToNSString(_browserState->GetStatePath().AsUTF8Unsafe());

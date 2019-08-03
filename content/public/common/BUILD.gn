@@ -253,7 +253,7 @@ jumbo_source_set("common_sources") {
     # needed because of allow_circular_includes_from.
     "//content/common:mojo_bindings",
     "//media",
-    "//media/mojo/interfaces",
+    "//media/mojo/mojom",
     "//ppapi/buildflags",
     "//ppapi/c",
     "//services/network/public/cpp",

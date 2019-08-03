@@ -9,8 +9,6 @@ import("//services/network/public/cpp/features.gni")
 
 jumbo_component("network_service") {
   sources = [
-    "cert_verifier_config_type_converter.cc",
-    "cert_verifier_config_type_converter.h",
     "chunked_data_pipe_upload_data_stream.cc",
     "chunked_data_pipe_upload_data_stream.h",
     "conditional_cache_deletion_helper.cc",

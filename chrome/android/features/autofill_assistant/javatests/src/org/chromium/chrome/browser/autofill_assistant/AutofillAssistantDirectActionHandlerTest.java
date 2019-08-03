@@ -88,13 +88,16 @@ public class AutofillAssistantDirectActionHandlerTest {
 
         FakeDirectActionDefinition list = reporter.mActions.get(0);
         assertEquals("list_assistant_actions", list.mId);
-        assertEquals(2, list.mParameters.size());
+        assertEquals(3, list.mParameters.size());
         assertEquals("user_name", list.mParameters.get(0).mName);
         assertEquals(Type.STRING, list.mParameters.get(0).mType);
         assertEquals(false, list.mParameters.get(0).mRequired);
         assertEquals("experiment_ids", list.mParameters.get(1).mName);
         assertEquals(Type.STRING, list.mParameters.get(1).mType);
         assertEquals(false, list.mParameters.get(1).mRequired);
+        assertEquals("script_bundle", list.mParameters.get(2).mName);
+        assertEquals(Type.STRING, list.mParameters.get(2).mType);
+        assertEquals(false, list.mParameters.get(2).mRequired);
 
         assertEquals(1, list.mResults.size());
         assertEquals("names", list.mResults.get(0).mName);

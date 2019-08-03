@@ -51,7 +51,6 @@ class Element;
 class FontResource;
 class ImageResourceContent;
 class LocalFrame;
-class SharedBuffer;
 class CSSPropertyValueSet;
 
 struct SerializedResource;

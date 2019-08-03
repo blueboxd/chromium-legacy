@@ -28,7 +28,7 @@
 #include <memory>
 
 #include "base/optional.h"
-#include "media/mojo/interfaces/display_media_information.mojom-shared.h"
+#include "media/mojo/mojom/display_media_information.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_string.h"

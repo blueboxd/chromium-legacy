@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import os
-from chrome_ent_test.ent_tests import ChromeEnterpriseTestCase
 from chrome_ent_test.infra.core import environment, before_all, test
+from infra import ChromeEnterpriseTestCase
 
 
 @environment(file="../policy_test.asset.textpb")

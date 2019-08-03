@@ -2193,6 +2193,11 @@ customize.loadColorsMenu = function() {
     const tile = customize.createTileWithoutTitle(
         id, imageUrl, dataset, customize.colorTileInteraction,
         customize.tileOnKeyDownInteraction);
+    const label = configData.translatedStrings.colorLabelPrefix + ' ' +
+        colorArrayToHex(colorsColl[i].color);
+    tile.setAttribute('aria-label', label);
+    tile.setAttribute('title', label);
+
     $(customize.IDS.COLORS_MENU).appendChild(tile);
   }
 

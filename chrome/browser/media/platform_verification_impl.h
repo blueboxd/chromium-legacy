@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/frame_service_base.h"
-#include "media/mojo/interfaces/platform_verification.mojom.h"
+#include "media/mojo/mojom/platform_verification.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"

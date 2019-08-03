@@ -30,23 +30,22 @@ class MultipartUploadRequestTest : public testing::Test {
 
 class MockMultipartUploadRequest : public MultipartUploadRequest {
  public:
-  MockMultipartUploadRequest(const std::string& metadata,
-                             const std::string& data,
-                             Callback callback)
+  MockMultipartUploadRequest()
       : MultipartUploadRequest(nullptr,
                                GURL(),
-                               metadata,
-                               data,
+                               "",
+                               "",
                                TRAFFIC_ANNOTATION_FOR_TESTS,
-                               std::move(callback)) {}
+                               base::DoNothing()) {}
 
-  MOCK_METHOD(void, SendRequest, (), (override));
+  MOCK_METHOD0(SendRequest, void());
 };
 
 TEST_F(MultipartUploadRequestTest, GeneratesCorrectBody) {
-  MultipartUploadRequest request(nullptr, GURL(), "metadata", "data",
-                                 TRAFFIC_ANNOTATION_FOR_TESTS,
-                                 base::DoNothing());
+  std::unique_ptr<MultipartUploadRequest> request =
+      MultipartUploadRequest::Create(nullptr, GURL(), "metadata", "data",
+                                     TRAFFIC_ANNOTATION_FOR_TESTS,
+                                     base::DoNothing());
 
   std::string expected_body =
       "--boundary\r\n"
@@ -59,14 +58,14 @@ TEST_F(MultipartUploadRequestTest, GeneratesCorrectBody) {
       "file data\r\n"
       "--boundary--\r\n";
 
-  request.set_boundary("boundary");
-  EXPECT_EQ(request.GenerateRequestBody("metadata", "file data"),
+  request->set_boundary("boundary");
+  EXPECT_EQ(request->GenerateRequestBody("metadata", "file data"),
             expected_body);
 }
 
 TEST_F(MultipartUploadRequestTest, RetriesCorrectly) {
-  MockMultipartUploadRequest mock_request("metadata", "data",
-                                          base::DoNothing());
+  MockMultipartUploadRequest mock_request;
+
   EXPECT_CALL(mock_request, SendRequest())
       .Times(3)
       .WillRepeatedly(Invoke([&mock_request]() {

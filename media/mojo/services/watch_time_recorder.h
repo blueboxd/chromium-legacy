@@ -14,7 +14,7 @@
 #include "media/base/audio_codecs.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_codecs.h"
-#include "media/mojo/interfaces/watch_time_recorder.mojom.h"
+#include "media/mojo/mojom/watch_time_recorder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 

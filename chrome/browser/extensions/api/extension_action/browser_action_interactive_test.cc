@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -29,7 +28,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -341,9 +339,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
     return;
 
   OpenPopupViaAPI(false);
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
-  ASSERT_FALSE(service->GetExtensionById(last_loaded_extension_id(), false)
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  ASSERT_FALSE(registry
+                   ->GetExtensionById(last_loaded_extension_id(),
+                                      ExtensionRegistry::ENABLED)
                    ->permissions_data()
                    ->HasAPIPermissionForTab(
                        SessionTabHelper::IdForTab(

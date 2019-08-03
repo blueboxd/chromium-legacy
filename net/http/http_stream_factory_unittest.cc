@@ -40,7 +40,6 @@
 #include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
@@ -407,8 +406,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
                                   base::TimeDelta(),
                                   ProxyServer::Direct(),
                                   false /* is_for_websockets */,
-                                  common_connect_job_params,
-                                  nullptr /* ssl_config_service */),
+                                  common_connect_job_params),
         last_num_streams_(-1) {}
 
   int last_num_streams() const { return last_num_streams_; }
@@ -791,7 +789,7 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
 
     HttpNetworkSession::Context session_context;
     SSLConfigServiceDefaults ssl_config_service;
-    HttpServerPropertiesImpl http_server_properties;
+    HttpServerProperties http_server_properties;
     MockClientSocketFactory socket_factory;
     session_context.client_socket_factory = &socket_factory;
     MockHostResolver host_resolver;
@@ -924,7 +922,7 @@ void SetupForQuicAlternativeProxyTest(
     MockClientSocketFactory* socket_factory,
     ProxyResolutionService* proxy_resolution_service,
     TestProxyDelegate* test_proxy_delegate,
-    HttpServerPropertiesImpl* http_server_properties,
+    HttpServerProperties* http_server_properties,
     MockCertVerifier* cert_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
     MultiLogCTVerifier* ct_verifier,
@@ -973,7 +971,7 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyMarkedAsBad) {
               "HTTPS badproxy:99; HTTPS badfallbackproxy:98; DIRECT",
               TRAFFIC_ANNOTATION_FOR_TESTS);
       TestProxyDelegate test_proxy_delegate;
-      HttpServerPropertiesImpl http_server_properties;
+      HttpServerProperties http_server_properties;
       MockCertVerifier cert_verifier;
       DefaultCTPolicyEnforcer ct_policy_enforcer;
       MultiLogCTVerifier ct_verifier;
@@ -1087,7 +1085,7 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyNotMarkedAsBad) {
         ProxyResolutionService::CreateFixedFromPacResult(
             "HTTPS badproxy:99; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
     TestProxyDelegate test_proxy_delegate;
-    HttpServerPropertiesImpl http_server_properties;
+    HttpServerProperties http_server_properties;
     MockCertVerifier cert_verifier;
     DefaultCTPolicyEnforcer ct_policy_enforcer;
     MultiLogCTVerifier ct_verifier;
@@ -1182,7 +1180,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     session_params.enable_quic = true;
 
     // Set up QUIC as alternative_service.
-    HttpServerPropertiesImpl http_server_properties;
+    HttpServerProperties http_server_properties;
     const AlternativeService alternative_service(kProtoQUIC, url.host().c_str(),
                                                  url.IntPort());
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
@@ -1228,7 +1226,7 @@ TEST_F(HttpStreamFactoryTest, OnlyOnePreconnectToProxyServer) {
               "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
 
       // Set up the proxy server as a server that supports request priorities.
-      HttpServerPropertiesImpl http_server_properties;
+      HttpServerProperties http_server_properties;
       if (set_http_server_properties) {
         url::SchemeHostPort spdy_server("https", "myproxy.org", 443);
         http_server_properties.SetSupportsSpdy(spdy_server, true);
@@ -1312,7 +1310,7 @@ TEST_F(HttpStreamFactoryTest, ProxyServerPreconnectDifferentPrivacyModes) {
           "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Set up the proxy server as a server that supports request priorities.
-  HttpServerPropertiesImpl http_server_properties;
+  HttpServerProperties http_server_properties;
 
   url::SchemeHostPort spdy_server("https", "myproxy.org", 443);
   http_server_properties.SetSupportsSpdy(spdy_server, true);
@@ -1710,7 +1708,7 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverProxyWithPreconnects) {
       "https://myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Set up the proxy server as a server that supports request priorities.
-  auto http_server_properties = std::make_unique<HttpServerPropertiesImpl>();
+  auto http_server_properties = std::make_unique<HttpServerProperties>();
   url::SchemeHostPort spdy_server("https", "myproxy.org", 443);
   http_server_properties->SetSupportsSpdy(spdy_server, true);
   session_deps.http_server_properties = std::move(http_server_properties);
@@ -2338,7 +2336,7 @@ class HttpStreamFactoryBidirectionalQuicTest
   MockCertVerifier cert_verifier_;
   ProofVerifyDetailsChromium verify_details_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
   TransportSecurityState transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;

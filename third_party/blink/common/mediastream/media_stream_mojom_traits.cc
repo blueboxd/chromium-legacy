@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "media/base/ipc/media_param_traits.h"
 #include "media/capture/mojom/video_capture_types_mojom_traits.h"
-#include "media/mojo/interfaces/display_media_information.mojom.h"
+#include "media/mojo/mojom/display_media_information.mojom.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 
 namespace mojo {

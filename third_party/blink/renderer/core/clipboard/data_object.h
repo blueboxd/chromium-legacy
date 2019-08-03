@@ -43,7 +43,6 @@
 namespace blink {
 
 class KURL;
-class SharedBuffer;
 class WebDragData;
 
 enum class PasteMode;

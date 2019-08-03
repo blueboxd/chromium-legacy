@@ -15,7 +15,7 @@
 #include "media/base/decode_status.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_decoder.h"
-#include "media/mojo/interfaces/video_decoder.mojom.h"
+#include "media/mojo/mojom/video_decoder.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

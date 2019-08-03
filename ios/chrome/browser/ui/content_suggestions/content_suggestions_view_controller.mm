@@ -66,7 +66,6 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 @synthesize overscrollDelegate = _overscrollDelegate;
 @synthesize scrolledToTop = _scrolledToTop;
 @synthesize metricsRecorder = _metricsRecorder;
-@synthesize containsToolbar = _containsToolbar;
 @dynamic collectionViewModel;
 
 #pragma mark - Lifecycle

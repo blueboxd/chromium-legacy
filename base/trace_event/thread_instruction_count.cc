@@ -105,7 +105,9 @@ ThreadInstructionCount ThreadInstructionCount::Now() {
 
   uint64_t instructions = 0;
   ssize_t bytes_read = read(fd, &instructions, sizeof(instructions));
-  DCHECK_EQ(bytes_read, static_cast<ssize_t>(sizeof(instructions)));
+  CHECK_EQ(bytes_read, static_cast<ssize_t>(sizeof(instructions)))
+      << "Short reads of small size from kernel memory is not expected. If "
+         "this fails, use HANDLE_EINTR.";
   return ThreadInstructionCount(instructions);
 #endif  // defined(OS_LINUX)
   return ThreadInstructionCount();

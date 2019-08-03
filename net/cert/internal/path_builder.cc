@@ -545,8 +545,7 @@ CertPathBuilder::CertPathBuilder(
     InitialExplicitPolicy initial_explicit_policy,
     const std::set<der::Input>& user_initial_policy_set,
     InitialPolicyMappingInhibit initial_policy_mapping_inhibit,
-    InitialAnyPolicyInhibit initial_any_policy_inhibit,
-    Result* result)
+    InitialAnyPolicyInhibit initial_any_policy_inhibit)
     : cert_path_iter_(new CertPathIter(std::move(cert), trust_store)),
       delegate_(delegate),
       time_(time),
@@ -554,10 +553,8 @@ CertPathBuilder::CertPathBuilder(
       initial_explicit_policy_(initial_explicit_policy),
       user_initial_policy_set_(user_initial_policy_set),
       initial_policy_mapping_inhibit_(initial_policy_mapping_inhibit),
-      initial_any_policy_inhibit_(initial_any_policy_inhibit),
-      out_result_(result) {
+      initial_any_policy_inhibit_(initial_any_policy_inhibit) {
   DCHECK(delegate);
-  *result = Result();
   // The TrustStore also implements the CertIssuerSource interface.
   AddCertIssuerSource(trust_store);
 }
@@ -577,7 +574,8 @@ void CertPathBuilder::SetDeadline(base::TimeTicks deadline) {
   deadline_ = deadline;
 }
 
-void CertPathBuilder::Run() {
+CertPathBuilder::Result CertPathBuilder::Run() {
+  Result result;
   uint32_t iteration_count = 0;
 
   while (true) {
@@ -589,13 +587,13 @@ void CertPathBuilder::Run() {
                                       &iteration_count, max_iteration_count_)) {
       // No more paths to check.
       if (max_iteration_count_ > 0 && iteration_count > max_iteration_count_) {
-        out_result_->exceeded_iteration_limit = true;
+        result.exceeded_iteration_limit = true;
       }
       if (!deadline_.is_null() && base::TimeTicks::Now() > deadline_) {
-        out_result_->exceeded_deadline = true;
+        result.exceeded_deadline = true;
       }
       RecordIterationCountHistogram(iteration_count);
-      return;
+      return result;
     }
 
     // Verify the entire certificate chain.
@@ -613,25 +611,26 @@ void CertPathBuilder::Run() {
 
     bool path_is_good = result_path->IsValid();
 
-    AddResultPath(std::move(result_path));
+    AddResultPath(std::move(result_path), &result);
 
     if (path_is_good) {
       RecordIterationCountHistogram(iteration_count);
       // Found a valid path, return immediately.
       // TODO(mattm): add debug/test mode that tries all possible paths.
-      return;
+      return result;
     }
     // Path did not verify. Try more paths.
   }
 }
 
 void CertPathBuilder::AddResultPath(
-    std::unique_ptr<CertPathBuilderResultPath> result_path) {
+    std::unique_ptr<CertPathBuilderResultPath> result_path,
+    Result* out_result) {
   // TODO(mattm): set best_result_index based on number or severity of errors.
   if (result_path->IsValid())
-    out_result_->best_result_index = out_result_->paths.size();
+    out_result->best_result_index = out_result->paths.size();
   // TODO(mattm): add flag to only return a single path or all attempted paths?
-  out_result_->paths.push_back(std::move(result_path));
+  out_result->paths.push_back(std::move(result_path));
 }
 
 }  // namespace net

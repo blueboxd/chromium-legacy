@@ -4,9 +4,9 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/perf_time_logger.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -91,7 +91,8 @@ void UDPSocketPerfTest::WritePacketsToSocket(UDPClientSocket* socket,
 }
 
 void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
-  base::MessageLoopForIO message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   const uint16_t kPort = 9999;
 
   // Setup the server to listen.

@@ -27,7 +27,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_migrator.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_component_loader.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
@@ -41,7 +40,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/common/extension.h"
@@ -339,10 +338,12 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     bool keep_if_present = false;
     if (extension->GetBoolean(kKeepIfPresent, &keep_if_present) &&
         keep_if_present && profile_) {
-      ExtensionServiceInterface* extension_service =
-          ExtensionSystem::Get(profile_)->extension_service();
-      const Extension* extension = extension_service ?
-          extension_service->GetExtensionById(extension_id, true) : NULL;
+      ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
+      const Extension* extension =
+          extension_registry
+              ? extension_registry->GetExtensionById(
+                    extension_id, ExtensionRegistry::COMPATIBILITY)
+              : nullptr;
       if (!extension) {
         unsupported_extensions.insert(extension_id);
         InstallationReporter::ReportFailure(

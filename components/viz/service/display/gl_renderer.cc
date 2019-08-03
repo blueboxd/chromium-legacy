@@ -594,28 +594,32 @@ static SkColorType GlFormatToSkFormat(GrGLenum format) {
   }
 }
 
+static GrGLenum SkFormatToGlFormat(SkColorType format) {
+  switch (format) {
+    case kRGB_888x_SkColorType:
+      return GL_RGB8_OES;
+      break;
+    case kRGBA_8888_SkColorType:
+      return GL_RGBA8_OES;
+      break;
+    case kBGRA_8888_SkColorType:
+      return GL_BGRA8_EXT;
+      break;
+    default:
+      NOTREACHED();
+      return GL_RGBA8_OES;
+  }
+}
+
 // Wrap a given texture in a Ganesh backend texture.
 static sk_sp<SkImage> WrapTexture(uint32_t texture_id,
                                   uint32_t target,
                                   const gfx::Size& size,
                                   GrContext* context,
                                   bool flip_texture,
-                                  SkColorType format) {
-  GrGLenum texture_format(GL_RGBA8_OES);
-  switch (format) {
-    case kRGB_888x_SkColorType:
-      texture_format = GL_RGB8_OES;
-      break;
-    case kRGBA_8888_SkColorType:
-      texture_format = GL_RGBA8_OES;
-      break;
-    case kBGRA_8888_SkColorType:
-      texture_format = GL_BGRA8_EXT;
-      break;
-    default:
-      NOTREACHED();
-  }
-
+                                  SkColorType format,
+                                  bool adopt_texture) {
+  GrGLenum texture_format = SkFormatToGlFormat(format);
   GrGLTextureInfo texture_info;
   texture_info.fTarget = target;
   texture_info.fID = texture_id;
@@ -624,8 +628,13 @@ static sk_sp<SkImage> WrapTexture(uint32_t texture_id,
                                    GrMipMapped::kNo, texture_info);
   GrSurfaceOrigin origin =
       flip_texture ? kBottomLeft_GrSurfaceOrigin : kTopLeft_GrSurfaceOrigin;
-  return SkImage::MakeFromTexture(context, backend_texture, origin, format,
-                                  kPremul_SkAlphaType, nullptr);
+  if (adopt_texture) {
+    return SkImage::MakeFromAdoptedTexture(
+        context, backend_texture, origin, format, kPremul_SkAlphaType, nullptr);
+  } else {
+    return SkImage::MakeFromTexture(context, backend_texture, origin, format,
+                                    kPremul_SkAlphaType, nullptr);
+  }
 }
 
 static gfx::RectF CenteredRect(const gfx::Rect& tile_rect) {
@@ -887,12 +896,11 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     return nullptr;
 
   auto filter = paint_filter->cached_sk_filter_;
-  bool flip_texture = true;
-
   sk_sp<SkImage> src_image = WrapTexture(
       params->background_texture, GL_TEXTURE_2D, params->background_rect.size(),
-      use_gr_context->context(), flip_texture,
-      GlFormatToSkFormat(params->background_texture_format));
+      use_gr_context->context(), /*flip_texture=*/true,
+      GlFormatToSkFormat(params->background_texture_format),
+      /*adopt_texture=*/false);
   if (!src_image) {
     TRACE_EVENT_INSTANT0("cc",
                          "ApplyBackdropFilters wrap background texture failed",
@@ -976,13 +984,48 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   //   2. Render the parent render pass (containing the "backdrop image" to be
   //      filtered).
   //   3. Run this code, to filter, and possibly mask, the backdrop image.
-  const SkImage* mask_image = nullptr;
+  sk_sp<const SkImage> mask_image = nullptr;
   base::Optional<DisplayResourceProvider::ScopedReadLockSkImage>
-      backdrop_image_lock;
+      backdrop_image_lock_sk;
+  base::Optional<DisplayResourceProvider::ScopedSamplerGL>
+      backdrop_image_lock_gl;
   if (quad->mask_applies_to_backdrop && quad->mask_resource_id()) {
-    backdrop_image_lock.emplace(resource_provider_, quad->mask_resource_id());
-    // TODO(984766): This will be null on Mac, so masks will not be applied.
-    mask_image = backdrop_image_lock->sk_image();
+    if (resource_provider_->GetResourceTextureTarget(
+            quad->mask_resource_id()) == GL_TEXTURE_RECTANGLE_ARB) {
+      // On some platforms, Skia doesn't know that the hardware supports
+      // GL_TEXTURE_RECTANGLE. So for texture rectangles, fall back to using
+      // CopyTextureCHROMIUM to copy from the mask resource to a newly-created
+      // texture, and then wrap that texture with an SkImage.
+      backdrop_image_lock_gl.emplace(resource_provider_,
+                                     quad->mask_resource_id(), GL_LINEAR);
+      GLenum source_id = backdrop_image_lock_gl->texture_id();
+      GLint internalformat = GLInternalFormat(
+          resource_provider_->GetResourceFormat(quad->mask_resource_id()));
+      GLuint dest_id;
+      gl_->GenTextures(1, &dest_id);
+      gl_->BindTexture(GL_TEXTURE_2D, dest_id);
+      // Format is the same as internalformat for the formats being considered.
+      GLint format = internalformat;
+      gl_->TexImage2D(GL_TEXTURE_2D, 0, internalformat,
+                      quad->mask_texture_size.width(),
+                      quad->mask_texture_size.height(), 0, format,
+                      GL_UNSIGNED_BYTE, nullptr);
+      gl_->CopyTextureCHROMIUM(source_id, 0, GL_TEXTURE_2D, dest_id, 0,
+                               internalformat, GL_UNSIGNED_BYTE,
+                               /*unpack_flip_y=*/false,
+                               /*unpack_premultiply_alpha=*/false,
+                               /*unpack_unmultiply_alpha=*/false);
+      mask_image = WrapTexture(dest_id, GL_TEXTURE_2D, quad->mask_texture_size,
+                               use_gr_context->context(), false,
+                               GlFormatToSkFormat(internalformat),
+                               /*adopt_texture=*/true);
+    } else {
+      backdrop_image_lock_sk.emplace(
+          resource_provider_, quad->mask_resource_id(), kPremul_SkAlphaType,
+          kTopLeft_GrSurfaceOrigin);
+      mask_image = backdrop_image_lock_sk->TakeSkImage();
+    }
+    DCHECK(mask_image);
   }
   if (mask_image) {
     // Scale normalized uv rect into absolute texel coordinates.
@@ -1288,7 +1331,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
           sk_sp<SkImage> src_image = WrapTexture(
               params->contents_texture->id(), GL_TEXTURE_2D,
               params->contents_texture->size(), use_gr_context->context(),
-              params->flip_texture, kN32_SkColorType);
+              params->flip_texture, kN32_SkColorType, /*adopt_texture=*/false);
           params->filter_image = SkiaHelper::ApplyImageFilter(
               use_gr_context->context(), src_image, src_rect, params->dst_rect,
               quad->filters_scale, std::move(filter), &offset, &subset,
@@ -1304,7 +1347,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
                           prefilter_bypass_quad_texture_lock.target(),
                           prefilter_bypass_quad_texture_lock.size(),
                           use_gr_context->context(), params->flip_texture,
-                          kN32_SkColorType);
+                          kN32_SkColorType, /*adopt_texture=*/false);
           params->filter_image = SkiaHelper::ApplyImageFilter(
               use_gr_context->context(), src_image, src_rect, params->dst_rect,
               quad->filters_scale, std::move(filter), &offset, &subset,

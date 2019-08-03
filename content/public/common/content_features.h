@@ -65,7 +65,6 @@ CONTENT_EXPORT extern const base::Feature kMimeHandlerViewInCrossProcessFrame;
 CONTENT_EXPORT extern const base::Feature kMojoVideoCapture;
 CONTENT_EXPORT extern const base::Feature kMojoVideoCaptureSecondary;
 CONTENT_EXPORT extern const base::Feature kMouseSubframeNoImplicitCapture;
-CONTENT_EXPORT extern const base::Feature kNavigationLoaderOnUI;
 CONTENT_EXPORT extern const base::Feature kNavigationImmediateResponseBody;
 CONTENT_EXPORT extern const base::Feature kNetworkQualityEstimatorWebHoldback;
 CONTENT_EXPORT extern const base::Feature kNetworkServiceInProcess;

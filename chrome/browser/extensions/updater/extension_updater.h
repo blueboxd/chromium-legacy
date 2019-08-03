@@ -34,6 +34,7 @@ namespace extensions {
 
 class ExtensionCache;
 class ExtensionPrefs;
+class ExtensionRegistry;
 class ExtensionServiceInterface;
 class ExtensionSet;
 struct ExtensionUpdateCheckParams;
@@ -269,6 +270,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   ExtensionPrefs* extension_prefs_;
   PrefService* prefs_;
   Profile* profile_;
+
+  ExtensionRegistry* registry_;
 
   std::map<int, InProgressCheck> requests_in_progress_;
   int next_request_id_;

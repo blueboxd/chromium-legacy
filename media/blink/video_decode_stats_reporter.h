@@ -20,7 +20,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/video_codecs.h"
 #include "media/blink/media_blink_export.h"
-#include "media/mojo/interfaces/video_decode_stats_recorder.mojom.h"
+#include "media/mojo/mojom/video_decode_stats_recorder.mojom.h"
 
 namespace media {
 

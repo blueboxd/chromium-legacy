@@ -982,6 +982,8 @@ jumbo_component("base") {
     "trace_event/heap_profiler_event_filter.h",
     "trace_event/java_heap_dump_provider_android.cc",
     "trace_event/java_heap_dump_provider_android.h",
+    "trace_event/log_message.cc",
+    "trace_event/log_message.h",
     "trace_event/malloc_dump_provider.cc",
     "trace_event/malloc_dump_provider.h",
     "trace_event/memory_allocator_dump.cc",

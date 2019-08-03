@@ -10,6 +10,8 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/chromeos/onc_mojo.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="cups_add_printer_dialog.html">
 <link rel="import" href="cups_edit_printer_dialog.html">
 <link rel="import" href="cups_printer_shared_css.html">
@@ -19,11 +21,10 @@
 
 <dom-module id="settings-cups-printers">
   <template>
-    <style include="cups-printer-shared action-link">
+    <style include="cups-printer-shared action-link iron-flex
+        iron-flex-alignment">
       .custom-list-item {
-        align-items: center;
         border-bottom: var(--cr-separator-line);
-        display: flex;
         min-height: var(--settings-row-min-height);
       }
 
@@ -40,6 +41,20 @@
 
       #addPrinterText {
         flex: 1;
+      }
+
+      #cloudOffIcon {
+        --iron-icon-fill-color: rgb(95, 99, 104);
+        margin-bottom: 16px;
+      }
+
+      #connectionMessage {
+        text-align: center;
+        width: 250px;
+      }
+
+      #noConnectivityContentContainer {
+        margin-top: 32px;
       }
 
       #noSearchResultsMessage {
@@ -102,9 +117,6 @@
         <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
           $i18n{learnMore}
         </a>
-        <div class="secondary" hidden="[[canAddPrinter_]]">
-          $i18n{requireNetworkMessage}
-        </div>
         <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter_,
             prefs.native_printing.user_native_printers_allowed.value)]]">
           <cr-policy-pref-indicator
@@ -114,21 +126,33 @@
         </template>
       </div>
 
-      <div id="addPrinterSection">
-        <div class="custom-list-item">
-          <div id="addPrinterText">$i18n{addCupsPrinter}</div>
-          <cr-button class="action-button" id="addPrinter"
-              on-click="onAddPrinterTap_"
-              disabled="[[!addPrinterButtonActive_(canAddPrinter_,
-                  prefs.native_printing.user_native_printers_allowed.value)]]">
-            $i18n{addCupsPrinter}
-          </cr-button>
+      <template is="dom-if" if="[[canAddPrinter_]]">
+        <div id="addPrinterSection">
+          <div class="layout horizontal center custom-list-item">
+            <div id="addPrinterText">$i18n{addCupsPrinter}</div>
+            <cr-button class="action-button" id="addPrinter"
+                on-click="onAddPrinterTap_"
+                disabled="[[!addPrinterButtonActive_(canAddPrinter_,
+                    prefs.native_printing.user_native_printers_allowed.value)]]"
+            >
+              $i18n{addCupsPrinter}
+            </cr-button>
+          </div>
         </div>
-      </div>
+        <settings-cups-nearby-printers search-term="[[searchTerm]]"
+            active-printer="{{activePrinter}}">
+        </settings-cups-nearby-printers>
+      </template>
 
-      <settings-cups-nearby-printers search-term="[[searchTerm]]"
-          active-printer="{{activePrinter}}">
-      </settings-cups-nearby-printers>
+      <template is="dom-if" if="[[!canAddPrinter_]]">
+        <div id="noConnectivityContentContainer"
+            class="layout vertical center">
+          <iron-icon id="cloudOffIcon" icon="settings20:cloud_off"></iron-icon>
+          <div id="connectionMessage" class="secondary">
+            $i18n{checkNetworkMessage}
+          </div>
+        </div>
+      </template>
     </template>
 
     <settings-cups-add-printer-dialog id="addPrinterDialog"

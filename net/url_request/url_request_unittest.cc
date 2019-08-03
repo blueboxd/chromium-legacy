@@ -89,7 +89,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
@@ -105,6 +105,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/ssl_server_config.h"
+#include "net/ssl/test_ssl_config_service.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -4380,33 +4381,6 @@ std::unique_ptr<test_server::HttpResponse> HandleRedirectConnect(
                                  "http://www.destination.com/foo.js");
   return std::move(http_response);
 }
-
-class TestSSLConfigService : public SSLConfigService {
- public:
-  TestSSLConfigService()
-      : min_version_(kDefaultSSLVersionMin),
-        max_version_(kDefaultSSLVersionMax) {}
-  ~TestSSLConfigService() override = default;
-
-  void set_max_version(uint16_t version) { max_version_ = version; }
-  void set_min_version(uint16_t version) { min_version_ = version; }
-
-  // SSLConfigService:
-  void GetSSLConfig(SSLConfig* config) override {
-    *config = SSLConfig();
-    config->version_min = min_version_;
-    config->version_max = max_version_;
-  }
-
-  bool CanShareConnectionWithClientCerts(
-      const std::string& hostname) const override {
-    return false;
-  }
-
- private:
-  uint16_t min_version_;
-  uint16_t max_version_;
-};
 
 }  // namespace
 
@@ -11226,7 +11200,8 @@ TEST_F(HTTPSRequestTest, NoSessionResumptionBetweenPrivacyModes) {
 class HTTPSFallbackTest : public TestWithScopedTaskEnvironment {
  public:
   HTTPSFallbackTest() : context_(true) {
-    ssl_config_service_ = std::make_unique<TestSSLConfigService>();
+    ssl_config_service_ =
+        std::make_unique<TestSSLConfigService>(SSLContextConfig());
     context_.set_ssl_config_service(ssl_config_service_.get());
   }
   ~HTTPSFallbackTest() override = default;
@@ -13344,8 +13319,9 @@ class HTTPSEarlyDataTest : public TestWithScopedTaskEnvironment {
     cert_verifier_.set_default_result(OK);
     context_.set_cert_verifier(&cert_verifier_);
 
-    ssl_config_service_ = std::make_unique<TestSSLConfigService>();
-    ssl_config_service_->set_max_version(SSL_PROTOCOL_VERSION_TLS1_3);
+    SSLContextConfig config;
+    config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+    ssl_config_service_ = std::make_unique<TestSSLConfigService>(config);
     context_.set_ssl_config_service(ssl_config_service_.get());
 
     context_.Init();

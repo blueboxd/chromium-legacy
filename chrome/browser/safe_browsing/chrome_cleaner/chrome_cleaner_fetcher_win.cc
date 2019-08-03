@@ -191,9 +191,8 @@ void ChromeCleanerFetcher::OnTemporaryDirectoryCreated(bool success) {
 
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = GetSRTDownloadURL();
-  request->load_flags = net::LOAD_DISABLE_CACHE |
-                        net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES;
+  request->load_flags = net::LOAD_DISABLE_CACHE;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   url_loader_ = network::SimpleURLLoader::Create(
       std::move(request), kChromeCleanerTrafficAnnotation);

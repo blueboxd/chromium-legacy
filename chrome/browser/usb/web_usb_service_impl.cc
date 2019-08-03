@@ -14,7 +14,7 @@
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
-#include "media/mojo/interfaces/remoting_common.mojom.h"
+#include "media/mojo/mojom/remoting_common.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 
 WebUsbServiceImpl::WebUsbServiceImpl(

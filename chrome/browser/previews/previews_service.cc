@@ -10,9 +10,9 @@
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/data_saver/data_saver_top_host_provider.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
-#include "chrome/browser/previews/previews_top_host_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
@@ -110,7 +110,7 @@ PreviewsService::GetAllowedPreviews() {
 
 PreviewsService::PreviewsService(content::BrowserContext* browser_context)
     : top_host_provider_(
-          std::make_unique<PreviewsTopHostProvider>(browser_context)),
+          std::make_unique<DataSaverTopHostProvider>(browser_context)),
       previews_lite_page_decider_(
           std::make_unique<PreviewsLitePageDecider>(browser_context)),
       previews_offline_helper_(

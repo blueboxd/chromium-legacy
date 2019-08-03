@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "media/audio/audio_sync_reader.h"
 #include "media/base/audio_renderer_sink.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"

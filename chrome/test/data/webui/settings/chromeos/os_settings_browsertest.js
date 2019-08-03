@@ -765,8 +765,12 @@ var OSSettingsPrinterLandingPageTest = class extends OSSettingsBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/assert.js',
+      '//ui/webui/resources/js/promise_resolver.js',
       BROWSER_SETTINGS_PATH + 'test_util.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
+      BROWSER_SETTINGS_PATH + '../chromeos/fake_networking_private.js',
+      BROWSER_SETTINGS_PATH + '../chromeos/fake_network_config_mojom.js',
       'test_cups_printers_browser_proxy.js',
       'cups_printer_landing_page_tests.js',
     ]);

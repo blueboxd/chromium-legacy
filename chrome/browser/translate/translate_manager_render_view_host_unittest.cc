@@ -251,8 +251,8 @@ class TranslateManagerRenderViewHostTest
     details.adopted_language = lang;
     ChromeTranslateClient::FromWebContents(web_contents())
         ->translate_driver()
-        .RegisterPage(fake_page_.BindToNewPagePtr(), details,
-                      page_translatable);
+        ->RegisterPage(fake_page_.BindToNewPagePtr(), details,
+                       page_translatable);
   }
 
   void SimulateOnPageTranslated(const std::string& source_lang,
@@ -428,7 +428,7 @@ class TranslateManagerRenderViewHostTest
     ChromeTranslateClient::CreateForWebContents(web_contents());
     ChromeTranslateClient::FromWebContents(web_contents())
         ->translate_driver()
-        .set_translate_max_reload_attempts(0);
+        ->set_translate_max_reload_attempts(0);
 
     infobar_observer_.Add(infobar_service());
   }
@@ -887,7 +887,7 @@ TEST_F(TranslateManagerRenderViewHostTest, Reload) {
   // immediately.
   ChromeTranslateClient::FromWebContents(web_contents())
       ->translate_driver()
-      .set_translate_max_reload_attempts(100);
+      ->set_translate_max_reload_attempts(100);
   ReloadAndWait(true);
   EXPECT_FALSE(TranslateUiVisible());
 }

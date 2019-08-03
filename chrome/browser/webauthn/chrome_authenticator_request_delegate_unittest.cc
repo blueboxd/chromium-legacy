@@ -86,6 +86,17 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   EXPECT_EQ(kTestPairedDeviceAddress2, second_address_value.GetString());
 }
 
+// Checks that DoesBlockRequestOnFailure does not crash if authenticator is
+// nullptr and reason is not kTimeout. Regression test for crbug.com/990136.
+TEST_F(ChromeAuthenticatorRequestDelegateTest,
+       DoesBlockRequestOnFailure__NullAuthenticator) {
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
+  EXPECT_TRUE(delegate.DoesBlockRequestOnFailure(
+      /*authenticator=*/nullptr,
+      ChromeAuthenticatorRequestDelegate::InterestingFailureReason::
+          kUserConsentDenied));
+}
+
 #if defined(OS_MACOSX)
 API_AVAILABLE(macos(10.12.2))
 std::string TouchIdMetadataSecret(

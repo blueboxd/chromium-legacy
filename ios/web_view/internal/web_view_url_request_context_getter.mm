@@ -24,7 +24,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/transport_security_persister.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
@@ -119,8 +119,7 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
                 {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
 
     storage_->set_http_server_properties(
-        std::unique_ptr<net::HttpServerProperties>(
-            new net::HttpServerPropertiesImpl()));
+        std::make_unique<net::HttpServerProperties>());
 
     std::unique_ptr<net::HostResolver> host_resolver(
         net::HostResolver::CreateStandaloneResolver(

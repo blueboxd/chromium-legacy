@@ -2958,10 +2958,10 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
   // kTestFontName, but on Android it does not.
   Font test_font(kTestFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kTestFontName),
-            base::ToLowerASCII(test_font.GetActualFontNameForTesting()));
+            base::ToLowerASCII(test_font.GetActualFontName()));
   Font cjk_font(kCJKFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kCJKFontName),
-            base::ToLowerASCII(cjk_font.GetActualFontNameForTesting()));
+            base::ToLowerASCII(cjk_font.GetActualFontName()));
   // "a" should be rendered with the test font, not with the CJK font.
   const char* test_font_text = "a";
   // "円" (U+5168 Han character YEN) should render with the CJK font, not
@@ -4761,9 +4761,9 @@ TEST_F(RenderTextTest, HarfBuzz_FontListFallback) {
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2u, fonts.size());
   ASSERT_EQ(base::ToLowerASCII(kTestFontName),
-            base::ToLowerASCII(fonts[0].GetActualFontNameForTesting()));
+            base::ToLowerASCII(fonts[0].GetActualFontName()));
   ASSERT_EQ(base::ToLowerASCII(kSymbolFontName),
-            base::ToLowerASCII(fonts[1].GetActualFontNameForTesting()));
+            base::ToLowerASCII(fonts[1].GetActualFontName()));
 
   // "⊕" (U+2295, CIRCLED PLUS) should be rendered with Symbol rather than
   // falling back to some other font that's present on the system.

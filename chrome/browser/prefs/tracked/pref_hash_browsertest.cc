@@ -22,7 +22,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -32,6 +31,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/template_url_data.h"
 #include "content/public/test/test_launcher.h"
@@ -175,7 +176,7 @@ bool SupportsRegistryValidation() {
 //     verify preferenes throughout the tests provided by this fixture.
 //  2) Instantiate their test via the PREF_HASH_BROWSER_TEST macro above.
 // Based on top of ExtensionBrowserTest to allow easy interaction with the
-// ExtensionService.
+// ExtensionRegistry.
 class PrefHashBrowserTestBase
     : public extensions::ExtensionBrowserTest,
       public testing::WithParamInterface<std::string> {
@@ -540,7 +541,8 @@ class PrefHashBrowserTestUnchangedCustom
     EXPECT_EQ("http://example.com",
               profile()->GetPrefs()->GetString(prefs::kHomePage));
 
-    EXPECT_TRUE(extension_service()->GetExtensionById(kGoodCrxId, false));
+    EXPECT_TRUE(extension_registry()->GetExtensionById(
+        kGoodCrxId, extensions::ExtensionRegistry::ENABLED));
 
     // Reaction should be identical to unattacked default prefs.
     PrefHashBrowserTestUnchangedDefault::VerifyReactionToPrefAttack();
@@ -924,7 +926,9 @@ class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
                   BEGIN_ALLOW_SINGLE_BUCKET + 5));
 
     EXPECT_EQ(protection_level_ < PROTECTION_ENABLED_EXTENSIONS,
-              extension_service()->GetExtensionById(kGoodCrxId, true) != NULL);
+              extension_registry()->GetExtensionById(
+                  kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY) !=
+                  nullptr);
 
     // Nothing else should have triggered.
     EXPECT_EQ(

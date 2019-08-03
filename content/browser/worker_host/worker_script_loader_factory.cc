@@ -23,29 +23,23 @@ namespace content {
 
 WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
     int process_id,
-    ServiceWorkerNavigationHandle* service_worker_handle /* UI only */,
-    ServiceWorkerNavigationHandleCore* service_worker_handle_core /* IO only */,
+    ServiceWorkerNavigationHandle* service_worker_handle,
     base::WeakPtr<AppCacheHost> appcache_host,
     const BrowserContextGetter& browser_context_getter,
-    const ResourceContextGetter& resource_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : process_id_(process_id),
       appcache_host_(std::move(appcache_host)),
       browser_context_getter_(browser_context_getter),
-      resource_context_getter_(resource_context_getter),
       loader_factory_(std::move(loader_factory)) {
-  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (service_worker_handle) {
     service_worker_handle_ = service_worker_handle->AsWeakPtr();
   }
-  if (service_worker_handle_core) {
-    service_worker_handle_core_ = service_worker_handle_core->AsWeakPtr();
-  }
 }
 
 WorkerScriptLoaderFactory::~WorkerScriptLoaderFactory() {
-  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void WorkerScriptLoaderFactory::CreateLoaderAndStart(
@@ -56,7 +50,7 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(resource_request.resource_type ==
              static_cast<int>(ResourceType::kWorker) ||
          resource_request.resource_type ==
@@ -67,9 +61,8 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
   // Create a WorkerScriptLoader to load the script.
   auto script_loader = std::make_unique<WorkerScriptLoader>(
       process_id_, routing_id, request_id, options, resource_request,
-      std::move(client), service_worker_handle_, service_worker_handle_core_,
-      appcache_host_, browser_context_getter_, resource_context_getter_,
-      loader_factory_, traffic_annotation);
+      std::move(client), service_worker_handle_, appcache_host_,
+      browser_context_getter_, loader_factory_, traffic_annotation);
   script_loader_ = script_loader->GetWeakPtr();
   mojo::MakeStrongBinding(std::move(script_loader), std::move(request));
 }

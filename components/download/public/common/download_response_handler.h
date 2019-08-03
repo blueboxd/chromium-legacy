@@ -53,7 +53,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
       const std::string& request_origin,
       DownloadSource download_source,
       bool ignore_content_length_mismatch,
-      std::vector<GURL> url_chain);
+      std::vector<GURL> url_chain,
+      bool is_background_mode);
   ~DownloadResponseHandler() override;
 
   // network::mojom::URLLoaderClient
@@ -107,6 +108,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   // Mojo interface ptr to send the completion status to the download sink.
   mojom::DownloadStreamClientPtr client_ptr_;
 
+  // Whether the download is running in background mode.
+  bool is_background_mode_;
   DISALLOW_COPY_AND_ASSIGN(DownloadResponseHandler);
 };
 

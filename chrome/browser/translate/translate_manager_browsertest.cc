@@ -2,35 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/translate/core/browser/translate_manager.h"
-
 #include <memory>
 
 #include "base/bind.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
+#include "chrome/browser/translate/translate_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_error_details.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_switches.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "url/gurl.h"
+
+namespace translate {
 
 namespace {
 
@@ -190,28 +191,27 @@ static const char kTestScriptLoadError[] =
 
 }  // namespace
 
-namespace translate {
-
 class TranslateManagerBrowserTest : public InProcessBrowserTest {
  public:
   TranslateManagerBrowserTest() {
-    error_subscription_ =
-        translate::TranslateManager::RegisterTranslateErrorCallback(
-            base::Bind(&TranslateManagerBrowserTest::OnTranslateError,
-                       base::Unretained(this)));
+    error_subscription_ = TranslateManager::RegisterTranslateErrorCallback(
+        base::Bind(&TranslateManagerBrowserTest::OnTranslateError,
+                   base::Unretained(this)));
   }
   ~TranslateManagerBrowserTest() override {}
 
-  void WaitUntilLanguageDetected() { language_detected_signal_->Wait(); }
-  void WaitUntilPageTranslated() { page_translated_signal_->Wait(); }
+  void WaitUntilLanguageDetermined() { language_determined_waiter_->Wait(); }
+
+  void WaitUntilPageTranslated() {
+    TranslateWaiter(browser()->tab_strip_model()->GetActiveWebContents(),
+                    TranslateWaiter::WaitEvent::kPageTranslated)
+        .Wait();
+  }
 
   void ResetObserver() {
-    language_detected_signal_.reset(new LangageDetectionObserver(
-        chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-        content::NotificationService::AllSources()));
-    page_translated_signal_.reset(new content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_PAGE_TRANSLATED,
-        content::NotificationService::AllSources()));
+    language_determined_waiter_ = std::make_unique<TranslateWaiter>(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        TranslateWaiter::WaitEvent::kLanguageDetermined);
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
@@ -227,13 +227,11 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
     return std::move(http_response);
   }
 
-  void OnTranslateError(const translate::TranslateErrorDetails& details) {
+  void OnTranslateError(const TranslateErrorDetails& details) {
     error_type_ = details.error;
   }
 
-  translate::TranslateErrors::Type GetPageTranslatedResult() {
-    return error_type_;
-  }
+  TranslateErrors::Type GetPageTranslatedResult() { return error_type_; }
 
   ChromeTranslateClient* GetChromeTranslateClient() {
     return ChromeTranslateClient::FromWebContents(
@@ -247,7 +245,7 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
   }
   void SetUpOnMainThread() override {
     ResetObserver();
-    error_type_ = translate::TranslateErrors::NONE;
+    error_type_ = TranslateErrors::NONE;
 
     host_resolver()->AddRule("www.google.com", "127.0.0.1");
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
@@ -262,10 +260,12 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
         ::switches::kEnableExperimentalWebPlatformFeatures);
 
     command_line->AppendSwitchASCII(
-        translate::switches::kTranslateScriptURL,
+        switches::kTranslateScriptURL,
         embedded_test_server()->GetURL("/mock_translate_script.js").spec());
   }
   void TearDownOnMainThread() override {
+    language_determined_waiter_.reset();
+
     EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
     InProcessBrowserTest::TearDownOnMainThread();
@@ -274,21 +274,16 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
   void SetTranslateScript(const std::string& script) { script_ = script; }
 
  private:
-  translate::TranslateErrors::Type error_type_;
+  TranslateErrors::Type error_type_;
 
-  std::unique_ptr<
-      translate::TranslateManager::TranslateErrorCallbackList::Subscription>
+  std::unique_ptr<TranslateManager::TranslateErrorCallbackList::Subscription>
       error_subscription_;
 
-  using LangageDetectionObserver =
-      ui_test_utils::WindowedNotificationObserverWithDetails<
-          translate::LanguageDetectionDetails>;
-
-  std::unique_ptr<LangageDetectionObserver> language_detected_signal_;
-  std::unique_ptr<content::WindowedNotificationObserver>
-      page_translated_signal_;
+  std::unique_ptr<TranslateWaiter> language_determined_waiter_;
 
   std::string script_;
+
+  DISALLOW_COPY_AND_ASSIGN(TranslateManagerBrowserTest);
 };
 
 // Tests that the CLD (Compact Language Detection) works properly.
@@ -299,17 +294,17 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageLanguageDetection) {
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Open a new tab with a page in English.
-  ResetObserver();
   AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/english_page.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("en",
             chrome_translate_client->GetLanguageState().original_language());
@@ -318,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageLanguageDetection) {
   // Now navigate to a page in French.
   ui_test_utils::NavigateToURL(
       browser(), GURL(embedded_test_server()->GetURL("/french_page.html")));
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
@@ -335,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
@@ -343,13 +338,13 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // Open a new tab with a page in French with incorrect HTML language
   // attribute specified. The language attribute should be overridden by the
   // language detection.
-  ResetObserver();
   AddTabAtIndex(
       0,
       GURL(embedded_test_server()->GetURL("/french_page_lang_conflict.html")),
       ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
@@ -357,13 +352,13 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // Open a new tab with a page in Korean with incorrect HTML language
   // attribute specified. The language attribute should not be overridden by the
   // language detection.
-  ResetObserver();
   AddTabAtIndex(
       0,
       GURL(embedded_test_server()->GetURL("/korean_page_lang_conflict.html")),
       ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("en",
             chrome_translate_client->GetLanguageState().original_language());
@@ -378,42 +373,40 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationSuccess) {
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Open a new tab with a page in French.
-  ResetObserver();
   AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Translate the page through TranslateManager.
-  translate::TranslateManager* manager =
-      chrome_translate_client->GetTranslateManager();
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
   manager->TranslatePage(
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
 
-  // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
   EXPECT_FALSE(chrome_translate_client->GetLanguageState().translation_error());
-  EXPECT_EQ(translate::TranslateErrors::NONE, GetPageTranslatedResult());
+  EXPECT_EQ(TranslateErrors::NONE, GetPageTranslatedResult());
 }
 
 // Test that the translation was successful in an about:blank page.
 // This is a regression test for https://crbug.com/943685.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationAboutBlank) {
   SetTranslateScript(kTestValidScript);
-  ResetObserver();
   AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
 
   // Open a pop-up window and leave it at the initial about:blank URL.
   content::WebContentsAddedObserver popup_observer;
@@ -429,8 +422,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationAboutBlank) {
   // Translate the about:blank page.
   ChromeTranslateClient* chrome_translate_client =
       ChromeTranslateClient::FromWebContents(popup);
-  translate::TranslateManager* manager =
-      chrome_translate_client->GetTranslateManager();
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
   manager->TranslatePage("fr", "en", true);
 
   // Verify that the crash from https://crbug.com/943685 didn't happen.
@@ -439,7 +431,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationAboutBlank) {
   // Wait for translation to finish and verify it was successful.
   WaitUntilPageTranslated();
   EXPECT_FALSE(chrome_translate_client->GetLanguageState().translation_error());
-  EXPECT_EQ(translate::TranslateErrors::NONE, GetPageTranslatedResult());
+  EXPECT_EQ(TranslateErrors::NONE, GetPageTranslatedResult());
 }
 
 // Test that hrefTranslate is propagating properly
@@ -452,19 +444,19 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateSuccess) {
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
-  ResetObserver();
   // Load a German page and detect it's language
   AddTabAtIndex(0,
                 GURL(embedded_test_server()->GetURL(
                     "www.google.com", "/href_translate_test.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("de",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -478,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateSuccess) {
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
 
   // Detect language on the new page
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -505,18 +497,18 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
-  ResetObserver();
   // Load a German page and detect it's language
   AddTabAtIndex(
       0, GURL(embedded_test_server()->GetURL("/href_translate_test.html")),
       ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("de",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -530,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
 
   // Detect language on the new page
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -547,19 +539,19 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateUnsupported) {
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
-  ResetObserver();
   // Load a German page and detect it's language
   AddTabAtIndex(0,
                 GURL(embedded_test_server()->GetURL(
                     "www.google.com", "/href_translate_test.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("de",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -576,7 +568,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateUnsupported) {
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
 
   // Detect language on the new page
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -593,19 +585,19 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateConflict) {
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
-  ResetObserver();
   // Load a German page and detect it's language
   AddTabAtIndex(0,
                 GURL(embedded_test_server()->GetURL(
                     "www.google.com", "/href_translate_test.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("de",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -620,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateConflict) {
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
 
   // Detect language on the new page
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -640,19 +632,19 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateNoHrefLang) {
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
-  ResetObserver();
   // Load a German page and detect it's language
   AddTabAtIndex(0,
                 GURL(embedded_test_server()->GetURL(
                     "www.google.com", "/href_translate_test.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("de",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -667,7 +659,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateNoHrefLang) {
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
 
   // Detect language on the new page
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -686,33 +678,30 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageTranslationError) {
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Open a new tab with about:blank page.
-  ResetObserver();
   AddTabAtIndex(0, GURL("about:blank"), ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Translate the page through TranslateManager.
-  translate::TranslateManager* manager =
-      chrome_translate_client->GetTranslateManager();
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
   manager->TranslatePage(
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
 
-  // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
   EXPECT_TRUE(chrome_translate_client->GetLanguageState().translation_error());
-  EXPECT_EQ(translate::TranslateErrors::TRANSLATION_ERROR,
-            GetPageTranslatedResult());
+  EXPECT_EQ(TranslateErrors::TRANSLATION_ERROR, GetPageTranslatedResult());
 }
 
 // Test if there was an error during translate library initialization.
@@ -725,34 +714,31 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Open a new tab with a page in French.
-  ResetObserver();
   AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Translate the page through TranslateManager.
-  translate::TranslateManager* manager =
-      chrome_translate_client->GetTranslateManager();
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
   manager->TranslatePage(
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
 
-  // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
   EXPECT_TRUE(chrome_translate_client->GetLanguageState().translation_error());
-  EXPECT_EQ(translate::TranslateErrors::INITIALIZATION_ERROR,
-            GetPageTranslatedResult());
+  EXPECT_EQ(TranslateErrors::INITIALIZATION_ERROR, GetPageTranslatedResult());
 }
 
 // Test the checks translate lib never gets ready and throws timeout.
@@ -765,34 +751,31 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Open a new tab with a page in French.
-  ResetObserver();
   AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Translate the page through TranslateManager.
-  translate::TranslateManager* manager =
-      chrome_translate_client->GetTranslateManager();
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
   manager->TranslatePage(
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
 
-  // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
   EXPECT_TRUE(chrome_translate_client->GetLanguageState().translation_error());
-  EXPECT_EQ(translate::TranslateErrors::TRANSLATION_TIMEOUT,
-            GetPageTranslatedResult());
+  EXPECT_EQ(TranslateErrors::TRANSLATION_TIMEOUT, GetPageTranslatedResult());
 }
 
 // Test the checks if both source and target languages mentioned are identical.
@@ -805,32 +788,29 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Open a new tab with a page in French.
-  ResetObserver();
   AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Translate the page through TranslateManager.
-  translate::TranslateManager* manager =
-      chrome_translate_client->GetTranslateManager();
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
   manager->TranslatePage("aa", "en", true);
 
-  // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
   EXPECT_TRUE(chrome_translate_client->GetLanguageState().translation_error());
-  EXPECT_EQ(translate::TranslateErrors::IDENTICAL_LANGUAGES,
-            GetPageTranslatedResult());
+  EXPECT_EQ(TranslateErrors::IDENTICAL_LANGUAGES, GetPageTranslatedResult());
 }
 
 // Test if there was an error during translatePage script execution.
@@ -843,33 +823,31 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Open a new tab with a page in French.
-  ResetObserver();
   AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Translate the page through TranslateManager.
-  translate::TranslateManager* manager =
-      chrome_translate_client->GetTranslateManager();
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
   manager->TranslatePage(
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
 
-  // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
   EXPECT_TRUE(chrome_translate_client->GetLanguageState().translation_error());
-  EXPECT_EQ(translate::TranslateErrors::UNEXPECTED_SCRIPT_ERROR,
+  EXPECT_EQ(TranslateErrors::UNEXPECTED_SCRIPT_ERROR,
             GetPageTranslatedResult());
 }
 
@@ -883,33 +861,31 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Open a new tab with a page in French.
-  ResetObserver();
   AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Translate the page through TranslateManager.
-  translate::TranslateManager* manager =
-      chrome_translate_client->GetTranslateManager();
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
   manager->TranslatePage(
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
 
-  // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
   EXPECT_TRUE(chrome_translate_client->GetLanguageState().translation_error());
-  EXPECT_EQ(translate::TranslateErrors::BAD_ORIGIN, GetPageTranslatedResult());
+  EXPECT_EQ(TranslateErrors::BAD_ORIGIN, GetPageTranslatedResult());
 }
 
 // Test if there was an error during script load.
@@ -922,34 +898,31 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Open a new tab with a page in French.
-  ResetObserver();
   AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
 
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 
   // Translate the page through TranslateManager.
-  translate::TranslateManager* manager =
-      chrome_translate_client->GetTranslateManager();
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
   manager->TranslatePage(
       chrome_translate_client->GetLanguageState().original_language(), "en",
       true);
 
-  // Wait for NOTIFICATION_PAGE_TRANSLATED notification.
   WaitUntilPageTranslated();
 
   EXPECT_TRUE(chrome_translate_client->GetLanguageState().translation_error());
-  EXPECT_EQ(translate::TranslateErrors::SCRIPT_LOAD_ERROR,
-            GetPageTranslatedResult());
+  EXPECT_EQ(TranslateErrors::SCRIPT_LOAD_ERROR, GetPageTranslatedResult());
 }
 
 // Test that session restore restores the translate infobar and other translate
@@ -964,7 +937,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
@@ -975,7 +948,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
       base::FilePath(), base::FilePath(FILE_PATH_LITERAL("french_page.html")));
   ui_test_utils::NavigateToURL(browser(), french_url);
 
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 }
@@ -984,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        TranslateSessionRestore) {
   ChromeTranslateClient* active_translate_client = GetChromeTranslateClient();
   if (active_translate_client->GetLanguageState().current_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
   EXPECT_EQ("und",
             active_translate_client->GetLanguageState().current_language());
 
@@ -1001,7 +974,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
           .current_language()
           .empty()) {
     ResetObserver();
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
   }
   EXPECT_EQ("fr",
             restored_translate_client->GetLanguageState().current_language());
@@ -1011,8 +984,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        HrefTranslateOverridesManualTranslate) {
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
-  translate::TranslateManager* manager =
-      chrome_translate_client->GetTranslateManager();
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
   manager->SetIgnoreMissingKeyForTesting(true);
 
   // Set target language manually
@@ -1024,19 +996,19 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   // There is a possible race condition, when the language is not yet detected,
   // so we check for that and wait if necessary.
   if (chrome_translate_client->GetLanguageState().original_language().empty())
-    WaitUntilLanguageDetected();
+    WaitUntilLanguageDetermined();
 
   EXPECT_EQ("und",
             chrome_translate_client->GetLanguageState().original_language());
 
-  ResetObserver();
   // Load a German page and detect it's language
   AddTabAtIndex(0,
                 GURL(embedded_test_server()->GetURL(
                     "www.google.com", "/href_translate_test.html")),
                 ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("de",
             chrome_translate_client->GetLanguageState().original_language());
 
@@ -1050,7 +1022,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
 
   // Detect language on the new page
-  WaitUntilLanguageDetected();
+  WaitUntilLanguageDetermined();
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 

@@ -270,7 +270,7 @@ cast_source_set("browser") {
 
   if (enable_mojo_media) {
     deps += [
-      "//media/mojo/interfaces:constants",
+      "//media/mojo/mojom:constants",
       "//media/mojo/services",
     ]
   }

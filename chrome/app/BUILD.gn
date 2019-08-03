@@ -545,19 +545,6 @@ source_set("chrome_content_renderer_overlay_manifest") {
   }
 }
 
-source_set("chrome_content_utility_overlay_manifest") {
-  sources = [
-    "chrome_content_utility_overlay_manifest.cc",
-    "chrome_content_utility_overlay_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/services/heap_profiling/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
-}
-
 source_set("builtin_service_manifests") {
   sources = [
     "builtin_service_manifests.cc",
@@ -575,7 +562,6 @@ source_set("builtin_service_manifests") {
     "//device/vr/buildflags",
     "//extensions/buildflags",
     "//printing/buildflags",
-    "//services/preferences/public/cpp:local_state_manifest",
     "//services/service_manager/public/cpp",
   ]
 
@@ -626,27 +612,11 @@ source_set("builtin_service_manifests") {
   }
 }
 
-source_set("chrome_renderer_manifest") {
-  sources = [
-    "chrome_renderer_manifest.cc",
-    "chrome_renderer_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chrome/common:mojo_bindings",
-    "//components/safe_browsing/common:interfaces",
-    "//services/service_manager/public/cpp",
-  ]
-}
-
 source_set("chrome_service_manifests") {
   public_deps = [
     ":builtin_service_manifests",
     ":chrome_content_browser_overlay_manifest",
     ":chrome_content_gpu_overlay_manifest",
     ":chrome_content_renderer_overlay_manifest",
-    ":chrome_content_utility_overlay_manifest",
-    ":chrome_renderer_manifest",
   ]
 }

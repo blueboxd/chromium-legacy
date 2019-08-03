@@ -4,11 +4,11 @@
 
 module audio.mojom;
 
-import "media/mojo/interfaces/audio_data_pipe.mojom";
-import "media/mojo/interfaces/audio_input_stream.mojom";
-import "media/mojo/interfaces/audio_logging.mojom";
-import "media/mojo/interfaces/audio_output_stream.mojom";
-import "media/mojo/interfaces/audio_parameters.mojom";
+import "media/mojo/mojom/audio_data_pipe.mojom";
+import "media/mojo/mojom/audio_input_stream.mojom";
+import "media/mojo/mojom/audio_logging.mojom";
+import "media/mojo/mojom/audio_output_stream.mojom";
+import "media/mojo/mojom/audio_parameters.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/audio/public/mojom/audio_processing.mojom";
 

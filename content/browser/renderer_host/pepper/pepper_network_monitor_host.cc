@@ -43,7 +43,7 @@ void OnGetNetworkList(
     base::OnceCallback<void(const net::NetworkInterfaceList&)> callback,
     const base::Optional<net::NetworkInterfaceList>& networks) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(callback), networks.has_value()
                                               ? *networks
@@ -70,7 +70,7 @@ PepperNetworkMonitorHost::PepperNetworkMonitorHost(BrowserPpapiHostImpl* host,
   host->GetRenderFrameIDsForInstance(
       instance, &render_process_id, &render_frame_id);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::Bind(&CanUseNetworkMonitor, host->external_plugin(),
                  render_process_id, render_frame_id),
@@ -100,7 +100,7 @@ void PepperNetworkMonitorHost::OnPermissionCheckResult(
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&content::GetNetworkConnectionTracker),
       base::BindOnce(&PepperNetworkMonitorHost::SetNetworkConnectionTracker,
@@ -117,7 +117,7 @@ void PepperNetworkMonitorHost::SetNetworkConnectionTracker(
 
 void PepperNetworkMonitorHost::GetAndSendNetworkList() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&GetNetworkList,
                      base::BindOnce(&PepperNetworkMonitorHost::SendNetworkList,

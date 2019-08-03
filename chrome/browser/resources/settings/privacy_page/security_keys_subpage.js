@@ -56,7 +56,7 @@ Polymer({
   /** @private */
   onCredentialManagementDialogClosed_: function() {
     this.showCredentialManagementDialog_ = false;
-    cr.ui.focusWithoutInk(this.$.credentialManagementButton);
+    cr.ui.focusWithoutInk(assert(this.$$('#credentialManagementButton')));
   },
 
   /** @private */

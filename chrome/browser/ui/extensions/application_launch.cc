@@ -59,6 +59,7 @@ using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
+using extensions::ExtensionService;
 
 namespace {
 
@@ -66,11 +67,13 @@ namespace {
 // This class manages its own lifetime.
 class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
  public:
-  EnableViaDialogFlow(extensions::ExtensionService* service,
+  EnableViaDialogFlow(ExtensionService* service,
+                      ExtensionRegistry* registry,
                       Profile* profile,
                       const std::string& extension_id,
                       const base::Closure& callback)
       : service_(service),
+        registry_(registry),
         profile_(profile),
         extension_id_(extension_id),
         callback_(callback) {}
@@ -87,7 +90,7 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
   // ExtensionEnableFlowDelegate overrides.
   void ExtensionEnableFlowFinished() override {
     const Extension* extension =
-        service_->GetExtensionById(extension_id_, false);
+        registry_->GetExtensionById(extension_id_, ExtensionRegistry::ENABLED);
     if (!extension)
       return;
     callback_.Run();
@@ -96,7 +99,8 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
 
   void ExtensionEnableFlowAborted(bool user_initiated) override { delete this; }
 
-  extensions::ExtensionService* service_;
+  ExtensionService* service_;
+  ExtensionRegistry* registry_;
   Profile* profile_;
   std::string extension_id_;
   base::Closure callback_;
@@ -448,19 +452,20 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
     return;
   Profile* profile = params.profile;
 
-  extensions::ExtensionService* service =
+  ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   if (!service->IsExtensionEnabled(extension->id()) ||
-      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-          extension->id(), extensions::ExtensionRegistry::TERMINATED)) {
-  base::Callback<gfx::NativeWindow(void)> dialog_parent_window_getter;
-  // TODO(pkotwicz): Figure out which window should be used as the parent for
-  // the "enable application" dialog in Athena.
-  (new EnableViaDialogFlow(
-       service, profile, extension->id(),
-       base::Bind(base::IgnoreResult(OpenEnabledApplication), params)))
-      ->Run();
-  return;
+      registry->GetExtensionById(extension->id(),
+                                 ExtensionRegistry::TERMINATED)) {
+    base::Callback<gfx::NativeWindow(void)> dialog_parent_window_getter;
+    // TODO(pkotwicz): Figure out which window should be used as the parent for
+    // the "enable application" dialog in Athena.
+    (new EnableViaDialogFlow(
+         service, registry, profile, extension->id(),
+         base::Bind(base::IgnoreResult(OpenEnabledApplication), params)))
+        ->Run();
+    return;
   }
 
   OpenEnabledApplication(params);

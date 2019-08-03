@@ -57,7 +57,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
  protected:
   HttpProxyConnectJobTest()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         field_trial_list_(nullptr) {
     // Used a mock HostResolver that does not have a cache.
     session_deps_.host_resolver = std::make_unique<MockHostResolver>();

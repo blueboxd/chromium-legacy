@@ -6,5 +6,6 @@ include_rules = [
   "+android_webview/browser/aw_feature_list.h",
   "+android_webview/common/aw_switches.h",
   "+android_webview/public/browser",
+  "+components/viz/service/main",
 ]
 

@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.chrome.browser.util.UrlUtilities;
 
 /**
  * Asynchronously creates Tabs for navigation originating from {@link NoTouchActivity}.
@@ -39,6 +40,12 @@ public class TouchlessTabDelegate extends TabDelegate {
             super.createNewTab(asyncParams, type, parentId);
             return;
         }
+        if (UrlUtilities.validateIntentUrl(asyncParams.getLoadUrlParams().getUrl())) {
+            // Handle intent URLs as normal.
+            super.createNewTab(asyncParams, type, parentId);
+            return;
+        }
+
         String url = asyncParams.getLoadUrlParams().getUrl();
 
         int assignedTabId = TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID);

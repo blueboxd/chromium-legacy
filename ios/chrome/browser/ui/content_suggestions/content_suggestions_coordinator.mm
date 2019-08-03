@@ -172,7 +172,6 @@
   self.suggestionsViewController.audience = self;
   self.suggestionsViewController.overscrollDelegate = self;
   self.suggestionsViewController.metricsRecorder = self.metricsRecorder;
-  self.suggestionsViewController.containsToolbar = YES;
   self.suggestionsViewController.dispatcher = self.dispatcher;
 
   self.NTPMediator.consumer = self.headerController;

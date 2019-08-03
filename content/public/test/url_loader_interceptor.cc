@@ -77,11 +77,6 @@ class URLLoaderInterceptor::IOState
 
     URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
         URLLoaderFactoryGetter::GetNetworkFactoryCallback());
-    if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-      NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
-          NavigationURLLoaderImpl::URLLoaderFactoryInterceptor());
-    }
-
     if (closure)
       std::move(closure).Run();
   }
@@ -469,12 +464,10 @@ URLLoaderInterceptor::URLLoaderInterceptor(
               &URLLoaderInterceptor::GetURLLoaderFactoryForBrowserProcess,
               base::Unretained(this)));
 
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
-        base::BindRepeating(
-            &URLLoaderInterceptor::InterceptNavigationRequestCallback,
-            base::Unretained(this)));
-  }
+  NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
+      base::BindRepeating(
+          &URLLoaderInterceptor::InterceptNavigationRequestCallback,
+          base::Unretained(this)));
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     if (use_runloop_) {
@@ -519,10 +512,8 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
       SetGetURLLoaderFactoryForBrowserProcessCallbackForTesting(
           StoragePartitionImpl::CreateNetworkFactoryCallback());
 
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
-        NavigationURLLoaderImpl::URLLoaderFactoryInterceptor());
-  }
+  NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
+      NavigationURLLoaderImpl::URLLoaderFactoryInterceptor());
 
   if (use_runloop_) {
     base::RunLoop run_loop;
@@ -682,13 +673,6 @@ void URLLoaderInterceptor::IOState::Initialize(
       base::BindRepeating(
           &URLLoaderInterceptor::IOState::GetNetworkFactoryCallback,
           base::Unretained(this)));
-
-  if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
-        base::BindRepeating(
-            &URLLoaderInterceptor::IOState::InterceptNavigationRequestCallback,
-            base::Unretained(this)));
-  }
 
   if (closure)
     std::move(closure).Run();

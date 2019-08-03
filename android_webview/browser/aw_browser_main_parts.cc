@@ -15,7 +15,7 @@
 #include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_web_ui_controller_factory.h"
 #include "android_webview/browser/memory_metrics_logger.h"
-#include "android_webview/browser/net/aw_network_change_notifier_factory.h"
+#include "android_webview/browser/network_service/aw_network_change_notifier_factory.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_resource.h"
@@ -29,8 +29,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/heap_profiling/supervisor.h"
@@ -77,7 +77,7 @@ int AwBrowserMainParts::PreEarlyInitialization() {
   DCHECK(!main_task_executor_.get());
   if (!base::MessageLoopCurrent::IsSet()) {
     main_task_executor_ = std::make_unique<base::SingleThreadTaskExecutor>(
-        base::MessagePump::Type::UI);
+        base::MessagePumpType::UI);
   }
 
   browser_process_ = std::make_unique<AwBrowserProcess>(

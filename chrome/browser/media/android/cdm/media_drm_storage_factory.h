@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_ANDROID_CDM_MEDIA_DRM_STORAGE_FACTORY_H_
 #define CHROME_BROWSER_MEDIA_ANDROID_CDM_MEDIA_DRM_STORAGE_FACTORY_H_
 
-#include "media/mojo/interfaces/media_drm_storage.mojom.h"
+#include "media/mojo/mojom/media_drm_storage.mojom.h"
 
 namespace content {
 class RenderFrameHost;

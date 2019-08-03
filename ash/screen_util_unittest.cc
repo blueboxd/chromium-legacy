@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -25,6 +27,33 @@
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
+
+namespace {
+
+AccessibilityPanelLayoutManager* GetLayoutManager() {
+  aura::Window* container =
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                          kShellWindowId_AccessibilityPanelContainer);
+  return static_cast<AccessibilityPanelLayoutManager*>(
+      container->layout_manager());
+}
+
+// Simulates Chrome creating the ChromeVoxPanel widget.
+std::unique_ptr<views::Widget> CreateChromeVoxPanel() {
+  std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  params.parent = Shell::GetContainer(
+      root_window, kShellWindowId_AccessibilityPanelContainer);
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.bounds = gfx::Rect(root_window->bounds().size());
+
+  widget->Init(std::move(params));
+  return widget;
+}
+}  // namespace
 
 using ScreenUtilTest = AshTestBase;
 
@@ -248,6 +277,30 @@ TEST_F(ScreenUtilTest, FullscreenWindowBoundsWithDockedMagnifier) {
   expected_bounds.Inset(
       0, docked_magnifier_controller->GetTotalMagnifierHeight(), 0, 0);
   EXPECT_EQ(expected_bounds, window->bounds());
+}
+
+// Tests that making a window fullscreen while the chromevox is enabled won't
+// create an empty bar instead of the chromevox panel, but the fullscreened
+// window will take the whole screen size.
+TEST_F(ScreenUtilTest, FullscreenWindowBoundsWithChromeVox) {
+  UpdateDisplay("1366x768");
+
+  // Create ChromeVox Panel
+  AccessibilityPanelLayoutManager* layout_manager = GetLayoutManager();
+  std::unique_ptr<views::Widget> widget = CreateChromeVoxPanel();
+  widget->Show();
+  layout_manager->SetPanelBounds(
+      gfx::Rect(0, 0, 0, AccessibilityPanelLayoutManager::kDefaultPanelHeight),
+      AccessibilityPanelState::FULL_WIDTH);
+
+  std::unique_ptr<aura::Window> window = CreateToplevelTestWindow(
+      gfx::Rect(300, 300, 200, 150), desks_util::GetActiveDeskContainerId());
+
+  const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window.get())->OnWMEvent(&event);
+
+  constexpr gfx::Rect kDisplayBounds{1366, 768};
+  EXPECT_EQ(window->bounds(), kDisplayBounds);
 }
 
 }  // namespace ash

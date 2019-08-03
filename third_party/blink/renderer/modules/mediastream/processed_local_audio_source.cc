@@ -17,7 +17,7 @@
 #include "media/base/sample_rates.h"
 #include "media/webrtc/audio_processor_controls.h"
 #include "media/webrtc/webrtc_switches.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"

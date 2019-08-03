@@ -25,7 +25,6 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/supported_types.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -398,11 +397,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // This is a workaround for an outdated test server used by Blink tests on
   // macOS. See https://crbug.com/936515.
   virtual bool SuppressLegacyTLSVersionConsoleMessage();
-
-  // Asks the embedder to bind |service_request| to its renderer-side service
-  // implementation.
-  virtual void CreateRendererService(
-      service_manager::mojom::ServiceRequest service_request) {}
 
   // Allows the embedder to return a (possibly null) URLLoaderThrottleProvider
   // for a frame or worker. For frames this is called on the main thread, and

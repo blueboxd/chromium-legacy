@@ -15,6 +15,8 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -217,6 +219,37 @@ TEST_F(DocumentLoaderTest, MixedContentOptOutNotSetIfNoHeaderReceived) {
                    ->GetFrame()
                    ->GetDocument()
                    ->GetMixedAutoUpgradeOptOut());
+}
+
+class DocumentLoaderSimTest : public SimTest {};
+
+TEST_F(DocumentLoaderSimTest, DocumentOpenUpdatesUrl) {
+  SimRequest main_resource("https://example.com", "text/html");
+  LoadURL("https://example.com");
+  main_resource.Write("<iframe src='javascript:42;'></iframe>");
+
+  auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
+  auto* child_document = child_frame->GetFrame()->GetDocument();
+  EXPECT_TRUE(child_document->HasPendingJavaScriptUrlsForTest());
+
+  main_resource.Write(
+      "<script>"
+      "window[0].document.open();"
+      "window[0].document.write('hello');"
+      "window[0].document.close();"
+      "</script>");
+
+  main_resource.Finish();
+
+  // document.open() should have cancelled the pending JavaScript URLs.
+  EXPECT_FALSE(child_document->HasPendingJavaScriptUrlsForTest());
+
+  // Per https://whatwg.org/C/dynamic-markup-insertion.html#document-open-steps,
+  // the URL associated with the Document should match the URL of the entry
+  // Document.
+  EXPECT_EQ(KURL("https://example.com"), child_document->Url());
+  // Similarly, the URL of the DocumentLoader should also match.
+  EXPECT_EQ(KURL("https://example.com"), child_document->Loader()->Url());
 }
 
 }  // namespace blink

@@ -17,6 +17,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/content_capabilities_handler.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/renderer/api_activity_logger.h"
 #include "extensions/renderer/bindings/api_binding_bridge.h"
@@ -37,8 +38,10 @@
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/runtime_hooks_delegate.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/script_context_set_iterable.h"
 #include "extensions/renderer/storage_area.h"
 #include "extensions/renderer/web_request_hooks.h"
+#include "extensions/renderer/worker_thread_util.h"
 #include "gin/converter.h"
 #include "gin/handle.h"
 #include "gin/per_context_data.h"
@@ -503,6 +506,8 @@ void NativeExtensionBindingsSystem::DidCreateScriptContext(
   context->module_system()->SetJSBindingUtilGetter(
       base::Bind(&NativeExtensionBindingsSystem::GetJSBindingUtil,
                  weak_factory_.GetWeakPtr()));
+
+  UpdateBindingsForContext(context);
 }
 
 void NativeExtensionBindingsSystem::WillReleaseScriptContext(
@@ -578,6 +583,7 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     LogUpdateBindingsForContextTime(context->context_type(),
                                     context->IsForServiceWorker(),
                                     timer.Elapsed());
+    UpdateContentCapabilities(context);
     return;
   }
 
@@ -655,9 +661,18 @@ IPCMessageSender* NativeExtensionBindingsSystem::GetIPCMessageSender() {
   return ipc_message_sender_.get();
 }
 
-void NativeExtensionBindingsSystem::OnExtensionPermissionsUpdated(
-    const ExtensionId& id) {
-  feature_cache_.InvalidateExtension(id);
+void NativeExtensionBindingsSystem::UpdateBindings(
+    const ExtensionId& extension_id,
+    bool permissions_changed,
+    ScriptContextSetIterable* script_context_set) {
+  if (permissions_changed)
+    InvalidateFeatureCache(extension_id);
+  script_context_set->ForEach(
+      extension_id,
+      base::BindRepeating(
+          &NativeExtensionBindingsSystem::UpdateBindingsForContext,
+          // Called synchronously.
+          base::Unretained(this)));
 }
 
 void NativeExtensionBindingsSystem::OnExtensionRemoved(const ExtensionId& id) {
@@ -932,6 +947,42 @@ void NativeExtensionBindingsSystem::GetJSBindingUtil(
           api_system_.type_reference_map(), api_system_.request_handler(),
           api_system_.event_handler(), api_system_.exception_handler()));
   *binding_util_out = handle.ToV8();
+}
+
+void NativeExtensionBindingsSystem::UpdateContentCapabilities(
+    ScriptContext* context) {
+  Feature::Context context_type = context->context_type();
+  if (context_type != Feature::WEB_PAGE_CONTEXT &&
+      context_type != Feature::BLESSED_WEB_PAGE_CONTEXT) {
+    return;
+  }
+
+  // Must be called on main thread.
+  DCHECK(!worker_thread_util::IsWorkerThread());
+
+  APIPermissionSet permissions;
+  for (const auto& extension :
+       *RendererExtensionRegistry::Get()->GetMainThreadExtensionSet()) {
+    blink::WebLocalFrame* web_frame = context->web_frame();
+    GURL url = context->url();
+    // We allow about:blank pages to take on the privileges of their parents if
+    // they aren't sandboxed.
+    if (web_frame && !web_frame->GetSecurityOrigin().IsUnique())
+      url = ScriptContext::GetEffectiveDocumentURL(web_frame, url, true);
+    const ContentCapabilitiesInfo& info =
+        ContentCapabilitiesInfo::Get(extension.get());
+    if (info.url_patterns.MatchesURL(url)) {
+      APIPermissionSet new_permissions;
+      APIPermissionSet::Union(permissions, info.permissions, &new_permissions);
+      permissions = std::move(new_permissions);
+    }
+  }
+  context->set_content_capabilities(std::move(permissions));
+}
+
+void NativeExtensionBindingsSystem::InvalidateFeatureCache(
+    const ExtensionId& extension_id) {
+  feature_cache_.InvalidateExtension(extension_id);
 }
 
 }  // namespace extensions

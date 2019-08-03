@@ -102,7 +102,7 @@ class TabSwitchTimeRecorderTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   TabSwitchTimeRecorder tab_switch_time_recorder_;
   base::HistogramTester histogram_tester_;
 };

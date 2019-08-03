@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,24 +34,17 @@ class URLLoaderThrottle;
 namespace content {
 
 class BrowserContext;
-class ChromeBlobStorageContext;
 class PrefetchedSignedExchangeCache;
-class ResourceContext;
 class URLLoaderFactoryGetter;
 
 class CONTENT_EXPORT PrefetchURLLoaderService final
     : public base::RefCountedThreadSafe<
           PrefetchURLLoaderService,
-          NavigationURLLoaderImpl::DeleteOnLoaderThread>,
+          content::BrowserThread::DeleteOnUIThread>,
       public blink::mojom::RendererPreferenceWatcher,
       public network::mojom::URLLoaderFactory {
  public:
   explicit PrefetchURLLoaderService(BrowserContext* browser_context);
-
-  // Must be called on the IO thread.
-  void InitializeResourceContext(
-      ResourceContext* resource_context,
-      ChromeBlobStorageContext* blob_storage_context);
 
   void GetFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
@@ -95,7 +87,7 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
 
  private:
   friend class base::DeleteHelper<content::PrefetchURLLoaderService>;
-  friend struct NavigationURLLoaderImpl::DeleteOnLoaderThread;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   struct BindContext;
 
   ~PrefetchURLLoaderService() override;
@@ -122,8 +114,6 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
 
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
   BrowserContext* browser_context_ = nullptr;
-  // Not used when NavigationLoaderOnUI is enabled.
-  ResourceContext* resource_context_ = nullptr;
 
   mojo::ReceiverSet<network::mojom::URLLoaderFactory,
                     std::unique_ptr<BindContext>>

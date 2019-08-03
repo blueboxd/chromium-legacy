@@ -104,7 +104,10 @@ def main():
   if args.child_args:
     child_args.extend(args.child_args)
 
-  with GetDeploymentTargetForArgs(args) as target:
+  # KVM is required on x64 test bots.
+  require_kvm = args.test_launcher_bot_mode and args.target_cpu == 'x64'
+
+  with GetDeploymentTargetForArgs(args, require_kvm=require_kvm) as target:
     target.Start()
 
     if args.test_launcher_filter_file:

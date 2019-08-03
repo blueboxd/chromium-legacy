@@ -1,6 +1,6 @@
 rootWebArea
 ++genericContainer
-++++date value='2008-09-01' controlsIds=rootWebArea
+++++date inputType='date' value='2008-09-01' controlsIds=rootWebArea
 ++++++genericContainer
 ++++++++genericContainer
 ++++++++++spinButton name='Month' value='09' valueForRange=9.00 minValueForRange=1.00 maxValueForRange=12.00

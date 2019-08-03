@@ -474,6 +474,11 @@ class BackgroundSyncManagerTest
     return false;
   }
 
+  url::Origin GetOriginForPeriodicSyncRegistration() {
+    DCHECK(callback_periodic_sync_registration_);
+    return callback_periodic_sync_registration_->origin();
+  }
+
   bool GetOneShotSyncRegistrations() {
     bool was_called = false;
     test_background_sync_manager()->GetOneShotSyncRegistrations(
@@ -1003,6 +1008,19 @@ TEST_F(BackgroundSyncManagerTest, RebootRecovery) {
 
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   EXPECT_FALSE(GetRegistration(sync_options_2_));
+}
+
+TEST_F(BackgroundSyncManagerTest, RebootRecoveryPeriodicSync) {
+  sync_options_1_.min_interval = 1000;
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+
+  // Restart the manager.
+  SetupBackgroundSyncManager();
+
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_EQ(GetOriginForPeriodicSyncRegistration(),
+            url::Origin::Create(GURL(kScope1).GetOrigin()));
 }
 
 TEST_F(BackgroundSyncManagerTest, RebootRecoveryTwoServiceWorkers) {

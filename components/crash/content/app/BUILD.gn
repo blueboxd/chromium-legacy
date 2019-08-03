@@ -95,13 +95,14 @@ static_library("app") {
       "//content/public/common:result_codes",
       "//sandbox",
     ]
+  }
 
-    if (is_linux) {
-      deps += [
-        "//content/public/common",
-        "//third_party/breakpad:client",
-      ]
-    }
+  if (is_linux) {
+    deps += [ "//third_party/breakpad:client" ]
+  }
+
+  if (is_chromeos) {
+    deps += [ "//content/public/common" ]
   }
 
   if (is_win) {

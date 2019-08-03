@@ -97,7 +97,7 @@ def _JoinChildNodes(tag):
 
 
 def _NormalizeString(s):
-  """Replaces all whitespace sequences with a single space.
+  r"""Replaces all whitespace sequences with a single space.
 
   The function properly handles multi-line strings and XML escaped characters.
 

@@ -12,22 +12,6 @@
 
 namespace blink {
 
-// Return the total amount of block space spent on a node by fragments
-// preceding this one (but not including this one).
-LayoutUnit PreviouslyUsedBlockSpace(const NGConstraintSpace& constraint_space,
-                                    const NGPhysicalFragment& fragment) {
-  if (!fragment.IsBox())
-    return LayoutUnit();
-  const NGPhysicalBoxFragment& box_fragment =
-      To<NGPhysicalBoxFragment>(fragment);
-  const auto* break_token = To<NGBlockBreakToken>(box_fragment.BreakToken());
-  if (!break_token)
-    return LayoutUnit();
-  NGBoxFragment logical_fragment(constraint_space.GetWritingMode(),
-                                 constraint_space.Direction(), box_fragment);
-  return break_token->UsedBlockSize() - logical_fragment.BlockSize();
-}
-
 // At a class A break point [1], the break value with the highest precedence
 // wins. If the two values have the same precedence (e.g. "left" and "right"),
 // the value specified on a latter object wins.

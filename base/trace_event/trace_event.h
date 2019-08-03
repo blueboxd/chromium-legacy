@@ -22,6 +22,7 @@
 #include "base/trace_event/builtin_categories.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/heap_profiler.h"
+#include "base/trace_event/log_message.h"
 #include "base/trace_event/thread_instruction_count.h"
 #include "base/trace_event/trace_arguments.h"
 #include "base/trace_event/trace_category.h"
@@ -430,6 +431,12 @@
           ##__VA_ARGS__);                                            \
     }                                                                \
   } while (0)
+
+#define INTERNAL_TRACE_LOG_MESSAGE(file, message, line)                        \
+  TRACE_EVENT_INSTANT1(                                                        \
+      "log", "LogMessage",                                                     \
+      TRACE_EVENT_FLAG_TYPED_PROTO_ARGS | TRACE_EVENT_SCOPE_THREAD, "message", \
+      std::make_unique<base::trace_event::LogMessage>(file, message, line))
 
 #if BUILDFLAG(ENABLE_LOCATION_SOURCE)
 

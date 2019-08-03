@@ -37,8 +37,6 @@ extern const base::Feature kCaptureInlineJavascriptForGoogleAds;
 // a SBER user downloads an APK file.
 extern const base::Feature kCaptureSafetyNetId;
 
-extern const base::Feature kCheckByURLLoaderThrottle;
-
 // Controls if safe browsing interstitials are implemented as committed
 // navigations instead of overlays.
 extern const base::Feature kCommittedSBInterstitials;

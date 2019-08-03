@@ -308,7 +308,7 @@ TaskTracker::TaskTracker(StringPiece histogram_label)
       tracked_ref_factory_(this) {
   // Confirm that all |task_latency_histograms_| have been initialized above.
   for (TaskPriorityType i = 0; i < kNumTaskPriorities; ++i) {
-    for (TaskPriorityType j = 0; j < kNumBlockingModes; ++j) {
+    for (uint8_t j = 0; j < kNumBlockingModes; ++j) {
       DCHECK(task_latency_histograms_[i][j]);
     }
   }

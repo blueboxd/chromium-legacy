@@ -97,7 +97,11 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   viz::FrameSinkId frame_sink_id_;
 
+  // These need to outlive viz objects such as |display_| below.
   scoped_refptr<AwGLSurface> gl_surface_;
+  scoped_refptr<gl::GLShareGroup> share_group_;
+  scoped_refptr<gpu::SharedContextState> shared_context_state_;
+
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<viz::Display> display_;
@@ -111,9 +115,6 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   viz::FrameTokenGenerator next_frame_token_;
 
   gfx::Size surface_size_;
-
-  scoped_refptr<gl::GLShareGroup> share_group_;
-  scoped_refptr<gpu::SharedContextState> shared_context_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesInstance);
 };

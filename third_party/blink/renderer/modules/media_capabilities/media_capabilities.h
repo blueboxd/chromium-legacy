@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CAPABILITIES_MEDIA_CAPABILITIES_H_
 
 #include "media/base/video_codecs.h"  // for media::VideoCodecProfile
-#include "media/mojo/interfaces/video_decode_perf_history.mojom-blink.h"
+#include "media/mojo/mojom/video_decode_perf_history.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"

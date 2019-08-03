@@ -440,7 +440,8 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadSourcePageTransitionType(
     const base::Optional<ui::PageTransition>& transition);
 
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadHttpResponseCode(
-    int response_code);
+    int response_code,
+    bool is_background_mode);
 
 COMPONENTS_DOWNLOAD_EXPORT void RecordInProgressDBCount(
     InProgressDBCountTypes type);
@@ -474,6 +475,24 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadConnectionInfo(
 COMPONENTS_DOWNLOAD_EXPORT void RecordFirstBackgroundDownloadInterruptReason(
     DownloadInterruptReason reason,
     bool download_started);
+
+enum class BackgroudTargetDeterminationResultTypes {
+  // Target determination succeeded.
+  kSuccess = 0,
+
+  // Target path doesn't exist.
+  kTargetPathMissing = 1,
+
+  // Path reservation failed.
+  kPathReservationFailed = 2,
+
+  kMaxValue = kPathReservationFailed
+};
+
+// Records whether download target determination is successfully completed in
+// reduced mode.
+COMPONENTS_DOWNLOAD_EXPORT void RecordBackgroundTargetDeterminationResult(
+    BackgroudTargetDeterminationResultTypes type);
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)

@@ -145,6 +145,7 @@ ExtensionUpdater::ExtensionUpdater(
       extension_prefs_(extension_prefs),
       prefs_(prefs),
       profile_(profile),
+      registry_(ExtensionRegistry::Get(profile)),
       next_request_id_(0),
       crx_install_is_running_(false),
       extension_cache_(cache) {
@@ -179,6 +180,7 @@ void ExtensionUpdater::Start() {
   DCHECK(prefs_);
   DCHECK(profile_);
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
+  DCHECK(registry_);
   alive_ = true;
   // Check soon, and set up the first delayed check.
   if (!g_skip_scheduled_checks_for_tests) {
@@ -190,13 +192,14 @@ void ExtensionUpdater::Start() {
 void ExtensionUpdater::Stop() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   alive_ = false;
-  service_ = NULL;
-  extension_prefs_ = NULL;
-  prefs_ = NULL;
-  profile_ = NULL;
+  service_ = nullptr;
+  extension_prefs_ = nullptr;
+  prefs_ = nullptr;
+  profile_ = nullptr;
   will_check_soon_ = false;
   downloader_.reset();
   update_service_ = nullptr;
+  registry_ = nullptr;
 }
 
 void ExtensionUpdater::ScheduleNextCheck() {
@@ -338,14 +341,14 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
       }
     }
 
-    ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
-    AddToDownloader(&registry->enabled_extensions(), pending_ids, request_id,
+    AddToDownloader(&registry_->enabled_extensions(), pending_ids, request_id,
                     params.fetch_priority, &update_check_params);
-    AddToDownloader(&registry->disabled_extensions(), pending_ids, request_id,
+    AddToDownloader(&registry_->disabled_extensions(), pending_ids, request_id,
                     params.fetch_priority, &update_check_params);
   } else {
     for (const std::string& id : params.ids) {
-      const Extension* extension = service_->GetExtensionById(id, true);
+      const Extension* extension = registry_->GetExtensionById(
+          id, extensions::ExtensionRegistry::COMPATIBILITY);
       if (extension) {
         if (update_service_->CanUpdate(id)) {
           update_check_params.update_info[id] = ExtensionUpdateData();
@@ -521,7 +524,8 @@ bool ExtensionUpdater::IsExtensionPending(const std::string& id) {
 bool ExtensionUpdater::GetExtensionExistingVersion(const std::string& id,
                                                    std::string* version) {
   DCHECK(alive_);
-  const Extension* extension = service_->GetExtensionById(id, true);
+  const Extension* extension = registry_->GetExtensionById(
+      id, extensions::ExtensionRegistry::COMPATIBILITY);
   if (!extension)
     return false;
   const Extension* update = service_->GetPendingExtensionUpdate(id);

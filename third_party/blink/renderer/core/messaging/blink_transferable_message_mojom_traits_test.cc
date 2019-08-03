@@ -155,7 +155,7 @@ TEST(BlinkTransferableMessageStructTraitsTest,
   // The original bitmap's height and width will be 0 after it is transferred.
   size_t original_bitmap_height = original_bitmap->height();
   size_t original_bitmap_width = original_bitmap->width();
-  scoped_refptr<blink::SharedBuffer> original_bitmap_data =
+  scoped_refptr<SharedBuffer> original_bitmap_data =
       original_bitmap->BitmapImage()->Data();
   v8::Local<v8::Value> wrapper = ToV8(original_bitmap, scope.GetScriptState());
   Transferables transferables;

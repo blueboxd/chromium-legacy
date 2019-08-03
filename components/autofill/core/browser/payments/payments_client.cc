@@ -1080,9 +1080,8 @@ void PaymentsClient::IssueRequest(std::unique_ptr<PaymentsRequest> request,
 void PaymentsClient::InitializeResourceRequest() {
   resource_request_ = std::make_unique<network::ResourceRequest>();
   resource_request_->url = GetRequestUrl(request_->GetRequestUrlPath());
-  resource_request_->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
-                                  net::LOAD_DO_NOT_SEND_COOKIES |
-                                  net::LOAD_DISABLE_CACHE;
+  resource_request_->load_flags = net::LOAD_DISABLE_CACHE;
+  resource_request_->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request_->method = "POST";
   if (base::FeatureList::IsEnabled(
           features::kAutofillSendExperimentIdsInPaymentsRPCs)) {

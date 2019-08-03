@@ -13,8 +13,8 @@
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_output_delegate.h"
-#include "media/mojo/interfaces/audio_logging.mojom.h"
-#include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "media/mojo/mojom/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_output_stream.mojom.h"
 
 namespace content {
 class MediaObserver;

@@ -623,6 +623,16 @@
           'isolated_scripts': 'memory_infra_isolated_scripts',
         },
       },
+      'android-pie-x86-fyi-rel': {
+        'mixins': [
+          'pie-x86-emulator',
+          'linux-xenial',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+        }
+      },
     },
   },
   {
@@ -711,7 +721,7 @@
     'machines': {
       'CFI Linux ToT': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',
@@ -807,7 +817,7 @@
       },
       'ToTLinux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -820,7 +830,7 @@
       },
       'ToTLinuxASan': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -834,7 +844,7 @@
       },
       'ToTLinuxMSan': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -846,7 +856,7 @@
       # Used on an internal builder.
       'ToTLinuxOfficial': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -854,7 +864,7 @@
       },
       'ToTLinuxTSan': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -865,7 +875,7 @@
       },
       'ToTLinuxThinLTO': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -873,7 +883,7 @@
       },
       'ToTLinuxUBSanVptr': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -1403,7 +1413,7 @@
       },
       'Mojo Linux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'mojo_linux_gtests',
@@ -2309,9 +2319,9 @@
           'gtest_tests': 'gpu_angle_gtests',
         },
       },
-      'ANGLE GPU Win10 Release (Intel HD 630)': {
+      'ANGLE GPU Win10 x64 Release (Intel HD 630)': {
         'os_type': 'win',
-        'browser_config': 'release',
+        'browser_config': 'release_x64',
         'mixins': [
           'win10_intel_hd_630_stable',
         ],
@@ -2321,9 +2331,9 @@
           'gpu_telemetry_tests': 'gpu_angle_win_intel_telemetry_tests',
         },
       },
-      'ANGLE GPU Win10 Release (NVIDIA)': {
+      'ANGLE GPU Win10 x64 Release (NVIDIA)': {
         'os_type': 'win',
-        'browser_config': 'release',
+        'browser_config': 'release_x64',
         'mixins': [
           'win10_nvidia_quadro_p400_stable',
         ],
@@ -2519,78 +2529,6 @@
           'gtest_tests': 'gpu_angle_deqp_android_gtests',
         },
       },
-      # BEGIN Fake builder used as mirror targets for Dawn's GPU tryservers
-      'Dawn GPU Linux Release (Intel HD 630)': {
-        'os_type': 'linux',
-        'browser_config': 'release',
-        'mixins': [
-          'linux_intel_hd_630',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
-        },
-      },
-      'Dawn GPU Linux Release (NVIDIA)': {
-        'os_type': 'linux',
-        'browser_config': 'release',
-        'mixins': [
-          'linux_nvidia_quadro_p400',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
-        },
-      },
-      'Dawn GPU Mac Release (Intel)': {
-        'os_type': 'mac',
-        'browser_config': 'release',
-        'mixins': [
-          'mac_mini_intel_gpu',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
-        },
-      },
-      'Dawn GPU Mac Retina Release (AMD)': {
-        'os_type': 'mac',
-        'browser_config': 'release',
-        'mixins': [
-          'mac_retina_amd_gpu',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
-        },
-      },
-      'Dawn GPU Mac Retina Release (NVIDIA)': {
-        'os_type': 'mac',
-        'browser_config': 'release',
-        'mixins': [
-          'mac_retina_nvidia_gpu',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
-        },
-      },
-      'Dawn GPU Win10 Release (Intel HD 630)': {
-        'os_type': 'win',
-        'browser_config': 'release',
-        'mixins': [
-          'win10_intel_hd_630_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
-        },
-      },
-      'Dawn GPU Win10 Release (NVIDIA)': {
-        'os_type': 'win',
-        'browser_config': 'release',
-        'mixins': [
-          'win10_nvidia_quadro_p400_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_dawn_gtests',
-        },
-      },
-      # END Fake builder used as mirror targets for Dawn's GPU tryservers
       'GPU FYI Fuchsia Builder' : {
         'additional_compile_targets': [
           'angle_end2end_tests',
@@ -3015,9 +2953,9 @@
           'gpu_telemetry_tests': 'gpu_fyi_optional_telemetry_tests',
         },
       },
-      'Optional Win10 Release (Intel HD 630)': {
+      'Optional Win10 x64 Release (Intel HD 630)': {
         'os_type': 'win',
-        'browser_config': 'release',
+        'browser_config': 'release_x64',
         'mixins': [
           'swarming_containment_auto',
           'win10_intel_hd_630_stable',
@@ -3028,9 +2966,9 @@
           'gpu_telemetry_tests': 'gpu_optional_win_intel_telemetry_tests',
         },
       },
-      'Optional Win10 Release (NVIDIA)': {
+      'Optional Win10 x64 Release (NVIDIA)': {
         'os_type': 'win',
-        'browser_config': 'release',
+        'browser_config': 'release_x64',
         'mixins': [
           'win10_nvidia_quadro_p400_stable',
         ],
@@ -3043,9 +2981,9 @@
         'use_multi_dimension_trigger_script': True,
       },
       # END Fake builder used as mirror targets for Optional GPU tryservers
-      'Win10 FYI Debug (NVIDIA)': {
+      'Win10 FYI x64 Debug (NVIDIA)': {
         'os_type': 'win',
-        'browser_config': 'debug',
+        'browser_config': 'debug_x64',
         'mixins': [
           'win10_nvidia_quadro_p400_stable',
         ],
@@ -3053,61 +2991,6 @@
           'gtest_tests': 'gpu_fyi_win_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_win_debug_telemetry_tests',
         },
-      },
-      'Win10 FYI Release (Intel HD 630)': {
-        'os_type': 'win',
-        'browser_config': 'release',
-        'mixins': [
-          'win10_intel_hd_630_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_angle_and_desktop_representative_perf_fyi_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
-        },
-      },
-      'Win10 FYI Release (NVIDIA)': {
-        'os_type': 'win',
-        'browser_config': 'release',
-        'mixins': [
-          'win10_nvidia_quadro_p400_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
-        },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
-      },
-      'Win10 FYI Release XR Perf (NVIDIA)': {
-        'os_type': 'win',
-        'browser_config': 'release',
-        'mixins': [
-          'win10_nvidia_quadro_p400_stable',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'win_specific_xr_perf_tests',
-        },
-      },
-      'Win10 FYI dEQP Release (Intel HD 630)': {
-        'os_type': 'win',
-        'mixins': [
-          'win10_intel_hd_630_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_gles2_d3d11_gtests',
-        },
-      },
-      'Win10 FYI dEQP Release (NVIDIA)': {
-        'os_type': 'win',
-        'mixins': [
-          'win10_nvidia_quadro_p400_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_angle_deqp_win_nvidia_gtests',
-        },
-        'use_multi_dimension_trigger_script': True,
       },
       # TODO(kbr): "Experimental" caused too-long path names pre-LUCI.
       # crbug.com/812000
@@ -3151,6 +3034,18 @@
           'gpu_telemetry_tests': 'gpu_fyi_win_amd_telemetry_tests',
         },
       },
+      'Win10 FYI x64 Release (Intel HD 630)': {
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'win10_intel_hd_630_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_win_gtests',
+          'isolated_scripts': 'gpu_angle_and_desktop_representative_perf_fyi_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
+        },
+      },
       'Win10 FYI x64 Release (NVIDIA GeForce GTX 1660)': {
         # This bot currently only has one piece of hardware behind it,
         # and is being qualified for potential scale-out.
@@ -3165,10 +3060,53 @@
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
+      'Win10 FYI x64 Release (NVIDIA)': {
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_win_gtests',
+          'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
+        },
+        # We keep this value enabled to provide minimal regression testing.
+        'use_multi_dimension_trigger_script': True,
+      },
+      'Win10 FYI x64 Release XR Perf (NVIDIA)': {
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'win_specific_xr_perf_tests',
+        },
+      },
+      'Win10 FYI x64 dEQP Release (Intel HD 630)': {
+        'os_type': 'win',
+        'mixins': [
+          'win10_intel_hd_630_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_angle_deqp_gles2_d3d11_gtests',
+        },
+      },
+      'Win10 FYI x64 dEQP Release (NVIDIA)': {
+        'os_type': 'win',
+        'mixins': [
+          'win10_nvidia_quadro_p400_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_angle_deqp_win_nvidia_gtests',
+        },
+        'use_multi_dimension_trigger_script': True,
+      },
       # This tryserver doesn't actually exist; it's a separate
       # configuration from the Win AMD bot on this waterfall because we
       # don't have enough tryserver capacity to run all the tests from
-      # that bot on win-angle-rel.
+      # that bot on win-angle-rel-32.
       'Win7 ANGLE Tryserver (AMD)': {
         'os_type': 'win',
         'browser_config': 'release',
@@ -3830,61 +3768,6 @@
       'Windows Swarm': {
         'test_suites': {
            'gtest_tests': 'chromium_swarm_desktop_gtests',
-        },
-      },
-    },
-  },
-  {
-    'name': 'chromium.webkit',
-    'machines': {
-      # TODO(jchinlee): The below three builders are in chromium.memory on LUCI,
-      # see crbug.com/790309, crbug.com/790294, crbug.com/790286.
-      'WebKit Linux ASAN': {
-        'mixins': [
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'WebKit Linux Leak': {
-        'mixins': [
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'WebKit Linux MSAN': {
-        'mixins': [
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      # TODO(vadimsh): This builder is in chromium.mac on LUCI, see
-      # crbug.com/864817.
-      'WebKit Mac10.13 (retina)': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '1002:6821',
-              'hidpi': '1',
-              'os': 'Mac-10.13.6',
-              'pool': 'Chrome-GPU',
-            }
-          ],
-        },
-      },
-      # TODO(jchinlee): This builder is in chromium.win on LUCI, see
-      # crbug.com/790343.
-      'WebKit Win10': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
     },

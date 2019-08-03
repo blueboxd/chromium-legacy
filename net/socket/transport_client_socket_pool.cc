@@ -139,8 +139,7 @@ TransportClientSocketPool::TransportClientSocketPool(
     base::TimeDelta unused_idle_socket_timeout,
     const ProxyServer& proxy_server,
     bool is_for_websockets,
-    const CommonConnectJobParams* common_connect_job_params,
-    SSLConfigService* ssl_config_service)
+    const CommonConnectJobParams* common_connect_job_params)
     : TransportClientSocketPool(
           max_sockets,
           max_sockets_per_group,
@@ -149,7 +148,7 @@ TransportClientSocketPool::TransportClientSocketPool(
           std::make_unique<ConnectJobFactoryImpl>(proxy_server,
                                                   is_for_websockets,
                                                   common_connect_job_params),
-          ssl_config_service,
+          common_connect_job_params->ssl_client_context,
           true /* connect_backup_jobs_enabled */) {}
 
 TransportClientSocketPool::~TransportClientSocketPool() {
@@ -163,8 +162,8 @@ TransportClientSocketPool::~TransportClientSocketPool() {
   DCHECK_EQ(0, handed_out_socket_count_);
   CHECK(higher_pools_.empty());
 
-  if (ssl_config_service_)
-    ssl_config_service_->RemoveObserver(this);
+  if (ssl_client_context_)
+    ssl_client_context_->RemoveObserver(this);
 
   NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
@@ -176,13 +175,13 @@ TransportClientSocketPool::CreateForTesting(
     base::TimeDelta unused_idle_socket_timeout,
     base::TimeDelta used_idle_socket_timeout,
     std::unique_ptr<ConnectJobFactory> connect_job_factory,
-    SSLConfigService* ssl_config_service,
+    SSLClientContext* ssl_client_context,
     bool connect_backup_jobs_enabled) {
   return base::WrapUnique<TransportClientSocketPool>(
       new TransportClientSocketPool(
           max_sockets, max_sockets_per_group, unused_idle_socket_timeout,
           used_idle_socket_timeout, std::move(connect_job_factory),
-          ssl_config_service, connect_backup_jobs_enabled));
+          ssl_client_context, connect_backup_jobs_enabled));
 }
 
 TransportClientSocketPool::CallbackResultPair::CallbackResultPair()
@@ -766,7 +765,7 @@ TransportClientSocketPool::TransportClientSocketPool(
     base::TimeDelta unused_idle_socket_timeout,
     base::TimeDelta used_idle_socket_timeout,
     std::unique_ptr<ConnectJobFactory> connect_job_factory,
-    SSLConfigService* ssl_config_service,
+    SSLClientContext* ssl_client_context,
     bool connect_backup_jobs_enabled)
     : idle_socket_count_(0),
       connecting_socket_count_(0),
@@ -778,20 +777,22 @@ TransportClientSocketPool::TransportClientSocketPool(
       connect_job_factory_(std::move(connect_job_factory)),
       connect_backup_jobs_enabled_(connect_backup_jobs_enabled &&
                                    g_connect_backup_jobs_enabled),
-      ssl_config_service_(ssl_config_service) {
+      ssl_client_context_(ssl_client_context) {
   DCHECK_LE(0, max_sockets_per_group);
   DCHECK_LE(max_sockets_per_group, max_sockets);
 
   NetworkChangeNotifier::AddIPAddressObserver(this);
 
-  if (ssl_config_service_)
-    ssl_config_service_->AddObserver(this);
+  if (ssl_client_context_)
+    ssl_client_context_->AddObserver(this);
 }
 
-void TransportClientSocketPool::OnSSLConfigChanged() {
+void TransportClientSocketPool::OnSSLConfigChanged(
+    bool is_cert_database_change) {
   // When the user changes the SSL config, flush all idle sockets so they won't
   // get re-used.
-  FlushWithError(ERR_NETWORK_CHANGED);
+  FlushWithError(is_cert_database_change ? ERR_CERT_DATABASE_CHANGED
+                                         : ERR_NETWORK_CHANGED);
 }
 
 bool TransportClientSocketPool::HasGroup(const GroupId& group_id) const {

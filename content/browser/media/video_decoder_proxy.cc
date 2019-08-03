@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/public/browser/system_connector.h"
-#include "media/mojo/interfaces/constants.mojom.h"
-#include "media/mojo/interfaces/media_service.mojom.h"
-#include "media/mojo/interfaces/renderer_extensions.mojom.h"
+#include "media/mojo/mojom/constants.mojom.h"
+#include "media/mojo/mojom/media_service.mojom.h"
+#include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {

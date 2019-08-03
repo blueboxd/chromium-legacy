@@ -62,21 +62,9 @@ PrefetchURLLoaderService::PrefetchURLLoaderService(
   // Create a RendererPreferenceWatcher to observe updates in the preferences.
   blink::mojom::RendererPreferenceWatcherPtr watcher_ptr;
   preference_watcher_request_ = mojo::MakeRequest(&watcher_ptr);
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled())
-    preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
+  preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
   GetContentClient()->browser()->RegisterRendererPreferenceWatcher(
       browser_context, std::move(watcher_ptr));
-}
-
-void PrefetchURLLoaderService::InitializeResourceContext(
-    ResourceContext* resource_context,
-    ChromeBlobStorageContext* blob_storage_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled());
-  DCHECK(!resource_context_);
-  resource_context_ = resource_context;
-  blob_storage_context_ = blob_storage_context->context()->AsWeakPtr();
-  preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
 }
 
 void PrefetchURLLoaderService::GetFactory(
@@ -85,8 +73,7 @@ void PrefetchURLLoaderService::GetFactory(
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> factories,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto factory_bundle =
       network::SharedURLLoaderFactory::Create(std::move(factories));
   loader_factory_receivers_.Add(
@@ -106,12 +93,9 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(static_cast<int>(ResourceType::kPrefetch),
             resource_request.resource_type);
-  DCHECK(NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled() ||
-         resource_context_);
 
   if (prefetch_load_callback_for_testing_)
     prefetch_load_callback_for_testing_.Run();
@@ -135,8 +119,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
           base::BindRepeating(
               &PrefetchURLLoaderService::CreateURLLoaderThrottles, this,
               resource_request, frame_tree_node_id_getter),
-          browser_context_, resource_context_,
-          signed_exchange_prefetch_metric_recorder_,
+          browser_context_, signed_exchange_prefetch_metric_recorder_,
           std::move(prefetched_signed_exchange_cache), blob_storage_context_,
           accept_langs_),
       std::move(request));
@@ -152,8 +135,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const auto& current_context = *loader_factory_receivers_.current_context();
   int frame_tree_node_id = current_context.frame_tree_node_id;
   CreateLoaderAndStart(
@@ -164,8 +146,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
 
 void PrefetchURLLoaderService::Clone(
     network::mojom::URLLoaderFactoryRequest request) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   loader_factory_receivers_.Add(
       this, std::move(request),
       std::make_unique<BindContext>(
@@ -182,15 +163,8 @@ PrefetchURLLoaderService::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter) {
   int frame_tree_node_id = frame_tree_node_id_getter.Run();
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    return GetContentClient()->browser()->CreateURLLoaderThrottles(
-        request, browser_context_,
-        base::BindRepeating(&WebContents::FromFrameTreeNodeId,
-                            frame_tree_node_id),
-        nullptr /* navigation_ui_data */, frame_tree_node_id);
-  }
-  return GetContentClient()->browser()->CreateURLLoaderThrottlesOnIO(
-      request, resource_context_,
+  return GetContentClient()->browser()->CreateURLLoaderThrottles(
+      request, browser_context_,
       base::BindRepeating(&WebContents::FromFrameTreeNodeId,
                           frame_tree_node_id),
       nullptr /* navigation_ui_data */, frame_tree_node_id);

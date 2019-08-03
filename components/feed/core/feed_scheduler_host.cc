@@ -569,18 +569,22 @@ FeedSchedulerHost::ShouldRefreshResult FeedSchedulerHost::ShouldRefresh(
     return kDontRefreshRefreshSuppressed;
   }
 
-  if (attempt_age < GetTriggerThreshold(trigger)) {
-    DVLOG(2) << "Last attempt age of " << attempt_age
-             << " stopped refresh from trigger " << static_cast<int>(trigger);
-    return kDontRefreshNotStale;
-  }
+  // https://crbug.com/988165: When kThrottleBackgroundFetches == false, skip
+  // checks for quota and staleness for background fetching.
+  if (kThrottleBackgroundFetches.Get() || trigger != TriggerType::kFixedTimer) {
+    if (attempt_age < GetTriggerThreshold(trigger)) {
+      DVLOG(2) << "Last attempt age of " << attempt_age
+               << " stopped refresh from trigger " << static_cast<int>(trigger);
+      return kDontRefreshNotStale;
+    }
 
-  auto throttlerIter = throttlers_.find(user_class);
-  if (throttlerIter == throttlers_.end() ||
-      !throttlerIter->second->RequestQuota()) {
-    DVLOG(2) << "Throttler stopped refresh from trigger "
-             << static_cast<int>(trigger);
-    return kDontRefreshRefreshThrottled;
+    auto throttlerIter = throttlers_.find(user_class);
+    if (throttlerIter == throttlers_.end() ||
+        !throttlerIter->second->RequestQuota()) {
+      DVLOG(2) << "Throttler stopped refresh from trigger "
+               << static_cast<int>(trigger);
+      return kDontRefreshRefreshThrottled;
+    }
   }
 
   switch (trigger) {

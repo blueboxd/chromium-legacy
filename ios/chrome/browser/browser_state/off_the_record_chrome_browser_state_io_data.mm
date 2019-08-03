@@ -31,7 +31,7 @@
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -168,9 +168,8 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
   main_context->set_cert_transparency_verifier(
       io_thread_globals->cert_transparency_verifier.get());
 
-  // For incognito, we use the default non-persistent HttpServerPropertiesImpl.
-  set_http_server_properties(std::unique_ptr<net::HttpServerProperties>(
-      new net::HttpServerPropertiesImpl()));
+  // For incognito, we use the default non-persistent HttpServerProperties.
+  set_http_server_properties(std::make_unique<net::HttpServerProperties>());
   main_context->set_http_server_properties(http_server_properties());
 
   main_cookie_store_ = cookie_util::CreateCookieStore(

@@ -26,6 +26,10 @@ struct NotificationParams {
   // An auto generated unique id of the scheduled notification.
   std::string guid;
 
+  // Will overwrite custom buttons in notification data with inline
+  // helpful/unhelpful buttons if set true.
+  bool enable_ihnr_buttons;
+
   // Data used to show the notification, such as text or title on the
   // notification.
   NotificationData notification_data;

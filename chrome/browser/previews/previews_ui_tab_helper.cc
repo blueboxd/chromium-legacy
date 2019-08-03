@@ -13,11 +13,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/data_saver/data_saver_top_host_provider.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
-#include "chrome/browser/previews/previews_top_host_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -285,7 +285,7 @@ void PreviewsUITabHelper::DidStartNavigation(
 
   MaybeRecordPreviewReload(navigation_handle);
 
-  PreviewsTopHostProvider::MaybeUpdateTopHostBlacklist(navigation_handle);
+  DataSaverTopHostProvider::MaybeUpdateTopHostBlacklist(navigation_handle);
 
   MaybeShowInfoBarForHintsFetcher();
 }

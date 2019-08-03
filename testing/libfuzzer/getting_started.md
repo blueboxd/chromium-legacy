@@ -25,10 +25,12 @@ tools/mb/mb.py gen -m chromium.fuzz -b 'Libfuzzer Upload Mac ASan' out/libfuzzer
 python tools\mb\mb.py gen -m chromium.fuzz -b "Libfuzzer Upload Windows ASan" out\libfuzzer
 ```
 
-**Note**: You can also invoke [AFL] by using the `use_afl` GN argument, but we
+*** note
+**Note:** You can also invoke [AFL] by using the `use_afl` GN argument, but we
 recommend libFuzzer for local development. Running libFuzzer locally doesn't
 require any special configuration and gives quick, meaningful output for speed,
 coverage, and other parameters.
+***
 
 It’s possible to run fuzz targets without sanitizers, but not recommended, as
 sanitizers help to detect errors which may not result in a crash otherwise.
@@ -43,8 +45,10 @@ sanitizers help to detect errors which may not result in a crash otherwise.
 For more on builder and sanitizer configurations, see the [Integration
 Reference] page.
 
+*** note
 **Hint**: Fuzz targets are built with minimal symbols by default. You can adjust
 the symbol level by setting the `symbol_level` attribute.
+***
 
 ### Creating your first fuzz target
 
@@ -53,9 +57,11 @@ After you set up your build environment, you can create your first fuzz target:
 1. In the same directory as the code you are going to fuzz (or next to the tests
    for that code), create a new `<my_fuzzer>.cc` file.
 
-   **Note**: Do not use the `testing/libfuzzer/fuzzers` directory. This
+   *** note
+   **Note:** Do not use the `testing/libfuzzer/fuzzers` directory. This
    directory was used for initial sample fuzz targets but is no longer
    recommended for landing new targets.
+   ***
 
 2. In the new file, define a `LLVMFuzzerTestOneInput` function:
 
@@ -79,11 +85,13 @@ After you set up your build environment, you can create your first fuzz target:
   }
   ```
 
-**Note**: Most of the targets are small. They may perform one or a few API calls
+*** note
+**Note:** Most of the targets are small. They may perform one or a few API calls
 using the data provided by the fuzzing engine as an argument. However, fuzz
 targets may be more complex if a certain initialization procedure needs to be
 performed. [quic_stream_factory_fuzzer.cc] is a good example of a complex fuzz
 target.
+***
 
 ### Running the fuzz target
 
@@ -119,9 +127,11 @@ your fuzz target is efficient, it will find a lot of them quickly. A `... pulse
 
 For more information about the output, see [libFuzzer's output documentation].
 
-**Note**: If you observe an `odr-violation` error in the log, please try setting
+*** note
+**Note:** If you observe an `odr-violation` error in the log, please try setting
 the following environment variable: `ASAN_OPTIONS=detect_odr_violation=0` and
 running the fuzz target again.
+***
 
 #### Symbolizing a stacktrace
 
@@ -149,12 +159,14 @@ fuzz target, ClusterFuzz will run it at scale. Check the [ClusterFuzz status]
 page after a day or two.
 
 If you want to better understand and optimize your fuzz target’s performance,
-see the [Efficient Fuzzer Guide].
+see the [Efficient Fuzzing Guide].
 
-**Note**: It’s important to run fuzzers at scale, not just in your own
+*** note
+**Note:** It’s important to run fuzzers at scale, not just in your own
 environment, because local fuzzing will catch fewer issues. If you run fuzz
 targets at scale continuously, you’ll catch regressions and improve code
 coverage over time.
+***
 
 ## Optional improvements
 
@@ -166,9 +178,11 @@ You can make it more effective with several easy steps:
 * **Create a seed corpus**. You can guide the fuzzing engine to generate more
   relevant inputs by adding the `seed_corpus = "src/fuzz-testcases/"` attribute
   to your fuzz target and adding example files to the appropriate directory. For
-  more, see the [Seed Corpus] section of the [Efficient Fuzzer Guide].
+  more, see the [Seed Corpus] section of the [Efficient Fuzzing Guide].
 
-  **Note**: make sure your corpus files are appropriately licensed.
+  *** note
+  **Note:** make sure your corpus files are appropriately licensed.
+  ***
 
 * **Create a mutation dictionary**. You can make mutations more effective by
   providing the fuzzer with a `dict = "protocol.dict"` GN attribute and a
@@ -195,7 +209,7 @@ You can make it more effective with several easy steps:
 * **Generate a [code coverage report]**. See which code the fuzzer covered in
   recent runs, so you can gauge whether it hits the important code parts or not.
 
-  **Note**: Since the code coverage of a fuzz target depends heavily on the
+  **Note:** Since the code coverage of a fuzz target depends heavily on the
   corpus provided when running the target, we recommend running the fuzz target
   built with ASan locally for a little while (several minutes / hours) first.
   This will produce some corpus, which should be used for generating a code
@@ -236,8 +250,10 @@ mutate multiple inputs at once.
 If you need to mutate multiple inputs of various types and length, see [Getting
 Started with libprotobuf-mutator in Chromium].
 
-**Note**: This method requires extra effort, but works with APIs and data
+*** note
+**Note:** This method requires extra effort, but works with APIs and data
 structures of any complexity.
+***
 
 #### Hash-based argument
 
@@ -255,11 +271,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
 ```
 
-**Note**: The hash value derived from the data is a random value, rather than a
+*** note
+**Note:** The hash value derived from the data is a random value, rather than a
 meaningful one controlled by the fuzzing engine. A single bit mutation might
 lead to a new code coverage, but the next mutation would generate a new hash
 value and trigger another code path, without providing any real guidance to the
 fuzzing engine.
+***
 
 #### Bytes taken from (data, size)
 
@@ -348,16 +366,16 @@ vector or string object, for example, simply initialize that object by passing
 [AFL]: AFL_integration.md
 [AddressSanitizer]: http://clang.llvm.org/docs/AddressSanitizer.html
 [ClusterFuzz status]: libFuzzer_integration.md#Status-Links
-[Efficient Fuzzer Guide]: efficient_fuzzer.md
+[Efficient Fuzzing Guide]: efficient_fuzzing.md
 [FuzzedDataProvider]: https://cs.chromium.org/chromium/src/third_party/libFuzzer/src/utils/FuzzedDataProvider.h
-[Fuzzer Dictionary]: efficient_fuzzer.md#Fuzzer-Dictionary
+[Fuzzer Dictionary]: efficient_fuzzing.md#Fuzzer-dictionary
 [GN]: https://gn.googlesource.com/gn/+/master/README.md
 [Getting Started with libprotobuf-mutator in Chromium]: libprotobuf-mutator.md
 [Integration Reference]: reference.md
 [MemorySanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html
-[Seed Corpus]: efficient_fuzzer.md#Seed-Corpus
+[Seed Corpus]: efficient_fuzzing.md#Seed-corpus
 [UndefinedBehaviorSanitizer]: http://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
-[code coverage report]: efficient_fuzzer.md#Code-Coverage
+[code coverage report]: efficient_fuzzing.md#Code-coverage
 [crbug/598448]: https://bugs.chromium.org/p/chromium/issues/detail?id=598448
 [google/fuzzing documentation page]: https://github.com/google/fuzzing/blob/master/docs/split-inputs.md#fuzzed-data-provider
 [libFuzzer's output documentation]: http://llvm.org/docs/LibFuzzer.html#output

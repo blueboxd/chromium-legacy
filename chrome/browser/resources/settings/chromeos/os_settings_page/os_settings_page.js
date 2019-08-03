@@ -12,6 +12,7 @@ Polymer({
   behaviors: [
     settings.MainPageBehavior,
     settings.RouteObserverBehavior,
+    PrefsBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -220,6 +221,11 @@ Polymer({
       return true;
     }
     return false;
+  },
+
+  /** @private */
+  onHideBrowserSettingsBannerClick_: function() {
+    this.setPrefValue('settings.cros.show_browser_banner', false);
   },
 
   /**

@@ -178,6 +178,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // Updates the database (and the result callback) based on
   // |displayed_notifications| if |supports_synchronization|.
   void SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
+      base::Time start_time,
       const GURL& origin,
       int64_t service_worker_registration_id,
       ReadAllResultCallback callback,
@@ -188,6 +189,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   // called on the |task_runner_| thread. |callback| will be invoked on the
   // UI thread when the operation has completed.
   void DoReadAllNotificationDataForServiceWorkerRegistration(
+      base::Time start_time,
       const GURL& origin,
       int64_t service_worker_registration_id,
       ReadAllResultCallback callback,

@@ -248,20 +248,17 @@ class Dispatcher : public content::RenderThreadObserver,
   // Enable custom element whitelist in Apps.
   void EnableCustomElementWhiteList();
 
-  // Adds or removes bindings for every context belonging to |extension_id|, or
-  // or all contexts if |extension_id| is empty.
-  void UpdateBindings(const std::string& extension_id);
+  // Adds or removes bindings for all contexts.
+  void UpdateAllBindings();
 
-  void UpdateBindingsForContext(ScriptContext* context);
+  // Adds or removes bindings for every context belonging to |extension|, due to
+  // permissions change in the extension.
+  void UpdateBindingsForExtension(const Extension& extension);
 
   void RegisterNativeHandlers(ModuleSystem* module_system,
                               ScriptContext* context,
                               NativeExtensionBindingsSystem* bindings_system,
                               V8SchemaRegistry* v8_schema_registry);
-
-  // Updates a web page context with any content capabilities granted by active
-  // extensions.
-  void UpdateContentCapabilities(ScriptContext* context);
 
   // Inserts static source code into |source_map_|.
   void PopulateSourceMap();

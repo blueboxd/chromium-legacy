@@ -162,7 +162,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;

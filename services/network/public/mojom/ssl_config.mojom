@@ -11,8 +11,8 @@ enum SSLVersion {
   kTLS13,
 };
 
-// This contains the subset of net::SSLConfig members that are managed by the
-// net::SSLConfigService. See net::SSLConfig for field descriptions.
+// This is a combination of net::SSLContextConfig and
+// net::CertVerifier::Config's fields. See those two classes for descriptions.
 struct SSLConfig {
   bool rev_checking_enabled = false;
   bool rev_checking_required_local_anchors = false;

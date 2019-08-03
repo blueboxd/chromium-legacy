@@ -744,7 +744,7 @@ test("gfx_unittests") {
     data += [ "$root_out_dir/ui_test.pak" ]
   }
 
-  if (is_linux || is_android || is_fuchsia) {
+  if (is_linux || is_android || is_fuchsia || is_win) {
     sources += [ "platform_font_skia_unittest.cc" ]
   }
 

@@ -54,7 +54,7 @@ class WorkingSetTrimmerPolicyChromeOSTest : public GraphTestHarness {
  public:
   WorkingSetTrimmerPolicyChromeOSTest()
       : GraphTestHarness(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
   ~WorkingSetTrimmerPolicyChromeOSTest() override {}
 
   void SetUp() override {

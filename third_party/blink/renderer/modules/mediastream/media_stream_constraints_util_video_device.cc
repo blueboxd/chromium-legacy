@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "media/base/limits.h"
-#include "media/mojo/interfaces/display_media_information.mojom-blink.h"
+#include "media/mojo/mojom/display_media_information.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"

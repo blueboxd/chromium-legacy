@@ -120,14 +120,9 @@ void ChromeFeatureListCreator::CreatePrefService() {
       std::make_unique<policy::ChromeBrowserPolicyConnector>();
 #endif  // defined(OS_CHROMEOS)
 
-  pref_service_factory_ =
-      std::make_unique<prefs::InProcessPrefServiceFactory>();
-  auto delegate = pref_service_factory_->CreateDelegate();
-  delegate->InitPrefRegistry(pref_registry.get());
-
   local_state_ = chrome_prefs::CreateLocalState(
       local_state_file, browser_policy_connector_->GetPolicyService(),
-      std::move(pref_registry), false, std::move(delegate),
+      std::move(pref_registry), false, nullptr /* delegate */,
       browser_policy_connector_.get());
 
 // TODO(asvitkine): This is done here so that the pref is set before

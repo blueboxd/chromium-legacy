@@ -327,7 +327,7 @@ CertificateList X509Certificate::CreateCertificateListFromBytes(
   return results;
 }
 
-void X509Certificate::Persist(base::Pickle* pickle) {
+void X509Certificate::Persist(base::Pickle* pickle) const {
   DCHECK(cert_buffer_);
   // This would be an absolutely insane number of intermediates.
   if (intermediate_ca_certs_.size() > static_cast<size_t>(INT_MAX) - 1) {
@@ -424,7 +424,7 @@ bool X509Certificate::EqualsIncludingChain(const X509Certificate* other) const {
 }
 
 bool X509Certificate::IsIssuedByEncoded(
-    const std::vector<std::string>& valid_issuers) {
+    const std::vector<std::string>& valid_issuers) const {
   std::vector<std::string> normalized_issuers;
   CertErrors errors;
   for (const auto& raw_issuer : valid_issuers) {

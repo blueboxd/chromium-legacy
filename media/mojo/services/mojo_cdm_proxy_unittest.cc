@@ -14,7 +14,7 @@
 #include "base/test/test_message_loop.h"
 #include "media/base/mock_filters.h"
 #include "media/cdm/cdm_proxy_context.h"
-#include "media/mojo/interfaces/cdm_proxy.mojom.h"
+#include "media/mojo/mojom/cdm_proxy.mojom.h"
 #include "media/mojo/services/mojo_cdm_proxy.h"
 #include "media/mojo/services/mojo_cdm_proxy_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"

@@ -1,10 +1,10 @@
 include_rules = [
   "-chrome/android/features/keyboard_accessory/internal",
 
+  "+chrome/browser/ui/android/widget",
   "+chrome/lib/lifecycle/public",
   "+chrome/lib/image_fetcher/public",
   "+chrome/lib/util/public",
-  "+chrome/lib/ui/widget/public",
   "+components/embedder_support/android",
   "+components/autofill/android/java/src/org/chromium/components/autofill",
   "+components/background_task_scheduler/android/java/src/org/chromium/components/background_task_scheduler",

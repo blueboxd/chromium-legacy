@@ -30,10 +30,12 @@
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
+using blink::WebElement;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
-using blink::WebLocalFrame;
 using blink::WebInputElement;
+using blink::WebLocalFrame;
+using blink::WebString;
 using blink::WebVector;
 
 namespace autofill {
@@ -286,6 +288,16 @@ class PasswordFormConversionUtilsTest : public content::RenderViewTest {
     content::RenderViewTest::TearDown();
   }
 
+  uint32_t GetRendererIdFromWebElementId(WebString id) {
+    WebLocalFrame* frame = GetMainFrame();
+    if (!frame || frame->GetDocument().IsNull())
+      return FormData::kNotSetFormRendererId;
+    WebElement element = frame->GetDocument().GetElementById(id);
+    if (element.IsNull())
+      return FormData::kNotSetFormRendererId;
+    return element.To<WebInputElement>().UniqueRendererFormControlId();
+  }
+
   UsernameDetectorCache username_detector_cache_;
 
  private:
@@ -373,73 +385,87 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_DeveloperGroupAttributes) {
     const char* first_text_field_parameters[3];
     const char* second_text_field_parameters[3];
     const char* expected_username_element;
+    const WebString expected_username_id;
     const char* expected_username_value;
   } cases[] = {
       // There are both field name and id.
-      {{"username", "id", "johnsmith"},
-       {"email", "id", "js@google.com"},
+      {{"username", "x1d", "johnsmith"},
+       {"email", "y1d", "js@google.com"},
        "username",
+       "x1d",
        "johnsmith"},
       // there is no field id.
-      {{"username", "", "johnsmith"},
-       {"email", "", "js@google.com"},
+      {{"username", "x1d", "johnsmith"},
+       {"email", "y1d", "js@google.com"},
        "username",
+       "x1d",
        "johnsmith"},
       // Upper or mixed case shouldn't matter.
-      {{"uSeRnAmE", "id", "johnsmith"},
-       {"email", "id", "js@google.com"},
+      {{"uSeRnAmE", "x1d", "johnsmith"},
+       {"email", "y1d", "js@google.com"},
        "uSeRnAmE",
+       "x1d",
        "johnsmith"},
       // Check removal of special characters.
-      {{"u1_s2-e3~r4/n5(a)6m#e", "", "johnsmith"},
-       {"email", "", "js@google.com"},
+      {{"u1_s2-e3~r4/n5(a)6m#e", "x1d", "johnsmith"},
+       {"email", "y1d", "js@google.com"},
        "u1_s2-e3~r4/n5(a)6m#e",
+       "x1d",
        "johnsmith"},
       // Check guard between field name and field id.
       {{"us", "ername", "johnsmith"},
-       {"email", "", "js@google.com"},
+       {"email", "id", "js@google.com"},
        "email",
+       "id",
        "js@google.com"},
       // Check removal of fields with latin negative words in developer group.
-      {{"email", "", "js@google.com"},
-       {"fake_username", "", "johnsmith"},
+      {{"email", "x", "js@google.com"},
+       {"fake_username", "y", "johnsmith"},
        "email",
+       "x",
        "js@google.com"},
       {{"email", "mail", "js@google.com"},
        {"user_name", "fullname", "johnsmith"},
        "email",
+       "mail",
        "js@google.com"},
       // Identify latin translations of "username".
-      {{"benutzername", "", "johnsmith"},
-       {"email", "", "js@google.com"},
+      {{"benutzername", "x", "johnsmith"},
+       {"email", "y", "js@google.com"},
        "benutzername",
+       "x",
        "johnsmith"},
       // Identify latin translations of "user".
-      {{"utilizator", "", "johnsmith"},
-       {"email", "", "js@google.com"},
+      {{"utilizator", "x1d", "johnsmith"},
+       {"email", "y1d", "js@google.com"},
        "utilizator",
+       "x1d",
        "johnsmith"},
       // Identify technical words.
-      {{"loginid", "", "johnsmith"},
-       {"email", "", "js@google.com"},
+      {{"loginid", "x1d", "johnsmith"},
+       {"email", "y1d", "js@google.com"},
        "loginid",
+       "x1d",
        "johnsmith"},
       // Identify weak words.
-      {{"usrname", "", "johnsmith"},
-       {"email", "", "js@google.com"},
+      {{"usrname", "x1d", "johnsmith"},
+       {"email", "y1d", "js@google.com"},
        "email",
+       "y1d",
        "js@google.com"},
       // If a word matches in maximum 2 fields, it is accepted.
       // First encounter is selected as username.
-      {{"username", "", "johnsmith"},
-       {"repeat_username", "", "johnsmith"},
+      {{"username", "x1d", "johnsmith"},
+       {"repeat_username", "y1d", "johnsmith"},
        "username",
+       "x1d",
        "johnsmith"},
       // A short word should be enclosed between delimiters. Otherwise, an
       // Occurrence doesn't count.
       {{"identity_name", "idn", "johnsmith"},
-       {"id", "id", "123"},
+       {"id", "xid", "123"},
        "id",
+       "xid",
        "123"}};
 
   for (size_t i = 0; i < base::size(cases); ++i) {
@@ -459,10 +485,12 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_DeveloperGroupAttributes) {
     std::string html = builder.ProduceHTML();
 
     username_detector_cache_.clear();
+
     std::unique_ptr<PasswordForm> password_form =
         LoadHTMLAndConvertForm(html, nullptr, false);
 
-    ASSERT_TRUE(password_form);
+    uint32_t username_renderer_id =
+        GetRendererIdFromWebElementId(cases[i].expected_username_id);
 
     EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_username_element),
               password_form->username_element);
@@ -471,9 +499,8 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_DeveloperGroupAttributes) {
     // Check that the username field was found by HTML detector.
     ASSERT_EQ(1u, username_detector_cache_.size());
     ASSERT_FALSE(username_detector_cache_.begin()->second.empty());
-    EXPECT_EQ(
-        cases[i].expected_username_element,
-        username_detector_cache_.begin()->second[0].NameForAutofill().Utf8());
+    EXPECT_EQ(username_renderer_id,
+              username_detector_cache_.begin()->second[0]);
   }
 }
 
@@ -481,11 +508,11 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_SeveralDetections) {
   // If word matches in more than 2 fields, we don't match on it.
   // We search for match with another word.
   PasswordFormBuilder builder(kTestFormActionURL);
-  builder.AddTextFieldWithoutAutocomplete("address", "user", "someaddress", "",
+  builder.AddTextFieldWithoutAutocomplete("address", "xuser", "someaddress", "",
                                           "");
-  builder.AddTextFieldWithoutAutocomplete("loginid", "user", "johnsmith", "",
+  builder.AddTextFieldWithoutAutocomplete("loginid", "yuser", "johnsmith", "",
                                           "");
-  builder.AddTextFieldWithoutAutocomplete("tel", "user", "sometel", "", "");
+  builder.AddTextFieldWithoutAutocomplete("tel", "zuser", "sometel", "", "");
   builder.AddPasswordField("password", "secret", nullptr);
   builder.AddSubmitButton("submit");
   std::string html = builder.ProduceHTML();
@@ -494,6 +521,8 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_SeveralDetections) {
   std::unique_ptr<PasswordForm> password_form =
       LoadHTMLAndConvertForm(html, nullptr, false);
 
+  uint32_t username_renderer_id = GetRendererIdFromWebElementId("yuser");
+
   ASSERT_TRUE(password_form);
 
   EXPECT_EQ(base::UTF8ToUTF16("loginid"), password_form->username_element);
@@ -501,9 +530,7 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_SeveralDetections) {
   // Check that the username field was found by HTML detector.
   ASSERT_EQ(1u, username_detector_cache_.size());
   ASSERT_EQ(1u, username_detector_cache_.begin()->second.size());
-  EXPECT_EQ(
-      "loginid",
-      username_detector_cache_.begin()->second[0].NameForAutofill().Utf8());
+  EXPECT_EQ(username_renderer_id, username_detector_cache_.begin()->second[0]);
 }
 
 TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_UserGroupAttributes) {
@@ -520,69 +547,82 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_UserGroupAttributes) {
     const char* first_text_field_parameters[4];
     const char* second_text_field_parameters[4];
     const char* expected_username_element;
+    const WebString expected_username_id;
     const char* expected_username_value;
   } cases[] = {
       // Label information will decide username.
       {{"name1", "id1", "johnsmith", "Username:"},
        {"name2", "id2", "js@google.com", "Email:"},
        "name1",
+       "id1",
        "johnsmith"},
       // Placeholder information will decide username.
       {{"name1", "id1", "js@google.com", "Email:"},
        {"name2", "id2", "johnsmith", "Username:"},
        "name2",
+       "id2",
        "johnsmith"},
       // Check removal of special characters.
       {{"name1", "id1", "johnsmith", "U s er n a m e:"},
        {"name2", "id2", "js@google.com", "Email:"},
        "name1",
+       "id1",
        "johnsmith"},
       // Check removal of fields with latin negative words in user group.
       {{"name1", "id1", "johnsmith", "Username password:"},
        {"name2", "id2", "js@google.com", "Email:"},
        "name2",
+       "id2",
        "js@google.com"},
       // Check removal of fields with non-latin negative words in user group.
       {{"name1", "id1", "js@google.com", "Email:"},
        {"name2", "id2", "johnsmith", "የይለፍቃልየይለፍቃል:"},
        "name1",
+       "id1",
        "js@google.com"},
       // Identify latin translations of "username".
       {{"name1", "id1", "johnsmith", "Username:"},
        {"name2", "id2", "js@google.com", "Email:"},
        "name1",
+       "id1",
        "johnsmith"},
       // Identify non-latin translations of "username".
       {{"name1", "id1", "johnsmith", "用户名:"},
        {"name2", "id2", "js@google.com", "Email:"},
        "name1",
+       "id1",
        "johnsmith"},
       // Identify latin translations of "user".
       {{"name1", "id1", "johnsmith", "Wosuta:"},
        {"name2", "id2", "js@google.com", "Email:"},
        "name1",
+       "id1",
        "johnsmith"},
       // Identify non-latin translations of "user".
       {{"name1", "id1", "johnsmith", "истифода:"},
        {"name2", "id2", "js@google.com", "Email:"},
        "name1",
+       "id1",
        "johnsmith"},
       // Identify weak words.
       {{"name1", "id1", "johnsmith", "Insert your login details:"},
        {"name2", "id2", "js@google.com", "Insert your email:"},
        "name1",
+       "id1",
        "johnsmith"},
       // Check user group priority, compared to developer group.
       // User group should have higher priority than developer group.
-      {{"email", "", "js@google.com", "Username:"},
-       {"username", "", "johnsmith", "Email:"},
+      {{"email", "id1", "js@google.com", "Username:"},
+       {"username", "id2", "johnsmith", "Email:"},
        "email",
+       "id1",
        "js@google.com"},
       // Check treatment for short dictionary words. "uid" has higher priority,
       // but its occurrence is ignored because it is a part of another word.
-      {{"name1", "", "johnsmith", "Insert your id:"},
+      {{"name1", "noword", "johnsmith", "Insert your id:"},
        {"name2", "uidentical", "js@google.com", "Insert something:"},
        "name1",
+       "noword",
        "johnsmith"}};
 
   for (size_t i = 0; i < base::size(cases); ++i) {
@@ -607,6 +647,9 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_UserGroupAttributes) {
     std::unique_ptr<PasswordForm> password_form =
         LoadHTMLAndConvertForm(html, nullptr, false);
 
+    uint32_t username_renderer_id =
+        GetRendererIdFromWebElementId(cases[i].expected_username_id);
+
     ASSERT_TRUE(password_form);
 
     EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_username_element),
@@ -616,9 +659,8 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetector_UserGroupAttributes) {
     // Check that the username field was found by HTML detector.
     ASSERT_EQ(1u, username_detector_cache_.size());
     ASSERT_FALSE(username_detector_cache_.begin()->second.empty());
-    EXPECT_EQ(
-        cases[i].expected_username_element,
-        username_detector_cache_.begin()->second[0].NameForAutofill().Utf8());
+    EXPECT_EQ(username_renderer_id,
+              username_detector_cache_.begin()->second[0]);
   }
 }
 
@@ -638,9 +680,10 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetectorCache) {
   base::HistogramTester histogram_tester;
   std::unique_ptr<PasswordForm> password_form =
       CreatePasswordFormFromWebForm(form, nullptr, nullptr, &detector_cache);
+
   EXPECT_TRUE(password_form);
   ASSERT_EQ(1u, detector_cache.size());
-  EXPECT_EQ(form, detector_cache.begin()->first);
+  EXPECT_EQ(form.UniqueRendererFormId(), detector_cache.begin()->first);
   EXPECT_TRUE(detector_cache.begin()->second.empty());
   histogram_tester.ExpectUniqueSample("PasswordManager.UsernameDetectionMethod",
                                       UsernameDetectionMethod::BASE_HEURISTIC,
@@ -655,7 +698,7 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetectorCache) {
       CreatePasswordFormFromWebForm(form, nullptr, nullptr, &detector_cache);
   EXPECT_TRUE(password_form);
   ASSERT_EQ(1u, detector_cache.size());
-  EXPECT_EQ(form, detector_cache.begin()->first);
+  EXPECT_EQ(form.UniqueRendererFormId(), detector_cache.begin()->first);
   EXPECT_TRUE(detector_cache.begin()->second.empty());
   histogram_tester.ExpectUniqueSample("PasswordManager.UsernameDetectionMethod",
                                       UsernameDetectionMethod::BASE_HEURISTIC,
@@ -668,9 +711,10 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetectorCache) {
       CreatePasswordFormFromWebForm(form, nullptr, nullptr, &detector_cache);
   EXPECT_TRUE(password_form);
   ASSERT_EQ(1u, detector_cache.size());
-  EXPECT_EQ(form, detector_cache.begin()->first);
+  EXPECT_EQ(form.UniqueRendererFormId(), detector_cache.begin()->first);
   ASSERT_EQ(1u, detector_cache.begin()->second.size());
-  EXPECT_EQ("id", detector_cache.begin()->second[0].NameForAutofill().Utf8());
+  EXPECT_EQ(control_elements[0].UniqueRendererFormControlId(),
+            detector_cache.begin()->second[0]);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("PasswordManager.UsernameDetectionMethod"),
       testing::UnorderedElementsAre(
@@ -684,9 +728,10 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetectorCache) {
       CreatePasswordFormFromWebForm(form, nullptr, nullptr, &detector_cache);
   EXPECT_TRUE(password_form);
   ASSERT_EQ(1u, detector_cache.size());
-  EXPECT_EQ(form, detector_cache.begin()->first);
+  EXPECT_EQ(form.UniqueRendererFormId(), detector_cache.begin()->first);
   ASSERT_EQ(1u, detector_cache.begin()->second.size());
-  EXPECT_EQ("id", detector_cache.begin()->second[0].NameForAutofill().Utf8());
+  EXPECT_EQ(control_elements[0].UniqueRendererFormControlId(),
+            detector_cache.begin()->second[0]);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("PasswordManager.UsernameDetectionMethod"),
       testing::UnorderedElementsAre(
@@ -716,9 +761,11 @@ TEST_F(PasswordFormConversionUtilsTest, HTMLDetectorCache_SkipSomePredictions) {
 
   // Add predictions for "email" and "id" fields to the cache.
   UsernameDetectorCache username_detector_cache;
-  username_detector_cache[control_elements[0].Form()] = {
-      *ToWebInputElement(&control_elements[1]),   // email
-      *ToWebInputElement(&control_elements[2])};  // id
+  username_detector_cache[control_elements[0].Form().UniqueRendererFormId()] = {
+      ToWebInputElement(&control_elements[1])
+          ->UniqueRendererFormControlId(),  // email
+      ToWebInputElement(&control_elements[2])
+          ->UniqueRendererFormControlId()};  // id
 
   // A user typed only into "id" and "password" fields. So, the prediction for
   // "email" field should be ignored despite it is more reliable than prediction

@@ -4,7 +4,7 @@
 
 module chromeos_camera.mojom;
 
-import "media/mojo/interfaces/media_types.mojom";
+import "media/mojo/mojom/media_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 

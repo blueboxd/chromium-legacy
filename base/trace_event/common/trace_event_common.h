@@ -958,6 +958,9 @@
 #define TRACE_TASK_EXECUTION(run_function, task) \
   INTERNAL_TRACE_TASK_EXECUTION(run_function, task)
 
+#define TRACE_LOG_MESSAGE(file, message, line) \
+  INTERNAL_TRACE_LOG_MESSAGE(file, message, line)
+
 // TRACE_EVENT_METADATA* events are information related to other
 // injected events, not events in their own right.
 #define TRACE_EVENT_METADATA1(category_group, name, arg1_name, arg1_val) \

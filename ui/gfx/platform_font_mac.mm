@@ -293,7 +293,7 @@ const std::string& PlatformFontMac::GetFontName() const {
   return font_name_;
 }
 
-std::string PlatformFontMac::GetActualFontNameForTesting() const {
+std::string PlatformFontMac::GetActualFontName() const {
   return base::SysNSStringToUTF8([native_font_ familyName]);
 }
 

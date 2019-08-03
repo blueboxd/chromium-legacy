@@ -19,6 +19,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
@@ -63,6 +64,11 @@ constexpr gfx::Size kMediaControlsButtonRowSize =
 constexpr int kCloseButtonOffset = 290;
 constexpr gfx::Size kCloseButtonSize = gfx::Size(24, 24);
 constexpr int kCloseButtonIconSize = 20;
+
+constexpr int kDragVelocityThreshold = -6;
+constexpr int kHeightDismissalThreshold = 20;
+constexpr base::TimeDelta kAnimationDuration =
+    base::TimeDelta::FromMilliseconds(200);
 
 // How long to wait (in milliseconds) for a new media session to begin.
 constexpr base::TimeDelta kNextMediaDelay =
@@ -135,18 +141,22 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   DCHECK(callbacks.hide_media_controls);
   DCHECK(callbacks.show_media_controls);
 
-  set_notify_enter_exit_on_child(true);
+  // Media controls have not been dismissed initially.
+  Shell::Get()->media_controller()->SetMediaControlsDismissed(false);
 
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
-
-  SetBackground(views::CreateRoundedRectBackground(kMediaControlsBackground,
-                                                   kMediaControlsCornerRadius));
   middle_spacing_ = std::make_unique<NonAccessibleView>();
   middle_spacing_->set_owned_by_client();
 
-  // Media controls have not been dismissed initially.
-  Shell::Get()->media_controller()->SetMediaControlsDismissed(false);
+  set_notify_enter_exit_on_child(true);
+
+  contents_view_ = AddChildView(std::make_unique<views::View>());
+  contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+  contents_view_->SetBackground(views::CreateRoundedRectBackground(
+      kMediaControlsBackground, kMediaControlsCornerRadius));
+
+  contents_view_->SetPaintToLayer();  // Needed for opacity animation.
+  contents_view_->layer()->SetFillsBoundsOpaquely(false);
 
   // |close_button_row| contains the close button to dismiss the controls.
   auto close_button_row = std::make_unique<NonAccessibleView>();
@@ -170,19 +180,20 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   close_button->SetAccessibleName(close_button_label);
   close_button_ = close_button_layout->AddView(std::move(close_button));
   close_button_->SetVisible(false);
-  AddChildView(std::move(close_button_row));
+  contents_view_->AddChildView(std::move(close_button_row));
 
   // |header_row_| contains the app icon and source title of the current media
   // session.
-  header_row_ = AddChildView(std::make_unique<MediaControlsHeaderView>());
+  header_row_ =
+      contents_view_->AddChildView(std::make_unique<MediaControlsHeaderView>());
 
   auto session_artwork = std::make_unique<views::ImageView>();
   session_artwork->SetPreferredSize(
       gfx::Size(kArtworkViewWidth, kArtworkViewHeight));
   session_artwork->SetBorder(views::CreateEmptyBorder(kArtworkInsets));
-  session_artwork_ = AddChildView(std::move(session_artwork));
+  session_artwork_ = contents_view_->AddChildView(std::move(session_artwork));
 
-  progress_ = AddChildView(
+  progress_ = contents_view_->AddChildView(
       std::make_unique<media_message_center::MediaControlsProgressView>());
 
   // |button_row_| contains the buttons for controlling playback.
@@ -196,7 +207,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   button_row_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   button_row->SetPreferredSize(kMediaControlsButtonRowSize);
-  button_row_ = AddChildView(std::move(button_row));
+  button_row_ = contents_view_->AddChildView(std::move(button_row));
 
   CreateMediaButton(
       kChangeTrackIconSize, MediaSessionAction::kPreviousTrack,
@@ -285,6 +296,10 @@ gfx::Size LockScreenMediaControlsView::CalculatePreferredSize() const {
   return gfx::Size(kMediaControlsTotalWidthDp, kMediaControlsTotalHeightDp);
 }
 
+void LockScreenMediaControlsView::Layout() {
+  contents_view_->SetBoundsRect(GetContentsBounds());
+}
+
 void LockScreenMediaControlsView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kListItem;
@@ -298,10 +313,16 @@ void LockScreenMediaControlsView::GetAccessibleNodeData(
 }
 
 void LockScreenMediaControlsView::OnMouseEntered(const ui::MouseEvent& event) {
+  if (is_in_drag_ || contents_view_->layer()->GetAnimator()->is_animating())
+    return;
+
   close_button_->SetVisible(true);
 }
 
 void LockScreenMediaControlsView::OnMouseExited(const ui::MouseEvent& event) {
+  if (is_in_drag_ || contents_view_->layer()->GetAnimator()->is_animating())
+    return;
+
   close_button_->SetVisible(false);
 }
 
@@ -431,11 +452,14 @@ void LockScreenMediaControlsView::MediaControllerImageChanged(
   }
 }
 
+void LockScreenMediaControlsView::OnImplicitAnimationsCompleted() {
+  Dismiss();
+}
+
 void LockScreenMediaControlsView::ButtonPressed(views::Button* sender,
                                                 const ui::Event& event) {
   if (sender == close_button_) {
-    media_controller_ptr_->Stop();
-    hide_media_controls_.Run();
+    Dismiss();
     return;
   }
 
@@ -448,6 +472,40 @@ void LockScreenMediaControlsView::ButtonPressed(views::Button* sender,
   media_session::PerformMediaSessionAction(
       media_message_center::GetActionFromButtonTag(*sender),
       media_controller_ptr_);
+}
+
+void LockScreenMediaControlsView::OnGestureEvent(ui::GestureEvent* event) {
+  gfx::Point point_in_screen = event->location();
+  ConvertPointToScreen(this, &point_in_screen);
+
+  switch (event->type()) {
+    case ui::ET_SCROLL_FLING_START:
+    case ui::ET_GESTURE_SCROLL_BEGIN: {
+      if (is_in_drag_)
+        break;
+
+      initial_drag_point_ = point_in_screen;
+      is_in_drag_ = true;
+      event->SetHandled();
+      break;
+    }
+    case ui::ET_GESTURE_SCROLL_UPDATE: {
+      last_fling_velocity_ = event->details().scroll_y();
+      UpdateDrag(point_in_screen);
+      event->SetHandled();
+      break;
+    }
+    case ui::ET_GESTURE_END: {
+      if (!is_in_drag_)
+        break;
+
+      EndDrag();
+      event->SetHandled();
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 void LockScreenMediaControlsView::FlushForTesting() {
@@ -502,6 +560,11 @@ void LockScreenMediaControlsView::SetIsPlaying(bool playing) {
   UpdateActionButtonsVisibility();
 }
 
+void LockScreenMediaControlsView::Dismiss() {
+  media_controller_ptr_->Stop();
+  hide_media_controls_.Run();
+}
+
 void LockScreenMediaControlsView::SetArtwork(
     base::Optional<gfx::ImageSkia> img) {
   if (!img.has_value()) {
@@ -512,6 +575,70 @@ void LockScreenMediaControlsView::SetArtwork(
   session_artwork_->SetImageSize(ScaleSizeToFitView(
       img->size(), gfx::Size(kArtworkViewWidth, kArtworkViewHeight)));
   session_artwork_->SetImage(*img);
+}
+
+void LockScreenMediaControlsView::UpdateDrag(
+    const gfx::Point& location_in_screen) {
+  is_in_drag_ = true;
+  int drag_delta = location_in_screen.y() - initial_drag_point_.y();
+
+  // Don't let the user drag |contents_view_| below the view area.
+  if (contents_view_->bounds().bottom() + drag_delta >=
+      GetLocalBounds().bottom()) {
+    return;
+  }
+
+  gfx::Transform transform;
+  transform.Translate(0, drag_delta);
+  contents_view_->layer()->SetTransform(transform);
+  UpdateOpacity();
+}
+
+void LockScreenMediaControlsView::EndDrag() {
+  is_in_drag_ = false;
+
+  // If the user releases the drag with velocity over the threshold or drags
+  // |contents_view_| past the height threshold, dismiss the controls.
+  if (last_fling_velocity_ <= kDragVelocityThreshold ||
+      (contents_view_->GetBoundsInScreen().y() <= kHeightDismissalThreshold &&
+       last_fling_velocity_ < 0)) {
+    RunHideControlsAnimation();
+    return;
+  }
+
+  RunResetControlsAnimation();
+}
+
+void LockScreenMediaControlsView::UpdateOpacity() {
+  float progress =
+      static_cast<float>(contents_view_->GetBoundsInScreen().bottom()) /
+      GetBoundsInScreen().bottom();
+  contents_view_->layer()->SetOpacity(progress);
+}
+
+void LockScreenMediaControlsView::RunHideControlsAnimation() {
+  ui::ScopedLayerAnimationSettings animation(
+      contents_view_->layer()->GetAnimator());
+  animation.AddObserver(this);
+  animation.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  animation.SetTransitionDuration(kAnimationDuration);
+
+  gfx::Transform transform;
+  transform.Translate(0, -GetBoundsInScreen().bottom());
+  contents_view_->layer()->SetTransform(transform);
+  contents_view_->layer()->SetOpacity(0);
+}
+
+void LockScreenMediaControlsView::RunResetControlsAnimation() {
+  ui::ScopedLayerAnimationSettings animation(
+      contents_view_->layer()->GetAnimator());
+  animation.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  animation.SetTransitionDuration(kAnimationDuration);
+
+  contents_view_->layer()->SetTransform(gfx::Transform());
+  contents_view_->layer()->SetOpacity(1);
 }
 
 }  // namespace ash

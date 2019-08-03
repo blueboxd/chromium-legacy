@@ -30,7 +30,7 @@ struct TabRendererData {
   bool IsCrashed() const;
 
   gfx::ImageSkia favicon;
-  ThumbnailImage thumbnail;
+  scoped_refptr<ThumbnailImage> thumbnail;
   TabNetworkState network_state = TabNetworkState::kNone;
   base::string16 title;
   // This corresponds to WebContents::GetVisibleUrl().

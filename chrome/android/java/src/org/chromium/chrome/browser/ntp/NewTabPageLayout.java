@@ -70,12 +70,6 @@ import org.chromium.ui.widget.ViewRectProvider;
 public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer, VrModeObserver {
     private static final String TAG = "NewTabPageLayout";
 
-    /**
-     * Parameter for the simplified NTP ablation experiment arm which removes the additional
-     * suggestions sections without replacing them with shortcut buttons.
-     */
-    private static final String PARAM_SIMPLIFIED_NTP_ABLATION = "simplified_ntp_ablation";
-
     private final int mTileGridLayoutBleed;
 
     private View mMiddleSpacer; // Spacer between toolbar and Most Likely.
@@ -87,7 +81,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private ImageView mVoiceSearchButton;
     private View mTileGridPlaceholder;
     private View mNoSearchLogoSpacer;
-    private ViewGroup mShortcutsView;
 
     @Nullable
     private View mExploreSectionView; // View is null if explore flag is disabled.
@@ -558,7 +551,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
             View child = getChildAt(i);
-            if (mShortcutsView != null && child == mShortcutsView) break;
             if (child == mSiteSectionViewHolder.itemView) break;
 
             // Don't change the visibility of a ViewStub as that will automagically inflate it.
@@ -582,17 +574,10 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * Updates the padding for the tile grid based on what is shown above it.
      */
     private void updateTileGridPadding() {
-        int paddingTop;
-        if (mShortcutsView != null) {
-            // If the shortcuts view is visible, padding will be built into that view.
-            paddingTop = 0;
-        } else {
-            // Set a bit more top padding on the tile grid if there is no logo.
-            paddingTop = getResources().getDimensionPixelSize(shouldShowLogo()
-                            ? R.dimen.tile_grid_layout_padding_top
-                            : R.dimen.tile_grid_layout_no_logo_padding_top);
-        }
-
+        // Set a bit more top padding on the tile grid if there is no logo.
+        int paddingTop = getResources().getDimensionPixelSize(shouldShowLogo()
+                        ? R.dimen.tile_grid_layout_padding_top
+                        : R.dimen.tile_grid_layout_no_logo_padding_top);
         mSiteSectionViewHolder.itemView.setPadding(
                 0, paddingTop, 0, mSiteSectionViewHolder.itemView.getPaddingBottom());
     }

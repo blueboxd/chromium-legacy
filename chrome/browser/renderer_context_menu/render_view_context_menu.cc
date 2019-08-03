@@ -33,6 +33,7 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_stats.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
@@ -126,6 +127,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/url_utils.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/base/media_switches.h"
 #include "net/base/escape.h"
@@ -685,10 +688,8 @@ bool RenderViewContextMenu::MenuItemMatchesParams(
 
 void RenderViewContextMenu::AppendAllExtensionItems() {
   extension_items_.Clear();
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(browser_context_)->extension_service();
-  if (!service)
-    return;  // In unit-tests, we may not have an ExtensionService.
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser_context_);
 
   MenuManager* menu_manager = MenuManager::Get(browser_context_);
   if (!menu_manager)
@@ -704,8 +705,8 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   std::map<base::string16, std::vector<const Extension*>>
       title_to_extensions_map;
   for (auto iter = ids.begin(); iter != ids.end(); ++iter) {
-    const Extension* extension =
-        service->GetExtensionById(iter->extension_id, false);
+    const Extension* extension = registry->GetExtensionById(
+        iter->extension_id, extensions::ExtensionRegistry::ENABLED);
     // Platform apps have their context menus created directly in
     // AppendPlatformAppItems.
     if (extension && !extension->is_platform_app()) {

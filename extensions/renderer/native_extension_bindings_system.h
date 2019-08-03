@@ -20,6 +20,7 @@ namespace extensions {
 class IPCMessageSender;
 class RequestSender;
 class ScriptContext;
+class ScriptContextSetIterable;
 
 // The class responsible for creating extension bindings in different contexts,
 // permissions/availability checks, dispatching requests and handling responses,
@@ -37,6 +38,7 @@ class NativeExtensionBindingsSystem {
   ~NativeExtensionBindingsSystem();
 
   // Called when a new ScriptContext is created.
+  // Initializes the bindings for a newly created |context|.
   void DidCreateScriptContext(ScriptContext* context);
 
   // Called when a ScriptContext is about to be released.
@@ -44,6 +46,7 @@ class NativeExtensionBindingsSystem {
 
   // Updates the bindings for a given |context|. This happens at initialization,
   // but also when e.g. an extension gets updated permissions.
+  // TODO(lazyboy): Make this private, and expose a test getter.
   void UpdateBindingsForContext(ScriptContext* context);
 
   // Dispatches an event with the given |name|, |event_args|, and
@@ -71,8 +74,12 @@ class NativeExtensionBindingsSystem {
   // Returns the associated IPC message sender.
   IPCMessageSender* GetIPCMessageSender();
 
-  // Called when an extension's permissions are updated.
-  void OnExtensionPermissionsUpdated(const ExtensionId& id);
+  // Adds or removes bindings for every context belonging to |extension_id|, or
+  // or all contexts if |extension_id| is empty. Also invalidates
+  // |feature_cache_| entry if |permissions_changed| = true.
+  void UpdateBindings(const ExtensionId& extension_id,
+                      bool permissions_changed,
+                      ScriptContextSetIterable* script_context_set);
 
   // Called when an extension is removed.
   void OnExtensionRemoved(const ExtensionId& id);
@@ -126,6 +133,14 @@ class NativeExtensionBindingsSystem {
   // method with a return value.
   void GetJSBindingUtil(v8::Local<v8::Context> context,
                         v8::Local<v8::Value>* binding_util_out);
+
+  // Updates a web page context within |context| with any content capabilities
+  // granted by active extensions.
+  void UpdateContentCapabilities(ScriptContext* context);
+
+  // Invalidates the cached feature availability for |extension|; called when
+  // bindings availability has changed (such as after a permissions change).
+  void InvalidateFeatureCache(const ExtensionId& extension_id);
 
   std::unique_ptr<IPCMessageSender> ipc_message_sender_;
 

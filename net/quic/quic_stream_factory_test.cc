@@ -25,7 +25,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/http/transport_security_state_test_util.h"
@@ -827,7 +827,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   const quic::ParsedQuicVersion version_;
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   TransportSecurityState transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
@@ -1047,7 +1047,7 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
                                             "192.168.0.1", "");
   Initialize();
   factory_->set_require_confirmation(true);
-  http_server_properties_.SetSupportsQuic(IPAddress(192, 0, 2, 33));
+  http_server_properties_.SetSupportsQuic(true, IPAddress(192, 0, 2, 33));
 
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -1649,7 +1649,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   if (version_.transport_version == quic::QUIC_VERSION_99) {
     socket_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
-                                          2, true, 51,
+                                          2, true, 50,
                                           /*unidirectional=*/false));
     socket_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(3, true, stream_id,

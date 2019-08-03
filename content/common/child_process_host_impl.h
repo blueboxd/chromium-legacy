@@ -72,6 +72,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   void AddFilter(IPC::MessageFilter* filter) override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   void RunService(
       const std::string& service_name,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;

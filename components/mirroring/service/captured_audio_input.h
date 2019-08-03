@@ -11,7 +11,7 @@
 #include "base/sequence_checker.h"
 #include "components/mirroring/mojom/resource_provider.mojom.h"
 #include "media/audio/audio_input_ipc.h"
-#include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mirroring {

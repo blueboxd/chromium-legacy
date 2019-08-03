@@ -33,7 +33,6 @@
 #include "components/metrics/public/mojom/call_stack_profile_collector.mojom.h"
 #include "components/rappor/public/mojom/rappor_recorder.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
 #include "components/translate/content/common/translate.mojom.h"
 #include "extensions/buildflags/buildflags.h"
@@ -130,8 +129,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("device_sync", "device_sync")
         .RequireCapability("file_util", "analyze_archive")
         .RequireCapability("file_util", "zip_file")
-        .RequireCapability("heap_profiling", "heap_profiler")
-        .RequireCapability("heap_profiling", "profiling")
         .RequireCapability("identity", "identity_accessor")
         .RequireCapability(image_annotation::mojom::kServiceName,
                            image_annotation::mojom::kAnnotationCapability)

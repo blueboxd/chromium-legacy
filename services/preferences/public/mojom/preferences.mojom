@@ -10,7 +10,6 @@ import "mojo/public/mojom/base/values.mojom";
 import "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom";
 
 const string kServiceName = "preferences";
-const string kLocalStateServiceName = "local_state";
 
 // The know pref store types.
 //

@@ -23,7 +23,6 @@ extern const base::Feature kAndroidPayIntegrationV2;
 extern const base::Feature kAndroidPaymentApps;
 extern const base::Feature kAndroidSearchEngineChoiceNotification;
 extern const base::Feature kAndroidSiteSettingsUIRefresh;
-extern const base::Feature kAndroidWebContentsDarkMode;
 extern const base::Feature kBackgroundTaskComponentUpdate;
 extern const base::Feature kBackgroundTaskSchedulerForBackgroundSync;
 extern const base::Feature kCastDeviceFilter;

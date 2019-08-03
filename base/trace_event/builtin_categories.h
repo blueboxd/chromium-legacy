@@ -85,6 +85,7 @@
   X("latencyInfo")                                                       \
   X("leveldb")                                                           \
   X("loading")                                                           \
+  X("log")                                                               \
   X("login")                                                             \
   X("media")                                                             \
   X("media_router")                                                      \

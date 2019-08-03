@@ -382,8 +382,13 @@ void NetworkCongestionAnalyzer::
   base::Optional<size_t> mapping_score =
       ComputePeakDelayMappingSampleScore(truncated_count, peak_queueing_delay_);
   // Records the score that evaluates the mapping between the count of requests
-  // to the peak observed queueing delay.
-  if (mapping_score.has_value()) {
+  // to the peak observed queueing delay. Only records when there are at least
+  // 10 samples in the cache. The goal is to eliminate low-score samples because
+  // only few requests are in cache. For example, when there are only 5 samples
+  // in the cache, a mapping score can be 40 if the new mapping sample violates
+  // 3 of them.
+  if (count_peak_queueing_delay_mapping_sample_ >= 10 &&
+      mapping_score.has_value()) {
     UMA_HISTOGRAM_COUNTS_100(
         "NQE.CongestionAnalyzer.PeakQueueingDelayMappingScore",
         mapping_score.value());

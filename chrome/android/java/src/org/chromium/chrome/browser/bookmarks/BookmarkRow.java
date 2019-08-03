@@ -42,12 +42,13 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     @Location
     private int mLocation;
 
-    @IntDef({Location.TOP, Location.MIDDLE, Location.BOTTOM})
+    @IntDef({Location.TOP, Location.MIDDLE, Location.BOTTOM, Location.SOLO})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Location {
         int TOP = 0;
         int MIDDLE = 1;
         int BOTTOM = 2;
+        int SOLO = 3;
     }
 
     /**
@@ -153,11 +154,14 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
                         new Item(getContext(), R.string.bookmark_item_delete, true)));
         if (mReorderBookmarksEnabled
                 && mDelegate.getCurrentState() == BookmarkUIState.STATE_FOLDER) {
-            if (mLocation != Location.TOP) {
-                menuItems.add(new Item(getContext(), R.string.menu_item_move_up, true));
-            }
-            if (mLocation != Location.BOTTOM) {
-                menuItems.add(new Item(getContext(), R.string.menu_item_move_down, true));
+            // Only add move up / move down buttons if there is more than 1 item
+            if (mLocation != Location.SOLO) {
+                if (mLocation != Location.TOP) {
+                    menuItems.add(new Item(getContext(), R.string.menu_item_move_up, true));
+                }
+                if (mLocation != Location.BOTTOM) {
+                    menuItems.add(new Item(getContext(), R.string.menu_item_move_down, true));
+                }
             }
         }
         return menuItems.toArray(new Item[menuItems.size()]);

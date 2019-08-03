@@ -1452,14 +1452,26 @@ void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
   }
 
   if (GetVisibility() != Visibility::VISIBLE && !was_captured) {
-    // Ensure that all views act as if they were visible before capture begins.
-    // TODO(fdoray): Replace RenderWidgetHostView::WasUnOccluded() with a method
-    // to explicitly notify the RenderWidgetHostView that capture began.
-    // https://crbug.com/668690
-    if (auto* main_view = GetRenderWidgetHostView())
-      main_view->WasUnOccluded();
+    // TODO: Share code with WasShown().
+    SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
+
+    if (auto* view = GetRenderWidgetHostView()) {
+      view->Show();
+#if defined(OS_MACOSX)
+      view->SetActive(true);
+#endif
+    }
+
     if (!ShowingInterstitialPage())
       SetVisibilityForChildViews(true);
+
+    for (FrameTreeNode* node : frame_tree_.Nodes()) {
+      RenderFrameProxyHost* parent = node->render_manager()->GetProxyToParent();
+      if (!parent)
+        continue;
+
+      parent->cross_process_frame_connector()->DelegateWasShown();
+    }
   }
 }
 

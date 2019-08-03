@@ -2191,6 +2191,7 @@
       'gin_unittests': {},
       'google_apis_unittests': {},
       'gpu_unittests': {},
+      'gwp_asan_unittests': {},
       'ipc_tests': {},
       'libjingle_xmpp_unittests': {},
       'jingle_unittests': {},

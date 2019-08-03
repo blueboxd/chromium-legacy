@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
@@ -37,8 +38,7 @@ int DesktopProcessMain() {
 
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Me2Me");
 
-  base::SingleThreadTaskExecutor main_task_executor(
-      base::MessagePump::Type::UI);
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   base::RunLoop run_loop;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner = new AutoThreadTaskRunner(
       main_task_executor.task_runner(), run_loop.QuitClosure());
@@ -50,12 +50,12 @@ int DesktopProcessMain() {
   // Launch the input thread.
   scoped_refptr<AutoThreadTaskRunner> input_task_runner =
       AutoThread::CreateWithType("Input thread", ui_task_runner,
-                                 base::MessagePump::Type::IO);
+                                 base::MessagePumpType::IO);
 
   // Launch the I/O thread.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
       AutoThread::CreateWithType("I/O thread", ui_task_runner,
-                                 base::MessagePump::Type::IO);
+                                 base::MessagePumpType::IO);
 
   mojo::core::ScopedIPCSupport ipc_support(
       io_task_runner->task_runner(),

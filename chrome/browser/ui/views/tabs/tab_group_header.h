@@ -25,6 +25,9 @@ class TabGroupHeader : public views::View {
   // Updates our visual state according to the TabGroupVisualData for our group.
   void VisualsChanged();
 
+  // views::View:
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+
  private:
   TabController* const controller_;
   const TabGroupId group_;

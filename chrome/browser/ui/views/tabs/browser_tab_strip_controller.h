@@ -74,6 +74,8 @@ class BrowserTabStripController : public TabStripController,
   void OnStoppedDraggingTabs() override;
   const TabGroupVisualData* GetVisualDataForGroup(
       TabGroupId group_id) const override;
+  void SetVisualDataForGroup(TabGroupId group,
+                             TabGroupVisualData visual_data) override;
   std::vector<int> ListTabsInGroup(TabGroupId group_id) const override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;

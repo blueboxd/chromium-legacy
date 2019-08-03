@@ -29,7 +29,6 @@
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/constants.mojom.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pdf_util.h"
 #include "chrome/common/pepper_permission_util.h"
@@ -112,6 +111,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -342,10 +342,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
           : blink::scheduler::WebRendererProcessType::kRenderer);
 
   {
-    startup_metric_utils::mojom::StartupMetricHostPtr startup_metric_host;
-    GetConnector()->BindInterface(
-        service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName),
-        &startup_metric_host);
+    mojo::Remote<startup_metric_utils::mojom::StartupMetricHost>
+        startup_metric_host;
+    thread->BindHostReceiver(startup_metric_host.BindNewPipeAndPassReceiver());
     startup_metric_host->RecordRendererMainEntryTime(main_entry_time_);
   }
 
@@ -367,17 +366,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (!spellcheck_)
     InitSpellCheck();
 #endif
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  registry_.AddInterface(
-      base::BindRepeating(&safe_browsing::PhishingClassifierFilter::Create));
-#endif
+
   prerender_dispatcher_.reset(new prerender::PrerenderDispatcher());
   subresource_filter_ruleset_dealer_.reset(
       new subresource_filter::UnverifiedRulesetDealer());
-
-  registry_.AddInterface(base::BindRepeating(
-      &ChromeContentRendererClient::OnWebRtcLoggingAgentRequest,
-      base::Unretained(this)));
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(prerender_dispatcher_.get());
@@ -1076,13 +1068,6 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
   return GURL();
 }
 
-void ChromeContentRendererClient::OnBindInterface(
-    const service_manager::BindSourceInfo& remote_info,
-    const std::string& name,
-    mojo::ScopedMessagePipeHandle handle) {
-  registry_.TryBindInterface(name, &handle);
-}
-
 void ChromeContentRendererClient::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
@@ -1582,16 +1567,6 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   return FlashEmbedRewrite::RewriteFlashEmbedURL(url);
 }
 
-void ChromeContentRendererClient::CreateRendererService(
-    service_manager::mojom::ServiceRequest service_request) {
-  DCHECK(!service_binding_.is_bound());
-  service_binding_.Bind(std::move(service_request));
-}
-
-service_manager::Connector* ChromeContentRendererClient::GetConnector() {
-  return service_binding_.GetConnector();
-}
-
 std::unique_ptr<content::URLLoaderThrottleProvider>
 ChromeContentRendererClient::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType provider_type) {
@@ -1644,18 +1619,28 @@ bool ChromeContentRendererClient::RequiresHtmlImports(const GURL& url) {
 
 void ChromeContentRendererClient::BindReceiverOnMainThread(
     mojo::GenericPendingReceiver receiver) {
-  // TODO(crbug.com/977637): Get rid of the use of BinderRegistry here. This is
-  // only used to bind a spellcheck interface.
+  if (auto agent_receiver = receiver.As<chrome::mojom::WebRtcLoggingAgent>()) {
+    if (!webrtc_logging_agent_impl_) {
+      webrtc_logging_agent_impl_ =
+          std::make_unique<chrome::WebRtcLoggingAgentImpl>();
+    }
+    webrtc_logging_agent_impl_->AddReceiver(std::move(agent_receiver));
+    return;
+  }
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+  if (auto setter_receiver =
+          receiver.As<safe_browsing::mojom::PhishingModelSetter>()) {
+    safe_browsing::PhishingClassifierFilter::Create(std::move(setter_receiver));
+    return;
+  }
+#endif
+
+  // TODO(crbug.com/977637): Get rid of the use of BinderRegistry here. This was
+  // done only to avoid churning spellcheck code while eliminting the "chrome"
+  // and "chrome_renderer" services. Spellcheck is (and should remain) the only
+  // user of |registry_|.
   std::string interface_name = *receiver.interface_name();
   auto pipe = receiver.PassPipe();
   registry_.TryBindInterface(interface_name, &pipe);
-}
-
-void ChromeContentRendererClient::OnWebRtcLoggingAgentRequest(
-    mojo::InterfaceRequest<chrome::mojom::WebRtcLoggingAgent> request) {
-  if (!webrtc_logging_agent_impl_) {
-    webrtc_logging_agent_impl_ =
-        std::make_unique<chrome::WebRtcLoggingAgentImpl>();
-  }
-  webrtc_logging_agent_impl_->AddReceiver(std::move(request));
 }

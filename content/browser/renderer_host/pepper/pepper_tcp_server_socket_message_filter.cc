@@ -99,7 +99,7 @@ void PepperTCPServerSocketMessageFilter::OnFilterDestroyed() {
   // also ensures that future messages will be ignored, so the mojo pipes won't
   // be re-created, so after Close() runs, |this| can be safely deleted on the
   // IO thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PepperTCPServerSocketMessageFilter::Close, this));
 }
@@ -111,7 +111,7 @@ PepperTCPServerSocketMessageFilter::OverrideTaskRunnerForMessage(
     case PpapiHostMsg_TCPServerSocket_Listen::ID:
     case PpapiHostMsg_TCPServerSocket_Accept::ID:
     case PpapiHostMsg_TCPServerSocket_StopListening::ID:
-      return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+      return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   }
   return nullptr;
 }
@@ -327,7 +327,7 @@ void PepperTCPServerSocketMessageFilter::OnAcceptCompleted(
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &PepperTCPServerSocketMessageFilter::OnAcceptCompletedOnIOThread,

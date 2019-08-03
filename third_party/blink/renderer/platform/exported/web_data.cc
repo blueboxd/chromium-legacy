@@ -30,7 +30,7 @@
 
 #include "third_party/blink/public/platform/web_data.h"
 
-#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
 #include <vector>
 

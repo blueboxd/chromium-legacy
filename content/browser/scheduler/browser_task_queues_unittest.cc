@@ -7,7 +7,8 @@
 #include <array>
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/test/bind_test_util.h"
@@ -19,7 +20,6 @@
 namespace content {
 namespace {
 
-using ::base::MessageLoop;
 using ::base::RunLoop;
 using ::base::sequence_manager::CreateSequenceManagerOnCurrentThreadWithPump;
 using ::base::sequence_manager::SequenceManager;
@@ -35,7 +35,7 @@ class BrowserTaskQueuesTest : public testing::Test {
  protected:
   BrowserTaskQueuesTest()
       : sequence_manager_(CreateSequenceManagerOnCurrentThreadWithPump(
-            base::MessagePump::Create(base::MessagePump::Type::DEFAULT))),
+            base::MessagePump::Create(base::MessagePumpType::DEFAULT))),
         queues_(std::make_unique<BrowserTaskQueues>(
             BrowserThread::UI,
             sequence_manager_.get(),

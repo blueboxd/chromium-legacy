@@ -23,7 +23,6 @@
 #include "base/time/time_override.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_browsertest_base.h"
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
@@ -64,25 +63,8 @@ PrefetchedSignedExchangeCache::EntryMap GetCachedExchanges(Shell* shell) {
   scoped_refptr<PrefetchedSignedExchangeCache> cache =
       rfh->EnsurePrefetchedSignedExchangeCache();
   PrefetchedSignedExchangeCache::EntryMap results;
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    for (const auto& exchanges_it : cache->GetExchanges()) {
-      results[exchanges_it.first] = exchanges_it.second->Clone();
-    }
-  } else {
-    base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            [](scoped_refptr<PrefetchedSignedExchangeCache> cache,
-               PrefetchedSignedExchangeCache::EntryMap* results) {
-              for (const auto& exchanges_it : cache->GetExchanges()) {
-                (*results)[exchanges_it.first] = exchanges_it.second->Clone();
-              }
-            },
-            cache, &results),
-        run_loop.QuitClosure());
-    run_loop.Run();
-  }
+  for (const auto& exchanges_it : cache->GetExchanges())
+    results[exchanges_it.first] = exchanges_it.second->Clone();
   return results;
 }
 

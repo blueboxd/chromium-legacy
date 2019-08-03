@@ -47,7 +47,6 @@ class TickClock;
 namespace blink {
 
 class KURL;
-class SharedBuffer;
 class WebDocumentLoader;
 
 // This structure holds all information collected by Blink when

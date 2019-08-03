@@ -10,7 +10,7 @@
 
 #include "base/sequence_checker.h"
 #include "media/audio/audio_output_delegate.h"
-#include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_audio_output_stream.h"
 #include "mojo/public/cpp/bindings/binding.h"

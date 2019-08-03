@@ -225,7 +225,7 @@ UtilityProcessHost::UtilityProcessHost(std::unique_ptr<Client> client)
 
 UtilityProcessHost::~UtilityProcessHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (client_ && !in_process_thread_)
+  if (client_ && launch_state_ == LaunchState::kLaunchComplete)
     client_->OnProcessTerminatedNormally();
 }
 

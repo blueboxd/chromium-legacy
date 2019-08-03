@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "media/cdm/default_cdm_factory.h"
 #include "media/media_buildflags.h"
-#include "media/mojo/interfaces/constants.mojom.h"
+#include "media/mojo/mojom/constants.mojom.h"
 #include "media/mojo/services/cdm_service.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"

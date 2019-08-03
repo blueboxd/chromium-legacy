@@ -576,7 +576,6 @@ android_java_prebuilt("package_impl_platform_java") {
   deps = [
     ":package_api_java",
     ":package_impl_common_java",
-    ":package_impl_util_java",
     ":repackage_platform",
   ]
 }
@@ -586,7 +585,6 @@ android_java_prebuilt("package_impl_fake_java") {
   deps = [
     ":package_api_java",
     ":package_impl_common_java",
-    ":package_impl_util_java",
     ":repackage_fake",
   ]
 }
@@ -762,7 +760,7 @@ repackage_jars("repackage_native") {
 repackage_jars("repackage_common") {
   output = "$_package_dir/cronet_impl_common_java.jar"
   deps = cronet_impl_common_java_deps_to_package +
-         [ ":cronet_impl_common_base_java" ]
+         [ ":cronet_impl_common_base_java", ":cronet_impl_java_util_java" ]
 }
 
 if (!is_component_build) {

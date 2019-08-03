@@ -77,7 +77,7 @@ const std::string& PlatformFontIOS::GetFontName() const {
   return font_name_;
 }
 
-std::string PlatformFontIOS::GetActualFontNameForTesting() const {
+std::string PlatformFontIOS::GetActualFontName() const {
   return base::SysNSStringToUTF8([GetNativeFont() familyName]);
 }
 

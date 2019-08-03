@@ -1795,7 +1795,8 @@ class AXPosition {
          (child_index_ != BEFORE_TEXT &&
           (child_index_ < 0 || child_index_ > AnchorChildCount()))) ||
         (kind_ == AXPositionKind::TEXT_POSITION &&
-         (text_offset_ < 0 || text_offset_ > MaxTextOffset()))) {
+         (text_offset_ < 0 ||
+          (text_offset > 0 && text_offset_ > MaxTextOffset())))) {
       // Reset to the null position.
       kind_ = AXPositionKind::NULL_POSITION;
       tree_id_ = AXTreeIDUnknown();

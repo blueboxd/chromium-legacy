@@ -11,7 +11,6 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "content/browser/frame_host/navigation_request_info.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
@@ -164,7 +163,6 @@ ServiceWorkerNavigationLoaderInterceptor::
         const ServiceWorkerNavigationLoaderInterceptorParams& params,
         base::WeakPtr<ServiceWorkerNavigationHandle> handle)
     : handle_(std::move(handle)), params_(params) {
-  DCHECK(NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled());
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(handle_);
 }

@@ -182,6 +182,9 @@ class TabController {
   virtual const TabGroupVisualData* GetVisualDataForGroup(
       TabGroupId group) const = 0;
 
+  virtual void SetVisualDataForGroup(TabGroupId group,
+                                     TabGroupVisualData visual_data) = 0;
+
  protected:
   virtual ~TabController() {}
 };

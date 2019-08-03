@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_creator.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_protocols.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
@@ -44,6 +45,15 @@ class ProcessManager;
 // Base class for extension browser tests. Provides utilities for loading,
 // unloading, and installing extensions.
 class ExtensionBrowserTest : virtual public InProcessBrowserTest {
+ public:
+  // Different types of extension's lazy background contexts used in some tests.
+  enum class ContextType {
+    // A non-persistent background page/JS based extension.
+    kEventPage,
+    // A Service Worker based extension.
+    kServiceWorker,
+  };
+
  protected:
   // Flags used to configure how the tests are run.
   enum Flags {
@@ -77,6 +87,10 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Useful accessors.
   ExtensionService* extension_service() {
     return ExtensionSystem::Get(profile())->extension_service();
+  }
+
+  ExtensionRegistry* extension_registry() {
+    return ExtensionRegistry::Get(profile());
   }
 
   const std::string& last_loaded_extension_id() {

@@ -16,11 +16,9 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_service.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/media/webrtc/webrtc_rtp_dump_handler.h"
-#include "chrome/common/constants.mojom.h"
 #include "components/webrtc_logging/browser/text_log_list.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
@@ -89,17 +87,10 @@ void WebRtcLoggingHandlerHost::StartLogging(
         content::RenderProcessHost::FromID(render_process_id_);
 
     // OK for this to replace an existing logging_agent_ connection.
-    ChromeService::GetInstance()->connector()->Connect(
-        service_manager::ServiceFilter::ByNameWithIdInGroup(
-            chrome::mojom::kRendererServiceName,
-            host->GetChildIdentity().instance_id(),
-            host->GetChildIdentity().instance_group()),
-        logging_agent_.BindNewPipeAndPassReceiver());
-
+    host->BindReceiver(logging_agent_.BindNewPipeAndPassReceiver());
     logging_agent_.set_disconnect_handler(
         base::BindOnce(&WebRtcLoggingHandlerHost::OnAgentDisconnected,
                        weak_factory_.GetWeakPtr()));
-
     logging_agent_->Start(receiver_.BindNewPipeAndPassRemote());
   }
 }

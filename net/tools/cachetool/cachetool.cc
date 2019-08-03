@@ -12,6 +12,7 @@
 #include "base/format_macros.h"
 #include "base/hash/md5.h"
 #include "base/logging.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -667,7 +668,7 @@ bool ExecuteCommands(CommandMarshal* command_marshal) {
 
 int main(int argc, char* argv[]) {
   base::AtExitManager at_exit_manager;
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
   base::CommandLine::Init(argc, argv);
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

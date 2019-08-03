@@ -9,9 +9,11 @@
 #include <set>
 #include <unordered_map>
 
+#include "base/containers/mru_cache.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "net/http/http_server_properties.h"
+#include "net/http/alternative_service.h"
 
 namespace base {
 class TickClock;
@@ -19,12 +21,28 @@ class TickClock;
 
 namespace net {
 
+// Stores broken alternative services and when their brokenness expires.
+typedef std::list<std::pair<AlternativeService, base::TimeTicks>>
+    BrokenAlternativeServiceList;
+
+// Stores how many times an alternative service has been marked broken.
+class RecentlyBrokenAlternativeServices
+    : public base::MRUCache<AlternativeService, int> {
+ public:
+  RecentlyBrokenAlternativeServices(
+      int max_recently_broken_alternative_service_entries)
+      : base::MRUCache<AlternativeService, int>(
+            max_recently_broken_alternative_service_entries) {}
+};
+
 // This class tracks HTTP alternative services that have been marked as broken.
 // The brokenness of an alt-svc will expire after some time according to an
 // exponential back-off formula: each time an alt-svc is marked broken, the
 // expiration delay will be some constant multiple of its previous expiration
 // delay. This prevents broken alt-svcs from being retried too often by the
 // network stack.
+//
+// Intended solely for use by HttpServerProperties.
 class NET_EXPORT_PRIVATE BrokenAlternativeServices {
  public:
   // Delegate to be used by owner so it can be notified when the brokenness of
@@ -42,7 +60,9 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   // |clock| is used for setting expiration times and scheduling the
   // expiration of broken alternative services. It must not be null.
   // |delegate| and |clock| are both unowned and must outlive this.
-  BrokenAlternativeServices(Delegate* delegate, const base::TickClock* clock);
+  BrokenAlternativeServices(int max_recently_broken_alternative_service_entries,
+                            Delegate* delegate,
+                            const base::TickClock* clock);
 
   BrokenAlternativeServices(const BrokenAlternativeServices&) = delete;
   void operator=(const BrokenAlternativeServices&) = delete;
@@ -114,9 +134,9 @@ class NET_EXPORT_PRIVATE BrokenAlternativeServices {
   recently_broken_alternative_services() const;
 
  private:
-  // TODO (wangyix): modify HttpServerPropertiesImpl unit tests so this
-  // friendness is no longer required.
-  friend class HttpServerPropertiesImplPeer;
+  // TODO (wangyix): modify HttpServerProperties unit tests so this friendness
+  // is no longer required.
+  friend class HttpServerPropertiesPeer;
 
   struct AlternativeServiceHash {
     size_t operator()(const net::AlternativeService& entry) const {

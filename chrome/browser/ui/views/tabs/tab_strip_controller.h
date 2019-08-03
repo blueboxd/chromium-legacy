@@ -115,6 +115,9 @@ class TabStripController {
   virtual const TabGroupVisualData* GetVisualDataForGroup(
       TabGroupId group) const = 0;
 
+  virtual void SetVisualDataForGroup(TabGroupId group,
+                                     TabGroupVisualData visual_data) = 0;
+
   // Returns the list of tabs in the given |group|.
   virtual std::vector<int> ListTabsInGroup(TabGroupId group) const = 0;
 

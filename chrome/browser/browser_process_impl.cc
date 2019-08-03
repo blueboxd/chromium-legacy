@@ -233,8 +233,6 @@ BrowserProcessImpl::BrowserProcessImpl(StartupData* startup_data) {
   browser_policy_connector_ =
       chrome_feature_list_creator_->TakeChromeBrowserPolicyConnector();
   created_browser_policy_connector_ = true;
-  pref_service_factory_ =
-      chrome_feature_list_creator_->TakePrefServiceFactory();
 
   platform_part_ = std::make_unique<BrowserProcessPlatformPart>();
   // Most work should be done in Init().
@@ -886,11 +884,6 @@ BrowserProcessImpl::resource_coordinator_parts() {
 shell_integration::DefaultWebClientState
 BrowserProcessImpl::CachedDefaultWebClientState() {
   return cached_default_web_client_state_;
-}
-
-prefs::InProcessPrefServiceFactory* BrowserProcessImpl::pref_service_factory()
-    const {
-  return pref_service_factory_.get();
 }
 
 // static

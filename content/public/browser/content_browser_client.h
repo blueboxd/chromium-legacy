@@ -41,7 +41,7 @@
 #include "media/base/video_codecs.h"
 #include "media/cdm/cdm_proxy.h"
 #include "media/media_buildflags.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/mime_util.h"
@@ -252,9 +252,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // If the client provides a service request, the content layer will ask the
   // corresponding embedder renderer-side component to bind it to an
   // implementation at the appropriate moment during initialization.
-  virtual void RenderProcessWillLaunch(
-      RenderProcessHost* host,
-      service_manager::mojom::ServiceRequest* service_request) {}
+  virtual void RenderProcessWillLaunch(RenderProcessHost* host) {}
 
   // Notifies that a BrowserChildProcessHost has been created.
   virtual void BrowserChildProcessHostCreated(BrowserChildProcessHost* host) {}
@@ -526,11 +524,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       const base::CommandLine& command_line);
 
   // Allow the embedder to control if an AppCache can be used for the given url.
-  // This is called on the IO thread.
-  virtual bool AllowAppCacheOnIO(const GURL& manifest_url,
-                                 const GURL& first_party,
-                                 ResourceContext* context);
-  // Same as above but called on UI thread.
+  // This is called on the UI thread.
   virtual bool AllowAppCache(const GURL& manifest_url,
                              const GURL& first_party,
                              BrowserContext* context);
@@ -567,11 +561,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                                  int render_frame_id);
 
   // Allows the embedder to control whether Signed HTTP Exchanges (SXG) can be
-  // loaded. This is called on the IO thread.
-  // Relying on ResourceContext to access preferences on IO thread until we move
-  // the call sites out of the IO thread. See crbug.com/908955 for more context.
-  virtual bool AllowSignedExchangeOnIO(ResourceContext* context);
-  // Same as above but called on UI thread.
+  // loaded. This is called on the UI thread.
   virtual bool AllowSignedExchange(BrowserContext* context);
 
   virtual bool IsDataSaverEnabled(BrowserContext* context);
@@ -970,6 +960,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderProcessHost* render_process_host,
       mojo::GenericPendingReceiver receiver) {}
 
+  // Called on the IO thread to handle an unhandled interface receiver binding
+  // request from a render process. See |RenderThread::BindHostReceiver()|.
+  virtual void BindHostReceiverForRendererOnIOThread(
+      int render_process_id,
+      mojo::GenericPendingReceiver* receiver) {}
+
   // Called just before the Service Manager is initialized.
   virtual void WillStartServiceManager() {}
 
@@ -982,15 +978,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // the service request should instead be handled by
   // |RunServiceInstanceOnIOThread| below.
   virtual void RunServiceInstance(
-      const service_manager::Identity& identity,
-      mojo::PendingReceiver<service_manager::mojom::Service>* receiver);
-
-  // Handles an incoming service instance request on the IO thread.
-  //
-  // NOTE: This should ONLY be overridden to register services which MUST run on
-  // the browser's IO thread. For other in-process services, use
-  // |RunServiceInstance| above.
-  virtual void RunServiceInstanceOnIOThread(
       const service_manager::Identity& identity,
       mojo::PendingReceiver<service_manager::mojom::Service>* receiver);
 
@@ -1131,7 +1118,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // and |frame_tree_node_id| take a callback returning a nullptr, nullptr, and
   // RenderFrameHost::kNoFrameTreeNodeId respectively.
   //
-  // This is called both when the network service is enabled and disabled.
   // This is called on the IO thread.
   virtual std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottlesOnIO(
@@ -1492,10 +1478,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       PictureInPictureWindowController* controller);
 
   // Returns true if it is safe to redirect to |url|, otherwise returns false.
-  // This is called on the IO thread.
-  virtual bool IsSafeRedirectTargetOnIO(const GURL& url,
-                                        ResourceContext* context);
-  // Same as above but called on UI thread.
+  // This is called on the UI thread.
   virtual bool IsSafeRedirectTarget(const GURL& url, BrowserContext* context);
 
   // Registers the watcher to observe updates in RendererPreferences.

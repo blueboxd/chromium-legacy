@@ -23,21 +23,18 @@ ChromeAppCacheService::ChromeAppCacheService(
     base::WeakPtr<StoragePartitionImpl> partition)
     : AppCacheServiceImpl(quota_manager_proxy, std::move(partition)) {}
 
-void ChromeAppCacheService::InitializeOnLoaderThread(
+void ChromeAppCacheService::Initialize(
     const base::FilePath& cache_path,
     BrowserContext* browser_context,
-    ResourceContext* resource_context,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   cache_path_ = cache_path;
-  DCHECK(!(browser_context && resource_context));
+  DCHECK(browser_context);
   browser_context_ = browser_context;
-  resource_context_ = resource_context;
 
   // Init our base class.
-  Initialize(cache_path_);
+  AppCacheServiceImpl::Initialize(cache_path_);
   set_appcache_policy(this);
   set_special_storage_policy(special_storage_policy.get());
 }
@@ -95,42 +92,27 @@ void ChromeAppCacheService::Shutdown() {
 
 bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url,
                                             const GURL& first_party) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
-  // We don't prompt for read access.
-  if (browser_context_) {
-    return GetContentClient()->browser()->AllowAppCache(
-        manifest_url, first_party, browser_context_);
-  }
-  return GetContentClient()->browser()->AllowAppCacheOnIO(
-      manifest_url, first_party, resource_context_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return GetContentClient()->browser()->AllowAppCache(manifest_url, first_party,
+                                                      browser_context_);
 }
 
 bool ChromeAppCacheService::CanCreateAppCache(
     const GURL& manifest_url, const GURL& first_party) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
-  if (browser_context_) {
-    return GetContentClient()->browser()->AllowAppCache(
-        manifest_url, first_party, browser_context_);
-  }
-  return GetContentClient()->browser()->AllowAppCacheOnIO(
-      manifest_url, first_party, resource_context_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return GetContentClient()->browser()->AllowAppCache(manifest_url, first_party,
+                                                      browser_context_);
 }
 
 ChromeAppCacheService::~ChromeAppCacheService() {}
 
 void ChromeAppCacheService::DeleteOnCorrectThread() const {
-  if (BrowserThread::CurrentlyOn(
-          NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID())) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     delete this;
     return;
   }
-  if (BrowserThread::IsThreadInitialized(
-          NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID())) {
-    BrowserThread::DeleteSoon(
-        NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID(),
-        FROM_HERE, this);
+  if (BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
+    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
     return;
   }
   // Better to leak than crash on shutdown.

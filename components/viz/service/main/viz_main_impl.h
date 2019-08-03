@@ -11,7 +11,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
-#include "components/viz/service/main/viz_compositor_thread_runner.h"
+#include "components/viz/service/main/viz_compositor_thread_runner_impl.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -84,6 +84,7 @@ class VizMainImpl : public mojom::VizMain {
     base::WaitableEvent* shutdown_event = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner;
     service_manager::Connector* connector = nullptr;
+    VizCompositorThreadRunner* viz_compositor_thread_runner = nullptr;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ExternalDependencies);
@@ -165,7 +166,13 @@ class VizMainImpl : public mojom::VizMain {
   mojom::FrameSinkManagerParamsPtr pending_frame_sink_manager_params_;
 
   // Runs the VizCompositorThread for the display compositor with OOP-D.
-  std::unique_ptr<VizCompositorThreadRunner> viz_compositor_thread_runner_;
+  std::unique_ptr<VizCompositorThreadRunnerImpl>
+      viz_compositor_thread_runner_impl_;
+  // Note under Android WebView where VizCompositorThreadRunner is not created
+  // and owned by this, Viz does not interact with other objects in this class,
+  // such as GpuServiceImpl or CommandBufferTaskExecutor. Code should take care
+  // to avoid introducing such assumptions.
+  VizCompositorThreadRunner* viz_compositor_thread_runner_ = nullptr;
 
   const scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner_;
 

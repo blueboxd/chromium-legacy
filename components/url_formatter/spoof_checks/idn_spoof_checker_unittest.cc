@@ -1066,7 +1066,15 @@ const IDNTestCase kIdnCases[] = {
     {"xn--google-8m4e.com", L"google\x309A.com", false},
 
     // Small letter theta looks like a zero.
-    {"xn--123456789-yzg.com", L"123456789θ.com", false}};
+    {"xn--123456789-yzg.com", L"123456789θ.com", false},
+
+    {"xn--est-118d.net", L"七est.net", false},
+    {"xn--est-918d.net", L"丅est.net", false},
+    {"xn--est-e28d.net", L"丆est.net", false},
+    {"xn--3-cq6a.com", L"丩3.com", false},
+    {"xn--cxe-n68d.com", L"c丫xe.com", false},
+    {"xn--cye-b98d.com", L"cy乂e.com", false},
+};  // namespace
 
 namespace test {
 #include "components/url_formatter/spoof_checks/top_domains/test_domains-trie-inc.cc"
@@ -1186,36 +1194,35 @@ TEST(IDNSpoofCheckerNoFixtureTest, UnsafeIDNToUnicodeWithDetails) {
 TEST(IDNSpoofCheckerNoFixtureTest, Skeletons) {
   // All of these should produce the same skeleton. Not all of these are
   // explicitly mapped in idn_spoof_checker.cc, ICU already handles some.
-  const GURL kTestCases[] = {
-      // U+2010 (Hyphen)
-      GURL("http://test‐site"),
-      // U+2011 (Non breaking hyphen)
-      GURL("http://test‑site"),
-      // U+2012 (Figure dash)
-      GURL("http://test‒site"),
-      // U+2013 (En dash)
-      GURL("http://test–site"),
-      // U+2014 (Em dash)
-      GURL("http://test—site"),
-      // U+2015 (Horizontal bar)
-      GURL("http://test―site"),
-      // U+4E00 (一)
-      GURL("http://test一site"),
-      // U+2212 (minus sign)
-      GURL("http://test−site"),
-      // U+2E3A (two-em dash)
-      GURL("http://test⸺site"),
-      // U+2E3B (three-em dash)
-      GURL("http://test⸻site"),
-  };
+  const char kDashSite[] = "test-site";
+  const struct TestCase {
+    const GURL url;
+    const char* const expected_skeleton;
+  } kTestCases[] = {
+      {GURL("http://test‐site"), kDashSite},   // U+2010 (Hyphen)
+      {GURL("http://test‑site"), kDashSite},   // U+2011 (Non breaking hyphen)
+      {GURL("http://test‒site"), kDashSite},   // U+2012 (Figure dash)
+      {GURL("http://test–site"), kDashSite},   // U+2013 (En dash)
+      {GURL("http://test—site"), kDashSite},   // U+2014 (Em dash)
+      {GURL("http://test―site"), kDashSite},   // U+2015 (Horizontal bar)
+      {GURL("http://test一site"), kDashSite},  // U+4E00 (一)
+      {GURL("http://test−site"), kDashSite},   // U+2212 (minus sign)
+      {GURL("http://test⸺site"), kDashSite},   // U+2E3A (two-em dash)
+      {GURL("http://test⸻site"), kDashSite},   // U+2E3B (three-em dash)
+      {GURL("http://七est.net"), "test.net"},
+      {GURL("http://丅est.net"), "test.net"},
+      {GURL("http://丆est.net"), "test.net"},
+      {GURL("http://c丫xe.com"), "cyxe.corn"},
+      {GURL("http://cy乂e.com"), "cyxe.corn"},
+      {GURL("http://丩3.com"), "43.corn"}};
 
   IDNSpoofChecker checker;
-  for (const GURL& url : kTestCases) {
+  for (const TestCase& test_case : kTestCases) {
     const url_formatter::IDNConversionResult result =
-        UnsafeIDNToUnicodeWithDetails(url.host());
+        UnsafeIDNToUnicodeWithDetails(test_case.url.host());
     Skeletons skeletons = checker.GetSkeletons(result.result);
     EXPECT_EQ(1u, skeletons.size());
-    EXPECT_EQ("test-site", *skeletons.begin());
+    EXPECT_EQ(test_case.expected_skeleton, *skeletons.begin());
   }
 }
 

@@ -625,17 +625,19 @@ void PlatformNotificationContextImpl::DoReadNotificationResources(
 
 void PlatformNotificationContextImpl::
     SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
+        base::Time start_time,
         const GURL& origin,
         int64_t service_worker_registration_id,
         ReadAllResultCallback callback,
         std::set<std::string> notification_ids,
         bool supports_synchronization) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  LazyInitialize(base::BindOnce(
-      &PlatformNotificationContextImpl::
-          DoReadAllNotificationDataForServiceWorkerRegistration,
-      this, origin, service_worker_registration_id, std::move(callback),
-      std::move(notification_ids), supports_synchronization));
+  LazyInitialize(
+      base::BindOnce(&PlatformNotificationContextImpl::
+                         DoReadAllNotificationDataForServiceWorkerRegistration,
+                     this, start_time, origin, service_worker_registration_id,
+                     std::move(callback), std::move(notification_ids),
+                     supports_synchronization));
 }
 
 void PlatformNotificationContextImpl::
@@ -653,20 +655,22 @@ void PlatformNotificationContextImpl::
     // Rely on the database only
     std::set<std::string> notification_ids;
     SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
-        origin, service_worker_registration_id, std::move(callback),
-        std::move(notification_ids), /* supports_synchronization= */ false);
+        base::Time::Now(), origin, service_worker_registration_id,
+        std::move(callback), std::move(notification_ids),
+        /* supports_synchronization= */ false);
     return;
   }
 
-  service->GetDisplayedNotifications(
-      base::BindOnce(
-          &PlatformNotificationContextImpl::
-              SynchronizeDisplayedNotificationsForServiceWorkerRegistration,
-          this, origin, service_worker_registration_id, std::move(callback)));
+  service->GetDisplayedNotifications(base::BindOnce(
+      &PlatformNotificationContextImpl::
+          SynchronizeDisplayedNotificationsForServiceWorkerRegistration,
+      this, base::Time::Now(), origin, service_worker_registration_id,
+      std::move(callback)));
 }
 
 void PlatformNotificationContextImpl::
     DoReadAllNotificationDataForServiceWorkerRegistration(
+        base::Time start_time,
         const GURL& origin,
         int64_t service_worker_registration_id,
         ReadAllResultCallback callback,
@@ -700,7 +704,7 @@ void PlatformNotificationContextImpl::
         DCHECK(NotificationIdGenerator::IsPersistentNotification(
             it->notification_id));
         if (displayed_notifications.count(it->notification_id) ||
-            CanTrigger(*it)) {
+            CanTrigger(*it) || it->creation_time_millis >= start_time) {
           ++it;
         } else {
           obsolete_notifications.push_back(it->notification_id);

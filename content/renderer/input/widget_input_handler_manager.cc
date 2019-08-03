@@ -315,6 +315,14 @@ void WidgetInputHandlerManager::ObserveGestureEventOnMainThread(
                                     std::move(observe_gesture_event_closure));
 }
 
+void WidgetInputHandlerManager::LogInputTimingUMA() {
+  if (!have_emitted_uma_) {
+    UMA_HISTOGRAM_ENUMERATION("PaintHolding.InputTiming2",
+                              current_lifecycle_state_);
+    have_emitted_uma_ = true;
+  }
+}
+
 void WidgetInputHandlerManager::DispatchEvent(
     std::unique_ptr<content::InputEvent> event,
     mojom::WidgetInputHandler::DispatchEventCallback callback) {
@@ -329,13 +337,11 @@ void WidgetInputHandlerManager::DispatchEvent(
     return;
   }
 
-  if (!(have_emitted_uma_ ||
-        event->web_event->GetType() == WebInputEvent::Type::kMouseMove ||
-        event->web_event->GetType() == WebInputEvent::Type::kPointerMove)) {
-    UMA_HISTOGRAM_ENUMERATION("PaintHolding.InputTiming",
-                              current_lifecycle_state_);
-    have_emitted_uma_ = true;
-  }
+  bool event_is_move =
+      event->web_event->GetType() == WebInputEvent::Type::kMouseMove ||
+      event->web_event->GetType() == WebInputEvent::Type::kPointerMove;
+  if (!event_is_move)
+    LogInputTimingUMA();
 
   // If TimeTicks is not consistent across processes we cannot use the event's
   // platform timestamp in this process. Instead use the time that the event is
@@ -453,12 +459,17 @@ void WidgetInputHandlerManager::FallbackCursorModeSetCursorVisibility(
 #endif
 }
 
-void WidgetInputHandlerManager::MarkBeginMainFrame() {
+void WidgetInputHandlerManager::DidNavigate() {
+  current_lifecycle_state_ = InitialInputTiming::kBeforeLifecycle;
+  have_emitted_uma_ = false;
+}
+
+void WidgetInputHandlerManager::BeginMainFrame() {
   if (current_lifecycle_state_ == InitialInputTiming::kBeforeLifecycle)
     current_lifecycle_state_ = InitialInputTiming::kBeforeCommit;
 }
 
-void WidgetInputHandlerManager::MarkCompositorCommit() {
+void WidgetInputHandlerManager::CompositorDidCommit() {
   if (current_lifecycle_state_ == InitialInputTiming::kBeforeCommit)
     current_lifecycle_state_ = InitialInputTiming::kAfterCommit;
 }

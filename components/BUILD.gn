@@ -100,7 +100,6 @@ test("components_unittests") {
     "//components/gcm_driver/crypto:unit_tests",
     "//components/google/core/common:unit_tests",
     "//components/grpc_support/test:unit_tests",
-    "//components/gwp_asan:unit_tests",
     "//components/history/core/browser:unit_tests",
     "//components/history/core/common:unit_tests",
     "//components/image_fetcher/core:unit_tests",

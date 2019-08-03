@@ -281,6 +281,8 @@ class TabStrip : public views::AccessiblePaneView,
   float GetHoverOpacityForRadialHighlight() const override;
   const TabGroupVisualData* GetVisualDataForGroup(
       TabGroupId group) const override;
+  void SetVisualDataForGroup(TabGroupId group,
+                             TabGroupVisualData visual_data) override;
 
   // MouseWatcherListener:
   void MouseMovedOutOfHost() override;

@@ -11,7 +11,7 @@
 
 #include "base/sequence_checker.h"
 #include "gpu/config/gpu_info.h"
-#include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
+#include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "media/video/video_encode_accelerator.h"
 
 namespace media {

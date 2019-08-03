@@ -40,7 +40,8 @@ class DefaultUrlDownloadHandlerFactory : public UrlDownloadHandlerFactory {
         download::ResourceDownloader::BeginDownload(
             delegate, std::move(params), std::move(request),
             std::move(url_loader_factory_getter), url_security_policy, GURL(),
-            GURL(), GURL(), true, true, std::move(connector), task_runner)
+            GURL(), GURL(), true, true, std::move(connector),
+            false /* is_background_mode */, task_runner)
             .release(),
         base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
   }

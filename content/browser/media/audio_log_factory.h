@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_AUDIO_LOG_FACTORY_H_
 #define CONTENT_BROWSER_MEDIA_AUDIO_LOG_FACTORY_H_
 
-#include "media/mojo/interfaces/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_logging.mojom.h"
 
 namespace content {
 

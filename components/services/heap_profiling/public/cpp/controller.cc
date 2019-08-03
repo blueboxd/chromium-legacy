@@ -5,39 +5,24 @@
 #include "components/services/heap_profiling/public/cpp/controller.h"
 
 #include "components/services/heap_profiling/public/cpp/settings.h"
-#include "components/services/heap_profiling/public/mojom/constants.mojom.h"
-#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
-#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace heap_profiling {
 
-Controller::Controller(std::unique_ptr<service_manager::Connector> connector,
+Controller::Controller(mojo::PendingRemote<mojom::ProfilingService> service,
                        mojom::StackMode stack_mode,
                        uint32_t sampling_rate)
-    : connector_(std::move(connector)),
+    : heap_profiling_service_(std::move(service)),
       sampling_rate_(sampling_rate),
       stack_mode_(stack_mode) {
   DCHECK_NE(sampling_rate, 0u);
-
-  // Start the Heap Profiling service.
-  connector_->BindInterface(mojom::kServiceName, &heap_profiling_service_);
-
-  // Grab a HeapProfiler InterfacePtr and pass that to memory instrumentation.
-  memory_instrumentation::mojom::HeapProfilerPtr heap_profiler;
-  connector_->BindInterface(mojom::kServiceName, &heap_profiler);
-
-  memory_instrumentation::mojom::CoordinatorPtr coordinator;
-  connector_->BindInterface(resource_coordinator::mojom::kServiceName,
-                            &coordinator);
-  coordinator->RegisterHeapProfiler(std::move(heap_profiler));
 }
 
 Controller::~Controller() = default;
 
-void Controller::StartProfilingClient(mojom::ProfilingClientPtr client,
-                                      base::ProcessId pid,
-                                      mojom::ProcessType process_type) {
+void Controller::StartProfilingClient(
+    mojo::PendingRemote<mojom::ProfilingClient> client,
+    base::ProcessId pid,
+    mojom::ProcessType process_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   mojom::ProfilingParamsPtr params = mojom::ProfilingParams::New();
@@ -55,11 +40,6 @@ void Controller::GetProfiledPids(GetProfiledPidsCallback callback) {
 base::WeakPtr<Controller> Controller::GetWeakPtr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return weak_factory_.GetWeakPtr();
-}
-
-service_manager::Connector* Controller::GetConnector() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return connector_.get();
 }
 
 }  // namespace heap_profiling

@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/process/launch.h"
@@ -35,7 +36,7 @@ namespace {
 // main() routine for the NaCl broker process.
 // This is necessary for supporting NaCl in Chrome on Win64.
 int NaClBrokerMain(const content::MainFunctionParams& parameters) {
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
   mojo::core::Init();

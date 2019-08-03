@@ -242,8 +242,7 @@ void CRDHostDelegate::FetchICEConfig(
 
   auto ice_request = std::make_unique<network::ResourceRequest>();
   ice_request->url = GURL(kICEConfigURL);
-  ice_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  ice_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   ice_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
                                  "Bearer " + oauth_token);

@@ -10,7 +10,7 @@
 #include "base/sync_socket.h"
 #include "base/test/mock_callback.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"

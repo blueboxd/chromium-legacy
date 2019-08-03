@@ -31,10 +31,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
@@ -56,9 +53,6 @@ class WebServiceWorkerContextProxy;
 }
 
 namespace chrome {
-namespace mojom {
-class WebRtcLoggingAgent;
-}  // namespace mojom
 class WebRtcLoggingAgentImpl;
 }  // namespace chrome
 
@@ -89,7 +83,6 @@ class WebCacheImpl;
 
 class ChromeContentRendererClient
     : public content::ContentRendererClient,
-      public service_manager::Service,
       public service_manager::LocalInterfaceProvider {
  public:
   ChromeContentRendererClient();
@@ -207,8 +200,6 @@ class ChromeContentRendererClient
       const std::string& header_name) override;
   bool ShouldEnforceWebRTCRoutingPreferences() override;
   GURL OverrideFlashEmbedWithHTML(const GURL& url) override;
-  void CreateRendererService(
-      service_manager::mojom::ServiceRequest service_request) override;
   std::unique_ptr<content::URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(
       content::URLLoaderThrottleProviderType provider_type) override;
@@ -252,11 +243,6 @@ class ChromeContentRendererClient
   static GURL GetNaClContentHandlerURL(const std::string& actual_mime_type,
                                        const content::WebPluginInfo& plugin);
 
-  // service_manager::Service:
-  void OnBindInterface(const service_manager::BindSourceInfo& remote_info,
-                       const std::string& name,
-                       mojo::ScopedMessagePipeHandle handle) override;
-
   // service_manager::LocalInterfaceProvider:
   void GetInterface(const std::string& name,
                     mojo::ScopedMessagePipeHandle request_handle) override;
@@ -272,11 +258,6 @@ class ChromeContentRendererClient
                                   bool is_nacl_unrestricted,
                                   const extensions::Extension* extension);
 #endif
-
-  service_manager::Connector* GetConnector();
-
-  void OnWebRtcLoggingAgentRequest(
-      mojo::InterfaceRequest<chrome::mojom::WebRtcLoggingAgent> request);
 
 #if defined(OS_WIN)
   // Observes module load events and notifies the ModuleDatabase in the browser
@@ -312,7 +293,6 @@ class ChromeContentRendererClient
   std::set<std::string> allowed_camera_device_origins_;
 #endif
 
-  service_manager::ServiceBinding service_binding_{this};
   service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentRendererClient);

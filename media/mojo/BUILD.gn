@@ -69,8 +69,8 @@ source_set("test_support") {
     "//media/mojo/clients",
     "//media/mojo/common",
     "//media/mojo/common:mojo_shared_buffer_video_frame",
-    "//media/mojo/interfaces",
-    "//media/mojo/interfaces:test_interfaces",
+    "//media/mojo/mojom",
+    "//media/mojo/mojom:test_interfaces",
     "//media/mojo/services",
   ]
 }
@@ -82,7 +82,7 @@ source_set("unit_tests") {
     "//media/learning/mojo:unit_tests",
     "//media/mojo/clients:unit_tests",
     "//media/mojo/common:unit_tests",
-    "//media/mojo/interfaces:unit_tests",
+    "//media/mojo/mojom:unit_tests",
     "//media/mojo/services:unit_tests",
     "//media/mojo/test:unit_tests",
   ]

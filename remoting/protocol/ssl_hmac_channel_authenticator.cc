@@ -294,7 +294,7 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     socket_context_.ct_policy_enforcer =
         std::make_unique<net::DefaultCTPolicyEnforcer>();
     socket_context_.client_context = std::make_unique<net::SSLClientContext>(
-        socket_context_.cert_verifier.get(),
+        nullptr /* default config */, socket_context_.cert_verifier.get(),
         socket_context_.transport_security_state.get(),
         socket_context_.ct_verifier.get(),
         socket_context_.ct_policy_enforcer.get(),

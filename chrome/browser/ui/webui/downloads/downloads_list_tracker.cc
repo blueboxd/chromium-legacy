@@ -21,14 +21,13 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_query.h"
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "net/base/filename_util.h"
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "ui/base/l10n/time_format.h"
@@ -224,13 +223,11 @@ downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
     // Lookup the extension's current name() in case the user changed their
     // language. This won't work if the extension was uninstalled, so the name
     // might be the wrong language.
-    bool include_disabled = true;
     auto* profile = Profile::FromBrowserContext(
         content::DownloadItemUtils::GetBrowserContext(download_item));
-    auto* service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-    const extensions::Extension* extension =
-        service->GetExtensionById(by_ext->id(), include_disabled);
+    auto* registry = extensions::ExtensionRegistry::Get(profile);
+    const extensions::Extension* extension = registry->GetExtensionById(
+        by_ext->id(), extensions::ExtensionRegistry::COMPATIBILITY);
     if (extension)
       by_ext_name = extension->name();
   }

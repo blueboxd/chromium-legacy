@@ -40,7 +40,7 @@ class PepperProxyLookupHelperTest : public testing::Test {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&PepperProxyLookupHelperTest::StartLookupOnIOThread,
                        base::Unretained(this), run_loop.QuitClosure()));
@@ -63,7 +63,7 @@ class PepperProxyLookupHelperTest : public testing::Test {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     base::RunLoop run_loop;
 
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &PepperProxyLookupHelperTest::DestroyLookupHelperOnIOThread,

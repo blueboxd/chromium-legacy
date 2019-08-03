@@ -20,7 +20,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/test/quic_simple_test_server.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -49,25 +49,23 @@ class BidirectionalStreamTestURLRequestContextGetter
       UpdateHostResolverRules();
       mock_cert_verifier_.reset(new net::MockCertVerifier());
       mock_cert_verifier_->set_default_result(net::OK);
-      server_properties_.reset(new net::HttpServerPropertiesImpl());
 
-      // Need to enable QUIC for the test server.
       auto params = std::make_unique<net::HttpNetworkSession::Params>();
       params->enable_quic = true;
       params->enable_http2 = true;
-      net::AlternativeService alternative_service(net::kProtoQUIC, "", 443);
-      url::SchemeHostPort quic_hint_server(
-          "https", net::QuicSimpleTestServer::GetHost(), 443);
-      server_properties_->SetQuicAlternativeService(
-          quic_hint_server, alternative_service, base::Time::Max(),
-          quic::ParsedQuicVersionVector());
-
       request_context_->set_cert_verifier(mock_cert_verifier_.get());
       request_context_->set_host_resolver(host_resolver_.get());
-      request_context_->set_http_server_properties(server_properties_.get());
       request_context_->set_http_network_session_params(std::move(params));
 
       request_context_->Init();
+
+      // Need to enable QUIC for the test server.
+      net::AlternativeService alternative_service(net::kProtoQUIC, "", 443);
+      url::SchemeHostPort quic_hint_server(
+          "https", net::QuicSimpleTestServer::GetHost(), 443);
+      request_context_->http_server_properties()->SetQuicAlternativeService(
+          quic_hint_server, alternative_service, base::Time::Max(),
+          quic::ParsedQuicVersionVector());
     }
     return request_context_.get();
   }
@@ -94,7 +92,6 @@ class BidirectionalStreamTestURLRequestContextGetter
   ~BidirectionalStreamTestURLRequestContextGetter() override {}
 
   int test_server_port_;
-  std::unique_ptr<net::HttpServerProperties> server_properties_;
   std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
   std::unique_ptr<net::MappedHostResolver> host_resolver_;
   std::unique_ptr<net::TestURLRequestContext> request_context_;

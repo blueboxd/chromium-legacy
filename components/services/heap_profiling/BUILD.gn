@@ -14,8 +14,14 @@ static_library("heap_profiling") {
     "json_exporter.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
+    "//components/services/heap_profiling/public/mojom",
+    "//mojo/public/cpp/bindings",
+    "//services/resource_coordinator/public/mojom",
+  ]
+
+  deps = [
     "//components/services/heap_profiling/public/cpp",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
   ]

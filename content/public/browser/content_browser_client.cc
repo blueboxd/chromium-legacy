@@ -281,12 +281,6 @@ base::FilePath ContentBrowserClient::GetLoggingFileName(
   return base::FilePath();
 }
 
-bool ContentBrowserClient::AllowAppCacheOnIO(const GURL& manifest_url,
-                                             const GURL& first_party,
-                                             ResourceContext* context) {
-  return true;
-}
-
 bool ContentBrowserClient::AllowAppCache(const GURL& manifest_url,
                                          const GURL& first_party,
                                          BrowserContext* context) {
@@ -311,10 +305,6 @@ bool ContentBrowserClient::AllowSharedWorker(
     int render_process_id,
     int render_frame_id) {
   DCHECK(context);
-  return true;
-}
-
-bool ContentBrowserClient::AllowSignedExchangeOnIO(ResourceContext* context) {
   return true;
 }
 
@@ -654,10 +644,6 @@ void ContentBrowserClient::RunServiceInstance(
     const service_manager::Identity& identity,
     mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {}
 
-void ContentBrowserClient::RunServiceInstanceOnIOThread(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {}
-
 bool ContentBrowserClient::ShouldTerminateOnServiceQuit(
     const service_manager::Identity& id) {
   return false;
@@ -889,11 +875,6 @@ std::unique_ptr<OverlayWindow>
 ContentBrowserClient::CreateWindowForPictureInPicture(
     PictureInPictureWindowController* controller) {
   return nullptr;
-}
-
-bool ContentBrowserClient::IsSafeRedirectTargetOnIO(const GURL& url,
-                                                    ResourceContext* context) {
-  return true;
 }
 
 bool ContentBrowserClient::IsSafeRedirectTarget(const GURL& url,

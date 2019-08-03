@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_skia.h"
@@ -16,9 +17,54 @@
 namespace {
 constexpr int kTestBitmapWidth = 200;
 constexpr int kTestBitmapHeight = 123;
+
+// Waits for thumbnail images and can report how many images it has received.
+class TestThumbnailImageObserver : public ThumbnailImage::Observer {
+ public:
+  void WaitForImage() {
+    if (new_image_count_ > last_image_count_) {
+      last_image_count_ = new_image_count_;
+      return;
+    }
+
+    // Need a fresh loop since we may have quit out of the last one.
+    run_loop_ = std::make_unique<base::RunLoop>();
+    waiting_ = true;
+    run_loop_->Run();
+  }
+
+  int new_image_count() const { return new_image_count_; }
+  gfx::ImageSkia thumbnail_image() const { return thumbnail_image_; }
+
+  ScopedObserver<ThumbnailImage, ThumbnailImage::Observer>* scoped_observer() {
+    return &scoped_observer_;
+  }
+
+ private:
+  // ThumbnailImage::Observer:
+  void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image) override {
+    ++new_image_count_;
+    thumbnail_image_ = thumbnail_image;
+    if (waiting_) {
+      last_image_count_ = new_image_count_;
+      run_loop_->Quit();
+      waiting_ = false;
+    }
+  }
+
+  ScopedObserver<ThumbnailImage, ThumbnailImage::Observer> scoped_observer_{
+      this};
+  int new_image_count_ = 0;
+  int last_image_count_ = 0;
+  gfx::ImageSkia thumbnail_image_;
+  bool waiting_ = false;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
 }  // namespace
 
-class ThumbnailImageTest : public testing::Test {
+class ThumbnailImageTest : public testing::Test,
+                           public ThumbnailImage::Delegate {
  public:
   ThumbnailImageTest() = default;
 
@@ -30,72 +76,108 @@ class ThumbnailImageTest : public testing::Test {
     return bitmap;
   }
 
+  bool is_being_observed() const { return is_being_observed_; }
+
  private:
+  void ThumbnailImageBeingObservedChanged(bool is_being_observed) override {
+    is_being_observed_ = is_being_observed;
+  }
+
+  bool is_being_observed_ = false;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   DISALLOW_COPY_AND_ASSIGN(ThumbnailImageTest);
 };
 
-TEST_F(ThumbnailImageTest, FromSkBitmap) {
-  SkBitmap bitmap = CreateBitmap(kTestBitmapWidth, kTestBitmapHeight);
-  ThumbnailImage image = ThumbnailImage::FromSkBitmap(bitmap);
-  EXPECT_TRUE(image.HasData());
-  EXPECT_GE(image.GetStorageSize(), 0U);
-  EXPECT_LE(image.GetStorageSize(), bitmap.computeByteSize());
-  gfx::ImageSkia image_skia = image.AsImageSkia();
-  EXPECT_EQ(gfx::Size(kTestBitmapWidth, kTestBitmapHeight), image_skia.size());
+TEST_F(ThumbnailImageTest, Add_Remove_Observer) {
+  auto image = base::MakeRefCounted<ThumbnailImage>(this);
+  EXPECT_FALSE(is_being_observed());
+  TestThumbnailImageObserver observer;
+  image->AddObserver(&observer);
+  EXPECT_TRUE(image->HasObserver(&observer));
+  EXPECT_TRUE(is_being_observed());
+  image->RemoveObserver(&observer);
+  EXPECT_FALSE(image->HasObserver(&observer));
+  EXPECT_FALSE(is_being_observed());
 }
 
-TEST_F(ThumbnailImageTest, FromSkBitmapAsync) {
-  SkBitmap bitmap = CreateBitmap(kTestBitmapWidth, kTestBitmapHeight);
-  ThumbnailImage image;
-
-  base::RunLoop run_loop;
-  ThumbnailImage::FromSkBitmapAsync(
-      bitmap, base::BindOnce(
-                  [](base::OnceClosure end_closure, ThumbnailImage* dest_image,
-                     ThumbnailImage source_image) {
-                    *dest_image = source_image;
-                    std::move(end_closure).Run();
-                  },
-                  run_loop.QuitClosure(), base::Unretained(&image)));
-  run_loop.Run();
-
-  EXPECT_TRUE(image.HasData());
-  EXPECT_GE(image.GetStorageSize(), 0U);
-  EXPECT_LE(image.GetStorageSize(), bitmap.computeByteSize());
-  gfx::ImageSkia image_skia = image.AsImageSkia();
-  EXPECT_EQ(gfx::Size(kTestBitmapWidth, kTestBitmapHeight), image_skia.size());
+TEST_F(ThumbnailImageTest, Add_Remove_MultipleObservers) {
+  auto image = base::MakeRefCounted<ThumbnailImage>(this);
+  EXPECT_FALSE(is_being_observed());
+  TestThumbnailImageObserver observer;
+  TestThumbnailImageObserver observer2;
+  image->AddObserver(&observer);
+  EXPECT_TRUE(image->HasObserver(&observer));
+  EXPECT_TRUE(is_being_observed());
+  image->AddObserver(&observer2);
+  EXPECT_TRUE(image->HasObserver(&observer2));
+  EXPECT_TRUE(is_being_observed());
+  image->RemoveObserver(&observer);
+  EXPECT_FALSE(image->HasObserver(&observer));
+  EXPECT_TRUE(image->HasObserver(&observer2));
+  EXPECT_TRUE(is_being_observed());
+  image->RemoveObserver(&observer2);
+  EXPECT_FALSE(image->HasObserver(&observer2));
+  EXPECT_FALSE(is_being_observed());
 }
 
-TEST_F(ThumbnailImageTest, AsImageSkia) {
-  SkBitmap bitmap = CreateBitmap(kTestBitmapWidth, kTestBitmapHeight);
-  ThumbnailImage image = ThumbnailImage::FromSkBitmap(bitmap);
-  EXPECT_TRUE(image.HasData());
+TEST_F(ThumbnailImageTest, AssignSkBitmap_NotifiesObservers) {
+  auto image = base::MakeRefCounted<ThumbnailImage>(this);
+  TestThumbnailImageObserver observer;
+  TestThumbnailImageObserver observer2;
+  observer.scoped_observer()->Add(image.get());
+  observer2.scoped_observer()->Add(image.get());
 
-  gfx::ImageSkia image_skia = image.AsImageSkia();
-  EXPECT_TRUE(image_skia.IsThreadSafe());
-  EXPECT_FALSE(image_skia.isNull());
-  EXPECT_EQ(gfx::Size(kTestBitmapWidth, kTestBitmapHeight), image_skia.size());
+  SkBitmap bitmap = CreateBitmap(kTestBitmapWidth, kTestBitmapHeight);
+  image->AssignSkBitmap(bitmap);
+  observer.WaitForImage();
+  observer2.WaitForImage();
+  EXPECT_EQ(1, observer.new_image_count());
+  EXPECT_EQ(1, observer2.new_image_count());
+  EXPECT_FALSE(observer.thumbnail_image().isNull());
+  EXPECT_FALSE(observer2.thumbnail_image().isNull());
+  EXPECT_EQ(gfx::Size(kTestBitmapWidth, kTestBitmapHeight),
+            observer.thumbnail_image().size());
 }
 
-TEST_F(ThumbnailImageTest, AsImageSkiaAsync) {
+TEST_F(ThumbnailImageTest, AssignSkBitmap_NotifiesObserversAgain) {
+  auto image = base::MakeRefCounted<ThumbnailImage>(this);
+  TestThumbnailImageObserver observer;
+  TestThumbnailImageObserver observer2;
+  observer.scoped_observer()->Add(image.get());
+  observer2.scoped_observer()->Add(image.get());
+
   SkBitmap bitmap = CreateBitmap(kTestBitmapWidth, kTestBitmapHeight);
-  ThumbnailImage image = ThumbnailImage::FromSkBitmap(bitmap);
-  EXPECT_TRUE(image.HasData());
+  image->AssignSkBitmap(bitmap);
+  observer.WaitForImage();
+  observer2.WaitForImage();
+  image->AssignSkBitmap(bitmap);
+  observer.WaitForImage();
+  observer2.WaitForImage();
+  EXPECT_EQ(2, observer.new_image_count());
+  EXPECT_EQ(2, observer2.new_image_count());
+  EXPECT_FALSE(observer.thumbnail_image().isNull());
+  EXPECT_FALSE(observer2.thumbnail_image().isNull());
+  EXPECT_EQ(gfx::Size(kTestBitmapWidth, kTestBitmapHeight),
+            observer.thumbnail_image().size());
+}
 
-  base::RunLoop run_loop;
-  gfx::ImageSkia image_skia;
-  const bool can_convert = image.AsImageSkiaAsync(base::BindOnce(
-      [](base::OnceClosure end_closure, gfx::ImageSkia* dest_image,
-         gfx::ImageSkia source_image) {
-        *dest_image = source_image;
-        std::move(end_closure).Run();
-      },
-      run_loop.QuitClosure(), base::Unretained(&image_skia)));
-  ASSERT_TRUE(can_convert);
-  run_loop.Run();
+TEST_F(ThumbnailImageTest, RequestThumbnailImage) {
+  auto image = base::MakeRefCounted<ThumbnailImage>(this);
+  TestThumbnailImageObserver observer;
+  observer.scoped_observer()->Add(image.get());
 
-  EXPECT_TRUE(image_skia.IsThreadSafe());
-  EXPECT_FALSE(image_skia.isNull());
-  EXPECT_EQ(gfx::Size(kTestBitmapWidth, kTestBitmapHeight), image_skia.size());
+  SkBitmap bitmap = CreateBitmap(kTestBitmapWidth, kTestBitmapHeight);
+  image->AssignSkBitmap(bitmap);
+  observer.WaitForImage();
+
+  TestThumbnailImageObserver observer2;
+  observer2.scoped_observer()->Add(image.get());
+  image->RequestThumbnailImage();
+  observer.WaitForImage();
+  observer2.WaitForImage();
+  EXPECT_EQ(2, observer.new_image_count());
+  EXPECT_EQ(1, observer2.new_image_count());
+  EXPECT_FALSE(observer2.thumbnail_image().isNull());
+  EXPECT_EQ(gfx::Size(kTestBitmapWidth, kTestBitmapHeight),
+            observer2.thumbnail_image().size());
 }

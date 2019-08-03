@@ -27,7 +27,20 @@ using printing::ConvertUnitDouble;
 using printing::kPointsPerInch;
 using printing::kPixelsPerInch;
 
+namespace chrome_pdf {
+
 namespace {
+
+PDFiumPage::IsValidLinkFunction g_is_valid_link_func_for_testing = nullptr;
+
+// If the link cannot be converted to a pp::Var, then it is not possible to
+// pass it to JS. In this case, ignore the link like other PDF viewers.
+// See https://crbug.com/312882 for an example.
+// TODO(crbug.com/702993): Get rid of the PPAPI usage here, as well as
+// SetIsValidLinkFunctionForTesting() and related code.
+bool IsValidLink(const std::string& url) {
+  return pp::Var(url).is_string();
+}
 
 pp::FloatRect FloatPageRectToPixelRect(FPDF_PAGE page,
                                        const pp::FloatRect& input) {
@@ -81,8 +94,6 @@ bool OverlapsOnYAxis(const pp::FloatRect& a, const pp::FloatRect& b) {
 
 }  // namespace
 
-namespace chrome_pdf {
-
 PDFiumPage::LinkTarget::LinkTarget() : page(-1) {}
 
 PDFiumPage::LinkTarget::LinkTarget(const LinkTarget& other) = default;
@@ -102,6 +113,12 @@ PDFiumPage::PDFiumPage(PDFiumPage&& that) = default;
 
 PDFiumPage::~PDFiumPage() {
   DCHECK_EQ(0, preventing_unload_count_);
+}
+
+// static
+void PDFiumPage::SetIsValidLinkFunctionForTesting(
+    IsValidLinkFunction function) {
+  g_is_valid_link_func_for_testing = function;
 }
 
 void PDFiumPage::Unload() {
@@ -444,11 +461,10 @@ void PDFiumPage::CalculateLinks() {
     Link link;
     link.url = base::UTF16ToUTF8(url);
 
-    // If the link cannot be converted to a pp::Var, then it is not possible to
-    // pass it to JS. In this case, ignore the link like other PDF viewers.
-    // See http://crbug.com/312882 for an example.
-    pp::Var link_var(link.url);
-    if (!link_var.is_string())
+    IsValidLinkFunction is_valid_link_func =
+        g_is_valid_link_func_for_testing ? g_is_valid_link_func_for_testing
+                                         : &IsValidLink;
+    if (!is_valid_link_func(link.url))
       continue;
 
     // Make sure all the characters in the URL are valid per RFC 1738.

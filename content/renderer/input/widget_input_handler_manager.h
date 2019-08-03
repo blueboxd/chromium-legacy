@@ -110,11 +110,15 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void FallbackCursorModeLockCursor(bool left, bool right, bool up, bool down);
   void FallbackCursorModeSetCursorVisibility(bool visible);
 
-  // Called to inform us of a lifecycle update
-  void MarkBeginMainFrame();
+  // Called to inform us of navigation, which resets UMA metrics for input
+  // timing.
+  void DidNavigate();
 
   // Called to inform us of a lifecycle update
-  void MarkCompositorCommit();
+  void BeginMainFrame();
+
+  // Called to inform us the the compositor has committed a frame.
+  void CompositorDidCommit();
 
  protected:
   friend class base::RefCountedThreadSafe<WidgetInputHandlerManager>;
@@ -152,6 +156,12 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void ObserveGestureEventOnInputHandlingThread(
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
+
+  // Logs UMA for the first real input event, to gather data on
+  // how often input occurs before a page is presented to the
+  // screen. It is a separate function to allow multiple sites to
+  // log to the same histogram.
+  void LogInputTimingUMA();
 
   // Returns the task runner for the thread that receives input. i.e. the
   // "Mojo-bound" thread.

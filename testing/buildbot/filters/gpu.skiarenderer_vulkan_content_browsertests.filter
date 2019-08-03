@@ -96,3 +96,5 @@
 -MediaSourceTest.Playback_VideoAudio_WebM
 -WebRtcDataBrowserTest.CallWithSctpDataAndMedia
 -WebRtcDataBrowserTest.CallWithDataAndMedia
+-Http/MediaTest.VideoBearMp4Vp9/0
+-File/MediaTest.VideoBearMp4Vp9/0

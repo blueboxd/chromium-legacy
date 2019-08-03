@@ -8,104 +8,107 @@
 
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
-// Refcounted class that stores compressed JPEG data.
-class ThumbnailImage::ThumbnailData
-    : public base::RefCountedThreadSafe<ThumbnailData> {
- public:
-  static gfx::ImageSkia ToImageSkia(
-      scoped_refptr<ThumbnailData> representation) {
-    const auto& data = representation->data_;
-    gfx::ImageSkia result = gfx::ImageSkia::CreateFrom1xBitmap(
-        *gfx::JPEGCodec::Decode(data.data(), data.size()));
-    result.MakeThreadSafe();
-    return result;
-  }
+namespace {
 
-  static scoped_refptr<ThumbnailData> FromSkBitmap(SkBitmap bitmap) {
-    constexpr int kCompressionQuality = 97;
-    std::vector<uint8_t> data;
-    const bool result =
-        gfx::JPEGCodec::Encode(bitmap, kCompressionQuality, &data);
-    DCHECK(result);
-    return scoped_refptr<ThumbnailData>(new ThumbnailData(std::move(data)));
-  }
-
-  size_t size() const { return data_.size(); }
-
- private:
-  friend base::RefCountedThreadSafe<ThumbnailData>;
-
-  explicit ThumbnailData(std::vector<uint8_t>&& data)
-      : data_(std::move(data)) {}
-
-  ~ThumbnailData() = default;
-
-  std::vector<uint8_t> data_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThumbnailData);
-};
-
-ThumbnailImage::ThumbnailImage() = default;
-ThumbnailImage::~ThumbnailImage() = default;
-ThumbnailImage::ThumbnailImage(const ThumbnailImage& other) = default;
-ThumbnailImage::ThumbnailImage(ThumbnailImage&& other) = default;
-ThumbnailImage& ThumbnailImage::operator=(const ThumbnailImage& other) =
-    default;
-ThumbnailImage& ThumbnailImage::operator=(ThumbnailImage&& other) = default;
-
-gfx::ImageSkia ThumbnailImage::AsImageSkia() const {
-  return ThumbnailData::ToImageSkia(image_representation_);
+std::vector<uint8_t> SkBitmapToJPEGData(SkBitmap bitmap) {
+  constexpr int kCompressionQuality = 97;
+  std::vector<uint8_t> data;
+  const bool result =
+      gfx::JPEGCodec::Encode(bitmap, kCompressionQuality, &data);
+  DCHECK(result);
+  return data;
 }
 
-bool ThumbnailImage::AsImageSkiaAsync(AsImageSkiaCallback callback) const {
-  if (!HasData())
-    return false;
-
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&ThumbnailData::ToImageSkia, image_representation_),
-      std::move(callback));
-  return true;
-}
-
-bool ThumbnailImage::HasData() const {
-  return static_cast<bool>(image_representation_);
-}
-
-size_t ThumbnailImage::GetStorageSize() const {
-  return image_representation_ ? image_representation_->size() : 0;
-}
-
-bool ThumbnailImage::BackedBySameObjectAs(const ThumbnailImage& other) const {
-  return image_representation_.get() == other.image_representation_.get();
-}
-
-// static
-ThumbnailImage ThumbnailImage::FromSkBitmap(SkBitmap bitmap) {
-  ThumbnailImage result;
-  result.image_representation_ = ThumbnailData::FromSkBitmap(bitmap);
+gfx::ImageSkia JPEGDataToImageSkia(
+    scoped_refptr<base::RefCountedData<std::vector<uint8_t>>> data) {
+  gfx::ImageSkia result = gfx::ImageSkia::CreateFrom1xBitmap(
+      *gfx::JPEGCodec::Decode(data->data.data(), data->data.size()));
+  result.MakeThreadSafe();
   return result;
 }
 
-// static
-void ThumbnailImage::FromSkBitmapAsync(SkBitmap bitmap,
-                                       CreateThumbnailCallback callback) {
+}  // namespace
+
+ThumbnailImage::Delegate::~Delegate() {
+  if (thumbnail_)
+    thumbnail_->delegate_ = nullptr;
+}
+
+ThumbnailImage::ThumbnailImage(Delegate* delegate) : delegate_(delegate) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK(delegate_);
+  DCHECK(!delegate_->thumbnail_);
+  delegate_->thumbnail_ = this;
+}
+
+ThumbnailImage::~ThumbnailImage() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (delegate_)
+    delegate_->thumbnail_ = nullptr;
+}
+
+void ThumbnailImage::AddObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(observer);
+  if (!observers_.HasObserver(observer)) {
+    const bool is_first_observer = !observers_.might_have_observers();
+    observers_.AddObserver(observer);
+    if (is_first_observer && delegate_)
+      delegate_->ThumbnailImageBeingObservedChanged(true);
+  }
+}
+
+void ThumbnailImage::RemoveObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(observer);
+  if (observers_.HasObserver(observer)) {
+    observers_.RemoveObserver(observer);
+    if (delegate_ && !observers_.might_have_observers())
+      delegate_->ThumbnailImageBeingObservedChanged(false);
+  }
+}
+
+bool ThumbnailImage::HasObserver(const Observer* observer) const {
+  return observers_.HasObserver(observer);
+}
+
+void ThumbnailImage::AssignSkBitmap(SkBitmap bitmap) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&ThumbnailData::FromSkBitmap, bitmap),
-      base::BindOnce(
-          [](CreateThumbnailCallback callback,
-             scoped_refptr<ThumbnailData> representation) {
-            ThumbnailImage result;
-            result.image_representation_ = representation;
-            std::move(callback).Run(result);
-          },
-          std::move(callback)));
+      base::BindOnce(&SkBitmapToJPEGData, std::move(bitmap)),
+      base::BindOnce(&ThumbnailImage::AssignJPEGData,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ThumbnailImage::RequestThumbnailImage() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ConvertJPEGDataToImageSkiaAndNotifyObservers();
+}
+
+void ThumbnailImage::AssignJPEGData(std::vector<uint8_t> data) {
+  data_ = base::MakeRefCounted<base::RefCountedData<std::vector<uint8_t>>>(
+      std::move(data));
+  ConvertJPEGDataToImageSkiaAndNotifyObservers();
+}
+
+bool ThumbnailImage::ConvertJPEGDataToImageSkiaAndNotifyObservers() {
+  if (!data_)
+    return false;
+  return base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&JPEGDataToImageSkia, data_),
+      base::BindOnce(&ThumbnailImage::NotifyObservers,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ThumbnailImage::NotifyObservers(gfx::ImageSkia image) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& observer : observers_)
+    observer.OnThumbnailImageAvailable(image);
 }

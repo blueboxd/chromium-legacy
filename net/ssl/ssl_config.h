@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
@@ -54,12 +55,11 @@ struct NET_EXPORT SSLConfig {
   // configuration.
   int GetCertVerifyFlags() const;
 
-  // The minimum and maximum protocol versions that are enabled.
-  // (Use the SSL_PROTOCOL_VERSION_xxx enumerators defined above.)
-  // SSL 2.0 and SSL 3.0 are not supported. If version_max < version_min, it
-  // means no protocol versions are enabled.
-  uint16_t version_min;
-  uint16_t version_max;
+  // If specified, the minimum and maximum protocol versions that are enabled.
+  // (Use the SSL_PROTOCOL_VERSION_xxx enumerators defined above.) If
+  // unspecified, values from the SSLConfigService are used.
+  base::Optional<uint16_t> version_min_override;
+  base::Optional<uint16_t> version_max_override;
 
   // Whether early data is enabled on this connection. Note that early data has
   // weaker security properties than normal data and changes the
@@ -74,16 +74,6 @@ struct NET_EXPORT SSLConfig {
   //
   // If unsure, do not enable this option.
   bool early_data_enabled;
-
-  // Presorted list of cipher suites which should be explicitly prevented from
-  // being used in addition to those disabled by the net built-in policy.
-  //
-  // Though cipher suites are sent in TLS as "uint8_t CipherSuite[2]", in
-  // big-endian form, they should be declared in host byte order, with the
-  // first uint8_t occupying the most significant byte.
-  // Ex: To disable TLS_RSA_WITH_RC4_128_MD5, specify 0x0004, while to
-  // disable TLS_ECDH_ECDSA_WITH_RC4_128_SHA, specify 0xC002.
-  std::vector<uint16_t> disabled_cipher_suites;
 
   bool false_start_enabled;  // True if we'll use TLS False Start.
 

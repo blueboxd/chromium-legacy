@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/eme_constants.h"
-#include "media/mojo/interfaces/content_decryption_module.mojom.h"
+#include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_cdm_promise.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"

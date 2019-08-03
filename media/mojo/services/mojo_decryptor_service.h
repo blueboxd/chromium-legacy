@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decryptor.h"
-#include "media/mojo/interfaces/decryptor.mojom.h"
+#include "media/mojo/mojom/decryptor.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 
 namespace media {

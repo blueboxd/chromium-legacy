@@ -1064,7 +1064,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     NavigationList, /* navigation_list.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("navigationScrollsWhenClipped")));
+    ::testing::Values(TestCase("navigationListHorizontalScroll"),
+                      TestCase("navigationListVerticalScroll")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Search, /* search.js */

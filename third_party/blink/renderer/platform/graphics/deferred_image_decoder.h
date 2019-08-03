@@ -43,7 +43,6 @@
 namespace blink {
 
 class ImageFrameGenerator;
-class SharedBuffer;
 struct DeferredFrameData;
 
 class PLATFORM_EXPORT DeferredImageDecoder final {

@@ -34,7 +34,7 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_adapter_factory.h"           // nogncheck
-#include "media/mojo/interfaces/constants.mojom.h"   // nogncheck
+#include "media/mojo/mojom/constants.mojom.h"   // nogncheck
 #include "media/mojo/services/cdm_service.h"         // nogncheck
 #include "media/mojo/services/mojo_cdm_helper.h"     // nogncheck
 #include "media/mojo/services/mojo_media_client.h"   // nogncheck

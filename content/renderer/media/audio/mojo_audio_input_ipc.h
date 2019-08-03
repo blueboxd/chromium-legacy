@@ -16,7 +16,7 @@
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_source_parameters.h"
-#include "media/mojo/interfaces/audio_input_stream.mojom.h"
+#include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "media/webrtc/audio_processor_controls.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"

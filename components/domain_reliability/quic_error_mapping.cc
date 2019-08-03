@@ -307,6 +307,8 @@ const struct QuicErrorMapping {
     {quic::QUIC_IETF_GQUIC_ERROR_MISSING, "quic.ietf.gquic.error_missing"},
     {quic::QUIC_WINDOW_UPDATE_RECEIVED_ON_READ_UNIDIRECTIONAL_STREAM,
      "quic.window.update.received.on.read.unidirectional.stream"},
+    {quic::QUIC_TOO_MANY_BUFFERED_CONTROL_FRAMES,
+     "quic.too.many.buffered.control.frames"},
 
     // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
     // deprecated, but to keep the assert below happy, there needs to be

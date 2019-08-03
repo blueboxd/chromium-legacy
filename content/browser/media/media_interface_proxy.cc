@@ -18,9 +18,9 @@
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "media/mojo/buildflags.h"
-#include "media/mojo/interfaces/cdm_proxy.mojom.h"
-#include "media/mojo/interfaces/constants.mojom.h"
-#include "media/mojo/interfaces/media_service.mojom.h"
+#include "media/mojo/mojom/cdm_proxy.mojom.h"
+#include "media/mojo/mojom/constants.mojom.h"
+#include "media/mojo/mojom/media_service.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -37,7 +37,7 @@
 #include "content/browser/media/key_system_support_impl.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/key_system_names.h"
-#include "media/mojo/interfaces/cdm_service.mojom.h"
+#include "media/mojo/mojom/cdm_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #if defined(OS_MACOSX)

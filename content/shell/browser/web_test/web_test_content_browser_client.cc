@@ -124,9 +124,8 @@ WebTestContentBrowserClient::GetNextFakeBluetoothChooser() {
 }
 
 void WebTestContentBrowserClient::RenderProcessWillLaunch(
-    RenderProcessHost* host,
-    service_manager::mojom::ServiceRequest* service_request) {
-  ShellContentBrowserClient::RenderProcessWillLaunch(host, service_request);
+    RenderProcessHost* host) {
+  ShellContentBrowserClient::RenderProcessWillLaunch(host);
 
   StoragePartition* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context());

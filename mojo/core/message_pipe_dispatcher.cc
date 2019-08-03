@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/trace_event/trace_event.h"
 #include "mojo/core/core.h"
 #include "mojo/core/node_controller.h"
 #include "mojo/core/ports/event.h"
@@ -378,6 +379,10 @@ MojoResult MessagePipeDispatcher::CloseNoLock() {
   if (!port_transferred_) {
     base::AutoUnlock unlock(signal_lock_);
     node_controller_->ClosePort(port_);
+
+    TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                           "MessagePipe closing", pipe_id_ + endpoint_,
+                           TRACE_EVENT_FLAG_FLOW_OUT);
   }
 
   return MOJO_RESULT_OK;
@@ -421,6 +426,18 @@ HandleSignalsState MessagePipeDispatcher::GetHandleSignalsStateNoLock() const {
   }
   rv.satisfiable_signals |=
       MOJO_HANDLE_SIGNAL_PEER_CLOSED | MOJO_HANDLE_SIGNAL_QUOTA_EXCEEDED;
+
+  const bool was_peer_closed =
+      last_known_satisfied_signals_ & MOJO_HANDLE_SIGNAL_PEER_CLOSED;
+  const bool is_peer_closed =
+      rv.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_CLOSED;
+  last_known_satisfied_signals_ = rv.satisfied_signals;
+  if (is_peer_closed && !was_peer_closed) {
+    TRACE_EVENT_WITH_FLOW0(
+        TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), "MessagePipe peer closed",
+        pipe_id_ + (1 - endpoint_), TRACE_EVENT_FLAG_FLOW_IN);
+  }
+
   return rv;
 }
 

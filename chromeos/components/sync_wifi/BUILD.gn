@@ -7,10 +7,14 @@ static_library("sync_wifi") {
     "synced_network_updater.h",
     "wifi_configuration_bridge.cc",
     "wifi_configuration_bridge.h",
+    "wifi_configuration_sync_service.cc",
+    "wifi_configuration_sync_service.h",
   ]
   deps = [
     "//base",
+    "//components/keyed_service/core",
     "//components/sync",
+    "//components/version_info",
   ]
 }
 

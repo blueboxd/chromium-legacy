@@ -23,7 +23,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_watcher.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
@@ -207,13 +206,11 @@ ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
   // forward observer methods to observers outside of content.
   core_observer_list_->AddObserver(this);
 
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    watcher_ = base::MakeRefCounted<ServiceWorkerContextWatcher>(
-        this,
-        base::BindRepeating(&ServiceWorkerContextWrapper::OnRegistrationUpdated,
-                            base::Unretained(this)),
-        base::DoNothing(), base::DoNothing());
-  }
+  watcher_ = base::MakeRefCounted<ServiceWorkerContextWatcher>(
+      this,
+      base::BindRepeating(&ServiceWorkerContextWrapper::OnRegistrationUpdated,
+                          base::Unretained(this)),
+      base::DoNothing(), base::DoNothing());
 }
 
 void ServiceWorkerContextWrapper::Init(
@@ -1533,7 +1530,6 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> ServiceWorkerContextWrapper::
 bool ServiceWorkerContextWrapper::HasRegistrationForOrigin(
     const GURL& origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled());
   return !registrations_initialized_ ||
          registrations_for_origin_.find(origin) !=
              registrations_for_origin_.end();

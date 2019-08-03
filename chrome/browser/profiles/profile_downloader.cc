@@ -214,8 +214,7 @@ void ProfileDownloader::FetchImageData() {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = image_url_to_fetch;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   if (!auth_token_.empty()) {
     resource_request->headers.SetHeader(
         net::HttpRequestHeaders::kAuthorization,

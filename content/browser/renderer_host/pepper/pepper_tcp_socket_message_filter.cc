@@ -112,7 +112,7 @@ void PepperTCPSocketMessageFilter::SetConnectedSocket(
   // thread to prevent the object from being deleted before this method returns.
   DCHECK(HasOneRef());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &PepperTCPSocketMessageFilter::SetConnectedSocketOnUIThread, this,
@@ -169,9 +169,8 @@ void PepperTCPSocketMessageFilter::OnFilterDestroyed() {
   // also ensures that future messages will be ignored, so the mojo pipes won't
   // be re-created, so after Close() runs, |this| can be safely deleted on the
   // IO thread.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&PepperTCPSocketMessageFilter::Close, this));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&PepperTCPSocketMessageFilter::Close, this));
 }
 
 scoped_refptr<base::TaskRunner>
@@ -188,7 +187,7 @@ PepperTCPSocketMessageFilter::OverrideTaskRunnerForMessage(
     case PpapiHostMsg_TCPSocket_Accept::ID:
     case PpapiHostMsg_TCPSocket_Close::ID:
     case PpapiHostMsg_TCPSocket_SetOption::ID:
-      return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+      return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   }
   return nullptr;
 }
@@ -220,7 +219,7 @@ int32_t PepperTCPSocketMessageFilter::OnResourceMessageReceived(
 }
 
 void PepperTCPSocketMessageFilter::OnThrottleStateChanged(bool is_throttled) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &PepperTCPSocketMessageFilter::ThrottleStateChangedOnUIThread, this,
@@ -1118,7 +1117,7 @@ void PepperTCPSocketMessageFilter::OnAcceptCompleted(
   // already.
   DCHECK(success);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperTCPSocketMessageFilter::OnAcceptCompletedOnIOThread,
                      this, context, connected_socket.PassInterface(),

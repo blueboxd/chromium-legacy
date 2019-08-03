@@ -212,7 +212,8 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
         info.extension_id);
   }
 
-  const Extension* extension = GetExtensionById(info.extension_id, true);
+  const Extension* extension = registry_->GetExtensionById(
+      info.extension_id, ExtensionRegistry::COMPATIBILITY);
   if (extension) {
     // Already installed. Skip this install if the current location has higher
     // priority than |info.download_location|, and we aren't doing a
@@ -378,19 +379,6 @@ ExtensionService::~ExtensionService() {
 void ExtensionService::Shutdown() {
   ExtensionManagementFactory::GetForBrowserContext(profile())->RemoveObserver(
       this);
-}
-
-const Extension* ExtensionService::GetExtensionById(
-    const std::string& id, bool include_disabled) const {
-  int include_mask = ExtensionRegistry::ENABLED;
-  if (include_disabled) {
-    // Include blacklisted and blocked extensions here because there are
-    // hundreds of callers of this function, and many might assume that this
-    // includes those that have been disabled due to blacklisting or blocking.
-    include_mask |= ExtensionRegistry::DISABLED |
-                    ExtensionRegistry::BLACKLISTED | ExtensionRegistry::BLOCKED;
-  }
-  return registry_->GetExtensionById(id, include_mask);
 }
 
 void ExtensionService::Init() {
@@ -769,7 +757,8 @@ void ExtensionService::DisableExtensionWithSource(
            Manifest::IsComponentLocation(source_extension->location()));
   }
 
-  const Extension* extension = GetExtensionById(extension_id, true);
+  const Extension* extension = registry_->GetExtensionById(
+      extension_id, ExtensionRegistry::COMPATIBILITY);
   CHECK(system_->management_policy()->ExtensionMayModifySettings(
       source_extension, extension, nullptr));
   extension_registrar_.DisableExtension(extension_id, disable_reasons);
@@ -1154,7 +1143,7 @@ void ExtensionService::UnloadExtension(const std::string& extension_id,
 void ExtensionService::RemoveComponentExtension(
     const std::string& extension_id) {
   scoped_refptr<const Extension> extension(
-      GetExtensionById(extension_id, false));
+      registry_->GetExtensionById(extension_id, ExtensionRegistry::ENABLED));
   UnloadExtension(extension_id, UnloadedExtensionReason::UNINSTALL);
   if (extension.get()) {
     ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(
@@ -1703,7 +1692,8 @@ bool ExtensionService::OnExternalExtensionFileFound(
   // Before even bothering to unpack, check and see if we already have this
   // version. This is important because these extensions are going to get
   // installed on every startup.
-  const Extension* existing = GetExtensionById(info.extension_id, true);
+  const Extension* existing = registry_->GetExtensionById(
+      info.extension_id, ExtensionRegistry::COMPATIBILITY);
 
   if (existing) {
     // The default apps will have the location set as INTERNAL. Since older
@@ -1821,7 +1811,8 @@ void ExtensionService::Observe(int type,
         // idle to update.  Check all imports of these extensions, too.
         std::set<std::string> import_ids;
         for (auto it = extension_ids.begin(); it != extension_ids.end(); ++it) {
-          const Extension* extension = GetExtensionById(*it, true);
+          const Extension* extension = registry_->GetExtensionById(
+              *it, ExtensionRegistry::COMPATIBILITY);
           if (!extension)
             continue;
           const std::vector<SharedModuleInfo::ImportInfo>& imports =

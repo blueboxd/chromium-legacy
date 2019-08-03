@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_OUTPUT_PROTECTION_IMPL_H_
 
 #include "content/public/browser/frame_service_base.h"
-#include "media/mojo/interfaces/output_protection.mojom.h"
+#include "media/mojo/mojom/output_protection.mojom.h"
 
 class OutputProtectionProxy;
 

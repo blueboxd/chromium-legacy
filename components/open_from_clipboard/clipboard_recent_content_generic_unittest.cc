@@ -9,6 +9,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/test/test_clipboard.h"
@@ -117,4 +118,18 @@ TEST_F(ClipboardRecentContentGenericTest, SuppressClipboardContent) {
   test_clipboard_->WriteText(text.data(), text.length());
   test_clipboard_->SetLastModifiedTime(now);
   EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
+}
+
+TEST_F(ClipboardRecentContentGenericTest, GetRecentTextFromClipboard) {
+  // Make sure the Text is suggested.
+  ClipboardRecentContentGeneric recent_content;
+  base::Time now = base::Time::Now();
+  std::string text = "  Foo Bar   ";
+  test_clipboard_->WriteText(text.data(), text.length());
+  test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromSeconds(10));
+  EXPECT_TRUE(recent_content.GetRecentTextFromClipboard().has_value());
+  EXPECT_STREQ(
+      "Foo Bar",
+      base::UTF16ToUTF8(recent_content.GetRecentTextFromClipboard().value())
+          .c_str());
 }

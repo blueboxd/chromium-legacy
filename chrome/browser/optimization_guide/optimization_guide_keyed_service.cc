@@ -4,6 +4,7 @@
 
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -11,6 +12,7 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 
 OptimizationGuideKeyedService::OptimizationGuideKeyedService(
     content::BrowserContext* browser_context)
@@ -34,6 +36,22 @@ void OptimizationGuideKeyedService::Initialize(
       optimization_guide_service, profile_path,
       Profile::FromBrowserContext(browser_context_)->GetPrefs(),
       database_provider);
+}
+
+void OptimizationGuideKeyedService::RegisterOptimizationTypes(
+    std::vector<optimization_guide::proto::OptimizationType>
+        optimization_types) {
+  for (const auto optimization_type : optimization_types) {
+    registered_optimization_types_.insert(optimization_type);
+  }
+}
+
+void OptimizationGuideKeyedService::MaybeLoadHintForNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!hints_manager_ || registered_optimization_types_.empty())
+    return;
+
+  hints_manager_->LoadHintForNavigation(navigation_handle, base::DoNothing());
 }
 
 void OptimizationGuideKeyedService::Shutdown() {

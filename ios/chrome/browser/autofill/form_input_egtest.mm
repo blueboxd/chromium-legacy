@@ -16,6 +16,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -26,6 +27,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::test::ios::kWaitForUIElementTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 using chrome_test_util::WebViewMatcher;
 
@@ -55,8 +59,7 @@ void AssertElementIsFocused(const std::string& element_id) {
   ConditionBlock condition = ^{
     return base::SysNSStringToUTF8(GetFocusedElementId()) == element_id;
   };
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(10, condition),
-             description);
+  GREYAssert(WaitUntilConditionOrTimeout(10, condition), description);
 }
 
 }  // namespace
@@ -68,12 +71,6 @@ void AssertElementIsFocused(const std::string& element_id) {
 @implementation FormInputTestCase
 
 - (void)tearDown {
-  // |testFindDefaultFormAssistControls| disables synchronization.
-  // This makes sure it is enabled if that test has failed and did not enable it
-  // back.
-  [[GREYConfiguration sharedInstance]
-          setValue:@YES
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
   [super tearDown];
 }
 
@@ -96,61 +93,57 @@ void AssertElementIsFocused(const std::string& element_id) {
   [ChromeEarlGrey waitForWebStateContainingText:"hello!"];
 
   // Opening the keyboard from a webview blocks EarlGrey's synchronization.
-  [[GREYConfiguration sharedInstance]
-          setValue:@NO
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  {
+    ScopedSynchronizationDisabler disabler;
 
-  // Brings up the keyboard by tapping on one of the form's field.
-  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
-      performAction:web::WebViewTapElement(
-                        chrome_test_util::GetCurrentWebState(),
-                        [ElementSelector
-                            selectorWithElementID:kFormElementId1])];
+    // Brings up the keyboard by tapping on one of the form's field.
+    [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
+        performAction:web::WebViewTapElement(
+                          chrome_test_util::GetCurrentWebState(),
+                          [ElementSelector
+                              selectorWithElementID:kFormElementId1])];
 
-  id<GREYMatcher> nextButtonMatcher =
-      chrome_test_util::ButtonWithAccessibilityLabelId(
-          IDS_IOS_AUTOFILL_ACCNAME_NEXT_FIELD);
-  id<GREYMatcher> previousButtonMatcher =
-      chrome_test_util::ButtonWithAccessibilityLabelId(
-          IDS_IOS_AUTOFILL_ACCNAME_PREVIOUS_FIELD);
-  id<GREYMatcher> closeButtonMatcher =
-      chrome_test_util::ButtonWithAccessibilityLabelId(
-          IDS_IOS_AUTOFILL_ACCNAME_HIDE_KEYBOARD);
+    id<GREYMatcher> nextButtonMatcher =
+        chrome_test_util::ButtonWithAccessibilityLabelId(
+            IDS_IOS_AUTOFILL_ACCNAME_NEXT_FIELD);
+    id<GREYMatcher> previousButtonMatcher =
+        chrome_test_util::ButtonWithAccessibilityLabelId(
+            IDS_IOS_AUTOFILL_ACCNAME_PREVIOUS_FIELD);
+    id<GREYMatcher> closeButtonMatcher =
+        chrome_test_util::ButtonWithAccessibilityLabelId(
+            IDS_IOS_AUTOFILL_ACCNAME_HIDE_KEYBOARD);
 
-  // Wait until the keyboard's "Next" button appeared.
-  NSString* description = @"Wait for the keyboard's \"Next\" button to appear.";
-  ConditionBlock condition = ^{
-    NSError* error = nil;
+    // Wait until the keyboard's "Next" button appeared.
+    NSString* description =
+        @"Wait for the keyboard's \"Next\" button to appear.";
+    ConditionBlock condition = ^{
+      NSError* error = nil;
+      [[EarlGrey selectElementWithMatcher:nextButtonMatcher]
+          assertWithMatcher:grey_notNil()
+                      error:&error];
+      return (error == nil);
+    };
+    GREYAssert(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition),
+               description);
+    base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSeconds(1));
+
+    // Verifies that the taped element is focused.
+    AssertElementIsFocused(kFormElementId1);
+
+    // Tap the "Next" button.
     [[EarlGrey selectElementWithMatcher:nextButtonMatcher]
-        assertWithMatcher:grey_notNil()
-                    error:&error];
-    return (error == nil);
-  };
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForUIElementTimeout, condition),
-             description);
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSeconds(1));
+        performAction:grey_tap()];
+    AssertElementIsFocused(kFormElementId2);
 
-  // Verifies that the taped element is focused.
-  AssertElementIsFocused(kFormElementId1);
+    // Tap the "Previous" button.
+    [[EarlGrey selectElementWithMatcher:previousButtonMatcher]
+        performAction:grey_tap()];
+    AssertElementIsFocused(kFormElementId1);
 
-  // Tap the "Next" button.
-  [[EarlGrey selectElementWithMatcher:nextButtonMatcher]
-      performAction:grey_tap()];
-  AssertElementIsFocused(kFormElementId2);
-
-  // Tap the "Previous" button.
-  [[EarlGrey selectElementWithMatcher:previousButtonMatcher]
-      performAction:grey_tap()];
-  AssertElementIsFocused(kFormElementId1);
-
-  // Tap the "Close" button.
-  [[EarlGrey selectElementWithMatcher:closeButtonMatcher]
-      performAction:grey_tap()];
-
-  [[GREYConfiguration sharedInstance]
-          setValue:@YES
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+    // Tap the "Close" button.
+    [[EarlGrey selectElementWithMatcher:closeButtonMatcher]
+        performAction:grey_tap()];
+  }
 }
 
 // Tests that trying to programmatically dismiss the keyboard when it isn't

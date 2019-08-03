@@ -10,6 +10,7 @@
 
 input,
 select,
+select:-internal-list-box,
 textarea {
   background-color: #ffffff;
   border-color: #cecece;
@@ -17,6 +18,7 @@ textarea {
 
 input:hover,
 select:hover,
+select:-internal-list-box:hover,
 textarea:hover {
   border-color: #9d9d9d;
 }
@@ -102,4 +104,56 @@ meter::-webkit-meter-suboptimum-value {
 meter::-webkit-meter-even-less-good-value {
   background: #d83b01;
   border-radius: 1px 0px 0px 1px;
+}
+
+/* -internal-list-box is how we specify select[multiple] */
+/* select[multiple] is an exception to the prohibition on sizes here
+   because it is one of the few controls with borders that grow on zoom
+   (to solve a nasty scrollbar location problem) */
+select:-internal-list-box {
+  border-radius: 2px;
+}
+
+/* These options only apply to in-page 'multiple' select elements.
+   The options in the popup are handled in listPicker.css */
+select:-internal-list-box option, select:-internal-list-box optgroup {
+  padding: 0 3px;
+}
+
+select:-internal-list-box option {
+  border-radius: 2px;
+}
+
+select:-internal-list-box option:hover {
+  background-color: #f3f3f3;
+}
+
+/* option selected */
+select:-internal-list-box:focus option:checked,
+select:-internal-list-box:focus option:checked:hover,
+select:-internal-list-box option:checked,
+select:-internal-list-box option:checked:hover {
+  background-color: #cecece !important;
+  color: #101010 !important;
+}
+
+/* option disabled */
+select:-internal-list-box option:disabled,
+select:-internal-list-box option:disabled:hover,
+select:-internal-list-box:disabled option,
+select:-internal-list-box:disabled option:hover {
+  background-color: #ffffff !important;
+}
+
+/* option both disabled and selected */
+option:checked:disabled,
+option:checked:disabled:hover,
+select:-internal-list-box:focus option:checked:disabled,
+select:-internal-list-box:focus option:checked:disabled:hover,
+select:-internal-list-box:disabled option:checked,
+select:-internal-list-box:disabled option:checked:hover,
+select:-internal-list-box option:checked:disabled,
+select:-internal-list-box option:checked:disabled:hover {
+  background-color: #f0f0f0 !important;
+  color: #c5c5c5 !important;
 }

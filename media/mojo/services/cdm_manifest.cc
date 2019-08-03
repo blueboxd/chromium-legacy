@@ -5,8 +5,8 @@
 #include "media/mojo/services/cdm_manifest.h"
 
 #include "base/no_destructor.h"
-#include "media/mojo/interfaces/cdm_service.mojom.h"
-#include "media/mojo/interfaces/constants.mojom.h"
+#include "media/mojo/mojom/cdm_service.mojom.h"
+#include "media/mojo/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace media {

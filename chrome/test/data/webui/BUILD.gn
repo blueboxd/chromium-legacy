@@ -11,6 +11,7 @@ js2gtest("interactive_ui_tests_js_webui") {
   sources = [
     "bookmarks/bookmarks_focus_test.js",
     "cr_elements/cr_elements_focus_test.js",
+    "cr_elements/cr_elements_v3_focus_test.js",
     "cr_focus_row_behavior_interactive_test.js",
     "extensions/cr_extensions_interactive_ui_tests.js",
     "history/history_focus_test.js",
@@ -50,6 +51,7 @@ js2gtest("browser_tests_js_webui") {
     "chrome_send_browsertest.js",
     "cr_components/cr_components_browsertest.js",
     "cr_elements/cr_elements_browsertest.js",
+    "cr_elements/cr_elements_v3_browsertest.js",
     "find_shortcut_behavior_browsertest.js",
     "history/history_browsertest.js",
     "js/webui_resource_module_async_browsertest.js",

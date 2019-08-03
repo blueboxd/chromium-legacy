@@ -25,10 +25,10 @@
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/proxy_server.h"
-#include "net/cert/cert_database.h"
 #include "net/log/net_log_source.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/socket/connect_job.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/spdy/http2_push_promise_index.h"
 #include "net/spdy/server_push_delegate.h"
 #include "net/spdy/spdy_session_key.h"
@@ -56,8 +56,7 @@ class TransportSecurityState;
 // This is a very simple pool for open SpdySessions.
 class NET_EXPORT SpdySessionPool
     : public NetworkChangeNotifier::IPAddressObserver,
-      public SSLConfigService::Observer,
-      public CertDatabase::Observer {
+      public SSLClientContext::Observer {
  public:
   typedef base::TimeTicks (*TimeFunc)(void);
 
@@ -134,7 +133,7 @@ class NET_EXPORT SpdySessionPool
   };
 
   SpdySessionPool(HostResolver* host_resolver,
-                  SSLConfigService* ssl_config_service,
+                  SSLClientContext* ssl_client_context,
                   HttpServerProperties* http_server_properties,
                   TransportSecurityState* transport_security_state,
                   const quic::ParsedQuicVersionVector& quic_supported_versions,
@@ -289,16 +288,10 @@ class NET_EXPORT SpdySessionPool
   // or error out due to the IP address change.
   void OnIPAddressChanged() override;
 
-  // SSLConfigService::Observer methods:
+  // SSLClientContext::Observer methods:
 
   // We perform the same flushing as described above when SSL settings change.
-  void OnSSLConfigChanged() override;
-
-  // CertDatabase::Observer methods:
-
-  // We perform the same flushing as described above when certificate database
-  // is changed.
-  void OnCertDBChanged() override;
+  void OnSSLConfigChanged(bool is_cert_database_change) override;
 
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_dump_absolute_name) const;
@@ -414,7 +407,7 @@ class NET_EXPORT SpdySessionPool
   // The index of all unclaimed pushed streams of all SpdySessions in this pool.
   Http2PushPromiseIndex push_promise_index_;
 
-  SSLConfigService* const ssl_config_service_;
+  SSLClientContext* const ssl_client_context_;
   HostResolver* const resolver_;
 
   // Versions of QUIC which may be used.

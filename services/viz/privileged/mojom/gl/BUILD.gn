@@ -13,7 +13,7 @@ mojom("gl") {
 
   public_deps = [
     "//gpu/ipc/common:interfaces",
-    "//media/mojo/interfaces",
+    "//media/mojo/mojom",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojom",
     "//url/mojom:url_mojom_gurl",

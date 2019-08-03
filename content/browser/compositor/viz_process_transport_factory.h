@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
-#include "components/viz/service/main/viz_compositor_thread_runner.h"
+#include "components/viz/service/main/viz_compositor_thread_runner_impl.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "gpu/command_buffer/common/context_result.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -131,7 +131,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
 
   // Will start and run the VizCompositorThread for using an in-process display
   // compositor.
-  std::unique_ptr<viz::VizCompositorThreadRunner> viz_compositor_thread_;
+  std::unique_ptr<viz::VizCompositorThreadRunnerImpl> viz_compositor_thread_;
   ui::HostContextFactoryPrivate context_factory_private_;
 
   base::WeakPtrFactory<VizProcessTransportFactory> weak_ptr_factory_{this};

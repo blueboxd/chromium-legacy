@@ -4,8 +4,8 @@
 
 import os
 
-from chrome_ent_test.ent_tests import ChromeEnterpriseTestCase
 from chrome_ent_test.infra.core import before_all, environment, test
+from infra import ChromeEnterpriseTestCase
 
 
 @environment(file="../policy_test.asset.textpb")

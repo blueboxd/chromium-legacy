@@ -55,8 +55,7 @@ MATCHER_P(IdIs, expected_id, "") {
 class AssistantNotificationControllerTest : public AshTestBase {
  protected:
   AssistantNotificationControllerTest()
-      : AshTestBase(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
+      : AshTestBase(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
   ~AssistantNotificationControllerTest() override = default;
 
   void SetUp() override {

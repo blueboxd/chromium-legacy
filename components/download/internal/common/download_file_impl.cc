@@ -564,9 +564,6 @@ void DownloadFileImpl::Resume() {
   DCHECK(is_paused_);
   is_paused_ = false;
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   for (auto& stream : source_streams_) {
     SourceStream* source_stream = stream.second.get();
     if (!source_stream->is_finished()) {
@@ -578,8 +575,7 @@ void DownloadFileImpl::Resume() {
 void DownloadFileImpl::StreamActive(SourceStream* source_stream,
                                     MojoResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      is_paused_)
+  if (is_paused_)
     return;
 
   base::TimeTicks start(base::TimeTicks::Now());

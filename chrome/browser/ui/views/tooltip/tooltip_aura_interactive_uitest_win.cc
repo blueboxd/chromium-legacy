@@ -29,7 +29,8 @@ class TooltipAuraUiaTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(TooltipAuraUiaTest, TooltipUiaEvents) {
+// Flakily tests: http://crbug.com/990214
+IN_PROC_BROWSER_TEST_F(TooltipAuraUiaTest, DISABLED_TooltipUiaEvents) {
   // Setup accessibility waiter
   HWND window_handle = GetDesktopWindow();
   UiaAccessibilityWaiterInfo opened_info = {

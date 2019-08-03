@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.autofill_assistant;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Base64;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -22,6 +24,8 @@ import java.util.Set;
  * A handler that provides Autofill Assistant actions for a specific activity.
  */
 class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandler {
+    private static final String TAG = "AutofillAssistant";
+
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
     private final ScrimView mScrimView;
@@ -36,8 +40,8 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
     }
 
     @Override
-    public void listActions(String userName, String experimentIds, Bundle arguments,
-            Callback<Set<String>> callback) {
+    public void listActions(String userName, String experimentIds, String scriptBundle,
+            Bundle arguments, Callback<Set<String>> callback) {
         if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
             callback.onResult(Collections.emptySet());
             return;
@@ -47,8 +51,16 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
             callback.onResult(Collections.emptySet());
             return;
         }
-
-        client.listDirectActions(userName, experimentIds, toArgumentMap(arguments), callback);
+        byte[] scriptBundleBytes = null;
+        if (!scriptBundle.isEmpty()) {
+            try {
+                scriptBundleBytes = Base64.decode(scriptBundle, Base64.DEFAULT);
+            } catch (IllegalArgumentException e) {
+                Log.v(TAG, "Invalid script_bundle parameter value: base64 decoding failed.");
+            }
+        }
+        client.listDirectActions(
+                userName, experimentIds, scriptBundleBytes, toArgumentMap(arguments), callback);
     }
 
     @Override

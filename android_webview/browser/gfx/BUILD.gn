@@ -44,12 +44,16 @@ source_set("gfx") {
     "render_thread_manager.h",
     "scoped_app_gl_state_restore.cc",
     "scoped_app_gl_state_restore.h",
+    "skia_output_surface_dependency_webview.cc",
+    "skia_output_surface_dependency_webview.h",
     "surfaces_instance.cc",
     "surfaces_instance.h",
     "task_forwarding_sequence.cc",
     "task_forwarding_sequence.h",
     "task_queue_web_view.cc",
     "task_queue_web_view.h",
+    "viz_compositor_thread_runner_webview.cc",
+    "viz_compositor_thread_runner_webview.h",
   ]
 
   deps = [
@@ -63,6 +67,7 @@ source_set("gfx") {
     "//gpu/skia_bindings",
     "//gpu/vulkan:vulkan",
     "//gpu/vulkan/init",
+    "//services/viz/privileged/mojom",
     "//services/viz/public/mojom",
     "//skia",
     "//ui/gfx",

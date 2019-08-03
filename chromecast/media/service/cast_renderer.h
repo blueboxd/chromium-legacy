@@ -15,7 +15,7 @@
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "media/base/renderer.h"
 #include "media/base/waiting.h"
-#include "media/mojo/interfaces/cast_application_media_info_manager.mojom.h"
+#include "media/mojo/mojom/cast_application_media_info_manager.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {

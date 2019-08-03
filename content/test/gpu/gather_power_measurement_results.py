@@ -235,7 +235,7 @@ def main():
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('-v', '--verbose', action='store_true', default=False,
                       help='Enable verbose output')
-  parser.add_argument('--bot', default='Win10 FYI Release (Intel HD 630)',
+  parser.add_argument('--bot', default='Win10 FYI x64 Release (Intel HD 630)',
                       help='Which bot to examine.')
   parser.add_argument('--last-build', type=int,
                       help='The last of a range of builds to fetch. If not '

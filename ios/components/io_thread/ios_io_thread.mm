@@ -51,7 +51,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
@@ -255,7 +255,8 @@ void IOSIOThread::Init() {
   globals_->ssl_config_service.reset(new net::SSLConfigServiceDefaults());
 
   CreateDefaultAuthHandlerFactory();
-  globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
+  globals_->http_server_properties =
+      std::make_unique<net::HttpServerProperties>();
   // In-memory cookie store.
   // TODO(crbug.com/801910): Hook up logging by passing in a non-null netlog.
   globals_->system_cookie_store.reset(

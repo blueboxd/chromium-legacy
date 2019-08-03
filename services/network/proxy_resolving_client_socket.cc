@@ -25,6 +25,7 @@
 #include "net/http/proxy_fallback.h"
 #include "net/log/net_log_source_type.h"
 #include "net/socket/socket_tag.h"
+#include "net/ssl/ssl_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace network {
@@ -32,12 +33,10 @@ namespace network {
 ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     net::HttpNetworkSession* network_session,
     const net::CommonConnectJobParams* common_connect_job_params,
-    const net::SSLConfig& ssl_config,
     const GURL& url,
     bool use_tls)
     : network_session_(network_session),
       common_connect_job_params_(common_connect_job_params),
-      ssl_config_(ssl_config),
       url_(url),
       use_tls_(use_tls),
       net_log_(net::NetLogWithSource::Make(network_session_->net_log(),
@@ -288,9 +287,10 @@ int ProxyResolvingClientSocket::DoInitConnection() {
   // the consumer.
   //
   // TODO(mmenke): Investigate that.
+  net::SSLConfig ssl_config;
   connect_job_ = net::ConnectJob::CreateConnectJob(
       use_tls_, net::HostPortPair::FromURL(url_), proxy_info_.proxy_server(),
-      proxy_annotation_tag, &ssl_config_, &ssl_config_, true /* force_tunnel */,
+      proxy_annotation_tag, &ssl_config, &ssl_config, true /* force_tunnel */,
       net::PRIVACY_MODE_DISABLED, net::OnHostResolutionCallback(),
       net::MAXIMUM_PRIORITY, net::SocketTag(), net::NetworkIsolationKey(),
       common_connect_job_params_, this);
@@ -352,10 +352,8 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
   if (!net::CanFalloverToNextProxy(proxy_info_.proxy_server(), error, &error))
     return error;
 
-  if (proxy_info_.is_https() && ssl_config_.send_client_cert) {
-    network_session_->ssl_client_auth_cache()->Remove(
-        proxy_info_.proxy_server().host_port_pair());
-  }
+  // TODO(davidben): When adding proxy client certificate support to this class,
+  // clear the SSLClientAuthCache entries on error.
 
   // There was nothing left to fall-back to, so fail the transaction
   // with the last connection error we got.

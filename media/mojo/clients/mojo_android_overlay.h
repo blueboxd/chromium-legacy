@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "media/base/android/android_overlay.h"
-#include "media/mojo/interfaces/android_overlay.mojom.h"
+#include "media/mojo/mojom/android_overlay.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {

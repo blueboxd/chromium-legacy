@@ -19,7 +19,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -256,14 +255,26 @@ views::View* CaptionContainerView::GetView() {
   return this;
 }
 
-gfx::Rect CaptionContainerView::GetHighlightBounds() {
+gfx::Rect CaptionContainerView::GetHighlightBoundsInScreen() {
   // Use the target bounds instead of |GetBoundsInScreen()| because |this| may
-  // be animating.
+  // be animating. However, the origin will be incorrect because the windows are
+  // always positioned above and left of the parents origin, then translated. To
+  // get the proper origin we use |GetBoundsInScreen()| which takes into account
+  // the transform (but returns the wrong height and width).
   auto* window = GetWidget()->GetNativeWindow();
   gfx::Rect target_bounds = window->GetTargetBounds();
-  target_bounds.set_origin(GetBoundsInScreen().origin());
-  ::wm::ConvertRectFromScreen(window->GetRootWindow(), &target_bounds);
+  target_bounds.set_origin(window->GetBoundsInScreen().origin());
   return target_bounds;
+}
+
+void CaptionContainerView::MaybeActivateHighlightedView() {
+  if (event_delegate_)
+    event_delegate_->OnHighlightedViewActivated();
+}
+
+void CaptionContainerView::MaybeCloseHighlightedView() {
+  if (event_delegate_)
+    event_delegate_->OnHighlightedViewClosed();
 }
 
 void CaptionContainerView::Layout() {

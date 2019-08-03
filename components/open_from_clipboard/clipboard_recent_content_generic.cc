@@ -65,7 +65,19 @@ ClipboardRecentContentGeneric::GetRecentURLFromClipboard() {
 
 base::Optional<base::string16>
 ClipboardRecentContentGeneric::GetRecentTextFromClipboard() {
-  return base::nullopt;
+  if (GetClipboardContentAge() > MaximumAgeOfClipboard())
+    return base::nullopt;
+
+  base::string16 text_from_clipboard;
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
+                                                 &text_from_clipboard);
+  base::TrimWhitespace(text_from_clipboard, base::TrimPositions::TRIM_ALL,
+                       &text_from_clipboard);
+  if (text_from_clipboard.empty()) {
+    return base::nullopt;
+  }
+
+  return text_from_clipboard;
 }
 
 base::Optional<gfx::Image>

@@ -393,20 +393,18 @@ bool ExtensionBrowserTest::CreateServiceWorkerBasedExtension(
 const Extension* ExtensionBrowserTest::LoadExtensionAsComponentWithManifest(
     const base::FilePath& path,
     const base::FilePath::CharType* manifest_relative_path) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile())->extension_service();
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::string manifest;
   if (!base::ReadFileToString(path.Append(manifest_relative_path), &manifest)) {
     return NULL;
   }
 
-  service->component_loader()->set_ignore_whitelist_for_testing(true);
-  std::string extension_id = service->component_loader()->Add(manifest, path);
+  extension_service()->component_loader()->set_ignore_whitelist_for_testing(
+      true);
+  std::string extension_id =
+      extension_service()->component_loader()->Add(manifest, path);
   const Extension* extension =
-      registry->enabled_extensions().GetByID(extension_id);
+      extension_registry()->enabled_extensions().GetByID(extension_id);
   if (!extension)
     return NULL;
   observer_->set_last_loaded_extension_id(extension->id());
@@ -569,9 +567,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     Extension::InitFromValueFlags creation_flags,
     bool install_immediately,
     bool grant_permissions) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile())->extension_service();
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  ExtensionRegistry* registry = extension_registry();
   size_t num_before = registry->enabled_extensions().size();
 
   {
@@ -609,7 +605,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
          browser->tab_strip_model()->GetActiveWebContents()));
     }
     scoped_refptr<CrxInstaller> installer(
-        CrxInstaller::Create(service, std::move(install_ui)));
+        CrxInstaller::Create(extension_service(), std::move(install_ui)));
     installer->set_expected_id(id);
     installer->set_creation_flags(creation_flags);
     installer->set_install_source(install_source);
@@ -650,16 +646,16 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
 
   if (!observer_->WaitForExtensionViewsToLoad())
     return NULL;
-  return service->GetExtensionById(last_loaded_extension_id(), false);
+  return registry->GetExtensionById(last_loaded_extension_id(),
+                                    ExtensionRegistry::ENABLED);
 }
 
 void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  const Extension* extension = registry->GetInstalledExtension(extension_id);
+  const Extension* extension =
+      extension_registry()->GetInstalledExtension(extension_id);
   ASSERT_TRUE(extension);
-  TestExtensionRegistryObserver observer(registry, extension_id);
-  ExtensionSystem::Get(profile())->extension_service()->ReloadExtension(
-      extension_id);
+  TestExtensionRegistryObserver observer(extension_registry(), extension_id);
+  extension_service()->ReloadExtension(extension_id);
   observer.WaitForExtensionLoaded();
 
   // We need to let other ExtensionRegistryObservers handle the extension load
@@ -671,27 +667,22 @@ void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
 }
 
 void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile())->extension_service();
-  service->UnloadExtension(extension_id, UnloadedExtensionReason::DISABLE);
+  extension_service()->UnloadExtension(extension_id,
+                                       UnloadedExtensionReason::DISABLE);
 }
 
 void ExtensionBrowserTest::UninstallExtension(const std::string& extension_id) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile())->extension_service();
-  service->UninstallExtension(extension_id, UNINSTALL_REASON_FOR_TESTING, NULL);
+  extension_service()->UninstallExtension(
+      extension_id, UNINSTALL_REASON_FOR_TESTING, nullptr);
 }
 
 void ExtensionBrowserTest::DisableExtension(const std::string& extension_id) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile())->extension_service();
-  service->DisableExtension(extension_id, disable_reason::DISABLE_USER_ACTION);
+  extension_service()->DisableExtension(extension_id,
+                                        disable_reason::DISABLE_USER_ACTION);
 }
 
 void ExtensionBrowserTest::EnableExtension(const std::string& extension_id) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile())->extension_service();
-  service->EnableExtension(extension_id);
+  extension_service()->EnableExtension(extension_id);
 }
 
 void ExtensionBrowserTest::OpenWindow(content::WebContents* contents,

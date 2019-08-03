@@ -25,7 +25,7 @@ class MemoryPurgeManagerTest : public testing::Test {
   MemoryPurgeManagerTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         memory_purge_manager_(
             scoped_task_environment_.GetMainThreadTaskRunner()),
         observed_memory_pressure_(false) {}

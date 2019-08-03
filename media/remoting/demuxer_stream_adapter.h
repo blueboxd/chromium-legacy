@@ -18,7 +18,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder_config.h"
 #include "media/mojo/common/mojo_data_pipe_read_write.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 #include "media/remoting/rpc_broker.h"
 #include "media/remoting/triggers.h"
 #include "mojo/public/cpp/system/data_pipe.h"

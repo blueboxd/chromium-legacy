@@ -9,7 +9,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/test/gtest_util.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -58,7 +58,7 @@ class PropertiesBasedQuicServerInfoTest : public ::testing::Test {
     EXPECT_EQ(kCertA, state.certs[0]);
   }
 
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
   quic::QuicServerId server_id_;
   PropertiesBasedQuicServerInfo server_info_;
 };

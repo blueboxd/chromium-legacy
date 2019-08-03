@@ -27,7 +27,7 @@ _typemap_imports = [
   "//ipc/typemaps.gni",
   "//media/capture/mojom/typemaps.gni",
   "//media/learning/mojo/public/cpp/typemaps.gni",
-  "//media/mojo/interfaces/typemaps.gni",
+  "//media/mojo/mojom/typemaps.gni",
   "//mojo/public/cpp/base/typemaps.gni",
   "//mojo/public/cpp/bindings/tests/chromium_typemaps.gni",
   "//sandbox/mac/mojom/typemaps.gni",

@@ -26,7 +26,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/request_priority.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -163,7 +162,6 @@ class ResourceSchedulerTest : public testing::Test {
  protected:
   ResourceSchedulerTest() : field_trial_list_(nullptr) {
     InitializeScheduler();
-    context_.set_http_server_properties(&http_server_properties_);
     context_.set_network_quality_estimator(&network_quality_estimator_);
   }
 
@@ -499,7 +497,6 @@ class ResourceSchedulerTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<ResourceScheduler> scheduler_;
-  net::HttpServerPropertiesImpl http_server_properties_;
   net::TestNetworkQualityEstimator network_quality_estimator_;
   net::TestURLRequestContext context_;
   ResourceSchedulerParamsManager resource_scheduler_params_manager_;
@@ -548,7 +545,7 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
 
 TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenNotDelayable) {
   InitializeScheduler();
-  http_server_properties_.SetSupportsSpdy(
+  context_.http_server_properties()->SetSupportsSpdy(
       url::SchemeHostPort("https", "spdyhost", 443), true);
 
   // Add more than max-per-host low-priority requests.
@@ -1042,7 +1039,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   }
   std::unique_ptr<TestRequest> low1(NewRequest("http://host/low", net::LOWEST));
   EXPECT_FALSE(low1->started());
-  http_server_properties_.SetSupportsSpdy(
+  context_.http_server_properties()->SetSupportsSpdy(
       url::SchemeHostPort("http", "spdyhost1", 8080), true);
   low1_spdy.reset();
   base::RunLoop().RunUntilIdle();
@@ -1054,7 +1051,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
       NewRequest("http://spdyhost2:8080/low", net::IDLE));
   // Reprioritize a request after we learn the server supports SPDY.
   EXPECT_TRUE(low2_spdy->started());
-  http_server_properties_.SetSupportsSpdy(
+  context_.http_server_properties()->SetSupportsSpdy(
       url::SchemeHostPort("http", "spdyhost2", 8080), true);
   ChangeRequestPriority(low2_spdy.get(), net::LOWEST);
   base::RunLoop().RunUntilIdle();
@@ -1087,7 +1084,7 @@ TEST_F(ResourceSchedulerTest,
   }
   std::unique_ptr<TestRequest> low1(NewRequest("http://host/low", net::LOWEST));
   EXPECT_FALSE(low1->started());
-  http_server_properties_.SetSupportsSpdy(
+  context_.http_server_properties()->SetSupportsSpdy(
       url::SchemeHostPort("http", "spdyhost1", 8080), true);
   low1_spdy.reset();
   base::RunLoop().RunUntilIdle();
@@ -1099,7 +1096,7 @@ TEST_F(ResourceSchedulerTest,
       NewRequest("http://spdyhost2:8080/low", net::IDLE));
   // Reprioritize a request after we learn the server supports SPDY.
   EXPECT_TRUE(low2_spdy->started());
-  http_server_properties_.SetSupportsSpdy(
+  context_.http_server_properties()->SetSupportsSpdy(
       url::SchemeHostPort("http", "spdyhost2", 8080), true);
   ChangeRequestPriority(low2_spdy.get(), net::LOWEST);
   base::RunLoop().RunUntilIdle();
@@ -1660,7 +1657,7 @@ TEST_F(ResourceSchedulerTest,
       net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   InitializeScheduler();
-  http_server_properties_.SetSupportsSpdy(
+  context_.http_server_properties()->SetSupportsSpdy(
       url::SchemeHostPort("https", "spdyhost", 443), true);
 
   // Should be in sync with resource_scheduler.cc for effective connection type
@@ -1700,7 +1697,7 @@ TEST_F(ResourceSchedulerTest,
       net::EFFECTIVE_CONNECTION_TYPE_4G);
 
   InitializeScheduler();
-  http_server_properties_.SetSupportsSpdy(
+  context_.http_server_properties()->SetSupportsSpdy(
       url::SchemeHostPort("https", "spdyhost", 443), true);
 
   // Should be in sync with resource_scheduler.cc for effective connection type

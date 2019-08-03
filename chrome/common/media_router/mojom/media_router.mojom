@@ -7,7 +7,7 @@ module media_router.mojom;
 import "chrome/common/media_router/mojom/media_controller.mojom";
 import "chrome/common/media_router/mojom/media_status.mojom";
 import "components/mirroring/mojom/mirroring_service_host.mojom";
-import "media/mojo/interfaces/mirror_service_remoting.mojom";
+import "media/mojo/mojom/mirror_service_remoting.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/ip_address.mojom";
 import "services/network/public/mojom/ip_endpoint.mojom";

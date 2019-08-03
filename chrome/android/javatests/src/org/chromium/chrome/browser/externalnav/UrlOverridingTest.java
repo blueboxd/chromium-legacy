@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.SingleTabModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -92,10 +93,13 @@ public class UrlOverridingTest {
     private static class TestTabObserver extends EmptyTabObserver {
         private final CallbackHelper mFinishCallback;
         private final CallbackHelper mFailCallback;
+        private final CallbackHelper mDestroyedCallback;
 
-        TestTabObserver(final CallbackHelper finishCallback, final CallbackHelper failCallback) {
+        TestTabObserver(final CallbackHelper finishCallback, final CallbackHelper failCallback,
+                final CallbackHelper destroyedCallback) {
             mFinishCallback = finishCallback;
             mFailCallback = failCallback;
+            mDestroyedCallback = destroyedCallback;
         }
 
         @Override
@@ -112,7 +116,7 @@ public class UrlOverridingTest {
         @Override
         public void onDestroyed(Tab tab) {
             // A new tab is destroyed when loading is overridden while opening it.
-            mFailCallback.notifyCalled();
+            mDestroyedCallback.notifyCalled();
         }
     }
 
@@ -137,14 +141,16 @@ public class UrlOverridingTest {
 
     private void loadUrlAndWaitForIntentUrl(final String url, boolean needClick,
             boolean shouldLaunchExternalIntent) throws InterruptedException {
-        loadUrlAndWaitForIntentUrl(url, needClick, 0, shouldLaunchExternalIntent, url);
+        loadUrlAndWaitForIntentUrl(url, needClick, false, shouldLaunchExternalIntent, url, true);
     }
 
     private void loadUrlAndWaitForIntentUrl(final String url, boolean needClick,
-            int expectedNewTabCount, final boolean shouldLaunchExternalIntent,
-            final String expectedFinalUrl) throws InterruptedException {
+            boolean createsNewTab, final boolean shouldLaunchExternalIntent,
+            final String expectedFinalUrl, final boolean shouldFailNavigation)
+            throws InterruptedException {
         final CallbackHelper finishCallback = new CallbackHelper();
         final CallbackHelper failCallback = new CallbackHelper();
+        final CallbackHelper destroyedCallback = new CallbackHelper();
         final CallbackHelper newTabCallback = new CallbackHelper();
 
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
@@ -153,14 +159,15 @@ public class UrlOverridingTest {
                 new InterceptNavigationDelegateImpl[1];
         latestTabHolder[0] = tab;
         latestDelegateHolder[0] = getInterceptNavigationDelegate(tab);
-        tab.addObserver(new TestTabObserver(finishCallback, failCallback));
-        if (expectedNewTabCount > 0) {
+        tab.addObserver(new TestTabObserver(finishCallback, failCallback, destroyedCallback));
+        if (createsNewTab) {
             mActivityTestRule.getActivity().getTabModelSelector().addObserver(
                     new EmptyTabModelSelectorObserver() {
                         @Override
                         public void onNewTabCreated(Tab newTab) {
                             newTabCallback.notifyCalled();
-                            newTab.addObserver(new TestTabObserver(finishCallback, failCallback));
+                            newTab.addObserver(new TestTabObserver(
+                                    finishCallback, failCallback, destroyedCallback));
                             latestTabHolder[0] = newTab;
                             latestDelegateHolder[0] = getInterceptNavigationDelegate(newTab);
                         }
@@ -190,11 +197,18 @@ public class UrlOverridingTest {
             TouchCommon.singleClickView(tab.getView());
         }
 
-        if (failCallback.getCallCount() == 0) {
+        if (shouldFailNavigation) {
             try {
                 failCallback.waitForCallback(0, 1, 20, TimeUnit.SECONDS);
             } catch (TimeoutException ex) {
                 Assert.fail("Haven't received navigation failure of intents.");
+                return;
+            }
+        } else if (createsNewTab) {
+            try {
+                destroyedCallback.waitForCallback(0, 1, 20, TimeUnit.SECONDS);
+            } catch (TimeoutException ex) {
+                Assert.fail("Intercepted new tab wasn't destroyed.");
                 return;
             }
         }
@@ -213,7 +227,7 @@ public class UrlOverridingTest {
             }
         }
 
-        Assert.assertEquals(expectedNewTabCount, newTabCallback.getCallCount());
+        Assert.assertEquals(createsNewTab ? 1 : 0, newTabCallback.getCallCount());
         // For sub frames, the |loadFailCallback| run through different threads
         // from the ExternalNavigationHandler. As a result, there is no guarantee
         // when url override result would come.
@@ -247,8 +261,8 @@ public class UrlOverridingTest {
                     }
                 }));
         Assert.assertEquals(1 + (hasFallbackUrl ? 1 : 0), finishCallback.getCallCount());
-        // failCallback can be called second time when the current tab is destroyed.
-        Assert.assertTrue(failCallback.getCallCount() >= 1);
+
+        Assert.assertEquals(failCallback.getCallCount(), shouldFailNavigation ? 1 : 0);
     }
 
     private static InterceptNavigationDelegateImpl getInterceptNavigationDelegate(Tab tab) {
@@ -332,7 +346,7 @@ public class UrlOverridingTest {
                 + ":"
                 + Base64.encodeToString(
                           ApiCompatibilityUtils.getBytesUtf8(fallbackUrl), Base64.URL_SAFE));
-        loadUrlAndWaitForIntentUrl(originalUrl, true, 0, false, fallbackUrl);
+        loadUrlAndWaitForIntentUrl(originalUrl, true, false, false, fallbackUrl, true);
     }
 
     @Test
@@ -368,8 +382,10 @@ public class UrlOverridingTest {
     @SmallTest
     @RetryOnFailure
     public void testOpenWindowFromUserGesture() throws InterruptedException {
-        loadUrlAndWaitForIntentUrl(
-                mTestServer.getURL(OPEN_WINDOW_FROM_USER_GESTURE_PAGE), true, 1, true, null);
+        boolean opensNewTab =
+                !(mActivityTestRule.getActivity().getCurrentTabModel() instanceof SingleTabModel);
+        loadUrlAndWaitForIntentUrl(mTestServer.getURL(OPEN_WINDOW_FROM_USER_GESTURE_PAGE), true,
+                opensNewTab, true, null, false);
     }
 
     @Test

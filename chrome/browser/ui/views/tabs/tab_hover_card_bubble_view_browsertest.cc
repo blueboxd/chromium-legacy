@@ -368,8 +368,14 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 
 // Verify counter for tab hover cards seen ratio metric increases as hover
 // cards are shown and is reset when a tab is selected.
+// Fails on Windows, see crbug.com/990210.
+#if defined(OS_WIN)
+#define MAYBE_HoverCardsSeenRatioMetric DISABLED_HoverCardsSeenRatioMetric
+#else
+#define MAYBE_HoverCardsSeenRatioMetric HoverCardsSeenRatioMetric
+#endif
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
-                       HoverCardsSeenRatioMetric) {
+                       MAYBE_HoverCardsSeenRatioMetric) {
   TabStrip* tab_strip =
       BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
   tab_strip->AddTabAt(1, TabRendererData(), false);

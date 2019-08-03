@@ -12,8 +12,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "net/base/net_export.h"
+#include "net/cert/cert_database.h"
 #include "net/socket/ssl_socket.h"
+#include "net/ssl/ssl_config_service.h"
 
 namespace net {
 
@@ -78,19 +81,33 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
 };
 
 // Shared state and configuration across multiple SSLClientSockets.
-class NET_EXPORT SSLClientContext {
+class NET_EXPORT SSLClientContext : public SSLConfigService::Observer,
+                                    public CertDatabase::Observer {
  public:
+  class NET_EXPORT Observer : public base::CheckedObserver {
+   public:
+    // Called when SSL configuration for all hosts changed. Newly-created
+    // SSLClientSockets will pick up the new configuration.
+    virtual void OnSSLConfigChanged(bool is_cert_database_change) = 0;
+  };
+
   // Creates a new SSLClientContext with the specified parameters. The
   // SSLClientContext may not outlive the input parameters.
   //
-  // |ssl_client_session_cache| may be null to disable session caching.
-  SSLClientContext(CertVerifier* cert_verifier,
+  // |ssl_config_service| may be null to always use the default
+  // SSLContextConfig. |ssl_client_session_cache| may be null to disable session
+  // caching.
+  SSLClientContext(SSLConfigService* ssl_config_service,
+                   CertVerifier* cert_verifier,
                    TransportSecurityState* transport_security_state,
                    CTVerifier* cert_transparency_verifier,
                    CTPolicyEnforcer* ct_policy_enforcer,
                    SSLClientSessionCache* ssl_client_session_cache);
-  ~SSLClientContext();
+  ~SSLClientContext() override;
 
+  const SSLContextConfig& config() { return config_; }
+
+  SSLConfigService* ssl_config_service() { return ssl_config_service_; }
   CertVerifier* cert_verifier() { return cert_verifier_; }
   TransportSecurityState* transport_security_state() {
     return transport_security_state_;
@@ -110,12 +127,32 @@ class NET_EXPORT SSLClientContext {
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config);
 
+  // Add an observer to be notified when configuration has changed.
+  // RemoveObserver() must be called before |observer| is destroyed.
+  void AddObserver(Observer* observer);
+
+  // Remove an observer added with AddObserver().
+  void RemoveObserver(Observer* observer);
+
+  // SSLConfigService::Observer:
+  void OnSSLContextConfigChanged() override;
+
+  // CertDatabase::Observer:
+  void OnCertDBChanged() override;
+
  private:
+  void NotifySSLConfigChanged(bool is_cert_database_change);
+
+  SSLContextConfig config_;
+
+  SSLConfigService* ssl_config_service_;
   CertVerifier* cert_verifier_;
   TransportSecurityState* transport_security_state_;
   CTVerifier* cert_transparency_verifier_;
   CTPolicyEnforcer* ct_policy_enforcer_;
   SSLClientSessionCache* ssl_client_session_cache_;
+
+  base::ObserverList<Observer, true /* check_empty */> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientContext);
 };

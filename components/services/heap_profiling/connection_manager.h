@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "components/services/heap_profiling/allocation.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace heap_profiling {
@@ -56,7 +57,7 @@ class ConnectionManager {
                                VmRegions vm_regions);
 
   void OnNewConnection(base::ProcessId pid,
-                       mojom::ProfilingClientPtr client,
+                       mojo::PendingRemote<mojom::ProfilingClient> client,
                        mojom::ProcessType process_type,
                        mojom::ProfilingParamsPtr params);
 

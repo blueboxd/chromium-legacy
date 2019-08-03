@@ -37,7 +37,6 @@ class URLLoaderThrottle;
 namespace content {
 
 class BrowserContext;
-class ResourceContext;
 class PrefetchedSignedExchangeCacheAdapter;
 class SignedExchangePrefetchHandler;
 class SignedExchangePrefetchMetricRecorder;
@@ -50,11 +49,11 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;
 
-  // |url_loader_throttles_getter| and |resource_context| may be used when
-  // a prefetch handler needs to additionally create a request (e.g. for
-  // fetching certificate if the prefetch was for a signed exchange).
-  // |frame_tree_node_id_getter| is called only on UI thread when NetworkService
-  // is not enabled, but can be also called on IO thread otherwise.
+  // |url_loader_throttles_getter| may be used when a prefetch handler needs to
+  // additionally create a request (e.g. for fetching certificate if the
+  // prefetch was for a signed exchange).  |frame_tree_node_id_getter| is called
+  // only on UI thread when NetworkService is not enabled, but can be also
+  // called on IO thread otherwise.
   PrefetchURLLoader(
       int32_t routing_id,
       int32_t request_id,
@@ -66,7 +65,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       BrowserContext* browser_context,
-      ResourceContext* resource_context,
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
           signed_exchange_prefetch_metric_recorder,
       scoped_refptr<PrefetchedSignedExchangeCache>
@@ -131,7 +129,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   BrowserContext* browser_context_;
-  ResourceContext* resource_context_;
 
   std::unique_ptr<mojo::DataPipeDrainer> pipe_drainer_;
 

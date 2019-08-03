@@ -14,6 +14,7 @@
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "net/http/http_server_properties.h"
 #include "net/nqe/network_quality_estimator.h"
 
 namespace {

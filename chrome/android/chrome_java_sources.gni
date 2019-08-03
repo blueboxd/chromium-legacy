@@ -876,7 +876,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java",
   "java/src/org/chromium/chrome/browser/metrics/UmaUtils.java",
   "java/src/org/chromium/chrome/browser/metrics/VariationsSession.java",
-  "java/src/org/chromium/chrome/browser/metrics/WebappSplashUmaCache.java",
   "java/src/org/chromium/chrome/browser/metrics/WebApkSplashscreenMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/WebApkUma.java",
   "java/src/org/chromium/chrome/browser/modaldialog/AppModalPresenter.java",

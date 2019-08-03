@@ -18,7 +18,7 @@
 #include "media/base/video_renderer_sink.h"
 #include "media/mojo/clients/mojo_renderer.h"
 #include "media/mojo/clients/mojo_renderer_wrapper.h"
-#include "media/mojo/interfaces/renderer_extensions.mojom.h"
+#include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {

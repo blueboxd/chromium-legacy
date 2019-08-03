@@ -74,7 +74,7 @@ class DeviceNativePrintersExternalDataHandlerTest : public testing::Test {
         std::make_unique<DeviceNativePrintersExternalDataHandler>(
             &policy_service_);
     external_printers_ =
-        chromeos::BulkPrintersCalculatorFactory::Get()->GetForDevice();
+        chromeos::BulkPrintersCalculatorFactory::Get()->GetForDevice(true);
     external_printers_->SetAccessMode(
         chromeos::BulkPrintersCalculator::ALL_ACCESS);
   }

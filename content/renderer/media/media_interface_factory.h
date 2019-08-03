@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "media/mojo/buildflags.h"
-#include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "media/mojo/mojom/interface_factory.mojom.h"
 #include "url/gurl.h"
 
 namespace service_manager {

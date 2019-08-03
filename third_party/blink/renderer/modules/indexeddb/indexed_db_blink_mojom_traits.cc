@@ -122,7 +122,7 @@ bool UnionTraits<
     case blink::mojom::IDBKeyDataDataView::Tag::BINARY: {
       ArrayDataView<uint8_t> bytes;
       data.GetBinaryDataView(&bytes);
-      *out = blink::IDBKey::CreateBinary(blink::SharedBuffer::Create(
+      *out = blink::IDBKey::CreateBinary(SharedBuffer::Create(
           reinterpret_cast<const char*>(bytes.data()), bytes.size()));
       return true;
     }
@@ -229,11 +229,11 @@ bool StructTraits<blink::mojom::IDBValueDataView,
 
   if (value_bits.IsEmpty()) {
     *out = std::make_unique<blink::IDBValue>(
-        scoped_refptr<blink::SharedBuffer>(), Vector<blink::WebBlobInfo>());
+        scoped_refptr<SharedBuffer>(), Vector<blink::WebBlobInfo>());
     return true;
   }
 
-  scoped_refptr<blink::SharedBuffer> value_buffer = blink::SharedBuffer::Create(
+  scoped_refptr<SharedBuffer> value_buffer = SharedBuffer::Create(
       reinterpret_cast<const char*>(value_bits.data()), value_bits.size());
 
   Vector<blink::mojom::blink::IDBBlobInfoPtr> blob_or_file_info;

@@ -30,7 +30,7 @@
 
     </org.chromium.chrome.browser.download.home.toolbar.DownloadHomeToolbar>
 
-    <org.chromium.chrome.lib.browser.widget.FadingShadowView
+    <org.chromium.chrome.browser.ui.widget.FadingShadowView
         android:id="@+id/shadow"
         android:layout_width="match_parent"
         android:layout_height="@dimen/action_bar_shadow_height"

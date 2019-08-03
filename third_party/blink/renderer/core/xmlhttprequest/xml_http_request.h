@@ -61,7 +61,6 @@ class ExceptionState;
 class ExecutionContext;
 class FormData;
 class ScriptState;
-class SharedBuffer;
 class TextResourceDecoder;
 class ThreadableLoader;
 class URLSearchParams;

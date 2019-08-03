@@ -8,7 +8,7 @@
 #include <string>
 
 #include "media/audio/audio_logging.h"
-#include "media/mojo/interfaces/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {

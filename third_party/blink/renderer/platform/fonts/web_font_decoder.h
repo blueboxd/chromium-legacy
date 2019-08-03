@@ -39,8 +39,6 @@ class SkTypeface;
 
 namespace blink {
 
-class SharedBuffer;
-
 class WebFontDecoder final {
   STACK_ALLOCATED();
 

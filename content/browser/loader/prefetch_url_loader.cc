@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache_adapter.h"
 #include "content/browser/web_package/signed_exchange_prefetch_handler.h"
@@ -37,7 +36,6 @@ PrefetchURLLoader::PrefetchURLLoader(
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     BrowserContext* browser_context,
-    ResourceContext* resource_context,
     scoped_refptr<SignedExchangePrefetchMetricRecorder>
         signed_exchange_prefetch_metric_recorder,
     scoped_refptr<PrefetchedSignedExchangeCache>
@@ -51,7 +49,6 @@ PrefetchURLLoader::PrefetchURLLoader(
       forwarding_client_(std::move(client)),
       url_loader_throttles_getter_(url_loader_throttles_getter),
       browser_context_(browser_context),
-      resource_context_(resource_context),
       signed_exchange_prefetch_metric_recorder_(
           std::move(signed_exchange_prefetch_metric_recorder)),
       accept_langs_(accept_langs) {
@@ -64,19 +61,10 @@ PrefetchURLLoader::PrefetchURLLoader(
         network::kAcceptHeader, kSignedExchangeEnabledAcceptHeaderForPrefetch);
     if (prefetched_signed_exchange_cache &&
         resource_request.is_signed_exchange_prefetch_cache_enabled) {
-      BrowserContext::BlobContextGetter getter;
-      if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-        getter = BrowserContext::GetBlobStorageContext(browser_context_);
-      } else {
-        getter = base::BindRepeating(
-            [](base::WeakPtr<storage::BlobStorageContext> context) {
-              return context;
-            },
-            std::move(blob_storage_context));
-      }
       prefetched_signed_exchange_cache_adapter_ =
           std::make_unique<PrefetchedSignedExchangeCacheAdapter>(
-              std::move(prefetched_signed_exchange_cache), std::move(getter),
+              std::move(prefetched_signed_exchange_cache),
+              BrowserContext::GetBlobStorageContext(browser_context_),
               resource_request.url, this);
     }
   }
@@ -255,12 +243,8 @@ void PrefetchURLLoader::OnNetworkConnectionError() {
 }
 
 bool PrefetchURLLoader::IsSignedExchangeHandlingEnabled() {
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    return signed_exchange_utils::IsSignedExchangeHandlingEnabled(
-        browser_context_);
-  }
-  return signed_exchange_utils::IsSignedExchangeHandlingEnabledOnIO(
-      resource_context_);
+  return signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+      browser_context_);
 }
 
 }  // namespace content

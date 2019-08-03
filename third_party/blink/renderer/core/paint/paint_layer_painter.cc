@@ -783,6 +783,10 @@ void PaintLayerPainter::PaintFragmentWithPhase(
                        fragment.fragment_data
                            ? fragment.fragment_data->LogicalTopInFlowThread()
                            : LayoutUnit());
+  if (UNLIKELY(paint_layer_.GetLayoutObject().PaintBlockedByDisplayLock(
+          DisplayLockContext::kChildren))) {
+    paint_info.SetDescendantPaintingBlocked(true);
+  }
   paint_layer_.GetLayoutObject().Paint(paint_info);
 }
 

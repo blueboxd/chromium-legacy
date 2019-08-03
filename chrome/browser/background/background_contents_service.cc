@@ -474,14 +474,14 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
       prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
   if (!contents)
     return;
-  extensions::ExtensionService* extensions_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  DCHECK(extensions_service);
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  DCHECK(extension_registry);
   for (base::DictionaryValue::Iterator it(*contents); !it.IsAtEnd();
        it.Advance()) {
     // Check to make sure that the parent extension is still enabled.
-    const Extension* extension =
-        extensions_service->GetExtensionById(it.key(), false);
+    const Extension* extension = extension_registry->GetExtensionById(
+        it.key(), extensions::ExtensionRegistry::ENABLED);
     if (!extension) {
       // We should never reach here - it should not be possible for an app
       // to become uninstalled without the associated BackgroundContents being
@@ -523,9 +523,9 @@ void BackgroundContentsService::LoadBackgroundContentsForExtension(
     Profile* profile,
     const std::string& extension_id) {
   // First look if the manifest specifies a background page.
-  const Extension* extension = extensions::ExtensionSystem::Get(profile)
-                                   ->extension_service()
-                                   ->GetExtensionById(extension_id, false);
+  const Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::ENABLED);
   DCHECK(!extension || extension->is_hosted_app());
   if (extension && BackgroundInfo::HasBackgroundPage(extension)) {
     LoadBackgroundContents(profile, BackgroundInfo::GetBackgroundURL(extension),
@@ -742,24 +742,21 @@ void BackgroundContentsService::OnBackgroundContentsNavigated(
   // Do not register in the pref if the extension has a manifest-specified
   // background page.
   const std::string& appid = GetParentApplicationId(contents);
-  extensions::ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  // extension_service can be nullptr when running tests.
-  if (extension_service) {
-    const Extension* extension =
-        extension_service->GetExtensionById(appid, false);
-    if (extension && BackgroundInfo::HasBackgroundPage(extension))
-      return;
-  }
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  const Extension* extension = extension_registry->GetExtensionById(
+      appid, extensions::ExtensionRegistry::ENABLED);
+  if (extension && BackgroundInfo::HasBackgroundPage(extension))
+    return;
   RegisterBackgroundContents(contents);
 }
 
 void BackgroundContentsService::OnBackgroundContentsTerminated(
     BackgroundContents* contents) {
   HandleExtensionCrashed(
-      extensions::ExtensionSystem::Get(profile_)
-          ->extension_service()
-          ->GetExtensionById(GetParentApplicationId(contents), false));
+      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+          GetParentApplicationId(contents),
+          extensions::ExtensionRegistry::ENABLED));
 }
 
 void BackgroundContentsService::OnBackgroundContentsClosed(

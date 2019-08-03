@@ -15,6 +15,7 @@ namespace blink {
 
 class LayoutBox;
 class NGBaselineRequest;
+class NGBlockBreakToken;
 class NGBreakToken;
 class NGConstraintSpace;
 class NGBoxFragmentBuilder;
@@ -159,18 +160,18 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // After we run the layout algorithm, this function copies back the geometry
   // data to the layout box.
-  void CopyFragmentDataToLayoutBox(const NGConstraintSpace&,
-                                   const NGLayoutResult&);
+  void CopyFragmentDataToLayoutBox(
+      const NGConstraintSpace&,
+      const NGLayoutResult&,
+      const NGBlockBreakToken* previous_break_token);
   void CopyFragmentDataToLayoutBoxForInlineChildren(
       const NGPhysicalContainerFragment& container,
       LayoutUnit initial_container_width,
       bool initial_container_is_flipped,
       PhysicalOffset offset = {});
-  void PlaceChildrenInLayoutBox(const NGConstraintSpace&,
-                                const NGPhysicalBoxFragment&,
+  void PlaceChildrenInLayoutBox(const NGPhysicalBoxFragment&,
                                 const PhysicalOffset& offset_from_start);
-  void PlaceChildrenInFlowThread(const NGConstraintSpace&,
-                                 const NGPhysicalBoxFragment&);
+  void PlaceChildrenInFlowThread(const NGPhysicalBoxFragment&);
   void CopyChildFragmentPosition(
       const NGPhysicalFragment& fragment,
       const PhysicalOffset fragment_offset,

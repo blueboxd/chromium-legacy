@@ -380,7 +380,7 @@ jumbo_static_library("content_shell_lib") {
   }
   if (mojo_media_host == "browser") {
     deps += [
-      "//media/mojo/interfaces:constants",
+      "//media/mojo/mojom:constants",
       "//media/mojo/services",
     ]
   }

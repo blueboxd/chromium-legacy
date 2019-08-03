@@ -425,6 +425,7 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 
 void TabHoverCardBubbleView::FadeOutToHide() {
   delayed_show_timer_.Stop();
+  RegisterToThumbnailImageUpdates(nullptr);
   if (!widget_->IsVisible())
     return;
   slide_animation_delegate_->StopAnimation();
@@ -524,40 +525,56 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
 
   // If the preview image feature is not enabled, |preview_image_| will be null.
   if (preview_image_ && preview_image_->GetVisible()) {
-    // If there is no valid thumbnail data, blank out the preview, else wait for
-    // the image data to be decoded and update momentarily.
-    if (!tab->data().thumbnail.AsImageSkiaAsync(
-            base::BindOnce(&TabHoverCardBubbleView::UpdatePreviewImage,
-                           weak_factory_.GetWeakPtr()))) {
-      // Check the no-preview color and size to see if it needs to be
-      // regenerated. DPI or theme change can cause a regeneration.
-      const SkColor foreground_color = tab->GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND);
-
-      // Set the no-preview placeholder image. All sizes are in DIPs.
-      // gfx::CreateVectorIcon() caches its result so there's no need to store
-      // images here; if a particular size/color combination has already been
-      // requested it will be low-cost to request it again.
-      constexpr gfx::Size kNoPreviewImageSize{64, 64};
-      const gfx::ImageSkia no_preview_image = gfx::CreateVectorIcon(
-          kGlobeIcon, kNoPreviewImageSize.width(), foreground_color);
-      preview_image_->SetImage(no_preview_image);
-      preview_image_->SetImageSize(kNoPreviewImageSize);
-      preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
-
-      // Also possibly regenerate the background if it has changed.
-      const SkColor background_color = tab->GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND);
-      if (!preview_image_->background() ||
-          preview_image_->background()->get_color() != background_color) {
-        preview_image_->SetBackground(
-            views::CreateSolidBackground(background_color));
-      }
-    }
+    if (tab->data().thumbnail != thumbnail_image_)
+      ClearPreviewImage();
+    RegisterToThumbnailImageUpdates(tab->data().thumbnail);
   }
 }
 
-void TabHoverCardBubbleView::UpdatePreviewImage(gfx::ImageSkia preview_image) {
+void TabHoverCardBubbleView::RegisterToThumbnailImageUpdates(
+    scoped_refptr<ThumbnailImage> thumbnail_image) {
+  if (thumbnail_image_ == thumbnail_image)
+    return;
+  if (thumbnail_image_) {
+    thumbnail_observer_.Remove(thumbnail_image_.get());
+    thumbnail_image_.reset();
+  }
+  if (thumbnail_image) {
+    thumbnail_image_ = thumbnail_image;
+    thumbnail_observer_.Add(thumbnail_image_.get());
+    thumbnail_image->RequestThumbnailImage();
+  }
+}
+
+void TabHoverCardBubbleView::ClearPreviewImage() {
+  // Check the no-preview color and size to see if it needs to be
+  // regenerated. DPI or theme change can cause a regeneration.
+  const SkColor foreground_color = GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND);
+
+  // Set the no-preview placeholder image. All sizes are in DIPs.
+  // gfx::CreateVectorIcon() caches its result so there's no need to store
+  // images here; if a particular size/color combination has already been
+  // requested it will be low-cost to request it again.
+  constexpr gfx::Size kNoPreviewImageSize{64, 64};
+  const gfx::ImageSkia no_preview_image = gfx::CreateVectorIcon(
+      kGlobeIcon, kNoPreviewImageSize.width(), foreground_color);
+  preview_image_->SetImage(no_preview_image);
+  preview_image_->SetImageSize(kNoPreviewImageSize);
+  preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());
+
+  // Also possibly regenerate the background if it has changed.
+  const SkColor background_color = GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND);
+  if (!preview_image_->background() ||
+      preview_image_->background()->get_color() != background_color) {
+    preview_image_->SetBackground(
+        views::CreateSolidBackground(background_color));
+  }
+}
+
+void TabHoverCardBubbleView::OnThumbnailImageAvailable(
+    gfx::ImageSkia preview_image) {
   preview_image_->SetImage(preview_image);
   preview_image_->SetImageSize(GetTabHoverCardPreviewImageSize());
   preview_image_->SetPreferredSize(GetTabHoverCardPreviewImageSize());

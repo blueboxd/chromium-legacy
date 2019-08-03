@@ -195,8 +195,10 @@ TabletModeWindowState::TabletModeWindowState(aura::Window* window,
   state_type_on_attach_ =
       snap ? current_state_type_ : GetMaximizedOrCenteredWindowType(state);
   // TODO(oshima|sammiequon): consider SplitView scenario.
-  if (entering_tablet_mode)
-    set_enter_animation_type(IsTopWindow(window) ? DEFAULT : STEP_END);
+  WindowState::ScopedBoundsChangeAnimation bounds_animation(
+      window, entering_tablet_mode && !IsTopWindow(window)
+                  ? WindowState::BoundsChangeAnimationType::STEP_END
+                  : WindowState::BoundsChangeAnimationType::DEFAULT);
   old_state_.reset(
       state->SetStateObject(std::unique_ptr<State>(this)).release());
 }
@@ -211,17 +213,19 @@ void TabletModeWindowState::LeaveTabletMode(WindowState* window_state,
   // or the top window or a window showing in splitview before leaving tablet
   // mode, and the window has changed its state. Otherwise, restore its bounds
   // immediately.
-  EnterAnimationType animation_type =
+  WindowState::BoundsChangeAnimationType animation_type =
       was_in_overview || window_state->IsSnapped() ||
               IsTopWindow(window_state->window())
-          ? DEFAULT
-          : IMMEDIATE;
+          ? WindowState::BoundsChangeAnimationType::DEFAULT
+          : WindowState::BoundsChangeAnimationType::IMMEDIATE;
   if (old_state_->GetType() == window_state->GetStateType() &&
       !window_state->IsNormalStateType()) {
-    animation_type = IMMEDIATE;
+    animation_type = WindowState::BoundsChangeAnimationType::IMMEDIATE;
   }
-  old_state_->set_enter_animation_type(animation_type);
+
   // Note: When we return we will destroy ourselves with the |our_reference|.
+  WindowState::ScopedBoundsChangeAnimation bounds_animation(
+      window_state->window(), animation_type);
   std::unique_ptr<WindowState::State> our_reference =
       window_state->SetStateObject(std::move(old_state_));
 }
@@ -480,16 +484,14 @@ void TabletModeWindowState::UpdateBounds(WindowState* window_state,
     if (!window_state->window()->IsVisible() || !animated) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else {
-      if (enter_animation_type() == STEP_END) {
+      if (window_state->bounds_animation_type() ==
+          WindowState::BoundsChangeAnimationType::STEP_END) {
         // Just use the normal bounds animation with ZERO tween with long enough
         // duration for STEP_END. The animation will be stopped when the to
         // window's animation ends.
         window_state->SetBoundsDirectAnimated(bounds_in_parent,
                                               base::TimeDelta::FromSeconds(1),
                                               gfx::Tween::ZERO);
-        // Reset the |enter_animation_type_| to DEFAULT it if is STEP_END, which
-        // is set for non-top windows when entering tablet mode.
-        set_enter_animation_type(DEFAULT);
         return;
       }
       // If we animate (to) tablet mode, we want to use the cross fade to

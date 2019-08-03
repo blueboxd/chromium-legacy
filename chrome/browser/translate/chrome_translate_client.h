@@ -51,8 +51,8 @@ class ChromeTranslateClient
 
   // Returns the ContentTranslateDriver instance associated with this
   // WebContents.
-  translate::ContentTranslateDriver& translate_driver() {
-    return translate_driver_;
+  translate::ContentTranslateDriver* translate_driver() {
+    return &translate_driver_;
   }
 
   // Helper method to return a new TranslatePrefs instance.
@@ -109,9 +109,6 @@ class ChromeTranslateClient
   // ContentTranslateDriver::Observer implementation.
   void OnLanguageDetermined(
       const translate::LanguageDetectionDetails& details) override;
-  void OnPageTranslated(const std::string& original_lang,
-                        const std::string& translated_lang,
-                        translate::TranslateErrors::Type error_type) override;
 
  private:
   explicit ChromeTranslateClient(content::WebContents* web_contents);

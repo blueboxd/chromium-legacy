@@ -178,6 +178,31 @@ void CollectPipEnterExitMetrics(aura::Window* window, bool enter) {
 
 constexpr base::TimeDelta WindowState::kBoundsChangeSlideDuration;
 
+WindowState::ScopedBoundsChangeAnimation::ScopedBoundsChangeAnimation(
+    aura::Window* window,
+    BoundsChangeAnimationType bounds_animation_type)
+    : window_(window) {
+  window_->AddObserver(this);
+  previous_bounds_animation_type_ =
+      WindowState::Get(window_)->bounds_animation_type_;
+  WindowState::Get(window_)->bounds_animation_type_ = bounds_animation_type;
+}
+
+WindowState::ScopedBoundsChangeAnimation::~ScopedBoundsChangeAnimation() {
+  if (window_) {
+    WindowState::Get(window_)->bounds_animation_type_ =
+        previous_bounds_animation_type_;
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+  }
+}
+
+void WindowState::ScopedBoundsChangeAnimation::OnWindowDestroying(
+    aura::Window* window) {
+  window_->RemoveObserver(this);
+  window_ = nullptr;
+}
+
 WindowState::~WindowState() {
   // WindowState is registered as an owned property of |window_|, and window
   // unregisters all of its observers in its d'tor before destroying its

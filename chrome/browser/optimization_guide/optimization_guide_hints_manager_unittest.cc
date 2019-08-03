@@ -17,6 +17,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/prefs/testing_pref_service.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
 class TestOptimizationGuideService
@@ -134,9 +135,17 @@ class OptimizationGuideHintsManagerTest
     ProcessHints(config, version);
   }
 
+  OptimizationGuideHintsManager* hints_manager() const {
+    return hints_manager_.get();
+  }
+
+  GURL url_with_hints() const {
+    return GURL("https://somedomain.org/news/whatever");
+  }
+
   base::FilePath temp_dir() const { return temp_dir_.GetPath(); }
 
-  TestingPrefServiceSimple* pref_service() { return pref_service_.get(); }
+  TestingPrefServiceSimple* pref_service() const { return pref_service_.get(); }
 
  protected:
   void RunUntilIdle() {
@@ -191,7 +200,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // However, we still expect the local histogram for the hints being updated to
   // be recorded.
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.UpdateComponentHints.Result2", true, 1);
+      "OptimizationGuide.UpdateComponentHints.Result", true, 1);
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -207,7 +216,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   histogram_tester.ExpectTotalCount("OptimizationGuide.ProcessHintsResult", 0);
   // We also do not expect to update the component hints with bad hints either.
   histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.UpdateComponentHints.Result2", 0);
+      "OptimizationGuide.UpdateComponentHints.Result", 0);
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
@@ -238,7 +247,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
     // However, we still expect the local histogram for the hints being updated
     // to be recorded.
     histogram_tester.ExpectUniqueSample(
-        "OptimizationGuide.UpdateComponentHints.Result2", true, 1);
+        "OptimizationGuide.UpdateComponentHints.Result", true, 1);
   }
 
   // Test that a new component coming in does not update the component hints.
@@ -250,7 +259,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
     histogram_tester.ExpectTotalCount("OptimizationGuide.ProcessHintsResult",
                                       0);
     histogram_tester.ExpectTotalCount(
-        "OptimizationGuide.UpdateComponentHints.Result2", 0);
+        "OptimizationGuide.UpdateComponentHints.Result", 0);
   }
 }
 
@@ -420,4 +429,51 @@ TEST_F(OptimizationGuideHintsManagerTest, ProcessHintsWithInvalidPref) {
         "OptimizationGuide.ProcessHintsResult",
         optimization_guide::ProcessHintsComponentResult::kSuccess, 1);
   }
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationWithHint) {
+  base::HistogramTester histogram_tester;
+  InitializeWithDefaultConfig("3.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(url_with_hints());
+
+  base::RunLoop run_loop;
+  hints_manager()->LoadHintForNavigation(&navigation_handle,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
+                                      true, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationNoHint) {
+  base::HistogramTester histogram_tester;
+  InitializeWithDefaultConfig("3.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("https://notinhints.com"));
+
+  base::RunLoop run_loop;
+  hints_manager()->LoadHintForNavigation(&navigation_handle,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.LoadedHint.Result",
+                                      false, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationNoHost) {
+  base::HistogramTester histogram_tester;
+  InitializeWithDefaultConfig("3.0.0.0");
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("blargh"));
+
+  base::RunLoop run_loop;
+  hints_manager()->LoadHintForNavigation(&navigation_handle,
+                                         run_loop.QuitClosure());
+  run_loop.Run();
+
+  histogram_tester.ExpectTotalCount("OptimizationGuide.LoadedHint.Result", 0);
 }

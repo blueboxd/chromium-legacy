@@ -49,6 +49,7 @@
 #include "components/sync/model/sync_merge_result.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
@@ -1261,8 +1262,10 @@ bool AppListSyncableService::AppIsOem(const std::string& id) {
 
   if (!extension_system_->extension_service())
     return false;
-  const extensions::Extension* extension =
-      extension_system_->extension_service()->GetExtensionById(id, true);
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  const extensions::Extension* extension = registry->GetExtensionById(
+      id, extensions::ExtensionRegistry::COMPATIBILITY);
   return extension && extension->was_installed_by_oem();
 }
 

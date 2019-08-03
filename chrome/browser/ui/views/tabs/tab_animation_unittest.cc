@@ -21,8 +21,7 @@ constexpr base::TimeDelta kZeroDuration = base::TimeDelta::FromMilliseconds(0);
 class TabAnimationTest : public testing::Test {
  public:
   TabAnimationTest()
-      : env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {
-  }
+      : env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   float PinnednessOf(TabAnimationState state) { return state.pinnedness_; }
 

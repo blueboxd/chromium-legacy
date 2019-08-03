@@ -26,6 +26,13 @@ group("closure_compile") {
     "cr_toggle:closure_compile",
     "cr_view_manager:closure_compile",
     "policy:closure_compile",
+
+    # Targets for auto-generated Polymer 3 JS Modules
+    "cr_button:closure_compile_module",
+    "cr_checkbox:closure_compile_module",
+    "cr_toast:closure_compile_module",
+    "cr_toggle:closure_compile_module",
+    "cr_view_manager:closure_compile_module",
   ]
 
   if (is_chromeos) {

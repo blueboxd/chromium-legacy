@@ -932,10 +932,12 @@ void ThemeService::OnExtensionServiceReady() {
 }
 
 void ThemeService::MigrateTheme() {
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
   const Extension* extension =
-      service ? service->GetExtensionById(GetThemeID(), false) : nullptr;
+      registry ? registry->GetExtensionById(
+                     GetThemeID(), extensions::ExtensionRegistry::ENABLED)
+               : nullptr;
   if (extension) {
     DLOG(ERROR) << "Migrating theme";
     // Theme migration is done on the UI thread. Blocking the UI from appearing

@@ -1212,20 +1212,5 @@
     "prefix": "conditional-appcache-delay",
     "base": "http/tests/loading/appcache-delay",
     "args": ["--enable-features=VerifyHTMLFetchedFromAppCacheBeforeDelay"]
-  },
-  {
-    "prefix": "audio-service",
-    "base": "http/tests/media",
-    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox"]
-  },
-  {
-    "prefix": "audio-service",
-    "base": "media",
-    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox"]
-  },
-  {
-    "prefix": "audio-service",
-    "base": "external/wpt/mediacapture-streams",
-    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox"]
   }
 ]

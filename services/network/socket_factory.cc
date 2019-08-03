@@ -21,7 +21,6 @@
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
-#include "services/network/ssl_config_type_converter.h"
 #include "services/network/tls_client_socket.h"
 #include "services/network/udp_socket.h"
 

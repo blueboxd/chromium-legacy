@@ -49,15 +49,13 @@ AppCacheNavigationHandleCore::AppCacheNavigationHandleCore(
 }
 
 AppCacheNavigationHandleCore::~AppCacheNavigationHandleCore() {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   precreated_host_.reset(nullptr);
   g_appcache_handle_map.Get().erase(appcache_host_id_);
 }
 
 void AppCacheNavigationHandleCore::Initialize() {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(precreated_host_.get() == nullptr);
   precreated_host_ = std::make_unique<AppCacheHost>(
       appcache_host_id_, process_id_, MSG_ROUTING_NONE, mojo::NullRemote(),
@@ -71,8 +69,7 @@ void AppCacheNavigationHandleCore::Initialize() {
 // static
 std::unique_ptr<AppCacheHost> AppCacheNavigationHandleCore::GetPrecreatedHost(
     const base::UnguessableToken& host_id) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto index = g_appcache_handle_map.Get().find(host_id);
   if (index != g_appcache_handle_map.Get().end()) {
     AppCacheNavigationHandleCore* instance = index->second;

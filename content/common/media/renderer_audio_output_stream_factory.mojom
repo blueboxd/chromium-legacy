@@ -4,9 +4,9 @@
 
 module content.mojom;
 
-import "media/mojo/interfaces/audio_output_stream.mojom";
-import "media/mojo/interfaces/audio_parameters.mojom";
-import "media/mojo/interfaces/media_types.mojom";
+import "media/mojo/mojom/audio_output_stream.mojom";
+import "media/mojo/mojom/audio_parameters.mojom";
+import "media/mojo/mojom/media_types.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // This interface is used to create output streams. The client supplies a

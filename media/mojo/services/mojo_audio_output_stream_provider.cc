@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace media {

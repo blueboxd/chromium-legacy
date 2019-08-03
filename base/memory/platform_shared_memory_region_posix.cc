@@ -267,7 +267,8 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   }
 
   FilePath path;
-  File shm_file(CreateAndOpenFdForTemporaryFileInDir(directory, &path));
+  ScopedFD fd = CreateAndOpenFdForTemporaryFileInDir(directory, &path);
+  File shm_file(fd.release());
 
   if (!shm_file.IsValid()) {
     LogCreateError(

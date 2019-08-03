@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/run_loop.h"
@@ -45,10 +46,10 @@ namespace content {
 
 // Mainline routine for running as the utility process.
 int UtilityMain(const MainFunctionParams& parameters) {
-  const base::MessagePump::Type message_pump_type =
+  const base::MessagePumpType message_pump_type =
       parameters.command_line.HasSwitch(switches::kMessageLoopTypeUi)
-          ? base::MessagePump::Type::UI
-          : base::MessagePump::Type::DEFAULT;
+          ? base::MessagePumpType::UI
+          : base::MessagePumpType::DEFAULT;
 
 #if defined(OS_MACOSX)
   // On Mac, the TYPE_UI pump for the main thread is an NSApplication loop. In

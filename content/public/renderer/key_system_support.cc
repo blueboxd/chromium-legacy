@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
-#include "media/mojo/interfaces/key_system_support.mojom.h"
+#include "media/mojo/mojom/key_system_support.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace content {

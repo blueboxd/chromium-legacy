@@ -183,15 +183,7 @@ void DeskMiniView::ButtonPressed(views::Button* sender,
   if (sender != close_desk_button_)
     return;
 
-  // Hide the close button so it can no longer be pressed.
-  close_desk_button_->SetVisible(false);
-
-  // This mini_view can no longer be pressed.
-  listener_ = nullptr;
-
-  auto* controller = DesksController::Get();
-  DCHECK(controller->CanRemoveDesks());
-  controller->RemoveDesk(desk_, DesksCreationRemovalSource::kButton);
+  OnCloseButtonPressed();
 }
 
 void DeskMiniView::OnContentChanged() {
@@ -222,18 +214,39 @@ views::View* DeskMiniView::GetView() {
   return this;
 }
 
-gfx::Rect DeskMiniView::GetHighlightBounds() {
-  // Use the target bounds instead of |GetBoundsInScreen()| because |this| may
-  // be animating.
-  gfx::Rect target_bounds = layer()->GetTargetBounds();
-  ::wm::ConvertRectFromScreen(root_window_, &target_bounds);
-  return target_bounds;
+gfx::Rect DeskMiniView::GetHighlightBoundsInScreen() {
+  gfx::Rect bounds_in_screen = bounds();
+  views::View::ConvertRectToScreen(this->parent(), &bounds_in_screen);
+  return bounds_in_screen;
+}
+
+void DeskMiniView::MaybeActivateHighlightedView() {
+  DesksController::Get()->ActivateDesk(desk(),
+                                       DesksSwitchSource::kMiniViewButton);
+}
+
+void DeskMiniView::MaybeCloseHighlightedView() {
+  OnCloseButtonPressed();
 }
 
 bool DeskMiniView::IsPointOnMiniView(const gfx::Point& screen_location) const {
   gfx::Point point_in_view = screen_location;
   ConvertPointFromScreen(this, &point_in_view);
   return HitTestPoint(point_in_view);
+}
+
+void DeskMiniView::OnCloseButtonPressed() {
+  auto* controller = DesksController::Get();
+  if (!controller->CanRemoveDesks())
+    return;
+
+  // Hide the close button so it can no longer be pressed.
+  close_desk_button_->SetVisible(false);
+
+  // This mini_view can no longer be pressed.
+  listener_ = nullptr;
+
+  controller->RemoveDesk(desk_, DesksCreationRemovalSource::kButton);
 }
 
 }  // namespace ash

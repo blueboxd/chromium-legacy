@@ -419,9 +419,9 @@ class MetaBuildWrapper(object):
       ('infra/tools/luci/logdog/butler/${platform}',
        'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'),
       ('infra/tools/luci/vpython-native/${platform}',
-       'git_revision:cc09450f1c27c0034ec08b1f6d63bbc298294763'),
+       'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'),
       ('infra/tools/luci/vpython/${platform}',
-       'git_revision:cc09450f1c27c0034ec08b1f6d63bbc298294763'),
+       'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'),
     ]
     for pkg, vers in cipd_packages:
       cmd.append('--cipd-package=.swarming_module:%s:%s' % (pkg, vers))

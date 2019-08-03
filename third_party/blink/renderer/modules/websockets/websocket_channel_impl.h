@@ -54,7 +54,6 @@ namespace blink {
 
 class BaseFetchContext;
 enum class FileErrorCode;
-class SharedBuffer;
 class WebSocketChannelClient;
 class WebSocketHandshakeThrottle;
 

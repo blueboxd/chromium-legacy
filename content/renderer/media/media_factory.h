@@ -15,14 +15,14 @@
 #include "media/blink/webmediaplayer_params.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_string.h"
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA)
-#include "media/mojo/interfaces/interface_factory.mojom.h"  // nogncheck
+#include "media/mojo/mojom/interface_factory.mojom.h"  // nogncheck
 #endif
 
 namespace blink {

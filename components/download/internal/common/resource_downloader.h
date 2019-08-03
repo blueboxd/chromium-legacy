@@ -42,6 +42,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       bool is_new_download,
       bool is_parallel_request,
       std::unique_ptr<service_manager::Connector> connector,
+      bool is_background_mode,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Create a ResourceDownloader from a navigation that turns to be a download.
@@ -95,7 +96,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // Helper method to start the network request.
   void Start(
       std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
-      bool is_parallel_request);
+      bool is_parallel_request,
+      bool is_background_mode);
 
   // Intercepts the navigation response.
   void InterceptResponse(

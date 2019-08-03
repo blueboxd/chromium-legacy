@@ -78,7 +78,8 @@
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature.h"
@@ -652,10 +653,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebRequestNewTab) {
 
   ResultCatcher catcher;
 
-  ExtensionService* service =
-      ExtensionSystem::Get(browser()->profile())->extension_service();
-  const Extension* extension =
-      service->GetExtensionById(last_loaded_extension_id(), false);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  const Extension* extension = registry->GetExtensionById(
+      last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
   GURL url = extension->GetResourceURL("newTab/a.html");
 
   ui_test_utils::NavigateToURL(browser(), url);
@@ -949,9 +949,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HostedAppRequest) {
                                   .Build())
                   .Build())
           .Build();
-  ExtensionSystem::Get(browser()->profile())
-      ->extension_service()
-      ->AddExtension(hosted_app.get());
+  extension_service()->AddExtension(hosted_app.get());
 
   ExtensionTestMessageListener listener1("main_frame", false);
   ExtensionTestMessageListener listener2("xmlhttprequest", false);

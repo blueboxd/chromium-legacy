@@ -12,7 +12,7 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "media/mojo/buildflags.h"
-#include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {

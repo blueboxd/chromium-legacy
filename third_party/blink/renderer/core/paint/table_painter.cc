@@ -30,7 +30,8 @@ void TablePainter::PaintObject(const PaintInfo& paint_info,
     return;
   }
 
-  if (paint_phase != PaintPhase::kSelfOutlineOnly) {
+  if (paint_phase != PaintPhase::kSelfOutlineOnly &&
+      !paint_info.DescendantPaintingBlocked()) {
     PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
 
     for (LayoutObject* child = layout_table_.FirstChild(); child;

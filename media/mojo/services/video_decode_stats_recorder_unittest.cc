@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "media/base/video_codecs.h"
 #include "media/learning/common/value.h"
-#include "media/mojo/interfaces/media_types.mojom.h"
+#include "media/mojo/mojom/media_types.mojom.h"
 #include "media/mojo/services/test_helpers.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"

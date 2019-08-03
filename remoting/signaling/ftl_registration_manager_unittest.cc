@@ -83,7 +83,7 @@ class FtlRegistrationManagerTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   FakeOAuthTokenGetter token_getter{OAuthTokenGetter::SUCCESS, "fake_email",
                                     "access_token"};
   FtlRegistrationManager registration_manager_{

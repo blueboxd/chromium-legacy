@@ -35,10 +35,6 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
   }
 
  private:
-  void CreateEmbedderRendererService(
-      service_manager::mojom::ServiceRequest service_request) override {
-    NOTREACHED();
-  }
   void CreateView(mojom::CreateViewParamsPtr) override { NOTREACHED(); }
   void CreateFrame(mojom::CreateFrameParamsPtr) override { NOTREACHED(); }
   void SetUpEmbeddedWorkerChannelForServiceWorker(

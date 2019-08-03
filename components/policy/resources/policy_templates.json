@@ -16583,10 +16583,10 @@
             '$ref': 'WeekDay'
           },
           'day_of_month': {
-            'description': '''Day of month [1-28] when the update check should happen, interpreted in the device's local time zone. Only used when 'frequency' is 'MONTHLY'. If this is more than the maximum number of days in a given month then the last day of the month will be chosen. Currently it is restricted to 28 to resolve month rollover ambiguities.''',
+            'description': '''Day of month [1-31] when the update check should happen, interpreted in the device's local time zone. Only used when 'frequency' is 'MONTHLY'. If this is more than the maximum number of days in a given month then the last day of the month will be chosen.''',
             'type': 'integer',
             'minimum': 1,
-            'maximum': 28
+            'maximum': 31
           }
         },
         'required': ['update_check_time', 'frequency']

@@ -47,7 +47,8 @@ class FakeCertVerifier : public net::CertVerifier {
 TLSSocketFactory::TLSSocketFactory(
     net::URLRequestContext* url_request_context,
     const net::HttpNetworkSession::Context* http_context)
-    : ssl_client_context_(url_request_context->cert_verifier(),
+    : ssl_client_context_(url_request_context->ssl_config_service(),
+                          url_request_context->cert_verifier(),
                           url_request_context->transport_security_state(),
                           url_request_context->cert_transparency_verifier(),
                           url_request_context->ct_policy_enforcer(),
@@ -105,15 +106,14 @@ void TLSSocketFactory::CreateTLSClientSocket(
   TLSClientSocket* socket_raw = socket.get();
   tls_socket_bindings_.AddBinding(std::move(socket), std::move(request));
 
-  net::SSLConfig ssl_config;
-  ssl_config_service_->GetSSLConfig(&ssl_config);
   net::SSLClientContext* ssl_client_context = &ssl_client_context_;
 
   bool send_ssl_info = false;
+  net::SSLConfig ssl_config;
   if (socket_options) {
-    ssl_config.version_min =
+    ssl_config.version_min_override =
         mojo::MojoSSLVersionToNetSSLVersion(socket_options->version_min);
-    ssl_config.version_max =
+    ssl_config.version_max_override =
         mojo::MojoSSLVersionToNetSSLVersion(socket_options->version_max);
 
     send_ssl_info = socket_options->send_ssl_info;
@@ -129,7 +129,7 @@ void TLSSocketFactory::CreateTLSClientSocket(
             std::make_unique<net::DefaultCTPolicyEnforcer>();
         no_verification_ssl_client_context_ =
             std::make_unique<net::SSLClientContext>(
-                no_verification_cert_verifier_.get(),
+                ssl_config_service_, no_verification_cert_verifier_.get(),
                 no_verification_transport_security_state_.get(),
                 no_verification_cert_transparency_verifier_.get(),
                 no_verification_ct_policy_enforcer_.get(),

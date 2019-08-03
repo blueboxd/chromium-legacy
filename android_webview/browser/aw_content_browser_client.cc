@@ -13,7 +13,6 @@
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/aw_content_browser_overlay_manifest.h"
 #include "android_webview/browser/aw_content_renderer_overlay_manifest.h"
-#include "android_webview/browser/aw_content_utility_overlay_manifest.h"
 #include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
@@ -66,8 +65,6 @@
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/features.h"
-#include "components/services/heap_profiling/heap_profiling_service.h"
-#include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -387,8 +384,7 @@ AwContentBrowserClient::GetWebContentsViewDelegate(
 }
 
 void AwContentBrowserClient::RenderProcessWillLaunch(
-    content::RenderProcessHost* host,
-    service_manager::mojom::ServiceRequest* service_request) {
+    content::RenderProcessHost* host) {
   // Grant content: scheme access to the whole renderer process, since we impose
   // per-view access checks, and access is granted by default (see
   // AwSettings.mAllowContentUrlAccess).
@@ -693,19 +689,7 @@ AwContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
     return GetAWContentBrowserOverlayManifest();
   if (name == content::mojom::kRendererServiceName)
     return GetAWContentRendererOverlayManifest();
-  if (name == content::mojom::kUtilityServiceName)
-    return GetAWContentUtilityOverlayManifest();
   return base::nullopt;
-}
-
-void AwContentBrowserClient::RunServiceInstanceOnIOThread(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
-  if (identity.name() == heap_profiling::mojom::kServiceName) {
-    heap_profiling::HeapProfilingService::GetServiceFactory().Run(
-        std::move(*receiver));
-    return;
-  }
 }
 
 void AwContentBrowserClient::BindInterfaceRequestFromFrame(

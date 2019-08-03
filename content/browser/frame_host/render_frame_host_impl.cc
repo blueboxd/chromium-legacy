@@ -167,7 +167,7 @@
 #include "media/base/user_input_monitor.h"
 #include "media/learning/common/value.h"
 #include "media/media_buildflags.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_perf_history.h"
@@ -5096,23 +5096,11 @@ void RenderFrameHostImpl::CommitNavigation(
       auto* storage_partition = static_cast<StoragePartitionImpl*>(
           BrowserContext::GetStoragePartition(
               GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
-      if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-        storage_partition->GetPrefetchURLLoaderService()->GetFactory(
-            prefetch_loader_factory.InitWithNewPipeAndPassReceiver(),
-            frame_tree_node_->frame_tree_node_id(),
-            std::move(factory_bundle_for_prefetch),
-            EnsurePrefetchedSignedExchangeCache());
-      } else {
-        base::PostTask(
-            FROM_HERE, {BrowserThread::IO},
-            base::BindOnce(
-                &PrefetchURLLoaderService::GetFactory,
-                storage_partition->GetPrefetchURLLoaderService(),
-                prefetch_loader_factory.InitWithNewPipeAndPassReceiver(),
-                frame_tree_node_->frame_tree_node_id(),
-                std::move(factory_bundle_for_prefetch),
-                EnsurePrefetchedSignedExchangeCache()));
-      }
+      storage_partition->GetPrefetchURLLoaderService()->GetFactory(
+          prefetch_loader_factory.InitWithNewPipeAndPassReceiver(),
+          frame_tree_node_->frame_tree_node_id(),
+          std::move(factory_bundle_for_prefetch),
+          EnsurePrefetchedSignedExchangeCache());
     }
 
     mojom::NavigationClient* navigation_client = nullptr;
@@ -6229,19 +6217,9 @@ void RenderFrameHostImpl::RegisterAppCacheHost(
   auto* appcache_service_impl = static_cast<AppCacheServiceImpl*>(
       GetProcess()->GetStoragePartition()->GetAppCacheService());
 
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    appcache_service_impl->RegisterHostForFrame(
-        std::move(host_receiver), std::move(frontend_remote), host_id,
-        routing_id_, GetProcess()->GetID(), mojo::GetBadMessageCallback());
-  } else {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&AppCacheServiceImpl::RegisterHostForFrame,
-                       appcache_service_impl->AsWeakPtr(),
-                       std::move(host_receiver), std::move(frontend_remote),
-                       host_id, routing_id_, GetProcess()->GetID(),
-                       mojo::GetBadMessageCallback()));
-  }
+  appcache_service_impl->RegisterHostForFrame(
+      std::move(host_receiver), std::move(frontend_remote), host_id,
+      routing_id_, GetProcess()->GetID(), mojo::GetBadMessageCallback());
 }
 
 std::unique_ptr<NavigationRequest>

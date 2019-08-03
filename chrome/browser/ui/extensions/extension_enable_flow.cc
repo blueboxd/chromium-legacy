@@ -59,9 +59,12 @@ void ExtensionEnableFlow::Start() {
 void ExtensionEnableFlow::Run() {
   extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const Extension* extension = service->GetExtensionById(extension_id_, true);
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  const Extension* extension = registry->GetExtensionById(
+      extension_id_, extensions::ExtensionRegistry::COMPATIBILITY);
   if (!extension) {
-    extension = extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+    extension = registry->GetExtensionById(
         extension_id_, extensions::ExtensionRegistry::TERMINATED);
     // It's possible (though unlikely) the app could have been uninstalled since
     // the user clicked on it.
@@ -71,7 +74,8 @@ void ExtensionEnableFlow::Run() {
     service->ReloadExtension(extension_id_);
 
     // ReloadExtension reallocates the Extension object.
-    extension = service->GetExtensionById(extension_id_, true);
+    extension = registry->GetExtensionById(
+        extension_id_, extensions::ExtensionRegistry::COMPATIBILITY);
 
     // |extension| could be NULL for asynchronous load, such as the case of
     // an unpacked extension. Wait for the load to continue the flow.
@@ -88,7 +92,10 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
   extensions::ExtensionSystem* system =
       extensions::ExtensionSystem::Get(profile_);
   extensions::ExtensionService* service = system->extension_service();
-  const Extension* extension = service->GetExtensionById(extension_id_, true);
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  const Extension* extension = registry->GetExtensionById(
+      extension_id_, extensions::ExtensionRegistry::COMPATIBILITY);
 
   bool abort =
       !extension ||
@@ -184,10 +191,12 @@ void ExtensionEnableFlow::InstallPromptDone(
   if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
     extensions::ExtensionService* service =
         extensions::ExtensionSystem::Get(profile_)->extension_service();
-
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile_);
     // The extension can be uninstalled in another window while the UI was
     // showing. Treat it as a cancellation and notify |delegate_|.
-    const Extension* extension = service->GetExtensionById(extension_id_, true);
+    const Extension* extension = registry->GetExtensionById(
+        extension_id_, extensions::ExtensionRegistry::COMPATIBILITY);
     if (!extension) {
       delegate_->ExtensionEnableFlowAborted(true);
       return;

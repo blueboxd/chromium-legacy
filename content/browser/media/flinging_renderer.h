@@ -12,7 +12,7 @@
 #include "media/base/media_status_observer.h"
 #include "media/base/renderer.h"
 #include "media/base/renderer_client.h"
-#include "media/mojo/interfaces/renderer_extensions.mojom.h"
+#include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -37,7 +37,7 @@ include_rules = [
 
     # Enforce to use mojom-shared.h in blink/public so that it can compile
     # inside and outside Blink.
-    "+media/mojo/interfaces/display_media_information.mojom-shared.h",
+    "+media/mojo/mojom/display_media_information.mojom-shared.h",
     "+services/network/public/mojom/cors.mojom-shared.h",
     "+services/network/public/mojom/fetch_api.mojom-shared.h",
     "+services/network/public/mojom/restricted_cookie_manager.mojom-shared.h",

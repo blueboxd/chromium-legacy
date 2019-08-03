@@ -63,9 +63,9 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
 #include <memory>
 
@@ -292,6 +292,11 @@ class CORE_EXPORT DocumentLoader
   bool HadTransientActivation() const { return had_transient_activation_; }
 
   bool IsBrowserInitiated() const { return is_browser_initiated_; }
+
+  // TODO(dcheng, japhet): Some day, Document::Url() will always match
+  // DocumentLoader::Url(), and one of them will be removed. Today is not that
+  // day though.
+  void UpdateUrlForDocumentOpen(const KURL& url) { url_ = url; }
 
  protected:
   Vector<KURL> redirect_chain_;

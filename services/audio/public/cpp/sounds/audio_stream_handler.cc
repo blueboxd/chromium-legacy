@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "media/audio/wav_audio_handler.h"
 #include "media/base/channel_layout.h"
-#include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "services/audio/public/cpp/output_device.h"
 
 namespace audio {

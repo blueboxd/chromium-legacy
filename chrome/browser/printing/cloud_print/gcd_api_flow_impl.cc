@@ -122,8 +122,7 @@ void GCDApiFlowImpl::OnAccessTokenFetchComplete(
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = request_->GetURL();
 
-  request->load_flags =
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   request->headers.SetHeader(kCloudPrintOAuthHeaderKey,
                              GetOAuthHeaderValue(access_token_info.token));

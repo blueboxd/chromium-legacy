@@ -600,9 +600,12 @@ foreach(_target_type,
                                       1)
         _output_name = string_replace(_output_name, _magic_prefix, "", 1)
 
-        _shlib_extension = ".so"
-        if (is_component_build && _target_type != "loadable_module") {
+        if (defined(output_extension)) {
+          _shlib_extension = ".$output_extension"
+        } else if (is_component_build && _target_type != "loadable_module") {
           _shlib_extension = ".cr.so"
+        } else {
+          _shlib_extension = ".so"
         }
 
         metadata = {

@@ -4,9 +4,9 @@
 
 import os
 import logging
-from chrome_ent_test.infra.core import environment, before_all, test
-from chrome_ent_test.ent_tests import ChromeEnterpriseTestCase
 from absl import flags
+from chrome_ent_test.infra.core import environment, before_all, test
+from infra import ChromeEnterpriseTestCase
 
 FLAGS = flags.FLAGS
 

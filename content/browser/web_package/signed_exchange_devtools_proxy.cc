@@ -116,20 +116,17 @@ SignedExchangeDevToolsProxy::SignedExchangeDevToolsProxy(
       frame_tree_node_id_getter_(frame_tree_node_id_getter),
       devtools_navigation_token_(devtools_navigation_token),
       devtools_enabled_(report_raw_headers) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 SignedExchangeDevToolsProxy::~SignedExchangeDevToolsProxy() {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void SignedExchangeDevToolsProxy::ReportError(
     const std::string& message,
     base::Optional<SignedExchangeError::FieldIndexPair> error_field) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   errors_.push_back(SignedExchangeError(message, std::move(error_field)));
   RunOrPostTaskIfNotOnUiThread(
       FROM_HERE,
@@ -186,8 +183,7 @@ void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
     const base::Optional<SignedExchangeEnvelope>& envelope,
     const scoped_refptr<net::X509Certificate>& certificate,
     const net::SSLInfo* ssl_info) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!devtools_enabled_)
     return;
   base::Optional<net::SSLInfo> ssl_info_opt;

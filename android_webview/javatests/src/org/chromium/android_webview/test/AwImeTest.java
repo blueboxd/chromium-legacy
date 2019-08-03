@@ -254,8 +254,10 @@ public class AwImeTest {
     }
 
     // https://crbug.com/920061
+    // Flaky! - https://crbug.com/990208
     @Test
     @SmallTest
+    @DisabledTest
     public void testFocusAndViewSizeChangeCausesScroll() throws Throwable {
         loadBottomInputHtml();
         Rect currentRect = new Rect();

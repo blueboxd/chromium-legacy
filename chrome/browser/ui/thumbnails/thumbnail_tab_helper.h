@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_THUMBNAILS_THUMBNAIL_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_THUMBNAILS_THUMBNAIL_TAB_HELPER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -12,70 +14,72 @@
 #include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_page_event_adapter.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_page_observer.h"
+#include "components/viz/host/client_frame_sink_video_capturer.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class ThumbnailTabHelper
-    : public thumbnails::ThumbnailPageObserver,
-      public content::WebContentsUserData<ThumbnailTabHelper> {
+    : public content::WebContentsUserData<ThumbnailTabHelper>,
+      public content::WebContentsObserver,
+      public viz::mojom::FrameSinkVideoConsumer,
+      public ThumbnailImage::Delegate {
  public:
   ~ThumbnailTabHelper() override;
 
-  ThumbnailImage thumbnail() const { return thumbnail_; }
-
- protected:
-  // ThumbnailWebContentsObserver:
-  void TopLevelNavigationStarted(const GURL& url) override;
-  void TopLevelNavigationEnded(const GURL& url) override;
-  void PagePainted() override;
-  void PageLoadStarted() override;
-  void PageLoadFinished() override;
-  void VisibilityChanged(bool visible) override;
-
-  content::WebContents* web_contents() const { return adapter_.web_contents(); }
+  scoped_refptr<ThumbnailImage> thumbnail() const { return thumbnail_; }
 
  private:
-  // Loading is treated as a state machine for each new URL, and the state for
-  // each new URL the current tab loads can only advance as events are received
-  // (so it is not possible to go from kLoadStarted to kNavigationStarted).
-  enum class LoadingState : int32_t {
-    kNone = 0,
-    kNavigationStarted = 1,
-    kNavigationFinished = 2,
-    kLoadStarted = 3,
-    kLoadFinished = 4
-  };
+  class ThumanailImageImpl;
+  friend class content::WebContentsUserData<ThumbnailTabHelper>;
+  friend class ThumanailImageImpl;
 
   explicit ThumbnailTabHelper(content::WebContents* contents);
-  friend class content::WebContentsUserData<ThumbnailTabHelper>;
 
-  void StartThumbnailCapture();
-  void ProcessCapturedThumbnail(base::TimeTicks start_time,
-                                const SkBitmap& bitmap);
-  void StoreThumbnail(base::TimeTicks start_time, ThumbnailImage thumbnail);
-  void NotifyTabPreviewChanged();
+  // ThumbnailImage::Delegate:
+  void ThumbnailImageBeingObservedChanged(bool is_being_observed) override;
 
-  void TransitionLoadingState(LoadingState state, const GURL& url);
-  void ClearThumbnail();
+  bool ShouldKeepUpdatingThumbnail() const;
 
-  ThumbnailImage thumbnail_;
+  void StartVideoCapture();
+  void StopVideoCapture();
+  void CaptureThumbnailOnTabSwitch();
+  void StoreThumbnail(const SkBitmap& bitmap);
 
-  // Caches whether or not the web contents view is visible. See notes in
-  // VisibilityChanged() for more information.
-  bool view_is_visible_;  // set in constructor
+  content::RenderWidgetHostView* GetView();
 
-  bool page_painted_ = false;
+  // content::WebContentsObserver:
+  void OnVisibilityChanged(content::Visibility visibility) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
-  LoadingState loading_state_ = LoadingState::kNone;
-  GURL current_url_;
+  // viz::mojom::FrameSinkVideoConsumer:
+  void OnFrameCaptured(
+      base::ReadOnlySharedMemoryRegion data,
+      ::media::mojom::VideoFrameInfoPtr info,
+      const gfx::Rect& content_rect,
+      ::viz::mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks) override;
+  void OnStopped() override;
 
-  thumbnails::ThumbnailPageEventAdapter adapter_;
-  ScopedObserver<thumbnails::ThumbnailPageEventAdapter,
-                 thumbnails::ThumbnailPageObserver>
-      scoped_observer_;
+  // The last known visibility WebContents visibility.
+  content::Visibility last_visibility_;
+
+  // Whether a thumbnail was captured while the tab was loaded, since the tab
+  // was last hidden.
+  bool captured_loaded_thumbnail_since_tab_hidden_ = false;
+
+  // Captures frames from the WebContents while it's hidden. The capturer count
+  // of the WebContents is incremented/decremented when a capturer is set/unset.
+  std::unique_ptr<viz::ClientFrameSinkVideoCapturer> video_capturer_;
+
+  // The thumbnail maintained by this instance.
+  scoped_refptr<ThumbnailImage> thumbnail_ =
+      base::MakeRefCounted<ThumbnailImage>(this);
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
-  base::WeakPtrFactory<ThumbnailTabHelper> weak_factory_{this};
+  base::WeakPtrFactory<ThumbnailTabHelper>
+      weak_factory_for_thumbnail_on_tab_hidden_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailTabHelper);
 };

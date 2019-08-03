@@ -33,8 +33,6 @@
 
 namespace blink {
 
-class SharedBuffer;
-
 namespace test {
 
 // Note: You may want to use TestingPlatformSupportWithMockScheduler to

@@ -38,8 +38,6 @@
 
 namespace blink {
 
-class SharedBuffer;
-
 class SharedBufferChunkReader final {
   DISALLOW_NEW();
 

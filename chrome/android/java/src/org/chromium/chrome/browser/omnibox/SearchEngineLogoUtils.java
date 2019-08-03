@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.util.UrlUtilities;
  * Collection of shared code for displaying search engine logos.
  */
 public class SearchEngineLogoUtils {
+    private static final String DUMMY_URL_QUERY = "replace_me";
     private static FaviconHelper sFaviconHelper;
 
     // Cache these values so they don't need to be recalculated.
@@ -43,11 +45,17 @@ public class SearchEngineLogoUtils {
     }
 
     /**
-     * @return The search URL of the current DSE.
+     * @return The search URL of the current DSE or null if one cannot be found.
      */
+    @Nullable
     public static String getSearchLogoUrl() {
-        return UrlUtilities.stripPath(
-                TemplateUrlServiceFactory.get().getDefaultSearchEngineTemplateUrl().getURL());
+        String logoUrlWithPath =
+                TemplateUrlServiceFactory.get().getUrlForSearchQuery(DUMMY_URL_QUERY);
+        if (logoUrlWithPath == null || !UrlUtilities.isHttpOrHttps(logoUrlWithPath)) {
+            return logoUrlWithPath;
+        }
+
+        return UrlUtilities.stripPath(logoUrlWithPath);
     }
 
     /**
@@ -63,12 +71,23 @@ public class SearchEngineLogoUtils {
         return sSearchEngineLogoTargetSizePixels;
     }
 
+    /**
+     * Get the search engine logo favicon. This can return a null bitmap under certain
+     * circumstances, such as: no logo url found, network/cache error, etc.
+     *
+     * @param profile The current profile.
+     * @param resources Provides access to Android resources.
+     * @param callback How the bitmap will be returned to the caller.
+     */
     public static void getSearchEngineLogoFavicon(
             Profile profile, Resources resources, Callback<Bitmap> callback) {
         if (sFaviconHelper == null) sFaviconHelper = new FaviconHelper();
 
-        boolean willReturn = sFaviconHelper.getLocalFaviconImageForURL(profile, getSearchLogoUrl(),
-                getSearchEngineLogoSizePixels(resources), (image, iconUrl) -> {
+        String logoUrl = getSearchLogoUrl();
+        if (logoUrl == null) callback.onResult(null);
+
+        boolean willReturn = sFaviconHelper.getLocalFaviconImageForURL(
+                profile, logoUrl, getSearchEngineLogoSizePixels(resources), (image, iconUrl) -> {
                     if (image == null) {
                         callback.onResult(image);
                         return;

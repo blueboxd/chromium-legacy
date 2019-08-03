@@ -16,7 +16,8 @@ namespace policy {
 namespace {
 
 base::WeakPtr<chromeos::BulkPrintersCalculator> GetBulkPrintersCalculator() {
-  return chromeos::BulkPrintersCalculatorFactory::Get()->GetForDevice();
+  return chromeos::BulkPrintersCalculatorFactory::Get()->GetForDevice(
+      /*create_if_not_exists=*/true);
 }
 
 }  // namespace
@@ -30,7 +31,9 @@ DeviceNativePrintersExternalDataHandler::
               this)) {}
 
 DeviceNativePrintersExternalDataHandler::
-    ~DeviceNativePrintersExternalDataHandler() = default;
+    ~DeviceNativePrintersExternalDataHandler() {
+  chromeos::BulkPrintersCalculatorFactory::Get()->Shutdown();
+}
 
 void DeviceNativePrintersExternalDataHandler::OnDeviceExternalDataSet(
     const std::string& policy) {
@@ -50,8 +53,7 @@ void DeviceNativePrintersExternalDataHandler::OnDeviceExternalDataFetched(
 }
 
 void DeviceNativePrintersExternalDataHandler::Shutdown() {
-  if (device_native_printers_observer_)
-    device_native_printers_observer_.reset();
+  device_native_printers_observer_.reset();
 }
 
 }  // namespace policy

@@ -89,10 +89,6 @@ class ASH_EXPORT DesksBarView : public views::View,
   // animated to their final positions.
   void UpdateNewMiniViews(bool animate);
 
-  // Updates the enabled state of the new desk button when the ability to create
-  // new desk may have changed.
-  void UpdateNewDeskButtonState();
-
   // Returns the mini_view associated with |desk| or nullptr if no mini_view
   // has been created for it yet.
   DeskMiniView* FindMiniViewForDesk(const Desk* desk) const;

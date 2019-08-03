@@ -137,6 +137,7 @@
 #include "storage/browser/fileapi/file_system_features.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/forcedark/forcedark_switches.h"
 #include "third_party/leveldatabase/leveldb_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ui_base_features.h"
@@ -406,6 +407,50 @@ const FeatureEntry::FeatureVariation kCCTModuleCacheVariations[] = {
 };
 
 #endif  // OS_ANDROID
+
+const FeatureEntry::FeatureParam kForceDark_SimpleHsl[] = {
+    {"inversion_method", "hsl_based"},
+    {"image_behavior", "none"},
+    {"text_lightness_threshold", "256"},
+    {"background_lightness_threshold", "0"}};
+
+const FeatureEntry::FeatureParam kForceDark_SimpleCielab[] = {
+    {"inversion_method", "cielab_based"},
+    {"image_behavior", "none"},
+    {"text_lightness_threshold", "256"},
+    {"background_lightness_threshold", "0"}};
+
+const FeatureEntry::FeatureParam kForceDark_SelectiveImageInversion[] = {
+    {"inversion_method", "cielab_based"},
+    {"image_behavior", "selective"},
+    {"text_lightness_threshold", "256"},
+    {"background_lightness_threshold", "0"}};
+
+const FeatureEntry::FeatureParam kForceDark_SelectiveElementInversion[] = {
+    {"inversion_method", "cielab_based"},
+    {"image_behavior", "none"},
+    {"text_lightness_threshold", "150"},
+    {"background_lightness_threshold", "205"}};
+
+const FeatureEntry::FeatureParam kForceDark_SelectiveGeneralInversion[] = {
+    {"inversion_method", "cielab_based"},
+    {"image_behavior", "selective"},
+    {"text_lightness_threshold", "150"},
+    {"background_lightness_threshold", "205"}};
+
+const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
+    {"with simple HSL-based inversion", kForceDark_SimpleHsl,
+     base::size(kForceDark_SimpleHsl), nullptr},
+    {"with simple CIELAB-based inversion", kForceDark_SimpleCielab,
+     base::size(kForceDark_SimpleCielab), nullptr},
+    {"with selective image inversion", kForceDark_SelectiveImageInversion,
+     base::size(kForceDark_SelectiveImageInversion), nullptr},
+    {"with selective inversion of non-image elements",
+     kForceDark_SelectiveElementInversion,
+     base::size(kForceDark_SelectiveElementInversion), nullptr},
+    {"with selective inversion of everything",
+     kForceDark_SelectiveGeneralInversion,
+     base::size(kForceDark_SelectiveGeneralInversion), nullptr}};
 
 const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1092,11 +1137,19 @@ const FeatureEntry::FeatureVariation kOfflineIndicatorFeatureVariations[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kTabSwitcherOnReturn_Immediate[] = {
+    {"tab_switcher_on_return_time_ms", "0"}};
+const FeatureEntry::FeatureParam kTabSwitcherOnReturn_1Minute[] = {
+    {"tab_switcher_on_return_time_ms", "60000"}};
 const FeatureEntry::FeatureParam kTabSwitcherOnReturn_30Minutes[] = {
     {"tab_switcher_on_return_time_ms", "1800000"}};
 const FeatureEntry::FeatureParam kTabSwitcherOnReturn_60Minutes[] = {
     {"tab_switcher_on_return_time_ms", "3600000"}};
 const FeatureEntry::FeatureVariation kTabSwitcherOnReturnVariations[] = {
+    {"Immediate", kTabSwitcherOnReturn_Immediate,
+     base::size(kTabSwitcherOnReturn_30Minutes), nullptr},
+    {"1 minute", kTabSwitcherOnReturn_1Minute,
+     base::size(kTabSwitcherOnReturn_30Minutes), nullptr},
     {"30 minutes", kTabSwitcherOnReturn_30Minutes,
      base::size(kTabSwitcherOnReturn_30Minutes), nullptr},
     {"60 minutes", kTabSwitcherOnReturn_60Minutes,
@@ -2247,11 +2300,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordEditingAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordEditingAndroid)},
 #endif  // OS_ANDROID
+    {"enable-force-dark", flag_descriptions::kForceWebContentsDarkModeName,
+     flag_descriptions::kForceWebContentsDarkModeDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kForceWebContentsDarkMode,
+                                    kForceDarkVariations,
+                                    "ForceDarkVariations")},
 #if defined(OS_ANDROID)
-    {"enable-android-web-contents-dark-mode",
-     flag_descriptions::kAndroidWebContentsDarkMode,
-     flag_descriptions::kAndroidWebContentsDarkModeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidWebContentsDarkMode)},
 #if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
     {"enable-android-night-mode", flag_descriptions::kAndroidNightModeName,
      flag_descriptions::kAndroidNightModeDescription, kOsAndroid,

@@ -87,7 +87,7 @@ struct InitGlobals {
     scoped_task_environment_ =
         std::make_unique<base::test::ScopedTaskEnvironment>(
             base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
 
     // Disable noisy logging as per "libFuzzer in Chrome" documentation:
     // testing/libfuzzer/getting_started.md#Disable-noisy-error-message-logging.

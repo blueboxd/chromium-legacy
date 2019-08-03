@@ -74,34 +74,35 @@ void PermissionMenuModel::ExecuteCommand(int command_id, int event_flags) {
 }
 
 bool PermissionMenuModel::ShouldShowAllow(const GURL& url) {
-  // Notifications does not support CONTENT_SETTING_ALLOW in incognito.
-  if (permission_.is_incognito &&
-      permission_.type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    return false;
+  switch (permission_.type) {
+    // Notifications does not support CONTENT_SETTING_ALLOW in incognito.
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      return !permission_.is_incognito;
+    // Media only supports CONTENT_SETTING_ALLOW for secure origins.
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      return content::IsOriginSecure(url);
+    // Chooser permissions do not support CONTENT_SETTING_ALLOW.
+    case CONTENT_SETTINGS_TYPE_SERIAL_GUARD:
+    case CONTENT_SETTINGS_TYPE_USB_GUARD:
+    // Bluetooth scanning does not support CONTENT_SETTING_ALLOW.
+    case CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
+    // Native file system write does not support CONTENT_SETTING_ALLOW.
+    case CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD:
+      return false;
+    default:
+      return true;
   }
-
-  // Media only supports CONTENT_SETTING_ALLOW for secure origins.
-  if ((permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-       permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) &&
-      !content::IsOriginSecure(url)) {
-    return false;
-  }
-
-  // Chooser permissions do not support CONTENT_SETTING_ALLOW.
-  if (permission_.type == CONTENT_SETTINGS_TYPE_SERIAL_GUARD ||
-      permission_.type == CONTENT_SETTINGS_TYPE_USB_GUARD) {
-    return false;
-  }
-
-  // Bluetooth scanning permission does not support CONTENT_SETTING_ALLOW.
-  if (permission_.type == CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING)
-    return false;
-
-  return true;
 }
 
 bool PermissionMenuModel::ShouldShowAsk(const GURL& url) {
-  return permission_.type == CONTENT_SETTINGS_TYPE_USB_GUARD ||
-         permission_.type == CONTENT_SETTINGS_TYPE_SERIAL_GUARD ||
-         permission_.type == CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING;
+  switch (permission_.type) {
+    case CONTENT_SETTINGS_TYPE_USB_GUARD:
+    case CONTENT_SETTINGS_TYPE_SERIAL_GUARD:
+    case CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
+    case CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD:
+      return true;
+    default:
+      return false;
+  }
 }

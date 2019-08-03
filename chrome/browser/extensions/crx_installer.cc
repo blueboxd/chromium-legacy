@@ -536,9 +536,10 @@ void CrxInstaller::CheckInstall() {
   if (SharedModuleInfo::ImportsModules(extension())) {
     const std::vector<SharedModuleInfo::ImportInfo>& imports =
         SharedModuleInfo::GetImports(extension());
+    ExtensionRegistry* registry = ExtensionRegistry::Get(service->profile());
     for (const auto& import : imports) {
-      const Extension* imported_module =
-          service->GetExtensionById(import.extension_id, true);
+      const Extension* imported_module = registry->GetExtensionById(
+          import.extension_id, ExtensionRegistry::COMPATIBILITY);
       if (!imported_module)
         continue;
 

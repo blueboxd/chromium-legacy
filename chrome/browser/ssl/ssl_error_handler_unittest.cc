@@ -602,15 +602,15 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
         tick_clock_(new base::SimpleTestTickClock),
         test_server_(new net::EmbeddedTestServer) {
     network_time::NetworkTimeTracker::RegisterPrefs(pref_service_.registry());
+
+    field_trial_test()->SetNetworkQueriesWithVariationsService(
+        false, 0.0,
+        network_time::NetworkTimeTracker::FETCHES_IN_BACKGROUND_ONLY);
   }
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SSLErrorHandler::ResetConfigForTesting();
-
-    field_trial_test()->SetNetworkQueriesWithVariationsService(
-        false, 0.0,
-        network_time::NetworkTimeTracker::FETCHES_IN_BACKGROUND_ONLY);
 
     base::RunLoop run_loop;
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>

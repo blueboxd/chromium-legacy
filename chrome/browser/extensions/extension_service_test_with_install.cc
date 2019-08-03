@@ -226,7 +226,8 @@ const Extension* ExtensionServiceTestWithInstall::VerifyCrxInstall(
       EXPECT_EQ(expected_extensions_count_, actual_extension_count) <<
           path.value();
       extension = loaded_[0].get();
-      EXPECT_TRUE(service()->GetExtensionById(extension->id(), false))
+      EXPECT_TRUE(registry()->GetExtensionById(extension->id(),
+                                               ExtensionRegistry::ENABLED))
           << path.value();
     }
 

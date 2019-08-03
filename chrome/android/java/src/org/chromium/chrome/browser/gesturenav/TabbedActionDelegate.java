@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.gesturenav;
 import android.os.Handler;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabAssociatedApp;
 
 /**
  * Implementation of {@link NavigationHandler#ActionDelegate} that works with
@@ -40,6 +41,8 @@ public class TabbedActionDelegate implements NavigationHandler.ActionDelegate {
 
     @Override
     public boolean willBackExitApp() {
-        return !mTab.canGoBack() && !mTab.getActivity().backShouldCloseTab(mTab);
+        return !mTab.canGoBack()
+                && (!mTab.getActivity().backShouldCloseTab(mTab)
+                        || TabAssociatedApp.isOpenedFromExternalApp(mTab));
     }
 }

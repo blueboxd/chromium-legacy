@@ -91,10 +91,6 @@ class ChromeBrowserPolicyConnector;
 class PolicyService;
 }
 
-namespace prefs {
-class InProcessPrefServiceFactory;
-}
-
 namespace printing {
 class BackgroundPrintingManager;
 class PrintJobManager;
@@ -275,8 +271,6 @@ class BrowserProcess {
   // process startup and now.
   virtual shell_integration::DefaultWebClientState
   CachedDefaultWebClientState() = 0;
-
-  virtual prefs::InProcessPrefServiceFactory* pref_service_factory() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);

@@ -47,7 +47,6 @@ const char kContentIdScheme[] = "cid";
 
 class ArchiveResource;
 class KURL;
-class SharedBuffer;
 
 struct SerializedResource;
 

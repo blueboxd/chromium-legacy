@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/mojo/common/mojo_data_pipe_read_write.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 #include "media/remoting/courier_renderer.h"
 #include "media/remoting/proto_utils.h"
 #include "media/remoting/receiver.h"

@@ -16,7 +16,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/video_facing.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
-#include "media/mojo/interfaces/display_media_information.mojom.h"
+#include "media/mojo/mojom/display_media_information.mojom.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 

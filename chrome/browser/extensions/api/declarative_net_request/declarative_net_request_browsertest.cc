@@ -31,7 +31,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
@@ -1688,8 +1687,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   set_has_background_script(true);
   LoadExtensionWithRules({});
 
-  const Extension* dnr_extension = extension_service()->GetExtensionById(
-      last_loaded_extension_id(), false /*include_disabled*/);
+  const Extension* dnr_extension = extension_registry()->GetExtensionById(
+      last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
   ASSERT_TRUE(dnr_extension);
   EXPECT_EQ("Test extension", dnr_extension->name());
 
@@ -2046,8 +2045,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   const GURL unblocked_url = embedded_test_server()->GetURL(
       "yahoo.com", "/pages_with_script/index.html");
 
-  const Extension* extension = extension_service()->GetExtensionById(
-      extension_id, false /*include_disabled*/);
+  const Extension* extension = extension_registry()->GetExtensionById(
+      extension_id, ExtensionRegistry::ENABLED);
   RulesetSource static_source = RulesetSource::CreateStatic(*extension);
   RulesetSource dynamic_source =
       RulesetSource::CreateDynamic(profile(), *extension);
@@ -2288,8 +2287,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
       {rule}, "extension" /* directory */, host_permissions));
 
-  const Extension* extension = extension_service()->GetExtensionById(
-      last_loaded_extension_id(), false /*include_disabled*/);
+  const Extension* extension = extension_registry()->GetExtensionById(
+      last_loaded_extension_id(), ExtensionRegistry::ENABLED);
   ASSERT_TRUE(extension);
 
   auto verify_script_redirected = [this, extension](
@@ -2414,8 +2413,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
       {rule}, "test_extension", {URLPattern::kAllUrlsPattern}));
 
-  const Extension* extension = extension_service()->GetExtensionById(
-      last_loaded_extension_id(), false /*include_disabled*/);
+  const Extension* extension = extension_registry()->GetExtensionById(
+      last_loaded_extension_id(), ExtensionRegistry::ENABLED);
   ASSERT_TRUE(extension);
 
   EXPECT_TRUE(extension->permissions_data()->HasEffectiveAccessToAllHosts());

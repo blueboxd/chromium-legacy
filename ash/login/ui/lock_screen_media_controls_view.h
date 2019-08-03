@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
 
 namespace service_manager {
@@ -37,7 +38,8 @@ class ASH_EXPORT LockScreenMediaControlsView
     : public views::View,
       public media_session::mojom::MediaControllerObserver,
       public media_session::mojom::MediaControllerImageObserver,
-      public views::ButtonListener {
+      public views::ButtonListener,
+      public ui::ImplicitAnimationObserver {
  public:
   using MediaControlsEnabled = base::RepeatingCallback<bool()>;
 
@@ -65,6 +67,7 @@ class ASH_EXPORT LockScreenMediaControlsView
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
+  void Layout() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
@@ -89,8 +92,14 @@ class ASH_EXPORT LockScreenMediaControlsView
       media_session::mojom::MediaSessionImageType type,
       const SkBitmap& bitmap) override;
 
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // ui::EventHandler:
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   void FlushForTesting();
 
@@ -105,6 +114,9 @@ class ASH_EXPORT LockScreenMediaControlsView
 
  private:
   friend class LockScreenMediaControlsViewTest;
+
+  // Hides the controls and stops media playback.
+  void Dismiss();
 
   // Sets the media artwork to |img|. If |img| is nullopt, the default artwork
   // is set instead.
@@ -123,6 +135,23 @@ class ASH_EXPORT LockScreenMediaControlsView
   // Toggles the media play/pause button between "play" and "pause" as
   // necessary.
   void SetIsPlaying(bool playing);
+
+  // Updates the y position and opacity of |contents_view_| during dragging.
+  void UpdateDrag(const gfx::Point& location_in_screen);
+
+  // If the drag velocity is past the threshold or the drag position is past
+  // the height threshold, this calls |HideControlsAnimation()|. Otherwise, this
+  // will call |ResetControlsAnimation()|.
+  void EndDrag();
+
+  // Updates the opacity of |contents_view_| based on its current position.
+  void UpdateOpacity();
+
+  // Animates |contents_view_| up and off the screen.
+  void RunHideControlsAnimation();
+
+  // Animates |contents_view_| to its original position.
+  void RunResetControlsAnimation();
 
   // Used to connect to the Media Session service.
   service_manager::Connector* const connector_;
@@ -159,7 +188,10 @@ class ASH_EXPORT LockScreenMediaControlsView
   // Set of enabled actions.
   std::set<media_session::mojom::MediaSessionAction> enabled_actions_;
 
-  // Container views directly attached to this view.
+  // Contains the visible and draggable UI of the media controls.
+  views::View* contents_view_ = nullptr;
+
+  // Container views attached to |contents_view_|.
   MediaControlsHeaderView* header_row_ = nullptr;
   views::ImageView* session_artwork_ = nullptr;
   NonAccessibleView* button_row_ = nullptr;
@@ -171,6 +203,15 @@ class ASH_EXPORT LockScreenMediaControlsView
   const MediaControlsEnabled media_controls_enabled_;
   const base::RepeatingClosure hide_media_controls_;
   const base::RepeatingClosure show_media_controls_;
+
+  // The location of the initial gesture event in screen coordinates.
+  gfx::Point initial_drag_point_;
+
+  // The velocity of the gesture event.
+  float last_fling_velocity_ = 0;
+
+  // True if the user is in the process of gesture-dragging |contents_view_|.
+  bool is_in_drag_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsView);
 };

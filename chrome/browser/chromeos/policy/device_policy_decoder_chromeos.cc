@@ -43,7 +43,7 @@ namespace em = enterprise_management;
 namespace policy {
 
 // A pattern for validating hostnames.
-const char hostNameRegex[] = "^([A-z0-9][A-z0-9-]+\\.)+[A-z0-9]+$";
+const char hostNameRegex[] = "^([A-z0-9][A-z0-9-]*\\.)+[A-z0-9]+$";
 
 namespace {
 

@@ -8,7 +8,6 @@
 #include "base/component_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cert/cert_verifier.h"
-#include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "services/network/crl_set_distributor.h"
 #include "services/network/public/mojom/ssl_config.mojom.h"
@@ -40,7 +39,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SSLConfigServiceMojo
   void OnSSLConfigUpdated(const mojom::SSLConfigPtr ssl_config) override;
 
   // net::SSLConfigService implementation:
-  void GetSSLConfig(net::SSLConfig* ssl_config) override;
+  net::SSLContextConfig GetSSLContextConfig() override;
   bool CanShareConnectionWithClientCerts(
       const std::string& hostname) const override;
 
@@ -50,7 +49,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SSLConfigServiceMojo
  private:
   mojo::Binding<mojom::SSLConfigClient> binding_;
 
-  net::SSLConfig ssl_config_;
+  net::SSLContextConfig ssl_context_config_;
   net::CertVerifier::Config cert_verifier_config_;
 
   net::CertVerifier* cert_verifier_;

@@ -7,7 +7,6 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
-#include "components/services/heap_profiling/public/cpp/manifest.h"
 #include "content/public/app/content_browser_manifest.h"
 #include "content/public/app/content_gpu_manifest.h"
 #include "content/public/app/content_plugin_manifest.h"
@@ -67,7 +66,6 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
           GetContentRendererManifest(),
           GetContentUtilityManifest(),
 
-          heap_profiling::GetManifest(),
           audio::GetManifest(IsAudioServiceOutOfProcess()
                                  ? service_manager::Manifest::ExecutionMode::
                                        kOutOfProcessBuiltin

@@ -17,6 +17,7 @@ extern const base::Feature kInterestFeedContentSuggestions;
 extern const base::FeatureParam<std::string> kDisableTriggerTypes;
 extern const base::FeatureParam<int> kSuppressRefreshDurationMinutes;
 extern const base::FeatureParam<int> kTimeoutDurationSeconds;
+extern const base::FeatureParam<bool> kThrottleBackgroundFetches;
 
 extern const base::Feature kInterestFeedNotifications;
 

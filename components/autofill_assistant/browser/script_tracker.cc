@@ -77,6 +77,23 @@ void ScriptTracker::SetScripts(std::vector<std::unique_ptr<Script>> scripts) {
     }
   }
   SortScripts(&interrupts_);
+
+  // If there were script actions defined, clear them. If we have a new set of
+  // script definition, scripts with the same path might now have different
+  // precondition, so we can't keep them.
+  script_actions_.clear();
+}
+
+bool ScriptTracker::SetScriptActions(
+    const std::string& script_path,
+    std::unique_ptr<ActionsResponseProto> actions) {
+  for (auto& script_pair : available_scripts_) {
+    if (script_pair.first->handle.path == script_path) {
+      script_actions_.emplace(std::make_pair(script_path, std::move(actions)));
+      return true;
+    }
+  }
+  return false;
 }
 
 void ScriptTracker::CheckScripts() {
@@ -131,6 +148,18 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
       script_path, std::move(context), last_global_payload_,
       last_script_payload_,
       /* listener= */ this, &scripts_state_, &interrupts_, delegate_);
+
+  // Set the initial set of actions, the first time a script is run.
+  auto actions_iter = script_actions_.find(script_path);
+  if (actions_iter != script_actions_.end()) {
+    // TODO(b/138278201): Consider keeping the set of actions for another run of
+    // the script. This means not transferring ownership, but also guaranteeing
+    // that the content of script_actions_ doesn't change while a script is
+    // running.
+    executor_->SetActions(std::move(actions_iter->second));
+    script_actions_.erase(actions_iter);
+  }
+
   ScriptExecutor::RunScriptCallback run_script_callback = base::BindOnce(
       &ScriptTracker::OnScriptRun, weak_ptr_factory_.GetWeakPtr(), script_path,
       std::move(callback));

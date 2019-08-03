@@ -15,14 +15,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.metrics.WebappSplashUmaCache;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -91,15 +89,5 @@ public class WebappSplashScreenThemeColorTest {
                         return mActivityTestRule.getActivity().getWindow().getStatusBarColor();
                     }
                 }));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Webapps"})
-    public void testUmaThemeColorCustom() {
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_THEMECOLOR,
-                        WebappSplashUmaCache.SplashColorStatus.CUSTOM));
     }
 }

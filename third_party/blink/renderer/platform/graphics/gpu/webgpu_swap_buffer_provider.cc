@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/gpu/webgpu_swap_buffer_provider.h"
 
+#include "build/build_config.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
@@ -12,13 +13,28 @@
 
 namespace blink {
 
+namespace {
+viz::ResourceFormat DawnFormatToViz(DawnTextureFormat format) {
+  if (format == DAWN_TEXTURE_FORMAT_BGRA8_UNORM) {
+    return viz::BGRA_8888;
+  }
+  if (format == DAWN_TEXTURE_FORMAT_RGBA8_UNORM) {
+    return viz::RGBA_8888;
+  }
+  NOTREACHED();
+  return viz::RGBA_8888;
+}
+}  // namespace
+
 WebGPUSwapBufferProvider::WebGPUSwapBufferProvider(
     Client* client,
     scoped_refptr<DawnControlClientHolder> dawn_control_client,
-    DawnTextureUsageBit usage)
+    DawnTextureUsageBit usage,
+    DawnTextureFormat format)
     : dawn_control_client_(dawn_control_client),
       client_(client),
-      usage_(usage) {
+      usage_(usage),
+      format_(DawnFormatToViz(format)) {
   // Create a layer that will be used by the canvas and will ask for a
   // SharedImage each frame.
   layer_ = cc::TextureLayer::CreateForMailbox(this);
@@ -80,8 +96,7 @@ DawnTexture WebGPUSwapBufferProvider::GetNewTexture(DawnDevice device,
   // Create a new swap buffer.
   // TODO(cwallez@chromium.org): have some recycling mechanism.
   gpu::Mailbox mailbox = sii->CreateSharedImage(
-      viz::RGBA_8888, static_cast<gfx::Size>(size),
-      gfx::ColorSpace::CreateSRGB(),
+      format_, static_cast<gfx::Size>(size), gfx::ColorSpace::CreateSRGB(),
       gpu::SHARED_IMAGE_USAGE_WEBGPU | gpu::SHARED_IMAGE_USAGE_DISPLAY);
   gpu::SyncToken creation_token = sii->GenUnverifiedSyncToken();
 
@@ -137,13 +152,25 @@ bool WebGPUSwapBufferProvider::PrepareTransferableResource(
   webgpu->GenUnverifiedSyncTokenCHROMIUM(
       current_swap_buffer_->access_finished_token.GetData());
 
+  // On macOS, shared images are backed by IOSurfaces that can only be used
+  // with OpenGL via the rectangle texture target. Every other shared image
+  // implementation is implemented on OpenGL via some form of eglSurface and
+  // eglBindTexImage (on ANGLE or system drivers) so they use the 2D texture
+  // target.
+  const uint32_t texture_target =
+#if defined(OS_MACOSX)
+      GL_TEXTURE_RECTANGLE_ARB
+#else
+      GL_TEXTURE_2D
+#endif
+      ;
   // Populate the output resource
   *out_resource = viz::TransferableResource::MakeGL(
-      current_swap_buffer_->mailbox, GL_LINEAR, GL_TEXTURE_RECTANGLE_ARB,
+      current_swap_buffer_->mailbox, GL_LINEAR, texture_target,
       current_swap_buffer_->access_finished_token, current_swap_buffer_->size,
       false);
   out_resource->color_space = gfx::ColorSpace::CreateSRGB();
-  out_resource->format = viz::RGBA_8888;
+  out_resource->format = format_;
 
   // This holds a ref on the SwapBuffers that will keep it alive until the
   // mailbox is released (and while the release callback is running).

@@ -1307,6 +1307,12 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             }
         };
         templateUrlService.addObserver(mTemplateUrlObserver);
+
+        // Force an update once to populate initial data.
+        mLocationBar.updateSearchEngineStatusIcon(
+                SearchEngineLogoUtils.shouldShowSearchEngineLogo(),
+                TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
+                SearchEngineLogoUtils.getSearchLogoUrl());
     }
 
     private void onNativeLibraryReady() {

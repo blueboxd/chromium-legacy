@@ -33,7 +33,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_proxy_connect_job.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_test_util.h"
@@ -929,7 +929,7 @@ class QuicNetworkTransactionTest
   std::unique_ptr<SSLConfigServiceDefaults> ssl_config_service_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
   HttpNetworkSession::Params session_params_;
   HttpNetworkSession::Context session_context_;
   HttpRequestInfo request_;
@@ -6327,7 +6327,7 @@ class QuicURLRequestContext : public URLRequestContext {
     storage_.set_http_auth_handler_factory(
         HttpAuthHandlerFactory::CreateDefault());
     storage_.set_http_server_properties(
-        std::make_unique<HttpServerPropertiesImpl>());
+        std::make_unique<HttpServerProperties>());
     storage_.set_job_factory(std::make_unique<URLRequestJobFactoryImpl>());
     storage_.set_http_network_session(std::move(session));
     storage_.set_http_transaction_factory(std::make_unique<HttpCache>(
@@ -6431,12 +6431,20 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
           client_packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),
           true, true, std::move(headers)));
 
+  const quic::QuicStreamOffset initial = server_maker_.stream_offset(
+      GetNthClientInitiatedBidirectionalStreamId(0));
   mock_quic_data.AddRead(
       ASYNC,
       ConstructServerPushPromisePacket(
           1, GetNthClientInitiatedBidirectionalStreamId(0),
           GetNthServerInitiatedUnidirectionalStreamId(0), false,
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
+  quic::QuicStreamOffset push_promise_offset = 0;
+  if (VersionUsesQpack(version_.transport_version)) {
+    push_promise_offset = server_maker_.stream_offset(
+                              GetNthClientInitiatedBidirectionalStreamId(0)) -
+                          initial;
+  }
 
   if ((client_headers_include_h2_stream_dependency_ &&
        version_.transport_version >= quic::QUIC_VERSION_43) ||
@@ -6513,8 +6521,9 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
             request->GetTotalSentBytes());
   EXPECT_EQ(network_delegate.total_network_bytes_received(),
             request->GetTotalReceivedBytes());
-  EXPECT_EQ(static_cast<int>(expected_raw_header_response_size),
-            request->raw_header_size());
+  EXPECT_EQ(
+      static_cast<int>(expected_raw_header_response_size + push_promise_offset),
+      request->raw_header_size());
 
   // Pump the message loop to allow all data to be consumed.
   base::RunLoop().RunUntilIdle();
@@ -6824,7 +6833,7 @@ class QuicNetworkTransactionWithDestinationTest
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<HttpAuthHandlerFactory> auth_handler_factory_;
   quic::test::MockRandom random_generator_;
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
   BoundTestNetLog net_log_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   std::vector<std::unique_ptr<StaticSocketDataProvider>>

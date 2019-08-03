@@ -8,8 +8,8 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "media/cast/cast_config.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
-#include "media/mojo/interfaces/remoting_common.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
+#include "media/mojo/mojom/remoting_common.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace media {

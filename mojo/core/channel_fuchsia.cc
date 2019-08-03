@@ -95,7 +95,7 @@ class MessageView {
   MessageView(Channel::MessagePtr message, size_t offset)
       : message_(std::move(message)),
         offset_(offset),
-        handles_(message_->TakeHandlesForTransport()) {
+        handles_(message_->TakeHandles()) {
     DCHECK_GT(message_->data_num_bytes(), offset_);
   }
 

@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/trace_event/trace_event.h"
@@ -35,8 +36,7 @@ int main(int argc, char** argv) {
 
   // Build UI thread task executor. This is used by platform
   // implementations for event polling & running background tasks.
-  base::SingleThreadTaskExecutor main_task_executor(
-      base::MessagePump::Type::UI);
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("VulkanDemo");
 
   gpu::VulkanDemo vulkan_demo;

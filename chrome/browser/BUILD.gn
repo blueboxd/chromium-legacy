@@ -284,8 +284,6 @@ jumbo_split_static_library("browser") {
     "chrome_quota_permission_context.h",
     "chrome_resource_bundle_helper.cc",
     "chrome_resource_bundle_helper.h",
-    "chrome_service.cc",
-    "chrome_service.h",
     "client_hints/client_hints.cc",
     "client_hints/client_hints.h",
     "client_hints/client_hints_factory.cc",
@@ -377,6 +375,8 @@ jumbo_split_static_library("browser") {
     "data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h",
     "data_reduction_proxy/data_reduction_proxy_tab_helper.cc",
     "data_reduction_proxy/data_reduction_proxy_tab_helper.h",
+    "data_saver/data_saver_top_host_provider.cc",
+    "data_saver/data_saver_top_host_provider.h",
     "data_use_measurement/chrome_data_use_measurement.cc",
     "data_use_measurement/chrome_data_use_measurement.h",
     "defaults.cc",
@@ -929,6 +929,8 @@ jumbo_split_static_library("browser") {
     "optimization_guide/optimization_guide_keyed_service.h",
     "optimization_guide/optimization_guide_keyed_service_factory.cc",
     "optimization_guide/optimization_guide_keyed_service_factory.h",
+    "optimization_guide/optimization_guide_web_contents_observer.cc",
+    "optimization_guide/optimization_guide_web_contents_observer.h",
     "page_load_metrics/metrics_navigation_throttle.cc",
     "page_load_metrics/metrics_navigation_throttle.h",
     "page_load_metrics/metrics_web_contents_observer.cc",
@@ -1364,8 +1366,6 @@ jumbo_split_static_library("browser") {
     "previews/previews_service.h",
     "previews/previews_service_factory.cc",
     "previews/previews_service_factory.h",
-    "previews/previews_top_host_provider.cc",
-    "previews/previews_top_host_provider.h",
     "previews/previews_ui_tab_helper.cc",
     "previews/previews_ui_tab_helper.h",
     "previews/resource_loading_hints/resource_loading_hints_web_contents_observer.cc",
@@ -2110,8 +2110,8 @@ jumbo_split_static_library("browser") {
     "//media/midi",
     "//media/mojo:buildflags",
     "//media/mojo/common",
-    "//media/mojo/interfaces:mirror_service_remoting",
-    "//media/mojo/interfaces:remoting",
+    "//media/mojo/mojom:mirror_service_remoting",
+    "//media/mojo/mojom:remoting",
     "//media/mojo/services",
     "//media/webrtc",
     "//mojo/core/embedder",
@@ -2861,7 +2861,7 @@ jumbo_split_static_library("browser") {
       "//components/send_tab_to_self",
       "//components/signin/internal/identity_manager",  # see android/signin/DEPS
       "//media/mojo/clients",
-      "//media/mojo/interfaces:constants",
+      "//media/mojo/mojom:constants",
       "//rlz:rlz_utils",
       "//sandbox",
       "//sandbox:sandbox_buildflags",
@@ -3614,6 +3614,8 @@ jumbo_split_static_library("browser") {
       "sync/sync_error_notifier_ash.h",
       "sync/sync_error_notifier_factory_ash.cc",
       "sync/sync_error_notifier_factory_ash.h",
+      "sync/wifi_configuration_sync_service_factory.cc",
+      "sync/wifi_configuration_sync_service_factory.h",
       "task_manager/providers/arc/arc_process_task.cc",
       "task_manager/providers/arc/arc_process_task.h",
       "task_manager/providers/arc/arc_process_task_provider.cc",
@@ -3633,6 +3635,7 @@ jumbo_split_static_library("browser") {
       "//chrome/services/cups_proxy",
       "//chrome/services/cups_proxy/public/mojom",
       "//chromeos/components/account_manager",
+      "//chromeos/components/sync_wifi",
       "//chromeos/services/assistant/public:feature_flags",
       "//chromeos/services/assistant/public/cpp:prefs",
       "//chromeos/services/cellular_setup",
@@ -4526,7 +4529,7 @@ jumbo_split_static_library("browser") {
       "media/output_protection_impl.cc",
       "media/output_protection_impl.h",
     ]
-    deps += [ "//media/mojo/interfaces" ]
+    deps += [ "//media/mojo/mojom" ]
 
     if (enable_widevine) {
       if (enable_widevine_cdm_component) {
@@ -4559,7 +4562,7 @@ jumbo_split_static_library("browser") {
 
     if (mojo_media_host == "browser") {
       deps += [
-        "//media/mojo/interfaces:constants",
+        "//media/mojo/mojom:constants",
         "//media/mojo/services",
       ]
     }
@@ -5408,6 +5411,8 @@ static_library("test_support") {
     "ssl/ssl_client_auth_requestor_mock.h",
     "subresource_filter/test_ruleset_publisher.cc",
     "subresource_filter/test_ruleset_publisher.h",
+    "translate/translate_test_utils.cc",
+    "translate/translate_test_utils.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]

@@ -13,7 +13,7 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_input_delegate.h"
-#include "media/mojo/interfaces/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_logging.mojom.h"
 
 namespace media {
 class AudioManager;

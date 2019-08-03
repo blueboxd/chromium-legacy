@@ -1092,7 +1092,7 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
 
   // The input handler wants to know about the main frame for metric purposes
   DCHECK(widget_input_handler_manager_);
-  widget_input_handler_manager_->MarkBeginMainFrame();
+  widget_input_handler_manager_->BeginMainFrame();
 
   GetWebWidget()->BeginFrame(frame_time, record_main_frame_metrics);
 }
@@ -1170,7 +1170,7 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
 
   // The input handler wants to know about the commit for metric purposes
   DCHECK(widget_input_handler_manager_);
-  widget_input_handler_manager_->MarkCompositorCommit();
+  widget_input_handler_manager_->CompositorDidCommit();
 
   for (auto& observer : render_frames_)
     observer.DidCommitAndDrawCompositorFrame();
@@ -1890,8 +1890,13 @@ void RenderWidget::AbortWarmupCompositor() {
     std::move(after_warmup_callback_).Run(nullptr);
 }
 
-void RenderWidget::DoDeferredClose() {
-  Send(new WidgetHostMsg_Close(routing_id_));
+// static
+void RenderWidget::DoDeferredClose(int widget_routing_id) {
+  // DoDeferredClose() was a posted task, which means the RenderWidget may have
+  // become frozen in the meantime. Frozen RenderWidgets do not send messages,
+  // so break the dependency on RenderWidget here, by making this method static
+  // and going to RenderThread directly to send.
+  RenderThread::Get()->Send(new WidgetHostMsg_Close(widget_routing_id));
 }
 
 void RenderWidget::ClosePopupWidgetSoon() {
@@ -1922,7 +1927,7 @@ void RenderWidget::CloseWidgetSoon() {
   // message back to the message loop, which won't run until the JS is
   // complete, and then the Close request can be sent.
   GetCleanupTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&RenderWidget::DoDeferredClose, this));
+      FROM_HERE, base::BindOnce(&RenderWidget::DoDeferredClose, routing_id_));
 }
 
 void RenderWidget::Close() {
@@ -3684,6 +3689,12 @@ void RenderWidget::DidNavigate() {
   // this method. But since we are closing we can skip it.
   if (closing_)
     return;
+
+  // The input handler wants to know about navigation so that it can
+  // resets the state for UMA reporting of input arrival with respect to
+  // document lifecycle.
+  DCHECK(widget_input_handler_manager_);
+  widget_input_handler_manager_->DidNavigate();
 
   layer_tree_view_->ClearCachesOnNextCommit();
 }

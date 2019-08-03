@@ -12,7 +12,7 @@
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
@@ -275,7 +275,7 @@ class HttpNetworkLayerTest : public PlatformTest,
   std::unique_ptr<HttpNetworkLayer> factory_;
 
  private:
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
 };
 
 TEST_F(HttpNetworkLayerTest, CreateAndDestroy) {

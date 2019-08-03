@@ -14,8 +14,8 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
-#include "media/mojo/interfaces/audio_input_stream.mojom.h"
-#include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "media/mojo/mojom/audio_input_stream.mojom.h"
+#include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 
 namespace audio {

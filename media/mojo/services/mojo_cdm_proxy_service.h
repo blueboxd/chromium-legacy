@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/cdm_context.h"
 #include "media/cdm/cdm_proxy.h"
-#include "media/mojo/interfaces/cdm_proxy.mojom.h"
+#include "media/mojo/mojom/cdm_proxy.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 
 namespace media {

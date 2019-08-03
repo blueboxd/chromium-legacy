@@ -119,10 +119,14 @@ class FakeTabController : public TabController {
     return 1.0f;
   }
   float GetHoverOpacityForRadialHighlight() const override { return 1.0f; }
+
   const TabGroupVisualData* GetVisualDataForGroup(
       TabGroupId group) const override {
     return nullptr;
   }
+
+  void SetVisualDataForGroup(TabGroupId group,
+                             TabGroupVisualData visual_data) override {}
 
   void SetTabColors(SkColor bg_color_active,
                     SkColor fg_color_active,

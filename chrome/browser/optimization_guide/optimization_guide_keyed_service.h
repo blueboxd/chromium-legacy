@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_KEYED_SERVICE_H_
 
 #include <memory>
+#include <unordered_set>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 
 namespace base {
 class FilePath;
@@ -16,6 +19,7 @@ class FilePath;
 
 namespace content {
 class BrowserContext;
+class NavigationHandle;
 }  // namespace content
 
 namespace leveldb_proto {
@@ -46,11 +50,24 @@ class OptimizationGuideKeyedService : public KeyedService {
     return hints_manager_.get();
   }
 
+  // Registers the optimization types that intend to be queried during the
+  // session.
+  void RegisterOptimizationTypes(
+      std::vector<optimization_guide::proto::OptimizationType>
+          optimization_types);
+
+  // Prompts the load of the hint for the navigation, if there is at least one
+  // optimization type registered and there is a hint available.
+  void MaybeLoadHintForNavigation(content::NavigationHandle* navigation_handle);
+
   // KeyedService implementation.
   void Shutdown() override;
 
  private:
   std::unique_ptr<OptimizationGuideHintsManager> hints_manager_;
+
+  std::unordered_set<optimization_guide::proto::OptimizationType>
+      registered_optimization_types_;
 
   content::BrowserContext* browser_context_;
 

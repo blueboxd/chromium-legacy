@@ -2096,7 +2096,8 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
 
   // The child broke, and we're not at the start of a fragmentainer, and we're
   // supposed to avoid breaking inside the child.
-  DCHECK(IsFirstFragment(ConstraintSpace(), physical_fragment));
+  DCHECK(!physical_fragment.IsBox() ||
+         To<NGPhysicalBoxFragment>(physical_fragment).IsFirstForNode());
   return SoftBreak;
 }
 

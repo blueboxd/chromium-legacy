@@ -10,6 +10,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -165,7 +167,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
     DCHECK_EQ(scheduler_type, SchedulerType::kRealScheduler);
     main_thread_scheduler_ =
         blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
-            base::MessagePump::Create(base::MessagePump::Type::DEFAULT));
+            base::MessagePump::Create(base::MessagePumpType::DEFAULT));
     base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
         "BlinkTestSupport");
   }

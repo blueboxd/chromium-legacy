@@ -6631,7 +6631,7 @@ class TestSSLConfigService : public SSLConfigService {
   TestSSLConfigService() {}
   ~TestSSLConfigService() override = default;
 
-  void GetSSLConfig(SSLConfig* config) override { *config = config_; }
+  SSLContextConfig GetSSLContextConfig() override { return config_; }
 
   // Returns true if |hostname| is in domains_for_pooling_. This is a simpler
   // implementation than the production implementation in SSLConfigServiceMojo.
@@ -6650,7 +6650,7 @@ class TestSSLConfigService : public SSLConfigService {
   }
 
  private:
-  SSLConfig config_;
+  SSLContextConfig config_;
   std::vector<std::string> domains_for_pooling_;
 };
 

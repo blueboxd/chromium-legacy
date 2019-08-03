@@ -12,7 +12,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/timestamp_constants.h"
 #include "media/learning/common/value.h"
-#include "media/mojo/interfaces/media_metrics_provider.mojom.h"
+#include "media/mojo/mojom/media_metrics_provider.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"

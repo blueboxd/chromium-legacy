@@ -27,6 +27,10 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
   if (!ShouldPaint(paint_state))
     return;
 
+  DCHECK(
+      !layout_block_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren) ||
+      paint_info.DescendantPaintingBlocked());
+
   auto paint_offset = paint_state.PaintOffset();
   auto& local_paint_info = paint_state.MutablePaintInfo();
   PaintPhase original_phase = local_paint_info.phase;
@@ -110,7 +114,7 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
 }
 
 void BlockPainter::PaintChildren(const PaintInfo& paint_info) {
-  if (layout_block_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (paint_info.DescendantPaintingBlocked())
     return;
 
   // We may use legacy paint to paint the anonymous fieldset child. The layout
@@ -156,7 +160,7 @@ void BlockPainter::PaintChild(const LayoutBox& child,
 
 void BlockPainter::PaintChildrenAtomically(const OrderIterator& order_iterator,
                                            const PaintInfo& paint_info) {
-  if (layout_block_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (paint_info.DescendantPaintingBlocked())
     return;
   for (const LayoutBox* child = order_iterator.First(); child;
        child = order_iterator.Next()) {
@@ -166,7 +170,7 @@ void BlockPainter::PaintChildrenAtomically(const OrderIterator& order_iterator,
 
 void BlockPainter::PaintAllChildPhasesAtomically(const LayoutBox& child,
                                                  const PaintInfo& paint_info) {
-  if (layout_block_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (paint_info.DescendantPaintingBlocked())
     return;
   if (!child.HasSelfPaintingLayer() && !child.IsFloating())
     ObjectPainter(child).PaintAllPhasesAtomically(paint_info);
@@ -222,7 +226,7 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
   if (paint_phase != PaintPhase::kSelfOutlineOnly &&
       paint_phase != PaintPhase::kSelfBlockBackgroundOnly &&
       paint_phase != PaintPhase::kMask &&
-      !layout_block_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+      !paint_info.DescendantPaintingBlocked()) {
     // Actually paint the contents.
     if (layout_block_.IsLayoutBlockFlow()) {
       // All floating descendants will be LayoutBlockFlow objects, and will get

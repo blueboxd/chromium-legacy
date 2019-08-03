@@ -6,7 +6,8 @@
 #define COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_PROFILING_CLIENT_H_
 
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace heap_profiling {
 
@@ -22,20 +23,20 @@ class ProfilingClient : public mojom::ProfilingClient {
   void StartProfiling(mojom::ProfilingParamsPtr params) override;
   void RetrieveHeapProfile(RetrieveHeapProfileCallback callback) override;
 
-  void BindToInterface(mojom::ProfilingClientRequest request);
+  void BindToInterface(mojo::PendingReceiver<mojom::ProfilingClient> receiver);
 
  private:
   ~ProfilingClient() override;
 
   void StartProfilingInternal(mojom::ProfilingParamsPtr params);
 
-  // Ideally, this would be a mojo::Binding that would only keep alive one
-  // client request. However, the service that makes the client requests
+  // Ideally, this would be a mojo::Receiver that would only keep alive one
+  // client receiver. However, the service that makes the client requests
   // [content_browser] is different from the service that dedupes the client
   // requests [profiling service]. This means that there may be a brief
   // intervals where there are two active bindings, until the profiling service
   // has a chance to figure out which one to keep.
-  mojo::BindingSet<mojom::ProfilingClient> bindings_;
+  mojo::ReceiverSet<mojom::ProfilingClient> receivers_;
 
   bool started_profiling_{false};
 };

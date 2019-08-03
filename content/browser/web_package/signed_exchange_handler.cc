@@ -17,7 +17,6 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/merkle_integrity_source_stream.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_certificate_chain.h"
@@ -92,15 +91,6 @@ using VerifyCallback = base::OnceCallback<void(int32_t,
                                                const net::CertVerifyResult&,
                                                const net::ct::CTVerifyResult&)>;
 
-void OnVerifyCertUI(VerifyCallback callback,
-                    int32_t error_code,
-                    const net::CertVerifyResult& cv_result,
-                    const net::ct::CTVerifyResult& ct_result) {
-  NavigationURLLoaderImpl::RunOrPostTaskOnLoaderThread(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), error_code, cv_result, ct_result));
-}
-
 void VerifyCert(const scoped_refptr<net::X509Certificate>& certificate,
                 const GURL& url,
                 const std::string& ocsp_result,
@@ -108,8 +98,8 @@ void VerifyCert(const scoped_refptr<net::X509Certificate>& certificate,
                 base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
                 VerifyCallback callback) {
   VerifyCallback wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-      base::BindOnce(OnVerifyCertUI, std::move(callback)), net::ERR_FAILED,
-      net::CertVerifyResult(), net::ct::CTVerifyResult());
+      std::move(callback), net::ERR_FAILED, net::CertVerifyResult(),
+      net::ct::CTVerifyResult());
 
   network::mojom::NetworkContext* network_context =
       g_network_context_for_testing;

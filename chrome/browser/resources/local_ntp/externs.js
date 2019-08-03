@@ -371,6 +371,7 @@ configData.translatedStrings.audioError;
 configData.translatedStrings.backLabel;
 configData.translatedStrings.backgroundsUnavailable;
 configData.translatedStrings.clickToViewDoodle;
+configData.translatedStrings.colorLabelPrefix;
 configData.translatedStrings.connectionError;
 configData.translatedStrings.connectionErrorNoPeriod;
 configData.translatedStrings.copyLink;

@@ -63,7 +63,7 @@ def _Spawn(args):
     # The canonical version numbers are stored in the infra repository here:
     # build/scripts/slave/recipe_modules/swarming/api.py
     cpython_version = 'version:2.7.15.chromium14'
-    vpython_version = 'git_revision:96f81e737868d43124b4661cf1c325296ca04944'
+    vpython_version = 'git_revision:98a268c6432f18aedd55d62b9621765316dc2a16'
     cpython_pkg = (
         '.swarming_module:infra/python/cpython/${platform}:' +
         cpython_version)

@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_service_impl.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
@@ -40,11 +39,6 @@ void RunFront(content::AppCacheQuotaClient::RequestQueue* queue) {
 void RunDeleteOnIO(const base::Location& from_here,
                    net::CompletionRepeatingCallback callback,
                    int result) {
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    std::move(callback).Run(result);
-    return;
-  }
-
   base::PostTask(from_here, {BrowserThread::IO},
                  base::BindOnce(std::move(callback), result));
 }
@@ -104,8 +98,7 @@ void AppCacheQuotaClient::GetOriginUsage(const url::Origin& origin,
   }
 
   base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           [](base::WeakPtr<AppCacheServiceImpl> service,
              const url::Origin& origin) -> int64_t {
@@ -166,8 +159,8 @@ void AppCacheQuotaClient::DeleteOriginData(const url::Origin& origin,
     return;
   }
 
-  NavigationURLLoaderImpl::RunOrPostTaskOnLoaderThread(
-      FROM_HERE,
+  base::PostTask(
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&AppCacheServiceImpl::DeleteAppCachesForOrigin, service_,
                      origin,
                      base::BindOnce(&RunDeleteOnIO, FROM_HERE,
@@ -217,8 +210,7 @@ void AppCacheQuotaClient::GetOriginsHelper(StorageType type,
   }
 
   base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           [](base::WeakPtr<AppCacheServiceImpl> service,
              const std::string& opt_host) {

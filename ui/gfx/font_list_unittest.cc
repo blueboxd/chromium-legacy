@@ -236,7 +236,7 @@ TEST(FontListTest, Fonts_GetHeight_GetBaseline) {
   // If a font list has only one font, the height and baseline must be the same.
   Font font1(kTestFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kTestFontName),
-            base::ToLowerASCII(font1.GetActualFontNameForTesting()));
+            base::ToLowerASCII(font1.GetActualFontName()));
   FontList font_list1(std::string(kTestFontName) + ", 16px");
   EXPECT_EQ(font1.GetHeight(), font_list1.GetHeight());
   EXPECT_EQ(font1.GetBaseline(), font_list1.GetBaseline());
@@ -247,7 +247,7 @@ TEST(FontListTest, Fonts_GetHeight_GetBaseline) {
   // kTestFontName, but on Android it does not.
   Font font2(kCJKFontName, 16);
   ASSERT_EQ(base::ToLowerASCII(kCJKFontName),
-            base::ToLowerASCII(font2.GetActualFontNameForTesting()));
+            base::ToLowerASCII(font2.GetActualFontName()));
   std::vector<Font> fonts;
   fonts.push_back(font1);
   fonts.push_back(font2);

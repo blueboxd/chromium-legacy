@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder.h"
-#include "media/mojo/interfaces/audio_decoder.mojom.h"
-#include "media/mojo/interfaces/media_types.mojom.h"
+#include "media/mojo/mojom/audio_decoder.mojom.h"
+#include "media/mojo/mojom/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 

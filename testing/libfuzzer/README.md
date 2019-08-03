@@ -24,12 +24,15 @@ Started Guide].
 
 ## Advanced Topics
 
-* Improving fuzz target effectiveness: [Efficient Fuzzer Guide].
+* Improving fuzz target effectiveness: [Efficient Fuzzing Guide].
 * Creating a fuzz target that expects a protobuf (instead of a byte steam) as
   input: [Guide to libprotobuf-mutator (LPM)].
 
-  **Note**: you can also use LPM to fuzz code that needs multiple mutated
+  *** note
+  **Note:** you can also use LPM to fuzz code that needs multiple mutated
   inputs, or to generate inputs defined by a grammar.
+  ***
+
 * Reproducing bugs found by libFuzzer/AFL and reported by ClusterFuzz:
   [Reproducing Bugs].
 
@@ -60,7 +63,7 @@ Started Guide].
 [ClusterFuzz]: https://clusterfuzz.com/
 [ClusterFuzz Bugs]: https://bugs.chromium.org/p/chromium/issues/list?sort=-modified&colspec=ID%20Pri%20M%20Stars%20ReleaseBlock%20Component%20Status%20Owner%20Summary%20OS%20Modified&q=label%3AStability-LibFuzzer%2CStability-AFL%20label%3AClusterFuzz%20-status%3AWontFix%2CDuplicate&can=1
 [ClusterFuzz Stats]: https://clusterfuzz.com/fuzzer-stats/by-fuzzer/fuzzer/libFuzzer/job/libfuzzer_chrome_asan
-[Efficient Fuzzer Guide]: efficient_fuzzer.md
+[Efficient Fuzzing Guide]: efficient_fuzzing.md
 [Fuzzing]: https://en.wikipedia.org/wiki/Fuzzing
 [Fuzzing on Chrome OS]: https://chromium.googlesource.com/chromiumos/docs/+/master/fuzzing.md
 [Getting Started Guide]: getting_started.md

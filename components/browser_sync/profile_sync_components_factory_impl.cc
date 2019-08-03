@@ -339,6 +339,15 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                                 base::Unretained(sync_client_),
                                 syncer::PRINTERS))));
   }
+  if (!disabled_types.Has(syncer::WIFI_CONFIGURATIONS) &&
+      base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
+    controllers.push_back(std::make_unique<ModelTypeController>(
+        syncer::WIFI_CONFIGURATIONS,
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            sync_client_
+                ->GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS)
+                .get())));
+  }
 #endif
 
   // Reading list sync is enabled by default only on iOS. Register unless

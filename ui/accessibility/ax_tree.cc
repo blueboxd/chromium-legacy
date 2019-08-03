@@ -233,7 +233,9 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
 
     // If the node bounds is empty (either width or height is zero),
     // try to compute good bounds from the children.
-    if (bounds.IsEmpty()) {
+    // If a tree update is in progress, skip this step as children may be in a
+    // bad state.
+    if (bounds.IsEmpty() && !GetTreeUpdateInProgressState()) {
       for (size_t i = 0; i < node->children().size(); i++) {
         ui::AXNode* child = node->children()[i];
         bounds.Union(GetTreeBounds(child));

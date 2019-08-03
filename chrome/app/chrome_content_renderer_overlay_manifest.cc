@@ -14,7 +14,6 @@
 #include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -43,10 +42,8 @@
 const service_manager::Manifest& GetChromeContentRendererOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
     service_manager::ManifestBuilder()
-        .ExposeCapability("browser",
-                          service_manager::Manifest::InterfaceList<
-                              chrome::mojom::SearchBouncer,
-                              heap_profiling::mojom::ProfilingClient>())
+        .ExposeCapability("browser", service_manager::Manifest::InterfaceList<
+                                         chrome::mojom::SearchBouncer>())
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "browser",
             service_manager::Manifest::InterfaceList<

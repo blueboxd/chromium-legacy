@@ -8,8 +8,10 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/thumbnails/thumbnail_image.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace gfx {
@@ -25,7 +27,8 @@ class Widget;
 class Tab;
 
 // Dialog that displays an informational hover card containing page information.
-class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
+class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
+                               public ThumbnailImage::Observer {
  public:
   explicit TabHoverCardBubbleView(Tab* tab);
 
@@ -69,8 +72,15 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   // Updates and formats title, domain, and preview image.
   void UpdateCardContent(const Tab* tab);
 
-  void UpdatePreviewImage(gfx::ImageSkia preview_image);
+  void RegisterToThumbnailImageUpdates(
+      scoped_refptr<ThumbnailImage> thumbnail_image);
 
+  void ClearPreviewImage();
+
+  // ThumbnailImage::Observer:
+  void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image) override;
+
+  // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
 
   void RecordTimeSinceLastSeenMetric(base::TimeDelta elapsed_time);
@@ -100,6 +110,9 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView {
   // Counter used to keey track of the number of tab hover cards seen before a
   // tab is selected by mouse press.
   size_t hover_cards_seen_count_ = 0;
+  scoped_refptr<ThumbnailImage> thumbnail_image_;
+  ScopedObserver<ThumbnailImage, ThumbnailImage::Observer> thumbnail_observer_{
+      this};
 
   base::WeakPtrFactory<TabHoverCardBubbleView> weak_factory_{this};
 

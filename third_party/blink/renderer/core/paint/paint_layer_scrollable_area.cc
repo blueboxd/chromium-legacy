@@ -145,7 +145,8 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       GetScrollAnimator().SetCurrentOffset(scroll_offset_);
     element->SetSavedLayerScrollOffset(ScrollOffset());
   }
-  UpdateResizerAreaSet();
+  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
+    UpdateResizerAreaSet();
 }
 
 PaintLayerScrollableArea::~PaintLayerScrollableArea() {
@@ -184,9 +185,11 @@ void PaintLayerScrollableArea::DisposeImpl() {
       element->SetSavedLayerScrollOffset(scroll_offset_);
   }
 
-  if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
-    if (LocalFrameView* frame_view = frame->View())
-      frame_view->RemoveResizerArea(*GetLayoutBox());
+  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+    if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
+      if (LocalFrameView* frame_view = frame->View())
+        frame_view->RemoveResizerArea(*GetLayoutBox());
+    }
   }
 
   // Note: it is not safe to call ScrollAnchor::clear if the document is being
@@ -1221,7 +1224,8 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
     VerticalScrollbar()->StyleChanged();
 
   UpdateScrollCornerStyle();
-  UpdateResizerAreaSet();
+  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
+    UpdateResizerAreaSet();
   UpdateResizerStyle(old_style);
 }
 
@@ -2440,13 +2444,17 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
       scrollbar_size = LayoutTheme::GetTheme().ScrollbarControlSizeForPart(
           style_source.StyleRef().EffectiveAppearance());
     }
-    scrollbar = MakeGarbageCollected<Scrollbar>(ScrollableArea(), orientation,
-                                                scrollbar_size,
-                                                &ScrollableArea()
-                                                     ->GetLayoutBox()
-                                                     ->GetFrame()
-                                                     ->GetPage()
-                                                     ->GetChromeClient());
+    Element* style_source_element = nullptr;
+    if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+      style_source_element = DynamicTo<Element>(style_source.GetNode());
+    }
+    scrollbar = MakeGarbageCollected<Scrollbar>(
+        ScrollableArea(), orientation, scrollbar_size, style_source_element,
+        &ScrollableArea()
+             ->GetLayoutBox()
+             ->GetFrame()
+             ->GetPage()
+             ->GetChromeClient());
   }
   ScrollableArea()->GetLayoutBox()->GetDocument().View()->AddScrollbar(
       scrollbar);

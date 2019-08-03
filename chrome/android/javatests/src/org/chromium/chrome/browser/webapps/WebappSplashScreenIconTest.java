@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
@@ -16,13 +15,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.metrics.WebappSplashUmaCache;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
@@ -56,23 +53,5 @@ public class WebappSplashScreenIconTest {
 
         Assert.assertEquals(512, drawable.getBitmap().getWidth());
         Assert.assertEquals(512, drawable.getBitmap().getHeight());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Webapps"})
-    public void testUmaCustomIcon() {
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_TYPE,
-                        WebappSplashUmaCache.SplashIconType.CUSTOM));
-
-        Bitmap icon =
-                ShortcutHelper.decodeBitmapFromString(WebappActivityTestRule.TEST_SPLASH_ICON);
-        int sizeInDp = Math.round((float) icon.getWidth()
-                / mActivityTestRule.getActivity().getResources().getDisplayMetrics().density);
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        WebappSplashUmaCache.HISTOGRAM_SPLASHSCREEN_ICON_SIZE, sizeInDp));
     }
 }

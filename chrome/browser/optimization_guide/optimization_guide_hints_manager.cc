@@ -24,6 +24,7 @@
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 
 namespace {
 
@@ -216,15 +217,14 @@ void OptimizationGuideHintsManager::UpdateComponentHints(
 
 void OptimizationGuideHintsManager::OnComponentHintsUpdated(
     base::OnceClosure update_closure,
-    bool hints_updated) {
+    bool hints_updated) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Record the result of updating the hints. This is used as a signal for the
   // hints being fully processed in testing.
-  // TODO(sophiechang): Change this back to just a Result suffix once we
-  // have the flag to not record the histogram in Previews.
-  LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.UpdateComponentHints.Result2",
-                          hints_updated);
+  LOCAL_HISTOGRAM_BOOLEAN(
+      optimization_guide::kComponentHintsUpdatedResultHistogramString,
+      hints_updated);
 
   MaybeRunUpdateClosure(std::move(update_closure));
 }
@@ -234,4 +234,34 @@ void OptimizationGuideHintsManager::ListenForNextUpdateForTesting(
   DCHECK(!next_update_closure_)
       << "Only one update closure is supported at a time";
   next_update_closure_ = std::move(next_update_closure);
+}
+
+void OptimizationGuideHintsManager::LoadHintForNavigation(
+    content::NavigationHandle* navigation_handle,
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const auto& url = navigation_handle->GetURL();
+  if (!url.has_host()) {
+    std::move(callback).Run();
+    return;
+  }
+
+  hint_cache_->LoadHint(
+      url.host(),
+      base::BindOnce(&OptimizationGuideHintsManager::OnHintLoaded,
+                     ui_weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void OptimizationGuideHintsManager::OnHintLoaded(
+    base::OnceClosure callback,
+    const optimization_guide::proto::Hint* loaded_hint) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Record the result of loading a hint. This is used as a signal for testing.
+  LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.LoadedHint.Result", loaded_hint);
+
+  // Run the callback now that the hint is loaded. This is used as a signal by
+  // tests.
+  std::move(callback).Run();
 }

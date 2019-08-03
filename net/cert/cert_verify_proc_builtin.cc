@@ -421,26 +421,25 @@ struct BuildPathAttempt {
   SimplePathBuilderDelegate::DigestPolicy digest_policy;
 };
 
-void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
-                  CertIssuerSourceStatic* intermediates,
-                  SystemTrustStore* ssl_trust_store,
-                  base::Time verification_time,
-                  base::TimeTicks deadline,
-                  VerificationType verification_type,
-                  SimplePathBuilderDelegate::DigestPolicy digest_policy,
-                  int flags,
-                  const std::string& ocsp_response,
-                  const CRLSet* crl_set,
-                  CertNetFetcher* net_fetcher,
-                  const EVRootCAMetadata* ev_metadata,
-                  CertPathBuilder::Result* result,
-                  bool* checked_revocation) {
+CertPathBuilder::Result TryBuildPath(
+    const scoped_refptr<ParsedCertificate>& target,
+    CertIssuerSourceStatic* intermediates,
+    SystemTrustStore* ssl_trust_store,
+    base::Time verification_time,
+    base::TimeTicks deadline,
+    VerificationType verification_type,
+    SimplePathBuilderDelegate::DigestPolicy digest_policy,
+    int flags,
+    const std::string& ocsp_response,
+    const CRLSet* crl_set,
+    CertNetFetcher* net_fetcher,
+    const EVRootCAMetadata* ev_metadata,
+    bool* checked_revocation) {
   der::GeneralizedTime der_verification_time;
   if (!der::EncodeTimeAsGeneralizedTime(verification_time,
                                         &der_verification_time)) {
     // This shouldn't be possible.
-    *result = CertPathBuilder::Result();
-    return;
+    return CertPathBuilder::Result();
   }
 
   // Path building will require candidate paths to conform to at least one of
@@ -462,8 +461,7 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
       target, ssl_trust_store->GetTrustStore(), &path_builder_delegate,
       der_verification_time, KeyPurpose::SERVER_AUTH,
       InitialExplicitPolicy::kFalse, user_initial_policy_set,
-      InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse,
-      result);
+      InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse);
 
   // Allow the path builder to discover the explicitly provided intermediates in
   // |input_cert|.
@@ -481,7 +479,7 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
   path_builder.SetIterationLimit(kPathBuilderIterationLimit);
   path_builder.SetDeadline(deadline);
 
-  path_builder.Run();
+  return path_builder.Run();
 }
 
 int AssignVerifyResult(X509Certificate* input_cert,
@@ -652,11 +650,11 @@ int CertVerifyProcBuiltin::VerifyInternal(
     verification_type = cur_attempt.verification_type;
 
     // Run the attempt through the path builder.
-    TryBuildPath(target, &intermediates, ssl_trust_store.get(),
-                 verification_time, deadline, cur_attempt.verification_type,
-                 cur_attempt.digest_policy, flags, ocsp_response, crl_set,
-                 net_fetcher_.get(), ev_metadata, &result,
-                 &checked_revocation_for_some_path);
+    result = TryBuildPath(
+        target, &intermediates, ssl_trust_store.get(), verification_time,
+        deadline, cur_attempt.verification_type, cur_attempt.digest_policy,
+        flags, ocsp_response, crl_set, net_fetcher_.get(), ev_metadata,
+        &checked_revocation_for_some_path);
 
     if (result.HasValidPath() || result.exceeded_deadline)
       break;

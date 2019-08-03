@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/manifest.h"
@@ -281,11 +282,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
   LoadExtensions();
   extensions::ScopedTestDialogAutoConfirm auto_confirm(
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(browser()->profile())
-          ->extension_service();
-  EXPECT_TRUE(service->GetExtensionById(extension_ids_["enabled_extension"],
-                                        false));
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  EXPECT_TRUE(
+      registry->GetExtensionById(extension_ids_["enabled_extension"],
+                                 extensions::ExtensionRegistry::ENABLED));
 
   // Ensure that all actions are allowed.
   extensions::ExtensionSystem::Get(
@@ -294,8 +295,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
   ASSERT_TRUE(RunExtensionSubtest("management/management_policy",
                                   "allowed.html"));
   // The last thing the test does is uninstall the "enabled_extension".
-  EXPECT_FALSE(service->GetExtensionById(extension_ids_["enabled_extension"],
-                                         true));
+  EXPECT_FALSE(
+      registry->GetExtensionById(extension_ids_["enabled_extension"],
+                                 extensions::ExtensionRegistry::COMPATIBILITY));
 }
 
 // Fails often on Windows dbg bots. http://crbug.com/177163
@@ -308,11 +310,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
                        MAYBE_ManagementPolicyProhibited) {
   LoadExtensions();
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(browser()->profile())
-          ->extension_service();
-  EXPECT_TRUE(service->GetExtensionById(extension_ids_["enabled_extension"],
-                                        false));
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  EXPECT_TRUE(
+      registry->GetExtensionById(extension_ids_["enabled_extension"],
+                                 extensions::ExtensionRegistry::ENABLED));
 
   // Prohibit status changes.
   extensions::ManagementPolicy* policy = extensions::ExtensionSystem::Get(
@@ -326,10 +328,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(browser()->profile())
-          ->extension_service();
-
   // Load an extension that calls launchApp() on any app that gets
   // installed.
   ExtensionTestMessageListener launcher_loaded("launcher loaded", false);
@@ -351,10 +349,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
   // Close the app panel.
   CloseBrowserSynchronously(app_browser);
 
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
   // Unload the extension.
   UninstallExtension(app_id);
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
-  ASSERT_FALSE(service->GetExtensionById(app_id, true));
+  ASSERT_FALSE(registry->GetExtensionById(
+      app_id, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Set a pref indicating that the user wants to launch in a regular tab.
   // This should be ignored, because panel apps always load in a popup.
@@ -386,10 +387,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchPanelApp) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(browser()->profile())
-          ->extension_service();
-
   // Load an extension that calls launchApp() on any app that gets
   // installed.
   ExtensionTestMessageListener launcher_loaded("launcher loaded", false);
@@ -411,10 +408,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
   // Unload the extension.
   UninstallExtension(app_id);
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
-  ASSERT_FALSE(service->GetExtensionById(app_id, true));
+  ASSERT_FALSE(registry->GetExtensionById(
+      app_id, extensions::ExtensionRegistry::COMPATIBILITY));
 
   // Set a pref indicating that the user wants to launch in a window.
   extensions::SetLaunchType(browser()->profile(), app_id,

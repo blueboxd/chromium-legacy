@@ -22,13 +22,11 @@ public class SplashUtils {
     public static View createSplashView(Context context) {
         Resources resources = context.getResources();
         Bitmap icon = WebApkUtils.decodeBitmapFromDrawable(resources, R.drawable.splash_icon);
-        @SplashLayout.IconClassification
-        int iconClassification = SplashLayout.classifyIcon(resources, icon, false);
         int backgroundColor = WebApkUtils.getColor(resources, R.color.background_color_non_empty);
 
         FrameLayout layout = new FrameLayout(context);
         SplashLayout.createLayout(context, layout, icon, false /* isIconAdaptive */,
-                iconClassification, resources.getString(R.string.name),
+                false /* isIconGenerated */, resources.getString(R.string.name),
                 WebApkUtils.shouldUseLightForegroundOnBackground(backgroundColor));
         return layout;
     }

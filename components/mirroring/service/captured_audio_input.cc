@@ -5,7 +5,7 @@
 #include "components/mirroring/service/captured_audio_input.h"
 
 #include "base/logging.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace mirroring {

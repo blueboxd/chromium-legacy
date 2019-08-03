@@ -110,7 +110,7 @@ void MultipartUploadRequest::RetryOrFinish(
     std::unique_ptr<std::string> response_body) {
   // TODO(drubery): Add metrics for success rates here.
   if (net_error == net::OK && response_code == net::HTTP_OK) {
-    std::move(callback_).Run(net::OK, net::HTTP_OK, *response_body.get());
+    std::move(callback_).Run(/*success=*/true, *response_body.get());
   } else {
     if (retry_count_ < kMaxRetryAttempts) {
       base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
@@ -120,9 +120,30 @@ void MultipartUploadRequest::RetryOrFinish(
       current_backoff_ *= kBackoffFactor;
       retry_count_++;
     } else {
-      std::move(callback_).Run(net_error, response_code, *response_body.get());
+      std::move(callback_).Run(/*success=*/false, *response_body.get());
     }
   }
+}
+
+// static
+MultipartUploadRequestFactory* MultipartUploadRequest::factory_ = nullptr;
+
+// static
+std::unique_ptr<MultipartUploadRequest> MultipartUploadRequest::Create(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const GURL& base_url,
+    const std::string& metadata,
+    const std::string& data,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    MultipartUploadRequest::Callback callback) {
+  if (!factory_) {
+    return std::make_unique<MultipartUploadRequest>(
+        url_loader_factory, base_url, metadata, data, traffic_annotation,
+        std::move(callback));
+  }
+
+  return factory_->Create(url_loader_factory, base_url, metadata, data,
+                          traffic_annotation, std::move(callback));
 }
 
 }  // namespace safe_browsing

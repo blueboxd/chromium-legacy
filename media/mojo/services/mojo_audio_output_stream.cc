@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace media {

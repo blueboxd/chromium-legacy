@@ -18,6 +18,8 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
+#include "ui/views/animation/bounds_animator.h"
+#include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/controls/image_view.h"
 
 namespace ash {
@@ -43,6 +45,34 @@ bool IsMediaButtonType(const char* class_name) {
   return class_name == views::ImageButton::kViewClassName ||
          class_name == views::ToggleImageButton::kViewClassName;
 }
+
+class AnimationWaiter : public ui::LayerAnimationObserver {
+ public:
+  explicit AnimationWaiter(views::View* host)
+      : animator_(host->layer()->GetAnimator()) {
+    animator_->AddObserver(this);
+  }
+  ~AnimationWaiter() override { animator_->RemoveObserver(this); }
+
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
+    if (!animator_->is_animating()) {
+      animator_->RemoveObserver(this);
+      run_loop_.Quit();
+    }
+  }
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  ui::LayerAnimator* animator_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(AnimationWaiter);
+};
 
 }  // namespace
 
@@ -72,6 +102,8 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     SetUserCount(1);
 
     media_controls_view_ = lock_contents.media_controls_view();
+
+    animation_waiter_ = new AnimationWaiter(contents_view());
 
     // Inject the test media controller into the media controls view.
     media_controller_ = std::make_unique<TestMediaController>();
@@ -156,6 +188,10 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return media_controller_.get();
   }
 
+  views::View* contents_view() const {
+    return media_controls_view_->contents_view_;
+  }
+
   MediaControlsHeaderView* header_row() const {
     return media_controls_view_->header_row_;
   }
@@ -185,6 +221,7 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   }
 
   LockScreenMediaControlsView* media_controls_view_ = nullptr;
+  AnimationWaiter* animation_waiter_ = nullptr;
 
  private:
   void NotifyUpdatedActions() {
@@ -596,6 +633,84 @@ TEST_F(LockScreenMediaControlsViewTest, AccessibleNodeData) {
       data.HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription));
   EXPECT_EQ(base::ASCIIToUTF16("title - artist"),
             data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+}
+
+TEST_F(LockScreenMediaControlsViewTest, DismissControlsVelocity) {
+  gfx::Point scroll_start(
+      media_controls_view_->GetBoundsInScreen().CenterPoint());
+  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() - 50);
+
+  // Simulate scroll with velocity past the threshold.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureScrollSequence(scroll_start, scroll_end,
+                                   base::TimeDelta::FromMilliseconds(100), 3);
+
+  animation_waiter_->Wait();
+
+  // Verify the controls were hidden.
+  EXPECT_FALSE(media_controls_view_->IsDrawn());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, DismissControlsHeight) {
+  gfx::Point scroll_start(
+      media_controls_view_->GetBoundsInScreen().CenterPoint());
+  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() - 200);
+
+  // Simulate scroll with height past the threshold.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureScrollSequence(scroll_start, scroll_end,
+                                   base::TimeDelta::FromSeconds(3), 3);
+
+  animation_waiter_->Wait();
+
+  // Verify the controls were hidden.
+  EXPECT_FALSE(media_controls_view_->IsDrawn());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, DragReset) {
+  // Verify |contents_view()| is in its initial position.
+  EXPECT_EQ(media_controls_view_->GetBoundsInScreen(),
+            contents_view()->GetBoundsInScreen());
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
+
+  gfx::Point scroll_start(
+      media_controls_view_->GetBoundsInScreen().CenterPoint());
+  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() - 10);
+
+  // Simulate scroll with neither height nor velocity past the thresholds.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureScrollSequence(scroll_start, scroll_end,
+                                   base::TimeDelta::FromSeconds(3), 3);
+
+  animation_waiter_->Wait();
+
+  // Verify |contents_view()| is reset to its initial position.
+  EXPECT_EQ(media_controls_view_->GetBoundsInScreen(),
+            contents_view()->GetBoundsInScreen());
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, DragBounds) {
+  // Verify |contents_view()| is in its initial position.
+  EXPECT_EQ(media_controls_view_->GetBoundsInScreen(),
+            contents_view()->GetBoundsInScreen());
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
+
+  gfx::Point scroll_start(
+      media_controls_view_->GetBoundsInScreen().CenterPoint());
+  gfx::Point scroll_end(scroll_start.x(), scroll_start.y() + 10);
+
+  // Simulate scroll that attempts to go below the view bounds.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureScrollSequence(scroll_start, scroll_end,
+                                   base::TimeDelta::FromSeconds(3), 3);
+
+  animation_waiter_->Wait();
+
+  // Verify |contents_view()| does not go below its initial position.
+  EXPECT_EQ(media_controls_view_->GetBoundsInScreen(),
+            contents_view()->GetBoundsInScreen());
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
 }
 
 }  // namespace ash

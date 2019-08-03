@@ -40,7 +40,7 @@ enum VideoCodec {
 };
 
 // Video codec profiles. Keep in sync with mojo::VideoCodecProfile (see
-// media/mojo/interfaces/media_types.mojom), gpu::VideoCodecProfile (see
+// media/mojo/mojom/media_types.mojom), gpu::VideoCodecProfile (see
 // gpu/config/gpu_info.h), and PP_VideoDecoder_Profile (translation is performed
 // in content/renderer/pepper/ppb_video_decoder_impl.cc).
 // NOTE: These values are histogrammed over time in UMA so the values must never

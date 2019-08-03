@@ -121,10 +121,9 @@ void NavigationObserver::OnInstallPromptDone(
   if (in_progress_prompt_extension_id_.empty())
     return;
 
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const Extension* extension = extension_service->GetExtensionById(
-      in_progress_prompt_extension_id_, true);
+  ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
+  const Extension* extension = extension_registry->GetExtensionById(
+      in_progress_prompt_extension_id_, ExtensionRegistry::COMPATIBILITY);
   CHECK(extension);
 
   if (result == ExtensionInstallPrompt::Result::ACCEPTED) {
@@ -132,6 +131,8 @@ void NavigationObserver::OnInstallPromptDone(
         in_progress_prompt_navigation_controller_;
     CHECK(nav_controller);
 
+    ExtensionService* extension_service =
+        ExtensionSystem::Get(profile_)->extension_service();
     // Grant permissions, re-enable the extension, and then reload the tab.
     extension_service->GrantPermissionsAndEnableExtension(extension);
     nav_controller->Reload(content::ReloadType::NORMAL, true);
@@ -148,7 +149,7 @@ void NavigationObserver::OnInstallPromptDone(
                                                         histogram_name.c_str());
   }
 
-  in_progress_prompt_extension_id_ = std::string();
+  in_progress_prompt_extension_id_.clear();
   in_progress_prompt_navigation_controller_ = nullptr;
   extension_install_prompt_.reset();
 }

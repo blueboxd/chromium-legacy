@@ -47,7 +47,6 @@ namespace blink {
 
 class ArchiveResource;
 class MIMEHeader;
-class SharedBuffer;
 
 class PLATFORM_EXPORT MHTMLParser final {
   STACK_ALLOCATED();

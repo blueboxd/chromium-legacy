@@ -32,6 +32,8 @@ class BuildBucketApiGpuUseCaseTests:
     # Verify we can get power measurement test data from latest successful
     # build, including the swarming bot that runs the test, and actual test
     # results.
+    # TODO(ynovikov): rename to 'Win10 FYI x64 Release (Intel HD 630)'
+    # once it has a successful build. crbug.com/988833
     bot = 'Win10 FYI Release (Intel HD 630)'
     step = 'power_measurement_test'
     build_id = gather_power_measurement_results.GetLatestGreenBuild(bot)

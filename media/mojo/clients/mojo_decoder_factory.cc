@@ -13,8 +13,8 @@
 #include "media/mojo/buildflags.h"
 #include "media/mojo/clients/mojo_audio_decoder.h"
 #include "media/mojo/clients/mojo_video_decoder.h"
-#include "media/mojo/interfaces/audio_decoder.mojom.h"
-#include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "media/mojo/mojom/audio_decoder.mojom.h"
+#include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace media {

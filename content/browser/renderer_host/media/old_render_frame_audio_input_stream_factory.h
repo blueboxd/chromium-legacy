@@ -23,7 +23,7 @@
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_input_delegate.h"
-#include "media/mojo/interfaces/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 

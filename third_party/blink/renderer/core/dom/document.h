@@ -1581,6 +1581,10 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   bool ToggleDuringParsing() { return toggle_during_parsing_; }
 
+  bool HasPendingJavaScriptUrlsForTest() {
+    return !pending_javascript_urls_.IsEmpty();
+  }
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 

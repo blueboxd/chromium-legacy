@@ -34,16 +34,6 @@ const base::Feature kCaptureInlineJavascriptForGoogleAds{
 const base::Feature kCaptureSafetyNetId{"SafeBrowsingCaptureSafetyNetId",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled in pre-network-service world, SafeBrowsing URL checks are done by
-// applying SafeBrowsing's URLLoaderThrottle subclasses to ThrottlingURLLoader.
-//
-// This flag has no effect if network service is enabled. With network service,
-// SafeBrowsing URL checks are always done by SafeBrowsing's URLLoaderThrottle
-// subclasses.
-const base::Feature kCheckByURLLoaderThrottle{
-    "S13nSafeBrowsingCheckByURLLoaderThrottle",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kCommittedSBInterstitials{
     "SafeBrowsingCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -94,7 +84,6 @@ constexpr struct {
     {&kAdSamplerTriggerFeature, false},
     {&kCaptureInlineJavascriptForGoogleAds, true},
     {&kCaptureSafetyNetId, true},
-    {&kCheckByURLLoaderThrottle, true},
     {&kCommittedSBInterstitials, true},
     {&kForceUseAPDownloadProtection, false},
     {&kPasswordProtectionForSignedInUsers, true},

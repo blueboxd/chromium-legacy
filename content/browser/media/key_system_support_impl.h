@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/common/cdm_info.h"
-#include "media/mojo/interfaces/key_system_support.mojom.h"
+#include "media/mojo/mojom/key_system_support.mojom.h"
 
 namespace content {
 

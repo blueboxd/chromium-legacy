@@ -41,7 +41,7 @@ void BoxPainter::Paint(const PaintInfo& paint_info) {
 }
 
 void BoxPainter::PaintChildren(const PaintInfo& paint_info) {
-  if (layout_box_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (paint_info.DescendantPaintingBlocked())
     return;
 
   PaintInfo child_info(paint_info);

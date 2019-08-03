@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/cdm_context.h"
 #include "media/cdm/api/content_decryption_module.h"
-#include "media/mojo/interfaces/cdm_proxy.mojom.h"
+#include "media/mojo/mojom/cdm_proxy.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 

@@ -918,6 +918,9 @@ extern const char kPassiveDocumentWheelEventListenersDescription[];
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
 
+extern const char kForceWebContentsDarkModeName[];
+extern const char kForceWebContentsDarkModeDescription[];
+
 extern const char kPeriodicBackgroundSyncName[];
 extern const char kPeriodicBackgroundSyncDescription[];
 
@@ -1263,9 +1266,6 @@ extern const char kAndroidAutofillAccessibilityDescription[];
 
 extern const char kAndroidSurfaceControl[];
 extern const char kAndroidSurfaceControlDescription[];
-
-extern const char kAndroidWebContentsDarkMode[];
-extern const char kAndroidWebContentsDarkModeDescription[];
 
 extern const char kAppNotificationStatusMessagingName[];
 extern const char kAppNotificationStatusMessagingDescription[];

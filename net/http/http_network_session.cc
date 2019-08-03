@@ -139,7 +139,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       proxy_resolution_service_(context.proxy_resolution_service),
       ssl_config_service_(context.ssl_config_service),
       ssl_client_session_cache_(SSLClientSessionCache::Config()),
-      ssl_client_context_(context.cert_verifier,
+      ssl_client_context_(context.ssl_config_service,
+                          context.cert_verifier,
                           context.transport_security_state,
                           context.cert_transparency_verifier,
                           context.ct_policy_enforcer,
@@ -165,7 +166,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                              : quic::QuicChromiumClock::GetInstance(),
           params.quic_params),
       spdy_session_pool_(context.host_resolver,
-                         context.ssl_config_service,
+                         &ssl_client_context_,
                          context.http_server_properties,
                          context.transport_security_state,
                          params.quic_params.supported_versions,
@@ -186,12 +187,12 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
   normal_socket_pool_manager_ = std::make_unique<ClientSocketPoolManagerImpl>(
       CreateCommonConnectJobParams(false /* for_websockets */),
       CreateCommonConnectJobParams(true /* for_websockets */),
-      context_.ssl_config_service, NORMAL_SOCKET_POOL);
+      NORMAL_SOCKET_POOL);
   websocket_socket_pool_manager_ =
       std::make_unique<ClientSocketPoolManagerImpl>(
           CreateCommonConnectJobParams(false /* for_websockets */),
           CreateCommonConnectJobParams(true /* for_websockets */),
-          context_.ssl_config_service, WEBSOCKET_SOCKET_POOL);
+          WEBSOCKET_SOCKET_POOL);
 
   if (params_.enable_http2)
     next_protos_.push_back(kProtoHTTP2);
@@ -376,7 +377,6 @@ void HttpNetworkSession::GetAlpnProtos(NextProtoVector* alpn_protos) const {
 void HttpNetworkSession::GetSSLConfig(const HttpRequestInfo& request,
                                       SSLConfig* server_config,
                                       SSLConfig* proxy_config) const {
-  ssl_config_service_->GetSSLConfig(server_config);
   GetAlpnProtos(&server_config->alpn_protos);
   server_config->ignore_certificate_errors = params_.ignore_certificate_errors;
   *proxy_config = *server_config;

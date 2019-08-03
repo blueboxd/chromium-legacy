@@ -488,8 +488,7 @@ void WebRtcLogUploader::UploadCompressedLog(
   resource_request->url = !upload_url_for_testing_.is_empty()
                               ? upload_url_for_testing_
                               : GURL(kUploadURL);
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = "POST";
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
       network::SimpleURLLoader::Create(std::move(resource_request),

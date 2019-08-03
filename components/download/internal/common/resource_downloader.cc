@@ -71,6 +71,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     bool is_new_download,
     bool is_parallel_request,
     std::unique_ptr<service_manager::Connector> connector,
+    bool is_background_mode,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(request), params->render_process_host_id(),
@@ -79,7 +80,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
       std::move(url_loader_factory_getter), url_security_policy,
       std::move(connector));
 
-  downloader->Start(std::move(params), is_parallel_request);
+  downloader->Start(std::move(params), is_parallel_request, is_background_mode);
   return downloader;
 }
 
@@ -146,7 +147,8 @@ ResourceDownloader::~ResourceDownloader() = default;
 
 void ResourceDownloader::Start(
     std::unique_ptr<DownloadUrlParameters> download_url_parameters,
-    bool is_parallel_request) {
+    bool is_parallel_request,
+    bool is_background_mode) {
   callback_ = download_url_parameters->callback();
   upload_callback_ = download_url_parameters->upload_callback();
   guid_ = download_url_parameters->guid();
@@ -163,7 +165,7 @@ void ResourceDownloader::Start(
       download_url_parameters->request_origin(),
       download_url_parameters->download_source(),
       download_url_parameters->ignore_content_length_mismatch(),
-      std::vector<GURL>(1, resource_request_->url));
+      std::vector<GURL>(1, resource_request_->url), is_background_mode);
   network::mojom::URLLoaderClientPtr url_loader_client_ptr;
   url_loader_client_binding_ =
       std::make_unique<mojo::Binding<network::mojom::URLLoaderClient>>(
@@ -203,7 +205,8 @@ void ResourceDownloader::InterceptResponse(
       download::DownloadUrlParameters::RequestHeadersType(),
       std::string(), /* request_origin */
       download::DownloadSource::NAVIGATION,
-      false /* ignore_content_length_mismatch */, std::move(url_chain));
+      false /* ignore_content_length_mismatch */, std::move(url_chain),
+      false /* is_background_mode */);
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
   response_head->head.cert_status = cert_status;

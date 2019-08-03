@@ -97,7 +97,7 @@ class RemotingRegisterSupportHostTest : public testing::Test {
   };
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
   std::unique_ptr<RemotingRegisterSupportHostRequest> register_host_request_;
   MockRegisterSupportHostClient* register_host_client_ = nullptr;

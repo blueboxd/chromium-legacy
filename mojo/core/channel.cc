@@ -447,17 +447,6 @@ std::vector<PlatformHandleInTransit> Channel::Message::TakeHandles() {
   return std::move(handle_vector_);
 }
 
-std::vector<PlatformHandleInTransit>
-Channel::Message::TakeHandlesForTransport() {
-#if defined(OS_WIN)
-  // Not necessary on Windows.
-  NOTREACHED();
-  return std::vector<PlatformHandleInTransit>();
-#else
-  return std::move(handle_vector_);
-#endif
-}
-
 // Helper class for managing a Channel's read buffer allocations. This maintains
 // a single contiguous buffer with the layout:
 //

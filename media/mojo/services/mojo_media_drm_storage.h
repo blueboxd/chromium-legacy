@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/android/media_drm_storage.h"
-#include "media/mojo/interfaces/media_drm_storage.mojom.h"
+#include "media/mojo/mojom/media_drm_storage.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 
 namespace media {

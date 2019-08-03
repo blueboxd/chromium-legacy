@@ -130,8 +130,6 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
   if (!weak_dialog_model_)
     return false;
 
-  DCHECK(authenticator || reason == InterestingFailureReason::kTimeout);
-
 #if defined(OS_WIN)
   if (authenticator && authenticator->IsWinNativeApiAuthenticator()) {
     // Do not display a Chrome error dialog if the user cancels out of the

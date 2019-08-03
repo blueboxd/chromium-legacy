@@ -40,6 +40,10 @@
 
 namespace net {
 
+namespace {
+const char kAlternativeServiceHeader[] = "Alt-Svc";
+}  // namespace
+
 HttpStreamFactory::HttpStreamFactory(HttpNetworkSession* session)
     : session_(session), job_factory_(std::make_unique<JobFactory>()) {}
 

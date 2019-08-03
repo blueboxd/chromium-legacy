@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "android_webview/browser/input_stream.h"
-#include "android_webview/browser/net/aw_web_resource_request.h"
-#include "android_webview/browser/net/aw_web_resource_response.h"
+#include "android_webview/browser/network_service/aw_web_resource_request.h"
+#include "android_webview/browser/network_service/aw_web_resource_response.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native_jni/AwContentsBackgroundThreadClient_jni.h"
 #include "android_webview/native_jni/AwContentsIoThreadClient_jni.h"

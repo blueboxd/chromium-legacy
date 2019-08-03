@@ -113,6 +113,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   GLenum GetResourceTextureTarget(ResourceId id);
   // Return the format of the underlying buffer that can be used for scanout.
   gfx::BufferFormat GetBufferFormat(ResourceId id);
+  ResourceFormat GetResourceFormat(ResourceId id);
   const gfx::ColorSpace& GetColorSpace(ResourceId id);
   // Indicates if this resource may be used for a hardware overlay plane.
   bool IsOverlayCandidate(ResourceId id);
@@ -182,6 +183,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     ~ScopedReadLockSkImage();
 
     const SkImage* sk_image() const { return sk_image_.get(); }
+    sk_sp<SkImage> TakeSkImage() { return std::move(sk_image_); }
 
     bool valid() const { return !!sk_image_; }
 

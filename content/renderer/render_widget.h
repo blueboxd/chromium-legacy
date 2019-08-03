@@ -737,7 +737,7 @@ class CONTENT_EXPORT RenderWidget
 
   // Request the window to close from the renderer by sending the request to the
   // browser.
-  void DoDeferredClose();
+  static void DoDeferredClose(int widget_routing_id);
 
   gfx::Size GetSizeForWebWidget() const;
   void ResizeWebWidget();

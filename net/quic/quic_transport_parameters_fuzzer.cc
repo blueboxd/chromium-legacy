@@ -18,7 +18,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   quic::TransportParameters transport_parameters;
   std::vector<uint8_t> remaining_bytes =
       data_provider.ConsumeRemainingBytes<uint8_t>();
-  quic::ParseTransportParameters(remaining_bytes.data(), remaining_bytes.size(),
-                                 perspective, &transport_parameters);
+  quic::ParseTransportParameters(
+      quic::ParsedQuicVersion(quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_99),
+      perspective, remaining_bytes.data(), remaining_bytes.size(),
+      &transport_parameters);
   return 0;
 }

@@ -30,7 +30,7 @@ include_rules = [
     "+media/audio",
     "+media/base",
     "+media/capture",
-    "+media/mojo/interfaces",
+    "+media/mojo/mojom",
     "+media/webrtc/audio_processor_controls.h",
     "+media/webrtc/webrtc_switches.h",
     "+mojo/public/cpp/bindings/binding.h",

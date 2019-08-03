@@ -22,7 +22,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
-#include "net/http/http_server_properties_manager.h"
+#include "net/http/http_server_properties.h"
 #include "net/nqe/network_qualities_prefs_manager.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -99,9 +99,8 @@ void InitializeStorageDirectory(const base::FilePath& dir) {
   }
 }
 
-// Connects the HttpServerPropertiesManager's storage to the prefs.
-class PrefServiceAdapter
-    : public net::HttpServerPropertiesManager::PrefDelegate {
+// Connects the HttpServerProperties's storage to the prefs.
+class PrefServiceAdapter : public net::HttpServerProperties::PrefDelegate {
  public:
   explicit PrefServiceAdapter(PrefService* pref_service)
       : pref_service_(pref_service), path_(kHttpServerPropertiesPref) {
@@ -211,8 +210,7 @@ CronetPrefsManager::CronetPrefsManager(
     bool enable_network_quality_estimator,
     bool enable_host_cache_persistence,
     net::NetLog* net_log,
-    net::URLRequestContextBuilder* context_builder)
-    : http_server_properties_manager_(nullptr) {
+    net::URLRequestContextBuilder* context_builder) {
   DCHECK(network_task_runner->BelongsToCurrentThread());
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -256,14 +254,9 @@ CronetPrefsManager::CronetPrefsManager(
     pref_service_ = factory.Create(registry.get());
   }
 
-  http_server_properties_manager_ = new net::HttpServerPropertiesManager(
-      std::make_unique<PrefServiceAdapter>(pref_service_.get()), net_log);
-
-  // Passes |http_server_properties_manager_| ownership to |context_builder|.
-  // The ownership will be subsequently passed to UrlRequestContext.
   context_builder->SetHttpServerProperties(
-      std::unique_ptr<net::HttpServerPropertiesManager>(
-          http_server_properties_manager_));
+      std::make_unique<net::HttpServerProperties>(
+          std::make_unique<PrefServiceAdapter>(pref_service_.get()), net_log));
 }
 
 CronetPrefsManager::~CronetPrefsManager() {

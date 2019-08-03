@@ -346,6 +346,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-force-dark",
+    "owners": [ "gilmanmh@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "background-task-component-update",
     "owners": [ "sorin", "waffles", "tiborg" ],
     "expiry_milestone": 76

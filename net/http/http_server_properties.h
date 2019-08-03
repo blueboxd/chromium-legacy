@@ -5,10 +5,12 @@
 #ifndef NET_HTTP_HTTP_SERVER_PROPERTIES_H_
 #define NET_HTTP_HTTP_SERVER_PROPERTIES_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <map>
-#include <ostream>
+#include <memory>
+#include <set>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -16,10 +18,17 @@
 #include "base/callback.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
+#include "base/values.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_export.h"
-#include "net/socket/next_proto.h"
+#include "net/http/alternative_service.h"
+#include "net/http/broken_alternative_services.h"
+#include "net/http/http_server_properties.h"
 #include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
@@ -28,200 +37,23 @@
 #include "url/scheme_host_port.h"
 
 namespace base {
+class Clock;
+class TickClock;
 class Value;
 }
 
 namespace net {
 
+class HostPortPair;
+class HttpServerPropertiesManager;
 class IPAddress;
+class NetLog;
 struct SSLConfig;
-
-enum AlternateProtocolUsage {
-  // Alternate Protocol was used without racing a normal connection.
-  ALTERNATE_PROTOCOL_USAGE_NO_RACE = 0,
-  // Alternate Protocol was used by winning a race with a normal connection.
-  ALTERNATE_PROTOCOL_USAGE_WON_RACE = 1,
-  // Alternate Protocol was not used by losing a race with a normal connection.
-  ALTERNATE_PROTOCOL_USAGE_LOST_RACE = 2,
-  // Alternate Protocol was not used because no Alternate-Protocol information
-  // was available when the request was issued, but an Alternate-Protocol header
-  // was present in the response.
-  ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING = 3,
-  // Alternate Protocol was not used because it was marked broken.
-  ALTERNATE_PROTOCOL_USAGE_BROKEN = 4,
-  // Maximum value for the enum.
-  ALTERNATE_PROTOCOL_USAGE_MAX,
-};
-
-// Log a histogram to reflect |usage|.
-NET_EXPORT void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage,
-                                                bool proxy_server_used);
-
-enum BrokenAlternateProtocolLocation {
-  BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_JOB = 0,
-  BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY = 1,
-  BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_JOB_ALT = 2,
-  BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_JOB_MAIN = 3,
-  BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_HTTP_STREAM = 4,
-  BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_NETWORK_TRANSACTION = 5,
-  BROKEN_ALTERNATE_PROTOCOL_LOCATION_MAX,
-};
-
-// Log a histogram to reflect |location|.
-NET_EXPORT void HistogramBrokenAlternateProtocolLocation(
-    BrokenAlternateProtocolLocation location);
-
-NET_EXPORT bool IsAlternateProtocolValid(NextProto protocol);
-
-// (protocol, host, port) triple as defined in
-// https://tools.ietf.org/id/draft-ietf-httpbis-alt-svc-06.html
-struct NET_EXPORT AlternativeService {
-  AlternativeService() : protocol(kProtoUnknown), host(), port(0) {}
-
-  AlternativeService(NextProto protocol, const std::string& host, uint16_t port)
-      : protocol(protocol), host(host), port(port) {}
-
-  AlternativeService(NextProto protocol, const HostPortPair& host_port_pair)
-      : protocol(protocol),
-        host(host_port_pair.host()),
-        port(host_port_pair.port()) {}
-
-  AlternativeService(const AlternativeService& alternative_service) = default;
-  AlternativeService& operator=(const AlternativeService& alternative_service) =
-      default;
-
-  HostPortPair host_port_pair() const { return HostPortPair(host, port); }
-
-  bool operator==(const AlternativeService& other) const {
-    return protocol == other.protocol && host == other.host &&
-           port == other.port;
-  }
-
-  bool operator!=(const AlternativeService& other) const {
-    return !this->operator==(other);
-  }
-
-  bool operator<(const AlternativeService& other) const {
-    return std::tie(protocol, host, port) <
-           std::tie(other.protocol, other.host, other.port);
-  }
-
-  // Output format: "protocol host:port", e.g. "h2 www.google.com:1234".
-  std::string ToString() const;
-
-  NextProto protocol;
-  std::string host;
-  uint16_t port;
-};
-
-NET_EXPORT_PRIVATE std::ostream& operator<<(
-    std::ostream& os,
-    const AlternativeService& alternative_service);
-
-struct AlternativeServiceHash {
-  size_t operator()(const net::AlternativeService& entry) const {
-    return entry.protocol ^ std::hash<std::string>()(entry.host) ^ entry.port;
-  }
-};
-
-class NET_EXPORT_PRIVATE AlternativeServiceInfo {
- public:
-  static AlternativeServiceInfo CreateHttp2AlternativeServiceInfo(
-      const AlternativeService& alternative_service,
-      base::Time expiration);
-
-  static AlternativeServiceInfo CreateQuicAlternativeServiceInfo(
-      const AlternativeService& alternative_service,
-      base::Time expiration,
-      const quic::ParsedQuicVersionVector& advertised_versions);
-
-  AlternativeServiceInfo();
-  ~AlternativeServiceInfo();
-
-  AlternativeServiceInfo(
-      const AlternativeServiceInfo& alternative_service_info);
-
-  AlternativeServiceInfo& operator=(
-      const AlternativeServiceInfo& alternative_service_info);
-
-  bool operator==(const AlternativeServiceInfo& other) const {
-    return alternative_service_ == other.alternative_service() &&
-           expiration_ == other.expiration() &&
-           advertised_versions_ == other.advertised_versions();
-  }
-
-  bool operator!=(const AlternativeServiceInfo& other) const {
-    return !this->operator==(other);
-  }
-
-  std::string ToString() const;
-
-  void set_alternative_service(const AlternativeService& alternative_service) {
-    alternative_service_ = alternative_service;
-  }
-
-  void set_protocol(const NextProto& protocol) {
-    alternative_service_.protocol = protocol;
-  }
-
-  void set_host(const std::string& host) { alternative_service_.host = host; }
-
-  void set_port(uint16_t port) { alternative_service_.port = port; }
-
-  void set_expiration(const base::Time& expiration) {
-    expiration_ = expiration;
-  }
-
-  void set_advertised_versions(
-      const quic::ParsedQuicVersionVector& advertised_versions) {
-    if (alternative_service_.protocol != kProtoQUIC)
-      return;
-
-    advertised_versions_ = advertised_versions;
-    std::sort(advertised_versions_.begin(), advertised_versions_.end(),
-              TransportVersionLessThan);
-  }
-
-  const AlternativeService& alternative_service() const {
-    return alternative_service_;
-  }
-
-  NextProto protocol() const { return alternative_service_.protocol; }
-
-  HostPortPair host_port_pair() const {
-    return alternative_service_.host_port_pair();
-  }
-
-  base::Time expiration() const { return expiration_; }
-
-  const quic::ParsedQuicVersionVector& advertised_versions() const {
-    return advertised_versions_;
-  }
-
- private:
-  AlternativeServiceInfo(
-      const AlternativeService& alternative_service,
-      base::Time expiration,
-      const quic::ParsedQuicVersionVector& advertised_versions);
-
-  static bool TransportVersionLessThan(const quic::ParsedQuicVersion& lhs,
-                                       const quic::ParsedQuicVersion& rhs);
-
-  AlternativeService alternative_service_;
-  base::Time expiration_;
-
-  // Lists all the QUIC versions that are advertised by the server and supported
-  // by Chrome. If empty, defaults to versions used by the current instance of
-  // the netstack.
-  // This list MUST be sorted in ascending order.
-  quic::ParsedQuicVersionVector advertised_versions_;
-};
 
 struct NET_EXPORT SupportsQuic {
   SupportsQuic() : used_quic(false) {}
   SupportsQuic(bool used_quic, const std::string& address)
-      : used_quic(used_quic),
-        address(address) {}
+      : used_quic(used_quic), address(address) {}
 
   bool Equals(const SupportsQuic& other) const {
     return used_quic == other.used_quic && address == other.address;
@@ -249,10 +81,6 @@ struct NET_EXPORT ServerNetworkStats {
 typedef std::vector<AlternativeService> AlternativeServiceVector;
 typedef std::vector<AlternativeServiceInfo> AlternativeServiceInfoVector;
 
-// Stores broken alternative services and when their brokenness expires.
-typedef std::list<std::pair<AlternativeService, base::TimeTicks>>
-    BrokenAlternativeServiceList;
-
 // Store at most 300 MRU SupportsSpdyServerHostPortPairs in memory and disk.
 const int kMaxSupportsSpdyServerEntries = 300;
 
@@ -263,6 +91,8 @@ const int kMaxAlternateProtocolEntries = 200;
 const int kMaxServerNetworkStatsEntries = 200;
 
 // Store at most 200 MRU RecentlyBrokenAlternativeServices in memory and disk.
+// This ideally would be with the other constants in HttpServerProperties, but
+// has to go here instead of prevent a circular dependency.
 const int kMaxRecentlyBrokenAlternativeServiceEntries = 200;
 
 // Store at most 5 MRU QUIC servers by default. This is mainly used by cronet.
@@ -292,20 +122,9 @@ class ServerNetworkStatsMap
             kMaxServerNetworkStatsEntries) {}
 };
 
-// Stores how many times an alternative service has been marked broken.
-class RecentlyBrokenAlternativeServices
-    : public base::MRUCache<AlternativeService, int> {
- public:
-  RecentlyBrokenAlternativeServices()
-      : base::MRUCache<AlternativeService, int>(
-            kMaxRecentlyBrokenAlternativeServiceEntries) {}
-};
-
 // Max number of quic servers to store is not hardcoded and can be set.
 // Because of this, QuicServerInfoMap will not be a subclass of MRUCache.
 typedef base::MRUCache<quic::QuicServerId, std::string> QuicServerInfoMap;
-
-extern const char kAlternativeServiceHeader[];
 
 // The interface for setting/retrieving the HTTP server properties.
 // Currently, this class manages servers':
@@ -313,169 +132,368 @@ extern const char kAlternativeServiceHeader[];
 // * Alternative Service support;
 // * QUIC data (like ServerNetworkStats and QuicServerInfo).
 //
-// Embedders must ensure that HttpServerProperites is completely initialized
-// before the first request is issued.
-class NET_EXPORT HttpServerProperties {
+// Optionally retrieves and saves properties from/to disk.
+class NET_EXPORT HttpServerProperties
+    : public BrokenAlternativeServices::Delegate {
  public:
-  HttpServerProperties() {}
-  virtual ~HttpServerProperties() {}
+  // Provides an interface to interact with persistent preferences storage
+  // implemented by the embedder. The prefs are assumed not to have been loaded
+  // before HttpServerPropertiesManager construction.
+  class NET_EXPORT PrefDelegate {
+   public:
+    virtual ~PrefDelegate();
+
+    // Returns the branch of the preferences system for the server properties.
+    // Returns nullptr if the pref system has no data for the server properties.
+    virtual const base::DictionaryValue* GetServerProperties() const = 0;
+
+    // Sets the server properties to the given value. If |callback| is
+    // non-empty, flushes data to persistent storage and invokes |callback|
+    // asynchronously when complete.
+    virtual void SetServerProperties(const base::DictionaryValue& value,
+                                     base::OnceClosure callback) = 0;
+
+    // Starts listening for prefs to be loaded. If prefs are already loaded,
+    // |pref_loaded_callback| will be invoked asynchronously. Callback will be
+    // invoked even if prefs fail to load. Will only be called once by the
+    // HttpServerPropertiesManager.
+    virtual void WaitForPrefLoad(base::OnceClosure pref_loaded_callback) = 0;
+  };
+
+  // If a |pref_delegate| is specified, it will be used to read/write the
+  // properties to a pref file. Writes are rate limited to improve performance.
+  //
+  // |tick_clock| is used for setting expiration times and scheduling the
+  // expiration of broken alternative services. If null, default clock will be
+  // used.
+  //
+  // |clock| is used for converting base::TimeTicks to base::Time for
+  // wherever base::Time is preferable.
+  HttpServerProperties(std::unique_ptr<PrefDelegate> pref_delegate = nullptr,
+                       NetLog* net_log = nullptr,
+                       const base::TickClock* tick_clock = nullptr,
+                       base::Clock* clock = nullptr);
+
+  ~HttpServerProperties() override;
 
   // Deletes all data. If |callback| is non-null, flushes data to disk
   // and invokes the callback asynchronously once changes have been written to
   // disk.
-  virtual void Clear(base::OnceClosure callback) = 0;
+  void Clear(base::OnceClosure callback);
 
   // Returns true if |server| supports a network protocol which honors
   // request prioritization.
   // Note that this also implies that the server supports request
   // multiplexing, since priorities imply a relationship between
   // multiple requests.
-  virtual bool SupportsRequestPriority(const url::SchemeHostPort& server) = 0;
+  bool SupportsRequestPriority(const url::SchemeHostPort& server);
 
   // Returns the value set by SetSupportsSpdy(). If not set, returns false.
-  virtual bool GetSupportsSpdy(const url::SchemeHostPort& server) = 0;
+  bool GetSupportsSpdy(const url::SchemeHostPort& server);
 
   // Add |server| into the persistent store. Should only be called from IO
   // thread.
-  virtual void SetSupportsSpdy(const url::SchemeHostPort& server,
-                               bool support_spdy) = 0;
+  void SetSupportsSpdy(const url::SchemeHostPort& server, bool support_spdy);
 
   // Returns true if |server| has required HTTP/1.1 via HTTP/2 error code.
-  virtual bool RequiresHTTP11(const HostPortPair& server) = 0;
+  bool RequiresHTTP11(const HostPortPair& server);
 
   // Require HTTP/1.1 on subsequent connections.  Not persisted.
-  virtual void SetHTTP11Required(const HostPortPair& server) = 0;
+  void SetHTTP11Required(const HostPortPair& server);
 
   // Modify SSLConfig to force HTTP/1.1.
   static void ForceHTTP11(SSLConfig* ssl_config);
 
   // Modify SSLConfig to force HTTP/1.1 if necessary.
-  virtual void MaybeForceHTTP11(const HostPortPair& server,
-                                SSLConfig* ssl_config) = 0;
+  void MaybeForceHTTP11(const HostPortPair& server, SSLConfig* ssl_config);
 
   // Return all alternative services for |origin|, including broken ones.
   // Returned alternative services never have empty hostnames.
-  virtual AlternativeServiceInfoVector GetAlternativeServiceInfos(
-      const url::SchemeHostPort& origin) = 0;
+  AlternativeServiceInfoVector GetAlternativeServiceInfos(
+      const url::SchemeHostPort& origin);
 
   // Set a single HTTP/2 alternative service for |origin|.  Previous
   // alternative services for |origin| are discarded.
   // |alternative_service.host| may be empty.
-  // Return true if |alternative_service_map_| has changed significantly enough
-  // that it should be persisted to disk.
-  virtual bool SetHttp2AlternativeService(
-      const url::SchemeHostPort& origin,
-      const AlternativeService& alternative_service,
-      base::Time expiration) = 0;
+  void SetHttp2AlternativeService(const url::SchemeHostPort& origin,
+                                  const AlternativeService& alternative_service,
+                                  base::Time expiration);
 
   // Set a single QUIC alternative service for |origin|.  Previous alternative
   // services for |origin| are discarded.
   // |alternative_service.host| may be empty.
-  // Return true if |alternative_service_map_| has changed significantly enough
-  // that it should be persisted to disk.
-  virtual bool SetQuicAlternativeService(
+  void SetQuicAlternativeService(
       const url::SchemeHostPort& origin,
       const AlternativeService& alternative_service,
       base::Time expiration,
-      const quic::ParsedQuicVersionVector& advertised_versions) = 0;
+      const quic::ParsedQuicVersionVector& advertised_versions);
 
   // Set alternative services for |origin|.  Previous alternative services for
   // |origin| are discarded.
   // Hostnames in |alternative_service_info_vector| may be empty.
   // |alternative_service_info_vector| may be empty.
-  // Return true if |alternative_service_map_| has changed significantly enough
-  // that it should be persisted to disk.
-  virtual bool SetAlternativeServices(
+  void SetAlternativeServices(
       const url::SchemeHostPort& origin,
-      const AlternativeServiceInfoVector& alternative_service_info_vector) = 0;
+      const AlternativeServiceInfoVector& alternative_service_info_vector);
 
   // Marks |alternative_service| as broken.
   // |alternative_service.host| must not be empty.
-  virtual void MarkAlternativeServiceBroken(
-      const AlternativeService& alternative_service) = 0;
+  void MarkAlternativeServiceBroken(
+      const AlternativeService& alternative_service);
 
   // Marks |alternative_service| as broken until the default network changes.
   // |alternative_service.host| must not be empty.
-  virtual void MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
-      const AlternativeService& alternative_service) = 0;
+  void MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
+      const AlternativeService& alternative_service);
 
   // Marks |alternative_service| as recently broken.
   // |alternative_service.host| must not be empty.
-  virtual void MarkAlternativeServiceRecentlyBroken(
-      const AlternativeService& alternative_service) = 0;
+  void MarkAlternativeServiceRecentlyBroken(
+      const AlternativeService& alternative_service);
 
   // Returns true iff |alternative_service| is currently broken.
   // |alternative_service.host| must not be empty.
-  virtual bool IsAlternativeServiceBroken(
-      const AlternativeService& alternative_service) const = 0;
+  bool IsAlternativeServiceBroken(
+      const AlternativeService& alternative_service) const;
 
   // Returns true iff |alternative_service| was recently broken.
   // |alternative_service.host| must not be empty.
-  virtual bool WasAlternativeServiceRecentlyBroken(
-      const AlternativeService& alternative_service) = 0;
+  bool WasAlternativeServiceRecentlyBroken(
+      const AlternativeService& alternative_service);
 
   // Confirms that |alternative_service| is working.
   // |alternative_service.host| must not be empty.
-  virtual void ConfirmAlternativeService(
-      const AlternativeService& alternative_service) = 0;
+  void ConfirmAlternativeService(const AlternativeService& alternative_service);
 
   // Called when the default network changes.
   // Clears all the alternative services that were marked broken until the
   // default network changed.
-  // Returns true if there is any broken alternative service affected by the
-  // default network change.
-  virtual bool OnDefaultNetworkChanged() = 0;
+  void OnDefaultNetworkChanged();
 
   // Returns all alternative service mappings.
   // Returned alternative services may have empty hostnames.
-  virtual const AlternativeServiceMap& alternative_service_map() const = 0;
+  const AlternativeServiceMap& alternative_service_map() const;
 
   // Returns all alternative service mappings as human readable strings.
   // Empty alternative service hostnames will be printed as such.
-  virtual std::unique_ptr<base::Value> GetAlternativeServiceInfoAsValue()
-      const = 0;
+  std::unique_ptr<base::Value> GetAlternativeServiceInfoAsValue() const;
 
-  virtual bool GetSupportsQuic(IPAddress* last_address) const = 0;
+  bool GetSupportsQuic(IPAddress* last_address) const;
 
-  virtual void SetSupportsQuic(bool used_quic,
-                               const IPAddress& last_address) = 0;
+  void SetSupportsQuic(bool used_quic, const IPAddress& last_address);
 
   // Sets |stats| for |server|.
-  virtual void SetServerNetworkStats(const url::SchemeHostPort& server,
-                                     ServerNetworkStats stats) = 0;
+  void SetServerNetworkStats(const url::SchemeHostPort& server,
+                             ServerNetworkStats stats);
 
   // Clears any stats for |server|.
-  virtual void ClearServerNetworkStats(const url::SchemeHostPort& server) = 0;
+  void ClearServerNetworkStats(const url::SchemeHostPort& server);
 
   // Returns any stats for |server| or nullptr if there are none.
-  virtual const ServerNetworkStats* GetServerNetworkStats(
-      const url::SchemeHostPort& server) = 0;
+  const ServerNetworkStats* GetServerNetworkStats(
+      const url::SchemeHostPort& server);
 
-  virtual const ServerNetworkStatsMap& server_network_stats_map() const = 0;
+  const ServerNetworkStatsMap& server_network_stats_map() const;
 
   // Save QuicServerInfo (in std::string form) for the given |server_id|.
-  // Returns true if the value has changed otherwise it returns false.
-  virtual bool SetQuicServerInfo(const quic::QuicServerId& server_id,
-                                 const std::string& server_info) = 0;
+  void SetQuicServerInfo(const quic::QuicServerId& server_id,
+                         const std::string& server_info);
 
   // Get QuicServerInfo (in std::string form) for the given |server_id|.
-  virtual const std::string* GetQuicServerInfo(
-      const quic::QuicServerId& server_id) = 0;
+  const std::string* GetQuicServerInfo(const quic::QuicServerId& server_id);
 
   // Returns all persistent QuicServerInfo objects.
-  virtual const QuicServerInfoMap& quic_server_info_map() const = 0;
+  const QuicServerInfoMap& quic_server_info_map() const;
 
   // Returns the number of server configs (QuicServerInfo objects) persisted.
-  virtual size_t max_server_configs_stored_in_properties() const = 0;
+  size_t max_server_configs_stored_in_properties() const;
 
   // Sets the number of server configs (QuicServerInfo objects) to be persisted.
-  virtual void SetMaxServerConfigsStoredInProperties(
-      size_t max_server_configs_stored_in_properties) = 0;
+  void SetMaxServerConfigsStoredInProperties(
+      size_t max_server_configs_stored_in_properties);
 
   // Returns whether HttpServerProperties is initialized.
-  virtual bool IsInitialized() const = 0;
+  bool IsInitialized() const;
+
+  // BrokenAlternativeServices::Delegate method.
+  void OnExpireBrokenAlternativeService(
+      const AlternativeService& expired_alternative_service) override;
+
+  static base::TimeDelta GetUpdatePrefsDelayForTesting();
+
+  // Test-only routines that call the methods used to load the specified
+  // field(s) from a prefs file. Unlike OnPrefsLoaded(), these may be invoked
+  // multiple times.
+  void OnSpdyServersLoadedForTesting(
+      std::unique_ptr<SpdyServersMap> spdy_servers_map) {
+    OnSpdyServersLoaded(std::move(spdy_servers_map));
+  }
+  void OnAlternativeServiceServersLoadedForTesting(
+      std::unique_ptr<AlternativeServiceMap> alternate_protocol_servers) {
+    OnAlternativeServiceServersLoaded(std::move(alternate_protocol_servers));
+  }
+  void OnServerNetworkStatsLoadedForTesting(
+      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map) {
+    OnServerNetworkStatsLoaded(std::move(server_network_stats_map));
+  }
+  void OnSupportsQuicLoadedForTesting(const IPAddress& last_address) {
+    OnSupportsQuicLoaded(last_address);
+  }
+  void OnQuicServerInfoMapLoadedForTesting(
+      std::unique_ptr<QuicServerInfoMap> quic_server_info_map) {
+    OnQuicServerInfoMapLoaded(std::move(quic_server_info_map));
+  }
+  void OnBrokenAndRecentlyBrokenAlternativeServicesLoadedForTesting(
+      std::unique_ptr<BrokenAlternativeServiceList>
+          broken_alternative_service_list,
+      std::unique_ptr<RecentlyBrokenAlternativeServices>
+          recently_broken_alternative_services) {
+    OnBrokenAndRecentlyBrokenAlternativeServicesLoaded(
+        std::move(broken_alternative_service_list),
+        std::move(recently_broken_alternative_services));
+  }
+
+  const std::string* GetCanonicalSuffixForTesting(
+      const std::string& host) const {
+    return GetCanonicalSuffix(host);
+  }
+
+  const SpdyServersMap& spdy_servers_map_for_testing() const {
+    return spdy_servers_map_;
+  }
+
+  // TODO(mmenke): Look into removing this.
+  HttpServerPropertiesManager* properties_manager_for_testing() {
+    return properties_manager_.get();
+  }
 
  private:
+  // TODO (wangyix): modify HttpServerProperties unit tests so this
+  // friendness is no longer required.
+  friend class HttpServerPropertiesPeer;
+
+  typedef base::flat_map<url::SchemeHostPort, url::SchemeHostPort>
+      CanonicalAltSvcMap;
+  typedef base::flat_map<HostPortPair, quic::QuicServerId>
+      CanonicalServerInfoMap;
+  typedef std::vector<std::string> CanonicalSuffixList;
+  typedef std::set<HostPortPair> Http11ServerHostPortSet;
+
+  // Return the iterator for |server|, or for its canonical host, or end.
+  AlternativeServiceMap::const_iterator GetAlternateProtocolIterator(
+      const url::SchemeHostPort& server);
+
+  // Return the canonical host for |server|, or end if none exists.
+  CanonicalAltSvcMap::const_iterator GetCanonicalAltSvcHost(
+      const url::SchemeHostPort& server) const;
+
+  // Return the canonical host with the same canonical suffix as |server|.
+  // The returned canonical host can be used to search for server info in
+  // |quic_server_info_map_|. Return 'end' the host doesn't exist.
+  CanonicalServerInfoMap::const_iterator GetCanonicalServerInfoHost(
+      const quic::QuicServerId& server) const;
+
+  // Remove the canonical alt-svc host for |server|.
+  void RemoveAltSvcCanonicalHost(const url::SchemeHostPort& server);
+
+  // Update |canonical_server_info_map_| with the new canonical host.
+  // The |server| should have the corresponding server info associated with it
+  // in |quic_server_info_map_|. If |canonical_server_info_map_| doesn't
+  // have an entry associated with |server|, the method will add one.
+  void UpdateCanonicalServerInfoMap(const quic::QuicServerId& server);
+
+  // Returns the canonical host suffix for |host|, or nullptr if none
+  // exists.
+  const std::string* GetCanonicalSuffix(const std::string& host) const;
+
+  void OnPrefsLoaded(
+      std::unique_ptr<SpdyServersMap> spdy_servers_map,
+      std::unique_ptr<AlternativeServiceMap> alternative_service_map,
+      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
+      const IPAddress& last_quic_address,
+      std::unique_ptr<QuicServerInfoMap> quic_server_info_map,
+      std::unique_ptr<BrokenAlternativeServiceList>
+          broken_alternative_service_list,
+      std::unique_ptr<RecentlyBrokenAlternativeServices>
+          recently_broken_alternative_services);
+
+  // These methods are called by OnPrefsLoaded to handle merging properties
+  // loaded from prefs with what has been learned while waiting for prefs to
+  // load.
+  void OnSpdyServersLoaded(std::unique_ptr<SpdyServersMap> spdy_servers_map);
+  void OnAlternativeServiceServersLoaded(
+      std::unique_ptr<AlternativeServiceMap> alternate_protocol_servers);
+  void OnServerNetworkStatsLoaded(
+      std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map);
+  void OnSupportsQuicLoaded(const IPAddress& last_address);
+  void OnQuicServerInfoMapLoaded(
+      std::unique_ptr<QuicServerInfoMap> quic_server_info_map);
+  void OnBrokenAndRecentlyBrokenAlternativeServicesLoaded(
+      std::unique_ptr<BrokenAlternativeServiceList>
+          broken_alternative_service_list,
+      std::unique_ptr<RecentlyBrokenAlternativeServices>
+          recently_broken_alternative_services);
+
+  // Queue a delayed call to WriteProperties(). If |is_initialized_| is false,
+  // or |properties_manager_| is nullptr, or there's already a queued call to
+  // WriteProperties(), does nothing.
+  void MaybeQueueWriteProperties();
+
+  // Writes cached state to |properties_manager_|, which must not be null.
+  // Invokes |callback| on completion, if non-null.
+  void WriteProperties(base::OnceClosure callback) const;
+
+  const base::TickClock* tick_clock_;  // Unowned
+  base::Clock* clock_;                 // Unowned
+
+  // Set to true once initial properties have been retrieved from disk by
+  // |properties_manager_|. Always true if |properties_manager_| is nullptr.
+  bool is_initialized_;
+
+  // Queue a write when resources finish loading. Set to true when
+  // MaybeQueueWriteProperties() is invoked while still waiting on
+  // initialization to complete.
+  bool queue_write_on_load_;
+
+  // Used to load/save properties from/to preferences. May be nullptr.
+  std::unique_ptr<HttpServerPropertiesManager> properties_manager_;
+
+  SpdyServersMap spdy_servers_map_;
+  Http11ServerHostPortSet http11_servers_;
+
+  AlternativeServiceMap alternative_service_map_;
+
+  BrokenAlternativeServices broken_alternative_services_;
+
+  IPAddress last_quic_address_;
+  ServerNetworkStatsMap server_network_stats_map_;
+  // Contains a map of servers which could share the same alternate protocol.
+  // Map from a Canonical scheme/host/port (host is some postfix of host names)
+  // to an actual origin, which has a plausible alternate protocol mapping.
+  CanonicalAltSvcMap canonical_alt_svc_map_;
+
+  // Contains list of suffixes (for example ".c.youtube.com",
+  // ".googlevideo.com", ".googleusercontent.com") of canonical hostnames.
+  const CanonicalSuffixList canonical_suffixes_;
+
+  QuicServerInfoMap quic_server_info_map_;
+
+  // Maps canonical suffixes to host names that have the same canonical suffix
+  // and have a corresponding entry in |quic_server_info_map_|. The map can be
+  // used to quickly look for server info for hosts that share the same
+  // canonical suffix but don't have exact match in |quic_server_info_map_|. The
+  // map exists solely to improve the search performance. It only contains
+  // derived data that can be recalculated by traversing
+  // |quic_server_info_map_|.
+  CanonicalServerInfoMap canonical_server_info_map_;
+
+  size_t max_server_configs_stored_in_properties_;
+
+  // Used to post calls to WriteProperties().
+  base::OneShotTimer prefs_update_timer_;
+
+  THREAD_CHECKER(thread_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(HttpServerProperties);
 };
 

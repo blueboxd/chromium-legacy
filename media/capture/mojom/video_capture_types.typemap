@@ -19,7 +19,7 @@ sources = [
 deps = [
   "//media",
   "//media/capture:capture_base",
-  "//media/mojo/interfaces",
+  "//media/mojo/mojom",
   "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 

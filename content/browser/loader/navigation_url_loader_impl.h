@@ -89,31 +89,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // the IO thread.
   static GlobalRequestID MakeGlobalRequestID();
 
-  // Returns true if URLLoaderRequestController will be run on the UI thread.
-  static bool IsNavigationLoaderOnUIEnabled();
-
-  // Returns the BrowserThread::ID that the URLLoaderRequestController will be
-  // running on.
-  static BrowserThread::ID GetLoaderRequestControllerThreadID();
-
-  // Runs |task| on the the loader thread if already on that thread, otherwise
-  // posts a task to the loader thread.
-  static void RunOrPostTaskOnLoaderThread(const base::Location& from_here,
-                                          base::OnceClosure task);
-
-  // Deleter to use for objects that should be deleted on the loader thread.
-  struct DeleteOnLoaderThread {
-    template <typename T>
-    static void Destruct(const T* x) {
-      if (BrowserThread::CurrentlyOn(GetLoaderRequestControllerThreadID())) {
-        delete x;
-      } else {
-        BrowserThread::DeleteSoon(GetLoaderRequestControllerThreadID(),
-                                  FROM_HERE, x);
-      }
-    }
-  };
-
  private:
   class URLLoaderRequestController;
   void OnRequestStarted(base::TimeTicks timestamp);

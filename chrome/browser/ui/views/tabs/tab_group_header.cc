@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -64,4 +65,9 @@ void TabGroupHeader::VisualsChanged() {
       data->color(), provider->GetCornerRadiusMetric(views::EMPHASIS_LOW)));
   title_->SetEnabledColor(color_utils::GetColorWithMaxContrast(data->color()));
   title_->SetText(data->title());
+}
+
+bool TabGroupHeader::OnMousePressed(const ui::MouseEvent& event) {
+  TabGroupEditorBubbleView::Show(this, controller_, group_);
+  return true;
 }

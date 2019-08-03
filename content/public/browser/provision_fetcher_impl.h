@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/provision_fetcher_factory.h"
 #include "media/base/provision_fetcher.h"
-#include "media/mojo/interfaces/provision_fetcher.mojom.h"
+#include "media/mojo/mojom/provision_fetcher.mojom.h"
 
 namespace network {
 class SharedURLLoaderFactory;

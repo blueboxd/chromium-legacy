@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/net_export.h"
-#include "net/cert/cert_database.h"
 #include "net/http/http_network_session.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/connect_job.h"
@@ -29,12 +28,10 @@ class ProcessMemoryDump;
 namespace net {
 
 class ProxyServer;
-class SSLConfigService;
 class ClientSocketPool;
 
 class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
-    : public ClientSocketPoolManager,
-      public CertDatabase::Observer {
+    : public ClientSocketPoolManager {
  public:
   // |websocket_common_connect_job_params| is only used for direct WebSocket
   // connections (No proxy in use). It's never used if |pool_type| is not
@@ -42,7 +39,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   ClientSocketPoolManagerImpl(
       const CommonConnectJobParams& common_connect_job_params,
       const CommonConnectJobParams& websocket_common_connect_job_params,
-      SSLConfigService* ssl_config_service,
       HttpNetworkSession::SocketPoolType pool_type);
   ~ClientSocketPoolManagerImpl() override;
 
@@ -53,9 +49,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
 
   // Creates a Value summary of the state of the socket pools.
   std::unique_ptr<base::Value> SocketPoolInfoToValue() const override;
-
-  // CertDatabase::Observer methods:
-  void OnCertDBChanged() override;
 
   void DumpMemoryStats(
       base::trace_event::ProcessMemoryDump* pmd,
@@ -68,8 +61,6 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
   const CommonConnectJobParams common_connect_job_params_;
   // Used only for direct WebSocket connections (i.e., no proxy in use).
   const CommonConnectJobParams websocket_common_connect_job_params_;
-
-  SSLConfigService* const ssl_config_service_;
 
   const HttpNetworkSession::SocketPoolType pool_type_;
 

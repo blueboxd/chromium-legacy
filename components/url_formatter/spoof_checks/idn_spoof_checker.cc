@@ -192,7 +192,8 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - U+0153 (œ) => "ce"
   //     TODO: see https://crbug.com/843352 for further work on
   //     U+0525 and U+0153.
-  //   - {U+0167 (ŧ), U+0442 (т), U+04AD (ҭ), U+050F (ԏ)} => t
+  //   - {U+0167 (ŧ), U+0442 (т), U+04AD (ҭ), U+050F (ԏ), U+4E03 (七),
+  //     U+4E05 (丅), U+4E06 (丆)} => t
   //   - {U+0185 (ƅ), U+044C (ь), U+048D (ҍ), U+0432 (в)} => b
   //   - {U+03C9 (ω), U+0448 (ш), U+0449 (щ), U+0E1E (พ),
   //      U+0E1F (ฟ), U+0E9E (ພ), U+0E9F (ຟ)} => w
@@ -201,8 +202,8 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - U+0491 (ґ) => r
   //   - {U+0493 (ғ), U+04FB (ӻ)} => f
   //   - {U+04AB (ҫ), U+1004 (င)} => c
-  //   - U+04B1 (ұ) => y
-  //   - {U+03C7 (χ), U+04B3 (ҳ), U+04FD (ӽ), U+04FF (ӿ)} => x
+  //   - {U+04B1 (ұ), U+4E2B (丫)} => y
+  //   - {U+03C7 (χ), U+04B3 (ҳ), U+04FD (ӽ), U+04FF (ӿ), U+4E42 (乂)} => x
   //   - {U+0503 (ԃ), U+10EB (ძ)} => d
   //   - {U+050D (ԍ), U+100c (ဌ)} => g
   //   - {U+0D1F (ട), U+0E23 (ร), U+0EA3 (ຣ), U+0EAE (ຮ)} => s
@@ -217,7 +218,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - {U+0437 (з), U+0499 (ҙ), U+04E1 (ӡ), U+0909 (उ), U+0993 (ও),
   //      U+0A24 (ਤ), U+0A69 (੩), U+0AE9 (૩), U+0C69 (౩),
   //      U+1012 (ဒ), U+10D5 (ვ), U+10DE (პ)} => 3
-  //   - {U+0A6B (੫)} => 4,
+  //   - {U+0A6B (੫), U+4E29 (丩)} => 4,
   //   - {U+09EA (৪), U+0A6A (੪), U+0b6b (୫)} => 8,
   //   - {U+0AED (૭), U+0b68 (୨), U+0C68 (౨)} => 9,
   //   Map a few dashes that ICU doesn't map. These are already blocked by ICU,
@@ -228,9 +229,9 @@ IDNSpoofChecker::IDNSpoofChecker() {
       icu::UnicodeString::fromUTF8(
           "[æӕ] > ae; [þϼҏ] > p; [ħнћңҥӈӊԋԧԩ] > h;"
           "[ĸκкқҝҟҡӄԟ] > k; [ŋпԥก] > n; œ > ce;"
-          "[ŧтҭԏ] > t; [ƅьҍв] > b;  [ωшщพฟພຟ] > w;"
+          "[ŧтҭԏ七丅丆] > t; [ƅьҍв] > b;  [ωшщพฟພຟ] > w;"
           "[мӎ] > m; [єҽҿၔ] > e; ґ > r; [ғӻ] > f;"
-          "[ҫင] > c; ұ > y; [χҳӽӿ] > x;"
+          "[ҫင] > c; [ұ丫] > y; [χҳӽӿ乂] > x;"
           "[ԃძ]  > d; [ԍဌ] > g; [ടรຣຮ] > s; ၂ > j;"
           "[०০੦૦ଠ୦೦] > o;"
           "[৭੧૧] > q;"
@@ -238,7 +239,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
           "[θ] > 0;"
           "[२২੨੨૨೩೭] > 2;"
           "[зҙӡउওਤ੩૩౩ဒვპ] > 3;"
-          "[੫] > 4;"
+          "[੫丩] > 4;"
           "[৪੪୫] > 8;"
           "[૭୨౨] > 9;"
           "[—一―⸺⸻] > \\-;"),
@@ -319,8 +320,8 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
     dangerous_pattern = new icu::RegexMatcher(
         icu::UnicodeString(
             // Disallow the following as they may be mistaken for slashes when
-            // they're surrounded by non-Japanese scripts (i.e. scripts other
-            // than Katakana, Hiragana or Han):
+            // they're surrounded by non-Japanese scripts (i.e. has non-Katakana
+            // Hiragana or Han scripts on both sides):
             // "ノ" (Katakana no, U+30ce), "ソ" (Katakana so, U+30bd),
             // "ゾ" (Katakana zo, U+30be), "ン" (Katakana n, U+30f3),
             // "丶" (CJK unified ideograph, U+4E36),

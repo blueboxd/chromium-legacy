@@ -4,8 +4,10 @@
 
 #include "third_party/blink/public/common/features.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/forcedark/forcedark_switches.h"
 
 namespace blink {
 namespace features {
@@ -275,6 +277,49 @@ const base::Feature kLightweightNoStatePrefetch{
 // Use scroll gestures for scrollbar scrolls (see https://crbug.com/954007).
 const base::Feature kScrollbarInjectScrollGestures{
     "ScrollbarInjectScrollGestures", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Automatically convert light-themed pages to use a Blink-generated dark theme
+const base::Feature kForceWebContentsDarkMode{
+    "WebContentsForceDark", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Which algorithm should be used for color inversion?
+const base::FeatureParam<ForceDarkInversionMethod>::Option
+    forcedark_inversion_method_options[] = {
+        {ForceDarkInversionMethod::kUseBlinkSettings,
+         "use_blink_settings_for_method"},
+        {ForceDarkInversionMethod::kHslBased, "hsl_based"},
+        {ForceDarkInversionMethod::kCielabBased, "cielab_based"}};
+
+const base::FeatureParam<ForceDarkInversionMethod>
+    kForceDarkInversionMethodParam{&kForceWebContentsDarkMode,
+                                   "inversion_method",
+                                   ForceDarkInversionMethod::kUseBlinkSettings,
+                                   &forcedark_inversion_method_options};
+
+// Should images be inverted?
+const base::FeatureParam<ForceDarkImageBehavior>::Option
+    forcedark_image_behavior_options[] = {
+        {ForceDarkImageBehavior::kUseBlinkSettings,
+         "use_blink_settings_for_images"},
+        {ForceDarkImageBehavior::kInvertNone, "none"},
+        {ForceDarkImageBehavior::kInvertSelectively, "selective"}};
+
+const base::FeatureParam<ForceDarkImageBehavior> kForceDarkImageBehaviorParam{
+    &kForceWebContentsDarkMode, "image_behavior",
+    ForceDarkImageBehavior::kUseBlinkSettings,
+    &forcedark_image_behavior_options};
+
+// Do not invert text lighter than this.
+// Range: 0 (do not invert any text) to 256 (invert all text)
+// Can also set to -1 to let Blink's internal settings control the value
+const base::FeatureParam<int> kForceDarkTextLightnessThresholdParam{
+    &kForceWebContentsDarkMode, "text_lightness_threshold", -1};
+
+// Do not invert backgrounds darker than this.
+// Range: 0 (invert all backgrounds) to 256 (invert no backgrounds)
+// Can also set to -1 to let Blink's internal settings control the value
+const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
+    &kForceWebContentsDarkMode, "background_lightness_threshold", -1};
 
 bool IsPlzDedicatedWorkerEnabled() {
   // PlzDedicatedWorker depends on off-the-main-thread dedicated worker script

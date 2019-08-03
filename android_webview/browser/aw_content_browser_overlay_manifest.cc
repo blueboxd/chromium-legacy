@@ -8,7 +8,6 @@
 #include "base/no_destructor.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -23,8 +22,6 @@ const service_manager::Manifest& GetAWContentBrowserOverlayManifest() {
                             service_manager::Manifest::InterfaceList<
                                 safe_browsing::mojom::SafeBrowsing,
                                 spellcheck::mojom::SpellCheckHost>())
-          .RequireCapability("heap_profiling", "profiling")
-          .RequireCapability("heap_profiling", "heap_profiler")
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:frame", "renderer",
               service_manager::Manifest::InterfaceList<

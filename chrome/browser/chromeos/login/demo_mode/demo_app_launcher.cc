@@ -23,6 +23,7 @@
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_names.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -77,8 +78,10 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
   const std::string extension_id = extension_service->component_loader()->Add(
       IDR_DEMO_APP_MANIFEST, *demo_app_path_);
 
-  const extensions::Extension* extension =
-      extension_service->GetExtensionById(extension_id, true);
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const extensions::Extension* extension = extension_registry->GetExtensionById(
+      extension_id, extensions::ExtensionRegistry::COMPATIBILITY);
   if (!extension) {
     // We've already done too much setup at this point to just return out, it
     // is safer to just restart.

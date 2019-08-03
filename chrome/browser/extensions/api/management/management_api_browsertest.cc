@@ -26,7 +26,7 @@
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -243,17 +243,17 @@ class ExtensionManagementApiEscalationTest :
         scoped_temp_dir_.GetPath().AppendASCII("permissions2.crx"), pem_path,
         base::FilePath());
 
-    ExtensionService* service = ExtensionSystem::Get(browser()->profile())->
-        extension_service();
-
     // Install low-permission version of the extension.
     ASSERT_TRUE(InstallExtension(path_v1, 1));
-    EXPECT_TRUE(service->GetExtensionById(kId, false) != NULL);
+    EXPECT_TRUE(extension_registry()->GetExtensionById(
+        kId, ExtensionRegistry::ENABLED));
 
     // Update to a high-permission version - it should get disabled.
     EXPECT_FALSE(UpdateExtension(kId, path_v2, -1));
-    EXPECT_TRUE(service->GetExtensionById(kId, false) == NULL);
-    EXPECT_TRUE(service->GetExtensionById(kId, true) != NULL);
+    EXPECT_FALSE(extension_registry()->GetExtensionById(
+        kId, ExtensionRegistry::ENABLED));
+    EXPECT_TRUE(extension_registry()->GetExtensionById(
+        kId, ExtensionRegistry::COMPATIBILITY));
     EXPECT_TRUE(ExtensionPrefs::Get(browser()->profile())
                     ->DidExtensionEscalatePermissions(kId));
   }
@@ -344,14 +344,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
     // Register the target extension with extension service.
     scoped_refptr<const Extension> target_extension =
         ExtensionBuilder("TargetExtension").SetID(kId).Build();
-    ExtensionService* const service =
-        ExtensionSystem::Get(browser()->profile())->extension_service();
-    service->AddExtension(target_extension.get());
+    extension_service()->AddExtension(target_extension.get());
     SetEnabled(false, true, std::string(), source_extension);
     SetEnabled(true, true, std::string(), source_extension);
-    const Extension* extension = ExtensionSystem::Get(browser()->profile())
-                                     ->extension_service()
-                                     ->GetExtensionById(kId, false);
+    const Extension* extension =
+        extension_registry()->GetExtensionById(kId, ExtensionRegistry::ENABLED);
     EXPECT_TRUE(extension);
   }
 }

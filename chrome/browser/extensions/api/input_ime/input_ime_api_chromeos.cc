@@ -16,12 +16,12 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_method_private.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -271,12 +271,12 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     // events (e.g. runtime.onMessage) from its other pages.
     // This is to save memory for steady state Chrome OS on which the users
     // don't want any IME features.
-    extensions::ExtensionSystem* extension_system =
-        extensions::ExtensionSystem::Get(profile_);
-    if (extension_system) {
+    extensions::ExtensionRegistry* extension_registry =
+        extensions::ExtensionRegistry::Get(profile_);
+    if (extension_registry) {
       const extensions::Extension* extension =
-          extension_system->extension_service()->GetExtensionById(
-              extension_id_, false /* include_disabled */);
+          extension_registry->GetExtensionById(
+              extension_id_, extensions::ExtensionRegistry::ENABLED);
       if (!extension)
         return;
       extensions::ProcessManager* process_manager =

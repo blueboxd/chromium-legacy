@@ -51,9 +51,13 @@ class ScrollerContentsView : public views::View {
  public:
   ScrollerContentsView(UnifiedMessageListView* message_list_view,
                        views::ButtonListener* listener) {
+    int bottom_padding = features::IsUnifiedMessageCenterRefactorEnabled()
+                             ? 0
+                             : kUnifiedNotificationCenterSpacing;
+
     auto* contents_layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
-        gfx::Insets(0, 0, kUnifiedNotificationCenterSpacing, 0)));
+        gfx::Insets(0, 0, bottom_padding, 0)));
     contents_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStretch);
     AddChildView(message_list_view);
@@ -293,7 +297,10 @@ UnifiedMessageCenterView::~UnifiedMessageCenterView() {
 }
 
 void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
-  scroller_->ClipHeightTo(0, max_height);
+  int max_scroller_height = max_height;
+  if (stacking_counter_->GetVisible())
+    max_scroller_height -= kStackingNotificationCounterHeight;
+  scroller_->ClipHeightTo(0, max_scroller_height);
 }
 
 void UnifiedMessageCenterView::SetAvailableHeight(int available_height) {
@@ -313,6 +320,10 @@ void UnifiedMessageCenterView::OnNotificationSlidOut() {
 void UnifiedMessageCenterView::ListPreferredSizeChanged() {
   UpdateVisibility();
   PreferredSizeChanged();
+
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
+    SetMaxHeight(available_height_);
+
   Layout();
 
   if (GetWidget() && !GetWidget()->IsClosed())

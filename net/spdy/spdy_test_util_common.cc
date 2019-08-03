@@ -330,7 +330,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       ssl_config_service(std::make_unique<SSLConfigServiceDefaults>()),
       socket_factory(std::make_unique<MockClientSocketFactory>()),
       http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
-      http_server_properties(std::make_unique<HttpServerPropertiesImpl>()),
+      http_server_properties(std::make_unique<HttpServerProperties>()),
       enable_ip_pooling(true),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
@@ -440,8 +440,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_ssl_config_service(std::make_unique<SSLConfigServiceDefaults>());
   storage_.set_http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault());
-  storage_.set_http_server_properties(
-      std::make_unique<HttpServerPropertiesImpl>());
+  storage_.set_http_server_properties(std::make_unique<HttpServerProperties>());
   storage_.set_job_factory(std::make_unique<URLRequestJobFactoryImpl>());
   HttpNetworkSession::Params session_params;
   session_params.enable_spdy_ping_based_connection_checking = false;

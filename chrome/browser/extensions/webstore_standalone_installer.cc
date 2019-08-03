@@ -192,14 +192,15 @@ void WebstoreStandaloneInstaller::OnInstallPromptDone(
 
   std::unique_ptr<WebstoreInstaller::Approval> approval = CreateApproval();
 
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  const Extension* installed_extension =
-      extension_service->GetExtensionById(id_, true /* include disabled */);
+  ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
+  const Extension* installed_extension = extension_registry->GetExtensionById(
+      id_, ExtensionRegistry::COMPATIBILITY);
   if (installed_extension) {
     std::string install_message;
     webstore_install::Result install_result = webstore_install::SUCCESS;
 
+    ExtensionService* extension_service =
+        ExtensionSystem::Get(profile_)->extension_service();
     if (ExtensionPrefs::Get(profile_)->IsExtensionBlacklisted(id_)) {
       // Don't install a blacklisted extension.
       install_result = webstore_install::BLACKLISTED;

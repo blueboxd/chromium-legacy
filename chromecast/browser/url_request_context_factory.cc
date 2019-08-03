@@ -34,7 +34,7 @@
 #include "net/dns/host_resolver_manager.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -224,7 +224,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
 
   // Use in-memory HttpServerProperties. Disk-based can improve performance
   // but benefit seems small (only helps 1st request to a server).
-  http_server_properties_.reset(new net::HttpServerPropertiesImpl);
+  http_server_properties_ = std::make_unique<net::HttpServerProperties>();
 
   DCHECK(proxy_config_service_);
   proxy_resolution_service_ =

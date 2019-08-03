@@ -30,7 +30,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/transport_security_state.h"
 #include "net/net_buildflags.h"
@@ -94,7 +94,7 @@ class RequestContext : public URLRequestContext {
     storage_.set_ssl_config_service(
         std::make_unique<SSLConfigServiceDefaults>());
     storage_.set_http_server_properties(
-        std::make_unique<HttpServerPropertiesImpl>());
+        std::make_unique<HttpServerProperties>());
 
     HttpNetworkSession::Context session_context;
     session_context.host_resolver = host_resolver();

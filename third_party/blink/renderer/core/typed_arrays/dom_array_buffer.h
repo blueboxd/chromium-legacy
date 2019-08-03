@@ -13,8 +13,6 @@
 
 namespace blink {
 
-class SharedBuffer;
-
 class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   DEFINE_WRAPPERTYPEINFO();
 

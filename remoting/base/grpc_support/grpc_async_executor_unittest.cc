@@ -633,7 +633,7 @@ TEST_F(GrpcAsyncExecutorTest,
   scoped_task_environment_.reset();
   scoped_task_environment_ =
       std::make_unique<base::test::ScopedTaskEnvironment>(
-          base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+          base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
 
   MockOnceClosure on_channel_ready;
   MockMessageCallback on_incoming_message;
@@ -651,7 +651,7 @@ TEST_F(GrpcAsyncExecutorTest,
   scoped_task_environment_.reset();
   scoped_task_environment_ =
       std::make_unique<base::test::ScopedTaskEnvironment>(
-          base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+          base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
 
   MockOnceClosure on_channel_ready;
   MockMessageCallback on_incoming_message;

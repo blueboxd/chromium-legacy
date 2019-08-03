@@ -186,12 +186,11 @@ BASE_EXPORT bool ReadFileToStringWithMaxSize(const FilePath& path,
 BASE_EXPORT bool ReadFromFD(int fd, char* buffer, size_t bytes);
 
 // Performs the same function as CreateAndOpenTemporaryFileInDir(), but returns
-// the file-descriptor directly, rather than wrapping it into a FILE. Returns
-// -1 on failure.
-BASE_EXPORT int CreateAndOpenFdForTemporaryFileInDir(const FilePath& dir,
-                                                     FilePath* path);
+// the file-descriptor wrapped in a ScopedFD, rather than wrapped in a FILE.
+BASE_EXPORT ScopedFD CreateAndOpenFdForTemporaryFileInDir(const FilePath& dir,
+                                                          FilePath* path);
 
-#endif  // OS_POSIX || OS_FUCHSIA
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 #if defined(OS_POSIX)
 

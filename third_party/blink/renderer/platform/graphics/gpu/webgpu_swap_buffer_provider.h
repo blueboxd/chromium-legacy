@@ -35,7 +35,8 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
   WebGPUSwapBufferProvider(
       Client* client,
       scoped_refptr<DawnControlClientHolder> dawn_control_client,
-      DawnTextureUsageBit usage);
+      DawnTextureUsageBit usage,
+      DawnTextureFormat format);
   ~WebGPUSwapBufferProvider() override;
 
   cc::Layer* CcLayer();
@@ -88,6 +89,7 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
   uint32_t wire_texture_id_ = 0;
   uint32_t wire_texture_generation_ = 0;
   scoped_refptr<SwapBuffer> current_swap_buffer_;
+  viz::ResourceFormat format_;
 };
 
 }  // namespace blink

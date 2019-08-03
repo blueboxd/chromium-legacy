@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "ui/gfx/favicon_size.h"
+
 namespace chrome {
 
 struct ParsedFaviconPath {
@@ -23,18 +25,18 @@ struct ParsedFaviconPath {
   std::string icon_url;
 
   // The size of the requested favicon in dip.
-  int size_in_dip;
+  int size_in_dip = gfx::kFaviconSize;
 
   // The device scale factor of the requested favicon.
-  float device_scale_factor;
+  float device_scale_factor = 1.0f;
 
   // TODO(victorvianna): Remove this parameter.
   // The index of the first character (relative to the path) where the the URL
   // from which the favicon is being requested is located.
-  size_t path_index;
+  size_t path_index = std::string::npos;
 
   // Whether we should allow making a request to the favicon server as fallback.
-  bool allow_favicon_server_fallback;
+  bool allow_favicon_server_fallback = false;
 };
 
 // Enum describing the two possible url formats: the legacy chrome://favicon

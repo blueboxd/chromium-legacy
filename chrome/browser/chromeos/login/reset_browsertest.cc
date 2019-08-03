@@ -438,7 +438,9 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
 }
 
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RollbackAvailable) {
+// See http://crbug.com/990362 for details.
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
+                       DISABLED_RollbackAvailable) {
   PrefService* prefs = g_browser_process->local_state();
 
   // PRE test triggers start with Reset screen.

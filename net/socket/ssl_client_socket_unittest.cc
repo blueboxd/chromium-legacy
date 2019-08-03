@@ -69,6 +69,7 @@
 #include "net/ssl/ssl_handshake_details.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_server_config.h"
+#include "net/ssl/test_ssl_config_service.h"
 #include "net/ssl/test_ssl_private_key.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -793,6 +794,8 @@ class SSLClientSocketTest : public PlatformTest,
  public:
   SSLClientSocketTest()
       : socket_factory_(ClientSocketFactory::GetDefaultFactory()),
+        ssl_config_service_(
+            std::make_unique<TestSSLConfigService>(SSLContextConfig())),
         cert_verifier_(std::make_unique<MockCertVerifier>()),
         transport_security_state_(std::make_unique<TransportSecurityState>()),
         ct_verifier_(std::make_unique<DoNothingCTVerifier>()),
@@ -800,6 +803,7 @@ class SSLClientSocketTest : public PlatformTest,
         ssl_client_session_cache_(std::make_unique<SSLClientSessionCache>(
             SSLClientSessionCache::Config())),
         context_(std::make_unique<SSLClientContext>(
+            ssl_config_service_.get(),
             cert_verifier_.get(),
             transport_security_state_.get(),
             ct_verifier_.get(),
@@ -940,6 +944,7 @@ class SSLClientSocketTest : public PlatformTest,
 
   TestNetLog log_;
   ClientSocketFactory* socket_factory_;
+  std::unique_ptr<TestSSLConfigService> ssl_config_service_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   std::unique_ptr<DoNothingCTVerifier> ct_verifier_;
@@ -1306,7 +1311,11 @@ std::unique_ptr<test_server::HttpResponse> HandleZeroRTTRequest(
 
 class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
  protected:
-  SSLClientSocketZeroRTTTest() : SSLClientSocketTest() {}
+  SSLClientSocketZeroRTTTest() : SSLClientSocketTest() {
+    SSLContextConfig config;
+    config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+    ssl_config_service_->UpdateSSLConfigAndNotify(config);
+  }
 
   bool StartServer() {
     SSLServerConfig server_config;
@@ -1327,7 +1336,6 @@ class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
 
   FakeBlockingStreamSocket* MakeClient(bool early_data_enabled) {
     SSLConfig ssl_config;
-    ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
     ssl_config.early_data_enabled = early_data_enabled;
 
     real_transport_.reset(
@@ -1541,8 +1549,9 @@ TEST_F(SSLClientSocketTest, SocketDestroyedDuringVerify) {
 
   HangingCertVerifier verifier;
   context_ = std::make_unique<SSLClientContext>(
-      &verifier, transport_security_state_.get(), ct_verifier_.get(),
-      ct_policy_enforcer_.get(), ssl_client_session_cache_.get());
+      ssl_config_service_.get(), &verifier, transport_security_state_.get(),
+      ct_verifier_.get(), ct_policy_enforcer_.get(),
+      ssl_client_session_cache_.get());
 
   TestCompletionCallback callback;
   auto transport =
@@ -2475,12 +2484,13 @@ TEST_F(SSLClientSocketTest, CipherSuiteDisables) {
   ssl_options.bulk_ciphers = SpawnedTestServer::SSLOptions::BULK_CIPHER_AES128;
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig ssl_config;
+  SSLContextConfig ssl_context_config;
   for (size_t i = 0; i < base::size(kCiphersToDisable); ++i)
-    ssl_config.disabled_cipher_suites.push_back(kCiphersToDisable[i]);
+    ssl_context_config.disabled_cipher_suites.push_back(kCiphersToDisable[i]);
+  ssl_config_service_->UpdateSSLConfigAndNotify(ssl_context_config);
 
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
 }
 
@@ -2806,8 +2816,9 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsTLSExtension) {
 
   MockCTVerifier ct_verifier;
   context_ = std::make_unique<SSLClientContext>(
-      cert_verifier_.get(), transport_security_state_.get(), &ct_verifier,
-      ct_policy_enforcer_.get(), ssl_client_session_cache_.get());
+      ssl_config_service_.get(), cert_verifier_.get(),
+      transport_security_state_.get(), &ct_verifier, ct_policy_enforcer_.get(),
+      ssl_client_session_cache_.get());
 
   // Check that the SCT list is extracted from the TLS extension as expected,
   // while also simulating that it was an unparsable response.
@@ -5217,10 +5228,12 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS12) {
       SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2;
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig config;
+  SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
   EXPECT_FALSE(sock_->IsConnected());
 }
@@ -5237,10 +5250,12 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS11) {
       SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1;
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig config;
+  SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
   EXPECT_FALSE(sock_->IsConnected());
 }
@@ -5257,10 +5272,12 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedAtTLS10) {
       SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0;
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig config;
+  SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
   EXPECT_FALSE(sock_->IsConnected());
 }
@@ -5275,10 +5292,12 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeValid) {
       SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2;
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig config;
+  SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(sock_->IsConnected());
 
@@ -5300,10 +5319,12 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeIgnoredAtTLS12) {
   ssl_options.simulate_tls13_downgrade = true;
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig config;
+  SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(sock_->IsConnected());
 
@@ -5325,10 +5346,12 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeIgnoredAtTLS11) {
       SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1;
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig config;
+  SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(sock_->IsConnected());
 
@@ -5350,10 +5373,12 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeIgnoredAtTLS10) {
       SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0;
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig config;
+  SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(sock_->IsConnected());
 
@@ -5384,10 +5409,12 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedKnownKnown) {
   verify_result.verified_cert = server_cert;
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
-  SSLConfig config;
+  SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
   EXPECT_FALSE(sock_->IsConnected());
 }
@@ -5410,10 +5437,12 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedKnownValid) {
   verify_result.verified_cert = server_cert;
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
-  SSLConfig config;
+  SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(sock_->IsConnected());
 }
@@ -5439,10 +5468,12 @@ TEST_F(SSLClientSocketTest, TLS13DowngradeEnforcedKnownUnknown) {
   verify_result.verified_cert = server_cert;
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
-  SSLConfig config;
+  SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(sock_->IsConnected());
 }
@@ -5544,10 +5575,12 @@ TEST_P(TLS13DowngradeMetricsTest, Metrics) {
   int rv = callback.GetResult(transport->Connect(callback.callback()));
   ASSERT_THAT(rv, IsOk());
 
-  SSLConfig config;
+  SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
+
   std::unique_ptr<SSLClientSocket> ssl_socket =
-      CreateSSLClientSocket(std::move(transport), host_port_pair, config);
+      CreateSSLClientSocket(std::move(transport), host_port_pair, SSLConfig());
   rv = callback.GetResult(ssl_socket->Connect(callback.callback()));
   EXPECT_THAT(rv, IsOk());
 
@@ -5623,9 +5656,14 @@ TEST_P(SSLHandshakeDetailsTest, Metrics) {
   ASSERT_TRUE(
       StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
+  SSLContextConfig client_context_config;
+  client_context_config.version_min = GetParam().version;
+  client_context_config.version_max = GetParam().version;
+  ssl_config_service_->UpdateSSLConfigAndNotify(client_context_config);
+
   SSLConfig client_config;
-  client_config.version_min = GetParam().version;
-  client_config.version_max = GetParam().version;
+  client_config.version_min_override = GetParam().version;
+  client_config.version_max_override = GetParam().version;
   client_config.early_data_enabled = GetParam().early_data;
   if (GetParam().alpn) {
     client_config.alpn_protos = {kProtoHTTP11};
@@ -5702,6 +5740,43 @@ TEST_P(SSLHandshakeDetailsTest, Metrics) {
     histograms.ExpectUniqueSample("Net.SSLHandshakeDetails",
                                   GetParam().expected_resume, 1);
   }
+}
+
+TEST_F(SSLClientSocketTest, VersionOverride) {
+  // Enable all test features in the server.
+  SSLServerConfig server_config;
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  SSLContextConfig context_config;
+  context_config.version_min = SSL_PROTOCOL_VERSION_TLS1_1;
+  context_config.version_max = SSL_PROTOCOL_VERSION_TLS1_1;
+  ssl_config_service_->UpdateSSLConfigAndNotify(context_config);
+
+  // Connecting normally uses the global configuration.
+  SSLConfig config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  SSLInfo info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_1,
+            SSLConnectionStatusToVersion(info.connection_status));
+
+  // Individual sockets may override the maximum version.
+  config.version_max_override = SSL_PROTOCOL_VERSION_TLS1_2;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&info));
+  EXPECT_EQ(SSL_CONNECTION_VERSION_TLS1_2,
+            SSLConnectionStatusToVersion(info.connection_status));
+
+  // Individual sockets may also override the minimum version.
+  config.version_min_override = SSL_PROTOCOL_VERSION_TLS1_3;
+  config.version_max_override = SSL_PROTOCOL_VERSION_TLS1_3;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
 }
 
 }  // namespace net

@@ -67,8 +67,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
         network_loader_factory_(std::move(network_loader_factory)),
         local_client_binding_(this),
         host_(appcache_host) {
-    DCHECK_CURRENTLY_ON(
-        NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     remote_binding_.set_connection_error_handler(base::BindOnce(
         &SubresourceLoader::OnConnectionError, base::Unretained(this)));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -341,19 +340,13 @@ void AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
     network::mojom::URLLoaderFactoryPtr* loader_factory) {
   DCHECK(host.get());
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory;
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    // The partition has shutdown, return without binding |loader_factory|.
-    if (!host->service()->partition())
-      return;
-    network_loader_factory =
-        host->service()
-            ->partition()
-            ->GetURLLoaderFactoryForBrowserProcessWithCORBEnabled();
-  } else {
-    network_loader_factory = host->service()
-                                 ->url_loader_factory_getter()
-                                 ->GetNetworkFactoryWithCORBEnabled();
-  }
+  // The partition has shutdown, return without binding |loader_factory|.
+  if (!host->service()->partition())
+    return;
+  network_loader_factory =
+      host->service()
+          ->partition()
+          ->GetURLLoaderFactoryForBrowserProcessWithCORBEnabled();
   // This instance is effectively reference counted by the number of pipes open
   // to it and will get deleted when all clients drop their connections.
   // Please see OnConnectionError() for details.
@@ -374,8 +367,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // TODO(943887): Replace HasSecurityState() call with something that can
   // preserve security state after process shutdown. The security state check

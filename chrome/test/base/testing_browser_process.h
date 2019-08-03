@@ -137,7 +137,6 @@ class TestingBrowserProcess : public BrowserProcess {
       override;
   shell_integration::DefaultWebClientState CachedDefaultWebClientState()
       override;
-  prefs::InProcessPrefServiceFactory* pref_service_factory() const override;
 
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).

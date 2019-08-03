@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> quản lý thiết bị này và có thể giám sát hoạt động của bạn.</translation>
 <translation id="1510238584712386396">Trình chạy</translation>
 <translation id="1734367976349034509">Thiết bị này do doanh nghiệp quản lý</translation>
 <translation id="1930797645656624981">Dịch vụ cung cấp phương thức nhập trên Chrome OS</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="3008341117444806826">LÀM MỚI</translation>
 <translation id="3838338534323494292">Mật khẩu mới</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> quản lý thiết bị này và có quyền truy cập vào tất cả hoạt động của người dùng, bao gồm cả các trang web đã truy cập, mật khẩu và email.</translation>
 <translation id="4227825898293920515">Mật khẩu sẽ hết hạn sau <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Phiếu Kerberos sẽ sớm hết hạn</translation>
 <translation id="445059817448385655">Mật khẩu cũ</translation>

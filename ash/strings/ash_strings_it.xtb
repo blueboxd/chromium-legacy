@@ -157,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connesso a un dispositivo}other{Connesso a # dispositivi}}</translation>
 <translation id="3226991577105957773">+ altre <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
+<translation id="3249513730522716925">La finestra <ph name="WINDOW_TITLE" /> è stata spostata dal desktop <ph name="ACTIVE_DESK" /> al desktop <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Cosa sai fare?</translation>
 <translation id="3294437725009624529">Ospite</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> può ancora accedere in seguito.</translation>
@@ -178,6 +179,7 @@
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
 <translation id="3576141592585647168">Cambia fuso orario</translation>
 <translation id="3595596368722241419">Batteria carica</translation>
+<translation id="3604801046548457007">Desktop <ph name="DESK_TITILE" /> creato</translation>
 <translation id="3606978283550408104">Display Braille collegato.</translation>
 <translation id="3621202678540785336">Ingresso</translation>
 <translation id="3626281679859535460">Luminosità</translation>
@@ -234,7 +236,6 @@
 <translation id="4379531060876907730">Ecco gli strumenti per il tuo stilo</translation>
 <translation id="4389184120735010762">Hai premuto la scorciatoia da tastiera per la lente d'ingrandimento ancorata. Vuoi attivarla?</translation>
 <translation id="4421231901400348175">Condividi il controllo dello schermo con <ph name="HELPER_NAME" /> tramite Assistenza remota.</translation>
-<translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Non mostrare più</translation>
 <translation id="4477350412780666475">Traccia successiva</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -309,7 +310,6 @@
 <translation id="5744083938413354016">Trascinamento al tocco</translation>
 <translation id="5750765938512549687">Bluetooth non attivo</translation>
 <translation id="5777841717266010279">Interrompere la condivisione dello schermo?</translation>
-<translation id="57838592816432529">Disattiva audio</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Interrompi <ph name="ROUTE_TITLE" /> su <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Off</translation>
@@ -380,6 +380,7 @@
 <translation id="6723839937902243910">Alimentazione</translation>
 <translation id="6727969043791803658">Dispositivo connesso. Livello batteria: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">La traccia delle prestazioni è attiva</translation>
+<translation id="6752912906630585008">Desktop <ph name="REMOVED_DESK" /> rimosso e unito al desktop <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Impossibile duplicare i display perché non sono state trovate risoluzioni supportate. È stato attivato il desktop esteso.</translation>
 <translation id="6820676911989879663">Fai una pausa!</translation>
@@ -490,6 +491,7 @@
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8433186206711564395">Impostazioni di rete</translation>
 <translation id="8433977262951327081">La scorciatoia per mostrare il fumetto del menu di opzioni di immissione nella shelf è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Desktop <ph name="DESK_TITILE" /> attivato</translation>
 <translation id="8452135315243592079">Scheda SIM mancante</translation>
 <translation id="8454013096329229812">Wi-Fi attivo.</translation>
 <translation id="847056008324733326">Impostazioni scala di visualizzazione</translation>

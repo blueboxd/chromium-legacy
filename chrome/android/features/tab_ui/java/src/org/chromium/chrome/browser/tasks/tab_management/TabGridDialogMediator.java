@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -159,11 +160,13 @@ public class TabGridDialogMediator {
             updateDialog();
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
         } else {
-            int index = filter.indexOf(
-                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), mCurrentTabId));
-            if (mAnimationOriginProvider != null && index != TabModel.INVALID_TAB_INDEX) {
-                Rect rect = mAnimationOriginProvider.getAnimationOriginRect(index);
-                mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, rect);
+            if (!FeatureUtilities.isTabToGtsAnimationEnabled()) {
+                int index = filter.indexOf(TabModelUtils.getTabById(
+                        mTabModelSelector.getCurrentModel(), mCurrentTabId));
+                if (mAnimationOriginProvider != null && index != TabModel.INVALID_TAB_INDEX) {
+                    Rect rect = mAnimationOriginProvider.getAnimationOriginRect(index);
+                    mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, rect);
+                }
             }
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
         }
@@ -179,10 +182,12 @@ public class TabGridDialogMediator {
         }
     }
 
+    boolean isVisible() {
+        return mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE);
+    }
+
     private void updateGridTabSwitcher() {
-        if (!mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE)
-                || mGridTabSwitcherResetHandler == null)
-            return;
+        if (!isVisible() || mGridTabSwitcherResetHandler == null) return;
         mGridTabSwitcherResetHandler.resetWithTabList(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false);
     }

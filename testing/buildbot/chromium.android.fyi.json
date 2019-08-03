@@ -132,6 +132,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -187,6 +188,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -242,6 +244,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -297,6 +300,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -352,6 +356,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -407,6 +412,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -462,6 +468,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -517,6 +524,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -573,6 +581,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -629,6 +638,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -684,6 +694,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -739,6 +750,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -794,6 +806,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -850,6 +863,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -905,6 +919,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -960,6 +975,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1015,6 +1031,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1074,6 +1091,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1130,6 +1148,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1187,6 +1206,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1242,6 +1262,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1298,6 +1319,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1356,6 +1378,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1415,6 +1438,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1470,6 +1494,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1528,6 +1553,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1584,6 +1610,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1640,6 +1667,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1695,6 +1723,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1750,6 +1779,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1805,6 +1835,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1860,6 +1891,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1915,6 +1947,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -1970,6 +2003,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2025,6 +2059,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2080,6 +2115,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2135,6 +2171,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2190,6 +2227,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2245,6 +2283,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2300,6 +2339,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2355,6 +2395,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2410,6 +2451,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2465,6 +2507,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2520,6 +2563,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2575,6 +2619,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2630,6 +2675,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2685,6 +2731,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2740,6 +2787,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2795,6 +2843,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2850,6 +2899,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2906,6 +2956,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -2961,6 +3012,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3016,6 +3068,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3071,6 +3124,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3126,6 +3180,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3181,6 +3236,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3236,6 +3292,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3291,6 +3348,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3346,6 +3404,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3401,6 +3460,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3456,6 +3516,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3512,6 +3573,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3567,6 +3629,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3622,6 +3685,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3681,6 +3745,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"
@@ -3737,6 +3802,7 @@
           ],
           "dimension_sets": [
             {
+              "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
               "os": "Ubuntu-16.04"

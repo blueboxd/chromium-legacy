@@ -688,12 +688,11 @@ void Element::scrollIntoView(bool align_to_top) {
   scrollIntoView(arg);
 }
 
-// TODO(cathiechen): CSS direction hasn't been supported. (See:
-// crbug.com/982212, https://www.w3.org/TR/cssom-view-1/#beginning-edges).
 static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions* options,
                                            ScrollOrientation axis,
-                                           bool is_horizontal_writing_mode,
-                                           bool is_flipped_blocks_mode) {
+                                           WritingMode writing_mode,
+                                           bool is_ltr) {
+  bool is_horizontal_writing_mode = IsHorizontalWritingMode(writing_mode);
   String alignment =
       ((axis == kHorizontalScroll && is_horizontal_writing_mode) ||
        (axis == kVerticalScroll && !is_horizontal_writing_mode))
@@ -705,16 +704,72 @@ static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions* options,
   if (alignment == "nearest")
     return ScrollAlignment::kAlignToEdgeIfNeeded;
   if (alignment == "start") {
-    return (axis == kHorizontalScroll)
-               ? is_flipped_blocks_mode ? ScrollAlignment::kAlignRightAlways
-                                        : ScrollAlignment::kAlignLeftAlways
-               : ScrollAlignment::kAlignTopAlways;
+    if (axis == kHorizontalScroll) {
+      switch (writing_mode) {
+        case WritingMode::kHorizontalTb:
+          return is_ltr ? ScrollAlignment::kAlignLeftAlways
+                        : ScrollAlignment::kAlignRightAlways;
+        case WritingMode::kVerticalRl:
+        case WritingMode::kSidewaysRl:
+          return ScrollAlignment::kAlignRightAlways;
+        case WritingMode::kVerticalLr:
+        case WritingMode::kSidewaysLr:
+          return ScrollAlignment::kAlignLeftAlways;
+        default:
+          NOTREACHED();
+          return ScrollAlignment::kAlignLeftAlways;
+      }
+    } else {
+      switch (writing_mode) {
+        case WritingMode::kHorizontalTb:
+          return ScrollAlignment::kAlignTopAlways;
+        case WritingMode::kVerticalRl:
+        case WritingMode::kSidewaysRl:
+        case WritingMode::kVerticalLr:
+          return is_ltr ? ScrollAlignment::kAlignTopAlways
+                        : ScrollAlignment::kAlignBottomAlways;
+        case WritingMode::kSidewaysLr:
+          return is_ltr ? ScrollAlignment::kAlignBottomAlways
+                        : ScrollAlignment::kAlignTopAlways;
+        default:
+          NOTREACHED();
+          return ScrollAlignment::kAlignTopAlways;
+      }
+    }
   }
   if (alignment == "end") {
-    return (axis == kHorizontalScroll)
-               ? is_flipped_blocks_mode ? ScrollAlignment::kAlignLeftAlways
-                                        : ScrollAlignment::kAlignRightAlways
-               : ScrollAlignment::kAlignBottomAlways;
+    if (axis == kHorizontalScroll) {
+      switch (writing_mode) {
+        case WritingMode::kHorizontalTb:
+          return is_ltr ? ScrollAlignment::kAlignRightAlways
+                        : ScrollAlignment::kAlignLeftAlways;
+        case WritingMode::kVerticalRl:
+        case WritingMode::kSidewaysRl:
+          return ScrollAlignment::kAlignLeftAlways;
+        case WritingMode::kVerticalLr:
+        case WritingMode::kSidewaysLr:
+          return ScrollAlignment::kAlignRightAlways;
+        default:
+          NOTREACHED();
+          return ScrollAlignment::kAlignRightAlways;
+      }
+    } else {
+      switch (writing_mode) {
+        case WritingMode::kHorizontalTb:
+          return ScrollAlignment::kAlignBottomAlways;
+        case WritingMode::kVerticalRl:
+        case WritingMode::kSidewaysRl:
+        case WritingMode::kVerticalLr:
+          return is_ltr ? ScrollAlignment::kAlignBottomAlways
+                        : ScrollAlignment::kAlignTopAlways;
+        case WritingMode::kSidewaysLr:
+          return is_ltr ? ScrollAlignment::kAlignTopAlways
+                        : ScrollAlignment::kAlignBottomAlways;
+        default:
+          NOTREACHED();
+          return ScrollAlignment::kAlignBottomAlways;
+      }
+    }
   }
 
   // Default values
@@ -744,16 +799,12 @@ void Element::ScrollIntoViewNoVisualUpdate(
                                 ? kScrollBehaviorSmooth
                                 : kScrollBehaviorAuto;
 
-  bool is_horizontal_writing_mode =
-      GetComputedStyle()->IsHorizontalWritingMode();
-  bool is_flipped_blocks_mode =
-      GetComputedStyle()->IsFlippedBlocksWritingMode();
+  WritingMode writing_mode = GetComputedStyle()->GetWritingMode();
+  bool is_ltr = GetComputedStyle()->IsLeftToRightDirection();
   ScrollAlignment align_x =
-      ToPhysicalAlignment(options, kHorizontalScroll,
-                          is_horizontal_writing_mode, is_flipped_blocks_mode);
+      ToPhysicalAlignment(options, kHorizontalScroll, writing_mode, is_ltr);
   ScrollAlignment align_y =
-      ToPhysicalAlignment(options, kVerticalScroll, is_horizontal_writing_mode,
-                          is_flipped_blocks_mode);
+      ToPhysicalAlignment(options, kVerticalScroll, writing_mode, is_ltr);
 
   PhysicalRect bounds = BoundingBoxForScrollIntoView();
   GetLayoutObject()->ScrollRectToVisible(

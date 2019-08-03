@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> gestionează acest dispozitiv și poate să îți monitorizeze activitatea.</translation>
 <translation id="1510238584712386396">Lansator</translation>
 <translation id="1734367976349034509">Acest dispozitiv este gestionat de companie</translation>
 <translation id="1930797645656624981">Serviciul metodei de introducere a textului din sistemul de operare Chrome</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">Închide</translation>
 <translation id="3008341117444806826">ACTUALIZEAZĂ</translation>
 <translation id="3838338534323494292">Parolă nouă</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gestionează acest dispozitiv și are acces la toată activitatea utilizatorului, inclusiv la paginile web accesate, parole și e-mail.</translation>
 <translation id="4227825898293920515">Parola expiră în <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Tichetul Kerberos expiră în curând</translation>
 <translation id="445059817448385655">Parolă veche</translation>

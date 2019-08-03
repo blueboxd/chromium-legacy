@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 tháng trước}other{# tháng trước}}</translation>
 <translation id="4289300219472526559">Bắt đầu nói</translation>
 <translation id="4316910396681052118">TẤT CẢ ỨNG DỤNG</translation>
+<translation id="4467014365953759647">Không thể gửi số điện thoại</translation>
 <translation id="4588090240171750605">Cuộn qua Phải</translation>
 <translation id="4690510401873698237">Giá ở dưới cùng</translation>
 <translation id="4724120544754982507">Trung tâm thông báo, <ph name="UNREAD_NOTIFICATION_COUNT" /> thông báo chưa đọc</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Trình khởi chạy, chế độ xem một phần</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 phút trước}other{# phút trước}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Hãy kiểm tra kết nối của điện thoại rồi thử lại</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Còn 1 phút}other{Còn # phút}}</translation>
 <translation id="7430878839542012341">Xóa nội dung tìm kiếm này khỏi lịch sử của bạn?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

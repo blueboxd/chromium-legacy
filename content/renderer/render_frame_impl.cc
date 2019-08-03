@@ -1921,6 +1921,8 @@ RenderFrameImpl::~RenderFrameImpl() {
   for (auto& observer : observers_)
     observer.OnDestruct();
 
+  web_user_media_client_.reset();
+
   base::trace_event::TraceLog::GetInstance()->RemoveProcessLabel(routing_id_);
 
   if (auto* factory = AudioOutputIPCFactory::get())
@@ -5680,7 +5682,7 @@ void RenderFrameImpl::WillStartUsingPeerConnectionHandler(
 blink::WebUserMediaClient* RenderFrameImpl::UserMediaClient() {
   if (!web_user_media_client_)
     InitializeUserMediaClient();
-  return web_user_media_client_;
+  return web_user_media_client_.get();
 }
 
 blink::WebEncryptedMediaClient* RenderFrameImpl::EncryptedMediaClient() {
@@ -7106,7 +7108,7 @@ void RenderFrameImpl::InitializeUserMediaClient() {
     return;
 
   DCHECK(!web_user_media_client_);
-  web_user_media_client_ = new UserMediaClientImpl(
+  web_user_media_client_ = std::make_unique<UserMediaClientImpl>(
       this,
       std::make_unique<blink::WebMediaStreamDeviceObserver>(GetWebFrame()),
       GetTaskRunner(blink::TaskType::kInternalMedia));

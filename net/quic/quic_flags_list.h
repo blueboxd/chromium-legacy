@@ -211,6 +211,12 @@ QUIC_FLAG(bool,
 // If true, set burst token to 2 in cwnd bootstrapping experiment.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_conservative_bursts, false)
 
+// When true, QuicFramer will not override connection IDs in headers and will
+// instead respect the source/destination direction as expected by IETF QUIC.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_do_not_override_connection_id,
+          true)
+
 // If true, export number of packets written per write operation histogram.")
 QUIC_FLAG(bool, FLAGS_quic_export_server_num_packets_per_write_histogram, false)
 
@@ -333,27 +339,4 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_restart_flag_quic_dispatcher_hands_chlo_extractor_one_version,
-    false)
-
-// If true, will negotiate the ACK delay time.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, false)
-
-// When true, QuicDispatcher will always use QuicFramer::ParsePublicHeader
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_parse_public_header, false)
-
-// If true, QuicFramer::WriteClientVersionNegotiationProbePacket uses
-// length-prefixed connection IDs.
-QUIC_FLAG(bool, FLAGS_quic_prober_uses_length_prefixed_connection_ids, false)
-
-// If true and H2PR connection option is received, write_blocked_streams_ uses
-// HTTP2 (tree-style) priority write scheduler.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_http2_priority_write_scheduler,
-          false)
-
-// If true, close connection if there are too many (> 1000) buffered control
-// frames.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames,
     false)

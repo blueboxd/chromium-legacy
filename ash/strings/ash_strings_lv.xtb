@@ -157,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Savienots ar ierīci}zero{Savienots ar # ierīcēm}one{Savienots ar # ierīci}other{Savienots ar # ierīcēm}}</translation>
 <translation id="3226991577105957773">vēl <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Mobilais tīkls nav pieejams</translation>
+<translation id="3249513730522716925">Logs <ph name="WINDOW_TITLE" /> pārvietots no darbvirsmas <ph name="ACTIVE_DESK" /> uz darbvirsmu <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Iespējamās darbības</translation>
 <translation id="3294437725009624529">Viesis</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> joprojām varēs pierakstīties vēlāk.</translation>
@@ -178,6 +179,7 @@
 <translation id="3573179567135747900">Mainīt atpakaļ uz <ph name="FROM_LOCALE" /> (nepieciešama restartēšana)</translation>
 <translation id="3576141592585647168">Mainīt laika joslu</translation>
 <translation id="3595596368722241419">Akumulators pilns</translation>
+<translation id="3604801046548457007">Darbvirsma <ph name="DESK_TITILE" /> ir izveidota</translation>
 <translation id="3606978283550408104">Savienojums ar Braila displeju ir izveidots.</translation>
 <translation id="3621202678540785336">Ievade</translation>
 <translation id="3626281679859535460">Spilgtums</translation>
@@ -233,7 +235,6 @@
 <translation id="4379531060876907730">Šie ir jūsu skārienekrāna pildspalvas rīki</translation>
 <translation id="4389184120735010762">Jūs nospiedāt dokotās lupas īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
 <translation id="4421231901400348175">Ekrāna pārvaldības koplietošana ar <ph name="HELPER_NAME" />, izmantojot attālo palīdzību.</translation>
-<translation id="4430019312045809116">Skaļums</translation>
 <translation id="4450893287417543264">Vairs nerādīt</translation>
 <translation id="4477350412780666475">Nākamais ieraksts</translation>
 <translation id="4479639480957787382">tīkls Ethernet</translation>
@@ -308,7 +309,6 @@
 <translation id="5744083938413354016">Vilkšana pieskaroties</translation>
 <translation id="5750765938512549687">Bluetooth ir izslēgts</translation>
 <translation id="5777841717266010279">Vai apturēt ekrāna koplietošanu?</translation>
-<translation id="57838592816432529">Izslēgt skaņu</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Pārtraukt “<ph name="ROUTE_TITLE" />” apraidi ierīcē “<ph name="RECEIVER_NAME" />”</translation>
 <translation id="5860033963881614850">Izsl.</translation>
@@ -379,6 +379,7 @@
 <translation id="6723839937902243910">Strāvas padeve</translation>
 <translation id="6727969043791803658">Savienojums izveidots, akumulatora uzlādes līmenis: <ph name="BATTERY_PERCENTAGE" /></translation>
 <translation id="6751826523481687655">Veiktspējas izsekošana ir ieslēgta.</translation>
+<translation id="6752912906630585008">Darbvirsma <ph name="REMOVED_DESK" /> ir noņemta un apvienota ar darbvirsmu <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Atskaņot</translation>
 <translation id="6803622936009808957">Nevarēja spoguļot displejus, jo netika atrasta atbalstīta izšķirtspēja. Tā vietā tika aktivizēts paplašinātās darbvirsmas režīms.</translation>
 <translation id="6820676911989879663">Laiks pārtraukumam</translation>
@@ -489,6 +490,7 @@
 <translation id="8428213095426709021">Iestatījumi</translation>
 <translation id="8433186206711564395">Tīkla iestatījumi</translation>
 <translation id="8433977262951327081">Tika mainīti īsinājumtaustiņi, ar kuriem plauktā var parādīt ievades opciju izvēlnes burbuli. Lūdzu, turpmāk izmantojiet <ph name="NEW_SHORTCUT" />, nevis <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Darbvirsma <ph name="DESK_TITILE" /> ir aktivizēta</translation>
 <translation id="8452135315243592079">Nav SIM kartes.</translation>
 <translation id="8454013096329229812">Wi-Fi tīkls ir ieslēgts.</translation>
 <translation id="847056008324733326">Displeja mēroga iestatījumi</translation>

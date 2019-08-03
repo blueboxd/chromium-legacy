@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" />에서 이 기기를 관리하며 내 활동을 모니터링할 수도 있습니다.</translation>
 <translation id="1510238584712386396">런처</translation>
 <translation id="1734367976349034509">기업에서 관리하는 기기입니다.</translation>
 <translation id="1930797645656624981">Chrome OS 입력 방법 서비스</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">종료</translation>
 <translation id="3008341117444806826">새로고침</translation>
 <translation id="3838338534323494292">새 비밀번호</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" />에서 이 기기를 관리하고 방문한 웹페이지, 비밀번호, 이메일을 비롯한 모든 사용자 활동에 액세스합니다.</translation>
 <translation id="4227825898293920515">비밀번호가 <ph name="TIME" /> 후에 만료됨</translation>
 <translation id="4429881212383817840">Kerberos 티켓이 곧 만료됨</translation>
 <translation id="445059817448385655">이전 비밀번호</translation>

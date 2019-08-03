@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/base_i18n_switches.h"
 #include "base/i18n/character_encoding.h"
@@ -719,6 +720,14 @@ const char* const kPredefinedAllowedSocketOrigins[] = {
 };
 #endif
 
+#if defined(OS_WIN) && !defined(COMPONENT_BUILD)
+// Enables pre-launch Code Integrity Guard (CIG) for Chrome renderers, when
+// running on Windows 10 1511 and above. See
+// https://blogs.windows.com/blog/tag/code-integrity-guard/.
+const base::Feature kRendererCodeIntegrity{"RendererCodeIntegrity",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD)
+
 enum AppLoadedInTabSource {
   // A platform app page tried to load one of its own URLs in a tab.
   APP_LOADED_IN_TAB_SOURCE_APP = 0,
@@ -1078,6 +1087,30 @@ void MaybeAppendSecureOriginsAllowlistSwitch(base::CommandLine* cmdline) {
         base::JoinString(allowlist, ","));
   }
 }
+
+#if defined(OS_WIN) && !defined(COMPONENT_BUILD)
+// Returns the full path to |module_name|. Both dev builds (where |module_name|
+// is in the current executable's directory) and proper installs (where
+// |module_name| is in a versioned sub-directory of the current executable's
+// directory) are supported. The identified file is not guaranteed to exist.
+base::FilePath GetModulePath(base::StringPiece16 module_name) {
+  base::FilePath exe_dir;
+  const bool has_path = base::PathService::Get(base::DIR_EXE, &exe_dir);
+  DCHECK(has_path);
+
+  // Look for the module in a versioned sub-directory of the current
+  // executable's directory and return the path if it can be read. This is the
+  // expected location of modules for proper installs.
+  const base::FilePath module_path =
+      exe_dir.AppendASCII(chrome::kChromeVersion).Append(module_name);
+  if (base::PathExists(module_path))
+    return module_path;
+
+  // Otherwise, return the path to the module in the current executable's
+  // directory. This is the expected location of modules for dev builds.
+  return exe_dir.Append(module_name);
+}
+#endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD)
 
 }  // namespace
 
@@ -3644,17 +3677,52 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
 
 bool ChromeContentBrowserClient::PreSpawnRenderer(
     sandbox::TargetPolicy* policy) {
-  // This code is duplicated in nacl_exe_win_64.cc.
   // Allow the server side of a pipe restricted to the "chrome.nacl."
   // namespace so that it cannot impersonate other system or other chrome
-  // service pipes.
-  sandbox::ResultCode result = policy->AddRule(
-      sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
-      sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-      L"\\\\.\\pipe\\chrome.nacl.*");
+  // service pipes. This is also done in nacl_broker_listener.cc.
+  sandbox::ResultCode result =
+      policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
+                      sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
+                      L"\\\\.\\pipe\\chrome.nacl.*");
   if (result != sandbox::SBOX_ALL_OK)
     return false;
-  return result == sandbox::SBOX_ALL_OK;
+
+#if !defined(COMPONENT_BUILD)
+  if (!base::FeatureList::IsEnabled(kRendererCodeIntegrity))
+    return true;
+
+  // Only enable signing mitigation if launching from chrome.exe.
+  base::FilePath exe_path;
+  if (!base::PathService::Get(base::FILE_EXE, &exe_path))
+    return true;
+  if (chrome::kBrowserProcessExecutableName != exe_path.BaseName().value())
+    return true;
+
+  sandbox::MitigationFlags mitigations = policy->GetProcessMitigations();
+  mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
+  result = policy->SetProcessMitigations(mitigations);
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
+
+  // Allow loading Chrome's DLLs. The name of this depends on whether
+  // is_multi_dll_chrome is defined or not. For multi-DLL Chrome,
+  // chrome_child.dll is loaded, but for single-DLL Chrome, it would be the
+  // same DLL as the browser process.
+#if defined(CHROME_MULTIPLE_DLL_BROWSER)
+  constexpr auto* child_dll_path = chrome::kChildDll;
+#else
+  constexpr auto* child_dll_path = chrome::kBrowserResourcesDll;
+#endif
+  for (const auto* dll : {child_dll_path, chrome::kElfDll}) {
+    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_SIGNED_BINARY,
+                             sandbox::TargetPolicy::SIGNED_ALLOW_LOAD,
+                             GetModulePath(dll).value().c_str());
+    if (result != sandbox::SBOX_ALL_OK)
+      return false;
+  }
+#endif  // !defined(COMPONENT_BUILD)
+
+  return true;
 }
 #endif  // defined(OS_WIN)
 

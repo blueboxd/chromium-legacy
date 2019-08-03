@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 månad sedan}other{# månader sedan}}</translation>
 <translation id="4289300219472526559">Börja tala</translation>
 <translation id="4316910396681052118">ALLA APPAR</translation>
+<translation id="4467014365953759647">Det gick inte att skicka numret</translation>
 <translation id="4588090240171750605">Rulla åt höger</translation>
 <translation id="4690510401873698237">Hyllan längst ned</translation>
 <translation id="4724120544754982507"><ph name="UNREAD_NOTIFICATION_COUNT" /> olästa aviseringar i meddelandecentret</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Översikt, delvy</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{för 1 min sedan}other{för # min sedan}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Kontrollera telefonens anslutning och försök igen</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut kvar}other{# minuter kvar}}</translation>
 <translation id="7430878839542012341">Vill du radera den här sökningen från historiken?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

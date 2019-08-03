@@ -18,6 +18,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
@@ -43,6 +44,7 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
+        FeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(true);
 
         mDummyParent = new FrameLayout(getActivity());
         mTabGridDialogParent = new TabGridDialogParent(getActivity(), mDummyParent);

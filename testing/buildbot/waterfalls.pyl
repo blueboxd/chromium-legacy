@@ -627,6 +627,7 @@
         'mixins': [
           'pie-x86-emulator',
           'linux-xenial',
+          'x86-64',
         ],
         'os_type': 'android',
         'test_suites': {

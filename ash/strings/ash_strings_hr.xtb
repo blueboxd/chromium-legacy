@@ -157,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Povezano s jednim uređajem}one{Povezano s # uređajem}few{Povezano s # uređaja}other{Povezano s # uređaja}}</translation>
 <translation id="3226991577105957773">Još <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Mobilne mreže nisu dostupne</translation>
+<translation id="3249513730522716925">Prozor <ph name="WINDOW_TITLE" /> premješten je s radne površine <ph name="ACTIVE_DESK" /> na radnu površinu <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Što možeš učiniti?</translation>
 <translation id="3294437725009624529">Gost</translation>
 <translation id="3308453408813785101">Korisnik <ph name="USER_EMAIL_ADDRESS" /> može se prijaviti i kasnije.</translation>
@@ -178,6 +179,7 @@
 <translation id="3573179567135747900">Vratite na "<ph name="FROM_LOCALE" />" (zahtijeva ponovno pokretanje)</translation>
 <translation id="3576141592585647168">Promjena vremenske zone</translation>
 <translation id="3595596368722241419">Baterija je puna</translation>
+<translation id="3604801046548457007">Izrađena je radna površina <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Brajev je redak povezan.</translation>
 <translation id="3621202678540785336">Ulaz</translation>
 <translation id="3626281679859535460">Svjetlina</translation>
@@ -233,7 +235,6 @@
 <translation id="4379531060876907730">Ovo su vaši alati za pisaljke</translation>
 <translation id="4389184120735010762">Pritisnuli ste tipkovni prečac za usidreno povećalo. Želite li ga uključiti?</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> i vi dijelite kontrolu nad zaslonom putem Daljinske pomoći.</translation>
-<translation id="4430019312045809116">Glasnoća</translation>
 <translation id="4450893287417543264">Ne prikazuj ponovo</translation>
 <translation id="4477350412780666475">Sljedeća pjesma</translation>
 <translation id="4479639480957787382">Eternet</translation>
@@ -308,7 +309,6 @@
 <translation id="5744083938413354016">Povlačenje dodirom</translation>
 <translation id="5750765938512549687">Bluetooth je isključen</translation>
 <translation id="5777841717266010279">Prekinuti dijeljenje zaslona?</translation>
-<translation id="57838592816432529">Isključi zvuk</translation>
 <translation id="5820394555380036790">OS Chromium</translation>
 <translation id="5837036133683224804">Zaustavite <ph name="ROUTE_TITLE" /> na uređaju <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Isključeno</translation>
@@ -379,6 +379,7 @@
 <translation id="6723839937902243910">Napajanje</translation>
 <translation id="6727969043791803658">Povezano, baterija <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Uključeno je praćenje izvedbe</translation>
+<translation id="6752912906630585008">Radna površina <ph name="REMOVED_DESK" /> uklonjena je i spojena s radnom površinom <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Reproduciraj</translation>
 <translation id="6803622936009808957">Nije bilo moguće zrcaliti zaslone jer nije pronađena nijedna podržana razlučivost. Umjesto toga proširena je radna površina.</translation>
 <translation id="6820676911989879663">Odmorite se!</translation>
@@ -489,6 +490,7 @@
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="8433186206711564395">Postavke mreže</translation>
 <translation id="8433977262951327081">Promijenio se prečac za prikazivanje oblačića izbornika s opcijama unosa na polici. Upotrijebite <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Aktivirana je radna površina <ph name="DESK_TITILE" /></translation>
 <translation id="8452135315243592079">Nedostaje SIM kartica</translation>
 <translation id="8454013096329229812">Wi-Fi je uključen.</translation>
 <translation id="847056008324733326">Postavke skale prikaza</translation>

@@ -39,6 +39,7 @@
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/ip_endpoint.h"
@@ -552,23 +553,13 @@ void Session::CreateVideoEncodeMemory(
     const media::cast::ReceiveVideoEncodeMemoryCallback& callback) {
   DVLOG(1) << __func__;
 
-  mojo::ScopedSharedBufferHandle mojo_buf =
-      mojo::SharedBufferHandle::Create(size);
-  if (!mojo_buf->is_valid()) {
-    LOG(WARNING) << "Browser failed to allocate shared memory.";
-    callback.Run(nullptr);
-    return;
-  }
+  base::UnsafeSharedMemoryRegion buf =
+      mojo::CreateUnsafeSharedMemoryRegion(size);
 
-  base::SharedMemoryHandle shared_buf;
-  if (mojo::UnwrapSharedMemoryHandle(std::move(mojo_buf), &shared_buf, nullptr,
-                                     nullptr) != MOJO_RESULT_OK) {
+  if (!buf.IsValid())
     LOG(WARNING) << "Browser failed to allocate shared memory.";
-    callback.Run(nullptr);
-    return;
-  }
 
-  callback.Run(std::make_unique<base::SharedMemory>(shared_buf, false));
+  callback.Run(std::move(buf));
 }
 
 void Session::OnTransportStatusChanged(CastTransportStatus status) {

@@ -84,6 +84,7 @@ public class FeatureUtilities {
     private static Boolean sShouldPrioritizeBootstrapTasks;
     private static Boolean sIsGridTabSwitcherEnabled;
     private static Boolean sIsTabGroupsAndroidEnabled;
+    private static Boolean sIsTabToGtsAnimationEnabled;
     private static Boolean sFeedEnabled;
     private static Boolean sServiceManagerForBackgroundPrefetch;
     private static Boolean sIsNetworkServiceEnabled;
@@ -644,9 +645,22 @@ public class FeatureUtilities {
     }
 
     /**
+     * Toggles whether the Tab-to-GTS animation is enabled for testing. Should be reset back to
+     * null after the test has finished.
+     */
+    @VisibleForTesting
+    public static void setIsTabToGtsAnimationEnabledForTesting(@Nullable Boolean enabled) {
+        sIsTabToGtsAnimationEnabled = enabled;
+    }
+
+    /**
      * @return Whether the Tab-to-Grid (and Grid-to-Tab) transition animation is enabled.
      */
     public static boolean isTabToGtsAnimationEnabled() {
+        if (sIsTabToGtsAnimationEnabled != null) {
+            Log.d(TAG, "IsTabToGtsAnimationEnabled forced to " + sIsTabToGtsAnimationEnabled);
+            return sIsTabToGtsAnimationEnabled;
+        }
         Log.d(TAG, "GTS.MinSdkVersion = " + GridTabSwitcherUtil.getMinSdkVersion());
         Log.d(TAG, "GTS.MinMemoryMB = " + GridTabSwitcherUtil.getMinMemoryMB());
         return ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)

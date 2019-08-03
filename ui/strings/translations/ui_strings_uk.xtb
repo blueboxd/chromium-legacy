@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 місяць тому}one{# місяць тому}few{# місяці тому}many{# місяців тому}other{# місяця тому}}</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4316910396681052118">УСІ ДОДАТКИ</translation>
+<translation id="4467014365953759647">Не вдалося надіслати номер</translation>
 <translation id="4588090240171750605">Прокрутка вправо</translation>
 <translation id="4690510401873698237">Полицю розміщено внизу</translation>
 <translation id="4724120544754982507">Центр сповіщень, непрочитаних сповіщень: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Панель запуску, частковий перегляд</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 хв тому}one{# хв тому}few{# хв тому}many{# хв тому}other{# хв тому}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Перевірте з'єднання телефона й повторіть спробу</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Залишилась 1 хвилина}one{Залишилася # хвилина}few{Залишилося # хвилини}many{Залишилося # хвилин}other{Залишилося # хвилини}}</translation>
 <translation id="7430878839542012341">Видалити цей пошуковий запит з історії?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>

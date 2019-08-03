@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Fa 1 mes}other{Fa # mesos}}</translation>
 <translation id="4289300219472526559">Comença a parlar</translation>
 <translation id="4316910396681052118">TOTES LES APLICACIONS</translation>
+<translation id="4467014365953759647">No es pot enviar el número</translation>
 <translation id="4588090240171750605">Desplaçament a la dreta</translation>
 <translation id="4690510401873698237">El prestatge és a la part inferior</translation>
 <translation id="4724120544754982507">Centre de notificacions, <ph name="UNREAD_NOTIFICATION_COUNT" /> notificacions no llegides</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Menú d'aplicacions, visualització parcial</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{fa 1 min}other{fa # min}}</translation>
 <translation id="7389409599945284130">: <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Comprova la connexió del telèfon i torna-ho a provar</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut restant}other{# minuts restants}}</translation>
 <translation id="7430878839542012341">Vols suprimir aquesta cerca de l'historial?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

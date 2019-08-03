@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> manages this device and may be able to monitor your activity.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1734367976349034509">This device is enterprise managed</translation>
 <translation id="1930797645656624981">Chrome OS Input Method Service</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="3008341117444806826">REFRESH</translation>
 <translation id="3838338534323494292">New password</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> manages this device and has access to all user activity, including web pages visited, passwords and email.</translation>
 <translation id="4227825898293920515">Password expires in <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos ticket expires soon</translation>
 <translation id="445059817448385655">Old password</translation>

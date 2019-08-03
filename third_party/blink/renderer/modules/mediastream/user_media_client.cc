@@ -76,4 +76,11 @@ bool UserMediaClient::IsCapturing() {
   return client_->IsCapturing();
 }
 
+void UserMediaClient::ContextDestroyed() {
+  if (!client_)
+    return;
+
+  client_->ContextDestroyed();
+}
+
 }  // namespace blink

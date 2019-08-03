@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="1482734542997480527">يدير النطاق <ph name="ENROLLMENT_DOMAIN" /> هذا الجهاز وقد يتمكن من مراقبة نشاطك.</translation>
 <translation id="1510238584712386396">مشغِّل التطبيقات</translation>
 <translation id="1734367976349034509">يخضع هذا الجهاز لإدارة المؤسسة</translation>
 <translation id="1930797645656624981">‏خدمة أسلوب الإدخال لنظام التشغيل Chrome</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">إيقاف التشغيل</translation>
 <translation id="3008341117444806826">إعادة التحميل</translation>
 <translation id="3838338534323494292">كلمة المرور الجديدة</translation>
+<translation id="4003259559679196451">يُدير <ph name="ENROLLMENT_DOMAIN" /> هذا الجهاز ويحصل على إذن الوصول إلى جميع أنشطة المستخدم، بما في ذلك صفحات الويب التي تمت زيارتها وكلمات المرور والبريد الإلكتروني.</translation>
 <translation id="4227825898293920515">تنتهي صلاحية كلمة المرور في <ph name="TIME" /></translation>
 <translation id="4429881212383817840">‏ستنتهي صلاحية تذكرة Kerberos قريبًا</translation>
 <translation id="445059817448385655">كلمة المرور القديمة</translation>

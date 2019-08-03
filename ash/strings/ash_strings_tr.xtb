@@ -157,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Bir cihaza bağlı}other{# cihaza bağlı}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> öğe daha</translation>
 <translation id="3236488194889173876">Kullanılabilir mobil ağ yok</translation>
+<translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> penceresi, <ph name="ACTIVE_DESK" /> numaralı Masadan <ph name="TARGET_DESK" /> numaralı Masaya taşındı</translation>
 <translation id="3255483164551725916">Neler yapabilirsin?</translation>
 <translation id="3294437725009624529">Misafir</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> daha sonra yine oturum açabilir.</translation>
@@ -178,6 +179,7 @@
 <translation id="3573179567135747900">Tekrar "<ph name="FROM_LOCALE" />" ayarına dön (yeniden başlatmak gerekir)</translation>
 <translation id="3576141592585647168">Saat dilimini değiştir</translation>
 <translation id="3595596368722241419">Pil tam dolu</translation>
+<translation id="3604801046548457007">Masa <ph name="DESK_TITILE" /> oluşturuldu</translation>
 <translation id="3606978283550408104">Braille ekranı bağlandı.</translation>
 <translation id="3621202678540785336">Giriş</translation>
 <translation id="3626281679859535460">Parlaklık</translation>
@@ -233,7 +235,6 @@
 <translation id="4379531060876907730">Bunlar ekran kalemi araçlarınızdır</translation>
 <translation id="4389184120735010762">Yerleştirilmiş büyüteç klavye kısayoluna bastınız. Bu özelliği açmak istiyor musunuz?</translation>
 <translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME" /> ile paylaşılıyor.</translation>
-<translation id="4430019312045809116">Ses</translation>
 <translation id="4450893287417543264">Bir daha gösterme</translation>
 <translation id="4477350412780666475">Sonraki Parça</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -308,7 +309,6 @@
 <translation id="5744083938413354016">Dokunarak sürükleme</translation>
 <translation id="5750765938512549687">Bluetooth kapalı</translation>
 <translation id="5777841717266010279">Ekran paylaşma durdurulsun mu?</translation>
-<translation id="57838592816432529">Sesi kapat</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> adlı alıcıya <ph name="ROUTE_TITLE" /> yayınını durdur</translation>
 <translation id="5860033963881614850">Kapalı</translation>
@@ -380,6 +380,7 @@
 <translation id="6723839937902243910">Güç</translation>
 <translation id="6727969043791803658">Bağlandı, %<ph name="BATTERY_PERCENTAGE" /> pil</translation>
 <translation id="6751826523481687655">Performans izleme açık</translation>
+<translation id="6752912906630585008">Masa <ph name="REMOVED_DESK" /> kaldırılarak Masa <ph name="RECEIVE_DESK" /> ile birleştirildi</translation>
 <translation id="6790428901817661496">Oynat</translation>
 <translation id="6803622936009808957">Desteklenen bir çözünürlük bulunamadığı için ekranlar yansıtılamıyor. Bunun yerine genişletilmiş masaüstüne geçiliyor.</translation>
 <translation id="6820676911989879663">Mola verin!</translation>
@@ -490,6 +491,7 @@
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433186206711564395">Ağ ayarları</translation>
 <translation id="8433977262951327081">Giriş seçenekleri menüsü balonunu rafta görüntüleme kısa yolu değişti. <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
+<translation id="8444246603146515890">Masa <ph name="DESK_TITILE" /> etkinleştirildi</translation>
 <translation id="8452135315243592079">SIM kart yok</translation>
 <translation id="8454013096329229812">Kablosuz açık.</translation>
 <translation id="847056008324733326">Ekran ölçeği ayarları</translation>

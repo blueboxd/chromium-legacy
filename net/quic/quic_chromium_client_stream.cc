@@ -709,10 +709,6 @@ void QuicChromiumClientStream::DisableConnectionMigrationToCellularNetwork() {
 }
 
 bool QuicChromiumClientStream::IsFirstStream() {
-  if (VersionUsesQpack(quic_version_)) {
-    return id() == quic::QuicUtils::GetFirstBidirectionalStreamId(
-                       quic_version_, quic::Perspective::IS_CLIENT);
-  }
   return id() == quic::QuicUtils::GetHeadersStreamId(quic_version_) +
                      quic::QuicUtils::StreamIdDelta(quic_version_);
 }

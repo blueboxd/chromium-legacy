@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="1005230401424685968">ΕΕΕΕ</translation>
 <translation id="1016495303386450659">Το στοιχείο ενημερώθηκε</translation>
 <translation id="1047726139967079566">Τοποθέτηση Σελιδοδείκτη σε Αυτήν τη Σελίδα...</translation>
 <translation id="1049743911850919806">Ανώνυμη περιήγηση</translation>
@@ -194,6 +195,7 @@
 <translation id="3607167657931203000">Δεδομένα Αυτόματης συμπλήρωσης</translation>
 <translation id="3609785682760573515">Συγχρονισμός…</translation>
 <translation id="3638472932233958418">Προφόρτ. ιστοσελίδων</translation>
+<translation id="3670030362669914947">Αριθμός</translation>
 <translation id="3691593122358196899">Ο σελιδοδείκτης είναι στο "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3771033907050503522">Καρτ.αν.περιήγ.</translation>
 <translation id="3775743491439407556">Ο συγχρονισμός δεν λειτουργεί</translation>
@@ -450,6 +452,7 @@
 <translation id="744343212394640790">Δεν είμαι ο χρήστης <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Νομός/Επαρχία</translation>
 <translation id="7456847797759667638">Άνοιγμα Τοποθεσίας...</translation>
+<translation id="7460314822154045102">Χρήση κάμερας</translation>
 <translation id="7464701184726199289">Διαγράφει τα συγχρονισμένα δεδομένα από όλες τις συσκευές. Οι αποθηκευμένες ρυθμίσεις ιστότοπου δεν θα διαγραφούν και ενδέχεται να υποδεικνύουν τις συνήθειες περιήγησής σας. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Επων. εταιρείας</translation>
 <translation id="7481312909269577407">Προώθηση</translation>

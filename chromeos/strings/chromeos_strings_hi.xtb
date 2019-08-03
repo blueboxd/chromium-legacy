@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
+<translation id="1482734542997480527">इस डिवाइस को <ph name="ENROLLMENT_DOMAIN" /> प्रबंधित करता है और आपकी गतिविधि पर नज़र रख सकता है.</translation>
 <translation id="1510238584712386396">लॉन्चर</translation>
 <translation id="1734367976349034509">यह डिवाइस एंटरप्राइज़ द्वारा प्रबंधित है</translation>
 <translation id="1930797645656624981">Chrome OS के इनपुट के तरीके की सेवा</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">शट डाउन करें</translation>
 <translation id="3008341117444806826">रीफ़्रेश करें</translation>
 <translation id="3838338534323494292">नया पासवर्ड</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> इस डिवाइस को प्रबंधित करता है. इसके पास उपयोगकर्ता की सभी गतिविधियों का ऐक्सेस है. इन गतिविधियों में उपयोगकर्ता के किसी वेबपेज पर जाने, उसके पासवर्ड, और ईमेल की जानकारी शामिल होती है.</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> में पासवर्ड की समयसीमा खत्म हो जाएगी</translation>
 <translation id="4429881212383817840">Kerberos टिकट की समयसीमा जल्द ही खत्म होने वाली है</translation>
 <translation id="445059817448385655">पुराना पासवर्ड</translation>

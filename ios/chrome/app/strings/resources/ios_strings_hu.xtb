@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1005230401424685968">ÉÉÉÉ</translation>
 <translation id="1016495303386450659">Elem frissítve</translation>
 <translation id="1047726139967079566">Könyvjelző hozzáadása ehhez az oldalhoz...</translation>
 <translation id="1049743911850919806">Inkognitómód</translation>
@@ -194,6 +195,7 @@
 <translation id="3607167657931203000">Automatikus kitöltés adatai</translation>
 <translation id="3609785682760573515">Szinkronizálás...</translation>
 <translation id="3638472932233958418">Weboldalak előtöltése</translation>
+<translation id="3670030362669914947">Szám</translation>
 <translation id="3691593122358196899">Könyvjelzők közé téve itt: <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Inkognitólapok</translation>
 <translation id="3775743491439407556">A szinkronizálás nem működik</translation>
@@ -449,6 +451,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="744343212394640790">Nem <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Állam/megye</translation>
 <translation id="7456847797759667638">Hely megnyitása...</translation>
+<translation id="7460314822154045102">A Kamera használata</translation>
 <translation id="7464701184726199289">Az összes eszközről törli a szinkronizált adatokat. A mentett webhelybeállítások nem törlődnek, és tájékozódási alapul szolgálhatnak böngészési szokásait illetően. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Vállalat neve</translation>
 <translation id="7481312909269577407">Előre</translation>

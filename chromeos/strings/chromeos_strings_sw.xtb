@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> anadhibiti kifaa hiki na anaweza kufuatilia shughuli zako.</translation>
 <translation id="1510238584712386396">Kizindua</translation>
 <translation id="1734367976349034509">Kifaa hiki kinadhibitiwa kibiashara</translation>
 <translation id="1930797645656624981">Huduma ya Mbinu ya Kuingiza Data kwenye Mfumo wa Uendeshaji wa Chrome</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">Zima</translation>
 <translation id="3008341117444806826">ONYESHA UPYA</translation>
 <translation id="3838338534323494292">Nenosiri jipya</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> hudhibiti kifaa hiki na ina idhini ya kufikia shughuli zote za mtumiaji, zikiwemo kurasa za wavuti alizotembelea, manenosiri na anwani za barua pepe.</translation>
 <translation id="4227825898293920515">Muda wa kutumia nenosiri utaisha baada ya <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Muda wa kutumia tiketi ya Kerberos unakaribia kuisha</translation>
 <translation id="445059817448385655">Nenosiri la awali</translation>

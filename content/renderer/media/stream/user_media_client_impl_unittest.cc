@@ -496,7 +496,7 @@ class UserMediaClientImplTest : public ::testing::Test {
   }
 
   void LoadNewDocumentInFrame() {
-    user_media_client_impl_->ReadyToCommitNavigation(nullptr);
+    user_media_client_impl_->ContextDestroyed();
     base::RunLoop().RunUntilIdle();
   }
 

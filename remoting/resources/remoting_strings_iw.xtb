@@ -70,9 +70,9 @@
 <translation id="2366718077645204424">לא ניתן להשיג את המארח. הסיבה לכך יכולה להיות תצורת הרשת שבה אתה משתמש.</translation>
 <translation id="2370754117186920852">המארח <ph name="OPTIONAL_OFFLINE_REASON" />  נראה לאחרונה במצב מקוון <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">‏האפליקציה הזו כבר לא נתמכת. כדי לוודא שיש לך גישה לתכונות ולעדכוני האבטחה העדכניים ביותר, יש להשתמש ב<ph name="LINK_BEGIN" />אפליקציית האינטרנט Chrome Remote Desktop<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">ש לבצע שלב הגדרה נוסף כדי לשלוט במחשב מרחוק באמצעות <ph name="PRODUCT_NAME" />.
+<translation id="2431841749166974386">יש לבצע שלב הגדרה נוסף כדי לשלוט במחשב מרחוק באמצעות <ph name="PRODUCT_NAME" />.
 
-כדי להפעיל את הפונקציונליות הזו, בוחרים '<ph name="BUTTON_NAME" />' כדי להציג את חלונית העדפות האבטחה והפרטיות, ואז מסמנים את התיבה לצד '<ph name="SERVICE_SCRIPT_NAME" />'.
+להפעלת הפונקציונליות הזו, בוחרים '<ph name="BUTTON_NAME" />' כדי להציג את חלונית העדפות האבטחה והפרטיות, ואז מסמנים את התיבה לצד '<ph name="SERVICE_SCRIPT_NAME" />'.
 
 אם '<ph name="SERVICE_SCRIPT_NAME" />' כבר מוצג ומסומן, ייתכן שצריך להסיר אותו ואז להוסיף אותו מחדש.</translation>
 <translation id="2499160551253595098">‏רוצה לעזור לנו לשפר את Chrome Remote Desktop? אנחנו זקוקים לאישורך כדי לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>

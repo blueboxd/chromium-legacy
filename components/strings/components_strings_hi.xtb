@@ -300,6 +300,7 @@
 <translation id="2485387744899240041">आपके डिवाइस और ब्राउज़र के लिए उपयोगकर्ता नाम</translation>
 <translation id="2491120439723279231">सर्वर के प्रमाणपत्र में त्रुटियां हैं.</translation>
 <translation id="2493640343870896922">लेटर-प्लस</translation>
+<translation id="2494497504885199552">आम तौर पर, आप &lt;a href="#" id="dont-proceed-link2"&gt;<ph name="DOMAIN" />&lt;/a&gt; पर जाते हैं. आपने अभी जिस साइट पर जाने की कोशिश की है उसका यूआरएल आपके खोज इतिहास में मौजूद साइट के यूआरएल से काफ़ी मिलता-जुलता है, लेकिन पूरी तरह से मेल नहीं खाता. हैकर कभी-कभी आपको धोखा देने या धोखाधड़ी करने के लिए इस तकनीक का इस्तेमाल करते हैं.</translation>
 <translation id="2495083838625180221">JSON पार्सर</translation>
 <translation id="2495093607237746763">अगर चेक किया गया हो, तो ज़्यादा तेज़ी से फ़ॉर्म भरने के लिए क्रोमियम इस डिवाइस पर आपके कार्ड की कॉपी संग्रहित करेगा.</translation>
 <translation id="2498091847651709837">नया कार्ड स्‍कैन करें</translation>
@@ -365,6 +366,7 @@
 <translation id="2826760142808435982">कनेक्शन को <ph name="CIPHER" /> का उपयोग करके एन्क्रिप्ट और प्रमाणित किया गया है और यह कुंजी विनिमय तकनीक के रूप में <ph name="KX" /> का उपयोग करता है.</translation>
 <translation id="2835170189407361413">फ़ॉर्म साफ़ करें</translation>
 <translation id="2847118875340931228">गुप्त विंडो खोलें</translation>
+<translation id="2849445596171421624">'जारी रखें' पर क्लिक करने से आपको सबसे आम साइट &lt;a href="#" id="dont-proceed-link3"&gt;<ph name="DOMAIN" />&lt;/a&gt; पर ले जाया जाएगा.</translation>
 <translation id="2850739647070081192">न्योता (एन्वेलप)</translation>
 <translation id="2851634818064021665">आपको इस साइट पर जाने की अनुमति लेनी होगी</translation>
 <translation id="2856444702002559011">हो सकता है कि हमलावर <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> से आपकी जानकारी (जैसे- पासवर्ड, मैसेज या क्रेडिट कार्ड वगैरह) चुराने की कोशिश कर रहे हों. <ph name="BEGIN_LEARN_MORE_LINK" />ज़्यादा जानें<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -683,6 +685,7 @@
 <translation id="4582204425268416675">कार्ड हटाएं</translation>
 <translation id="4587425331216688090">Chrome से पता निकालें?</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> से आपके कनेक्शन को किसी आधुनिक सिफ़र सुइट का उपयोग करके एन्‍क्रिप्‍ट किया गया है.</translation>
+<translation id="4594047029158047642">जो लिंक आप खोलना चाहते हैं वह आपको ऐसी वेबसाइट तक ले जाएगा, जिस पर आप सामान्य तौर पर नहीं जाते. यह वेबसाइट आपको गुमराह कर सकती है.</translation>
 <translation id="4594403342090139922">मिटाना &amp;पहले जैसा करें</translation>
 <translation id="4597348597567598915">आकार 8</translation>
 <translation id="4600854749408232102">सी6/सी5 (एन्वेलप)</translation>
@@ -785,6 +788,7 @@
 <translation id="5169827969064885044">आपके संगठन के खाते का ऐक्सेस खो सकता है या आपकी पहचान चोरी हो सकती है. Chrome आपको अभी अपना पासवर्ड बदलने का सुझाव देता है.</translation>
 <translation id="5171045022955879922">URL खोजें या टाइप करें</translation>
 <translation id="5171689220826475070">फ़ैनफ़ोल्ड-यूरोपियन</translation>
+<translation id="5172068981283436906">आम तौर पर, आप &lt;a href="#" id="dont-proceed-link2"&gt;<ph name="DOMAIN" />&lt;/a&gt;. पर जाते हैं. अपने अभी जिस साइट पर जाने की कोशिश की है उसका यूआरएल आपके खोज इतिहास में मौजूद साइट के यूआरएल से काफ़ी मिलता-जुलता है, लेकिन पूरी तरह से मेल नहीं खाता. हैकर कभी-कभी आपको धोखा देने या धोखाधड़ी करने के लिए इस तकनीक का इस्तेमाल करते हैं.</translation>
 <translation id="5172758083709347301">मशीन</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> में नहीं है? इस गड़बड़ी की रिपोर्ट करें</translation>
 <translation id="5190835502935405962">बुकमार्क बार</translation>
@@ -913,6 +917,7 @@
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5863847714970149516">आगे आने वाला पेज आपसे शुल्क लेने की कोशिश कर सकता है</translation>
 <translation id="5866257070973731571">फ़ोन नंबर जोड़ें</translation>
+<translation id="5866898949289125849">आप डेवलपर के टूल वाला पेज देख रहे हैं</translation>
 <translation id="5869405914158311789">इस साइट तक नहीं पहुंचा जा सकता</translation>
 <translation id="5869522115854928033">सेव किए गए पासवर्ड</translation>
 <translation id="5887400589839399685">कार्ड सेव किया गया</translation>
@@ -1081,7 +1086,6 @@
 <translation id="6891596781022320156">नीति स्तर समर्थित नहीं है.</translation>
 <translation id="6895330447102777224">आपके कार्ड की पुष्टि हो गई है</translation>
 <translation id="6897140037006041989">उपयोगकर्ता एजेंट</translation>
-<translation id="6903319715792422884">'सुरक्षित ब्राउज़िंग' को बेहतर बनाने में मदद करने के लिए, Google को कुछ <ph name="BEGIN_WHITEPAPER_LINK" />'सिस्टम जानकारी' और 'पेज सामग्री'<ph name="END_WHITEPAPER_LINK" /> भेजें. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">उपयोगकर्ता:</translation>
 <translation id="6934672428414710184">यह नाम आपके Google खाते से है</translation>
 <translation id="6944692733090228304">आपने एक ऐसी साइट पर अपना पासवर्ड डाला है जिसे <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> प्रबंधित नहीं करता है. अपने खाते को सुरक्षित रखने के लिए, दूसरे ऐप्लिकेशन और साइटों पर अपने पासवर्ड का दोबारा इस्तेमाल न करें.</translation>
@@ -1151,6 +1155,7 @@
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से एक निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके कंप्‍यूटर का तारीख और समय (<ph name="DATE_AND_TIME" />) गलत है.</translation>
 <translation id="7260504762447901703">ऐक्सेस रद्द करें</translation>
+<translation id="726226871651201355">क्या आप &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; पर जारी रखना चाहते हैं?</translation>
 <translation id="7271803869921933038">स्वीकार किए जाने वाले प्रीपेड कार्ड</translation>
 <translation id="7275334191706090484">प्रबंधित बुकमार्क</translation>
 <translation id="7298195798382681320">सुझाए गए</translation>
@@ -1489,6 +1494,7 @@
 <translation id="9078964945751709336">ज़्यादा जानकारी की आवश्यकता है</translation>
 <translation id="9080712759204168376">ऑर्डर की जानकारी</translation>
 <translation id="9089260154716455634">बंद रहने के समय के लिए नीति:</translation>
+<translation id="9093075372111400787">ज़्यादा जानकारी बंद करें</translation>
 <translation id="9095388113577226029">और भाषाएं...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> आपकी जानकारी की सुरक्षा करने के लिए आमतौर पर एन्क्रिप्शन का इस्तेमाल करती है. जब क्रोमियम ने इस बार <ph name="SITE" /> से कनेक्ट करने की कोशिश की, तो वेबसाइट ने असामान्य और गलत क्रेडेंशियल वापस भेजे. ऐसा तब हो सकता है जब कोई हमलावर <ph name="SITE" /> होने का दावा करने का प्रयास कर रहा हो या किसी वाई-फ़ाई साइन इन स्क्रीन ने कनेक्शन को रोक दिया हो. आपकी जानकारी अब भी सुरक्षित है क्योंकि किसी भी डेटा के लेन-देन से पहले ही क्रोमियम ने कनेक्शन को रोक दिया था.</translation>
 <translation id="9106062320799175032">बिलिंग पता जोड़ें</translation>

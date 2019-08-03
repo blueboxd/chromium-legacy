@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1005230401424685968">JJJJ</translation>
 <translation id="1016495303386450659">Item geüpdated</translation>
 <translation id="1047726139967079566">Bladwijzer instellen voor deze pagina...</translation>
 <translation id="1049743911850919806">Incognito</translation>
@@ -194,6 +195,7 @@
 <translation id="3607167657931203000">Gegevens van Automatisch aanvullen</translation>
 <translation id="3609785682760573515">Synchroniseren...</translation>
 <translation id="3638472932233958418">Webpagina's vooraf laden</translation>
+<translation id="3670030362669914947">Nummer</translation>
 <translation id="3691593122358196899">Bladwijzer gemaakt in <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Incognitotabbladen</translation>
 <translation id="3775743491439407556">Synchronisatie werkt niet</translation>
@@ -449,6 +451,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="744343212394640790">Niet <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Provincie</translation>
 <translation id="7456847797759667638">Open locatie...</translation>
+<translation id="7460314822154045102">Camera gebruiken</translation>
 <translation id="7464701184726199289">Hiermee worden gesynchroniseerde gegevens van alle apparaten gewist. Opgeslagen site-instellingen worden niet verwijderd en kunnen je browsegedrag weerspiegelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Bedrijfsnaam</translation>
 <translation id="7481312909269577407">Vooruit</translation>

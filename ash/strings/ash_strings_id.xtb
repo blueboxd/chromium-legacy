@@ -157,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Tersambung ke satu perangkat}other{Tersambung ke # perangkat}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> lagi</translation>
 <translation id="3236488194889173876">Jaringan seluler tidak tersedia</translation>
+<translation id="3249513730522716925">Jendela <ph name="WINDOW_TITLE" /> berpindah dari Halaman kerja <ph name="ACTIVE_DESK" /> ke Halaman kerja <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Apa yang bisa kamu lakukan?</translation>
 <translation id="3294437725009624529">Tamu</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> tetap dapat login di lain waktu.</translation>
@@ -178,6 +179,7 @@
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
 <translation id="3576141592585647168">Ubah zona waktu</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
+<translation id="3604801046548457007">Halaman kerja <ph name="DESK_TITILE" /> dibuat</translation>
 <translation id="3606978283550408104">Layar Braille tersambung.</translation>
 <translation id="3621202678540785336">Masukan</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
@@ -233,7 +235,6 @@
 <translation id="4379531060876907730">Ini adalah fitur stilus</translation>
 <translation id="4389184120735010762">Anda menekan pintasan keyboard untuk kaca pembesar yang terpasang di dok. Ingin mengaktifkannya?</translation>
 <translation id="4421231901400348175">Berbagi kontrol layar dengan <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
-<translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Jangan tampilkan lagi</translation>
 <translation id="4477350412780666475">Lagu Berikutnya</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -308,7 +309,6 @@
 <translation id="5744083938413354016">Ketuk tarik</translation>
 <translation id="5750765938512549687">Bluetooth nonaktif</translation>
 <translation id="5777841717266010279">Berhenti membagikan layar?</translation>
-<translation id="57838592816432529">Bisukan</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Hentikan <ph name="ROUTE_TITLE" /> di <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Nonaktif</translation>
@@ -379,6 +379,7 @@
 <translation id="6723839937902243910">Daya</translation>
 <translation id="6727969043791803658">Terhubung, baterai <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Pelacakan performa diaktifkan</translation>
+<translation id="6752912906630585008">Halaman kerja <ph name="REMOVED_DESK" /> dihapus dan digabung dengan Halaman kerja <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Putar</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
 <translation id="6820676911989879663">Istirahatlah sebentar</translation>
@@ -489,6 +490,7 @@
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8433186206711564395">Setelan jaringan</translation>
 <translation id="8433977262951327081">Pintasan untuk menampilkan balon menu opsi masukan di rak telah diubah. Harap gunakan <ph name="NEW_SHORTCUT" />, bukan <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Halaman kerja <ph name="DESK_TITILE" /> diaktifkan</translation>
 <translation id="8452135315243592079">Kartu SIM tidak ada</translation>
 <translation id="8454013096329229812">Wi-Fi diaktifkan.</translation>
 <translation id="847056008324733326">Setelan skala layar</translation>

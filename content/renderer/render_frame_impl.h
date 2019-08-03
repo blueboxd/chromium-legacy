@@ -1607,12 +1607,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // of handling a FrameInputHandler::SelectRange IPC.
   bool handling_select_range_;
 
-  // The next group of objects all implement RenderFrameObserver, so are deleted
-  // along with the RenderFrame automatically.  This is why we just store weak
-  // references.
-
-  // Destroyed via the RenderFrameObserver::OnDestruct() mechanism.
-  UserMediaClientImpl* web_user_media_client_;
+  // Implements getUserMedia() and related functionality.
+  std::unique_ptr<UserMediaClientImpl> web_user_media_client_;
 
   mojom::RendererAudioInputStreamFactoryPtr audio_input_stream_factory_;
 

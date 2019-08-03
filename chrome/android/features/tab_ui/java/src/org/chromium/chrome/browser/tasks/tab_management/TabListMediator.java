@@ -58,8 +58,6 @@ import java.util.Map;
  * TODO(yusufo): Move some of the logic here to a parent component to make the above true.
  */
 class TabListMediator {
-    private static final int INVALID_INDEX = -1;
-
     private boolean mVisible;
     private boolean mShownIPH;
 
@@ -216,21 +214,18 @@ class TabListMediator {
     private boolean mActionsOnAllRelatedTabs;
     private ComponentCallbacks mComponentCallbacks;
     private TabGridItemTouchHelperCallback mTabGridItemTouchHelperCallback;
-    private int mNextTabIndex = INVALID_INDEX;
+    private int mNextTabId = Tab.INVALID_TAB_ID;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
         @Override
         public void run(int tabId) {
-            Tab currentTab = mTabModelSelector.getCurrentTab();
-
-            mNextTabIndex = TabModelUtils.getTabIndexById(
-                    mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
-                    tabId);
-
-            Tab newlySelectedTab =
-                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);
+            mNextTabId = tabId;
 
             if (!mActionsOnAllRelatedTabs) {
+                Tab currentTab = mTabModelSelector.getCurrentTab();
+                Tab newlySelectedTab =
+                        TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);
+
                 // We filtered the tab switching related metric for components that takes actions on
                 // all related tabs (e.g. GTS) because that component can switch to different
                 // TabModel before switching tabs, while this class only contains information for
@@ -372,7 +367,7 @@ class TabListMediator {
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void didSelectTab(Tab tab, int type, int lastId) {
-                mNextTabIndex = INVALID_INDEX;
+                mNextTabId = Tab.INVALID_TAB_ID;
                 if (tab.getId() == lastId) return;
                 int oldIndex = mModel.indexFromId(lastId);
                 if (oldIndex != TabModel.INVALID_TAB_INDEX) {
@@ -640,21 +635,27 @@ class TabListMediator {
                 .getRelatedTabList(id);
     }
 
-    private void onTabAdded(Tab tab, boolean onlyShowRelatedTabs) {
+    private int getIndexOfTab(Tab tab, boolean onlyShowRelatedTabs) {
         int index;
         if (onlyShowRelatedTabs) {
-            if (mModel.size() == 0) return;
+            if (mModel.size() == 0) return TabList.INVALID_TAB_INDEX;
             List<Tab> related = getRelatedTabsForId(mModel.get(0).get(TabProperties.TAB_ID));
             index = related.indexOf(tab);
-            if (index == -1) return;
+            if (index == -1) return TabList.INVALID_TAB_INDEX;
         } else {
             index = TabModelUtils.getTabIndexById(
                     mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
                     tab.getId());
             // TODO(wychen): the title (tab count in the group) is wrong when it's not the last
             //  tab added in the group.
-            if (index == TabList.INVALID_TAB_INDEX) return;
         }
+        return index;
+    }
+
+    private void onTabAdded(Tab tab, boolean onlyShowRelatedTabs) {
+        int index = getIndexOfTab(tab, onlyShowRelatedTabs);
+        if (index == TabList.INVALID_TAB_INDEX) return;
+
         addTabInfoToModel(tab, index, mTabModelSelector.getCurrentTab() == tab);
     }
 
@@ -915,7 +916,12 @@ class TabListMediator {
     }
 
     int indexOfSelected() {
-        if (mNextTabIndex != INVALID_INDEX) return mNextTabIndex;
+        if (mNextTabId != Tab.INVALID_TAB_ID) {
+            return getIndexOfTab(
+                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), mNextTabId),
+                    !mActionsOnAllRelatedTabs);
+        }
+
         return mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index();
     }
 

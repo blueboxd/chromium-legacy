@@ -70,7 +70,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2366718077645204424">ホストにアクセスできません。お使いのネットワークの設定が原因であることが考えられます。</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />最終オンライン: <ph name="RELATIVE_TIMESTAMP" />。</translation>
 <translation id="2405928220797050937">このアプリのサポートは終了しました。最新の機能とセキュリティ アップデートを反映した <ph name="LINK_BEGIN" />Chrome リモート デスクトップ ウェブアプリ<ph name="LINK_END" />をご利用ください。</translation>
-<translation id="2431841749166974386"><ph name="PRODUCT_NAME" /> を使用してこのパソコンをリモートで管理するには、追加の設定手順を行う必要があります。
+<translation id="2431841749166974386"><ph name="PRODUCT_NAME" /> を使用してこのパソコンをリモートで管理するには、追加の設定が必要です。
 
 この機能を有効にするには、[<ph name="BUTTON_NAME" />] を選択して [セキュリティとプライバシー] 設定パネルを開き、[<ph name="SERVICE_SCRIPT_NAME" />] の横にあるチェックボックスをオンにします。
 

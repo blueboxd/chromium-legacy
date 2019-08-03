@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 kuukausi sitten}other{# kuukautta sitten}}</translation>
 <translation id="4289300219472526559">Aloita puhuminen</translation>
 <translation id="4316910396681052118">KAIKKI SOVELLUKSET</translation>
+<translation id="4467014365953759647">Numeroa ei voi lähettää</translation>
 <translation id="4588090240171750605">Vieritä oikealle</translation>
 <translation id="4690510401873698237">Hylly alareunassa</translation>
 <translation id="4724120544754982507">Ilmoituskeskus, <ph name="UNREAD_NOTIFICATION_COUNT" /> lukematonta ilmoitusta</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Käynnistysohjelma, osittainen näkymä</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min sitten}other{# min sitten}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Tarkista puhelimen yhteys ja yritä uudelleen</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minuutti jäljellä}other{# minuuttia jäljellä}}</translation>
 <translation id="7430878839542012341">Poistetaanko tämä haku historiastasi?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> Tt</translation>

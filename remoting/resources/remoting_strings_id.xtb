@@ -70,7 +70,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2366718077645204424">Tidak dapat menjangkau inang. Ini mungkin karena konfigurasi jaringan yang Anda gunakan.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Terakhir terlihat online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Aplikasi ini tidak lagi didukung. Untuk memastikan Anda mendapatkan update fitur dan keamanan terbaru, gunakan <ph name="LINK_BEGIN" />aplikasi web Chrome Desktop Jarak Jauh<ph name="LINK_END" />.</translation>
-<translation id="2431841749166974386">Langkah konfigurasi tambahan diperlukan sebelum Anda dapat mengontrol mesin ini dari jarak jauh menggunakan <ph name="PRODUCT_NAME" />.
+<translation id="2431841749166974386">Langkah konfigurasi tambahan diperlukan sebelum Anda dapat mengontrol perangkat ini dari jarak jauh menggunakan <ph name="PRODUCT_NAME" />.
 
 Untuk mengaktifkan fungsi ini, pilih <ph name="BUTTON_NAME" />' untuk menampilkan panel preferensi Keamanan dan Privasi, kemudian centang kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.
 

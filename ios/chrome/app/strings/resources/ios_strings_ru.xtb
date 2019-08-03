@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1005230401424685968">ГГГГ</translation>
 <translation id="1016495303386450659">Обновлено</translation>
 <translation id="1047726139967079566">Добавить страницу в закладки…</translation>
 <translation id="1049743911850919806">Инкогнито</translation>
@@ -194,6 +195,7 @@
 <translation id="3607167657931203000">Данные автозаполнения</translation>
 <translation id="3609785682760573515">Cинхронизация…</translation>
 <translation id="3638472932233958418">Предварительная загрузка</translation>
+<translation id="3670030362669914947">Номер</translation>
 <translation id="3691593122358196899">Закладка добавлена в папку "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3771033907050503522">Вкладки инкогнито</translation>
 <translation id="3775743491439407556">Ошибка синхронизации</translation>
@@ -449,6 +451,7 @@
 <translation id="744343212394640790">Не <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Регион</translation>
 <translation id="7456847797759667638">Открыть адрес...</translation>
+<translation id="7460314822154045102">Использовать камеру</translation>
 <translation id="7464701184726199289">Синхронизированные данные будут удалены со всех устройств. Настройки сайтов не изменятся, поэтому данные о вашей работе в Интернете сохранятся. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Название компании</translation>
 <translation id="7481312909269577407">Вперед</translation>

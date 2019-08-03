@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1482734542997480527">Uređajem upravlja domena <ph name="ENROLLMENT_DOMAIN" /> i ona možda može nadzirati vašu aktivnost.</translation>
 <translation id="1510238584712386396">Pokretač</translation>
 <translation id="1734367976349034509">Ovim uređajem upravlja tvrtka</translation>
 <translation id="1930797645656624981">Usluga načina unosa OS-a Chrome</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="3008341117444806826">OSVJEŽI</translation>
 <translation id="3838338534323494292">Nova zaporka</translation>
+<translation id="4003259559679196451">Uređajem upravlja domena <ph name="ENROLLMENT_DOMAIN" /> i ona ima pristup svim aktivnostima korisnika, uključujući posjećene web-stranice, zaporke i e-poštu.</translation>
 <translation id="4227825898293920515">Zaporka istječe za <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberosov tiket uskoro istječe</translation>
 <translation id="445059817448385655">Stara zaporka</translation>

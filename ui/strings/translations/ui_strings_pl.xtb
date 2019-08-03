@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{miesiąc temu}few{# miesiące temu}many{# miesięcy temu}other{# miesiąca temu}}</translation>
 <translation id="4289300219472526559">Zacznij mówić</translation>
 <translation id="4316910396681052118">WSZYSTKIE APLIKACJE</translation>
+<translation id="4467014365953759647">Nie można wysłać numeru</translation>
 <translation id="4588090240171750605">Przewiń w prawo</translation>
 <translation id="4690510401873698237">Półka na dole</translation>
 <translation id="4724120544754982507">Centrum powiadomień, liczba nieprzeczytanych powiadomień: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Menu z aplikacjami, widok częściowy</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min temu}few{# min temu}many{# min temu}other{# min temu}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Sprawdź połączenie telefonu i spróbuj ponownie</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Pozostała 1 minuta}few{Pozostały # minuty}many{Pozostały # minut}other{Pozostało # minuty}}</translation>
 <translation id="7430878839542012341">Usunąć to hasło z historii wyszukiwania?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

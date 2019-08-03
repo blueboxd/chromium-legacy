@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 bulan yang lalu}other{# bulan yang lalu}}</translation>
 <translation id="4289300219472526559">Mulai Berbicara</translation>
 <translation id="4316910396681052118">SEMUA APLIKASI</translation>
+<translation id="4467014365953759647">Tidak dapat mengirim nomor</translation>
 <translation id="4588090240171750605">Gulir ke Kanan</translation>
 <translation id="4690510401873698237">Rak di bagian bawah</translation>
 <translation id="4724120544754982507">Pusat Notifikasi, <ph name="UNREAD_NOTIFICATION_COUNT" /> notifikasi belum dibaca</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Peluncur, tampilan sebagian</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 mnt yang lalu}other{# mnt yang lalu}}</translation>
 <translation id="7389409599945284130"><ph name="MESSAGE" /> -</translation>
+<translation id="7399254631220132461">Periksa koneksi ponsel dan coba lagi</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 menit lagi}other{# menit lagi}}</translation>
 <translation id="7430878839542012341">Hapus penelusuran ini dari histori Anda?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

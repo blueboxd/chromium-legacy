@@ -14,7 +14,6 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/stream/user_media_processor.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
@@ -30,8 +29,7 @@ class WebMediaStreamDeviceObserver;
 // UserMediaClientImpl handles requests coming from the Blink MediaDevices
 // object. This includes getUserMedia and enumerateDevices. It must be created,
 // called and destroyed on the render thread.
-class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
-                                           public blink::WebUserMediaClient {
+class CONTENT_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
  public:
   // TODO(guidou): Make all constructors private and replace with Create methods
   // that return a std::unique_ptr. This class is intended for instantiation on
@@ -58,10 +56,7 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
       const blink::WebApplyConstraintsRequest& web_request) override;
   void StopTrack(const blink::WebMediaStreamTrack& web_track) override;
   bool IsCapturing() override;
-
-  // RenderFrameObserver override
-  void ReadyToCommitNavigation(
-      blink::WebDocumentLoader* document_loader) override;
+  void ContextDestroyed() override;
 
   void SetMediaDevicesDispatcherForTesting(
       blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher);
@@ -105,11 +100,11 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
 
   void DeleteAllUserMediaRequests();
 
-  // RenderFrameObserver implementation.
-  void OnDestruct() override;
-
   const blink::mojom::MediaDevicesDispatcherHostPtr&
   GetMediaDevicesDispatcher();
+
+  // |render_frame_| is the frame owning this UserMediaClientImpl.
+  RenderFrameImpl* const render_frame_;
 
   // |user_media_processor_| is a unique_ptr for testing purposes.
   std::unique_ptr<UserMediaProcessor> user_media_processor_;

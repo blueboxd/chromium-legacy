@@ -18,6 +18,7 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 
 namespace {
 
@@ -34,12 +35,9 @@ void CreateVideoEncodeMemory(
     const media::cast::ReceiveVideoEncodeMemoryCallback& callback) {
   DCHECK(content::RenderThread::Get());
 
-  std::unique_ptr<base::SharedMemory> shm =
-      content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(size);
-  DCHECK(shm) << "Failed to allocate shared memory";
-  if (!shm->Map(size)) {
-    NOTREACHED() << "Map failed";
-  }
+  base::UnsafeSharedMemoryRegion shm =
+      mojo::CreateUnsafeSharedMemoryRegion(size);
+  DCHECK(shm.IsValid()) << "Failed to allocate shared memory";
   callback.Run(std::move(shm));
 }
 

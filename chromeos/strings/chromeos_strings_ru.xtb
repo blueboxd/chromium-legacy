@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1482734542997480527">Это управляемое устройство. Администратор домена <ph name="ENROLLMENT_DOMAIN" /> может отслеживать ваши действия.</translation>
 <translation id="1510238584712386396">Панель запуска</translation>
 <translation id="1734367976349034509">Это корпоративное устройство</translation>
 <translation id="1930797645656624981">Выбор способа ввода в Chrome OS</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">Завершить работу</translation>
 <translation id="3008341117444806826">ОБНОВИТЬ</translation>
 <translation id="3838338534323494292">Новый пароль</translation>
+<translation id="4003259559679196451">Это управляемое устройство. Администратору домена <ph name="ENROLLMENT_DOMAIN" /> доступна информация обо всех действиях пользователя, в том числе о посещенных сайтах, используемом адресе электронной почты и введенных паролях.</translation>
 <translation id="4227825898293920515">Срок действия пароля истекает через <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Срок действия билета Kerberos истекает</translation>
 <translation id="445059817448385655">Старый пароль</translation>

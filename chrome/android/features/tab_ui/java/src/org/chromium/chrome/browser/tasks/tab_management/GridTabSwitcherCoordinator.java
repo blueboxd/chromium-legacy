@@ -157,6 +157,14 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
     @Override
     @NonNull
     public Rect getThumbnailLocationOfCurrentTab(boolean forceUpdate) {
+        if (mTabGridDialogCoordinator != null && mTabGridDialogCoordinator.isVisible()) {
+            assert forceUpdate;
+            Rect thumbnail = mTabGridDialogCoordinator.getGlobalLocationOfCurrentThumbnail();
+            // Adjust to the relative coordinate.
+            Rect root = mTabGridCoordinator.getRecyclerViewLocation();
+            thumbnail.offset(-root.left, -root.top);
+            return thumbnail;
+        }
         if (forceUpdate) mTabGridCoordinator.updateThumbnailLocation();
         return mTabGridCoordinator.getThumbnailLocationOfCurrentTab();
     }

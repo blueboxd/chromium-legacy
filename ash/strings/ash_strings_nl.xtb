@@ -157,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Verbonden met een apparaat}other{Verbonden met # apparaten}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> andere meldingen</translation>
 <translation id="3236488194889173876">Geen mobiel netwerk beschikbaar</translation>
+<translation id="3249513730522716925">Het venster <ph name="WINDOW_TITLE" /> is verplaatst van bureau <ph name="ACTIVE_DESK" /> naar bureau <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Wat kun je doen?</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan later nog inloggen.</translation>
@@ -178,6 +179,7 @@
 <translation id="3573179567135747900">Teruggaan naar '<ph name="FROM_LOCALE" />' (opnieuw starten vereist)</translation>
 <translation id="3576141592585647168">Tijdzone wijzigen</translation>
 <translation id="3595596368722241419">Batterij is vol</translation>
+<translation id="3604801046548457007">Bureau <ph name="DESK_TITILE" /> gemaakt</translation>
 <translation id="3606978283550408104">Braillescherm gekoppeld.</translation>
 <translation id="3621202678540785336">Ingang</translation>
 <translation id="3626281679859535460">Helderheid</translation>
@@ -233,7 +235,6 @@
 <translation id="4379531060876907730">Dit zijn je stylustools</translation>
 <translation id="4389184120735010762">Je hebt op de sneltoets voor het gedockte vergrootglas gedrukt. Wil je deze functie inschakelen?</translation>
 <translation id="4421231901400348175">De controle over je scherm wordt gedeeld met <ph name="HELPER_NAME" /> via externe ondersteuning.</translation>
-<translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Niet meer tonen</translation>
 <translation id="4477350412780666475">Volgend nummer</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -308,7 +309,6 @@
 <translation id="5744083938413354016">Tikken en slepen</translation>
 <translation id="5750765938512549687">Bluetooth is uitgeschakeld</translation>
 <translation id="5777841717266010279">Stoppen met scherm delen?</translation>
-<translation id="57838592816432529">Dempen</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="ROUTE_TITLE" /> in <ph name="RECEIVER_NAME" /> stopzetten</translation>
 <translation id="5860033963881614850">Uit</translation>
@@ -379,6 +379,7 @@
 <translation id="6723839937902243910">Voeding</translation>
 <translation id="6727969043791803658">Verbonden, batterij <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Bijhouden van prestaties is ingeschakeld</translation>
+<translation id="6752912906630585008">Bureau <ph name="REMOVED_DESK" /> verwijderd en samengevoegd met bureau <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Spelen</translation>
 <translation id="6803622936009808957">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd.</translation>
 <translation id="6820676911989879663">Neem een pauze</translation>
@@ -489,6 +490,7 @@
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8433186206711564395">Netwerkinstellingen</translation>
 <translation id="8433977262951327081">De sneltoets om de ballon van het menu met invoeropties op de plank weer te geven, is gewijzigd. Gebruik <ph name="NEW_SHORTCUT" /> in plaats van <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Bureau <ph name="DESK_TITILE" /> geactiveerd</translation>
 <translation id="8452135315243592079">Simkaart ontbreekt</translation>
 <translation id="8454013096329229812">Wifi is ingeschakeld.</translation>
 <translation id="847056008324733326">Instellingen voor weergaveschaal</translation>

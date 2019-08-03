@@ -34,6 +34,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_drag_dest_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -244,6 +245,24 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   void StopObserveringFrames() { frame_observer_.reset(); }
 
  protected:
+  class MockWebDragDestDelegate : public WebDragDestDelegate {
+   public:
+    void DragInitialize(WebContents* contents) override {
+      drag_initialize_called_ = true;
+    }
+    void OnDragOver() override {}
+    void OnDragEnter() override {}
+    void OnDrop() override {}
+    void OnDragLeave() override {}
+    void OnReceiveDragData(const ui::OSExchangeData& data) override {}
+
+    void Reset() { drag_initialize_called_ = false; }
+    bool GetDragInitializeCalled() { return drag_initialize_called_; }
+
+   private:
+    bool drag_initialize_called_ = false;
+  };
+
   // ContentBrowserTest:
   void PostRunTestOnMainThread() override {
     // Delete this before the WebContents is destroyed.
@@ -255,6 +274,8 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
   // A closure indicating that async drop operation has completed.
   base::OnceClosure async_drop_closure_;
+
+  MockWebDragDestDelegate drag_dest_delegate_;
 
  private:
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
@@ -279,10 +300,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollNavigation) {
 // On Linux, the test frequently times out. (See crbug.com/440043).
 #if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_OverscrollNavigationWithTouchHandler \
-        DISABLED_OverscrollNavigationWithTouchHandler
+  DISABLED_OverscrollNavigationWithTouchHandler
 #else
 #define MAYBE_OverscrollNavigationWithTouchHandler \
-        OverscrollNavigationWithTouchHandler
+  OverscrollNavigationWithTouchHandler
 #endif
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        MAYBE_OverscrollNavigationWithTouchHandler) {
@@ -394,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 // Flaky on CrOS as well: https://crbug.com/856079
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_QuickOverscrollDirectionChange \
-        DISABLED_QuickOverscrollDirectionChange
+  DISABLED_QuickOverscrollDirectionChange
 #else
 #define MAYBE_QuickOverscrollDirectionChange QuickOverscrollDirectionChange
 #endif
@@ -523,8 +544,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DragDropOnOopif) {
   WebContentsViewAura* view =
       static_cast<WebContentsViewAura*>(contents->GetView());
 
+  view->SetDragDestDelegateForTesting(&drag_dest_delegate_);
+
   // Drop on the root frame.
   {
+    drag_dest_delegate_.Reset();
     std::unique_ptr<ui::OSExchangeData> data =
         std::make_unique<ui::OSExchangeData>();
     view->RegisterDropCallbackForTesting(base::BindOnce(
@@ -536,6 +560,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DragDropOnOopif) {
     ui::DropTargetEvent event(*data.get(), point, point,
                               ui::DragDropTypes::DRAG_COPY);
     view->OnDragEntered(event);
+    EXPECT_TRUE(drag_dest_delegate_.GetDragInitializeCalled());
     view->OnPerformDrop(event, std::move(data));
 
     run_loop.Run();
@@ -548,6 +573,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DragDropOnOopif) {
   }
   // Drop on the element in the root frame overlapping the embedded OOPIF.
   {
+    drag_dest_delegate_.Reset();
     std::unique_ptr<ui::OSExchangeData> data =
         std::make_unique<ui::OSExchangeData>();
     view->RegisterDropCallbackForTesting(base::BindOnce(
@@ -567,6 +593,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DragDropOnOopif) {
     ui::DropTargetEvent event(*data.get(), point, point,
                               ui::DragDropTypes::DRAG_COPY);
     view->OnDragEntered(event);
+    EXPECT_TRUE(drag_dest_delegate_.GetDragInitializeCalled());
     view->OnPerformDrop(event, std::move(data));
 
     run_loop.Run();

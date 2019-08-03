@@ -110,7 +110,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         // The Tab-to-GTS animation is done, and it's time to renew the thumbnail without causing
         // janky frames.
         // When animation is off, the thumbnail is already updated when showing the GTS.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)) {
+        if (FeatureUtilities.isTabToGtsAnimationEnabled()) {
             Tab currentTab = mTabModelSelector.getCurrentTab();
             if (currentTab != null) mTabContentManager.cacheTabThumbnail(currentTab);
         }

@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 મહિના પહેલાં}one{# મહિના પહેલાં}other{# મહિના પહેલાં}}</translation>
 <translation id="4289300219472526559">બોલવાનું પ્રારંભ કરો</translation>
 <translation id="4316910396681052118">બધી ઍપ્લિકેશનો</translation>
+<translation id="4467014365953759647">નંબર મોકલી શકાતો નથી</translation>
 <translation id="4588090240171750605">જમણે સ્ક્રોલ કરો</translation>
 <translation id="4690510401873698237">શેલ્ફ સૌથી નીચે છે</translation>
 <translation id="4724120544754982507">સૂચના કેન્દ્ર, વાંચ્યા વગરની <ph name="UNREAD_NOTIFICATION_COUNT" /> સૂચનાઓ</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">લૉન્ચર, આંશિક દૃશ્ય</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 મિ પહેલાં}one{# મિ પહેલાં}other{# મિ પહેલાં}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">તમારા ફોનનું કનેક્શન ચેક કરો અને ફરી પ્રયાસ કરો</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 મિનિટ બાકી}one{# મિનિટ બાકી}other{# મિનિટ બાકી}}</translation>
 <translation id="7430878839542012341">તમારા ઇતિહાસમાંથી આ શોધ ડિલીટ કરીએ?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

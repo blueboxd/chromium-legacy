@@ -157,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Pripojené k zariadeniu}few{Pripojené k # zariadeniam}many{Connected to # devices}other{Pripojené k # zariadeniam}}</translation>
 <translation id="3226991577105957773">a ďalšie (<ph name="COUNT" />)</translation>
 <translation id="3236488194889173876">Nie je k dispozícii žiadna mobilná sieť</translation>
+<translation id="3249513730522716925">Okno <ph name="WINDOW_TITLE" /> bolo presunuté z pracovného prostredia <ph name="ACTIVE_DESK" /> do pracovného prostredia <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Čo dokážeš?</translation>
 <translation id="3294437725009624529">Hosť</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> sa bude môcť stále prihlásiť neskôr.</translation>
@@ -178,6 +179,7 @@
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE" />“ (vyžaduje sa reštart)</translation>
 <translation id="3576141592585647168">Zmena časového pásma</translation>
 <translation id="3595596368722241419">Batéria je nabitá</translation>
+<translation id="3604801046548457007">Pracovné prostredie <ph name="DESK_TITILE" /> bolo vytvorené</translation>
 <translation id="3606978283550408104">Bola pripojená Braillova obrazovka.</translation>
 <translation id="3621202678540785336">Vstup</translation>
 <translation id="3626281679859535460">Jas</translation>
@@ -233,7 +235,6 @@
 <translation id="4379531060876907730">Toto sú vaše nástroje pre dotykové pero</translation>
 <translation id="4389184120735010762">Stlačili ste klávesovú skratku ukotvenej lupy. Chcete ju zapnúť?</translation>
 <translation id="4421231901400348175">Ovládanie obrazovky sa prostredníctvom Vzdialenej pomoci zdieľa s používateľom <ph name="HELPER_NAME" />.</translation>
-<translation id="4430019312045809116">Hlasitosť</translation>
 <translation id="4450893287417543264">Nabudúce nezobrazovať</translation>
 <translation id="4477350412780666475">Ďalšia stopa</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -308,7 +309,6 @@
 <translation id="5744083938413354016">Presunutie klepnutím</translation>
 <translation id="5750765938512549687">Rozhranie Bluetooth je vypnuté</translation>
 <translation id="5777841717266010279">Chcete ukončiť zdieľanie obrazovky?</translation>
-<translation id="57838592816432529">Vypnúť zvuk</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Zastaviť prenos obsahu <ph name="ROUTE_TITLE" /> do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Vypnuté</translation>
@@ -379,6 +379,7 @@
 <translation id="6723839937902243910">Napájanie</translation>
 <translation id="6727969043791803658">Pripojené, <ph name="BATTERY_PERCENTAGE" /> % batérie</translation>
 <translation id="6751826523481687655">Trasovanie výkonnosti je zapnuté</translation>
+<translation id="6752912906630585008">Pracovné prostredie <ph name="REMOVED_DESK" /> bolo odstránené a zlúčené s pracovným prostredím <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Prehrať</translation>
 <translation id="6803622936009808957">Obraz na monitoroch sa nedá zrkadliť, pretože sa nenašli podporované rozlíšenia. Namiesto toho sa spustil režim rozšírenej pracovnej plochy.</translation>
 <translation id="6820676911989879663">Urobte si prestávku.</translation>
@@ -489,6 +490,7 @@
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="8433186206711564395">Nastavenia siete</translation>
 <translation id="8433977262951327081">Klávesová skratka na zobrazenie bubliny s možnosťami vstupu na poličke sa zmenila. Namiesto skratky <ph name="OLD_SHORTCUT" /> použite skratku <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Pracovné prostredie <ph name="DESK_TITILE" /> bolo aktivované</translation>
 <translation id="8452135315243592079">Chýba SIM karta</translation>
 <translation id="8454013096329229812">Pripojenie Wi‑Fi je zapnuté.</translation>
 <translation id="847056008324733326">Nastavenia hustoty zobrazenia</translation>

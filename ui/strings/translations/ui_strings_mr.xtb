@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 महिन्यापूर्वी}other{# महिन्यांपूर्वी}}</translation>
 <translation id="4289300219472526559">बोलणे प्रारंभ करा</translation>
 <translation id="4316910396681052118">सर्व अ‍ॅप्स</translation>
+<translation id="4467014365953759647">नंबर पाठवू शकत नाही</translation>
 <translation id="4588090240171750605">उजवे स्क्रोल करा</translation>
 <translation id="4690510401873698237">शेल्फ तळाशी आहे</translation>
 <translation id="4724120544754982507">सूचना केंद्र, <ph name="UNREAD_NOTIFICATION_COUNT" /> न वाचलेल्या सूचना</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">लाँचर, आंशिक दृश्य</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 मिनिटापूर्वी}other{# मिनिटांपूर्वी}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">तुमच्या फोनचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 मिनिट शिल्लक}other{# मिनिटे शिल्लक}}</translation>
 <translation id="7430878839542012341">तुमच्या इतिहासातून हा शोध हटवायचा आहे का?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

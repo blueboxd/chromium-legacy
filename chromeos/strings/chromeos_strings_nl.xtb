@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> beheert dit apparaat en kan je activiteit mogelijk bekijken.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1734367976349034509">Dit apparaat wordt beheerd door een onderneming</translation>
 <translation id="1930797645656624981">Invoermethodeservice voor Chrome OS</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="3008341117444806826">VERNIEUWEN</translation>
 <translation id="3838338534323494292">Nieuw wachtwoord</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> beheert dit apparaat en heeft toegang tot alle gebruikersactiviteit, waaronder bezochte webpagina's, wachtwoorden en e-mails.</translation>
 <translation id="4227825898293920515">Wachtwoord verloopt over <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos-ticket verloopt binnenkort</translation>
 <translation id="445059817448385655">Oud wachtwoord</translation>

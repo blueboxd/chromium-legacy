@@ -157,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectado a um dispositivo}one{Conectado a # dispositivo}other{Conectado a # dispositivos}}</translation>
 <translation id="3226991577105957773">Mais <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
+<translation id="3249513730522716925">A janela <ph name="WINDOW_TITLE" /> foi movida da área de trabalho <ph name="ACTIVE_DESK" /> para a <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">O que você pode fazer?</translation>
 <translation id="3294437725009624529">Visitante</translation>
 <translation id="3308453408813785101">O usuário <ph name="USER_EMAIL_ADDRESS" /> ainda poderá fazer login mais tarde.</translation>
@@ -178,6 +179,7 @@
 <translation id="3573179567135747900">Voltar a "<ph name="FROM_LOCALE" />" (exige reinicialização)</translation>
 <translation id="3576141592585647168">Alterar fuso horário</translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
+<translation id="3604801046548457007">Área de trabalho <ph name="DESK_TITILE" /> criada</translation>
 <translation id="3606978283550408104">Display em braille conectado.</translation>
 <translation id="3621202678540785336">Entrada</translation>
 <translation id="3626281679859535460">Brilho</translation>
@@ -233,7 +235,6 @@
 <translation id="4379531060876907730">Estas são suas ferramentas da stylus</translation>
 <translation id="4389184120735010762">Você pressionou o atalho de teclado para a lupa ancorada. Gostaria de ativá-la?</translation>
 <translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME" /> via Assistência remota.</translation>
-<translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Não mostrar novamente</translation>
 <translation id="4477350412780666475">Próxima faixa</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -308,7 +309,6 @@
 <translation id="5744083938413354016">Arrastar com toque</translation>
 <translation id="5750765938512549687">Bluetooth desativado</translation>
 <translation id="5777841717266010279">Interromper compartilhamento de tela?</translation>
-<translation id="57838592816432529">Desativar som</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Parar <ph name="ROUTE_TITLE" /> para <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Desativado</translation>
@@ -380,6 +380,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6723839937902243910">Energia</translation>
 <translation id="6727969043791803658">Conectado, <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="6751826523481687655">O acompanhamento de desempenho está ativado</translation>
+<translation id="6752912906630585008">Área de trabalho <ph name="REMOVED_DESK" /> removida e mesclada com a <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os displays porque não foram encontradas resoluções suportadas. Em vez disso, foi ativada a área de trabalho estendida.</translation>
 <translation id="6820676911989879663">Faça uma pausa</translation>
@@ -490,6 +491,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433186206711564395">Configurações de rede</translation>
 <translation id="8433977262951327081">O atalho para mostrar o balão de menu de opções de entrada na estante foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Área de trabalho <ph name="DESK_TITILE" /> ativada</translation>
 <translation id="8452135315243592079">Chip ausente</translation>
 <translation id="8454013096329229812">O Wi-Fi está ligado.</translation>
 <translation id="847056008324733326">Exibir configurações de escala</translation>

@@ -105,7 +105,7 @@ UserMediaClientImpl::UserMediaClientImpl(
     RenderFrameImpl* render_frame,
     std::unique_ptr<UserMediaProcessor> user_media_processor,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : RenderFrameObserver(render_frame),
+    : render_frame_(render_frame),
       user_media_processor_(std::move(user_media_processor)),
       apply_constraints_processor_(new ApplyConstraintsProcessor(
           base::BindRepeating(&UserMediaClientImpl::GetMediaDevicesDispatcher,
@@ -146,7 +146,7 @@ void UserMediaClientImpl::RequestUserMedia(
   // ownerDocument may be null if we are in a test.
   // In that case, it's OK to not check frame().
   DCHECK(web_request.OwnerDocument().IsNull() ||
-         render_frame()->GetWebFrame() ==
+         render_frame_->GetWebFrame() ==
              static_cast<blink::WebFrame*>(
                  web_request.OwnerDocument().GetFrame()));
 
@@ -240,8 +240,7 @@ void UserMediaClientImpl::CurrentRequestCompleted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_processing_request_ = false;
   if (!pending_request_infos_.empty()) {
-    render_frame()
-        ->GetTaskRunner(blink::TaskType::kInternalMedia)
+    render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)
         ->PostTask(
             FROM_HERE,
             base::BindOnce(&UserMediaClientImpl::MaybeProcessNextRequestInfo,
@@ -292,8 +291,7 @@ void UserMediaClientImpl::DeleteAllUserMediaRequests() {
   pending_request_infos_.clear();
 }
 
-void UserMediaClientImpl::ReadyToCommitNavigation(
-    blink::WebDocumentLoader* document_loader) {
+void UserMediaClientImpl::ContextDestroyed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Cancel all outstanding UserMediaRequests.
   DeleteAllUserMediaRequests();
@@ -307,15 +305,11 @@ void UserMediaClientImpl::SetMediaDevicesDispatcherForTesting(
 const blink::mojom::MediaDevicesDispatcherHostPtr&
 UserMediaClientImpl::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
-    render_frame()->GetRemoteInterfaces()->GetInterface(
+    render_frame_->GetRemoteInterfaces()->GetInterface(
         mojo::MakeRequest(&media_devices_dispatcher_));
   }
 
   return media_devices_dispatcher_;
-}
-
-void UserMediaClientImpl::OnDestruct() {
-  delete this;
 }
 
 }  // namespace content

@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 mês atrás}one{# mês atrás}other{# meses atrás}}</translation>
 <translation id="4289300219472526559">Comece a falar</translation>
 <translation id="4316910396681052118">TODOS OS APPS</translation>
+<translation id="4467014365953759647">Não é possível enviar o número</translation>
 <translation id="4588090240171750605">Percorrer à direita</translation>
 <translation id="4690510401873698237">Estante na parte inferior</translation>
 <translation id="4724120544754982507">Central de Notificações: <ph name="UNREAD_NOTIFICATION_COUNT" /> notificações não lidas</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Iniciador, visualização parcial</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Um minuto atrás}one{# minutos atrás}other{# minutos atrás}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Verifique a conexão do smartphone e tente novamente</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Um minuto restante}one{# minutos restantes}other{# minutos restantes}}</translation>
 <translation id="7430878839542012341">Excluir essa pesquisa do seu histórico?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

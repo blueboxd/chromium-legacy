@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -40,6 +41,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class TabGridDialogParent {
     private static final int DIALOG_ANIMATION_DURATION = 300;
+    private static final int DIALOG_QUICK_FADEOUT_DURATION = 50;
     @IntDef({UngroupBarStatus.SHOW, UngroupBarStatus.HIDE, UngroupBarStatus.HOVERED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface UngroupBarStatus {
@@ -128,7 +130,9 @@ public class TabGridDialogParent {
 
         mBasicFadeOut = ObjectAnimator.ofFloat(mDialogContainerView, View.ALPHA, 1f, 0f);
         mBasicFadeOut.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-        mBasicFadeOut.setDuration(DIALOG_ANIMATION_DURATION);
+        mBasicFadeOut.setDuration(FeatureUtilities.isTabToGtsAnimationEnabled()
+                        ? DIALOG_QUICK_FADEOUT_DURATION
+                        : DIALOG_ANIMATION_DURATION);
 
         mShowDialogAnimationListener = new AnimatorListenerAdapter() {
             @Override

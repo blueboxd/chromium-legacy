@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Mwezi 1 uliopita}other{Miezi # iliyopita}}</translation>
 <translation id="4289300219472526559">Anza Kuzungumza</translation>
 <translation id="4316910396681052118">PROGRAMU ZOTE</translation>
+<translation id="4467014365953759647">Imeshindwa kutuma nambari</translation>
 <translation id="4588090240171750605">Sogeza Kulia</translation>
 <translation id="4690510401873698237">Rafu iko upande wa chini</translation>
 <translation id="4724120544754982507">Kituo cha Arifa, arifa <ph name="UNREAD_NOTIFICATION_COUNT" /> ambazo hujasoma</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Kifungua programu, mwonekano mdogo</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Dakika 1 iliyopita}other{Dakika # zilizopita}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Angalia muunganisho wa simu yako kisha ujaribu tena.</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Imesalia dakika 1}other{Zimesalia dakika #}}</translation>
 <translation id="7430878839542012341">Ungependa kufuta utafutaji huu kwenye historia yako?</translation>
 <translation id="7460907917090416791">TB <ph name="QUANTITY" /></translation>

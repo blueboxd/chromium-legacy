@@ -454,7 +454,7 @@ TEST_F(InstantServiceTest, SetLocalImage) {
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTest, SyncPrefOverridesLocalImage) {
+TEST_F(InstantServiceTest, SyncPrefOverridesAndRemovesLocalImage) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("https://www.foo.com/");
 
@@ -472,6 +472,7 @@ TEST_F(InstantServiceTest, SyncPrefOverridesLocalImage) {
 
   EXPECT_TRUE(
       pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice));
+  EXPECT_TRUE(base::PathExists(path));
 
   // Update theme info via Sync.
   pref_service->SetUserPref(
@@ -483,6 +484,7 @@ TEST_F(InstantServiceTest, SyncPrefOverridesLocalImage) {
   EXPECT_EQ(kUrl, theme_info->custom_background_url);
   EXPECT_FALSE(
       pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice));
+  EXPECT_FALSE(base::PathExists(path));
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }
 

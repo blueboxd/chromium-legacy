@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -351,7 +352,26 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     @Test
-    public void hideDialog() {
+    public void hideDialog_Animation() {
+        FeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(true);
+
+        // Mock that the dialog is showing and animation source Rect is null.
+        mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
+        mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
+
+        mMediator.onReset(null);
+
+        assertThat(mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE), equalTo(false));
+        // Animation source Rect should be updated with specific Rect.
+        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(null));
+
+        FeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(null);
+    }
+
+    @Test
+    public void hideDialog_NoAnimation() {
+        FeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(false);
+
         // Mock that the dialog is showing and animation source Rect is null.
         mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
         mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
@@ -361,6 +381,8 @@ public class TabGridDialogMediatorUnitTest {
         assertThat(mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE), equalTo(false));
         // Animation source Rect should be updated with specific Rect.
         assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(mRect));
+
+        FeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(null);
     }
 
     @Test

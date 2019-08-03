@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 
@@ -38,7 +39,8 @@ class UserMediaRequest;
 
 class UserMediaController final
     : public GarbageCollectedFinalized<UserMediaController>,
-      public Supplement<LocalFrame> {
+      public Supplement<LocalFrame>,
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
 
  public:
@@ -54,6 +56,9 @@ class UserMediaController final
   void ApplyConstraints(ApplyConstraintsRequest*);
   void StopTrack(MediaStreamComponent*);
   bool HasRequestedUserMedia();
+
+  // ContextLifecycleObserver implementation.
+  void ContextDestroyed(ExecutionContext*) override;
 
   static UserMediaController* From(LocalFrame* frame) {
     return Supplement<LocalFrame>::From<UserMediaController>(frame);

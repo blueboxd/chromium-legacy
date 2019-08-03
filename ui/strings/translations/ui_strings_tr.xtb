@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 ay önce}other{# ay önce}}</translation>
 <translation id="4289300219472526559">Konuşmaya Başla</translation>
 <translation id="4316910396681052118">TÜM UYGULAMALAR</translation>
+<translation id="4467014365953759647">Numara gönderilemiyor</translation>
 <translation id="4588090240171750605">Sağa Kaydır</translation>
 <translation id="4690510401873698237">Raf, ekranın alt tarafında</translation>
 <translation id="4724120544754982507">Bildirim Merkezi, <ph name="UNREAD_NOTIFICATION_COUNT" /> okunmamış bildirim</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Launcher, kısmi görünüm</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 dk. önce}other{# dk. önce}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Telefonunuzun bağlantısını kontrol edip tekrar deneyin</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 dakika kaldı}other{# dakika kaldı}}</translation>
 <translation id="7430878839542012341">Bu arama, geçmişinizden silinsin mi?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

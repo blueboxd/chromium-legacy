@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> haldab seda seadet ja saab võib-olla jälgida teie tegevusi.</translation>
 <translation id="1510238584712386396">Käivitaja</translation>
 <translation id="1734367976349034509">Seda seadet haldab ettevõte</translation>
 <translation id="1930797645656624981">Chrome OS sisestusmeetodi teenus</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="3008341117444806826">VÄRSKENDA</translation>
 <translation id="3838338534323494292">Uus parool</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> haldab seda seadet ja sellel on juurdepääs kogu kasutaja tegevusele, sh külastatud veebilehtedele, paroolidele ning e-postile.</translation>
 <translation id="4227825898293920515">Parooli aegumiseni on jäänud <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberose pilet aegub peagi</translation>
 <translation id="445059817448385655">Vana parool</translation>

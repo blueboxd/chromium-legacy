@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Pirms 1 mēneša}zero{Pirms # mēnešiem}one{Pirms # mēneša}other{Pirms # mēnešiem}}</translation>
 <translation id="4289300219472526559">Sākt runāt</translation>
 <translation id="4316910396681052118">VISAS LIETOTNES</translation>
+<translation id="4467014365953759647">Nevar nosūtīt numuru</translation>
 <translation id="4588090240171750605">Ritināt pa labi</translation>
 <translation id="4690510401873698237">Plaukts tiek rādīts apakšā</translation>
 <translation id="4724120544754982507">Paziņojumu centrs, <ph name="UNREAD_NOTIFICATION_COUNT" /> nelasīts(-i) paziņojums(-i)</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Palaišanas programma, daļējs skats</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Pirms 1 min}zero{Pirms # min}one{Pirms # min}other{Pirms # min}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Pārbaudiet tālruņa savienojumu un mēģiniet vēlreiz</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Atlikusi 1 minūte}zero{Atlikušas # minūtes}one{Atlikusi # minūte}other{Atlikušas # minūtes}}</translation>
 <translation id="7430878839542012341">Vai dzēst šo meklēšanas vaicājumu no vēstures?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

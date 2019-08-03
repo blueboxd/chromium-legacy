@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Пре месец дана}one{Пре # месец}few{Пре # месеца}other{Пре # месеци}}</translation>
 <translation id="4289300219472526559">Почните да говорите</translation>
 <translation id="4316910396681052118">СВЕ АПЛИКАЦИЈЕ</translation>
+<translation id="4467014365953759647">Слање броја није успело</translation>
 <translation id="4588090240171750605">Помери надесно</translation>
 <translation id="4690510401873698237">Полица у дну</translation>
 <translation id="4724120544754982507">Центар за обавештења, непрочитаних обавештења: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Покретач, делимичан приказ</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Пре 1 мин}one{Пре # мин}few{Пре # мин}other{Пре # мин}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Проверите везу телефона и пробајте поново</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Још 1 минут}one{Још # минут}few{Још # минута}other{Још # минута}}</translation>
 <translation id="7430878839542012341">Желите ли да избришете ову претрагу из историје?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

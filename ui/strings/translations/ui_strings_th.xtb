@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 เดือนที่ผ่านมา}other{# เดือนที่ผ่านมา}}</translation>
 <translation id="4289300219472526559">เริ่มพูด</translation>
 <translation id="4316910396681052118">แอปทั้งหมด</translation>
+<translation id="4467014365953759647">ส่งหมายเลขไม่ได้</translation>
 <translation id="4588090240171750605">เลื่อนทางขวา</translation>
 <translation id="4690510401873698237">ชั้นวางอยู่ด้านล่าง</translation>
 <translation id="4724120544754982507">ศูนย์การแจ้งเตือนมีการแจ้งเตือนที่ยังไม่อ่าน <ph name="UNREAD_NOTIFICATION_COUNT" /> รายการ</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Launcher มุมมองบางส่วน</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 นาทีที่ผ่านมา}other{# นาทีที่ผ่านมา}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">ตรวจสอบการเชื่อมต่อของโทรศัพท์แล้วลองอีกครั้ง</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{เหลือ 1 นาที}other{เหลือ # นาที}}</translation>
 <translation id="7430878839542012341">ลบการค้นหานี้ออกจากประวัติการเข้าชมไหม</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

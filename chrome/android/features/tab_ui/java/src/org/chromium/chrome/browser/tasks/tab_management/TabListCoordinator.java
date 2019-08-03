@@ -189,10 +189,7 @@ public class TabListCoordinator implements Destroyable {
             touchHelper.attachToRecyclerView(mRecyclerView);
             mMediator.registerOrientationListener(
                     (GridLayoutManager) mRecyclerView.getLayoutManager());
-        }
 
-        if (actionOnRelatedTabs) {
-            // Only do this for Grid Tab Switcher.
             // TODO(crbug.com/964406): unregister the listener when we don't need it.
             mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(
                     this::updateThumbnailLocation);
@@ -205,10 +202,22 @@ public class TabListCoordinator implements Destroyable {
         return mThumbnailLocationOfCurrentTab;
     }
 
-    void updateThumbnailLocation() {
+    @NonNull
+    Rect getRecyclerViewLocation() {
+        Rect recyclerViewRect = new Rect();
+        mRecyclerView.getGlobalVisibleRect(recyclerViewRect);
+        return recyclerViewRect;
+    }
+
+    /**
+     * Update the location of the selected thumbnail.
+     * @return Whether a valid {@link Rect} is obtained.
+     */
+    boolean updateThumbnailLocation() {
         Rect rect = mRecyclerView.getRectOfCurrentThumbnail(mMediator.indexOfSelected());
-        if (rect == null) return;
+        if (rect == null) return false;
         mThumbnailLocationOfCurrentTab.set(rect);
+        return true;
     }
 
     /**

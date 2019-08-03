@@ -293,6 +293,7 @@
 <translation id="2485387744899240041">Имена пользователей для вашего устройства и браузера</translation>
 <translation id="2491120439723279231">Сертификат сервера содержит ошибки.</translation>
 <translation id="2493640343870896922">Letter-Plus</translation>
+<translation id="2494497504885199552">Обычно вы посещаете сайт &lt;a href="#" id="dont-proceed-link2"&gt;<ph name="DOMAIN" />&lt;/a&gt;. Сейчас вы пытаетесь открыть другой сайт с очень похожим адресом. Злоумышленники могут использовать такие адреса, которые незначительно отличаются от настоящих, чтобы вводить пользователей в заблуждение и красть их данные.</translation>
 <translation id="2495083838625180221">Синтаксический анализатор JSON</translation>
 <translation id="2495093607237746763">Если флажок установлен, Chromium будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
 <translation id="2498091847651709837">Сканировать новую карту</translation>
@@ -358,6 +359,7 @@
 <translation id="2826760142808435982">Соединение зашифровано и проверено с помощью <ph name="CIPHER" />. В качестве механизма обмена ключами используется <ph name="KX" />.</translation>
 <translation id="2835170189407361413">Очистить форму</translation>
 <translation id="2847118875340931228">Открыть окно в режиме инкогнито</translation>
+<translation id="2849445596171421624">Нажав "Продолжить", вы перейдете на тот сайт, который посещаете обычно: &lt;a href="#" id="dont-proceed-link3"&gt;<ph name="DOMAIN" />&lt;/a&gt;.</translation>
 <translation id="2850739647070081192">Invite (конверт)</translation>
 <translation id="2851634818064021665">Для доступа к этой странице требуется разрешение.</translation>
 <translation id="2856444702002559011">Злоумышленники могут пытаться похитить ваши данные с сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (например, пароли, сообщения или номера банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -676,6 +678,7 @@
 <translation id="4582204425268416675">Удалить карту</translation>
 <translation id="4587425331216688090">Удалить адрес из Chrome?</translation>
 <translation id="4592951414987517459">Соединение с <ph name="DOMAIN" /> зашифровано с помощью современных наборов шифров.</translation>
+<translation id="4594047029158047642">Ссылка ведет не на тот сайт, который вы обычно посещаете. Возможно, вас пытаются ввести в заблуждение.</translation>
 <translation id="4594403342090139922">&amp;Отменить удаление</translation>
 <translation id="4597348597567598915">Размер: 8</translation>
 <translation id="4600854749408232102">C6/C5 (конверт)</translation>
@@ -778,6 +781,7 @@
 <translation id="5169827969064885044">Возможно, кто-то пытается получить доступ к вашим личным данным или корпоративному аккаунту. Рекомендуем немедленно сменить пароль.</translation>
 <translation id="5171045022955879922">Введите запрос или URL</translation>
 <translation id="5171689220826475070">Fanfold-European</translation>
+<translation id="5172068981283436906">Обычно вы посещаете сайт &lt;a href="#" id="dont-proceed-link2"&gt;<ph name="DOMAIN" />&lt;/a&gt;. Сейчас вы пытаетесь открыть другой сайт с очень похожим URL. Злоумышленники могут использовать такие адреса, которые незначительно отличаются от настоящих, чтобы вводить пользователей в заблуждение и красть их данные.</translation>
 <translation id="5172758083709347301">Локальный компьютер</translation>
 <translation id="5179510805599951267">Это не <ph name="ORIGINAL_LANGUAGE" />? Сообщите об ошибке</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
@@ -906,6 +910,7 @@
 <translation id="5860033963881614850">ВЫКЛ</translation>
 <translation id="5863847714970149516">При открытии этой страницы с вашего счета могут быть списаны средства</translation>
 <translation id="5866257070973731571">Добавьте номер телефона</translation>
+<translation id="5866898949289125849">Вы просматриваете страницу инструментов разработчика</translation>
 <translation id="5869405914158311789">Не удается получить доступ к сайту</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="5887400589839399685">Карта сохранена</translation>
@@ -1074,7 +1079,6 @@
 <translation id="6891596781022320156">Значение правила не поддерживается.</translation>
 <translation id="6895330447102777224">Ваша карта подтверждена</translation>
 <translation id="6897140037006041989">User Agent</translation>
-<translation id="6903319715792422884">Чтобы улучшить режим Безопасного просмотра, вы можете <ph name="BEGIN_WHITEPAPER_LINK" />отправлять системную информацию и содержимое страниц<ph name="END_WHITEPAPER_LINK" /> в Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Пользователь:</translation>
 <translation id="6934672428414710184">Это имя из вашего аккаунта Google</translation>
 <translation id="6944692733090228304">Вы ввели пароль на сайте, который не находится под управлением организации <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Чтобы защитить свой аккаунт, не используйте этот пароль для других приложений и сайтов.</translation>
@@ -1141,6 +1145,7 @@
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Запретить доступ</translation>
+<translation id="726226871651201355">Перейти на сайт &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="7271803869921933038">Карты предоплаты, которые принимаются к оплате</translation>
 <translation id="7275334191706090484">Управляемые закладки</translation>
 <translation id="7298195798382681320">Рекомендованные</translation>
@@ -1478,6 +1483,7 @@
 <translation id="9078964945751709336">Информации недостаточно</translation>
 <translation id="9080712759204168376">Информация о заказе</translation>
 <translation id="9089260154716455634">Время, когда правила не действуют:</translation>
+<translation id="9093075372111400787">Скрыть подробности</translation>
 <translation id="9095388113577226029">Другие языки</translation>
 <translation id="9103872766612412690">На сайте <ph name="SITE" /> для защиты ваших данных обычно используется шифрование. Однако учетные данные, которые мы получили от сайта <ph name="SITE" /> сейчас, отличаются от тех, которые он отправляет обычно. Вероятно, вредоносный сайт пытается выдать себя за <ph name="SITE" />, либо страница подключения к сети Wi-Fi прервала соединение. Ваша информация по-прежнему в безопасности, так как браузер Chromium разорвал соединение до того, как произошел обмен данными.</translation>
 <translation id="9106062320799175032">Добавьте платежный адрес</translation>

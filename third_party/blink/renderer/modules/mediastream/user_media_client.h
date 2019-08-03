@@ -58,6 +58,7 @@ class MODULES_EXPORT UserMediaClient {
   void ApplyConstraints(ApplyConstraintsRequest*);
   void StopTrack(MediaStreamComponent*);
   bool IsCapturing();
+  void ContextDestroyed();
 
  private:
   WebUserMediaClient* client_;

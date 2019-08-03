@@ -46,7 +46,7 @@
 <translation id="2289052229480071835">点按您屏幕上的触摸目标。</translation>
 <translation id="2295140143284145483">调查问卷</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
-<translation id="2388990488038464401">从手机拨打此号码？</translation>
+<translation id="2388990488038464401">要用手机拨打此号码？</translation>
 <translation id="24452542372838207">展开通知</translation>
 <translation id="2445449901874883781">使用高密度</translation>
 <translation id="2451871130406122810">已发送到设备</translation>
@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 个月前}other{# 个月前}}</translation>
 <translation id="4289300219472526559">开始讲话</translation>
 <translation id="4316910396681052118">所有应用</translation>
+<translation id="4467014365953759647">无法发送电话号码</translation>
 <translation id="4588090240171750605">向右滚动</translation>
 <translation id="4690510401873698237">任务栏位于屏幕底部</translation>
 <translation id="4724120544754982507">通知中心，<ph name="UNREAD_NOTIFICATION_COUNT" /> 条未读通知</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">启动器，局部视图</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分钟前}other{# 分钟前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">请检查手机的网络连接，然后重试</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{还剩 1 分钟}other{还剩 # 分钟}}</translation>
 <translation id="7430878839542012341">要将这项搜索从您的历史记录中删除吗？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

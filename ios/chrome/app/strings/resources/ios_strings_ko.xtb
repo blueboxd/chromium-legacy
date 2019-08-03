@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="1005230401424685968">연도</translation>
 <translation id="1016495303386450659">북마크가 업데이트되었습니다.</translation>
 <translation id="1047726139967079566">현재 페이지를 북마크에 추가...</translation>
 <translation id="1049743911850919806">시크릿</translation>
@@ -194,6 +195,7 @@
 <translation id="3607167657931203000">데이터 자동 완성</translation>
 <translation id="3609785682760573515">동기화 중...</translation>
 <translation id="3638472932233958418">웹페이지 미리 로드하기</translation>
+<translation id="3670030362669914947">번호</translation>
 <translation id="3691593122358196899">북마크를 <ph name="FOLDER_TITLE" />에 추가함</translation>
 <translation id="3771033907050503522">시크릿 탭</translation>
 <translation id="3775743491439407556">동기화가 작동하지 않음</translation>
@@ -449,6 +451,7 @@
 <translation id="744343212394640790"><ph name="EMAIL" /> 아님</translation>
 <translation id="7454057999980797137">도/군</translation>
 <translation id="7456847797759667638">위치 열기...</translation>
+<translation id="7460314822154045102">카메라 사용</translation>
 <translation id="7464701184726199289">모든 기기에서 동기화된 데이터가 삭제됩니다. 저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관이 반영될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">회사명</translation>
 <translation id="7481312909269577407">앞으로</translation>

@@ -278,9 +278,11 @@ class ExternalVideoEncoder::VEAClientImpl
       NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    base::SharedMemory* output_buffer =
-        output_buffers_[bitstream_buffer_id].get();
-    if (metadata.payload_size_bytes > output_buffer->mapped_size()) {
+    const char* output_buffer_memory = output_buffers_[bitstream_buffer_id]
+                                           .second.GetMemoryAsSpan<char>()
+                                           .data();
+    if (metadata.payload_size_bytes >
+        output_buffers_[bitstream_buffer_id].second.size()) {
       NOTREACHED();
       VLOG(1) << "BitstreamBufferReady(): invalid payload_size = "
               << metadata.payload_size_bytes;
@@ -296,8 +298,7 @@ class ExternalVideoEncoder::VEAClientImpl
       //
       // TODO(miu): Should |stream_header_| be an std::ostringstream for
       // performance reasons?
-      stream_header_.append(static_cast<const char*>(output_buffer->memory()),
-                            metadata.payload_size_bytes);
+      stream_header_.append(output_buffer_memory, metadata.payload_size_bytes);
     } else if (!in_progress_frame_encodes_.empty()) {
       const InProgressExternalVideoFrameEncode& request =
           in_progress_frame_encodes_.front();
@@ -318,9 +319,8 @@ class ExternalVideoEncoder::VEAClientImpl
         encoded_frame->data = stream_header_;
         stream_header_.clear();
       }
-      encoded_frame->data.append(
-          static_cast<const char*>(output_buffer->memory()),
-          metadata.payload_size_bytes);
+      encoded_frame->data.append(output_buffer_memory,
+                                 metadata.payload_size_bytes);
       DCHECK(!encoded_frame->data.empty()) << "BUG: Encoder must provide data.";
 
       // If FRAME_DURATION metadata was provided in the source VideoFrame,
@@ -416,9 +416,8 @@ class ExternalVideoEncoder::VEAClientImpl
       video_encode_accelerator_->UseOutputBitstreamBuffer(
           media::BitstreamBuffer(
               bitstream_buffer_id,
-              output_buffers_[bitstream_buffer_id]->handle(),
-              false /* read_only */,
-              output_buffers_[bitstream_buffer_id]->mapped_size()));
+              output_buffers_[bitstream_buffer_id].first.Duplicate(),
+              output_buffers_[bitstream_buffer_id].first.GetSize()));
     }
   }
 
@@ -438,24 +437,25 @@ class ExternalVideoEncoder::VEAClientImpl
   }
 
   // Note: This method can be called on any thread.
-  void OnCreateSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
+  void OnCreateSharedMemory(base::UnsafeSharedMemoryRegion memory) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&VEAClientImpl::OnReceivedSharedMemory, this,
                                   std::move(memory)));
   }
 
-  void OnCreateInputSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
+  void OnCreateInputSharedMemory(base::UnsafeSharedMemoryRegion memory) {
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&VEAClientImpl::OnReceivedInputSharedMemory, this,
-                       base::UnsafeSharedMemoryRegion::CreateFromHandle(
-                           memory->TakeHandle())));
+        FROM_HERE, base::BindOnce(&VEAClientImpl::OnReceivedInputSharedMemory,
+                                  this, std::move(memory)));
   }
 
-  void OnReceivedSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
+  void OnReceivedSharedMemory(base::UnsafeSharedMemoryRegion memory) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-    output_buffers_.push_back(std::move(memory));
+    base::WritableSharedMemoryMapping mapping = memory.Map();
+    DCHECK(mapping.IsValid());
+    output_buffers_.push_back(
+        std::make_pair(std::move(memory), std::move(mapping)));
 
     // Wait until all requested buffers are received.
     if (output_buffers_.size() < kOutputBufferCount)
@@ -464,9 +464,9 @@ class ExternalVideoEncoder::VEAClientImpl
     // Immediately provide all output buffers to the VEA.
     for (size_t i = 0; i < output_buffers_.size(); ++i) {
       video_encode_accelerator_->UseOutputBitstreamBuffer(
-          media::BitstreamBuffer(
-              static_cast<int32_t>(i), output_buffers_[i]->handle(),
-              false /* read_only */, output_buffers_[i]->mapped_size()));
+          media::BitstreamBuffer(static_cast<int32_t>(i),
+                                 output_buffers_[i].first.Duplicate(),
+                                 output_buffers_[i].first.GetSize()));
     }
   }
 
@@ -574,7 +574,9 @@ class ExternalVideoEncoder::VEAClientImpl
   H264Parser h264_parser_;
 
   // Shared memory buffers for output with the VideoAccelerator.
-  std::vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
+  std::vector<std::pair<base::UnsafeSharedMemoryRegion,
+                        base::WritableSharedMemoryMapping>>
+      output_buffers_;
 
   // Shared memory buffers for input video frames with the VideoAccelerator.
   // These buffers will be allocated only when copy is needed to match the

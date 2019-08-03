@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{před 1 měsícem}few{před # měsíci}many{před # měsíce}other{před # měsíci}}</translation>
 <translation id="4289300219472526559">Začít mluvit</translation>
 <translation id="4316910396681052118">VŠECHNY APLIKACE</translation>
+<translation id="4467014365953759647">Číslo nelze odeslat</translation>
 <translation id="4588090240171750605">Posuv doprava</translation>
 <translation id="4690510401873698237">Polička dole</translation>
 <translation id="4724120544754982507">Centrum oznámení – nepřečtená oznámení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Spouštěč, částečné zobrazení</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Před 1 min}few{Před # min}many{Před # min}other{Před # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Zkontrolujte připojení telefonu a zkuste to znovu</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Zbývá 1 minuta}few{Zbývají # minuty}many{Zbývá # minuty}other{Zbývá # minut}}</translation>
 <translation id="7430878839542012341">Vymazat toto vyhledávání z historie?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
+<translation id="1005230401424685968">AAAA</translation>
 <translation id="1016495303386450659">Élément mis à jour</translation>
 <translation id="1047726139967079566">Ajouter cette page aux favoris</translation>
 <translation id="1049743911850919806">Navigation privée</translation>
@@ -194,6 +195,7 @@
 <translation id="3607167657931203000">Saisie automatique</translation>
 <translation id="3609785682760573515">Synchronisation en cours…</translation>
 <translation id="3638472932233958418">Précharger pages Web</translation>
+<translation id="3670030362669914947">Numéro</translation>
 <translation id="3691593122358196899">Ajouté aux favoris dans "<ph name="FOLDER_TITLE" />"</translation>
 <translation id="3771033907050503522">Ongl. navig. priv.</translation>
 <translation id="3775743491439407556">La synchronisation ne fonctionne pas</translation>
@@ -449,6 +451,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="744343212394640790">Autre que <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">État/Comté</translation>
 <translation id="7456847797759667638">Ouvrir une adresse</translation>
+<translation id="7460314822154045102">Utiliser la caméra</translation>
 <translation id="7464701184726199289">Les données synchronisées seront effacées de tous les appareils. Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Nom de la société</translation>
 <translation id="7481312909269577407">Avancer</translation>

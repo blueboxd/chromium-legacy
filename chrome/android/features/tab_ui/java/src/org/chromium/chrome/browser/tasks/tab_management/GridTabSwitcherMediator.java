@@ -495,6 +495,7 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
         mOnTabSelectingListener = listener;
     }
 
+    // GridCardOnClickListenerProvider implementation.
     @Override
     @Nullable
     public TabListMediator.TabActionListener openTabGridDialog(Tab tab) {

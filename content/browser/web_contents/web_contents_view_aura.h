@@ -226,6 +226,10 @@ class CONTENT_EXPORT WebContentsViewAura
                               bool drop_allowed)>;
   void RegisterDropCallbackForTesting(DropCallbackForTesting callback);
 
+  void SetDragDestDelegateForTesting(WebDragDestDelegate* delegate) {
+    drag_dest_delegate_ = delegate;
+  }
+
 #if defined(OS_WIN)
   // Callback for asynchronous retrieval of virtual files.
   void OnGotVirtualFilesAsTempFiles(

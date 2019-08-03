@@ -157,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ühendatud ühe seadmega}other{Ühendatud # seadmega}}</translation>
 <translation id="3226991577105957773">ja veel <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Ühtegi mobiilsidevõrku pole saadaval</translation>
+<translation id="3249513730522716925">Aken <ph name="WINDOW_TITLE" /> teisaldati töölaualt <ph name="ACTIVE_DESK" /> töölauale <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Mida sa teha oskad?</translation>
 <translation id="3294437725009624529">Külaline</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> saab siiski hiljem sisse logida.</translation>
@@ -178,6 +179,7 @@
 <translation id="3573179567135747900">Muuda tagasi seadele <ph name="FROM_LOCALE" /> (nõuab taaskäivitust)</translation>
 <translation id="3576141592585647168">Ajavööndi muutmine</translation>
 <translation id="3595596368722241419">Aku on täis</translation>
+<translation id="3604801046548457007">Töölaud <ph name="DESK_TITILE" /> on loodud</translation>
 <translation id="3606978283550408104">Punktkirja ekraanikuva on ühendatud.</translation>
 <translation id="3621202678540785336">Sisend</translation>
 <translation id="3626281679859535460">Eredus</translation>
@@ -234,7 +236,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4379531060876907730">Need on teie elektronpliiatsi tööriistad</translation>
 <translation id="4389184120735010762">Vajutasite dokitud luubi otseteed. Kas soovite luubi sisse lülitada?</translation>
 <translation id="4421231901400348175">Ekraani juhtimise jagamine isikuga <ph name="HELPER_NAME" /> kaugabi kaudu.</translation>
-<translation id="4430019312045809116">Helitugevus</translation>
 <translation id="4450893287417543264">Ära kuva uuesti</translation>
 <translation id="4477350412780666475">Järgmine lugu</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -309,7 +310,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="5744083938413354016">Puudutusega lohistamine</translation>
 <translation id="5750765938512549687">Bluetooth on välja lülitatud</translation>
 <translation id="5777841717266010279">Kas peatada ekraani jagamine?</translation>
-<translation id="57838592816432529">Vaigista</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Katkesta <ph name="ROUTE_TITLE" /> asukohas <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Väljas</translation>
@@ -380,6 +380,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6723839937902243910">Toide</translation>
 <translation id="6727969043791803658">Ühendatud, <ph name="BATTERY_PERCENTAGE" />% akut</translation>
 <translation id="6751826523481687655">Toimivuse jälgimine on sisse lülitatud</translation>
+<translation id="6752912906630585008">Töölaud <ph name="REMOVED_DESK" /> eemaldati ja liideti töölauaga <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Esita</translation>
 <translation id="6803622936009808957">Ei saanud kuvasid peegeldada, kuna toetatud eraldusvõimeid ei leitud. Selle asemel siseneti laiendatud töölaua režiimi.</translation>
 <translation id="6820676911989879663">Tehke paus!</translation>
@@ -490,6 +491,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8433186206711564395">Võrguseaded</translation>
 <translation id="8433977262951327081">Otsetee sisestusvalikute menüü mulli kuvamiseks riiulil on muutunud. Kasutage otsetee <ph name="OLD_SHORTCUT" /> asemel otseteed <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Töölaud <ph name="DESK_TITILE" /> aktiveeriti</translation>
 <translation id="8452135315243592079">SIM-kaart puudub</translation>
 <translation id="8454013096329229812">WiFi on sisse lülitatud.</translation>
 <translation id="847056008324733326">Ekraani skaala seaded</translation>

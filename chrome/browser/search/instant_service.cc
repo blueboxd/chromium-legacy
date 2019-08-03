@@ -419,6 +419,7 @@ void InstantService::UpdateThemeInfo() {
 void InstantService::UpdateBackgroundFromSync() {
   // Any incoming change to synced background data should clear the local image.
   pref_service_->SetBoolean(prefs::kNtpCustomBackgroundLocalToDevice, false);
+  RemoveLocalBackgroundImageCopy();
   UpdateThemeInfo();
 }
 

@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 bulan yang lalu}other{# bulan yang lalu}}</translation>
 <translation id="4289300219472526559">Mula Bercakap</translation>
 <translation id="4316910396681052118">SEMUA APL</translation>
+<translation id="4467014365953759647">Tidak dapat menghantar nombor</translation>
 <translation id="4588090240171750605">Tatal ke Kanan</translation>
 <translation id="4690510401873698237">Rak di bahagian bawah</translation>
 <translation id="4724120544754982507">Pusat Pemberitahuan, <ph name="UNREAD_NOTIFICATION_COUNT" /> pemberitahuan belum dibaca</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Pelancar, paparan separa</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 min yang lalu}other{# min yang lalu}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Periksa sambungan telefon anda dan cuba lagi</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minit lagi}other{# minit lagi}}</translation>
 <translation id="7430878839542012341">Padamkan carian ini daripada sejarah anda?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

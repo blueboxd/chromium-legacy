@@ -100,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Acum 1 lună}few{Acum # luni}other{Acum # de luni}}</translation>
 <translation id="4289300219472526559">Începeți să vorbiți</translation>
 <translation id="4316910396681052118">TOATE APLICAȚIILE</translation>
+<translation id="4467014365953759647">Numărul nu poate fi trimis</translation>
 <translation id="4588090240171750605">Derulează spre dreapta</translation>
 <translation id="4690510401873698237">Raft în partea de jos</translation>
 <translation id="4724120544754982507">Centrul de notificări, <ph name="UNREAD_NOTIFICATION_COUNT" /> notificări necitite</translation>
@@ -174,6 +175,7 @@
 <translation id="7319740667687257810">Lansator, afișare parțială</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Acum un min.}few{Acum # min.}other{Acum # min.}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Verifică-ți conexiunea telefonului și încearcă din nou</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Un minut rămas}few{# minute rămase}other{# de minute rămase}}</translation>
 <translation id="7430878839542012341">Ștergi această căutare din istoric?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>

@@ -41,7 +41,6 @@ using base::android::JavaRef;
 
 namespace {
 
-const size_t kMaxReadbacks = 1;
 using TabReadbackCallback = base::OnceCallback<void(float, const SkBitmap&)>;
 
 }  // namespace
@@ -226,8 +225,7 @@ content::RenderWidgetHostView* TabContentManager::GetRwhvForTab(
   TabAndroid* tab_android = TabAndroid::GetNativeTab(env, tab);
   DCHECK(tab_android);
   const int tab_id = tab_android->GetAndroidId();
-  if (pending_tab_readbacks_.find(tab_id) != pending_tab_readbacks_.end() ||
-      pending_tab_readbacks_.size() >= kMaxReadbacks) {
+  if (pending_tab_readbacks_.find(tab_id) != pending_tab_readbacks_.end()) {
     return nullptr;
   }
 

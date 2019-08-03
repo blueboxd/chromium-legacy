@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="1482734542997480527">Toto zařízení je spravováno doménou <ph name="ENROLLMENT_DOMAIN" />, která také může sledovat vaši aktivitu.</translation>
 <translation id="1510238584712386396">Spouštěč</translation>
 <translation id="1734367976349034509">Toto zařízení je spravováno organizací</translation>
 <translation id="1930797645656624981">Služba metod zadávání systému Chrome OS</translation>
@@ -12,6 +13,7 @@
 <translation id="2872961005593481000">Vypnout</translation>
 <translation id="3008341117444806826">OBNOVIT</translation>
 <translation id="3838338534323494292">Nové heslo</translation>
+<translation id="4003259559679196451">Toto zařízení je spravováno doménou <ph name="ENROLLMENT_DOMAIN" />, která má přístup k veškeré uživatelské aktivitě, včetně navštívených webových stránek, hesel a e‑mailu.</translation>
 <translation id="4227825898293920515">Platnost hesla vyprší za <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Platnost lístku Kerberos brzy vyprší</translation>
 <translation id="445059817448385655">Staré heslo</translation>

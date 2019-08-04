@@ -690,7 +690,9 @@ void RenderViewTest::Resize(gfx::Size new_size,
   visual_properties.display_mode = blink::kWebDisplayModeBrowser;
   std::unique_ptr<IPC::Message> resize_message(
       new WidgetMsg_SynchronizeVisualProperties(0, visual_properties));
-  OnMessageReceived(*resize_message);
+  RenderWidget* render_widget =
+      static_cast<RenderViewImpl*>(view_)->GetWidget();
+  render_widget->OnMessageReceived(*resize_message);
 }
 
 void RenderViewTest::SimulateUserTypingASCIICharacter(char ascii_character,
@@ -741,11 +743,6 @@ void RenderViewTest::SimulateUserInputChangeForElement(
   EXPECT_EQ(new_value, input->Value().Utf8().substr(0, new_value.length()));
 
   base::RunLoop().RunUntilIdle();
-}
-
-bool RenderViewTest::OnMessageReceived(const IPC::Message& msg) {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  return impl->OnMessageReceived(msg);
 }
 
 void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,

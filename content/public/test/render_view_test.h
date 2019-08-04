@@ -180,7 +180,6 @@ class RenderViewTest : public testing::Test {
                                          const std::string& new_value);
 
   // These are all methods from RenderViewImpl that we expose to testing code.
-  bool OnMessageReceived(const IPC::Message& msg);
   void OnSameDocumentNavigation(blink::WebLocalFrame* frame,
                                 bool is_new_navigation);
   blink::WebWidget* GetWebWidget();

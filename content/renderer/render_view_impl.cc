@@ -1309,7 +1309,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 
     // Have the widget handle all other messages.
     // TODO(ajwong): Remove this cross-object dispatch.
-    IPC_MESSAGE_UNHANDLED(handled = GetWidget()->OnMessageReceived(message))
+    IPC_MESSAGE_UNHANDLED(handled = ForwardToWidgetAndCheckIfHandled(message))
   IPC_END_MESSAGE_MAP()
 
   return handled;
@@ -2272,6 +2272,15 @@ RenderViewImpl::GetCleanupTaskRunner() {
   return RenderThreadImpl::current_blink_platform_impl()
       ->main_thread_scheduler()
       ->CleanupTaskRunner();
+}
+
+bool RenderViewImpl::ForwardToWidgetAndCheckIfHandled(
+    const IPC::Message& message) {
+  // TODO(https://crbug.com/990607): This CHECK is temporary and will be
+  // removed, assuming nothing crashes in the wild.
+  bool handled = GetWidget()->OnMessageReceived(message);
+  CHECK(!handled);
+  return handled;
 }
 
 }  // namespace content

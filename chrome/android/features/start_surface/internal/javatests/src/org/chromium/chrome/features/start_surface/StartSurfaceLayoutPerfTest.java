@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -42,6 +43,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
@@ -201,12 +203,44 @@ public class StartSurfaceLayoutPerfTest {
                                       .getTabModelSelector()
                                       .getCurrentModel()
                                       .getTabAt(i);
+
+            boolean fixPendingReadbacks = mActivityTestRule.getActivity()
+                                                  .getTabContentManager()
+                                                  .getPendingReadbacksForTesting()
+                    != 0;
+
+            // When there are pending readbacks due to detached Tabs, try to fix it by switching
+            // back to that tab.
+            if (fixPendingReadbacks) {
+                int lastIndex = i;
+                // clang-format off
+                TestThreadUtils.runOnUiThreadBlocking(() ->
+                        mActivityTestRule.getActivity().getCurrentTabModel().setIndex(
+                                lastIndex, TabSelectionType.FROM_USER)
+                );
+                // clang-format on
+            }
             checkThumbnailsExist(previousTab);
+            if (fixPendingReadbacks) {
+                int currentIndex = i + 1;
+                // clang-format off
+                TestThreadUtils.runOnUiThreadBlocking(() ->
+                        mActivityTestRule.getActivity().getCurrentTabModel().setIndex(
+                                currentIndex, TabSelectionType.FROM_USER)
+                );
+                // clang-format on
+            }
         }
         ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(), null,
                 null, WAIT_TIMEOUT_SECONDS * 10);
         assertEquals(
                 numTabs, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+
+        // clang-format off
+        CriteriaHelper.pollUiThread(Criteria.equals(0, () ->
+            mActivityTestRule.getActivity().getTabContentManager().getPendingReadbacksForTesting()
+        ));
+        // clang-format on
     }
 
     private void reportTabToGridPerf(String fromUrl, String description)

@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "url/gurl.h"
@@ -138,24 +139,19 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
 @end
 
 @implementation TableViewURLCell
-@synthesize faviconView = _faviconView;
-@synthesize faviconContainerView = _faviconContainerView;
-@synthesize faviconBadgeView = _faviconBadgeView;
-@synthesize horizontalStack = _horizontalStack;
-@synthesize cellUniqueIdentifier = _cellUniqueIdentifier;
-@synthesize shouldGenerateAccessibilityLabel =
-    _shouldGenerateAccessibilityLabel;
-@synthesize metadataLabel = _metadataLabel;
-@synthesize titleLabel = _titleLabel;
-@synthesize URLLabel = _URLLabel;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
-    _faviconContainerView = [[UIImageView alloc]
-        initWithImage:[UIImage
-                          imageNamed:@"table_view_cell_favicon_background"]];
+    UIImage* containerBackground =
+        [[UIImage imageNamed:@"table_view_cell_favicon_background"]
+            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _faviconContainerView =
+        [[UIImageView alloc] initWithImage:containerBackground];
+    _faviconContainerView.tintColor =
+        [UIColor colorNamed:@"table_view_favicon_background_color"];
+
     _faviconView = [[FaviconView alloc] init];
     _faviconView.contentMode = UIViewContentModeScaleAspectFit;
     _faviconView.clipsToBounds = YES;

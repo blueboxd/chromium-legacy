@@ -145,7 +145,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'babf84897873b5d4faa67acd7ae5c34b5ce9c66f',
+  'skia_revision': 'ced601b40b379b213b498ffb4fd4ac5f6090ed07',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -809,7 +809,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '8e83c857f6b458bcf95cdc549f83c7dc88563604',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '9728153c447f4b855960f55874f793c59dbce6c0',
       'condition': 'checkout_linux',
   },
 
@@ -1416,7 +1416,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@87bfa76af8f1719df76ea04bcff15020b3c4b8d2',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d24cebce9e2fed9e7cc0455b332c6334eecb7ec6',
     'condition': 'checkout_src_internal',
   },
 

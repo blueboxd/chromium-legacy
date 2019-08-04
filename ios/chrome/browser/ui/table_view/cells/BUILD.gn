@@ -46,6 +46,7 @@ source_set("cells") {
     "resources:table_view_cell_chevron",
     "resources:table_view_cell_edit_icon",
     "resources:table_view_cell_favicon_background",
+    "resources:table_view_favicon_background_color",
     "//base",
     "//base:i18n",
     "//ios/chrome/app/strings",

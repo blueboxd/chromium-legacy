@@ -549,4 +549,8 @@ interface FrameHost {
 
   // Sent by the renderer when the frame becomes focused.
   FrameFocused();
+
+  // Evicts the page from the back/forward cache due to e.g., JavaScript
+  // execution.
+  EvictFromBackForwardCache();
 };

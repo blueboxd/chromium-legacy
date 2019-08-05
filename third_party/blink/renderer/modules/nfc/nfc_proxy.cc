@@ -16,10 +16,6 @@
 
 namespace blink {
 
-namespace {
-constexpr uint32_t kInvalidNfcWatchId = 0;
-}
-
 // static
 const char NFCProxy::kSupplementName[] = "NFCProxy";
 
@@ -65,16 +61,18 @@ void NFCProxy::StartReading(NFCReader* reader) {
 
   EnsureMojoConnection();
   nfc_->Watch(device::mojom::blink::NFCReaderOptions::From(reader->options()),
+              next_watch_id_,
               WTF::Bind(&NFCProxy::OnReaderRegistered, WrapPersistent(this),
-                        WrapPersistent(reader)));
-  readers_.insert(reader, kInvalidNfcWatchId);
+                        WrapPersistent(reader), next_watch_id_));
+  readers_.insert(reader, next_watch_id_);
+  next_watch_id_++;
 }
 
 void NFCProxy::StopReading(NFCReader* reader) {
   DCHECK(reader);
   auto iter = readers_.find(reader);
   if (iter != readers_.end()) {
-    if (nfc_ && iter->value != kInvalidNfcWatchId) {
+    if (nfc_) {
       // We do not need to notify |reader| of anything.
       nfc_->CancelWatch(iter->value,
                         device::mojom::blink::NFC::CancelWatchCallback());
@@ -108,26 +106,31 @@ void NFCProxy::CancelPush(
 }
 
 // device::mojom::blink::NFCClient implementation.
-void NFCProxy::OnWatch(const Vector<uint32_t>& ids,
+void NFCProxy::OnWatch(const Vector<uint32_t>& watch_ids,
                        const String& serial_number,
                        device::mojom::blink::NDEFMessagePtr message) {
-  // Dispatch the event to all matched readers. Of course readers with
-  // kInvalidNfcWatchId do not match.
+  // Dispatch the event to all matched readers.
   // This loop is O(n^2), however, we assume the number of readers to be small
   // so it'd be just OK.
   for (auto pair : readers_) {
-    if (ids.Contains(pair.value)) {
+    if (watch_ids.Contains(pair.value)) {
       pair.key->OnReading(serial_number, *message);
     }
   }
 }
 
 void NFCProxy::OnReaderRegistered(NFCReader* reader,
-                                  uint32_t id,
+                                  uint32_t watch_id,
                                   device::mojom::blink::NFCErrorPtr error) {
   DCHECK(reader);
   // |reader| may have already stopped reading.
   if (!readers_.Contains(reader))
+    return;
+
+  // |reader| already stopped reading for the previous |watch_id| request and
+  // started a new one, let's just ignore this response callback as we do not
+  // need to notify |reader| of anything for an obsoleted session.
+  if (readers_.at(reader) != watch_id)
     return;
 
   if (error) {
@@ -136,8 +139,8 @@ void NFCProxy::OnReaderRegistered(NFCReader* reader,
     return;
   }
 
-  DCHECK_NE(id, kInvalidNfcWatchId);
-  readers_.Set(reader, id);
+  // It's good the watch request has been accepted, we do nothing here but just
+  // wait for message notifications in OnWatch().
 }
 
 void NFCProxy::PageVisibilityChanged() {
@@ -204,11 +207,15 @@ void NFCProxy::OnMojoConnectionError() {
 
   // Notify all active readers about the connection error and clear the list.
   ReaderMap readers = std::move(readers_);
-  for (auto pair : readers) {
+  for (auto& pair : readers) {
     // The reader may call StopReading() to remove itself from |readers_| when
     // handling the error.
     pair.key->OnError(device::mojom::blink::NFCErrorType::NOT_READABLE);
   }
+
+  // Each connection maintains its own watch ID numbering, so reset to 1 on
+  // connection error.
+  next_watch_id_ = 1;
 
   // Notify all writers about the connection error.
   for (auto& writer : writers_) {

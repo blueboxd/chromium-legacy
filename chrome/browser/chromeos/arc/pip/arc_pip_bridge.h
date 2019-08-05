@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "components/arc/common/pip.mojom.h"
+#include "components/arc/mojom/pip.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"

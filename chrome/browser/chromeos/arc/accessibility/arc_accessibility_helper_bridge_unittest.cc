@@ -21,7 +21,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "components/arc/common/accessibility_helper.mojom.h"
+#include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/shell_surface_util.h"

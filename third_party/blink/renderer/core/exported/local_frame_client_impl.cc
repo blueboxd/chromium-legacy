@@ -1270,6 +1270,11 @@ WebLocalFrameClient::AppCacheType LocalFrameClientImpl::GetAppCacheType() {
   return web_frame_->Client()->GetAppCacheType();
 }
 
+void LocalFrameClientImpl::EvictFromBackForwardCache() {
+  DCHECK(web_frame_->Client());
+  return web_frame_->Client()->EvictFromBackForwardCache();
+}
+
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kFollow,
                    WebLocalFrameClient::CrossOriginRedirects::kFollow);
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kNavigate,

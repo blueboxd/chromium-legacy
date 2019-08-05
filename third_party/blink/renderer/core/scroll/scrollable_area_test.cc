@@ -106,9 +106,8 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
   EXPECT_CALL(*scrollable_area, LayerForHorizontalScrollbar())
       .WillRepeatedly(Return(&graphics_layer));
 
-  auto* scrollbar =
-      MakeGarbageCollected<Scrollbar>(scrollable_area, kHorizontalScrollbar,
-                                      kRegularScrollbar, nullptr, nullptr);
+  auto* scrollbar = MakeGarbageCollected<Scrollbar>(
+      scrollable_area, kHorizontalScrollbar, kRegularScrollbar, nullptr);
   graphics_layer.ResetTrackedRasterInvalidations();
   scrollbar->SetNeedsPaintInvalidation(kNoPart);
   EXPECT_TRUE(graphics_layer.HasTrackedRasterInvalidations());

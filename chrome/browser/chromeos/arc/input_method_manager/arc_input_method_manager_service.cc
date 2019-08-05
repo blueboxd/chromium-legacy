@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/common/ime_struct_traits.h"
+#include "components/arc/mojom/ime_mojom_traits.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"

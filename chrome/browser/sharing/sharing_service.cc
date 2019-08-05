@@ -127,6 +127,8 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
 
   std::unordered_set<std::string> device_names;
   std::vector<SharingDeviceInfo> device_candidates;
+  const syncer::DeviceInfo* local_device_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
   for (const auto& device : all_devices) {
     // If the current device is considered expired for our purposes, stop here
     // since the next devices in the vector are at least as expired than this
@@ -134,7 +136,8 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
     if (device->last_updated_timestamp() < min_updated_time)
       break;
 
-    if (GetDeviceName() == device->client_name()) {
+    if (local_device_info &&
+        (local_device_info->client_name() == device->client_name())) {
       continue;
     }
 
@@ -182,6 +185,11 @@ void SharingService::SendMessageToDevice(
       base::BindOnce(&SharingService::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
                      message_guid));
+}
+
+void SharingService::SetDeviceInfoTrackerForTesting(
+    syncer::DeviceInfoTracker* tracker) {
+  device_info_tracker_ = tracker;
 }
 
 void SharingService::OnMessageSent(base::TimeTicks start_time,
@@ -266,10 +274,8 @@ void SharingService::RegisterDevice() {
 }
 
 void SharingService::RegisterDeviceInTesting(
-    std::string device_name,
     int capabilities,
     SharingDeviceRegistration::RegistrationCallback callback) {
-  local_device_name_for_tests_ = std::move(device_name);
   sharing_device_registration_->SetDeviceCapabilityForTesting(capabilities);
   sharing_device_registration_->RegisterDevice(std::move(callback));
 }
@@ -375,16 +381,4 @@ bool SharingService::IsSyncDisabled() const {
           (sync_service_->GetTransportState() ==
                syncer::SyncService::TransportState::ACTIVE &&
            !sync_service_->GetActiveDataTypes().Has(syncer::PREFERENCES)));
-}
-
-base::Optional<std::string> SharingService::GetDeviceName() const {
-  if (local_device_name_for_tests_)
-    return local_device_name_for_tests_;
-
-  const syncer::DeviceInfo* local_device_info =
-      local_device_info_provider_->GetLocalDeviceInfo();
-  if (local_device_info)
-    return local_device_info->client_name();
-  else
-    return base::nullopt;
 }

@@ -146,15 +146,13 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure,
     int frame_tree_node_id,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info) {
+    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
+    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info) {
   DCHECK(context);
-  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
-  (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       blink::mojom::ServiceWorkerProviderType::kForWindow, are_ancestors_secure,
-      frame_tree_node_id,
-      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
-      std::move(client_ptr_info), context));
+      frame_tree_node_id, std::move(host_request), std::move(client_ptr_info),
+      context));
   auto weak_ptr = host->AsWeakPtr();
   RegisterToContextCore(context, std::move(host));
   return weak_ptr;
@@ -185,17 +183,15 @@ ServiceWorkerProviderHost::PreCreateForWebWorker(
     base::WeakPtr<ServiceWorkerContextCore> context,
     int process_id,
     blink::mojom::ServiceWorkerProviderType provider_type,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info) {
+    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
+    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info) {
   using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
   DCHECK((blink::features::IsPlzDedicatedWorkerEnabled() &&
           provider_type == ServiceWorkerProviderType::kForDedicatedWorker) ||
          provider_type == ServiceWorkerProviderType::kForSharedWorker);
-  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
-  (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       provider_type, true /* is_parent_frame_secure */,
-      FrameTreeNode::kFrameTreeNodeInvalidId,
-      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)),
+      FrameTreeNode::kFrameTreeNodeInvalidId, std::move(host_request),
       std::move(client_ptr_info), context));
   host->SetRenderProcessId(process_id);
 

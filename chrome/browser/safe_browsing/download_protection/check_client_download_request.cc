@@ -18,6 +18,7 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
@@ -190,11 +191,12 @@ void CheckClientDownloadRequest::Start() {
     is_incognito_ = browser_context->IsOffTheRecord();
     is_under_advanced_protection_ =
         profile &&
-        AdvancedProtectionStatusManager::IsUnderAdvancedProtection(profile);
+        AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
+            ->is_under_advanced_protection();
     requests_ap_verdicts_ =
         profile &&
-        AdvancedProtectionStatusManager::RequestsAdvancedProtectionVerdicts(
-            profile);
+        AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
+            ->RequestsAdvancedProtectionVerdicts();
   }
 
   // If whitelist check passes, FinishRequest() will be called to avoid

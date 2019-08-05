@@ -492,7 +492,7 @@ void URLBlacklistManager::SetBlacklist(
 bool URLBlacklistManager::IsURLBlocked(const GURL& url) const {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   // Ignore blob scheme for two reasons:
-  // 1) PlzNavigate uses it to deliver the response to the renderer.
+  // 1) Its used to deliver the response to the renderer.
   // 2) A whitelisted page can use blob URLs internally.
   return !url.SchemeIs(url::kBlobScheme) && blacklist_->IsURLBlocked(url);
 }

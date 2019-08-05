@@ -314,10 +314,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   bool DeleteFromPendingList(RenderFrameHostImpl* render_frame_host);
 
   // BackForwardCache:
-  // During an history navigation, try to swap back a document from the
-  // BackForwardCache. The document is referenced from its navigation entry ID.
-  // Returns true when it succeed.
+  // During a history navigation, unfreezes and swaps in a document from the
+  // BackForwardCache, making it active.
   void RestoreFromBackForwardCache(std::unique_ptr<RenderFrameHostImpl>);
+  void EvictFromBackForwardCache(RenderFrameHostImpl*);
 
   // Deletes any proxy hosts associated with this node. Used during destruction
   // of WebContentsImpl.

@@ -38,6 +38,7 @@
 #include "content/browser/frame_host/origin_policy_throttle.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
+#include "content/browser/loader/cached_navigation_url_loader.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/network_service_instance_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -80,6 +81,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -540,11 +542,23 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     navigation_params->skip_service_worker = true;
   }
 
+  std::unique_ptr<RenderFrameHostImpl> rfh_restored_from_back_forward_cache;
+  if (entry) {
+    NavigationControllerImpl* controller =
+        static_cast<NavigationControllerImpl*>(
+            frame_tree_node->navigator()->GetController());
+    // This will be nullptr if there is no matching document in the
+    // BackForwardCache.
+    rfh_restored_from_back_forward_cache =
+        controller->back_forward_cache().RestoreDocument(entry->GetUniqueID());
+  }
+
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(navigation_params),
       std::move(commit_params), browser_initiated,
       false /* from_begin_navigation */, false /* is_for_commit */,
-      &frame_entry, entry, std::move(navigation_ui_data), nullptr, nullptr));
+      &frame_entry, entry, std::move(navigation_ui_data), nullptr, nullptr,
+      std::move(rfh_restored_from_back_forward_cache)));
   navigation_request->blob_url_loader_factory_ =
       frame_entry.blob_url_loader_factory();
 
@@ -628,7 +642,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       false,  // is_for_commit
       nullptr, entry,
       nullptr,  // navigation_ui_data
-      std::move(navigation_client), std::move(navigation_initiator)));
+      std::move(navigation_client), std::move(navigation_initiator),
+      nullptr  // rfh_restored_from_back_forward_cache
+      ));
   navigation_request->blob_url_loader_factory_ =
       std::move(blob_url_loader_factory);
   navigation_request->prefetched_signed_exchange_cache_ =
@@ -698,7 +714,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       entry ? entry->GetFrameEntry(frame_tree_node) : nullptr, entry,
       nullptr /* navigation_ui_data */,
       mojom::NavigationClientAssociatedPtrInfo(),
-      blink::mojom::NavigationInitiatorPtr()));
+      blink::mojom::NavigationInitiatorPtr(),
+      nullptr /* rfh_restores_from_bfcache */));
 
   // Update the state of the NavigationRequest to match the fact that the
   // navigation just committed.
@@ -721,7 +738,8 @@ NavigationRequest::NavigationRequest(
     NavigationEntryImpl* entry,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
-    blink::mojom::NavigationInitiatorPtr navigation_initiator)
+    blink::mojom::NavigationInitiatorPtr navigation_initiator,
+    std::unique_ptr<RenderFrameHostImpl> rfh_restored_from_back_forward_cache)
     : frame_tree_node_(frame_tree_node),
       common_params_(std::move(common_params)),
       begin_params_(std::move(begin_params)),
@@ -740,7 +758,11 @@ NavigationRequest::NavigationRequest(
       expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
       devtools_navigation_token_(base::UnguessableToken::Create()),
       request_navigation_client_(nullptr),
-      commit_navigation_client_(nullptr) {
+      commit_navigation_client_(nullptr),
+      rfh_restored_from_back_forward_cache_(
+          std::move(rfh_restored_from_back_forward_cache)),
+      is_served_from_back_forward_cache_(
+          rfh_restored_from_back_forward_cache_ != nullptr) {
   DCHECK(browser_initiated || common_params_->initiator_origin.has_value());
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
   DCHECK(!IsRendererDebugURL(common_params_->url));
@@ -765,6 +787,12 @@ NavigationRequest::NavigationRequest(
       bundled_exchanges_handle_ = std::make_unique<BundledExchangesHandle>(
           BundledExchangesSource(specified_path));
     }
+  }
+
+  if (frame_entry) {
+    frame_entry_item_sequence_number_ = frame_entry->item_sequence_number();
+    frame_entry_document_sequence_number_ =
+        frame_entry->document_sequence_number();
   }
 
   // Sanitize the referrer.
@@ -997,8 +1025,7 @@ void NavigationRequest::BeginNavigation() {
     state_ = RESPONSE_STARTED;
 
     // Select an appropriate RenderFrameHost.
-    render_frame_host_ =
-        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+    render_frame_host_ = GetFrameHostForNavigation();
     NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
         render_frame_host_, common_params_->url);
 
@@ -1458,8 +1485,7 @@ void NavigationRequest::OnResponseStarted(
 
   // Select an appropriate renderer to commit the navigation.
   if (response_should_be_rendered_) {
-    render_frame_host_ =
-        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+    render_frame_host_ = GetFrameHostForNavigation();
     NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
         render_frame_host_, common_params_->url);
   } else {
@@ -1672,14 +1698,12 @@ void NavigationRequest::OnRequestFailedInternal(
     // account for clearing the expected process if it clears the speculative
     // RenderFrameHost. See https://crbug.com/793127.
     ResetExpectedProcess();
-    render_frame_host =
-        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+    render_frame_host = GetFrameHostForNavigation();
   } else {
     if (ShouldKeepErrorPageInCurrentProcess(status.error_code)) {
       render_frame_host = frame_tree_node_->current_frame_host();
     } else {
-      render_frame_host =
-          frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+      render_frame_host = GetFrameHostForNavigation();
     }
   }
 
@@ -1891,7 +1915,8 @@ void NavigationRequest::OnStartChecksComplete(
           frame_tree_node_->devtools_frame_token()),
       std::move(navigation_ui_data), service_worker_handle_.get(),
       appcache_handle_.get(), std::move(prefetched_signed_exchange_cache_),
-      this, std::move(interceptor));
+      this, is_served_from_back_forward_cache(), std::move(interceptor));
+
   DCHECK(!render_frame_host_);
 }
 
@@ -2116,13 +2141,25 @@ void NavigationRequest::CommitNavigation() {
          (was_redirected_ && common_params_->url.IsAboutBlank()));
   DCHECK(!common_params_->url.SchemeIs(url::kJavaScriptScheme));
   DCHECK(!IsRendererDebugURL(common_params_->url));
+
+  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
+
+  if (is_served_from_back_forward_cache()) {
+    frame_tree_node()->render_manager()->RestoreFromBackForwardCache(
+        std::move(rfh_restored_from_back_forward_cache_));
+
+    // Note that this will delete the NavigationRequest.
+    render_frame_host()->DidCommitBackForwardCacheNavigation(
+        this, MakeDidCommitProvisionalLoadParamsForBFCache());
+
+    return;
+  }
+
   DCHECK(render_frame_host_ ==
              frame_tree_node_->render_manager()->current_frame_host() ||
          render_frame_host_ ==
              frame_tree_node_->render_manager()->speculative_frame_host());
 
-
-  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
       request_navigation_client_.is_bound()) {
     if (associated_site_instance_id_ ==
@@ -2151,6 +2188,7 @@ void NavigationRequest::CommitNavigation() {
     commit_params_->prefetched_signed_exchanges =
         std::move(subresource_loader_params_->prefetched_signed_exchanges);
   }
+
   render_frame_host_->CommitNavigation(
       this, *common_params_, *commit_params_, response_head_.get(),
       std::move(response_body_), std::move(url_loader_client_endpoints_),
@@ -3093,6 +3131,55 @@ const net::HttpResponseHeaders* NavigationRequest::GetResponseHeaders() {
   if (response_headers_for_testing_)
     return response_headers_for_testing_.get();
   return response_head_.get() ? response_head_->head.headers.get() : nullptr;
+}
+
+std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+NavigationRequest::MakeDidCommitProvisionalLoadParamsForBFCache() {
+  // TODO(lowell): Review all of these parameters for completeness.
+  std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params =
+      std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>();
+  params->http_status_code = net::HTTP_OK;
+  params->method = common_params().method;
+  params->intended_as_new_entry = commit_params().intended_as_new_entry;
+  params->should_replace_current_entry =
+      common_params().should_replace_current_entry;
+  params->post_id = -1;
+  params->nav_entry_id = commit_params().nav_entry_id;
+  params->navigation_token = commit_params().navigation_token;
+  params->transition = common_params().transition;
+
+  // TODO(lowell): Is there a way to get access to the the values needed to set
+  // the insecure_request_policy, etc?
+
+  params->url = common_params().url;
+  params->gesture = common_params().has_user_gesture ? NavigationGestureUser
+                                                     : NavigationGestureAuto;
+  params->page_state = commit_params().page_state;
+
+  params->should_update_history = true;
+
+  if (commit_params().origin_to_commit.has_value()) {
+    params->origin = commit_params().origin_to_commit.value();
+  }
+
+  params->item_sequence_number = frame_entry_item_sequence_number_;
+  params->document_sequence_number = frame_entry_document_sequence_number_;
+
+  // TODO(lowell): Set the actual response mime type from FrameNavigationEntry.
+  params->contents_mime_type = "text/html";
+
+  params->request_id = request_id().request_id;
+
+  return params;
+}
+
+RenderFrameHostImpl* NavigationRequest::GetFrameHostForNavigation() {
+  if (is_served_from_back_forward_cache()) {
+    DCHECK(rfh_restored_from_back_forward_cache_);
+    return rfh_restored_from_back_forward_cache_.get();
+  }
+
+  return frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
 }
 
 }  // namespace content

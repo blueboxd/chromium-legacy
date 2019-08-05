@@ -165,11 +165,12 @@ ScriptPromise NFC::watch(ScriptState* script_state,
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
-  auto watch_callback =
-      WTF::Bind(&NFC::OnWatchRegistered, WrapPersistent(this),
-                WrapPersistent(callback), WrapPersistent(resolver));
+  auto watch_callback = WTF::Bind(&NFC::OnWatchRegistered, WrapPersistent(this),
+                                  WrapPersistent(callback),
+                                  WrapPersistent(resolver), next_watch_id_);
   nfc_->Watch(device::mojom::blink::NFCReaderOptions::From(options),
-              std::move(watch_callback));
+              next_watch_id_, std::move(watch_callback));
+  next_watch_id_++;
   return resolver->Promise();
 }
 
@@ -179,15 +180,14 @@ ScriptPromise NFC::cancelWatch(ScriptState* script_state, int32_t id) {
   if (!promise.IsEmpty())
     return promise;
 
-  if (id) {
-    callbacks_.erase(id);
-  } else {
+  if (!callbacks_.Contains(id)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotFoundError,
                                            kNfcWatchIdNotFound));
   }
 
+  callbacks_.erase(id);
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
   nfc_->CancelWatch(id,
@@ -309,16 +309,6 @@ void NFC::OnWatchRegistered(V8MessageCallback* callback,
                             uint32_t id,
                             device::mojom::blink::NFCErrorPtr error) {
   requests_.erase(resolver);
-
-  // Invalid id was returned.
-  // https://w3c.github.io/web-nfc/#dom-nfc-watch
-  // 8. If the request fails, reject promise with "NotSupportedError"
-  // and abort these steps.
-  if (!id) {
-    resolver->Reject(NFCErrorTypeToDOMException(
-        device::mojom::blink::NFCErrorType::NOT_SUPPORTED));
-    return;
-  }
 
   if (error.is_null()) {
     callbacks_.insert(id, callback);

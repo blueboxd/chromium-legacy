@@ -545,6 +545,9 @@ void SetIndividualRuntimeFeatures(
 
   if (base::FeatureList::IsEnabled(features::kTrustedDOMTypes))
     WebRuntimeFeatures::EnableFeatureFromString("TrustedDOMTypes", true);
+
+  WebRuntimeFeatures::EnableBackForwardCache(
+      base::FeatureList::IsEnabled(features::kBackForwardCache));
 }
 
 }  // namespace

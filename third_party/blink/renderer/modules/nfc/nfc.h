@@ -93,6 +93,10 @@ class NFC final : public ScriptWrappable,
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;
   using WatchCallbacksMap = HeapHashMap<uint32_t, Member<V8MessageCallback>>;
   WatchCallbacksMap callbacks_;
+
+  // Identifies watch requests tied to a given Mojo connection of NFC interface.
+  // Incremented each time a watch request is made.
+  uint32_t next_watch_id_ = 1;
 };
 
 }  // namespace blink

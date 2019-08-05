@@ -37,7 +37,6 @@
 namespace blink {
 
 class CullRect;
-class Element;
 class GraphicsContext;
 class IntRect;
 class ChromeClient;
@@ -56,13 +55,12 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
                                      ScrollbarControlSize size,
                                      ScrollbarTheme* theme) {
     return MakeGarbageCollected<Scrollbar>(scrollable_area, orientation, size,
-                                           nullptr, nullptr, theme);
+                                           nullptr, theme);
   }
 
   Scrollbar(ScrollableArea*,
             ScrollbarOrientation,
             ScrollbarControlSize,
-            Element* style_source,
             ChromeClient* = nullptr,
             ScrollbarTheme* = nullptr);
   ~Scrollbar() override;
@@ -191,14 +189,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
 
   CompositorElementId GetElementId();
 
-  float EffectiveZoom() const;
-  bool ContainerIsRightToLeft() const;
-
-  // The Element that supplies our style information. If the scrollbar is
-  // for a document, this is either the <body> or <html> element. Otherwise, it
-  // is the element that owns our PaintLayerScrollableArea.
-  Element* StyleSource() const { return style_source_.Get(); }
-
   virtual void Trace(blink::Visitor*);
 
  protected:
@@ -252,7 +242,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   bool injected_gesture_scroll_begin_;
   IntRect visual_rect_;
   IntRect frame_rect_;
-  Member<Element> style_source_;
 };
 
 }  // namespace blink

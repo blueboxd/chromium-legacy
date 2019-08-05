@@ -100,6 +100,12 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   NavigationHandleImpl* GetNavigationHandle() override;
   content::GlobalRequestID GetGlobalRequestID() override;
 
+  void SetKeepLoading(bool keep_loading) override;
+  void StopLoading() override;
+  void FailLoading(const GURL& url,
+                   int error_code,
+                   const base::string16& error_description) override;
+
   // Additional utilites usable only inside content/.
 
   // This will do the very beginning of a navigation but stop before the
@@ -292,6 +298,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   bool auto_advance_ = true;
   bool drop_swap_out_ack_ = false;
   bool block_on_before_unload_ack_ = false;
+  bool keep_loading_ = false;
 
   // Generic params structure used for fully customized browser initiated
   // navigation requests. Only valid if explicitely provided.

@@ -197,8 +197,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   struct ScrollbarArrowExtraParams {
     bool is_hovering;
-    float zoom;
-    bool right_to_left;
   };
 
   struct ScrollbarTrackExtraParams {

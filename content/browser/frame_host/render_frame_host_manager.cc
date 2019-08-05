@@ -583,12 +583,23 @@ void RenderFrameHostManager::RestoreFromBackForwardCache(
   rfh->GetProcess()->AddPendingView();  // Matched in CommitPending().
   // Save as a temp variable to check later to match |current_frame_host()|.
   RenderFrameHostImpl* tmp_rfh = rfh.get();
+
+  // Make the frame restored from the back-forward cache the current frame.
   CommitPending(std::move(rfh));
   DCHECK_EQ(tmp_rfh, current_frame_host());
 
   // Resume the page after CommitPending.
   delegate_->GetControllerForRenderManager().back_forward_cache().Resume(
       current_frame_host());
+}
+
+void RenderFrameHostManager::EvictFromBackForwardCache(
+    RenderFrameHostImpl* rfh) {
+  // TODO(hajimehoshi): Add a direct getter of BackForwardCache to
+  // RenderFrameHostDelegate.
+  BackForwardCache& back_forward_cache =
+      delegate_->GetControllerForRenderManager().back_forward_cache();
+  back_forward_cache.EvictDocument(rfh);
 }
 
 void RenderFrameHostManager::ResetProxyHosts() {
@@ -611,12 +622,19 @@ void RenderFrameHostManager::ClearWebUIInstances() {
 
 void RenderFrameHostManager::DidCreateNavigationRequest(
     NavigationRequest* request) {
-  RenderFrameHostImpl* dest_rfh = GetFrameHostForNavigation(*request);
-  DCHECK(dest_rfh);
-  request->set_associated_site_instance_type(
-      dest_rfh == render_frame_host_.get()
-          ? NavigationRequest::AssociatedSiteInstanceType::CURRENT
-          : NavigationRequest::AssociatedSiteInstanceType::SPECULATIVE);
+  if (request->is_served_from_back_forward_cache()) {
+    // Since the frame from the back-forward cache is being committed to the
+    // SiteInstance we already have, it is treated as current.
+    request->set_associated_site_instance_type(
+        NavigationRequest::AssociatedSiteInstanceType::CURRENT);
+  } else {
+    RenderFrameHostImpl* dest_rfh = GetFrameHostForNavigation(*request);
+    DCHECK(dest_rfh);
+    request->set_associated_site_instance_type(
+        dest_rfh == render_frame_host_.get()
+            ? NavigationRequest::AssociatedSiteInstanceType::CURRENT
+            : NavigationRequest::AssociatedSiteInstanceType::SPECULATIVE);
+  }
 }
 
 RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(

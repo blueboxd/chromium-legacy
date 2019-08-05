@@ -21,11 +21,6 @@ namespace wayland {
 
 namespace {
 
-// Expose raw gamepad device information to the client.
-// TODO(tetsui): Remove when the change becomes default.
-const base::Feature kRawGamepadInfoFeature{"ExoRawGamepadInfo",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 unsigned int GetGamepadBusType(ui::InputDeviceType type) {
   switch (type) {
     case ui::INPUT_DEVICE_BLUETOOTH:
@@ -69,37 +64,21 @@ class WaylandGamepadDelegate : public GamepadDelegate {
     wl_resource_set_user_data(gamepad_resource_, nullptr);
     delete this;
   }
-  void OnAxis(int axis, int raw_axis, double value) override {
+  void OnAxis(int axis, double value) override {
     if (!gamepad_resource_) {
       return;
     }
-    // There are two types of axis events: Web Gamepad remapped and raw. When
-    // |axis| is not WG_ABS_COUNT, it's Web Gamepad remapped. ExoRawGamepadInfo
-    // expects raw events to be forawrded, so we should discard remapped ones.
-    // TODO(tetsui): Remove this when Web Gamepad mapping in Ozone is removed.
-    if (base::FeatureList::IsEnabled(kRawGamepadInfoFeature) &&
-        axis != ui::WG_ABS_COUNT) {
-      return;
-    }
-    zcr_gamepad_v2_send_axis(
-        gamepad_resource_, NowInMilliseconds(),
-        base::FeatureList::IsEnabled(kRawGamepadInfoFeature) ? raw_axis : axis,
-        wl_fixed_from_double(value));
+    zcr_gamepad_v2_send_axis(gamepad_resource_, NowInMilliseconds(), axis,
+                             wl_fixed_from_double(value));
   }
-  void OnButton(int button,
-                int raw_button,
-                bool pressed,
-                double value) override {
+  void OnButton(int button, bool pressed) override {
     if (!gamepad_resource_) {
       return;
     }
     uint32_t state = pressed ? ZCR_GAMEPAD_V2_BUTTON_STATE_PRESSED
                              : ZCR_GAMEPAD_V2_BUTTON_STATE_RELEASED;
-    zcr_gamepad_v2_send_button(
-        gamepad_resource_, NowInMilliseconds(),
-        base::FeatureList::IsEnabled(kRawGamepadInfoFeature) ? raw_button
-                                                             : button,
-        state, wl_fixed_from_double(value));
+    zcr_gamepad_v2_send_button(gamepad_resource_, NowInMilliseconds(), button,
+                               state, wl_fixed_from_double(0));
   }
   void OnFrame() override {
     if (!gamepad_resource_) {
@@ -158,22 +137,17 @@ class WaylandGamingSeatDelegate : public GamingSeatDelegate {
         gamepad_resource, &gamepad_implementation, gamepad_delegate,
         &WaylandGamepadDelegate::ResetGamepadResource);
 
-    if (base::FeatureList::IsEnabled(kRawGamepadInfoFeature)) {
-      zcr_gaming_seat_v2_send_gamepad_added_with_device_info(
-          gaming_seat_resource_, gamepad_resource, device.name.c_str(),
-          GetGamepadBusType(device.type), device.vendor_id, device.product_id,
-          device.version);
+    zcr_gaming_seat_v2_send_gamepad_added_with_device_info(
+        gaming_seat_resource_, gamepad_resource, device.name.c_str(),
+        GetGamepadBusType(device.type), device.vendor_id, device.product_id,
+        device.version);
 
-      for (const auto& axis : device.axes) {
-        zcr_gamepad_v2_send_axis_added(gamepad_resource, axis.code,
-                                       axis.min_value, axis.max_value,
-                                       axis.flat, axis.fuzz, axis.resolution);
-      }
-      zcr_gamepad_v2_send_activated(gamepad_resource);
-    } else {
-      zcr_gaming_seat_v2_send_gamepad_added(gaming_seat_resource_,
-                                            gamepad_resource);
+    for (const auto& axis : device.axes) {
+      zcr_gamepad_v2_send_axis_added(gamepad_resource, axis.code,
+                                     axis.min_value, axis.max_value, axis.flat,
+                                     axis.fuzz, axis.resolution);
     }
+    zcr_gamepad_v2_send_activated(gamepad_resource);
     wl_client_flush(wl_resource_get_client(gaming_seat_resource_));
 
     return gamepad_delegate;

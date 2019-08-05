@@ -45,9 +45,8 @@ void SetIcons(const WebApplicationInfo& web_app_info, WebApp* web_app) {
 
 }  // namespace
 
-WebAppInstallFinalizer::WebAppInstallFinalizer(WebAppRegistrar* registrar,
-                                               WebAppIconManager* icon_manager)
-    : registrar_(registrar), icon_manager_(icon_manager) {}
+WebAppInstallFinalizer::WebAppInstallFinalizer(WebAppIconManager* icon_manager)
+    : icon_manager_(icon_manager) {}
 
 WebAppInstallFinalizer::~WebAppInstallFinalizer() = default;
 
@@ -99,6 +98,8 @@ void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
   AppId app_id = web_app->app_id();
 
   registrar_->RegisterApp(std::move(web_app));
+  // TODO(loyso): NotifyWebAppInstalled should be a part of RegisterApp.
+  registrar_->NotifyWebAppInstalled(app_id);
 
   std::move(callback).Run(std::move(app_id), InstallResultCode::kSuccess);
 }
@@ -143,6 +144,12 @@ bool WebAppInstallFinalizer::CanSkipAppUpdateForSync(
     const WebApplicationInfo& web_app_info) const {
   NOTIMPLEMENTED();
   return true;
+}
+
+void WebAppInstallFinalizer::SetSubsystems(AppRegistrar* registrar,
+                                           WebAppUiManager* ui_manager) {
+  registrar_ = registrar ? registrar->AsWebAppRegistrar() : nullptr;
+  InstallFinalizer::SetSubsystems(registrar, ui_manager);
 }
 
 }  // namespace web_app

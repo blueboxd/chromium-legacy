@@ -2895,6 +2895,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kResourceLoadSchedulerDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kResourceLoadScheduler)},
 
+    {"prefetch-redirect-error", flag_descriptions::kPrefetchRedirectErrorName,
+     flag_descriptions::kPrefetchRedirectErrorDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kPrefetchRedirectError)},
+
 #if defined(OS_ANDROID)
     {"omnibox-spare-renderer", flag_descriptions::kOmniboxSpareRendererName,
      flag_descriptions::kOmniboxSpareRendererDescription, kOsAndroid,

@@ -295,6 +295,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void SendAccessibilityEventsToManager(
       const AXEventNotificationDetails& details);
+  void EvictFromBackForwardCache() override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -1006,6 +1007,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
       network::mojom::CrossOriginEmbedderPolicy policy) {
     cross_origin_embedder_policy_ = policy;
   }
+
+  // This function mimics DidCommitProvisionalLoad for navigations served from
+  // the back-forward cache.
+  void DidCommitBackForwardCacheNavigation(
+      NavigationRequest* committing_navigation_request,
+      std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+          validated_params);
 
  protected:
   friend class RenderFrameHostFactory;

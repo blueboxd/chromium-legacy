@@ -55,6 +55,11 @@ class LayoutScrollbar final : public Scrollbar {
                                             const LayoutBox& enclosing_box,
                                             const LayoutObject& style_source);
 
+  // The Element that supplies our style information. If the scrollbar is
+  // for a document, this is either the <body> or <html> element. Otherwise, it
+  // is the element that owns our PaintLayerScrollableArea.
+  Element* StyleSource() const { return style_source_.Get(); }
+
   IntRect ButtonRect(ScrollbarPart) const;
   IntRect TrackRect(int start_length, int end_length) const;
   IntRect TrackPieceRectWithMargins(ScrollbarPart, const IntRect&) const;
@@ -93,6 +98,9 @@ class LayoutScrollbar final : public Scrollbar {
 
   scoped_refptr<ComputedStyle> GetScrollbarPseudoStyle(ScrollbarPart, PseudoId);
   void UpdateScrollbarPart(ScrollbarPart, bool destroy = false);
+
+  // The element that supplies our style information.
+  Member<Element> style_source_;
 
   HashMap<unsigned, LayoutScrollbarPart*> parts_;
 };

@@ -95,13 +95,17 @@ class SharedWorkerHostTest : public testing::Test {
     auto service_worker_handle =
         std::make_unique<ServiceWorkerNavigationHandle>(
             helper_->context_wrapper());
+    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
     auto provider_info =
         blink::mojom::ServiceWorkerProviderInfoForClient::New();
+    provider_info->client_request = mojo::MakeRequest(&client_ptr_info);
+    host_request = mojo::MakeRequest(&provider_info->host_ptr_info);
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_host =
         ServiceWorkerProviderHost::PreCreateForWebWorker(
             helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
             blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-            &provider_info);
+            std::move(host_request), std::move(client_ptr_info));
     service_worker_handle->OnCreatedProviderHost(std::move(provider_info));
     host->SetServiceWorkerHandle(std::move(service_worker_handle));
 

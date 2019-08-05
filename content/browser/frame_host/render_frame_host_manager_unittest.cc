@@ -3130,7 +3130,10 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   // Navigate main frame to |kUrl1| and commit, but don't simulate
   // DidStopLoading.  The main frame should still be considered loading at this
   // point.
-  contents()->NavigateAndCommit(kUrl1);
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(kUrl1, contents());
+  navigation->SetKeepLoading(true);
+  navigation->Commit();
   FrameTreeNode* root = contents()->GetFrameTree()->root();
   EXPECT_TRUE(root->IsLoading());
 
@@ -3162,7 +3165,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
                                       proxy_to_child->GetRoutingID()));
 
   // Simulate load stop in the main frame.
-  main_test_rfh()->ResetLoadingState();
+  navigation->StopLoading();
 
   // Navigate the child to a third site.
   child_host = static_cast<TestRenderFrameHost*>(

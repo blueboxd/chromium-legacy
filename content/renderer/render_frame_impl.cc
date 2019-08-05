@@ -4101,6 +4101,10 @@ blink::WebLocalFrameClient::AppCacheType RenderFrameImpl::GetAppCacheType() {
   return blink::WebLocalFrameClient::AppCacheType::kAppCacheForFrame;
 }
 
+void RenderFrameImpl::EvictFromBackForwardCache() {
+  GetFrameHost()->EvictFromBackForwardCache();
+}
+
 void RenderFrameImpl::BindToFrame(blink::WebNavigationControl* frame) {
   DCHECK(!frame_);
 

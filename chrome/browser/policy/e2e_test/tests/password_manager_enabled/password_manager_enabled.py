@@ -11,7 +11,7 @@ from infra import ChromeEnterpriseTestCase
 class PasswordManagerEnabledTest(ChromeEnterpriseTestCase):
   """Test the PasswordManagerEnabled policy.
 
-  See https://www.chromium.org/administrators/policy-list-3#PasswordManagerEnabled"""
+  See https://cloud.google.com/docs/chrome-enterprise/policies/?policy=PasswordManagerEnabled"""
 
   @before_all
   def setup(self):

@@ -16,6 +16,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/ui/webui/downloads/downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
@@ -51,8 +52,10 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
 
-  bool requests_ap_verdicts = safe_browsing::AdvancedProtectionStatusManager::
-      RequestsAdvancedProtectionVerdicts(profile);
+  bool requests_ap_verdicts =
+      safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
+          profile)
+          ->RequestsAdvancedProtectionVerdicts();
   source->AddBoolean("requestsApVerdicts", requests_ap_verdicts);
 
   static constexpr LocalizedString kStrings[] = {

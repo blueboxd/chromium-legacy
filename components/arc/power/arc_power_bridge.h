@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "components/arc/common/power.mojom.h"
+#include "components/arc/mojom/power.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"

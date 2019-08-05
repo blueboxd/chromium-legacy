@@ -87,6 +87,7 @@
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -973,8 +974,9 @@ signin::IdentityManager* ChromePasswordManagerClient::GetIdentityManager() {
 
 bool ChromePasswordManagerClient::IsUnderAdvancedProtection() const {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  return safe_browsing::AdvancedProtectionStatusManager::
-      IsUnderAdvancedProtection(profile_);
+  return safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
+             profile_)
+      ->is_under_advanced_protection();
 #else
   return false;
 #endif

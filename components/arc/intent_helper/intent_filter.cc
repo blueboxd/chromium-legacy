@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string_util.h"
-#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
 #include "url/gurl.h"
 
 namespace arc {

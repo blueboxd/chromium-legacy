@@ -12,7 +12,7 @@ from infra import ChromeEnterpriseTestCase
 class YouTubeRestrictTest(ChromeEnterpriseTestCase):
   """Test the ForceYouTubeRestrict policy.
 
-  See https://www.chromium.org/administrators/policy-list-3#ForceYouTubeRestrict"""
+  See https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ForceYouTubeRestrict"""
 
   RestrictedText = "This video is restricted. " \
       + "Try signing in with a Google Apps account."

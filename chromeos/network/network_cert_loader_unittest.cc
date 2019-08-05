@@ -63,14 +63,8 @@ class FakePolicyCertificateProvider : public PolicyCertificateProvider {
   }
 
   void NotifyObservers() {
-    // NetworkCertLoader does not use these parameters - it calls
-    // |GetAllAuthorityCertificates| explicitly.
-    net::CertificateList all_server_and_authority_certs;
-    net::CertificateList trust_anchors;
-    for (auto& observer : observer_list_) {
-      observer.OnPolicyProvidedCertsChanged(all_server_and_authority_certs,
-                                            trust_anchors);
-    }
+    for (auto& observer : observer_list_)
+      observer.OnPolicyProvidedCertsChanged();
   }
 
  private:

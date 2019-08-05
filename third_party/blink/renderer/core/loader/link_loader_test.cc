@@ -7,7 +7,9 @@
 #include <base/macros.h>
 #include <memory>
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -548,6 +550,65 @@ TEST_P(LinkLoaderModulePreloadTest, ModulePreload) {
 INSTANTIATE_TEST_SUITE_P(LinkLoaderModulePreloadTest,
                          LinkLoaderModulePreloadTest,
                          testing::ValuesIn(kModulePreloadTestParams));
+
+class LinkLoaderTestPrefetchRedirect
+    : public testing::Test,
+      public testing::WithParamInterface<bool> {
+ public:
+  LinkLoaderTestPrefetchRedirect() : redirect_mode_is_error_(GetParam()) {}
+  void SetUp() override {
+    std::vector<base::Feature> enable_features;
+    std::vector<base::Feature> disabled_features;
+    if (GetParam()) {
+      enable_features.push_back(features::kPrefetchRedirectError);
+    } else {
+      disabled_features.push_back(features::kPrefetchRedirectError);
+    }
+    feature_list_.InitWithFeatures(enable_features, disabled_features);
+  }
+
+ protected:
+  const bool redirect_mode_is_error_;
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithNetworkHintsMock>
+      platform_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(LinkLoaderTestPrefetchRedirect,
+                         LinkLoaderTestPrefetchRedirect,
+                         testing::Values(true, false));
+
+TEST_P(LinkLoaderTestPrefetchRedirect, PrefetchRedirect) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
+  dummy_page_holder->GetFrame().GetSettings()->SetScriptEnabled(true);
+  Persistent<MockLinkLoaderClient> loader_client =
+      MakeGarbageCollected<MockLinkLoaderClient>(true);
+  LinkLoader* loader = LinkLoader::Create(loader_client.Get());
+  KURL href_url = KURL(NullURL(), "http://example.test/cat.jpg");
+  url_test_helpers::RegisterMockedErrorURLLoad(href_url);
+  LinkLoadParameters params(
+      LinkRelAttribute("prefetch"), kCrossOriginAttributeNotSet, "image/jpg",
+      "", "", "", "", String(), network::mojom::ReferrerPolicy::kDefault,
+      href_url, String() /* image_srcset */, String() /* image_sizes */);
+  loader->LoadLink(params, dummy_page_holder->GetDocument());
+  ASSERT_TRUE(dummy_page_holder->GetDocument().Fetcher());
+  Resource* resource = loader->GetResourceForTesting();
+  EXPECT_TRUE(resource);
+
+  if (redirect_mode_is_error_) {
+    EXPECT_EQ(resource->GetResourceRequest().GetRedirectMode(),
+              network::mojom::RedirectMode::kError);
+  } else {
+    EXPECT_EQ(resource->GetResourceRequest().GetRedirectMode(),
+              network::mojom::RedirectMode::kFollow);
+  }
+
+  Platform::Current()
+      ->GetURLLoaderMockFactory()
+      ->UnregisterAllURLsAndClearMemoryCache();
+}
 
 class LinkLoaderTest : public testing::Test {
  protected:

@@ -137,7 +137,10 @@ class BundledExchangesReader::SharedFileDataSource final
 
 BundledExchangesReader::BundledExchangesReader(
     const BundledExchangesSource& source)
-    : file_(base::MakeRefCounted<SharedFile>(source.file_path)) {}
+    : parser_(ServiceManagerConnection::GetForProcess()
+                  ? ServiceManagerConnection::GetForProcess()->GetConnector()
+                  : nullptr),
+      file_(base::MakeRefCounted<SharedFile>(source.file_path)) {}
 
 BundledExchangesReader::~BundledExchangesReader() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -202,8 +205,7 @@ const GURL& BundledExchangesReader::GetStartURL() const {
 }
 
 void BundledExchangesReader::SetBundledExchangesParserFactoryForTesting(
-    std::unique_ptr<data_decoder::mojom::BundledExchangesParserFactory>
-        factory) {
+    mojo::Remote<data_decoder::mojom::BundledExchangesParserFactory> factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   parser_.SetBundledExchangesParserFactoryForTesting(std::move(factory));
@@ -211,15 +213,17 @@ void BundledExchangesReader::SetBundledExchangesParserFactoryForTesting(
 
 void BundledExchangesReader::ReadMetadataInternal(MetadataCallback callback,
                                                   base::File file) {
-  parser_.OpenFile(
-      ServiceManagerConnection::GetForProcess()
-          ? ServiceManagerConnection::GetForProcess()->GetConnector()
-          : nullptr,
-      std::move(file));
-
-  parser_.ParseMetadata(
-      base::BindOnce(&BundledExchangesReader::OnMetadataParsed,
-                     base::Unretained(this), std::move(callback)));
+  base::File::Error error = parser_.OpenFile(std::move(file));
+  if (base::File::FILE_OK != error) {
+    PostTask(FROM_HERE,
+             base::BindOnce(std::move(callback),
+                            data_decoder::mojom::BundleMetadataParseError::New(
+                                base::File::ErrorToString(error))));
+  } else {
+    parser_.ParseMetadata(
+        base::BindOnce(&BundledExchangesReader::OnMetadataParsed,
+                       base::Unretained(this), std::move(callback)));
+  }
 }
 
 void BundledExchangesReader::OnMetadataParsed(

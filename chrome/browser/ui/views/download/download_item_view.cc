@@ -30,6 +30,7 @@
 #include "chrome/browser/download/drag_download_item.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -949,8 +950,9 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
                                    gfx::kGoogleRed700);
 
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
-      if (safe_browsing::AdvancedProtectionStatusManager::
-              RequestsAdvancedProtectionVerdicts(model()->profile())) {
+      if (safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
+              model()->profile())
+              ->RequestsAdvancedProtectionVerdicts()) {
         return gfx::CreateVectorIcon(vector_icons::kErrorIcon, kErrorIconSize,
                                      gfx::kGoogleYellow500);
       } else {

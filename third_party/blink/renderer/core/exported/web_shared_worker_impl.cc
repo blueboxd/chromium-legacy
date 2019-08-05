@@ -96,7 +96,8 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
     return;
   asked_to_terminate_ = true;
   appcache_host_->Detach();
-  if (shadow_page_ && !shadow_page_->WasInitialized()) {
+
+  if (!worker_thread_) {
     client_->WorkerScriptLoadFailed();
     // The worker thread hasn't been started yet. Immediately notify the client
     // of worker termination.
@@ -104,11 +105,10 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
     // |this| is deleted at this point.
     return;
   }
-  if (worker_thread_) {
-    worker_thread_->Terminate();
-    DevToolsAgent::WorkerThreadTerminated(shadow_page_->GetDocument(),
-                                          worker_thread_.get());
-  }
+  worker_thread_->Terminate();
+  DevToolsAgent::WorkerThreadTerminated(shadow_page_->GetDocument(),
+                                        worker_thread_.get());
+  // DidTerminateWorkerThread() will be called asynchronously.
 }
 
 void WebSharedWorkerImpl::OnShadowPageInitialized() {
@@ -159,6 +159,7 @@ void WebSharedWorkerImpl::DidCloseWorkerGlobalScope() {
   DCHECK(IsMainThread());
   client_->WorkerContextClosed();
   TerminateWorkerThread();
+  // DidTerminateWorkerThread() will be called asynchronously.
 }
 
 void WebSharedWorkerImpl::DidTerminateWorkerThread() {

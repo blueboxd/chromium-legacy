@@ -111,6 +111,6 @@ def ProcessResults(options):
       after any adjustments from ProcessOptions were applied.
   """
   if not getattr(options, 'output_formats', None):
-    return
+    return 0
 
   raise NotImplementedError(options.output_formats)

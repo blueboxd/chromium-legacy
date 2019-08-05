@@ -77,6 +77,8 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandle {
     return std::move(provider_info_);
   }
 
+  bool has_provider_info() const { return !!provider_info_; }
+
   ServiceWorkerNavigationHandleCore* core() const { return core_; }
 
   const ServiceWorkerContextWrapper* context_wrapper() const {

@@ -80,10 +80,9 @@ class MockMirroringDestination
             render_process_id_, render_frame_id_)) != candidates.end()) {
       result.insert(GlobalFrameRoutingId(render_process_id_, render_frame_id_));
     }
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(*results_callback), std::move(result),
-                       is_duplication_));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(std::move(*results_callback),
+                                  std::move(result), is_duplication_));
   }
 
   media::AudioOutputStream* SimulateAddInput(

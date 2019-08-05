@@ -45,7 +45,7 @@ class WebContentsVideoCaptureDevice::FrameTracker
     DCHECK(device_task_runner_);
     DCHECK(cursor_controller_);
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             [](base::WeakPtr<FrameTracker> self, int process_id, int frame_id) {
@@ -236,7 +236,7 @@ WebContentsVideoCaptureDevice::Create(const std::string& device_id) {
 }
 
 void WebContentsVideoCaptureDevice::WillStart() {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&FrameTracker::WillStartCapturingWebContents,
                      tracker_->AsWeakPtr(),
@@ -244,10 +244,9 @@ void WebContentsVideoCaptureDevice::WillStart() {
 }
 
 void WebContentsVideoCaptureDevice::DidStop() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&FrameTracker::DidStopCapturingWebContents,
-                     tracker_->AsWeakPtr()));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&FrameTracker::DidStopCapturingWebContents,
+                                tracker_->AsWeakPtr()));
 }
 
 }  // namespace content

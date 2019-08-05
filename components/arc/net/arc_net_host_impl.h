@@ -18,7 +18,7 @@
 #include "base/values.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "components/arc/common/net.mojom.h"
+#include "components/arc/mojom/net.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 

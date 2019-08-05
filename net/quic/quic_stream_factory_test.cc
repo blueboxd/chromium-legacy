@@ -1649,7 +1649,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
   if (version_.transport_version == quic::QUIC_VERSION_99) {
     socket_data.AddWrite(SYNCHRONOUS, client_maker_.MakeStreamsBlockedPacket(
-                                          2, true, 51,
+                                          2, true, 50,
                                           /*unidirectional=*/false));
     socket_data.AddWrite(
         SYNCHRONOUS, client_maker_.MakeRstPacket(3, true, stream_id,

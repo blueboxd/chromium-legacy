@@ -30,7 +30,7 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
-#include "components/arc/common/cert_store.mojom.h"
+#include "components/arc/mojom/cert_store.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/policy/policy_constants.h"

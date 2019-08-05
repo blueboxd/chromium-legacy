@@ -65,6 +65,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kWasmCodeCache;
 BLINK_COMMON_EXPORT extern const base::Feature kNativeFileSystemAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kFileHandlingAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kForbidSyncXHRInPageDismissal;
+BLINK_COMMON_EXPORT extern const base::Feature kPrefetchRedirectError;
 
 BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeParamName[];
 BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeBlockable[];

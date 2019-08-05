@@ -15,6 +15,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "mojo/public/c/system/data_pipe.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -133,7 +137,10 @@ class BundledExchangesReaderTest : public testing::Test {
     std::unique_ptr<MockParserFactory> factory =
         std::make_unique<MockParserFactory>();
     factory_ = factory.get();
-    reader_->SetBundledExchangesParserFactoryForTesting(std::move(factory));
+    mojo::Remote<data_decoder::mojom::BundledExchangesParserFactory> remote;
+    mojo::MakeSelfOwnedReceiver(std::move(factory),
+                                remote.BindNewPipeAndPassReceiver());
+    reader_->SetBundledExchangesParserFactoryForTesting(std::move(remote));
   }
 
  protected:

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/arc/common/accessibility_helper.mojom.h"
+#include "components/arc/mojom/accessibility_helper.mojom.h"
 
 namespace arc {
 

@@ -28,7 +28,7 @@ component("gpu") {
   # media-related content code should access //media/gpu.
   visibility = [
     "//chrome/gpu",
-    "//components/arc/common:media",
+    "//components/arc/mojom:media",
     "//components/arc/video_accelerator",
     "//components/mirroring/service:mirroring_service",
     "//components/viz/service/main",

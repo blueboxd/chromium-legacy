@@ -2510,10 +2510,16 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   int nav_entry_id = pending_entry_->GetUniqueID();
 
   // BackForwardCache:
-  // Try to restore a document from the BackForwardCache.
-  if (auto rfh = back_forward_cache_.RestoreDocument(nav_entry_id)) {
-    root->render_manager()->RestoreFromBackForwardCache(std::move(rfh));
-    CommitRestoreFromBackForwardCache();
+  // Navigate immediately if the document is in the BackForwardCache.
+  if (back_forward_cache_.ContainsDocument(nav_entry_id)) {
+    DCHECK_EQ(reload_type, ReloadType::NONE);
+    auto navigation_request = CreateNavigationRequestFromEntry(
+        root, pending_entry_, pending_entry_->GetFrameEntry(root),
+        ReloadType::NONE, false /* is_same_document_history_load */,
+        false /* is_history_navigation_in_new_child */);
+    root->navigator()->Navigate(std::move(navigation_request), ReloadType::NONE,
+                                RestoreType::NONE);
+
     return;
   }
 
@@ -3378,27 +3384,6 @@ void NavigationControllerImpl::InsertEntriesFrom(
 void NavigationControllerImpl::SetGetTimestampCallbackForTest(
     const base::Callback<base::Time()>& get_timestamp_callback) {
   get_timestamp_callback_ = get_timestamp_callback;
-}
-
-// BackForwardCache:
-void NavigationControllerImpl::CommitRestoreFromBackForwardCache() {
-  // TODO(arthursonzogni): Extract the missing parts from RendererDidNavigate()
-  // and reuse them.
-  LoadCommittedDetails details;
-  details.previous_entry_index = GetCurrentEntryIndex();
-  details.entry = pending_entry_;
-  details.type = NAVIGATION_TYPE_EXISTING_PAGE;
-  details.is_main_frame = true;
-  details.http_status_code = net::HTTP_OK;
-  details.did_replace_entry = false;
-  details.is_same_document = false;
-
-  last_committed_entry_index_ = pending_entry_index_;
-  DiscardPendingEntry(false);
-
-  // Notify content/ embedder of the history update.
-  delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
-  delegate_->NotifyNavigationEntryCommitted(details);
 }
 
 // History manipulation intervention:

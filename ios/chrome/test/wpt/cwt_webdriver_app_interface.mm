@@ -245,7 +245,7 @@ int GetIndexOfWebStateWithId(NSString* tab_id) {
     CGRect adjustedBounds = UIEdgeInsetsInsetRect(bounds, insets);
 
     webState->TakeSnapshot(gfx::RectF(adjustedBounds),
-                           base::BindOnce(^(const gfx::Image& image) {
+                           base::BindRepeating(^(const gfx::Image& image) {
                              snapshot = image.ToUIImage();
                            }));
   });

@@ -47,7 +47,7 @@ class AuraWindowVideoCaptureDevice::WindowTracker
     DCHECK(device_task_runner_);
     DCHECK(cursor_controller_);
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WindowTracker::ResolveTarget, AsWeakPtr(), source_id));
   }
@@ -158,7 +158,7 @@ AuraWindowVideoCaptureDevice::~AuraWindowVideoCaptureDevice() = default;
 #if defined(OS_CHROMEOS)
 void AuraWindowVideoCaptureDevice::CreateCapturer(
     viz::mojom::FrameSinkVideoCapturerRequest request) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           [](base::WeakPtr<WindowTracker> tracker_ptr,

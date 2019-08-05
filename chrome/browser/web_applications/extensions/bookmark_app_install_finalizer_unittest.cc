@@ -18,7 +18,9 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -91,10 +93,15 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
     test_system->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
                                         profile()->GetPath(),
                                         false /* autoupdate_enabled */);
+
+    registrar_ = std::make_unique<BookmarkAppRegistrar>(profile());
+    ui_manager_ = std::make_unique<web_app::TestWebAppUiManager>();
+
+    finalizer_ = std::make_unique<BookmarkAppInstallFinalizer>(profile());
+    finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get());
   }
 
-  web_app::AppId InstallExternalApp(BookmarkAppInstallFinalizer* finalizer,
-                                    const GURL& app_url) {
+  web_app::AppId InstallExternalApp(const GURL& app_url) {
     auto info = std::make_unique<WebApplicationInfo>();
     info->app_url = app_url;
     info->title = base::ASCIIToUTF16(kWebAppTitle);
@@ -104,7 +111,7 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
 
     web_app::AppId app_id;
     base::RunLoop run_loop;
-    finalizer->FinalizeInstall(
+    finalizer().FinalizeInstall(
         *info, options,
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
@@ -133,13 +140,17 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
     return ExtensionRegistry::Get(profile())->enabled_extensions();
   }
 
+  BookmarkAppInstallFinalizer& finalizer() { return *finalizer_; }
+
  private:
+  std::unique_ptr<BookmarkAppRegistrar> registrar_;
+  std::unique_ptr<web_app::TestWebAppUiManager> ui_manager_;
+  std::unique_ptr<BookmarkAppInstallFinalizer> finalizer_;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallFinalizerTest);
 };
 
 TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallSucceeds) {
-  BookmarkAppInstallFinalizer installer(profile());
-
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = kWebAppUrl;
   info->title = base::ASCIIToUTF16(kWebAppTitle);
@@ -150,7 +161,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallSucceeds) {
   web_app::AppId app_id;
   bool callback_called = false;
 
-  installer.FinalizeInstall(
+  finalizer().FinalizeInstall(
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
@@ -165,13 +176,11 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallSucceeds) {
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
-  BookmarkAppInstallFinalizer installer(profile());
-
   auto fake_crx_installer =
       base::MakeRefCounted<BookmarkAppInstallFinalizerTest::FakeCrxInstaller>(
           profile());
 
-  installer.SetCrxInstallerFactoryForTesting(
+  finalizer().SetCrxInstallerFactoryForTesting(
       base::BindLambdaForTesting([&](Profile* profile) {
         scoped_refptr<CrxInstaller> crx_installer = fake_crx_installer;
         return crx_installer;
@@ -186,7 +195,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
   options.install_source = WebappInstallSource::INTERNAL_DEFAULT;
   bool callback_called = false;
 
-  installer.FinalizeInstall(
+  finalizer().FinalizeInstall(
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
@@ -204,8 +213,6 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
-  BookmarkAppInstallFinalizer finalizer(profile());
-
   base::RunLoop run_loop;
 
   const GURL url1("https://foo1.example");
@@ -221,7 +228,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
     WebApplicationInfo web_application_info;
     web_application_info.app_url = url1;
 
-    finalizer.FinalizeInstall(
+    finalizer().FinalizeInstall(
         web_application_info, options,
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
@@ -238,7 +245,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
     WebApplicationInfo web_application_info;
     web_application_info.app_url = url2;
 
-    finalizer.FinalizeInstall(
+    finalizer().FinalizeInstall(
         web_application_info, options,
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
@@ -257,8 +264,6 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, DefaultInstalledSucceeds) {
-  BookmarkAppInstallFinalizer installer(profile());
-
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = kWebAppUrl;
   info->title = base::ASCIIToUTF16(kWebAppTitle);
@@ -267,7 +272,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, DefaultInstalledSucceeds) {
   options.install_source = WebappInstallSource::EXTERNAL_DEFAULT;
 
   base::RunLoop run_loop;
-  installer.FinalizeInstall(
+  finalizer().FinalizeInstall(
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
@@ -286,8 +291,6 @@ TEST_F(BookmarkAppInstallFinalizerTest, DefaultInstalledSucceeds) {
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstalledSucceeds) {
-  BookmarkAppInstallFinalizer installer(profile());
-
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = kWebAppUrl;
   info->title = base::ASCIIToUTF16(kWebAppTitle);
@@ -296,7 +299,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstalledSucceeds) {
   options.install_source = WebappInstallSource::EXTERNAL_POLICY;
 
   base::RunLoop run_loop;
-  installer.FinalizeInstall(
+  finalizer().FinalizeInstall(
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
@@ -314,8 +317,6 @@ TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstalledSucceeds) {
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledSucceeds) {
-  BookmarkAppInstallFinalizer installer(profile());
-
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = kWebAppUrl;
   info->title = base::ASCIIToUTF16(kWebAppTitle);
@@ -324,7 +325,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledSucceeds) {
   options.install_source = WebappInstallSource::SYSTEM_DEFAULT;
 
   base::RunLoop run_loop;
-  installer.FinalizeInstall(
+  finalizer().FinalizeInstall(
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
@@ -343,8 +344,6 @@ TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledSucceeds) {
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallSucceeds) {
-  BookmarkAppInstallFinalizer installer(profile());
-
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = kWebAppUrl;
 
@@ -353,7 +352,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallSucceeds) {
   options.no_network_install = true;
 
   base::RunLoop run_loop;
-  installer.FinalizeInstall(
+  finalizer().FinalizeInstall(
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
@@ -371,8 +370,6 @@ TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallSucceeds) {
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, ForceLaunchContainer) {
-  BookmarkAppInstallFinalizer installer(profile());
-
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = kWebAppUrl;
   // The info says extensions::LAUNCH_TYPE_WINDOW needed.
@@ -384,7 +381,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ForceLaunchContainer) {
   options.force_launch_container = web_app::LaunchContainer::kTab;
 
   base::RunLoop run_loop;
-  installer.FinalizeInstall(
+  finalizer().FinalizeInstall(
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
@@ -405,8 +402,6 @@ TEST_F(BookmarkAppInstallFinalizerTest, ForceLaunchContainer) {
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, CanSkipAppUpdateForSync) {
-  BookmarkAppInstallFinalizer installer(profile());
-
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = kWebAppUrl;
   info->title = base::ASCIIToUTF16("Title1");
@@ -414,13 +409,13 @@ TEST_F(BookmarkAppInstallFinalizerTest, CanSkipAppUpdateForSync) {
 
   const web_app::AppId app_id = web_app::GenerateAppIdFromURL(info->app_url);
 
-  EXPECT_FALSE(installer.CanSkipAppUpdateForSync(app_id, *info));
+  EXPECT_FALSE(finalizer().CanSkipAppUpdateForSync(app_id, *info));
 
   base::RunLoop run_loop;
   web_app::InstallFinalizer::FinalizeOptions options;
   options.install_source = WebappInstallSource::SYNC;
 
-  installer.FinalizeInstall(
+  finalizer().FinalizeInstall(
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
@@ -430,26 +425,25 @@ TEST_F(BookmarkAppInstallFinalizerTest, CanSkipAppUpdateForSync) {
       }));
   run_loop.Run();
 
-  EXPECT_TRUE(installer.CanSkipAppUpdateForSync(app_id, *info));
+  EXPECT_TRUE(finalizer().CanSkipAppUpdateForSync(app_id, *info));
 
   WebApplicationInfo info_with_diff_title = *info;
   info_with_diff_title.title = base::ASCIIToUTF16("Title2");
-  EXPECT_FALSE(installer.CanSkipAppUpdateForSync(app_id, info_with_diff_title));
+  EXPECT_FALSE(
+      finalizer().CanSkipAppUpdateForSync(app_id, info_with_diff_title));
 
   WebApplicationInfo info_with_diff_description = *info;
   info_with_diff_description.title = base::ASCIIToUTF16("Description2");
   EXPECT_FALSE(
-      installer.CanSkipAppUpdateForSync(app_id, info_with_diff_description));
+      finalizer().CanSkipAppUpdateForSync(app_id, info_with_diff_description));
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, UninstallExternalWebApp_Successful) {
-  BookmarkAppInstallFinalizer finalizer(profile());
-
-  InstallExternalApp(&finalizer, kWebAppUrl);
+  InstallExternalApp(kWebAppUrl);
   ASSERT_EQ(1u, enabled_extensions().size());
 
   base::RunLoop run_loop;
-  finalizer.UninstallExternalWebApp(
+  finalizer().UninstallExternalWebApp(
       kWebAppUrl, base::BindLambdaForTesting([&](bool uninstalled) {
         EXPECT_TRUE(uninstalled);
         EXPECT_EQ(0u, enabled_extensions().size());
@@ -459,16 +453,14 @@ TEST_F(BookmarkAppInstallFinalizerTest, UninstallExternalWebApp_Successful) {
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, UninstallExternalWebApp_Multiple) {
-  BookmarkAppInstallFinalizer finalizer(profile());
-
-  auto foo_app_id = InstallExternalApp(&finalizer, kWebAppUrl);
-  auto bar_app_id = InstallExternalApp(&finalizer, kAlternateWebAppUrl);
+  auto foo_app_id = InstallExternalApp(kWebAppUrl);
+  auto bar_app_id = InstallExternalApp(kAlternateWebAppUrl);
   ASSERT_EQ(2u, enabled_extensions().size());
 
   // Uninstall one app.
   {
     base::RunLoop run_loop;
-    finalizer.UninstallExternalWebApp(
+    finalizer().UninstallExternalWebApp(
         kWebAppUrl, base::BindLambdaForTesting([&](bool uninstalled) {
           EXPECT_TRUE(uninstalled);
           run_loop.Quit();
@@ -482,7 +474,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, UninstallExternalWebApp_Multiple) {
   // Uninstall the second app.
   {
     base::RunLoop run_loop;
-    finalizer.UninstallExternalWebApp(
+    finalizer().UninstallExternalWebApp(
         kAlternateWebAppUrl, base::BindLambdaForTesting([&](bool uninstalled) {
           EXPECT_TRUE(uninstalled);
           run_loop.Quit();
@@ -494,13 +486,11 @@ TEST_F(BookmarkAppInstallFinalizerTest, UninstallExternalWebApp_Multiple) {
 
 TEST_F(BookmarkAppInstallFinalizerTest,
        UninstallExternalWebApp_UninstalledExternalApp) {
-  BookmarkAppInstallFinalizer finalizer(profile());
-
-  auto app_id = InstallExternalApp(&finalizer, kWebAppUrl);
+  auto app_id = InstallExternalApp(kWebAppUrl);
   SimulateExternalAppUninstalledByUser(app_id);
 
   base::RunLoop run_loop;
-  finalizer.UninstallExternalWebApp(
+  finalizer().UninstallExternalWebApp(
       kWebAppUrl, base::BindLambdaForTesting([&](bool uninstalled) {
         EXPECT_FALSE(uninstalled);
         run_loop.Quit();
@@ -510,9 +500,8 @@ TEST_F(BookmarkAppInstallFinalizerTest,
 
 TEST_F(BookmarkAppInstallFinalizerTest,
        UninstallExternalWebApp_FailsNeverInstalled) {
-  BookmarkAppInstallFinalizer finalizer(profile());
   base::RunLoop run_loop;
-  finalizer.UninstallExternalWebApp(
+  finalizer().UninstallExternalWebApp(
       kWebAppUrl, base::BindLambdaForTesting([&](bool uninstalled) {
         EXPECT_FALSE(uninstalled);
         run_loop.Quit();
@@ -522,14 +511,12 @@ TEST_F(BookmarkAppInstallFinalizerTest,
 
 TEST_F(BookmarkAppInstallFinalizerTest,
        UninstallExternalWebApp_FailsAlreadyUninstalled) {
-  BookmarkAppInstallFinalizer finalizer(profile());
-
-  InstallExternalApp(&finalizer, kWebAppUrl);
+  InstallExternalApp(kWebAppUrl);
 
   // Uninstall the app.
   {
     base::RunLoop run_loop;
-    finalizer.UninstallExternalWebApp(
+    finalizer().UninstallExternalWebApp(
         kWebAppUrl, base::BindLambdaForTesting([&](bool uninstalled) {
           EXPECT_TRUE(uninstalled);
           run_loop.Quit();
@@ -540,7 +527,7 @@ TEST_F(BookmarkAppInstallFinalizerTest,
   // Try to uninstall it again.
   {
     base::RunLoop run_loop;
-    finalizer.UninstallExternalWebApp(
+    finalizer().UninstallExternalWebApp(
         kWebAppUrl, base::BindLambdaForTesting([&](bool uninstalled) {
           EXPECT_FALSE(uninstalled);
           run_loop.Quit();
@@ -550,8 +537,6 @@ TEST_F(BookmarkAppInstallFinalizerTest,
 }
 
 TEST_F(BookmarkAppInstallFinalizerTest, NotLocallyInstalled) {
-  BookmarkAppInstallFinalizer installer(profile());
-
   auto info = std::make_unique<WebApplicationInfo>();
   info->app_url = kWebAppUrl;
 
@@ -560,7 +545,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, NotLocallyInstalled) {
   options.locally_installed = false;
 
   base::RunLoop run_loop;
-  installer.FinalizeInstall(
+  finalizer().FinalizeInstall(
       *info, options,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {

@@ -25,20 +25,18 @@ namespace data_decoder {
 // mojom::BundledExchangesParser service.
 class SafeBundledExchangesParser {
  public:
-  SafeBundledExchangesParser();
+  // |connector| can be null if SetBundledExchangesParserForTesting() will be
+  // called before calling Open*().
+  explicit SafeBundledExchangesParser(service_manager::Connector* connector);
   // Remaining callbacks on flight will be dropped.
   ~SafeBundledExchangesParser();
 
   // Binds |this| instance to the given |file| for subsequent parse calls.
-  // |connector| can be null if SetBundledExchangesParserForTesting() was
-  // called.
-  void OpenFile(service_manager::Connector* connector, base::File file);
+  base::File::Error OpenFile(base::File file);
 
   // Binds |this| instance to the given |data_source| for subsequent parse
-  // calls. |connector| can be null if SetBundledExchangesParserForTesting()
-  // was called.
-  void OpenDataSource(service_manager::Connector* connector,
-                      mojo::PendingRemote<mojom::BundleDataSource> data_source);
+  // calls.
+  void OpenDataSource(mojo::PendingRemote<mojom::BundleDataSource> data_source);
 
   // Parses metadata. See mojom::BundledExchangesParser::ParseMetadata for
   // details. This method fails when it's called before the previous call
@@ -56,7 +54,7 @@ class SafeBundledExchangesParser {
   // Sets alternative BundledExchangesParserFactory that will be used to create
   // BundledExchangesParser for testing purpose.
   void SetBundledExchangesParserFactoryForTesting(
-      std::unique_ptr<mojom::BundledExchangesParserFactory> factory);
+      mojo::Remote<mojom::BundledExchangesParserFactory> factory);
 
  private:
   void OnDisconnect();
@@ -66,14 +64,13 @@ class SafeBundledExchangesParser {
                         mojom::BundleResponsePtr response,
                         mojom::BundleResponseParseErrorPtr error);
 
+  mojo::Remote<mojom::BundledExchangesParserFactory> factory_;
   mojo::Remote<mojom::BundledExchangesParser> parser_;
   mojom::BundledExchangesParser::ParseMetadataCallback metadata_callback_;
   base::flat_map<size_t, mojom::BundledExchangesParser::ParseResponseCallback>
       response_callbacks_;
   size_t response_callback_next_id_ = 0;
   bool disconnected_ = true;
-  std::unique_ptr<mojom::BundledExchangesParserFactory> factory_for_testing_ =
-      nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBundledExchangesParser);
 };

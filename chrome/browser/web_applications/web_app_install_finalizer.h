@@ -21,8 +21,7 @@ class WebAppRegistrar;
 
 class WebAppInstallFinalizer final : public InstallFinalizer {
  public:
-  WebAppInstallFinalizer(WebAppRegistrar* registrar,
-                         WebAppIconManager* icon_manager);
+  explicit WebAppInstallFinalizer(WebAppIconManager* icon_manager);
   ~WebAppInstallFinalizer() override;
 
   // InstallFinalizer:
@@ -43,13 +42,15 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   bool CanSkipAppUpdateForSync(
       const AppId& app_id,
       const WebApplicationInfo& web_app_info) const override;
+  void SetSubsystems(AppRegistrar* registrar,
+                     WebAppUiManager* ui_manager) override;
 
  private:
   void OnDataWritten(InstallFinalizedCallback callback,
                      std::unique_ptr<WebApp> web_app,
                      bool success);
 
-  WebAppRegistrar* registrar_;
+  WebAppRegistrar* registrar_ = nullptr;
   WebAppIconManager* icon_manager_;
 
   base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};

@@ -8,6 +8,8 @@
 
 #include "base/command_line.h"
 #include "content/browser/frame_host/navigation_request_info.h"
+#include "content/browser/loader/cached_navigation_url_loader.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
@@ -29,8 +31,12 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
     NavigationURLLoaderDelegate* delegate,
+    bool is_served_from_back_forward_cache,
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
         initial_interceptors) {
+  if (is_served_from_back_forward_cache) {
+    return CachedNavigationURLLoader::Create(std::move(request_info), delegate);
+  }
   if (g_loader_factory) {
     return g_loader_factory->CreateLoader(
         resource_context, storage_partition, std::move(request_info),

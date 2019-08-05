@@ -15,7 +15,7 @@
 #include "base/system/sys_info.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/arc/bluetooth/bluetooth_type_converters.h"
-#include "components/arc/common/bluetooth.mojom.h"
+#include "components/arc/mojom/bluetooth.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_bluetooth_instance.h"

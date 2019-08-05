@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/arc/common",
+  "+components/arc/mojom",
   "+gpu/config/gpu_preferences.h",
   "+media/base",
   "+media/gpu",

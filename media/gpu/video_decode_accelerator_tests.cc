@@ -86,8 +86,15 @@ class VideoDecoderTest : public ::testing::Test {
     // Use the new VD-based video decoders if requested.
     config.use_vd = g_env->UseVD();
 
-    return VideoPlayer::Create(video, std::move(frame_renderer),
-                               std::move(frame_processors), config);
+    auto video_player = VideoPlayer::Create(
+        video, std::move(frame_renderer), std::move(frame_processors), config);
+
+    // Increase event timeout when outputting video frames.
+    if (g_env->IsFramesOutputEnabled()) {
+      video_player->SetEventWaitTimeout(std::max(
+          kDefaultEventWaitTimeout, g_env->Video()->GetDuration() * 10));
+    }
+    return video_player;
   }
 };
 

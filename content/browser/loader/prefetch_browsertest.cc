@@ -19,6 +19,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/base/features.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -58,6 +59,78 @@ class PrefetchBrowserTest
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTest);
 };
+
+class PrefetchBrowserTestRedirectMode
+    : public PrefetchBrowserTestBase,
+      public testing::WithParamInterface<bool> {
+ public:
+  PrefetchBrowserTestRedirectMode()
+      : redirect_mode_is_error_(GetParam()),
+        cross_origin_server_(std::make_unique<net::EmbeddedTestServer>(
+            net::EmbeddedTestServer::TYPE_HTTPS)) {}
+  ~PrefetchBrowserTestRedirectMode() override = default;
+
+  void SetUp() override {
+    std::vector<base::Feature> enable_features;
+    std::vector<base::Feature> disabled_features;
+    if (redirect_mode_is_error_) {
+      enable_features.push_back(blink::features::kPrefetchRedirectError);
+    } else {
+      disabled_features.push_back(blink::features::kPrefetchRedirectError);
+    }
+    feature_list_.InitWithFeatures(enable_features, disabled_features);
+    PrefetchBrowserTestBase::SetUp();
+  }
+
+ protected:
+  const bool redirect_mode_is_error_;
+  std::unique_ptr<net::EmbeddedTestServer> cross_origin_server_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTestRedirectMode);
+};
+
+IN_PROC_BROWSER_TEST_P(PrefetchBrowserTestRedirectMode, RedirectNotFollowed) {
+  const char* prefetch_path = "/prefetch.html";
+  const char* redirect_path = "/redirect.html";
+  const char* destination_path = "/destination.html";
+  RegisterResponse(
+      prefetch_path,
+      ResponseEntry(base::StringPrintf(
+          "<body><link rel='prefetch' href='%s'></body>", redirect_path)));
+  RegisterResponse(
+      redirect_path,
+      ResponseEntry("", "", {{"location", std::string(destination_path)}},
+                    net::HTTP_MOVED_PERMANENTLY));
+  RegisterResponse(destination_path,
+                   ResponseEntry("<head><title>Prefetch Target</title></head>",
+                                 "text/html", {{"cache-control", "no-store"}}));
+
+  base::RunLoop prefetch_waiter;
+  auto main_page_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), prefetch_path, &prefetch_waiter);
+  auto destination_counter = RequestCounter::CreateAndMonitor(
+      embedded_test_server(), destination_path);
+  RegisterRequestHandler(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_EQ(0, main_page_counter->GetRequestCount());
+  EXPECT_EQ(0, destination_counter->GetRequestCount());
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
+
+  const GURL destination_url = embedded_test_server()->GetURL(destination_path);
+  // Loading a page that prefetches the redirect resource only follows the
+  // redirect when the mode is follow.
+  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  prefetch_waiter.Run();
+  EXPECT_EQ(1, main_page_counter->GetRequestCount());
+
+  NavigateToURLAndWaitTitle(destination_url, "Prefetch Target");
+  EXPECT_EQ(redirect_mode_is_error_ ? 1 : 2,
+            destination_counter->GetRequestCount());
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+}
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, Simple) {
   const char* prefetch_path = "/prefetch.html";
@@ -466,5 +539,9 @@ INSTANTIATE_TEST_SUITE_P(PrefetchBrowserTest,
                          PrefetchBrowserTest,
                          testing::Values(PrefetchBrowserTestParam(false),
                                          PrefetchBrowserTestParam(true)));
+
+INSTANTIATE_TEST_SUITE_P(PrefetchBrowserTestRedirectMode,
+                         PrefetchBrowserTestRedirectMode,
+                         testing::Values(false, true));
 
 }  // namespace content

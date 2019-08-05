@@ -669,6 +669,7 @@ if (!is_android) {
       "//components/strings",
       "//components/sync",
       "//components/sync:test_support_model",
+      "//components/sync_device_info:test_support",
       "//components/translate/core/common",
       "//content/public/common:buildflags",
       "//content/test:test_support",
@@ -4512,6 +4513,7 @@ test("unit_tests") {
   if (safe_browsing_mode == 1) {
     # TODO(sgurun): enable tests for safe_browsing==2.
     sources += [
+      "../browser/safe_browsing/advanced_protection_status_manager_factory_unittest.cc",
       "../browser/safe_browsing/advanced_protection_status_manager_unittest.cc",
       "../browser/safe_browsing/browser_feature_extractor_unittest.cc",
       "../browser/safe_browsing/chrome_password_protection_service_unittest.cc",

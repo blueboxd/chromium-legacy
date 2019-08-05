@@ -253,7 +253,7 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
   // TODO(https://crbug.com/823869): Fix DesktopCaptureDeviceTest and remove
   // this conditional.
   if (BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI}, base::BindOnce(&GetServiceConnector),
         base::BindOnce(&DesktopCaptureDevice::Core::RequestWakeLock,
                        weak_factory_.GetWeakPtr()));

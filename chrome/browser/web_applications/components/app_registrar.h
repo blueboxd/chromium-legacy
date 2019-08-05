@@ -15,9 +15,14 @@
 class GURL;
 class Profile;
 
+namespace extensions {
+class BookmarkAppRegistrar;
+}
+
 namespace web_app {
 
 class AppRegistrarObserver;
+class WebAppRegistrar;
 
 enum class ExternalInstallSource;
 
@@ -27,6 +32,10 @@ class AppRegistrar {
   virtual ~AppRegistrar();
 
   virtual void Init(base::OnceClosure callback) = 0;
+
+  // Safe downcasts. TODO(loyso): Subclass WebAppProvider to get rid of these:
+  virtual WebAppRegistrar* AsWebAppRegistrar();
+  virtual extensions::BookmarkAppRegistrar* AsBookmarkAppRegistrar();
 
   // Returns true if the app with the specified |start_url| is currently fully
   // locally installed. The provided |start_url| must exactly match the launch
@@ -80,10 +89,11 @@ class AppRegistrar {
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(const AppRegistrarObserver* observer);
 
+  void NotifyWebAppInstalled(const AppId& app_id);
+
  protected:
   Profile* profile() const { return profile_; }
 
-  void NotifyWebAppInstalled(const AppId& app_id);
   void NotifyWebAppUninstalled(const AppId& app_id);
   void NotifyAppRegistrarShutdown();
 

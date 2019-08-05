@@ -695,4 +695,8 @@ void WebRuntimeFeatures::EnableMouseSubframeNoImplicitCapture(bool enable) {
   RuntimeEnabledFeatures::SetMouseSubframeNoImplicitCaptureEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableBackForwardCache(bool enable) {
+  RuntimeEnabledFeatures::SetBackForwardCacheEnabled(enable);
+}
+
 }  // namespace blink

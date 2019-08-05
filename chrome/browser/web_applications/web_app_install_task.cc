@@ -30,8 +30,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/common/app.mojom.h"
-#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/mojom/app.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "net/base/url_util.h"
 #endif

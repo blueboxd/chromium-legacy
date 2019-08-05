@@ -68,6 +68,18 @@ bool IsValidFrameForQueueDMABuf(const VideoFrame* frame,
 
 }  // namespace
 
+V4L2SliceVideoDecoder::DecodeRequest::DecodeRequest(
+    scoped_refptr<DecoderBuffer> buf,
+    DecodeCB cb,
+    int32_t id)
+    : buffer(std::move(buf)), decode_cb(std::move(cb)), bitstream_id(id) {}
+
+V4L2SliceVideoDecoder::DecodeRequest::DecodeRequest(DecodeRequest&&) = default;
+V4L2SliceVideoDecoder::DecodeRequest& V4L2SliceVideoDecoder::DecodeRequest::
+operator=(DecodeRequest&&) = default;
+
+V4L2SliceVideoDecoder::DecodeRequest::~DecodeRequest() = default;
+
 struct V4L2SliceVideoDecoder::OutputRequest {
   enum OutputRequestType {
     // The surface to be outputted.

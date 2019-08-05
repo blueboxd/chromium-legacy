@@ -45,29 +45,21 @@ PolicyCertService::PolicyCertService(const std::string& user_id,
       weak_ptr_factory_(this) {}
 
 void PolicyCertService::StartObservingPolicyCerts() {
-  // Don't notify the network service since it will get the initial list of
-  // trust anchors in NetworkContextParams::initial_trust_anchors.
-  StartObservingPolicyCertsInternal(false /* notify */);
-}
-
-void PolicyCertService::OnPolicyProvidedCertsChanged(
-    const net::CertificateList& all_server_and_authority_certs,
-    const net::CertificateList& trust_anchors) {
-  OnPolicyProvidedCertsChangedInternal(all_server_and_authority_certs,
-                                       trust_anchors, true /* notify */);
-}
-
-void PolicyCertService::StartObservingPolicyCertsInternal(bool notify) {
   net_conf_updater_->AddPolicyProvidedCertsObserver(this);
 
-  // Set the current list of policy-provided server and authority certificates,
-  // and the current list of trust anchors.
-  net::CertificateList all_server_and_authority_certs =
-      net_conf_updater_->GetAllServerAndAuthorityCertificates();
-  net::CertificateList trust_anchors =
-      net_conf_updater_->GetWebTrustedCertificates();
-  OnPolicyProvidedCertsChangedInternal(all_server_and_authority_certs,
-                                       trust_anchors, notify);
+  // Retrieve the initial list of policy-provided server and authority
+  // certificates, and the initial list of trust anchors. Don't notify the
+  // network service since it will get the initial list of trust anchors in
+  // NetworkContextParams::initial_trust_anchors.
+  OnPolicyProvidedCertsChangedInternal(
+      net_conf_updater_->GetAllServerAndAuthorityCertificates(),
+      net_conf_updater_->GetWebTrustedCertificates(), false /* notify */);
+}
+
+void PolicyCertService::OnPolicyProvidedCertsChanged() {
+  OnPolicyProvidedCertsChangedInternal(
+      net_conf_updater_->GetAllServerAndAuthorityCertificates(),
+      net_conf_updater_->GetWebTrustedCertificates(), true /* notify */);
 }
 
 void PolicyCertService::OnPolicyProvidedCertsChangedInternal(
@@ -116,9 +108,8 @@ void PolicyCertService::Shutdown() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   if (net_conf_updater_)
     net_conf_updater_->RemovePolicyProvidedCertsObserver(this);
-  OnPolicyProvidedCertsChanged(
-      net::CertificateList() /* all_server_and_authority_certs */,
-      net::CertificateList() /* trust_anchors */);
+  OnPolicyProvidedCertsChangedInternal(
+      net::CertificateList(), net::CertificateList(), true /* notify */);
   net_conf_updater_ = NULL;
 }
 
@@ -127,6 +118,17 @@ std::unique_ptr<PolicyCertService> PolicyCertService::CreateForTesting(
     const std::string& user_id,
     user_manager::UserManager* user_manager) {
   return base::WrapUnique(new PolicyCertService(user_id, user_manager));
+}
+
+void PolicyCertService::SetPolicyTrustAnchorsForTesting(
+    const net::CertificateList& trust_anchors) {
+  // Only allow this call in an instance that has been created through
+  // PolicyCertService::CreateForTesting.
+  CHECK_EQ(nullptr, profile_);
+  CHECK_EQ(nullptr, net_conf_updater_);
+
+  all_server_and_authority_certs_ = trust_anchors;
+  trust_anchors_ = trust_anchors;
 }
 
 }  // namespace policy

@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "components/arc/common/arc_bridge.mojom.h"
+#include "components/arc/mojom/arc_bridge.mojom.h"
 #include "components/arc/session/connection_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"

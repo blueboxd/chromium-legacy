@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "components/arc/common/storage_manager.mojom.h"
+#include "components/arc/mojom/storage_manager.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/user_manager/user.h"

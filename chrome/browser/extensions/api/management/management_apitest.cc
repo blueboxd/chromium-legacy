@@ -158,26 +158,22 @@ class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
   ~InstallReplacementWebAppApiTest() override = default;
 
  protected:
+  static const char kManifest[];
+  static const char kAppManifest[];
+
   void SetUpOnMainThread() override {
     ExtensionManagementApiTest::SetUpOnMainThread();
     https_test_server_.ServeFilesFromDirectory(test_data_dir_);
     ASSERT_TRUE(https_test_server_.Start());
   }
 
-  void RunTest(const char* web_app_path,
+  void RunTest(const char* manifest,
+               const char* web_app_path,
                const char* background_script,
                bool from_webstore) {
-    static constexpr char kManifest[] =
-        R"({
-            "name": "Management API Test",
-            "version": "0.1",
-            "manifest_version": 2,
-            "background": { "scripts": ["background.js"] },
-            "replacement_web_app": "%s"
-          })";
     extensions::TestExtensionDir extension_dir;
     extension_dir.WriteManifest(base::StringPrintf(
-        kManifest, https_test_server_.GetURL(web_app_path).spec().c_str()));
+        manifest, https_test_server_.GetURL(web_app_path).spec().c_str()));
     extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
                             background_script);
     extensions::ResultCatcher catcher;
@@ -196,6 +192,26 @@ class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
   net::EmbeddedTestServer https_test_server_;
 };
 
+const char InstallReplacementWebAppApiTest::kManifest[] =
+    R"({
+          "name": "Management API Test",
+          "version": "0.1",
+          "manifest_version": 2,
+          "background": { "scripts": ["background.js"] },
+          "replacement_web_app": "%s"
+        })";
+
+const char InstallReplacementWebAppApiTest::kAppManifest[] =
+    R"({
+          "name": "Management API Test",
+          "version": "0.1",
+          "manifest_version": 2,
+          "app": {
+            "background": { "scripts": ["background.js"] }
+          },
+          "replacement_web_app": "%s"
+        })";
+
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotWebstore) {
   static constexpr char kBackground[] = R"(
   chrome.management.installReplacementWebApp(function() {
@@ -204,7 +220,8 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotWebstore) {
     chrome.test.notifyPass();
   });)";
 
-  RunTest("/management/install_replacement_web_app/good_web_app/index.html",
+  RunTest(kManifest,
+          "/management/install_replacement_web_app/good_web_app/index.html",
           kBackground, false /* from_webstore */);
 }
 
@@ -216,7 +233,8 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NoGesture) {
     chrome.test.notifyPass();
   });)";
 
-  RunTest("/management/install_replacement_web_app/good_web_app/index.html",
+  RunTest(kManifest,
+          "/management/install_replacement_web_app/good_web_app/index.html",
           kBackground, true /* from_webstore */);
 }
 
@@ -230,7 +248,8 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotInstallableWebApp) {
            });
          });)";
 
-  RunTest("/management/install_replacement_web_app/bad_web_app/index.html",
+  RunTest(kManifest,
+          "/management/install_replacement_web_app/bad_web_app/index.html",
           kBackground, true /* from_webstore */);
 }
 
@@ -265,7 +284,44 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, InstallableWebApp) {
       web_app::WebAppProviderBase::GetProviderBase(browser()->profile());
   EXPECT_FALSE(provider->registrar().IsInstalled(good_web_app_url));
 
-  RunTest(kGoodWebAppURL, kBackground, true /* from_webstore */);
+  RunTest(kManifest, kGoodWebAppURL, kBackground, true /* from_webstore */);
+  EXPECT_TRUE(provider->registrar().IsInstalled(good_web_app_url));
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+}
+
+IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest,
+                       InstallableWebAppInPlatformApp) {
+  static constexpr char kBackground[] =
+      R"(chrome.test.runTests([
+           function runInstall() {
+             chrome.test.runWithUserGesture(function() {
+               chrome.management.installReplacementWebApp(function() {
+                 chrome.test.assertNoLastError();
+                 chrome.test.succeed();
+               });
+             });
+           },
+           function runInstallWhenAlreadyInstalled() {
+             chrome.test.runWithUserGesture(function() {
+               chrome.management.installReplacementWebApp(function() {
+                 chrome.test.assertLastError(
+                     'Web app is already installed.');
+                 chrome.test.succeed();
+               });
+             });
+           }
+         ]);)";
+  static constexpr char kGoodWebAppURL[] =
+      "/management/install_replacement_web_app/good_web_app/index.html";
+
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+  const GURL good_web_app_url = https_test_server_.GetURL(kGoodWebAppURL);
+
+  auto* provider =
+      web_app::WebAppProviderBase::GetProviderBase(browser()->profile());
+  EXPECT_FALSE(provider->registrar().IsInstalled(good_web_app_url));
+
+  RunTest(kAppManifest, kGoodWebAppURL, kBackground, true /* from_webstore */);
   EXPECT_TRUE(provider->registrar().IsInstalled(good_web_app_url));
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
 }

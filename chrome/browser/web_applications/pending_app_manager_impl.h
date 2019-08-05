@@ -29,22 +29,12 @@ class WebContents;
 
 namespace web_app {
 
-class AppRegistrar;
-class InstallFinalizer;
-class WebAppUiManager;
-
 // WebAppProvider creates an instance of this class and manages its
 // lifetime. This class should only be used from the UI thread.
-class PendingAppManagerImpl final : public PendingAppManager {
+class PendingAppManagerImpl : public PendingAppManager {
  public:
   using WebContentsFactory =
       base::RepeatingCallback<std::unique_ptr<content::WebContents>(Profile*)>;
-  using TaskFactory =
-      base::RepeatingCallback<std::unique_ptr<PendingAppInstallTask>(
-          Profile*,
-          AppRegistrar*,
-          InstallFinalizer*,
-          ExternalInstallOptions)>;
 
   explicit PendingAppManagerImpl(Profile* profile);
   ~PendingAppManagerImpl() override;
@@ -58,13 +48,16 @@ class PendingAppManagerImpl final : public PendingAppManager {
                      const UninstallCallback& callback) override;
   void Shutdown() override;
 
-  void SetTaskFactoryForTesting(TaskFactory task_factory);
   void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);
+
+ protected:
+  virtual std::unique_ptr<PendingAppInstallTask> CreateInstallationTask(
+      ExternalInstallOptions install_options);
+
+  Profile* profile() { return profile_; }
 
  private:
   struct TaskAndCallback;
-
-  WebAppUiManager& GetUiManager();
 
   void MaybeStartNextInstallation();
 
@@ -88,8 +81,6 @@ class PendingAppManagerImpl final : public PendingAppManager {
 
   // unique_ptr so that it can be replaced in tests.
   std::unique_ptr<WebAppUrlLoader> url_loader_;
-
-  TaskFactory task_factory_;
 
   std::unique_ptr<content::WebContents> web_contents_;
 

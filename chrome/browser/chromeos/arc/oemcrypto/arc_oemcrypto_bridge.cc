@@ -13,7 +13,7 @@
 #include "chromeos/dbus/arc_oemcrypto_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/common/protected_buffer_manager.mojom.h"
+#include "components/arc/mojom/protected_buffer_manager.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

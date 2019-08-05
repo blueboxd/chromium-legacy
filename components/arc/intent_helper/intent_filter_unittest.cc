@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/intent_filter.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

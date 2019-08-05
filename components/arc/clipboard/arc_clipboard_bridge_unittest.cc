@@ -10,7 +10,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
-#include "components/arc/common/clipboard.mojom.h"
+#include "components/arc/mojom/clipboard.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_clipboard_instance.h"

@@ -67,7 +67,7 @@ std::string DesktopStreamsRegistryImpl::RegisterStream(
   stream.extension_name = extension_name;
   stream.type = type;
 
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DesktopStreamsRegistryImpl::CleanupStream,
                      base::Unretained(this), id),

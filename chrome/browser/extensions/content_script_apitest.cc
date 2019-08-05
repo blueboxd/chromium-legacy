@@ -32,6 +32,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -498,7 +499,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
 
 IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptBypassPageCSP) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  ASSERT_TRUE(RunExtensionTest("content_scripts/bypass_page_csp")) << message_;
+  extensions::ResultCatcher catcher;
+  ASSERT_TRUE(RunExtensionTest("content_scripts/bypass_page_csp"))
+      << catcher.message();
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
+                       ContentScriptBypassPageTrustedTypes) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kTrustedDOMTypes);
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  extensions::ResultCatcher catcher;
+  ASSERT_TRUE(RunExtensionTest("content_scripts/bypass_page_trusted_types"))
+      << catcher.message();
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 // Test that when injecting a blocking content script, other scripts don't run

@@ -6,7 +6,7 @@
 #define ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_ITEM_H_
 
 #include "base/macros.h"
-#include "components/arc/common/notifications.mojom.h"
+#include "components/arc/mojom/notifications.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {

@@ -53,7 +53,7 @@ namespace {
 
 // Convenience macro to post a task to run on the device thread.
 #define POST_DEVICE_TASK(closure) \
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, closure)
+  base::PostTask(FROM_HERE, {BrowserThread::IO}, closure)
 
 // Convenience macro to block the test procedure until all pending tasks have
 // run on the device thread.
@@ -263,14 +263,13 @@ class FrameSinkVideoCaptureDeviceForTest : public FrameSinkVideoCaptureDevice {
 
  protected:
   void CreateCapturer(viz::mojom::FrameSinkVideoCapturerRequest request) final {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            [](MockFrameSinkVideoCapturer* capturer,
-               viz::mojom::FrameSinkVideoCapturerRequest request) {
-              capturer->Bind(std::move(request));
-            },
-            capturer_, std::move(request)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(
+                       [](MockFrameSinkVideoCapturer* capturer,
+                          viz::mojom::FrameSinkVideoCapturerRequest request) {
+                         capturer->Bind(std::move(request));
+                       },
+                       capturer_, std::move(request)));
   }
 
   MockFrameSinkVideoCapturer* const capturer_;

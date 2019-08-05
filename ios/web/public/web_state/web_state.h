@@ -343,7 +343,7 @@ class WebState : public base::SupportsUserData {
   virtual void SetHasOpener(bool has_opener) = 0;
 
   // Callback used to handle snapshots. The parameter is the snapshot image.
-  typedef base::OnceCallback<void(const gfx::Image&)> SnapshotCallback;
+  typedef base::RepeatingCallback<void(const gfx::Image&)> SnapshotCallback;
 
   // Returns whether TakeSnapshot() can be executed.  The API may be disabled if
   // the WKWebView IPC mechanism is blocked due to an outstanding JavaScript

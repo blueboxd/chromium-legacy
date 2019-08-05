@@ -53,7 +53,7 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
   AccumulateArrayBuffersForAllWorlds(isolate, to_transfer, buffer_handles);
 
   for (const auto& buffer_handle : buffer_handles)
-    buffer_handle->Neuter();
+    buffer_handle->Detach();
 
   return true;
 }

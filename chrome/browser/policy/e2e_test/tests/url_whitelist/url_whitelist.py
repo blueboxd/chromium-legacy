@@ -14,8 +14,8 @@ class UrlWhitelistTest(ChromeEnterpriseTestCase):
 
   This policy provides exceptions to the URLBlacklist policy.
 
-  See https://www.chromium.org/administrators/policy-list-3#URLBlacklist
-  and https://www.chromium.org/administrators/policy-list-3#URLWhitelist"""
+  See https://cloud.google.com/docs/chrome-enterprise/policies/?policy=URLBlacklist
+  and https://cloud.google.com/docs/chrome-enterprise/policies/?policy=URLWhitelist"""
 
   @before_all
   def setup(self):

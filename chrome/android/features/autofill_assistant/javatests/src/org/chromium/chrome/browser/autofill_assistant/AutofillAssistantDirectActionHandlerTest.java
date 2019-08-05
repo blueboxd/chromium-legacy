@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.contains;
@@ -14,6 +15,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.os.Bundle;
 import android.support.test.filters.MediumTest;
@@ -157,6 +160,8 @@ public class AutofillAssistantDirectActionHandlerTest {
     private void acceptOnboarding() throws Exception {
         WaitingCallback<Boolean> onboardingCallback =
                 performActionAsync("onboarding", Bundle.EMPTY);
+
+        waitUntilViewMatchesCondition(withId(R.id.button_init_ok), isDisplayed());
 
         assertFalse(onboardingCallback.hasResult());
         onView(withId(R.id.button_init_ok)).perform(click());

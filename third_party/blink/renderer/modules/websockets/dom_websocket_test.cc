@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/websockets/dom_websocket.h"
 
 #include <memory>
+#include <string>
 
 #include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -343,31 +344,6 @@ TEST(DOMWebSocketTest, channelConnectFail) {
       "loaded over HTTPS.",
       scope.GetExceptionState().Message());
   EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
-}
-
-TEST(DOMWebSocketTest, isValidSubprotocolString) {
-  EXPECT_TRUE(DOMWebSocket::IsValidSubprotocolString("Helloworld!!"));
-  EXPECT_FALSE(DOMWebSocket::IsValidSubprotocolString("Hello, world!!"));
-  EXPECT_FALSE(DOMWebSocket::IsValidSubprotocolString(String()));
-  EXPECT_FALSE(DOMWebSocket::IsValidSubprotocolString(""));
-
-  const char kValidCharacters[] =
-      "!#$%&'*+-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ^_`"
-      "abcdefghijklmnopqrstuvwxyz|~";
-  size_t length = strlen(kValidCharacters);
-  for (size_t i = 0; i < length; ++i) {
-    String s(kValidCharacters + i, 1u);
-    EXPECT_TRUE(DOMWebSocket::IsValidSubprotocolString(s));
-  }
-  for (size_t i = 0; i < 256; ++i) {
-    if (std::find(kValidCharacters, kValidCharacters + length,
-                  static_cast<char>(i)) != kValidCharacters + length) {
-      continue;
-    }
-    char to_check = char{i};
-    String s(&to_check, 1u);
-    EXPECT_FALSE(DOMWebSocket::IsValidSubprotocolString(s));
-  }
 }
 
 TEST(DOMWebSocketTest, connectSuccess) {

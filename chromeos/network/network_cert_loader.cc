@@ -496,9 +496,7 @@ void NetworkCertLoader::NotifyCertificatesLoaded() {
     observer.OnCertificatesLoaded();
 }
 
-void NetworkCertLoader::OnPolicyProvidedCertsChanged(
-    const net::CertificateList& all_server_and_authority_certs,
-    const net::CertificateList& trust_anchors) {
+void NetworkCertLoader::OnPolicyProvidedCertsChanged() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   UpdateCertificates();
 }

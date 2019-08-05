@@ -74,6 +74,13 @@ void VideoPlayer::Destroy() {
   video_player_state_ = VideoPlayerState::kDestroyed;
 }
 
+void VideoPlayer::SetEventWaitTimeout(base::TimeDelta timeout) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOGF(4);
+
+  event_timeout_ = timeout;
+}
+
 void VideoPlayer::Play() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(4);
@@ -129,9 +136,7 @@ FrameRenderer* VideoPlayer::GetFrameRenderer() const {
   return decoder_client_->GetFrameRenderer();
 }
 
-bool VideoPlayer::WaitForEvent(VideoPlayerEvent event,
-                               size_t times,
-                               base::TimeDelta max_wait) {
+bool VideoPlayer::WaitForEvent(VideoPlayerEvent event, size_t times) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(times, 1u);
   DVLOGF(4) << "Event ID: " << static_cast<size_t>(event);
@@ -153,11 +158,11 @@ bool VideoPlayer::WaitForEvent(VideoPlayerEvent event,
     }
 
     // Check whether we've exceeded the maximum time we're allowed to wait.
-    if (time_waiting >= max_wait)
+    if (time_waiting >= event_timeout_)
       return false;
 
     const base::TimeTicks start_time = base::TimeTicks::Now();
-    event_cv_.TimedWait(max_wait);
+    event_cv_.TimedWait(event_timeout_ - time_waiting);
     time_waiting += base::TimeTicks::Now() - start_time;
   }
 }

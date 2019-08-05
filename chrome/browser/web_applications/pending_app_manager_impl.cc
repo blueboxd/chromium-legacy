@@ -21,19 +21,6 @@
 
 namespace web_app {
 
-namespace {
-
-std::unique_ptr<PendingAppInstallTask> InstallationTaskCreateWrapper(
-    Profile* profile,
-    AppRegistrar* registrar,
-    InstallFinalizer* install_finalizer,
-    ExternalInstallOptions install_options) {
-  return std::make_unique<PendingAppInstallTask>(
-      profile, registrar, install_finalizer, std::move(install_options));
-}
-
-}  // namespace
-
 struct PendingAppManagerImpl::TaskAndCallback {
   TaskAndCallback(std::unique_ptr<PendingAppInstallTask> task,
                   OnceInstallCallback callback)
@@ -47,17 +34,14 @@ struct PendingAppManagerImpl::TaskAndCallback {
 PendingAppManagerImpl::PendingAppManagerImpl(Profile* profile)
     : profile_(profile),
       externally_installed_app_prefs_(profile->GetPrefs()),
-      url_loader_(std::make_unique<WebAppUrlLoader>()),
-      task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)) {}
+      url_loader_(std::make_unique<WebAppUrlLoader>()) {}
 
 PendingAppManagerImpl::~PendingAppManagerImpl() = default;
 
 void PendingAppManagerImpl::Install(ExternalInstallOptions install_options,
                                     OnceInstallCallback callback) {
   pending_tasks_and_callbacks_.push_front(std::make_unique<TaskAndCallback>(
-      task_factory_.Run(profile_, registrar(), finalizer(),
-                        std::move(install_options)),
-      std::move(callback)));
+      CreateInstallationTask(std::move(install_options)), std::move(callback)));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -70,9 +54,7 @@ void PendingAppManagerImpl::InstallApps(
     const RepeatingInstallCallback& callback) {
   for (auto& install_options : install_options_list) {
     pending_tasks_and_callbacks_.push_back(std::make_unique<TaskAndCallback>(
-        task_factory_.Run(profile_, registrar(), finalizer(),
-                          std::move(install_options)),
-        callback));
+        CreateInstallationTask(std::move(install_options)), callback));
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -98,13 +80,16 @@ void PendingAppManagerImpl::Shutdown() {
   web_contents_.reset();
 }
 
-void PendingAppManagerImpl::SetTaskFactoryForTesting(TaskFactory task_factory) {
-  task_factory_ = std::move(task_factory);
-}
-
 void PendingAppManagerImpl::SetUrlLoaderForTesting(
     std::unique_ptr<WebAppUrlLoader> url_loader) {
   url_loader_ = std::move(url_loader);
+}
+
+std::unique_ptr<PendingAppInstallTask>
+PendingAppManagerImpl::CreateInstallationTask(
+    ExternalInstallOptions install_options) {
+  return std::make_unique<PendingAppInstallTask>(
+      profile_, registrar(), finalizer(), std::move(install_options));
 }
 
 void PendingAppManagerImpl::MaybeStartNextInstallation() {

@@ -9,7 +9,7 @@
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "components/arc/common/rotation_lock.mojom.h"
+#include "components/arc/mojom/rotation_lock.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 

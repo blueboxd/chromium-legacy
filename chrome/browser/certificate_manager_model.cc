@@ -299,9 +299,7 @@ class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
   }
 
   // chromeos::PolicyCertificateProvider::Observer
-  void OnPolicyProvidedCertsChanged(
-      const net::CertificateList& all_server_and_authority_certs,
-      const net::CertificateList& web_trusted_certs) override {
+  void OnPolicyProvidedCertsChanged() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     Refresh();
   }

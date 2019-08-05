@@ -17,7 +17,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/timer/arc_timer_bridge.h"
-#include "components/arc/timer/arc_timer_struct_traits.h"
+#include "components/arc/timer/arc_timer_mojom_traits.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 

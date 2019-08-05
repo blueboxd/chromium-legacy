@@ -132,6 +132,8 @@ class V4L2ConfigStoreDecodeSurface : public V4L2DecodeSurface {
 
   // The configuration store of the input buffer.
   uint32_t config_store_;
+
+  DISALLOW_COPY_AND_ASSIGN(V4L2ConfigStoreDecodeSurface);
 };
 
 // An implementation of V4L2DecodeSurface that uses requests to associate
@@ -156,6 +158,8 @@ class V4L2RequestDecodeSurface : public V4L2DecodeSurface {
   bool Submit() const override;
 
  private:
+  ~V4L2RequestDecodeSurface() override = default;
+
   // FD of the request to use.
   const int request_fd_;
 
@@ -167,6 +171,8 @@ class V4L2RequestDecodeSurface : public V4L2DecodeSurface {
                           std::move(output_buffer),
                           std::move(frame)),
         request_fd_(request_fd) {}
+
+  DISALLOW_COPY_AND_ASSIGN(V4L2RequestDecodeSurface);
 };
 
 }  // namespace media

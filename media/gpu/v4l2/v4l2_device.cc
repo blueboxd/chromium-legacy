@@ -219,6 +219,9 @@ class V4L2BuffersList : public base::RefCountedThreadSafe<V4L2BuffersList> {
   size_t size() const;
 
  private:
+  friend class base::RefCountedThreadSafe<V4L2BuffersList>;
+  ~V4L2BuffersList() = default;
+
   mutable base::Lock lock_;
   std::set<size_t> free_buffers_ GUARDED_BY(lock_);
   DISALLOW_COPY_AND_ASSIGN(V4L2BuffersList);

@@ -38,6 +38,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
@@ -116,7 +117,10 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
     tester->SetLastActiveTime(NowTicks());
     ResourceCoordinatorTabHelper::CreateForWebContents(web_contents_);
     // Commit an URL to allow discarding.
-    tester->NavigateAndCommit(GURL("https://www.example.com"));
+    auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+        GURL("https://www.example.com"), web_contents_);
+    navigation->SetKeepLoading(true);
+    navigation->Commit();
 
     tab_strip_model_ =
         std::make_unique<TabStripModel>(&tab_strip_model_delegate_, profile());

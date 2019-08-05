@@ -209,8 +209,12 @@ class EventRouter
       const std::string& file_system_name,
       const std::string& full_path);
 
-  // Called when a VM is enabled/disabled.
-  void OnCrostiniEnabledChanged(const std::string& vm_name);
+  // Called for Crostini events when the specified pref value changes.
+  void OnCrostiniChanged(
+      const std::string& vm_name,
+      const std::string& pref_name,
+      extensions::api::file_manager_private::CrostiniEventType pref_true,
+      extensions::api::file_manager_private::CrostiniEventType pref_false);
 
   base::Time last_copy_progress_event_;
 

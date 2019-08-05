@@ -373,10 +373,6 @@ class ScriptExecutor : public ActionDelegate,
   TopPadding last_focused_element_top_padding_;
   std::unique_ptr<ElementAreaProto> touchable_element_area_;
 
-  // Callback set by Prompt(). This is called when the prompt is terminated
-  // without selecting any chips. nullptr unless showing a prompt.
-  base::OnceCallback<void()> on_terminate_prompt_;
-
   // Steps towards the requirements for calling |on_expected_navigation_done_|
   // to be fulfilled.
   enum class ExpectedNavigationStep {

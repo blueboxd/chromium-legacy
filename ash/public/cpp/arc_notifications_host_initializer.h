@@ -6,7 +6,7 @@
 #define ASH_PUBLIC_CPP_ARC_NOTIFICATIONS_HOST_INITIALIZER_H_
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "components/arc/common/notifications.mojom.h"
+#include "components/arc/mojom/notifications.mojom.h"
 
 namespace ash {
 

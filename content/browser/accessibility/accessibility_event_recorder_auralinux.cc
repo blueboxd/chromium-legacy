@@ -238,7 +238,11 @@ void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
     int index = static_cast<int>(g_value_get_uint(&params[1]));
     log += base::StringPrintf(" index:%d", index);
     AtkObject* child = static_cast<AtkObject*>(g_value_get_pointer(&params[2]));
-    if (child)
+
+    // Removed children may become stale references by this point.
+    if (event_name.find("::remove") != std::string::npos)
+      log += " CHILD:(REMOVED)";
+    else if (child)
       log += " CHILD:(" + AtkObjectToString(child, log_name) + ")";
     else
       log += " CHILD:(NULL)";

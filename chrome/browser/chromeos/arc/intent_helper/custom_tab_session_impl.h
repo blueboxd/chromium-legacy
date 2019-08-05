@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/ash/arc_custom_tab_modal_dialog_host.h"
-#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {

@@ -1,6 +1,6 @@
 include_rules = [
   "+components/account_id",
-  "+components/arc/common/notifications.mojom.h",
+  "+components/arc/mojom/notifications.mojom.h",
   "+components/arc/metrics/arc_metrics_constants.h",
   "+components/arc/session/connection_holder.h",
   "+components/arc/session/connection_observer.h",

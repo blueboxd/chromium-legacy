@@ -296,7 +296,6 @@ class MockNFC {
     this.push_timeout_id_ = null;
     this.push_completed_ = true;
     this.client_ = null;
-    this.watch_id_ = 0;
     this.watchers_ = [];
   }
 
@@ -347,17 +346,15 @@ class MockNFC {
     this.client_ = client;
   }
 
-  async watch(options) {
+  async watch(options, id) {
+    assert_true(id > 0);
     let error = this.isReady();
     if (error) {
-      error.id = 0;
       return error;
     }
 
-    let retVal = createNFCError(null);
-    retVal.id = ++this.watch_id_;
-    this.watchers_.push({id: this.watch_id_, options: options});
-    return retVal;
+    this.watchers_.push({id: id, options: options});
+    return createNFCError(null);
   }
 
   async cancelWatch(id) {
@@ -411,7 +408,6 @@ class MockNFC {
   reset() {
     this.hw_status_ = NFCHWStatus.ENABLED;
     this.push_completed_ = true;
-    this.watch_id_ = 0;
     this.watchers_ = [];
     this.cancelPendingPushOperation();
   }

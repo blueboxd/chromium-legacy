@@ -502,6 +502,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void PauseContext();
   void UnpauseContext();
 
+  void EvictFromBackForwardCache();
+
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
   // Holds all PauseSubresourceLoadingHandles allowing either |this| to delete

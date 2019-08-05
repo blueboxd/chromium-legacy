@@ -155,6 +155,8 @@ V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
       egl_display_(egl_display),
       bind_image_cb_(bind_image_cb),
       make_context_current_cb_(make_context_current_cb),
+      gl_image_format_fourcc_(0),
+      gl_image_planes_count_(0),
       weak_this_factory_(this) {
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
@@ -455,6 +457,9 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
   if (output_format_fourcc_ == 0) {
     VLOGF(1) << "Could not find a usable output format";
     return false;
+  } else {
+    gl_image_format_fourcc_ = output_format_fourcc_;
+    gl_image_device_ = device_;
   }
 
   // Only set fourcc for output; resolution, etc., will come from the
@@ -468,6 +473,7 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
 
   DCHECK_EQ(V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc_), static_cast<size_t>(format.fmt.pix_mp.num_planes));
   output_planes_count_ = format.fmt.pix_mp.num_planes;
+  gl_image_planes_count_ = output_planes_count_;
 
   return true;
 }
@@ -542,6 +548,8 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   DCHECK_EQ(coded_size_.width() % 16, 0);
   DCHECK_EQ(coded_size_.height() % 16, 0);
 
+  gl_image_size_ = coded_size_;
+
   if (!gfx::Rect(coded_size_).Contains(gfx::Rect(pic_size))) {
     VLOGF(1) << "Got invalid adjusted coded size: " << coded_size_.ToString();
     return false;
@@ -552,7 +560,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
             << ", coded size=" << coded_size_.ToString();
 
   VideoPixelFormat pixel_format =
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_);
+      V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_);
   child_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -1281,6 +1289,8 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     }
   }
 
+  gl_image_size_ = coded_size_;
+
   const v4l2_memory memory =
       (output_mode_ == Config::OutputMode::ALLOCATE ? V4L2_MEMORY_MMAP
                                                     : V4L2_MEMORY_DMABUF);
@@ -1326,8 +1336,8 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
 
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
       std::vector<base::ScopedFD> passed_dmabuf_fds =
-          device_->GetDmabufsForV4L2Buffer(i, output_planes_count_,
-                                           V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
+          gl_image_device_->GetDmabufsForV4L2Buffer(
+              i, gl_image_planes_count_, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
       if (passed_dmabuf_fds.empty()) {
         NOTIFY_ERROR(PLATFORM_FAILURE);
         return;
@@ -1377,18 +1387,19 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
   }
 
   scoped_refptr<gl::GLImage> gl_image =
-      device_->CreateGLImage(size, fourcc, passed_dmabuf_fds);
+      gl_image_device_->CreateGLImage(size, fourcc, passed_dmabuf_fds);
   if (!gl_image) {
     VLOGF(1) << "Could not create GLImage,"
              << " index=" << buffer_index << " texture_id=" << texture_id;
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
-  gl::ScopedTextureBinder bind_restore(device_->GetTextureTarget(), texture_id);
-  bool ret = gl_image->BindTexImage(device_->GetTextureTarget());
+  gl::ScopedTextureBinder bind_restore(gl_image_device_->GetTextureTarget(),
+                                       texture_id);
+  bool ret = gl_image->BindTexImage(gl_image_device_->GetTextureTarget());
   DCHECK(ret);
-  bind_image_cb_.Run(client_texture_id, device_->GetTextureTarget(), gl_image,
-                     true);
+  bind_image_cb_.Run(client_texture_id, gl_image_device_->GetTextureTarget(),
+                     gl_image, true);
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&V4L2SliceVideoDecodeAccelerator::AssignDmaBufs,
@@ -1452,7 +1463,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
   for (auto& plane : gpu_memory_buffer_handle.native_pixmap_handle.planes) {
     dmabuf_fds.push_back(std::move(plane.fd));
   }
-  for (size_t i = dmabuf_fds.size() - 1; i >= output_planes_count_; i--) {
+  for (size_t i = dmabuf_fds.size() - 1; i >= gl_image_planes_count_; i--) {
     if (gpu_memory_buffer_handle.native_pixmap_handle.planes[i].offset == 0) {
       VLOGF(1) << "The dmabuf fd points to a new buffer, ";
       NOTIFY_ERROR(INVALID_ARGUMENT);
@@ -1471,7 +1482,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
   }
 
   if (pixel_format !=
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_)) {
+      V4L2Device::V4L2PixFmtToVideoPixelFormat(gl_image_format_fourcc_)) {
     VLOGF(1) << "Unsupported import format: "
              << VideoPixelFormatToString(pixel_format);
     NOTIFY_ERROR(INVALID_ARGUMENT);
@@ -1523,10 +1534,11 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
         base::BindOnce(&V4L2SliceVideoDecodeAccelerator::CreateGLImageFor,
                        weak_this_, index, picture_buffer_id,
                        std::move(passed_dmabuf_fds), iter->client_texture_id,
-                       iter->texture_id, coded_size_, output_format_fourcc_));
+                       iter->texture_id, gl_image_size_,
+                       gl_image_format_fourcc_));
   } else {
     // No need for a GLImage, start using this buffer now.
-    DCHECK_EQ(output_planes_count_, passed_dmabuf_fds.size());
+    DCHECK_EQ(gl_image_planes_count_, passed_dmabuf_fds.size());
     iter->dmabuf_fds = std::move(passed_dmabuf_fds);
 
     // Buffer is now ready to be used.

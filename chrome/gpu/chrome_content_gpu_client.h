@@ -15,10 +15,10 @@
 #include "content/public/gpu/content_gpu_client.h"
 
 #if defined(OS_CHROMEOS)
-#include "components/arc/common/protected_buffer_manager.mojom.h"
-#include "components/arc/common/video_decode_accelerator.mojom.h"
-#include "components/arc/common/video_encode_accelerator.mojom.h"
-#include "components/arc/common/video_protected_buffer_allocator.mojom.h"
+#include "components/arc/mojom/protected_buffer_manager.mojom.h"
+#include "components/arc/mojom/video_decode_accelerator.mojom.h"
+#include "components/arc/mojom/video_encode_accelerator.mojom.h"
+#include "components/arc/mojom/video_protected_buffer_allocator.mojom.h"
 #include "gpu/config/gpu_preferences.h"
 
 namespace arc {

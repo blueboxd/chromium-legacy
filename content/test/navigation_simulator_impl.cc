@@ -632,6 +632,8 @@ void NavigationSimulatorImpl::Commit() {
   }
 
   state_ = FINISHED;
+  if (!keep_loading_)
+    StopLoading();
 
   if (!IsRendererDebugURL(navigation_url_))
     CHECK_EQ(1, num_did_finish_navigation_called_);
@@ -654,6 +656,8 @@ void NavigationSimulatorImpl::AbortCommit() {
   render_frame_host_->AbortCommit(request_);
 
   state_ = FINISHED;
+  StopLoading();
+
   CHECK_EQ(1, num_did_finish_navigation_called_);
 }
 
@@ -757,6 +761,8 @@ void NavigationSimulatorImpl::CommitErrorPage() {
   }
 
   state_ = FINISHED;
+  if (!keep_loading_)
+    StopLoading();
 
   CHECK_EQ(1, num_did_finish_navigation_called_);
 }
@@ -801,6 +807,9 @@ void NavigationSimulatorImpl::CommitSameDocument() {
     return;
   }
   state_ = FINISHED;
+  if (!keep_loading_)
+    StopLoading();
+
   CHECK_EQ(1, num_did_start_navigation_called_);
   CHECK_EQ(1, num_did_finish_navigation_called_);
 }
@@ -1066,9 +1075,9 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
 
       // A navigation to a renderer-debug URL cannot commit. Simulate the
       // renderer process aborting it.
-      web_contents_->GetMainFrame()->OnMessageReceived(
-          FrameHostMsg_DidStopLoading(
-              web_contents_->GetMainFrame()->GetRoutingID()));
+      render_frame_host_ =
+          static_cast<TestRenderFrameHost*>(web_contents_->GetMainFrame());
+      StopLoading();
       state_ = FAILED;
       return false;
     } else if (request_ &&
@@ -1330,6 +1339,24 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
           params->document_sequence_number));
 
   return params;
+}
+
+void NavigationSimulatorImpl::SetKeepLoading(bool keep_loading) {
+  keep_loading_ = keep_loading;
+}
+
+void NavigationSimulatorImpl::StopLoading() {
+  CHECK(render_frame_host_);
+  render_frame_host_->OnMessageReceived(
+      FrameHostMsg_DidStopLoading(render_frame_host_->GetRoutingID()));
+}
+
+void NavigationSimulatorImpl::FailLoading(
+    const GURL& url,
+    int error_code,
+    const base::string16& error_description) {
+  CHECK(render_frame_host_);
+  render_frame_host_->DidFailLoadWithError(url, error_code, error_description);
 }
 
 }  // namespace content

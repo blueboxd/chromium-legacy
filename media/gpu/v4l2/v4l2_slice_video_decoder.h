@@ -94,12 +94,13 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
     // The identifier for the decoder buffer.
     int32_t bitstream_id;
 
-    DecodeRequest(scoped_refptr<DecoderBuffer> buf, DecodeCB cb, int32_t id)
-        : buffer(std::move(buf)), decode_cb(std::move(cb)), bitstream_id(id) {}
+    DecodeRequest(scoped_refptr<DecoderBuffer> buf, DecodeCB cb, int32_t id);
 
     // Allow move, but not copy
-    DecodeRequest(DecodeRequest&&) = default;
-    DecodeRequest& operator=(DecodeRequest&&) = default;
+    DecodeRequest(DecodeRequest&&);
+    DecodeRequest& operator=(DecodeRequest&&);
+
+    ~DecodeRequest();
 
     DISALLOW_COPY_AND_ASSIGN(DecodeRequest);
   };

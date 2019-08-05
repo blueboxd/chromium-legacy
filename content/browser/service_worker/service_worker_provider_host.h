@@ -114,15 +114,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // id. |web_contents_getter| indicates the tab where the navigation is
   // occurring.
   //
-  // The returned host stays alive as long as the filled |out_provider_info|
-  // stays alive (namely, as long as |out_provider_info->host_ptr_info| stays
-  // alive). Upon navigation commit, OnBeginNavigationCommit() will complete
-  // initialization for it.
+  // The returned host stays alive as long as the corresponding host ptr for
+  // |host_request| stays alive.
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
       int frame_tree_node_id,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
+      blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
+      blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info);
 
   // Used for starting a service worker. Returns a provider host for the service
   // worker and partially fills |out_provider_info|.  The host stays alive as
@@ -137,15 +136,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
           out_provider_info);
 
   // Used for starting a web worker (dedicated worker or shared worker). Returns
-  // a provider host for the worker and fills |out_provider_info| with info to
-  // send to the renderer to connect to the host. The host stays alive as long
-  // as this info stays alive (namely, as long as
-  // |out_provider_info->host_ptr_info| stays alive).
+  // a provider host for the worker. The host stays alive as long as the
+  // corresponding host for |host_request| stays alive.
   static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForWebWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
       blink::mojom::ServiceWorkerProviderType provider_type,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
+      blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request,
+      blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info);
 
   ~ServiceWorkerProviderHost() override;
 

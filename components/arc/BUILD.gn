@@ -237,7 +237,7 @@ static_library("arc_base") {
     ":arc_base_utils",
     ":connection_holder",
     ":prefs",
-    "//components/arc/common",
+    "//components/arc/mojom",
     "//dbus",
   ]
 }
@@ -267,7 +267,7 @@ static_library("notification_test_support") {
 
   public_deps = [
     ":connection_holder",
-    "//components/arc/common:notifications",
+    "//components/arc/mojom:notifications",
   ]
 }
 
@@ -335,7 +335,7 @@ source_set("unit_tests") {
   sources = [
     "arc_features_parser_unittest.cc",
     "arc_util_unittest.cc",
-    "bluetooth/bluetooth_struct_traits_unittest.cc",
+    "bluetooth/bluetooth_mojom_traits_unittest.cc",
     "bluetooth/bluetooth_type_converters_unittest.cc",
     "clipboard/arc_clipboard_bridge_unittest.cc",
     "ime/arc_ime_service_unittest.cc",

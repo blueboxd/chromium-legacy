@@ -535,6 +535,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
     return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
   }
+
+  virtual void EvictFromBackForwardCache() = 0;
 };
 
 }  // namespace blink

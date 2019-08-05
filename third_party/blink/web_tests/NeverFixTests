@@ -1622,6 +1622,7 @@ crbug.com/457718 external/wpt/css/css-pseudo/marker-font-properties.html [ WontF
 
 # Requires --use-fake-ui-for-media-stream to run.
 external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ WontFix ]
+virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ WontFix ]
 
 # These directories have manual tests that don't have to run with
 # run_web_tests.py; see https://crbug.com/359838.
@@ -2137,6 +2138,8 @@ virtual/blink-cors/external/wpt/xhr/send-authentication-existing-session-manual.
 virtual/blink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ WontFix ]
 virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
+virtual/audio-service/external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ WontFix ]
+virtual/audio-service/external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
@@ -2245,6 +2248,7 @@ crbug.com/946022 [ Win7 ] images/image-click-scale-restore-zoomed-image.html [ W
 crbug.com/946022 [ Win7 ] images/image-zoom-to-25.html [ WontFix ]
 crbug.com/946022 [ Win7 ] images/image-zoom-to-500.html [ WontFix ]
 crbug.com/946022 [ Win7 ] media/controls/overflow-menu-hide-on-resize.html [ WontFix ]
+crbug.com/946022 [ Win7 ] virtual/audio-service/media/controls/overflow-menu-hide-on-resize.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/resize-iframe-text.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ WontFix ]
 crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/ [ WontFix ]

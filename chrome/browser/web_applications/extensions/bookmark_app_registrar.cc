@@ -34,6 +34,10 @@ void BookmarkAppRegistrar::Init(base::OnceClosure callback) {
   ExtensionSystem::Get(profile())->ready().Post(FROM_HERE, std::move(callback));
 }
 
+BookmarkAppRegistrar* BookmarkAppRegistrar::AsBookmarkAppRegistrar() {
+  return this;
+}
+
 bool BookmarkAppRegistrar::IsInstalled(const GURL& start_url) const {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   const ExtensionSet& extensions = registry->enabled_extensions();
@@ -78,15 +82,6 @@ base::Optional<web_app::AppId> BookmarkAppRegistrar::FindAppWithUrlInScope(
 
 int BookmarkAppRegistrar::CountUserInstalledApps() const {
   return CountUserInstalledBookmarkApps(profile());
-}
-
-void BookmarkAppRegistrar::OnExtensionInstalled(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    bool is_update) {
-  DCHECK_EQ(browser_context, profile());
-  if (extension->from_bookmark())
-    NotifyWebAppInstalled(extension->id());
 }
 
 void BookmarkAppRegistrar::OnExtensionUninstalled(

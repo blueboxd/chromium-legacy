@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/arc/common/app.mojom.h"
+#include "components/arc/mojom/app.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {

@@ -27,6 +27,7 @@
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -322,7 +323,6 @@ TEST_F(TabMetricsTest, TabEvents) {
 
   // Navigating the active tab doesn't trigger logging.
   WebContentsTester::For(test_contents_1)->NavigateAndCommit(kTestUrls[2]);
-  WebContentsTester::For(test_contents_1)->TestSetIsLoading(false);
   EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
 
   // Pinning the active tab doesn't trigger logging.
@@ -346,9 +346,12 @@ TEST_F(TabMetricsTest, TabEvents) {
 
   // Navigating the background tab triggers logging once the page finishes
   // loading.
-  WebContentsTester::For(test_contents_2)->NavigateAndCommit(kTestUrls[0]);
+  auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+      kTestUrls[0], test_contents_2);
+  navigation->SetKeepLoading(true);
+  navigation->Commit();
   EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
-  WebContentsTester::For(test_contents_2)->TestSetIsLoading(false);
+  navigation->StopLoading();
   {
     SCOPED_TRACE("");
     ExpectNewEntry(GURL(kTestUrls[0]), kBasicMetricValues);

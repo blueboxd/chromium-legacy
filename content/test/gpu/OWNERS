@@ -11,4 +11,5 @@ crouleau@chromium.org
 # Emeritus:
 # dtu@chromium.org
 
-# COMPONENT: Test
+# COMPONENT: Internals>GPU>Internals
+# TEAM: graphics-dev@chromium.org

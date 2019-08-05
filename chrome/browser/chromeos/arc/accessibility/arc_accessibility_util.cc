@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 
-#include "components/arc/common/accessibility_helper.mojom.h"
+#include "components/arc/mojom/accessibility_helper.mojom.h"
 
 namespace arc {
 

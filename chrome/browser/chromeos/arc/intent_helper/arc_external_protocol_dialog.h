@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;

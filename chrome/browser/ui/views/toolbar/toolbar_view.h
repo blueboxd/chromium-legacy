@@ -33,8 +33,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
-#include "components/arc/common/intent_helper.mojom.h"  // nogncheck https://crbug.com/784179
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/mojom/intent_helper.mojom.h"  // nogncheck https://crbug.com/784179
 #endif  // defined(OS_CHROMEOS)
 
 class AppMenuButton;

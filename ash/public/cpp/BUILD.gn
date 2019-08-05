@@ -246,7 +246,7 @@ component("cpp") {
   public_deps = [
     "//ash/public/mojom",
     "//base",
-    "//components/arc/common:notifications",
+    "//components/arc/mojom:notifications",
     "//components/session_manager:base",
     "//components/user_manager",
     "//ui/gfx",

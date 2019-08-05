@@ -61,7 +61,7 @@ source_set("web_applications") {
       "//ash/public/cpp:cpp",
       "//chromeos/constants",
       "//components/arc:arc_base",
-      "//components/arc/common",
+      "//components/arc/mojom",
     ]
   }
 
@@ -129,6 +129,7 @@ source_set("web_applications_unit_tests") {
   deps = [
     ":web_app_test_group",
     ":web_applications",
+    ":web_applications_on_extensions_test_support",
     ":web_applications_test_support",
     "//base/test:test_support",
     "//chrome/browser",
@@ -145,7 +146,7 @@ source_set("web_applications_unit_tests") {
       "//chrome/browser/chromeos",
       "//components/arc:arc",
       "//components/arc:arc_test_support",
-      "//components/arc/common",
+      "//components/arc/mojom",
     ]
   }
 }

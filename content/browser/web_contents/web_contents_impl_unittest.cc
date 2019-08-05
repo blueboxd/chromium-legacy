@@ -3029,7 +3029,10 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
 
   // Navigate the main RenderFrame and commit. The frame should still be
   // loading.
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), main_url);
+  auto main_frame_navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(main_url, contents());
+  main_frame_navigation->SetKeepLoading(true);
+  main_frame_navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
   EXPECT_TRUE(contents()->IsLoading());
@@ -3044,18 +3047,11 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
 
   // Navigate the child frame to about:blank, which will send DidStopLoading
   // message.
-  {
-    NavigationSimulator::NavigateAndCommitFromDocument(initial_url, subframe);
-    subframe->OnMessageReceived(
-        FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
-  }
+  NavigationSimulator::NavigateAndCommitFromDocument(initial_url, subframe);
 
   // Navigate the frame to another URL, which will send again
   // DidStartLoading and DidStopLoading messages.
-  subframe = static_cast<TestRenderFrameHost*>(
-      NavigationSimulator::NavigateAndCommitFromDocument(foo_url, subframe));
-  subframe->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
+  NavigationSimulator::NavigateAndCommitFromDocument(foo_url, subframe);
 
   // Since the main frame hasn't sent any DidStopLoading messages, it is
   // expected that the WebContents is still in loading state.
@@ -3085,9 +3081,6 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
     navigation->Commit();
     subframe = static_cast<TestRenderFrameHost*>(
         navigation->GetFinalRenderFrameHost());
-
-    subframe->OnMessageReceived(
-        FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
   }
 
   // At this point the status should still be loading, since the main frame
@@ -3098,8 +3091,7 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
 
   // Send the DidStopLoading for the main frame and ensure it isn't loading
   // anymore.
-  orig_rfh->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(orig_rfh->GetRoutingID()));
+  main_frame_navigation->StopLoading();
   EXPECT_FALSE(contents()->IsLoading());
   EXPECT_FALSE(observer.is_loading());
   EXPECT_FALSE(observer.did_receive_response());
@@ -3114,7 +3106,10 @@ TEST_F(WebContentsImplTestWithSiteIsolation, IsLoadingToDifferentDocument) {
 
   // Navigate the main RenderFrame and commit. The frame should still be
   // loading.
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), main_url);
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(main_url, contents());
+  navigation->SetKeepLoading(true);
+  navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
   EXPECT_TRUE(contents()->IsLoading());
@@ -3122,8 +3117,7 @@ TEST_F(WebContentsImplTestWithSiteIsolation, IsLoadingToDifferentDocument) {
 
   // Send the DidStopLoading for the main frame and ensure it isn't loading
   // anymore.
-  orig_rfh->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(orig_rfh->GetRoutingID()));
+  navigation->StopLoading();
   EXPECT_FALSE(contents()->IsLoading());
   EXPECT_FALSE(contents()->IsLoadingToDifferentDocument());
 

@@ -18,7 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
-#include "components/arc/common/process.mojom.h"
+#include "components/arc/mojom/process.mojom.h"
 
 namespace task_manager {
 

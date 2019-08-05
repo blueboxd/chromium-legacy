@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/preload_helper.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -481,6 +482,11 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     UseCounter::Count(document, WebFeature::kLinkRelPrefetch);
 
     ResourceRequest resource_request(params.href);
+
+    if (base::FeatureList::IsEnabled(features::kPrefetchRedirectError)) {
+      resource_request.SetRedirectMode(network::mojom::RedirectMode::kError);
+    }
+
     resource_request.SetReferrerPolicy(params.referrer_policy);
     resource_request.SetFetchImportanceMode(
         GetFetchImportanceAttributeValue(params.importance));

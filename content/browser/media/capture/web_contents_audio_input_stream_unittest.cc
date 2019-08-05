@@ -283,7 +283,7 @@ class WebContentsAudioInputStreamTest : public testing::TestWithParam<bool> {
     // causes our mock to set |destination_|.  Block until that has happened.
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();

@@ -16,7 +16,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "components/arc/common/file_system.mojom.h"
+#include "components/arc/mojom/file_system.mojom.h"
 #include "storage/browser/fileapi/watcher_manager.h"
 
 namespace arc {

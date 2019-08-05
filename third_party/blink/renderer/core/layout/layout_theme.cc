@@ -21,11 +21,13 @@
 
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/fileapi/file_list.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -35,6 +37,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/spin_button_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_inner_elements.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
@@ -62,6 +65,80 @@
 // The methods in this file are shared by all themes on every platform.
 
 namespace blink {
+
+namespace {
+
+// This function should match to the user-agent stylesheet.
+ControlPart AutoAppearanceFor(const Element& element) {
+  if (IsA<HTMLButtonElement>(element))
+    return kButtonPart;
+  if (IsA<HTMLMeterElement>(element))
+    return kMeterPart;
+  if (IsA<HTMLProgressElement>(element))
+    return kProgressBarPart;
+  if (IsA<HTMLTextAreaElement>(element))
+    return kTextAreaPart;
+  if (IsA<SpinButtonElement>(element))
+    return kInnerSpinButtonPart;
+  if (const auto* select = DynamicTo<HTMLSelectElement>(element))
+    return select->UsesMenuList() ? kMenulistPart : kListboxPart;
+
+  if (const auto* input = DynamicTo<HTMLInputElement>(element)) {
+    const AtomicString& type = input->type();
+    if (type == input_type_names::kCheckbox)
+      return kCheckboxPart;
+    if (type == input_type_names::kRadio)
+      return kRadioPart;
+    if (input->IsTextButton())
+      return kPushButtonPart;
+    if (type == input_type_names::kColor) {
+      return input->FastHasAttribute(html_names::kListAttr) ? kMenulistPart
+                                                            : kSquareButtonPart;
+    }
+    if (type == input_type_names::kRange)
+      return kSliderHorizontalPart;
+    if (type == input_type_names::kSearch)
+      return kSearchFieldPart;
+    if (type == input_type_names::kDate ||
+        type == input_type_names::kDatetimeLocal ||
+        type == input_type_names::kMonth || type == input_type_names::kTime ||
+        type == input_type_names::kWeek) {
+#if defined(OS_ANDROID)
+      return kMenulistPart;
+#else
+      return kTextFieldPart;
+#endif
+    }
+    if (type == input_type_names::kEmail || type == input_type_names::kNumber ||
+        type == input_type_names::kPassword || type == input_type_names::kTel ||
+        type == input_type_names::kText || type == input_type_names::kUrl)
+      return kTextFieldPart;
+
+    // Type=hidden/image/file.
+    return kNoControlPart;
+  }
+
+  if (element.IsInUserAgentShadowRoot()) {
+    const AtomicString& id_value =
+        element.FastGetAttribute(html_names::kIdAttr);
+    if (id_value == shadow_element_names::SliderThumb())
+      return kSliderThumbHorizontalPart;
+    if (id_value == shadow_element_names::SearchClearButton() ||
+        id_value == shadow_element_names::ClearButton())
+      return kSearchFieldCancelButtonPart;
+
+    // Slider container elements and -webkit-meter-inner-element don't have IDs.
+    const AtomicString& shadow_pseudo = element.ShadowPseudoId();
+    if (shadow_pseudo == "-webkit-media-slider-container" ||
+        shadow_pseudo == "-webkit-slider-container")
+      return kSliderHorizontalPart;
+    if (shadow_pseudo == "-webkit-meter-inner-element")
+      return kMeterPart;
+  }
+  return kNoControlPart;
+}
+
+}  // namespace
 
 // Wrapper function defined in WebKit.h
 void SetMockThemeEnabledForTest(bool value) {
@@ -92,11 +169,69 @@ ControlPart LayoutTheme::AdjustAppearanceWithElementType(
     const ComputedStyle& style,
     const Element* element) {
   ControlPart part = style.EffectiveAppearance();
-  // TODO(crbug.com/981720): Implement element type restriction, and apply
-  // 'auto' if |part| doesn't support |element|.
-  // e.g.  kSearchFieldPart for input[type=search] ==> kSearchFieldPart
-  //       kSearchFieldPart for div ==> kNoControlPart
-  //       kSearchFieldPart for button ==> kButtonPart
+  if (!RuntimeEnabledFeatures::RestrictedWebkitAppearanceEnabled())
+    return part;
+
+  if (!element)
+    return kNoControlPart;
+
+  ControlPart auto_appearance = AutoAppearanceFor(*element);
+  if (part == auto_appearance)
+    return part;
+
+  switch (part) {
+    // No restrictions.
+    case kNoControlPart:
+    case kMediaSliderPart:
+    case kMediaSliderThumbPart:
+    case kMediaVolumeSliderPart:
+    case kMediaVolumeSliderThumbPart:
+    case kMediaControlPart:
+      return part;
+
+    // Aliases of 'auto'.
+    // https://drafts.csswg.org/css-ui-4/#typedef-appearance-compat-auto
+    case kCheckboxPart:
+    case kRadioPart:
+    case kPushButtonPart:
+    case kSquareButtonPart:
+    case kInnerSpinButtonPart:
+    case kListboxPart:
+    case kMenulistPart:
+    case kMeterPart:
+    case kProgressBarPart:
+    case kSliderHorizontalPart:
+    case kSliderThumbHorizontalPart:
+    case kSearchFieldPart:
+    case kSearchFieldCancelButtonPart:
+    case kTextAreaPart:
+      return auto_appearance;
+
+      // The following keywords should work well for some element types
+      // even if their default appearances are different from the keywords.
+
+    case kButtonPart:
+      if (IsA<HTMLSelectElement>(*element) || IsA<HTMLAnchorElement>(*element))
+        return auto_appearance;
+      return part;
+
+    case kMenulistButtonPart:
+      return auto_appearance == kMenulistPart ? part : auto_appearance;
+
+    case kSliderVerticalPart:
+      return auto_appearance == kSliderHorizontalPart ? part : auto_appearance;
+
+    case kSliderThumbVerticalPart:
+      return auto_appearance == kSliderThumbHorizontalPart ? part
+                                                           : auto_appearance;
+
+    case kTextFieldPart:
+      if (IsA<HTMLInputElement>(*element) &&
+          To<HTMLInputElement>(*element).type() == input_type_names::kSearch)
+        return part;
+      return auto_appearance;
+  }
+
   return part;
 }
 

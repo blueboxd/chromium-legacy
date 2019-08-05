@@ -36,22 +36,13 @@ const base::TimeDelta kMinimumRefreshDelay = base::TimeDelta::FromMinutes(1);
 // AdvancedProtectionStatusManager
 ////////////////////////////////////////////////////////////////////////////////
 AdvancedProtectionStatusManager::AdvancedProtectionStatusManager(
-    Profile* profile)
-    : profile_(profile),
-      identity_manager_(nullptr),
-      access_token_fetcher_(nullptr),
-      is_under_advanced_protection_(false),
-      minimum_delay_(kMinimumRefreshDelay) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (profile_->IsOffTheRecord())
-    return;
-
-  Initialize();
-  MaybeRefreshOnStartUp();
-}
+    PrefService* pref_service,
+    signin::IdentityManager* identity_manager)
+    : AdvancedProtectionStatusManager(pref_service,
+                                      identity_manager,
+                                      kMinimumRefreshDelay) {}
 
 void AdvancedProtectionStatusManager::Initialize() {
-  identity_manager_ = IdentityManagerFactory::GetForProfile(profile_);
   SubscribeToSigninEvents();
 }
 
@@ -63,10 +54,9 @@ void AdvancedProtectionStatusManager::MaybeRefreshOnStartUp() {
 
   is_under_advanced_protection_ = core_info.is_under_advanced_protection;
 
-  if (profile_->GetPrefs()->HasPrefPath(
-          prefs::kAdvancedProtectionLastRefreshInUs)) {
+  if (pref_service_->HasPrefPath(prefs::kAdvancedProtectionLastRefreshInUs)) {
     last_refreshed_ = base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromMicroseconds(profile_->GetPrefs()->GetInt64(
+        base::TimeDelta::FromMicroseconds(pref_service_->GetInt64(
             prefs::kAdvancedProtectionLastRefreshInUs)));
     if (is_under_advanced_protection_)
       ScheduleNextRefresh();
@@ -87,11 +77,11 @@ void AdvancedProtectionStatusManager::Shutdown() {
 AdvancedProtectionStatusManager::~AdvancedProtectionStatusManager() {}
 
 void AdvancedProtectionStatusManager::SubscribeToSigninEvents() {
-  IdentityManagerFactory::GetForProfile(profile_)->AddObserver(this);
+  identity_manager_->AddObserver(this);
 }
 
 void AdvancedProtectionStatusManager::UnsubscribeFromSigninEvents() {
-  IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
+  identity_manager_->RemoveObserver(this);
 }
 
 bool AdvancedProtectionStatusManager::IsRefreshScheduled() {
@@ -100,9 +90,8 @@ bool AdvancedProtectionStatusManager::IsRefreshScheduled() {
 
 void AdvancedProtectionStatusManager::OnExtendedAccountInfoUpdated(
     const AccountInfo& info) {
-  // Ignore update if |profile_| is in incognito mode, or the updated account
-  // is not the primary account.
-  if (profile_->IsOffTheRecord() || !IsPrimaryAccount(info))
+  // Ignore update if the updated account is not the primary account.
+  if (!IsPrimaryAccount(info))
     return;
 
   if (info.is_under_advanced_protection) {
@@ -116,9 +105,6 @@ void AdvancedProtectionStatusManager::OnExtendedAccountInfoUpdated(
 
 void AdvancedProtectionStatusManager::OnExtendedAccountInfoRemoved(
     const AccountInfo& info) {
-  if (profile_->IsOffTheRecord())
-    return;
-
   // If user signed out primary account, cancel refresh.
   std::string primary_account_id = GetPrimaryAccountId();
   if (!primary_account_id.empty() && primary_account_id == info.account_id) {
@@ -182,7 +168,7 @@ void AdvancedProtectionStatusManager::OnAccessTokenFetchComplete(
 }
 
 void AdvancedProtectionStatusManager::RefreshAdvancedProtectionStatus() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::string primary_account_id = GetPrimaryAccountId();
   if (!identity_manager_ || primary_account_id.empty())
@@ -206,7 +192,7 @@ void AdvancedProtectionStatusManager::RefreshAdvancedProtectionStatus() {
 }
 
 void AdvancedProtectionStatusManager::ScheduleNextRefresh() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CancelFutureRefresh();
   base::Time now = base::Time::Now();
   const base::TimeDelta time_since_last_refresh =
@@ -227,44 +213,17 @@ void AdvancedProtectionStatusManager::CancelFutureRefresh() {
 
 void AdvancedProtectionStatusManager::UpdateLastRefreshTime() {
   last_refreshed_ = base::Time::Now();
-  profile_->GetPrefs()->SetInt64(
+  pref_service_->SetInt64(
       prefs::kAdvancedProtectionLastRefreshInUs,
       last_refreshed_.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
-// static
-bool AdvancedProtectionStatusManager::IsUnderAdvancedProtection(
-    Profile* profile) {
-  Profile* original_profile =
-      profile->IsOffTheRecord() ? profile->GetOriginalProfile() : profile;
-
-  return original_profile &&
-         AdvancedProtectionStatusManagerFactory::GetInstance()
-             ->GetForBrowserContext(
-                 static_cast<content::BrowserContext*>(original_profile))
-             ->is_under_advanced_protection();
-}
-
-// static
-bool AdvancedProtectionStatusManager::RequestsAdvancedProtectionVerdicts(
-    Profile* profile) {
-  Profile* original_profile =
-      profile->IsOffTheRecord() ? profile->GetOriginalProfile() : profile;
-
-  if (!original_profile)
-    return false;
-
-  bool is_under_advanced_protection =
-      AdvancedProtectionStatusManagerFactory::GetInstance()
-          ->GetForBrowserContext(
-              static_cast<content::BrowserContext*>(original_profile))
-          ->is_under_advanced_protection();
-
+bool AdvancedProtectionStatusManager::RequestsAdvancedProtectionVerdicts() {
   static bool force_enabled =
       base::FeatureList::IsEnabled(kForceUseAPDownloadProtection);
   static bool enabled = base::FeatureList::IsEnabled(kUseAPDownloadProtection);
 
-  return force_enabled || (is_under_advanced_protection && enabled);
+  return force_enabled || (is_under_advanced_protection() && enabled);
 }
 
 bool AdvancedProtectionStatusManager::IsPrimaryAccount(
@@ -299,14 +258,16 @@ void AdvancedProtectionStatusManager::OnGetIDToken(
 }
 
 AdvancedProtectionStatusManager::AdvancedProtectionStatusManager(
-    Profile* profile,
+    PrefService* pref_service,
+    signin::IdentityManager* identity_manager,
     const base::TimeDelta& min_delay)
-    : profile_(profile),
-      identity_manager_(nullptr),
+    : pref_service_(pref_service),
+      identity_manager_(identity_manager),
       is_under_advanced_protection_(false),
       minimum_delay_(min_delay) {
-  if (profile_->IsOffTheRecord())
-    return;
+  DCHECK(identity_manager_);
+  DCHECK(pref_service_);
+
   Initialize();
   MaybeRefreshOnStartUp();
 }

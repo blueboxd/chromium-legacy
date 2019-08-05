@@ -19,7 +19,7 @@ static_library("video_accelerator") {
   ]
 
   deps = [
-    "//components/arc/common:media",
+    "//components/arc/mojom:media",
     "//media",
     "//ui/ozone",
   ]

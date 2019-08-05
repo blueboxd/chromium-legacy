@@ -136,11 +136,8 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   icon_manager_ = std::make_unique<WebAppIconManager>(
       profile, std::make_unique<FileUtilsWrapper>());
 
-  // TODO(crbug.com/973324): Once the WebAppInstallFinalizer can take an
-  // AppRegistrar instead of needing a WebAppRegistrar, move this wiring into
-  // ConnectSubsystems().
-  install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-      web_app_registrar.get(), icon_manager_.get());
+  install_finalizer_ =
+      std::make_unique<WebAppInstallFinalizer>(icon_manager_.get());
   sync_manager_ = std::make_unique<WebAppSyncManager>();
 
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
@@ -165,7 +162,7 @@ void WebAppProvider::ConnectSubsystems() {
   DCHECK(!started_);
 
   install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
-  install_finalizer_->SetSubsystems(ui_manager_.get());
+  install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get());
 
   // TODO(crbug.com/877898): Port all other managers to support BMO.
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {

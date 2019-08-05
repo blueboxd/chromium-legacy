@@ -6,7 +6,7 @@
 #define COMPONENTS_ARC_TEST_FAKE_POWER_INSTANCE_H_
 
 #include "base/macros.h"
-#include "components/arc/common/power.mojom.h"
+#include "components/arc/mojom/power.mojom.h"
 
 namespace arc {
 

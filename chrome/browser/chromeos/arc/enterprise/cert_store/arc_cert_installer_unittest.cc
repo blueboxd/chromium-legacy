@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/common/policy.mojom.h"
+#include "components/arc/mojom/policy.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/fake_policy_instance.h"
 #include "components/policy/core/common/remote_commands/remote_commands_queue.h"

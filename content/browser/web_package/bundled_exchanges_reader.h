@@ -68,8 +68,7 @@ class CONTENT_EXPORT BundledExchangesReader final {
   const GURL& GetStartURL() const;
 
   void SetBundledExchangesParserFactoryForTesting(
-      std::unique_ptr<data_decoder::mojom::BundledExchangesParserFactory>
-          factory);
+      mojo::Remote<data_decoder::mojom::BundledExchangesParserFactory> factory);
 
  private:
   // A simple wrapper class to share a single base::File instance among multiple

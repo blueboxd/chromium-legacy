@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_info_data.h"
-#include "components/arc/common/accessibility_helper.mojom.h"
+#include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "ui/accessibility/ax_action_handler.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"

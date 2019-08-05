@@ -194,11 +194,14 @@ static void DoNotCheckSecurityVoidMethodMethod(const v8::FunctionCallbackInfo<v8
 
 static void DoNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::PropertyCallbackInfo<v8::Value>& info) {
   static int dom_template_key; // This address is used for a key to look up the dom template.
-  V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
-  const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
+  v8::Isolate* isolate = info.GetIsolate();
+  V8PerIsolateData* data = V8PerIsolateData::From(isolate);
+  const DOMWrapperWorld& world =
+      DOMWrapperWorld::World(isolate->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
       data->FindInterfaceTemplate(world, V8TestInterfaceCheckSecurity::GetWrapperTypeInfo());
-  v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
+  v8::Local<v8::Signature> signature =
+      v8::Signature::New(isolate, interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
       data->FindOrCreateOperationTemplate(
@@ -208,24 +211,32 @@ static void DoNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::Propert
           v8::Local<v8::Value>(),
           signature,
           0);
-  // Return the function by default, unless the user script has overwritten it.
-  V8SetReturnValue(info, method_template->GetFunction(info.GetIsolate()->GetCurrentContext())
-                   .ToLocalChecked());
 
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::ToImpl(info.Holder());
   if (!BindingSecurity::ShouldAllowAccessTo(
-          CurrentDOMWindow(info.GetIsolate()), impl,
+          CurrentDOMWindow(isolate), impl,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            isolate->GetCurrentContext()).ToLocalChecked());
     return;
   }
 
-  // {{method.name}} must be same with |methodName| (=name) in
-  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
+  // When the web author overwrote the property, return the overwriting value.
+  //
+  // "doNotCheckSecurityVoidMethod" must be the same as |name_in_utf8| (=name) in
+  // TestInterfaceCheckSecurityOriginSafeMethodSetter defined in interface.cc.tmpl.
   V8PrivateProperty::Symbol property_symbol =
-      V8PrivateProperty::GetSymbol(info.GetIsolate(), "doNotCheckSecurityVoidMethod");
+      V8PrivateProperty::GetSymbol(isolate, "doNotCheckSecurityVoidMethod");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
   if (property_symbol.HasValue(holder)) {
     V8SetReturnValue(info, property_symbol.GetOrUndefined(holder));
+  } else {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            holder->CreationContext()).ToLocalChecked());
   }
 }
 
@@ -237,11 +248,14 @@ static void DoNotCheckSecurityPerWorldBindingsVoidMethodMethod(const v8::Functio
 
 static void DoNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(const v8::PropertyCallbackInfo<v8::Value>& info) {
   static int dom_template_key; // This address is used for a key to look up the dom template.
-  V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
-  const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
+  v8::Isolate* isolate = info.GetIsolate();
+  V8PerIsolateData* data = V8PerIsolateData::From(isolate);
+  const DOMWrapperWorld& world =
+      DOMWrapperWorld::World(isolate->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
       data->FindInterfaceTemplate(world, V8TestInterfaceCheckSecurity::GetWrapperTypeInfo());
-  v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
+  v8::Local<v8::Signature> signature =
+      v8::Signature::New(isolate, interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
       data->FindOrCreateOperationTemplate(
@@ -251,24 +265,32 @@ static void DoNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(c
           v8::Local<v8::Value>(),
           signature,
           0);
-  // Return the function by default, unless the user script has overwritten it.
-  V8SetReturnValue(info, method_template->GetFunction(info.GetIsolate()->GetCurrentContext())
-                   .ToLocalChecked());
 
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::ToImpl(info.Holder());
   if (!BindingSecurity::ShouldAllowAccessTo(
-          CurrentDOMWindow(info.GetIsolate()), impl,
+          CurrentDOMWindow(isolate), impl,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            isolate->GetCurrentContext()).ToLocalChecked());
     return;
   }
 
-  // {{method.name}} must be same with |methodName| (=name) in
-  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
+  // When the web author overwrote the property, return the overwriting value.
+  //
+  // "doNotCheckSecurityPerWorldBindingsVoidMethod" must be the same as |name_in_utf8| (=name) in
+  // TestInterfaceCheckSecurityOriginSafeMethodSetter defined in interface.cc.tmpl.
   V8PrivateProperty::Symbol property_symbol =
-      V8PrivateProperty::GetSymbol(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod");
+      V8PrivateProperty::GetSymbol(isolate, "doNotCheckSecurityPerWorldBindingsVoidMethod");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
   if (property_symbol.HasValue(holder)) {
     V8SetReturnValue(info, property_symbol.GetOrUndefined(holder));
+  } else {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            holder->CreationContext()).ToLocalChecked());
   }
 }
 
@@ -280,11 +302,14 @@ static void DoNotCheckSecurityPerWorldBindingsVoidMethodMethodForMainWorld(const
 
 static void DoNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info) {
   static int dom_template_key; // This address is used for a key to look up the dom template.
-  V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
-  const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
+  v8::Isolate* isolate = info.GetIsolate();
+  V8PerIsolateData* data = V8PerIsolateData::From(isolate);
+  const DOMWrapperWorld& world =
+      DOMWrapperWorld::World(isolate->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
       data->FindInterfaceTemplate(world, V8TestInterfaceCheckSecurity::GetWrapperTypeInfo());
-  v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
+  v8::Local<v8::Signature> signature =
+      v8::Signature::New(isolate, interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
       data->FindOrCreateOperationTemplate(
@@ -294,24 +319,32 @@ static void DoNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterFo
           v8::Local<v8::Value>(),
           signature,
           0);
-  // Return the function by default, unless the user script has overwritten it.
-  V8SetReturnValue(info, method_template->GetFunction(info.GetIsolate()->GetCurrentContext())
-                   .ToLocalChecked());
 
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::ToImpl(info.Holder());
   if (!BindingSecurity::ShouldAllowAccessTo(
-          CurrentDOMWindow(info.GetIsolate()), impl,
+          CurrentDOMWindow(isolate), impl,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            isolate->GetCurrentContext()).ToLocalChecked());
     return;
   }
 
-  // {{method.name}} must be same with |methodName| (=name) in
-  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
+  // When the web author overwrote the property, return the overwriting value.
+  //
+  // "doNotCheckSecurityPerWorldBindingsVoidMethod" must be the same as |name_in_utf8| (=name) in
+  // TestInterfaceCheckSecurityOriginSafeMethodSetter defined in interface.cc.tmpl.
   V8PrivateProperty::Symbol property_symbol =
-      V8PrivateProperty::GetSymbol(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod");
+      V8PrivateProperty::GetSymbol(isolate, "doNotCheckSecurityPerWorldBindingsVoidMethod");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
   if (property_symbol.HasValue(holder)) {
     V8SetReturnValue(info, property_symbol.GetOrUndefined(holder));
+  } else {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            holder->CreationContext()).ToLocalChecked());
   }
 }
 
@@ -323,11 +356,14 @@ static void DoNotCheckSecurityUnforgeableVoidMethodMethod(const v8::FunctionCall
 
 static void DoNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const v8::PropertyCallbackInfo<v8::Value>& info) {
   static int dom_template_key; // This address is used for a key to look up the dom template.
-  V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
-  const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
+  v8::Isolate* isolate = info.GetIsolate();
+  V8PerIsolateData* data = V8PerIsolateData::From(isolate);
+  const DOMWrapperWorld& world =
+      DOMWrapperWorld::World(isolate->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
       data->FindInterfaceTemplate(world, V8TestInterfaceCheckSecurity::GetWrapperTypeInfo());
-  v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
+  v8::Local<v8::Signature> signature =
+      v8::Signature::New(isolate, interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
       data->FindOrCreateOperationTemplate(
@@ -337,24 +373,32 @@ static void DoNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const 
           v8::Local<v8::Value>(),
           signature,
           0);
-  // Return the function by default, unless the user script has overwritten it.
-  V8SetReturnValue(info, method_template->GetFunction(info.GetIsolate()->GetCurrentContext())
-                   .ToLocalChecked());
 
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::ToImpl(info.Holder());
   if (!BindingSecurity::ShouldAllowAccessTo(
-          CurrentDOMWindow(info.GetIsolate()), impl,
+          CurrentDOMWindow(isolate), impl,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            isolate->GetCurrentContext()).ToLocalChecked());
     return;
   }
 
-  // {{method.name}} must be same with |methodName| (=name) in
-  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
+  // When the web author overwrote the property, return the overwriting value.
+  //
+  // "doNotCheckSecurityUnforgeableVoidMethod" must be the same as |name_in_utf8| (=name) in
+  // TestInterfaceCheckSecurityOriginSafeMethodSetter defined in interface.cc.tmpl.
   V8PrivateProperty::Symbol property_symbol =
-      V8PrivateProperty::GetSymbol(info.GetIsolate(), "doNotCheckSecurityUnforgeableVoidMethod");
+      V8PrivateProperty::GetSymbol(isolate, "doNotCheckSecurityUnforgeableVoidMethod");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
   if (property_symbol.HasValue(holder)) {
     V8SetReturnValue(info, property_symbol.GetOrUndefined(holder));
+  } else {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            holder->CreationContext()).ToLocalChecked());
   }
 }
 
@@ -463,11 +507,14 @@ static void DoNotCheckSecurityVoidOverloadMethodMethod(const v8::FunctionCallbac
 
 static void DoNotCheckSecurityVoidOverloadMethodOriginSafeMethodGetter(const v8::PropertyCallbackInfo<v8::Value>& info) {
   static int dom_template_key; // This address is used for a key to look up the dom template.
-  V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
-  const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
+  v8::Isolate* isolate = info.GetIsolate();
+  V8PerIsolateData* data = V8PerIsolateData::From(isolate);
+  const DOMWrapperWorld& world =
+      DOMWrapperWorld::World(isolate->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
       data->FindInterfaceTemplate(world, V8TestInterfaceCheckSecurity::GetWrapperTypeInfo());
-  v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
+  v8::Local<v8::Signature> signature =
+      v8::Signature::New(isolate, interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
       data->FindOrCreateOperationTemplate(
@@ -477,24 +524,32 @@ static void DoNotCheckSecurityVoidOverloadMethodOriginSafeMethodGetter(const v8:
           v8::Local<v8::Value>(),
           signature,
           test_interface_check_security_v8_internal::DoNotCheckSecurityVoidOverloadMethodMethodLength());
-  // Return the function by default, unless the user script has overwritten it.
-  V8SetReturnValue(info, method_template->GetFunction(info.GetIsolate()->GetCurrentContext())
-                   .ToLocalChecked());
 
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::ToImpl(info.Holder());
   if (!BindingSecurity::ShouldAllowAccessTo(
-          CurrentDOMWindow(info.GetIsolate()), impl,
+          CurrentDOMWindow(isolate), impl,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            isolate->GetCurrentContext()).ToLocalChecked());
     return;
   }
 
-  // {{method.name}} must be same with |methodName| (=name) in
-  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
+  // When the web author overwrote the property, return the overwriting value.
+  //
+  // "doNotCheckSecurityVoidOverloadMethod" must be the same as |name_in_utf8| (=name) in
+  // TestInterfaceCheckSecurityOriginSafeMethodSetter defined in interface.cc.tmpl.
   V8PrivateProperty::Symbol property_symbol =
-      V8PrivateProperty::GetSymbol(info.GetIsolate(), "doNotCheckSecurityVoidOverloadMethod");
+      V8PrivateProperty::GetSymbol(isolate, "doNotCheckSecurityVoidOverloadMethod");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
   if (property_symbol.HasValue(holder)) {
     V8SetReturnValue(info, property_symbol.GetOrUndefined(holder));
+  } else {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            holder->CreationContext()).ToLocalChecked());
   }
 }
 

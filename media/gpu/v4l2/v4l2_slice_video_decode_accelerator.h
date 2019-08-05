@@ -452,6 +452,15 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Callback to set the correct gl context.
   MakeGLContextCurrentCallback make_context_current_cb_;
 
+  // The V4L2Device GLImage is created from.
+  scoped_refptr<V4L2Device> gl_image_device_;
+  // The format of GLImage.
+  uint32_t gl_image_format_fourcc_;
+  // The logical dimensions of GLImage buffer in pixels.
+  gfx::Size gl_image_size_;
+  // Number of planes for GLImage.
+  size_t gl_image_planes_count_;
+
   // The WeakPtrFactory for |weak_this_|.
   base::WeakPtrFactory<V4L2SliceVideoDecodeAccelerator> weak_this_factory_;
 

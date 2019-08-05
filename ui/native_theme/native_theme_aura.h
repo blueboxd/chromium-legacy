@@ -41,8 +41,7 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                         const gfx::Rect& rect,
                         Part direction,
                         State state,
-                        ColorScheme color_scheme,
-                        const ScrollbarArrowExtraParams& arrow) const override;
+                        ColorScheme color_scheme) const override;
   void PaintScrollbarTrack(cc::PaintCanvas* canvas,
                            Part part,
                            State state,
@@ -109,14 +108,6 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                                   const gfx::Rect& rect,
                                   const SkScalar borderRadius,
                                   ColorScheme color_scheme) const;
-
-  static void DrawPartiallyRoundRect(cc::PaintCanvas* canvas,
-                                     const gfx::Rect& rect,
-                                     const SkScalar upper_left_radius,
-                                     const SkScalar upper_right_radius,
-                                     const SkScalar lower_right_radius,
-                                     const SkScalar lower_left_radius,
-                                     const cc::PaintFlags& flags);
 
   bool use_overlay_scrollbars_;
 

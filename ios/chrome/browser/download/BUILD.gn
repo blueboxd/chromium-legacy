@@ -22,12 +22,10 @@ source_set("download") {
     "pass_kit_tab_helper.h",
     "pass_kit_tab_helper.mm",
     "pass_kit_tab_helper_delegate.h",
-    "usdz_mime_type.cc",
-    "usdz_mime_type.h",
   ]
 
   public_deps = [
-    ":pass_kit_mime_type",
+    ":mime_types",
   ]
 
   deps = [
@@ -64,10 +62,12 @@ source_set("features") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("pass_kit_mime_type") {
+source_set("mime_types") {
   sources = [
     "pass_kit_mime_type.cc",
     "pass_kit_mime_type.h",
+    "usdz_mime_type.cc",
+    "usdz_mime_type.h",
   ]
 
   deps = [

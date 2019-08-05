@@ -505,7 +505,7 @@ source_set("chrome_content_gpu_overlay_manifest") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//components/arc/common:media" ]
+    deps += [ "//components/arc/mojom:media" ]
   }
 }
 

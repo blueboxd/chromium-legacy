@@ -395,7 +395,7 @@ fieldset {
 }
 
 button {
-    -webkit-appearance: button;
+    -webkit-appearance: button; /* AutoAppearanceFor() should match to this. */
 }
 
 /* Form controls don't go vertical. */
@@ -423,7 +423,7 @@ input[type="hidden" i] {
 }
 
 input {
-    -webkit-appearance: textfield;
+    -webkit-appearance: textfield; /* AutoAppearanceFor() should match to this. */
     padding: 1px;
     background-color: white;
     border: 2px inset;
@@ -432,7 +432,7 @@ input {
 }
 
 input[type="search" i] {
-    -webkit-appearance: searchfield;
+    -webkit-appearance: searchfield; /* AutoAppearanceFor() should match to this. */
     box-sizing: border-box;
 }
 
@@ -444,7 +444,7 @@ input::-webkit-textfield-decoration-container {
 }
 
 input::-webkit-clear-button {
-    -webkit-appearance: searchfield-cancel-button;
+    -webkit-appearance: searchfield-cancel-button; /* AutoAppearanceFor() should match to this. */
     display: inline-block;
     cursor: default;
     flex: none;
@@ -460,7 +460,7 @@ input:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-clear-button {
 }
 
 input[type="search" i]::-webkit-search-cancel-button {
-    -webkit-appearance: searchfield-cancel-button;
+    -webkit-appearance: searchfield-cancel-button; /* AutoAppearanceFor() should match to this. */
     display: block;
     cursor: default;
     flex: none;
@@ -477,7 +477,7 @@ input[type="search" i]:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-se
 }
 
 input::-webkit-inner-spin-button {
-    -webkit-appearance: inner-spin-button;
+    -webkit-appearance: inner-spin-button; /* AutoAppearanceFor() should match to this. */
     display: inline-block;
     cursor: default;
     flex: none;
@@ -497,7 +497,7 @@ select {
 }
 
 textarea {
-    -webkit-appearance: textarea;
+    -webkit-appearance: textarea; /* AutoAppearanceFor() should match to this. */
     background-color: white;
     border: 1px solid;
     -webkit-rtl-ordering: logical;
@@ -544,7 +544,7 @@ input[type="password" i]::-internal-input-suggested {
 }
 
 input[type="hidden" i], input[type="image" i], input[type="file" i] {
-    -webkit-appearance: initial;
+    -webkit-appearance: initial; /* AutoAppearanceFor() should match to this. */
     padding: initial;
     background-color: initial;
     border: initial;
@@ -588,13 +588,13 @@ input[type="radio" i], input[type="checkbox" i] {
 }
 
 input[type="button" i], input[type="submit" i], input[type="reset" i] {
-    -webkit-appearance: push-button;
+    -webkit-appearance: push-button; /* AutoAppearanceFor() should match to this. */
     -webkit-user-select: none;
     white-space: pre
 }
 
 input[type="file" i]::-webkit-file-upload-button {
-    -webkit-appearance: push-button;
+    -webkit-appearance: push-button; /* AutoAppearanceFor() should match to this. */
     -webkit-user-modify: read-only !important;
     white-space: nowrap;
     margin: 0;
@@ -613,7 +613,7 @@ input[type="button" i], input[type="submit" i], input[type="reset" i], input[typ
 }
 
 input[type="range" i] {
-    -webkit-appearance: slider-horizontal;
+    -webkit-appearance: slider-horizontal; /* AutoAppearanceFor() should match to this. */
     padding: initial;
     border: initial;
     margin: 2px;
@@ -622,7 +622,7 @@ input[type="range" i] {
 }
 
 input[type="range" i]::-webkit-slider-container, input[type="range" i]::-webkit-media-slider-container {
-    -webkit-appearance: inherit;
+    -webkit-appearance: inherit; /* AutoAppearanceFor() should match to this. */
     flex: 1;
     min-width: 0;
     box-sizing: border-box;
@@ -641,7 +641,7 @@ input[type="range" i]::-webkit-slider-runnable-track {
 }
 
 input[type="range" i]::-webkit-slider-thumb, input[type="range" i]::-webkit-media-slider-thumb {
-    -webkit-appearance: sliderthumb-horizontal;
+    -webkit-appearance: sliderthumb-horizontal; /* AutoAppearanceFor() should match to this. */
     box-sizing: border-box;
     -webkit-user-modify: read-only !important;
     display: block;
@@ -689,17 +689,17 @@ param {
 }
 
 input[type="checkbox" i] {
-    -webkit-appearance: checkbox;
+    -webkit-appearance: checkbox; /* AutoAppearanceFor() should match to this. */
     box-sizing: border-box;
 }
 
 input[type="radio" i] {
-    -webkit-appearance: radio;
+    -webkit-appearance: radio; /* AutoAppearanceFor() should match to this. */
     box-sizing: border-box;
 }
 
 input[type="color" i] {
-    -webkit-appearance: square-button;
+    -webkit-appearance: square-button; /* AutoAppearanceFor() should match to this. */
     width: 44px;
     height: 23px;
     background-color: ButtonFace;
@@ -727,7 +727,7 @@ input[type="color" i]::-webkit-color-swatch {
 }
 
 input[type="color" i][list] {
-    -webkit-appearance: menulist;
+    -webkit-appearance: menulist; /* AutoAppearanceFor() should match to this. */
     width: 88px;
     height: 23px
 }
@@ -784,7 +784,7 @@ input[readonly]::-webkit-calendar-picker-indicator {
 }
 
 select {
-    -webkit-appearance: menulist;
+    -webkit-appearance: menulist; /* AutoAppearanceFor() should match to this. */
     box-sizing: border-box;
     align-items: center;
     border: 1px solid;
@@ -800,7 +800,7 @@ select:not(:-internal-list-box) {
 }
 
 select:-internal-list-box {
-    -webkit-appearance: listbox;
+    -webkit-appearance: listbox; /* AutoAppearanceFor() should match to this. */
     align-items: flex-start;
     border: 1px inset gray;
     border-radius: initial;
@@ -864,7 +864,7 @@ output {
 /* meter */
 
 meter {
-    -webkit-appearance: meter;
+    -webkit-appearance: meter; /* AutoAppearanceFor() should match to this. */
     box-sizing: border-box;
     display: inline-block;
     height: 1em;
@@ -874,7 +874,7 @@ meter {
 }
 
 meter::-webkit-meter-inner-element {
-    -webkit-appearance: inherit;
+    -webkit-appearance: inherit; /* AutoAppearanceFor() should match to this. */
     box-sizing: inherit;
     display: none;
     -webkit-user-modify: read-only !important;
@@ -922,7 +922,7 @@ meter::-webkit-meter-even-less-good-value {
 /* progress */
 
 progress {
-    -webkit-appearance: progress-bar;
+    -webkit-appearance: progress-bar; /* AutoAppearanceFor() should match to this. */
     box-sizing: border-box;
     display: inline-block;
     height: 1em;

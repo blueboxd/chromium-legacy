@@ -30,7 +30,7 @@
         padding: 8px 0;
       }
 
-      #progress-container {
+      #input-overlay {
         border-radius: 4px;
         height: 100%;
         left: 0;
@@ -38,6 +38,19 @@
         pointer-events: none;
         position: absolute;
         top: 0;
+        width: 100%;
+      }
+
+      #input-box {
+        height: 100%;
+        left: 0;
+        pointer-events: none;
+        top: 0;
+        width: 100%;
+      }
+
+      #dropdown-box {
+        pointer-events: initial;
         width: 100%;
       }
 
@@ -74,20 +87,24 @@
         placeholder="[[placeholder]]" readonly="[[readonly]]"
         error-message="[[getErrorMessage_(errorMessage, errorMessageAllowed)]]"
         invalid="[[shouldShowErrorMessage_(errorMessage, errorMessageAllowed)]]">
-      <div id="progress-container" slot="suffix">
-        <paper-progress id="loading" indeterminate hidden="[[!showLoading]]">
-        </paper-progress>
+      <div id="input-overlay" slot="suffix">
+        <div id="input-box">
+          <paper-progress id="loading" indeterminate hidden="[[!showLoading]]">
+          </paper-progress>
+        </div>
+        <div id="dropdown-box">
+          <iron-dropdown horizontal-align="left" vertical-align="top"
+              vertical-offset="4">
+            <div slot="dropdown-content">
+              <template is="dom-repeat" items="[[items]]"
+                  filter="[[filterItems_(searchTerm_)]]">
+                <button class="list-item" on-click="onSelect_">[[item]]</button>
+              </template>
+            </div>
+          </iron-dropdown>
+        </div>
       </div>
     </cr-input>
-    <iron-dropdown horizontal-align="left" vertical-align="top"
-        vertical-offset="52">
-      <div slot="dropdown-content">
-        <template is="dom-repeat" items="[[items]]"
-            filter="[[filterItems_(searchTerm_)]]">
-          <button class="list-item" on-click="onSelect_">[[item]]</button>
-        </template>
-      </div>
-    </iron-dropdown>
   </template>
   <script src="cr_searchable_drop_down.js"></script>
 </dom-module>

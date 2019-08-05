@@ -882,6 +882,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
     return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
   }
+
+  // Evicts the page from the back forward cache due to e.g., JavaScript
+  // execution.
+  virtual void EvictFromBackForwardCache() {}
 };
 
 }  // namespace blink

@@ -35,7 +35,7 @@ void WebContentsTracker::Start(int render_process_id, int main_render_frame_id,
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     StartObservingWebContents(render_process_id, main_render_frame_id);
   } else {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WebContentsTracker::StartObservingWebContents, this,
                        render_process_id, main_render_frame_id));
@@ -51,10 +51,9 @@ void WebContentsTracker::Stop() {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     WebContentsObserver::Observe(nullptr);
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&WebContentsTracker::Observe, this,
-                       static_cast<WebContents*>(nullptr)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&WebContentsTracker::Observe, this,
+                                  static_cast<WebContents*>(nullptr)));
   }
 }
 

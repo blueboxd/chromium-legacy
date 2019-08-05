@@ -1096,6 +1096,8 @@ jumbo_source_set("browser") {
     "keyboard_lock/keyboard_lock_service_impl.h",
     "loader/browser_initiated_resource_request.cc",
     "loader/browser_initiated_resource_request.h",
+    "loader/cached_navigation_url_loader.cc",
+    "loader/cached_navigation_url_loader.h",
     "loader/cross_origin_read_blocking_checker.cc",
     "loader/cross_origin_read_blocking_checker.h",
     "loader/data_pipe_to_source_stream.cc",

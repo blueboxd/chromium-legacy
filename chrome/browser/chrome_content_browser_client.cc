@@ -725,7 +725,7 @@ const char* const kPredefinedAllowedSocketOrigins[] = {
 // running on Windows 10 1511 and above. See
 // https://blogs.windows.com/blog/tag/code-integrity-guard/.
 const base::Feature kRendererCodeIntegrity{"RendererCodeIntegrity",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD)
 
 enum AppLoadedInTabSource {

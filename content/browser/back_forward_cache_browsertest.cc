@@ -340,10 +340,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VisibleURL) {
 
   // 3) Go back to A.
   web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(url_a, web_contents()->GetVisibleURL());
 
   // 4) Go forward to B.
   web_contents()->GetController().GoForward();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(url_b, web_contents()->GetVisibleURL());
 }
 
@@ -700,7 +702,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_FALSE(delete_rfh_a.deleted());
   EXPECT_FALSE(delete_rfh_b.deleted());
   EXPECT_EQ(rfh_a, current_frame_host());
-  EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
   EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
   {
     base::string16 title_when_loaded = base::UTF8ToUTF16("loaded!");
@@ -829,6 +830,77 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // The page should be deleted (not cached).
   delete_rfh_a.WaitUntilDeleted();
+}
+
+// Navigate from A to B, then cause JavaScript execution on A, then go back.
+// Test the RenderFrameHost in the cache is evicted by JavaScript.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       EvictionOnJavaScriptExecution) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a(rfh_a);
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_b(rfh_b);
+
+  EXPECT_FALSE(delete_rfh_a.deleted());
+  EXPECT_FALSE(delete_rfh_b.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
+
+  // 3) Execute JavaScript on A.
+  //
+  // Run JavaScript on a page in the back-forward cache. The page should be
+  // evicted. As the frame is deleted, ExecJs returns false without executing.
+  EXPECT_FALSE(ExecJs(rfh_a, "console.log('hi');"));
+
+  // RenderFrameHost A is evicted from the BackForwardCache:
+  delete_rfh_a.WaitUntilDeleted();
+}
+
+// Similar to BackForwardCacheBrowserTest.EvictionOnJavaScriptExecution.
+// Test case: A(B) -> C -> JS on B -> A(B)
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       EvictionOnJavaScriptExecutionIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+
+  // 1) Navigate to A(B).
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a(rfh_a);
+  RenderFrameDeletedObserver delete_rfh_b(rfh_b);
+
+  // 2) Navigate to C.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+  RenderFrameHostImpl* rfh_c = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_c(rfh_c);
+
+  EXPECT_FALSE(delete_rfh_a.deleted());
+  EXPECT_FALSE(delete_rfh_b.deleted());
+  EXPECT_FALSE(delete_rfh_c.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+  EXPECT_TRUE(rfh_b->is_in_back_forward_cache());
+  EXPECT_FALSE(rfh_c->is_in_back_forward_cache());
+
+  // 3) Execute JavaScript on B.
+  //
+  // As the frame is deleted, ExecJs returns false without executing.
+  EXPECT_FALSE(ExecJs(rfh_b, "console.log('hi');"));
+
+  // The A(B) page is evicted. So A and B are removed:
+  delete_rfh_a.WaitUntilDeleted();
+  delete_rfh_b.WaitUntilDeleted();
 }
 
 }  // namespace content

@@ -740,12 +740,13 @@ bool WebStateImpl::CanTakeSnapshot() const {
 void WebStateImpl::TakeSnapshot(const gfx::RectF& rect,
                                 SnapshotCallback callback) {
   DCHECK(CanTakeSnapshot());
+  // Move the callback to a __block pointer, which will be in scope as long
+  // as the callback is retained.
   __block SnapshotCallback shared_callback = std::move(callback);
-  [web_controller_
-      takeSnapshotWithRect:rect.ToCGRect()
-                completion:^(UIImage* snapshot) {
-                  std::move(shared_callback).Run(gfx::Image(snapshot));
-                }];
+  [web_controller_ takeSnapshotWithRect:rect.ToCGRect()
+                             completion:^(UIImage* snapshot) {
+                               shared_callback.Run(gfx::Image(snapshot));
+                             }];
 }
 
 void WebStateImpl::OnNavigationStarted(web::NavigationContextImpl* context) {

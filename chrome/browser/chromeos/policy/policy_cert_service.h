@@ -64,10 +64,8 @@ class PolicyCertService : public KeyedService,
   }
   const net::CertificateList& trust_anchors() const { return trust_anchors_; }
 
-  // UserNetworkConfigurationUpdater::PolicyProvidedCertsObserver:
-  void OnPolicyProvidedCertsChanged(
-      const net::CertificateList& all_server_and_authority_certs,
-      const net::CertificateList& trust_anchors) override;
+  // PolicyCertificateProvider::Observer:
+  void OnPolicyProvidedCertsChanged() override;
 
   // KeyedService:
   void Shutdown() override;
@@ -76,11 +74,16 @@ class PolicyCertService : public KeyedService,
       const std::string& user_id,
       user_manager::UserManager* user_manager);
 
+  // Sets the profile-wide policy-provided trust anchors reported by this
+  // PolicyCertService. This is only callable for instances created through
+  // CreateForTesting.
+  void SetPolicyTrustAnchorsForTesting(
+      const net::CertificateList& trust_anchors);
+
  private:
   PolicyCertService(const std::string& user_id,
                     user_manager::UserManager* user_manager);
 
-  void StartObservingPolicyCertsInternal(bool notify);
   void OnPolicyProvidedCertsChangedInternal(
       const net::CertificateList& all_server_and_authority_certs,
       const net::CertificateList& trust_anchors,

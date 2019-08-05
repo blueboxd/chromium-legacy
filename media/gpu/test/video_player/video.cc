@@ -103,6 +103,11 @@ gfx::Size Video::Resolution() const {
   return resolution_;
 }
 
+base::TimeDelta Video::GetDuration() const {
+  return base::TimeDelta::FromSecondsD(static_cast<double>(num_frames_) /
+                                       static_cast<double>(frame_rate_));
+}
+
 const std::vector<std::string>& Video::FrameChecksums() const {
   return frame_checksums_;
 }

@@ -71,7 +71,9 @@ class WebURL;
 // methods must be called from a worker thread. Such methods are suffixed with
 // *OnWorkerThread or have header comments.
 //
-// Owned by WebSharedWorkerClient.
+// Owned by WebSharedWorkerClient. Destroyed in TerminateWorkerThread() or
+// DidTerminateWorkerThread() via
+// WebSharedWorkerClient::WorkerContextDestroyed().
 class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
                                               public WorkerShadowPage::Client {
  public:
@@ -116,12 +118,13 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void DidFailToFetchClassicScript();
   void DidEvaluateClassicScript(bool success);
   void DidCloseWorkerGlobalScope();
+  // This synchronously destroys |this|.
   void DidTerminateWorkerThread();
 
  private:
   SharedWorkerThread* GetWorkerThread() { return worker_thread_.get(); }
 
-  // Shuts down the worker thread.
+  // Shuts down the worker thread. This may synchronously destroy |this|.
   void TerminateWorkerThread();
 
   void OnAppCacheSelected();

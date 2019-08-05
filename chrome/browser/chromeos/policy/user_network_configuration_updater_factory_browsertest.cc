@@ -94,11 +94,7 @@ class WebTrustedCertsChangedObserver
   WebTrustedCertsChangedObserver() = default;
 
   // chromeos::PolicyCertificateProvider::Observer
-  void OnPolicyProvidedCertsChanged(
-      const net::CertificateList& all_server_and_authority_certs,
-      const net::CertificateList& trust_anchors) override {
-    run_loop_.Quit();
-  }
+  void OnPolicyProvidedCertsChanged() override { run_loop_.Quit(); }
 
   void Wait() { run_loop_.Run(); }
 

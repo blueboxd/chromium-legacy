@@ -155,6 +155,17 @@ void BackForwardCache::Resume(RenderFrameHostImpl* main_rfh) {
   SetPageFrozenImpl(main_rfh, /*freeze = */ false, &unfrozen_render_view_hosts);
 }
 
+void BackForwardCache::EvictDocument(RenderFrameHostImpl* render_frame_host) {
+  auto matching_rfh = std::find_if(
+      render_frame_hosts_.begin(), render_frame_hosts_.end(),
+      [render_frame_host](std::unique_ptr<RenderFrameHostImpl>& rfh) {
+        return rfh.get() == render_frame_host;
+      });
+
+  DCHECK(matching_rfh != render_frame_hosts_.end());
+  render_frame_hosts_.erase(matching_rfh);
+}
+
 std::unique_ptr<RenderFrameHostImpl> BackForwardCache::RestoreDocument(
     int navigation_entry_id) {
   // Select the RenderFrameHostImpl matching the navigation entry.
@@ -185,6 +196,16 @@ void BackForwardCache::DisableForTesting() {
   // called DisableForTesting(). This is not something we currently expect tests
   // to do.
   DCHECK(render_frame_hosts_.empty());
+}
+
+bool BackForwardCache::ContainsDocument(int navigation_entry_id) {
+  auto matching_rfh = std::find_if(
+      render_frame_hosts_.begin(), render_frame_hosts_.end(),
+      [navigation_entry_id](std::unique_ptr<RenderFrameHostImpl>& rfh) {
+        return rfh->nav_entry_id() == navigation_entry_id;
+      });
+
+  return matching_rfh != render_frame_hosts_.end();
 }
 
 }  // namespace content

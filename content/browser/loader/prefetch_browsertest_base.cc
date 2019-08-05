@@ -27,8 +27,12 @@ PrefetchBrowserTestBase::ResponseEntry::ResponseEntry() = default;
 PrefetchBrowserTestBase::ResponseEntry::ResponseEntry(
     const std::string& content,
     const std::string& content_type,
-    const std::vector<std::pair<std::string, std::string>>& headers)
-    : content(content), content_type(content_type), headers(headers) {}
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    net::HttpStatusCode code)
+    : content(content),
+      content_type(content_type),
+      headers(headers),
+      code(code) {}
 
 PrefetchBrowserTestBase::ResponseEntry::ResponseEntry(ResponseEntry&& other) =
     default;
@@ -73,7 +77,7 @@ PrefetchBrowserTestBase::ServeResponses(
   auto found = response_map_.find(request.relative_url);
   if (found != response_map_.end()) {
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-    response->set_code(net::HTTP_OK);
+    response->set_code(found->second.code);
     response->set_content(found->second.content);
     response->set_content_type(found->second.content_type);
     for (const auto& header : found->second.headers) {

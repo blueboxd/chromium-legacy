@@ -67,6 +67,16 @@ namespace {
 const bool kFalse = false;
 const bool kTrue = true;
 
+std::unique_ptr<content::NavigationSimulator> NavigateAndKeepLoading(
+    content::WebContents* web_contents,
+    const GURL& url) {
+  auto navigation =
+      content::NavigationSimulator::CreateBrowserInitiated(url, web_contents);
+  navigation->SetKeepLoading(true);
+  navigation->Commit();
+  return navigation;
+}
+
 }  // namespace
 
 namespace safe_browsing {
@@ -898,7 +908,7 @@ TEST_F(ClientSideDetectionHostTest,
 
   ExpectPreClassificationChecks(GURL(malware_verdict.url()), &kFalse, &kFalse,
                                 &kFalse, &kFalse, &kFalse, &kFalse);
-  NavigateAndCommit(GURL(malware_verdict.url()));
+  NavigateAndKeepLoading(web_contents(), GURL(malware_verdict.url()));
   WaitAndCheckPreClassificationChecks();
 
   ClientSideDetectionService::ClientReportMalwareRequestCallback cb;
@@ -1034,7 +1044,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckPass) {
   GURL url("http://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(&url);
@@ -1046,7 +1056,7 @@ TEST_F(ClientSideDetectionHostTest,
   GURL url("http://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(&url);
@@ -1057,7 +1067,7 @@ TEST_F(ClientSideDetectionHostTest,
   EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_)).Times(0);
   GURL inpage("http://host.com/#foo");
   ExpectPreClassificationChecks(inpage, NULL, NULL, NULL, NULL, NULL, NULL);
-  NavigateAndCommit(inpage);
+  NavigateAndKeepLoading(web_contents(), inpage);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(NULL);
@@ -1070,6 +1080,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckXHTML) {
   auto navigation =
       content::NavigationSimulator::CreateBrowserInitiated(url, web_contents());
   navigation->SetContentsMimeType("application/xhtml+xml");
+  navigation->SetKeepLoading(true);
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
   navigation->Commit();
@@ -1084,7 +1095,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckTwoNavigations) {
   GURL url1("http://host1.com/");
   ExpectPreClassificationChecks(url1, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
-  NavigateAndCommit(url1);
+  NavigateAndKeepLoading(web_contents(), url1);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(&url1);
@@ -1093,7 +1104,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckTwoNavigations) {
   GURL url2("http://host2.com/");
   ExpectPreClassificationChecks(url2, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
-  NavigateAndCommit(url2);
+  NavigateAndKeepLoading(web_contents(), url2);
   // Re-override the binder for PhishingDetector because navigation causes
   // a new web InterfaceProvider to be created
   InitTestApi();
@@ -1114,6 +1125,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckMimeType) {
   auto navigation =
       content::NavigationSimulator::CreateBrowserInitiated(url, web_contents());
   navigation->SetContentsMimeType("image/jpeg");
+  navigation->SetKeepLoading(true);
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
   navigation->Commit();
@@ -1155,7 +1167,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckCsdWhitelist) {
   GURL url("http://host5.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kTrue, &kFalse, &kFalse, &kFalse,
                                 &kFalse);
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(NULL);
@@ -1168,7 +1180,7 @@ TEST_F(ClientSideDetectionHostTest,
   GURL url("http://host5.com/kill-switch");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(&url);
@@ -1182,7 +1194,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckInvalidCache) {
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kTrue, NULL,
                                 &kFalse);
 
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(&url);
@@ -1196,7 +1208,7 @@ TEST_F(ClientSideDetectionHostTest,
   GURL url("http://host7.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse, &kTrue,
                                 &kFalse);
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(NULL);
@@ -1208,7 +1220,7 @@ TEST_F(ClientSideDetectionHostTest,
   GURL url("http://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kTrue);
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(&url);
@@ -1220,7 +1232,7 @@ TEST_F(ClientSideDetectionHostTest,
   GURL url("http://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse, &kTrue,
                                 &kTrue);
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(NULL);
@@ -1231,7 +1243,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckHttpsUrl) {
   GURL url("https://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(&url);
@@ -1243,7 +1255,7 @@ TEST_F(ClientSideDetectionHostTest,
   GURL url("file://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse);
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(NULL);
@@ -1261,7 +1273,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckValidCached) {
   EXPECT_CALL(*ui_manager_.get(), DisplayBlockingPage(_))
       .WillOnce(SaveArg<0>(&resource));
 
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
   EXPECT_EQ(url, resource.url);
   EXPECT_EQ(url, resource.original_url);
@@ -1281,7 +1293,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationWhitelistedByPolicy) {
   GURL url("http://example.com/");
   ExpectPreClassificationChecks(url, &kFalse, NULL, NULL, NULL, NULL, NULL);
 
-  NavigateAndCommit(url);
+  NavigateAndKeepLoading(web_contents(), url);
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(NULL);

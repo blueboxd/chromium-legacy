@@ -39,7 +39,7 @@ static_library("gpu") {
 
   if (is_chromeos) {
     deps += [
-      "//components/arc/common:media",
+      "//components/arc/mojom:media",
       "//components/arc/video_accelerator",
       "//gpu/command_buffer/service",
       "//services/service_manager/public/cpp",

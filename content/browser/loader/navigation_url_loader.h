@@ -42,6 +42,9 @@ class CONTENT_EXPORT NavigationURLLoader {
   // |delegate| outlives the loader. |request_body| must not be accessed on the
   // UI thread after this point.
   //
+  // If |is_served_from_back_forward_cache| is true, a dummy
+  // CachedNavigationURLLoader will be returned.
+  //
   // TODO(davidben): When navigation is disentangled from the loader, the
   // request parameters should not come in as a navigation-specific
   // structure. Information like has_user_gesture and
@@ -57,6 +60,7 @@ class CONTENT_EXPORT NavigationURLLoader {
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
       NavigationURLLoaderDelegate* delegate,
+      bool is_served_from_back_forward_cache,
       std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
           initial_interceptors = {});
 

@@ -32,7 +32,6 @@ void AppBannerController::BannerPromptRequest(
     mojom::blink::AppBannerServicePtr service_ptr,
     mojom::blink::AppBannerEventRequest event_request,
     const Vector<String>& platforms,
-    bool require_gesture,
     BannerPromptRequestCallback callback) {
   // TODO(hajimehoshi): Add tests for the case the frame is detached.
   if (!frame_ || !frame_->GetDocument() || !frame_->IsAttached()) {
@@ -43,8 +42,8 @@ void AppBannerController::BannerPromptRequest(
   mojom::AppBannerPromptReply reply =
       frame_->DomWindow()->DispatchEvent(*BeforeInstallPromptEvent::Create(
           event_type_names::kBeforeinstallprompt, *frame_,
-          std::move(service_ptr), std::move(event_request), platforms,
-          require_gesture)) == DispatchEventResult::kNotCanceled
+          std::move(service_ptr), std::move(event_request), platforms)) ==
+              DispatchEventResult::kNotCanceled
           ? mojom::AppBannerPromptReply::NONE
           : mojom::AppBannerPromptReply::CANCEL;
 

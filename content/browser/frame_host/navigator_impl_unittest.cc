@@ -179,8 +179,6 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
   const GURL kUrl2("http://www.google.com");
 
   contents()->NavigateAndCommit(kUrl1);
-  main_test_rfh()->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(main_test_rfh()->GetRoutingID()));
   EXPECT_TRUE(main_test_rfh()->IsRenderFrameLive());
   int32_t site_instance_id_1 = main_test_rfh()->GetSiteInstance()->GetId();
 
@@ -198,7 +196,6 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
   EXPECT_EQ(NavigationRequest::STARTED, request->state());
   EXPECT_EQ(kUrl2, request->common_params().url);
   EXPECT_FALSE(request->browser_initiated());
-  EXPECT_FALSE(main_test_rfh()->is_loading());
   if (AreAllSitesIsolatedForTesting() ||
       IsProactivelySwapBrowsingInstanceEnabled()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
@@ -217,7 +214,6 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
 
   // Commit the navigation.
   navigation->Commit();
-  EXPECT_TRUE(main_test_rfh()->is_loading());
   EXPECT_TRUE(main_test_rfh()->is_active());
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -1006,7 +1002,7 @@ TEST_F(NavigatorTest, DataUrls) {
   auto navigation_to_data_url =
       NavigationSimulator::CreateRendererInitiated(kUrl2, main_test_rfh());
   navigation_to_data_url->Start();
-  EXPECT_TRUE(main_test_rfh()->is_loading());
+  EXPECT_FALSE(main_test_rfh()->is_loading());
   EXPECT_TRUE(node->navigation_request());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }

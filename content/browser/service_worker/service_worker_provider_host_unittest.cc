@@ -485,13 +485,13 @@ class MockServiceWorkerContainer : public blink::mojom::ServiceWorkerContainer {
 
 TEST_F(ServiceWorkerProviderHostTest, Controller) {
   // Create a host.
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
+      CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                         /*are_ancestors_secure=*/true);
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
-          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
+      std::move(host_and_info->host);
   remote_endpoints_.emplace_back();
-  remote_endpoints_.back().BindForWindow(std::move(provider_info));
+  remote_endpoints_.back().BindForWindow(std::move(host_and_info->info));
   auto container = std::make_unique<MockServiceWorkerContainer>(
       std::move(*remote_endpoints_.back().client_request()));
 
@@ -521,13 +521,13 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
 
 TEST_F(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
   // Create a host.
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
+      CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                         /*are_ancestors_secure=*/true);
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
-          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
+      std::move(host_and_info->host);
   remote_endpoints_.emplace_back();
-  remote_endpoints_.back().BindForWindow(std::move(provider_info));
+  remote_endpoints_.back().BindForWindow(std::move(host_and_info->info));
   auto container = std::make_unique<MockServiceWorkerContainer>(
       std::move(*remote_endpoints_.back().client_request()));
 
@@ -889,12 +889,16 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
     blink::mojom::ServiceWorkerProviderType provider_type,
     const GURL url) {
   {
+    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
     auto provider_info =
         blink::mojom::ServiceWorkerProviderInfoForClient::New();
+    provider_info->client_request = mojo::MakeRequest(&client_ptr_info);
+    host_request = mojo::MakeRequest(&provider_info->host_ptr_info);
     base::WeakPtr<ServiceWorkerProviderHost> host =
         ServiceWorkerProviderHost::PreCreateForWebWorker(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
-            provider_type, &provider_info);
+            provider_type, std::move(host_request), std::move(client_ptr_info));
     host->UpdateUrls(url, url);
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
     host->CompleteWebWorkerPreparation();
@@ -902,14 +906,14 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
   }
 
   {
-    auto provider_info =
-        blink::mojom::ServiceWorkerProviderInfoForClient::New();
+    std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
+        CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                           /*are_ancestors_secure=*/true);
     base::WeakPtr<ServiceWorkerProviderHost> host =
-        ServiceWorkerProviderHost::PreCreateNavigationHost(
-            helper_->context()->AsWeakPtr(), true,
-            FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
+        std::move(host_and_info->host);
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-    remote_endpoint.BindForWindow(std::move(provider_info));
+    remote_endpoint.BindForWindow(std::move(host_and_info->info));
+
     FinishNavigation(host.get());
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
 
@@ -938,16 +942,16 @@ TEST_F(ServiceWorkerProviderHostTest,
 
 // Tests the client phase transitions for a navigation.
 TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
+      CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                         /*are_ancestors_secure=*/true);
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          helper_->context()->AsWeakPtr(), true,
-          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
+      std::move(host_and_info->host);
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  remote_endpoint.BindForWindow(std::move(host_and_info->info));
   EXPECT_FALSE(host->is_response_committed());
   EXPECT_FALSE(host->is_execution_ready());
 
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  remote_endpoint.BindForWindow(std::move(provider_info));
   FinishNavigation(host.get());
   EXPECT_TRUE(host->is_response_committed());
   EXPECT_FALSE(host->is_execution_ready());
@@ -964,11 +968,15 @@ TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
 void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
     blink::mojom::ServiceWorkerProviderType provider_type,
     const GURL url) {
+  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
   auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  provider_info->client_request = mojo::MakeRequest(&client_ptr_info);
+  host_request = mojo::MakeRequest(&provider_info->host_ptr_info);
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateForWebWorker(
-          context_->AsWeakPtr(), helper_->mock_render_process_id(),
-          provider_type, &provider_info);
+          helper_->context()->AsWeakPtr(), helper_->mock_render_process_id(),
+          provider_type, std::move(host_request), std::move(client_ptr_info));
   EXPECT_FALSE(host->is_response_committed());
   EXPECT_FALSE(host->is_execution_ready());
 

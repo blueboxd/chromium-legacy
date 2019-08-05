@@ -27,6 +27,7 @@ def PostProcess(df):
       'quarter')['timestamp'].transform('max').dt.date
 
   # Change units for values in ms to seconds, and percent values.
+  df['units'] = df['units'].fillna('')
   is_ms_unit = df['units'].str.startswith('ms_')
   df.loc[is_ms_unit, 'value'] = df['value'] / 1000
 

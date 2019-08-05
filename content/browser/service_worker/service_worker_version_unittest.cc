@@ -1263,18 +1263,19 @@ TEST_F(ServiceWorkerVersionTest,
       0,
       helper_->mock_render_process_host()->foreground_service_worker_count());
 
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+
   // Add a controllee, but don't begin the navigation commit yet.  This will
   // cause the client to have an invalid process id like we see in real
   // navigations.
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  registration_->SetActiveVersion(version_);
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
+      CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                         /*are_ancestors_secure=*/true);
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          helper_->context()->AsWeakPtr(), true /* is_parent_frame_secure */,
-          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
-  remote_endpoint.BindForWindow(std::move(provider_info));
+      std::move(host_and_info->host);
+  remote_endpoint.BindForWindow(std::move(host_and_info->info));
   host->UpdateUrls(registration_->scope(), registration_->scope());
   host->SetControllerRegistration(registration_,
                                   false /* notify_controllerchange */);

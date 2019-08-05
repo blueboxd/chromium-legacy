@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/arc/common/screen_capture.mojom.h"
+#include "components/arc/mojom/screen_capture.mojom.h"
 #include "components/viz/common/gl_helper.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/compositor/compositor_animation_observer.h"

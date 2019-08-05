@@ -45,8 +45,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_app_instance.h"
@@ -126,9 +126,9 @@ class WebAppInstallTaskTest : public WebAppTest {
 
     ui_manager_ = std::make_unique<TestWebAppUiManager>();
 
-    install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-        registrar_.get(), icon_manager_.get());
-    install_finalizer_->SetSubsystems(ui_manager_.get());
+    install_finalizer_ =
+        std::make_unique<WebAppInstallFinalizer>(icon_manager_.get());
+    install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get());
 
     auto data_retriever = std::make_unique<TestDataRetriever>();
     data_retriever_ = data_retriever.get();

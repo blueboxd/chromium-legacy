@@ -20,7 +20,7 @@ class NFCReader;
 class NFCWriter;
 
 // This is a proxy class used by NFCWriter(s) and NFCReader(s) to connect
-// to the DeviceService for device::mojom::blink::NFC service.
+// to implementation of device::mojom::blink::NFC interface.
 class MODULES_EXPORT NFCProxy final
     : public GarbageCollectedFinalized<NFCProxy>,
       public PageVisibilityObserver,
@@ -49,11 +49,10 @@ class MODULES_EXPORT NFCProxy final
   void StartReading(NFCReader*);
   void StopReading(NFCReader*);
   bool IsReading(const NFCReader*);
-  void Push(device::mojom::blink::NDEFMessagePtr message,
-            device::mojom::blink::NFCPushOptionsPtr options,
-            device::mojom::blink::NFC::PushCallback cb);
-  void CancelPush(const String& target,
-                  device::mojom::blink::NFC::CancelPushCallback callback);
+  void Push(device::mojom::blink::NDEFMessagePtr,
+            device::mojom::blink::NFCPushOptionsPtr,
+            device::mojom::blink::NFC::PushCallback);
+  void CancelPush(const String&, device::mojom::blink::NFC::CancelPushCallback);
 
  private:
   // Implementation of device::mojom::blink::NFCClient.
@@ -61,9 +60,9 @@ class MODULES_EXPORT NFCProxy final
                const String&,
                device::mojom::blink::NDEFMessagePtr) override;
 
-  void OnReaderRegistered(NFCReader* reader,
-                          uint32_t id,
-                          device::mojom::blink::NFCErrorPtr error);
+  void OnReaderRegistered(NFCReader*,
+                          uint32_t watch_id,
+                          device::mojom::blink::NFCErrorPtr);
 
   // Implementation of PageVisibilityObserver.
   void PageVisibilityChanged() override;
@@ -74,13 +73,17 @@ class MODULES_EXPORT NFCProxy final
   void UpdateSuspendedStatus();
   bool ShouldSuspendNFC() const;
 
-  // For the Mojo connection with the DeviceService.
   void EnsureMojoConnection();
+
+  // This could only happen when the embedder does not implement NFC interface.
   void OnMojoConnectionError();
 
-  // The <NFCReader, WatchId> map. An reader is inserted with the WatchId
-  // initially being 0, then we send a watch request to |nfc_|, the watch ID is
-  // then updated to the value (>= 1) passed to OnReaderRegistered().
+  // Identifies watch requests tied to a given Mojo connection of NFC interface,
+  // i.e. |nfc_|. Incremented each time a watch request is made.
+  uint32_t next_watch_id_ = 1;
+
+  // The <NFCReader, WatchId> map keeps all readers that have started reading.
+  // The watch id comes from |next_watch_id_|.
   using ReaderMap = HeapHashMap<WeakMember<NFCReader>, uint32_t>;
   ReaderMap readers_;
 

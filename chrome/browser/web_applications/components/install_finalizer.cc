@@ -9,7 +9,9 @@
 
 namespace web_app {
 
-void InstallFinalizer::SetSubsystems(WebAppUiManager* ui_manager) {
+void InstallFinalizer::SetSubsystems(AppRegistrar* registrar,
+                                     WebAppUiManager* ui_manager) {
+  registrar_ = registrar;
   ui_manager_ = ui_manager;
 }
 

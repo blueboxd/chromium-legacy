@@ -230,7 +230,7 @@ TEST_P(WebStateTest, Snapshot) {
   CGRect rect = [web_state()->GetView() bounds];
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
   web_state()->TakeSnapshot(
-      gfx::RectF(rect), base::BindOnce(^(const gfx::Image& snapshot) {
+      gfx::RectF(rect), base::BindRepeating(^(const gfx::Image& snapshot) {
         ASSERT_FALSE(snapshot.IsEmpty());
         EXPECT_GT(snapshot.Width(), 0);
         EXPECT_GT(snapshot.Height(), 0);

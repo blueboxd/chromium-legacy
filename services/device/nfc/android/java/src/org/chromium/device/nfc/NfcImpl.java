@@ -164,7 +164,7 @@ public class NfcImpl implements Nfc {
     /**
      * Sets NfcClient. NfcClient interface is used to notify mojo NFC service client when NFC
      * device is in proximity and has NdefMessage that matches NfcReaderOptions criteria.
-     * @see Nfc#watch(NfcReaderOptions options, WatchResponse callback)
+     * @see Nfc#watch(NfcReaderOptions options, int id, WatchResponse callback)
      *
      * @param client @see NfcClient
      */
@@ -237,20 +237,25 @@ public class NfcImpl implements Nfc {
 
     /**
      * Watch method allows to set filtering criteria for NdefMessages that are found when NFC device
-     * is within proximity. On success, watch ID is returned to caller through WatchResponse
-     * callback. When NdefMessage that matches NfcReaderOptions is found, it is passed to NfcClient
-     * interface together with corresponding watch ID.
+     * is within proximity. When NdefMessage that matches NfcReaderOptions is found, it is passed to
+     * NfcClient interface together with corresponding watch ID.
      * @see NfcClient#onWatch(int[] id, String serial_number, NdefMessage message)
      *
      * @param options used to filter NdefMessages, @see NfcReaderOptions.
-     * @param callback that is used to notify caller when watch() is completed and return watch ID.
+     * @param callback that is used to notify caller when watch() is completed.
      */
     @Override
-    public void watch(NfcReaderOptions options, WatchResponse callback) {
+    public void watch(NfcReaderOptions options, int id, WatchResponse callback) {
         if (!checkIfReady(callback)) return;
-        int watcherId = ++mWatcherId;
-        mWatchers.put(watcherId, options);
-        callback.call(watcherId, null);
+        // We received a duplicate |id| here that should never happen, in such a case we should
+        // report a bad message to Mojo but unfortunately Mojo bindings for Java does not support
+        // this feature yet. So, we just passes back a generic error instead.
+        if (mWatchers.indexOfKey(id) >= 0) {
+            callback.call(createError(NfcErrorType.NOT_READABLE));
+            return;
+        }
+        mWatchers.put(id, options);
+        callback.call(null);
         enableReaderModeIfNeeded();
         processPendingWatchOperations();
     }
@@ -393,7 +398,7 @@ public class NfcImpl implements Nfc {
         NfcError error = checkIfReady();
         if (error == null) return true;
 
-        callback.call(0, error);
+        callback.call(error);
         return false;
     }
 

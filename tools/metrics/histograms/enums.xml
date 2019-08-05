@@ -36573,6 +36573,7 @@ from previous Chrome versions.
   <int value="1373777956" label="disable-threaded-gpu-rasterization"/>
   <int value="1375165388" label="LazyFrameLoading:enabled"/>
   <int value="1376437124" label="show-cert-link"/>
+  <int value="1376535351" label="PrefetchRedirectError:enabled"/>
   <int value="1377056573" label="browser-side-navigation:enabled"/>
   <int value="1378310092" label="disable-suggestions-service"/>
   <int value="1379944457" label="EnableMessagesWebPush:disabled"/>
@@ -36690,6 +36691,7 @@ from previous Chrome versions.
   <int value="1559034872" label="AutofillPrefilledFields:enabled"/>
   <int value="1560188739" label="reader-mode-heuristics"/>
   <int value="1563255033" label="memlog-stack-mode"/>
+  <int value="1566084951" label="PrefetchRedirectError:disabled"/>
   <int value="1567839560"
       label="ChromeHomePersonalizedOmniboxSuggestions:disabled"/>
   <int value="1571998166" label="DetectingHeavyPages:disabled"/>

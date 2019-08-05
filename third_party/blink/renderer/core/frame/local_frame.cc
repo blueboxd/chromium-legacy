@@ -38,6 +38,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
@@ -511,6 +512,30 @@ void LocalFrame::DidFreeze() {
       document_resource_coordinator->SetLifecycleState(
           resource_coordinator::mojom::LifecycleState::kFrozen);
     }
+
+    // Register a callback dispatched when JavaScript is executed on the frame.
+    // The callback evicts the frame. If a frame is frozen by BackForwardCache,
+    // the frame must not be mutated e.g., by JavaScript execution, then the
+    // frame must be evicted in such cases.
+    if (RuntimeEnabledFeatures::BackForwardCacheEnabled()) {
+      // TODO(hajimehoshi): Set the callback only when the frame is frozen by
+      // BackForwardCache (crbug.com/990718).
+      Vector<scoped_refptr<DOMWrapperWorld>> worlds;
+      DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
+      for (const auto& world : worlds) {
+        ScriptState* script_state = ToScriptState(this, *world);
+        ScriptState::Scope scope(script_state);
+        script_state->GetContext()->SetAbortScriptExecution(
+            [](v8::Isolate* isolate, v8::Local<v8::Context> context) {
+              ScriptState* script_state = ScriptState::From(context);
+              LocalDOMWindow* window = LocalDOMWindow::From(script_state);
+              DCHECK(window);
+              LocalFrame* frame = window->GetFrame();
+              if (frame)
+                frame->EvictFromBackForwardCache();
+            });
+      }
+    }
   }
 }
 
@@ -529,6 +554,14 @@ void LocalFrame::DidResume() {
             GetDocument()->GetResourceCoordinator()) {
       document_resource_coordinator->SetLifecycleState(
           resource_coordinator::mojom::LifecycleState::kRunning);
+    }
+
+    Vector<scoped_refptr<DOMWrapperWorld>> worlds;
+    DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
+    for (const auto& world : worlds) {
+      ScriptState* script_state = ToScriptState(this, *world);
+      ScriptState::Scope scope(script_state);
+      script_state->GetContext()->SetAbortScriptExecution(nullptr);
     }
   }
 }
@@ -1732,6 +1765,10 @@ void LocalFrame::FinishedLoading(FrameLoader::NavigationFinishState state) {
     DCHECK(!IsLoading());
     SetLifecycleState(pending_lifecycle_state_.value());
   }
+}
+
+void LocalFrame::EvictFromBackForwardCache() {
+  Client()->EvictFromBackForwardCache();
 }
 
 }  // namespace blink

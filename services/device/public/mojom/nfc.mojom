@@ -124,8 +124,9 @@ interface NFC {
   CancelPush(NFCPushTarget target) => (NFCError? error);
 
   // Starts watching for nearby NFC devices with data that matches
-  // NFCReaderOptions filtering criteria. On success, watch id is returned.
-  Watch(NFCReaderOptions options) => (uint32 id, NFCError? error);
+  // NFCReaderOptions filtering criteria. |id| identifies each watch request on
+  // the current Mojo connection.
+  Watch(NFCReaderOptions options, uint32 id) => (NFCError? error);
 
   // Cancels watch operation with provided id.
   CancelWatch (uint32 id) => (NFCError? error);

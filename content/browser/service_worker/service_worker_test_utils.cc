@@ -238,22 +238,44 @@ void ServiceWorkerRemoteProviderEndpoint::BindForServiceWorker(
   host_ptr_.Bind(std::move(info->host_ptr_info));
 }
 
+ServiceWorkerProviderHostAndInfo::ServiceWorkerProviderHostAndInfo(
+    base::WeakPtr<ServiceWorkerProviderHost> host,
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr info)
+    : host(std::move(host)), info(std::move(info)) {}
+
+ServiceWorkerProviderHostAndInfo::~ServiceWorkerProviderHostAndInfo() = default;
+
 base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
     int process_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
+      CreateProviderHostAndInfoForWindow(context, is_parent_frame_secure);
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          context, is_parent_frame_secure,
-          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
-  output_endpoint->BindForWindow(std::move(provider_info));
+      std::move(host_and_info->host);
+  output_endpoint->BindForWindow(std::move(host_and_info->info));
 
   // In production code this is called from NavigationRequest in the browser
   // process right before navigation commit.
   host->OnBeginNavigationCommit(process_id, 1 /* route_id */);
   return host;
+}
+
+std::unique_ptr<ServiceWorkerProviderHostAndInfo>
+CreateProviderHostAndInfoForWindow(
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    bool are_ancestors_secure) {
+  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
+  auto info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  info->client_request = mojo::MakeRequest(&client_ptr_info);
+  host_request = mojo::MakeRequest(&(info->host_ptr_info));
+  return std::make_unique<ServiceWorkerProviderHostAndInfo>(
+      ServiceWorkerProviderHost::PreCreateNavigationHost(
+          context, are_ancestors_secure, FrameTreeNode::kFrameTreeNodeInvalidId,
+          std::move(host_request), std::move(client_ptr_info)),
+      std::move(info));
 }
 
 base::OnceCallback<void(blink::ServiceWorkerStatusCode)>

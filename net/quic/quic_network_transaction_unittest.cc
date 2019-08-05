@@ -6431,12 +6431,20 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
           client_packet_number++, GetNthClientInitiatedBidirectionalStreamId(0),
           true, true, std::move(headers)));
 
+  const quic::QuicStreamOffset initial = server_maker_.stream_offset(
+      GetNthClientInitiatedBidirectionalStreamId(0));
   mock_quic_data.AddRead(
       ASYNC,
       ConstructServerPushPromisePacket(
           1, GetNthClientInitiatedBidirectionalStreamId(0),
           GetNthServerInitiatedUnidirectionalStreamId(0), false,
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
+  quic::QuicStreamOffset push_promise_offset = 0;
+  if (VersionUsesQpack(version_.transport_version)) {
+    push_promise_offset = server_maker_.stream_offset(
+                              GetNthClientInitiatedBidirectionalStreamId(0)) -
+                          initial;
+  }
 
   if ((client_headers_include_h2_stream_dependency_ &&
        version_.transport_version >= quic::QUIC_VERSION_43) ||
@@ -6513,8 +6521,9 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
             request->GetTotalSentBytes());
   EXPECT_EQ(network_delegate.total_network_bytes_received(),
             request->GetTotalReceivedBytes());
-  EXPECT_EQ(static_cast<int>(expected_raw_header_response_size),
-            request->raw_header_size());
+  EXPECT_EQ(
+      static_cast<int>(expected_raw_header_response_size + push_promise_offset),
+      request->raw_header_size());
 
   // Pump the message loop to allow all data to be consumed.
   base::RunLoop().RunUntilIdle();

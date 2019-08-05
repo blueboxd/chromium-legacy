@@ -305,7 +305,7 @@
   "management.installReplacementWebApp": {
     "dependencies": ["manifest:replacement_web_app"],
     "channel": "stable",
-    "extension_types": ["extension"]
+    "extension_types": ["extension", "platform_app"]
   },
   "management.uninstallSelf": {
     "dependencies": [],

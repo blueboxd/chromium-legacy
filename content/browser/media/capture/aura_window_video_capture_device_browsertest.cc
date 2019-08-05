@@ -161,9 +161,8 @@ class AuraWindowVideoCaptureDeviceBrowserTest
       // Wait for at least the minimum capture period before checking for more
       // captured frames.
       base::RunLoop run_loop;
-      base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                      run_loop.QuitClosure(),
-                                      GetMinCapturePeriod());
+      base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                            run_loop.QuitClosure(), GetMinCapturePeriod());
       run_loop.Run();
     }
   }
@@ -265,9 +264,8 @@ IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
   // frames were queued because the device should be suspended.
   ChangePageContentColor(SK_ColorGREEN);
   base::RunLoop run_loop;
-  base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                  run_loop.QuitClosure(),
-                                  base::TimeDelta::FromSeconds(5));
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI}, run_loop.QuitClosure(),
+                        base::TimeDelta::FromSeconds(5));
   run_loop.Run();
   EXPECT_FALSE(HasCapturedFramesInQueue());
 

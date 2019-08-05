@@ -276,14 +276,8 @@ void NetworkConfigurationUpdater::ImportCertificates(
 }
 
 void NetworkConfigurationUpdater::NotifyPolicyProvidedCertsChanged() {
-  net::CertificateList all_server_and_authority_certs =
-      GetAllServerAndAuthorityCertificates();
-  net::CertificateList trust_anchors = GetWebTrustedCertificates();
-
-  for (auto& observer : observer_list_) {
-    observer.OnPolicyProvidedCertsChanged(all_server_and_authority_certs,
-                                          trust_anchors);
-  }
+  for (auto& observer : observer_list_)
+    observer.OnPolicyProvidedCertsChanged();
 }
 
 }  // namespace policy

@@ -21,6 +21,7 @@ class WebContents;
 namespace web_app {
 
 enum class InstallResultCode;
+class AppRegistrar;
 class WebAppUiManager;
 
 // An abstract finalizer for the installation process, represents the last step.
@@ -28,8 +29,6 @@ class WebAppUiManager;
 // and registers an app.
 class InstallFinalizer {
  public:
-  void SetSubsystems(WebAppUiManager* ui_manager);
-
   using InstallFinalizedCallback =
       base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
   using UninstallExternalWebAppCallback =
@@ -76,12 +75,20 @@ class InstallFinalizer {
       const AppId& app_id,
       const WebApplicationInfo& web_app_info) const = 0;
 
+  // TODO(loyso): This method should be protected and subclasses should call it
+  // (upcasting their final registrar type). Subclassing WebAppProvider will fix
+  // this.
+  virtual void SetSubsystems(AppRegistrar* registrar,
+                             WebAppUiManager* ui_manager);
+
   virtual ~InstallFinalizer() = default;
 
  protected:
+  AppRegistrar& registrar() const { return *registrar_; }
   WebAppUiManager& ui_manager() const { return *ui_manager_; }
 
  private:
+  AppRegistrar* registrar_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
 };
 

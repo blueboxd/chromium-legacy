@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/arc/common/policy.mojom.h"
+#include "components/arc/mojom/policy.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace policy {

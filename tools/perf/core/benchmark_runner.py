@@ -19,5 +19,6 @@ def main(config):
       environment=config,
       results_arg_parser=results_processor.ArgumentParser())
   results_processor.ProcessOptions(options)
-  command_line.RunCommand(options)
-  results_processor.ProcessResults(options)
+  run_return_code = command_line.RunCommand(options)
+  process_return_code = results_processor.ProcessResults(options)
+  return max(run_return_code, process_return_code)

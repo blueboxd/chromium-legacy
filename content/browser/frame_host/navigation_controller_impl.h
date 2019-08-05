@@ -465,11 +465,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // specified |offset|.  The index returned is not guaranteed to be valid.
   int GetIndexForOffset(int offset);
 
-  // BackForwardCache:
-  // Notify observers a document was restored from the bfcache.
-  // This updates the URL bar and the history buttons.
-  void CommitRestoreFromBackForwardCache();
-
   // History Manipulation intervention:
   // The previous document that started this navigation needs to be skipped in
   // subsequent back/forward UI navigations if it never received any user

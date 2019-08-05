@@ -16,7 +16,7 @@ FLAGS = flags.FLAGS
 class BookmarkBarEnabledTest(ChromeEnterpriseTestCase):
   """Test the BookmarkBarEnabled
 
-    https://www.chromium.org/administrators/policy-list-3#BookmarkBarEnabled.
+    https://cloud.google.com/docs/chrome-enterprise/policies/?policy=BookmarkBarEnabled.
 
     If this setting is left not set the user can decide to use this function
     or not.

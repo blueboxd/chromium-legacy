@@ -124,7 +124,6 @@ int VaapiVideoDecoder::GetMaxDecodeRequests() const {
   return kMaxDecodeRequests;
 }
 
-// TODO(dstaessens): Handle re-initialization.
 void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                    bool low_delay,
                                    CdmContext* cdm_context,
@@ -155,8 +154,10 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  decoder_thread_task_runner_ = decoder_thread_.task_runner();
-  frame_pool_->set_parent_task_runner(decoder_thread_task_runner_);
+  if (!decoder_thread_task_runner_) {
+    decoder_thread_task_runner_ = decoder_thread_.task_runner();
+    frame_pool_->set_parent_task_runner(decoder_thread_task_runner_);
+  }
 
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,

@@ -12,7 +12,7 @@ from infra import ChromeEnterpriseTestCase
 class UrlBlacklistTest(ChromeEnterpriseTestCase):
   """Test the URLBlacklist policy.
 
-  See https://www.chromium.org/administrators/policy-list-3#URLBlacklist"""
+  See https://cloud.google.com/docs/chrome-enterprise/policies/?policy=URLBlacklist"""
 
   @before_all
   def setup(self):

@@ -1609,6 +1609,12 @@ const char kResourceLoadSchedulerDescription[] =
     "Uses the resource load scheduler in blink to throttle resource load "
     "requests.";
 
+const char kPrefetchRedirectErrorName[] =
+    "Prefetch requests use \"error\" redirect mode";
+const char kPrefetchRedirectErrorDescription[] =
+    "Prefetch requests will not follow redirect responses, and instead be "
+    "logged as errors. Redirect responses are still stored in the cache.";
+
 const char kSafeBrowsingUseAPDownloadVerdictsName[] =
     "Request Advanced Protection verdicts when inspecting downloads";
 const char kSafeBrowsingUseAPDownloadVerdictsDescription[] =

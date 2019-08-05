@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
 
 namespace arc {
 

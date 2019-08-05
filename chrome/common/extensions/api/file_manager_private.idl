@@ -229,7 +229,14 @@ enum SourceRestriction {
   native_or_drive_source
 };
 
-enum CrostiniEventType { enable, disable, share, unshare };
+enum CrostiniEventType {
+  enable,
+  disable,
+  root_access_allow,
+  root_access_disallow,
+  share,
+  unshare
+};
 
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See

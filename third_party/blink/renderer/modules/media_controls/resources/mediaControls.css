@@ -385,6 +385,8 @@ video::-webkit-media-controls-play-button:disabled,
 video::-webkit-media-controls-fullscreen-button:disabled {
   background-color: initial;
   opacity: 0.3;
+
+  cursor: default;
 }
 
 audio::-internal-media-controls-cast-button,
@@ -621,6 +623,11 @@ video::-webkit-media-controls-timeline {
 
   /* This prevents layout issues in quirks mode */
   box-sizing: unset !important;
+}
+
+audio::-webkit-media-controls-timeline:disabled,
+video::-webkit-media-controls-timeline:disabled {
+  cursor: default;
 }
 
 audio::-webkit-media-controls-timeline,

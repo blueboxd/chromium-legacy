@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_ARC_INTENT_HELPER_FACTORY_RESET_DELEGATE_H_
 #define COMPONENTS_ARC_INTENT_HELPER_FACTORY_RESET_DELEGATE_H_
 
-#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
 
 namespace arc {
 

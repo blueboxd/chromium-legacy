@@ -300,10 +300,6 @@ void ScriptExecutor::Prompt(
 }
 
 void ScriptExecutor::CancelPrompt() {
-  // Delete on_terminate_prompt_ if necessary, without running.
-  if (on_terminate_prompt_)
-    std::move(on_terminate_prompt_);
-
   delegate_->SetUserActions(nullptr);
   CleanUpAfterPrompt();
 }

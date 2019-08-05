@@ -17,7 +17,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/arc/arc_features.h"
-#include "components/arc/common/bitmap.mojom.h"
+#include "components/arc/mojom/bitmap.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia_operations.h"

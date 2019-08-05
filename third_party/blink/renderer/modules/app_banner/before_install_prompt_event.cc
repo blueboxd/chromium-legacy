@@ -18,8 +18,7 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     LocalFrame& frame,
     mojom::blink::AppBannerServicePtr service_ptr,
     mojom::blink::AppBannerEventRequest event_request,
-    const Vector<String>& platforms,
-    bool require_gesture)
+    const Vector<String>& platforms)
     : Event(name, Bubbles::kNo, Cancelable::kYes),
       ContextClient(&frame),
       banner_service_(std::move(service_ptr)),
@@ -30,8 +29,7 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
       user_choice_(MakeGarbageCollected<UserChoiceProperty>(
           frame.GetDocument(),
           this,
-          UserChoiceProperty::kUserChoice)),
-      require_gesture_(require_gesture) {
+          UserChoiceProperty::kUserChoice)) {
   DCHECK(banner_service_);
   DCHECK(binding_.is_bound());
   UseCounter::Count(frame.GetDocument(), WebFeature::kBeforeInstallPromptEvent);
@@ -41,10 +39,7 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     ExecutionContext* execution_context,
     const AtomicString& name,
     const BeforeInstallPromptEventInit* init)
-    : Event(name, init),
-      ContextClient(execution_context),
-      binding_(this),
-      require_gesture_(true) {
+    : Event(name, init), ContextClient(execution_context), binding_(this) {
   if (init->hasPlatforms())
     platforms_ = init->platforms();
 }
@@ -86,8 +81,8 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   Document* doc = To<Document>(context);
 
-  if (require_gesture_ && !LocalFrame::ConsumeTransientUserActivation(
-                              doc ? doc->GetFrame() : nullptr)) {
+  if (!LocalFrame::ConsumeTransientUserActivation(doc ? doc->GetFrame()
+                                                      : nullptr)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(

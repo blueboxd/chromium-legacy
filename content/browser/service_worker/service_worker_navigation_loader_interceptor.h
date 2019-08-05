@@ -71,7 +71,6 @@ class ServiceWorkerNavigationLoaderInterceptor final
 
   // These are called back from the IO thread helper functions:
   void LoaderCallbackWrapper(
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       LoaderCallback loader_callback,
       SingleRequestURLLoaderFactory::RequestHandler handler_on_io);

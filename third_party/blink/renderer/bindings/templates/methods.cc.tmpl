@@ -506,16 +506,16 @@ void {{v8_class_or_partial}}::{{method.camel_case_name}}MethodCallback{{world_su
 
 {##############################################################################}
 {% macro origin_safe_method_getter(method, world_suffix) %}
-{# TODO(dcheng): Currently, bindings must create a function object for each
-   realm as a hack to support the incumbent realm. Clean this up when Blink
-   properly supports the incumbent realm. #}
 static void {{method.camel_case_name}}OriginSafeMethodGetter{{world_suffix}}(const v8::PropertyCallbackInfo<v8::Value>& info) {
   static int dom_template_key; // This address is used for a key to look up the dom template.
-  V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
-  const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
+  v8::Isolate* isolate = info.GetIsolate();
+  V8PerIsolateData* data = V8PerIsolateData::From(isolate);
+  const DOMWrapperWorld& world =
+      DOMWrapperWorld::World(isolate->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
       data->FindInterfaceTemplate(world, {{v8_class}}::GetWrapperTypeInfo());
-  v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
+  v8::Local<v8::Signature> signature =
+      v8::Signature::New(isolate, interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
       data->FindOrCreateOperationTemplate(
@@ -525,26 +525,32 @@ static void {{method.camel_case_name}}OriginSafeMethodGetter{{world_suffix}}(con
           v8::Local<v8::Value>(),
           signature,
           {{method.length}});
-  // Return the function by default, unless the user script has overwritten it.
-  V8SetReturnValue(info, method_template->GetFunction(info.GetIsolate()->GetCurrentContext())
-                   .ToLocalChecked());
 
   {{cpp_class}}* impl = {{v8_class}}::ToImpl(info.Holder());
   if (!BindingSecurity::ShouldAllowAccessTo(
-          CurrentDOMWindow(info.GetIsolate()), impl,
+          CurrentDOMWindow(isolate), impl,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            isolate->GetCurrentContext()).ToLocalChecked());
     return;
   }
 
-  {% raw %}
-  // {{method.name}} must be same with |methodName| (=name) in
+  // When the web author overwrote the property, return the overwriting value.
+  //
+  // "{{method.name}}" must be the same as |name_in_utf8| (=name) in
   // {{cpp_class}}OriginSafeMethodSetter defined in interface.cc.tmpl.
-  {% endraw %}
   V8PrivateProperty::Symbol property_symbol =
-      V8PrivateProperty::GetSymbol(info.GetIsolate(), "{{method.name}}");
+      V8PrivateProperty::GetSymbol(isolate, "{{method.name}}");
   v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
   if (property_symbol.HasValue(holder)) {
     V8SetReturnValue(info, property_symbol.GetOrUndefined(holder));
+  } else {
+    V8SetReturnValue(
+        info,
+        method_template->GetFunction(
+            holder->CreationContext()).ToLocalChecked());
   }
 }
 {% endmacro %}

@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/arc/common/camera.mojom.h"
+#include "components/arc/mojom/camera.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {

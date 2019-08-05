@@ -11,7 +11,7 @@ from infra import ChromeEnterpriseTestCase
 @environment(file="../policy_test.asset.textpb")
 class ExtensionInstallWhitelistTest(ChromeEnterpriseTestCase):
   """Test the ExtensionInstallBlacklist policy.
-    https://www.chromium.org/administrators/policy-list-3#ExtensionInstallWhitelist"""
+    https://cloud.google.com/docs/chrome-enterprise/policies/?policy=ExtensionInstallWhitelist"""
 
   @before_all
   def setup(self):

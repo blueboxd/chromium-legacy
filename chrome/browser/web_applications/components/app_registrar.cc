@@ -19,6 +19,14 @@ AppRegistrar::~AppRegistrar() {
     observer.OnAppRegistrarDestroyed();
 }
 
+WebAppRegistrar* AppRegistrar::AsWebAppRegistrar() {
+  return nullptr;
+}
+
+extensions::BookmarkAppRegistrar* AppRegistrar::AsBookmarkAppRegistrar() {
+  return nullptr;
+}
+
 void AppRegistrar::AddObserver(AppRegistrarObserver* observer) {
   observers_.AddObserver(observer);
 }

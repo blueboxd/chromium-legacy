@@ -24,6 +24,7 @@
 #include "chrome/browser/web_applications/pending_app_install_task.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -70,10 +71,14 @@ std::string GenerateFakeAppId(const GURL& url) {
   return TestInstallFinalizer::GetAppIdForUrl(url);
 }
 
-class TestPendingAppInstallTaskFactory {
+class TestPendingAppManagerImpl : public PendingAppManagerImpl {
  public:
-  TestPendingAppInstallTaskFactory() = default;
-  ~TestPendingAppInstallTaskFactory() {
+  TestPendingAppManagerImpl(Profile* profile,
+                            TestAppRegistrar* test_app_registrar)
+      : PendingAppManagerImpl(profile),
+        test_app_registrar_(test_app_registrar) {}
+
+  ~TestPendingAppManagerImpl() override {
     DCHECK(next_installation_task_results_.empty());
   }
 
@@ -90,13 +95,9 @@ class TestPendingAppInstallTaskFactory {
   }
 
   std::unique_ptr<PendingAppInstallTask> CreateInstallationTask(
-      Profile* profile,
-      AppRegistrar* registrar,
-      InstallFinalizer* install_finalizer,
-      ExternalInstallOptions install_options) {
+      ExternalInstallOptions install_options) override {
     return std::make_unique<TestPendingAppInstallTask>(
-        this, profile, static_cast<TestAppRegistrar*>(registrar),
-        install_finalizer, std::move(install_options));
+        this, profile(), std::move(install_options));
   }
 
   void OnInstallCalled(const ExternalInstallOptions& install_options) {
@@ -111,56 +112,54 @@ class TestPendingAppInstallTaskFactory {
     return result;
   }
 
+  TestAppRegistrar* registrar() { return test_app_registrar_; }
+
  private:
   class TestPendingAppInstallTask : public PendingAppInstallTask {
    public:
-    TestPendingAppInstallTask(TestPendingAppInstallTaskFactory* factory,
-                              Profile* profile,
-                              TestAppRegistrar* registrar,
-                              InstallFinalizer* install_finalizer,
-                              ExternalInstallOptions install_options)
+    TestPendingAppInstallTask(
+        TestPendingAppManagerImpl* pending_app_manager_impl,
+        Profile* profile,
+        ExternalInstallOptions install_options)
         : PendingAppInstallTask(profile,
-                                registrar,
-                                install_finalizer,
+                                pending_app_manager_impl->registrar(),
+                                pending_app_manager_impl->finalizer(),
                                 install_options),
-          factory_(factory),
-          profile_(profile),
-          registrar_(registrar),
-          install_options_(install_options),
-          externally_installed_app_prefs_(profile_->GetPrefs()) {}
+          pending_app_manager_impl_(pending_app_manager_impl),
+          externally_installed_app_prefs_(profile->GetPrefs()) {}
     ~TestPendingAppInstallTask() override = default;
 
     void Install(content::WebContents* web_contents,
                  WebAppUrlLoader::Result url_loaded_result,
                  ResultCallback callback) override {
-      factory_->OnInstallCalled(install_options_);
+      pending_app_manager_impl_->OnInstallCalled(install_options());
 
       base::Optional<AppId> app_id;
+      const GURL& install_url = install_options().url;
       auto result_code =
-          factory_->GetNextInstallationTaskResult(install_options_.url);
+          pending_app_manager_impl_->GetNextInstallationTaskResult(install_url);
       if (result_code == InstallResultCode::kSuccess) {
-        app_id = GenerateFakeAppId(install_options_.url);
-        registrar_->AddExternalApp(
-            *app_id, {install_options_.url, install_options_.install_source});
-        externally_installed_app_prefs_.Insert(install_options_.url, *app_id,
-                                               install_options_.install_source);
+        app_id = GenerateFakeAppId(install_url);
+        pending_app_manager_impl_->registrar()->AddExternalApp(
+            *app_id, {install_url, install_options().install_source});
+        externally_installed_app_prefs_.Insert(
+            install_url, *app_id, install_options().install_source);
         const bool is_placeholder =
             (url_loaded_result != WebAppUrlLoader::Result::kUrlLoaded);
-        externally_installed_app_prefs_.SetIsPlaceholder(install_options_.url,
+        externally_installed_app_prefs_.SetIsPlaceholder(install_url,
                                                          is_placeholder);
       }
       std::move(callback).Run({result_code, app_id});
     }
 
    private:
-    TestPendingAppInstallTaskFactory* factory_;
-    Profile* profile_;
-    TestAppRegistrar* registrar_;
-    ExternalInstallOptions install_options_;
+    TestPendingAppManagerImpl* pending_app_manager_impl_;
     ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
     DISALLOW_COPY_AND_ASSIGN(TestPendingAppInstallTask);
   };
+
+  TestAppRegistrar* test_app_registrar_;
 
   std::vector<ExternalInstallOptions> install_options_list_;
   size_t install_run_count_ = 0;
@@ -178,13 +177,32 @@ class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    registrar_ = std::make_unique<TestAppRegistrar>();
-    ui_manager_ = std::make_unique<TestWebAppUiManager>();
-    install_finalizer_ = std::make_unique<TestInstallFinalizer>();
-    task_factory_ = std::make_unique<TestPendingAppInstallTaskFactory>();
-  }
 
-  void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
+    auto* provider = web_app::TestWebAppProvider::Get(profile());
+
+    auto test_app_registrar = std::make_unique<TestAppRegistrar>();
+    app_registrar_ = test_app_registrar.get();
+    provider->SetRegistrar(std::move(test_app_registrar));
+
+    auto test_pending_app_manager =
+        std::make_unique<TestPendingAppManagerImpl>(profile(), app_registrar_);
+    pending_app_manager_impl_ = test_pending_app_manager.get();
+    provider->SetPendingAppManager(std::move(test_pending_app_manager));
+
+    auto url_loader = std::make_unique<TestWebAppUrlLoader>();
+    url_loader_ = url_loader.get();
+    pending_app_manager_impl_->SetUrlLoaderForTesting(std::move(url_loader));
+
+    auto test_install_finalizer = std::make_unique<TestInstallFinalizer>();
+    install_finalizer_ = test_install_finalizer.get();
+    provider->SetInstallFinalizer(std::move(test_install_finalizer));
+
+    auto ui_manager = std::make_unique<TestWebAppUiManager>();
+    ui_manager_ = ui_manager.get();
+    provider->SetWebAppUiManager(std::move(ui_manager));
+
+    provider->Start();
+  }
 
  protected:
   std::pair<GURL, InstallResultCode> InstallAndWait(
@@ -195,7 +213,7 @@ class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
 
-    pending_app_manager->Install(
+    pending_app_manager_impl()->Install(
         std::move(install_options),
         base::BindLambdaForTesting([&](const GURL& u, InstallResultCode c) {
           url = u;
@@ -215,7 +233,7 @@ class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop run_loop;
     auto barrier_closure =
         base::BarrierClosure(apps_to_install.size(), run_loop.QuitClosure());
-    pending_app_manager->InstallApps(
+    pending_app_manager_impl()->InstallApps(
         std::move(apps_to_install),
         base::BindLambdaForTesting(
             [&](const GURL& url, InstallResultCode code) {
@@ -247,34 +265,17 @@ class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
     return results;
   }
 
-  std::unique_ptr<PendingAppManagerImpl>
-  GetPendingAppManagerImplWithTestMocks() {
-    auto manager = std::make_unique<PendingAppManagerImpl>(profile());
-    manager->SetSubsystems(registrar_.get(), ui_manager_.get(),
-                           install_finalizer_.get());
-    manager->SetTaskFactoryForTesting(base::BindRepeating(
-        &TestPendingAppInstallTaskFactory::CreateInstallationTask,
-        base::Unretained(task_factory_.get())));
-
-    // The test suite doesn't support multiple loaders.
-    DCHECK_EQ(nullptr, url_loader_);
-
-    auto url_loader = std::make_unique<TestWebAppUrlLoader>();
-    url_loader_ = url_loader.get();
-    manager->SetUrlLoaderForTesting(std::move(url_loader));
-
-    return manager;
-  }
-
   // ExternalInstallOptions that was used to run the last installation task.
   const ExternalInstallOptions& last_install_options() {
-    DCHECK(!task_factory_->install_options_list().empty());
-    return task_factory_->install_options_list().back();
+    DCHECK(!pending_app_manager_impl_->install_options_list().empty());
+    return pending_app_manager_impl_->install_options_list().back();
   }
 
   // Number of times PendingAppInstallTask::Install was called. Reflects
   // how many times we've tried to create a web app.
-  size_t install_run_count() { return task_factory_->install_run_count(); }
+  size_t install_run_count() {
+    return pending_app_manager_impl_->install_run_count();
+  }
 
   size_t uninstall_call_count() {
     return install_finalizer_->uninstall_external_web_app_urls().size();
@@ -288,39 +289,37 @@ class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
     return install_finalizer_->uninstall_external_web_app_urls().back();
   }
 
-  TestPendingAppInstallTaskFactory* task_factory() {
-    return task_factory_.get();
+  TestPendingAppManagerImpl* pending_app_manager_impl() {
+    return pending_app_manager_impl_;
   }
 
-  TestAppRegistrar* registrar() { return registrar_.get(); }
+  TestAppRegistrar* registrar() { return app_registrar_; }
 
-  TestWebAppUiManager* ui_manager() { return ui_manager_.get(); }
+  TestWebAppUiManager* ui_manager() { return ui_manager_; }
 
   TestWebAppUrlLoader* url_loader() { return url_loader_; }
 
-  TestInstallFinalizer* install_finalizer() { return install_finalizer_.get(); }
+  TestInstallFinalizer* install_finalizer() { return install_finalizer_; }
 
  private:
-  std::unique_ptr<TestPendingAppInstallTaskFactory> task_factory_;
-  std::unique_ptr<TestAppRegistrar> registrar_;
-  std::unique_ptr<TestWebAppUiManager> ui_manager_;
-  std::unique_ptr<TestInstallFinalizer> install_finalizer_;
-
+  TestAppRegistrar* app_registrar_ = nullptr;
+  TestPendingAppManagerImpl* pending_app_manager_impl_ = nullptr;
+  TestInstallFinalizer* install_finalizer_ = nullptr;
+  TestWebAppUiManager* ui_manager_ = nullptr;
   TestWebAppUrlLoader* url_loader_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PendingAppManagerImplTest);
 };
 
 TEST_F(PendingAppManagerImplTest, Install_Succeeds) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   base::Optional<GURL> url;
   base::Optional<InstallResultCode> code;
   std::tie(url, code) =
-      InstallAndWait(pending_app_manager.get(), GetFooInstallOptions());
+      InstallAndWait(pending_app_manager_impl(), GetFooInstallOptions());
 
   EXPECT_EQ(InstallResultCode::kSuccess, code.value());
   EXPECT_EQ(kFooWebAppUrl, url.value());
@@ -330,16 +329,15 @@ TEST_F(PendingAppManagerImplTest, Install_Succeeds) {
 }
 
 TEST_F(PendingAppManagerImplTest, Install_SerialCallsDifferentApps) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   {
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), GetFooInstallOptions());
+        InstallAndWait(pending_app_manager_impl(), GetFooInstallOptions());
 
     EXPECT_EQ(InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
@@ -348,8 +346,8 @@ TEST_F(PendingAppManagerImplTest, Install_SerialCallsDifferentApps) {
     EXPECT_EQ(GetFooInstallOptions(), last_install_options());
   }
 
-  task_factory()->SetNextInstallationTaskResult(kBarWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kBarWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kBarWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   {
@@ -357,7 +355,7 @@ TEST_F(PendingAppManagerImplTest, Install_SerialCallsDifferentApps) {
     base::Optional<InstallResultCode> code;
 
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), GetBarInstallOptions());
+        InstallAndWait(pending_app_manager_impl(), GetBarInstallOptions());
 
     EXPECT_EQ(InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kBarWebAppUrl, url.value());
@@ -368,19 +366,17 @@ TEST_F(PendingAppManagerImplTest, Install_SerialCallsDifferentApps) {
 }
 
 TEST_F(PendingAppManagerImplTest, Install_ConcurrentCallsDifferentApps) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-
-  task_factory()->SetNextInstallationTaskResult(kBarWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kBarWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kBarWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
   base::RunLoop run_loop;
-  pending_app_manager->Install(
+  pending_app_manager_impl()->Install(
       GetFooInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -394,7 +390,7 @@ TEST_F(PendingAppManagerImplTest, Install_ConcurrentCallsDifferentApps) {
 
         run_loop.Quit();
       }));
-  pending_app_manager->Install(
+  pending_app_manager_impl()->Install(
       GetBarInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -409,13 +405,12 @@ TEST_F(PendingAppManagerImplTest, Install_ConcurrentCallsDifferentApps) {
 }
 
 TEST_F(PendingAppManagerImplTest, Install_PendingSuccessfulTask) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
-  task_factory()->SetNextInstallationTaskResult(kBarWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kBarWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kBarWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   url_loader()->SaveLoadUrlRequests();
@@ -423,7 +418,7 @@ TEST_F(PendingAppManagerImplTest, Install_PendingSuccessfulTask) {
   base::RunLoop foo_run_loop;
   base::RunLoop bar_run_loop;
 
-  pending_app_manager->Install(
+  pending_app_manager_impl()->Install(
       GetFooInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -437,7 +432,7 @@ TEST_F(PendingAppManagerImplTest, Install_PendingSuccessfulTask) {
   // Make sure the installation has started.
   base::RunLoop().RunUntilIdle();
 
-  pending_app_manager->Install(
+  pending_app_manager_impl()->Install(
       GetBarInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -460,13 +455,12 @@ TEST_F(PendingAppManagerImplTest, Install_PendingSuccessfulTask) {
 }
 
 TEST_F(PendingAppManagerImplTest, Install_PendingFailingTask) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
       kFooWebAppUrl, InstallResultCode::kFailedUnknownReason);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
-  task_factory()->SetNextInstallationTaskResult(kBarWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kBarWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kBarWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   url_loader()->SaveLoadUrlRequests();
@@ -474,7 +468,7 @@ TEST_F(PendingAppManagerImplTest, Install_PendingFailingTask) {
   base::RunLoop foo_run_loop;
   base::RunLoop bar_run_loop;
 
-  pending_app_manager->Install(
+  pending_app_manager_impl()->Install(
       GetFooInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kFailedUnknownReason, code);
@@ -487,7 +481,7 @@ TEST_F(PendingAppManagerImplTest, Install_PendingFailingTask) {
   // Make sure the installation has started.
   base::RunLoop().RunUntilIdle();
 
-  pending_app_manager->Install(
+  pending_app_manager_impl()->Install(
       GetBarInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -510,13 +504,12 @@ TEST_F(PendingAppManagerImplTest, Install_PendingFailingTask) {
 }
 
 TEST_F(PendingAppManagerImplTest, Install_ReentrantCallback) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
-  task_factory()->SetNextInstallationTaskResult(kBarWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kBarWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kBarWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -538,18 +531,19 @@ TEST_F(PendingAppManagerImplTest, Install_ReentrantCallback) {
         EXPECT_EQ(1u, install_run_count());
         EXPECT_EQ(GetFooInstallOptions(), last_install_options());
 
-        pending_app_manager->Install(GetBarInstallOptions(), final_callback);
+        pending_app_manager_impl()->Install(GetBarInstallOptions(),
+                                            final_callback);
       });
 
   // Call Install() with a callback that tries to install another app.
-  pending_app_manager->Install(GetFooInstallOptions(), reentrant_callback);
+  pending_app_manager_impl()->Install(GetFooInstallOptions(),
+                                      reentrant_callback);
   run_loop.Run();
 }
 
 TEST_F(PendingAppManagerImplTest, Install_SerialCallsSameApp) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -557,7 +551,7 @@ TEST_F(PendingAppManagerImplTest, Install_SerialCallsSameApp) {
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), GetFooInstallOptions());
+        InstallAndWait(pending_app_manager_impl(), GetFooInstallOptions());
 
     EXPECT_EQ(InstallResultCode::kSuccess, code);
     EXPECT_EQ(kFooWebAppUrl, url);
@@ -570,7 +564,7 @@ TEST_F(PendingAppManagerImplTest, Install_SerialCallsSameApp) {
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), GetFooInstallOptions());
+        InstallAndWait(pending_app_manager_impl(), GetFooInstallOptions());
 
     EXPECT_EQ(InstallResultCode::kAlreadyInstalled, code);
     EXPECT_EQ(kFooWebAppUrl, url);
@@ -581,16 +575,15 @@ TEST_F(PendingAppManagerImplTest, Install_SerialCallsSameApp) {
 }
 
 TEST_F(PendingAppManagerImplTest, Install_ConcurrentCallsSameApp) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
   base::RunLoop run_loop;
   bool first_callback_ran = false;
 
-  pending_app_manager->Install(
+  pending_app_manager_impl()->Install(
       GetFooInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         // kAlreadyInstalled because the last call to Install gets higher
@@ -607,7 +600,7 @@ TEST_F(PendingAppManagerImplTest, Install_ConcurrentCallsSameApp) {
         run_loop.Quit();
       }));
 
-  pending_app_manager->Install(
+  pending_app_manager_impl()->Install(
       GetFooInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -624,9 +617,8 @@ TEST_F(PendingAppManagerImplTest, Install_ConcurrentCallsSameApp) {
 }
 
 TEST_F(PendingAppManagerImplTest, Install_AlwaysUpdate) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -641,7 +633,7 @@ TEST_F(PendingAppManagerImplTest, Install_AlwaysUpdate) {
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), get_force_reinstall_info());
+        InstallAndWait(pending_app_manager_impl(), get_force_reinstall_info());
 
     EXPECT_EQ(InstallResultCode::kSuccess, code);
     EXPECT_EQ(kFooWebAppUrl, url);
@@ -650,15 +642,15 @@ TEST_F(PendingAppManagerImplTest, Install_AlwaysUpdate) {
     EXPECT_EQ(get_force_reinstall_info(), last_install_options());
   }
 
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
   {
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), get_force_reinstall_info());
+        InstallAndWait(pending_app_manager_impl(), get_force_reinstall_info());
 
     EXPECT_EQ(InstallResultCode::kSuccess, code);
     EXPECT_EQ(kFooWebAppUrl, url);
@@ -670,8 +662,7 @@ TEST_F(PendingAppManagerImplTest, Install_AlwaysUpdate) {
 }
 
 TEST_F(PendingAppManagerImplTest, Install_InstallationFails) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
       kFooWebAppUrl, InstallResultCode::kFailedUnknownReason);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
@@ -679,7 +670,7 @@ TEST_F(PendingAppManagerImplTest, Install_InstallationFails) {
   base::Optional<GURL> url;
   base::Optional<InstallResultCode> code;
   std::tie(url, code) =
-      InstallAndWait(pending_app_manager.get(), GetFooInstallOptions());
+      InstallAndWait(pending_app_manager_impl(), GetFooInstallOptions());
 
   EXPECT_EQ(InstallResultCode::kFailedUnknownReason, code);
   EXPECT_EQ(kFooWebAppUrl, url);
@@ -688,9 +679,8 @@ TEST_F(PendingAppManagerImplTest, Install_InstallationFails) {
 }
 
 TEST_F(PendingAppManagerImplTest, Install_PlaceholderApp) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(
       kFooWebAppUrl, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
 
@@ -700,7 +690,7 @@ TEST_F(PendingAppManagerImplTest, Install_PlaceholderApp) {
   base::Optional<GURL> url;
   base::Optional<InstallResultCode> code;
   std::tie(url, code) =
-      InstallAndWait(pending_app_manager.get(), install_options);
+      InstallAndWait(pending_app_manager_impl(), install_options);
 
   EXPECT_EQ(InstallResultCode::kSuccess, code);
   EXPECT_EQ(kFooWebAppUrl, url);
@@ -710,17 +700,16 @@ TEST_F(PendingAppManagerImplTest, Install_PlaceholderApp) {
 }
 
 TEST_F(PendingAppManagerImplTest, InstallApps_Succeeds) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
   std::vector<ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
 
-  InstallAppsResults results =
-      InstallAppsAndWait(pending_app_manager.get(), std::move(apps_to_install));
+  InstallAppsResults results = InstallAppsAndWait(pending_app_manager_impl(),
+                                                  std::move(apps_to_install));
 
   EXPECT_EQ(results,
             InstallAppsResults({{kFooWebAppUrl, InstallResultCode::kSuccess}}));
@@ -730,8 +719,7 @@ TEST_F(PendingAppManagerImplTest, InstallApps_Succeeds) {
 }
 
 TEST_F(PendingAppManagerImplTest, InstallApps_FailsInstallationFails) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
       kFooWebAppUrl, InstallResultCode::kFailedUnknownReason);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
@@ -739,8 +727,8 @@ TEST_F(PendingAppManagerImplTest, InstallApps_FailsInstallationFails) {
   std::vector<ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
 
-  InstallAppsResults results =
-      InstallAppsAndWait(pending_app_manager.get(), std::move(apps_to_install));
+  InstallAppsResults results = InstallAppsAndWait(pending_app_manager_impl(),
+                                                  std::move(apps_to_install));
 
   EXPECT_EQ(results,
             InstallAppsResults(
@@ -750,9 +738,8 @@ TEST_F(PendingAppManagerImplTest, InstallApps_FailsInstallationFails) {
 }
 
 TEST_F(PendingAppManagerImplTest, InstallApps_PlaceholderApp) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(
       kFooWebAppUrl, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
 
@@ -761,8 +748,8 @@ TEST_F(PendingAppManagerImplTest, InstallApps_PlaceholderApp) {
   std::vector<ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(install_options);
 
-  InstallAppsResults results =
-      InstallAppsAndWait(pending_app_manager.get(), std::move(apps_to_install));
+  InstallAppsResults results = InstallAppsAndWait(pending_app_manager_impl(),
+                                                  std::move(apps_to_install));
 
   EXPECT_EQ(results,
             InstallAppsResults({{kFooWebAppUrl, InstallResultCode::kSuccess}}));
@@ -772,13 +759,12 @@ TEST_F(PendingAppManagerImplTest, InstallApps_PlaceholderApp) {
 }
 
 TEST_F(PendingAppManagerImplTest, InstallApps_Multiple) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
-  task_factory()->SetNextInstallationTaskResult(kBarWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kBarWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kBarWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -786,8 +772,8 @@ TEST_F(PendingAppManagerImplTest, InstallApps_Multiple) {
   apps_to_install.push_back(GetFooInstallOptions());
   apps_to_install.push_back(GetBarInstallOptions());
 
-  InstallAppsResults results =
-      InstallAppsAndWait(pending_app_manager.get(), std::move(apps_to_install));
+  InstallAppsResults results = InstallAppsAndWait(pending_app_manager_impl(),
+                                                  std::move(apps_to_install));
 
   EXPECT_EQ(results,
             InstallAppsResults({{kFooWebAppUrl, InstallResultCode::kSuccess},
@@ -798,13 +784,12 @@ TEST_F(PendingAppManagerImplTest, InstallApps_Multiple) {
 }
 
 TEST_F(PendingAppManagerImplTest, InstallApps_PendingInstallApps) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
-  task_factory()->SetNextInstallationTaskResult(kBarWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kBarWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kBarWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -813,7 +798,7 @@ TEST_F(PendingAppManagerImplTest, InstallApps_PendingInstallApps) {
     std::vector<ExternalInstallOptions> apps_to_install;
     apps_to_install.push_back(GetFooInstallOptions());
 
-    pending_app_manager->InstallApps(
+    pending_app_manager_impl()->InstallApps(
         std::move(apps_to_install),
         base::BindLambdaForTesting(
             [&](const GURL& url, InstallResultCode code) {
@@ -829,7 +814,7 @@ TEST_F(PendingAppManagerImplTest, InstallApps_PendingInstallApps) {
     std::vector<ExternalInstallOptions> apps_to_install;
     apps_to_install.push_back(GetBarInstallOptions());
 
-    pending_app_manager->InstallApps(
+    pending_app_manager_impl()->InstallApps(
         std::move(apps_to_install),
         base::BindLambdaForTesting(
             [&](const GURL& url, InstallResultCode code) {
@@ -846,17 +831,16 @@ TEST_F(PendingAppManagerImplTest, InstallApps_PendingInstallApps) {
 }
 
 TEST_F(PendingAppManagerImplTest, Install_PendingMulitpleInstallApps) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
-  task_factory()->SetNextInstallationTaskResult(kBarWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kBarWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kBarWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
-  task_factory()->SetNextInstallationTaskResult(kQuxWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kQuxWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kQuxWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -868,7 +852,7 @@ TEST_F(PendingAppManagerImplTest, Install_PendingMulitpleInstallApps) {
 
   // Queue through InstallApps.
   int callback_calls = 0;
-  pending_app_manager->InstallApps(
+  pending_app_manager_impl()->InstallApps(
       std::move(apps_to_install),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         ++callback_calls;
@@ -892,7 +876,7 @@ TEST_F(PendingAppManagerImplTest, Install_PendingMulitpleInstallApps) {
       }));
 
   // Queue through Install.
-  pending_app_manager->Install(
+  pending_app_manager_impl()->Install(
       GetQuxInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -907,24 +891,23 @@ TEST_F(PendingAppManagerImplTest, Install_PendingMulitpleInstallApps) {
 }
 
 TEST_F(PendingAppManagerImplTest, InstallApps_PendingInstall) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
-  task_factory()->SetNextInstallationTaskResult(kBarWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kBarWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kBarWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
-  task_factory()->SetNextInstallationTaskResult(kQuxWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kQuxWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kQuxWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
   base::RunLoop run_loop;
 
   // Queue through Install.
-  pending_app_manager->Install(
+  pending_app_manager_impl()->Install(
       GetQuxInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -941,7 +924,7 @@ TEST_F(PendingAppManagerImplTest, InstallApps_PendingInstall) {
   apps_to_install.push_back(GetBarInstallOptions());
 
   int callback_calls = 0;
-  pending_app_manager->InstallApps(
+  pending_app_manager_impl()->InstallApps(
       std::move(apps_to_install),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         ++callback_calls;
@@ -971,9 +954,8 @@ TEST_F(PendingAppManagerImplTest, InstallApps_PendingInstall) {
 }
 
 TEST_F(PendingAppManagerImplTest, AppUninstalled) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -981,7 +963,7 @@ TEST_F(PendingAppManagerImplTest, AppUninstalled) {
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), GetFooInstallOptions());
+        InstallAndWait(pending_app_manager_impl(), GetFooInstallOptions());
 
     EXPECT_EQ(1u, install_run_count());
     EXPECT_EQ(InstallResultCode::kSuccess, code.value());
@@ -992,15 +974,15 @@ TEST_F(PendingAppManagerImplTest, AppUninstalled) {
 
   // Try to install the app again.
   {
-    task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                  InstallResultCode::kSuccess);
+    pending_app_manager_impl()->SetNextInstallationTaskResult(
+        kFooWebAppUrl, InstallResultCode::kSuccess);
     url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                        WebAppUrlLoader::Result::kUrlLoaded);
 
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), GetFooInstallOptions());
+        InstallAndWait(pending_app_manager_impl(), GetFooInstallOptions());
 
     // The app was uninstalled so a new installation task should run.
     EXPECT_EQ(2u, install_run_count());
@@ -1009,9 +991,8 @@ TEST_F(PendingAppManagerImplTest, AppUninstalled) {
 }
 
 TEST_F(PendingAppManagerImplTest, ExternalAppUninstalled) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -1019,7 +1000,7 @@ TEST_F(PendingAppManagerImplTest, ExternalAppUninstalled) {
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), GetFooInstallOptions());
+        InstallAndWait(pending_app_manager_impl(), GetFooInstallOptions());
 
     EXPECT_EQ(1u, install_run_count());
     EXPECT_EQ(InstallResultCode::kSuccess, code.value());
@@ -1036,7 +1017,7 @@ TEST_F(PendingAppManagerImplTest, ExternalAppUninstalled) {
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) = InstallAndWait(
-        pending_app_manager.get(),
+        pending_app_manager_impl(),
         GetFooInstallOptions(false /* override_previous_user_uninstall */));
 
     // The app shouldn't be installed because the user previously uninstalled
@@ -1046,15 +1027,15 @@ TEST_F(PendingAppManagerImplTest, ExternalAppUninstalled) {
   }
 
   {
-    task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                  InstallResultCode::kSuccess);
+    pending_app_manager_impl()->SetNextInstallationTaskResult(
+        kFooWebAppUrl, InstallResultCode::kSuccess);
     url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                        WebAppUrlLoader::Result::kUrlLoaded);
 
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) = InstallAndWait(
-        pending_app_manager.get(),
+        pending_app_manager_impl(),
         GetFooInstallOptions(true /* override_previous_user_uninstall */));
 
     EXPECT_EQ(2u, install_run_count());
@@ -1063,7 +1044,6 @@ TEST_F(PendingAppManagerImplTest, ExternalAppUninstalled) {
 }
 
 TEST_F(PendingAppManagerImplTest, UninstallApps_Succeeds) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
   registrar()->AddExternalApp(
       GenerateFakeAppId(kFooWebAppUrl),
       {kFooWebAppUrl, ExternalInstallSource::kExternalPolicy});
@@ -1071,7 +1051,7 @@ TEST_F(PendingAppManagerImplTest, UninstallApps_Succeeds) {
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             true);
   UninstallAppsResults results = UninstallAppsAndWait(
-      pending_app_manager.get(), std::vector<GURL>{kFooWebAppUrl});
+      pending_app_manager_impl(), std::vector<GURL>{kFooWebAppUrl});
 
   EXPECT_EQ(results, UninstallAppsResults({{kFooWebAppUrl, true}}));
 
@@ -1080,12 +1060,10 @@ TEST_F(PendingAppManagerImplTest, UninstallApps_Succeeds) {
 }
 
 TEST_F(PendingAppManagerImplTest, UninstallApps_Fails) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             false);
   UninstallAppsResults results = UninstallAppsAndWait(
-      pending_app_manager.get(), std::vector<GURL>{kFooWebAppUrl});
+      pending_app_manager_impl(), std::vector<GURL>{kFooWebAppUrl});
   EXPECT_EQ(results, UninstallAppsResults({{kFooWebAppUrl, false}}));
 
   EXPECT_EQ(1u, uninstall_call_count());
@@ -1093,7 +1071,6 @@ TEST_F(PendingAppManagerImplTest, UninstallApps_Fails) {
 }
 
 TEST_F(PendingAppManagerImplTest, UninstallApps_Multiple) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
   registrar()->AddExternalApp(
       GenerateFakeAppId(kFooWebAppUrl),
       {kFooWebAppUrl, ExternalInstallSource::kExternalPolicy});
@@ -1106,7 +1083,7 @@ TEST_F(PendingAppManagerImplTest, UninstallApps_Multiple) {
   install_finalizer()->SetNextUninstallExternalWebAppResult(kBarWebAppUrl,
                                                             true);
   UninstallAppsResults results =
-      UninstallAppsAndWait(pending_app_manager.get(),
+      UninstallAppsAndWait(pending_app_manager_impl(),
                            std::vector<GURL>{kFooWebAppUrl, kBarWebAppUrl});
   EXPECT_EQ(results, UninstallAppsResults(
                          {{kFooWebAppUrl, true}, {kBarWebAppUrl, true}}));
@@ -1117,14 +1094,13 @@ TEST_F(PendingAppManagerImplTest, UninstallApps_Multiple) {
 }
 
 TEST_F(PendingAppManagerImplTest, UninstallApps_PendingInstall) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-  task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                InstallResultCode::kSuccess);
+  pending_app_manager_impl()->SetNextInstallationTaskResult(
+      kFooWebAppUrl, InstallResultCode::kSuccess);
   url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                      WebAppUrlLoader::Result::kUrlLoaded);
 
   base::RunLoop run_loop;
-  pending_app_manager->Install(
+  pending_app_manager_impl()->Install(
       GetFooInstallOptions(),
       base::BindLambdaForTesting([&](const GURL& url, InstallResultCode code) {
         EXPECT_EQ(InstallResultCode::kSuccess, code);
@@ -1135,7 +1111,7 @@ TEST_F(PendingAppManagerImplTest, UninstallApps_PendingInstall) {
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             false);
   UninstallAppsResults uninstall_results = UninstallAppsAndWait(
-      pending_app_manager.get(), std::vector<GURL>{kFooWebAppUrl});
+      pending_app_manager_impl(), std::vector<GURL>{kFooWebAppUrl});
   EXPECT_EQ(uninstall_results, UninstallAppsResults({{kFooWebAppUrl, false}}));
   EXPECT_EQ(1u, uninstall_call_count());
 
@@ -1143,20 +1119,19 @@ TEST_F(PendingAppManagerImplTest, UninstallApps_PendingInstall) {
 }
 
 TEST_F(PendingAppManagerImplTest, ReinstallPlaceholderApp_Success) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
   // Install a placeholder app
   auto install_options = GetFooInstallOptions();
   install_options.install_placeholder = true;
 
   {
-    task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                  InstallResultCode::kSuccess);
+    pending_app_manager_impl()->SetNextInstallationTaskResult(
+        kFooWebAppUrl, InstallResultCode::kSuccess);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), install_options);
+        InstallAndWait(pending_app_manager_impl(), install_options);
     ASSERT_EQ(InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(1u, install_run_count());
   }
@@ -1164,8 +1139,8 @@ TEST_F(PendingAppManagerImplTest, ReinstallPlaceholderApp_Success) {
   // Reinstall placeholder
   {
     install_options.reinstall_placeholder = true;
-    task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                  InstallResultCode::kSuccess);
+    pending_app_manager_impl()->SetNextInstallationTaskResult(
+        kFooWebAppUrl, InstallResultCode::kSuccess);
     url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                        WebAppUrlLoader::Result::kUrlLoaded);
     install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
@@ -1174,7 +1149,7 @@ TEST_F(PendingAppManagerImplTest, ReinstallPlaceholderApp_Success) {
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), install_options);
+        InstallAndWait(pending_app_manager_impl(), install_options);
 
     EXPECT_EQ(InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
@@ -1185,21 +1160,19 @@ TEST_F(PendingAppManagerImplTest, ReinstallPlaceholderApp_Success) {
 
 TEST_F(PendingAppManagerImplTest,
        ReinstallPlaceholderApp_ReinstallNotPossible) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-
   // Install a placeholder app
   auto install_options = GetFooInstallOptions();
   install_options.install_placeholder = true;
 
   {
-    task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                  InstallResultCode::kSuccess);
+    pending_app_manager_impl()->SetNextInstallationTaskResult(
+        kFooWebAppUrl, InstallResultCode::kSuccess);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), install_options);
+        InstallAndWait(pending_app_manager_impl(), install_options);
     ASSERT_EQ(InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(1u, install_run_count());
   }
@@ -1207,15 +1180,15 @@ TEST_F(PendingAppManagerImplTest,
   // Try to reinstall placeholder
   {
     install_options.reinstall_placeholder = true;
-    task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                  InstallResultCode::kSuccess);
+    pending_app_manager_impl()->SetNextInstallationTaskResult(
+        kFooWebAppUrl, InstallResultCode::kSuccess);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
 
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), install_options);
+        InstallAndWait(pending_app_manager_impl(), install_options);
 
     EXPECT_EQ(InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
@@ -1229,20 +1202,19 @@ TEST_F(PendingAppManagerImplTest,
 
 TEST_F(PendingAppManagerImplTest,
        ReinstallPlaceholderAppWhenUnused_NoOpenedWindows) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
   // Install a placeholder app
   auto install_options = GetFooInstallOptions();
   install_options.install_placeholder = true;
 
   {
-    task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                  InstallResultCode::kSuccess);
+    pending_app_manager_impl()->SetNextInstallationTaskResult(
+        kFooWebAppUrl, InstallResultCode::kSuccess);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), install_options);
+        InstallAndWait(pending_app_manager_impl(), install_options);
     ASSERT_EQ(InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(1u, install_run_count());
   }
@@ -1251,8 +1223,8 @@ TEST_F(PendingAppManagerImplTest,
   {
     install_options.reinstall_placeholder = true;
     install_options.wait_for_windows_closed = true;
-    task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                  InstallResultCode::kSuccess);
+    pending_app_manager_impl()->SetNextInstallationTaskResult(
+        kFooWebAppUrl, InstallResultCode::kSuccess);
     ui_manager()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 0);
     url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                        WebAppUrlLoader::Result::kUrlLoaded);
@@ -1260,7 +1232,7 @@ TEST_F(PendingAppManagerImplTest,
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), install_options);
+        InstallAndWait(pending_app_manager_impl(), install_options);
 
     EXPECT_EQ(InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());
@@ -1271,21 +1243,19 @@ TEST_F(PendingAppManagerImplTest,
 
 TEST_F(PendingAppManagerImplTest,
        ReinstallPlaceholderAppWhenUnused_OneWindowOpened) {
-  auto pending_app_manager = GetPendingAppManagerImplWithTestMocks();
-
   // Install a placeholder app
   auto install_options = GetFooInstallOptions();
   install_options.install_placeholder = true;
 
   {
-    task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                  InstallResultCode::kSuccess);
+    pending_app_manager_impl()->SetNextInstallationTaskResult(
+        kFooWebAppUrl, InstallResultCode::kSuccess);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), install_options);
+        InstallAndWait(pending_app_manager_impl(), install_options);
     ASSERT_EQ(InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(1u, install_run_count());
   }
@@ -1294,8 +1264,8 @@ TEST_F(PendingAppManagerImplTest,
   {
     install_options.reinstall_placeholder = true;
     install_options.wait_for_windows_closed = true;
-    task_factory()->SetNextInstallationTaskResult(kFooWebAppUrl,
-                                                  InstallResultCode::kSuccess);
+    pending_app_manager_impl()->SetNextInstallationTaskResult(
+        kFooWebAppUrl, InstallResultCode::kSuccess);
     ui_manager()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 1);
     url_loader()->SetNextLoadUrlResult(kFooWebAppUrl,
                                        WebAppUrlLoader::Result::kUrlLoaded);
@@ -1305,7 +1275,7 @@ TEST_F(PendingAppManagerImplTest,
     base::Optional<GURL> url;
     base::Optional<InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), install_options);
+        InstallAndWait(pending_app_manager_impl(), install_options);
 
     EXPECT_EQ(InstallResultCode::kSuccess, code.value());
     EXPECT_EQ(kFooWebAppUrl, url.value());

@@ -120,8 +120,6 @@ CrostiniImpl.prototype.isEnabled = function(vmName) {
  * @param {string} vmName
  * @param {boolean} allowed
  */
-// TODO(crbug.com/988375): add dynamic pref change functionality for
-// RootAccessAllowed.
 CrostiniImpl.prototype.setRootAccessAllowed = function(vmName, allowed) {
   this.rootAccessAllowed_[vmName] = allowed;
 };
@@ -218,6 +216,12 @@ CrostiniImpl.prototype.onCrostiniChanged_ = function(event) {
       break;
     case chrome.fileManagerPrivate.CrostiniEventType.DISABLE:
       this.setEnabled(event.vmName, false);
+      break;
+    case chrome.fileManagerPrivate.CrostiniEventType.ROOT_ACCESS_ALLOW:
+      this.setRootAccessAllowed(event.vmName, true);
+      break;
+    case chrome.fileManagerPrivate.CrostiniEventType.ROOT_ACCESS_DISALLOW:
+      this.setRootAccessAllowed(event.vmName, false);
       break;
     case chrome.fileManagerPrivate.CrostiniEventType.SHARE:
       for (const entry of event.entries) {

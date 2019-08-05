@@ -28,11 +28,9 @@ class PolicyCertificateProvider {
    public:
     virtual ~Observer() = default;
 
-    // Is called every time the list of policy-set server and authority
+    // Called every time the list of policy-set server and authority
     // certificates changes.
-    virtual void OnPolicyProvidedCertsChanged(
-        const net::CertificateList& all_server_and_authority_certs,
-        const net::CertificateList& trust_anchors) = 0;
+    virtual void OnPolicyProvidedCertsChanged() = 0;
   };
 
   virtual void AddPolicyProvidedCertsObserver(Observer* observer) = 0;

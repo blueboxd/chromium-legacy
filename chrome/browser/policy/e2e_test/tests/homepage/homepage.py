@@ -17,8 +17,8 @@ class HomepageTest(ChromeEnterpriseTestCase):
   """Test HomepageIsNewTabPage and HomepageLocation policies.
 
   See:
-     https://www.chromium.org/administrators/policy-list-3#HomepageLocation
-     https://www.chromium.org/administrators/policy-list-3#HomepageIsNewTabPage
+     https://cloud.google.com/docs/chrome-enterprise/policies/?policy=HomepageLocation
+     https://cloud.google.com/docs/chrome-enterprise/policies/?policy=HomepageIsNewTabPage
   """
 
   @before_all

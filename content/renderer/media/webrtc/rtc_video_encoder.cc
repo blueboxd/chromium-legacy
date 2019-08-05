@@ -252,11 +252,15 @@ class RTCVideoEncoder::Impl
   gfx::Size input_frame_coded_size_;
   gfx::Size input_visible_size_;
 
-  // Shared memory buffers for input/output with the VEA.
+  // Shared memory buffers for input/output with the VEA. The input buffers may
+  // be referred to by a VideoFrame, so they are wrapped in a unique_ptr to have
+  // a stable memory location. That is not necessary for the output buffers.
   std::vector<std::unique_ptr<std::pair<base::UnsafeSharedMemoryRegion,
                                         base::WritableSharedMemoryMapping>>>
       input_buffers_;
-  std::vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
+  std::vector<std::pair<base::UnsafeSharedMemoryRegion,
+                        base::WritableSharedMemoryMapping>>
+      output_buffers_;
 
   // Input buffers ready to be filled with input from Encode().  As a LIFO since
   // we don't care about ordering.
@@ -394,9 +398,9 @@ void RTCVideoEncoder::Impl::UseOutputBitstreamBufferId(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (video_encoder_) {
     video_encoder_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
-        bitstream_buffer_id, output_buffers_[bitstream_buffer_id]->handle(),
-        false /* read_only */,
-        output_buffers_[bitstream_buffer_id]->mapped_size()));
+        bitstream_buffer_id,
+        output_buffers_[bitstream_buffer_id].first.Duplicate(),
+        output_buffers_[bitstream_buffer_id].first.GetSize()));
     output_buffers_free_count_++;
   }
 }
@@ -504,21 +508,23 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
   }
 
   for (int i = 0; i < kOutputBufferCount; ++i) {
-    std::unique_ptr<base::SharedMemory> shm =
-        gpu_factories_->CreateSharedMemory(output_buffer_size);
-    if (!shm) {
+    base::UnsafeSharedMemoryRegion region =
+        gpu_factories_->CreateSharedMemoryRegion(output_buffer_size);
+    base::WritableSharedMemoryMapping mapping = region.Map();
+    if (!mapping.IsValid()) {
       LogAndNotifyError(FROM_HERE, "failed to create output buffer",
                         media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    output_buffers_.push_back(std::move(shm));
+    output_buffers_.push_back(
+        std::make_pair(std::move(region), std::move(mapping)));
   }
 
   // Immediately provide all output buffers to the VEA.
   for (size_t i = 0; i < output_buffers_.size(); ++i) {
-    video_encoder_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
-        i, output_buffers_[i]->handle(), false /* read_only */,
-        output_buffers_[i]->mapped_size()));
+    video_encoder_->UseOutputBitstreamBuffer(
+        media::BitstreamBuffer(i, output_buffers_[i].first.Duplicate(),
+                               output_buffers_[i].first.GetSize()));
     output_buffers_free_count_++;
   }
   DCHECK_EQ(GetStatus(), WEBRTC_VIDEO_CODEC_UNINITIALIZED);
@@ -541,9 +547,10 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
                       media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
-  base::SharedMemory* output_buffer =
-      output_buffers_[bitstream_buffer_id].get();
-  if (metadata.payload_size_bytes > output_buffer->mapped_size()) {
+  void* output_mapping_memory =
+      output_buffers_[bitstream_buffer_id].second.memory();
+  if (metadata.payload_size_bytes >
+      output_buffers_[bitstream_buffer_id].second.size()) {
     LogAndNotifyError(FROM_HERE, "invalid payload_size",
                       media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
@@ -581,7 +588,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
   webrtc::EncodedImage image;
   image.Allocate(metadata.payload_size_bytes);
   image.set_size(metadata.payload_size_bytes);
-  memcpy(image.data(), output_buffer->memory(), metadata.payload_size_bytes);
+  memcpy(image.data(), output_mapping_memory, metadata.payload_size_bytes);
   image._encodedWidth = input_visible_size_.width();
   image._encodedHeight = input_visible_size_.height();
   image.SetTimestamp(rtp_timestamp.value());

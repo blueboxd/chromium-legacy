@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "components/arc/common/print_common.mojom.h"
+#include "components/arc/mojom/print_common.mojom.h"
 #include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
 #include "ui/gfx/geometry/size.h"

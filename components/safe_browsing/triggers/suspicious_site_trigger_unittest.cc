@@ -68,6 +68,7 @@ class SuspiciousSiteTriggerTest : public content::RenderViewHostTestHarness {
     GURL gurl(url);
     auto navigation_simulator =
         NavigationSimulator::CreateRendererInitiated(gurl, frame);
+    navigation_simulator->SetKeepLoading(true);
     navigation_simulator->Commit();
     RenderFrameHost* final_frame_host =
         navigation_simulator->GetFinalRenderFrameHost();

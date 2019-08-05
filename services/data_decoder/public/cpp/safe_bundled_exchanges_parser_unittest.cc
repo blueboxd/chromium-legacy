@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,7 +66,10 @@ class MockFactory final : public mojom::BundledExchangesParserFactory {
   };
 
   MockFactory() {}
-  MockParser* GetCreatedParser() { return parser_.get(); }
+  MockParser* GetCreatedParser() {
+    base::RunLoop().RunUntilIdle();
+    return parser_.get();
+  }
   void DeleteParser() { parser_.reset(); }
 
  private:
@@ -107,17 +111,26 @@ class SafeBundledExchangesParserTest : public testing::Test {
  public:
   service_manager::Connector* GetConnector() { return service_.connector(); }
 
+  MockFactory* InitializeMockFactory(SafeBundledExchangesParser* parser) {
+    std::unique_ptr<MockFactory> factory = std::make_unique<MockFactory>();
+    MockFactory* raw_factory = factory.get();
+    mojo::Remote<mojom::BundledExchangesParserFactory> remote;
+    mojo::MakeSelfOwnedReceiver(std::move(factory),
+                                remote.BindNewPipeAndPassReceiver());
+    parser->SetBundledExchangesParserFactoryForTesting(std::move(remote));
+    return raw_factory;
+  }
+
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   TestDataDecoderService service_;
 };
 
 TEST_F(SafeBundledExchangesParserTest, ParseGoldenFile) {
-  SafeBundledExchangesParser parser;
+  SafeBundledExchangesParser parser(GetConnector());
   base::File test_file =
       OpenTestFile(base::FilePath(FILE_PATH_LITERAL("hello.wbn")));
-
-  parser.OpenFile(GetConnector(), std::move(test_file));
+  ASSERT_EQ(base::File::FILE_OK, parser.OpenFile(std::move(test_file)));
 
   mojom::BundleMetadataPtr metadata_result;
   {
@@ -172,8 +185,13 @@ TEST_F(SafeBundledExchangesParserTest, ParseGoldenFile) {
   EXPECT_EQ(index[3]->request_url, "https://test.example.org/script.js");
 }
 
+TEST_F(SafeBundledExchangesParserTest, OpenInvalidFile) {
+  SafeBundledExchangesParser parser(GetConnector());
+  EXPECT_EQ(base::File::FILE_ERROR_FAILED, parser.OpenFile(base::File()));
+}
+
 TEST_F(SafeBundledExchangesParserTest, CallWithoutOpen) {
-  SafeBundledExchangesParser parser;
+  SafeBundledExchangesParser parser(GetConnector());
   bool metadata_parsed = false;
   parser.ParseMetadata(base::BindOnce(
       [](bool* metadata_parsed, mojom::BundleMetadataPtr metadata,
@@ -204,13 +222,13 @@ TEST_F(SafeBundledExchangesParserTest, CallWithoutOpen) {
 }
 
 TEST_F(SafeBundledExchangesParserTest, UseMockFactory) {
-  SafeBundledExchangesParser parser;
-  std::unique_ptr<MockFactory> factory = std::make_unique<MockFactory>();
-  MockFactory* raw_factory = factory.get();
-  parser.SetBundledExchangesParserFactoryForTesting(std::move(factory));
+  SafeBundledExchangesParser parser(GetConnector());
+  MockFactory* raw_factory = InitializeMockFactory(&parser);
 
   EXPECT_FALSE(raw_factory->GetCreatedParser());
-  parser.OpenFile(GetConnector(), base::File());
+  base::File test_file =
+      OpenTestFile(base::FilePath(FILE_PATH_LITERAL("hello.wbn")));
+  ASSERT_EQ(base::File::FILE_OK, parser.OpenFile(std::move(test_file)));
   ASSERT_TRUE(raw_factory->GetCreatedParser());
   EXPECT_FALSE(raw_factory->GetCreatedParser()->IsParseMetadataCalled());
   EXPECT_FALSE(raw_factory->GetCreatedParser()->IsParseResponseCalled());
@@ -227,15 +245,13 @@ TEST_F(SafeBundledExchangesParserTest, UseMockFactory) {
 }
 
 TEST_F(SafeBundledExchangesParserTest, ConnectionError) {
-  SafeBundledExchangesParser parser;
-  std::unique_ptr<MockFactory> factory = std::make_unique<MockFactory>();
-  MockFactory* raw_factory = factory.get();
-  parser.SetBundledExchangesParserFactoryForTesting(std::move(factory));
+  SafeBundledExchangesParser parser(GetConnector());
+  MockFactory* raw_factory = InitializeMockFactory(&parser);
 
   mojo::PendingRemote<mojom::BundleDataSource> remote_data_source;
   auto data_source = std::make_unique<MockDataSource>(
       remote_data_source.InitWithNewPipeAndPassReceiver());
-  parser.OpenDataSource(GetConnector(), std::move(remote_data_source));
+  parser.OpenDataSource(std::move(remote_data_source));
   ASSERT_TRUE(raw_factory->GetCreatedParser());
 
   base::RunLoop run_loop;

@@ -885,6 +885,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
   const blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
       override;
+  void EvictFromBackForwardCache() override;
 
   // WebFrameSerializerClient implementation:
   void DidSerializeDataForFrame(

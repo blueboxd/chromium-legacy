@@ -134,16 +134,9 @@ if (use_ozone) {
         "evdev/touch_filter/touch_filter.h",
         "gamepad/gamepad_event.cc",
         "gamepad/gamepad_event.h",
-        "gamepad/gamepad_mapping.cc",
-        "gamepad/gamepad_mapping.h",
         "gamepad/gamepad_observer.h",
         "gamepad/gamepad_provider_ozone.cc",
         "gamepad/gamepad_provider_ozone.h",
-        "gamepad/generic_gamepad_mapping.cc",
-        "gamepad/generic_gamepad_mapping.h",
-        "gamepad/static_gamepad_mapping.cc",
-        "gamepad/static_gamepad_mapping.h",
-        "gamepad/webgamepad_constants.h",
       ]
 
       defines = [ "EVENTS_OZONE_EVDEV_IMPLEMENTATION" ]

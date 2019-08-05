@@ -85,10 +85,7 @@ class DisplayPanel extends HTMLElement {
               /* Limit to 3 visible progress panels before scroll. */
               #panels {
                   max-height: calc(192px + 28px);
-              }
-              /* Show only the first of any non-progress panels. */
-              xf-panel-item:not([panel-type='0']):not(:first-child) {
-                display: none;
+                  overflow-y: auto;
               }
               xf-panel-item:not(:only-child) {
                 --progress-height: 64px;
@@ -239,8 +236,15 @@ class DisplayPanel extends HTMLElement {
     let summaryHost = this.shadowRoot.querySelector('#summary');
     let summaryPanel = summaryHost.querySelector('#summary-panel');
 
-    // If there's only one panel item active, no need for summary.
-    if (this.items_.length <= 1 && summaryPanel) {
+    // Work out how many progress panels are being shown.
+    let count = 0;
+    for (let i = 0; i < this.items_.length; ++i) {
+      if (this.items_[i].panelType == this.items_[i].panelTypeProgress) {
+        count++;
+      }
+    }
+    // If there's only one progress panel item active, no need for summary.
+    if (count <= 1 && summaryPanel) {
       const button = summaryPanel.primaryButton;
       if (button) {
         button.removeEventListener('click', this.toggleSummary);
@@ -252,12 +256,6 @@ class DisplayPanel extends HTMLElement {
       return;
     }
     // Show summary panel if there are more than 1 progress panels.
-    let count = 0;
-    for (let i = 0; i < this.items_.length; ++i) {
-      if (this.items_[i].panelType == this.items_[i].panelTypeProgress) {
-        count++;
-      }
-    }
     if (count > 1 && !summaryPanel) {
       summaryPanel = document.createElement('xf-panel-item');
       summaryPanel.setAttribute('panel-type', 1);

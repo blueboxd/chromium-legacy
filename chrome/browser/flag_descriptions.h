@@ -964,6 +964,9 @@ extern const char kRequestTabletSiteDescription[];
 extern const char kResourceLoadSchedulerName[];
 extern const char kResourceLoadSchedulerDescription[];
 
+extern const char kPrefetchRedirectErrorName[];
+extern const char kPrefetchRedirectErrorDescription[];
+
 extern const char kSafeBrowsingUseAPDownloadVerdictsName[];
 extern const char kSafeBrowsingUseAPDownloadVerdictsDescription[];
 

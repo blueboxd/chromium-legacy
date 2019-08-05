@@ -33,8 +33,7 @@ class NativeThemeGtk : public ui::NativeThemeBase {
                         const gfx::Rect& rect,
                         Part direction,
                         State state,
-                        ColorScheme color_scheme,
-                        const ScrollbarArrowExtraParams& arrow) const override;
+                        ColorScheme color_scheme) const override;
   void PaintScrollbarTrack(cc::PaintCanvas* canvas,
                            Part part,
                            State state,

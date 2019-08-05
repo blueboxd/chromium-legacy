@@ -88,11 +88,18 @@ ServiceWorkerRequestHandler::CreateForNavigationIO(
   if (!context)
     return nullptr;
 
+  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
+
   auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  provider_info->client_request = mojo::MakeRequest(&client_ptr_info);
+  host_request = mojo::MakeRequest(&provider_info->host_ptr_info);
+
   // Initialize the SWProviderHost.
   *out_provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
       context->AsWeakPtr(), request_info.are_ancestors_secure,
-      request_info.frame_tree_node_id, &provider_info);
+      request_info.frame_tree_node_id, std::move(host_request),
+      std::move(client_ptr_info));
   navigation_handle_core->OnCreatedProviderHost(*out_provider_host,
                                                 std::move(provider_info));
 
@@ -149,7 +156,6 @@ ServiceWorkerRequestHandler::CreateForWorkerIO(
     return nullptr;
   }
 
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   if (!navigation_handle_core->context_wrapper())
     return nullptr;
   ServiceWorkerContextCore* context =
@@ -173,10 +179,18 @@ ServiceWorkerRequestHandler::CreateForWorkerIO(
       return nullptr;
   }
 
+  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
+
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  provider_info->client_request = mojo::MakeRequest(&client_ptr_info);
+  host_request = mojo::MakeRequest(&provider_info->host_ptr_info);
+
   // Initialize the SWProviderHost.
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateForWebWorker(
-          context->AsWeakPtr(), process_id, provider_type, &provider_info);
+          context->AsWeakPtr(), process_id, provider_type,
+          std::move(host_request), std::move(client_ptr_info));
   navigation_handle_core->OnCreatedProviderHost(host, std::move(provider_info));
 
   return std::make_unique<ServiceWorkerControlleeRequestHandler>(

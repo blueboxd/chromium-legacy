@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_url_sb_client.h"
@@ -291,8 +292,8 @@ void DownloadProtectionService::ShowDetailsForDownload(
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(item));
   if (profile &&
-      AdvancedProtectionStatusManager::RequestsAdvancedProtectionVerdicts(
-          profile) &&
+      AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
+          ->RequestsAdvancedProtectionVerdicts() &&
       item->GetDangerType() ==
           download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT) {
     learn_more_url = GURL(chrome::kAdvancedProtectionDownloadLearnMoreURL);

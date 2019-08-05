@@ -150,7 +150,8 @@ TrustedTypePolicy* GetDefaultPolicy(const ExecutionContext* execution_context) {
 }  // namespace
 
 bool RequireTrustedTypesCheck(const ExecutionContext* execution_context) {
-  return execution_context && execution_context->RequireTrustedTypes();
+  return execution_context && execution_context->RequireTrustedTypes() &&
+         !ContentSecurityPolicy::ShouldBypassMainWorld(execution_context);
 }
 
 String GetStringFromTrustedType(

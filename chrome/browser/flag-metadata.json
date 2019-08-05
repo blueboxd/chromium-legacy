@@ -119,7 +119,7 @@
   },
   {
     "name": "arc-boot-completed-broadcast",
-    "owners": [ "//components/arc/common/ARC_SECURITY_OWNERS" ],
+    "owners": [ "//components/arc/mojom/ARC_SECURITY_OWNERS" ],
     "expiry_milestone": 76
   },
   {
@@ -2731,6 +2731,11 @@
     "name": "periodic-background-sync",
     "owners": [ "nator" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "prefetch-redirect-error",
+    "owners": [ "dom", "yhirano" ],
+    "expiry_milestone": 83
   },
   {
     "name": "postscript-printing",

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/arc/common/print_spooler.mojom.h"
+#include "components/arc/mojom/print_spooler.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {

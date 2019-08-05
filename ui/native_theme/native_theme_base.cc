@@ -215,8 +215,7 @@ void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
     case kScrollbarLeftArrow:
     case kScrollbarRightArrow:
       if (scrollbar_button_length_ > 0)
-        PaintArrowButton(canvas, rect, part, state, color_scheme,
-                         extra.scrollbar_arrow);
+        PaintArrowButton(canvas, rect, part, state, color_scheme);
       break;
     case kScrollbarHorizontalThumb:
     case kScrollbarVerticalThumb:
@@ -283,13 +282,11 @@ NativeThemeBase::NativeThemeBase()
 NativeThemeBase::~NativeThemeBase() {
 }
 
-void NativeThemeBase::PaintArrowButton(
-    cc::PaintCanvas* canvas,
-    const gfx::Rect& rect,
-    Part direction,
-    State state,
-    ColorScheme color_scheme,
-    const ScrollbarArrowExtraParams& arrow) const {
+void NativeThemeBase::PaintArrowButton(cc::PaintCanvas* canvas,
+                                       const gfx::Rect& rect,
+                                       Part direction,
+                                       State state,
+                                       ColorScheme color_scheme) const {
   cc::PaintFlags flags;
 
   // Calculate button color.
@@ -893,14 +890,11 @@ void NativeThemeBase::PaintInnerSpinButton(
 
   gfx::Rect half = rect;
   half.set_height(rect.height() / 2);
-  ScrollbarArrowExtraParams arrow;
-  arrow.zoom = 1.0;
-  PaintArrowButton(canvas, half, kScrollbarUpArrow, north_state, color_scheme,
-                   arrow);
+  PaintArrowButton(canvas, half, kScrollbarUpArrow, north_state, color_scheme);
 
   half.set_y(rect.y() + rect.height() / 2);
-  PaintArrowButton(canvas, half, kScrollbarDownArrow, south_state, color_scheme,
-                   arrow);
+  PaintArrowButton(canvas, half, kScrollbarDownArrow, south_state,
+                   color_scheme);
 }
 
 void NativeThemeBase::PaintProgressBar(

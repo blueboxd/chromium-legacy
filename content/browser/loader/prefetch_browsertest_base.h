@@ -35,7 +35,8 @@ class PrefetchBrowserTestBase : public ContentBrowserTest {
     ResponseEntry(
         const std::string& content,
         const std::string& content_types = "text/html",
-        const std::vector<std::pair<std::string, std::string>>& headers = {});
+        const std::vector<std::pair<std::string, std::string>>& headers = {},
+        net::HttpStatusCode code = net::HTTP_OK);
     ResponseEntry(const ResponseEntry&) = delete;
     ResponseEntry(ResponseEntry&& other);
     ResponseEntry& operator=(const ResponseEntry&) = delete;
@@ -45,6 +46,7 @@ class PrefetchBrowserTestBase : public ContentBrowserTest {
     std::string content;
     std::string content_type;
     std::vector<std::pair<std::string, std::string>> headers;
+    net::HttpStatusCode code;
   };
 
   struct ScopedSignedExchangeHandlerFactory {

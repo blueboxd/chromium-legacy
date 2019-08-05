@@ -2361,9 +2361,7 @@ class ManagedSessionsTest : public DeviceLocalAccountTest {
     explicit CertsObserver(base::OnceClosure on_change)
         : on_change_(std::move(on_change)) {}
 
-    void OnPolicyProvidedCertsChanged(
-        const net::CertificateList& all_server_and_authority_certs,
-        const net::CertificateList& trust_anchors) override {
+    void OnPolicyProvidedCertsChanged() override {
       std::move(on_change_).Run();
     }
 

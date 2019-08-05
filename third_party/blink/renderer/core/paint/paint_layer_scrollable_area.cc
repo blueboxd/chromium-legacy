@@ -2444,17 +2444,13 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
       scrollbar_size = LayoutTheme::GetTheme().ScrollbarControlSizeForPart(
           style_source.StyleRef().EffectiveAppearance());
     }
-    Element* style_source_element = nullptr;
-    if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
-      style_source_element = DynamicTo<Element>(style_source.GetNode());
-    }
-    scrollbar = MakeGarbageCollected<Scrollbar>(
-        ScrollableArea(), orientation, scrollbar_size, style_source_element,
-        &ScrollableArea()
-             ->GetLayoutBox()
-             ->GetFrame()
-             ->GetPage()
-             ->GetChromeClient());
+    scrollbar = MakeGarbageCollected<Scrollbar>(ScrollableArea(), orientation,
+                                                scrollbar_size,
+                                                &ScrollableArea()
+                                                     ->GetLayoutBox()
+                                                     ->GetFrame()
+                                                     ->GetPage()
+                                                     ->GetChromeClient());
   }
   ScrollableArea()->GetLayoutBox()->GetDocument().View()->AddScrollbar(
       scrollbar);

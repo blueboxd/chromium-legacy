@@ -37,8 +37,8 @@ class MockGamepadDelegate : public GamepadDelegate {
 
   // Overridden from GamepadDelegate:
   MOCK_METHOD0(OnRemoved, void());
-  MOCK_METHOD3(OnAxis, void(int, int, double));
-  MOCK_METHOD4(OnButton, void(int, int, bool, double));
+  MOCK_METHOD2(OnAxis, void(int, double));
+  MOCK_METHOD2(OnButton, void(int, bool));
   MOCK_METHOD0(OnFrame, void());
 };
 
@@ -67,7 +67,7 @@ class GamingSeatTest : public test::ExoTestBase {
 
   void SendFrameToGamepads(const std::vector<int>& gamepad_device_ids) {
     for (auto& id : gamepad_device_ids) {
-      ui::GamepadEvent event(id, ui::GamepadEventType::FRAME, 0, 0, 0,
+      ui::GamepadEvent event(id, ui::GamepadEventType::FRAME, 0, 0,
                              base::TimeTicks());
       ui::GamepadProviderOzone::GetInstance()->DispatchGamepadEvent(event);
     }

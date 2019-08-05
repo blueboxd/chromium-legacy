@@ -16,7 +16,7 @@ FLAGS = flags.FLAGS
 class PopupsAllowedForUrlsTest(ChromeEnterpriseTestCase):
   """Test the PopupsAllowedForUrls
 
-    https://www.chromium.org/administrators/policy-list-3#PopupsAllowedForUrls.
+    https://cloud.google.com/docs/chrome-enterprise/policies/?policy=PopupsAllowedForUrls.
     """
 
   @before_all

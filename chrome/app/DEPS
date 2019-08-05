@@ -69,7 +69,7 @@ specific_include_rules = {
     "+third_party/blink/public/mojom",
   ],
   "chrome_content_gpu_overlay_manifest\.cc": [
-    "+components/arc/common",
+    "+components/arc/mojom",
   ],
   "chrome_content_renderer_overlay_manifest\.cc": [
     "+chromeos/services/network_config/public",

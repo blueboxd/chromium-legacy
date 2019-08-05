@@ -148,12 +148,14 @@ source_set("eg2_tests") {
   testonly = true
 
   sources = [
+    "ar_quick_look_egtest.mm",
     "pass_kit_egtest.mm",
   ]
 
   deps = [
     "//ios/chrome/app/strings:ios_strings_grit",
-    "//ios/chrome/browser/download:pass_kit_mime_type",
+    "//ios/chrome/browser/download:features",
+    "//ios/chrome/browser/download:mime_types",
     "//ios/chrome/browser/download:test_support",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",

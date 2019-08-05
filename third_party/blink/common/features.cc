@@ -230,6 +230,10 @@ const base::Feature kFileHandlingAPI{"FileHandlingAPI",
 const base::Feature kForbidSyncXHRInPageDismissal{
     "ForbidSyncXHRInPageDismissal", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Forces the redirect mode for prefetches to kManual. See crbug.com/988956.
+const base::Feature kPrefetchRedirectError{"PrefetchRedirectError",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kMixedContentAutoupgradeModeParamName[] = "mode";
 const char kMixedContentAutoupgradeModeBlockable[] = "blockable";
 const char kMixedContentAutoupgradeModeOptionallyBlockable[] =

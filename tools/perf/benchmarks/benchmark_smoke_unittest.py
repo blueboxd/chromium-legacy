@@ -24,7 +24,6 @@ from py_utils import discover
 from py_utils import tempfile_ext
 
 from benchmarks import jetstream
-from benchmarks import kraken
 from benchmarks import octane
 from benchmarks import rasterize_and_record_micro
 from benchmarks import speedometer
@@ -104,7 +103,6 @@ _BLACK_LIST_TEST_MODULES = {
     rasterize_and_record_micro,  # Always fails on cq bot.
     speedometer,  # Takes 101 seconds.
     jetstream,  # Take 206 seconds.
-    kraken,  # Flaky on Android, crbug.com/626174.
     v8_browsing, # Flaky on Android, crbug.com/628368.
 }
 

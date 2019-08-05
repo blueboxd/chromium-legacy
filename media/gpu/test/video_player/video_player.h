@@ -27,7 +27,8 @@ class VideoDecoderClient;
 struct VideoDecoderClientConfig;
 
 // Default timeout used when waiting for events.
-constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kDefaultEventWaitTimeout =
+    base::TimeDelta::FromSeconds(30);
 
 enum class VideoPlayerState : size_t {
   kUninitialized = 0,
@@ -71,6 +72,9 @@ class VideoPlayer {
   // Wait until the renderer has finished rendering all queued frames.
   void WaitForRenderer();
 
+  // Set the maximum time we will wait for an event to finish.
+  void SetEventWaitTimeout(base::TimeDelta timeout);
+
   // Play the video asynchronously.
   void Play();
   // Play the video asynchronously. Automatically pause decoding when the
@@ -94,9 +98,7 @@ class VideoPlayer {
   // occurred since last calling this function will be taken into account. All
   // events with different types will be consumed. Will return false if the
   // specified timeout is exceeded while waiting for the events.
-  bool WaitForEvent(VideoPlayerEvent event,
-                    size_t times = 1,
-                    base::TimeDelta max_wait = kDefaultTimeout);
+  bool WaitForEvent(VideoPlayerEvent event, size_t times = 1);
   // Helper function to wait for a FlushDone event.
   bool WaitForFlushDone();
   // Helper function to wait for a ResetDone event.
@@ -131,6 +133,8 @@ class VideoPlayer {
   VideoPlayerState video_player_state_;
   std::unique_ptr<VideoDecoderClient> decoder_client_;
 
+  // The timeout used when waiting for events.
+  base::TimeDelta event_timeout_ = kDefaultEventWaitTimeout;
   mutable base::Lock event_lock_;
   base::ConditionVariable event_cv_;
 

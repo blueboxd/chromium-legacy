@@ -194,7 +194,7 @@ public class TrustedWebActivityClient {
         Origin origin = new Origin(url);
 
         // Trusted Web Activities only work with https so we can shortcut here.
-        if (!origin.uri().getScheme().equals(UrlConstants.HTTPS_SCHEME)) return null;
+        if (!UrlConstants.HTTPS_SCHEME.equals(origin.uri().getScheme())) return null;
 
         Set<String> verifiedPackages = TrustedWebActivityServiceConnectionManager
                 .getVerifiedPackages(appContext, origin.toString());

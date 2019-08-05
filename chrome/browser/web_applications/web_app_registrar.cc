@@ -75,6 +75,10 @@ void WebAppRegistrar::OnDatabaseOpened(base::OnceClosure callback,
   std::move(callback).Run();
 }
 
+WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {
+  return this;
+}
+
 bool WebAppRegistrar::IsInstalled(const GURL& start_url) const {
   NOTIMPLEMENTED();
   return false;

@@ -158,6 +158,9 @@
       settable_from_internals: true,
     },
     {
+      name: "BackForwardCache",
+    },
+    {
       name: "BackgroundFetch",
       status: "stable",
     },
@@ -1337,6 +1340,9 @@
       name: "RestrictAutomaticLazyImageLoadingToDataSaver",
       depends_on: ["AutomaticLazyImageLoading"],
       status: "experimental",
+    },
+    {
+      name: "RestrictedWebkitAppearance",
     },
     {
       name: "RtcAudioJitterBufferMaxPackets",

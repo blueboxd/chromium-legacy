@@ -584,9 +584,19 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
   pref_change_registrar_->Add(
       crostini::prefs::kCrostiniEnabled,
-      base::BindRepeating(&EventRouter::OnCrostiniEnabledChanged,
-                          weak_factory_.GetWeakPtr(),
-                          crostini::kCrostiniDefaultVmName));
+      base::BindRepeating(
+          &EventRouter::OnCrostiniChanged, weak_factory_.GetWeakPtr(),
+          crostini::kCrostiniDefaultVmName, crostini::prefs::kCrostiniEnabled,
+          file_manager_private::CROSTINI_EVENT_TYPE_ENABLE,
+          file_manager_private::CROSTINI_EVENT_TYPE_DISABLE));
+  pref_change_registrar_->Add(
+      crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy,
+      base::BindRepeating(
+          &EventRouter::OnCrostiniChanged, weak_factory_.GetWeakPtr(),
+          crostini::kCrostiniDefaultVmName,
+          crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy,
+          file_manager_private::CROSTINI_EVENT_TYPE_ROOT_ACCESS_ALLOW,
+          file_manager_private::CROSTINI_EVENT_TYPE_ROOT_ACCESS_DISALLOW));
   pref_change_registrar_->Add(arc::prefs::kArcEnabled, callback);
   pref_change_registrar_->Add(arc::prefs::kArcHasAccessToRemovableMedia,
                               callback);
@@ -1145,15 +1155,17 @@ void EventRouter::OnUnshare(const std::string& vm_name,
   }
 }
 
-void EventRouter::OnCrostiniEnabledChanged(const std::string& vm_name) {
+void EventRouter::OnCrostiniChanged(
+    const std::string& vm_name,
+    const std::string& pref_name,
+    extensions::api::file_manager_private::CrostiniEventType pref_true,
+    extensions::api::file_manager_private::CrostiniEventType pref_false) {
   for (const auto& extension_id : GetEventListenerExtensionIds(
            profile_, file_manager_private::OnCrostiniChanged::kEventName)) {
     file_manager_private::CrostiniEvent event;
     event.vm_name = vm_name;
     event.event_type =
-        profile_->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled)
-            ? file_manager_private::CROSTINI_EVENT_TYPE_ENABLE
-            : file_manager_private::CROSTINI_EVENT_TYPE_DISABLE;
+        profile_->GetPrefs()->GetBoolean(pref_name) ? pref_true : pref_false;
     DispatchEventToExtension(
         profile_, extension_id,
         extensions::events::FILE_MANAGER_PRIVATE_ON_CROSTINI_CHANGED,

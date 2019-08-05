@@ -83,22 +83,15 @@ class FakeUser : public user_manager::User {
   DISALLOW_COPY_AND_ASSIGN(FakeUser);
 };
 
-class FakePolicyProvidedCertsObserver
+class MockPolicyProvidedCertsObserver
     : public chromeos::PolicyCertificateProvider::Observer {
  public:
-  FakePolicyProvidedCertsObserver() {}
+  MockPolicyProvidedCertsObserver() = default;
 
-  void OnPolicyProvidedCertsChanged(
-      const net::CertificateList& all_server_and_authority_certs,
-      const net::CertificateList& trust_anchors) override {
-    all_server_and_authority_certs_ = all_server_and_authority_certs;
-    trust_anchors_ = trust_anchors;
-  }
-  net::CertificateList all_server_and_authority_certs_;
-  net::CertificateList trust_anchors_;
+  MOCK_METHOD0(OnPolicyProvidedCertsChanged, void());
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakePolicyProvidedCertsObserver);
+  DISALLOW_COPY_AND_ASSIGN(MockPolicyProvidedCertsObserver);
 };
 
 class FakeNetworkDeviceHandler : public chromeos::FakeNetworkDeviceHandler {
@@ -532,9 +525,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
           false /* do not allow trusted certs from policy */,
           false /* set certificate importer */);
 
-  // Certificates with the "Web" trust flag set should not be forwarded to
-  // observers.
-  FakePolicyProvidedCertsObserver observer;
+  MockPolicyProvidedCertsObserver observer;
+  EXPECT_CALL(observer, OnPolicyProvidedCertsChanged());
   updater->AddPolicyProvidedCertsObserver(&observer);
 
   PolicyMap policy;
@@ -549,7 +541,7 @@ TEST_F(NetworkConfigurationUpdaterTest,
   EXPECT_EQ(2u, updater->GetCertificatesWithoutWebTrust().size());
   EXPECT_EQ(2u, updater->GetAllServerAndAuthorityCertificates().size());
 
-  EXPECT_TRUE(observer.trust_anchors_.empty());
+  Mock::VerifyAndClearExpectations(&observer);
   updater->RemovePolicyProvidedCertsObserver(&observer);
 }
 
@@ -564,9 +556,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
           true /* allow trusted certs from policy */,
           false /* set certificate importer */);
 
-  // Certificates with the "Web" trust flag set should be forwarded to
-  // observers.
-  FakePolicyProvidedCertsObserver observer;
+  MockPolicyProvidedCertsObserver observer;
+  EXPECT_CALL(observer, OnPolicyProvidedCertsChanged());
   updater->AddPolicyProvidedCertsObserver(&observer);
 
   PolicyMap policy;
@@ -582,12 +573,11 @@ TEST_F(NetworkConfigurationUpdaterTest,
   EXPECT_EQ(1u, updater->GetCertificatesWithoutWebTrust().size());
   EXPECT_EQ(2u, updater->GetAllServerAndAuthorityCertificates().size());
 
-  EXPECT_EQ(1u, observer.trust_anchors_.size());
   updater->RemovePolicyProvidedCertsObserver(&observer);
 }
 
 TEST_F(NetworkConfigurationUpdaterTest,
-       AllowTrustedCertificatesFromPolicyOnUpdate) {
+       WebTrustedCertificatesFromPolicyOnUpdate) {
   // Ignore network configuration changes.
   EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _))
       .Times(AnyNumber());
@@ -597,7 +587,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
       CreateNetworkConfigurationUpdaterForUserPolicy(
           true /* allow trusted certs from policy */,
           false /* set certificate importer */);
-  FakePolicyProvidedCertsObserver observer;
+  MockPolicyProvidedCertsObserver observer;
+  EXPECT_CALL(observer, OnPolicyProvidedCertsChanged()).Times(0);
   updater->AddPolicyProvidedCertsObserver(&observer);
 
   MarkPolicyProviderInitialized();
@@ -605,9 +596,12 @@ TEST_F(NetworkConfigurationUpdaterTest,
 
   // Verify that the returned certificate list is empty.
   EXPECT_TRUE(updater->GetWebTrustedCertificates().empty());
-  EXPECT_TRUE(observer.trust_anchors_.empty());
   EXPECT_TRUE(updater->GetCertificatesWithoutWebTrust().empty());
   EXPECT_TRUE(updater->GetAllServerAndAuthorityCertificates().empty());
+
+  // No call has been made to the policy-provided certificates observer.
+  Mock::VerifyAndClearExpectations(&observer);
+  EXPECT_CALL(observer, OnPolicyProvidedCertsChanged());
 
   // Change to ONC policy with web trust certs.
   PolicyMap policy;
@@ -617,10 +611,7 @@ TEST_F(NetworkConfigurationUpdaterTest,
   UpdateProviderPolicy(policy);
   base::RunLoop().RunUntilIdle();
 
-  // Certificates with the "Web" trust flag set will be returned and forwarded
-  // to observers.
   EXPECT_EQ(1u, updater->GetWebTrustedCertificates().size());
-  EXPECT_EQ(1u, observer.trust_anchors_.size());
   EXPECT_EQ(1u, updater->GetCertificatesWithoutWebTrust().size());
   EXPECT_EQ(2u, updater->GetAllServerAndAuthorityCertificates().size());
 

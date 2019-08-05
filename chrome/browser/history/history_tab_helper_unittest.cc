@@ -81,7 +81,6 @@ TEST_F(HistoryTabHelperTest, ShouldUpdateTitleInHistory) {
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   ASSERT_NE(nullptr, entry);
-  ASSERT_TRUE(web_contents()->IsLoading());
 
   web_contents()->UpdateTitleForEntry(entry, base::UTF8ToUTF16("title1"));
   EXPECT_EQ("title1", QueryPageTitleFromHistory(page_url_));
@@ -93,7 +92,6 @@ TEST_F(HistoryTabHelperTest, ShouldLimitTitleUpdatesPerPage) {
   content::NavigationEntry* entry =
       web_contents()->GetController().GetLastCommittedEntry();
   ASSERT_NE(nullptr, entry);
-  ASSERT_TRUE(web_contents()->IsLoading());
 
   // The first 10 title updates are accepted and update history, as per
   // history::kMaxTitleChanges.

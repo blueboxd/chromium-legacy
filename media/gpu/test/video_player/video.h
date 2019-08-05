@@ -10,6 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "media/base/video_codecs.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -48,6 +49,8 @@ class Video {
   uint32_t NumFragments() const;
   // Get the video resolution.
   gfx::Size Resolution() const;
+  // Get the video duration.
+  base::TimeDelta GetDuration() const;
 
   // Get the list of frame checksums.
   const std::vector<std::string>& FrameChecksums() const;

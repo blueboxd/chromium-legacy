@@ -120,10 +120,10 @@ class FakeNfcService : public device::mojom::blink::NFC {
     std::move(callback).Run(nullptr);
   }
   void Watch(device::mojom::blink::NFCReaderOptionsPtr options,
+             uint32_t id,
              WatchCallback callback) override {
-    uint32_t id = ++last_watch_id_;
     watches_.insert(std::make_pair(id, std::move(options)));
-    std::move(callback).Run(id, nullptr);
+    std::move(callback).Run(nullptr);
   }
   void CancelWatch(uint32_t id, CancelWatchCallback callback) override {
     if (watches_.erase(id) < 1) {
@@ -142,7 +142,6 @@ class FakeNfcService : public device::mojom::blink::NFC {
 
   device::mojom::blink::NDEFMessagePtr tag_message_;
   device::mojom::blink::NFCClientPtr client_;
-  uint32_t last_watch_id_ = 0;
   std::map<uint32_t, device::mojom::blink::NFCReaderOptionsPtr> watches_;
   mojo::Binding<device::mojom::blink::NFC> binding_;
 };

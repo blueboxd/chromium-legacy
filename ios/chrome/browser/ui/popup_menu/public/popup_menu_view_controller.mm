@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/util/accessibility_close_menu_button.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -16,8 +17,6 @@
 
 namespace {
 const CGFloat kImageMargin = 196;
-const CGFloat kBackgroundGreyScale = 0.98;
-const CGFloat kBackgroundAlpha = 0.65;
 }  // namespace
 
 @interface PopupMenuViewController ()
@@ -65,23 +64,7 @@ const CGFloat kBackgroundAlpha = 0.65;
 // Sets the content container view up.
 - (void)setUpContentContainer {
   _contentContainer = [[UIView alloc] init];
-
-  if (UIAccessibilityIsReduceTransparencyEnabled()) {
-    _contentContainer.backgroundColor =
-        [UIColor colorWithWhite:kBackgroundGreyScale alpha:1];
-  } else {
-    UIBlurEffect* blurEffect =
-        [UIBlurEffect effectWithStyle:UIBlurEffectStyleExtraLight];
-    UIVisualEffectView* blur =
-        [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-    blur.translatesAutoresizingMaskIntoConstraints = NO;
-    blur.layer.cornerRadius = kPopupMenuCornerRadius;
-    blur.clipsToBounds = YES;
-    blur.backgroundColor = [UIColor colorWithWhite:kBackgroundGreyScale
-                                             alpha:kBackgroundAlpha];
-    [_contentContainer addSubview:blur];
-    AddSameConstraints(_contentContainer, blur);
-  }
+  _contentContainer.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
   UIImageView* shadow =
       [[UIImageView alloc] initWithImage:StretchableImageNamed(@"menu_shadow")];

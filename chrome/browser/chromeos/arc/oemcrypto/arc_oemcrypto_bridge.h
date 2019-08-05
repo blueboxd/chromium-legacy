@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/arc/common/oemcrypto.mojom.h"
-#include "components/arc/common/oemcrypto_daemon.mojom.h"
+#include "components/arc/mojom/oemcrypto.mojom.h"
+#include "components/arc/mojom/oemcrypto_daemon.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {

@@ -2353,6 +2353,34 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
   }
 }
 
+void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
+    NavigationRequest* committing_navigation_request,
+    std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
+        validated_params) {
+  auto request = navigation_requests_.find(committing_navigation_request);
+  CHECK(request != navigation_requests_.end());
+
+  std::unique_ptr<NavigationRequest> owned_request = std::move(request->second);
+  navigation_requests_.erase(committing_navigation_request);
+
+  // During a normal (uncached) navigation, is_loading_ is set to true in
+  // CommitNavigation(). When navigating to a document in the BackForwardCache,
+  // CommitNavigation() is never called, so we have to set is_loading_ to true
+  // ourselves.
+  //
+  // If is_start_loading_ is set to false, DidCommitNavigationInternal will
+  // re-fire the DidStartLoading event, which we don't want since it has already
+  // been fired.
+  is_loading_ = true;
+
+  DidCommitNavigationInternal(std::move(owned_request), validated_params.get(),
+                              /*is_same_document_navigation=*/false);
+
+  // The page is already loaded since it came from the cache, so fire the stop
+  // loading event.
+  OnDidStopLoading();
+}
+
 void RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation(
     NavigationRequest* committing_navigation_request,
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
@@ -3353,6 +3381,28 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
     // OnAccessibilityEvents returns false in IPC error conditions
     AccessibilityFatalError();
   }
+}
+
+void RenderFrameHostImpl::EvictFromBackForwardCache() {
+  DCHECK(IsBackForwardCacheEnabled());
+
+  bool in_back_forward_cache = is_in_back_forward_cache();
+
+  RenderFrameHostImpl* top_document = this;
+  while (top_document->parent_) {
+    top_document = top_document->parent_;
+    DCHECK_EQ(top_document->is_in_back_forward_cache(), in_back_forward_cache);
+  }
+
+  if (!in_back_forward_cache) {
+    // TODO(hajimehoshi): A document is evicted from the BackForwardCache, but
+    // it has already been restored. This race condition can be resolved by
+    // reloading the current document to avoid stale state. (crbug.com/989392)
+    return;
+  }
+
+  frame_tree_node_->render_manager()->EvictFromBackForwardCache(top_document);
+  // DO NOT ADD CODE after this. The previous call destroyed |this|.
 }
 
 void RenderFrameHostImpl::OnAccessibilityLocationChanges(

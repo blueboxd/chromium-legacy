@@ -22,7 +22,8 @@ class SerialTracker {
   enum EventType {
     POINTER_ENTER,
     POINTER_LEAVE,
-    POINTER_BUTTON,
+    POINTER_BUTTON_DOWN,
+    POINTER_BUTTON_UP,
 
     TOUCH_DOWN,
     TOUCH_UP,
@@ -34,6 +35,15 @@ class SerialTracker {
   ~SerialTracker();
 
   uint32_t GetNextSerial(EventType type);
+
+  // Get the serial number of the last {pointer,touch} pressed event, or nullopt
+  // if the press has since been released.
+  base::Optional<uint32_t> GetPointerDownSerial();
+  base::Optional<uint32_t> GetTouchDownSerial();
+
+  // Needed because wl_touch::cancel doesn't send a serial number, so we can't
+  // test for it in GetNextSerial.
+  void ResetTouchDownSerial();
 
   // Get the EventType for a serial number, or nullopt if the serial number was
   // never sent or is too old.
@@ -53,6 +63,9 @@ class SerialTracker {
   // around the 32 bit space, we cannot assume that max_event_ >= min_event_.
   uint32_t min_event_ = 1;
   uint32_t max_event_ = 1;
+
+  base::Optional<uint32_t> pointer_down_serial_;
+  base::Optional<uint32_t> touch_down_serial_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialTracker);
 };

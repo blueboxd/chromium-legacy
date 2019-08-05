@@ -1133,8 +1133,16 @@ void NGLineBreaker::HandleBidiControlItem(const NGInlineItem& item,
     if (!item_results->IsEmpty()) {
       NGInlineItemResult* item_result = AddItem(item, line_info);
       NGInlineItemResult* last = &(*item_results)[item_results->size() - 2];
-      item_result->can_break_after = last->can_break_after;
-      last->can_break_after = false;
+      // Honor the last |can_break_after| if it's true, in case it was
+      // artificially set to true for break-after-space.
+      if (last->can_break_after) {
+        item_result->can_break_after = last->can_break_after;
+        last->can_break_after = false;
+      } else {
+        // Otherwise compute from the text. |LazyLineBreakIterator| knows how to
+        // break around bidi control characters.
+        ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
+      }
     } else {
       AddItem(item, line_info);
     }

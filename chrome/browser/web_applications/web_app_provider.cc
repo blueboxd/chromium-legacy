@@ -113,22 +113,8 @@ SystemWebAppManager& WebAppProvider::system_web_app_manager() {
 }
 
 void WebAppProvider::Shutdown() {
-  // Destroy subsystems.
-  // The order of destruction is the reverse order of creation:
-  // TODO(calamity): Make subsystem destruction happen in destructor.
-  ui_manager_.reset();
-  system_web_app_manager_.reset();
-  web_app_policy_manager_.reset();
-  external_web_app_manager_.reset();
-  pending_app_manager_.reset();
-
-  install_manager_.reset();
-  install_finalizer_.reset();
-  icon_manager_.reset();
-  registrar_.reset();
-  database_.reset();
-  database_factory_.reset();
-  audio_focus_id_map_.reset();
+  pending_app_manager_->Shutdown();
+  install_manager_->Shutdown();
 }
 
 void WebAppProvider::StartImpl() {

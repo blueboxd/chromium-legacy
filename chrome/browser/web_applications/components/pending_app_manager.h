@@ -100,6 +100,8 @@ class PendingAppManager {
       ExternalInstallSource install_source,
       SynchronizeCallback callback);
 
+  virtual void Shutdown() = 0;
+
  protected:
   AppRegistrar* registrar() { return registrar_; }
   WebAppUiManager* ui_manager() { return ui_manager_; }

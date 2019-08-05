@@ -7713,9 +7713,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_WINDOW_MENU_MAC" desc="The menu title of the Mac window menu.">
           Window
         </message>
-        <message name="IDS_TAB_MENU_MAC" desc="The menu title of the Mac tab menu.">
-          Tab
-        </message>
         <message name="IDS_HELP_MENU_MAC" desc="The menu title of the Mac help menu.">
           Help
         </message>

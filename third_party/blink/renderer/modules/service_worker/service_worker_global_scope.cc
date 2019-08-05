@@ -766,11 +766,6 @@ void ServiceWorkerGlobalScope::importScripts(
                             : stringOrUrl.GetAsTrustedScriptURL()->toString();
 
     KURL completed_url = CompleteURL(string_url);
-    // Bust the MemoryCache to ensure script requests reach the browser-side
-    // and get added to and retrieved from the ServiceWorker's script cache.
-    // FIXME: Revisit in light of the solution to crbug/388375.
-    RemoveURLFromMemoryCache(completed_url);
-
     if (installed_scripts_manager &&
         !installed_scripts_manager->IsScriptInstalled(completed_url)) {
       DCHECK(installed_scripts_manager->IsScriptInstalled(Url()));

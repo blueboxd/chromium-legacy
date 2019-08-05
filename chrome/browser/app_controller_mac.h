@@ -30,7 +30,6 @@ class Profile;
 class QuitWithAppsController;
 class ScopedKeepAlive;
 @class ShareMenuController;
-class TabMenuBridge;
 
 // The application controller object, created by loading the MainMenu nib.
 // This handles things like responding to menus when there are no windows
@@ -71,8 +70,6 @@ class TabMenuBridge;
 
   // Controller for the macOS system share menu.
   base::scoped_nsobject<ShareMenuController> shareMenuController_;
-
-  std::unique_ptr<TabMenuBridge> tabMenuBridge_;
 
   // If we're told to open URLs (in particular, via |-application:openFiles:| by
   // Launch Services) before we've launched the browser, we queue them up in
@@ -165,7 +162,6 @@ class TabMenuBridge;
 
 - (BookmarkMenuBridge*)bookmarkMenuBridge;
 - (HistoryMenuBridge*)historyMenuBridge;
-- (TabMenuBridge*)tabMenuBridge;
 
 // Initializes the AppShimMenuController. This enables changing the menu bar for
 // apps.

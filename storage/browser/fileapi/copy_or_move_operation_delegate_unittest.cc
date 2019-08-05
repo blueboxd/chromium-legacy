@@ -17,7 +17,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -738,7 +737,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   base::WriteFile(source_path, kTestData,
                   base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
-  base::MessageLoopForIO message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   base::Thread file_thread("file_thread");
   ASSERT_TRUE(file_thread.Start());
   ScopedThreadStopper thread_stopper(&file_thread);
@@ -795,7 +795,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
   base::WriteFile(source_path, kTestData,
                   base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
-  base::MessageLoopForIO message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   base::Thread file_thread("file_thread");
   ASSERT_TRUE(file_thread.Start());
   ScopedThreadStopper thread_stopper(&file_thread);
@@ -848,7 +849,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   base::WriteFile(source_path, kTestData,
                   base::size(kTestData) - 1);  // Exclude trailing '\0'.
 
-  base::MessageLoopForIO message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   base::Thread file_thread("file_thread");
   ASSERT_TRUE(file_thread.Start());
   ScopedThreadStopper thread_stopper(&file_thread);

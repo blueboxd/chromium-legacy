@@ -60,9 +60,9 @@ class AppBrowserController : public TabStripModelObserver,
   // Whether the browser should include the tab strip.
   virtual bool HasTabStrip() const;
 
-  // Returns true if the hosted app buttons should be shown in the frame for
-  // this BrowserView.
-  virtual bool ShouldShowHostedAppButtonContainer() const = 0;
+  // Whether the browser toolbar is present.
+  // Note: web app windows have their browser toolbar inline in their titlebar.
+  virtual bool HasTitlebarToolbar() const = 0;
 
   // Returns the app icon for the window to use in the task list.
   virtual gfx::ImageSkia GetWindowAppIcon() const = 0;

@@ -56,6 +56,7 @@ class PendingAppManagerImpl final : public PendingAppManager {
                    const RepeatingInstallCallback& callback) override;
   void UninstallApps(std::vector<GURL> uninstall_urls,
                      const UninstallCallback& callback) override;
+  void Shutdown() override;
 
   void SetTaskFactoryForTesting(TaskFactory task_factory);
   void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);

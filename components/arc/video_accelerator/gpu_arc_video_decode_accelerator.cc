@@ -416,15 +416,17 @@ void GpuArcVideoDecodeAccelerator::AssignPictureBuffers(uint32_t count) {
         mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
     return;
   }
+  if (assign_picture_buffers_called_) {
+    VLOGF(1) << "AssignPictureBuffers is called twice without "
+             << "ImportBufferForPicture()";
+    client_->NotifyError(
+        mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
+    return;
+  }
 
   coded_size_ = pending_coded_size_;
-  std::vector<media::PictureBuffer> buffers;
-  for (uint32_t id = 0; id < count; ++id) {
-    buffers.push_back(
-        media::PictureBuffer(static_cast<int32_t>(id), coded_size_));
-  }
   output_buffer_count_ = static_cast<size_t>(count);
-  vda_->AssignPictureBuffers(buffers);
+  assign_picture_buffers_called_ = true;
 }
 
 void GpuArcVideoDecodeAccelerator::ImportBufferForPicture(
@@ -512,6 +514,21 @@ void GpuArcVideoDecodeAccelerator::ImportBufferForPicture(
       gmb_handle.native_pixmap_handle.planes.emplace_back(
           planes[i].stride, planes[i].offset, 0, std::move(scoped_fds[i]));
     }
+  }
+
+  // This is the first time of ImportBufferForPicture() after
+  // AssignPictureBuffers() is called. Call VDA::AssignPictureBuffers() here.
+  if (assign_picture_buffers_called_) {
+    gfx::Size picture_size(gmb_handle.native_pixmap_handle.planes[0].stride,
+                           coded_size_.height());
+    std::vector<media::PictureBuffer> buffers;
+    for (size_t id = 0; id < output_buffer_count_; ++id) {
+      buffers.push_back(
+          media::PictureBuffer(static_cast<int32_t>(id), picture_size));
+    }
+
+    vda_->AssignPictureBuffers(std::move(buffers));
+    assign_picture_buffers_called_ = false;
   }
 
   vda_->ImportBufferForPicture(picture_buffer_id, pixel_format,

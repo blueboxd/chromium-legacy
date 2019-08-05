@@ -592,7 +592,7 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
         await fileManager.volumeManager.unmount(volume);
       } catch (error) {
         console.error(
-            `Cannot unmount ${volume.volumeId}: ${error.stack || error}`);
+            `Cannot unmount '${volume.volumeId}': ${error.stack || error}`);
         errorCallback(volume.volumeType);
       }
     });

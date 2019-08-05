@@ -5,6 +5,7 @@
 #include "components/exo/touch.h"
 
 #include "components/exo/input_trace.h"
+#include "components/exo/seat.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/touch_delegate.h"
@@ -47,7 +48,8 @@ gfx::PointF EventLocationInWindow(ui::TouchEvent* event, aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // Touch, public:
 
-Touch::Touch(TouchDelegate* delegate) : delegate_(delegate) {
+Touch::Touch(TouchDelegate* delegate, Seat* seat)
+    : delegate_(delegate), seat_(seat) {
   WMHelper::GetInstance()->AddPreTargetHandler(this);
 }
 
@@ -127,6 +129,7 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
       }
 
       delegate_->OnTouchUp(event->time_stamp(), touch_pointer_id);
+      seat_->AbortPendingDragOperation();
     } break;
     case ui::ET_TOUCH_MOVED: {
       auto it = FindVectorItem(touch_points_, touch_pointer_id);
@@ -155,6 +158,7 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
       // Cancel the full set of touch sequences as soon as one is canceled.
       touch_points_.clear();
       delegate_->OnTouchCancel();
+      seat_->AbortPendingDragOperation();
     } break;
     default:
       NOTREACHED();

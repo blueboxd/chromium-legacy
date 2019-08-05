@@ -136,6 +136,15 @@ void WebAppInstallManager::InstallOrUpdateWebAppFromSync(
     MaybeStartQueuedTask();
 }
 
+void WebAppInstallManager::Shutdown() {
+  tasks_.clear();
+  {
+    TaskQueue empty;
+    task_queue_.swap(empty);
+  }
+  web_contents_.reset();
+}
+
 void WebAppInstallManager::InstallWebAppForTesting(
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {

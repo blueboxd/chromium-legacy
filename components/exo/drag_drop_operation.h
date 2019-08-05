@@ -52,6 +52,9 @@ class DragDropOperation : public DataSourceObserver,
       Surface* icon,
       ui::DragDropTypes::DragEventSource event_source);
 
+  // Abort the operation if it hasn't been started yet, otherwise do nothing.
+  void AbortIfPending();
+
   // DataSourceObserver:
   void OnDataSourceDestroying(DataSource* source) override;
 

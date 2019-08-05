@@ -59,6 +59,7 @@ class WebAppInstallManager final : public InstallManager {
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) override;
+  void Shutdown() override;
   void InstallWebAppForTesting(
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) override;

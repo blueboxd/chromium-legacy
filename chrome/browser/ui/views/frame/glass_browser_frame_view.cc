@@ -113,7 +113,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
 
   web_app::AppBrowserController* controller =
       browser_view->browser()->app_controller();
-  if (controller && controller->ShouldShowHostedAppButtonContainer()) {
+  if (controller && controller->HasTitlebarToolbar()) {
     // TODO(alancutter): Avoid snapshotting GetCaptionColor() values here and
     // call it on demand in HostedAppButtonContainer::UpdateIconsColor() via a
     // delegate interface.

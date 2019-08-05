@@ -78,9 +78,11 @@ void seat_get_pointer(wl_client* client, wl_resource* resource, uint32_t id) {
   wl_resource* pointer_resource = wl_resource_create(
       client, &wl_pointer_interface, wl_resource_get_version(resource), id);
 
-  SetImplementation(pointer_resource, &pointer_implementation,
-                    std::make_unique<Pointer>(new WaylandPointerDelegate(
-                        pointer_resource, data->serial_tracker)));
+  SetImplementation(
+      pointer_resource, &pointer_implementation,
+      std::make_unique<Pointer>(
+          new WaylandPointerDelegate(pointer_resource, data->serial_tracker),
+          data->seat));
 }
 
 void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
@@ -117,9 +119,11 @@ void seat_get_touch(wl_client* client, wl_resource* resource, uint32_t id) {
   wl_resource* touch_resource = wl_resource_create(
       client, &wl_touch_interface, wl_resource_get_version(resource), id);
 
-  SetImplementation(touch_resource, &touch_implementation,
-                    std::make_unique<Touch>(new WaylandTouchDelegate(
-                        touch_resource, data->serial_tracker)));
+  SetImplementation(
+      touch_resource, &touch_implementation,
+      std::make_unique<Touch>(
+          new WaylandTouchDelegate(touch_resource, data->serial_tracker),
+          data->seat));
 }
 
 void seat_release(wl_client* client, wl_resource* resource) {

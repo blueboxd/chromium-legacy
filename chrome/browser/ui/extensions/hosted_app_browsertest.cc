@@ -109,12 +109,10 @@ constexpr const char kAppDotComManifest[] =
     "}";
 
 enum class AppType {
-  HOSTED_APP,
-  BOOKMARK_APP,
+  HOSTED_APP,    // Using HostedAppBrowserController
+  BOOKMARK_APP,  // Using HostedAppBrowserController
+  WEB_APP,       // Using WebAppBrowserController
 };
-
-const auto kAppTypeValues =
-    ::testing::Values(AppType::HOSTED_APP, AppType::BOOKMARK_APP);
 
 // Opens |url| in a new popup window with the dimensions |popup_size|.
 Browser* OpenPopupAndWait(Browser* browser,
@@ -284,8 +282,15 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
       : app_browser_(nullptr),
         app_(nullptr),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    scoped_feature_list_.InitWithFeatures(
-        {}, {predictors::kSpeculativePreconnectFeature});
+    if (GetParam() == AppType::WEB_APP) {
+      scoped_feature_list_.InitWithFeatures(
+          {features::kDesktopPWAsUnifiedUiController},
+          {predictors::kSpeculativePreconnectFeature});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {features::kDesktopPWAsUnifiedUiController,
+               predictors::kSpeculativePreconnectFeature});
+    }
   }
   ~HostedAppTest() override {}
 
@@ -314,9 +319,9 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
   void SetupApp(const base::FilePath& app_folder) {
     app_ = InstallExtensionWithSourceAndFlags(
         app_folder, 1, extensions::Manifest::INTERNAL,
-        app_type_ == AppType::BOOKMARK_APP
-            ? extensions::Extension::FROM_BOOKMARK
-            : extensions::Extension::NO_FLAGS);
+        app_type_ == AppType::HOSTED_APP
+            ? extensions::Extension::NO_FLAGS
+            : extensions::Extension::FROM_BOOKMARK);
     ASSERT_TRUE(app_);
 
     LaunchApp();
@@ -458,6 +463,8 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppTest);
 };
+
+using SharedAppTest = HostedAppTest;
 
 // Tests that "Open link in new tab" opens a link in a foreground tab.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, OpenLinkInNewTab) {
@@ -718,7 +725,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowCustomTabBarForAppWithoutWWW) {
 
 // Check that a subframe on a regular web page can navigate to a URL that
 // redirects to a hosted app.  https://crbug.com/721949.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, SubframeRedirectsToHostedApp) {
+IN_PROC_BROWSER_TEST_P(SharedAppTest, SubframeRedirectsToHostedApp) {
   // This test only applies to hosted apps.
   if (app_type() != AppType::HOSTED_APP)
     return;
@@ -867,12 +874,13 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, InScopeHttpUrlsDisplayAppTitle) {
 }
 
 using HostedAppPWAOnlyTest = HostedAppTest;
+using SharedPWATest = HostedAppTest;
 using HostedAppPWAOnlyTestWithAutoupgradesDisabled =
     HostedAppTestWithAutoupgradesDisabled;
 
 // Tests that the command for popping a tab out to a PWA window is disabled in
 // incognito.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, PopOutDisabledInIncognito) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, PopOutDisabledInIncognito) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1109,7 +1117,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, UninstallMenuOption) {
 
 // Tests that both installing a PWA and creating a shortcut app are disabled for
 // incognito windows.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ShortcutMenuOptionsInIncognito) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, ShortcutMenuOptionsInIncognito) {
   Browser* incognito_browser = CreateIncognitoBrowser(profile());
   auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
       incognito_browser->tab_strip_model()->GetActiveWebContents());
@@ -1126,8 +1134,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ShortcutMenuOptionsInIncognito) {
 
 // Tests that both installing a PWA and creating a shortcut app are available
 // for an installable PWA.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       ShortcutMenuOptionsForInstallablePWA) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, ShortcutMenuOptionsForInstallablePWA) {
   auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
 
@@ -1141,7 +1148,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 
 // Tests that creating a shortcut app but not installing a PWA is available for
 // a non-installable site.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+IN_PROC_BROWSER_TEST_P(SharedPWATest,
                        ShortcutMenuOptionsForNonInstallableSite) {
   auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
@@ -1154,7 +1161,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kNotPresent);
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallInstallableSite) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, InstallInstallableSite) {
   base::UserActionTester user_action_tester;
   ASSERT_TRUE(https_server()->Start());
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
@@ -1193,7 +1200,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallInstallableSite) {
   EXPECT_EQ(0, user_action_tester.GetActionCount("CreateShortcut"));
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreateShortcutForInstallableSite) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, CreateShortcutForInstallableSite) {
   base::UserActionTester user_action_tester;
   ASSERT_TRUE(https_server()->Start());
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
@@ -1218,8 +1225,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreateShortcutForInstallableSite) {
 
 // Tests that the command for OpenActiveTabInPwaWindow is available for secure
 // pages in an app's scope.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       ReparentSecureActiveTabIntoPwaWindow) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, ReparentSecureActiveTabIntoPwaWindow) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1239,7 +1245,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 }
 
 // Tests that reparenting the last browser tab doesn't close the browser window.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ReparentLastBrowserTab) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, ReparentLastBrowserTab) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1255,7 +1261,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ReparentLastBrowserTab) {
 
 // Tests that the manifest name of the current installable site is used in the
 // installation menu text.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallToShelfContainsAppName) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, InstallToShelfContainsAppName) {
   auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
 
@@ -1282,7 +1288,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OverscrollEnabled) {
 }
 
 // Tests that mixed content is not loaded inside PWA windows.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, MixedContentInPWA) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, MixedContentInPWA) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1372,7 +1378,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
 }
 
 // Tests that mixed content is not loaded inside iframes in PWA windows.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, IFrameMixedContentInPWA) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, IFrameMixedContentInPWA) {
   ASSERT_TRUE(https_server()->Start());
 
   InstallMixedContentIFramePWA();
@@ -1428,7 +1434,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
 }
 
 // Check that uninstalling a PWA with a window opened doesn't crash.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, UninstallPwaWithWindowOpened) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, UninstallPwaWithWindowOpened) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
   InstallSecurePWA();
@@ -1473,7 +1479,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, CreatedForInstalledPwaForNonPwas) {
   EXPECT_FALSE(app_browser_->app_controller()->CreatedForInstalledPwa());
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreatedForInstalledPwaForPwa) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, CreatedForInstalledPwaForPwa) {
   WebApplicationInfo web_app_info;
   web_app_info.app_url = GURL(kExampleURL);
   web_app_info.scope = GURL(kExampleURL);
@@ -2612,7 +2618,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
                             "window.open('', 'bg2').document.body.innerText"));
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ThemeColor) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, ThemeColor) {
   {
     WebApplicationInfo web_app_info;
     web_app_info.app_url = GURL(kExampleURL);
@@ -2678,12 +2684,26 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   NavigateAndCheckForToolbar(app_browser_, popup_url, false);
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */, HostedAppTest, kAppTypeValues);
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         HostedAppTest,
+                         ::testing::Values(AppType::HOSTED_APP,
+                                           AppType::BOOKMARK_APP));
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SharedAppTest,
+                         ::testing::Values(AppType::HOSTED_APP,
+                                           AppType::BOOKMARK_APP,
+                                           AppType::WEB_APP));
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppPWAOnlyTest,
     ::testing::Values(AppType::BOOKMARK_APP));
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    SharedPWATest,
+    ::testing::Values(AppType::BOOKMARK_APP, AppType::WEB_APP));
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,

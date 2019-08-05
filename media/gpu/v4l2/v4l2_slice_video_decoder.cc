@@ -426,8 +426,8 @@ bool V4L2SliceVideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
 }
 
 base::Optional<struct v4l2_format>
-V4L2SliceVideoDecoder::SetFormatOnOutputQueue(uint32_t format_fourcc,
-                                              const gfx::Size& size) {
+V4L2SliceVideoDecoder::SetV4L2FormatOnOutputQueue(uint32_t format_fourcc,
+                                                  const gfx::Size& size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
 
   struct v4l2_format format = {};
@@ -457,19 +457,26 @@ base::Optional<VideoFrameLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
     if (!device_->CanCreateEGLImageFrom(format_fourcc))
       continue;
 
+    base::Optional<struct v4l2_format> format =
+        SetV4L2FormatOnOutputQueue(format_fourcc, size);
+    if (!format)
+      continue;
+
+    // S_FMT is successful. Next make sure VFPool can allocate video frames with
+    // width and height adjusted by a video driver.
+    gfx::Size adjusted_size(format->fmt.pix_mp.width,
+                            format->fmt.pix_mp.height);
+
     // Make sure VFPool can allocate video frames with width and height.
     auto frame_layout =
-        UpdateVideoFramePoolFormat(format_fourcc, size, visible_rect);
-    if (!frame_layout) {
-      continue;
-    }
+        UpdateVideoFramePoolFormat(format_fourcc, adjusted_size, visible_rect);
+    if (frame_layout) {
+      if (frame_layout->coded_size() != adjusted_size) {
+        VLOGF(1) << "The size adjusted by VFPool is different from one "
+                 << "adjusted by a video driver";
+        continue;
+      }
 
-    // Next S_FMT with the size adjusted by VFPool.
-    gfx::Size adjusted_size(frame_layout->planes()[0].stride,
-                            frame_layout->coded_size().height());
-    base::Optional<struct v4l2_format> format =
-        SetFormatOnOutputQueue(format_fourcc, adjusted_size);
-    if (format) {
       num_output_planes_ = format->fmt.pix_mp.num_planes;
       return frame_layout;
     }

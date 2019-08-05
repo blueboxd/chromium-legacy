@@ -129,6 +129,11 @@ DragDropOperation::~DragDropOperation() {
     drag_drop_controller_->DragCancel();
 }
 
+void DragDropOperation::AbortIfPending() {
+  if (!started_by_this_object_)
+    delete this;
+}
+
 void DragDropOperation::OnTextRead(const std::string& mime_type,
                                    base::string16 data) {
   DCHECK(os_exchange_data_);

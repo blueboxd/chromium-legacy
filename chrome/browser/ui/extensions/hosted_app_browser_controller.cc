@@ -205,8 +205,8 @@ bool HostedAppBrowserController::ShouldShowCustomTabBar() const {
   return false;
 }
 
-bool HostedAppBrowserController::ShouldShowHostedAppButtonContainer() const {
-  // System Web Apps don't get the Hosted App buttons.
+bool HostedAppBrowserController::HasTitlebarToolbar() const {
+  // System Web Apps don't have a toolbar.
   return IsForWebAppBrowser(browser()) && !IsForSystemWebApp();
 }
 

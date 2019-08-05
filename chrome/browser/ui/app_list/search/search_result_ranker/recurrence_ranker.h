@@ -142,6 +142,8 @@ class RecurrenceRanker {
   const base::TimeDelta min_seconds_between_saves_;
   base::Time time_of_last_save_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<RecurrenceRanker> weak_factory_;
 

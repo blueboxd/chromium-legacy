@@ -110,10 +110,6 @@ class WebAppProvider : public WebAppProviderBase {
   void StartRegistry();
   void OnRegistryReady();
 
-  // Called just before profile destruction. All WebContents must be destroyed
-  // by the end of this method.
-  void ProfileDestroyed();
-
   // New extension-independent subsystems:
   std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;

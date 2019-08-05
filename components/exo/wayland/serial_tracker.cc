@@ -28,6 +28,23 @@ uint32_t SerialTracker::GetNextSerial(EventType type) {
   if ((max_event_ - min_event_) > kMaxEventsTracked)
     min_event_ = max_event_ - kMaxEventsTracked;
 
+  switch (type) {
+    case EventType::POINTER_BUTTON_DOWN:
+      pointer_down_serial_ = serial;
+      break;
+    case EventType::POINTER_BUTTON_UP:
+      pointer_down_serial_ = base::nullopt;
+      break;
+    case EventType::TOUCH_DOWN:
+      touch_down_serial_ = serial;
+      break;
+    case EventType::TOUCH_UP:
+      touch_down_serial_ = base::nullopt;
+      break;
+    default:
+      break;
+  }
+
   return serial;
 }
 
@@ -47,6 +64,18 @@ base::Optional<SerialTracker::EventType> SerialTracker::GetEventType(
   }
 
   return events_[serial % kMaxEventsTracked];
+}
+
+base::Optional<uint32_t> SerialTracker::GetPointerDownSerial() {
+  return pointer_down_serial_;
+}
+
+base::Optional<uint32_t> SerialTracker::GetTouchDownSerial() {
+  return touch_down_serial_;
+}
+
+void SerialTracker::ResetTouchDownSerial() {
+  touch_down_serial_ = base::nullopt;
 }
 
 }  // namespace wayland

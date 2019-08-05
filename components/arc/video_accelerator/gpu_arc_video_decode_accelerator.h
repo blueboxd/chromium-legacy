@@ -151,6 +151,7 @@ class GpuArcVideoDecodeAccelerator
 
   bool secure_mode_ = false;
   size_t output_buffer_count_ = 0;
+  bool assign_picture_buffers_called_ = false;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(GpuArcVideoDecodeAccelerator);

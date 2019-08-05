@@ -24,6 +24,7 @@ class KeyEvent;
 }  // namespace ui
 
 namespace exo {
+class DragDropOperation;
 class ScopedDataSource;
 class SeatObserver;
 class Surface;
@@ -71,6 +72,9 @@ class Seat : public aura::client::FocusChangeObserver,
                  Surface* icon,
                  ui::DragDropTypes::DragEventSource event_source);
 
+  // Abort any drag operations that haven't been started yet.
+  void AbortPendingDragOperation();
+
   // Overridden from aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
@@ -92,6 +96,10 @@ class Seat : public aura::client::FocusChangeObserver,
       ui::DomCode physical_code_for_currently_processing_event) {
     physical_code_for_currently_processing_event_ =
         physical_code_for_currently_processing_event;
+  }
+
+  base::WeakPtr<DragDropOperation> get_drag_drop_operation_for_testing() {
+    return drag_drop_operation_;
   }
 
  private:
@@ -145,6 +153,8 @@ class Seat : public aura::client::FocusChangeObserver,
 
   // Data source being used as a clipboard content.
   std::unique_ptr<ScopedDataSource> selection_source_;
+
+  base::WeakPtr<DragDropOperation> drag_drop_operation_;
 
   // True while Seat is updating clipboard data to selection source.
   bool changing_clipboard_data_to_selection_source_;

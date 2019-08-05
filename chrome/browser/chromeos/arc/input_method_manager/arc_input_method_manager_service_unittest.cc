@@ -12,7 +12,6 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -24,11 +23,11 @@
 #include "chrome/browser/chromeos/arc/input_method_manager/test_input_method_manager_bridge.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/test_browser_context.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_input_method_manager.h"
@@ -42,6 +41,39 @@ namespace arc {
 namespace {
 
 namespace im = chromeos::input_method;
+
+class FakeTabletMode : public ash::TabletMode {
+ public:
+  FakeTabletMode() = default;
+  ~FakeTabletMode() override = default;
+
+  // ash::TabletMode overrides:
+  void AddObserver(ash::TabletModeObserver* observer) override {
+    observer_ = observer;
+  }
+
+  void RemoveObserver(ash::TabletModeObserver* observer) override {
+    observer_ = nullptr;
+  }
+
+  bool InTabletMode() const override { return in_tablet_mode; }
+
+  void SetEnabledForTest(bool enabled) override {
+    bool changed = (in_tablet_mode != enabled);
+    in_tablet_mode = enabled;
+
+    if (changed && observer_) {
+      if (in_tablet_mode)
+        observer_->OnTabletModeStarted();
+      else
+        observer_->OnTabletModeEnded();
+    }
+  }
+
+ private:
+  ash::TabletModeObserver* observer_ = nullptr;
+  bool in_tablet_mode = false;
+};
 
 // The fake im::InputMethodManager for testing.
 class TestInputMethodManager : public im::MockInputMethodManager {
@@ -169,9 +201,7 @@ class TestIMEInputContextHandler : public ui::MockIMEInputContextHandler {
   DISALLOW_COPY_AND_ASSIGN(TestIMEInputContextHandler);
 };
 
-// TODO(crbug.com/890677): Stop inheriting ChromeAshTestBase once ash::Shell
-// dependency is removed from ArcInputMethodManagerService.
-class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
+class ArcInputMethodManagerServiceTest : public testing::Test {
  protected:
   ArcInputMethodManagerServiceTest()
       : arc_service_manager_(std::make_unique<ArcServiceManager>()) {}
@@ -186,23 +216,20 @@ class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
   TestingProfile* profile() { return profile_.get(); }
 
   void ToggleTabletMode(bool enabled) {
-    ash::ShellTestApi().SetTabletModeEnabledForTest(enabled);
+    tablet_mode_controller_->SetEnabledForTest(enabled);
   }
 
   void SetUp() override {
-    ChromeAshTestBase::SetUp();
     ui::IMEBridge::Initialize();
     input_method_manager_ = new TestInputMethodManager();
     chromeos::input_method::InputMethodManager::Initialize(
         input_method_manager_);
     profile_ = std::make_unique<TestingProfile>();
 
-    // Create a test widget so that enabling tablet mode does not show app list
-    // whose search box could mess with the tests.
-    widget_ = CreateTestWidget();
+    tablet_mode_controller_ = std::make_unique<FakeTabletMode>();
 
     chrome_keyboard_controller_client_test_helper_ =
-        ChromeKeyboardControllerClientTestHelper::InitializeForAsh();
+        ChromeKeyboardControllerClientTestHelper::InitializeWithFake();
     chrome_keyboard_controller_client_test_helper_->SetProfile(profile_.get());
 
     service_ = ArcInputMethodManagerService::GetForBrowserContextForTesting(
@@ -216,18 +243,20 @@ class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
     test_bridge_ = nullptr;
     service_->Shutdown();
     chrome_keyboard_controller_client_test_helper_.reset();
+    tablet_mode_controller_.reset();
     profile_.reset();
     chromeos::input_method::InputMethodManager::Shutdown();
     ui::IMEBridge::Shutdown();
-    ChromeAshTestBase::TearDown();
   }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
+
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
       chrome_keyboard_controller_client_test_helper_;
-  std::unique_ptr<views::Widget> widget_;
+  std::unique_ptr<FakeTabletMode> tablet_mode_controller_;
   TestInputMethodManager* input_method_manager_ = nullptr;
   TestInputMethodManagerBridge* test_bridge_ = nullptr;  // Owned by |service_|
   ArcInputMethodManagerService* service_ = nullptr;

@@ -4725,7 +4725,6 @@ test("unit_tests") {
       "../browser/ui/cocoa/profiles/profile_menu_controller_unittest.mm",
       "../browser/ui/cocoa/scoped_menu_bar_lock_unittest.mm",
       "../browser/ui/cocoa/status_icons/status_icon_mac_unittest.mm",
-      "../browser/ui/cocoa/tab_menu_bridge_unittest.mm",
       "../browser/ui/cocoa/test/cocoa_profile_test.h",
       "../browser/ui/cocoa/test/cocoa_profile_test.mm",
       "../browser/ui/cocoa/test/run_loop_testing_unittest.mm",

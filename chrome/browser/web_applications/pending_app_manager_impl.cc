@@ -92,6 +92,12 @@ void PendingAppManagerImpl::UninstallApps(std::vector<GURL> uninstall_urls,
   }
 }
 
+void PendingAppManagerImpl::Shutdown() {
+  pending_tasks_and_callbacks_.clear();
+  current_task_and_callback_.reset();
+  web_contents_.reset();
+}
+
 void PendingAppManagerImpl::SetTaskFactoryForTesting(TaskFactory task_factory) {
   task_factory_ = std::move(task_factory);
 }

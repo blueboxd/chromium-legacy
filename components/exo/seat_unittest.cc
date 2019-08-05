@@ -11,6 +11,7 @@
 #include "components/exo/data_source.h"
 #include "components/exo/data_source_delegate.h"
 #include "components/exo/seat_observer.h"
+#include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -441,6 +442,22 @@ TEST_F(SeatTest, PressedKeys) {
   seat.DidProcessEvent(&release_b);
   seat.OnKeyEvent(release_b.AsKeyEvent());
   EXPECT_TRUE(seat.pressed_keys().empty());
+}
+
+TEST_F(SeatTest, DragDropAbort) {
+  Seat seat;
+  TestDataSourceDelegate delegate;
+  DataSource source(&delegate);
+  Surface origin, icon;
+
+  // Give origin a root window for DragDropOperation.
+  CurrentContext()->AddChild(origin.window());
+
+  seat.StartDrag(&source, &origin, &icon,
+                 ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_MOUSE);
+  EXPECT_TRUE(seat.get_drag_drop_operation_for_testing());
+  seat.AbortPendingDragOperation();
+  EXPECT_FALSE(seat.get_drag_drop_operation_for_testing());
 }
 
 }  // namespace

@@ -37,6 +37,7 @@
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/caption_button_types.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -976,10 +977,23 @@ void HandleRemoteSurfaceBoundsChangedCallback(
       reason = ZCR_REMOTE_SURFACE_V1_BOUNDS_CHANGE_REASON_SNAP_TO_RIGHT;
     }
   }
-  zcr_remote_surface_v1_send_bounds_changed(
-      resource, static_cast<uint32_t>(display_id >> 32),
-      static_cast<uint32_t>(display_id), bounds.x(), bounds.y(), bounds.width(),
-      bounds.height(), reason);
+  if (wl_resource_get_version(resource) >= 22) {
+    // Notify bounds change by local bounds.
+     auto* widget = GetUserDataAs<ShellSurfaceBase>(resource)->GetWidget();
+    gfx::Rect bounds_in_display = gfx::Rect(bounds);
+    wm::ConvertRectFromScreen(widget->GetNativeWindow()->parent(),
+                              &bounds_in_display);
+    zcr_remote_surface_v1_send_bounds_changed(
+        resource, static_cast<uint32_t>(display_id >> 32),
+        static_cast<uint32_t>(display_id), bounds_in_display.x(),
+        bounds_in_display.y(), bounds_in_display.width(),
+        bounds_in_display.height(), reason);
+  } else {
+    zcr_remote_surface_v1_send_bounds_changed(
+        resource, static_cast<uint32_t>(display_id >> 32),
+        static_cast<uint32_t>(display_id), bounds.x(), bounds.y(),
+        bounds.width(), bounds.height(), reason);
+  }
   wl_client_flush(wl_resource_get_client(resource));
 }
 

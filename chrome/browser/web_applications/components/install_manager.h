@@ -113,6 +113,8 @@ class InstallManager {
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) = 0;
 
+  virtual void Shutdown() = 0;
+
   // Starts background installation of a web app from the given
   // |web_application_info|.
   virtual void InstallWebAppForTesting(

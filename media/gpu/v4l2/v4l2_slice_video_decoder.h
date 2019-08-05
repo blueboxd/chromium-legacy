@@ -143,7 +143,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Call VIDIOC_S_FMT with |format_fourcc| and |size|. Returns v4l2_format
   // returned by VIDIOC_S_FMT on success, otherwise returns base::nullopt.
   // This should be called only from SetupOutputFormat().
-  base::Optional<struct v4l2_format> SetFormatOnOutputQueue(
+  base::Optional<struct v4l2_format> SetV4L2FormatOnOutputQueue(
       uint32_t format_fourcc,
       const gfx::Size& size);
   // Setup format for output queue. This function sets output format on output

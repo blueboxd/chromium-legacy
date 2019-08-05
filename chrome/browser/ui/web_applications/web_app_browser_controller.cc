@@ -36,7 +36,7 @@ bool WebAppBrowserController::ShouldShowCustomTabBar() const {
   return false;
 }
 
-bool WebAppBrowserController::ShouldShowHostedAppButtonContainer() const {
+bool WebAppBrowserController::HasTitlebarToolbar() const {
   return true;
 }
 

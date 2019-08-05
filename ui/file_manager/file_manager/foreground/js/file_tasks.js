@@ -922,6 +922,7 @@ class FileTasks {
           this.ui_.alertDialog.show(
               strf('ARCHIVE_MOUNT_FAILED', path.substr(namePos + 1), error),
               null, null);
+          console.error(`Cannot mount '${path}': ${error.stack || error}`);
         }
       });
 

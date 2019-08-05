@@ -68,9 +68,7 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
   }
 
   if (browser_view->IsBrowserTypeHostedApp()) {
-    if (browser_view->browser()
-            ->app_controller()
-            ->ShouldShowHostedAppButtonContainer()) {
+    if (browser_view->browser()->app_controller()->HasTitlebarToolbar()) {
       set_hosted_app_button_container(new HostedAppButtonContainer(
           frame, browser_view, GetCaptionColor(kActive),
           GetCaptionColor(kInactive), kHostedAppMenuMargin));

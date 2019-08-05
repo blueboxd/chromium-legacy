@@ -295,11 +295,13 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
                  uint32_t serial) {
     base::Optional<wayland::SerialTracker::EventType> event_type =
         serial_tracker_->GetEventType(serial);
-    if (event_type == wayland::SerialTracker::EventType::POINTER_BUTTON) {
+    if (event_type == wayland::SerialTracker::EventType::POINTER_BUTTON_DOWN &&
+        serial_tracker_->GetPointerDownSerial() == serial) {
       data_device->StartDrag(
           source, origin, icon,
           ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_MOUSE);
-    } else if (event_type == wayland::SerialTracker::EventType::TOUCH_DOWN) {
+    } else if (event_type == wayland::SerialTracker::EventType::TOUCH_DOWN &&
+               serial_tracker_->GetTouchDownSerial() == serial) {
       data_device->StartDrag(
           source, origin, icon,
           ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_TOUCH);

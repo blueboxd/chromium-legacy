@@ -722,7 +722,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
 
 void BrowserNonClientFrameViewAsh::SetUpForHostedApp() {
   Browser* browser = browser_view()->browser();
-  if (!browser->app_controller()->ShouldShowHostedAppButtonContainer())
+  if (!browser->app_controller()->HasTitlebarToolbar())
     return;
 
   // Add the container for extra hosted app buttons (e.g app menu button).

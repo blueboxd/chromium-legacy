@@ -81,9 +81,11 @@ void WaylandPointerDelegate::OnPointerButton(base::TimeTicks time_stamp,
   for (auto button : buttons) {
     if (button_flags & button.flag) {
       SendTimestamp(time_stamp);
+      SerialTracker::EventType event_type =
+          pressed ? SerialTracker::EventType::POINTER_BUTTON_DOWN
+                  : SerialTracker::EventType::POINTER_BUTTON_UP;
       wl_pointer_send_button(pointer_resource_,
-                             serial_tracker_->GetNextSerial(
-                                 SerialTracker::EventType::POINTER_BUTTON),
+                             serial_tracker_->GetNextSerial(event_type),
                              TimeTicksToMilliseconds(time_stamp), button.value,
                              pressed ? WL_POINTER_BUTTON_STATE_PRESSED
                                      : WL_POINTER_BUTTON_STATE_RELEASED);

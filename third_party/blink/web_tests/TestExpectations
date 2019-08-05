@@ -5524,9 +5524,6 @@ crbug.com/941429 virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ Fai
 # Sheriff 2018-05-31
 crbug.com/848398 http/tests/devtools/oopif/oopif-performance-cpu-profiles.js [ Pass Timeout Failure ]
 
-# Sheriff 2018-06-01
-crbug.com/848851 virtual/exotic-color-space/images/image-hover-display-alt.html [ Failure Pass ]
-
 # Flakes 2018-06-02
 crbug.com/841567 fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass ]
 

@@ -52,8 +52,7 @@ bool ManifestWebAppBrowserController::ShouldShowCustomTabBar() const {
   return false;
 }
 
-bool ManifestWebAppBrowserController::ShouldShowHostedAppButtonContainer()
-    const {
+bool ManifestWebAppBrowserController::HasTitlebarToolbar() const {
   return true;
 }
 

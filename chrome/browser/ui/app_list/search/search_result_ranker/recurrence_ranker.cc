@@ -166,6 +166,7 @@ RecurrenceRanker::RecurrenceRanker(const std::string& model_identifier,
           TimeDelta::FromSeconds(config.min_seconds_between_saves())),
       time_of_last_save_(Time::Now()),
       weak_factory_(this) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
@@ -201,6 +202,7 @@ RecurrenceRanker::~RecurrenceRanker() = default;
 
 void RecurrenceRanker::OnLoadProtoFromDiskComplete(
     std::unique_ptr<RecurrenceRankerProto> proto) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   load_from_disk_completed_ = true;
   LogInitializationStatus(model_identifier_,
                           InitializationStatus::kInitialized);
@@ -242,6 +244,7 @@ void RecurrenceRanker::OnLoadProtoFromDiskComplete(
 
 void RecurrenceRanker::Record(const std::string& target,
                               const std::string& condition) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return;
   LogUsage(model_identifier_, Usage::kRecord);
@@ -252,6 +255,7 @@ void RecurrenceRanker::Record(const std::string& target,
 
 void RecurrenceRanker::RenameTarget(const std::string& target,
                                     const std::string& new_target) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return;
   LogUsage(model_identifier_, Usage::kRenameTarget);
@@ -261,6 +265,7 @@ void RecurrenceRanker::RenameTarget(const std::string& target,
 }
 
 void RecurrenceRanker::RemoveTarget(const std::string& target) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(tby): Find a solution to the edge case of a removal before disk
   // loading is complete, resulting in the remove getting dropped.
   if (!load_from_disk_completed_)
@@ -273,6 +278,7 @@ void RecurrenceRanker::RemoveTarget(const std::string& target) {
 
 void RecurrenceRanker::RenameCondition(const std::string& condition,
                                        const std::string& new_condition) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return;
   LogUsage(model_identifier_, Usage::kRenameCondition);
@@ -282,6 +288,7 @@ void RecurrenceRanker::RenameCondition(const std::string& condition,
 }
 
 void RecurrenceRanker::RemoveCondition(const std::string& condition) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return;
   LogUsage(model_identifier_, Usage::kRemoveCondition);
@@ -292,6 +299,7 @@ void RecurrenceRanker::RemoveCondition(const std::string& condition) {
 
 std::map<std::string, float> RecurrenceRanker::Rank(
     const std::string& condition) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return {};
   LogUsage(model_identifier_, Usage::kRank);
@@ -313,6 +321,7 @@ std::map<std::string, float> RecurrenceRanker::Rank(
 
 void RecurrenceRanker::MaybeCleanup(float proportion_valid,
                                     const FrecencyStore::ScoreTable& targets) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (proportion_valid > kMinValidTargetProportionBeforeCleanup)
     return;
 
@@ -325,6 +334,7 @@ void RecurrenceRanker::MaybeCleanup(float proportion_valid,
 std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(
     int n,
     const std::string& condition) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return {};
 
@@ -333,15 +343,18 @@ std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(
 
 std::map<std::string, FrecencyStore::ValueData>*
 RecurrenceRanker::GetTargetData() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return targets_->get_mutable_values();
 }
 
 std::map<std::string, FrecencyStore::ValueData>*
 RecurrenceRanker::GetConditionData() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return conditions_->get_mutable_values();
 }
 
 void RecurrenceRanker::SaveToDisk() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_ephemeral_user_)
     return;
 
@@ -354,12 +367,14 @@ void RecurrenceRanker::SaveToDisk() {
 }
 
 void RecurrenceRanker::MaybeSave() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (Time::Now() - time_of_last_save_ > min_seconds_between_saves_) {
     SaveToDisk();
   }
 }
 
 void RecurrenceRanker::ToProto(RecurrenceRankerProto* proto) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   proto->set_config_hash(config_hash_);
   predictor_->ToProto(proto->mutable_predictor());
   targets_->ToProto(proto->mutable_targets());

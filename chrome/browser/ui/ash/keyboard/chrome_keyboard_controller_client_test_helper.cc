@@ -33,9 +33,13 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
   bool IsKeyboardEnabled() override { return enabled_; }
   void SetEnableFlag(keyboard::KeyboardEnableFlag flag) override {
     keyboard_enable_flags_.insert(flag);
+    for (auto& observer : observers_)
+      observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
   }
   void ClearEnableFlag(keyboard::KeyboardEnableFlag flag) override {
     keyboard_enable_flags_.erase(flag);
+    for (auto& observer : observers_)
+      observer.OnKeyboardEnableFlagsChanged(keyboard_enable_flags_);
   }
   const std::set<keyboard::KeyboardEnableFlag>& GetEnableFlags() override {
     return keyboard_enable_flags_;
@@ -54,14 +58,19 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
   void SetOccludedBounds(const std::vector<gfx::Rect>& bounds) override {}
   void SetHitTestBounds(const std::vector<gfx::Rect>& bounds) override {}
   void SetDraggableArea(const gfx::Rect& bounds) override {}
-  void AddObserver(ash::KeyboardControllerObserver* observer) override {}
-  void RemoveObserver(ash::KeyboardControllerObserver* observer) override {}
+  void AddObserver(ash::KeyboardControllerObserver* observer) override {
+    observers_.AddObserver(observer);
+  }
+  void RemoveObserver(ash::KeyboardControllerObserver* observer) override {
+    observers_.RemoveObserver(observer);
+  }
 
  private:
   keyboard::KeyboardConfig keyboard_config_;
   std::set<keyboard::KeyboardEnableFlag> keyboard_enable_flags_;
   bool enabled_ = false;
   bool visible_ = false;
+  base::ObserverList<ash::KeyboardControllerObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeKeyboardController);
 };

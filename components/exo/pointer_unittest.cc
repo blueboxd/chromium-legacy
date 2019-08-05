@@ -11,7 +11,10 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "components/exo/buffer.h"
+#include "components/exo/data_source.h"
+#include "components/exo/data_source_delegate.h"
 #include "components/exo/pointer_delegate.h"
+#include "components/exo/seat.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
@@ -46,6 +49,22 @@ class MockPointerDelegate : public PointerDelegate {
   MOCK_METHOD0(OnPointerFrame, void());
 };
 
+class TestDataSourceDelegate : public DataSourceDelegate {
+ public:
+  TestDataSourceDelegate() {}
+
+  // Overridden from DataSourceDelegate:
+  void OnDataSourceDestroying(DataSource* device) override {}
+  void OnTarget(const std::string& mime_type) override {}
+  void OnSend(const std::string& mime_type, base::ScopedFD fd) override {}
+  void OnCancelled() override {}
+  void OnDndDropPerformed() override {}
+  void OnDndFinished() override {}
+  void OnAction(DndAction dnd_action) override {}
+
+  DISALLOW_COPY_AND_ASSIGN(TestDataSourceDelegate);
+};
+
 class PointerTest : public test::ExoTestBase {
  public:
   PointerTest() = default;
@@ -72,7 +91,8 @@ TEST_F(PointerTest, SetCursor) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -134,7 +154,8 @@ TEST_F(PointerTest, SetCursorNull) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -165,7 +186,8 @@ TEST_F(PointerTest, SetCursorType) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -223,7 +245,8 @@ TEST_F(PointerTest, SetCursorTypeOutsideOfSurface) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -255,7 +278,8 @@ TEST_F(PointerTest, SetCursorAndSetCursorType) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -328,7 +352,8 @@ TEST_F(PointerTest, SetCursorNullAndSetCursorType) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -372,7 +397,8 @@ TEST_F(PointerTest, OnPointerEnter) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -395,7 +421,8 @@ TEST_F(PointerTest, OnPointerLeave) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -428,7 +455,8 @@ TEST_F(PointerTest, OnPointerMotion) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -501,7 +529,8 @@ TEST_F(PointerTest, OnPointerButton) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -531,7 +560,8 @@ TEST_F(PointerTest, OnPointerScroll) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
   gfx::Point location = surface->window()->GetBoundsInScreen().origin();
 
@@ -566,7 +596,8 @@ TEST_F(PointerTest, OnPointerScrollWithThreeFinger) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
   gfx::Point location = surface->window()->GetBoundsInScreen().origin();
 
@@ -601,7 +632,8 @@ TEST_F(PointerTest, OnPointerScrollDiscrete) {
   surface->Commit();
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
@@ -636,7 +668,8 @@ TEST_F(PointerTest, RegisterPointerEventsOnModal) {
   EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, OnPointerFrame()).Times(testing::AnyNumber());
@@ -694,7 +727,8 @@ TEST_F(PointerTest, IgnorePointerEventsOnNonModalWhenModalIsOpen) {
   EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, OnPointerFrame()).Times(testing::AnyNumber());
@@ -755,7 +789,8 @@ TEST_F(PointerTest, IgnorePointerLeaveOnModal) {
   EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, OnPointerFrame()).Times(testing::AnyNumber());
@@ -802,7 +837,8 @@ TEST_F(PointerTest, RegisterPointerEventsOnNonModal) {
   ash::CenterWindow(shell_surface2->GetWidget()->GetNativeWindow());
 
   MockPointerDelegate delegate;
-  std::unique_ptr<Pointer> pointer(new Pointer(&delegate));
+  Seat seat;
+  std::unique_ptr<Pointer> pointer(new Pointer(&delegate, &seat));
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
   EXPECT_CALL(delegate, OnPointerFrame()).Times(testing::AnyNumber());
@@ -843,6 +879,42 @@ TEST_F(PointerTest, RegisterPointerEventsOnNonModal) {
   }
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
+TEST_F(PointerTest, DragDropAbort) {
+  Seat seat;
+  MockPointerDelegate pointer_delegate;
+  std::unique_ptr<Pointer> pointer(new Pointer(&pointer_delegate, &seat));
+  TestDataSourceDelegate data_source_delegate;
+  DataSource source(&data_source_delegate);
+  Surface origin, icon;
+
+  // Make origin into a real window so the pointer can click it
+  ShellSurface shell_surface(&origin);
+  Buffer buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(10, 10)));
+  origin.Attach(&buffer);
+  origin.Commit();
+
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(pointer_delegate, CanAcceptPointerEventsForSurface(&origin))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(pointer_delegate, OnPointerFrame()).Times(3);
+  EXPECT_CALL(pointer_delegate, OnPointerEnter(&origin, gfx::PointF(), 0));
+  generator.MoveMouseTo(origin.window()->GetBoundsInScreen().origin());
+
+  seat.StartDrag(&source, &origin, &icon,
+                 ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_MOUSE);
+  EXPECT_TRUE(seat.get_drag_drop_operation_for_testing());
+
+  EXPECT_CALL(pointer_delegate, OnPointerButton).Times(2);
+  generator.PressLeftButton();
+  EXPECT_TRUE(seat.get_drag_drop_operation_for_testing());
+  generator.ReleaseLeftButton();
+  EXPECT_FALSE(seat.get_drag_drop_operation_for_testing());
+
+  EXPECT_CALL(pointer_delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();
 }
 

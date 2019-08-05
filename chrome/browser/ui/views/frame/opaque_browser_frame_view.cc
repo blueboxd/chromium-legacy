@@ -182,7 +182,7 @@ void OpaqueBrowserFrameView::InitViews() {
 
   web_app::AppBrowserController* controller =
       browser_view()->browser()->app_controller();
-  if (controller && controller->ShouldShowHostedAppButtonContainer()) {
+  if (controller && controller->HasTitlebarToolbar()) {
     set_hosted_app_button_container(new HostedAppButtonContainer(
         frame(), browser_view(), GetCaptionColor(kActive),
         GetCaptionColor(kInactive)));

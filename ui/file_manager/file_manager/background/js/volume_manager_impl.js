@@ -174,6 +174,8 @@ class VolumeManagerImpl extends cr.EventTarget {
             const volumeInfo =
                 await this.addVolumeMetadata_(event.volumeMetadata);
             this.finishRequest_(requestKey, event.status, volumeInfo);
+            console.warn(`Mounted '${event.volumeMetadata.sourcePath}' as '${
+                event.volumeMetadata.volumeId}'`);
             break;
           }
 
@@ -184,6 +186,9 @@ class VolumeManagerImpl extends cr.EventTarget {
             navigationEvent.volumeId = event.volumeMetadata.volumeId;
             this.dispatchEvent(navigationEvent);
             this.finishRequest_(requestKey, event.status);
+            console.error(`'Cannot mount ${
+                event.volumeMetadata.sourcePath}': Already mounted as '${
+                event.volumeMetadata.volumeId}'`);
             break;
           }
 
@@ -211,6 +216,9 @@ class VolumeManagerImpl extends cr.EventTarget {
           this.finishRequest_(requestKey, status);
           if (event.status === 'success') {
             this.volumeInfoList.remove(event.volumeMetadata.volumeId);
+            console.warn(`Unmounted '${volumeId}'`);
+          } else {
+            console.error(`Cannot unmount '${volumeId}': ${event.status}`);
           }
 
           break;
@@ -240,9 +248,7 @@ class VolumeManagerImpl extends cr.EventTarget {
     });
     console.warn(`Mounting '${path}'`);
     const key = this.makeRequestKey_('mount', path);
-    const volumeInfo = await this.startRequest_(key);
-    console.warn(`Mounted '${path}' as '${volumeInfo.volumeId}'`);
-    return volumeInfo;
+    return this.startRequest_(key);
   }
 
   /** @override */
@@ -251,7 +257,6 @@ class VolumeManagerImpl extends cr.EventTarget {
     chrome.fileManagerPrivate.removeMount(volumeInfo.volumeId);
     const key = this.makeRequestKey_('unmount', volumeInfo.volumeId);
     await this.startRequest_(key);
-    console.warn(`Unmounted '${volumeInfo.volumeId}'`);
   }
 
   /** @override */

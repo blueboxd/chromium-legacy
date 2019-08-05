@@ -89,7 +89,13 @@ void Seat::StartDrag(DataSource* source,
                      Surface* icon,
                      ui::DragDropTypes::DragEventSource event_source) {
   // DragDropOperation manages its own lifetime.
-  DragDropOperation::Create(source, origin, icon, event_source);
+  drag_drop_operation_ =
+      DragDropOperation::Create(source, origin, icon, event_source);
+}
+
+void Seat::AbortPendingDragOperation() {
+  if (drag_drop_operation_)
+    drag_drop_operation_->AbortIfPending();
 }
 
 void Seat::SetSelection(DataSource* source) {

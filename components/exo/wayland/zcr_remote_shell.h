@@ -22,7 +22,7 @@ class Display;
 namespace exo {
 namespace wayland {
 
-constexpr uint32_t kZcrRemoteShellVersion = 21;
+constexpr uint32_t kZcrRemoteShellVersion = 22;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

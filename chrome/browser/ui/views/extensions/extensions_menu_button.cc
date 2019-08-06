@@ -69,7 +69,7 @@ void ExtensionsMenuButton::UpdatePinButton() {
       IsPinned() ? IDS_EXTENSIONS_MENU_UNPIN_BUTTON_TOOLTIP
                  : IDS_EXTENSIONS_MENU_PIN_BUTTON_TOOLTIP));
   SkColor unpinned_icon_color =
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()
           ? gfx::kGoogleGrey500
           : gfx::kChromeIconGrey;
   SkColor icon_color = IsPinned()
@@ -191,9 +191,8 @@ void ExtensionsMenuButton::ConfigureSecondaryView() {
       views::BoxLayout::Orientation::kHorizontal));
 
   const SkColor icon_color =
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
-          ? gfx::kGoogleGrey500
-          : gfx::kChromeIconGrey;
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor);
 
   auto pin_button = views::CreateVectorImageButton(this);
   pin_button->SetID(EXTENSION_PINNING);

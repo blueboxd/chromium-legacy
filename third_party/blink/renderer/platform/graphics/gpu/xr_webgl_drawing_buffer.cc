@@ -8,6 +8,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
@@ -213,7 +214,10 @@ bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
             "GL_EXT_multisampled_render_to_texture")) {
       anti_aliasing_mode_ = kMSAAImplicitResolve;
     } else if (extensions_util->SupportsExtension(
-                   "GL_CHROMIUM_screen_space_antialiasing")) {
+                   "GL_CHROMIUM_screen_space_antialiasing") &&
+               drawing_buffer_->ContextProvider()
+                   ->GetGpuFeatureInfo()
+                   .IsWorkaroundEnabled(gpu::USE_FRAMEBUFFER_CMAA)) {
       anti_aliasing_mode_ = kScreenSpaceAntialiasing;
     }
   }

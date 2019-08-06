@@ -24,12 +24,10 @@ namespace features {
 extern const base::Feature kAutofillAddressNormalizer;
 extern const base::Feature kAutofillAllowNonHttpActivation;
 extern const base::Feature kAutofillAlwaysFillAddresses;
-extern const base::Feature kAutofillAlwaysShowServerCardsInSyncTransport;
 extern const base::Feature kAutofillCacheQueryResponses;
 extern const base::Feature kAutofillCreateDataForTest;
 extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillEnableAccountWalletStorage;
-extern const base::Feature kAutofillEnableAccountWalletStorageUpload;
 extern const base::Feature kAutofillEnableCompanyName;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics;
 extern const base::Feature kAutofillEnforceMinRequiredFieldsForQuery;

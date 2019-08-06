@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -21,6 +22,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.Accessor
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type.TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.getType;
 
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 
 import org.junit.Before;
@@ -75,6 +77,7 @@ public class PasswordAccessorySheetControllerTest {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         mocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogramNatives);
+        AccessorySheetTabCoordinator.IconProvider.setIconForTesting(mock(Drawable.class));
         mCoordinator = new PasswordAccessorySheetCoordinator(RuntimeEnvironment.application, null);
         assertNotNull(mCoordinator);
         mSheetDataPieces = mCoordinator.getSheetDataPiecesForTesting();

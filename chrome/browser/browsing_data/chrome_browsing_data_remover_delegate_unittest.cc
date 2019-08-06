@@ -2578,8 +2578,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
 // Check the |CONTENT_SETTINGS_TYPE_PLUGINS_DATA| content setting is cleared
 // with browsing data.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearFlashPreviouslyChanged) {
-  ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      GetProfile(), GetProfile()->GetResourceContext());
+  ChromePluginServiceFilter::GetInstance()->RegisterProfile(GetProfile());
 
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());

@@ -15,4 +15,9 @@ UserActionData::UserActionData(const UserActionData& other) = default;
 
 UserActionData::~UserActionData() = default;
 
+bool UserActionData::operator==(const UserActionData& other) const {
+  return client_type == other.client_type && action_type == other.action_type &&
+         guid == other.guid;
+}
+
 }  // namespace notifications

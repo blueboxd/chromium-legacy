@@ -7,7 +7,6 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/services/file_util/public/cpp/manifest.h"
 #include "components/services/quarantine/public/cpp/manifest.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
@@ -59,7 +58,6 @@
 const std::vector<service_manager::Manifest>&
 GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
-      GetFileUtilManifest(),
       quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       GetRemovableStorageWriterManifest(),

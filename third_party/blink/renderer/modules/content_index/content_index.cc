@@ -106,9 +106,7 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
   // TODO(crbug.com/973844): Use ideal icon dimensions instead of the max.
   threaded_icon_loader->Start(
       registration_->GetExecutionContext(), resource_request,
-      /* resize_dimensions= */
-      WebSize(mojom::blink::ContentIndexService::kMaxIconDimension,
-              mojom::blink::ContentIndexService::kMaxIconDimension),
+      /* resize_dimensions= */ WebSize(256, 256),
       WTF::Bind(&ContentIndex::DidGetIcon, WrapPersistent(this),
                 WrapPersistent(resolver), WrapPersistent(threaded_icon_loader),
                 mojom::blink::ContentDescription::From(description)));
@@ -134,7 +132,7 @@ void ContentIndex::DidGetIcon(ScriptPromiseResolver* resolver,
       description->launch_url);
 
   GetService()->Add(registration_->RegistrationId(), std::move(description),
-                    icon, launch_url,
+                    {std::move(icon)}, launch_url,
                     WTF::Bind(&ContentIndex::DidAdd, WrapPersistent(this),
                               WrapPersistent(resolver)));
 }

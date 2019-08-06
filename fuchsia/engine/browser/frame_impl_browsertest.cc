@@ -5,8 +5,6 @@
 #include <lib/fidl/cpp/binding.h>
 #include <lib/ui/scenic/cpp/view_token_pair.h>
 
-#include "base/containers/span.h"
-
 #include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/macros.h"
@@ -21,6 +19,7 @@
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
+#include "fuchsia/base/string_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/common.h"
@@ -79,11 +78,6 @@ class MockWebContentsObserver : public content::WebContentsObserver {
   MOCK_METHOD1(RenderViewDeleted,
                void(content::RenderViewHost* render_view_host));
 };
-
-std::vector<uint8_t> StringToUnsignedVector(base::StringPiece str) {
-  const uint8_t* raw_data = reinterpret_cast<const uint8_t*>(str.data());
-  return std::vector<uint8_t>(raw_data, raw_data + str.length());
-}
 
 std::string StringFromMemBufferOrDie(const fuchsia::mem::Buffer& buffer) {
   std::string output;
@@ -1529,11 +1523,11 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringFrameImplBrowserTest, ExtraHeaders) {
   const GURL page_url(embedded_test_server()->GetURL(kPage1Path));
   fuchsia::web::LoadUrlParams load_url_params;
   fuchsia::net::http::Header header1;
-  header1.name = StringToUnsignedVector("X-ExtraHeaders");
-  header1.value = StringToUnsignedVector("1");
+  header1.name = cr_fuchsia::StringToBytes("X-ExtraHeaders");
+  header1.value = cr_fuchsia::StringToBytes("1");
   fuchsia::net::http::Header header2;
-  header2.name = StringToUnsignedVector("X-2ExtraHeaders");
-  header2.value = StringToUnsignedVector("2");
+  header2.name = cr_fuchsia::StringToBytes("X-2ExtraHeaders");
+  header2.value = cr_fuchsia::StringToBytes("2");
   load_url_params.set_headers({header1, header2});
 
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(

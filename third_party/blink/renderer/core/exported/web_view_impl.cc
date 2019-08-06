@@ -1305,21 +1305,29 @@ void WebViewImpl::UpdateBrowserControlsConstraint(
 }
 
 void WebViewImpl::DidUpdateBrowserControls() {
-  if (layer_tree_view_) {
-    layer_tree_view_->SetBrowserControlsShownRatio(
-        GetBrowserControls().ShownRatio());
-    layer_tree_view_->SetBrowserControlsHeight(
-        GetBrowserControls().TopHeight(), GetBrowserControls().BottomHeight(),
-        GetBrowserControls().ShrinkViewport());
-  }
-
+  // BrowserControls are a feature whereby the browser can introduce an
+  // interactable element [e.g. search box] that grows/shrinks in height as the
+  // user scrolls the web contents.
+  //
+  // This method is called by the BrowserControls class to let the compositor
+  // know that the browser controls have been updated. This is only relevant if
+  // the main frame is local because BrowserControls only affects the main
+  // frame's viewport, and are only affected by main frame scrolling.
+  //
+  // The relevant state is stored on the BrowserControls object even if the main
+  // frame is remote. If the main frame becomes local, the state will be
+  // restored by the first commit, since the state is checked in every call to
+  // ApplyScrollAndScale().
   WebLocalFrameImpl* main_frame = MainFrameImpl();
   if (!main_frame)
     return;
 
-  LocalFrameView* view = main_frame->GetFrameView();
-  if (!view)
-    return;
+  WebWidgetClient* client = main_frame->LocalRootFrameWidget()->Client();
+  DCHECK(client);
+  client->SetBrowserControlsShownRatio(GetBrowserControls().ShownRatio());
+  client->SetBrowserControlsHeight(GetBrowserControls().TopHeight(),
+                                   GetBrowserControls().BottomHeight(),
+                                   GetBrowserControls().ShrinkViewport());
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
 

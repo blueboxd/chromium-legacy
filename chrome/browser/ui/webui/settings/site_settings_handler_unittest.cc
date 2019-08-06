@@ -1009,8 +1009,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 TEST_F(SiteSettingsHandlerTest, ChangingFlashSettingForSiteIsRemembered) {
-  ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      profile(), profile()->GetResourceContext());
+  ChromePluginServiceFilter::GetInstance()->RegisterProfile(profile());
   FlashContentSettingsChangeWaiter waiter(profile());
 
   const std::string origin_with_port("https://www.example.com:443");

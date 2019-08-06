@@ -268,8 +268,8 @@ CommandHandler.onCommand = function(command) {
           false);
       break;
     case 'showTtsSettings':
-      var ttsSettings = {url: 'chrome://settings/manageAccessibility/tts'};
-      chrome.windows.create(ttsSettings);
+      chrome.accessibilityPrivate.openSettingsSubpage(
+          'manageAccessibility/tts');
       break;
     default:
       break;

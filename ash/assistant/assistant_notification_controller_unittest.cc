@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,7 +60,7 @@ class AssistantNotificationControllerTest : public AshTestBase {
   ~AssistantNotificationControllerTest() override = default;
 
   void SetUp() override {
-    ASSERT_TRUE(chromeos::switches::IsAssistantEnabled());
+    ASSERT_TRUE(chromeos::features::IsAssistantEnabled());
 
     AshTestBase::SetUp();
 

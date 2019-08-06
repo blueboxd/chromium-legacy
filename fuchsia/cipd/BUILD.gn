@@ -176,7 +176,7 @@ action("strip_chromedriver_binary") {
 
 cipd_archive("chromedriver") {
   cipd_manifest_name = "chromedriver.yaml"
-  cipd_path = "chromium/fuchsia/chromedriver-\${os}-\${arch}"
+  cipd_path = "chromium/fuchsia/chromedriver/\${os}-\${arch}"
   cipd_description = "Prebuilt Chromedriver binary for Fuchsia host."
 
   deps = [

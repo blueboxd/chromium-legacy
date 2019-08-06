@@ -36,14 +36,12 @@
 #include "components/download/public/common/download_url_loader_factory_getter_impl.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/download_utils.h"
+#include "components/download/public/common/input_stream.h"
 #include "components/download/public/common/url_download_handler_factory.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
-#include "content/browser/download/byte_stream_input_stream.h"
-#include "content/browser/download/download_utils.h"
 #include "content/browser/download/file_download_url_loader_factory_getter.h"
 #include "content/browser/download/file_system_download_url_loader_factory_getter.h"
 #include "content/browser/download/network_download_url_loader_factory_getter.h"
@@ -138,14 +136,12 @@ void CreateInterruptedDownload(
           base::Time::Now(), base::WrapUnique(new download::DownloadSaveInfo)));
   failed_created_info->url_chain.push_back(params->url());
   failed_created_info->result = reason;
-  std::unique_ptr<ByteStreamReader> empty_byte_stream;
   base::PostTask(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &DownloadManager::StartDownload, download_manager,
-          std::move(failed_created_info),
-          std::make_unique<ByteStreamInputStream>(std::move(empty_byte_stream)),
-          nullptr, params->callback()));
+      base::BindOnce(&DownloadManager::StartDownload, download_manager,
+                     std::move(failed_created_info),
+                     std::make_unique<download::InputStream>(), nullptr,
+                     params->callback()));
 }
 
 class DownloadItemFactoryImpl : public download::DownloadItemFactory {

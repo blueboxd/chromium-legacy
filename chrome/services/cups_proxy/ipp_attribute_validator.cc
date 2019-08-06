@@ -7,15 +7,16 @@
 #include <cups/ipp.h>
 
 #include <map>
+#include <set>
 #include <string>
 
-#include "chrome/services/cups_ipp_parser/public/mojom/ipp_parser.mojom.h"
+#include "chrome/services/ipp_parser/public/mojom/ipp_parser.mojom.h"
 
 namespace cups_proxy {
 
 namespace {
 
-using ValueType = cups_ipp_parser::mojom::ValueType;
+using ValueType = ipp_parser::mojom::ValueType;
 
 // Represents the type of a single attribute.
 struct AttributeDefinition {

@@ -1982,9 +1982,11 @@ void AppsGridView::UpdateOpacity() {
   // view (i.e. this class).
   if (should_restore_opacity) {
     // Layers are not necessary. Destroy them, and return. No need to update
-    // opacity.
-    for (size_t i = 0; i < current_page.size(); ++i)
-      current_page[i]->DestroyLayer();
+    // opacity. This needs to be done on all views within |view_model_| because
+    // some item view might have been moved out from the current page. See also
+    // https://crbug.com/990529.
+    for (int i = 0; i < view_model_.view_size(); ++i)
+      view_model_.view_at(i)->DestroyLayer();
     return;
   }
 

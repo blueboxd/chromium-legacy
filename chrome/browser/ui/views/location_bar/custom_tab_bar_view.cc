@@ -192,9 +192,9 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   // frame color.
   title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
 
-  // In dark mode, match the default frame color.
+  // Match the default frame colors if using dark colors.
   background_color_ =
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()
           ? GetDefaultFrameColor()
           : kDefaultCustomTabBarBackgroundColor;
 

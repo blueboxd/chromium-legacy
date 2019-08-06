@@ -44,16 +44,39 @@ class MenuManager {
     this.node_;
 
     /**
+     * The node that the menu has been opened for.
+     * @private {!chrome.automation.AutomationNode}
+     */
+    this.menuOriginNode_ = desktop;
+
+    /**
      * Keeps track of when we're in the Switch Access menu.
      * @private {boolean}
      */
     this.inMenu_ = false;
 
     /**
+     * Keeps track of when the clipboard is empty.
+     * @private {boolean}
+     */
+    this.clipboardHasData_ = false;
+
+    /**
      * A reference to the Switch Access Menu Panel class.
      * @private {PanelInterface}
      */
     this.menuPanel_;
+
+    this.init_();
+  }
+
+  /**
+   * Set up clipboardListener for showing/hiding paste button.
+   * @private
+   */
+  init_() {
+    chrome.clipboard.onClipboardDataChanged.addListener(
+        this.updateClipboardHasData.bind(this));
   }
 
   /**
@@ -87,6 +110,7 @@ class MenuManager {
     if (navNode.location) {
       chrome.accessibilityPrivate.setSwitchAccessMenuState(
           true, navNode.location, actions.length);
+      this.menuOriginNode_ = navNode;
     } else {
       console.log('Unable to show Switch Access menu.');
     }
@@ -103,6 +127,7 @@ class MenuManager {
   }
 
   /**
+   * TODO(rosalindag): Refactor enter and reloadMenu to reduce duplicated code.
    * Reload the menu.
    * @param {!chrome.automation.AutomationNode} navNode the node for which the
    * menu is to be displayed.
@@ -130,6 +155,7 @@ class MenuManager {
     if (navNode.location) {
       chrome.accessibilityPrivate.setSwitchAccessMenuState(
           true /* show menu */, navNode.location, actions.length);
+      this.menuOriginNode_ = navNode;
     } else {
       console.log('Unable to show Switch Access menu.');
     }
@@ -269,6 +295,16 @@ class MenuManager {
   }
 
   /**
+   * TODO(rosalindag): Add functionality to catch when clipboardHasData_ needs
+   * to be set to false.
+   * Set the clipboardHasData variable to true and reload the menu.
+   */
+  updateClipboardHasData() {
+    this.clipboardHasData_ = true;
+    this.reloadMenu_(this.menuOriginNode_);
+  }
+
+  /**
    * Clear the focus ring.
    * @private
    */
@@ -328,7 +364,9 @@ class MenuManager {
         }
         actions.push(SAConstants.MenuAction.CUT);
         actions.push(SAConstants.MenuAction.COPY);
-        actions.push(SAConstants.MenuAction.PASTE);
+        if (this.clipboardHasData_) {
+          actions.push(SAConstants.MenuAction.PASTE);
+        }
       }
     } else if (actions.length > 0) {
       actions.push(SAConstants.MenuAction.SELECT);

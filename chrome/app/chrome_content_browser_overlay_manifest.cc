@@ -127,8 +127,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("device", "device:geolocation_control")
         .RequireCapability("device", "device:ip_geolocator")
         .RequireCapability("device_sync", "device_sync")
-        .RequireCapability("file_util", "analyze_archive")
-        .RequireCapability("file_util", "zip_file")
         .RequireCapability("identity", "identity_accessor")
         .RequireCapability(image_annotation::mojom::kServiceName,
                            image_annotation::mojom::kAnnotationCapability)

@@ -507,6 +507,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // mojom::Renderer:
   void CreateView(mojom::CreateViewParamsPtr params) override;
+  void DestroyView(int32_t view_id) override;
   void CreateFrame(mojom::CreateFrameParamsPtr params) override;
   void CreateFrameProxy(
       int32_t routing_id,

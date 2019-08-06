@@ -246,7 +246,12 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   data_reduction_proxy::DataReductionProxySettings::
       SetCallbackToRegisterSyntheticFieldTrial(base::Bind(
           &ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial));
-  // TODO(bengr): Remove after M46. See http://crbug.com/445599.
+  // In M35 and earlier, the Data Reduction Proxy enabled/disabled setting was
+  // stored in prefs, so this setting needs to be migrated to the new way of
+  // storing the setting. Removing this migration code would cause users
+  // upgrading from M35 and earlier with the Data Reduction Proxy enabled to be
+  // unable to browse non-SSL sites for the most part (see
+  // http://crbug.com/476610).
   MigrateDataReductionProxyOffProxyPrefs(profile_prefs);
 }
 

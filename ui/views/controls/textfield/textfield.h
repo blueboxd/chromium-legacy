@@ -73,12 +73,6 @@ class VIEWS_EXPORT Textfield : public View,
  public:
   METADATA_HEADER(Textfield);
 
-  // An enum giving different model properties unique keys for the
-  // OnPropertyChanged call.
-  enum ModelPropertyKey {
-    kTextProperty = 1,
-  };
-
   // Returns the text cursor blink time, or 0 for no blinking.
   static base::TimeDelta GetCaretBlinkInterval();
 
@@ -452,6 +446,12 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Updates the border per the state of |invalid_|.
   void UpdateBorder();
+
+  // Updates the selection text color.
+  void UpdateSelectionTextColor();
+
+  // Updates the selection background color.
+  void UpdateSelectionBackgroundColor();
 
   // Does necessary updates when the text and/or cursor position changes.
   void UpdateAfterChange(bool text_changed, bool cursor_changed);

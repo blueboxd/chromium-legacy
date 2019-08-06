@@ -9,7 +9,7 @@
 #include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/result_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,7 +100,9 @@ class AgentImplTest : public ::testing::Test {
     return nullptr;
   }
 
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<base::fuchsia::ServiceDirectory> services_;
   std::unique_ptr<base::fuchsia::ServiceDirectoryClient> services_client_;
 

@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -129,7 +128,6 @@ bool IsPluginLoadingAccessibleResourceInWebView(
 
 PluginInfoHostImpl::Context::Context(int render_process_id, Profile* profile)
     : render_process_id_(render_process_id),
-      resource_context_(profile->GetResourceContext()),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       extension_registry_(extensions::ExtensionRegistry::Get(profile)),
 #endif
@@ -138,14 +136,8 @@ PluginInfoHostImpl::Context::Context(int render_process_id, Profile* profile)
       plugin_prefs_(PluginPrefs::GetForProfile(profile)) {
   allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
                                profile->GetPrefs());
-  allow_outdated_plugins_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}));
   run_all_flash_in_allow_mode_.Init(prefs::kRunAllFlashInAllowMode,
                                     profile->GetPrefs());
-  run_all_flash_in_allow_mode_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}));
 }
 
 PluginInfoHostImpl::Context::~Context() {}
@@ -157,9 +149,7 @@ void PluginInfoHostImpl::Context::ShutdownOnUIThread() {
 }
 
 PluginInfoHostImpl::PluginInfoHostImpl(int render_process_id, Profile* profile)
-    : context_(render_process_id, profile),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      binding_(this) {
+    : context_(render_process_id, profile) {
   shutdown_notifier_ =
       PluginInfoHostImplShutdownNotifierFactory::GetInstance()
           ->Get(profile)
@@ -171,19 +161,6 @@ void PluginInfoHostImpl::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   context_.ShutdownOnUIThread();
   shutdown_notifier_.reset();
-}
-
-void PluginInfoHostImplTraits::Destruct(const PluginInfoHostImpl* impl) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&PluginInfoHostImpl::DestructOnBrowserThread,
-                     base::Unretained(impl)));
-}
-
-void PluginInfoHostImpl::DestructOnBrowserThread() const {
-  binding_.Close();
-  // Destroy on the UI thread because we contain a |PrefMember|.
-  content::BrowserThread::DeleteOnUIThread::Destruct(this);
 }
 
 // static
@@ -202,19 +179,16 @@ struct PluginInfoHostImpl::GetPluginInfo_Params {
   std::string mime_type;
 };
 
-void PluginInfoHostImpl::OnPluginInfoHostRequest(
-    chrome::mojom::PluginInfoHostAssociatedRequest request) {
-  binding_.Bind(std::move(request));
-}
-
 void PluginInfoHostImpl::GetPluginInfo(int32_t render_frame_id,
                                        const GURL& url,
                                        const url::Origin& origin,
                                        const std::string& mime_type,
                                        GetPluginInfoCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   GetPluginInfo_Params params = {render_frame_id, url, origin, mime_type};
-  PluginService::GetInstance()->GetPlugins(base::BindOnce(
-      &PluginInfoHostImpl::PluginsLoaded, this, params, std::move(callback)));
+  PluginService::GetInstance()->GetPlugins(
+      base::BindOnce(&PluginInfoHostImpl::PluginsLoaded,
+                     weak_factory_.GetWeakPtr(), params, std::move(callback)));
 }
 
 void PluginInfoHostImpl::PluginsLoaded(
@@ -236,15 +210,12 @@ void PluginInfoHostImpl::PluginsLoaded(
 
   if (output->status == chrome::mojom::PluginStatus::kNotFound) {
     // Check to see if the component updater can fetch an implementation.
-    base::PostTaskAndReplyWithResult(
-        main_thread_task_runner_.get(), FROM_HERE,
-        base::BindOnce(
-            &component_updater::ComponentUpdateService::GetComponentForMimeType,
-            base::Unretained(g_browser_process->component_updater()),
-            params.mime_type),
-        base::BindOnce(&PluginInfoHostImpl::ComponentPluginLookupDone, this,
-                       params, std::move(output), std::move(callback),
-                       std::move(plugin_metadata)));
+    std::unique_ptr<component_updater::ComponentInfo> cus_plugin_info =
+        g_browser_process->component_updater()->GetComponentForMimeType(
+            params.mime_type);
+    ComponentPluginLookupDone(params, std::move(output), std::move(callback),
+                              std::move(plugin_metadata),
+                              std::move(cus_plugin_info));
   } else {
     GetPluginInfoFinish(params, std::move(output), std::move(callback),
                         std::move(plugin_metadata));
@@ -370,9 +341,9 @@ bool PluginInfoHostImpl::Context::FindEnabledPlugin(
       PluginService::GetInstance()->GetFilter();
   size_t i = 0;
   for (; i < matching_plugins.size(); ++i) {
-    if (!filter || filter->IsPluginAvailable(
-                       render_process_id_, render_frame_id, resource_context_,
-                       url, main_frame_origin, &matching_plugins[i])) {
+    if (!filter ||
+        filter->IsPluginAvailable(render_process_id_, render_frame_id, url,
+                                  main_frame_origin, &matching_plugins[i])) {
       break;
     }
   }
@@ -440,11 +411,8 @@ void PluginInfoHostImpl::GetPluginInfoFinish(
   context_.MaybeGrantAccess(output->status, output->plugin.path);
 
   if (output->status != chrome::mojom::PluginStatus::kNotFound) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&PluginInfoHostImpl::ReportMetrics, this,
-                       params.render_frame_id, output->actual_mime_type,
-                       params.url, params.main_frame_origin));
+    ReportMetrics(params.render_frame_id, output->actual_mime_type, params.url,
+                  params.main_frame_origin);
   }
   std::move(callback).Run(std::move(output));
 }

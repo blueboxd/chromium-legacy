@@ -350,6 +350,7 @@ jumbo_source_set("unit_tests") {
     "mediastream/media_stream_video_track_test.cc",
     "mediastream/mock_mojo_media_stream_dispatcher_host.cc",
     "mediastream/mock_mojo_media_stream_dispatcher_host.h",
+    "mediastream/user_media_client_impl_test.cc",
     "mediastream/video_track_adapter_unittest.cc",
     "mediastream/webaudio_media_stream_audio_sink_test.cc",
     "mediastream/webmediaplayer_ms_test.cc",

@@ -323,37 +323,42 @@ base::UnguessableToken MockMediaSession::RequestAudioFocusFromService(
   return request_id_;
 }
 
-base::UnguessableToken MockMediaSession::RequestGroupedAudioFocusFromService(
+bool MockMediaSession::RequestGroupedAudioFocusFromService(
+    const base::UnguessableToken& request_id,
     mojom::AudioFocusManagerPtr& service,
     mojom::AudioFocusType audio_focus_type,
     const base::UnguessableToken& group_id) {
   if (afr_client_.is_bound()) {
     RequestAudioFocusFromClient(audio_focus_type);
-  } else {
-    DCHECK(request_id_.is_empty());
-
-    // Build a new audio focus request.
-    mojo::PendingRemote<mojom::MediaSession> media_session;
-    receivers_.Add(this, media_session.InitWithNewPipeAndPassReceiver());
-
-    service->RequestGroupedAudioFocus(
-        afr_client_.BindNewPipeAndPassReceiver(), std::move(media_session),
-        GetMediaSessionInfoSync(), audio_focus_type, group_id,
-        base::BindOnce(
-            [](base::UnguessableToken* id,
-               const base::UnguessableToken& received_id) {
-              *id = received_id;
-            },
-            &request_id_));
-
-    service.FlushForTesting();
-    afr_client_.FlushForTesting();
+    SetState(mojom::MediaSessionInfo::SessionState::kActive);
+    return true;
   }
 
-  DCHECK(!request_id_.is_empty());
-  SetState(mojom::MediaSessionInfo::SessionState::kActive);
+  DCHECK(request_id_.is_empty());
 
-  return request_id_;
+  // Build a new audio focus request.
+  mojo::PendingRemote<mojom::MediaSession> media_session;
+  receivers_.Add(this, media_session.InitWithNewPipeAndPassReceiver());
+  bool success;
+
+  service->RequestGroupedAudioFocus(
+      request_id, afr_client_.BindNewPipeAndPassReceiver(),
+      std::move(media_session), GetMediaSessionInfoSync(), audio_focus_type,
+      group_id,
+      base::BindOnce([](bool* success, bool result) { *success = result; },
+                     &success));
+
+  service.FlushForTesting();
+  afr_client_.FlushForTesting();
+
+  if (success) {
+    request_id_ = request_id;
+    SetState(mojom::MediaSessionInfo::SessionState::kActive);
+  } else {
+    afr_client_.reset();
+  }
+
+  return success;
 }
 
 mojom::MediaSessionInfo::SessionState MockMediaSession::GetState() const {

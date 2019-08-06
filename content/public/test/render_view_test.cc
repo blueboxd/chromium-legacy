@@ -84,24 +84,29 @@ namespace content {
 
 namespace {
 
+// This class records, and then tears down all existing RenderViews. It's
+// important to do this in two steps, since tearing down a RenderView will
+// mutate the container that RenderView::ForEach() iterates over.
 class CloseMessageSendingRenderViewVisitor : public RenderViewVisitor {
  public:
   CloseMessageSendingRenderViewVisitor() = default;
   ~CloseMessageSendingRenderViewVisitor() override = default;
 
+  void CloseRenderViews() {
+    for (RenderView* render_view : live_render_views) {
+      RenderViewImpl* view_impl = static_cast<RenderViewImpl*>(render_view);
+      view_impl->Destroy();
+    }
+  }
+
  protected:
   bool Visit(RenderView* render_view) override {
-    // Simulate the Widget receiving a close message. This should result on
-    // releasing the internal reference counts and destroying the internal
-    // state.
-    RenderWidget* render_widget =
-        static_cast<RenderViewImpl*>(render_view)->GetWidget();
-    WidgetMsg_Close msg(render_widget->routing_id());
-    render_widget->OnMessageReceived(msg);
+    live_render_views.push_back(render_view);
     return true;
   }
 
  private:
+  std::vector<RenderView*> live_render_views;
   DISALLOW_COPY_AND_ASSIGN(CloseMessageSendingRenderViewVisitor);
 };
 
@@ -466,6 +471,7 @@ void RenderViewTest::TearDown() {
   // opened by the test.
   CloseMessageSendingRenderViewVisitor closing_visitor;
   RenderView::ForEach(&closing_visitor);
+  closing_visitor.CloseRenderViews();
 
   // |view_| is ref-counted and deletes itself during the RunUntilIdle() call
   // below.

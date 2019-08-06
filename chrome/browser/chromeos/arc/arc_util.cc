@@ -36,7 +36,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
@@ -601,7 +601,7 @@ bool IsPlayStoreAvailable() {
 
   // Demo Mode is the only public session scenario that can launch Play.
   return chromeos::DemoSession::IsDeviceInDemoMode() &&
-         chromeos::switches::ShouldShowPlayStoreInDemoMode();
+         chromeos::features::ShouldShowPlayStoreInDemoMode();
 }
 
 bool ShouldStartArcSilentlyForManagedProfile(const Profile* profile) {

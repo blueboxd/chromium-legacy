@@ -28,7 +28,9 @@ import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.gcm_driver.GCMDriver;
 import org.chromium.components.gcm_driver.GCMMessage;
+import org.chromium.components.gcm_driver.InstanceIDFlags;
 import org.chromium.components.gcm_driver.LazySubscriptionsManager;
+import org.chromium.components.gcm_driver.SubscriptionFlagManager;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
@@ -36,7 +38,6 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  */
 public class ChromeGcmListenerService extends GcmListenerService {
     private static final String TAG = "ChromeGcmListener";
-    private static final String SHARING_APP_ID = "com.google.chrome.sharing.fcm";
 
     @Override
     public void onCreate() {
@@ -98,13 +99,16 @@ public class ChromeGcmListenerService extends GcmListenerService {
      */
     private static boolean maybeBypassScheduler(GCMMessage message) {
         // Android only puts us on a whitelist for high priority messages.
-        if (message.getOriginalPriority() != GCMMessage.Priority.HIGH
-                || !SHARING_APP_ID.equals(message.getAppId())) {
+        if (message.getOriginalPriority() != GCMMessage.Priority.HIGH) {
             return false;
         }
 
-        // Receiving a high priority push message should put us in a whitelist to start
-        // background services.
+        final String subscriptionId = SubscriptionFlagManager.buildSubscriptionUniqueId(
+                message.getAppId(), message.getSenderId());
+        if (!SubscriptionFlagManager.hasFlags(subscriptionId, InstanceIDFlags.BYPASS_SCHEDULER)) {
+            return false;
+        }
+
         try {
             Context context = ContextUtils.getApplicationContext();
             Intent intent = new Intent(context, GCMBackgroundService.class);
@@ -121,57 +125,75 @@ public class ChromeGcmListenerService extends GcmListenerService {
     }
 
     /**
+     * Returns if the |message| is sent from a lazy subscription and we persist it to be delivered
+     * the next time Chrome is launched into foreground.
+     */
+    private static boolean maybePersistLazyMessage(GCMMessage message) {
+        if (ApplicationStatus.hasVisibleActivities()) {
+            return false;
+        }
+
+        final String subscriptionId = LazySubscriptionsManager.buildSubscriptionUniqueId(
+                message.getAppId(), message.getSenderId());
+        long time = SystemClock.elapsedRealtime();
+
+        boolean isSubscriptionLazy = LazySubscriptionsManager.isSubscriptionLazy(subscriptionId);
+        boolean isHighPriority = message.getOriginalPriority() == GCMMessage.Priority.HIGH;
+        // TODO(crbug.com/945402): Add metrics for the new high priority message logic.
+        boolean shouldPersistMessage = isSubscriptionLazy && !isHighPriority;
+        if (shouldPersistMessage) {
+            LazySubscriptionsManager.persistMessage(subscriptionId, message);
+        }
+
+        // Use {@link CachedMetrics} so this gets reported when native is
+        // loaded instead of calling native right away.
+        new CachedMetrics.TimesHistogramSample("PushMessaging.TimeToCheckIfSubscriptionLazy")
+                .record(SystemClock.elapsedRealtime() - time);
+
+        return shouldPersistMessage;
+    }
+
+    /**
+     * Schedules a background task via Job Scheduler to deliver the |message|. Delivery might get
+     * delayed by Android if the device is currently in doze mode.
+     */
+    private static void scheduleBackgroundTask(GCMMessage message) {
+        // TODO(peter): Add UMA for measuring latency introduced by the BackgroundTaskScheduler.
+        TaskInfo backgroundTask = TaskInfo.createOneOffTask(TaskIds.GCM_BACKGROUND_TASK_JOB_ID,
+                                                  GCMBackgroundTask.class, 0 /* immediately */)
+                                          .setExtras(message.toBundle())
+                                          .build();
+        BackgroundTaskSchedulerFactory.getScheduler().schedule(
+                ContextUtils.getApplicationContext(), backgroundTask);
+    }
+
+    /**
      * If Chrome is backgrounded, messages coming from lazy subscriptions are
      * persisted on disk and replayed next time Chrome is forgrounded. If Chrome is forgrounded or
      * if the message isn't coming from a lazy subscription, this method either schedules |message|
      * to be dispatched through the Job Scheduler, which we use on Android N and beyond, or
-     * immediately dispatches the message on other versions of Android. Must be called on the UI
-     * thread both for the BackgroundTaskScheduler and for dispatching the |message| to the
-     * GCMDriver.
+     * immediately dispatches the message on other versions of Android. Some subscriptions bypass
+     * the Job Scheduler and use Context#startService instead if the |message| has a high priority.
+     * Must be called on the UI thread both for the BackgroundTaskScheduler and for dispatching the
+     * |message| to the GCMDriver.
      */
     static void scheduleOrDispatchMessageToDriver(GCMMessage message) {
         ThreadUtils.assertOnUiThread();
-        final String subscriptionId = LazySubscriptionsManager.buildSubscriptionUniqueId(
-                message.getAppId(), message.getSenderId());
-        if (!ApplicationStatus.hasVisibleActivities()) {
-            boolean isSubscriptionLazy = false;
-            long time = SystemClock.elapsedRealtime();
-            // TODO(crbug.com/945402): Add metrics for the new high priority message logic.
-            if (LazySubscriptionsManager.isSubscriptionLazy(subscriptionId)
-                    && message.getOriginalPriority() != GCMMessage.Priority.HIGH) {
-                isSubscriptionLazy = true;
-                LazySubscriptionsManager.persistMessage(subscriptionId, message);
-            }
 
-            // Use {@link CachedMetrics} so this gets reported when native is
-            // loaded instead of calling native right away.
-            new CachedMetrics.TimesHistogramSample("PushMessaging.TimeToCheckIfSubscriptionLazy")
-                    .record(SystemClock.elapsedRealtime() - time);
-
-            if (isSubscriptionLazy) {
-                return;
-            }
+        // Check if we should only persist the message for now.
+        if (maybePersistLazyMessage(message)) {
+            return;
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (maybeBypassScheduler(message)) {
-                // We've bypassed the scheduler, so nothing to do here.
-                return;
-            }
-
-            Bundle extras = message.toBundle();
-
-            // TODO(peter): Add UMA for measuring latency introduced by the BackgroundTaskScheduler.
-            TaskInfo backgroundTask = TaskInfo.createOneOffTask(TaskIds.GCM_BACKGROUND_TASK_JOB_ID,
-                                                      GCMBackgroundTask.class, 0 /* immediately */)
-                                              .setExtras(extras)
-                                              .build();
-
-            BackgroundTaskSchedulerFactory.getScheduler().schedule(
-                    ContextUtils.getApplicationContext(), backgroundTask);
-
-        } else {
+        // Dispatch message immediately on pre N versions of Android.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             dispatchMessageToDriver(ContextUtils.getApplicationContext(), message);
+            return;
+        }
+
+        // Check if we should bypass the scheduler for high priority messages.
+        if (!maybeBypassScheduler(message)) {
+            scheduleBackgroundTask(message);
         }
     }
 

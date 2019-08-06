@@ -6740,11 +6740,6 @@ TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode) {
 // Make sure that the opt in is necessary to show server cards if the
 // appropriate feature is disabled.
 TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode_NeedOptIn) {
-  // Disable the feature that always shows server cards in sync transport.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kAutofillAlwaysShowServerCardsInSyncTransport);
-
   // Set up PersonalDataManager in transport mode.
   ResetPersonalDataManager(USER_MODE_NORMAL,
                            /*use_sync_transport_mode=*/true);
@@ -6763,29 +6758,6 @@ TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode_NeedOptIn) {
   // Opt-in to seeing server card in sync transport mode.
   ::autofill::prefs::SetUserOptedInWalletSyncTransport(
       prefs_.get(), active_info.account_id, true);
-
-  // Check that the server cards are available for suggestion.
-  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  EXPECT_EQ(
-      3U, personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true)
-              .size());
-  EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
-  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
-}
-
-// Make sure that the opt in is not necessary to show server cards if the
-// appropriate feature is enabled.
-TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode_NoOptInNeeded) {
-  // Enable the feature that always shows server cards in sync transport.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillAlwaysShowServerCardsInSyncTransport);
-
-  // Set up PersonalDataManager in transport mode.
-  ResetPersonalDataManager(USER_MODE_NORMAL,
-                           /*use_sync_transport_mode=*/true);
-  SetUpThreeCardTypes();
-  AccountInfo active_info = SetActiveSecondaryAccount();
 
   // Check that the server cards are available for suggestion.
   EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
@@ -7649,18 +7621,6 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
     histogram_tester.ExpectUniqueSample(kHistogramName, false, 1);
   }
 
-  // Enable feature to always show server cards. The function should now return
-  // false.
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitWithFeatures(
-        /*enabled_features=*/
-        {features::kAutofillEnableAccountWalletStorage,
-         features::kAutofillAlwaysShowServerCardsInSyncTransport},
-        /*disabled_features=*/{});
-    EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
-  }
-
   // Set that the user already opted-in. Check that the function now returns
   // false.
   ::autofill::prefs::SetUserOptedInWalletSyncTransport(
@@ -7766,18 +7726,6 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
 
   // Make sure the function returns false.
   EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
-
-  // Enable feature to always show server cards. The function should still
-  // return false.
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitWithFeatures(
-        /*enabled_features=*/
-        {features::kAutofillEnableAccountWalletStorage,
-         features::kAutofillAlwaysShowServerCardsInSyncTransport},
-        /*disabled_features=*/{});
-    EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
-  }
 
   // Set that the user already opted-in. Check that the function still returns
   // false.

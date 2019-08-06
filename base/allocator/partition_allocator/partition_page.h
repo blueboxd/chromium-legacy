@@ -217,10 +217,6 @@ ALWAYS_INLINE void PartitionPage::Free(void* ptr) {
 #endif
 
   DCHECK(this->num_allocated_slots);
-  // TODO(palmer): See if we can afford to make this a CHECK.
-  // FIX FIX FIX
-  //  DCHECK(!freelist_head || PartitionRootBase::IsValidPage(
-  //                               PartitionPage::FromPointer(freelist_head)));
   CHECK(ptr != freelist_head);  // Catches an immediate double free.
   // Look for double free one level deeper in debug.
   DCHECK(!freelist_head || ptr != internal::PartitionFreelistEntry::Transform(

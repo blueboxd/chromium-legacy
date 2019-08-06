@@ -7,6 +7,7 @@
 
 #include <vector>
 
+struct TabLayoutConstants;
 struct TabSizeInfo;
 
 // Contains the data necessary to determine the bounds of a tab even while
@@ -43,16 +44,19 @@ class TabAnimationState {
   TabAnimationState WithActiveness(TabActiveness active) const;
 
   // The smallest width this tab should ever have.
-  float GetMinimumWidth(TabSizeInfo tab_size_info) const;
+  float GetMinimumWidth(const TabLayoutConstants& layout_constants,
+                        const TabSizeInfo& size_info) const;
 
   // The width this tab should have at the crossover point between the
   // tabstrip's two layout domains.  Above this width, inactive tabs have the
   // same width as active tabs.  Below this width, inactive tabs are smaller
   // than active tabs.
-  float GetLayoutCrossoverWidth(TabSizeInfo tab_size_info) const;
+  float GetLayoutCrossoverWidth(const TabLayoutConstants& layout_constants,
+                                const TabSizeInfo& size_info) const;
 
   // The width this tab would like to have, if space is available.
-  float GetPreferredWidth(TabSizeInfo tab_size_info) const;
+  float GetPreferredWidth(const TabLayoutConstants& layout_constants,
+                          const TabSizeInfo& size_info) const;
 
   int GetLeadingEdgeOffset(std::vector<int> tab_widths, int my_index) const;
 
@@ -72,8 +76,10 @@ class TabAnimationState {
         normalized_leading_edge_x_(normalized_leading_edge_x) {}
 
   // All widths are affected by pinnedness and activeness in the same way.
-  float TransformForPinnednessAndOpenness(TabSizeInfo tab_size_info,
-                                          float width) const;
+  float TransformForPinnednessAndOpenness(
+      const TabLayoutConstants& layout_constants,
+      const TabSizeInfo& size_info,
+      float width) const;
 
   // The degree to which the tab is open. 1 if it is, 0 if it is not, and in
   // between if it's in the process of animating between open and closed.

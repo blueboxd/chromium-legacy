@@ -1923,7 +1923,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, NoFragmentation) {
   scoped_refptr<const NGPhysicalBoxFragment> fragment =
       RunBlockLayoutAlgorithm(node, space);
   EXPECT_EQ(PhysicalSize(150, 200), fragment->Size());
-  ASSERT_TRUE(fragment->BreakToken()->IsFinished());
+  ASSERT_FALSE(fragment->BreakToken());
 }
 
 // Tests that a block will fragment if it reaches the fragmentation line.
@@ -1954,7 +1954,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, SimpleFragmentation) {
 
   fragment = RunBlockLayoutAlgorithm(node, space, fragment->BreakToken());
   EXPECT_EQ(PhysicalSize(150, 100), fragment->Size());
-  ASSERT_TRUE(fragment->BreakToken()->IsFinished());
+  ASSERT_FALSE(fragment->BreakToken());
 }
 
 // Tests that children inside the same block formatting context fragment when
@@ -2005,7 +2005,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentation) {
 
   fragment = RunBlockLayoutAlgorithm(node, space, fragment->BreakToken());
   EXPECT_EQ(PhysicalSize(150, 140), fragment->Size());
-  ASSERT_TRUE(fragment->BreakToken()->IsFinished());
+  ASSERT_FALSE(fragment->BreakToken());
 
   iterator.SetParent(To<NGPhysicalBoxFragment>(fragment.get()));
   child = iterator.NextChild(&offset);
@@ -2070,7 +2070,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
 
   fragment = RunBlockLayoutAlgorithm(node, space, fragment->BreakToken());
   EXPECT_EQ(PhysicalSize(150, 140), fragment->Size());
-  ASSERT_TRUE(fragment->BreakToken()->IsFinished());
+  ASSERT_FALSE(fragment->BreakToken());
 
   iterator.SetParent(To<NGPhysicalBoxFragment>(fragment.get()));
   child = iterator.NextChild(&offset);
@@ -2133,7 +2133,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentationSmallHeight) {
 
   fragment = RunBlockLayoutAlgorithm(node, space, fragment->BreakToken());
   EXPECT_EQ(PhysicalSize(150, 0), fragment->Size());
-  ASSERT_TRUE(fragment->BreakToken()->IsFinished());
+  ASSERT_FALSE(fragment->BreakToken());
 
   iterator.SetParent(To<NGPhysicalBoxFragment>(fragment.get()));
   child = iterator.NextChild(&offset);
@@ -2209,7 +2209,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_FloatFragmentationParallelFlows) {
 
   fragment = RunBlockLayoutAlgorithm(node, space, fragment->BreakToken());
   EXPECT_EQ(PhysicalSize(150, 0), fragment->Size());
-  ASSERT_TRUE(fragment->BreakToken()->IsFinished());
+  ASSERT_FALSE(fragment->BreakToken());
 
   iterator.SetParent(To<NGPhysicalBoxFragment>(fragment.get()));
 
@@ -2267,7 +2267,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationOrthogonalFlows) {
   scoped_refptr<const NGPhysicalBoxFragment> fragment =
       RunBlockLayoutAlgorithm(node, space);
   EXPECT_EQ(PhysicalSize(150, 60), fragment->Size());
-  ASSERT_TRUE(!fragment->BreakToken() || fragment->BreakToken()->IsFinished());
+  ASSERT_FALSE(fragment->BreakToken());
 
   const auto* float2 = fragment->Children()[1].fragment;
 
@@ -2275,7 +2275,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationOrthogonalFlows) {
   EXPECT_EQ(PhysicalSize(60, 200), float2->Size());
   ASSERT_TRUE(float2->IsBox());
   NGBreakToken* break_token = To<NGPhysicalBoxFragment>(float2)->BreakToken();
-  EXPECT_TRUE(!break_token || break_token->IsFinished());
+  EXPECT_FALSE(break_token);
 }
 
 // Tests that a float child inside a zero height block fragments correctly.
@@ -2333,7 +2333,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_FloatFragmentationZeroHeight) {
 
   fragment = RunBlockLayoutAlgorithm(node, space, fragment->BreakToken());
   EXPECT_EQ(PhysicalSize(150, 0), fragment->Size());
-  ASSERT_TRUE(fragment->BreakToken()->IsFinished());
+  ASSERT_FALSE(fragment->BreakToken());
 
   iterator.SetParent(To<NGPhysicalBoxFragment>(fragment.get()));
   child = iterator.NextChild();

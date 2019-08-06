@@ -901,34 +901,6 @@ const FeatureEntry::FeatureVariation kTranslateBubbleUIVariations[] = {
      base::size(kTranslateBubbleUIButton), nullptr}};
 #endif  // OS_LINUX || OS_MACOSX || OS_WIN || OS_CHROMEOS
 
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin0px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "0"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin2px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "2"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin4px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "4"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin6px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "6"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin8px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "8"}};
-const FeatureEntry::FeatureParam kOmniboxUIVerticalMargin10px[] = {
-    {OmniboxFieldTrial::kUIVerticalMarginParam, "10"}};
-
-const FeatureEntry::FeatureVariation kOmniboxUIVerticalMarginVariations[] = {
-    {"0px vertical margin", kOmniboxUIVerticalMargin0px,
-     base::size(kOmniboxUIVerticalMargin0px), nullptr},
-    {"2px vertical margin", kOmniboxUIVerticalMargin2px,
-     base::size(kOmniboxUIVerticalMargin2px), nullptr},
-    {"4px vertical margin", kOmniboxUIVerticalMargin4px,
-     base::size(kOmniboxUIVerticalMargin4px), nullptr},
-    {"6px vertical margin", kOmniboxUIVerticalMargin6px,
-     base::size(kOmniboxUIVerticalMargin6px), nullptr},
-    {"8px vertical margin", kOmniboxUIVerticalMargin8px,
-     base::size(kOmniboxUIVerticalMargin8px), nullptr},
-    {"10px vertical margin", kOmniboxUIVerticalMargin10px,
-     base::size(kOmniboxUIVerticalMargin10px), nullptr},
-};
-
 const FeatureEntry::FeatureParam kMarkHttpAsDangerous[] = {
     {security_state::features::kMarkHttpAsFeatureParameterName,
      security_state::features::kMarkHttpAsParameterDangerous}};
@@ -1165,6 +1137,17 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
     {"New Tab Variation", kTabGridLayoutAndroid_NewTabVariation,
      base::size(kTabGridLayoutAndroid_NewTabVariation), nullptr},
 };
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
+    {"start_surface_variation", "single"}};
+
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_TwoPanesSurface[] = {
+    {"start_surface_variation", "twopanes"}};
+
+const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
+    {"Single Surface", kStartSurfaceAndroid_SingleSurface,
+     base::size(kStartSurfaceAndroid_SingleSurface), nullptr},
+    {"Two Panes Surface", kStartSurfaceAndroid_TwoPanesSurface,
+     base::size(kStartSurfaceAndroid_TwoPanesSurface), nullptr}};
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
@@ -2822,20 +2805,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kOmniboxMaxURLMatchesVariations,
                                     "OmniboxMaxURLMatchesVariations")},
 
-    {"omnibox-ui-vertical-margin",
-     flag_descriptions::kOmniboxUIVerticalMarginName,
-     flag_descriptions::kOmniboxUIVerticalMarginDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kUIExperimentVerticalMargin,
-                                    kOmniboxUIVerticalMarginVariations,
-                                    "OmniboxUIVerticalMarginVariations")},
-
-    {"omnibox-ui-vertical-margin-limit-to-non-touch-only",
-     flag_descriptions::kOmniboxUIVerticalMarginLimitToNonTouchOnlyName,
-     flag_descriptions::kOmniboxUIVerticalMarginLimitToNonTouchOnlyDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         omnibox::kUIExperimentVerticalMarginLimitToNonTouchOnly)},
-
     {"omnibox-ui-show-suggestion-favicons",
      flag_descriptions::kOmniboxUIShowSuggestionFaviconsName,
      flag_descriptions::kOmniboxUIShowSuggestionFaviconsDescription,
@@ -3186,10 +3155,11 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout)},
 
 #if defined(OS_ANDROID)
-    {"enable-two-panes-start-surface",
-     flag_descriptions::kTwoPanesStartSurfaceAndroidName,
-     flag_descriptions::kTwoPanesStartSurfaceAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTwoPanesStartSurfaceAndroid)},
+    {"enable-start-surface", flag_descriptions::kStartSurfaceAndroidName,
+     flag_descriptions::kStartSurfaceAndroidDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kStartSurfaceAndroid,
+                                    kStartSurfaceAndroidVariations,
+                                    "StartSurfaceAndroid")},
 
     {"enable-horizontal-tab-switcher",
      flag_descriptions::kHorizontalTabSwitcherAndroidName,
@@ -3537,7 +3507,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableChromeOsAccountManagerName,
      flag_descriptions::kEnableChromeOsAccountManagerDescription,
      kOsCrOS | kExpireM77,
-     FEATURE_VALUE_TYPE(chromeos::switches::kAccountManager)},
+     FEATURE_VALUE_TYPE(chromeos::features::kAccountManager)},
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -3637,7 +3607,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-native-google-assistant",
      flag_descriptions::kEnableGoogleAssistantName,
      flag_descriptions::kEnableGoogleAssistantDescription, kOsCrOS | kExpireM77,
-     FEATURE_VALUE_TYPE(chromeos::switches::kAssistantFeature)},
+     FEATURE_VALUE_TYPE(chromeos::features::kAssistantFeature)},
 
     {"enable-assistant-dsp", flag_descriptions::kEnableGoogleAssistantDspName,
      flag_descriptions::kEnableGoogleAssistantDspDescription,
@@ -3767,16 +3737,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceEnableSystemAecDescription, kOsMac | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kForceEnableSystemAec)},
 #endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-    {"autofill-always-show-server-cards-in-sync-transport",
-     flag_descriptions::kAutofillAlwaysShowServerCardsInSyncTransportName,
-     flag_descriptions::
-         kAutofillAlwaysShowServerCardsInSyncTransportDescription,
-     kOsMac | kOsWin | kOsLinux | kExpireM77,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillAlwaysShowServerCardsInSyncTransport)},
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_MACOSX)
     {"enable-custom-mac-paper-sizes",
@@ -4228,7 +4188,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-parental-controls-settings",
      flag_descriptions::kEnableParentalControlsSettingsName,
      flag_descriptions::kEnableParentalControlsSettingsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::switches::kParentalControlsSettings)},
+     FEATURE_VALUE_TYPE(chromeos::features::kParentalControlsSettings)},
 #endif  // defined(OS_CHROMEOS)
 
     {"mouse-subframe-no-implicit-capture",
@@ -4337,6 +4297,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"temporary-unexpire-flags-m77", flag_descriptions::kUnexpireFlagsM77Name,
      flag_descriptions::kUnexpireFlagsM77Description, kOsAll,
      FEATURE_VALUE_TYPE(flags_ui::kUnexpireFlagsM77)},
+
+#if defined(OS_CHROMEOS)
+    {"lock-screen-media-controls",
+     flag_descriptions::kLockScreenMediaControlsName,
+     flag_descriptions::kLockScreenMediaControlsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kLockScreenMediaControls)},
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

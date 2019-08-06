@@ -29,7 +29,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
 #include "ui/gfx/geometry/insets.h"
@@ -217,7 +217,7 @@ void AppListMainView::SearchBoxFocusChanged(
 }
 
 void AppListMainView::AssistantButtonPressed() {
-  DCHECK(chromeos::switches::IsAssistantEnabled());
+  DCHECK(chromeos::features::IsAssistantEnabled());
   delegate_->StartAssistant();
 }
 

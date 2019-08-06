@@ -65,6 +65,7 @@ class UpstartClientImpl : public UpstartClient {
   }
 
   void StopJob(const std::string& job,
+               const std::vector<std::string>& upstart_env,
                VoidDBusMethodCallback callback) override {
     CallJobMethod(job, kStopMethod, {}, std::move(callback));
   }
@@ -86,6 +87,8 @@ class UpstartClientImpl : public UpstartClient {
   void RestartMediaAnalytics(VoidDBusMethodCallback callback) override {
     CallJobMethod(kMediaAnalyticsJob, kRestartMethod, {}, std::move(callback));
   }
+
+  using UpstartClient::StopJob;
 
   void StopMediaAnalytics() override {
     StopJob(kMediaAnalyticsJob, EmptyVoidDBusMethodCallback());

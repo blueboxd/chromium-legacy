@@ -41,9 +41,7 @@ using views::BoxLayout;
 
 AuthenticatorRequestSheetView::AuthenticatorRequestSheetView(
     std::unique_ptr<AuthenticatorRequestSheetModel> model)
-    : model_(std::move(model)),
-      in_dark_mode_(
-          ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()) {}
+    : model_(std::move(model)) {}
 
 AuthenticatorRequestSheetView::~AuthenticatorRequestSheetView() = default;
 
@@ -199,20 +197,17 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
 }
 
 void AuthenticatorRequestSheetView::OnThemeChanged() {
-  ui::NativeTheme* theme = GetNativeTheme();
-  if (theme != ui::NativeTheme::GetInstanceForNativeUi())
-    return;
-  bool in_dark_mode = theme->SystemDarkModeEnabled();
-  if (in_dark_mode == in_dark_mode_)
-    return;
-  in_dark_mode_ = in_dark_mode;
   UpdateIconImageFromModel();
 }
 
 void AuthenticatorRequestSheetView::UpdateIconImageFromModel() {
+  if (!step_illustration_)
+    return;
+
   gfx::IconDescription icon_description(
-      model()->GetStepIllustration(in_dark_mode_ ? ImageColorScheme::kDark
-                                                 : ImageColorScheme::kLight),
+      model()->GetStepIllustration(GetNativeTheme()->ShouldUseDarkColors()
+                                       ? ImageColorScheme::kDark
+                                       : ImageColorScheme::kLight),
       0 /* automatic dip_size */, SK_ColorBLACK, base::TimeDelta(),
       gfx::kNoneIcon);
   step_illustration_->SetImage(gfx::CreateVectorIcon(icon_description));

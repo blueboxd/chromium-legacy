@@ -329,13 +329,15 @@ IN_PROC_BROWSER_TEST_F(ResetOobeTest, RequestAndCancleResetOnWelcomeScreen) {
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
 }
 
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_ViewsLogic) {
+// See http://crbug.com/990362 for details.
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, DISABLED_PRE_ViewsLogic) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
   update_engine_client_->set_can_rollback_check_result(false);
 }
 
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ViewsLogic) {
+// See http://crbug.com/990362 for details.
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, DISABLED_ViewsLogic) {
   PrefService* prefs = g_browser_process->local_state();
 
   // Rollback unavailable. Show and cancel.

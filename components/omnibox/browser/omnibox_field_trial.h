@@ -409,11 +409,6 @@ bool IsHideSteadyStateUrlSchemeEnabled();
 // subdomains is enabled.
 bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
 
-// Returns the field trial override for the vertical margin size that should be
-// used in the suggestion view. Returns base::nullopt if the UI code should use
-// the default vertical margin.
-base::Optional<int> GetSuggestionVerticalMarginFieldTrialOverride();
-
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
@@ -492,7 +487,6 @@ extern const char kMaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevicesParam[];
 // Parameter names used by UI experiments.
 extern const char kUIMaxAutocompleteMatchesParam[];
 extern const char kUIMaxAutocompleteMatchesByProviderParam[];
-extern const char kUIVerticalMarginParam[];
 
 // Parameter names used by On Focus Suggestions Custom Endpoint.
 extern const char kOnFocusSuggestionsEndpointExperimentIdParam[];

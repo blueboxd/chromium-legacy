@@ -137,7 +137,7 @@ class AppListDialogContainer : public BaseDialogContainer,
       : BaseDialogContainer(std::move(dialog_body), base::RepeatingClosure()) {
     SetBackground(std::make_unique<AppListOverlayBackground>());
     close_button_ = AddChildView(views::BubbleFrameView::CreateCloseButton(
-        this, GetNativeTheme()->SystemDarkModeEnabled()));
+        this, GetNativeTheme()->ShouldUseDarkColors()));
   }
   ~AppListDialogContainer() override {}
 

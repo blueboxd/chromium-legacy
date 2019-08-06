@@ -385,20 +385,23 @@ void LockScreenMediaControlsView::MediaSessionActionsChanged(
 
 void LockScreenMediaControlsView::MediaSessionChanged(
     const base::Optional<base::UnguessableToken>& request_id) {
-  // If a new media session began while waiting, keep showing the controls.
-  if (hide_controls_timer_->IsRunning() && request_id.has_value()) {
+  if (!media_session_id_.has_value()) {
+    media_session_id_ = request_id;
+    return;
+  }
+
+  // If |media_session_id_| resumed while waiting, don't hide the controls.
+  if (hide_controls_timer_->IsRunning() && request_id == media_session_id_) {
     hide_controls_timer_->Stop();
     enabled_actions_.clear();
   }
 
-  // If there is no current session but there was a previous one, wait to see
-  // if a new session starts before hiding the controls.
-  if (!request_id.has_value() && media_session_id_.has_value()) {
+  // If this session is different than the previous one, wait to see if the
+  // previous one resumes before hiding the controls.
+  if (request_id != media_session_id_) {
     hide_controls_timer_->Start(FROM_HERE, kNextMediaDelay,
                                 hide_media_controls_);
   }
-
-  media_session_id_ = request_id;
 }
 
 void LockScreenMediaControlsView::MediaSessionPositionChanged(

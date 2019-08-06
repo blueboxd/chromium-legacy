@@ -74,8 +74,12 @@ class Color {
         [this.rValue_, this.gValue_, this.bValue_] =
             colorStringOrFormat.substring(4, colorStringOrFormat.length - 1)
             .split(',').map(Number);
+      } else if (colorStringOrFormat.startsWith('hsl')) {
+        colorStringOrFormat = colorStringOrFormat.replace(/%|\s+/g, '');
+        [this.hValue_, this.sValue_, this.lValue_] =
+            colorStringOrFormat.substring(4, colorStringOrFormat.length - 1)
+            .split(',').map(Number);
       }
-      // TODO(crbug.com/982088): Add support for HSL
     } else {
       switch(colorStringOrFormat) {
         case ColorFormat.HEX:
@@ -84,7 +88,9 @@ class Color {
         case ColorFormat.RGB:
           [this.rValue_, this.gValue_, this.bValue_] = colorValues.map(Number);
           break;
-        // TODO(crbug.com/982088): Add support for HSL
+        case ColorFormat.HSL:
+          [this.hValue_, this.sValue_, this.lValue_] = colorValues.map(Number);
+          break;
       }
     }
   }
@@ -110,8 +116,10 @@ class Color {
     } else if (this.rValue_ !== undefined) {
       this.hexValue_ =
           Color.rgbToHex(this.rValue_, this.gValue_, this.bValue_);
+    } else if (this.hValue_ !== undefined) {
+      this.hexValue_ =
+          Color.hslToHex(this.hValue_, this.sValue_, this.lValue_);
     }
-    // TODO(crbug.com/982088): Add support for HSL
   }
 
   asHex() {
@@ -148,8 +156,11 @@ class Color {
     } else if (this.hexValue_ !== undefined) {
       [this.rValue_, this.gValue_, this.bValue_] =
           Color.hexToRGB(this.hexValue_);
+    } else if (this.hValue_ !== undefined) {
+      [this.rValue_, this.gValue_, this.bValue_] =
+          Color.hslToRGB(this.hValue_, this.sValue_, this.lValue_)
+          .map(Math.round);
     }
-    // TODO(crbug.com/982088): Add support for HSL
   }
 
   rgbValues() {
@@ -158,6 +169,51 @@ class Color {
 
   asRGB() {
     return 'rgb(' + this.rgbValues().join() + ')';
+  }
+
+  /**
+   * @returns {number} between 0 and 359
+   */
+  get hValue() {
+    this.computeHSLValues_();
+    return this.hValue_;
+  }
+
+  /**
+   * @returns {number} between 0 and 100
+   */
+  get sValue() {
+    this.computeHSLValues_();
+    return this.sValue_;
+  }
+
+  /**
+   * @returns {number} between 0 and 100
+   */
+  get lValue() {
+    this.computeHSLValues_();
+    return this.lValue_;
+  }
+
+  computeHSLValues_() {
+    if (this.hValue_ !== undefined) {
+      // Already computed.
+    } else if (this.rValue_ !== undefined) {
+      [this.hValue_, this.sValue_, this.lValue_] =
+          Color.rgbToHSL(this.rValue_, this.gValue_, this.bValue_)
+          .map(Math.round);
+    } else if (this.hexValue_ !== undefined) {
+      [this.hValue_, this.sValue_, this.lValue_] =
+          Color.hexToHSL(this.hexValue_).map(Math.round);
+    }
+  }
+
+  hslValues() {
+    return [this.hValue, this.sValue, this.lValue];
+  }
+
+  asHSL() {
+    return 'hsl(' + this.hValue + ',' + this.sValue + '%,' + this.lValue + '%)';
   }
 
   /**
@@ -183,6 +239,108 @@ class Color {
       }
       return (cumulativeHexValue + hexValue);
     }, '');
+  }
+
+  /**
+   * The algorithm has been written based on the mathematical formula found at:
+   * https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB.
+   * @param {...number} hslValues
+   * @returns {number[]}
+   */
+  static hslToRGB(...hslValues) {
+    let [hValue, sValue, lValue] = hslValues;
+    hValue /= 60;
+    sValue /= 100;
+    lValue /= 100;
+
+    let rValue = lValue;
+    let gValue = lValue;
+    let bValue = lValue;
+    let match = 0;
+    if (sValue !== 0) {
+      const chroma = (1 - Math.abs(2 * lValue - 1)) * sValue;
+      const x = chroma * (1 - Math.abs(hValue % 2 - 1));
+      match = lValue - chroma / 2;
+      if ((0 <= hValue) && (hValue <= 1)) {
+        rValue = chroma;
+        gValue = x;
+        bValue = 0;
+      } else if ((1 < hValue) && (hValue <= 2)) {
+        rValue = x;
+        gValue = chroma;
+        bValue = 0;
+      } else if ((2 < hValue) && (hValue <= 3)) {
+        rValue = 0;
+        gValue = chroma;
+        bValue = x;
+      } else if ((3 < hValue) && (hValue <= 4)) {
+        rValue = 0;
+        gValue = x;
+        bValue = chroma;
+      } else if ((4 < hValue) && (hValue <= 5)) {
+        rValue = x;
+        gValue = 0;
+        bValue = chroma;
+      } else {
+        // (5 < hValue) && (hValue < 6)
+        rValue = chroma;
+        gValue = 0;
+        bValue = x;
+      }
+    }
+    rValue = (rValue + match) * 255;
+    gValue = (gValue + match) * 255;
+    bValue = (bValue + match) * 255;
+    return [rValue, gValue, bValue];
+  }
+
+  /**
+   * The algorithm has been written based on the mathematical formula found at:
+   * https://en.wikipedia.org/wiki/HSL_and_HSV#From_RGB.
+   * @param {...number} rgbValues
+   * @returns {number[]}
+   */
+  static rgbToHSL(...rgbValues) {
+    const [rValue, gValue, bValue] = rgbValues.map((value) => value / 255);
+    const max = Math.max(rValue, gValue, bValue);
+    const min = Math.min(rValue, gValue, bValue);
+    let hValue = 0;
+    let sValue = 0;
+    let lValue = (max + min) / 2;
+    if (max !== min) {
+      const diff = max - min;
+      if (max === rValue) {
+        hValue = ((gValue - bValue) / diff);
+      } else if (max === gValue) {
+        hValue = ((bValue - rValue) / diff) + 2;
+      } else {
+        // max === bValue
+        hValue = ((rValue - gValue) / diff) + 4;
+      }
+      hValue *= 60;
+      if (hValue < 0) {
+        hValue += 360;
+      }
+      sValue = (diff / (1 - Math.abs(2 * lValue - 1))) * 100;
+    }
+    lValue *= 100;
+    return [hValue, sValue, lValue];
+  }
+
+  /**
+   * @param {...number} rgbValues
+   * @returns {string}
+   */
+  static hslToHex(...hslValues) {
+    return Color.rgbToHex(...Color.hslToRGB(...hslValues).map(Math.round));
+  }
+
+  /**
+   * @param {string} hexValue
+   * @returns {...number}
+   */
+  static hexToHSL(hexValue) {
+    return Color.rgbToHSL(...Color.hexToRGB(hexValue));
   }
 }
 
@@ -290,16 +448,17 @@ class ManualColorPicker extends HTMLElement {
                                                       initialColor);
     this.rgbValueContainer_ = new ColorValueContainer(ColorFormat.RGB,
                                                       initialColor);
+    this.hslValueContainer_ = new ColorValueContainer(ColorFormat.HSL,
+                                                      initialColor);
     this.colorValueContainers_ = [
       this.hexValueContainer_,
       this.rgbValueContainer_,
-      // TODO(crbug.com/982088): Add support for HSL
+      this.hslValueContainer_,
     ];
-    this.formatToggler_ = new FormatToggler(ColorFormat.RGB);
+    this.currentColorFormat_ = ColorFormat.RGB;
+    this.adjustValueContainerVisibility_();
+    this.formatToggler_ = new FormatToggler(this.currentColorFormat_);
     this.append(...this.colorValueContainers_, this.formatToggler_);
-
-    this.hexValueContainer_.hide();
-    this.rgbValueContainer_.show();
 
     this.formatToggler_
     .addEventListener('format-change', this.onFormatChange_);
@@ -307,18 +466,22 @@ class ManualColorPicker extends HTMLElement {
     this.addEventListener('manual-color-change', this.onManualColorChange_);
   }
 
-  /**
-   * @param {!Event} event
-   */
-  onFormatChange_ = (event) => {
-    const newColorFormat = event.detail.colorFormat;
+  adjustValueContainerVisibility_() {
     this.colorValueContainers_.forEach((colorValueContainer) => {
-      if (colorValueContainer.colorFormat === newColorFormat) {
+      if (colorValueContainer.colorFormat === this.currentColorFormat_) {
         colorValueContainer.show();
       } else {
         colorValueContainer.hide();
       }
     });
+  }
+
+  /**
+   * @param {!Event} event
+   */
+  onFormatChange_ = (event) => {
+    this.currentColorFormat_ = event.detail.colorFormat;
+    this.adjustValueContainerVisibility_();
   }
 
   /**
@@ -360,8 +523,17 @@ class ColorValueContainer extends HTMLElement {
       this.channelValueContainers_.push(rValueContainer,
                                         gValueContainer,
                                         bValueContainer);
+    } else if (this.colorFormat_ === ColorFormat.HSL) {
+      const hValueContainer = new ChannelValueContainer(ColorChannel.H,
+                                                        initialColor);
+      const sValueContainer = new ChannelValueContainer(ColorChannel.S,
+                                                        initialColor);
+      const lValueContainer = new ChannelValueContainer(ColorChannel.L,
+                                                        initialColor);
+      this.channelValueContainers_.push(hValueContainer,
+                                        sValueContainer,
+                                        lValueContainer);
     }
-    // TODO(crbug.com/982088): Add support for HSL
     this.append(...this.channelValueContainers_);
 
     this.channelValueContainers_.forEach((channelValueContainer) =>
@@ -427,9 +599,16 @@ class ChannelValueContainer extends HTMLInputElement {
       case ColorChannel.R:
       case ColorChannel.G:
       case ColorChannel.B:
-        this.setAttribute('maxLength', '3');
+        this.setAttribute('maxlength', '3');
         break;
-      // TODO(crbug.com/982088): Add support for HSL
+      case ColorChannel.H:
+        this.setAttribute('maxlength', '3');
+        break;
+      case ColorChannel.S:
+      case ColorChannel.L:
+        // up to 3 digits plus '%'
+        this.setAttribute('maxlength', '4');
+        break;
     }
     this.setValue(initialColor);
 
@@ -469,7 +648,24 @@ class ChannelValueContainer extends HTMLInputElement {
           this.value = this.channelValue_;
         }
         break;
-      // TODO(crbug.com/982088): Add support for HSL
+      case ColorChannel.H:
+        if (this.channelValue_ !== color.hValue) {
+          this.channelValue_ = color.hValue;
+          this.value = this.channelValue_;
+        }
+        break;
+      case ColorChannel.S:
+        if (this.channelValue_ !== color.sValue) {
+          this.channelValue_ = color.sValue;
+          this.value = this.channelValue_ + '%';
+        }
+        break;
+      case ColorChannel.L:
+        if (this.channelValue_ !== color.lValue) {
+          this.channelValue_ = color.lValue;
+          this.value = this.channelValue_ + '%';
+        }
+        break;
     }
   }
 
@@ -495,7 +691,20 @@ class ChannelValueContainer extends HTMLInputElement {
             this.channelValue_ = Number(value);
           }
           break;
-        // TODO(crbug.com/982088): Add support for HSL
+        case ColorChannel.H:
+            if (value.match(/^\d+$/) && (0 <= value) && (value < 360)) {
+              this.channelValue_ = Number(value);
+            }
+            break;
+        case ColorChannel.S:
+        case ColorChannel.L:
+          if (value.endsWith('%')) {
+            value = value.substring(0, value.length - 1);
+            if (value.match(/^\d+$/) && (0 <= value) && (value <= 100)) {
+              this.channelValue_ = Number(value);
+            }
+          }
+          break;
       }
     }
   }
@@ -517,12 +726,13 @@ class FormatToggler extends HTMLElement {
     this.currentColorFormat_ = initialColorFormat;
     this.hexFormatLabel_ = new FormatLabel(ColorFormat.HEX);
     this.rgbFormatLabel_ = new FormatLabel(ColorFormat.RGB);
+    this.hslFormatLabel_ = new FormatLabel(ColorFormat.HSL);
     this.colorFormatLabels_ = [
       this.hexFormatLabel_,
       this.rgbFormatLabel_,
-      // TODO(crbug.com/982088): Add support for HSL
+      this.hslFormatLabel_,
     ];
-    this.adjustFormatLabelVisibility();
+    this.adjustFormatLabelVisibility_();
 
     this.upDownIcon_ = document.createElement('span');
     this.upDownIcon_.innerHTML =
@@ -539,7 +749,7 @@ class FormatToggler extends HTMLElement {
     this.addEventListener('mousedown', (event) => event.preventDefault());
   }
 
-  adjustFormatLabelVisibility() {
+  adjustFormatLabelVisibility_() {
     this.colorFormatLabels_.forEach((colorFormatLabel) => {
       if (colorFormatLabel.colorFormat === this.currentColorFormat_) {
         colorFormatLabel.show();
@@ -553,10 +763,11 @@ class FormatToggler extends HTMLElement {
     if (this.currentColorFormat_ == ColorFormat.HEX) {
       this.currentColorFormat_ = ColorFormat.RGB;
     } else if (this.currentColorFormat_ == ColorFormat.RGB) {
+      this.currentColorFormat_ = ColorFormat.HSL;
+    } else if (this.currentColorFormat_ == ColorFormat.HSL) {
       this.currentColorFormat_ = ColorFormat.HEX;
     }
-    // TODO(crbug.com/982088): Add support for HSL
-    this.adjustFormatLabelVisibility();
+    this.adjustFormatLabelVisibility_();
 
     this.dispatchEvent(new CustomEvent('format-change', {
       detail: {
@@ -581,15 +792,21 @@ class FormatLabel extends HTMLElement {
     if (colorFormat === ColorFormat.HEX) {
       this.hexChannelLabel_ = new ChannelLabel(ColorChannel.HEX);
       this.append(this.hexChannelLabel_);
-    } else {
+    } else if (colorFormat === ColorFormat.RGB) {
       this.rChannelLabel_ = new ChannelLabel(ColorChannel.R);
       this.gChannelLabel_ = new ChannelLabel(ColorChannel.G);
       this.bChannelLabel_ = new ChannelLabel(ColorChannel.B);
       this.append(this.rChannelLabel_,
                   this.gChannelLabel_,
                   this.bChannelLabel_);
+    } else if (colorFormat === ColorFormat.HSL) {
+      this.hChannelLabel_ = new ChannelLabel(ColorChannel.H);
+      this.sChannelLabel_ = new ChannelLabel(ColorChannel.S);
+      this.lChannelLabel_ = new ChannelLabel(ColorChannel.L);
+      this.append(this.hChannelLabel_,
+                  this.sChannelLabel_,
+                  this.lChannelLabel_);
     }
-    // TODO(crbug.com/982088): Add support for HSL
   }
 
   get colorFormat() {
@@ -624,8 +841,13 @@ class ChannelLabel extends HTMLElement {
       this.textContent = 'G';
     } else if (colorChannel === ColorChannel.B) {
       this.textContent = 'B';
+    } else if (colorChannel === ColorChannel.H) {
+      this.textContent = 'H';
+    } else if (colorChannel === ColorChannel.S) {
+      this.textContent = 'S';
+    } else if (colorChannel === ColorChannel.L) {
+      this.textContent = 'L';
     }
-    // TODO(crbug.com/982088): Add support for HSL
   }
 }
 window.customElements.define('channel-label', ChannelLabel);

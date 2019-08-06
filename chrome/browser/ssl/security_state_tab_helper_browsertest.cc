@@ -1066,7 +1066,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Simulates a Gaia password change, then malicious content status will
   // change to MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING.
-  service->OnGaiaPasswordChanged();
+  service->OnGaiaPasswordChanged(/*username=*/"", false);
   base::RunLoop().RunUntilIdle();
   visible_security_state = helper->GetVisibleSecurityState();
   EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());

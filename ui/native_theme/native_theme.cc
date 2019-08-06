@@ -33,14 +33,14 @@ void NativeTheme::NotifyObservers() {
 }
 
 NativeTheme::NativeTheme()
-    : is_dark_mode_(IsForcedDarkMode()),
+    : should_use_dark_colors_(IsForcedDarkMode()),
       is_high_contrast_(IsForcedHighContrast()),
       preferred_color_scheme_(CalculatePreferredColorScheme()) {}
 
 NativeTheme::~NativeTheme() = default;
 
-bool NativeTheme::SystemDarkModeEnabled() const {
-  return is_dark_mode_;
+bool NativeTheme::ShouldUseDarkColors() const {
+  return should_use_dark_colors_;
 }
 
 bool NativeTheme::SystemDarkModeSupported() const {
@@ -71,8 +71,8 @@ bool NativeTheme::IsForcedHighContrast() const {
 
 NativeTheme::PreferredColorScheme NativeTheme::CalculatePreferredColorScheme()
     const {
-  return SystemDarkModeEnabled() ? NativeTheme::PreferredColorScheme::kDark
-                                 : NativeTheme::PreferredColorScheme::kLight;
+  return ShouldUseDarkColors() ? NativeTheme::PreferredColorScheme::kDark
+                               : NativeTheme::PreferredColorScheme::kLight;
 }
 
 base::Optional<CaptionStyle> NativeTheme::GetSystemCaptionStyle() const {
@@ -88,14 +88,14 @@ NativeTheme::ColorSchemeNativeThemeObserver::~ColorSchemeNativeThemeObserver() =
 
 void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     ui::NativeTheme* observed_theme) {
-  bool is_dark_mode = observed_theme->SystemDarkModeEnabled();
+  bool should_use_dark_colors = observed_theme->ShouldUseDarkColors();
   bool is_high_contrast = observed_theme->UsesHighContrastColors();
   PreferredColorScheme preferred_color_scheme =
       observed_theme->GetPreferredColorScheme();
   bool notify_observers = false;
 
-  if (theme_to_update_->SystemDarkModeEnabled() != is_dark_mode) {
-    theme_to_update_->set_dark_mode(is_dark_mode);
+  if (theme_to_update_->ShouldUseDarkColors() != should_use_dark_colors) {
+    theme_to_update_->set_use_dark_colors(should_use_dark_colors);
     notify_observers = true;
   }
   if (theme_to_update_->UsesHighContrastColors() != is_high_contrast) {
@@ -112,7 +112,7 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
 }
 
 NativeTheme::ColorScheme NativeTheme::GetSystemColorScheme() const {
-  return SystemDarkModeEnabled() ? ColorScheme::kDark : ColorScheme::kLight;
+  return ShouldUseDarkColors() ? ColorScheme::kDark : ColorScheme::kLight;
 }
 
 }  // namespace ui

@@ -398,20 +398,6 @@ TEST_F(LayoutTableSectionTest, RowCollapseNegativeHeightCrash) {
   )HTML");
 }
 
-TEST_F(LayoutTableSectionTest, RowCollapseSaturation) {
-  // When a collapsed row's height saturates LayoutUnit, we'd set the height to
-  // -1/64, triggering a downstream DCHECK(height >= 0). After a little trial
-  // and error, a huge line-height was the only way I could reproduce this.
-  SetBodyInnerHTML(R"HTML(
-    <div style="display:table-row; visibility:collapse; line-height:279999999%">
-      <div style="display:table-cell;">
-        <div style="position:fixed"></div>
-        No crash = pass.
-      </div>
-    </div>
-  )HTML");
-}
-
 }  // anonymous namespace
 
 }  // namespace blink

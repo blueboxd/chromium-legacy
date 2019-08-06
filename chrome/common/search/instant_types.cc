@@ -4,34 +4,13 @@
 
 #include "chrome/common/search/instant_types.h"
 
-ThemeBackgroundInfo::ThemeBackgroundInfo()
-    : using_default_theme(true),
-      using_dark_mode(false),
-      custom_background_url(std::string()),
-      custom_background_attribution_line_1(std::string()),
-      custom_background_attribution_line_2(std::string()),
-      custom_background_attribution_action_url(std::string()),
-      collection_id(std::string()),
-      background_color(),
-      text_color(),
-      text_color_light(),
-      image_horizontal_alignment(THEME_BKGRND_IMAGE_ALIGN_CENTER),
-      image_vertical_alignment(THEME_BKGRND_IMAGE_ALIGN_CENTER),
-      image_tiling(THEME_BKGRND_IMAGE_NO_REPEAT),
-      has_attribution(false),
-      logo_alternate(false),
-      has_theme_image(false),
-      theme_name(),
-      color_id(-1),
-      color_dark(),
-      color_light() {}
+ThemeBackgroundInfo::ThemeBackgroundInfo() = default;
 
-ThemeBackgroundInfo::~ThemeBackgroundInfo() {
-}
+ThemeBackgroundInfo::~ThemeBackgroundInfo() {}
 
 bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
   return using_default_theme == rhs.using_default_theme &&
-         using_dark_mode == rhs.using_dark_mode &&
+         using_dark_colors == rhs.using_dark_colors &&
          custom_background_url == rhs.custom_background_url &&
          custom_background_attribution_line_1 ==
              rhs.custom_background_attribution_line_1 &&
@@ -62,10 +41,7 @@ InstantMostVisitedItem::InstantMostVisitedItem(
 
 InstantMostVisitedItem::~InstantMostVisitedItem() {}
 
-InstantMostVisitedInfo::InstantMostVisitedInfo()
-    : items_are_custom_links(false),
-      use_most_visited(false),
-      is_visible(true) {}
+InstantMostVisitedInfo::InstantMostVisitedInfo() = default;
 
 InstantMostVisitedInfo::InstantMostVisitedInfo(
     const InstantMostVisitedInfo& other) = default;

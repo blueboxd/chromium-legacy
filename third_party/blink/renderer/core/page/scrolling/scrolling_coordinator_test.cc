@@ -1907,6 +1907,11 @@ TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
 
 TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
        NonCompositedResizerNonFastScrollableRegion) {
+  // TODO(pdr): Paint non-fast scrollable regions for resizers
+  // (crbug.com/864567).
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
+    return;
+
   GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
       false);
   LoadHTML(R"HTML(
@@ -1920,7 +1925,6 @@ TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
       }
     </style>
     <div id="container">
-      <div id="offset" style="height: 35px;"></div>
       <div id="scroller"></div>
     </div>
   )HTML");
@@ -1936,11 +1940,15 @@ TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
   // when the container moves and not when the viewport scrolls.
   auto region =
       container_graphics_layer->CcLayer()->non_fast_scrollable_region();
-  EXPECT_EQ(region.bounds(), gfx::Rect(66, 101, 14, 14));
+  EXPECT_EQ(region.bounds(), gfx::Rect(66, 66, 14, 14));
 }
 
 TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
        CompositedResizerNonFastScrollableRegion) {
+  // TODO(pdr): Paint non-fast scrollable regions for resizers
+  // (crbug.com/864567).
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
+    return;
   LoadHTML(R"HTML(
     <style>
       #container { will-change: transform; }
@@ -1953,7 +1961,6 @@ TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
       }
     </style>
     <div id="container">
-      <div id="offset" style="height: 35px;"></div>
       <div id="scroller"></div>
     </div>
   )HTML");

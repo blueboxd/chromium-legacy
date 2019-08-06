@@ -31,6 +31,7 @@ struct AutocompleteMatch {
   array<ACMatchClassification> contents_class;
   string description;
   array<ACMatchClassification> description_class;
+  bool swap_contents_and_description;
   string answer;
   string transition;
   bool allowed_to_be_default_match;

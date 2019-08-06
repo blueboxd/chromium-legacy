@@ -12,7 +12,8 @@ if ! command -v gen-bundle > /dev/null 2>&1; then
     exit 1
 fi
 
-gen-bundle -baseURL https://test.example.org/ \
+gen-bundle -version b1 \
+           -baseURL https://test.example.org/ \
            -dir hello/ \
            -manifestURL manifest.webmanifest \
            -o hello.wbn

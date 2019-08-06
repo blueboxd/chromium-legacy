@@ -90,7 +90,13 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
     public ContextualSearchCaptionControl(OverlayPanel panel, Context context, ViewGroup container,
             DynamicResourceLoader resourceLoader, boolean shouldShowExpandedCaption) {
         super(panel, R.layout.contextual_search_caption_view, R.id.contextual_search_caption_view,
-                context, container, resourceLoader);
+                context, container, resourceLoader,
+                (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                                ? R.dimen.contextual_search_end_padding
+                                : R.dimen.overlay_panel_padded_button_width),
+                (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                                ? R.dimen.contextual_search_end_buttons_width
+                                : R.dimen.overlay_panel_padded_button_width));
         mShouldShowExpandedCaption = shouldShowExpandedCaption;
     }
 
@@ -122,6 +128,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
      * Updates the caption when in transition between peeked to expanded states.
      * @param percentage The percentage to the more opened state.
      */
+    @Override
     public void onUpdateFromPeekToExpand(float percentage) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
             if (mHasPeekingCaption) {

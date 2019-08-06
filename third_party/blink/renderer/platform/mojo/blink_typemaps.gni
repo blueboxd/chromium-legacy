@@ -4,6 +4,7 @@
 
 typemaps = [
   "//media/capture/mojom/video_capture_types_for_blink.typemap",
+  "//media/mojo/mojom/audio_parameters.typemap",
   "//mojo/public/cpp/base/values.typemap",
   "//ui/gfx/mojom/color_space_for_blink.typemap",
   "//ui/gfx/mojom/transform.typemap",

@@ -14,8 +14,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,7 +33,7 @@ class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
   ~AccountManagerPolicyControllerTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    scoped_feature_list_.InitAndEnableFeature(switches::kAccountManager);
+    scoped_feature_list_.InitAndEnableFeature(features::kAccountManager);
   }
 
   void SetUpOnMainThread() override {

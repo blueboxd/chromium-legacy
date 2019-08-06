@@ -161,67 +161,70 @@ class VolumeManagerImpl extends cr.EventTarget {
   async onMountCompleted_(event) {
     const unlock = await this.mutex_.lock();
     try {
-      switch (event.eventType) {
-        case 'mount':
-          var requestKey = this.makeRequestKey_(
-              'mount', event.volumeMetadata.sourcePath || '');
+      const {eventType, status, volumeMetadata} = event;
+      const {sourcePath = '', volumeId} = volumeMetadata;
 
-          if (event.status === 'success' ||
-              event.status ===
-                  VolumeManagerCommon.VolumeError.UNKNOWN_FILESYSTEM ||
-              event.status ===
-                  VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM) {
-            const volumeInfo =
-                await this.addVolumeMetadata_(event.volumeMetadata);
-            this.finishRequest_(requestKey, event.status, volumeInfo);
-            console.warn(`Mounted '${event.volumeMetadata.sourcePath}' as '${
-                event.volumeMetadata.volumeId}'`);
-            break;
+      switch (eventType) {
+        case 'mount': {
+          const requestKey = this.makeRequestKey_('mount', sourcePath);
+
+          switch (status) {
+            case 'success':
+            case VolumeManagerCommon.VolumeError.UNKNOWN_FILESYSTEM:
+            case VolumeManagerCommon.VolumeError.UNSUPPORTED_FILESYSTEM: {
+              console.warn(`Mounted '${sourcePath}' as '${volumeId}'`);
+              const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
+              this.finishRequest_(requestKey, status, volumeInfo);
+              return;
+            }
+
+            case VolumeManagerCommon.VolumeError.ALREADY_MOUNTED: {
+              console.warn(`'Cannot mount ${sourcePath}': Already mounted as '${
+                  volumeId}'`);
+              const navigationEvent =
+                  new Event(VolumeManagerCommon.VOLUME_ALREADY_MOUNTED);
+              navigationEvent.volumeId = volumeId;
+              this.dispatchEvent(navigationEvent);
+              this.finishRequest_(requestKey, status);
+              return;
+            }
+
+            default:
+              console.error(`Cannot mount '${sourcePath}': ${status}`);
+              this.finishRequest_(requestKey, status);
+              return;
           }
+        }
 
-          if (event.status ===
-              VolumeManagerCommon.VolumeError.ALREADY_MOUNTED) {
-            const navigationEvent =
-                new Event(VolumeManagerCommon.VOLUME_ALREADY_MOUNTED);
-            navigationEvent.volumeId = event.volumeMetadata.volumeId;
-            this.dispatchEvent(navigationEvent);
-            this.finishRequest_(requestKey, event.status);
-            console.error(`'Cannot mount ${
-                event.volumeMetadata.sourcePath}': Already mounted as '${
-                event.volumeMetadata.volumeId}'`);
-            break;
-          }
-
-          console.error(`Cannot mount '${event.volumeMetadata.sourcePath}': ${
-              event.status}`);
-          this.finishRequest_(requestKey, event.status);
-          break;
-
-        case 'unmount':
-          const volumeId = event.volumeMetadata.volumeId;
-          const status = event.status;
-          var requestKey = this.makeRequestKey_('unmount', volumeId);
-          const requested = requestKey in this.requests_;
+        case 'unmount': {
+          const requestKey = this.makeRequestKey_('unmount', volumeId);
           const volumeInfoIndex = this.volumeInfoList.findIndex(volumeId);
           const volumeInfo = volumeInfoIndex !== -1 ?
               this.volumeInfoList.item(volumeInfoIndex) :
               null;
 
-          if (event.status === 'success' && !requested && volumeInfo) {
-            console.warn(`Unmounted '${volumeId}' without request`);
-            this.dispatchEvent(
-                new CustomEvent('externally-unmounted', {detail: volumeInfo}));
-          }
+          switch (status) {
+            case 'success': {
+              const requested = requestKey in this.requests_;
+              if (!requested && volumeInfo) {
+                console.warn(`Unmounted '${volumeId}' without request`);
+                this.dispatchEvent(new CustomEvent(
+                    'externally-unmounted', {detail: volumeInfo}));
+              } else {
+                console.warn(`Unmounted '${volumeId}'`);
+              }
 
-          this.finishRequest_(requestKey, status);
-          if (event.status === 'success') {
-            this.volumeInfoList.remove(event.volumeMetadata.volumeId);
-            console.warn(`Unmounted '${volumeId}'`);
-          } else {
-            console.error(`Cannot unmount '${volumeId}': ${event.status}`);
-          }
+              this.volumeInfoList.remove(volumeId);
+              this.finishRequest_(requestKey, status);
+              return;
+            }
 
-          break;
+            default:
+              console.error(`Cannot unmount '${volumeId}': ${status}`);
+              this.finishRequest_(requestKey, status);
+              return;
+          }
+        }
       }
     } finally {
       unlock();
@@ -252,10 +255,10 @@ class VolumeManagerImpl extends cr.EventTarget {
   }
 
   /** @override */
-  async unmount(volumeInfo) {
-    console.warn(`Unmounting '${volumeInfo.volumeId}'`);
-    chrome.fileManagerPrivate.removeMount(volumeInfo.volumeId);
-    const key = this.makeRequestKey_('unmount', volumeInfo.volumeId);
+  async unmount({volumeId}) {
+    console.warn(`Unmounting '${volumeId}'`);
+    chrome.fileManagerPrivate.removeMount(volumeId);
+    const key = this.makeRequestKey_('unmount', volumeId);
     await this.startRequest_(key);
   }
 

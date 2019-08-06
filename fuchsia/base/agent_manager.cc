@@ -28,8 +28,9 @@ void AgentManager::ConnectToAgentServiceUnsafe(base::StringPiece agent,
                                        it->second.services.NewRequest(),
                                        it->second.controller.NewRequest());
     it->second.services.set_error_handler(
-        [agent = agent.as_string()](zx_status_t status) {
-          ZX_LOG(FATAL, status) << "Agent disconnected: " << agent;
+        [this, agent = agent.as_string()](zx_status_t status) {
+          ZX_LOG(WARNING, status) << "Agent disconnected: " << agent;
+          agents_.erase(agent);
         });
   }
   it->second.services->ConnectToService(interface.as_string(),

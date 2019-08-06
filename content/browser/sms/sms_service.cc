@@ -116,7 +116,7 @@ void SmsService::OnTimeout() {
   Dismiss();
 }
 
-void SmsService::OnContinue() {
+void SmsService::OnConfirm() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(sms_);
@@ -145,7 +145,7 @@ void SmsService::Prompt() {
   if (prompt_) {
     prompt_->Open(
         render_frame_host(),
-        base::BindOnce(&SmsService::OnContinue, base::Unretained(this)),
+        base::BindOnce(&SmsService::OnConfirm, base::Unretained(this)),
         base::BindOnce(&SmsService::OnCancel, base::Unretained(this)));
   }
 }

@@ -222,8 +222,8 @@ SelectToSpeakOptionsPage.prototype = {
   setUpTtsButtonClickListener_: function() {
     let button = document.getElementById('ttsSettingsBtn');
     button.addEventListener('click', () => {
-      let url = 'chrome://settings/manageAccessibility/tts';
-      chrome.tabs.create({url: url});
+      chrome.accessibilityPrivate.openSettingsSubpage(
+          'manageAccessibility/tts');
     });
   }
 };

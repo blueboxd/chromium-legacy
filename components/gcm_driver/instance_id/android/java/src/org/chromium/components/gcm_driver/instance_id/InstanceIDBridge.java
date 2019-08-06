@@ -9,7 +9,9 @@ import android.os.Bundle;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.components.gcm_driver.InstanceIDFlags;
 import org.chromium.components.gcm_driver.LazySubscriptionsManager;
+import org.chromium.components.gcm_driver.SubscriptionFlagManager;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -101,7 +103,7 @@ public class InstanceIDBridge {
      * messages are deferred until there are visible activities.*/
     @CalledByNative
     private void getToken(final int requestId, final String authorizedEntity, final String scope,
-            String[] extrasStrings, boolean isLazy) {
+            String[] extrasStrings, int flags) {
         final Bundle extras = new Bundle();
         assert extrasStrings.length % 2 == 0;
         for (int i = 0; i < extrasStrings.length; i += 2) {
@@ -112,10 +114,16 @@ public class InstanceIDBridge {
             @Override
             protected String doBackgroundWork() {
                 try {
+                    // TODO(knollr): Migrate stored LazySubscriptionsManager data to
+                    // SubscriptionFlagManager.
                     LazySubscriptionsManager.storeLazinessInformation(
                             LazySubscriptionsManager.buildSubscriptionUniqueId(
                                     mSubtype, authorizedEntity),
-                            isLazy);
+                            (flags & InstanceIDFlags.IS_LAZY) == InstanceIDFlags.IS_LAZY);
+                    SubscriptionFlagManager.setFlags(
+                            SubscriptionFlagManager.buildSubscriptionUniqueId(
+                                    mSubtype, authorizedEntity),
+                            flags);
                     return mInstanceID.getToken(authorizedEntity, scope, extras);
                 } catch (IOException ex) {
                     return "";
@@ -143,6 +151,9 @@ public class InstanceIDBridge {
                         LazySubscriptionsManager.deletePersistedMessagesForSubscriptionId(
                                 subscriptionId);
                     }
+                    SubscriptionFlagManager.clearFlags(
+                            SubscriptionFlagManager.buildSubscriptionUniqueId(
+                                    mSubtype, authorizedEntity));
                     return true;
                 } catch (IOException ex) {
                     return false;

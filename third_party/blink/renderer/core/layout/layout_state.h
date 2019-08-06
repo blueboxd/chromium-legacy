@@ -76,12 +76,6 @@ class LayoutState {
 
   bool IsPaginated() const { return is_paginated_; }
 
-  // The page logical offset is the object's offset from the top of the page in
-  // the page progression direction (so an x-offset in vertical text and a
-  // y-offset for horizontal text).
-  LayoutUnit PageLogicalOffset(const LayoutBox&,
-                               const LayoutUnit& child_logical_offset) const;
-
   LayoutUnit HeightOffsetForTableHeaders() const {
     return height_offset_for_table_headers_;
   }

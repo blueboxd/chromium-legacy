@@ -56,7 +56,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 namespace signin {
@@ -197,7 +197,7 @@ void ProcessMirrorHeaderUIThread(
   signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
       account_reconcilor->GetState());
 
-  if (chromeos::switches::IsAccountManagerEnabled()) {
+  if (chromeos::features::IsAccountManagerEnabled()) {
     // Chrome OS Account Manager is available. The only allowed operations
     // are:
     //

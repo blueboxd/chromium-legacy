@@ -13,6 +13,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
+import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -24,25 +25,27 @@ import org.chromium.ui.modelutil.PropertyModel;
  * surface and the bottom bar to switch between them.
  */
 public class StartSurfaceCoordinator implements StartSurface {
-    private final GridTabSwitcher mGridTabSwitcher;
+    private final TasksSurface mTasksSurface;
     private final StartSurfaceMediator mStartSurfaceMediator;
     private BottomBarCoordinator mBottomBarCoordinator;
     private ExploreSurfaceCoordinator mExploreSurfaceCoordinator;
     private PropertyModel mPropertyModel;
 
     public StartSurfaceCoordinator(ChromeActivity activity) {
-        mGridTabSwitcher =
-                TabManagementModuleProvider.getDelegate().createGridTabSwitcher(activity);
+        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(activity);
 
         // Do not enable this feature when the bottom bar is enabled since it will
         // overlap the start surface's bottom bar.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TWO_PANES_START_SURFACE_ANDROID)
+        if ((ChromeFeatureList
+                            .getFieldTrialParamByFeature(ChromeFeatureList.START_SURFACE_ANDROID,
+                                    "start_surface_variation")
+                            .equals("twopanes"))
                 && !FeatureUtilities.isBottomToolbarEnabled()) {
             // Margin the bottom of the Tab grid to save space for the bottom bar.
             int bottomBarHeight =
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
                             R.dimen.ss_bottom_bar_height);
-            mGridTabSwitcher.getTabGridDelegate().setBottomControlsHeight(bottomBarHeight);
+            mTasksSurface.getTabGridDelegate().setBottomControlsHeight(bottomBarHeight);
 
             mPropertyModel = new PropertyModel(StartSurfaceProperties.ALL_KEYS);
             mPropertyModel.set(BOTTOM_BAR_HEIGHT, bottomBarHeight);
@@ -66,7 +69,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                     activity, exploreSurfaceContainer, mPropertyModel);
         }
 
-        mStartSurfaceMediator = new StartSurfaceMediator(mGridTabSwitcher.getGridController(),
+        mStartSurfaceMediator = new StartSurfaceMediator(mTasksSurface.getGridController(),
                 activity.getTabModelSelector(), mPropertyModel,
                 mExploreSurfaceCoordinator == null
                         ? null
@@ -76,8 +79,7 @@ public class StartSurfaceCoordinator implements StartSurface {
     // Implements StartSurface.
     @Override
     public void setOnTabSelectingListener(StartSurface.OnTabSelectingListener listener) {
-        mGridTabSwitcher.setOnTabSelectingListener(
-                (GridTabSwitcher.OnTabSelectingListener) listener);
+        mTasksSurface.setOnTabSelectingListener(listener);
     }
 
     @Override
@@ -87,6 +89,6 @@ public class StartSurfaceCoordinator implements StartSurface {
 
     @Override
     public GridTabSwitcher.TabGridDelegate getTabGridDelegate() {
-        return mGridTabSwitcher.getTabGridDelegate();
+        return mTasksSurface.getTabGridDelegate();
     }
 }

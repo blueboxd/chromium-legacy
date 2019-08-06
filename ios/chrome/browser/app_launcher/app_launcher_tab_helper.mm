@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
+#import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -148,10 +149,13 @@ bool AppLauncherTabHelper::RequestToLaunchApp(const GURL& url,
                              launchAppWithURL:copied_url
                                linkTransition:YES];
             } else {
-              // TODO(crbug.com/674649): Once non modal dialogs are implemented,
-              // update this to always prompt instead of blocking the app.
-              [abuse_detector_ blockLaunchingAppURL:copied_url
-                                  fromSourcePageURL:copied_source_page_url];
+              if (!base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
+                // Only block app launches if the app launch alert is being
+                // displayed modally since DOS attacks are not possible when the
+                // app launch alert is presented non-modally.
+                [abuse_detector_ blockLaunchingAppURL:copied_url
+                                    fromSourcePageURL:copied_source_page_url];
+              }
             }
             is_prompt_active_ = false;
           }];

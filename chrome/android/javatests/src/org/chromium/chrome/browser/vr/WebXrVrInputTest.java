@@ -194,6 +194,9 @@ public class WebXrVrInputTest {
         // Send a controller click and wait for JavaScript to receive it.
         controller.sendClickButtonToggleEvent();
         mWebVrTestFramework.waitOnJavaScriptStep();
+        // Re-register the callback since it unregisters itself after finishing the step.
+        mWebVrTestFramework.runJavaScriptOrFail(
+                "onPresentingAnimationFrameCallback = gamepadFrameCallback", POLL_TIMEOUT_SHORT_MS);
         controller.sendClickButtonToggleEvent();
         mWebVrTestFramework.waitOnJavaScriptStep();
         mWebVrTestFramework.endTest();
@@ -380,6 +383,9 @@ public class WebXrVrInputTest {
                 TestVrShellDelegate.getVrShellForTesting().getPresentationViewForTesting();
         long downTime = sendScreenTouchDown(presentationView, x, y);
         mWebVrTestFramework.waitOnJavaScriptStep();
+        // Re-register the callback since it unregisters itself after finishing the step.
+        mWebVrTestFramework.runJavaScriptOrFail(
+                "onPresentingAnimationFrameCallback = gamepadFrameCallback", POLL_TIMEOUT_SHORT_MS);
         sendScreenTouchUp(presentationView, x, y, downTime);
         mWebVrTestFramework.waitOnJavaScriptStep();
         mWebVrTestFramework.endTest();

@@ -11,6 +11,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/hover_button_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -20,6 +21,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 
 namespace {
@@ -69,7 +71,13 @@ void SetTooltipAndAccessibleName(views::Button* parent,
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,
                          const base::string16& text)
-    : views::MenuButton(text, this), listener_(button_listener) {
+    : views::LabelButton(/*button_listener*/ nullptr,
+                         text,
+                         views::style::CONTEXT_BUTTON),
+      listener_(button_listener) {
+  SetButtonController(std::make_unique<HoverButtonController>(
+      this, listener_, CreateButtonControllerDelegate()));
+
   SetInstallFocusRingOnFocus(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
@@ -189,7 +197,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
         grid_layout->AddView(std::move(secondary_view), 1, num_labels);
 
     if (!resize_row_for_secondary_view) {
-      insets_ = views::MenuButton::GetInsets();
+      insets_ = views::LabelButton::GetInsets();
       auto secondary_ctl_size = secondary_view_->GetPreferredSize();
       if (secondary_ctl_size.height() > row_height) {
         // Secondary view is larger. Reduce the insets.
@@ -221,16 +229,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
 
 HoverButton::~HoverButton() {}
 
-bool HoverButton::OnKeyPressed(const ui::KeyEvent& event) {
-  // Unlike MenuButton, HoverButton should not be activated when the up or down
-  // arrow key is pressed.
-  if (event.key_code() == ui::VKEY_UP || event.key_code() == ui::VKEY_DOWN)
-    return false;
-  return MenuButton::OnKeyPressed(event);
-}
-
 void HoverButton::SetBorder(std::unique_ptr<views::Border> b) {
-  MenuButton::SetBorder(std::move(b));
+  LabelButton::SetBorder(std::move(b));
   // Make sure the minimum size is correct according to the layout (if any).
   if (GetLayoutManager())
     SetMinSize(GetLayoutManager()->GetPreferredSize(this));
@@ -243,7 +243,7 @@ void HoverButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 gfx::Insets HoverButton::GetInsets() const {
   if (insets_)
     return insets_.value();
-  return views::MenuButton::GetInsets();
+  return views::LabelButton::GetInsets();
 }
 
 void HoverButton::SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior) {
@@ -275,11 +275,11 @@ views::Button::KeyClickAction HoverButton::GetKeyClickActionForEvent(
     // |PlatformStyle::kReturnClicksFocusedControl|.
     return CLICK_ON_KEY_PRESS;
   }
-  return MenuButton::GetKeyClickActionForEvent(event);
+  return LabelButton::GetKeyClickActionForEvent(event);
 }
 
 void HoverButton::StateChanged(ButtonState old_state) {
-  MenuButton::StateChanged(old_state);
+  LabelButton::StateChanged(old_state);
 
   // |HoverButtons| are designed for use in a list, so ensure only one button
   // can have a hover background at any time by requesting focus on hover.
@@ -296,7 +296,7 @@ SkColor HoverButton::GetInkDropBaseColor() const {
 }
 
 std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {
-  std::unique_ptr<views::InkDrop> ink_drop = MenuButton::CreateInkDrop();
+  std::unique_ptr<views::InkDrop> ink_drop = LabelButton::CreateInkDrop();
   // Turn on highlighting when the button is focused only - hovering the button
   // will request focus.
   ink_drop->SetShowHighlightOnFocus(true);
@@ -305,7 +305,7 @@ std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {
 }
 
 void HoverButton::Layout() {
-  MenuButton::Layout();
+  LabelButton::Layout();
 
   // Vertically center |title_| manually since it doesn't have a LayoutManager.
   if (title_) {

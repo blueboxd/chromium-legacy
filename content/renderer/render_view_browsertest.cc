@@ -434,17 +434,6 @@ class RenderViewImplTest : public RenderViewTest {
            webview->MainFrame()->VisibleContentRect().width;
   }
 
-  // Closes a view created during the test, i.e. not the |view()|. Checks that
-  // the main frame is detached and deleted, and makes sure the view does not
-  // leak.
-  void CloseRenderWidget(RenderWidget* widget) {
-    WidgetMsg_Close msg(widget->routing_id());
-    widget->OnMessageReceived(msg);
-
-    // WidgetMsg_Close posts a task to do the actual closing. Let that run.
-    base::RunLoop().RunUntilIdle();
-  }
-
  private:
   std::unique_ptr<MockKeyboard> mock_keyboard_;
 };
@@ -867,9 +856,6 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       ->BeginNavigation(std::move(popup_navigation_info));
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_OpenURL::ID));
-
-  RenderWidget* render_widget = new_view->GetWidget();
-  CloseRenderWidget(render_widget);
 }
 
 class AlwaysForkingRenderViewTest : public RenderViewImplTest {

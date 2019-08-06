@@ -34,10 +34,9 @@
 
 - (NSString*)description {
   return [NSString stringWithFormat:@"<%@: %p, GaiaID: \"%@\", name: \"%@\", "
-                                    @"email: \"%@\", hosted domain: \"%@\">",
+                                    @"email: \"%@\">",
                                     self.class.description, self, self.gaiaID,
-                                    self.userFullName, self.userEmail,
-                                    self.hostedDomain];
+                                    self.userFullName, self.userEmail];
 }
 
 @end

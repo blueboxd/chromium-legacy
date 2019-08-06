@@ -673,6 +673,8 @@ class BBJSONGenerator(object):
         gpu = ['10de', '1cb3']
       elif gpu.startswith('intel-hd-630'):
         gpu = ['8086', '5912']
+      elif gpu.startswith('intel-uhd-630'):
+        gpu = ['8086', '3e92']
       else:
         gpu = gpu.split('-')[0].split(':')
       substitutions['gpu_vendor_id'] = gpu[0]
@@ -1025,7 +1027,6 @@ class BBJSONGenerator(object):
       'Dummy WebKit Mac10.13',
       'WebKit Linux composite_after_paint Dummy Builder',
       'WebKit Linux layout_ng Dummy Builder',
-      'WebKit Linux root_layer_scrolls Dummy Builder',
       # chromium, due to https://crbug.com/878915
       'win-dbg',
       'win32-dbg',

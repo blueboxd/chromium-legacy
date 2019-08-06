@@ -12,8 +12,8 @@
 #include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/test_interface_impl.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -30,7 +30,9 @@ class ServiceDirectoryTestBase : public testing::Test {
  protected:
   const RunLoop::ScopedRunTimeoutForTest run_timeout_;
 
-  MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
 
   std::unique_ptr<ServiceDirectory> service_directory_;
   TestInterfaceImpl test_service_;

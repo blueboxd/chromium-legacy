@@ -631,7 +631,7 @@ void PushMessagingServiceImpl::DoSubscribe(
       ->GetInstanceID(app_identifier.app_id())
       ->GetToken(NormalizeSenderInfo(application_server_key_string), kGCMScope,
                  std::map<std::string, std::string>() /* options */,
-                 false /* is_lazy */,
+                 {} /* flags */,
                  base::BindOnce(&PushMessagingServiceImpl::DidSubscribe,
                                 weak_factory_.GetWeakPtr(), app_identifier,
                                 application_server_key_string,

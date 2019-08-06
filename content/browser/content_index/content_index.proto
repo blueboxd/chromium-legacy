@@ -31,3 +31,12 @@ message ContentEntry {
   // can be an absolute or relative path without the host.
   optional string launch_url = 3;
 }
+
+// Wrapper to store all the serialized icons.
+message SerializedIcons {
+  // Create a sub-message in case we want to store metadata with the
+  // serialized icon.
+  message SerializedIcon { optional string icon = 1; }
+
+  repeated SerializedIcon icons = 1;
+}

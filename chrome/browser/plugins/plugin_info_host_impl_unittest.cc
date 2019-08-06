@@ -47,7 +47,6 @@ class FakePluginServiceFilter : public content::PluginServiceFilter {
 
   bool IsPluginAvailable(int render_process_id,
                          int render_view_id,
-                         const void* context,
                          const GURL& url,
                          const url::Origin& main_frame_origin,
                          content::WebPluginInfo* plugin) override;
@@ -66,7 +65,6 @@ class FakePluginServiceFilter : public content::PluginServiceFilter {
 bool FakePluginServiceFilter::IsPluginAvailable(
     int render_process_id,
     int render_view_id,
-    const void* context,
     const GURL& url,
     const url::Origin& main_frame_origin,
     content::WebPluginInfo* plugin) {

@@ -589,7 +589,7 @@ CrSettingsPeoplePageAccountManagerTest.prototype = {
   browsePreload: 'chrome://settings/people_page/account_manager.html',
 
   /** @override */
-  featureList: {enabled: ['chromeos::switches::kAccountManager']},
+  featureList: {enabled: ['chromeos::features::kAccountManager']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([

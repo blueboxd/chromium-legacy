@@ -43,31 +43,33 @@ async function checkPopulateMatrix(sensorProvider, sensorType) {
   let mockSensor = await sensorProvider.getCreatedSensor(sensorType.name);
   await mockSensor.setSensorReading(kDefaultReading);
   await new Promise((resolve, reject) => {
-    let wrapper = new CallbackWrapper(() => {
-      // Works for all supported types.
-      let rotationMatrix32 = new Float32Array(16);
-      sensorObject.populateMatrix(rotationMatrix32);
-      assert_array_equals(rotationMatrix32, kRotationMatrix);
+    sensorObject.onreading = () => {
+      try {
+        // Works for all supported types.
+        let rotationMatrix32 = new Float32Array(16);
+        sensorObject.populateMatrix(rotationMatrix32);
+        assert_array_equals(rotationMatrix32, kRotationMatrix);
 
-      let rotationMatrix64 = new Float64Array(16);
-      sensorObject.populateMatrix(rotationMatrix64);
-      assert_array_equals(rotationMatrix64, kRotationMatrix);
+        let rotationMatrix64 = new Float64Array(16);
+        sensorObject.populateMatrix(rotationMatrix64);
+        assert_array_equals(rotationMatrix64, kRotationMatrix);
 
-      let rotationDOMMatrix = new DOMMatrix();
-      sensorObject.populateMatrix(rotationDOMMatrix);
-      assert_array_equals(rotationDOMMatrix.toFloat64Array(),
-                          kRotationMatrix);
+        let rotationDOMMatrix = new DOMMatrix();
+        sensorObject.populateMatrix(rotationDOMMatrix);
+        assert_array_equals(rotationDOMMatrix.toFloat64Array(),
+                            kRotationMatrix);
 
-      // Sets every matrix element.
-      rotationMatrix64.fill(123);
-      sensorObject.populateMatrix(rotationMatrix64);
-      assert_array_equals(rotationMatrix64, kRotationMatrix);
+        // Sets every matrix element.
+        rotationMatrix64.fill(123);
+        sensorObject.populateMatrix(rotationMatrix64);
+        assert_array_equals(rotationMatrix64, kRotationMatrix);
 
-      sensorObject.stop();
-      resolve(mockSensor);
-    }, reject);
-
-    sensorObject.onreading = wrapper.callback;
+        sensorObject.stop();
+        resolve(mockSensor);
+      } catch (e) {
+        reject(e);
+      };
+    }
     sensorObject.onerror = reject;
   });
   return mockSensor.removeConfigurationCalled();

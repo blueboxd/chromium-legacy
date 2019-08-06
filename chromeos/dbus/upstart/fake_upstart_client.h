@@ -29,6 +29,7 @@ class COMPONENT_EXPORT(UPSTART_CLIENT) FakeUpstartClient
                 const std::vector<std::string>& upstart_env,
                 VoidDBusMethodCallback callback) override;
   void StopJob(const std::string& job,
+               const std::vector<std::string>& upstart_env,
                VoidDBusMethodCallback callback) override;
   void StartAuthPolicyService() override;
   void RestartAuthPolicyService() override;

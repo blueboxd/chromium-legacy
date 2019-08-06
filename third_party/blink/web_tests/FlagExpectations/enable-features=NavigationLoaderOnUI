@@ -1,2 +1,0 @@
-# These tests currently fail when run with --enable-features=NavigationLoaderOnUI
-# See https://crbug.com/824840

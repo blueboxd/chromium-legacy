@@ -51,6 +51,7 @@ class AnonymizerTool {
 
   std::string AnonymizeMACAddresses(const std::string& input);
   std::string AnonymizeAndroidAppStoragePaths(const std::string& input);
+  std::string AnonymizeHashes(const std::string& input);
   std::string AnonymizeCustomPatterns(std::string input);
   std::string AnonymizeCustomPatternWithContext(
       const std::string& input,
@@ -66,11 +67,18 @@ class AnonymizerTool {
   const char* const* first_party_extension_ids_;  // Not owned.
 
   // Map of MAC addresses discovered in anonymized strings to anonymized
-  // representations. 11:22:33:44:55:66 gets anonymized to 11:22:33:00:00:01,
-  // where the first three bytes represent the manufacturer. The last three
-  // bytes are used to distinguish different MAC addresses and are incremented
-  // for each newly discovered MAC address.
+  // representations. 11:22:33:44:55:66 gets anonymized to
+  // [MAC OUI=11:22:33 IFACE=1], where the first three bytes (OUI) represent the
+  // manufacturer. The IFACE value is incremented for each newly discovered MAC
+  // address.
   std::map<std::string, std::string> mac_addresses_;
+
+  // Map of hashes discovered in anonymized strings to anonymized
+  // representations. Hexadecimal strings of length 32, 40 and 64 are considered
+  // to be hashes. 11223344556677889900aabbccddeeff gets anonymized to
+  // <HASH:1122 1> where the first 2 bytes of the hash are retained as-is and
+  // the value after that is incremented for each newly discovered hash.
+  std::map<std::string, std::string> hashes_;
 
   // Like mac addresses, identifiers in custom patterns are anonymized.
   // custom_patterns_with_context_[i] contains a map of original identifier to

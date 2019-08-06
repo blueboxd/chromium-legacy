@@ -12,6 +12,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/safe_browsing/test_extension_event_observer.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -25,6 +26,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/common/utils.h"
@@ -148,6 +151,18 @@ class ChromePasswordProtectionServiceTest
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+
+    // Use TestPasswordStore to remove a possible race. Normally the
+    // PasswordStore does its database manipulation on the DB thread, which
+    // creates a possible race during navigation. Specifically the
+    // PasswordManager will ignore any forms in a page if the load from the
+    // PasswordStore has not completed.
+    PasswordStoreFactory::GetInstance()->SetTestingFactory(
+        profile(),
+        base::BindRepeating(
+            &password_manager::BuildPasswordStore<
+                content::BrowserContext, password_manager::TestPasswordStore>));
+
     profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
     profile()->GetPrefs()->SetInteger(
         prefs::kPasswordProtectionWarningTrigger,
@@ -966,7 +981,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   SetUpSyncAccount("example.com", account_info);
 
   // Simulates change password.
-  service_->OnGaiaPasswordChanged();
+  service_->OnGaiaPasswordChanged("foo@example.com", false);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1, test_event_router_->GetEventCount(
@@ -977,7 +992,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
 
   // If user is in incognito mode, no event should be sent.
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
-  service_->OnGaiaPasswordChanged();
+  service_->OnGaiaPasswordChanged("foo@example.com", false);
   base::RunLoop().RunUntilIdle();
   // Event count should be unchanged.
   EXPECT_EQ(1, test_event_router_->GetEventCount(

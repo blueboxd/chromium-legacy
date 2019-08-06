@@ -52,7 +52,6 @@ void WebViewWebMainParts::PreCreateThreads() {
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   std::string enable_features = base::JoinString(
       {autofill::features::kAutofillEnableAccountWalletStorage.name,
-       autofill::features::kAutofillAlwaysShowServerCardsInSyncTransport.name,
        switches::kSyncSupportSecondaryAccount.name},
       ",");
   std::string disabled_features = base::JoinString(

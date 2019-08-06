@@ -29,9 +29,9 @@
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/service_directory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/multiprocess_test.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "fuchsia/engine/common.h"
 #include "fuchsia/engine/fake_context.h"
@@ -46,7 +46,9 @@ constexpr char kUrl[] = "chrome://:emorhc";
 constexpr char kTitle[] = "Palindrome";
 
 MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
-  base::MessageLoopForIO message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
   base::FilePath data_dir;
   CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_dir));
@@ -177,7 +179,9 @@ class ContextProviderImplTest : public base::MultiProcessTest {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<ContextProviderImpl> provider_;
   fuchsia::web::ContextProviderPtr provider_ptr_;
   fidl::BindingSet<fuchsia::web::ContextProvider> bindings_;

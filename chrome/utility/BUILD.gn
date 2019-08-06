@@ -152,7 +152,7 @@ static_library("utility") {
 
   if (is_chromeos) {
     deps += [
-      "//chrome/services/file_util:lib",
+      "//chrome/services/file_util",
       "//chromeos/assistant:buildflags",
       "//chromeos/services/ime:lib",
       "//chromeos/services/ime/public/mojom",
@@ -185,8 +185,8 @@ static_library("utility") {
 
     if (is_chromeos) {
       deps += [
-        "//chrome/services/cups_ipp_parser",
-        "//chrome/services/cups_ipp_parser/public/mojom",
+        "//chrome/services/ipp_parser",
+        "//chrome/services/ipp_parser/public/mojom",
       ]
     }
   }
@@ -203,7 +203,7 @@ static_library("utility") {
   }
 
   if (safe_browsing_mode == 1) {
-    deps += [ "//chrome/services/file_util:lib" ]
+    deps += [ "//chrome/services/file_util" ]
     if (is_mac) {
       deps += [ "//chrome/utility/safe_browsing/mac" ]
     }

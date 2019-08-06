@@ -101,12 +101,11 @@ void WebSocketFactory::CreateWebSocket(
     const url::Origin& origin,
     uint32_t options,
     mojom::WebSocketHandshakeClientPtr handshake_client,
-    mojom::WebSocketClientPtr client,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client) {
   if (throttler_.HasTooManyPendingConnections(process_id)) {
     // Too many websockets!
-    client.ResetWithReason(
+    handshake_client.ResetWithReason(
         mojom::WebSocket::kInsufficientResources,
         "Error in connection establishment: net::ERR_INSUFFICIENT_RESOURCES");
     return;
@@ -115,7 +114,7 @@ void WebSocketFactory::CreateWebSocket(
       std::make_unique<Delegate>(this, process_id), url, requested_protocols,
       site_for_cookies, std::move(additional_headers), process_id,
       render_frame_id, origin, options, std::move(handshake_client),
-      std::move(client), std::move(auth_handler), std::move(header_client),
+      std::move(auth_handler), std::move(header_client),
       throttler_.IssuePendingConnectionTracker(process_id),
       throttler_.CalculateDelay(process_id)));
 }

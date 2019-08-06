@@ -1377,14 +1377,6 @@ void StyleEngine::InvalidateForRuleSetChanges(
   if (tree_scope.GetDocument().HasPendingForcedStyleRecalc())
     return;
 
-  if (!tree_scope.GetDocument().body()) {
-    tree_scope.GetDocument().SetNeedsStyleRecalc(
-        kSubtreeStyleChange,
-        StyleChangeReasonForTracing::Create(
-            style_change_reason::kCleanupPlaceholderStyles));
-    return;
-  }
-
   if (changed_rule_sets.IsEmpty())
     return;
 

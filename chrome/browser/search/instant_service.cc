@@ -602,8 +602,8 @@ void InstantService::OnRendererProcessTerminated(int process_id) {
 
 void InstantService::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   DCHECK_EQ(observed_theme, native_theme_);
-  // Force the theme information to rebuild so the correct using_dark_mode value
-  // is sent to the renderer.
+  // Force the theme information to rebuild so the correct using_dark_colors
+  // value is sent to the renderer.
   BuildThemeInfo();
   UpdateThemeInfo();
 }
@@ -662,7 +662,7 @@ void InstantService::BuildThemeInfo() {
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
   theme_info_->using_default_theme = theme_service->UsingDefaultTheme();
 
-  theme_info_->using_dark_mode = native_theme_->SystemDarkModeEnabled();
+  theme_info_->using_dark_colors = native_theme_->ShouldUseDarkColors();
 
   // Get theme colors.
   const ui::ThemeProvider& theme_provider =

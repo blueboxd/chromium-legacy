@@ -1232,11 +1232,11 @@ void TabStrip::ChangeTabGroup(int model_index,
     auto header = std::make_unique<TabGroupHeader>(this, new_group.value());
     header->set_owned_by_client();
     AddChildView(header.get());
-    group_headers_[new_group.value()] = std::move(header);
     layout_helper_->InsertGroupHeader(
-        new_group.value(),
+        new_group.value(), header.get(),
         base::BindOnce(&TabStrip::OnGroupCloseAnimationCompleted,
                        base::Unretained(this), new_group.value()));
+    group_headers_[new_group.value()] = std::move(header);
   }
   if (old_group.has_value() &&
       controller_->ListTabsInGroup(old_group.value()).size() == 0) {

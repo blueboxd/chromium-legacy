@@ -16,6 +16,7 @@
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_title_source.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "url/gurl.h"
 
 // ID used by Instant code to refer to objects (e.g. Autocomplete results, Most
@@ -51,10 +52,11 @@ struct ThemeBackgroundInfo {
   bool operator==(const ThemeBackgroundInfo& rhs) const;
 
   // True if the default theme is selected.
-  bool using_default_theme;
+  bool using_default_theme = true;
 
-  // True if dark mode is enabled.
-  bool using_dark_mode;
+  // True if the system theme uses a light-on-dark color scheme instead of
+  // dark-on-light.
+  bool using_dark_colors = false;
 
   // Url of the custom background selected by the user.
   GURL custom_background_url;
@@ -86,24 +88,26 @@ struct ThemeBackgroundInfo {
 
   // The theme background image horizontal alignment is only valid if |theme_id|
   // is valid.
-  ThemeBackgroundImageAlignment image_horizontal_alignment;
+  ThemeBackgroundImageAlignment image_horizontal_alignment =
+      THEME_BKGRND_IMAGE_ALIGN_CENTER;
 
   // The theme background image vertical alignment is only valid if |theme_id|
   // is valid.
-  ThemeBackgroundImageAlignment image_vertical_alignment;
+  ThemeBackgroundImageAlignment image_vertical_alignment =
+      THEME_BKGRND_IMAGE_ALIGN_CENTER;
 
   // The theme background image tiling is only valid if |theme_id| is valid.
-  ThemeBackgroundImageTiling image_tiling;
+  ThemeBackgroundImageTiling image_tiling = THEME_BKGRND_IMAGE_NO_REPEAT;
 
   // True if theme has attribution logo.
   // Value is only valid if |theme_id| is valid.
-  bool has_attribution;
+  bool has_attribution = false;
 
   // True if theme has an alternate logo.
-  bool logo_alternate;
+  bool logo_alternate = false;
 
   // True if theme has NTP image.
-  bool has_theme_image;
+  bool has_theme_image = false;
 
   // The theme name.
   std::string theme_name;
@@ -111,13 +115,13 @@ struct ThemeBackgroundInfo {
   // The color id for Chrome Colors. It is -1 if Chrome Colors is not set, 0
   // when Chrome Colors is set but not from predefined color list, and > 0 if
   // Chrome Colors is set from predefined color list.
-  int color_id;
+  int color_id = 0;
 
   // The dark color for Chrome Colors. Valid only if Chrome Colors is set.
-  SkColor color_dark;
+  SkColor color_dark = gfx::kPlaceholderColor;
 
   // The light color for Chrome Colors. Valid only if Chrome Colors is set.
-  SkColor color_light;
+  SkColor color_light = gfx::kPlaceholderColor;
 };
 
 struct InstantMostVisitedItem {
@@ -156,14 +160,14 @@ struct InstantMostVisitedInfo {
   // True if the source of the |items| is custom links (i.e.
   // ntp_tiles::TileSource::CUSTOM_LINKS). Required since the source cannot be
   // checked if |items| is empty.
-  bool items_are_custom_links;
+  bool items_are_custom_links = false;
 
   // True if Most Visited functionality is enabled instead of customizable
   // shortcuts.
-  bool use_most_visited;
+  bool use_most_visited = false;
 
   // True if the items are visible and not hidden by the user.
-  bool is_visible;
+  bool is_visible = true;
 };
 
 // An InstantMostVisitedItem along with its assigned restricted ID.

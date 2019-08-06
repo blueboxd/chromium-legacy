@@ -1593,7 +1593,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestConsoleOnNavigateBack) {
   RunTest("testConsoleOnNavigateBack", kNavigateBackTestPage);
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDeviceEmulation) {
+#if defined(OS_LINUX)
+// Flaking on linux runs, see crbug.com/990692.
+#define MAYBE_TestDeviceEmulation DISABLED_TestDeviceEmulation
+#else
+#define MAYBE_TestDeviceEmulation TestDeviceEmulation
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestDeviceEmulation) {
   RunTest("testDeviceMetricsOverrides", "about:blank");
 }
 

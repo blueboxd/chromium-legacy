@@ -278,6 +278,7 @@ js_library("switch_access") {
   externs_list = [
     "$externs_path/automation.js",
     "$externs_path/chrome_extensions.js",
+    "$externs_path/clipboard.js",
     "$externs_path/command_line_private.js",
   ]
 }

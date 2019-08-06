@@ -83,10 +83,11 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
   application.launchArguments = arguments;
 
   [application launch];
+  if (self.runningApplication) {
+    [self.observers appLaunchManagerDidRelaunchApp:self];
+  }
   self.runningApplication = application;
   self.currentLaunchArgs = arguments;
-
-  [self.observers appLaunchManagerDidRelaunchApp:self];
 #endif
 }
 

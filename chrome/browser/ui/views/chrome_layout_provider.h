@@ -51,6 +51,9 @@ enum ChromeDistanceMetric {
   // Horizontal indent of a subsection relative to related items above, e.g.
   // checkboxes below explanatory text/headings.
   DISTANCE_SUBSECTION_HORIZONTAL_INDENT,
+  // The horizontal padding on each side of a tab group header's title chip that
+  // creates visual space between it and the adjacent tabs.
+  DISTANCE_TAB_GROUP_TITLE_CHIP_MARGIN,
   // Vertical margin for controls in a toast.
   DISTANCE_TOAST_CONTROL_VERTICAL,
   // Vertical margin for labels in a toast.

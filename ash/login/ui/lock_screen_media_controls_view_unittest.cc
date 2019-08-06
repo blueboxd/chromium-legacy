@@ -238,43 +238,57 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsViewTest);
 };
 
-TEST_F(LockScreenMediaControlsViewTest, KeepMediaSessionDataBetweenSessions) {
-  // Simulate media session stopping.
-  media_controls_view_->MediaSessionChanged(base::nullopt);
-
-  // Simulate new media session starting within the timer delay.
-  SimulateMediaSessionChanged(
-      media_session::mojom::MediaPlaybackState::kPlaying);
-
-  // Set icon for new media session.
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(kAppIconSize, kAppIconSize);
-  media_controls_view_->MediaControllerImageChanged(
-      media_session::mojom::MediaSessionImageType::kSourceIcon, bitmap);
-
-  // Default icon.
-  gfx::ImageSkia default_icon = gfx::CreateVectorIcon(
-      message_center::kProductIcon, kAppIconSize, gfx::kChromeIconGrey);
-
-  // Verify that the default icon is not drawn.
-  EXPECT_FALSE(icon_view()->GetImage().BackedBySameObjectAs(default_icon));
-
-  // Set artwork for new media session.
-  SkBitmap artwork;
-  artwork.allocN32Pixels(kArtworkViewWidth, kArtworkViewHeight);
-  media_controls_view_->MediaControllerImageChanged(
-      media_session::mojom::MediaSessionImageType::kArtwork, artwork);
-
-  // Verify that the default artwork is not drawn.
-  EXPECT_FALSE(artwork_view()->GetImage().isNull());
-
-  // Set app name for new media session.
+TEST_F(LockScreenMediaControlsViewTest, DoNotUpdateMetadataBetweenSessions) {
+  // Set app name for current session
   media_session::MediaMetadata metadata;
   metadata.source_title = kTestAppName;
   media_controls_view_->MediaSessionMetadataChanged(metadata);
 
-  // Verify that the default name is not used.
+  // Simulate new media session starting.
+  metadata.source_title = base::ASCIIToUTF16("AppName2");
+  SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState::kPlaying);
+  media_controls_view_->MediaSessionMetadataChanged(metadata);
+
   EXPECT_EQ(kTestAppName, GetAppName());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, DoNotUpdateArtworkBetweenSessions) {
+  SkBitmap image;
+  image.allocN32Pixels(10, 10);
+  image.eraseColor(SK_ColorMAGENTA);
+
+  SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState::kPlaying);
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, image);
+
+  EXPECT_TRUE(artwork_view()->GetImage().isNull());
+}
+
+TEST_F(LockScreenMediaControlsViewTest,
+       DoNotUpdatePlaybackStateBetweenSessions) {
+  EnableAction(MediaSessionAction::kPlay);
+  EnableAction(MediaSessionAction::kPause);
+
+  SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState::kPaused);
+
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPlay));
+}
+
+TEST_F(LockScreenMediaControlsViewTest, DoNotUpdateActionsBetweenSessions) {
+  EXPECT_FALSE(
+      GetButtonForAction(MediaSessionAction::kSeekForward)->GetVisible());
+
+  SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState::kPlaying);
+
+  EnableAction(MediaSessionAction::kSeekForward);
+
+  EXPECT_FALSE(
+      GetButtonForAction(MediaSessionAction::kSeekForward)->GetVisible());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, ButtonsSanityCheck) {

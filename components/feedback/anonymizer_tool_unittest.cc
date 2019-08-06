@@ -19,6 +19,10 @@ class AnonymizerToolTest : public testing::Test {
     return anonymizer_.AnonymizeMACAddresses(input);
   }
 
+  std::string AnonymizeHashes(const std::string& input) {
+    return anonymizer_.AnonymizeHashes(input);
+  }
+
   std::string AnonymizeAndroidAppStoragePaths(const std::string& input) {
     return anonymizer_.AnonymizeAndroidAppStoragePaths(input);
   }
@@ -53,6 +57,10 @@ TEST_F(AnonymizerToolTest, Anonymize) {
   EXPECT_EQ("[MAC OUI=02:46:8a IFACE=1]",
             anonymizer_.Anonymize("02:46:8a:ce:13:57"));
 
+  // Make sure hash anonymization is invoked.
+  EXPECT_EQ("<HASH:1122 1>",
+            anonymizer_.Anonymize("11223344556677889900AABBCCDDEEFF"));
+
   // Make sure custom pattern anonymization is invoked.
   EXPECT_EQ("Cell ID: '1'", AnonymizeCustomPatterns("Cell ID: 'A1B2'"));
 
@@ -79,6 +87,10 @@ TEST_F(AnonymizerToolTest, AnonymizeMACAddresses) {
   EXPECT_EQ("11:22:33:44:55", AnonymizeMACAddresses("11:22:33:44:55"));
   EXPECT_EQ("[MAC OUI=aa:bb:cc IFACE=1]",
             AnonymizeMACAddresses("aa:bb:cc:dd:ee:ff"));
+  EXPECT_EQ("[MAC OUI=aa:bb:cc IFACE=1]",
+            AnonymizeMACAddresses("aa_bb_cc_dd_ee_ff"));
+  EXPECT_EQ("[MAC OUI=aa:bb:cc IFACE=1]",
+            AnonymizeMACAddresses("aa-bb-cc-dd-ee-ff"));
   EXPECT_EQ("00:00:00:00:00:00", AnonymizeMACAddresses("00:00:00:00:00:00"));
   EXPECT_EQ("ff:ff:ff:ff:ff:ff", AnonymizeMACAddresses("ff:ff:ff:ff:ff:ff"));
   EXPECT_EQ(
@@ -96,6 +108,51 @@ TEST_F(AnonymizerToolTest, AnonymizeMACAddresses) {
                             "x bb:cc:dd:ee:ff:00 cc:dd:ee:ff:00:11 x\n"));
   EXPECT_EQ("Remember [MAC OUI=bb:cc:dd IFACE=2]?",
             AnonymizeMACAddresses("Remember bB:Cc:DD:ee:ff:00?"));
+}
+
+TEST_F(AnonymizerToolTest, AnonymizeHashes) {
+  EXPECT_EQ("", AnonymizeHashes(""));
+  EXPECT_EQ("foo\nbar\n", AnonymizeHashes("foo\nbar\n"));
+  // Too short.
+  EXPECT_EQ("11223344556677889900aabbccddee",
+            AnonymizeHashes("11223344556677889900aabbccddee"));
+  // Not the right length.
+  EXPECT_EQ("11223344556677889900aabbccddeeff1122",
+            AnonymizeHashes("11223344556677889900aabbccddeeff1122"));
+  // Too long.
+  EXPECT_EQ(
+      "11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff11",
+      AnonymizeHashes("11223344556677889900aabbccddeeff11223344556677889900aabb"
+                      "ccddeeff11"));
+  // Test all 3 valid lengths.
+  EXPECT_EQ("<HASH:aabb 1>",
+            AnonymizeHashes("aabbccddeeff00112233445566778899"));
+  EXPECT_EQ("<HASH:aabb 2>",
+            AnonymizeHashes("aabbccddeeff00112233445566778899aabbccdd"));
+  EXPECT_EQ(
+      "<HASH:9988 3>",
+      AnonymizeHashes(
+          "99887766554433221100ffeeddccbbaaaabbccddeeff00112233445566778899"));
+  // Skip 32 byte hashes that have a at least 3 whitespace chars before it.
+  EXPECT_EQ("  <HASH:aabb 1>",
+            AnonymizeHashes("  aabbccddeeff00112233445566778899"));
+  EXPECT_EQ("   aabbccddeeff00112233445566778899",
+            AnonymizeHashes("   aabbccddeeff00112233445566778899"));
+  // Multiline test.
+  EXPECT_EQ(
+      "Hash value=<HASH:aabb 1>, should be replaced as\n"
+      "well as /<HASH:aabb 1>/ and mixed case of\n"
+      "<HASH:aabb 1> but we don't go across lines\n"
+      "aabbccddeeff\n00112233445566778899 but allow multiple on a line "
+      "<HASH:aabb 4>-"
+      "<HASH:0011 5>\n",
+      AnonymizeHashes(
+          "Hash value=aabbccddeeff00112233445566778899, should be replaced as\n"
+          "well as /aabbccddeeff00112233445566778899/ and mixed case of\n"
+          "AaBbCCddEeFf00112233445566778899 but we don't go across lines\n"
+          "aabbccddeeff\n00112233445566778899 but allow multiple on a line "
+          "aabbccddeeffaabbccddeeffaabbccddeeffaabb-"
+          "00112233445566778899aabbccddeeff\n"));
 }
 
 TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
@@ -366,7 +423,9 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
     {"chrome://resources/f?user=bar",  // Potentially PII in parameter.
      "<URL: 2>"},
     {"chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js?bar=x",
-     "<URL: 3>"},         // Potentially PII in parameter.
+     "<URL: 3>"},  // Potentially PII in parameter.
+    {"/root/27540283740a0897ab7c8de0f809add2bacde78f/foo",
+     "/root/<HASH:2754 1>/foo"},  // Hash string.
 #if defined(OS_CHROMEOS)  // We only anonymize Android paths on Chrome OS.
     // Allowed android storage path.
     {"112K\t/home/root/deadbeef1234/android-data/data/system_de",

@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/tabs/tab_animation.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
+#include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
@@ -28,27 +29,15 @@ namespace {
 constexpr base::TimeDelta kTickInterval =
     base::TimeDelta::FromMilliseconds(1000 / 60.0);
 
-const TabSizeInfo& GetTabSizeInfo() {
-  static TabSizeInfo tab_size_info, touch_tab_size_info;
-  TabSizeInfo* info = ui::MaterialDesignController::touch_ui()
-                          ? &touch_tab_size_info
-                          : &tab_size_info;
-  if (info->standard_size.IsEmpty()) {
-    info->pinned_tab_width = TabStyle::GetPinnedWidth();
-    info->min_active_width = TabStyleViews::GetMinimumActiveWidth();
-    info->min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
-    info->standard_size =
-        gfx::Size(TabStyle::GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
-    info->tab_overlap = TabStyle::GetTabOverlap();
-  }
-  return *info;
-}
-
-// The types of Views that can be represented by TabSlot.
+// The types of TabSlotView that can be referenced by TabSlot.
 enum class ViewType {
   kTab,
   kGroupHeader,
 };
+
+TabLayoutConstants GetTabLayoutConstants() {
+  return {GetLayoutConstant(TAB_HEIGHT), TabStyle::GetTabOverlap()};
+}
 
 }  // namespace
 
@@ -60,7 +49,7 @@ struct TabStripLayoutHelper::TabSlot {
       base::OnceClosure removed_callback) {
     TabStripLayoutHelper::TabSlot slot;
     slot.type = ViewType::kTab;
-    slot.tab = tab;
+    slot.view = tab;
     TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
         openness, pinned, TabAnimationState::TabActiveness::kInactive, 0);
     slot.animation = std::make_unique<TabAnimation>(
@@ -70,33 +59,23 @@ struct TabStripLayoutHelper::TabSlot {
 
   static TabStripLayoutHelper::TabSlot CreateForGroupHeader(
       TabGroupId group,
+      TabGroupHeader* header,
       TabAnimationState::TabPinnedness pinned,
       base::OnceClosure removed_callback) {
     TabStripLayoutHelper::TabSlot slot;
     slot.type = ViewType::kGroupHeader;
+    slot.view = header;
     TabAnimationState initial_state = TabAnimationState::ForIdealTabState(
         TabAnimationState::TabOpenness::kOpen, pinned,
         TabAnimationState::TabActiveness::kInactive, 0);
     slot.animation = std::make_unique<TabAnimation>(
         initial_state, std::move(removed_callback));
-    slot.group = group;
     return slot;
   }
 
-  TabGroupId GetGroup() const {
-    DCHECK(group.has_value());
-    return group.value();
-  }
-
-  Tab* GetTab() const {
-    DCHECK(tab.has_value());
-    return tab.value();
-  }
-
   ViewType type;
+  TabSlotView* view;
   std::unique_ptr<TabAnimation> animation;
-  base::Optional<TabGroupId> group;
-  base::Optional<Tab*> tab;
 };
 
 TabStripLayoutHelper::TabStripLayoutHelper(
@@ -118,9 +97,8 @@ TabStripLayoutHelper::~TabStripLayoutHelper() = default;
 std::vector<Tab*> TabStripLayoutHelper::GetTabs() {
   std::vector<Tab*> tabs;
   for (const TabSlot& slot : slots_) {
-    if (slot.type == ViewType::kTab) {
-      tabs.push_back(slot.GetTab());
-    }
+    if (slot.type == ViewType::kTab)
+      tabs.push_back(static_cast<Tab*>(slot.view));
   }
 
   return tabs;
@@ -180,7 +158,7 @@ void TabStripLayoutHelper::CloseTabAt(int model_index) {
 void TabStripLayoutHelper::OnTabDestroyed(Tab* tab) {
   auto it =
       std::find_if(slots_.begin(), slots_.end(), [tab](const TabSlot& slot) {
-        return slot.type == ViewType::kTab && slot.GetTab() == tab;
+        return slot.type == ViewType::kTab && slot.view == tab;
       });
   DCHECK(it != slots_.end());
   slots_.erase(it);
@@ -224,14 +202,14 @@ void TabStripLayoutHelper::SetTabPinnedness(
 
 void TabStripLayoutHelper::InsertGroupHeader(
     TabGroupId group,
+    TabGroupHeader* header,
     base::OnceClosure header_removed_callback) {
   // TODO(958173): Animate open.
   std::vector<int> tabs_in_group = controller_->ListTabsInGroup(group);
-  const int first_tab_slot_index =
-      GetSlotIndexForTabModelIndex(tabs_in_group[0]);
-  slots_.insert(slots_.begin() + first_tab_slot_index,
+  const int header_slot_index = GetSlotIndexForTabModelIndex(tabs_in_group[0]);
+  slots_.insert(slots_.begin() + header_slot_index,
                 TabSlot::CreateForGroupHeader(
-                    group, TabAnimationState::TabPinnedness::kUnpinned,
+                    group, header, TabAnimationState::TabPinnedness::kUnpinned,
                     std::move(header_removed_callback)));
 }
 
@@ -281,7 +259,7 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
       pinned_tab_count > 0 ? GetSlotIndexForTabModelIndex(pinned_tab_count - 1)
                            : TabStripModel::kNoTab;
 
-  std::vector<TabAnimationState> ideal_animation_states;
+  std::vector<TabLayoutInfo> tab_layout_info;
   for (int i = 0; i < int{slots_.size()}; i++) {
     auto active = i == active_tab_slot_index
                       ? TabAnimationState::TabActiveness::kActive
@@ -292,12 +270,14 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
     auto open = slots_[i].animation->target_state().IsFullyClosed()
                     ? TabAnimationState::TabOpenness::kClosed
                     : TabAnimationState::TabOpenness::kOpen;
-    ideal_animation_states.push_back(
-        TabAnimationState::ForIdealTabState(open, pinned, active, 0));
+    TabAnimationState ideal_animation_state =
+        TabAnimationState::ForIdealTabState(open, pinned, active, 0);
+    tab_layout_info.push_back(
+        {ideal_animation_state, slots_[i].view->GetTabSizeInfo()});
   }
 
   const std::vector<gfx::Rect> bounds = CalculateTabBounds(
-      GetTabSizeInfo(), ideal_animation_states, available_width);
+      GetTabLayoutConstants(), tab_layout_info, available_width);
   DCHECK_EQ(slots_.size(), bounds.size());
 
   views::ViewModelT<Tab>* tabs = get_tabs_callback_.Run();
@@ -317,7 +297,7 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
         }
         break;
       case ViewType::kGroupHeader:
-        group_headers[slot.GetGroup()]->SetBoundsRect(bounds[i]);
+        slot.view->SetBoundsRect(bounds[i]);
         break;
     }
   }
@@ -331,16 +311,19 @@ void TabStripLayoutHelper::UpdateIdealBoundsForPinnedTabs() {
   first_non_pinned_tab_x_ = 0;
 
   if (pinned_tab_count > 0) {
-    std::vector<TabAnimationState> ideal_animation_states;
+    std::vector<TabLayoutInfo> layout_info;
     for (int tab_index = 0; tab_index < pinned_tab_count; tab_index++) {
-      ideal_animation_states.push_back(TabAnimationState::ForIdealTabState(
-          TabAnimationState::TabOpenness::kOpen,
-          TabAnimationState::TabPinnedness::kPinned,
-          TabAnimationState::TabActiveness::kInactive, 0));
+      TabAnimationState ideal_animation_state =
+          TabAnimationState::ForIdealTabState(
+              TabAnimationState::TabOpenness::kOpen,
+              TabAnimationState::TabPinnedness::kPinned,
+              TabAnimationState::TabActiveness::kInactive, 0);
+      layout_info.push_back(
+          {ideal_animation_state, tabs->view_at(tab_index)->GetTabSizeInfo()});
     }
 
     const std::vector<gfx::Rect> tab_bounds =
-        CalculatePinnedTabBounds(GetTabSizeInfo(), ideal_animation_states);
+        CalculatePinnedTabBounds(GetTabLayoutConstants(), layout_info);
 
     for (int i = 0; i < pinned_tab_count; ++i)
       tabs->set_ideal_bounds(i, tab_bounds[i]);
@@ -353,7 +336,7 @@ int TabStripLayoutHelper::LayoutTabs(int available_width) {
       get_group_headers_callback_.Run();
 
   std::vector<gfx::Rect> bounds = CalculateTabBounds(
-      GetTabSizeInfo(), GetCurrentTabStates(), available_width);
+      GetTabLayoutConstants(), CreateTabLayoutInfo(), available_width);
 
   if (DCHECK_IS_ON()) {
     int num_closing_tabs = 0;
@@ -373,7 +356,7 @@ int TabStripLayoutHelper::LayoutTabs(int available_width) {
   for (size_t i = 0; i < bounds.size(); i++) {
     switch (slots_[i].type) {
       case ViewType::kTab: {
-        Tab* tab = slots_[i].GetTab();
+        Tab* tab = static_cast<Tab*>(slots_[i].view);
         if (!tab->dragging()) {
           tab->SetBoundsRect(bounds[i]);
           trailing_x = std::max(trailing_x, bounds[i].right());
@@ -389,8 +372,7 @@ int TabStripLayoutHelper::LayoutTabs(int available_width) {
         break;
       }
       case ViewType::kGroupHeader: {
-        TabGroupHeader* header = group_headers[slots_[i].GetGroup()];
-        header->SetBoundsRect(bounds[i]);
+        slots_[i].view->SetBoundsRect(bounds[i]);
         trailing_x = std::max(trailing_x, bounds[i].right());
         break;
       }
@@ -417,7 +399,7 @@ int TabStripLayoutHelper::GetSlotIndexForTabModelIndex(int model_index) const {
 int TabStripLayoutHelper::GetSlotIndexForGroupHeader(TabGroupId group) const {
   for (size_t i = 0; i < slots_.size(); i++) {
     if (slots_[i].type == ViewType::kGroupHeader &&
-        slots_[i].GetGroup() == group) {
+        static_cast<TabGroupHeader*>(slots_[i].view)->group() == group) {
       return i;
     }
   }
@@ -425,11 +407,12 @@ int TabStripLayoutHelper::GetSlotIndexForGroupHeader(TabGroupId group) const {
   return 0;
 }
 
-std::vector<TabAnimationState> TabStripLayoutHelper::GetCurrentTabStates()
-    const {
-  std::vector<TabAnimationState> result;
-  for (const TabSlot& slot : slots_)
-    result.push_back(slot.animation->GetCurrentState());
+std::vector<TabLayoutInfo> TabStripLayoutHelper::CreateTabLayoutInfo() const {
+  std::vector<TabLayoutInfo> result;
+  for (const TabSlot& slot : slots_) {
+    result.push_back(
+        {slot.animation->GetCurrentState(), slot.view->GetTabSizeInfo()});
+  }
   return result;
 }
 

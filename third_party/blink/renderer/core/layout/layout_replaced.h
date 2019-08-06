@@ -99,7 +99,8 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   // intrinsic size in LayoutNG.
   virtual void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const;
 
-  // This callback is invoked whenever the intrinsic size changed.
+  // This callback must be invoked whenever the underlying intrinsic size has
+  // changed.
   //
   // The intrinsic size can change due to the network (from the default
   // intrinsic size [see above] to the actual intrinsic size) or to some
@@ -111,7 +112,11 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
 
   void UpdateLayout() override;
 
-  LayoutSize IntrinsicSize() const final { return intrinsic_size_; }
+  LayoutSize IntrinsicSize() const final {
+    // TODO(vmpstr): To address the intrinsic size of replaced element for
+    // display lock.
+    return ShouldApplySizeContainment() ? LayoutSize() : intrinsic_size_;
+  }
 
   void ComputePositionedLogicalWidth(
       LogicalExtentComputedValues&) const override;

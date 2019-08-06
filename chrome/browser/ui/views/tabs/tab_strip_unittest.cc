@@ -1015,7 +1015,8 @@ TEST_P(TabStripTest, GroupHeaderBasics) {
   EXPECT_EQ(1u, headers.size());
   TabGroupHeader* header = headers[0];
   EXPECT_EQ(first_slot_x, header->x());
-  EXPECT_EQ(tab->width(), header->width());
+  EXPECT_GT(header->width(), 0);
+  EXPECT_EQ(header->bounds().right() - TabStyle::GetTabOverlap(), tab->x());
   EXPECT_EQ(tab->height(), header->height());
 }
 
@@ -1043,15 +1044,13 @@ TEST_P(TabStripTest, GroupHeaderMovesRightWithTab) {
   controller_->MoveTabIntoGroup(1, group);
   CompleteAnimationAndLayout();
 
-  TabGroupHeader* header = ListGroupHeaders()[0];
-  const int initial_header_x = header->x();
-  const int initial_tab_1_x = tab_strip_->tab_at(1)->x();
-
   controller_->MoveTab(1, 2);
   CompleteAnimationAndLayout();
 
-  EXPECT_EQ(initial_header_x, tab_strip_->tab_at(1)->x());
-  EXPECT_EQ(initial_tab_1_x, header->x());
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  // Header is now left of tab 2.
+  EXPECT_LT(tab_strip_->tab_at(1)->x(), header->x());
+  EXPECT_LT(header->x(), tab_strip_->tab_at(2)->x());
 }
 
 TEST_P(TabStripTest, GroupHeaderMovesLeftWithTab) {
@@ -1062,15 +1061,13 @@ TEST_P(TabStripTest, GroupHeaderMovesLeftWithTab) {
   controller_->MoveTabIntoGroup(2, group);
   CompleteAnimationAndLayout();
 
-  TabGroupHeader* header = ListGroupHeaders()[0];
-  const int initial_header_x = header->x();
-  const int initial_tab_1_x = tab_strip_->tab_at(1)->x();
-
   controller_->MoveTab(2, 1);
   CompleteAnimationAndLayout();
 
-  EXPECT_EQ(initial_header_x, tab_strip_->tab_at(1)->x());
-  EXPECT_EQ(initial_tab_1_x, header->x());
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  // Header is now left of tab 1.
+  EXPECT_LT(tab_strip_->tab_at(0)->x(), header->x());
+  EXPECT_LT(header->x(), tab_strip_->tab_at(1)->x());
 }
 
 TEST_P(TabStripTest, GroupHeaderDoesntMoveReorderingTabsInGroup) {

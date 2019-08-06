@@ -61,9 +61,16 @@ class COMPONENT_EXPORT(UPSTART_CLIENT) UpstartClient {
 
   // Stops an Upstart job.
   // |job|: Name of Upstart job.
+  // |upstart_env|: List of upstart environment variables to be passed to the
+  // upstart service.
   // |callback|: Called with a response.
   virtual void StopJob(const std::string& job,
+                       const std::vector<std::string>& upstart_env,
                        VoidDBusMethodCallback callback) = 0;
+
+  void StopJob(const std::string& job, VoidDBusMethodCallback callback) {
+    StopJob(job, {}, std::move(callback));
+  }
 
   // Starts authpolicyd.
   virtual void StartAuthPolicyService() = 0;

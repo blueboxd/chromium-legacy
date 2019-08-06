@@ -174,6 +174,7 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     result->description_class =
         mojo::ConvertTo<std::vector<mojom::ACMatchClassificationPtr>>(
             input.description_class);
+    result->swap_contents_and_description = input.swap_contents_and_description;
     if (input.answer) {
       result->answer =
           SuggestionAnswerImageLineToString(input.answer->first_line()) +

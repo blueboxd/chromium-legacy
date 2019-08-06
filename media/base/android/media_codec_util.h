@@ -77,9 +77,6 @@ class MEDIA_EXPORT MediaCodecUtil {
   static bool IsHEVCDecoderAvailable();
 #endif
 
-  // Indicates if the h264 encoder is available on this device.
-  static bool IsH264EncoderAvailable();
-
   // Indicates if SurfaceView and MediaCodec work well together on this device.
   static bool IsSurfaceViewOutputSupported();
 
@@ -103,6 +100,12 @@ class MEDIA_EXPORT MediaCodecUtil {
   // create a MediaCodec (which requires permissions) to get the codec name.
   static bool CanDecode(VideoCodec codec, bool is_secure);
   static bool CanDecode(AudioCodec codec);
+
+  // Indicates if the h264 encoder is available on this device.
+  //
+  // WARNING: This can't be used from the renderer process since it attempts to
+  // access MediaCodecList (which requires permissions).
+  static bool IsH264EncoderAvailable();
 
   // Returns a vector of supported codecs profiles and levels.
   //

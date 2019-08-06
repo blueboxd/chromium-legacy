@@ -94,7 +94,6 @@ class AuthenticatorRequestSheetView : public views::View,
   void OnThemeChanged() override;
 
   std::unique_ptr<AuthenticatorRequestSheetModel> model_;
-  bool in_dark_mode_;
   views::Button* back_arrow_button_ = nullptr;
   views::View* step_specific_content_ = nullptr;
   NonAccessibleImageView* step_illustration_ = nullptr;

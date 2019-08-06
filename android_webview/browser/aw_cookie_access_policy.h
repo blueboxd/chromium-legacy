@@ -38,10 +38,6 @@ class AwCookieAccessPolicy {
                                         int frame_tree_node_id);
   bool GetShouldAcceptThirdPartyCookies(const net::URLRequest& request);
 
-  // Whether or not to allow cookies to bet sent or set for |request|. Can only
-  // be called from the IO thread.
-  bool AllowCookies(const net::URLRequest& request);
-
   // Whether or not to allow cookies for requests with these parameters.
   bool AllowCookies(const GURL& url,
                     const GURL& first_party,

@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 
+import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type;
@@ -20,8 +21,9 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetT
  */
 public class TouchToFillSheetCoordinator extends AccessorySheetTabCoordinator {
     private AccessorySheetTabModel mModel = new AccessorySheetTabModel();
-    private final AccessorySheetTabMediator mMediator = new AccessorySheetTabMediator(
-            mModel, AccessoryTabType.TOUCH_TO_FILL, Type.TOUCH_TO_FILL_INFO);
+    private final AccessorySheetTabMediator mMediator =
+            new AccessorySheetTabMediator(mModel, AccessoryTabType.TOUCH_TO_FILL,
+                    Type.TOUCH_TO_FILL_INFO, AccessoryAction.MANAGE_PASSWORDS);
 
     /**
      * Creates the touch to fill tab.

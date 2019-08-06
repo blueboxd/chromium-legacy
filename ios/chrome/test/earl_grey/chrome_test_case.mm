@@ -185,7 +185,12 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   [super setUp];
   [ChromeTestCase setUpHelper];
 }
-#endif  // CHROME_EARL_GREY_1
+#elif defined(CHROME_EARL_GREY_2)
++ (void)setUpForTestCase {
+  [super setUpForTestCase];
+  [ChromeTestCase setUpHelper];
+}
+#endif  // CHROME_EARL_GREY_2
 
 // Tear down called once for the class, to shutdown mock authentication and
 // the HTTP server.

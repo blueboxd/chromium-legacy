@@ -519,7 +519,7 @@ class MetaBuildWrapper(object):
     if self.platform == 'darwin':
       os_dim = ('os', 'Mac-10.13')
     elif self.platform.startswith('linux'):
-      os_dim = ('os', 'Ubuntu-14.04')
+      os_dim = ('os', 'Ubuntu-16.04')
     elif self.platform == 'win32':
       os_dim = ('os', 'Windows-10')
     else:

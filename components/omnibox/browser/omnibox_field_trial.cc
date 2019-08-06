@@ -673,24 +673,6 @@ bool OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled() {
       omnibox::kHideSteadyStateUrlTrivialSubdomains);
 }
 
-base::Optional<int>
-OmniboxFieldTrial::GetSuggestionVerticalMarginFieldTrialOverride() {
-  if (!base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalMargin))
-    return base::nullopt;
-
-  if (base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentVerticalMarginLimitToNonTouchOnly) &&
-      ui::MaterialDesignController::touch_ui()) {
-    return base::nullopt;
-  }
-
-  // When the vertical margin is set to 2dp, the suggestion height is the
-  // closest to the pre-Refresh height. In fact it's 1dp taller than the
-  // pre-Refresh height on Linux.
-  return base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kUIExperimentVerticalMargin, kUIVerticalMarginParam, 2);
-}
-
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
 }
@@ -781,7 +763,6 @@ const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam[] =
     "UIMaxAutocompleteMatches";
 const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesByProviderParam[] =
     "UIMaxAutocompleteMatchesByProvider";
-const char OmniboxFieldTrial::kUIVerticalMarginParam[] = "UIVerticalMargin";
 
 const char OmniboxFieldTrial::kOnFocusSuggestionsEndpointExperimentIdParam[] =
     "CustomEndpointExperimentID";

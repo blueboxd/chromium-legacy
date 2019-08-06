@@ -27,6 +27,8 @@
 #include "chrome/android/chrome_jni_headers/SharingJNIBridge_jni.h"
 #endif
 
+using instance_id::InstanceID;
+
 SharingDeviceRegistration::SharingDeviceRegistration(
     SharingSyncPreference* sharing_sync_preference,
     instance_id::InstanceIDDriver* instance_id_driver,
@@ -58,7 +60,7 @@ void SharingDeviceRegistration::RegisterDevice(RegistrationCallback callback) {
   instance_id_driver_->GetInstanceID(kSharingFCMAppID)
       ->GetToken(*authorized_entity, kFCMScope,
                  /*options=*/{},
-                 /*is_lazy=*/false,
+                 /*flags=*/{InstanceID::Flags::kBypassScheduler},
                  base::BindOnce(&SharingDeviceRegistration::OnFCMTokenReceived,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 std::move(callback), *authorized_entity));
@@ -68,23 +70,23 @@ void SharingDeviceRegistration::OnFCMTokenReceived(
     RegistrationCallback callback,
     const std::string& authorized_entity,
     const std::string& fcm_registration_token,
-    instance_id::InstanceID::Result result) {
+    InstanceID::Result result) {
   switch (result) {
-    case instance_id::InstanceID::SUCCESS:
+    case InstanceID::SUCCESS:
       sharing_sync_preference_->SetFCMRegistration(
           {authorized_entity, fcm_registration_token, base::Time::Now()});
       RetrieveEncryptionInfo(std::move(callback), authorized_entity,
                              fcm_registration_token);
       break;
-    case instance_id::InstanceID::NETWORK_ERROR:
-    case instance_id::InstanceID::SERVER_ERROR:
-    case instance_id::InstanceID::ASYNC_OPERATION_PENDING:
+    case InstanceID::NETWORK_ERROR:
+    case InstanceID::SERVER_ERROR:
+    case InstanceID::ASYNC_OPERATION_PENDING:
       std::move(callback).Run(
           SharingDeviceRegistrationResult::kFcmTransientError);
       break;
-    case instance_id::InstanceID::INVALID_PARAMETER:
-    case instance_id::InstanceID::UNKNOWN_ERROR:
-    case instance_id::InstanceID::DISABLED:
+    case InstanceID::INVALID_PARAMETER:
+    case InstanceID::UNKNOWN_ERROR:
+    case InstanceID::DISABLED:
       std::move(callback).Run(SharingDeviceRegistrationResult::kFcmFatalError);
       break;
   }
@@ -143,25 +145,24 @@ void SharingDeviceRegistration::UnregisterDevice(
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void SharingDeviceRegistration::OnFCMTokenDeleted(
-    RegistrationCallback callback,
-    instance_id::InstanceID::Result result) {
+void SharingDeviceRegistration::OnFCMTokenDeleted(RegistrationCallback callback,
+                                                  InstanceID::Result result) {
   switch (result) {
-    case instance_id::InstanceID::SUCCESS:
+    case InstanceID::SUCCESS:
       // INVALID_PARAMETER is expected if InstanceID.GetToken hasn't been
       // invoked since restart.
-    case instance_id::InstanceID::INVALID_PARAMETER:
+    case InstanceID::INVALID_PARAMETER:
       sharing_sync_preference_->ClearFCMRegistration();
       std::move(callback).Run(SharingDeviceRegistrationResult::kSuccess);
       return;
-    case instance_id::InstanceID::NETWORK_ERROR:
-    case instance_id::InstanceID::SERVER_ERROR:
-    case instance_id::InstanceID::ASYNC_OPERATION_PENDING:
+    case InstanceID::NETWORK_ERROR:
+    case InstanceID::SERVER_ERROR:
+    case InstanceID::ASYNC_OPERATION_PENDING:
       std::move(callback).Run(
           SharingDeviceRegistrationResult::kFcmTransientError);
       return;
-    case instance_id::InstanceID::UNKNOWN_ERROR:
-    case instance_id::InstanceID::DISABLED:
+    case InstanceID::UNKNOWN_ERROR:
+    case InstanceID::DISABLED:
       std::move(callback).Run(SharingDeviceRegistrationResult::kFcmFatalError);
       return;
   }

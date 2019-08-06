@@ -119,9 +119,6 @@
     'arc_auth': {
       'filepath': 'chrome/browser/chromeos/arc/arc_auth'
     },
-    'arc_common': {
-      'filepath': 'components/arc/common/',
-    },
     'arc_ime': {
       'filepath': 'chrome/browser/chromeos/arc/input_method_manager/'\
                   '|components/arc/ime/'
@@ -130,6 +127,9 @@
       'filepath': 'chrome/browser/chromeos/app_mode/arc/'\
                   '|components/arc/kiosk/'\
                   '|arc_kiosk'
+    },
+    'arc_mojom': {
+      'filepath': 'components/arc/mojom/',
     },
     'arc_net': {
       'filepath': 'components/arc/net/',
@@ -1015,7 +1015,7 @@
                   'extensions/browser/api/guest_view|'\
                   'extensions/browser/guest_view|'\
                   'extensions/common/guest_view|'\
-                  'extensions/common/mojo/guest_view.mojom|'\
+                  'extensions/common/mojom/guest_view.mojom|'\
                   'extensions/common/api/*view*.json|'\
                   'extensions/renderer/guest_view',
     },
@@ -1168,7 +1168,7 @@
     'media_remoting': {
       'filepath': 'chrome/browser/media/cast_remoting'\
                   '|media/blink/webmediaplayer_'\
-                  '|media/mojo/interfaces/remoting.mojom'\
+                  '|media/mojo/mojom/remoting.mojom'\
                   '|media/remoting/',
     },
     'media_router': {
@@ -1663,7 +1663,7 @@
         '|media/audio/(audio_output_controller|fake_audio_|virtual_audio_)'\
         '|media/base/video_frame\.h'\
         '|media/capture/'\
-        '|services/viz/privileged/interfaces/compositing/frame_sink',
+        '|services/viz/privileged/mojom/compositing/frame_sink',
     },
     'tab_contents': {
       'filepath': 'chrome/browser/tab_contents/|'\
@@ -1814,7 +1814,7 @@
       'filepath': 'wake_lock',
     },
     'wallpapers': {
-      'filepath': 'ash/public/interfaces/wallpaper.mojom'\
+      'filepath': 'components/arc/common/wallpaper.mojom'\
                   '|ash/wallpaper/'\
                   '|chrome/browser/resources/chromeos/wallpaper_manager/',
     },
@@ -1952,9 +1952,9 @@
             'yusukes+watch@chromium.org',
             'arc-reviews+chromium@google.com'],
     'arc_auth': ['khmel+watch@chromium.org'],
-    'arc_common': ['hashimoto+watch@chromium.org'],
     'arc_ime': ['yhanada+watch@chromium.org'],
     'arc_kiosk': ['poromov+watch@chromium.org'],
+    'arc_mojom': ['hashimoto+watch@chromium.org'],
     'arc_net': ['abhishekbh@chromium.org',
                 'cernekee@chromium.org',
                 'snanda@chromium.org'],

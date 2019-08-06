@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -24,12 +25,13 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/masked_targeter_delegate.h"
-#include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 
 class AlertIndicator;
 class TabCloseButton;
 class TabController;
 class TabIcon;
+struct TabSizeInfo;
 class TabStyleViews;
 
 namespace gfx {
@@ -38,6 +40,7 @@ class LinearAnimation;
 }  // namespace gfx
 namespace views {
 class Label;
+class View;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,8 +52,8 @@ class Tab : public gfx::AnimationDelegate,
             public views::ButtonListener,
             public views::ContextMenuController,
             public views::MaskedTargeterDelegate,
-            public views::View,
-            public views::ViewObserver {
+            public views::ViewObserver,
+            public TabSlotView {
  public:
   // The Tab's class name.
   static const char kViewClassName[];
@@ -79,7 +82,7 @@ class Tab : public gfx::AnimationDelegate,
   // views::MaskedTargeterDelegate:
   bool GetHitTestMask(SkPath* mask) const override;
 
-  // views::View:
+  // TabSlotView:
   void Layout() override;
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
@@ -101,6 +104,7 @@ class Tab : public gfx::AnimationDelegate,
   void OnFocus() override;
   void OnBlur() override;
   void OnThemeChanged() override;
+  TabSizeInfo GetTabSizeInfo() const override;
 
   TabController* controller() const { return controller_; }
 

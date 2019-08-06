@@ -86,7 +86,7 @@ void FootnoteContainerView::ResetBackground() {
 
 void FootnoteContainerView::ResetBorder() {
   SetBorder(CreateSolidSidedBorder(1, 0, 0, 0,
-                                   GetNativeTheme()->SystemDarkModeEnabled()
+                                   GetNativeTheme()->ShouldUseDarkColors()
                                        ? gfx::kGoogleGrey900
                                        : gfx::kGoogleGrey200));
 }

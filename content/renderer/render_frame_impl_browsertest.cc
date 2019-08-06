@@ -163,9 +163,7 @@ class RenderFrameImplTest : public RenderViewTest {
 
   TestRenderFrame* frame() { return frame_; }
 
-  content::RenderWidget* frame_widget() const {
-    return frame_->render_widget_.get();
-  }
+  content::RenderWidget* frame_widget() const { return frame_->render_widget_; }
 
   static url::Origin GetOriginForFrame(TestRenderFrame* frame) {
     return url::Origin(frame->GetWebFrame()->GetSecurityOrigin());

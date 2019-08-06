@@ -60,10 +60,14 @@ class PasswordManagerPresenter
   // Gets the password exception entry at |index|.
   const autofill::PasswordForm* GetPasswordException(size_t index) const;
 
-  // Changes the username and password corresponding to |sort_key|.
+  // Changes the username and password at |index|, or corresponding to
+  // |sort_key|.
+  void ChangeSavedPassword(size_t index,
+                           const base::string16& new_username,
+                           const base::Optional<base::string16>& new_password);
   void ChangeSavedPassword(const std::string& sort_key,
-                           base::string16 new_username,
-                           base::Optional<base::string16> new_password);
+                           const base::string16& new_username,
+                           const base::Optional<base::string16>& new_password);
 
   // Removes the saved password entries at |index|, or corresponding to
   // |sort_key|, respectively.
@@ -109,6 +113,12 @@ class PasswordManagerPresenter
   using PasswordFormMap =
       std::map<std::string,
                std::vector<std::unique_ptr<autofill::PasswordForm>>>;
+
+  // Implementation used in both |ChangeSavedPassword()| methods.
+  void ChangeSavedPasswords(
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>& old_forms,
+      const base::string16& new_username,
+      const base::Optional<base::string16>& new_password);
 
   // Attempts to remove the entries corresponding to |index| from |form_map|.
   // This will also add a corresponding undo operation to |undo_manager_|.

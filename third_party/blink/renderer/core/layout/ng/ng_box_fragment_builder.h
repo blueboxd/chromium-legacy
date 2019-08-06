@@ -157,6 +157,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // the break if we instead break at an earlier element.
   void SetHasLastResortBreak() { has_last_resort_break_ = true; }
 
+  // Set when we have iterated over all the children. This means that all
+  // children have been fully laid out, or have break tokens. No more children
+  // left to discover.
+  void SetHasSeenAllChildren() { has_seen_all_children_ = true; }
+
   // Offsets are not supposed to be set during fragment construction, so we
   // do not provide a setter here.
 
@@ -258,6 +263,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool did_break_;
   bool has_forced_break_ = false;
   bool is_new_fc_ = false;
+  bool has_seen_all_children_ = false;
   LayoutUnit used_block_size_;
 
   LayoutUnit minimal_space_shortage_ = LayoutUnit::Max();

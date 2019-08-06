@@ -868,7 +868,7 @@ customize.richerPicker_isOptionSelected = function() {
 customize.richerPicker_maybeToggleDone = function() {
   const enable = customize.richerPicker_isOptionSelected();
   $(customize.IDS.MENU_DONE).disabled = !enable;
-  $(customize.IDS.MENU_DONE).tabIndex = enable ? 1 : 0;
+  $(customize.IDS.MENU_DONE).tabIndex = enable ? 0 : -1;
 };
 
 /**

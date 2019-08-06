@@ -41,11 +41,6 @@ class CookieManager {
  public:
   static CookieManager* GetInstance();
 
-  // Returns the TaskRunner on which the CookieStore lives.
-  base::SingleThreadTaskRunner* GetCookieStoreTaskRunner();
-  // Returns the CookieStore, creating it if necessary. This must only be called
-  // on the CookieStore TaskRunner.
-  net::CookieStore* GetCookieStore();
   // Passes a |cookie_manager_info|, which this will use for CookieManager APIs
   // going forward. Only called in the Network Service path, with the intention
   // this is called once during content initialization (when we create the
@@ -76,6 +71,10 @@ class CookieManager {
 
   CookieManager();
   ~CookieManager();
+
+  // Returns the CookieStore, creating it if necessary. This must only be called
+  // on the CookieStore TaskRunner.
+  net::CookieStore* GetCookieStore();
 
   // Gets the Network Service CookieManager if it's been passed via
   // |SetMojoCookieManager|. Otherwise (if Network Service is disabled or

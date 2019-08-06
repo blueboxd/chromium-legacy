@@ -112,20 +112,18 @@ void SetExtensionThrottleManagerTestPolicy(
 }  // namespace
 
 URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
+    service_manager::Connector* connector,
     content::URLLoaderThrottleProviderType type,
     ChromeContentRendererClient* chrome_content_renderer_client)
     : type_(type),
       chrome_content_renderer_client_(chrome_content_renderer_client) {
   DETACH_FROM_THREAD(thread_checker_);
-
-  content::RenderThread::Get()->GetConnector()->BindInterface(
-      content::mojom::kBrowserServiceName,
-      mojo::MakeRequest(&safe_browsing_info_));
+  connector->BindInterface(content::mojom::kBrowserServiceName,
+                           mojo::MakeRequest(&safe_browsing_info_));
 
   if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    content::RenderThread::Get()->GetConnector()->BindInterface(
-        content::mojom::kBrowserServiceName,
-        mojo::MakeRequest(&data_reduction_proxy_info_));
+    connector->BindInterface(content::mojom::kBrowserServiceName,
+                             mojo::MakeRequest(&data_reduction_proxy_info_));
   }
 }
 

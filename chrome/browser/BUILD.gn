@@ -507,6 +507,8 @@ jumbo_split_static_library("browser") {
     "file_select_helper_contacts_android.cc",
     "file_select_helper_contacts_android.h",
     "file_select_helper_mac.mm",
+    "file_util_service.cc",
+    "file_util_service.h",
     "flag_descriptions.cc",
     "flag_descriptions.h",
     "font_pref_change_notifier.cc",
@@ -1873,6 +1875,7 @@ jumbo_split_static_library("browser") {
   public_deps = [
     "//base",
     "//chrome/common",
+    "//chrome/services/file_util/public/mojom",
     "//components/account_id",
     "//components/autofill/core/browser",
     "//components/nacl/common:buildflags",

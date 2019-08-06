@@ -27,6 +27,7 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -50,7 +51,7 @@ const CGFloat kUILabelUITextfieldBaselineDeltaInPoints = 1.0;
 
 // The default omnibox text color (used while editing).
 UIColor* TextColor() {
-  return [UIColor colorWithWhite:(51 / 255.0) alpha:1.0];
+  return [UIColor colorNamed:kTextPrimaryColor];
 }
 
 NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
@@ -369,7 +370,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   DCHECK(!_preEditStaticLabel);
   CGRect rect = [self preEditLabelRectForBounds:self.bounds];
   _preEditStaticLabel = [[UILabel alloc] initWithFrame:rect];
-  _preEditStaticLabel.backgroundColor = [UIColor clearColor];
+  _preEditStaticLabel.backgroundColor = UIColor.clearColor;
   _preEditStaticLabel.opaque = YES;
   _preEditStaticLabel.font = self.currentFont;
   _preEditStaticLabel.textColor = _displayedTextColor;
@@ -451,8 +452,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   // When editing, use the default text color for all text.
   if (self.editing) {
     // Hide the text when the |_selection| label is displayed.
-    UIColor* textColor =
-        _selection ? [UIColor clearColor] : _displayedTextColor;
+    UIColor* textColor = _selection ? UIColor.clearColor : _displayedTextColor;
     [mutableText addAttribute:NSForegroundColorAttributeName
                         value:textColor
                         range:entireString];
@@ -854,7 +854,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   [_selection setFont:self.currentFont];
   [_selection setTextColor:_displayedTextColor];
   [_selection setOpaque:NO];
-  [_selection setBackgroundColor:[UIColor clearColor]];
+  [_selection setBackgroundColor:UIColor.clearColor];
   _selection.lineBreakMode = NSLineBreakByClipping;
   [self addSubview:_selection];
   [self hideTextAndCursor];
@@ -926,7 +926,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (BOOL)isColorHidden:(UIColor*)color {
-  return ([color isEqual:[UIColor clearColor]] ||
+  return ([color isEqual:UIColor.clearColor] ||
           CGColorGetAlpha(color.CGColor) < 0.05);
 }
 
@@ -944,8 +944,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 // Set the text field's text and cursor to clear so that they don't show up
 // behind any overlaid views.
 - (void)hideTextAndCursor {
-  [self setTintColor:[UIColor clearColor]];
-  [self setTextColor:[UIColor clearColor]];
+  [self setTintColor:UIColor.clearColor];
+  [self setTextColor:UIColor.clearColor];
 }
 
 - (NSArray*)fadeAnimationLayers {

@@ -34,6 +34,7 @@ using local_discovery::ServiceResolverImplMac;
 
 - (id)initWithContainer:
         (ServiceWatcherImplMac::NetServiceBrowserContainer*)serviceWatcherImpl;
+- (void)clearDiscoveredServices;
 
 @end
 
@@ -196,6 +197,10 @@ ServiceWatcherImplMac::NetServiceBrowserContainer::
   // already gone.
   // https://crbug.com/657495, https://openradar.appspot.com/28943305
   [browser_ setDelegate:nil];
+
+  // Ensure the delegate clears all references to itself, which it had added as
+  // discovered services were reported to it.
+  [delegate_ clearDiscoveredServices];
 }
 
 void ServiceWatcherImplMac::NetServiceBrowserContainer::Start() {
@@ -459,6 +464,14 @@ ServiceResolverImplMac::GetContainerForTesting() {
   return self;
 }
 
+- (void)clearDiscoveredServices {
+  for (NSNetService* netService in services_.get()) {
+    [netService stopMonitoring];
+    [netService setDelegate:nil];
+  }
+  [services_ removeAllObjects];
+}
+
 - (void)netServiceBrowser:(NSNetServiceBrowser*)netServiceBrowser
            didFindService:(NSNetService*)netService
                moreComing:(BOOL)moreServicesComing {
@@ -481,7 +494,9 @@ ServiceResolverImplMac::GetContainerForTesting() {
         base::SysNSStringToUTF8([netService name]));
 
     // Stop monitoring this service for updates.
-    [[services_ objectAtIndex:index] stopMonitoring];
+    DCHECK_EQ(netService, [services_ objectAtIndex:index]);
+    [netService stopMonitoring];
+    [netService setDelegate:nil];
     [services_ removeObjectAtIndex:index];
   }
 }

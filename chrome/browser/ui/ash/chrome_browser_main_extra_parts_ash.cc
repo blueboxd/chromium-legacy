@@ -46,7 +46,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/session_manager/core/session_manager.h"
@@ -201,7 +201,7 @@ void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
       g_browser_process->shared_url_loader_factory());
   night_light_client_->Start();
 
-  if (chromeos::switches::IsAmbientModeEnabled())
+  if (chromeos::features::IsAmbientModeEnabled())
     photo_controller_ = std::make_unique<PhotoControllerImpl>();
 }
 
@@ -212,7 +212,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   exo_parts_.reset();
 #endif
 
-  if (chromeos::switches::IsAmbientModeEnabled())
+  if (chromeos::features::IsAmbientModeEnabled())
     photo_controller_.reset();
 
   night_light_client_.reset();

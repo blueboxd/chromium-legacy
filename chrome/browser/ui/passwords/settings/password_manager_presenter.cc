@@ -217,53 +217,25 @@ const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
 }
 
 void PasswordManagerPresenter::ChangeSavedPassword(
-    const std::string& sort_key,
-    base::string16 new_username,
-    base::Optional<base::string16> new_password) {
-  // If a password was provided, make sure it is not empty.
-  if (new_password && new_password->empty())
-    return;
+    size_t index,
+    const base::string16& new_username,
+    const base::Optional<base::string16>& new_password) {
+  DCHECK_LT(index, password_map_.size());
 
+  ChangeSavedPasswords(std::next(password_map_.begin(), index)->second,
+                       new_username, new_password);
+}
+
+void PasswordManagerPresenter::ChangeSavedPassword(
+    const std::string& sort_key,
+    const base::string16& new_username,
+    const base::Optional<base::string16>& new_password) {
   // Find the equivalence class that needs to be updated.
   auto it = password_map_.find(sort_key);
   if (it == password_map_.end())
     return;
 
-  const auto& old_forms = it->second;
-  DCHECK(!old_forms.empty());
-  const std::string& signon_realm = old_forms[0]->signon_realm;
-  const base::string16& old_username = old_forms[0]->username_value;
-
-  const bool username_changed = old_username != new_username;
-  // In case the username changed, make sure that there exists no other
-  // credential with the same signon_realm and username.
-  if (username_changed) {
-    for (const auto& sort_key_passwords_pair : password_map_) {
-      for (const auto& password : sort_key_passwords_pair.second) {
-        if (password->signon_realm == signon_realm &&
-            password->username_value == new_username) {
-          return;
-        }
-      }
-    }
-  }
-
-  PasswordStore* store = GetPasswordStore();
-  if (!store)
-    return;
-
-  // An updated username implies a change in the primary key, thus we need to
-  // make sure to call the right API. Update every entry in the equivalence
-  // class.
-  for (const auto& old_form : old_forms) {
-    autofill::PasswordForm new_form = *old_form;
-    new_form.username_value = new_username;
-    if (new_password)
-      new_form.password_value = *new_password;
-
-    username_changed ? store->UpdateLoginWithPrimaryKey(new_form, *old_form)
-                     : store->UpdateLogin(new_form);
-  }
+  ChangeSavedPasswords(it->second, new_username, new_password);
 }
 
 void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
@@ -352,6 +324,54 @@ void PasswordManagerPresenter::RemoveLogin(const autofill::PasswordForm& form) {
   undo_manager_.AddUndoOperation(
       std::make_unique<RemovePasswordOperation>(this, form));
   store->RemoveLogin(form);
+}
+
+void PasswordManagerPresenter::ChangeSavedPasswords(
+    const FormVector& old_forms,
+    const base::string16& new_username,
+    const base::Optional<base::string16>& new_password) {
+  // If a password was provided, make sure it is not empty.
+  if (new_password && new_password->empty()) {
+    DLOG(ERROR) << "The password is empty.";
+    return;
+  }
+
+  DCHECK(!old_forms.empty());
+  const std::string& signon_realm = old_forms[0]->signon_realm;
+  const base::string16& old_username = old_forms[0]->username_value;
+
+  const bool username_changed = old_username != new_username;
+  // In case the username changed, make sure that there exists no other
+  // credential with the same signon_realm and username.
+  if (username_changed) {
+    for (const auto& sort_key_passwords_pair : password_map_) {
+      for (const auto& password : sort_key_passwords_pair.second) {
+        if (password->signon_realm == signon_realm &&
+            password->username_value == new_username) {
+          DLOG(ERROR) << "A credential with the same signon_realm and username "
+                         "already exists.";
+          return;
+        }
+      }
+    }
+  }
+
+  PasswordStore* store = GetPasswordStore();
+  if (!store)
+    return;
+
+  // An updated username implies a change in the primary key, thus we need to
+  // make sure to call the right API. Update every entry in the equivalence
+  // class.
+  for (const auto& old_form : old_forms) {
+    autofill::PasswordForm new_form = *old_form;
+    new_form.username_value = new_username;
+    if (new_password)
+      new_form.password_value = *new_password;
+
+    username_changed ? store->UpdateLoginWithPrimaryKey(new_form, *old_form)
+                     : store->UpdateLogin(new_form);
+  }
 }
 
 bool PasswordManagerPresenter::TryRemovePasswordEntries(

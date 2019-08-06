@@ -69,14 +69,20 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   }
 
   void SimulateGaiaPasswordChange(const std::string& new_password) {
-    password_manager::HashPasswordManager hash_manager;
-    hash_manager.set_prefs(browser()->profile()->GetPrefs());
-    hash_manager.SavePasswordHash(user_manager::kStubUserEmail,
-                                  base::UTF8ToUTF16(new_password));
+    scoped_refptr<password_manager::PasswordStore> password_store =
+        PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                            ServiceAccessType::EXPLICIT_ACCESS)
+            .get();
+    password_store->SaveGaiaPasswordHash(
+        user_manager::kStubUserEmail, base::UTF8ToUTF16(new_password),
+        password_manager::metrics_util::SyncPasswordHashChange::
+            CHANGED_IN_CONTENT_AREA);
   }
 
-  void SimulateGaiaPasswordChanged(ChromePasswordProtectionService* service) {
-    service->OnGaiaPasswordChanged();
+  void SimulateGaiaPasswordChanged(ChromePasswordProtectionService* service,
+                                   const std::string& username,
+                                   bool is_other_gaia_password) {
+    service->OnGaiaPasswordChanged(username, is_other_gaia_password);
   }
 
   security_state::SecurityLevel GetSecurityLevel(
@@ -203,7 +209,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                   .DomainIs("google.com"));
 
   // Simulates user finished changing password.
-  SimulateGaiaPasswordChanged(service);
+  SimulateGaiaPasswordChanged(service, user_manager::kStubUserEmail,
+                              /*is_other_gaia_password=*/true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
@@ -392,7 +399,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           profile));
 
   // Simulates a Gaia password change.
-  SimulateGaiaPasswordChange("new_password");
+  SimulateGaiaPasswordChanged(service, user_manager::kStubUserEmail,
+                              /*is_other_password=*/true);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u,
             profile->GetPrefs()
@@ -411,11 +419,14 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   Profile* profile = browser()->profile();
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
   // Configures initial password to "password_1";
-  password_manager::PasswordHashData hash_data(
-      user_manager::kStubUserEmail, base::UTF8ToUTF16("password_1"), true);
-  password_manager::HashPasswordManager hash_manager;
-  hash_manager.set_prefs(profile->GetPrefs());
-  hash_manager.SavePasswordHash(hash_data);
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                          ServiceAccessType::EXPLICIT_ACCESS)
+          .get();
+  password_store->SaveGaiaPasswordHash(
+      user_manager::kStubUserEmail, base::UTF8ToUTF16("password_1"),
+      password_manager::metrics_util::SyncPasswordHashChange::
+          CHANGED_IN_CONTENT_AREA);
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
 
   // Shows modal dialog on current web_contents.
@@ -464,7 +475,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           profile));
 
   // Simulates a Gaia password change.
-  SimulateGaiaPasswordChanged(GetService(/*is_incognito=*/false));
+  SimulateGaiaPasswordChanged(GetService(/*is_incognito=*/false), "username",
+                              /*is_other_gaia_password=*/true);
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
@@ -472,45 +484,6 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       profile->GetPrefs()
           ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
           ->empty());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    ChromePasswordProtectionServiceBrowserTest,
-    VerifyIsPasswordReuseProtectionConfiguredForNonDomainUser) {
-  Profile* profile = browser()->profile();
-  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
-  // If prefs::kPasswordProtectionWarningTrigger isn't set to PASSWORD_REUSE,
-  // |IsPasswordReuseProtectionConfigured(..)| returns false.
-  EXPECT_EQ(PHISHING_REUSE, service->GetPasswordProtectionWarningTriggerPref());
-  EXPECT_FALSE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
-
-  SetUpPrimaryAccountWithHostedDomain(kNoHostedDomainFound);
-  profile->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
-                                  PasswordProtectionTrigger::PASSWORD_REUSE);
-  // Otherwise, |IsPasswordReuseProtectionConfigured(..)| returns false for
-  // GMAIL users.
-  EXPECT_FALSE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
-                       VerifyIsPasswordReuseProtectionConfiguredForDomainUser) {
-  Profile* profile = browser()->profile();
-  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
-  SetUpPrimaryAccountWithHostedDomain("domain.com");
-  EXPECT_EQ(PHISHING_REUSE, service->GetPasswordProtectionWarningTriggerPref());
-  EXPECT_FALSE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
-
-  profile->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
-                                  PasswordProtectionTrigger::PASSWORD_REUSE);
-  EXPECT_TRUE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
@@ -687,24 +660,20 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ConfigureEnterprisePasswordProtection(
       /*is_gsuite=*/true, PasswordProtectionTrigger::PHISHING_REUSE);
   Profile* profile = browser()->profile();
-  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
-  password_manager::HashPasswordManager hash_password_manager;
-  hash_password_manager.set_prefs(profile->GetPrefs());
-  hash_password_manager.SavePasswordHash(service->GetAccountInfo().email,
-                                         base::UTF8ToUTF16("password"),
-                                         /*is_gaia_password=*/true);
+  SimulateGaiaPasswordChange("password");
   ASSERT_EQ(1u, profile->GetPrefs()
                     ->GetList(password_manager::prefs::kPasswordHashDataList)
                     ->GetList()
                     .size());
-
   // Turn off trigger
   profile->GetPrefs()->SetInteger(
       prefs::kPasswordProtectionWarningTrigger,
       PasswordProtectionTrigger::PASSWORD_PROTECTION_OFF);
-  base::RunLoop().RunUntilIdle();
+
+  password_manager::HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(profile->GetPrefs());
   EXPECT_FALSE(hash_password_manager.HasPasswordHash(
-      service->GetAccountInfo().email, /*is_gaia_password=*/true));
+      user_manager::kStubUserEmail, /*is_gaia_password=*/true));
   EXPECT_EQ(0u, profile->GetPrefs()
                     ->GetList(password_manager::prefs::kPasswordHashDataList)
                     ->GetList()
@@ -716,13 +685,22 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ConfigureEnterprisePasswordProtection(
       /*is_gsuite=*/false, PasswordProtectionTrigger::PHISHING_REUSE);
   Profile* profile = browser()->profile();
-  password_manager::HashPasswordManager hash_password_manager;
-  hash_password_manager.set_prefs(profile->GetPrefs());
-  hash_password_manager.SavePasswordHash(
-      "username", base::UTF8ToUTF16("password"), /*is_gaia_password=*/false);
-  hash_password_manager.SavePasswordHash("foo@gmail.com",
-                                         base::UTF8ToUTF16("password"),
-                                         /*is_gaia_password=*/true);
+
+  ASSERT_EQ(0u, profile->GetPrefs()
+                    ->GetList(password_manager::prefs::kPasswordHashDataList)
+                    ->GetList()
+                    .size());
+  // Configures initial password to "password_1";
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(profile,
+                                          ServiceAccessType::EXPLICIT_ACCESS)
+          .get();
+  password_store->SaveEnterprisePasswordHash("username@domain.com",
+                                             base::UTF8ToUTF16("password_1"));
+  password_store->SaveGaiaPasswordHash(
+      user_manager::kStubUserEmail, base::UTF8ToUTF16("password_2"),
+      password_manager::metrics_util::SyncPasswordHashChange::
+          CHANGED_IN_CONTENT_AREA);
   ASSERT_EQ(2u, profile->GetPrefs()
                     ->GetList(password_manager::prefs::kPasswordHashDataList)
                     ->GetList()
@@ -732,11 +710,14 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   profile->GetPrefs()->SetInteger(
       prefs::kPasswordProtectionWarningTrigger,
       PasswordProtectionTrigger::PASSWORD_PROTECTION_OFF);
-  base::RunLoop().RunUntilIdle();
+
+  password_manager::HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(profile->GetPrefs());
   EXPECT_FALSE(hash_password_manager.HasPasswordHash(
-      "username", /*is_gaia_password=*/false));
-  EXPECT_TRUE(hash_password_manager.HasPasswordHash("foo@gmail.com",
-                                                    /*is_gaia_password=*/true));
+      "username@domain.com", /*is_gaia_password=*/false));
+  EXPECT_TRUE(
+      hash_password_manager.HasPasswordHash(user_manager::kStubUserEmail,
+                                            /*is_gaia_password=*/true));
   EXPECT_EQ(1u, profile->GetPrefs()
                     ->GetList(password_manager::prefs::kPasswordHashDataList)
                     ->GetList()

@@ -9,12 +9,17 @@
 #include "base/feature_list.h"
 
 namespace chromeos {
-
 namespace features {
 
 // All features in alphabetical order. The features should be documented
-// alongside the definition of their values in the .cc file.
+// alongside the definition of their values in the .cc file. If a feature is
+// being rolled out via Finch, add a comment in the .cc file.
 
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kAccountManager;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kAmbientModeFeature;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kAssistantFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAutoScreenBrightness;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -66,9 +71,13 @@ extern const base::Feature kImeInputLogicFstNonEnglish;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kInstantTethering;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kParentalControlsSettings;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kReleaseNotes;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kShowBluetoothDeviceBattery;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kShowPlayInDemoMode;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kSmartDimModelV3;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -88,10 +97,20 @@ extern const base::Feature kVideoPlayerNativeControls;
 
 // Keep alphabetized.
 
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAccountManagerEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAmbientModeEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+bool IsInstantTetheringBackgroundAdvertisingSupported();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsParentalControlsSettingsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSettingsEnabled();
 
-}  // namespace features
+// TODO(michaelpg): Remove after M71 branch to re-enable Play Store by default.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowPlayStoreInDemoMode();
 
+// Keep alphabetized.
+
+}  // namespace features
 }  // namespace chromeos
 
 #endif  // CHROMEOS_CONSTANTS_CHROMEOS_FEATURES_H_

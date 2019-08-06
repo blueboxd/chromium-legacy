@@ -295,6 +295,12 @@ class ChromeContentRendererClient
 
   service_manager::BinderRegistry registry_;
 
+  // These are initialized in RenderThreadStarted() and used to create throttle
+  // providers on the IO thread.
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
+  std::unique_ptr<service_manager::Connector>
+      render_thread_connector_for_io_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeContentRendererClient);
 };
 

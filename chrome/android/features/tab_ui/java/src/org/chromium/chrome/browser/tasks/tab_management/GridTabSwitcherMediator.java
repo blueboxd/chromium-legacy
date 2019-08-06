@@ -26,7 +26,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -110,7 +109,6 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
             };
 
     private final CompositorViewHolder mCompositorViewHolder;
-    private Layout mLayout;
     private GridTabSwitcher.OnTabSelectingListener mOnTabSelectingListener;
     private final TabSelectionEditorCoordinator
             .TabSelectionEditorController mTabSelectionEditorController;

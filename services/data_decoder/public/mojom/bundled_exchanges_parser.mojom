@@ -38,16 +38,26 @@ interface BundleDataSource {
   Read(uint64 offset, uint64 length) => (array<uint8>? buffer);
 };
 
+enum BundleParseErrorType {
+  kParserInternalError,
+  kFormatError,
+  kVersionError,
+};
+
 struct BundleMetadataParseError {
+  BundleParseErrorType type;
+  url.mojom.Url fallback_url;
   string message;
-  // TODO(crbug.com/969596): Add fields for error type and fallback URL.
 };
 
 struct BundleResponseParseError {
+  BundleParseErrorType type;
   string message;
 };
 
+// https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#semantics-load-metadata
 struct BundleMetadata {
+  url.mojom.Url primary_url;
   array<BundleIndexItem> index;
   url.mojom.Url manifest_url;
 };

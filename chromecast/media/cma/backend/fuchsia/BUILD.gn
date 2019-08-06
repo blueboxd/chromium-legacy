@@ -55,6 +55,7 @@ cast_source_set("unit_tests") {
   deps = [
     ":cma_backend_support",
     "//base",
+    "//base/test:test_support",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk:media",
   ]

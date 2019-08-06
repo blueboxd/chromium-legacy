@@ -210,7 +210,7 @@ void ClientAppMetadataProviderService::OnInstanceIdFetched(
       device_sync::
           kCryptAuthGcmInstanceIdAuthorizedEntity /* authorized_entity */,
       kInstanceIdScope /* scope */,
-      std::map<std::string, std::string>() /* options */, false /* is_lazy */,
+      std::map<std::string, std::string>() /* options */, {} /* flags */,
       base::Bind(&ClientAppMetadataProviderService::OnInstanceIdTokenFetched,
                  weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter,
                  hardware_info, instance_id));

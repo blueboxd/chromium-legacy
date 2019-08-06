@@ -3,23 +3,6 @@
 // Default sensor frequency in default configurations.
 const DEFAULT_FREQUENCY = 5;
 
-// Wraps callback and calls rejectFunc if callback throws an error.
-class CallbackWrapper {
-  constructor(callback, rejectFunc) {
-    this.wrapperFunc_ = (args) => {
-      try {
-        callback(args);
-      } catch(e) {
-        rejectFunc(e);
-      }
-    }
-  }
-
-  get callback() {
-    return this.wrapperFunc_;
-  }
-}
-
 function sensorMocks() {
   // Class that mocks Sensor interface defined in sensor.mojom
   class MockSensor {

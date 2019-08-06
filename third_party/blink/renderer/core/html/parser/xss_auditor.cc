@@ -363,105 +363,15 @@ void XSSAuditor::InitForFragment() {
 
 void XSSAuditor::Init(Document* document,
                       XSSAuditorDelegate* auditor_delegate) {
+  // XSSAuditor permanently disabled.
+  // TODO(968591): remove this code after modifying callers.
   TRACE_EVENT0("loading", "XSSAuditor::Init");
   DCHECK(IsMainThread());
   if (state_ != kUninitialized)
     return;
+
   state_ = kFilteringTokens;
-
-  if (Settings* settings = document->GetSettings())
-    is_enabled_ = settings->GetXSSAuditorEnabled();
-
-  if (!is_enabled_)
-    return;
-
-  document_url_ = document->Url();
-  document_url_.RemoveFragmentIdentifier();
-  document_url_ = document_url_.Copy();  // Make thread safe.
-
-  // In theory, the Document could have detached from the LocalFrame after the
-  // XSSAuditor was constructed.
-  if (!document->GetFrame()) {
-    is_enabled_ = false;
-    return;
-  }
-
-  if (document_url_.IsEmpty()) {
-    // The URL can be empty when opening a new browser window or calling
-    // window.open("").
-    is_enabled_ = false;
-    return;
-  }
-
-  if (document_url_.ProtocolIsData()) {
-    is_enabled_ = false;
-    return;
-  }
-
-  if (document->Encoding().IsValid())
-    encoding_ = document->Encoding();
-
-  if (DocumentLoader* document_loader =
-          document->GetFrame()->Loader().GetDocumentLoader()) {
-    const AtomicString& header_value =
-        document_loader->GetResponse().HttpHeaderField(
-            http_names::kXXSSProtection);
-    String error_details;
-    unsigned error_position = 0;
-    String report_url;
-    KURL xss_protection_report_url;
-
-    ReflectedXSSDisposition xss_protection_header = ParseXSSProtectionHeader(
-        header_value, error_details, error_position, report_url);
-
-    if (xss_protection_header == kAllowReflectedXSS)
-      UseCounter::Count(*document, WebFeature::kXSSAuditorDisabled);
-    else if (xss_protection_header == kFilterReflectedXSS)
-      UseCounter::Count(*document, WebFeature::kXSSAuditorEnabledFilter);
-    else if (xss_protection_header == kBlockReflectedXSS)
-      UseCounter::Count(*document, WebFeature::kXSSAuditorEnabledBlock);
-    else if (xss_protection_header == kReflectedXSSInvalid)
-      UseCounter::Count(*document, WebFeature::kXSSAuditorInvalid);
-
-    did_send_valid_xss_protection_header_ =
-        xss_protection_header != kReflectedXSSUnset &&
-        xss_protection_header != kReflectedXSSInvalid;
-    if ((xss_protection_header == kFilterReflectedXSS ||
-         xss_protection_header == kBlockReflectedXSS) &&
-        !report_url.IsEmpty()) {
-      xss_protection_report_url = document->CompleteURL(report_url);
-      if (MixedContentChecker::IsMixedContent(document->GetSecurityOrigin(),
-                                              xss_protection_report_url)) {
-        error_details = "insecure reporting URL for secure page";
-        xss_protection_header = kReflectedXSSInvalid;
-        xss_protection_report_url = KURL();
-      }
-    }
-    if (xss_protection_header == kReflectedXSSInvalid) {
-      document->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kSecurity,
-          mojom::ConsoleMessageLevel::kError,
-          "Error parsing header X-XSS-Protection: " + header_value + ": " +
-              error_details + " at character position " +
-              String::Format("%u", error_position) +
-              ". The default protections will be applied."));
-    }
-
-    xss_protection_ = xss_protection_header;
-    if (xss_protection_ == kReflectedXSSInvalid ||
-        xss_protection_ == kReflectedXSSUnset) {
-      xss_protection_ = kFilterReflectedXSS;
-    }
-
-    if (auditor_delegate)
-      auditor_delegate->SetReportURL(xss_protection_report_url.Copy());
-
-    EncodedFormData* http_body = document_loader->HttpBody();
-    if (http_body && !http_body->IsEmpty())
-      http_body_as_string_ = http_body->FlattenToString();
-  }
-
-  SetEncoding(encoding_);
+  is_enabled_ = false;
 }
 
 void XSSAuditor::SetEncoding(const WTF::TextEncoding& encoding) {

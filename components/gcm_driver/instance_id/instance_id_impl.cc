@@ -91,7 +91,7 @@ void InstanceIDImpl::DoGetCreationTime(
 void InstanceIDImpl::GetToken(const std::string& authorized_entity,
                               const std::string& scope,
                               const std::map<std::string, std::string>& options,
-                              bool is_lazy,
+                              std::set<Flags> flags,
                               GetTokenCallback callback) {
   DCHECK(!authorized_entity.empty());
   DCHECK(!scope.empty());

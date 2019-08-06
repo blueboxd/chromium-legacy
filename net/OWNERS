@@ -1,6 +1,5 @@
 agl@chromium.org
 asanka@chromium.org
-bnc@chromium.org  # for QUICHE rolls only
 davidben@chromium.org
 ericorth@chromium.org
 eroman@chromium.org
@@ -13,6 +12,9 @@ pauljensen@chromium.org
 rch@chromium.org
 rsleevi@chromium.org
 zhongyi@chromium.org
+
+# For QUICHE rolls only.
+bnc@chromium.org
 
 per-file BUILD.gn=file://net/nqe/OWNERS
 per-file BUILD.gn=file://net/websockets/OWNERS

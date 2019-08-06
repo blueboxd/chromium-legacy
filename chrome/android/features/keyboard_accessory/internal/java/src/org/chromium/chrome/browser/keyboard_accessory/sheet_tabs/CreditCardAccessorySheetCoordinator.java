@@ -6,10 +6,11 @@ package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type;
@@ -20,9 +21,9 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetT
  */
 public class CreditCardAccessorySheetCoordinator extends AccessorySheetTabCoordinator {
     private AccessorySheetTabModel mModel = new AccessorySheetTabModel();
-    // TODO(crbug.com/926365): Consider creating a mediator for CCs (e.g. to record footer metrics).
-    private final AccessorySheetTabMediator mMediator = new AccessorySheetTabMediator(
-            mModel, AccessoryTabType.CREDIT_CARDS, Type.CREDIT_CARD_INFO);
+    private final AccessorySheetTabMediator mMediator =
+            new AccessorySheetTabMediator(mModel, AccessoryTabType.CREDIT_CARDS,
+                    Type.CREDIT_CARD_INFO, AccessoryAction.MANAGE_CREDIT_CARDS);
 
     /**
      * Creates the credit cards tab.
@@ -32,7 +33,7 @@ public class CreditCardAccessorySheetCoordinator extends AccessorySheetTabCoordi
     public CreditCardAccessorySheetCoordinator(
             Context context, @Nullable RecyclerView.OnScrollListener scrollListener) {
         super(context.getString(R.string.autofill_payment_methods),
-                AppCompatResources.getDrawable(context, R.drawable.infobar_autofill_cc),
+                IconProvider.getIcon(context, R.drawable.infobar_autofill_cc),
                 context.getString(R.string.credit_card_accessory_sheet_toggle),
                 context.getString(R.string.credit_card_accessory_sheet_opened),
                 R.layout.credit_card_accessory_sheet, AccessoryTabType.CREDIT_CARDS,
@@ -48,5 +49,10 @@ public class CreditCardAccessorySheetCoordinator extends AccessorySheetTabCoordi
     public void onTabCreated(ViewGroup view) {
         super.onTabCreated(view);
         CreditCardAccessorySheetViewBinder.initializeView((RecyclerView) view, mModel);
+    }
+
+    @VisibleForTesting
+    AccessorySheetTabModel getSheetDataPiecesForTesting() {
+        return mModel;
     }
 }

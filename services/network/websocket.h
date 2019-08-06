@@ -73,7 +73,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
             const url::Origin& origin,
             uint32_t options,
             mojom::WebSocketHandshakeClientPtr handshake_client,
-            mojom::WebSocketClientPtr client,
             mojom::AuthenticationHandlerPtr auth_handler,
             mojom::TrustedHeaderClientPtr header_client,
             WebSocketThrottler::PendingConnection pending_connection_tracker,

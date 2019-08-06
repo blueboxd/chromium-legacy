@@ -4,13 +4,17 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.CallSuper;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
@@ -23,6 +27,30 @@ import org.chromium.chrome.browser.keyboard_accessory.data.Provider;
 public abstract class AccessorySheetTabCoordinator implements KeyboardAccessoryData.Tab.Listener {
     private final KeyboardAccessoryData.Tab mTab;
     private final RecyclerView.OnScrollListener mScrollListener;
+
+    /**
+     * Provides the icon used for a sheet. Simplifies mocking in controller tests.
+     */
+    @VisibleForTesting
+    static public class IconProvider {
+        private static Drawable sTestIcon;
+
+        /**
+         * Loads the icon used for this class. Used to mock icons in unit tests.
+         * @param context The context containing the icon resources.
+         * @param resource The icon resources.
+         * @return The icon as {@link Drawable}.
+         */
+        static Drawable getIcon(Context context, @DrawableRes int resource) {
+            if (sTestIcon != null) return sTestIcon;
+            return AppCompatResources.getDrawable(context, resource);
+        }
+
+        @VisibleForTesting
+        public static void setIconForTesting(Drawable icon) {
+            sTestIcon = icon;
+        }
+    }
 
     /**
      * Creates a keyboard accessory sheet tab coordinator.

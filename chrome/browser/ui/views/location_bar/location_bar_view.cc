@@ -1237,7 +1237,7 @@ void LocationBarView::OnOmniboxHovered(bool is_hovering) {
 }
 
 OmniboxTint LocationBarView::CalculateTint() const {
-  if (GetNativeTheme()->SystemDarkModeEnabled())
+  if (GetNativeTheme()->ShouldUseDarkColors())
     return OmniboxTint::DARK;
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
   return (theme_service->UsingDefaultTheme() && profile()->IsIncognitoProfile())

@@ -556,6 +556,19 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     }
   }
 
+  if (child_iterator.IsAtEnd()) {
+    // We've gone through all the children. This doesn't necessarily mean that
+    // we're done fragmenting, as there may be parallel flows [1] (visible
+    // overflow) still needing more space than what the current fragmentainer
+    // can provide. It does mean, though, that, for any future fragmentainers,
+    // we'll just be looking at the break tokens, if any, and *not* start laying
+    // out any nodes from scratch, since we have started/finished all the
+    // children, or at least created break tokens for them.
+    //
+    // [1] https://drafts.csswg.org/css-break/#parallel-flows
+    container_builder_.SetHasSeenAllChildren();
+  }
+
   // The intrinsic block size is not allowed to be less than the content edge
   // offset, as that could give us a negative content box size.
   intrinsic_block_size_ = content_edge;

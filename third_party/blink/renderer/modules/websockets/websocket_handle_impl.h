@@ -72,10 +72,13 @@ class WebSocketHandleImpl
       network::mojom::blink::WebSocketHandshakeRequestPtr) override;
   void OnResponseReceived(
       network::mojom::blink::WebSocketHandshakeResponsePtr) override;
-  void OnConnectionEstablished(network::mojom::blink::WebSocketPtr websocket,
-                               const String& selected_protocol,
-                               const String& extensions,
-                               uint64_t receive_quota_threshold) override;
+  void OnConnectionEstablished(
+      network::mojom::blink::WebSocketPtr websocket,
+      mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
+          client_receiver,
+      const String& selected_protocol,
+      const String& extensions,
+      uint64_t receive_quota_threshold) override;
   // network::mojom::blink::WebSocketClient methods:
   void OnDataFrame(bool fin,
                    network::mojom::blink::WebSocketMessageType,
@@ -90,7 +93,6 @@ class WebSocketHandleImpl
   WeakPersistent<WebSocketChannelImpl> channel_;
 
   network::mojom::blink::WebSocketPtr websocket_;
-  network::mojom::blink::WebSocketClientRequest pending_client_receiver_;
   mojo::Binding<network::mojom::blink::WebSocketHandshakeClient>
       handshake_client_binding_;
   mojo::Binding<network::mojom::blink::WebSocketClient> client_binding_;

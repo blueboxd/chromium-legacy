@@ -14,6 +14,7 @@
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"

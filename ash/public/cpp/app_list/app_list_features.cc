@@ -7,7 +7,7 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 
 namespace app_list_features {
 
@@ -97,7 +97,7 @@ bool IsAppReinstallZeroStateEnabled() {
 }
 
 bool IsEmbeddedAssistantUIEnabled() {
-  return chromeos::switches::IsAssistantEnabled() &&
+  return chromeos::features::IsAssistantEnabled() &&
          base::FeatureList::IsEnabled(kEnableEmbeddedAssistantUI);
 }
 

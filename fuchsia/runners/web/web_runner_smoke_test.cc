@@ -12,6 +12,7 @@
 #include "base/fuchsia/service_directory_client.h"
 #include "base/fuchsia/service_provider_impl.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -84,7 +85,9 @@ class WebRunnerSmokeTest : public testing::Test {
   bool test_html_requested_ = false;
   bool test_image_requested_ = false;
 
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
 
   std::unique_ptr<base::fuchsia::ServiceDirectory> service_directory_;
   std::unique_ptr<base::fuchsia::ServiceProviderImpl> service_provider_;

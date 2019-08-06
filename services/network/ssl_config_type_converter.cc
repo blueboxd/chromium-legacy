@@ -33,9 +33,7 @@ net::SSLContextConfig MojoSSLConfigToSSLContextConfig(
       MojoSSLVersionToNetSSLVersion(mojo_config->version_max);
   DCHECK_LE(net_config.version_min, net_config.version_max);
 
-  for (uint16_t cipher_suite : mojo_config->disabled_cipher_suites) {
-    net_config.disabled_cipher_suites.push_back(cipher_suite);
-  }
+  net_config.disabled_cipher_suites = mojo_config->disabled_cipher_suites;
   return net_config;
 }
 

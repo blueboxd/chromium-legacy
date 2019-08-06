@@ -599,8 +599,10 @@ void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   CancelKeyboardLock();
   RejectMouseLockOrUnlockIfNecessary();
 
-  if (process_->IsInitializedAndNotDead()) {
-    // Tell the RendererWidget to close.
+  if (process_->IsInitializedAndNotDead() && !owner_delegate()) {
+    // Tell the RendererWidget to close. We only want to do this if the
+    // RenderWidget is the root of the renderer object graph, which is for
+    // pepper fullscreen and popups.
     bool rv = Send(new WidgetMsg_Close(routing_id_));
     DCHECK(rv);
   }

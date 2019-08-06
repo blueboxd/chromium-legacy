@@ -514,7 +514,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::AccountManagerWelcomeUI>;
   if (url.host_piece() == chrome::kChromeUIAccountMigrationWelcomeHost)
     return &NewWebUI<chromeos::AccountMigrationWelcomeUI>;
-  if (chromeos::switches::IsParentalControlsSettingsEnabled()) {
+  if (chromeos::features::IsParentalControlsSettingsEnabled()) {
     if (url.host_piece() == chrome::kChromeUIAddSupervisionHost)
       return &NewWebUI<chromeos::AddSupervisionUI>;
   }

@@ -5,14 +5,15 @@
 #include "base/fuchsia/service_provider_impl.h"
 
 #include <lib/zx/channel.h>
+
 #include <utility>
 
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/fuchsia/test_interface_impl.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -49,7 +50,9 @@ class ServiceProviderImplTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   TestInterfaceImpl test_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProviderImplTest);

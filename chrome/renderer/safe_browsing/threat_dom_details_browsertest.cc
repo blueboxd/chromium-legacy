@@ -55,8 +55,6 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
   safe_browsing::ThreatDOMDetails::kMaxAttributes = 5;
 
   const char kUrlPrefix[] = "data:text/html;charset=utf-8,";
-  const char kMaxNodesExceededMetric[] =
-      "SafeBrowsing.ThreatReport.MaxNodesExceededInFrame";
   {
     // A page with an internal script
     std::string html = "<html><head><script></script></head></html>";
@@ -71,8 +69,6 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     EXPECT_EQ(0, param->node_id);
     EXPECT_EQ(0, param->parent_node_id);
     EXPECT_TRUE(param->child_node_ids.empty());
-
-    histograms.ExpectBucketCount(kMaxNodesExceededMetric, false, 1);
   }
 
   {
@@ -219,8 +215,6 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
       EXPECT_EQ(0, param.parent_node_id);
       EXPECT_TRUE(param.child_node_ids.empty());
     }
-
-    histograms.ExpectBucketCount(kMaxNodesExceededMetric, true, 1);
   }
 
   {
@@ -248,8 +242,6 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
       EXPECT_EQ(0, param.parent_node_id);
       EXPECT_TRUE(param.child_node_ids.empty());
     }
-
-    histograms.ExpectBucketCount(kMaxNodesExceededMetric, true, 1);
   }
 
   {
@@ -417,8 +409,6 @@ TEST_F(ThreatDOMDetailsTest, CaptureInnerHtmlContent) {
                                               registry_.get()));
 
   const char kUrlPrefix[] = "data:text/html;charset=utf-8,";
-  const char kMaxNodesExceededMetric[] =
-      "SafeBrowsing.ThreatReport.MaxNodesExceededInFrame";
   {
     // A page with a html element without an onclick element, html element with
     // an onclick element, an internal script. Html elements without onclick
@@ -467,7 +457,5 @@ TEST_F(ThreatDOMDetailsTest, CaptureInnerHtmlContent) {
     EXPECT_EQ(0, param->node_id);
     EXPECT_EQ(0, param->parent_node_id);
     EXPECT_TRUE(param->child_node_ids.empty());
-
-    histograms.ExpectBucketCount(kMaxNodesExceededMetric, false, 1);
   }
 }

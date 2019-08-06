@@ -20,7 +20,8 @@ function openPickerSuccessfulCallback() {
   popupWindow.focus();
   const popupDocument = popupWindow.document;
   const formatToggler = popupDocument.querySelector('format-toggler');
-  formatToggler.click();
+  formatToggler.click();  // first click changes format to HSL
+  formatToggler.click();  // second click changes format to Hex
   testRunner.notifyDone();
 }
 </script>

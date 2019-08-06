@@ -12,7 +12,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_tray.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
@@ -59,7 +59,7 @@ class PaletteWelcomeBubble::WelcomeBubbleView
   void Init() override {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     auto* label = new views::Label(l10n_util::GetStringUTF16(
-        chromeos::switches::IsAssistantEnabled()
+        chromeos::features::IsAssistantEnabled()
             ? IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_WITH_ASSISTANT_DESCRIPTION
             : IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_DESCRIPTION));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

@@ -24,6 +24,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/webplugininfo.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
@@ -56,7 +57,8 @@ std::string FindURLMimeType(const GURL& url) {
 }
 
 void OnFindURLMimeType(const GURL& url,
-                       Profile* profile,
+                       int process_id,
+                       int routing_id,
                        FileSupportedCallback callback,
                        const std::string& mime_type) {
   // Check whether the mime type, if given, is known to be supported or whether
@@ -65,13 +67,10 @@ void OnFindURLMimeType(const GURL& url,
   // to do disk access.
   content::WebPluginInfo plugin;
   std::move(callback).Run(
-      url,
-      mime_type.empty() || blink::IsSupportedMimeType(mime_type) ||
-          content::PluginService::GetInstance()->GetPluginInfo(
-              -1,                // process ID
-              MSG_ROUTING_NONE,  // routing ID
-              profile->GetResourceContext(), url, url::Origin(), mime_type,
-              false, nullptr, &plugin, nullptr));
+      url, mime_type.empty() || blink::IsSupportedMimeType(mime_type) ||
+               content::PluginService::GetInstance()->GetPluginInfo(
+                   process_id, routing_id, url, url::Origin(), mime_type, false,
+                   nullptr, &plugin, nullptr));
 }
 
 bool GetURLForDrop(const ui::DropTargetEvent& event, GURL* url) {
@@ -147,10 +146,15 @@ void BrowserRootView::OnDragEntered(const ui::DropTargetEvent& event) {
 
     // Check if the file is supported.
     if (url.SchemeIsFile()) {
+      content::RenderFrameHost* rfh = browser_view_->browser()
+                                          ->tab_strip_model()
+                                          ->GetActiveWebContents()
+                                          ->GetMainFrame();
       base::PostTaskWithTraitsAndReplyWithResult(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&FindURLMimeType, url),
-          base::BindOnce(&OnFindURLMimeType, url, browser_view_->GetProfile(),
+          base::BindOnce(&OnFindURLMimeType, url, rfh->GetProcess()->GetID(),
+                         rfh->GetRoutingID(),
                          base::BindOnce(&BrowserRootView::OnFileSupported,
                                         weak_ptr_factory_.GetWeakPtr())));
     }

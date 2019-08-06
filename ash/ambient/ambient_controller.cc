@@ -9,7 +9,7 @@
 #include "ash/ambient/util/ambient_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/photo_controller.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -17,7 +17,7 @@ namespace ash {
 namespace {
 
 bool CanStartAmbientMode() {
-  return chromeos::switches::IsAmbientModeEnabled() && PhotoController::Get() &&
+  return chromeos::features::IsAmbientModeEnabled() && PhotoController::Get() &&
          !ambient::util::IsShowing(LockScreen::ScreenType::kLogin);
 }
 

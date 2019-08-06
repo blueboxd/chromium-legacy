@@ -34,11 +34,6 @@ const base::Feature kAutofillAllowNonHttpActivation{
 const base::Feature kAutofillAlwaysFillAddresses{
     "AlwaysFillAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether the server cards are always shown when the user is in sync
-// transport mode, or if an explicit opt-in is required.
-const base::Feature kAutofillAlwaysShowServerCardsInSyncTransport{
-    "AlwaysShowServerCardsInSyncTransport", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls the use of GET (instead of POST) to fetch cacheable autofill query
 // responses.
 const base::Feature kAutofillCacheQueryResponses{
@@ -54,12 +49,6 @@ const base::Feature kAutofillCreditCardAssist{
 // account-based storage when sync the transport is enabled.
 const base::Feature kAutofillEnableAccountWalletStorage{
     "AutofillEnableAccountWalletStorage", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether we show also upload prompts when we are using the
-// account-based storage for server cards.
-const base::Feature kAutofillEnableAccountWalletStorageUpload{
-    "AutofillEnableAccountWalletStorageUpload",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether we use COMPANY as part of Autofill
 const base::Feature kAutofillEnableCompanyName{

@@ -43,7 +43,7 @@ bool TestNativeTheme::UsesHighContrastColors() const {
   return high_contrast_;
 }
 
-bool TestNativeTheme::SystemDarkModeEnabled() const {
+bool TestNativeTheme::ShouldUseDarkColors() const {
   return dark_mode_;
 }
 

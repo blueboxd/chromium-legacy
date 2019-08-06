@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -19,6 +20,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.Accessor
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type.TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.getType;
 
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 
 import org.junit.Before;
@@ -71,6 +73,7 @@ public class AddressAccessorySheetControllerTest {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         mocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogramNatives);
+        AccessorySheetTabCoordinator.IconProvider.setIconForTesting(mock(Drawable.class));
         setAutofillFeature(true);
         mCoordinator = new AddressAccessorySheetCoordinator(RuntimeEnvironment.application, null);
         assertNotNull(mCoordinator);
@@ -169,7 +172,7 @@ public class AddressAccessorySheetControllerTest {
     }
 
     @Test
-    public void testRecordsSuggestionsImpressionsWhenShown() {
+    public void testRecordsNoSuggestionsImpressionsWithoutInteractiveElements() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         mCoordinator.registerDataProvider(testProvider);
         assertThat(RecordHistogram.getHistogramTotalCountForTesting(
@@ -186,6 +189,33 @@ public class AddressAccessorySheetControllerTest {
 
         assertThat(getSuggestionsImpressions(AccessoryTabType.ADDRESSES, 0), is(1));
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 0), is(1));
+    }
+
+    @Test
+    public void testRecordsSelectableSuggestionsImpressionsWhenShown() {
+        final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
+        mCoordinator.registerDataProvider(testProvider);
+        assertThat(RecordHistogram.getHistogramTotalCountForTesting(
+                           UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS),
+                is(0));
+        assertThat(getSuggestionsImpressions(AccessoryTabType.ADDRESSES, 1), is(0));
+        assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 1), is(0));
+
+        // Add only two interactive items - the third one should not be recorded.
+        AccessorySheetData accessorySheetData =
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses");
+        accessorySheetData.getUserInfoList().add(new UserInfo("", null));
+        accessorySheetData.getUserInfoList().get(0).addField(
+                new UserInfoField("Todd Tester", "Todd Tester", "0", false, result -> {}));
+        accessorySheetData.getUserInfoList().get(0).addField(
+                new UserInfoField("Main Street", "Main Street", "1", false, result -> {}));
+        accessorySheetData.getUserInfoList().get(0).addField(
+                new UserInfoField("Unselectable", "Unselectable", "-1", false, null));
+        testProvider.notifyObservers(accessorySheetData);
+        mCoordinator.onTabShown();
+
+        assertThat(getSuggestionsImpressions(AccessoryTabType.ADDRESSES, 2), is(1));
+        assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 2), is(1));
     }
 
     private int getSuggestionsImpressions(@AccessoryTabType int type, int sample) {

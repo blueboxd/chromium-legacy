@@ -22,6 +22,10 @@ class Origin;
 
 namespace content {
 
+namespace proto {
+class SerializedIcons;
+}  // namespace proto
+
 class BrowserContext;
 
 // Handles interacting with the Service Worker Database for Content Index
@@ -36,7 +40,7 @@ class CONTENT_EXPORT ContentIndexDatabase {
   void AddEntry(int64_t service_worker_registration_id,
                 const url::Origin& origin,
                 blink::mojom::ContentDescriptionPtr description,
-                const SkBitmap& icon,
+                const std::vector<SkBitmap>& icons,
                 const GURL& launch_url,
                 blink::mojom::ContentIndexService::AddCallback callback);
 
@@ -49,11 +53,11 @@ class CONTENT_EXPORT ContentIndexDatabase {
       int64_t service_worker_registration_id,
       blink::mojom::ContentIndexService::GetDescriptionsCallback callback);
 
-  // Gets the icon for |description_id| and invokes |icon_callback| on the UI
+  // Gets the icon for |description_id| and invokes |callback| on the UI
   // thread.
-  void GetIcon(int64_t service_worker_registration_id,
-               const std::string& description_id,
-               base::OnceCallback<void(SkBitmap)> icon_callback);
+  void GetIcons(int64_t service_worker_registration_id,
+                const std::string& description_id,
+                ContentIndexContext::GetIconsCallback callback);
 
   // Returns all registered entries.
   void GetAllEntries(ContentIndexContext::GetAllEntriesCallback callback);
@@ -75,12 +79,13 @@ class CONTENT_EXPORT ContentIndexDatabase {
   }
 
  private:
-  void DidSerializeIcon(int64_t service_worker_registration_id,
-                        const url::Origin& origin,
-                        blink::mojom::ContentDescriptionPtr description,
-                        const GURL& launch_url,
-                        blink::mojom::ContentIndexService::AddCallback callback,
-                        std::string serialized_icon);
+  void DidSerializeIcons(
+      int64_t service_worker_registration_id,
+      const url::Origin& origin,
+      blink::mojom::ContentDescriptionPtr description,
+      const GURL& launch_url,
+      std::unique_ptr<proto::SerializedIcons> serialized_icons,
+      blink::mojom::ContentIndexService::AddCallback callback);
   void DidAddEntry(blink::mojom::ContentIndexService::AddCallback callback,
                    ContentIndexEntry entry,
                    blink::ServiceWorkerStatusCode status);
@@ -94,9 +99,11 @@ class CONTENT_EXPORT ContentIndexDatabase {
       blink::mojom::ContentIndexService::GetDescriptionsCallback callback,
       const std::vector<std::string>& data,
       blink::ServiceWorkerStatusCode status);
-  void DidGetSerializedIcon(base::OnceCallback<void(SkBitmap)> icon_callback,
-                            const std::vector<std::string>& data,
-                            blink::ServiceWorkerStatusCode status);
+  void DidGetSerializedIcons(ContentIndexContext::GetIconsCallback callback,
+                             const std::vector<std::string>& data,
+                             blink::ServiceWorkerStatusCode status);
+  void DidDeserializeIcons(ContentIndexContext::GetIconsCallback callback,
+                           std::unique_ptr<std::vector<SkBitmap>> icons);
   void DidGetEntries(
       ContentIndexContext::GetAllEntriesCallback callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,

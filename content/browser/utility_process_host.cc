@@ -429,6 +429,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kAlsaOutputDevice,
 #endif
 #if defined(OS_WIN)
+      switches::kDisableHighResTimer,
       switches::kEnableExclusiveAudio,
       switches::kForceWaveAudio,
       switches::kTrySupportedChannelLayouts,

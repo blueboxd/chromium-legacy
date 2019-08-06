@@ -30,6 +30,8 @@ class PepperPluginInstanceImpl;
 class RenderWidgetFullscreenPepper : public RenderWidget,
                                      public FullscreenContainer {
  public:
+  // The created object is owned by the browser process. The browser process
+  // is responsible for destroying it with an IPC message.
   static RenderWidgetFullscreenPepper* Create(
       int32_t routing_id,
       RenderWidget::ShowCallback show_callback,
@@ -65,7 +67,7 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
 
   // RenderWidget API.
   void DidInitiatePaint() override;
-  void Close() override;
+  void Close(std::unique_ptr<RenderWidget> widget) override;
   void OnSynchronizeVisualProperties(
       const VisualProperties& visual_properties) override;
 

@@ -179,7 +179,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTrustedWebActivity,
     &kTrustedWebActivityPostMessage,
     &kTrustedWebActivityNotificationDelegationEnrolment,
-    &kTwoPanesStartSurfaceAndroid,
+    &kStartSurfaceAndroid,
     &kUmaBackgroundSessions,
     &kUsageStatsFeature,
     &kVideoPersistence,
@@ -550,8 +550,8 @@ const base::Feature kTrustedWebActivityNotificationDelegationEnrolment{
     "TrustedWebActivityNotificationDelegationAutoEnrolment",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kTwoPanesStartSurfaceAndroid{
-    "TwoPanesStartSurfaceAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kStartSurfaceAndroid{"StartSurfaceAndroid",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, keep logging and reporting UMA while chrome is backgrounded.
 const base::Feature kUmaBackgroundSessions{"UMABackgroundSessions",

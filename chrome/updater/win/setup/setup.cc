@@ -21,14 +21,21 @@ namespace updater {
 
 namespace {
 
-constexpr char kBuildGenWinDir[] = "gen\\chrome\\updater\\win";
-
 const base::char16* kUpdaterFiles[] = {
     L"updater.exe",
+    L"uninstall.cmd",
 #if defined(COMPONENT_BUILD)
-    L"base.dll",    L"boringssl.dll", L"crcrypto.dll",      L"icuuc.dll",
-    L"libc++.dll",  L"prefs.dll",     L"protobuf_lite.dll", L"updater.exe",
-    L"url_lib.dll", L"zlib.dll",
+    // TODO(sorin): get the list of component dependencies from a build-time
+    // file instead of hardcoding the names of the components here.
+    L"base.dll",
+    L"boringssl.dll",
+    L"crcrypto.dll",
+    L"icuuc.dll",
+    L"libc++.dll",
+    L"prefs.dll",
+    L"protobuf_lite.dll",
+    L"url_lib.dll",
+    L"zlib.dll",
 #endif
 };
 
@@ -69,10 +76,6 @@ int Setup() {
         WorkItem::CreateCopyTreeWorkItem(source_path, target_path, temp_dir,
                                          WorkItem::ALWAYS, base::FilePath()));
   }
-  install_list->AddWorkItem(WorkItem::CreateCopyTreeWorkItem(
-      source_dir.AppendASCII(kBuildGenWinDir).AppendASCII(kUninstallScript),
-      product_dir.AppendASCII(kUninstallScript), temp_dir, WorkItem::ALWAYS,
-      base::FilePath()));
 
   if (!install_list->Do()) {
     LOG(ERROR) << "Install failed, rolling back...";

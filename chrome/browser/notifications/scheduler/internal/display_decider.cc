@@ -25,7 +25,7 @@ class DecisionHelper {
  public:
   DecisionHelper(const SchedulerConfig* config,
                  const std::vector<SchedulerClientType>& clients,
-                 std::unique_ptr<DistributionPolicy> distribution_policy,
+                 DistributionPolicy* distribution_policy,
                  SchedulerTaskTime task_start_time,
                  Notifications notifications,
                  ClientStates client_states)
@@ -34,7 +34,7 @@ class DecisionHelper {
         client_states_(std::move(client_states)),
         config_(config),
         clients_(clients),
-        policy_(std::move(distribution_policy)),
+        policy_(distribution_policy),
         daily_max_to_show_all_types_(0),
         last_shown_type_(SchedulerClientType::kUnknown),
         shown_(0) {}
@@ -146,7 +146,7 @@ class DecisionHelper {
   const ClientStates client_states_;
   const SchedulerConfig* config_;
   const std::vector<SchedulerClientType> clients_;
-  std::unique_ptr<DistributionPolicy> policy_;
+  DistributionPolicy* policy_;
   int daily_max_to_show_all_types_;
 
   SchedulerClientType last_shown_type_;
@@ -158,24 +158,30 @@ class DecisionHelper {
 
 class DisplayDeciderImpl : public DisplayDecider {
  public:
-  DisplayDeciderImpl() = default;
+  DisplayDeciderImpl(const SchedulerConfig* config,
+                     std::vector<SchedulerClientType> clients,
+                     std::unique_ptr<DistributionPolicy> distribution_policy)
+      : config_(config),
+        clients_(std::move(clients)),
+        distribution_policy_(std::move(distribution_policy)) {}
   ~DisplayDeciderImpl() override = default;
 
  private:
   // DisplayDecider implementation.
   void FindNotificationsToShow(
-      const SchedulerConfig* config,
-      std::vector<SchedulerClientType> clients,
-      std::unique_ptr<DistributionPolicy> distribution_policy,
       SchedulerTaskTime task_start_time,
       Notifications notifications,
       ClientStates client_states,
       Results* results) override {
     auto helper = std::make_unique<DecisionHelper>(
-        config, std::move(clients), std::move(distribution_policy),
-        task_start_time, std::move(notifications), std::move(client_states));
+        config_, clients_, distribution_policy_.get(), task_start_time,
+        std::move(notifications), std::move(client_states));
     helper->DecideNotificationToShow(results);
   }
+
+  const SchedulerConfig* config_;
+  const std::vector<SchedulerClientType> clients_;
+  std::unique_ptr<DistributionPolicy> distribution_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayDeciderImpl);
 };
@@ -183,8 +189,12 @@ class DisplayDeciderImpl : public DisplayDecider {
 }  // namespace
 
 // static
-std::unique_ptr<DisplayDecider> DisplayDecider::Create() {
-  return std::make_unique<DisplayDeciderImpl>();
+std::unique_ptr<DisplayDecider> DisplayDecider::Create(
+    const SchedulerConfig* config,
+    std::vector<SchedulerClientType> clients,
+    std::unique_ptr<DistributionPolicy> distribution_policy) {
+  return std::make_unique<DisplayDeciderImpl>(config, std::move(clients),
+                                              std::move(distribution_policy));
 }
 
 }  // namespace notifications

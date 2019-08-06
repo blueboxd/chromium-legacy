@@ -170,7 +170,7 @@ Polymer({
 
   /** @return {!HTMLInputElement} */
   get inputElement() {
-    return this.$.input;
+    return /** @type {!HTMLInputElement} */ (this.$.input);
   },
 
   /** @private */

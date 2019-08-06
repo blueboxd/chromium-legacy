@@ -22,17 +22,17 @@ ContentIndexContextImpl::ContentIndexContextImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-void ContentIndexContextImpl::GetIcon(
-    int64_t service_worker_registration_id,
-    const std::string& description_id,
-    base::OnceCallback<void(SkBitmap)> icon_callback) {
+void ContentIndexContextImpl::GetIcons(int64_t service_worker_registration_id,
+                                       const std::string& description_id,
+                                       GetIconsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&ContentIndexDatabase::GetIcon,
-                                content_index_database_.GetWeakPtrForIO(),
-                                service_worker_registration_id, description_id,
-                                std::move(icon_callback)));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ContentIndexDatabase::GetIcons,
+                     content_index_database_.GetWeakPtrForIO(),
+                     service_worker_registration_id, description_id,
+                     std::move(callback)));
 }
 
 void ContentIndexContextImpl::GetAllEntries(GetAllEntriesCallback callback) {

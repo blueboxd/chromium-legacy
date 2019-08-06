@@ -328,7 +328,10 @@ ChromeContentRendererClient::ChromeContentRendererClient()
 #endif
 }
 
-ChromeContentRendererClient::~ChromeContentRendererClient() = default;
+ChromeContentRendererClient::~ChromeContentRendererClient() {
+  DCHECK(!render_thread_connector_for_io_thread_ ||
+         !render_thread_connector_for_io_thread_->IsBound());
+}
 
 void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
@@ -352,6 +355,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   remote_module_watcher_ = RemoteModuleWatcher::Create(
       thread->GetIOTaskRunner(), thread->GetConnector());
 #endif
+
+  io_thread_task_runner_ = thread->GetIOTaskRunner();
+  render_thread_connector_for_io_thread_ = thread->GetConnector()->Clone();
 
   chrome_observer_.reset(new ChromeRenderThreadObserver());
   web_cache_impl_.reset(new web_cache::WebCacheImpl());
@@ -1361,7 +1367,16 @@ ChromeRenderThreadObserver* ChromeContentRendererClient::GetChromeObserver()
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
-  return std::make_unique<WebSocketHandshakeThrottleProviderImpl>();
+  if (content::RenderThread::Get()) {
+    return std::make_unique<WebSocketHandshakeThrottleProviderImpl>(
+        content::RenderThread::Get()->GetConnector());
+  }
+  if (io_thread_task_runner_->BelongsToCurrentThread()) {
+    return std::make_unique<WebSocketHandshakeThrottleProviderImpl>(
+        render_thread_connector_for_io_thread_.get());
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 std::unique_ptr<blink::WebSpeechSynthesizer>
@@ -1570,7 +1585,16 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
 std::unique_ptr<content::URLLoaderThrottleProvider>
 ChromeContentRendererClient::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType provider_type) {
-  return std::make_unique<URLLoaderThrottleProviderImpl>(provider_type, this);
+  if (content::RenderThread::Get()) {
+    return std::make_unique<URLLoaderThrottleProviderImpl>(
+        content::RenderThread::Get()->GetConnector(), provider_type, this);
+  }
+  if (io_thread_task_runner_->BelongsToCurrentThread()) {
+    return std::make_unique<URLLoaderThrottleProviderImpl>(
+        render_thread_connector_for_io_thread_.get(), provider_type, this);
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 blink::WebFrame* ChromeContentRendererClient::FindFrame(

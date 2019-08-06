@@ -7,6 +7,8 @@ import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("mediastream") {
   sources = [
+    "apply_constraints_processor.cc",
+    "apply_constraints_processor.h",
     "apply_constraints_request.cc",
     "apply_constraints_request.h",
     "dom_window_media_stream.h",
@@ -61,8 +63,12 @@ blink_modules_sources("mediastream") {
     "track_audio_renderer.h",
     "user_media_client.cc",
     "user_media_client.h",
+    "user_media_client_impl.cc",
+    "user_media_client_impl.h",
     "user_media_controller.cc",
     "user_media_controller.h",
+    "user_media_processor.cc",
+    "user_media_processor.h",
     "user_media_request.cc",
     "user_media_request.h",
     "video_track_adapter.cc",

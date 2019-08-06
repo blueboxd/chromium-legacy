@@ -59,6 +59,8 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
+  void OverrideThreadForMessage(const IPC::Message& message,
+                                BrowserThread::ID* thread) override;
 
   // Clears |resource_context_| to prevent accessing it after deletion.
   void ClearResourceContext();

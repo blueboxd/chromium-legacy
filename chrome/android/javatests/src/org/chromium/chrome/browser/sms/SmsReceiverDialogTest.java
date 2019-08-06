@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.sms;
 
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
+import android.app.Dialog;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -44,7 +48,7 @@ public class SmsReceiverDialogTest {
     private SmsReceiverDialog mSmsDialog;
 
     final private CallbackHelper mCancelButtonClickedCallback = new CallbackHelper();
-    final private CallbackHelper mContinueButtonClickedCallback = new CallbackHelper();
+    final private CallbackHelper mConfirmButtonClickedCallback = new CallbackHelper();
 
     private class TestSmsReceiverDialogJni implements SmsReceiverDialog.Natives {
         @Override
@@ -53,8 +57,8 @@ public class SmsReceiverDialogTest {
         }
 
         @Override
-        public void onContinue(long nativeSmsDialogAndroid) {
-            mContinueButtonClickedCallback.notifyCalled();
+        public void onConfirm(long nativeSmsDialogAndroid) {
+            mConfirmButtonClickedCallback.notifyCalled();
         }
     }
 
@@ -76,25 +80,24 @@ public class SmsReceiverDialogTest {
 
     @Test
     @LargeTest
-    public void testCancelButtonAndContinueButton() {
-        ProgressDialog dialog = mSmsDialog.getDialogForTesting();
-        Button cancelButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+    public void testCancelButtonAndConfirmButton() {
+        Dialog dialog = mSmsDialog.getDialogForTesting();
+
+        Button cancelButton = (Button) dialog.findViewById(R.id.cancel_button);
         Assert.assertTrue(cancelButton.isEnabled());
 
-        Button continueButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
-        Assert.assertFalse(continueButton.isEnabled());
+        Button confirmButton = (Button) dialog.findViewById(R.id.confirm_button);
+        Assert.assertFalse(confirmButton.isEnabled());
 
         TestThreadUtils.runOnUiThreadBlocking(mSmsDialog::smsReceived);
-        Assert.assertTrue(mSmsDialog.getDialogForTesting()
-                                  .getButton(DialogInterface.BUTTON_POSITIVE)
-                                  .isEnabled());
+        Assert.assertTrue(confirmButton.isEnabled());
     }
 
     @Test
     @LargeTest
     public void testClickCancelButton() throws Throwable {
-        ProgressDialog dialog = mSmsDialog.getDialogForTesting();
-        Button cancelButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+        Dialog dialog = mSmsDialog.getDialogForTesting();
+        Button cancelButton = (Button) dialog.findViewById(R.id.cancel_button);
 
         TestTouchUtils.performClickOnMainSync(
                 InstrumentationRegistry.getInstrumentation(), cancelButton);
@@ -104,20 +107,44 @@ public class SmsReceiverDialogTest {
 
     @Test
     @LargeTest
-    public void testClickContinueButton() throws Throwable {
-        ProgressDialog dialog = mSmsDialog.getDialogForTesting();
-        Button continueButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+    public void testClickConfirmButton() throws Throwable {
+        Dialog dialog = mSmsDialog.getDialogForTesting();
+        Button confirmButton = (Button) dialog.findViewById(R.id.confirm_button);
 
         TestTouchUtils.performClickOnMainSync(
-                InstrumentationRegistry.getInstrumentation(), continueButton);
+                InstrumentationRegistry.getInstrumentation(), confirmButton);
 
-        mContinueButtonClickedCallback.waitForCallback(0, 1);
+        mConfirmButtonClickedCallback.waitForCallback(0, 1);
+    }
+
+    @Test
+    @LargeTest
+    public void testStatusRowChangesWhenMessageReceived() {
+        Dialog dialog = mSmsDialog.getDialogForTesting();
+
+        ProgressBar progressBar = (ProgressBar) dialog.findViewById(R.id.progress);
+        ImageView doneIcon = (ImageView) dialog.findViewById(R.id.done_icon);
+        TextView status = (TextView) dialog.findViewById(R.id.status);
+
+        Assert.assertEquals(View.VISIBLE, progressBar.getVisibility());
+        Assert.assertEquals(View.GONE, doneIcon.getVisibility());
+        Assert.assertEquals(
+                mActivityTestRule.getActivity().getString(R.string.sms_dialog_status_waiting),
+                status.getText().toString());
+
+        TestThreadUtils.runOnUiThreadBlocking(mSmsDialog::smsReceived);
+
+        Assert.assertEquals(View.GONE, progressBar.getVisibility());
+        Assert.assertEquals(View.VISIBLE, doneIcon.getVisibility());
+        Assert.assertEquals(
+                mActivityTestRule.getActivity().getString(R.string.sms_dialog_status_sms_received),
+                status.getText().toString());
     }
 
     @Test
     @LargeTest
     public void testDialogClose() {
-        ProgressDialog dialog = mSmsDialog.getDialogForTesting();
+        Dialog dialog = mSmsDialog.getDialogForTesting();
         Assert.assertTrue(dialog.isShowing());
 
         TestThreadUtils.runOnUiThreadBlocking(mSmsDialog::close);

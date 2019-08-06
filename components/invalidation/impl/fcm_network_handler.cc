@@ -123,7 +123,7 @@ void FCMNetworkHandler::StartListening() {
   instance_id_driver_->GetInstanceID(app_id_)->GetToken(
       sender_id_, kGCMScope,
       /*options=*/std::map<std::string, std::string>(),
-      /*is_lazy=*/true,
+      /*flags=*/{InstanceID::Flags::kIsLazy},
       base::BindRepeating(&FCMNetworkHandler::DidRetrieveToken,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -183,7 +183,7 @@ void FCMNetworkHandler::StartTokenValidation() {
   diagnostic_info_.token_validation_requested_num++;
   instance_id_driver_->GetInstanceID(app_id_)->GetToken(
       sender_id_, kGCMScope, std::map<std::string, std::string>(),
-      /*is_lazy=*/true,
+      /*flags=*/{InstanceID::Flags::kIsLazy},
       base::Bind(&FCMNetworkHandler::DidReceiveTokenForValidation,
                  weak_ptr_factory_.GetWeakPtr()));
 }

@@ -23,6 +23,9 @@ android_library("instance_id_driver_java") {
     "//components/gcm_driver/android:gcm_driver_java",
   ]
 
+  srcjar_deps =
+      [ "//components/gcm_driver/instance_id:instance_id_java_enums_srcjar" ]
+
   java_files = [
     "java/src/org/chromium/components/gcm_driver/instance_id/InstanceIDBridge.java",
     "java/src/org/chromium/components/gcm_driver/instance_id/InstanceIDWithSubtype.java",

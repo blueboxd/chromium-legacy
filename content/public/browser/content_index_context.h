@@ -32,16 +32,19 @@ class CONTENT_EXPORT ContentIndexContext {
                               std::vector<ContentIndexEntry>)>;
   using GetEntryCallback =
       base::OnceCallback<void(base::Optional<ContentIndexEntry>)>;
+  using GetIconsCallback = base::OnceCallback<void(std::vector<SkBitmap>)>;
 
   ContentIndexContext() = default;
   virtual ~ContentIndexContext() = default;
 
-  // The client will need to provide an icon for the entry when requested.
-  // Must be called on the UI thread. |icon_callback| must be invoked on the
-  // UI thread.
-  virtual void GetIcon(int64_t service_worker_registration_id,
-                       const std::string& description_id,
-                       base::OnceCallback<void(SkBitmap)> icon_callback) = 0;
+  // Returns all available icons for the entry identified by
+  // |service_worker_registration_id| and |description_id|.
+  // The number of icons and the sizes are chosen by the ContentIndexProvider.
+  // Must be called on the UI thread. |callback| must be invoked on the UI
+  // the UI thread.
+  virtual void GetIcons(int64_t service_worker_registration_id,
+                        const std::string& description_id,
+                        GetIconsCallback callback) = 0;
 
   // Must be called on the UI thread.
   virtual void GetAllEntries(GetAllEntriesCallback callback) = 0;

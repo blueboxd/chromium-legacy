@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"
@@ -390,7 +390,7 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
 
   if (property_name == kPropertyAssistantStatus) {
     return std::make_unique<base::Value>(
-        chromeos::switches::IsAssistantEnabled() ? kAssistantStatusSupported
+        chromeos::features::IsAssistantEnabled() ? kAssistantStatusSupported
                                                  : kAssistantStatusUnsupported);
   }
 

@@ -215,10 +215,13 @@ void BundledExchangesReader::ReadMetadataInternal(MetadataCallback callback,
                                                   base::File file) {
   base::File::Error error = parser_.OpenFile(std::move(file));
   if (base::File::FILE_OK != error) {
-    PostTask(FROM_HERE,
-             base::BindOnce(std::move(callback),
-                            data_decoder::mojom::BundleMetadataParseError::New(
-                                base::File::ErrorToString(error))));
+    PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            std::move(callback),
+            data_decoder::mojom::BundleMetadataParseError::New(
+                data_decoder::mojom::BundleParseErrorType::kParserInternalError,
+                GURL() /* fallback_url */, base::File::ErrorToString(error))));
   } else {
     parser_.ParseMetadata(
         base::BindOnce(&BundledExchangesReader::OnMetadataParsed,

@@ -23,9 +23,9 @@ constexpr int kLabelPreviewSpacing = 8;
 
 constexpr int kCloseButtonMargin = 4;
 
-constexpr SkColor kActiveColor = SkColorSetARGB(0xEE, 0xFF, 0xFF, 0xFF);
+constexpr SkColor kActiveColor = SkColorSetA(SK_ColorWHITE, 0xCC);  // 80%
 
-constexpr SkColor kInactiveColor = SkColorSetARGB(0x50, 0xFF, 0xFF, 0xFF);
+constexpr SkColor kInactiveColor = SkColorSetA(SK_ColorWHITE, 0x33);  // 20%
 
 constexpr SkColor kDraggedOverColor = SkColorSetARGB(0xFF, 0x5B, 0xBC, 0xFF);
 

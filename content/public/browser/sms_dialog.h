@@ -19,7 +19,7 @@ class CONTENT_EXPORT SmsDialog {
   SmsDialog() = default;
   virtual ~SmsDialog() = default;
   virtual void Open(content::RenderFrameHost* host,
-                    base::OnceClosure on_continue,
+                    base::OnceClosure on_confirm,
                     base::OnceClosure on_cancel) = 0;
   virtual void Close() = 0;
   virtual void SmsReceived() = 0;

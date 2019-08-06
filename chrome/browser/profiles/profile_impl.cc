@@ -440,9 +440,6 @@ void ProfileImpl::RegisterProfilePrefs(
 #if !defined(OS_ANDROID)
   registry->RegisterBooleanPref(prefs::kShowCastIconInToolbar, false);
 #endif  // !defined(OS_ANDROID)
-  // Initialize the cache prefs.
-  registry->RegisterFilePathPref(prefs::kDiskCacheDir, base::FilePath());
-  registry->RegisterIntegerPref(prefs::kDiskCacheSize, 0);
 }
 
 ProfileImpl::ProfileImpl(
@@ -696,8 +693,7 @@ void ProfileImpl::DoFinalInit() {
   io_data_.Init(GetPath());
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      this, io_data_.GetResourceContextNoInit());
+  ChromePluginServiceFilter::GetInstance()->RegisterProfile(this);
 #endif
 
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
@@ -778,8 +774,7 @@ ProfileImpl::~ProfileImpl() {
   pref_change_registrar_.RemoveAll();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
-      io_data_.GetResourceContextNoInit());
+  ChromePluginServiceFilter::GetInstance()->UnregisterProfile(this);
 #endif
 
   // Destroy OTR profile and its profile services first.

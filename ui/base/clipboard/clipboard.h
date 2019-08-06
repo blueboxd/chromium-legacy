@@ -61,10 +61,12 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   static void SetAllowedThreads(
       const std::vector<base::PlatformThreadId>& allowed_threads);
 
-  // Sets the clipboard for the current thread. Previously, there was only
-  // one clipboard implementation on a platform; now that mus exists, during
-  // mus app startup, we need to specifically initialize mus instead of the
-  // current platform clipboard. We take ownership of |platform_clipboard|.
+  // Sets the clipboard for the current thread, and take ownership of
+  // |platform_clipboard|.
+  // TODO(huangdarwin): In the past, mus allowed >1 clipboard implementation per
+  // platform. Now that mus is removed, only 1 clipboard implementation exists
+  // per platform. Evaluate whether we can or should remove functions like
+  // SetClipboardForCurrentThread, as only one clipboard should exist now.
   static void SetClipboardForCurrentThread(
       std::unique_ptr<Clipboard> platform_clipboard);
 

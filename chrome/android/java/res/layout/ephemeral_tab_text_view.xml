@@ -4,14 +4,13 @@
      found in the LICENSE file. -->
 
 <!-- Ephemeral Tab bar text -->
-<!-- TODO(jinsukkim): Define Ephemeral Tab's own text view style -->
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/ephemeral_tab_text_view"
-    style="@style/ContextualSearchTextViewLayout" >
+    style="@style/OverlayPanelTextViewLayout" >
     <TextView
         android:id="@+id/ephemeral_tab_text"
-        style="@style/ContextualSearchTextView"
+        style="@style/OverlayPanelTextView"
         android:layout_width="match_parent"
         android:layout_gravity="bottom"
         android:background="@color/overlay_panel_bar_background_color"

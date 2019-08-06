@@ -33,7 +33,6 @@
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -280,7 +279,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           initial_interceptors,
       std::unique_ptr<network::ResourceRequest> resource_request,
       BrowserContext* browser_context,
-      ResourceContext* resource_context,
       const GURL& url,
       bool is_main_frame,
       network::mojom::URLLoaderFactoryRequest proxied_factory_request,
@@ -290,9 +288,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       const base::WeakPtr<NavigationURLLoaderImpl>& owner)
       : interceptors_(std::move(initial_interceptors)),
         resource_request_(std::move(resource_request)),
-#if BUILDFLAG(ENABLE_PLUGINS)
-        resource_context_(resource_context),
-#endif
         url_(url),
         owner_(owner),
         response_loader_binding_(this),
@@ -858,15 +853,14 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       const std::vector<WebPluginInfo>& plugins) {
     bool stale;
     WebPluginInfo plugin;
-    // It's ok to pass -1 for the render process and frame ID since that's
-    // only used for plugin overridding. We don't actually care if we get an
-    // overridden plugin or not, since all we care about is the presence of a
-    // plugin. Note that this is what the MimeSniffingResourceHandler code
-    // path does as well for navigations.
+    FrameTreeNode* frame_tree_node =
+        FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
+    int render_process_id =
+        frame_tree_node->current_frame_host()->GetProcess()->GetID();
+    int routing_id = frame_tree_node->current_frame_host()->GetRoutingID();
     bool has_plugin = PluginService::GetInstance()->GetPluginInfo(
-        -1 /* render_process_id */, -1 /* render_frame_id */, resource_context_,
-        resource_request_->url, url::Origin(), head.mime_type,
-        false /* allow_wildcard */, &stale, &plugin, nullptr);
+        render_process_id, routing_id, resource_request_->url, url::Origin(),
+        head.mime_type, false /* allow_wildcard */, &stale, &plugin, nullptr);
 
     if (stale) {
       // Refresh the plugins asynchronously.
@@ -1094,9 +1088,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   GlobalRequestID global_request_id_;
   net::RedirectInfo redirect_info_;
   int redirect_limit_ = net::URLRequest::kMaxRedirects;
-#if BUILDFLAG(ENABLE_PLUGINS)
-  ResourceContext* resource_context_;
-#endif
   base::Callback<WebContents*()> web_contents_getter_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
@@ -1202,7 +1193,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 // request so that it could be modified.
 NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     BrowserContext* browser_context,
-    ResourceContext* resource_context,
     StoragePartition* storage_partition,
     std::unique_ptr<NavigationRequestInfo> request_info,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
@@ -1350,10 +1340,10 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_interceptors), std::move(new_request), browser_context,
-      resource_context, request_info->common_params->url,
-      request_info->is_main_frame, std::move(proxied_factory_request),
-      std::move(proxied_factory_info), std::move(known_schemes),
-      bypass_redirect_checks, weak_factory_.GetWeakPtr());
+      request_info->common_params->url, request_info->is_main_frame,
+      std::move(proxied_factory_request), std::move(proxied_factory_info),
+      std::move(known_schemes), bypass_redirect_checks,
+      weak_factory_.GetWeakPtr());
   request_controller_->Start(
       std::move(network_factory_info), service_worker_navigation_handle,
       service_worker_navigation_handle_core, appcache_handle_core,

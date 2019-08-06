@@ -36,7 +36,6 @@ class WebSocketFactory final {
                        const url::Origin& origin,
                        uint32_t options,
                        mojom::WebSocketHandshakeClientPtr handshake_client,
-                       mojom::WebSocketClientPtr client,
                        mojom::AuthenticationHandlerPtr auth_handler,
                        mojom::TrustedHeaderClientPtr header_client);
 

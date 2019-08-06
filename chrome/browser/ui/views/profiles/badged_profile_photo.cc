@@ -68,19 +68,19 @@ gfx::ImageSkia ImageForBadgeType(BadgedProfilePhoto::BadgeType badge_type) {
               ui::NativeTheme::kColorId_DefaultIconColor));
     case BadgedProfilePhoto::BADGE_TYPE_SYNC_COMPLETE:
       return gfx::CreateVectorIcon(kSyncCircleIcon, kBadgeIconSize,
-                                   native_theme->SystemDarkModeEnabled()
+                                   native_theme->ShouldUseDarkColors()
                                        ? gfx::kGoogleGreen300
                                        : gfx::kGoogleGreen700);
     case BadgedProfilePhoto::BADGE_TYPE_SYNC_ERROR:
       return gfx::CreateVectorIcon(kSyncErrorCircleIcon, kBadgeIconSize,
-                                   native_theme->SystemDarkModeEnabled()
+                                   native_theme->ShouldUseDarkColors()
                                        ? gfx::kGoogleRed300
                                        : gfx::kGoogleRed700);
     case BadgedProfilePhoto::BADGE_TYPE_SYNC_PAUSED:
-      return gfx::CreateVectorIcon(kSyncPausedCircleIcon, kBadgeIconSize,
-                                   native_theme->SystemDarkModeEnabled()
-                                       ? gfx::kGoogleBlue300
-                                       : gfx::kGoogleBlue500);
+      return gfx::CreateVectorIcon(
+          kSyncPausedCircleIcon, kBadgeIconSize,
+          native_theme->GetSystemColor(
+              ui::NativeTheme::kColorId_ProminentButtonColor));
     case BadgedProfilePhoto::BADGE_TYPE_SYNC_DISABLED:
       return gfx::CreateVectorIcon(kSyncCircleIcon, kBadgeIconSize,
                                    gfx::kGoogleGrey400);

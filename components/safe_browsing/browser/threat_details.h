@@ -233,11 +233,6 @@ class ThreatDetails : public content::WebContentsObserver {
   // How many times this user has visited this page before.
   int num_visits_;
 
-  // Keeps track of whether we have an ambiguous DOM in this report. This can
-  // happen when the HTML Elements returned by a renderer can't be
-  // associated with a parent Element in the parent frame.
-  bool ambiguous_dom_;
-
   // Whether this report should be trimmed down to only ad tags, not the entire
   // page contents. Used for sampling ads.
   bool trim_to_ad_tags_;

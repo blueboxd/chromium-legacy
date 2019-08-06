@@ -394,16 +394,6 @@ gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
   // interior between each row of text.
   popup_height += RoundedOmniboxResultsFrame::GetNonResultSectionHeight();
 
-  base::Optional<int> vertical_margin_override =
-      OmniboxFieldTrial::GetSuggestionVerticalMarginFieldTrialOverride();
-  if (vertical_margin_override) {
-    // If the vertical margin experiment uses a very small value (like a value
-    // similar to pre-Refresh), we need to pad up the popup height at the
-    // bottom (just like pre-Refresh) to prevent it from looking very bad.
-    if (vertical_margin_override.value() < 4)
-      popup_height += 4;
-  }
-
   // The rounded popup is always offset the same amount from the omnibox.
   gfx::Rect content_rect = location_bar_view_->GetBoundsInScreen();
   content_rect.Inset(

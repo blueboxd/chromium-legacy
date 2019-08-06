@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/fuchsia/testfidl/cpp/fidl.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "fuchsia/mojom/example.mojom.h"
 #include "fuchsia/mojom/test_interface_request_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -15,7 +15,9 @@ using base::fuchsia::testfidl::TestInterface;
 using base::fuchsia::testfidl::TestInterfacePtr;
 
 TEST(InterfaceRequestStructTraitsTest, Serialization) {
-  base::MessageLoopForIO message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   TestInterfacePtr test_ptr;
   fidl::InterfaceRequest<TestInterface> input_request = test_ptr.NewRequest();
   fidl::InterfaceRequest<TestInterface> output_request;

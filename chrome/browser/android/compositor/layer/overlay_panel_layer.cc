@@ -217,8 +217,9 @@ void OverlayPanelLayer::SetProperties(
     // Positions the icon at the end of the bar.
     float open_tab_top = close_icon_top;
     float open_tab_left;
+    float spacing_between_icons = 2 * bar_margin_side;
     float margin_from_close_icon =
-        close_icon_resource->size().width() + bar_margin_side;
+        close_icon_resource->size().width() + spacing_between_icons;
     if (is_rtl) {
       open_tab_left = close_icon_left + margin_from_close_icon;
     } else {

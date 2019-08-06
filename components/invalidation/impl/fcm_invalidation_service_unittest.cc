@@ -95,15 +95,15 @@ class MockInstanceID : public InstanceID {
   void GetToken(const std::string& authorized_entity,
                 const std::string& scope,
                 const std::map<std::string, std::string>& options,
-                bool is_lazy,
+                std::set<Flags> flags,
                 GetTokenCallback callback) override {
-    GetToken_(authorized_entity, scope, options, is_lazy, callback);
+    GetToken_(authorized_entity, scope, options, std::move(flags), callback);
   }
   MOCK_METHOD5(GetToken_,
                void(const std::string& authorized_entity,
                     const std::string& scope,
                     const std::map<std::string, std::string>& options,
-                    bool is_lazy,
+                    std::set<Flags> flags,
                     GetTokenCallback& callback));
   MOCK_METHOD4(ValidateToken,
                void(const std::string& authorized_entity,

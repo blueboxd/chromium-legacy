@@ -26,7 +26,6 @@ namespace content {
 class BrowserContext;
 class NavigationLoaderInterceptor;
 class PrefetchedSignedExchangeCache;
-class ResourceContext;
 class StoragePartition;
 class StoragePartitionImpl;
 struct GlobalRequestID;
@@ -37,7 +36,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // Note |initial_interceptors| is there for test purposes only.
   NavigationURLLoaderImpl(
       BrowserContext* browser_context,
-      ResourceContext* resource_context,
       StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,

@@ -36,8 +36,7 @@
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/mock_download_file.h"
 #include "components/download/public/common/mock_download_item_impl.h"
-#include "content/browser/byte_stream.h"
-#include "content/browser/download/byte_stream_input_stream.h"
+#include "components/download/public/common/mock_input_stream.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/storage_partition.h"
@@ -66,7 +65,6 @@ ACTION_TEMPLATE(RunCallback,
 }
 
 namespace content {
-class ByteStreamReader;
 
 namespace {
 
@@ -356,14 +354,6 @@ class MockDownloadManagerObserver : public DownloadManager::Observer {
   MOCK_METHOD2(SelectFileDialogDisplayed, void(DownloadManager*, int32_t));
 };
 
-class MockByteStreamReader : public ByteStreamReader {
- public:
-  ~MockByteStreamReader() override {}
-  MOCK_METHOD2(Read, StreamState(scoped_refptr<net::IOBuffer>*, size_t*));
-  MOCK_CONST_METHOD0(GetStatus, int());
-  MOCK_METHOD1(RegisterCallback, void(const base::Closure&));
-};
-
 class TestInProgressManager : public download::InProgressDownloadManager {
  public:
   TestInProgressManager();
@@ -570,7 +560,6 @@ class DownloadManagerTest : public testing::Test {
 TEST_F(DownloadManagerTest, StartDownload) {
   std::unique_ptr<download::DownloadCreateInfo> info(
       new download::DownloadCreateInfo);
-  std::unique_ptr<ByteStreamReader> stream(new MockByteStreamReader);
   // Random value, a non 0 value means history db is properly loaded, and new
   // downloads should be persisted to the in-progress db.
   uint32_t local_id(5);
@@ -592,8 +581,8 @@ TEST_F(DownloadManagerTest, StartDownload) {
               ApplicationClientIdForFileScanning())
       .WillRepeatedly(Return("client-id"));
   download::MockDownloadFile* mock_file = new download::MockDownloadFile;
-  auto input_stream =
-      std::make_unique<ByteStreamInputStream>(std::move(stream));
+  auto input_stream = std::make_unique<download::MockInputStream>();
+  EXPECT_CALL(*input_stream, IsEmpty()).WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_download_file_factory_.get(),
               MockCreateFile(Ref(*info->save_info.get()), input_stream.get()))
       .WillOnce(Return(mock_file));
@@ -610,7 +599,6 @@ TEST_F(DownloadManagerTest, StartDownload) {
 TEST_F(DownloadManagerTest, StartDownloadWithoutHistoryDB) {
   std::unique_ptr<download::DownloadCreateInfo> info(
       new download::DownloadCreateInfo);
-  std::unique_ptr<ByteStreamReader> stream(new MockByteStreamReader);
   base::FilePath download_path(FILE_PATH_LITERAL("download/path"));
   OnInProgressDownloadManagerInitialized();
   EXPECT_FALSE(download_manager_->GetDownload(1));
@@ -629,8 +617,8 @@ TEST_F(DownloadManagerTest, StartDownloadWithoutHistoryDB) {
               ApplicationClientIdForFileScanning())
       .WillRepeatedly(Return("client-id"));
   download::MockDownloadFile* mock_file = new download::MockDownloadFile;
-  auto input_stream =
-      std::make_unique<ByteStreamInputStream>(std::move(stream));
+  auto input_stream = std::make_unique<download::MockInputStream>();
+  EXPECT_CALL(*input_stream, IsEmpty()).WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_download_file_factory_.get(),
               MockCreateFile(Ref(*info->save_info.get()), input_stream.get()))
       .WillOnce(Return(mock_file));

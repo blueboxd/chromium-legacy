@@ -603,6 +603,18 @@ class AutotestPrivateSetTabletModeEnabledFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+// Returns a list of all shelf items
+class AutotestPrivateGetShelfItemsFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateGetShelfItemsFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getShelfItems",
+                             AUTOTESTPRIVATE_GETSHELFITEMS)
+
+ private:
+  ~AutotestPrivateGetShelfItemsFunction() override;
+  ResponseAction Run() override;
+};
+
 // Returns the shelf auto hide behavior.
 class AutotestPrivateGetShelfAutoHideBehaviorFunction
     : public ExtensionFunction {

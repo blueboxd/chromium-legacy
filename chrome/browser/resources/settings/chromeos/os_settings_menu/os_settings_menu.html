@@ -6,9 +6,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
+<!-- TODO(crbug.com/986596): Don't use browser icons here. Fork them. -->
 <link rel="import" href="../../icons.html">
 <link rel="import" href="../../route.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../os_icons.html">
 
 <dom-module id="os-settings-menu">
   <template>
@@ -137,7 +139,7 @@
         role="navigation" on-click="onLinkClick_">
       <a href="/internet">
         <div class="item">
-          <iron-icon icon="settings:network-wifi"></iron-icon>
+          <iron-icon icon="os-settings:network-wifi"></iron-icon>
           $i18n{internetPageTitle}
         </div>
       </a>
@@ -150,7 +152,7 @@
       <a id="multidevice" href="/multidevice"
           hidden="[[isGuestMode_]]">
         <div class="item">
-          <iron-icon icon="settings:multidevice-better-together-suite">
+          <iron-icon icon="os-settings:multidevice-better-together-suite">
           </iron-icon>
           $i18n{multidevicePageTitle}
         </div>
@@ -170,7 +172,7 @@
       </a>
       <a href="/device">
         <div class="item">
-          <iron-icon icon="settings:laptop-chromebook"></iron-icon>
+          <iron-icon icon="os-settings:laptop-chromebook"></iron-icon>
           $i18n{devicePageTitle}
         </div>
       </a>
@@ -182,25 +184,25 @@
       </a>
       <a href="/apps" hidden="[[!showApps]]">
         <div class="item">
-          <iron-icon icon="settings:apps"></iron-icon>
+          <iron-icon icon="os-settings:apps"></iron-icon>
           $i18n{appsPageTitle}
         </div>
       </a>
       <a href="/androidApps" hidden="[[!showAndroidApps]]">
         <div class="item">
-          <iron-icon icon="settings:play-prism"></iron-icon>
+          <iron-icon icon="os-settings:play-prism"></iron-icon>
           $i18n{androidAppsPageTitle}
         </div>
       </a>
       <a href="/crostini" hidden="[[!showCrostini]]">
         <div class="item">
-          <iron-icon icon="settings:crostini-mascot"></iron-icon>
+          <iron-icon icon="os-settings:crostini-mascot"></iron-icon>
           $i18n{crostiniPageTitle}
         </div>
       </a>
       <a href="/pluginVm" hidden="[[!showPluginVm]]">
         <div class="item">
-          <iron-icon icon="settings:plugin-vm"></iron-icon>
+          <iron-icon icon="os-settings:plugin-vm"></iron-icon>
           $i18n{pluginVmPageTitle}
         </div>
       </a>
@@ -215,7 +217,7 @@
             role="navigation" on-click="onLinkClick_">
           <a href="/dateTime">
             <div class="item">
-              <iron-icon icon="settings:access-time"></iron-icon>
+              <iron-icon icon="os-settings:access-time"></iron-icon>
               $i18n{dateTimePageTitle}
             </div>
           </a>
@@ -233,7 +235,7 @@
           </a>
           <a href="/files" hidden="[[isGuestMode_]]">
             <div class="item">
-              <iron-icon icon="settings20:folder-outline"></iron-icon>
+              <iron-icon icon="os-settings:folder-outline"></iron-icon>
               $i18n{filesPageTitle}
             </div>
           </a>

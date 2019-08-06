@@ -385,6 +385,9 @@ std::string AnonymizerTool::Anonymize(const std::string& input) {
   std::string anonymized = AnonymizeMACAddresses(input);
   anonymized = AnonymizeAndroidAppStoragePaths(std::move(anonymized));
   anonymized = AnonymizeCustomPatterns(std::move(anonymized));
+  // Do hashes last since they may appear in URLs and they also prevent us from
+  // properly recognizing the Android storage paths.
+  anonymized = AnonymizeHashes(std::move(anonymized));
   return anonymized;
 }
 
@@ -404,14 +407,15 @@ RE2* AnonymizerTool::GetRegExp(const std::string& pattern) {
 std::string AnonymizerTool::AnonymizeMACAddresses(const std::string& input) {
   // This regular expression finds the next MAC address. It splits the data into
   // an OUI (Organizationally Unique Identifier) part and a NIC (Network
-  // Interface Controller) specific part.
+  // Interface Controller) specific part. We also match on dash and underscore
+  // because we have seen instances of both of those occurring.
 
   RE2* mac_re = GetRegExp(
-      "([0-9a-fA-F][0-9a-fA-F]:"
-      "[0-9a-fA-F][0-9a-fA-F]:"
-      "[0-9a-fA-F][0-9a-fA-F]):("
-      "[0-9a-fA-F][0-9a-fA-F]:"
-      "[0-9a-fA-F][0-9a-fA-F]:"
+      "([0-9a-fA-F][0-9a-fA-F][:\\-_]"
+      "[0-9a-fA-F][0-9a-fA-F][:\\-_]"
+      "[0-9a-fA-F][0-9a-fA-F])[:\\-_]("
+      "[0-9a-fA-F][0-9a-fA-F][:\\-_]"
+      "[0-9a-fA-F][0-9a-fA-F][:\\-_]"
       "[0-9a-fA-F][0-9a-fA-F])");
 
   std::string result;
@@ -419,12 +423,15 @@ std::string AnonymizerTool::AnonymizeMACAddresses(const std::string& input) {
 
   // Keep consuming, building up a result string as we go.
   re2::StringPiece text(input);
-  re2::StringPiece skipped;
-  re2::StringPiece pre_mac, oui, nic;
+  re2::StringPiece skipped, oui, nic;
+  static const char kMacSeparatorChars[] = "-_";
   while (FindAndConsumeAndGetSkipped(&text, *mac_re, &skipped, &oui, &nic)) {
-    // Look up the MAC address in the hash.
+    // Look up the MAC address in the hash. Force the separator to be a colon
+    // so that the same MAC with a different format will match in all cases.
     std::string oui_string = base::ToLowerASCII(oui.as_string());
+    base::ReplaceChars(oui_string, kMacSeparatorChars, ":", &oui_string);
     std::string nic_string = base::ToLowerASCII(nic.as_string());
+    base::ReplaceChars(nic_string, kMacSeparatorChars, ":", &nic_string);
     std::string mac = oui_string + ":" + nic_string;
     std::string replacement_mac = mac_addresses_[mac];
     if (replacement_mac.empty()) {
@@ -438,6 +445,58 @@ std::string AnonymizerTool::AnonymizeMACAddresses(const std::string& input) {
 
     skipped.AppendToString(&result);
     result += replacement_mac;
+  }
+
+  text.AppendToString(&result);
+  return result;
+}
+
+std::string AnonymizerTool::AnonymizeHashes(const std::string& input) {
+  // This will match hexadecimal strings from length 32 to 64 that have a word
+  // boundary at each end. We then check to make sure they are one of our valid
+  // hash lengths before replacing.
+  // NOTE: There are some occurrences in the dump data (specifically modetest)
+  // where relevant data is formatted with 32 hex chars on a line. In this case,
+  // it is preceded by at least 3 whitespace chars, so check for that and in
+  // that case do not redact.
+  RE2* hash_re = GetRegExp(R"((\s*)\b([0-9a-fA-F]{4})([0-9a-fA-F]{28,60})\b)");
+
+  std::string result;
+  result.reserve(input.size());
+
+  // Keep consuming, building up a result string as we go.
+  re2::StringPiece text(input);
+  re2::StringPiece skipped, pre_whitespace, hash_prefix, hash_suffix;
+  while (FindAndConsumeAndGetSkipped(&text, *hash_re, &skipped, &pre_whitespace,
+                                     &hash_prefix, &hash_suffix)) {
+    skipped.AppendToString(&result);
+    pre_whitespace.AppendToString(&result);
+
+    // Check if it's a valid length for our hashes or if we need to skip due to
+    // the whitespace check.
+    size_t hash_length = 4 + hash_suffix.length();
+    if ((hash_length != 32 && hash_length != 40 && hash_length != 64) ||
+        (hash_length == 32 && pre_whitespace.length() >= 3)) {
+      // This is not a hash string, skip it.
+      hash_prefix.AppendToString(&result);
+      hash_suffix.AppendToString(&result);
+      continue;
+    }
+
+    // Look up the hash value address in the map of replacements.
+    std::string hash_prefix_string =
+        base::ToLowerASCII(hash_prefix.as_string());
+    std::string hash =
+        hash_prefix_string + base::ToLowerASCII(hash_suffix.as_string());
+    std::string replacement_hash = hashes_[hash];
+    if (replacement_hash.empty()) {
+      // If not found, build up a replacement value.
+      replacement_hash = base::StringPrintf(
+          "<HASH:%s %zd>", hash_prefix_string.c_str(), hashes_.size());
+      hashes_[hash] = replacement_hash;
+    }
+
+    result += replacement_hash;
   }
 
   text.AppendToString(&result);

@@ -18,6 +18,10 @@ struct Feature;
 
 namespace metrics {
 
+// Provider of user demographics. Aggregate, non-individually-identifying
+// demographics are used to measure usage of Chrome features by age and gender.
+// Users can avoid aggregation of usage data by demographics by either a)
+// turning off sending usage statistics to Google or b) turning off sync.
 class DemographicMetricsProvider : public MetricsProvider {
  public:
   // Interface that represents the client that retrieves Profile information.

@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/completion_once_callback.h"
@@ -55,7 +55,8 @@ class ChunkedDataPipeUploadDataStreamTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<TestChunkedDataPipeGetter> chunked_data_pipe_getter_;
   std::unique_ptr<ChunkedDataPipeUploadDataStream> chunked_upload_stream_;
 

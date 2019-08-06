@@ -17,7 +17,6 @@ namespace content {
 class NavigationURLLoaderFactory {
  public:
   virtual std::unique_ptr<NavigationURLLoader> CreateLoader(
-      ResourceContext* resource_context,
       StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,

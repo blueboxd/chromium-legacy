@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/ash/assistant/assistant_context_util.h"
 #include "chrome/browser/ui/ash/assistant/assistant_image_downloader.h"
 #include "chrome/browser/ui/ash/assistant/assistant_setup.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "components/session_manager/core/session_manager.h"
@@ -115,7 +116,7 @@ void AssistantClient::OnExtendedAccountInfoUpdated(const AccountInfo& info) {
 }
 
 void AssistantClient::OnUserProfileLoaded(const AccountId& account_id) {
-  if (!chromeos::switches::IsAssistantEnabled())
+  if (!chromeos::features::IsAssistantEnabled())
     return;
 
   // Initialize Assistant when primary user profile is loaded so that it could

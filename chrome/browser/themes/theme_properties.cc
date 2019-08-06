@@ -160,7 +160,7 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
       << "These values should be queried via their respective non-incognito "
          "equivalents and an appropriate |incognito| value.";
   if (!incognito &&
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled() &&
+      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors() &&
       id == TINT_BUTTONS) {
     return {0, 0, 1};
   }
@@ -186,7 +186,7 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     if (incognito_color.has_value())
       return incognito_color.value();
   }
-  if (ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()) {
+  if (ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()) {
     base::Optional<SkColor> dark_mode_color = GetDarkModeColor(id);
     if (dark_mode_color.has_value())
       return dark_mode_color.value();

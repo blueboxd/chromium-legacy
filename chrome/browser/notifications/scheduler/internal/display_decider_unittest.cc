@@ -100,9 +100,9 @@ class DisplayDeciderTest : public testing::Test {
     }
 
     // Copy test inputs into |decider_|.
-    decider_ = DisplayDecider::Create();
+    decider_ =
+        DisplayDecider::Create(&config_, clients, DistributionPolicy::Create());
     decider_->FindNotificationsToShow(
-        &config_, std::move(clients), DistributionPolicy::Create(),
         test_data_.task_start_time, std::move(notifications),
         std::move(client_states), &results_);
 

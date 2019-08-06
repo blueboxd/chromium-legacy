@@ -10,6 +10,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/was_activated_option.mojom.h"
+#include "fuchsia/base/string_util.h"
 #include "ui/base/page_transition_types.h"
 
 namespace {
@@ -140,15 +141,10 @@ void NavigationControllerImpl::LoadUrl(std::string url,
     std::vector<std::string> extra_headers;
     extra_headers.reserve(params.headers().size());
     for (const auto& header : params.headers()) {
-      // TODO(crbug.com/964732): Check there is no colon in |header_name|.
-      base::StringPiece header_name(
-          reinterpret_cast<const char*>(header.name.data()),
-          header.name.size());
-      base::StringPiece header_value(
-          reinterpret_cast<const char*>(header.value.data()),
-          header.value.size());
+      // TODO(crbug.com/990525): Validate |header.name| and |header.value|.
       extra_headers.emplace_back(
-          base::StrCat({header_name, ": ", header_value}));
+          base::StrCat({cr_fuchsia::BytesAsString(header.name), ": ",
+                        cr_fuchsia::BytesAsString(header.value)}));
     }
     params_converted.extra_headers = base::JoinString(extra_headers, "\n");
   }

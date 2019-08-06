@@ -915,6 +915,26 @@
             ]
         }
     ],
+    "AutofillSaveCardBubbleStringExperiment": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledConfirmAndSaveCardVariation",
+                    "params": {
+                        "AutofillSaveCreditCardUsesImprovedMessaging": "Confirm & Save Card"
+                    },
+                    "enable_features": [
+                        "AutofillSaveCreditCardUsesImprovedMessaging"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillSmallFormSupport": [
         {
             "platforms": [
@@ -2496,7 +2516,7 @@
             ]
         }
     ],
-    "HomePageButtonForceEnabled": [
+    "HomeButtonAndroid": [
         {
             "platforms": [
                 "android"
@@ -2735,6 +2755,21 @@
                 },
                 {
                     "name": "Disabled"
+                }
+            ]
+        }
+    ],
+    "IsolatePasswordSites": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "site-isolation-for-password-sites"
+                    ]
                 }
             ]
         }
@@ -3557,9 +3592,6 @@
             "experiments": [
                 {
                     "name": "DesktopExperiments",
-                    "params": {
-                        "UIVerticalMargin": "10"
-                    },
                     "enable_features": [
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",

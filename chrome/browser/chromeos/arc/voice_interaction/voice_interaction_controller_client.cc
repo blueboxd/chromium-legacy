@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/language/core/browser/pref_names.h"
@@ -49,7 +49,7 @@ VoiceInteractionControllerClient::VoiceInteractionControllerClient() {
   arc::ArcSessionManager::Get()->AddObserver(this);
   g_voice_interaction_controller_client_instance = this;
 
-  if (chromeos::switches::IsAssistantEnabled()) {
+  if (chromeos::features::IsAssistantEnabled()) {
     voice_interaction_state_ = ash::mojom::VoiceInteractionState::NOT_READY;
   }
 }

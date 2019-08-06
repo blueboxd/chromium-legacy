@@ -28,7 +28,7 @@
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
 #include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/js_java_interaction/js_api_handler_factory.h"
-#include "android_webview/browser/net/aw_proxy_config_monitor.h"
+#include "android_webview/browser/network_service/aw_proxy_config_monitor.h"
 #include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
 #include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
 #include "android_webview/browser/network_service/aw_url_loader_throttle.h"

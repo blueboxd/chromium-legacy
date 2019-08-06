@@ -12,13 +12,13 @@ GEN_INCLUDE([
   'settings_accessibility_test.js',
 ]);
 
-GEN('#include "chromeos/constants/chromeos_switches.h"');
+GEN('#include "chromeos/constants/chromeos_features.h"');
 
 // eslint-disable-next-line no-var
 var GoogleAssistantAccessibilityTest = class extends SettingsAccessibilityTest {
   /** @override */
   get featureList() {
-    return {enabled: ['chromeos::switches::kAssistantFeature']};
+    return {enabled: ['chromeos::features::kAssistantFeature']};
   }
 };
 

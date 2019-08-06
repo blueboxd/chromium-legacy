@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -377,7 +378,7 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
               << params_.ToString();
 
     if (params_.arc_state != ArcState::kNotAvailable)
-      feature_list_.InitAndEnableFeature(switches::kAssistantFeature);
+      feature_list_.InitAndEnableFeature(features::kAssistantFeature);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

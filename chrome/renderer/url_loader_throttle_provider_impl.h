@@ -22,6 +22,10 @@ namespace data_reduction_proxy {
 class DataReductionProxyThrottleManager;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 class ChromeContentRendererClient;
 
 // Instances must be constructed on the render thread, and then used and
@@ -30,6 +34,7 @@ class URLLoaderThrottleProviderImpl
     : public content::URLLoaderThrottleProvider {
  public:
   URLLoaderThrottleProviderImpl(
+      service_manager::Connector* connector,
       content::URLLoaderThrottleProviderType type,
       ChromeContentRendererClient* chrome_content_renderer_client);
 

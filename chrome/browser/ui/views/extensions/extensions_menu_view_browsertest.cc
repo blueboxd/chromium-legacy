@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/hover_button_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_paths.h"
@@ -24,7 +25,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
-#include "ui/views/test/button_test_api.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -83,10 +83,10 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
   void TriggerSingleExtensionButton() {
     auto buttons = GetExtensionMenuButtons();
     ASSERT_EQ(1u, buttons.size());
-    ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                               base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-    views::test::ButtonTestApi test_api(buttons[0]);
-    test_api.NotifyClick(click_event);
+    ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
+                               gfx::Point(), base::TimeTicks(),
+                               ui::EF_LEFT_MOUSE_BUTTON, 0);
+    buttons[0]->button_controller()->OnMouseReleased(click_event);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -181,10 +181,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
 
   ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-  views::test::ButtonTestApi test_api(
-      ExtensionsMenuView::GetExtensionsMenuViewForTesting()
-          ->manage_extensions_button_for_testing());
-  test_api.NotifyClick(click_event);
+  ExtensionsMenuView::GetExtensionsMenuViewForTesting()
+      ->manage_extensions_button_for_testing()
+      ->button_controller()
+      ->OnMouseReleased(click_event);
 
   // Clicking the Manage Extensions button should open chrome://extensions.
   EXPECT_EQ(

@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, UnwantedSoftwareInterstitialQuiet) {
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, BillingInterstitialQuiet) {
   TestInterstitial(
       GURL("chrome://interstitials/quietsafebrowsing?type=billing"),
-      "Security error", IDS_BILLING_WEBVIEW_HEADING);
+      "Page may charge money", IDS_BILLING_WEBVIEW_HEADING);
 }
 
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, ClientsideMalwareInterstitial) {
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, ClientsidePhishingInterstitial) {
 
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, BillingInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/safebrowsing?type=billing"),
-                   "Security error", IDS_BILLING_HEADING);
+                   "Page may charge money", IDS_BILLING_HEADING);
 }
 
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, CaptivePortalInterstitial) {

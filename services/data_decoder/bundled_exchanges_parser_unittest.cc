@@ -18,6 +18,8 @@ namespace data_decoder {
 
 namespace {
 
+constexpr char kFallbackUrl[] = "https://test.example.com/";
+
 std::string GetTestFileContents(const base::FilePath& path) {
   base::FilePath test_data_dir;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir);
@@ -62,7 +64,10 @@ class TestDataSource : public mojom::BundleDataSource {
   mojo::ReceiverSet<mojom::BundleDataSource> receivers_;
 };
 
-mojom::BundleMetadataPtr ParseBundle(TestDataSource* data_source) {
+using ParseBundleResult =
+    std::pair<mojom::BundleMetadataPtr, mojom::BundleMetadataParseErrorPtr>;
+
+ParseBundleResult ParseBundle(TestDataSource* data_source) {
   mojo::PendingRemote<mojom::BundleDataSource> source_remote;
   data_source->AddReceiver(source_remote.InitWithNewPipeAndPassReceiver());
 
@@ -72,15 +77,23 @@ mojom::BundleMetadataPtr ParseBundle(TestDataSource* data_source) {
   data_decoder::mojom::BundledExchangesParser& parser = parser_impl;
 
   base::RunLoop run_loop;
-  mojom::BundleMetadataPtr result;
+  ParseBundleResult result;
   parser.ParseMetadata(base::BindLambdaForTesting(
       [&result, &run_loop](mojom::BundleMetadataPtr metadata,
                            mojom::BundleMetadataParseErrorPtr error) {
-        result = std::move(metadata);
+        result = std::make_pair(std::move(metadata), std::move(error));
         run_loop.QuitClosure().Run();
       }));
   run_loop.Run();
+  EXPECT_TRUE((result.first && !result.second) ||
+              (!result.first && result.second));
   return result;
+}
+
+void ExpectFormatErrorWithFallbackURL(ParseBundleResult result) {
+  ASSERT_TRUE(result.second);
+  EXPECT_EQ(result.second->type, mojom::BundleParseErrorType::kFormatError);
+  EXPECT_EQ(result.second->fallback_url, kFallbackUrl);
 }
 
 mojom::BundleResponsePtr ParseResponse(TestDataSource* data_source,
@@ -111,12 +124,16 @@ class BundleBuilder {
  public:
   using Headers = std::vector<std::pair<std::string, std::string>>;
 
+  explicit BundleBuilder(const std::string& fallback_url)
+      : fallback_url_(fallback_url) {
+    writer_config_.allow_invalid_utf8_for_testing = true;
+  }
+
   void AddExchange(const Headers& request_headers,
                    const Headers& response_headers,
                    base::StringPiece payload) {
     cbor::Value::ArrayValue response_array;
-    response_array.emplace_back(
-        *cbor::Writer::Write(CreateHeaderMap(response_headers)));
+    response_array.emplace_back(Encode(CreateHeaderMap(response_headers)));
     response_array.emplace_back(CreateByteString(payload));
     cbor::Value response(response_array);
 
@@ -134,7 +151,7 @@ class BundleBuilder {
   std::vector<uint8_t> CreateBundle() {
     AddSection("index", cbor::Value(index_));
     AddSection("responses", cbor::Value(responses_));
-    return *cbor::Writer::Write(CreateTopLevel());
+    return Encode(CreateTopLevel());
   }
 
  private:
@@ -154,16 +171,25 @@ class BundleBuilder {
     toplevel_array.emplace_back(
         CreateByteString(u8"\U0001F310\U0001F4E6"));  // "🌐📦"
     toplevel_array.emplace_back(
-        *cbor::Writer::Write(cbor::Value(section_lengths_)));
+        CreateByteString(base::StringPiece("b1\0\0", 4)));
+    toplevel_array.emplace_back(
+        cbor::Value::InvalidUTF8StringValueForTesting(fallback_url_));
+    toplevel_array.emplace_back(Encode(cbor::Value(section_lengths_)));
     toplevel_array.emplace_back(sections_);
     toplevel_array.emplace_back(CreateByteString(""));  // length (ignored)
     return cbor::Value(toplevel_array);
   }
 
-  static int64_t EncodedLength(const cbor::Value& value) {
-    return cbor::Writer::Write(value)->size();
+  std::vector<uint8_t> Encode(const cbor::Value& value) {
+    return *cbor::Writer::Write(value, writer_config_);
   }
 
+  int64_t EncodedLength(const cbor::Value& value) {
+    return Encode(value).size();
+  }
+
+  cbor::Writer::Config writer_config_;
+  std::string fallback_url_;
   cbor::Value::ArrayValue section_lengths_;
   cbor::Value::ArrayValue sections_;
   cbor::Value::ArrayValue index_;
@@ -178,10 +204,10 @@ class BundledExchangeParserTest : public testing::Test {
 };
 
 TEST_F(BundledExchangeParserTest, EmptyBundle) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
   ASSERT_TRUE(metadata);
   const auto& index = metadata->index;
 
@@ -189,40 +215,68 @@ TEST_F(BundledExchangeParserTest, EmptyBundle) {
 }
 
 TEST_F(BundledExchangeParserTest, WrongMagic) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   std::vector<uint8_t> bundle = builder.CreateBundle();
   bundle[3] ^= 1;
   TestDataSource data_source(bundle);
 
-  ASSERT_FALSE(ParseBundle(&data_source));
+  mojom::BundleMetadataParseErrorPtr error = ParseBundle(&data_source).second;
+  ASSERT_TRUE(error);
+  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kFormatError);
+  EXPECT_TRUE(error->fallback_url.is_empty());
+}
+
+TEST_F(BundledExchangeParserTest, UnknownVersion) {
+  BundleBuilder builder(kFallbackUrl);
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  // Modify the version string from "b1\0\0" to "q1\0\0".
+  ASSERT_EQ(bundle[11], 'b');
+  bundle[11] = 'q';
+  TestDataSource data_source(bundle);
+
+  mojom::BundleMetadataParseErrorPtr error = ParseBundle(&data_source).second;
+  ASSERT_TRUE(error);
+  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kVersionError);
+  EXPECT_EQ(error->fallback_url, kFallbackUrl);
+}
+
+TEST_F(BundledExchangeParserTest, FallbackURLIsNotUTF8) {
+  BundleBuilder builder("https://test.example.com/\xcc");
+  std::vector<uint8_t> bundle = builder.CreateBundle();
+  TestDataSource data_source(bundle);
+
+  mojom::BundleMetadataParseErrorPtr error = ParseBundle(&data_source).second;
+  ASSERT_TRUE(error);
+  EXPECT_EQ(error->type, mojom::BundleParseErrorType::kFormatError);
+  EXPECT_TRUE(error->fallback_url.is_empty());
 }
 
 TEST_F(BundledExchangeParserTest, SectionLengthsTooLarge) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   std::string too_long_section_name(8192, 'x');
   builder.AddSection(too_long_section_name, cbor::Value(0));
   TestDataSource data_source(builder.CreateBundle());
 
-  ASSERT_FALSE(ParseBundle(&data_source));
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
 }
 
 TEST_F(BundledExchangeParserTest, DuplicateSectionName) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddSection("foo", cbor::Value(0));
   builder.AddSection("foo", cbor::Value(0));
   TestDataSource data_source(builder.CreateBundle());
 
-  ASSERT_FALSE(ParseBundle(&data_source));
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
 }
 
 TEST_F(BundledExchangeParserTest, SingleEntry) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange(
       {{":method", "GET"}, {":url", "https://test.example.com/"}},
       {{":status", "200"}, {"content-type", "text/plain"}}, "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
   ASSERT_TRUE(metadata);
   const auto& index = metadata->index;
 
@@ -240,62 +294,57 @@ TEST_F(BundledExchangeParserTest, SingleEntry) {
 }
 
 TEST_F(BundledExchangeParserTest, InvalidRequestURL) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange({{":method", "GET"}, {":url", ""}},
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
-  ASSERT_FALSE(metadata);
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
 }
 
 TEST_F(BundledExchangeParserTest, RequestURLHasCredentials) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange(
       {{":method", "GET"}, {":url", "https://user:passwd@test.example.com/"}},
       {{":status", "200"}, {"content-type", "text/plain"}}, "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
-  ASSERT_FALSE(metadata);
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
 }
 
 TEST_F(BundledExchangeParserTest, RequestURLHasFragment) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange(
       {{":method", "GET"}, {":url", "https://test.example.com/#fragment"}},
       {{":status", "200"}, {"content-type", "text/plain"}}, "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
-  ASSERT_FALSE(metadata);
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
 }
 
 TEST_F(BundledExchangeParserTest, NoMethodInRequestHeaders) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange(
       {{":url", "https://test.example.com/"}},  // ":method" is missing.
       {{":status", "200"}, {"content-type", "text/plain"}}, "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
-  ASSERT_FALSE(metadata);
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
 }
 
 TEST_F(BundledExchangeParserTest, MethodIsNotGET) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange(
       {{":method", "POST"}, {":url", "https://test.example.com/"}},
       {{":status", "200"}, {"content-type", "text/plain"}}, "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
-  ASSERT_FALSE(metadata);
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
 }
 
 TEST_F(BundledExchangeParserTest, ExtraPseudoInRequestHeaders) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange({{":method", "GET"},
                        {":url", "https://test.example.com/"},
                        {":scheme", "https"}},
@@ -303,17 +352,17 @@ TEST_F(BundledExchangeParserTest, ExtraPseudoInRequestHeaders) {
                       "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  ASSERT_FALSE(ParseBundle(&data_source));
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
 }
 
 TEST_F(BundledExchangeParserTest, NoStatusInResponseHeaders) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange(
       {{":method", "GET"}, {":url", "https://test.example.com/"}},
       {{"content-type", "text/plain"}}, "payload");  // ":status" is missing.
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
   ASSERT_TRUE(metadata);
   ASSERT_EQ(metadata->index.size(), 1u);
 
@@ -321,13 +370,13 @@ TEST_F(BundledExchangeParserTest, NoStatusInResponseHeaders) {
 }
 
 TEST_F(BundledExchangeParserTest, InvalidResponseStatus) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange(
       {{":method", "GET"}, {":url", "https://test.example.com/"}},
       {{":status", "0200"}, {"content-type", "text/plain"}}, "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
   ASSERT_TRUE(metadata);
   ASSERT_EQ(metadata->index.size(), 1u);
 
@@ -335,14 +384,14 @@ TEST_F(BundledExchangeParserTest, InvalidResponseStatus) {
 }
 
 TEST_F(BundledExchangeParserTest, ExtraPseudoInResponseHeaders) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange(
       {{":method", "GET"}, {":url", "https://test.example.com/"}},
       {{":status", "200"}, {":foo", ""}, {"content-type", "text/plain"}},
       "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
   ASSERT_TRUE(metadata);
   ASSERT_EQ(metadata->index.size(), 1u);
 
@@ -350,13 +399,13 @@ TEST_F(BundledExchangeParserTest, ExtraPseudoInResponseHeaders) {
 }
 
 TEST_F(BundledExchangeParserTest, UpperCaseCharacterInHeaderName) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange(
       {{":method", "GET"}, {":url", "https://test.example.com/"}},
       {{":status", "200"}, {"Content-Type", "text/plain"}}, "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
   ASSERT_TRUE(metadata);
   ASSERT_EQ(metadata->index.size(), 1u);
 
@@ -364,13 +413,13 @@ TEST_F(BundledExchangeParserTest, UpperCaseCharacterInHeaderName) {
 }
 
 TEST_F(BundledExchangeParserTest, InvalidHeaderValue) {
-  BundleBuilder builder;
+  BundleBuilder builder(kFallbackUrl);
   builder.AddExchange(
       {{":method", "GET"}, {":url", "https://test.example.com/"}},
       {{":status", "200"}, {"content-type", "\n"}}, "payload");
   TestDataSource data_source(builder.CreateBundle());
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
   ASSERT_TRUE(metadata);
   ASSERT_EQ(metadata->index.size(), 1u);
 
@@ -380,7 +429,7 @@ TEST_F(BundledExchangeParserTest, InvalidHeaderValue) {
 TEST_F(BundledExchangeParserTest, ParseGoldenFile) {
   TestDataSource data_source(base::FilePath(FILE_PATH_LITERAL("hello.wbn")));
 
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source);
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
   ASSERT_TRUE(metadata);
   ASSERT_EQ(metadata->index.size(), 4u);
 

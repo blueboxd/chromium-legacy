@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -442,6 +443,7 @@ Session::~Session() {
 }
 
 void Session::ReportError(SessionError error) {
+  UMA_HISTOGRAM_ENUMERATION("MediaRouter.MirroringService.SessionError", error);
   if (session_monitor_.has_value())
     session_monitor_->OnStreamingError(error);
   if (state_ == REMOTING) {

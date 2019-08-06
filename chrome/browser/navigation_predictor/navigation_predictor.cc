@@ -802,7 +802,7 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   }
 
   sort(link_locations.begin(), link_locations.end());
-  median_link_location_ = link_locations[link_locations.size() / 2];
+  median_link_location_ = link_locations[link_locations.size() / 2] * 100;
   double page_metrics_score = GetPageMetricsScore();
 
   // Retrieve site engagement score of the document. |metrics| is guaranteed to

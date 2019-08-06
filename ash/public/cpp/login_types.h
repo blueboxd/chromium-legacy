@@ -9,7 +9,7 @@
 #include "ash/public/cpp/session/user_info.h"
 #include "base/time/time.h"
 #include "base/token.h"
-#include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h"
+#include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom-forward.h"
 
 namespace ash {
 
@@ -223,8 +223,8 @@ struct ASH_PUBLIC_EXPORT LoginUserInfo {
   UserInfo basic_user_info;
 
   // What method the user can use to sign in.
-  proximity_auth::mojom::AuthType auth_type =
-      proximity_auth::mojom::AuthType::OFFLINE_PASSWORD;
+  // Initialized in .cc file because the mojom header is huge.
+  proximity_auth::mojom::AuthType auth_type;
 
   // True if this user has already signed in.
   bool is_signed_in = false;

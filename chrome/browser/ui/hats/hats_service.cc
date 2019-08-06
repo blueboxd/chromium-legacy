@@ -130,6 +130,9 @@ bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
   if (!consent_given)
     return false;
 
+  if (profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED)
+    return false;
+
   const base::DictionaryValue* pref_data =
       profile_->GetPrefs()->GetDictionary(prefs::kHatsSurveyMetadata);
   base::Optional<int> last_major_version =

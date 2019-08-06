@@ -13,6 +13,21 @@ namespace autotestPrivate {
     Bottom, Left, Right
   };
 
+  // A mapping of ash::ShelfItemType.
+  enum ShelfItemType {
+    App,
+    PinnedApp,
+    BrowserShortcut,
+    Dialog
+  };
+
+  // A mapping of ash::ShelfItemStatus.
+  enum ShelfItemStatus {
+    Closed,
+    Running,
+    Attention
+  };
+
   // A subset of Window State types in ash::WindowStateType. We may add more
   // into the set in the future.
   enum WindowStateType {
@@ -201,6 +216,19 @@ namespace autotestPrivate {
   callback IsTabletModeEnabledCallback = void (boolean enabled);
 
   callback SetTabletModeEnabledCallback = void(boolean enabled);
+
+  dictionary ShelfItem {
+    DOMString appId;
+    DOMString launchId;
+    DOMString title;
+    ShelfItemType? type;
+    ShelfItemStatus status;
+    boolean showsTooltip;
+    boolean pinnedByPolicy;
+    boolean hasNotification;
+  };
+
+  callback GetShelfItemsCallback = void (ShelfItem[] items);
 
   callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
 
@@ -397,6 +425,9 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void setTabletModeEnabled(boolean enabled,
         SetTabletModeEnabledCallback callback);
+
+    // Get the list of all shelf items
+    static void getShelfItems(GetShelfItemsCallback callback);
 
     // Get the shelf auto hide behavior.
     // |displayId|: display that contains the shelf.

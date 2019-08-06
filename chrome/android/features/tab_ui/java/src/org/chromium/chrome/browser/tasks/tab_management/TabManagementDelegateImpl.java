@@ -18,6 +18,8 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tasks.TasksSurface;
+import org.chromium.chrome.browser.tasks.TasksSurfaceCoordinator;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceCoordinator;
@@ -29,7 +31,12 @@ import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 @UsedByReflection("TabManagementModule")
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
-    public GridTabSwitcher createGridTabSwitcher(ChromeActivity activity) {
+    public TasksSurface createTasksSurface(ChromeActivity activity) {
+        return new TasksSurfaceCoordinator(activity);
+    }
+
+    @Override
+    public GridTabSwitcher createGridTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
         if (UmaSessionStats.isMetricsServiceAvailable()) {
             UmaSessionStats.registerSyntheticFieldTrial(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
@@ -38,7 +45,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
         return new GridTabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
                 activity.getCompositorViewHolder(), activity.getFullscreenManager(), activity,
-                activity.getMenuOrKeyboardActionController(), activity::onBackPressed, activity);
+                activity.getMenuOrKeyboardActionController(), activity, containerView);
     }
 
     @Override

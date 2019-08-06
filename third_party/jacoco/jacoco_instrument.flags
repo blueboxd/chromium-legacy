@@ -1,0 +1,3 @@
+# This package is only used when Java coverage is enabled.
+# JaCoCo libraries contain all dependencies so we can ignore warning here.
+-dontwarn java.lang.instrument.**

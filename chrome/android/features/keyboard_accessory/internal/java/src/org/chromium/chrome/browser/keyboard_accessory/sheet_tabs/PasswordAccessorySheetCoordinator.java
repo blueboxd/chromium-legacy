@@ -5,9 +5,7 @@
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
@@ -15,7 +13,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
-import org.chromium.chrome.browser.keyboard_accessory.ManualFillingMetricsRecorder;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type;
@@ -29,60 +26,8 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
  */
 public class PasswordAccessorySheetCoordinator extends AccessorySheetTabCoordinator {
     private final AccessorySheetTabModel mModel = new AccessorySheetTabModel();
-    private final PasswordAccessorySheetMediator mMediator;
-
-    /**
-     * This class contains all logic for the password accessory sheet component. Changes to its
-     * internal
-     * {@link PropertyModel} are observed by a {@link PropertyModelChangeProcessor} and affect the
-     * password accessory sheet tab view.
-     */
-    private static class PasswordAccessorySheetMediator extends AccessorySheetTabMediator {
-        PasswordAccessorySheetMediator(AccessorySheetTabModel model) {
-            super(model, AccessoryTabType.PASSWORDS, Type.PASSWORD_INFO);
-        }
-
-        @Override
-        void onTabShown() {
-            super.onTabShown();
-
-            // This is a compromise: we log an impression, even if the user didn't scroll down far
-            // enough to see it. If we moved it into the view layer (i.e. when the actual button is
-            // created and shown), we could record multiple impressions of the user scrolls up and
-            // down repeatedly.
-            ManualFillingMetricsRecorder.recordActionImpression(AccessoryAction.MANAGE_PASSWORDS);
-        }
-    }
-
-    /**
-     * Provides the icon used in this sheet. Simplifies mocking in controller tests.
-     */
-    @VisibleForTesting
-    public static class IconProvider {
-        private final static IconProvider sInstance = new IconProvider();
-        private Drawable mIcon;
-        private IconProvider() {}
-
-        public static IconProvider getInstance() {
-            return sInstance;
-        }
-
-        /**
-         * Loads and remembers the icon used for this class. Used to mock icons in unit tests.
-         * @param context The context containing the icon resources.
-         * @return The icon as {@link Drawable}.
-         */
-        public Drawable getIcon(Context context) {
-            if (mIcon != null) return mIcon;
-            mIcon = AppCompatResources.getDrawable(context, R.drawable.ic_vpn_key_grey);
-            return mIcon;
-        }
-
-        @VisibleForTesting
-        public void setIconForTesting(Drawable icon) {
-            mIcon = icon;
-        }
-    }
+    private final AccessorySheetTabMediator mMediator = new AccessorySheetTabMediator(mModel,
+            AccessoryTabType.PASSWORDS, Type.PASSWORD_INFO, AccessoryAction.MANAGE_PASSWORDS);
 
     /**
      * Creates the passwords tab.
@@ -92,11 +37,10 @@ public class PasswordAccessorySheetCoordinator extends AccessorySheetTabCoordina
     public PasswordAccessorySheetCoordinator(
             Context context, @Nullable RecyclerView.OnScrollListener scrollListener) {
         super(context.getString(R.string.prefs_saved_passwords_title),
-                IconProvider.getInstance().getIcon(context),
+                IconProvider.getIcon(context, R.drawable.ic_vpn_key_grey),
                 context.getString(R.string.password_accessory_sheet_toggle),
                 context.getString(R.string.password_accessory_sheet_opened),
                 R.layout.password_accessory_sheet, AccessoryTabType.PASSWORDS, scrollListener);
-        mMediator = new PasswordAccessorySheetMediator(mModel);
     }
 
     @Override

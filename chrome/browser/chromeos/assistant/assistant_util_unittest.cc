@@ -16,7 +16,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
@@ -150,7 +150,7 @@ class ChromeAssistantUtilTest : public testing::Test {
 
   void SetUp() override {
     command_line_ = std::make_unique<base::test::ScopedCommandLine>();
-    feature_list_.InitAndEnableFeature(chromeos::switches::kAssistantFeature);
+    feature_list_.InitAndEnableFeature(chromeos::features::kAssistantFeature);
 
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     profile_manager_ = std::make_unique<TestingProfileManager>(

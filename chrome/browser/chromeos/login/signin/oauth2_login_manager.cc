@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/account_id_from_account_info.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
@@ -164,7 +165,7 @@ void OAuth2LoginManager::StoreOAuth2Token() {
   const CoreAccountInfo primary_account_info =
       identity_manager->GetPrimaryAccountInfo();
 
-  if (switches::IsAccountManagerEnabled()) {
+  if (features::IsAccountManagerEnabled()) {
     // If Account Manager is enabled, we already have the refresh token at this
     // point, and will not get any additional callbacks from Account Manager or
     // Identity Manager about refresh tokens. Manually call

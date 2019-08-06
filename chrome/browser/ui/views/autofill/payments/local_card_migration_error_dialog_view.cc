@@ -105,7 +105,7 @@ void LocalCardMigrationErrorDialogView::Init() {
   auto* image = new views::ImageView();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image->SetImage(
-      rb.GetImageSkiaNamed(GetNativeTheme()->SystemDarkModeEnabled()
+      rb.GetImageSkiaNamed(GetNativeTheme()->ShouldUseDarkColors()
                                ? IDR_AUTOFILL_MIGRATION_DIALOG_HEADER_DARK
                                : IDR_AUTOFILL_MIGRATION_DIALOG_HEADER));
   image->SetAccessibleName(

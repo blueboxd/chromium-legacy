@@ -5,8 +5,29 @@
 #include "chromeos/constants/chromeos_features.h"
 
 namespace chromeos {
-
 namespace features {
+namespace {
+
+// Controls whether Instant Tethering supports hosts which use the background
+// advertisement model.
+const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
+    "InstantTetheringBackgroundAdvertisementSupport",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+}  // namespace
+
+// Controls whether to enable Chrome OS Account Manager.
+// Rollout controlled by Finch.
+const base::Feature kAccountManager{"ChromeOSAccountManager",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to enable Ambient mode feature.
+const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to enable Google Assistant feature.
+const base::Feature kAssistantFeature{"ChromeOSAssistant",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables auto screen-brightness adjustment when ambient light
 // changes.
@@ -129,15 +150,23 @@ const base::Feature kImeInputLogicFstNonEnglish{
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables showing the battery level in the System Tray and Settings
-// UI for supported Bluetooth Devices.
-const base::Feature kShowBluetoothDeviceBattery{
-    "ShowBluetoothDeviceBattery", base::FEATURE_DISABLED_BY_DEFAULT};
+// Controls whether to enable the Parental Controls section of settings.
+const base::Feature kParentalControlsSettings{
+    "ChromeOSParentalControlsSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Release Notes on Chrome OS.
 // TODO(yulunwu): http://crbug.com/978201
 const base::Feature kReleaseNotes{"ReleaseNotes",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables showing the battery level in the System Tray and Settings
+// UI for supported Bluetooth Devices.
+const base::Feature kShowBluetoothDeviceBattery{
+    "ShowBluetoothDeviceBattery", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Shows the Play Store icon in Demo Mode.
+const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Uses the V3 (~2019-05 era) Smart Dim model instead of the default V2
 // (~2018-11) model.
@@ -179,10 +208,36 @@ const base::Feature kUseSearchClickForRightClick{
 const base::Feature kVideoPlayerNativeControls{
     "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
 
+////////////////////////////////////////////////////////////////////////////////
+
+bool IsAccountManagerEnabled() {
+  return base::FeatureList::IsEnabled(kAccountManager);
+}
+
+bool IsAmbientModeEnabled() {
+  return base::FeatureList::IsEnabled(kAmbientModeFeature);
+}
+
+bool IsAssistantEnabled() {
+  return base::FeatureList::IsEnabled(kAssistantFeature);
+}
+
+bool IsInstantTetheringBackgroundAdvertisingSupported() {
+  return base::FeatureList::IsEnabled(
+      kInstantTetheringBackgroundAdvertisementSupport);
+}
+
+bool IsParentalControlsSettingsEnabled() {
+  return base::FeatureList::IsEnabled(kParentalControlsSettings);
+}
+
 bool IsSplitSettingsEnabled() {
   return base::FeatureList::IsEnabled(kSplitSettings);
 }
 
-}  // namespace features
+bool ShouldShowPlayStoreInDemoMode() {
+  return base::FeatureList::IsEnabled(kShowPlayInDemoMode);
+}
 
+}  // namespace features
 }  // namespace chromeos

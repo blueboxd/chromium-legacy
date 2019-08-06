@@ -167,11 +167,13 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
   }
   DVLOG(3) << "receive_quota_threshold is " << receive_quota_threshold;
   impl_->handshake_client_->OnConnectionEstablished(
-      std::move(websocket_to_pass), selected_protocol, extensions,
-      receive_quota_threshold);
+      std::move(websocket_to_pass), mojo::MakeRequest(&impl_->client_),
+      selected_protocol, extensions, receive_quota_threshold);
   impl_->handshake_client_ = nullptr;
   impl_->auth_handler_ = nullptr;
   impl_->header_client_ = nullptr;
+  impl_->client_.set_connection_error_handler(
+      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(impl_)));
 }
 
 void WebSocket::WebSocketEventHandler::OnDataFrame(
@@ -342,7 +344,6 @@ WebSocket::WebSocket(
     const url::Origin& origin,
     uint32_t options,
     mojom::WebSocketHandshakeClientPtr handshake_client,
-    mojom::WebSocketClientPtr client,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client,
     WebSocketThrottler::PendingConnection pending_connection_tracker,
@@ -350,7 +351,6 @@ WebSocket::WebSocket(
     : delegate_(std::move(delegate)),
       binding_(this),
       handshake_client_(std::move(handshake_client)),
-      client_(std::move(client)),
       auth_handler_(std::move(auth_handler)),
       header_client_(std::move(header_client)),
       pending_connection_tracker_(std::move(pending_connection_tracker)),
@@ -360,7 +360,6 @@ WebSocket::WebSocket(
       frame_id_(frame_id),
       origin_(std::move(origin)) {
   DCHECK(handshake_client_);
-  DCHECK(client_);
   if (auth_handler_) {
     // Make sure the request dies if |auth_handler_| has an error, otherwise
     // requests can hang.
@@ -374,8 +373,6 @@ WebSocket::WebSocket(
         base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
   }
   handshake_client_.set_connection_error_handler(
-      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
-  client_.set_connection_error_handler(
       base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
   if (delay_ > base::TimeDelta()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

@@ -37,7 +37,7 @@ class PDFIFrameNavigationThrottleTest : public ChromeRenderViewHostTestHarness {
         ->SetAlwaysOpenPdfExternallyForTests(always_open_pdf_externally);
     ChromePluginServiceFilter* filter =
         ChromePluginServiceFilter::GetInstance();
-    filter->RegisterResourceContext(profile(), profile()->GetResourceContext());
+    filter->RegisterProfile(profile());
 #endif
   }
 

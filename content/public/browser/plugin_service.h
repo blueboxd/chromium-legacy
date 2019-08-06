@@ -27,7 +27,6 @@ namespace content {
 
 class BrowserContext;
 class PluginServiceFilter;
-class ResourceContext;
 struct PepperPluginInfo;
 struct WebPluginInfo;
 
@@ -36,6 +35,7 @@ struct WebPluginInfo;
 // PluginList interface for querying plugin information. This must be used
 // instead of that to avoid doing expensive disk operations on the IO/UI
 // threads.
+// TODO(http://crbug.com/990013): Only use this on the UI thread.
 class CONTENT_EXPORT PluginService {
  public:
   using GetPluginsCallback =
@@ -70,10 +70,9 @@ class CONTENT_EXPORT PluginService {
   // Gets plugin info for an individual plugin and filters the plugins using
   // the |context| and renderer IDs. This will report whether the data is stale
   // via |is_stale| and returns whether or not the plugin can be found.
-  // This can be called from any thread.
+  // This must be called from the UI thread.
   virtual bool GetPluginInfo(int render_process_id,
                              int render_frame_id,
-                             ResourceContext* context,
                              const GURL& url,
                              const url::Origin& main_frame_origin,
                              const std::string& mime_type,

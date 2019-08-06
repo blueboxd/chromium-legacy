@@ -19,7 +19,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id,
   return GetAuraColor(color_id, this, color_scheme);
 }
 
-bool NativeThemeDarkAura::SystemDarkModeEnabled() const {
+bool NativeThemeDarkAura::ShouldUseDarkColors() const {
   return true;
 }
 

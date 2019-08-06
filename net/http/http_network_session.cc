@@ -374,8 +374,7 @@ void HttpNetworkSession::GetAlpnProtos(NextProtoVector* alpn_protos) const {
   *alpn_protos = next_protos_;
 }
 
-void HttpNetworkSession::GetSSLConfig(const HttpRequestInfo& request,
-                                      SSLConfig* server_config,
+void HttpNetworkSession::GetSSLConfig(SSLConfig* server_config,
                                       SSLConfig* proxy_config) const {
   GetAlpnProtos(&server_config->alpn_protos);
   server_config->ignore_certificate_errors = params_.ignore_certificate_errors;

@@ -32,25 +32,24 @@ const base::Time kTestLastUpdated =
 TEST_F(ConsistencyGoldenConverterTest, ConvertInputWhenEmpty) {
   ConsistencyGoldenInput input;
 
-  std::unique_ptr<base::DictionaryValue> actual_output =
-      ConvertGoldenInputToProcessorInput(input);
+  base::Value actual_output = ConvertGoldenInputToProcessorInput(input);
 
-  std::unique_ptr<base::DictionaryValue> expected_output =
+  base::Value expected_output =
       utils::CreateTimeLimitPolicy(base::TimeDelta::FromHours(6));
 
-  EXPECT_TRUE(*actual_output == *expected_output);
+  EXPECT_TRUE(actual_output == expected_output);
 }
 
 TEST_F(ConsistencyGoldenConverterTest, ConvertInputWithBedtimes) {
   ConsistencyGoldenInput input;
-  std::unique_ptr<base::DictionaryValue> expected_output =
+  base::Value expected_output =
       utils::CreateTimeLimitPolicy(base::TimeDelta::FromHours(6));
 
   // First window: Wednesday, 22:30 to 8:00
   consistency_utils::AddWindowLimitEntryToGoldenInput(
       &input, WEDNESDAY, consistency_utils::TimeOfDay({22, 30}),
       consistency_utils::TimeOfDay({8, 0}), base::nullopt);
-  utils::AddTimeWindowLimit(expected_output.get(), utils::kWednesday,
+  utils::AddTimeWindowLimit(&expected_output, utils::kWednesday,
                             utils::CreateTime(22, 30), utils::CreateTime(8, 0),
                             kTestLastUpdated);
 
@@ -58,38 +57,36 @@ TEST_F(ConsistencyGoldenConverterTest, ConvertInputWithBedtimes) {
   consistency_utils::AddWindowLimitEntryToGoldenInput(
       &input, SATURDAY, consistency_utils::TimeOfDay({18, 45}),
       consistency_utils::TimeOfDay({22, 30}), base::nullopt);
-  utils::AddTimeWindowLimit(expected_output.get(), utils::kSaturday,
+  utils::AddTimeWindowLimit(&expected_output, utils::kSaturday,
                             utils::CreateTime(18, 45),
                             utils::CreateTime(22, 30), kTestLastUpdated);
 
-  std::unique_ptr<base::DictionaryValue> actual_output =
-      ConvertGoldenInputToProcessorInput(input);
+  base::Value actual_output = ConvertGoldenInputToProcessorInput(input);
 
-  EXPECT_TRUE(*actual_output == *expected_output);
+  EXPECT_TRUE(actual_output == expected_output);
 }
 
 TEST_F(ConsistencyGoldenConverterTest, ConvertInputWithBedtimesLastUpdated) {
   ConsistencyGoldenInput input;
-  std::unique_ptr<base::DictionaryValue> expected_output =
+  base::Value expected_output =
       utils::CreateTimeLimitPolicy(base::TimeDelta::FromHours(6));
 
   // First window: Wednesday, 22:30 to 8:00
   consistency_utils::AddWindowLimitEntryToGoldenInput(
       &input, WEDNESDAY, consistency_utils::TimeOfDay({22, 30}),
       consistency_utils::TimeOfDay({8, 0}), kTestTimestamp);
-  utils::AddTimeWindowLimit(expected_output.get(), utils::kWednesday,
+  utils::AddTimeWindowLimit(&expected_output, utils::kWednesday,
                             utils::CreateTime(22, 30), utils::CreateTime(8, 0),
                             base::Time::FromJavaTime(kTestTimestamp));
 
-  std::unique_ptr<base::DictionaryValue> actual_output =
-      ConvertGoldenInputToProcessorInput(input);
+  base::Value actual_output = ConvertGoldenInputToProcessorInput(input);
 
-  EXPECT_TRUE(*actual_output == *expected_output);
+  EXPECT_TRUE(actual_output == expected_output);
 }
 
 TEST_F(ConsistencyGoldenConverterTest, ConvertInputWithUsageLimit) {
   ConsistencyGoldenInput input;
-  std::unique_ptr<base::DictionaryValue> expected_output =
+  base::Value expected_output =
       utils::CreateTimeLimitPolicy(utils::CreateTime(17, 30));
 
   input.mutable_usage_limit_resets_at()->set_hour(17);
@@ -98,83 +95,79 @@ TEST_F(ConsistencyGoldenConverterTest, ConvertInputWithUsageLimit) {
   // First quota: Tuesday, 60 minutes
   consistency_utils::AddUsageLimitEntryToGoldenInput(&input, TUESDAY, 60,
                                                      base::nullopt);
-  utils::AddTimeUsageLimit(expected_output.get(), utils::kTuesday,
+  utils::AddTimeUsageLimit(&expected_output, utils::kTuesday,
                            base::TimeDelta::FromMinutes(60), kTestLastUpdated);
 
   // Second quota: Friday, 30 minutes
   consistency_utils::AddUsageLimitEntryToGoldenInput(&input, FRIDAY, 30,
                                                      base::nullopt);
-  utils::AddTimeUsageLimit(expected_output.get(), utils::kFriday,
+  utils::AddTimeUsageLimit(&expected_output, utils::kFriday,
                            base::TimeDelta::FromMinutes(30), kTestLastUpdated);
 
-  std::unique_ptr<base::DictionaryValue> actual_output =
-      ConvertGoldenInputToProcessorInput(input);
+  base::Value actual_output = ConvertGoldenInputToProcessorInput(input);
 
-  EXPECT_TRUE(*actual_output == *expected_output);
+  EXPECT_TRUE(actual_output == expected_output);
 }
 
 TEST_F(ConsistencyGoldenConverterTest, ConvertInputWithUsageLimitDefaultReset) {
   ConsistencyGoldenInput input;
-  std::unique_ptr<base::DictionaryValue> expected_output =
+  base::Value expected_output =
       utils::CreateTimeLimitPolicy(base::TimeDelta::FromHours(6));
 
   // First quota: Tuesday, 60 minutes
   consistency_utils::AddUsageLimitEntryToGoldenInput(&input, TUESDAY, 60,
                                                      base::nullopt);
-  utils::AddTimeUsageLimit(expected_output.get(), utils::kTuesday,
+  utils::AddTimeUsageLimit(&expected_output, utils::kTuesday,
                            base::TimeDelta::FromMinutes(60), kTestLastUpdated);
 
   // Second quota: Friday, 30 minutes
   consistency_utils::AddUsageLimitEntryToGoldenInput(&input, FRIDAY, 30,
                                                      base::nullopt);
-  utils::AddTimeUsageLimit(expected_output.get(), utils::kFriday,
+  utils::AddTimeUsageLimit(&expected_output, utils::kFriday,
                            base::TimeDelta::FromMinutes(30), kTestLastUpdated);
 
-  std::unique_ptr<base::DictionaryValue> actual_output =
-      ConvertGoldenInputToProcessorInput(input);
+  base::Value actual_output = ConvertGoldenInputToProcessorInput(input);
 
-  EXPECT_TRUE(*actual_output == *expected_output);
+  EXPECT_TRUE(actual_output == expected_output);
 }
 
 TEST_F(ConsistencyGoldenConverterTest, ConvertInputWithUsageLimitLastUpdated) {
   ConsistencyGoldenInput input;
-  std::unique_ptr<base::DictionaryValue> expected_output =
+  base::Value expected_output =
       utils::CreateTimeLimitPolicy(base::TimeDelta::FromHours(6));
 
   // First quota: Tuesday, 60 minutes
   consistency_utils::AddUsageLimitEntryToGoldenInput(&input, TUESDAY, 60,
                                                      kTestTimestamp);
-  utils::AddTimeUsageLimit(expected_output.get(), utils::kTuesday,
+  utils::AddTimeUsageLimit(&expected_output, utils::kTuesday,
                            base::TimeDelta::FromMinutes(60),
                            base::Time::FromJavaTime(kTestTimestamp));
 
-  std::unique_ptr<base::DictionaryValue> actual_output =
-      ConvertGoldenInputToProcessorInput(input);
+  base::Value actual_output = ConvertGoldenInputToProcessorInput(input);
 
-  EXPECT_TRUE(*actual_output == *expected_output);
+  EXPECT_TRUE(actual_output == expected_output);
 }
 
 TEST_F(ConsistencyGoldenConverterTest, ConvertInputWithOverride) {
   ConsistencyGoldenInput input;
-  std::unique_ptr<base::DictionaryValue> expected_output =
+  base::Value expected_output =
       utils::CreateTimeLimitPolicy(base::TimeDelta::FromHours(6));
 
   // Override: Unlock bedtime
   consistency_utils::AddOverrideToGoldenInput(&input, UNLOCK_WINDOW_LIMIT,
                                               kTestTimestamp);
-  utils::AddOverride(expected_output.get(),
+  utils::AddOverride(&expected_output,
                      usage_time_limit::TimeLimitOverride::Action::kUnlock,
                      base::Time::FromJavaTime(kTestTimestamp));
 
-  std::unique_ptr<base::DictionaryValue> actual_output =
-      ConvertGoldenInputToProcessorInput(input);
+  base::Value actual_output = ConvertGoldenInputToProcessorInput(input);
 
-  EXPECT_TRUE(*actual_output == *expected_output);
+  EXPECT_TRUE(actual_output == expected_output);
 }
 
 TEST_F(ConsistencyGoldenConverterTest, ConvertInputWithTimedOverride) {
   ConsistencyGoldenInput input;
-  std::unique_ptr<base::DictionaryValue> expected_output =
+  base::Value expected_output =
       utils::CreateTimeLimitPolicy(base::TimeDelta::FromHours(6));
   const int64_t override_duration_millis = 10000;
 
@@ -182,15 +175,13 @@ TEST_F(ConsistencyGoldenConverterTest, ConvertInputWithTimedOverride) {
   consistency_utils::AddTimedOverrideToGoldenInput(
       &input, override_duration_millis, kTestTimestamp);
   utils::AddOverrideWithDuration(
-      expected_output.get(),
-      usage_time_limit::TimeLimitOverride::Action::kUnlock,
+      &expected_output, usage_time_limit::TimeLimitOverride::Action::kUnlock,
       base::Time::FromJavaTime(kTestTimestamp),
       base::TimeDelta::FromMilliseconds(override_duration_millis));
 
-  std::unique_ptr<base::DictionaryValue> actual_output =
-      ConvertGoldenInputToProcessorInput(input);
+  base::Value actual_output = ConvertGoldenInputToProcessorInput(input);
 
-  EXPECT_TRUE(*actual_output == *expected_output);
+  EXPECT_TRUE(actual_output == expected_output);
 }
 
 TEST_F(ConsistencyGoldenConverterTest, ConvertOutputWhenUnlocked) {

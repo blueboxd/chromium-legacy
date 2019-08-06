@@ -456,6 +456,10 @@
                  file="icons.html"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_OS_SETTINGS_OS_ICONS"
+                 file="chromeos/os_icons.html"
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_OS_SETTINGS_POWERWASH_DIALOG_HTML"
                  file="chromeos/os_reset_page/os_powerwash_dialog.html"
                  type="chrome_html" />

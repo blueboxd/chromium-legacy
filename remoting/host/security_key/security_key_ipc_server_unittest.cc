@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -65,7 +65,8 @@ class SecurityKeyIpcServerTest : public testing::Test,
   uint32_t desktop_session_id() const override { return peer_session_id_; }
 
   // IPC tests require a valid MessageLoop to run.
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
 
   // Used to allow |message_loop_| to run during tests.  The instance is reset
   // after each stage of the tests has been completed.

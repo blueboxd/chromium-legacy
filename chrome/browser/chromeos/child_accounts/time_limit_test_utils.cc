@@ -102,19 +102,17 @@ base::Value CreateTimeUsage(base::TimeDelta usage_quota,
   return time_usage;
 }
 
-std::unique_ptr<base::DictionaryValue> CreateTimeLimitPolicy(
-    base::TimeDelta reset_time) {
+base::Value CreateTimeLimitPolicy(base::TimeDelta reset_time) {
   base::Value time_usage_limit = base::Value(base::Value::Type::DICTIONARY);
   time_usage_limit.SetKey(kUsageLimitResetAt, CreatePolicyTime(reset_time));
 
   base::Value time_limit = base::Value(base::Value::Type::DICTIONARY);
   time_limit.SetKey(kTimeUsageLimit, std::move(time_usage_limit));
 
-  return base::DictionaryValue::From(
-      std::make_unique<base::Value>(std::move(time_limit)));
+  return time_limit;
 }
 
-void AddTimeUsageLimit(base::DictionaryValue* policy,
+void AddTimeUsageLimit(base::Value* policy,
                        std::string day,
                        base::TimeDelta quota,
                        base::Time last_updated) {
@@ -130,7 +128,7 @@ void AddTimeUsageLimit(base::DictionaryValue* policy,
       ->SetKey(day, CreateTimeUsage(quota, last_updated));
 }
 
-void AddTimeWindowLimit(base::DictionaryValue* policy,
+void AddTimeWindowLimit(base::Value* policy,
                         const std::string& day,
                         base::TimeDelta start_time,
                         base::TimeDelta end_time,
@@ -152,7 +150,7 @@ void AddTimeWindowLimit(base::DictionaryValue* policy,
       CreateTimeWindow(day, start_time, end_time, last_updated));
 }
 
-void AddOverride(base::DictionaryValue* policy,
+void AddOverride(base::Value* policy,
                  usage_time_limit::TimeLimitOverride::Action action,
                  base::Time created_at) {
   base::Value* overrides =
@@ -168,7 +166,7 @@ void AddOverride(base::DictionaryValue* policy,
   overrides->GetList().push_back(new_override.ToDictionary());
 }
 
-void AddOverrideWithDuration(base::DictionaryValue* policy,
+void AddOverrideWithDuration(base::Value* policy,
                              usage_time_limit::TimeLimitOverride::Action action,
                              base::Time created_at,
                              base::TimeDelta duration) {
@@ -185,9 +183,9 @@ void AddOverrideWithDuration(base::DictionaryValue* policy,
   overrides->GetList().push_back(new_override.ToDictionary());
 }
 
-std::string PolicyToString(const base::DictionaryValue* policy) {
+std::string PolicyToString(const base::Value& policy) {
   std::string json_string;
-  base::JSONWriter::Write(*policy, &json_string);
+  base::JSONWriter::Write(policy, &json_string);
   return json_string;
 }
 

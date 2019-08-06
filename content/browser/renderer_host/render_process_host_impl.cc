@@ -2166,11 +2166,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   // Initialization can happen more than once (in the case of a child process
   // crash), but we don't want to lose the plugin registry in this case.
   if (!plugin_registry_) {
-    plugin_registry_.reset(
-        new PluginRegistryImpl(GetBrowserContext()->GetResourceContext()));
+    plugin_registry_ = std::make_unique<PluginRegistryImpl>(GetID());
   }
-  registry->AddInterface(base::BindRepeating(
-      &PluginRegistryImpl::Bind, base::Unretained(plugin_registry_.get())));
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(&PluginRegistryImpl::Bind,
+                          base::Unretained(plugin_registry_.get())));
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -3051,6 +3052,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #endif
 #if defined(OS_WIN)
     service_manager::switches::kDisableWin32kLockDown,
+    switches::kDisableHighResTimer,
     switches::kEnableWin7WebRtcHWH264Decoding,
     switches::kTrySupportedChannelLayouts,
 #endif

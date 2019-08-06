@@ -64,9 +64,9 @@ class ContentIndexProviderImpl
  private:
   friend class ContentIndexProviderImplTest;
 
-  void DidGetIcon(const offline_items_collection::ContentId& id,
-                  VisualsCallback callback,
-                  SkBitmap icon);
+  void DidGetIcons(const offline_items_collection::ContentId& id,
+                   VisualsCallback callback,
+                   std::vector<SkBitmap> icons);
   void DidGetEntryToOpen(base::Optional<content::ContentIndexEntry> entry);
 
   Profile* profile_;

@@ -171,7 +171,7 @@ void ModuleInspector::SetModuleInspectionResultForTesting(
 void ModuleInspector::EnsureUtilWinServiceBound() {
   DCHECK(base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature));
 
-  if (test_remote_util_win_)
+  if (test_remote_util_win_ || remote_util_win_)
     return;
 
   remote_util_win_ = LaunchUtilWinServiceInstance();
@@ -312,13 +312,6 @@ void ModuleInspector::OnInspectionFinished(
   queue_.pop();
 
   on_module_inspected_callback_.Run(module_key, std::move(inspection_result));
-
-  // Disconnect from the UtilWin service to clean up the service process. While
-  // this code is only ever needed in the case the WinOOPInspectModule feature
-  // is enabled, it's faster to check the Remote's bound state than to check the
-  // feature status.
-  if (queue_.empty() && remote_util_win_)
-    remote_util_win_.reset();
 
   // Continue the work.
   if (!queue_.empty())

@@ -34,7 +34,7 @@ class CONTENT_EXPORT ContentIndexServiceImpl
   // blink::mojom::ContentIndexService implementation.
   void Add(int64_t service_worker_registration_id,
            blink::mojom::ContentDescriptionPtr description,
-           const SkBitmap& icon,
+           const std::vector<SkBitmap>& icons,
            const GURL& launch_url,
            AddCallback callback) override;
   void Delete(int64_t service_worker_registration_id,

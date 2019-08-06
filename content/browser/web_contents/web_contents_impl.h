@@ -1921,7 +1921,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       native_theme_observer_;
 
   bool in_high_contrast_ = false;
-  bool in_dark_mode_ = false;
+  bool using_dark_colors_ = false;
   ui::NativeTheme::PreferredColorScheme preferred_color_scheme_ =
       ui::NativeTheme::PreferredColorScheme::kNoPreference;
 

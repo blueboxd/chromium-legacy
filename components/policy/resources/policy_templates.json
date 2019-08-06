@@ -14324,7 +14324,8 @@
                           'minimum': 0,
                           'maximum': 59
                         },
-                      }
+                      },
+                      'required': ['hour', 'minute']
                     },
                     'ends_at': { '$ref': 'Time' },
                     'last_updated_millis': { 'type': 'string' }

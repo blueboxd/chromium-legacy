@@ -7,6 +7,8 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_suggestion_icon_util.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 #import "url/gurl.h"
@@ -98,13 +100,18 @@
     case OmniboxIconTypeImage:
     case OmniboxIconTypeSuggestionIcon:
       if ([self hasCustomAnswerIcon]) {
-        return UIColor.whiteColor;
+        return color::IncognitoDynamicColor(
+            self.incognito,
+            [UIColor colorNamed:@"omnibox_suggestion_answer_icon_color"],
+            [UIColor colorNamed:@"omnibox_suggestion_answer_icon_dark_color"]);
       }
-      return self.incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.52]
-                            : [UIColor.blackColor colorWithAlphaComponent:0.45];
+      return color::IncognitoDynamicColor(
+          self.incognito, [UIColor colorNamed:@"omnibox_suggestion_icon_color"],
+          [UIColor colorNamed:@"omnibox_suggestion_icon_dark_color"]);
     case OmniboxIconTypeFavicon:
-      return self.incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.52]
-                            : [UIColor.blackColor colorWithAlphaComponent:0.31];
+      return color::IncognitoDynamicColor(
+          self.incognito, [UIColor colorNamed:@"omnibox_suggestion_icon_color"],
+          [UIColor colorNamed:@"omnibox_suggestion_icon_dark_color"]);
   }
 }
 
@@ -113,11 +120,13 @@
     case OmniboxIconTypeImage:
       return nil;
     case OmniboxIconTypeSuggestionIcon:
-      return [[UIImage imageNamed:@"background_solid"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      if ([self hasCustomAnswerIcon]) {
+        return [[UIImage imageNamed:@"background_solid"]
+            imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      }
+      return nil;
     case OmniboxIconTypeFavicon:
-      return [[UIImage imageNamed:@"background_stroke"]
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      return nil;
   }
 }
 
@@ -127,23 +136,19 @@
       return nil;
     case OmniboxIconTypeSuggestionIcon:
       if ([self hasCustomAnswerIcon]) {
-        return [MDCPalette.cr_bluePalette tint500];
+        return color::IncognitoDynamicColor(
+            self.incognito, [UIColor colorNamed:kBlueColor],
+            [UIColor colorNamed:kBlueDarkColor]);
       }
-      return self.incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.15]
-                            : [UIColor.blackColor colorWithAlphaComponent:0.08];
+      return nil;
     case OmniboxIconTypeFavicon:
-      return self.incognito ? [UIColor.whiteColor colorWithAlphaComponent:0.16]
-                            : [UIColor.blackColor colorWithAlphaComponent:0.13];
+      return nil;
   }
 }
 
 - (UIImage*)overlayImage {
   switch (self.iconType) {
     case OmniboxIconTypeImage:
-      return self.isAnswer ? nil
-                           : [[UIImage imageNamed:@"background_stroke"]
-                                 imageWithRenderingMode:
-                                     UIImageRenderingModeAlwaysTemplate];
     case OmniboxIconTypeSuggestionIcon:
     case OmniboxIconTypeFavicon:
       return nil;
@@ -151,7 +156,7 @@
 }
 
 - (UIColor*)overlayImageTintColor {
-  return [UIColor.blackColor colorWithAlphaComponent:0.1];
+  return nil;
 }
 
 @end

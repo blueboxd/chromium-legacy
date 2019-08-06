@@ -12,7 +12,6 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
-#include "android_webview/browser/net/init_native_callback.h"
 #include "android_webview/native_jni/AwCookieManager_jni.h"
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
@@ -251,10 +250,6 @@ void CookieManager::RunPendingCookieTasks() {
     std::move(temp_queue.front()).Run();
     temp_queue.pop_front();
   }
-}
-
-base::SingleThreadTaskRunner* CookieManager::GetCookieStoreTaskRunner() {
-  return cookie_store_task_runner_.get();
 }
 
 net::CookieStore* CookieManager::GetCookieStore() {
@@ -704,18 +699,6 @@ static void JNI_AwCookieManager_SetAcceptFileSchemeCookies(
     const JavaParamRef<jobject>& obj,
     jboolean accept) {
   return CookieManager::GetInstance()->SetAcceptFileSchemeCookies(accept);
-}
-
-// The following two methods are used to avoid a circular project dependency.
-// TODO(mmenke):  This is weird. Maybe there should be a leaky Singleton in
-// browser/net that creates and owns there?
-
-scoped_refptr<base::SingleThreadTaskRunner> GetCookieStoreTaskRunner() {
-  return CookieManager::GetInstance()->GetCookieStoreTaskRunner();
-}
-
-net::CookieStore* GetCookieStore() {
-  return CookieManager::GetInstance()->GetCookieStore();
 }
 
 }  // namespace android_webview

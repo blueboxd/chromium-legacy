@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
@@ -67,8 +68,8 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
             ActivityLifecycleDispatcher lifecycleDispatcher, TabModelSelector tabModelSelector,
             TabContentManager tabContentManager, CompositorViewHolder compositorViewHolder,
             ChromeFullscreenManager fullscreenManager, TabCreatorManager tabCreatorManager,
-            MenuOrKeyboardActionController menuOrKeyboardActionController, Runnable backPress,
-            SnackbarManager.SnackbarManageable snackbarManageable) {
+            MenuOrKeyboardActionController menuOrKeyboardActionController,
+            SnackbarManager.SnackbarManageable snackbarManageable, @Nullable ViewGroup container) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
@@ -104,10 +105,11 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
                     R.plurals.bottom_tab_grid_title_placeholder, numRelatedTabs, numRelatedTabs);
         };
 
+        ViewGroup tabListContainerView = container != null ? container : compositorViewHolder;
         mTabGridCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,
                 tabModelSelector, mMultiThumbnailCardProvider, titleProvider, true,
                 mMediator::getCreateGroupButtonOnClickListener, mMediator, null, null, null,
-                compositorViewHolder, compositorViewHolder.getDynamicResourceLoader(), true,
+                tabListContainerView, compositorViewHolder.getDynamicResourceLoader(), true,
                 COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabGridCoordinator.getContainerView(), TabGridContainerViewBinder::bind);

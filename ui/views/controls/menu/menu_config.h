@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_MENU_MENU_CONFIG_H_
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/controls/menu/menu_image_util.h"
 #include "ui/views/round_rect_painter.h"
@@ -87,7 +88,7 @@ struct VIEWS_EXPORT MenuConfig {
   int touchable_icon_size = 20;
 
   // The color used for icons in touchable menu items.
-  SkColor touchable_icon_color = SkColorSetRGB(0x5F, 0x63, 0x60);
+  SkColor touchable_icon_color = gfx::kGoogleGrey700;
 
   // The space reserved for the check. The actual size of the image may be
   // different.

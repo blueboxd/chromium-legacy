@@ -48,30 +48,36 @@ TabAnimationState TabAnimationState::WithActiveness(
                            normalized_leading_edge_x_);
 }
 
-float TabAnimationState::GetMinimumWidth(TabSizeInfo tab_size_info) const {
+float TabAnimationState::GetMinimumWidth(
+    const TabLayoutConstants& layout_constants,
+    const TabSizeInfo& size_info) const {
   const float min_width = gfx::Tween::FloatValueBetween(
-      activeness_, tab_size_info.min_inactive_width,
-      tab_size_info.min_active_width);
-  return TransformForPinnednessAndOpenness(tab_size_info, min_width);
+      activeness_, size_info.min_inactive_width, size_info.min_active_width);
+  return TransformForPinnednessAndOpenness(layout_constants, size_info,
+                                           min_width);
 }
 
 float TabAnimationState::GetLayoutCrossoverWidth(
-    TabSizeInfo tab_size_info) const {
-  return TransformForPinnednessAndOpenness(tab_size_info,
-                                           tab_size_info.min_active_width);
+    const TabLayoutConstants& layout_constants,
+    const TabSizeInfo& size_info) const {
+  return TransformForPinnednessAndOpenness(layout_constants, size_info,
+                                           size_info.min_active_width);
 }
 
-float TabAnimationState::GetPreferredWidth(TabSizeInfo tab_size_info) const {
-  return TransformForPinnednessAndOpenness(tab_size_info,
-                                           tab_size_info.standard_size.width());
+float TabAnimationState::GetPreferredWidth(
+    const TabLayoutConstants& layout_constants,
+    const TabSizeInfo& size_info) const {
+  return TransformForPinnednessAndOpenness(layout_constants, size_info,
+                                           size_info.standard_width);
 }
 
 float TabAnimationState::TransformForPinnednessAndOpenness(
-    TabSizeInfo tab_size_info,
+    const TabLayoutConstants& layout_constants,
+    const TabSizeInfo& size_info,
     float width) const {
   const float pinned_width = gfx::Tween::FloatValueBetween(
-      pinnedness_, width, tab_size_info.pinned_tab_width);
-  return gfx::Tween::FloatValueBetween(openness_, tab_size_info.tab_overlap,
+      pinnedness_, width, size_info.pinned_tab_width);
+  return gfx::Tween::FloatValueBetween(openness_, layout_constants.tab_overlap,
                                        pinned_width);
 }
 

@@ -271,20 +271,23 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
     weak_factory_.InvalidateWeakPtrs();
 
     int64_t host_quota = desired_host_quota_;
+    int64_t temp_pool_free_space =
+        std::max(static_cast<int64_t>(0),
+                 available_space_ - settings_.must_remain_available);
 
-    if (!base::FeatureList::IsEnabled(features::kStaticHostQuota)) {
-      // Constrain the desired |host_quota| to something that fits.
-      // If available space is too low, cap usage at current levels.
-      // If it's close to being too low, cap growth to avoid it getting too low.
-      int64_t temp_pool_free_space =
-          std::max(static_cast<int64_t>(0),
-                   available_space_ - settings_.must_remain_available);
-      host_quota = std::min(host_quota, temp_pool_free_space + host_usage_);
+    // Constrain the desired |host_quota| to something that fits.
+    if (host_quota > temp_pool_free_space) {
+      if (is_unlimited_) {
+        host_quota = available_space_ + host_usage_;
+      } else if (!base::FeatureList::IsEnabled(features::kStaticHostQuota)) {
+        host_quota = temp_pool_free_space + host_usage_;
+      }
     }
 
     std::move(callback_).Run(blink::mojom::QuotaStatusCode::kOk, host_usage_,
                              host_quota, std::move(host_usage_breakdown_));
-    if (type_ == StorageType::kTemporary && !is_incognito_ && !is_unlimited_) {
+    if (type_ == StorageType::kTemporary && !is_incognito_ &&
+        !is_unlimited_) {
       UMA_HISTOGRAM_MBYTES("Quota.QuotaForOrigin", host_quota);
       UMA_HISTOGRAM_MBYTES("Quota.UsageByOrigin", host_usage_);
       if (host_quota > 0) {

@@ -16,6 +16,8 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -204,9 +206,9 @@
 - (UIButton*)cancelButton {
   UIButton* cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
   cancelButton.titleLabel.font = [UIFont systemFontOfSize:kLocationBarFontSize];
-  cancelButton.tintColor = self.style == NORMAL
-                               ? UIColorFromRGB(kLocationBarTintBlue)
-                               : [UIColor whiteColor];
+  cancelButton.tintColor = color::IncognitoDynamicColor(
+      self.style == INCOGNITO, [UIColor colorNamed:kBlueColor],
+      [UIColor colorNamed:kBlueDarkColor]);
   [cancelButton setTitle:l10n_util::GetNSString(IDS_CANCEL)
                 forState:UIControlStateNormal];
   [cancelButton setContentHuggingPriority:UILayoutPriorityRequired

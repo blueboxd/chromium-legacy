@@ -37,6 +37,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  * Implements a modal dialog that prompts the user about the languages they can read. Displayed
@@ -264,7 +265,7 @@ public class LanguageAskPrompt implements ModalDialogProperties.Controller {
      * mLanguagesUpdate, and by extension which languages were checked by the user in the prompt.
      */
     private void saveLanguages() {
-        HashSet<String> languagesToAdd = new HashSet<String>(mLanguagesUpdate);
+        TreeSet<String> languagesToAdd = new TreeSet<String>(mLanguagesUpdate);
         languagesToAdd.removeAll(mInitialLanguages);
 
         for (String language : languagesToAdd) {

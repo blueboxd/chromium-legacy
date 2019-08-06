@@ -11,7 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 
 namespace ash {
@@ -41,8 +41,8 @@ class AssistantPrefsControllerTest : public AshTestBase {
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        chromeos::switches::kAssistantFeature);
-    ASSERT_TRUE(chromeos::switches::IsAssistantEnabled());
+        chromeos::features::kAssistantFeature);
+    ASSERT_TRUE(chromeos::features::IsAssistantEnabled());
 
     AshTestBase::SetUp();
 

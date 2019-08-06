@@ -16,7 +16,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
-#include "chrome/browser/notifications/scheduler/internal/distribution_policy.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler_context.h"
@@ -234,7 +233,10 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   }
 
   // ImpressionHistoryTracker::Delegate implementation.
-  void OnImpressionUpdated() override { ScheduleBackgroundTask(); }
+  void OnImpressionUpdated() override {
+    // TODO(xingliu): Fix duplicate ScheduleBackgroundTask() call.
+    ScheduleBackgroundTask();
+  }
 
   void FindNotificationToShow(SchedulerTaskTime task_start_time) {
     DisplayDecider::Results results;
@@ -248,7 +250,6 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     context_->client_registrar()->GetRegisteredClients(&clients);
 
     context_->display_decider()->FindNotificationsToShow(
-        context_->config(), std::move(clients), DistributionPolicy::Create(),
         task_start_time, std::move(notifications), std::move(client_states),
         &results);
 

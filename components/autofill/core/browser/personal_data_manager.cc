@@ -1304,11 +1304,8 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
       base::FeatureList::IsEnabled(
           features::kAutofillEnableAccountWalletStorage)) {
     // For SyncTransport, only show server cards if the user has opted in to
-    // seeing them in the dropdown, or if the feature to always show server
-    // cards is enabled.
-    if (!base::FeatureList::IsEnabled(
-            features::kAutofillAlwaysShowServerCardsInSyncTransport) &&
-        !prefs::IsUserOptedInWalletSyncTransport(
+    // seeing them in the dropdown.
+    if (!prefs::IsUserOptedInWalletSyncTransport(
             pref_service_,
             sync_service_->GetAuthenticatedAccountInfo().account_id)) {
       return false;
@@ -1948,13 +1945,6 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
   // cards). This should only happen if that feature is enabled.
   DCHECK(base::FeatureList::IsEnabled(
       features::kAutofillEnableAccountWalletStorage));
-
-  // If the feature to always show the server cards in sync transport mode is
-  // enabled, don't show the option.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillAlwaysShowServerCardsInSyncTransport)) {
-    return false;
-  }
 
   bool is_opted_in = prefs::IsUserOptedInWalletSyncTransport(
       pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id);

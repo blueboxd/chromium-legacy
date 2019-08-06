@@ -30,6 +30,7 @@ group("closure_compile") {
     # Targets for auto-generated Polymer 3 JS Modules
     "cr_button:closure_compile_module",
     "cr_checkbox:closure_compile_module",
+    "cr_input:closure_compile_module",
     "cr_toast:closure_compile_module",
     "cr_toggle:closure_compile_module",
     "cr_view_manager:closure_compile_module",
@@ -91,6 +92,12 @@ polymer_modulizer("md_select_css") {
   html_type = "style-module"
 }
 
+polymer_modulizer("cr_icons_css") {
+  js_file = "cr_icons_css.m.js"
+  html_file = "cr_icons_css.html"
+  html_type = "style-module"
+}
+
 polymer_modulizer("icons") {
   js_file = "icons.m.js"
   html_file = "icons.html"
@@ -99,6 +106,7 @@ polymer_modulizer("icons") {
 
 group("polymer3_elements") {
   deps = [
+    ":cr_icons_css_module",
     ":hidden_style_css_module",
     ":icons_module",
     ":md_select_css_module",
@@ -106,6 +114,8 @@ group("polymer3_elements") {
     ":shared_vars_css_module",
     "cr_button:cr_button_module",
     "cr_checkbox:cr_checkbox_module",
+    "cr_input:cr_input_module",
+    "cr_input:cr_input_style_css_module",
     "cr_toast:cr_toast_module",
     "cr_toggle:cr_toggle_module",
     "cr_view_manager:cr_view_manager_module",

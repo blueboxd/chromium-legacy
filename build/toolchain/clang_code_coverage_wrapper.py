@@ -64,6 +64,16 @@ _COVERAGE_FLAGS = [
 # apply to all platforms that don't have their own specific list.
 _COVERAGE_EXCLUSION_LIST_MAP = {
     'default': [],
+    'linux': [
+        # These files caused a static initializer to be generated, which
+        # shouldn't.
+        # TODO(crbug.com/990948): Remove when the bug is fixed.
+        '../../chrome/browser/media/router/providers/cast/cast_internal_message_util.cc', #pylint: disable=line-too-long
+        '../../chrome/common/media_router/providers/cast/cast_media_source.cc',
+        '../../components/cast_channel/cast_channel_enum.cc',
+        '../../components/cast_channel/cast_message_util.cc'
+
+    ],
     'chromeos': [
         # These files caused clang to crash while compiling them. They are
         # excluded pending an investigation into the underlying compiler bug.

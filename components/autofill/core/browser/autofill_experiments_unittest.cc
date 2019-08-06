@@ -192,31 +192,6 @@ TEST_F(AutofillExperimentsTest, IsCardUploadEnabled_TransportModeOnly) {
       AutofillMetrics::CardUploadEnabledMetric::CARD_UPLOAD_ENABLED, 1);
 }
 
-TEST_F(AutofillExperimentsTest,
-       IsCardUploadEnabled_TransportSyncDoesNotHaveUploadEnabled) {
-  scoped_feature_list_.InitWithFeatures(
-      /*enable_features=*/{features::kAutofillUpstream,
-                           features::kAutofillEnableAccountWalletStorage},
-      /*disable_features=*/{
-          features::kAutofillEnableAccountWalletStorageUpload});
-  // When we have no primary account, Sync will start in Transport-only mode
-  // (if allowed).
-  sync_service_.SetIsAuthenticatedAccountPrimary(false);
-
-  EXPECT_FALSE(IsCreditCardUploadEnabled(
-      AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled));
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadEnabled",
-      AutofillMetrics::CardUploadEnabledMetric::
-          ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED,
-      1);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CardUploadEnabled.SignedInAndSyncFeatureEnabled",
-      AutofillMetrics::CardUploadEnabledMetric::
-          ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED,
-      1);
-}
-
 TEST_F(
     AutofillExperimentsTest,
     IsCardUploadEnabled_TransportSyncDoesNotHaveAutofillProfileActiveDataType) {

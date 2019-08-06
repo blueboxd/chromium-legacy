@@ -1418,7 +1418,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'mojo_linux_gtests',
-          'isolated_scripts': 'navigation_loader_on_ui_isolated_scripts',
         },
       },
       'Mojo Windows': {
@@ -1482,19 +1481,6 @@
         },
         'test_suites': {
           'gtest_tests': 'layout_ng_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'WebKit Linux root_layer_scrolls Dummy Builder': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
-          'hard_timeout': 900,
-        },
-        'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
@@ -1741,7 +1727,7 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
         'gtest_args': [
-          '--enable-blink-features=HeapConcurrentMarking',
+          '--enable-features=BlinkHeapConcurrentMarking',
         ]
       },
       'linux-blink-heap-unified-gc': {
@@ -1766,15 +1752,11 @@
         },
       },
       'linux-blink-rel-dummy': {
+        'mixins': [
+          'linux-xenial',
+        ],
         'test_suites': {
           'isolated_scripts': 'chromium_web_tests_and_wpt_webdriver_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
         },
       },
       'linux-chromeos-code-coverage': {
@@ -3047,6 +3029,18 @@
           'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
         },
       },
+      'Win10 FYI x64 Release (Intel UHD 630)': {
+        'os_type': 'win',
+        'browser_config': 'release_x64',
+        'mixins': [
+          'win10_intel_uhd_630_stable',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_win_gtests',
+          'isolated_scripts': 'gpu_angle_and_desktop_representative_perf_fyi_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
+        },
+      },
       'Win10 FYI x64 Release (NVIDIA GeForce GTX 1660)': {
         # This bot currently only has one piece of hardware behind it,
         # and is being qualified for potential scale-out.
@@ -3974,6 +3968,9 @@
     'name': 'chromium.win',
     'machines': {
       'WebKit Win10': {
+        'mixins': [
+            'win10',
+        ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },

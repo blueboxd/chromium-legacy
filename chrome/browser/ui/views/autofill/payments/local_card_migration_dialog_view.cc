@@ -88,9 +88,8 @@ std::unique_ptr<views::Label> CreateTitle(
   title->SetFontList(gfx::FontList().Derive(kMigrationDialogTitleFontSize,
                                             gfx::Font::NORMAL,
                                             gfx::Font::Weight::NORMAL));
-  title->SetEnabledColor(dialog_view->GetNativeTheme()->SystemDarkModeEnabled()
-                             ? gfx::kGoogleGrey200
-                             : gfx::kGoogleGrey900);
+  title->SetEnabledColor(dialog_view->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor));
   constexpr int kMigrationDialogTitleLineHeight = 20;
   title->SetMultiLine(true);
   title->SetLineHeight(kMigrationDialogTitleLineHeight);
@@ -185,12 +184,12 @@ std::unique_ptr<views::View> CreateTip(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(container_insets),
       container_child_space));
   tip_text_container->SetBackground(views::CreateSolidBackground(
-      dialog_view->GetNativeTheme()->SystemDarkModeEnabled()
+      dialog_view->GetNativeTheme()->ShouldUseDarkColors()
           ? gfx::kGoogleGrey800
           : gfx::kGoogleGrey050));
 
-  // If in dark mode, do not add the border.
-  if (!dialog_view->GetNativeTheme()->SystemDarkModeEnabled()) {
+  // Do not add the border if it is not using dark colors.
+  if (!dialog_view->GetNativeTheme()->ShouldUseDarkColors()) {
     constexpr int kTipValuePromptBorderThickness = 1;
     tip_text_container->SetBorder(views::CreateSolidBorder(
         kTipValuePromptBorderThickness, gfx::kGoogleGrey100));
@@ -200,9 +199,8 @@ std::unique_ptr<views::View> CreateTip(
   constexpr int kTipImageSize = 16;
   lightbulb_outline_image->SetImage(gfx::CreateVectorIcon(
       vector_icons::kLightbulbOutlineIcon, kTipImageSize,
-      dialog_view->GetNativeTheme()->SystemDarkModeEnabled()
-          ? gfx::kGoogleYellow300
-          : gfx::kGoogleYellow700));
+      dialog_view->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_AlertSeverityMedium)));
   lightbulb_outline_image->SetVerticalAlignment(
       views::ImageView::Alignment::kLeading);
   tip_text_container->AddChildView(lightbulb_outline_image);
@@ -212,9 +210,8 @@ std::unique_ptr<views::View> CreateTip(
   tip->SetMultiLine(true);
   // If it is in dark mode, set the font color to GG200 since it is on a lighter
   // shade of grey background.
-  if (dialog_view->GetNativeTheme()->SystemDarkModeEnabled()) {
+  if (dialog_view->GetNativeTheme()->ShouldUseDarkColors())
     tip->SetEnabledColor(gfx::kGoogleGrey200);
-  }
   tip->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   tip->SizeToFit(
       provider->GetDistanceMetric(DISTANCE_LARGE_MODAL_DIALOG_PREFERRED_WIDTH) -
@@ -487,7 +484,7 @@ void LocalCardMigrationDialogView::ConstructView() {
   image->SetBorder(views::CreateEmptyBorder(0, 0, kImageBorderBottom, 0));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image->SetImage(
-      rb.GetImageSkiaNamed(GetNativeTheme()->SystemDarkModeEnabled()
+      rb.GetImageSkiaNamed(GetNativeTheme()->ShouldUseDarkColors()
                                ? IDR_AUTOFILL_MIGRATION_DIALOG_HEADER_DARK
                                : IDR_AUTOFILL_MIGRATION_DIALOG_HEADER));
   image->SetAccessibleName(

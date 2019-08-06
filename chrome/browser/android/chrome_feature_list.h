@@ -115,7 +115,7 @@ extern const base::Feature kTabToGTSAnimation;
 extern const base::Feature kTrustedWebActivity;
 extern const base::Feature kTrustedWebActivityPostMessage;
 extern const base::Feature kTrustedWebActivityNotificationDelegationEnrolment;
-extern const base::Feature kTwoPanesStartSurfaceAndroid;
+extern const base::Feature kStartSurfaceAndroid;
 extern const base::Feature kUmaBackgroundSessions;
 extern const base::Feature kUsageStatsFeature;
 extern const base::Feature kUserMediaScreenCapturing;

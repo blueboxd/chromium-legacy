@@ -182,8 +182,7 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
   start_timeticks_ = base::TimeTicks::Now();
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-  // Now that we have an HttpRequestInfo object, update server_ssl_config_.
-  session_->GetSSLConfig(*request_, &server_ssl_config_, &proxy_ssl_config_);
+  session_->GetSSLConfig(&server_ssl_config_, &proxy_ssl_config_);
 
   if (request_->load_flags & LOAD_DISABLE_CERT_NETWORK_FETCHES) {
     server_ssl_config_.disable_cert_verification_network_fetches = true;

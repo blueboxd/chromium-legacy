@@ -16,7 +16,6 @@ class HostContentSettingsMap;
 
 namespace content {
 class BrowserContext;
-class ResourceContext;
 struct WebPluginInfo;
 }
 
@@ -62,11 +61,6 @@ class PluginUtils {
 
   // If there's an extension that is allowed to handle |mime_type|, returns its
   // ID. Otherwise returns an empty string.
-  // Must be called on IO thread.
-  static std::string GetExtensionIdForMimeType(
-      content::ResourceContext* resource_context,
-      const std::string& mime_type);
-  // Same as above, but must be called on UI thread.
   static std::string GetExtensionIdForMimeType(
       content::BrowserContext* browser_context,
       const std::string& mime_type);
@@ -74,7 +68,7 @@ class PluginUtils {
   // Returns a map populated with MIME types that are handled by an extension as
   // keys and the corresponding extensions Ids as values.
   static base::flat_map<std::string, std::string> GetMimeTypeToExtensionIdMap(
-      content::ResourceContext* resource_context);
+      content::BrowserContext* browser_context);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PluginUtils);

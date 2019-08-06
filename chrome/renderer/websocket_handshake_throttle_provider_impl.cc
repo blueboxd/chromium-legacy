@@ -12,12 +12,11 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 
-WebSocketHandshakeThrottleProviderImpl::
-    WebSocketHandshakeThrottleProviderImpl() {
+WebSocketHandshakeThrottleProviderImpl::WebSocketHandshakeThrottleProviderImpl(
+    service_manager::Connector* connector) {
   DETACH_FROM_THREAD(thread_checker_);
-  content::RenderThread::Get()->GetConnector()->BindInterface(
-      content::mojom::kBrowserServiceName,
-      mojo::MakeRequest(&safe_browsing_info_));
+  connector->BindInterface(content::mojom::kBrowserServiceName,
+                           mojo::MakeRequest(&safe_browsing_info_));
 }
 
 WebSocketHandshakeThrottleProviderImpl::

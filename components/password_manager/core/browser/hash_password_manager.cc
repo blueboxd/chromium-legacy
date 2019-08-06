@@ -143,6 +143,8 @@ base::Optional<PasswordHashData> ConvertToPasswordHashData(
 }  // namespace
 
 HashPasswordManager::HashPasswordManager(PrefService* prefs) : prefs_(prefs) {}
+HashPasswordManager::HashPasswordManager() = default;
+HashPasswordManager::~HashPasswordManager() = default;
 
 bool HashPasswordManager::SavePasswordHash(const std::string username,
                                            const base::string16& password,
@@ -168,9 +170,10 @@ bool HashPasswordManager::SavePasswordHash(const std::string username,
       }
     }
   }
-
-  return SavePasswordHash(
+  bool is_saved = SavePasswordHash(
       PasswordHashData(username, password, true, is_gaia_password));
+  state_callback_list_.Notify(username);
+  return is_saved;
 }
 
 bool HashPasswordManager::SavePasswordHash(
@@ -268,6 +271,11 @@ bool HashPasswordManager::HasPasswordHash(const std::string& username,
   }
 
   return false;
+}
+
+std::unique_ptr<StateSubscription> HashPasswordManager::RegisterStateCallback(
+    const base::Callback<void(const std::string& username)>& callback) {
+  return state_callback_list_.Add(callback);
 }
 
 bool HashPasswordManager::EncryptAndSaveToPrefs(const std::string& pref_name,

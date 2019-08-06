@@ -6,7 +6,7 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="../icons.html">
+<link rel="import" href="../chromeos/os_icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 
@@ -87,7 +87,8 @@
           </div>
           <div class="flex"></div>
           <div id="host-device-lost-container" hidden$="[[!outOfRange]]">
-            <iron-icon icon="settings:alert-device-out-of-range"></iron-icon>
+            <iron-icon icon="os-settings:alert-device-out-of-range">
+            </iron-icon>
             $i18n{tetherPhoneOutOfRange}
           </div>
         </div>

@@ -10,12 +10,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "chrome/browser/file_util_service.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/safe_browsing/features.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
 
 namespace safe_browsing {
 
@@ -149,7 +149,7 @@ void FileAnalyzer::StartExtractZipFeatures() {
       tmp_path_,
       base::BindRepeating(&FileAnalyzer::OnZipAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::GetSystemConnector());
+      LaunchFileUtilService());
   zip_analyzer_->Start();
 }
 
@@ -222,7 +222,7 @@ void FileAnalyzer::StartExtractRarFeatures() {
       tmp_path_,
       base::BindRepeating(&FileAnalyzer::OnRarAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::GetSystemConnector());
+      LaunchFileUtilService());
   rar_analyzer_->Start();
 }
 
@@ -285,7 +285,7 @@ void FileAnalyzer::StartExtractDmgFeatures() {
       FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("dmg"),
       base::BindRepeating(&FileAnalyzer::OnDmgAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::GetSystemConnector());
+      LaunchFileUtilService());
   dmg_analyzer_->Start();
   dmg_analysis_start_time_ = base::TimeTicks::Now();
 }

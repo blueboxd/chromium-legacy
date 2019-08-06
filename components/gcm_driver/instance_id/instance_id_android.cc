@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <numeric>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -14,6 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/gcm_driver/instance_id/android/jni_headers/InstanceIDBridge_jni.h"
@@ -93,7 +95,7 @@ void InstanceIDAndroid::GetToken(
     const std::string& authorized_entity,
     const std::string& scope,
     const std::map<std::string, std::string>& options,
-    bool is_lazy,
+    std::set<Flags> flags,
     GetTokenCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -108,12 +110,16 @@ void InstanceIDAndroid::GetToken(
     options_strings.push_back(entry.second);
   }
 
+  int java_flags = std::accumulate(
+      flags.begin(), flags.end(), 0,
+      [](int sum, Flags flag) { return sum + static_cast<int>(flag); });
+
   JNIEnv* env = AttachCurrentThread();
   Java_InstanceIDBridge_getToken(
       env, java_ref_, request_id,
       ConvertUTF8ToJavaString(env, authorized_entity),
       ConvertUTF8ToJavaString(env, scope),
-      base::android::ToJavaArrayOfStrings(env, options_strings), is_lazy);
+      base::android::ToJavaArrayOfStrings(env, options_strings), java_flags);
 }
 
 void InstanceIDAndroid::ValidateToken(const std::string& authorized_entity,

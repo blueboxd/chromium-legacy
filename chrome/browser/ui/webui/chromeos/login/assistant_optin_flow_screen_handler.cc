@@ -26,6 +26,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace chromeos {
 
@@ -113,7 +114,8 @@ void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
   builder->Add("assistantOptinSaveButton", IDS_ASSISTANT_SAVE_BUTTON);
   builder->Add("assistantOptinWaitMessage", IDS_ASSISTANT_WAIT_MESSAGE);
   builder->Add("assistantReadyTitle", IDS_ASSISTANT_READY_SCREEN_TITLE);
-  builder->Add("assistantReadyMessage", IDS_ASSISTANT_READY_SCREEN_MESSAGE);
+  builder->AddF("assistantReadyMessage", IDS_ASSISTANT_READY_SCREEN_MESSAGE,
+                ui::GetChromeOSDeviceName());
   builder->Add("assistantReadyButton", IDS_ASSISTANT_DONE_BUTTON);
   builder->Add("back", IDS_EULA_BACK_BUTTON);
   builder->Add("next", IDS_EULA_NEXT_BUTTON);

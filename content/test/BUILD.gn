@@ -1900,7 +1900,6 @@ test("content_unittests") {
     "../renderer/media/render_media_log_unittest.cc",
     "../renderer/media/renderer_webaudiodevice_impl_unittest.cc",
     "../renderer/media/stream/processed_local_audio_source_unittest.cc",
-    "../renderer/media/stream/user_media_client_impl_unittest.cc",
     "../renderer/media/webrtc/fake_rtc_rtp_transceiver.cc",
     "../renderer/media/webrtc/fake_rtc_rtp_transceiver.h",
     "../renderer/media/webrtc/media_stream_remote_video_source_unittest.cc",

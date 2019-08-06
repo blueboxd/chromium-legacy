@@ -11,7 +11,9 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/shelf_item.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/mojom/constants.mojom.h"
@@ -188,6 +190,39 @@ std::string GetPrinterType(PrinterClass type) {
     default:
       return "unknown";
   }
+}
+
+api::autotest_private::ShelfItemType GetShelfItemType(ash::ShelfItemType type) {
+  switch (type) {
+    case ash::TYPE_APP:
+      return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_APP;
+    case ash::TYPE_PINNED_APP:
+      return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_PINNEDAPP;
+    case ash::TYPE_BROWSER_SHORTCUT:
+      return api::autotest_private::ShelfItemType::
+          SHELF_ITEM_TYPE_BROWSERSHORTCUT;
+    case ash::TYPE_DIALOG:
+      return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_DIALOG;
+    case ash::TYPE_UNDEFINED:
+      return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_NONE;
+  }
+  NOTREACHED();
+  return api::autotest_private::ShelfItemType::SHELF_ITEM_TYPE_NONE;
+}
+
+api::autotest_private::ShelfItemStatus GetShelfItemStatus(
+    ash::ShelfItemStatus status) {
+  switch (status) {
+    case ash::STATUS_CLOSED:
+      return api::autotest_private::ShelfItemStatus::SHELF_ITEM_STATUS_CLOSED;
+    case ash::STATUS_RUNNING:
+      return api::autotest_private::ShelfItemStatus::SHELF_ITEM_STATUS_RUNNING;
+    case ash::STATUS_ATTENTION:
+      return api::autotest_private::ShelfItemStatus::
+          SHELF_ITEM_STATUS_ATTENTION;
+  }
+  NOTREACHED();
+  return api::autotest_private::ShelfItemStatus::SHELF_ITEM_STATUS_NONE;
 }
 
 // Helper function to set whitelisted user pref based on |pref_name| with any
@@ -1696,6 +1731,41 @@ AutotestPrivateSetTabletModeEnabledFunction::Run() {
   waiter.Wait();
   return RespondNow(OneArgument(
       std::make_unique<base::Value>(ash::TabletMode::Get()->InTabletMode())));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetShelfItemsFunction
+///////////////////////////////////////////////////////////////////////////////
+AutotestPrivateGetShelfItemsFunction::AutotestPrivateGetShelfItemsFunction() =
+    default;
+
+AutotestPrivateGetShelfItemsFunction::~AutotestPrivateGetShelfItemsFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateGetShelfItemsFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetShelfItemsFunction";
+
+  ChromeLauncherController* const controller =
+      ChromeLauncherController::instance();
+  if (!controller)
+    return RespondNow(Error("Controller not available"));
+
+  std::vector<api::autotest_private::ShelfItem> result_items;
+  for (const auto& item : controller->shelf_model()->items()) {
+    api::autotest_private::ShelfItem result_item;
+    result_item.app_id = item.id.app_id;
+    result_item.launch_id = item.id.launch_id;
+    result_item.title = base::UTF16ToUTF8(item.title);
+    result_item.type = GetShelfItemType(item.type);
+    result_item.status = GetShelfItemStatus(item.status);
+    result_item.shows_tooltip = item.shows_tooltip;
+    result_item.pinned_by_policy = item.pinned_by_policy;
+    result_item.has_notification = item.has_notification;
+    result_items.emplace_back(std::move(result_item));
+  }
+
+  return RespondNow(ArgumentList(
+      api::autotest_private::GetShelfItems::Results::Create(result_items)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

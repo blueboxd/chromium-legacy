@@ -237,6 +237,10 @@ class TestWebWidgetClient : public WebWidgetClient {
   void StartDeferringCommits(base::TimeDelta timeout) override;
   void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   void DidMeaningfulLayout(WebMeaningfulLayout) override;
+  void SetBrowserControlsShownRatio(float) override;
+  void SetBrowserControlsHeight(float top_height,
+                                float bottom_height,
+                                bool shrink_viewport) override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
   cc::LayerTreeHost* layer_tree_host() {

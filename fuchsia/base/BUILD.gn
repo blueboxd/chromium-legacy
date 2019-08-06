@@ -12,9 +12,11 @@ import("//testing/test.gni")
 source_set("base") {
   sources = [
     "mem_buffer_util.cc",
+    "string_util.cc",
   ]
   public = [
     "mem_buffer_util.h",
+    "string_util.h",
   ]
   deps = [
     "//base",
@@ -90,6 +92,7 @@ test("cr_fuchsia_base_unittests") {
     "//base",
     "//base:testfidl",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }

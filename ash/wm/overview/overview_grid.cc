@@ -67,6 +67,10 @@ constexpr float kOverviewInsetRatio = 0.05f;
 // Additional vertical inset reserved for windows in overview mode.
 constexpr float kOverviewVerticalInset = 0.1f;
 
+// Number of columns and rows for windows in tablet overview mode.
+constexpr int kTabletLayoutCol = 3;
+constexpr int kTabletLayoutRow = 2;
+
 // Histogram names for overview enter/exit smoothness in clamshell,
 // tablet mode and splitview.
 constexpr char kOverviewEnterClamshellHistogram[] =
@@ -420,9 +424,6 @@ void OverviewGrid::PositionWindows(
           ? GetWindowRectsForTabletModeLayout(ignored_items)
           : GetWindowRects(ignored_items);
 
-  // TODO(dantonvu): Performance-wise, windows offscreen should not be
-  // animated. If we're in entering overview process, not all window items in
-  // the grid might need animation even if the grid needs animation.
   if (transition == OverviewSession::OverviewTransition::kEnter) {
     CalculateWindowListAnimationStates(/*selected_item=*/nullptr, transition,
                                        rects);
@@ -953,6 +954,7 @@ void OverviewGrid::CalculateWindowListAnimationStates(
               return false;
             });
 
+  gfx::Rect screen_bounds = GetGridEffectiveBounds();
   SkRegion occluded_region;
   for (size_t i = 0; i < items.size(); ++i) {
     const bool minimized =
@@ -986,6 +988,12 @@ void OverviewGrid::CalculateWindowListAnimationStates(
     SkIRect dst_bounds = gfx::RectToSkIRect(gfx::ToEnclosedRect(
         transition == OverviewTransition::kEnter ? target_bounds[i]
                                                  : items[i]->target_bounds()));
+
+    if (!screen_bounds.Contains(gfx::SkIRectToRect(dst_bounds))) {
+      items[i]->set_should_animate_when_entering(false);
+      items[i]->set_should_animate_when_exiting(false);
+      continue;
+    }
 
     if (!occluded_region.isEmpty()) {
       src_occluded |=
@@ -1257,6 +1265,30 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
   return false;
 }
 
+void OverviewGrid::PrepareScrollLimitMin() {
+  // Users are not allowed to scroll past the leftmost or rightmost bounds of
+  // the items on screen in the grid. |scroll_offset_min_| is the amount needed
+  // to fit the rightmost window into |total_bounds|. The max is zero which is
+  // default because windows are aligned to the left from the beginning.
+  gfx::Rect total_bounds = GetGridEffectiveBounds();
+  total_bounds.Inset(GetGridInsets(total_bounds));
+  float rightmost_window_right = 0;
+  for (const auto& window : window_list_) {
+    if (rightmost_window_right < window->target_bounds().right())
+      rightmost_window_right = window->target_bounds().right();
+  }
+  // |rightmost_window_right| may have been modified by an earlier scroll.
+  // |scroll_offset_| is added to adjust for that.
+  rightmost_window_right += scroll_offset_;
+  scroll_offset_min_ = total_bounds.right() - rightmost_window_right;
+}
+
+void OverviewGrid::UpdateScrollOffset(float delta) {
+  scroll_offset_ += delta;
+  scroll_offset_ = base::ClampToRange(scroll_offset_, scroll_offset_min_, 0.0f);
+  PositionWindows(false);
+}
+
 void OverviewGrid::MaybeInitDesksWidget() {
   if (!desks_util::ShouldDesksBarBeCreated() || desks_widget_)
     return;
@@ -1404,8 +1436,8 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
   // animation.
   // Since the number of rows is limited, windows are laid out column-wise so
   // that the most recently used windows are displayed first.
-  const int width = total_bounds.width() / 3;
-  const int height = total_bounds.height() / 2;
+  const int width = total_bounds.width() / kTabletLayoutCol;
+  const int height = total_bounds.height() / kTabletLayoutRow;
   size_t window_position = 0u;
   std::vector<gfx::RectF> rects;
 
@@ -1414,12 +1446,14 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
       rects.push_back(gfx::RectF());
       continue;
     }
-    const int x = width * (window_position / 2) + total_bounds.x();
+    const int x =
+        width * (window_position / 2) + total_bounds.x() + scroll_offset_;
     const int y = height * (window_position % 2) + total_bounds.y();
     const gfx::RectF bounds(x, y, width, height);
     rects.push_back(bounds);
     ++window_position;
   }
+
   return rects;
 }
 

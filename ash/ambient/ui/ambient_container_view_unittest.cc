@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -40,7 +40,7 @@ class AmbientContainerViewTest : public AshTestBase {
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        chromeos::switches::kAmbientModeFeature);
+        chromeos::features::kAmbientModeFeature);
     photo_controller_ = std::make_unique<PhotoControllerTest>();
     AshTestBase::SetUp();
   }

@@ -167,8 +167,7 @@ void OffTheRecordProfileImpl::Init() {
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      this, io_data_->GetResourceContextNoInit());
+  ChromePluginServiceFilter::GetInstance()->RegisterProfile(this);
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -192,8 +191,7 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   MaybeSendDestroyedNotification();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  ChromePluginServiceFilter::GetInstance()->UnregisterResourceContext(
-      io_data_->GetResourceContextNoInit());
+  ChromePluginServiceFilter::GetInstance()->UnregisterProfile(this);
 #endif
 
   // Clears any data the network stack contains that may be related to the

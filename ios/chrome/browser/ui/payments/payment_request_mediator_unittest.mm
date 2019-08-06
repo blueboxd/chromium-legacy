@@ -485,7 +485,7 @@ TEST_F(PaymentRequestMediatorTest, TestFooterItem) {
   EXPECT_TRUE([footer_item.text
       isEqualToString:l10n_util::GetNSStringF(
                           IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN,
-                          base::ASCIIToUTF16("username@foo.com"))]);
+                          base::ASCIIToUTF16("username@gmail.com"))]);
 
   // Record that the first transaction completed.
   pref_service()->SetBoolean(payments::kPaymentsFirstTransactionCompleted,

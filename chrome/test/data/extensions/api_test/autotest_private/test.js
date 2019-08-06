@@ -322,6 +322,23 @@ var defaultTests = [
       chrome.test.succeed();
     });
   },
+  // This test verifies that only Chromium is available by default.
+  function getShelfItems() {
+    chrome.autotestPrivate.getShelfItems(chrome.test.callbackPass(items => {
+      chrome.test.assertEq(1, items.length);
+      item = items[0];
+      // Only check that appId and title are set because their values change if
+      // chrome_branded is true.
+      chrome.test.assertTrue(!!item.appId);
+      chrome.test.assertTrue(!!item.title);
+      chrome.test.assertEq('', item.launchId);
+      chrome.test.assertEq('BrowserShortcut', item.type);
+      chrome.test.assertEq('Running', item.status);
+      chrome.test.assertTrue(item.showsTooltip);
+      chrome.test.assertFalse(item.pinnedByPolicy);
+      chrome.test.assertFalse(item.hasNotification);
+    }));
+  },
   // This test verifies that changing the shelf behavior works as expected.
   function setShelfAutoHideBehavior() {
     // Using shelf from primary display.

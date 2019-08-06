@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -91,7 +91,8 @@ class DataPipeElementReaderTest : public testing::Test {
       : element_reader_(nullptr, data_pipe_getter_.GetDataPipeGetterPtr()) {}
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   PassThroughDataPipeGetter data_pipe_getter_;
   DataPipeElementReader element_reader_;
 };

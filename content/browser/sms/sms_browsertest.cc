@@ -108,22 +108,21 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
 
   auto* dialog = new NiceMock<MockSmsDialog>();
 
-  base::OnceClosure on_continue_callback;
+  base::OnceClosure on_confirm_callback;
 
   EXPECT_CALL(delegate_, CreateSmsDialog())
       .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
   EXPECT_CALL(*dialog, Open(_, _, _))
-      .WillOnce(Invoke([&on_continue_callback](content::RenderFrameHost*,
-                                               base::OnceClosure on_continue,
-                                               base::OnceClosure on_cancel) {
-        on_continue_callback = std::move(on_continue);
+      .WillOnce(Invoke([&on_confirm_callback](content::RenderFrameHost*,
+                                              base::OnceClosure on_confirm,
+                                              base::OnceClosure on_cancel) {
+        on_confirm_callback = std::move(on_confirm);
       }));
 
-  EXPECT_CALL(*dialog, SmsReceived())
-      .WillOnce(Invoke([&on_continue_callback]() {
-        std::move(on_continue_callback).Run();
-      }));
+  EXPECT_CALL(*dialog, SmsReceived()).WillOnce(Invoke([&on_confirm_callback]() {
+    std::move(on_confirm_callback).Run();
+  }));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
@@ -154,22 +153,21 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
 
   auto* dialog = new NiceMock<MockSmsDialog>();
 
-  base::OnceClosure on_continue_callback;
+  base::OnceClosure on_confirm_callback;
 
   EXPECT_CALL(delegate_, CreateSmsDialog())
       .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
   EXPECT_CALL(*dialog, Open(_, _, _))
-      .WillOnce(Invoke([&on_continue_callback](content::RenderFrameHost*,
-                                               base::OnceClosure on_continue,
-                                               base::OnceClosure on_cancel) {
-        on_continue_callback = std::move(on_continue);
+      .WillOnce(Invoke([&on_confirm_callback](content::RenderFrameHost*,
+                                              base::OnceClosure on_confirm,
+                                              base::OnceClosure on_cancel) {
+        on_confirm_callback = std::move(on_confirm);
       }));
 
-  EXPECT_CALL(*dialog, SmsReceived())
-      .WillOnce(Invoke([&on_continue_callback]() {
-        std::move(on_continue_callback).Run();
-      }));
+  EXPECT_CALL(*dialog, SmsReceived()).WillOnce(Invoke([&on_confirm_callback]() {
+    std::move(on_confirm_callback).Run();
+  }));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
@@ -282,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
     true
   )";
 
-  base::OnceClosure on_continue1, on_continue2;
+  base::OnceClosure on_confirm1, on_confirm2;
 
   {
     base::RunLoop loop;
@@ -299,10 +297,10 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
     }));
 
     EXPECT_CALL(*dialog, Open(_, _, _))
-        .WillOnce(Invoke([&on_continue1](content::RenderFrameHost*,
-                                         base::OnceClosure on_continue,
-                                         base::OnceClosure on_cancel) {
-          on_continue1 = std::move(on_continue);
+        .WillOnce(Invoke([&on_confirm1](content::RenderFrameHost*,
+                                        base::OnceClosure on_confirm,
+                                        base::OnceClosure on_cancel) {
+          on_confirm1 = std::move(on_confirm);
         }));
 
     // First tab registers an observer.
@@ -326,10 +324,10 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
     }));
 
     EXPECT_CALL(*dialog, Open(_, _, _))
-        .WillOnce(Invoke([&on_continue2](content::RenderFrameHost*,
-                                         base::OnceClosure on_continue,
-                                         base::OnceClosure on_cancel) {
-          on_continue2 = std::move(on_continue);
+        .WillOnce(Invoke([&on_confirm2](content::RenderFrameHost*,
+                                        base::OnceClosure on_confirm,
+                                        base::OnceClosure on_cancel) {
+          on_confirm2 = std::move(on_confirm);
         }));
 
     // Second tab registers an observer.
@@ -342,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
 
   provider->NotifyReceive(url::Origin::Create(url), "hello1");
 
-  std::move(on_continue1).Run();
+  std::move(on_confirm1).Run();
 
   EXPECT_EQ("hello1", EvalJs(tab1, "sms"));
 
@@ -350,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
 
   provider->NotifyReceive(url::Origin::Create(url), "hello2");
 
-  std::move(on_continue2).Run();
+  std::move(on_confirm2).Run();
 
   EXPECT_EQ("hello2", EvalJs(tab2, "sms"));
 
@@ -394,25 +392,25 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
   auto* dialog1 = new NiceMock<MockSmsDialog>();
   auto* dialog2 = new NiceMock<MockSmsDialog>();
 
-  base::OnceClosure on_continue_callback1;
-  base::OnceClosure on_continue_callback2;
+  base::OnceClosure on_confirm_callback1;
+  base::OnceClosure on_confirm_callback2;
 
   EXPECT_CALL(delegate_, CreateSmsDialog())
       .WillOnce(Return(ByMove(base::WrapUnique(dialog1))))
       .WillOnce(Return(ByMove(base::WrapUnique(dialog2))));
 
   EXPECT_CALL(*dialog1, Open(_, _, _))
-      .WillOnce(Invoke([&on_continue_callback1](content::RenderFrameHost*,
-                                                base::OnceClosure on_continue,
-                                                base::OnceClosure on_cancel) {
-        on_continue_callback1 = std::move(on_continue);
+      .WillOnce(Invoke([&on_confirm_callback1](content::RenderFrameHost*,
+                                               base::OnceClosure on_confirm,
+                                               base::OnceClosure on_cancel) {
+        on_confirm_callback1 = std::move(on_confirm);
       }));
 
   EXPECT_CALL(*dialog2, Open(_, _, _))
-      .WillOnce(Invoke([&on_continue_callback2](content::RenderFrameHost*,
-                                                base::OnceClosure on_continue,
-                                                base::OnceClosure on_cancel) {
-        on_continue_callback2 = std::move(on_continue);
+      .WillOnce(Invoke([&on_confirm_callback2](content::RenderFrameHost*,
+                                               base::OnceClosure on_confirm,
+                                               base::OnceClosure on_cancel) {
+        on_confirm_callback2 = std::move(on_confirm);
       }));
 
   EXPECT_EQ(true, EvalJs(tab1, script));
@@ -424,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
 
   provider->NotifyReceive(url::Origin::Create(url1), "hello1");
 
-  std::move(on_continue_callback1).Run();
+  std::move(on_confirm_callback1).Run();
 
   EXPECT_EQ("hello1", EvalJs(tab1, "sms"));
 
@@ -432,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
 
   provider->NotifyReceive(url::Origin::Create(url2), "hello2");
 
-  std::move(on_continue_callback2).Run();
+  std::move(on_confirm_callback2).Run();
 
   EXPECT_EQ("hello2", EvalJs(tab2, "sms"));
 
@@ -486,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
 
   EXPECT_CALL(*dialog, Open(_, _, _))
       .WillOnce(
-          Invoke([](content::RenderFrameHost*, base::OnceClosure on_continue,
+          Invoke([](content::RenderFrameHost*, base::OnceClosure on_confirm,
                     base::OnceClosure on_cancel) {
             // Simulates the user pressing "cancel".
             std::move(on_cancel).Run();

@@ -62,12 +62,13 @@ class RemoteTest(object):
   BASIC_SHELL_SCRIPT = [
     '#!/bin/sh',
 
-    # /home is mounted with "noexec" in the device, but some of our tools
-    # and tests use the home dir as a workspace (eg: vpython downloads
-    # python binaries to ~/.vpython-root). /usr/local/tmp doesn't have this
-    # restriction, so change the location of the home dir for the
-    # duration of the test.
+    # /home and /tmp are mounted with "noexec" in the device, but some of our
+    # tools and tests use those dirs as a workspace (eg: vpython downloads
+    # python binaries to ~/.vpython-root and /tmp/vpython_bootstrap).
+    # /usr/local/tmp doesn't have this restriction, so change the location of
+    # the home and temp dirs for the duration of the test.
     'export HOME=/usr/local/tmp',
+    'export TMPDIR=/usr/local/tmp',
   ]
 
   def __init__(self, args, unknown_args):

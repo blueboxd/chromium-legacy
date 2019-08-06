@@ -72,7 +72,8 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     // viewport_intersection empty, and signal the frame as occluded if
     // necessary.
     occlusion_state = FrameOcclusionState::kPossiblyOccluded;
-  } else if (parent_lifecycle_state >= DocumentLifecycle::kLayoutClean) {
+  } else if (parent_lifecycle_state >= DocumentLifecycle::kLayoutClean &&
+             !owner_document.View()->NeedsLayout()) {
     unsigned geometry_flags =
         IntersectionGeometry::kShouldUseReplacedContentRect;
     if (should_compute_occlusion)

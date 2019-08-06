@@ -415,6 +415,93 @@ TEST_F(NGColumnLayoutAlgorithmTest, OverflowedBlock) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, OverflowedBlock2) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:75%; height:10px;">
+          <div style="width:50px; height:220px;"></div>
+        </div>
+        <div style="width:85%; height:10px;"></div>
+        <div style="width:65%; height:10px;">
+          <div style="width:51px; height:220px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x30
+        offset:0,0 size:75x10
+          offset:0,0 size:50x100
+        offset:0,10 size:85x10
+        offset:0,20 size:65x10
+          offset:0,0 size:51x80
+      offset:110,0 size:100x0
+        offset:0,0 size:75x0
+          offset:0,0 size:50x100
+        offset:0,0 size:65x0
+          offset:0,0 size:51x100
+      offset:220,0 size:100x0
+        offset:0,0 size:75x0
+          offset:0,0 size:50x20
+        offset:0,0 size:65x0
+          offset:0,0 size:51x40
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, OverflowedBlock3) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 100px;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:75%; height:60px;">
+          <div style="width:50px; height:220px;"></div>
+        </div>
+        <div style="width:85%; height:10px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x70
+        offset:0,0 size:75x60
+          offset:0,0 size:50x100
+        offset:0,60 size:85x10
+      offset:110,0 size:100x0
+        offset:0,0 size:75x0
+          offset:0,0 size:50x100
+      offset:220,0 size:100x0
+        offset:0,0 size:75x0
+          offset:0,0 size:50x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, UnusedSpaceInBlock) {
   SetBodyInnerHTML(R"HTML(
     <style>

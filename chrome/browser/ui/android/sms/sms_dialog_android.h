@@ -16,20 +16,20 @@ class SmsDialogAndroid : public content::SmsDialog {
   ~SmsDialogAndroid() override;
 
   void Open(content::RenderFrameHost*,
-            base::OnceClosure on_continue,
+            base::OnceClosure on_confirm,
             base::OnceClosure on_cancel) override;
   void Close() override;
   void SmsReceived() override;
 
-  // Report the user manually clicks the 'Continue' button.
-  void OnContinue(JNIEnv* env);
+  // Report the user manually clicks the 'Confirm' button.
+  void OnConfirm(JNIEnv* env);
 
   // Report the user manually dismisses the SMS dialog.
   void OnCancel(JNIEnv* env);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_dialog_;
-  base::OnceClosure on_continue_;
+  base::OnceClosure on_confirm_;
   base::OnceClosure on_cancel_;
   DISALLOW_COPY_AND_ASSIGN(SmsDialogAndroid);
 };

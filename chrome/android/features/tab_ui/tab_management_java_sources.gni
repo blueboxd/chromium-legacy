@@ -6,6 +6,7 @@ import(
     "//chrome/android/features/start_surface/public/start_surface_public_java_sources.gni")
 
 public_tab_management_java_sources = [
+  "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/TasksSurface.java",
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_groups/TabGroupModelFilter.java",
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/GridTabSwitcher.java",
   "//chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/SilenceLintErrors.java",

@@ -864,15 +864,12 @@ interface NetworkContext {
   // performance impact because of the extra process hops, so use should be
   // minimized.
   //
-  // Detect mojo connection errors on |handshake_client| in the caller side.
+  // Detect mojo connection errors on |handshake_client| until the connection
+  // is established.
   // Do *NOT* interpret mojo connection errors on |auth_handler| and
   // |header_client| as WebSocket connection errors. They are disconnected when
   // the connection is established, and due to message ordering uncertainty we
-  // cannot know what happened. |handshake_client| doesn't have such an issue
-  // because OnConnectionEstablished will be called when the connection is
-  // established, but it is still recommended to rely only on
-  // |connection_client| because |connection_client| can be disconnected with
-  // custom reasons.
+  // cannot know what happened.
   CreateWebSocket(
         url.mojom.Url url,
         array<string> requested_protocols,
@@ -883,7 +880,6 @@ interface NetworkContext {
         url.mojom.Origin origin,
         uint32 options,
         WebSocketHandshakeClient handshake_client,
-        WebSocketClient connection_client,
         AuthenticationHandler? auth_handler,
         TrustedHeaderClient? header_client);
 

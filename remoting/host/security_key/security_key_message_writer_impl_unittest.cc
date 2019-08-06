@@ -9,11 +9,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "remoting/host/security_key/security_key_message.h"
@@ -104,7 +103,8 @@ void SecurityKeyMessageWriterImplTest::WriteMessageToOutput(
   reader_thread.StartWithOptions(options);
 
   // Used to block until the read complete callback is triggered.
-  base::MessageLoopForIO message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
   base::RunLoop run_loop;
 
   ASSERT_TRUE(base::PostTaskAndReplyWithResult(

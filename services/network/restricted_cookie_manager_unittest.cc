@@ -7,10 +7,10 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/base/features.h"
@@ -250,7 +250,8 @@ class RestrictedCookieManagerTest
     return recording_client_.recorded_activity();
   }
 
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   net::CookieMonster cookie_monster_;
   CookieSettings cookie_settings_;
   RecordingNetworkContextClient recording_client_;

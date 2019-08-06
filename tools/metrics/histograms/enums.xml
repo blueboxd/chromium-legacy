@@ -20233,6 +20233,7 @@ Called by update_net_error_codes.py.-->
   <int value="1363" label="ACTION_ENABLE"/>
   <int value="1364" label="ACTION_DISABLE"/>
   <int value="1365" label="FILEMANAGERPRIVATEINTERNAL_IMPORTCROSTINIIMAGE"/>
+  <int value="1366" label="AUTOTESTPRIVATE_GETSHELFITEMS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -35013,6 +35014,7 @@ from previous Chrome versions.
   <int value="-866993841" label="OfflinePagesCTV2:disabled"/>
   <int value="-864266073" label="cros-regions-mode"/>
   <int value="-864234985" label="UseDdljsonApi:enabled"/>
+  <int value="-864232986" label="StartSurfaceAndroid:disabled"/>
   <int value="-864205629" label="enable-offline-load-stale-cache"/>
   <int value="-861678473" label="disable-offer-upload-credit-cards"/>
   <int value="-861343291" label="ChromeHome:disabled"/>
@@ -35741,7 +35743,9 @@ from previous Chrome versions.
   <int value="161409456" label="AutofillUseMobileLabelDisambiguation:disabled"/>
   <int value="161694478" label="OmniboxNewAnswerLayout:enabled"/>
   <int value="173288154" label="PrintPdfAsImage:enabled"/>
+  <int value="174759256" label="LockScreenMediaControls:enabled"/>
   <int value="178337215" label="enable-md-history"/>
+  <int value="178693406" label="LockScreenMediaControls:disabled"/>
   <int value="180074362" label="memory-pressure-thresholds"/>
   <int value="181150000" label="CrosVmCupsProxy:enabled"/>
   <int value="183208826" label="TabGroups:enabled"/>
@@ -35767,6 +35771,7 @@ from previous Chrome versions.
   <int value="217455219" label="SyncStandaloneTransport:enabled"/>
   <int value="218890378" label="ManualSaving:disabled"/>
   <int value="219117936" label="AllowReaderForAccessibility:enabled"/>
+  <int value="221212638" label="StartSurfaceAndroid:enabled"/>
   <int value="222184258"
       label="AutofillEnforceMinRequiredFieldsForHeuristics:disabled"/>
   <int value="223591010" label="CastMediaRouteProvider:enabled"/>
@@ -39747,6 +39752,22 @@ Called by update_use_counter_css.py.-->
     observing mismatch between routing IDs of frames inside and those that are
     expected.
   </int>
+</enum>
+
+<enum name="MirroringServiceErrorType">
+  <int value="0" label="ANSWER_TIME_OUT"/>
+  <int value="1" label="ANSWER_NOT_OK"/>
+  <int value="2" label="ANSWER_MISMATCHED_CAST_MODE"/>
+  <int value="3" label="ANSWER_MISMATCHED_SSRC_LENGTH"/>
+  <int value="4" label="ANSWER_SELECT_MULTIPLE_AUDIO"/>
+  <int value="5" label="ANSWER_SELECT_MULTIPLE_VIDEO"/>
+  <int value="6" label="ANSWER_SELECT_INVALID_INDEX"/>
+  <int value="7" label="ANSWER_NO_AUDIO_OR_VIDEO"/>
+  <int value="8" label="AUDIO_CAPTURE_ERROR"/>
+  <int value="9" label="VIDEO_CAPTURE_ERROR"/>
+  <int value="10" label="RTP_STREAM_ERROR"/>
+  <int value="11" label="ENCODING_ERROR"/>
+  <int value="12" label="CAST_TRANSPORT_ERROR"/>
 </enum>
 
 <enum name="MissingStartType">

@@ -585,13 +585,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DiskCacheDirOverride) {
   ASSERT_TRUE(mock_user_data_dir.CreateUniqueTempDir());
   base::FilePath profile_path =
       mock_user_data_dir.GetPath().Append(profile_name);
-  ProfileImpl* profile_impl = static_cast<ProfileImpl*>(browser()->profile());
 
   {
     base::ScopedTempDir temp_disk_cache_dir;
     ASSERT_TRUE(temp_disk_cache_dir.CreateUniqueTempDir());
-    profile_impl->GetPrefs()->SetFilePath(prefs::kDiskCacheDir,
-                                          temp_disk_cache_dir.GetPath());
+    g_browser_process->local_state()->SetFilePath(
+        prefs::kDiskCacheDir, temp_disk_cache_dir.GetPath());
   }
 }
 

@@ -87,7 +87,7 @@ RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
   return render_view_proxy;
 }
 
-scoped_refptr<RenderWidget> CreateRenderWidgetForFrame(
+std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
     const ScreenInfo& screen_info,
@@ -95,7 +95,7 @@ scoped_refptr<RenderWidget> CreateRenderWidgetForFrame(
     bool swapped_out,
     bool never_visible,
     mojom::WidgetRequest widget_request) {
-  return base::MakeRefCounted<test_runner::WebWidgetTestProxy>(
+  return std::make_unique<test_runner::WebWidgetTestProxy>(
       routing_id, compositor_deps, screen_info, display_mode, swapped_out,
       /*hidden=*/true, never_visible, std::move(widget_request));
 }

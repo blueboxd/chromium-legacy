@@ -625,8 +625,7 @@ TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
 #if BUILDFLAG(ENABLE_PLUGINS)
 TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
   Profile* profile = web_contents_helper_.profile();
-  ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      profile, profile->GetResourceContext());
+  ChromePluginServiceFilter::GetInstance()->RegisterProfile(profile);
   FlashContentSettingsChangeWaiter waiter(profile);
 
   const GURL url(kUrl);

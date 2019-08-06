@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "ash/wm/overview/overview_grid_pre_event_handler.h"
-
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "ash/wm/window_util.h"
 #include "ui/events/event.h"
 
 namespace ash {
@@ -21,13 +22,38 @@ void OverviewGridPreEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void OverviewGridPreEventHandler::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP)
-    HandleClickOrTap(event);
+  // TODO(sammiequon): Investigate why scrolling on the bottom of the grid exits
+  // overview.
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP:
+      HandleClickOrTap(event);
+      break;
+    case ui::ET_GESTURE_SCROLL_BEGIN: {
+      if (!ShouldUseTabletModeGridLayout())
+        return;
+      StartDrag(event->location());
+      event->SetHandled();
+      break;
+    }
+    case ui::ET_GESTURE_SCROLL_UPDATE: {
+      if (!ShouldUseTabletModeGridLayout())
+        return;
+      UpdateDrag(event->details().scroll_x());
+      event->SetHandled();
+      break;
+    }
+    case ui::ET_GESTURE_SCROLL_END: {
+      event->SetHandled();
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 void OverviewGridPreEventHandler::HandleClickOrTap(ui::Event* event) {
   CHECK_EQ(ui::EP_PRETARGET, event->phase());
-  OverviewController* controller = Shell::Get()->overview_controller();
+  auto* controller = Shell::Get()->overview_controller();
   if (!controller->InOverviewSession())
     return;
   // Events that happen while app list is sliding out during overview should
@@ -35,6 +61,22 @@ void OverviewGridPreEventHandler::HandleClickOrTap(ui::Event* event) {
   if (!IsSlidingOutOverviewFromShelf())
     controller->EndOverview();
   event->StopPropagation();
+}
+
+void OverviewGridPreEventHandler::StartDrag(const gfx::Point& location) {
+  // TODO(sammiequon): Investigate if this can be passed in the constructor.
+  auto* controller = Shell::Get()->overview_controller();
+  if (!controller->InOverviewSession())
+    return;
+  grid_ = controller->overview_session()->GetGridWithRootWindow(
+      window_util::GetRootWindowAt(location));
+  grid_->PrepareScrollLimitMin();
+}
+
+void OverviewGridPreEventHandler::UpdateDrag(float scroll) {
+  // Pass new scroll values to update the offset which will also update overview
+  // mode to position windows according to the scroll values.
+  grid_->UpdateScrollOffset(scroll);
 }
 
 }  // namespace ash

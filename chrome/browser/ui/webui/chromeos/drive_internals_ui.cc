@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/drive/drive_notification_manager_factory.h"
+#include "chrome/browser/file_util_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -53,7 +54,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -997,7 +997,7 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
     (new ZipFileCreator(
          base::BindRepeating(&LogsZipper::OnZipDone, base::Unretained(this)),
          logs_directory_, files, zip_path_))
-        ->Start(content::GetSystemConnector());
+        ->Start(LaunchFileUtilService());
   }
 
   static std::vector<base::FilePath> EnumerateLogFiles(

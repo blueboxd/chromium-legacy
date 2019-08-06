@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -267,7 +267,7 @@ class SyncConsentPolicyDisabledTest : public SyncConsentTest,
   SyncConsentPolicyDisabledTest() {
     // Assistant feature contains an OOBE page which is irrelevant for this
     // test.
-    feature_list_.InitAndDisableFeature(switches::kAssistantFeature);
+    feature_list_.InitAndDisableFeature(features::kAssistantFeature);
   }
   ~SyncConsentPolicyDisabledTest() = default;
 

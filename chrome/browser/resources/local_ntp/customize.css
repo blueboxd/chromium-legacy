@@ -286,7 +286,8 @@ html[dir=rtl] .bg-option-img {
   box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
       0 4px 8px 3px rgba(var(--GG800-rgb), .15);
   height: 400px;
-  padding: 0 0 0 0;
+  max-height: 100vh;  /* Constrain the dialog within viewport boundaries. */
+  padding: 0;
   position: fixed;
   top: 0;
   /* Suitable for 3 columns of tiles on all platforms, accounting for larger
@@ -312,6 +313,9 @@ right, so that every text can stay on its row even on the smallest window */
 
 #bg-sel-tiles {
   height: 284px;
+  /* Compress the tile section in order to constrain the dialog within viewport
+   * boundaries. 116px = 284px - (header + footer height) */
+  max-height: calc(100vh - 116px);
   overflow-y: scroll;
   padding-inline-start: 8px;
 }

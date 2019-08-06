@@ -36,9 +36,7 @@
 #include "url/origin.h"
 
 namespace content {
-class BrowserContext;
 class PluginServiceFilter;
-class ResourceContext;
 struct PepperPluginInfo;
 
 class CONTENT_EXPORT PluginServiceImpl : public PluginService {
@@ -55,7 +53,6 @@ class CONTENT_EXPORT PluginServiceImpl : public PluginService {
                           std::vector<std::string>* actual_mime_types) override;
   bool GetPluginInfo(int render_process_id,
                      int render_frame_id,
-                     ResourceContext* context,
                      const GURL& url,
                      const url::Origin& main_frame_origin,
                      const std::string& mime_type,

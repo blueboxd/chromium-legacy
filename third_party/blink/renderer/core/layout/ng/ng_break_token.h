@@ -73,7 +73,8 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
         flags_(0),
         ignore_floats_(false),
         is_break_before_(false),
-        has_last_resort_break_(false) {
+        has_last_resort_break_(false),
+        has_seen_all_children_(false) {
     DCHECK_EQ(type, static_cast<NGBreakTokenType>(node.Type()));
   }
 
@@ -101,6 +102,11 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
   // unavoidable, but we should only break here if we cannot find a better break
   // point further up in the ancestry.
   unsigned has_last_resort_break_ : 1;
+
+  // All children of this container have been "seen" at this point. This means
+  // that all children have been fully laid out, or have break tokens. No more
+  // children left to discover.
+  unsigned has_seen_all_children_ : 1;
 };
 
 typedef Vector<scoped_refptr<NGBreakToken>> NGBreakTokenVector;

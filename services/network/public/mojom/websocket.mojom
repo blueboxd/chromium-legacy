@@ -68,6 +68,7 @@ interface WebSocketHandshakeClient {
   // AddReceiveFlowControlQuota() to the browser per receiving this value
   // so that the browser can continue sending remaining data to the renderer.
   OnConnectionEstablished(WebSocket socket,
+                          pending_receiver<WebSocketClient> client_receiver,
                           string selected_protocol,
                           string extensions,
                           uint64 receive_quota_threshold);

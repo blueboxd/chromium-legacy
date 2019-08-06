@@ -7,10 +7,16 @@
 
 #include <map>
 
+#include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
+#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/sessions/core/session_id.h"
@@ -66,7 +72,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // change password card, etc) in reaction to user events.
   class Observer {
    public:
-    // Called when user completes the Gaia password reset.
+    // Called when user completes the GAIA password reset.
     virtual void OnGaiaPasswordChanged() = 0;
 
     // Called when user marks the site as legitimate.
@@ -98,10 +104,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       content::WebContents* web_contents,
       PasswordType password_type);
 
-  // Called by ChromeWebUIControllerFactory class to determine if Chrome should
-  // show chrome://reset-password page.
-  static bool IsPasswordReuseProtectionConfigured(Profile* profile);
-
   void ShowModalWarning(content::WebContents* web_contents,
                         const std::string& verdict_token,
                         PasswordType password_type) override;
@@ -132,11 +134,17 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void MaybeFinishCollectingThreatDetails(content::WebContents* web_contents,
                                           bool did_proceed);
 
-  // Check if Gaia password hash is changed.
-  void CheckGaiaPasswordChange();
+  // Check if Gaia password hash has changed. If it is changed, it will call
+  // |OnGaiaPasswordChanged|. |username| is used to get the appropriate account
+  // to check if the account is a Gmail account as no reporting is done for
+  // those accounts.
+  void CheckGaiaPasswordChangeForAllSignedInUsers(const std::string& username);
 
-  // Called when sync user's Gaia password changed.
-  void OnGaiaPasswordChanged();
+  // Called when user's GAIA password changed. |username| is used to get
+  // the account the password is associated with. |is_other_gaia_password|
+  // specifies whether the account is syncing or not syncing (content area).
+  void OnGaiaPasswordChanged(const std::string& username,
+                             bool is_other_gaia_password);
 
   // If user has clicked through any Safe Browsing interstitial on this given
   // |web_contents|.
@@ -432,6 +440,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::set<content::WebContents*>
       web_contents_with_unhandled_enterprise_reuses_;
+
+  // Subscription for state changes. When this subscription is notified, it
+  // means HashPasswordManager password data list has changed.
+  std::unique_ptr<
+      base::CallbackList<void(const std::string& username)>::Subscription>
+      hash_password_manager_subscription_;
 
   // Reference to the current profile's VerdictCacheManager. This is unowned.
   VerdictCacheManager* cache_manager_;

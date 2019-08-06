@@ -48,6 +48,19 @@ const CGFloat kVerticalOffset = 6;
     UIView* containerView = [[UIView alloc] init];
     [containerView addSubview:viewController.view];
     _popupContainerView = containerView;
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+    if (@available(iOS 13, *)) {
+      UIUserInterfaceStyle userInterfaceStyle =
+          incognito ? UIUserInterfaceStyleDark
+                    : UIUserInterfaceStyleUnspecified;
+      // Both the container view and the popup view controller need
+      // overrideUserInterfaceStyle set because the overall popup background
+      // comes from the container, but overrideUserInterfaceStyle won't
+      // propagate from a view to any subviews in a different view controller.
+      _popupContainerView.overrideUserInterfaceStyle = userInterfaceStyle;
+      viewController.overrideUserInterfaceStyle = userInterfaceStyle;
+    }
+#endif
     _popupContainerView.backgroundColor = [configuration backgroundColor];
     _popupContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     viewController.view.translatesAutoresizingMaskIntoConstraints = NO;

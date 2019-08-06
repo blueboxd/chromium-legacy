@@ -46,6 +46,12 @@ typedef void (^ForgetIdentityCallback)(NSError* error);
 typedef void (^GetAvatarCallback)(UIImage* avatar);
 
 // Callback passed to method |GetHostedDomainForIdentity()|.
+// |hosted_domain|:
+//   + nil, if error.
+//   + an empty string, if this is a consumer account (e.g. foo@gmail.com).
+//   + non-empty string, if the hosted domain was fetched and this account
+//     has a hosted domain.
+// |error|: Error if failed to fetch the identity profile.
 typedef void (^GetHostedDomainCallback)(NSString* hosted_domain,
                                         NSError* error);
 
@@ -196,7 +202,6 @@ class ChromeIdentityService {
   virtual void GetHostedDomainForIdentity(ChromeIdentity* identity,
                                           GetHostedDomainCallback callback);
 
-  // DO NOT USE YET.
   // Returns the identity hosted domain, for the cache only. This method
   // returns:
   //   + nil, if the hosted domain value was yet not fetched from the server.

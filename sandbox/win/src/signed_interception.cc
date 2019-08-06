@@ -33,8 +33,11 @@ TargetNtCreateSection(NtCreateSectionFunction orig_CreateSection,
   // Only intercept calls that match a particular signature.
   if (status != STATUS_INVALID_IMAGE_HASH)
     return status;
-  if (desired_access != (SECTION_QUERY | SECTION_MAP_WRITE | SECTION_MAP_READ |
-                         SECTION_MAP_EXECUTE))
+  // The section only needs to have SECTION_MAP_EXECUTE, but the permissions
+  // vary depending on the OS. Windows 1903 and higher requests (SECTION_QUERY |
+  // SECTION_MAP_READ | SECTION_MAP_EXECUTE) while previous OS versions also
+  // request SECTION_MAP_WRITE. Just check for EXECUTE.
+  if (!(desired_access & SECTION_MAP_EXECUTE))
     return status;
   if (object_attributes)
     return status;

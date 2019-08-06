@@ -8,32 +8,37 @@ In this example we'll be creating a simple menu list where each list item consis
 label.
 
 ### Additional Resources
-[Introductory MVC tutorial][mvc_tutorial_link]
-
-#### Todo
-[Update this doc to use data providers](https://crbug.com/967054)
+* [Introductory MVC tutorial][mvc_tutorial_link]
+* [Expanding to RecyclerViews in MVC][mvc_recycler_view_tutorial]
 
 ### File Structure
 The file structure of our component will be the following:
 * ./chrome/android/java/src/org/chromium/chrome/browser/simple_menu/
   * [`SimpleMenuCoordinator.java`](#SimpleMenuCoordinator)
+  * [`SimpleMenuMediator.java`](#SimpleMenuMediator)
   * [`SimpleMenuItemViewBinder.java`](#SimpleMenuItemViewBinder)
   * [`SimpleMenuProperties.java`](#SimpleMenuProperties)
 * ./chrome/android/java/res/layout/
   * [`simple_menu_item.xml`](#simple_menu_item_xml)
 
 ### SimpleMenuCoordinator
-This class will own the ListAdapter that knows how to show PropertyModels. In this example we'll be
-combining the responsibilities of what would otherwise be the coordinator and mediator for
-simplicity.
+This class will own the ```ModelListAdapter``` that knows how to show ```PropertyModels```. In
+this example we'll be combining the responsibilities of what would otherwise be the coordinator
+and mediator for simplicity.
 
 ```java
 public class SimpleMenuCoordinator {
 
-    public SimpleMenuCoordinator(Context context, ListView listView) {
-        ModelListAdapter adapter = new ModelListAdapter();
+    private SimpleMenuMediator mMediator;
 
-        final LayoutInflater layoutInflater = context.getSystemService(LAYOUT_INFLATER_SERVICE);
+    public SimpleMenuCoordinator(Context context, ListView listView) {
+        ModelList listItems = new ModelList();
+
+        // Once this is attached to the ListView, there is no need to hold a reference to it.
+        ModelListAdapter adapter = new ModelListAdapter(listItems);
+
+        final LayoutInflater layoutInflater =
+                (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
 
         // If this is a heterogeneous list, register more than one type.
         adapter.registerType(
@@ -43,27 +48,34 @@ public class SimpleMenuCoordinator {
 
         listView.setAdapter(adapter);
 
-        List<Pair<Integer, PropertyModel>> items = new ArrayList<>();
-        PropertyModel listModel1 = generateListItem(
+        mMediator = new SimpleMenuMediator(context, listItems);
+    }
+}
+```
+
+### SimpleMenuMediator
+This class is responsible for pushing updates into the ```ModelList```. Updates to that
+object are automatically pushed and bound to the list view. For a more complex system, the
+```ModelList``` may be part of a larger ```PropertyModel``` that the mediator maintains.
+```java
+class SimpleMenuMediator {
+
+    private ModelList mModelList;
+
+    SimpleMenuMediator(Context context, ModelList modelList) {
+        mModelList = modelList;
+        PropertyModel itemModel = generateListItem(
                 ApiCompatibilityUtils.getDrawable(context.getResources(), R.drawable.icon),
                 context.getResources().getString(R.string.label));
-        // The list adapter needs to be told what kind of view should render the data; hence the
-        // pair object.
-        list.add(new Pair(ListItemType.DEFAULT, listModel1));
-
-        // ... add other list items as needed. Typically this work is done in the mediator piece of
-        // the component.
-
-        adapter.updateModels(items);
+        mModelList.add(new ModelListAdapter.ListItem(ListItemType.DEFAULT, itemModel));
     }
 
-    public PropertyModel generateListItem(Drawable icon, String text) {
-        return PropertyModel.Builder(SimpleMenuProperties.ALL_KEYS)
+    private PropertyModel generateListItem(Drawable icon, String text) {
+        return new PropertyModel.Builder(SimpleMenuProperties.ALL_KEYS)
                 .with(SimpleMenuProperties.ICON, icon)
                 .with(SimpleMenuProperties.LABEL, text)
                 .with(SimpleMenuProperties.CLICK_LISTENER, (view) -> handleClick(view))
                 .build();
-        // Click handling can be done as above or the listener can be passed in.
     }
 
     private void handleClick(View view) {
@@ -71,6 +83,7 @@ public class SimpleMenuCoordinator {
     }
 }
 ```
+
 
 ### SimpleMenuProperties
 These are the types of data that we want to apply to each list item in our menu.
@@ -122,7 +135,6 @@ class SimpleMenuItemViewBinder {
             view.setOnClickListener(model.get(SimpleMenuProperties.CLICK_LISTENER));
         }
     }
-
 }
 ```
 
@@ -157,4 +169,5 @@ class SimpleMenuItemViewBinder {
 ```
 
 [mvc_tutorial_link]:https://chromium.googlesource.com/chromium/src/+/HEAD/docs/ui/android/mvc_architecture_tutorial.md
+[mvc_recycler_view_tutorial]:https://chromium.googlesource.com/chromium/src/+/HEAD/docs/ui/android/mvc_simple_recycler_view_tutorial.md
 

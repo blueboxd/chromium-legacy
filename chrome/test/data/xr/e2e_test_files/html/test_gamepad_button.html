@@ -37,7 +37,7 @@ View.
         return frameCounter - lastInputChangeFrame > 60;
       }
 
-      onPresentingAnimationFrameCallback = function() {
+      function gamepadFrameCallback() {
         if (index == -1) return;
         frameCounter++;
         var gp = navigator.getGamepads()[index];
@@ -52,12 +52,19 @@ View.
         }
         if (!pressed && gp.buttons[0].pressed == true) {
           pressed = true;
+          // Unregister the callback so that we don't call
+          // finishJavaScriptStep() multiple times without acking if the test
+          // code doesn't ack within a single frame.
+          onPresentingAnimationFrameCallback = null;
           finishJavaScriptStep();
         }
         if (pressed && gp.buttons[0].pressed == false) {
+          onPresentingAnimationFrameCallback = null;
           done();
         }
       }
+
+      onPresentingAnimationFrameCallback = gamepadFrameCallback;
     </script>
   </body>
 </html>

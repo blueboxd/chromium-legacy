@@ -198,6 +198,7 @@ class InteractiveRenderWidget : public RenderWidget {
         mojo::PendingReceiver<mojom::WidgetInputHandler>(),
         mock_input_handler_host_->BindNewPipeAndPassRemote());
   }
+  ~InteractiveRenderWidget() override { webwidget_internal_ = nullptr; }
 
   void SendInputEvent(const blink::WebInputEvent& event,
                       HandledEventCallback callback) {
@@ -225,11 +226,6 @@ class InteractiveRenderWidget : public RenderWidget {
   }
 
  protected:
-  ~InteractiveRenderWidget() override {
-    Close();
-    webwidget_internal_ = nullptr;
-  }
-
   // Overridden from RenderWidget:
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override {
     if (always_overscroll_ &&
@@ -269,13 +265,17 @@ class RenderWidgetUnittest : public testing::Test {
  public:
   // testing::Test implementation.
   void SetUp() override {
-    widget_ = new InteractiveRenderWidget(&compositor_deps_);
-    // RenderWidget::Init does an AddRef that's balanced by a browser-initiated
-    // Close IPC. That Close will never happen in this test, so do a Release
-    // here to ensure |widget_| is properly freed.
-    widget_->Release();
-    DCHECK(widget_->HasOneRef());
+    widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_);
   }
+
+  void DestroyWidget() {
+    if (widget_) {
+      widget_->PrepareForClose();
+      widget_->Close(std::move(widget_));
+    }
+  }
+
+  void TearDown() override { DestroyWidget(); }
 
   InteractiveRenderWidget* widget() const { return widget_.get(); }
 
@@ -290,7 +290,7 @@ class RenderWidgetUnittest : public testing::Test {
   MockRenderProcess render_process_;
   MockRenderThread render_thread_;
   FakeCompositorDependencies compositor_deps_;
-  scoped_refptr<InteractiveRenderWidget> widget_;
+  std::unique_ptr<InteractiveRenderWidget> widget_;
   base::HistogramTester histogram_tester_;
 };
 
@@ -460,6 +460,7 @@ class PopupRenderWidget : public RenderWidget {
                      nullptr) {
     InitForPopup(RenderWidget::ShowCallback(), &stub_page_popup_);
   }
+  ~PopupRenderWidget() override { DCHECK(shutdown_); }
 
   IPC::TestSink* sink() { return &sink_; }
 
@@ -469,13 +470,15 @@ class PopupRenderWidget : public RenderWidget {
 
   // Shuts down the metrics emulator, the compositor, and destroys the internal
   // WebWidget. Should be called before destroying the object.
-  void Shutdown() {
-    RenderWidget::Close();
+  void Shutdown(std::unique_ptr<RenderWidget> widget) {
     shutdown_ = true;
+
+    // OnClose takes ownership and destroys the widget.
+    widget->OnClose();
+    widget.release();
   }
 
  protected:
-  ~PopupRenderWidget() override { DCHECK(shutdown_); }
 
   bool Send(IPC::Message* msg) override {
     sink_.OnMessageReceived(*msg);
@@ -496,16 +499,13 @@ int PopupRenderWidget::routing_id_ = 1;
 
 class RenderWidgetPopupUnittest : public testing::Test {
  public:
-  ~RenderWidgetPopupUnittest() override { widget_->Shutdown(); }
+  ~RenderWidgetPopupUnittest() override {
+    widget_->Shutdown(std::move(widget_));
+  }
 
   // testing::Test implementation.
   void SetUp() override {
-    widget_ = new PopupRenderWidget(&compositor_deps_);
-    // RenderWidget::Init does an AddRef that's balanced by a browser-initiated
-    // Close IPC. That Close will never happen in this test, so do a Release
-    // here to ensure |widget_| is properly freed.
-    widget_->Release();
-    DCHECK(widget_->HasOneRef());
+    widget_ = std::make_unique<PopupRenderWidget>(&compositor_deps_);
   }
 
   PopupRenderWidget* widget() const { return widget_.get(); }
@@ -517,7 +517,7 @@ class RenderWidgetPopupUnittest : public testing::Test {
  private:
   MockRenderProcess render_process_;
   MockRenderThread render_thread_;
-  scoped_refptr<PopupRenderWidget> widget_;
+  std::unique_ptr<PopupRenderWidget> widget_;
 };
 
 class StubRenderWidgetDelegate : public RenderWidgetDelegate {
@@ -532,7 +532,6 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   void DidHandleGestureEventForWidget(
       const blink::WebGestureEvent& event) override {}
   bool ShouldAckSyntheticInputImmediately() override { return true; }
-  void DidCloseWidget() override {}
   void CancelPagePopupForWidget() override {}
   void ApplyNewDisplayModeForWidget(
       const blink::WebDisplayMode& new_display_mode) override {}
@@ -579,7 +578,9 @@ TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHost) {
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
 
   // Repeat with a 'mainframe' widget.
-  widget()->set_delegate(std::make_unique<StubRenderWidgetDelegate>());
+  std::unique_ptr<StubRenderWidgetDelegate> delegate =
+      std::make_unique<StubRenderWidgetDelegate>();
+  widget()->set_delegate(delegate.get());
   visual_properties.is_pinch_gesture_active = true;
   widget()->OnSynchronizeVisualProperties(visual_properties);
   // We do not expect the |is_pinch_gesture_active| value to propagate to the
@@ -588,6 +589,7 @@ TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHost) {
   // not a pinch gesture is active, and so we shouldn't propagate this
   // information to the layer tree for a main-frame's widget.
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
+  DestroyWidget();
 }
 
 TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
@@ -614,12 +616,13 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
   VisualProperties visual_properties;
   visual_properties.new_size = parent_window_rect.size();
 
-  scoped_refptr<PopupRenderWidget> parent_widget(
+  std::unique_ptr<PopupRenderWidget> parent_widget(
       new PopupRenderWidget(&compositor_deps_));
-  parent_widget->Release();  // Balance Init().
 
   // Emulation only happens for RenderWidgets with a delegate.
-  parent_widget->set_delegate(std::make_unique<StubRenderWidgetDelegate>());
+  std::unique_ptr<StubRenderWidgetDelegate> delegate =
+      std::make_unique<StubRenderWidgetDelegate>();
+  parent_widget->set_delegate(delegate.get());
 
   // Setup emulation on the |parent_widget|.
   parent_widget->OnSynchronizeVisualProperties(visual_properties);
@@ -650,7 +653,7 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
   EXPECT_EQ(popup_emulated_rect.x, widget()->ViewRect().x);
   EXPECT_EQ(popup_emulated_rect.y, widget()->ViewRect().y);
 
-  parent_widget->Shutdown();
+  parent_widget->Shutdown(std::move(parent_widget));
 }
 
 // Verify desktop memory limit calculations.

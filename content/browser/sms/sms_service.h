@@ -60,8 +60,8 @@ class CONTENT_EXPORT SmsService
 
   // Callback when the |timer_| times out.
   void OnTimeout();
-  // Callback when the user manually clicks 'Continue' button.
-  void OnContinue();
+  // Callback when the user manually clicks 'Confirm' button.
+  void OnConfirm();
   // Callback when the user manually dismisses the dialog.
   void OnCancel();
 

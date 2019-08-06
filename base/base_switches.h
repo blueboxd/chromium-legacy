@@ -34,6 +34,7 @@ extern const char kVModule[];
 extern const char kWaitForDebugger[];
 
 #if defined(OS_WIN)
+extern const char kDisableHighResTimer[];
 extern const char kDisableUsbKeyboardDetect[];
 #endif
 

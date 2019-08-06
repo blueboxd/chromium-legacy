@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
@@ -28,33 +27,7 @@ const char kTestCrosGaiaIdMigration[] = "test-cros-gaia-id-migration";
 // all stored user keys will be converted to GaiaId)
 const char kTestCrosGaiaIdMigrationStarted[] = "started";
 
-// Controls whether Instant Tethering supports hosts which use the background
-// advertisement model.
-const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
-    "InstantTetheringBackgroundAdvertisementSupport",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // namespace
-
-// Controls whether to enable Chrome OS Account Manager.
-// Rollout controlled by Finch.
-const base::Feature kAccountManager{"ChromeOSAccountManager",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether to enable the Parental Controls section of settings.
-const base::Feature kParentalControlsSettings{
-    "ChromeOSParentalControlsSettings", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether to enable Google Assistant feature.
-const base::Feature kAssistantFeature{"ChromeOSAssistant",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether to enable Ambient mode feature.
-const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Please keep the order of these switches synchronized with the header file
 // (i.e. in alphabetical order).
@@ -554,26 +527,6 @@ bool IsCellularFirstDevice() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kCellularFirst);
 }
 
-bool IsAccountManagerEnabled() {
-  return base::FeatureList::IsEnabled(kAccountManager);
-}
-
-bool IsParentalControlsSettingsEnabled() {
-  return base::FeatureList::IsEnabled(kParentalControlsSettings);
-}
-
-bool IsAssistantFlagsEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantFeature);
-}
-
-bool IsAssistantEnabled() {
-  return IsAssistantFlagsEnabled();
-}
-
-bool IsAmbientModeEnabled() {
-  return base::FeatureList::IsEnabled(kAmbientModeFeature);
-}
-
 bool IsSigninFrameClientCertsEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableSigninFrameClientCerts);
@@ -601,18 +554,9 @@ bool ShouldShowScrollableShelf() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfScrollable);
 }
 
-bool IsInstantTetheringBackgroundAdvertisingSupported() {
-  return base::FeatureList::IsEnabled(
-      kInstantTetheringBackgroundAdvertisementSupport);
-}
-
 bool ShouldTetherHostScansIgnoreWiredConnections() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kTetherHostScansIgnoreWiredConnections);
-}
-
-bool ShouldShowPlayStoreInDemoMode() {
-  return base::FeatureList::IsEnabled(kShowPlayInDemoMode);
 }
 
 bool ShouldSkipOobePostLogin() {

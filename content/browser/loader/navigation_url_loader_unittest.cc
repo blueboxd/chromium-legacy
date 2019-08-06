@@ -17,7 +17,6 @@
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_ui_data.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_context.h"
@@ -44,7 +43,6 @@ class NavigationURLLoaderTest : public testing::Test {
   NavigationURLLoaderTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext) {
-    BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -82,7 +80,7 @@ class NavigationURLLoaderTest : public testing::Test {
             base::UnguessableToken::Create(),
             base::UnguessableToken::Create()));
     return NavigationURLLoader::Create(
-        browser_context_.get(), browser_context_->GetResourceContext(),
+        browser_context_.get(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
         std::move(request_info), nullptr, nullptr, nullptr, nullptr, delegate,
         false);

@@ -1759,7 +1759,7 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-two-panes-start-surface",
+    "name": "enable-start-surface",
     "owners": [ "gogerald"],
     "expiry_milestone": 83
   },
@@ -2260,6 +2260,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "lock-screen-media-controls",
+    "owners": [ "beccahughes", "media-dev" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "mac-v2-gpu-sandbox",
     "owners": [ "kerrnel@google.com" ],
     "expiry_milestone": 78
@@ -2607,16 +2612,6 @@
   },
   {
     "name": "omnibox-ui-swap-title-and-url",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "omnibox-ui-vertical-margin",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "omnibox-ui-vertical-margin-limit-to-non-touch-only",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
   },

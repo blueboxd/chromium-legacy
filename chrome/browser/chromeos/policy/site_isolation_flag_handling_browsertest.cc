@@ -321,6 +321,12 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, PRE_FlagHandlingTest) {
 }
 
 IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, FlagHandlingTest) {
+  // Skip tests where expected_request_restart is true.
+  // See crbug.com/990817 for more details.
+  if (GetParam().expected_request_restart) {
+    return;
+  }
+
   // Start user sign-in. We can't use |LoginPolicyTestBase::LogIn|, because
   // it waits for a user session start unconditionally, which will not happen if
   // chrome requests a restart to set user-session flags.

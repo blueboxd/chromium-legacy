@@ -166,7 +166,6 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
       // progress into a next outer fragmentainer if the (remaining part of the)
       // multicol container fits block-wise in the current outer fragmentainer.
       if (ConstraintSpace().HasBlockFragmentation() && break_token &&
-          !break_token->IsFinished() &&
           actual_column_count >= used_column_count &&
           needs_more_fragments_in_outer) {
         LayoutUnit fragment_block_size = child_space.FragmentainerBlockSize();
@@ -188,7 +187,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
         container_builder_.SetDidBreak();
         break;
       }
-    } while (break_token && !break_token->IsFinished());
+    } while (break_token);
 
     // TODO(mstensho): Nested column balancing.
     if (container_builder_.DidBreak())

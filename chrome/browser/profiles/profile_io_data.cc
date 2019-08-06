@@ -266,9 +266,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
   DCHECK(protocol_handler_registry);
 
-  protocol_handler_registry_io_thread_delegate_ =
-      protocol_handler_registry->io_thread_delegate();
-
 #if defined(OS_CHROMEOS)
   // Enable client certificates for the Chrome OS sign-in frame, if this feature
   // is not disabled by a flag.
@@ -319,15 +316,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->profile = profile;
   profile_params_ = std::move(params);
 
-  force_google_safesearch_.Init(prefs::kForceGoogleSafeSearch, pref_service);
-  force_google_safesearch_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-  force_youtube_restrict_.Init(prefs::kForceYouTubeRestrict, pref_service);
-  force_youtube_restrict_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-  allowed_domains_for_apps_.Init(prefs::kAllowedDomainsForApps, pref_service);
-  allowed_domains_for_apps_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   signed_exchange_enabled_.Init(prefs::kSignedHTTPExchangeEnabled,
                                 pref_service);
   signed_exchange_enabled_.MoveToSequence(
@@ -580,11 +568,7 @@ void ProfileIOData::ShutdownOnUIThread() {
 #if !defined(OS_CHROMEOS)
   signin_scoped_device_id_.Destroy();
 #endif
-  force_google_safesearch_.Destroy();
-  force_youtube_restrict_.Destroy();
-  allowed_domains_for_apps_.Destroy();
   safe_browsing_enabled_.Destroy();
-  safe_browsing_whitelist_domains_.Destroy();
   network_prediction_options_.Destroy();
   incognito_availibility_pref_.Destroy();
   signed_exchange_enabled_.Destroy();

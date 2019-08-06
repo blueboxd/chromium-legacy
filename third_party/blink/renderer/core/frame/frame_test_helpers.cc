@@ -727,6 +727,17 @@ void TestWebWidgetClient::DidMeaningfulLayout(
   }
 }
 
+void TestWebWidgetClient::SetBrowserControlsShownRatio(float ratio) {
+  layer_tree_host()->SetBrowserControlsShownRatio(ratio);
+}
+
+void TestWebWidgetClient::SetBrowserControlsHeight(float top_height,
+                                                   float bottom_height,
+                                                   bool shrink_viewport) {
+  layer_tree_host()->SetBrowserControlsHeight(top_height, bottom_height,
+                                              shrink_viewport);
+}
+
 void TestWebViewClient::DestroyChildViews() {
   child_web_views_.clear();
 }

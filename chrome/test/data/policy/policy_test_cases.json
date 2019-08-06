@@ -689,7 +689,9 @@
     "os": ["win", "mac", "linux"],
     "test_policy": { "DiskCacheDir": "${user_home}/test-cache" },
     "pref_mappings": [
-      { "pref": "browser.disk_cache_dir" }
+      { "pref": "browser.disk_cache_dir",
+        "local_state": true
+      }
     ]
   },
 
@@ -697,7 +699,9 @@
     "os": ["win", "mac", "linux"],
     "test_policy": { "DiskCacheSize": 100 },
     "pref_mappings": [
-      { "pref": "browser.disk_cache_size" }
+      { "pref": "browser.disk_cache_size",
+        "local_state": true
+      }
     ]
   },
 

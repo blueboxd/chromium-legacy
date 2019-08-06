@@ -609,10 +609,6 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
-#if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
-#include "chrome/services/file_util/public/mojom/constants.mojom.h"
-#endif
-
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
@@ -725,7 +721,7 @@ const char* const kPredefinedAllowedSocketOrigins[] = {
 // running on Windows 10 1511 and above. See
 // https://blogs.windows.com/blog/tag/code-integrity-guard/.
 const base::Feature kRendererCodeIntegrity{"RendererCodeIntegrity",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD)
 
 enum AppLoadedInTabSource {
@@ -1191,6 +1187,8 @@ ChromeContentBrowserClient::~ChromeContentBrowserClient() {
 // static
 void ChromeContentBrowserClient::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
+  registry->RegisterFilePathPref(prefs::kDiskCacheDir, base::FilePath());
+  registry->RegisterIntegerPref(prefs::kDiskCacheSize, 0);
   registry->RegisterStringPref(prefs::kIsolateOrigins, std::string());
   registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
   registry->RegisterBooleanPref(prefs::kTabLifecyclesEnabled, true);
@@ -2674,12 +2672,15 @@ ChromeContentBrowserClient::GetGeneratedCodeCacheSettings(
   // heuristics based on available disk size. These are implemented in
   // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
   int64_t size_in_bytes = 0;
-  PrefService* prefs = Profile::FromBrowserContext(context)->GetPrefs();
-  DCHECK(prefs);
-  size_in_bytes = prefs->GetInteger(prefs::kDiskCacheSize);
-  base::FilePath disk_cache_dir = prefs->GetFilePath(prefs::kDiskCacheDir);
-  if (!disk_cache_dir.empty())
-    cache_path = disk_cache_dir.Append(cache_path.BaseName());
+  DCHECK(g_browser_process);
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state) {
+    size_in_bytes = local_state->GetInteger(prefs::kDiskCacheSize);
+    base::FilePath disk_cache_dir =
+        local_state->GetFilePath(prefs::kDiskCacheDir);
+    if (!disk_cache_dir.empty())
+      cache_path = disk_cache_dir.Append(cache_path.BaseName());
+  }
   return content::GeneratedCodeCacheSettings(true, size_in_bytes, cache_path);
 }
 
@@ -4665,7 +4666,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
-      browser_context, request.resource_type, frame_tree_node_id));
+      request.resource_type, frame_tree_node_id));
 #endif
 
   auto delegate =
@@ -5705,10 +5706,10 @@ ChromeContentBrowserClient::GetWideColorGamutHeuristic() {
 
 base::flat_set<std::string>
 ChromeContentBrowserClient::GetPluginMimeTypesWithExternalHandlers(
-    content::ResourceContext* resource_context) {
+    content::BrowserContext* browser_context) {
   base::flat_set<std::string> mime_types;
 #if BUILDFLAG(ENABLE_PLUGINS)
-  auto map = PluginUtils::GetMimeTypeToExtensionIdMap(resource_context);
+  auto map = PluginUtils::GetMimeTypeToExtensionIdMap(browser_context);
   for (const auto& pair : map)
     mime_types.insert(pair.first);
 #endif

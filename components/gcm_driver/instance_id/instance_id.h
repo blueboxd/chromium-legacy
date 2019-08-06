@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/callback.h"
@@ -47,6 +48,18 @@ class InstanceID {
 
     // Used for UMA. Keep LAST_RESULT up to date and sync with histograms.xml.
     LAST_RESULT = UNKNOWN_ERROR
+  };
+
+  // Flags to be used to create a token. These might be platform specific.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.gcm_driver
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: InstanceIDFlags
+  enum class Flags {
+    // Whether delivery of received messages should be deferred until there is a
+    // visible activity. Only applicable for Android.
+    kIsLazy = 1 << 0,
+    // Whether delivery of received messages should bypass the background task
+    // scheduler. Only applicable for high priority messages on Android.
+    kBypassScheduler = 1 << 1,
   };
 
   // Asynchronous callbacks. Must not synchronously delete |this| (using
@@ -95,13 +108,12 @@ class InstanceID {
   // |options|: allows including a small number of string key/value pairs that
   //            will be associated with the token and may be used in processing
   //            the request.
-  // |is_lazy|: Whether delivery of received messages should be deferred until
-  //            there is a visible activity. Only applicable for Android.
+  // |flags|: Flags used to create this token.
   // |callback|: to be called once the asynchronous operation is done.
   virtual void GetToken(const std::string& authorized_entity,
                         const std::string& scope,
                         const std::map<std::string, std::string>& options,
-                        bool is_lazy,
+                        std::set<Flags> flags,
                         GetTokenCallback callback) = 0;
 
   // Checks that the provided |token| matches the stored token for (|app_id()|,

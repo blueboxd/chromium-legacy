@@ -59,7 +59,7 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
                                     page_offset.block_offset + page_block_size);
     page_offset += page_progression;
     break_token = To<NGBlockBreakToken>(page.BreakToken());
-  } while (break_token && !break_token->IsFinished());
+  } while (break_token);
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
 

@@ -249,8 +249,12 @@ id<GREYMatcher> PopupBlocker() {
   // Instead, it percent encodes '#hash' and considers 'blank%23hash' as the
   // resource identifier. Nevertheless, the '#' is significant in triggering the
   // edge case in the bug. TODO(crbug.com/885249): Change back to '#'.
-  const GURL URL("about:blank%23hash");
-  [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank%23hash")]
+  // Since about scheme URLs are also trimmed to about:blank, check the url
+  // directly instead.
+  DCHECK_EQ(GURL("about:blank%23hash"),
+            chrome_test_util::GetCurrentWebState()->GetLastCommittedURL());
+  // And confirm the location bar only shows about:blank.
+  [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank")]
       assertWithMatcher:grey_notNil()];
 }
 

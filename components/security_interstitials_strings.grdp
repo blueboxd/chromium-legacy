@@ -405,6 +405,9 @@
   </if>
 
   <!-- Billing interstitial -->
+  <message name="IDS_BILLING_TITLE" desc="The tab title for the Safe Browsing Billing interstitial.">
+    Page may charge money
+  </message>
   <message name="IDS_BILLING_HEADING" desc="The large heading at the top of the billing interstitial.">
     The page ahead may try to charge you money
   </message>

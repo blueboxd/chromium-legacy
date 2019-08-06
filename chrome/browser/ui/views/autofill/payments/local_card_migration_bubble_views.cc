@@ -111,7 +111,7 @@ void LocalCardMigrationBubbleViews::AddedToWidget() {
   // setting the icon size would rescale it incorrectly.
   gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(
       gfx::CreateVectorIcon(kGooglePayLogoIcon,
-                            GetNativeTheme()->SystemDarkModeEnabled()
+                            GetNativeTheme()->ShouldUseDarkColors()
                                 ? gfx::kGoogleGrey200
                                 : gfx::kGoogleGrey700),
       /*x=*/0, /*y=*/0, kMigrationBubbleGooglePayLogoWidth,

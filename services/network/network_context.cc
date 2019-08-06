@@ -1245,7 +1245,6 @@ void NetworkContext::CreateWebSocket(
     const url::Origin& origin,
     uint32_t options,
     mojom::WebSocketHandshakeClientPtr handshake_client,
-    mojom::WebSocketClientPtr client,
     mojom::AuthenticationHandlerPtr auth_handler,
     mojom::TrustedHeaderClientPtr header_client) {
 #if !defined(OS_IOS)
@@ -1254,7 +1253,7 @@ void NetworkContext::CreateWebSocket(
   websocket_factory_->CreateWebSocket(
       url, requested_protocols, site_for_cookies, std::move(additional_headers),
       process_id, render_frame_id, origin, options, std::move(handshake_client),
-      std::move(client), std::move(auth_handler), std::move(header_client));
+      std::move(auth_handler), std::move(header_client));
 #endif  // !defined(OS_IOS)
 }
 

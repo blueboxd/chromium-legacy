@@ -494,8 +494,8 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
   authentication_service()->SignIn(identity(0));
   std::vector<std::string> accounts_in_prefs = GetAccountsInPrefs();
   ASSERT_EQ(2U, accounts_in_prefs.size());
-  EXPECT_EQ("foo2@foo.com", accounts_in_prefs[0]);
-  EXPECT_EQ("foo@foo.com", accounts_in_prefs[1]);
+  EXPECT_EQ("foo2@gmail.com", accounts_in_prefs[0]);
+  EXPECT_EQ("foo@gmail.com", accounts_in_prefs[1]);
 
   // Migrate the accounts.
   browser_state_->GetPrefs()->SetInteger(

@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/google/core/common/google_util.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -152,7 +152,7 @@ class ChromeOsMirrorAccountConsistencyTestWithAccountManagerEnabled
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        chromeos::switches::kAccountManager);
+        chromeos::features::kAccountManager);
     ChromeOsMirrorAccountConsistencyTest::SetUp();
   }
 

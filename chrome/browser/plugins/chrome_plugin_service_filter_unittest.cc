@@ -35,6 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/web_contents_tester.h"
 #include "url/origin.h"
 
 class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
@@ -46,23 +47,11 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
 
   bool IsPluginAvailable(const GURL& plugin_content_url,
                          const url::Origin& main_frame_origin,
-                         const void* resource_context,
-                         const content::WebPluginInfo& plugin_info) {
-    bool is_available = false;
-
-    // ChromePluginServiceFilter::IsPluginAvailable always runs on the IO
-    // thread. Use a RunLoop to ensure this method blocks until it posts back.
-    base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(
-            &ChromePluginServiceFilterTest::IsPluginAvailableOnIOThread,
-            base::Unretained(this), plugin_content_url, main_frame_origin,
-            resource_context, plugin_info, &is_available),
-        run_loop.QuitClosure());
-    run_loop.Run();
-
-    return is_available;
+                         content::WebPluginInfo plugin_info) {
+    return filter_->IsPluginAvailable(
+        web_contents()->GetMainFrame()->GetProcess()->GetID(),
+        web_contents()->GetMainFrame()->GetRoutingID(), plugin_content_url,
+        main_frame_origin, &plugin_info);
   }
 
  protected:
@@ -74,19 +63,7 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
     PluginFinder::GetInstance();
 
     filter_ = ChromePluginServiceFilter::GetInstance();
-    filter_->RegisterResourceContext(profile(),
-                                     profile()->GetResourceContext());
-  }
-
-  void IsPluginAvailableOnIOThread(const GURL& plugin_content_url,
-                                   const url::Origin& main_frame_origin,
-                                   const void* resource_context,
-                                   content::WebPluginInfo plugin_info,
-                                   bool* is_available) {
-    *is_available = filter_->IsPluginAvailable(
-        web_contents()->GetMainFrame()->GetProcess()->GetID(),
-        web_contents()->GetMainFrame()->GetRoutingID(), resource_context,
-        plugin_content_url, main_frame_origin, &plugin_info);
+    filter_->RegisterProfile(profile());
   }
 
   ChromePluginServiceFilter* filter_;
@@ -101,8 +78,7 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   // The default content setting should block Flash.
   GURL url("http://www.google.com");
   url::Origin main_frame_origin = url::Origin::Create(url);
-  EXPECT_FALSE(IsPluginAvailable(
-      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(url, main_frame_origin, flash_plugin));
 
   // Block plugins.
   HostContentSettingsMap* map =
@@ -110,23 +86,20 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
                                      std::string(), CONTENT_SETTING_BLOCK);
 
-  EXPECT_FALSE(IsPluginAvailable(
-      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(url, main_frame_origin, flash_plugin));
 
   // Allow plugins.
   map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
                                      std::string(), CONTENT_SETTING_ALLOW);
 
-  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
-                                profile()->GetResourceContext(), flash_plugin));
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin, flash_plugin));
 
   // Detect important content should block plugins without user gesture.
   map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
                                      std::string(),
                                      CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
-  EXPECT_FALSE(IsPluginAvailable(
-      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(url, main_frame_origin, flash_plugin));
 }
 
 TEST_F(ChromePluginServiceFilterTest,
@@ -143,27 +116,24 @@ TEST_F(ChromePluginServiceFilterTest,
       HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
                                      std::string(), CONTENT_SETTING_ALLOW);
-  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
-                                profile()->GetResourceContext(), flash_plugin));
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin, flash_plugin));
 
   // Plugins should be hidden on ASK mode.
   map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
                                      std::string(),
                                      CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
-  EXPECT_FALSE(IsPluginAvailable(
-      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(url, main_frame_origin, flash_plugin));
 
   // Block plugins.
   map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
                                      std::string(), CONTENT_SETTING_BLOCK);
-  EXPECT_FALSE(IsPluginAvailable(
-      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(url, main_frame_origin, flash_plugin));
 }
 
 TEST_F(ChromePluginServiceFilterTest,
        PreferHtmlOverPluginsIncognitoHasIndependentSetting) {
   Profile* incognito = profile()->GetOffTheRecordProfile();
-  filter_->RegisterResourceContext(incognito, incognito->GetResourceContext());
+  filter_->RegisterProfile(incognito);
 
   content::WebPluginInfo flash_plugin(
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
@@ -180,12 +150,14 @@ TEST_F(ChromePluginServiceFilterTest,
 
   // We pass the availablity check in incognito.
   url::Origin main_frame_origin = url::Origin::Create(url);
-  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
-                                incognito->GetResourceContext(), flash_plugin));
+  SetContents(
+      content::WebContentsTester::CreateTestWebContents(incognito, nullptr));
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin, flash_plugin));
 
   // But the original profile still fails the availability check.
-  EXPECT_FALSE(IsPluginAvailable(
-      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
+  SetContents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  EXPECT_FALSE(IsPluginAvailable(url, main_frame_origin, flash_plugin));
 }
 
 TEST_F(ChromePluginServiceFilterTest, ManagedSetting) {
@@ -203,12 +175,10 @@ TEST_F(ChromePluginServiceFilterTest, ManagedSetting) {
   NavigateAndCommit(url);
 
   // Flash is normally blocked on the ASK managed policy.
-  EXPECT_FALSE(IsPluginAvailable(
-      url, main_frame_origin, profile()->GetResourceContext(), flash_plugin));
+  EXPECT_FALSE(IsPluginAvailable(url, main_frame_origin, flash_plugin));
 
   // Allow flash temporarily.
   FlashTemporaryPermissionTracker::Get(profile())->FlashEnabledForWebContents(
       web_contents());
-  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin,
-                                profile()->GetResourceContext(), flash_plugin));
+  EXPECT_TRUE(IsPluginAvailable(url, main_frame_origin, flash_plugin));
 }

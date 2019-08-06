@@ -16,14 +16,8 @@ class MockDisplayDecider : public DisplayDecider {
  public:
   MockDisplayDecider();
   ~MockDisplayDecider() override;
-  MOCK_METHOD7(FindNotificationsToShow,
-               void(const SchedulerConfig*,
-                    std::vector<SchedulerClientType>,
-                    std::unique_ptr<DistributionPolicy>,
-                    SchedulerTaskTime,
-                    Notifications,
-                    ClientStates,
-                    Results*));
+  MOCK_METHOD4(FindNotificationsToShow,
+               void(SchedulerTaskTime, Notifications, ClientStates, Results*));
 };
 
 }  // namespace test

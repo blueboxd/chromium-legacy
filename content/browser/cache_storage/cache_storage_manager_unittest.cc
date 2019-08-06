@@ -1594,7 +1594,7 @@ TEST_P(CacheStorageManagerLegacyOnlyTestP, OpenRunsSerially) {
   EXPECT_FALSE(Delete(origin1_, "tmp"));  // Init storage.
   CacheStorageHandle cache_storage = CacheStorageForOrigin(origin1_);
   auto* impl = LegacyCacheStorage::From(cache_storage);
-  impl->StartAsyncOperationForTesting();
+  auto id = impl->StartAsyncOperationForTesting();
 
   base::RunLoop open_loop;
   cache_storage.value()->OpenCache(
@@ -1605,7 +1605,7 @@ TEST_P(CacheStorageManagerLegacyOnlyTestP, OpenRunsSerially) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(callback_cache_handle_.value());
 
-  impl->CompleteAsyncOperationForTesting();
+  impl->CompleteAsyncOperationForTesting(id);
   open_loop.Run();
   EXPECT_TRUE(callback_cache_handle_.value());
 }

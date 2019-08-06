@@ -52,13 +52,6 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   virtual bool ShouldAckSyntheticInputImmediately() = 0;
 
   // ==================================
-  // These methods called during closing of a RenderWidget.
-  //
-  // Called after closing the RenderWidget and destroying the WebView.
-  virtual void DidCloseWidget() = 0;
-  // ==================================
-
-  // ==================================
   // These methods called during handling of a SynchronizeVisualProperties
   // message to handle updating state on the delegate.
   //

@@ -654,26 +654,6 @@ TEST_F(ExtensionMessageBubbleTest, DevModeControllerTest) {
   service_->EnableExtension(kId1);
   service_->EnableExtension(kId2);
 
-  // Show the dialog a third time, but now press the learn more link.
-  bubble.set_action_on_show(
-      FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
-  controller.reset(
-      new TestExtensionMessageBubbleController(
-          new DevModeBubbleDelegate(browser()->profile()),
-          browser()));
-  controller->SetIsActiveBubble();
-  controller->delegate()->ClearProfileSetForTesting();
-  EXPECT_TRUE(controller->ShouldShow());
-  dev_mode_extensions = controller->GetExtensionList();
-  EXPECT_EQ(2U, dev_mode_extensions.size());
-  bubble.set_controller(controller.get());
-  bubble.Show();  // Simulate showing the bubble.
-  EXPECT_EQ(1U, controller->link_click_count());
-  EXPECT_EQ(0U, controller->action_click_count());
-  EXPECT_EQ(0U, controller->dismiss_click_count());
-  EXPECT_TRUE(registry->enabled_extensions().GetByID(kId1) != NULL);
-  EXPECT_TRUE(registry->enabled_extensions().GetByID(kId2) != NULL);
-
   // Now disable the unpacked extension.
   service_->DisableExtension(kId1, disable_reason::DISABLE_USER_ACTION);
   service_->DisableExtension(kId2, disable_reason::DISABLE_USER_ACTION);

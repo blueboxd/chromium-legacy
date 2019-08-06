@@ -6,6 +6,7 @@ def _CheckForModularizedTests(input_api, output_api):
   module_tests = [
       'cr_elements/cr_button_tests.m.js',
       'cr_elements/cr_checkbox_test.m.js',
+      'cr_elements/cr_input_test.m.js',
       'cr_elements/cr_toast_test.m.js',
       'cr_elements/cr_toggle_test.m.js',
       'cr_elements/cr_view_manager_test.m.js',

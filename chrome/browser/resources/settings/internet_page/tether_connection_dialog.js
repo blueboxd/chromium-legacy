@@ -111,7 +111,7 @@ Polymer({
     if (signalStrength === undefined) {
       signalStrength = 4;
     }
-    return 'settings:signal-cellular-' +
+    return 'os-settings:signal-cellular-' +
         Math.min(4, Math.max(signalStrength, 0)) + '-bar';
   },
 

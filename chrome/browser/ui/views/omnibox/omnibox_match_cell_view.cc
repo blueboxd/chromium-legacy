@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_text_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "extensions/common/image_util.h"
@@ -64,24 +63,11 @@ int HorizontalPadding() {
 }
 
 // Returns the margins that should appear around the result.
-// |is_two_line| indicates whether the vertical margin is for a omnibox
-// result displaying an answer to the query.
+// |is_two_line| indicates whether the vertical margin is for a type of
+// suggestion that uses two lines (e.g. answers).
 gfx::Insets GetMarginInsets(int text_height, bool is_two_line) {
   int vertical_margin =
       is_two_line ? kTwoLineRowMarginHeight : kOneLineRowMarginHeight;
-
-  base::Optional<int> vertical_margin_override =
-      OmniboxFieldTrial::GetSuggestionVerticalMarginFieldTrialOverride();
-  if (vertical_margin_override) {
-    // If the vertical margin experiment is on, we purposely set both the
-    // one-line and two-line suggestions to have the same vertical margin.
-    //
-    // There is no vertical margin value we could set to make the new answer
-    // style look anything similar to the pre-Refresh style, but setting them to
-    // be the same looks reasonable, and is a sane place to start experimenting.
-    vertical_margin = vertical_margin_override.value();
-  }
-
   return gfx::Insets(vertical_margin, kMarginLeft, vertical_margin,
                      OmniboxMatchCellView::kMarginRight);
 }

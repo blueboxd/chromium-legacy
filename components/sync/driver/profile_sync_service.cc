@@ -809,7 +809,6 @@ void ProfileSyncService::OnEngineInitialized(
     const std::string& bag_of_chips,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!cache_guid.empty());
 
   // TODO(treib): Based on some crash reports, it seems like the user could have
   // signed out already at this point, so many of the steps below, including
@@ -830,6 +829,8 @@ void ProfileSyncService::OnEngineInitialized(
                              ERROR_REASON_ENGINE_INIT_FAILURE);
     return;
   }
+
+  DCHECK(!cache_guid.empty());
 
   sync_js_controller_.AttachJsBackend(js_backend);
 

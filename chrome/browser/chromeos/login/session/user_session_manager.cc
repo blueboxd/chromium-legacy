@@ -1173,7 +1173,7 @@ void UserSessionManager::InitializeAccountManager() {
   base::FilePath profile_path =
       ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash());
 
-  if (switches::IsAccountManagerEnabled() &&
+  if (features::IsAccountManagerEnabled() &&
       ProfileHelper::IsRegularProfilePath(profile_path)) {
     chromeos::InitializeAccountManager(
         profile_path,
@@ -1347,7 +1347,7 @@ void UserSessionManager::InitProfilePreferences(
     }
 
     bool should_use_legacy_flow = false;
-    if (!switches::IsAccountManagerEnabled()) {
+    if (!features::IsAccountManagerEnabled()) {
       // Always use the legacy flow if Account Manager has not been enabled yet.
       should_use_legacy_flow = true;
     } else if (!identity_manager

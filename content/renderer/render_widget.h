@@ -151,9 +151,19 @@ class CONTENT_EXPORT RenderWidget
       public LayerTreeViewDelegate,
       public RenderWidgetInputHandlerDelegate,
       public RenderWidgetScreenMetricsEmulatorDelegate,
-      public base::RefCounted<RenderWidget>,
       public MainThreadEventQueueClient {
  public:
+  RenderWidget(int32_t widget_routing_id,
+               CompositorDependencies* compositor_deps,
+               const ScreenInfo& screen_info,
+               blink::WebDisplayMode display_mode,
+               bool is_frozen,
+               bool hidden,
+               bool never_visible,
+               mojom::WidgetRequest widget_request);
+
+  ~RenderWidget() override;
+
   using ShowCallback =
       base::OnceCallback<void(RenderWidget* widget_to_show,
                               blink::WebNavigationPolicy policy,
@@ -168,13 +178,13 @@ class CONTENT_EXPORT RenderWidget
   // Convenience type for creation method taken by InstallCreateForFrameHook().
   // The method signature matches the RenderWidget constructor.
   using CreateRenderWidgetFunction =
-      scoped_refptr<RenderWidget> (*)(int32_t,
-                                      CompositorDependencies*,
-                                      const ScreenInfo&,
-                                      blink::WebDisplayMode display_mode,
-                                      bool is_frozen,
-                                      bool never_visible,
-                                      mojom::WidgetRequest widget_request);
+      std::unique_ptr<RenderWidget> (*)(int32_t,
+                                        CompositorDependencies*,
+                                        const ScreenInfo&,
+                                        blink::WebDisplayMode display_mode,
+                                        bool is_frozen,
+                                        bool never_visible,
+                                        mojom::WidgetRequest widget_request);
   // Overrides the implementation of CreateForFrame() function below. Used by
   // web tests to return a partial fake of RenderWidget.
   static void InstallCreateForFrameHook(
@@ -183,7 +193,7 @@ class CONTENT_EXPORT RenderWidget
   // Creates a RenderWidget that is meant to be associated with a RenderFrame.
   // Testing infrastructure, such as test_runner, can override this function
   // by calling InstallCreateForFrameHook().
-  static scoped_refptr<RenderWidget> CreateForFrame(
+  static std::unique_ptr<RenderWidget> CreateForFrame(
       int32_t widget_routing_id,
       CompositorDependencies* compositor_deps,
       const ScreenInfo& screen_info,
@@ -194,15 +204,17 @@ class CONTENT_EXPORT RenderWidget
 
   // Creates a RenderWidget for a popup. This is separate from CreateForFrame()
   // because popups do not not need to be faked out.
-  static scoped_refptr<RenderWidget> CreateForPopup(
-      int32_t widget_routing_id,
-      CompositorDependencies* compositor_deps,
-      const ScreenInfo& screen_info,
-      blink::WebDisplayMode display_mode,
-      bool is_frozen,
-      bool hidden,
-      bool never_visible,
-      mojom::WidgetRequest widget_request);
+  // A RenderWidget popup is owned by the browser process. The object will be
+  // destroyed by the WidgetMsg_Close message. The object can request its own
+  // destruction via ClosePopupWidgetSoon().
+  static RenderWidget* CreateForPopup(int32_t widget_routing_id,
+                                      CompositorDependencies* compositor_deps,
+                                      const ScreenInfo& screen_info,
+                                      blink::WebDisplayMode display_mode,
+                                      bool is_frozen,
+                                      bool hidden,
+                                      bool never_visible,
+                                      mojom::WidgetRequest widget_request);
 
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
   // when RenderWidget::Show() happens. This method increments the reference
@@ -218,22 +230,30 @@ class CONTENT_EXPORT RenderWidget
   void InitForChildLocalRoot(blink::WebFrameWidget* web_frame_widget);
 
   // Sets a delegate to handle certain RenderWidget operations that need an
-  // escape to the RenderView. Also take ownership until RenderWidget lifetime
-  // has been reassociated with the RenderFrame. This is only set on Widgets
-  // that are associated with the RenderView.
-  // TODO(ajwong): Do not have RenderWidget own the delegate.
-  void set_delegate(std::unique_ptr<RenderWidgetDelegate> delegate) {
+  // escape to the RenderView.
+  void set_delegate(RenderWidgetDelegate* delegate) {
     DCHECK(!delegate_);
-    delegate_ = std::move(delegate);
+    delegate_ = delegate;
   }
 
-  RenderWidgetDelegate* delegate() const { return delegate_.get(); }
+  RenderWidgetDelegate* delegate() const { return delegate_; }
 
   // Returns the RenderWidget for the given routing ID.
   static RenderWidget* FromRoutingID(int32_t routing_id);
 
-  // Closes a RenderWidget that was created by |CreateForFrame|.
-  void CloseForFrame();
+  // Closes a RenderWidget that was created by |CreateForFrame|. Ownership is
+  // passed into this object to asynchronously delete itself.
+  void CloseForFrame(std::unique_ptr<RenderWidget> widget);
+
+  // RenderWidgets cannot always be synchronously destroyed, since that may
+  // happen in a re-entrancy scenario, and there may be existing references on
+  // the stack. This method shuts down further sources of input to the
+  // RenderWidget. This must be called before Close().
+  void PrepareForClose();
+
+  // Close the underlying WebWidget and stop the compositor. This method deletes
+  // the object.
+  virtual void Close(std::unique_ptr<RenderWidget> widget);
 
   int32_t routing_id() const { return routing_id_; }
 
@@ -472,6 +492,10 @@ class CONTENT_EXPORT RenderWidget
   void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   void RequestBeginMainFrameNotExpected(bool request) override;
   int GetLayerTreeId() const override;
+  void SetBrowserControlsShownRatio(float ratio) override;
+  void SetBrowserControlsHeight(float top_height,
+                                float bottom_height,
+                                bool shrink_viewport) override;
 
   // Registers a SwapPromise to report presentation time and possibly swap time.
   // If |swap_time_callback| is not a null callback, it would be called once
@@ -687,24 +711,16 @@ class CONTENT_EXPORT RenderWidget
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
  protected:
-  // An Init*() method must be called after creating a RenderWidget, which will
-  // make the RenderWidget self-referencing. Then it can be deleted by calling
-  // by calling OnClose().
-  RenderWidget(int32_t widget_routing_id,
-               CompositorDependencies* compositor_deps,
-               const ScreenInfo& screen_info,
-               blink::WebDisplayMode display_mode,
-               bool is_frozen,
-               bool hidden,
-               bool never_visible,
-               mojom::WidgetRequest widget_request);
-  ~RenderWidget() override;
-
-  // Close the underlying WebWidget and stop the compositor.
-  virtual void Close();
-
   // Notify subclasses that we initiated the paint operation.
   virtual void DidInitiatePaint() {}
+
+  // RenderWidgets are created for frames, popups and pepper fullscreen. In the
+  // former case, the caller frame takes ownership and eventually passes the
+  // unique_ptr back in Close(). In the latter cases, the browser process takes
+  // ownership via IPC.  These booleans exist to allow us to confirm than an IPC
+  // message to kill the render widget is coming for a popup or fullscreen.
+  bool popup_ = false;
+  bool pepper_fullscreen_ = false;
 
  private:
   // Friend RefCounted so that the dtor can be non-public. Using this class
@@ -937,7 +953,9 @@ class CONTENT_EXPORT RenderWidget
   blink::WebWidget* webwidget_internal_ = nullptr;
 
   // The delegate for this object which is just a RenderViewImpl.
-  std::unique_ptr<RenderWidgetDelegate> delegate_;
+  // This member is non-null if and only if the RenderWidget is associated with
+  // a RenderViewImpl.
+  RenderWidgetDelegate* delegate_ = nullptr;
 
   // This is lazily constructed and must not outlive webwidget_.
   std::unique_ptr<LayerTreeView> layer_tree_view_;

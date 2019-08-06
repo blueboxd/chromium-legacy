@@ -22,7 +22,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/components/account_manager/account_manager.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate_chromeos.h"
 #include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
@@ -141,7 +141,7 @@ CreateOAuth2TokenServiceDelegate(
                                 account_tracker_service);
 #else  // !defined(OS_ANDROID) && !defined(OS_IOS)
 #if defined(OS_CHROMEOS)
-  if (chromeos::switches::IsAccountManagerEnabled()) {
+  if (chromeos::features::IsAccountManagerEnabled()) {
     return CreateCrOsOAuthDelegate(account_tracker_service,
                                    network_connection_tracker, account_manager,
                                    is_regular_profile);
@@ -150,7 +150,7 @@ CreateOAuth2TokenServiceDelegate(
   // Fall back to |MutableProfileOAuth2TokenServiceDelegate|:
   // 1. On all platforms other than Android and Chrome OS.
   // 2. On Chrome OS, if Account Manager has not been switched on yet
-  // (chromeos::switches::IsAccountManagerEnabled).
+  // (chromeos::features::IsAccountManagerEnabled).
   return CreateMutableProfileOAuthDelegate(
       account_tracker_service, account_consistency,
       delete_signin_cookies_on_exit, token_web_data, signin_client,

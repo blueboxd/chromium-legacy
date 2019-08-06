@@ -321,18 +321,19 @@ void ContentIndexProviderImpl::GetVisualsForItem(const ContentId& id,
     return;
   }
 
-  storage_partition->GetContentIndexContext()->GetIcon(
+  storage_partition->GetContentIndexContext()->GetIcons(
       components.service_worker_registration_id, components.description_id,
-      base::BindOnce(&ContentIndexProviderImpl::DidGetIcon,
+      base::BindOnce(&ContentIndexProviderImpl::DidGetIcons,
                      weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)));
 }
 
-void ContentIndexProviderImpl::DidGetIcon(const ContentId& id,
-                                          VisualsCallback callback,
-                                          SkBitmap icon) {
+void ContentIndexProviderImpl::DidGetIcons(const ContentId& id,
+                                           VisualsCallback callback,
+                                           std::vector<SkBitmap> icons) {
   auto visuals =
       std::make_unique<offline_items_collection::OfflineItemVisuals>();
-  visuals->icon = gfx::Image::CreateFrom1xBitmap(icon);
+  if (!icons.empty())
+    visuals->icon = gfx::Image::CreateFrom1xBitmap(std::move(icons.front()));
   std::move(callback).Run(id, std::move(visuals));
 }
 

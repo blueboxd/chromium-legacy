@@ -7,15 +7,12 @@
 #include <memory>
 
 #include "android_webview/browser/aw_contents_io_thread_client.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
-#include "net/url_request/url_request.h"
-#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 using base::AutoLock;
@@ -64,20 +61,6 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
     return false;
   }
   return io_thread_client->ShouldAcceptThirdPartyCookies();
-}
-
-bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
-    const net::URLRequest& request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return false;
-}
-
-bool AwCookieAccessPolicy::AllowCookies(const net::URLRequest& request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  bool third_party = GetShouldAcceptThirdPartyCookies(request);
-  return CanAccessCookies(request.url(), request.site_for_cookies(),
-                          third_party);
 }
 
 bool AwCookieAccessPolicy::AllowCookies(const GURL& url,

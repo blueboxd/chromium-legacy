@@ -94,7 +94,7 @@ crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failur
 # declare any OS.
 crbug.com/979444 [ chromeos ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
-crbug.com/979444 [ mac ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ mac no-passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/979444 [ android no-angle ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
@@ -343,11 +343,48 @@ crbug.com/923080 [ mac nvidia-0xfe9 ] conformance/ogles/GL/exp2/exp2_001_to_008.
 crbug.com/635081 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-location-long-names-test.html [ Failure ]
 crbug.com/635081 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-location-test.html [ Failure ]
 crbug.com/635081 [ mac nvidia-0xfe9 no-passthrough ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
-crbug.com/635081 [ mac nvidia-0xfe9 ] conformance/textures/misc/tex-input-validation.html [ Failure ]
+crbug.com/635081 [ mac nvidia-0xfe9 no-passthrough ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/784817 [ mac nvidia-0xfe9 ] conformance/glsl/bugs/init-array-with-loop.html [ Failure ]
 crbug.com/871352 [ mac debug nvidia-0xfe9 ] conformance/uniforms/uniform-samplers-test.html [ Failure ]
 crbug.com/948218 [ mac debug nvidia-0xfe9 ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
+# Mac / Passthrough command decoder
+crbug.com/990368 [ mac passthrough ] conformance/canvas/canvas-test.html [ Failure ]
+crbug.com/990368 [ mac passthrough ] conformance/canvas/draw-static-webgl-to-multiple-canvas-test.html [ Failure ]
+crbug.com/990368 [ mac passthrough ] conformance/canvas/draw-webgl-to-canvas-test.html [ Failure ]
+crbug.com/990368 [ mac passthrough ] conformance/canvas/to-data-url-test.html [ Failure ]
+crbug.com/angleproject/3766 [ mac passthrough ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
+crbug.com/angleproject/3766 [ mac passthrough ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
+crbug.com/angleproject/3766 [ mac passthrough ] conformance/context/context-hidden-alpha.html [ Failure ]
+crbug.com/angleproject/3766 [ mac passthrough ] conformance/context/context-no-alpha-fbo-with-alpha.html [ Failure ]
+crbug.com/990368 [ mac passthrough ] conformance/context/premultiplyalpha-test.html [ Failure ]
+crbug.com/989194 [ mac passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
+crbug.com/989194 [ mac passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
+crbug.com/989194 [ mac passthrough ] conformance/extensions/oes-texture-half-float.html [ Failure ]
+crbug.com/angleproject/3768 [ mac passthrough ] conformance/glsl/bugs/sequence-operator-evaluation-order.html [ Failure ]
+crbug.com/angleproject/3769 [ mac passthrough ] conformance/glsl/misc/shader-struct-scope.html [ Failure ]
+crbug.com/angleproject/3769 [ mac passthrough ] conformance/glsl/misc/shader-with-short-circuiting-operators.html [ Failure ]
+crbug.com/angleproject/3771 [ mac passthrough ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Failure ]
+crbug.com/angleproject/3770 [ mac passthrough ] conformance/ogles/GL/build/build_177_to_178.html [ Failure ]
+crbug.com/angleproject/3766 [ mac passthrough ] conformance/rendering/color-mask-preserved-during-implicit-clears.html [ Failure ]
+crbug.com/angleproject/3772 [ mac passthrough ] conformance/rendering/draw-webgl-to-canvas-2d-repeatedly.html [ Failure ]
+crbug.com/angleproject/3766 [ mac passthrough ] conformance/rendering/scissor-rect-repeated-rendering.html [ Failure ]
+crbug.com/989194 [ mac passthrough ] conformance/textures/image_bitmap_from_video/* [ Failure ]
+crbug.com/989194 [ mac passthrough ] conformance/textures/video/* [ Failure ]
+crbug.com/990368 [ mac passthrough ] conformance/textures/webgl_canvas/* [ Failure ]
+crbug.com/angleproject/3766 [ mac passthrough ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
+crbug.com/angleproject/3774 [ mac passthrough ] conformance/textures/misc/gl-pixelstorei.html [ Failure ]
+crbug.com/angleproject/3766 [ mac passthrough ] conformance/textures/misc/gl-teximage.html [ Failure ]
+crbug.com/angleproject/3766 [ mac passthrough ] conformance/textures/misc/tex-image-webgl.html [ Failure ]
+crbug.com/angleproject/3766 [ mac passthrough ] conformance/textures/misc/tex-input-validation.html [ Failure ]
+crbug.com/989194 [ mac passthrough ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ Failure ]
+crbug.com/989194 [ mac passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+crbug.com/989194 [ mac passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
+crbug.com/989194 [ mac passthrough ] conformance/textures/misc/texture-upload-size.html [ Failure ]
+crbug.com/989194 [ mac passthrough ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
+
+# Mac / Passthrough command decoder / AMD
+crbug.com/angleproject/3767 [ mac passthrough amd ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
 
 ####################
 # Linux failures   #

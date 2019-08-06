@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -35,22 +36,15 @@ TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
   views::FlexLayout* layout =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetCollapseMargins(true)
       .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
-  title_chip_ = AddChildView(std::make_unique<views::View>());
-  title_chip_->SetBorder(views::CreateEmptyBorder(
+  title_ = AddChildView(std::make_unique<views::Label>());
+  title_->SetBorder(views::CreateEmptyBorder(
       provider->GetInsetsMetric(INSETS_TAB_GROUP_TITLE_CHIP)));
-  title_chip_->SetLayoutManager(std::make_unique<views::FillLayout>());
-  title_chip_->SetProperty(views::kFlexBehaviorKey,
-                           views::FlexSpecification::ForSizeRule(
-                               views::MinimumFlexSizeRule::kScaleToZero,
-                               views::MaximumFlexSizeRule::kPreferred));
-
-  title_ = title_chip_->AddChildView(std::make_unique<views::Label>());
+  // Color is set in VisualsChanged().
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetElideBehavior(gfx::FADE_TAIL);
@@ -58,16 +52,41 @@ TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
   VisualsChanged();
 }
 
-void TabGroupHeader::VisualsChanged() {
-  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  const TabGroupVisualData* data = controller_->GetVisualDataForGroup(group_);
-  title_chip_->SetBackground(views::CreateRoundedRectBackground(
-      data->color(), provider->GetCornerRadiusMetric(views::EMPHASIS_LOW)));
-  title_->SetEnabledColor(color_utils::GetColorWithMaxContrast(data->color()));
-  title_->SetText(data->title());
-}
-
 bool TabGroupHeader::OnMousePressed(const ui::MouseEvent& event) {
   TabGroupEditorBubbleView::Show(this, controller_, group_);
   return true;
+}
+
+TabSizeInfo TabGroupHeader::GetTabSizeInfo() const {
+  TabSizeInfo size_info;
+  // Group headers have a fixed width based on |title_|'s width.
+  const int width = CalculateWidth();
+  size_info.pinned_tab_width = width;
+  size_info.min_active_width = width;
+  size_info.min_inactive_width = width;
+  size_info.standard_width = width;
+  return size_info;
+}
+
+int TabGroupHeader::CalculateWidth() const {
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const int title_chip_outside_margin =
+      provider->GetDistanceMetric(DISTANCE_TAB_GROUP_TITLE_CHIP_MARGIN);
+  // We don't want tabs to visually overlap group headers, so we add that space
+  // to the width to compensate. We don't want to actually remove the overlap
+  // during layout however; that would cause an the margin to be visually uneven
+  // when the header is in the first slot and thus wouldn't overlap anything to
+  // the left.
+  const int overlap_margin = TabStyle::GetTabOverlap() * 2;
+  return title_->GetPreferredSize().width() + title_chip_outside_margin +
+         overlap_margin;
+}
+
+void TabGroupHeader::VisualsChanged() {
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const TabGroupVisualData* data = controller_->GetVisualDataForGroup(group_);
+  title_->SetBackground(views::CreateRoundedRectBackground(
+      data->color(), provider->GetCornerRadiusMetric(views::EMPHASIS_LOW)));
+  title_->SetEnabledColor(color_utils::GetColorWithMaxContrast(data->color()));
+  title_->SetText(data->title());
 }

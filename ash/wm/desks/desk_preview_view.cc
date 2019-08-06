@@ -26,7 +26,7 @@ constexpr int kDeskPreviewHeight = 64;
 constexpr int kBorderSize = 2;
 
 // The rounded corner radii, also in dips.
-constexpr gfx::RoundedCornersF kCornerRadii(2);
+constexpr gfx::RoundedCornersF kCornerRadii(4);
 
 // Holds data about the original desk's layers to determine what we should do
 // when we attempt to mirror those layers.

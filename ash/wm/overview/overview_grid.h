@@ -265,6 +265,14 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   bool MaybeDropItemOnDeskMiniView(const gfx::Point& screen_location,
                                    OverviewItem* drag_item);
 
+  // Prepares the |scroll_offset_min_| as a limit for |scroll_offset| from
+  // scrolling or positioning windows too far offscreen.
+  void PrepareScrollLimitMin();
+
+  // |delta| is used for updating |scroll_offset_| with new scroll values so
+  // that windows in tablet overview mode get positioned accordingly.
+  void UpdateScrollOffset(float delta);
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 
@@ -414,6 +422,14 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // True to skip |PositionWindows()|. Used to avoid O(n^2) layout
   // when reposition windows in tablet overview mode.
   bool suspend_reposition_ = false;
+
+  // Used by |GetWindowRectsForTabletModeLayout| to shift the x position of the
+  // overview items.
+  float scroll_offset_ = 0;
+
+  // Value to clamp |scroll_offset| so scrolling stays limited to windows that
+  // are visible in tablet overview mode.
+  float scroll_offset_min_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewGrid);
 };

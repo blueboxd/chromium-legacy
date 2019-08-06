@@ -4,6 +4,8 @@
 
 #include "ash/public/cpp/login_types.h"
 
+#include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h"
+
 namespace ash {
 
 EasyUnlockIconOptions::EasyUnlockIconOptions() = default;
@@ -45,7 +47,8 @@ PublicAccountInfo& PublicAccountInfo::operator=(
 PublicAccountInfo& PublicAccountInfo::operator=(PublicAccountInfo&& other) =
     default;
 
-LoginUserInfo::LoginUserInfo() = default;
+LoginUserInfo::LoginUserInfo()
+    : auth_type(proximity_auth::mojom::AuthType::OFFLINE_PASSWORD) {}
 LoginUserInfo::LoginUserInfo(const LoginUserInfo& other) = default;
 LoginUserInfo::LoginUserInfo(LoginUserInfo&& other) = default;
 LoginUserInfo::~LoginUserInfo() = default;

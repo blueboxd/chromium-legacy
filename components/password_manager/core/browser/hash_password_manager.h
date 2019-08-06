@@ -5,12 +5,17 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_HASH_PASSWORD_MANAGER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_HASH_PASSWORD_MANAGER_H_
 
+#include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "components/password_manager/core/browser/password_hash_data.h"
 
 class PrefService;
+
+using StateSubscription =
+    base::CallbackList<void(const std::string& username)>::Subscription;
 
 namespace password_manager {
 
@@ -19,9 +24,9 @@ namespace password_manager {
 // All methods should be called on UI thread.
 class HashPasswordManager {
  public:
-  HashPasswordManager() = default;
+  HashPasswordManager();
   explicit HashPasswordManager(PrefService* prefs);
-  ~HashPasswordManager() = default;
+  ~HashPasswordManager();
 
   bool SavePasswordHash(const std::string username,
                         const base::string16& password,
@@ -48,6 +53,11 @@ class HashPasswordManager {
 
   void set_prefs(PrefService* prefs) { prefs_ = prefs; }
 
+  // Adds a listener for when |kPasswordHashDataList| list might have changed.
+  // Should only be called on the UI thread.
+  virtual std::unique_ptr<StateSubscription> RegisterStateCallback(
+      const base::Callback<void(const std::string& username)>& callback);
+
  private:
   // Saves encrypted string |s| in a preference |pref_name|. Returns true on
   // success.
@@ -62,6 +72,10 @@ class HashPasswordManager {
   std::string RetrievedDecryptedStringFromPrefs(const std::string& pref_name);
 
   PrefService* prefs_ = nullptr;
+
+  // Callbacks when |kPasswordHashDataList| might have changed.
+  // Should only be accessed on the UI thread.
+  base::CallbackList<void(const std::string& username)> state_callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HashPasswordManager);
 };

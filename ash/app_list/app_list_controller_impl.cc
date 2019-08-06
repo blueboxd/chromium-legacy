@@ -47,7 +47,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -1174,7 +1174,7 @@ void AppListControllerImpl::NotifySearchResultsForLogging(
 }
 
 bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
-  if (!chromeos::switches::IsAssistantEnabled())
+  if (!chromeos::features::IsAssistantEnabled())
     return false;
 
   if (!Shell::Get()->assistant_controller()->IsAssistantReady())

@@ -71,7 +71,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
-import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -104,8 +104,6 @@ public class ManualFillingControllerTest {
     private ViewGroup mMockContentView;
     @Mock
     private TabModelSelector mMockTabModelSelector;
-    @Mock
-    private Drawable mMockIcon;
     @Mock
     private android.content.res.Resources mMockResources;
     @Mock
@@ -309,7 +307,7 @@ public class ManualFillingControllerTest {
         Configuration config = new Configuration();
         config.hardKeyboardHidden = HARDKEYBOARDHIDDEN_UNDEFINED;
         when(mMockResources.getConfiguration()).thenReturn(config);
-        PasswordAccessorySheetCoordinator.IconProvider.getInstance().setIconForTesting(mMockIcon);
+        AccessorySheetTabCoordinator.IconProvider.setIconForTesting(mock(Drawable.class));
         mController.initialize(mMockWindow, mMockKeyboardAccessory, mMockAccessorySheet);
     }
 

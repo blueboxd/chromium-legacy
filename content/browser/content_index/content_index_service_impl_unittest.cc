@@ -20,9 +20,9 @@ namespace {
 
 const url::Origin origin = url::Origin::Create(GURL("https://example.com"));
 
-SkBitmap CreateIcon(int dimension) {
+SkBitmap CreateIcon(int resolution) {
   SkBitmap icon;
-  icon.allocN32Pixels(dimension, dimension);
+  icon.allocN32Pixels(1, resolution);
   return icon;
 }
 
@@ -39,7 +39,7 @@ class ContentIndexServiceImplTest : public ::testing::Test {
     base::RunLoop run_loop;
     service_->Add(
         /* service_worker_registration_id= */ 42, /* description= */ nullptr,
-        icon, launch_url,
+        {icon}, launch_url,
         base::BindLambdaForTesting([&](blink::mojom::ContentIndexError error) {
           EXPECT_EQ(error, blink::mojom::ContentIndexError::INVALID_PARAMETER);
           run_loop.Quit();
@@ -66,22 +66,22 @@ TEST_F(ContentIndexServiceImplTest, NullIcon) {
 }
 
 TEST_F(ContentIndexServiceImplTest, LargeIcon) {
-  Add(CreateIcon(/* dimension= */ 2 *
-                 blink::mojom::ContentIndexService::kMaxIconDimension),
+  Add(CreateIcon(/* resolution= */ 2 *
+                 blink::mojom::ContentIndexService::kMaxIconResolution),
       origin.GetURL());
   EXPECT_EQ("Invalid icon", bad_message_observer().WaitForBadMessage());
 }
 
 TEST_F(ContentIndexServiceImplTest, InvalidLaunchUrl) {
-  Add(CreateIcon(/* dimension= */ 0.5 *
-                 blink::mojom::ContentIndexService::kMaxIconDimension),
+  Add(CreateIcon(/* resolution= */ 0.5 *
+                 blink::mojom::ContentIndexService::kMaxIconResolution),
       GURL());
   EXPECT_EQ("Invalid launch URL", bad_message_observer().WaitForBadMessage());
 }
 
 TEST_F(ContentIndexServiceImplTest, CrossOriginLaunchUrl) {
-  Add(CreateIcon(/* dimension= */ 0.5 *
-                 blink::mojom::ContentIndexService::kMaxIconDimension),
+  Add(CreateIcon(/* resolution= */ 0.5 *
+                 blink::mojom::ContentIndexService::kMaxIconResolution),
       GURL("https://evil.com"));
   EXPECT_EQ("Invalid launch URL", bad_message_observer().WaitForBadMessage());
 }

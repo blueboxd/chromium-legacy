@@ -22,7 +22,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/timer/timer.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "ui/display/screen.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -57,7 +57,7 @@ HomeButtonController::HomeButtonController(HomeButton* button)
   // session has already started. This could happen when an external monitor
   // is plugged in.
   if (shell->session_controller()->IsActiveUserSessionStarted() &&
-      chromeos::switches::IsAssistantEnabled()) {
+      chromeos::features::IsAssistantEnabled()) {
     InitializeVoiceInteractionOverlay();
   }
 }
@@ -166,7 +166,7 @@ void HomeButtonController::OnActiveUserSessionChanged(
   // Initialize voice interaction overlay when primary user session becomes
   // active.
   if (Shell::Get()->session_controller()->IsUserPrimary() &&
-      !assistant_overlay_ && chromeos::switches::IsAssistantEnabled()) {
+      !assistant_overlay_ && chromeos::features::IsAssistantEnabled()) {
     InitializeVoiceInteractionOverlay();
   }
 }
@@ -192,7 +192,7 @@ void HomeButtonController::OnVoiceInteractionStatusChanged(
       // If we are showing the bursting or waiting animation, no need to do
       // anything. Otherwise show the waiting animation now.
       // NOTE: No waiting animation for native assistant.
-      if (!chromeos::switches::IsAssistantEnabled() &&
+      if (!chromeos::features::IsAssistantEnabled() &&
           !assistant_overlay_->IsBursting() &&
           !assistant_overlay_->IsWaiting()) {
         assistant_overlay_->WaitingAnimation();

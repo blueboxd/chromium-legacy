@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -164,7 +165,7 @@ class ProfileNetworkContextServiceDiskCacheBrowsertest
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceDiskCacheBrowsertest,
                        DiskCacheLocation) {
   // Make sure command line switch is hooked up to the pref.
-  ASSERT_EQ(TempPath(), browser()->profile()->GetPrefs()->GetFilePath(
+  ASSERT_EQ(TempPath(), g_browser_process->local_state()->GetFilePath(
                             prefs::kDiskCacheDir));
 
   // Run a request that caches the response, to give the network service time to
@@ -195,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceDiskCacheBrowsertest,
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceDiskCacheBrowsertest,
                        DiskCacheSize) {
   // Make sure command line switch is hooked up to the pref.
-  ASSERT_EQ(kCacheSize, browser()->profile()->GetPrefs()->GetInteger(
+  ASSERT_EQ(kCacheSize, g_browser_process->local_state()->GetInteger(
                             prefs::kDiskCacheSize));
 
   // We don't have a great way of directly checking that the disk cache has the

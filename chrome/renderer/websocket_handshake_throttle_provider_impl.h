@@ -12,12 +12,17 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 
+namespace service_manager {
+class Connector;
+}
+
 // This must be constructed on the render thread, and then used and destructed
 // on a single thread, which can be different from the render thread.
 class WebSocketHandshakeThrottleProviderImpl final
     : public content::WebSocketHandshakeThrottleProvider {
  public:
-  WebSocketHandshakeThrottleProviderImpl();
+  explicit WebSocketHandshakeThrottleProviderImpl(
+      service_manager::Connector* connector);
   ~WebSocketHandshakeThrottleProviderImpl() override;
 
   // Implements content::WebSocketHandshakeThrottleProvider.

@@ -240,15 +240,6 @@ void ConnectivityCheckerImpl::OnSSLCertificateError(
     int net_error,
     const net::SSLInfo& ssl_info,
     bool fatal) {
-  if (url_request_context_->http_transaction_factory()
-          ->GetSession()
-          ->params()
-          .ignore_certificate_errors) {
-    LOG(WARNING) << "OnSSLCertificateError: ignore cert_status="
-                 << ssl_info.cert_status;
-    request->ContinueDespiteLastError();
-    return;
-  }
   DCHECK(task_runner_->BelongsToCurrentThread());
   LOG(ERROR) << "OnSSLCertificateError: cert_status=" << ssl_info.cert_status;
   url_request_context_->http_transaction_factory()

@@ -398,13 +398,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
   bool IsLogicalWidthAuto() const;
 
-  // When table headers are repeated, we need to know the offset from the block
-  // start of the fragmentation context to the first occurrence of the table
-  // header.
-  LayoutUnit BlockOffsetToFirstRepeatableHeader() const {
-    return block_offset_to_first_repeatable_header_;
-  }
-
   const char* GetName() const override { return "LayoutTable"; }
 
   // Whether a table has opaque foreground depends on many factors, e.g. border
@@ -603,7 +596,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   mutable unsigned collapsed_outer_border_start_overflow_;
   mutable unsigned collapsed_outer_border_end_overflow_;
 
-  LayoutUnit block_offset_to_first_repeatable_header_;
   LayoutUnit row_offset_from_repeating_header_;
   LayoutUnit row_offset_from_repeating_footer_;
   LayoutUnit old_available_logical_height_;

@@ -15,7 +15,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -47,8 +47,8 @@ class AssistantScreenContextControllerTest : public AshTestBase {
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        chromeos::switches::kAssistantFeature);
-    ASSERT_TRUE(chromeos::switches::IsAssistantEnabled());
+        chromeos::features::kAssistantFeature);
+    ASSERT_TRUE(chromeos::features::IsAssistantEnabled());
 
     AshTestBase::SetUp();
 

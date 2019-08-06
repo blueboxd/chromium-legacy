@@ -18,8 +18,8 @@ struct Feature;
 // Protocol that test cases can implement to be notified by AppLaunchManager.
 @protocol AppLaunchManagerObserver
 @optional
-// Observer method for when an app is (re)launched (due to not running, force
-// restart, or changing arguments).
+// Called when app gets relaunched (due to force restart, or changing the
+// arguments).
 - (void)appLaunchManagerDidRelaunchApp:(AppLaunchManager*)appLaunchManager;
 @end
 

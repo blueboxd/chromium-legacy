@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import org.chromium.chrome.tab_ui.R;
 
 /**
- * {@link TabGriViewHolder} for tab carousel. Owns the tab info card
+ * {@link TabGridViewHolder} for tab carousel. Owns the tab info card
  * and the associated view hierarchy.
  */
 final class TabCarouselViewHolder extends TabGridViewHolder {

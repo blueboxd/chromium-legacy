@@ -3258,7 +3258,7 @@
     Your Assistant is ready
   </message>
   <message name="IDS_ASSISTANT_READY_SCREEN_MESSAGE" desc="Message for Assistant ready screen.">
-    When your Chromebook is set up, press the Assistant button or say "Ok Google" to get help anytime. Go to Assistant settings to make changes.
+    When your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is set up, press the Assistant button or say "Ok Google" to get help anytime. Go to Assistant settings to make changes.
   </message>
   <message name="IDS_ASSISTANT_CONTINUE_BUTTON" desc="Continue button for asssitant optin flow.">
     Continue

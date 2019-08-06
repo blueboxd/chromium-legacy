@@ -10,6 +10,11 @@
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 
+<if expr="chromeos">
+<!-- TODO(crbug.com/986596): Remove OS icons when SplitSettings is complete. -->
+<link rel="import" href="../chromeos/os_icons.html">
+</if>
+
 <dom-module id="settings-menu">
   <template>
     <style include="settings-shared">
@@ -107,7 +112,7 @@
         role="navigation" on-click="onLinkClick_">
 <if expr="chromeos">
       <a href="/internet" hidden="[[!pageVisibility.internet]]">
-        <iron-icon icon="settings:network-wifi"></iron-icon>
+        <iron-icon icon="os-settings:network-wifi"></iron-icon>
         $i18n{internetPageTitle}
       </a>
       <a href="/bluetooth" hidden="[[!pageVisibility.bluetooth]]">
@@ -116,7 +121,7 @@
       </a>
       <a id="multidevice" href="/multidevice"
           hidden="[[!pageVisibility.multidevice]]">
-        <iron-icon icon="settings:multidevice-better-together-suite">
+        <iron-icon icon="os-settings:multidevice-better-together-suite">
         </iron-icon>
         $i18n{multidevicePageTitle}
       </a>
@@ -137,7 +142,7 @@
       </a>
 <if expr="chromeos">
       <a href="/device" hidden="[[!pageVisibility.device]]">
-        <iron-icon icon="settings:laptop-chromebook"></iron-icon>
+        <iron-icon icon="os-settings:laptop-chromebook"></iron-icon>
         $i18n{devicePageTitle}
       </a>
 </if>
@@ -147,15 +152,15 @@
       </a>
 <if expr="chromeos">
       <a href="/androidApps" hidden="[[!showAndroidApps]]">
-        <iron-icon icon="settings:play-prism"></iron-icon>
+        <iron-icon icon="os-settings:play-prism"></iron-icon>
         $i18n{androidAppsPageTitle}
       </a>
       <a href="/crostini" hidden="[[!showCrostini]]">
-        <iron-icon icon="settings:crostini-mascot"></iron-icon>
+        <iron-icon icon="os-settings:crostini-mascot"></iron-icon>
         $i18n{crostiniPageTitle}
       </a>
       <a href="/pluginVm" hidden="[[!showPluginVm]]">
-        <iron-icon icon="settings:plugin-vm"></iron-icon>
+        <iron-icon icon="os-settings:plugin-vm"></iron-icon>
         $i18n{pluginVmPageTitle}
       </a>
 </if>
@@ -183,7 +188,7 @@
             role="navigation" on-click="onLinkClick_">
 <if expr="chromeos">
           <a href="/dateTime" hidden="[[!pageVisibility.dateTime]]">
-            <iron-icon icon="settings:access-time"></iron-icon>
+            <iron-icon icon="os-settings:access-time"></iron-icon>
             $i18n{dateTimePageTitle}
           </a>
 </if>

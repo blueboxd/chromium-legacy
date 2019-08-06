@@ -48,6 +48,7 @@ class MockMojoMediaStreamDispatcherHost
 
   void ResetSessionId() { session_id_ = base::UnguessableToken::Create(); }
   void DoNotRunCallback() { do_not_run_cb_ = true; }
+  const base::UnguessableToken& session_id() { return session_id_; }
 
   int request_stream_counter() const { return request_stream_counter_; }
   int stop_audio_device_counter() const { return stop_audio_device_counter_; }

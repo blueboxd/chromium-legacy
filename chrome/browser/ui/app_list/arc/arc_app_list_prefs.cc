@@ -33,7 +33,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -1097,7 +1097,7 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
   if (app_id == arc::kPlayStoreAppId &&
       arc::IsRobotOrOfflineDemoAccountMode() &&
       !(chromeos::DemoSession::IsDeviceInDemoMode() &&
-        chromeos::switches::ShouldShowPlayStoreInDemoMode())) {
+        chromeos::features::ShouldShowPlayStoreInDemoMode())) {
     return;
   }
 

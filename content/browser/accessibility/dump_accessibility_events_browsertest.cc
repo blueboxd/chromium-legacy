@@ -797,7 +797,13 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("select-selected-add-remove.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest, DeleteSubtree) {
+// Test is flaky on Linux. See crbug.com/990847 for more details.
+#if defined(OS_LINUX)
+#define MAYBE_DeleteSubtree DISABLED_DeleteSubtree
+#else
+#define MAYBE_DeleteSubtree DeleteSubtree
+#endif
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest, MAYBE_DeleteSubtree) {
   RunEventTest(FILE_PATH_LITERAL("delete-subtree.html"));
 }
 

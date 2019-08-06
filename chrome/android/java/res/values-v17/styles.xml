@@ -580,8 +580,8 @@
         <item name="android:alpha">0.6</item>
     </style>
 
-    <!-- Contextual Search styles -->
-    <style name="ContextualSearchTextViewLayout">
+    <!-- Generic Overlay Panel styles -->
+    <style name="OverlayPanelTextViewLayout">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_gravity">bottom</item>
@@ -589,14 +589,21 @@
         <item name="android:visibility">invisible</item>
         <!-- 60dp padding minus 7dp for fading edge -->
         <item name="android:paddingStart">53dp</item>
-        <item name="android:paddingEnd">53dp</item>
+        <!-- padding for icons that can appear on the right end of the Bar. -->
+        <item name="android:paddingEnd">@dimen/overlay_panel_end_buttons_width</item>
     </style>
-    <style name="ContextualSearchTextView" parent="@style/TextAppearance.BlackTitle1">
+    <style name="OverlayPanelTextView" parent="@style/TextAppearance.BlackTitle1">
         <item name="android:layout_height">match_parent</item>
         <item name="android:ellipsize">end</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:singleLine">true</item>
     </style>
+
+    <!-- Contextual Search Overlay styles -->
+    <style name="ContextualSearchTextViewLayout" parent="@style/OverlayPanelTextViewLayout">
+        <item name="android:paddingEnd">@dimen/contextual_search_end_padding</item>
+    </style>
+    <style name="ContextualSearchTextView" parent="@style/OverlayPanelTextView" />
     <style name="ContextualSearchContextTextView">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">match_parent</item>

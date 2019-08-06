@@ -136,6 +136,7 @@ class WebTransmissionEncodingInfoHandler;
 class WebURLLoaderMockFactory;
 class WebURLResponse;
 class WebURLResponse;
+class WebUserMediaRequest;
 class WebVideoCaptureImplManager;
 
 namespace scheduler {
@@ -639,6 +640,9 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual base::Optional<int> GetAgcStartupMinimumVolume() {
     return base::nullopt;
   }
+
+  virtual void TrackGetUserMedia(
+      const blink::WebUserMediaRequest& web_request) {}
 
   // VideoCapture -------------------------------------------------------
 

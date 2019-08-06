@@ -63,7 +63,7 @@ class FakeInstanceID : public InstanceID {
   void GetToken(const std::string& authorized_entity,
                 const std::string& scope,
                 const std::map<std::string, std::string>& options,
-                bool is_lazy,
+                std::set<Flags> flags,
                 GetTokenCallback callback) override {
     std::move(callback).Run(fcm_token_, result_);
   }

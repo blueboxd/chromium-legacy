@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.module_installer.ModuleInterface;
@@ -25,11 +26,19 @@ import org.chromium.components.module_installer.ModuleInterface;
         impl = "org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegateImpl")
 public interface TabManagementDelegate {
     /**
+     * Create the {@link TasksSurface}
+     * @param activity The {@link ChromeActivity} that creates this surface.
+     * @return The {@TasksSurface}.
+     */
+    TasksSurface createTasksSurface(ChromeActivity activity);
+
+    /**
      * Create the {@link GridTabSwitcher}.
-     * @param activity The {@link ChromeActivity} creates this switcher.
+     * @param context The {@link Context} of this switcher.
+     * @param containerView The {@link ViewGroup} to add the switcher to.
      * @return The {@link GridTabSwitcher}.
      */
-    GridTabSwitcher createGridTabSwitcher(ChromeActivity activity);
+    GridTabSwitcher createGridTabSwitcher(ChromeActivity context, ViewGroup containerView);
 
     /**
      * Create the {@link TabGroupUi}.

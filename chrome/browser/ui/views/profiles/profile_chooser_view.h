@@ -17,7 +17,6 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
-#include "chrome/browser/ui/views/profiles/dice_accounts_menu.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -138,10 +137,6 @@ class ProfileChooserView : public ProfileMenuViewBase,
   // Clean-up done after an action was performed in the ProfileChooser.
   void PostActionPerformed(ProfileMetrics::ProfileDesktopMenu action_performed);
 
-  // Callbacks for DiceAccountsMenu.
-  void EnableSync(const base::Optional<AccountInfo>& account);
-  void SignOutAllWebAccounts();
-
   // Methods to keep track of the number of times the Dice sign-in promo has
   // been shown.
   int GetDiceSigninPromoShowCount() const;
@@ -194,10 +189,6 @@ class ProfileChooserView : public ProfileMenuViewBase,
 
   // Dice accounts used in the sync promo.
   std::vector<AccountInfo> dice_accounts_;
-
-  // Accounts submenu that is shown when |sync_to_another_account_button_| is
-  // pressed.
-  std::unique_ptr<DiceAccountsMenu> dice_accounts_menu_;
 
   const bool dice_enabled_;
 

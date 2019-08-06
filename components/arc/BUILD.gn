@@ -352,7 +352,6 @@ source_set("unit_tests") {
     "session/arc_data_remover_unittest.cc",
     "session/arc_session_impl_unittest.cc",
     "session/arc_session_runner_unittest.cc",
-    "session/arc_vm_client_adapter_unittest.cc",
     "timer/arc_timer_bridge_unittest.cc",
     "wake_lock/arc_wake_lock_bridge_unittest.cc",
   ]

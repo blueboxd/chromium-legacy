@@ -427,7 +427,8 @@ void NGBlockNode::FinishLayout(
   if (!IsBlockLayoutComplete(constraint_space, *layout_result))
     return;
 
-  box_->SetCachedLayoutResult(*layout_result, break_token);
+  if (!constraint_space.HasBlockFragmentation())
+    box_->SetCachedLayoutResult(*layout_result, break_token);
   if (block_flow) {
     auto* child = GetLayoutObjectForFirstChildNode(block_flow);
     bool has_inline_children =
@@ -721,9 +722,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   NGBoxStrut scrollbars = ComputeScrollbars(constraint_space, *this);
   NGBoxStrut padding = fragment.Padding();
   NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
-  const auto* break_token =
-      To<NGBlockBreakToken>(physical_fragment.BreakToken());
-  bool is_last_fragment = !break_token || break_token->IsFinished();
+  bool is_last_fragment = !physical_fragment.BreakToken();
 
   if (LIKELY(is_last_fragment))
     intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();

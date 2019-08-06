@@ -5,6 +5,10 @@
 #ifndef PDF_DOCUMENT_LAYOUT_H_
 #define PDF_DOCUMENT_LAYOUT_H_
 
+#include <vector>
+
+#include "pdf/draw_utils/coordinates.h"
+#include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 
 namespace chrome_pdf {
@@ -13,10 +17,12 @@ namespace chrome_pdf {
 // (possibly rotated) in a non-overlapping vertical sequence.
 //
 // All layout units are pixels.
-//
-// TODO(crbug.com/51472): Support multiple columns.
 class DocumentLayout final {
  public:
+  static const draw_utils::PageInsetSizes kSingleViewInsets;
+  static constexpr int32_t kBottomSeparator = 4;
+  static constexpr int32_t kHorizontalSeparator = 1;
+
   DocumentLayout();
 
   DocumentLayout(const DocumentLayout& other);
@@ -44,6 +50,12 @@ class DocumentLayout final {
 
   // Sets the layout's total size.
   void set_size(const pp::Size& size) { size_ = size; }
+
+  // Given |page_rects| and the layout's size is set to a single-view layout,
+  // return |page_rects| formatted for two-up view and update the layout's size
+  // to the size of the new two-up view layout.
+  std::vector<pp::Rect> GetTwoUpViewLayout(
+      const std::vector<pp::Rect>& page_rects);
 
   // Increases the layout's total height by |height|.
   void EnlargeHeight(int height);

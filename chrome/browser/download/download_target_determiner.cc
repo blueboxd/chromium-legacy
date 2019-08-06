@@ -49,6 +49,7 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/webplugininfo.h"
 #endif
 
@@ -614,12 +615,13 @@ enum ActionOnStalePluginList {
   IGNORE_IF_STALE_PLUGIN_LIST
 };
 
-void IsHandledBySafePlugin(content::ResourceContext* resource_context,
+void IsHandledBySafePlugin(int render_process_id,
+                           int routing_id,
                            const GURL& url,
                            const std::string& mime_type,
                            ActionOnStalePluginList stale_plugin_action,
                            const base::Callback<void(bool)>& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!mime_type.empty());
   using content::WebPluginInfo;
 
@@ -630,16 +632,16 @@ void IsHandledBySafePlugin(content::ResourceContext* resource_context,
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
   bool plugin_found = plugin_service->GetPluginInfo(
-      -1, -1, resource_context, url, url::Origin(), mime_type, false, &is_stale,
-      &plugin_info, &actual_mime_type);
+      render_process_id, routing_id, url, url::Origin(), mime_type, false,
+      &is_stale, &plugin_info, &actual_mime_type);
   if (is_stale && stale_plugin_action == RETRY_IF_STALE_PLUGIN_LIST) {
     // The GetPlugins call causes the plugin list to be refreshed. Once that's
     // done we can retry the GetPluginInfo call. We break out of this cycle
     // after a single retry in order to avoid retrying indefinitely.
     plugin_service->GetPlugins(base::BindOnce(
         &InvokeClosureAfterGetPluginCallback,
-        base::Bind(&IsHandledBySafePlugin, resource_context, url, mime_type,
-                   IGNORE_IF_STALE_PLUGIN_LIST, callback)));
+        base::Bind(&IsHandledBySafePlugin, render_process_id, routing_id, url,
+                   mime_type, IGNORE_IF_STALE_PLUGIN_LIST, callback)));
     return;
   }
   // In practice, we assume that retrying once is enough.
@@ -674,14 +676,19 @@ DownloadTargetDeterminer::Result
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &IsHandledBySafePlugin, GetProfile()->GetResourceContext(),
-          net::FilePathToFileURL(local_path_), mime_type_,
-          RETRY_IF_STALE_PLUGIN_LIST,
-          base::Bind(&DownloadTargetDeterminer::DetermineIfHandledSafelyDone,
-                     weak_ptr_factory_.GetWeakPtr())));
+  int render_process_id = -1;
+  int routing_id = -1;
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(download_);
+  if (web_contents) {
+    render_process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
+    routing_id = web_contents->GetMainFrame()->GetRoutingID();
+  }
+  IsHandledBySafePlugin(
+      render_process_id, routing_id, net::FilePathToFileURL(local_path_),
+      mime_type_, RETRY_IF_STALE_PLUGIN_LIST,
+      base::Bind(&DownloadTargetDeterminer::DetermineIfHandledSafelyDone,
+                 weak_ptr_factory_.GetWeakPtr()));
   return QUIT_DOLOOP;
 #else
   return CONTINUE;

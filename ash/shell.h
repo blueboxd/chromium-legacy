@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
@@ -312,10 +311,7 @@ class ASH_EXPORT Shell : public SessionObserver,
     return app_list_controller_.get();
   }
   AmbientController* ambient_controller() { return ambient_controller_.get(); }
-  AssistantController* assistant_controller() {
-    DCHECK(chromeos::switches::IsAssistantEnabled());
-    return assistant_controller_.get();
-  }
+  AssistantController* assistant_controller();
   AutoclickController* autoclick_controller() {
     return autoclick_controller_.get();
   }

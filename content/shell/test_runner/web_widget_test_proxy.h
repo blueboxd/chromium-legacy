@@ -56,6 +56,7 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
   template <typename... Args>
   explicit WebWidgetTestProxy(Args&&... args)
       : RenderWidget(std::forward<Args>(args)...) {}
+  ~WebWidgetTestProxy() override;
 
   // RenderWidget overrides.
   void BeginMainFrame(base::TimeTicks frame_time) override;
@@ -94,8 +95,6 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
   void SynchronouslyComposite(bool do_raster);
 
  private:
-  // RenderWidget does not have a public destructor.
-  ~WebWidgetTestProxy() override;
 
   TestRunnerForSpecificView* GetViewTestRunner();
   TestRunner* GetTestRunner();

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace ui {
 class Event;
@@ -15,11 +16,13 @@ class MouseEvent;
 }  // namespace ui
 
 namespace ash {
+class OverviewGrid;
 
 // This event handler receives events in the pre-target phase and takes care of
 // the following:
 //   - Disabling overview mode on touch release.
 //   - Disabling overview mode on mouse release.
+//   - Scrolling through tablet overview mode on scrolling.
 class OverviewGridPreEventHandler : public ui::EventHandler {
  public:
   OverviewGridPreEventHandler();
@@ -31,6 +34,13 @@ class OverviewGridPreEventHandler : public ui::EventHandler {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   void HandleClickOrTap(ui::Event* event);
+
+  void StartDrag(const gfx::Point& location);
+  void UpdateDrag(float scroll);
+
+  // Cached value of the OverviewGrid that handles a series of gesture scroll
+  // events.
+  OverviewGrid* grid_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewGridPreEventHandler);
 };

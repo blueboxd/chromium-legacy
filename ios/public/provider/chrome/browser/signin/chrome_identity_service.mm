@@ -4,6 +4,9 @@
 
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
+#include "base/strings/sys_string_conversions.h"
+#include "google_apis/gaia/gaia_auth_util.h"
+#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -107,6 +110,15 @@ void ChromeIdentityService::GetHostedDomainForIdentity(
 
 NSString* ChromeIdentityService::GetCachedHostedDomainForIdentity(
     ChromeIdentity* identity) {
+  // @gmail.com accounts are end consumer accounts so it is safe to return @""
+  // even when SSOProfileSource has a nil profile for |sso_identity|.
+  //
+  // Note: This is also needed during the sign-in flow as it avoids waiting for
+  // the profile of |sso_identity| to be fetched from the server.
+  if (gaia::ExtractDomainName(base::SysNSStringToUTF8(identity.userEmail)) ==
+      "gmail.com") {
+    return @"";
+  }
   return nil;
 }
 

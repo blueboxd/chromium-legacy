@@ -12,12 +12,11 @@
 
 namespace content {
 
-class ResourceContext;
 struct WebPluginInfo;
 
 class PluginRegistryImpl : public blink::mojom::PluginRegistry {
  public:
-  explicit PluginRegistryImpl(ResourceContext* resource_context);
+  explicit PluginRegistryImpl(int render_process_id);
   ~PluginRegistryImpl() override;
 
   void Bind(blink::mojom::PluginRegistryRequest request);
@@ -32,7 +31,7 @@ class PluginRegistryImpl : public blink::mojom::PluginRegistry {
                           GetPluginsCallback callback,
                           const std::vector<WebPluginInfo>& all_plugins);
 
-  ResourceContext* const resource_context_;
+  int render_process_id_;
   mojo::BindingSet<PluginRegistry> bindings_;
   base::TimeTicks last_plugin_refresh_time_;
   base::WeakPtrFactory<PluginRegistryImpl> weak_factory_{this};

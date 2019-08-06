@@ -28,7 +28,7 @@
 #include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
 #include "chrome/browser/chromeos/account_manager/account_migration_runner.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #endif
@@ -171,7 +171,7 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
       // TODO(sinhak): Remove the if-condition (and use
       // |MirrorAccountReconcilorDelegate|) when all Chrome OS users have been
       // migrated to Account Manager.
-      if (chromeos::switches::IsAccountManagerEnabled()) {
+      if (chromeos::features::IsAccountManagerEnabled()) {
         return std::make_unique<ChromeOSAccountReconcilorDelegate>(
             IdentityManagerFactory::GetForProfile(profile),
             chromeos::AccountManagerMigratorFactory::GetForBrowserContext(

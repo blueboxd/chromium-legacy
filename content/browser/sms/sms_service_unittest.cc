@@ -127,15 +127,15 @@ class Service {
 
     EXPECT_CALL(*dialog, Open(rfh, _, _))
         .WillOnce(
-            Invoke([&](content::RenderFrameHost*, base::OnceClosure on_continue,
+            Invoke([&](content::RenderFrameHost*, base::OnceClosure on_confirm,
                        base::OnceClosure on_cancel) {
-              on_continue_callback_ = std::move(on_continue);
+              on_confirm_callback_ = std::move(on_confirm);
             }));
 
     EXPECT_CALL(*dialog, SmsReceived()).WillOnce(Invoke([&]() {
-      // Simulates user clicking the "Continue" button to verify received
+      // Simulates user clicking the "Confirm" button to verify received
       // sms.
-      std::move(on_continue_callback_).Run();
+      std::move(on_confirm_callback_).Run();
     }));
 
     EXPECT_CALL(*dialog, Close()).WillOnce(Return());
@@ -154,7 +154,7 @@ class Service {
   NiceMock<MockSmsProvider> provider_;
   blink::mojom::SmsReceiverPtr service_ptr_;
   std::unique_ptr<SmsService> service_;
-  base::OnceClosure on_continue_callback_;
+  base::OnceClosure on_confirm_callback_;
 };
 
 class SmsServiceTest : public RenderViewHostTestHarness {
@@ -484,7 +484,7 @@ TEST_F(SmsServiceTest, Cancel) {
 
   EXPECT_CALL(*dialog, Open(main_rfh(), _, _))
       .WillOnce(
-          Invoke([](content::RenderFrameHost*, base::OnceClosure on_continue,
+          Invoke([](content::RenderFrameHost*, base::OnceClosure on_confirm,
                     base::OnceClosure on_cancel) {
             // Simulates the user pressing "Cancel".
             std::move(on_cancel).Run();
@@ -537,25 +537,24 @@ TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
   auto* dialog1 = new NiceMock<MockSmsDialog>();
   auto* dialog2 = new NiceMock<MockSmsDialog>();
 
-  base::OnceClosure on_continue_callback;
+  base::OnceClosure on_confirm_callback;
 
   EXPECT_CALL(*service.delegate(), CreateSmsDialog())
       .WillOnce(Return(ByMove(base::WrapUnique(dialog1))))
       .WillOnce(Return(ByMove(base::WrapUnique(dialog2))));
 
   EXPECT_CALL(*dialog1, Open(main_rfh(), _, _))
-      .WillOnce(Invoke([&on_continue_callback](content::RenderFrameHost*,
-                                               base::OnceClosure on_continue,
-                                               base::OnceClosure on_cancel) {
-        on_continue_callback = std::move(on_continue);
+      .WillOnce(Invoke([&on_confirm_callback](content::RenderFrameHost*,
+                                              base::OnceClosure on_confirm,
+                                              base::OnceClosure on_cancel) {
+        on_confirm_callback = std::move(on_confirm);
       }));
 
   EXPECT_CALL(*dialog2, Open(main_rfh(), _, _)).Times(1);
 
   EXPECT_CALL(*dialog1, SmsReceived())
-      .WillOnce(Invoke([&on_continue_callback]() {
-        std::move(on_continue_callback).Run();
-      }));
+      .WillOnce(Invoke(
+          [&on_confirm_callback]() { std::move(on_confirm_callback).Run(); }));
 
   EXPECT_CALL(*service.provider(), Retrieve())
       .WillOnce(Invoke([&service]() {
@@ -641,7 +640,7 @@ TEST_F(SmsServiceTest, RecordCancelOnSuccessTimeMetric) {
 
     EXPECT_CALL(*dialog, Open(main_rfh(), _, _))
         .WillOnce(
-            Invoke([](content::RenderFrameHost*, base::OnceClosure on_continue,
+            Invoke([](content::RenderFrameHost*, base::OnceClosure on_confirm,
                       base::OnceClosure on_cancel) {
               // Simulates the user pressing "Cancel".
               std::move(on_cancel).Run();
@@ -678,7 +677,7 @@ TEST_F(SmsServiceTest, RecordCancelOnSuccessTimeMetric) {
 
     EXPECT_CALL(*dialog, Open(main_rfh(), _, _))
         .WillOnce(Invoke([&on_cancel_callback](content::RenderFrameHost*,
-                                               base::OnceClosure on_continue,
+                                               base::OnceClosure on_confirm,
                                                base::OnceClosure on_cancel) {
           on_cancel_callback = std::move(on_cancel);
         }));

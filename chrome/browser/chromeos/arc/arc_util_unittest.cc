@@ -30,7 +30,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_oobe_configuration_client.h"
 #include "chromeos/tpm/stub_install_attributes.h"
@@ -711,7 +711,7 @@ TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoMode) {
 
 TEST_F(ChromeArcUtilTest, ArcStartModeDefaultDemoModeWithPlayStore) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatureState(chromeos::switches::kShowPlayInDemoMode,
+  feature_list.InitWithFeatureState(chromeos::features::kShowPlayInDemoMode,
                                     true /* enabled */);
   auto* command_line = base::CommandLine::ForCurrentProcess();
   command_line->InitFromArgv({"", "--arc-availability=installed"});

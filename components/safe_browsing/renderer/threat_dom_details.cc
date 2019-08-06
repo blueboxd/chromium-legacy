@@ -327,20 +327,16 @@ void ThreatDOMDetails::ExtractResources(
   ElementToNodeMap element_to_node_map;
   blink::WebElementCollection elements = document.All();
   blink::WebElement element = elements.FirstItem();
-  bool max_nodes_exceeded = false;
   for (; !element.IsNull(); element = elements.NextItem()) {
     if (ShouldHandleElement(element, tag_and_attributes_list_)) {
       HandleElement(element, tag_and_attributes_list_, details_node.get(),
                     resources, &element_to_node_map);
       if (resources->size() >= kMaxNodes) {
         // We have reached kMaxNodes, exit early.
-        max_nodes_exceeded = true;
         break;
       }
     }
   }
-  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.ThreatReport.MaxNodesExceededInFrame",
-                        max_nodes_exceeded);
   resources->push_back(std::move(details_node));
 }
 

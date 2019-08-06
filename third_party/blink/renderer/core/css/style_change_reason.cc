@@ -14,7 +14,6 @@ namespace style_change_reason {
 const char kActiveStylesheetsUpdate[] = "ActiveStylesheetsUpdate";
 const char kAnimation[] = "Animation";
 const char kAttribute[] = "Attribute";
-const char kCleanupPlaceholderStyles[] = "CleanupPlaceholderStyles";
 const char kControlValue[] = "ControlValue";
 const char kControl[] = "Control";
 const char kDeclarativeContent[] = "Extension declarativeContent.css";

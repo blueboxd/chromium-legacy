@@ -4171,65 +4171,6 @@
       'monochrome_apk_checker': {},
     },
 
-    'navigation_loader_on_ui_gtests': {
-      'navigation_ui_browser_tests': {
-        'args': [
-          '--enable-features=NavigationLoaderOnUI',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/navigation_loader_on_ui_browser_tests.filter',
-        ],
-        'swarming': {
-          'shards': 15,
-        },
-        'test': 'browser_tests',
-      },
-      'navigation_ui_components_browsertests': {
-        'args': [
-          '--enable-features=NavigationLoaderOnUI',
-        ],
-        'test': 'components_browsertests',
-      },
-      'navigation_ui_content_browsertests': {
-        'args': [
-          '--enable-features=NavigationLoaderOnUI',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/navigation_loader_on_ui_content_browsertests.filter',
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-        'test': 'content_browsertests',
-      },
-      'navigation_ui_extensions_browsertests': {
-        'args': [
-          '--enable-features=NavigationLoaderOnUI',
-        ],
-        'test': 'extensions_browsertests',
-      },
-    },
-    'navigation_loader_on_ui_isolated_scripts': {
-      'webkit_layout_tests': {
-        'args': [
-          '--additional-driver-flag=--enable-features=NavigationLoaderOnUI',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=NavigationLoaderOnUI',
-
-          # layout test failures are retried 3 times when '--test-list' is not
-          # passed, but 0 times when '--test-list' is passed. We want to always
-          # retry 3 times, so we explicitly specify it.
-          '--num-retries=3',
-        ],
-        'isolate_name': 'blink_web_tests_exparchive',
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 12,
-        },
-      },
-    },
-
     # These tests will be run on the main waterfall.
     'network_service_android_gtests': {
       'network_service_out_of_process_chrome_public_test_apk': {
@@ -4858,7 +4799,7 @@
           '-v',
           '--upload-results',
           '--output-format=histograms',
-          '--browser=release',
+          '--browser=release_x64',
         ],
         'isolate_name': 'vr_perf_tests',
         'merge': {
@@ -5324,6 +5265,7 @@
       'gpu_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
 
     'gpu_fyi_optional_linux_telemetry_tests': [
@@ -5569,14 +5511,12 @@
     ],
 
     'mojo_linux_gtests': [
-      'navigation_loader_on_ui_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
     ],
 
     'mojo_windows_gtests': [
       'mojo_windows_specific_gtests',
-      'navigation_loader_on_ui_gtests',
       'network_service_fyi_gtests',
       'network_service_in_process_gtests',
     ],

@@ -429,18 +429,19 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
   // Configure on-disk storage for non-OTR profiles. OTR profiles just use
   // default behavior (in memory storage, default sizes).
-  PrefService* prefs = profile_->GetPrefs();
   if (!in_memory) {
+    PrefService* local_state = g_browser_process->local_state();
     // Configure the HTTP cache path and size.
     base::FilePath base_cache_path;
     chrome::GetUserCacheDirectory(path, &base_cache_path);
-    base::FilePath disk_cache_dir = prefs->GetFilePath(prefs::kDiskCacheDir);
+    base::FilePath disk_cache_dir =
+        local_state->GetFilePath(prefs::kDiskCacheDir);
     if (!disk_cache_dir.empty())
       base_cache_path = disk_cache_dir.Append(base_cache_path.BaseName());
     network_context_params->http_cache_path =
         base_cache_path.Append(chrome::kCacheDirname);
     network_context_params->http_cache_max_size =
-        prefs->GetInteger(prefs::kDiskCacheSize);
+        local_state->GetInteger(prefs::kDiskCacheSize);
 
     // Currently this just contains HttpServerProperties, but that will likely
     // change.

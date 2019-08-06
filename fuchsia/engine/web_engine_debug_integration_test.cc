@@ -10,6 +10,7 @@
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/service_directory_client.h"
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
 #include "fuchsia/base/fit_adapter.h"
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/result_receiver.h"
@@ -93,7 +94,9 @@ class WebEngineDebugIntegrationTest : public testing::Test {
               fuchsia::web::ContextError::REMOTE_DEBUGGING_PORT_NOT_OPENED);
   }
 
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
 
   TestDebugListener dev_tools_listener_;
   fidl::Binding<fuchsia::web::DevToolsListener> dev_tools_listener_binding_;

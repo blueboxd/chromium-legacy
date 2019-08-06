@@ -12,10 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
-#include "chrome/services/cups_ipp_parser/public/cpp/ipp_converter.h"
-#include "chrome/services/cups_ipp_parser/public/mojom/ipp_parser.mojom.h"
 #include "chrome/services/cups_proxy/cups_proxy_service_delegate.h"
 #include "chrome/services/cups_proxy/public/cpp/ipp_messages.h"
+#include "chrome/services/ipp_parser/public/cpp/ipp_converter.h"
+#include "chrome/services/ipp_parser/public/mojom/ipp_parser.mojom.h"
 
 namespace cups_proxy {
 
@@ -33,7 +33,7 @@ class IppValidator {
   // Validates each of |to_validate|'s fields and returns a POD representation
   // of the IPP request. Returns empty Optional on failure.
   base::Optional<IppRequest> ValidateIppRequest(
-      cups_ipp_parser::mojom::IppRequestPtr to_validate);
+      ipp_parser::mojom::IppRequestPtr to_validate);
 
  private:
   base::Optional<HttpRequestLine> ValidateHttpRequestLine(
@@ -45,7 +45,7 @@ class IppValidator {
       const size_t http_content_length,
       const base::flat_map<std::string, std::string>& headers);
 
-  ipp_t* ValidateIppMessage(cups_ipp_parser::mojom::IppMessagePtr ipp_message);
+  ipp_t* ValidateIppMessage(ipp_parser::mojom::IppMessagePtr ipp_message);
 
   bool ValidateIppData(const std::vector<uint8_t>& ipp_data);
 

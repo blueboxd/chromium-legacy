@@ -55,9 +55,7 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
 
  private:
   // Finishes an async audio focus request.
-  void FinishAudioFocusRequest(AudioFocusType type);
-  void FinishInitialAudioFocusRequest(AudioFocusType type,
-                                      const base::UnguessableToken& request_id);
+  void FinishAudioFocusRequest(AudioFocusType type, bool success);
 
   // Ensures that |audio_focus_ptr_| is connected.
   void EnsureServiceConnection();
@@ -78,6 +76,9 @@ class AudioFocusDelegateDefault : public AudioFocusDelegate {
 
   // The last requested AudioFocusType by the associated |media_session_|.
   base::Optional<AudioFocusType> audio_focus_type_;
+
+  // ID to uniquely identify the audio focus delegate.
+  base::UnguessableToken const request_id_ = base::UnguessableToken::Create();
 };
 
 }  // anonymous namespace
@@ -105,7 +106,8 @@ AudioFocusDelegateDefault::RequestAudioFocus(AudioFocusType audio_focus_type) {
     request_client_remote_->RequestAudioFocus(
         session_info_.Clone(), audio_focus_type,
         base::BindOnce(&AudioFocusDelegateDefault::FinishAudioFocusRequest,
-                       base::Unretained(this), audio_focus_type));
+                       base::Unretained(this), audio_focus_type,
+                       true /* success */));
   } else {
     EnsureServiceConnection();
 
@@ -114,12 +116,11 @@ AudioFocusDelegateDefault::RequestAudioFocus(AudioFocusType audio_focus_type) {
         media_session_->AddRemote();
 
     audio_focus_ptr_->RequestGroupedAudioFocus(
-        request_client_remote_.BindNewPipeAndPassReceiver(),
+        request_id_, request_client_remote_.BindNewPipeAndPassReceiver(),
         std::move(media_session), session_info_.Clone(), audio_focus_type,
         GetAudioFocusGroupId(media_session_),
-        base::BindOnce(
-            &AudioFocusDelegateDefault::FinishInitialAudioFocusRequest,
-            base::Unretained(this), audio_focus_type));
+        base::BindOnce(&AudioFocusDelegateDefault::FinishAudioFocusRequest,
+                       base::Unretained(this), audio_focus_type));
   }
 
   // Return delayed as we make the async call to request audio focus.
@@ -155,18 +156,13 @@ void AudioFocusDelegateDefault::MediaSessionInfoChanged(
   session_info_ = std::move(session_info);
 }
 
-void AudioFocusDelegateDefault::FinishAudioFocusRequest(AudioFocusType type) {
+void AudioFocusDelegateDefault::FinishAudioFocusRequest(AudioFocusType type,
+                                                        bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request_client_remote_.is_bound());
 
   audio_focus_type_ = type;
-  media_session_->FinishSystemAudioFocusRequest(type, true /* result */);
-}
-
-void AudioFocusDelegateDefault::FinishInitialAudioFocusRequest(
-    AudioFocusType type,
-    const base::UnguessableToken& request_id) {
-  FinishAudioFocusRequest(type);
+  media_session_->FinishSystemAudioFocusRequest(type, success);
 }
 
 void AudioFocusDelegateDefault::EnsureServiceConnection() {

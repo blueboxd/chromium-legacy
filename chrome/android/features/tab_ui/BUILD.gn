@@ -20,6 +20,7 @@ android_library("java") {
   no_build_hooks = true
 
   java_files = [
+    "java/src/org/chromium/chrome/browser/tasks/TasksSurfaceCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_groups/TabGroupUtils.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/ClosableTabGridViewHolder.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/GridTabSwitcherCoordinator.java",

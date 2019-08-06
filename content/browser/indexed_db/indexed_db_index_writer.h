@@ -29,7 +29,7 @@ class IndexWriter {
   explicit IndexWriter(const blink::IndexedDBIndexMetadata& index_metadata);
 
   IndexWriter(const blink::IndexedDBIndexMetadata& index_metadata,
-              const blink::IndexedDBIndexKeys& index_keys);
+              const std::vector<blink::IndexedDBKey>& keys);
 
   bool VerifyIndexKeys(IndexedDBBackingStore* store,
                        IndexedDBBackingStore::Transaction* transaction,
@@ -59,7 +59,7 @@ class IndexWriter {
                         bool* allowed) const WARN_UNUSED_RESULT;
 
   const blink::IndexedDBIndexMetadata index_metadata_;
-  blink::IndexedDBIndexKeys index_keys_;
+  const std::vector<blink::IndexedDBKey> keys_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexWriter);
 };

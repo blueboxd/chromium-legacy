@@ -266,7 +266,12 @@ RenderViewHostImpl::~RenderViewHostImpl() {
         GetWidget()->GetRoutingID());
   }
 
+  // Destroy the RenderWidgetHost.
   GetWidget()->ShutdownAndDestroyWidget(false);
+  if (IsRenderViewLive()) {
+    // Destroy the RenderView, which will also destroy the RenderWidget.
+    GetProcess()->GetRendererInterface()->DestroyView(GetRoutingID());
+  }
 
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
 
@@ -373,6 +378,9 @@ bool RenderViewHostImpl::CreateRenderView(
   GetWidget()->GetVisualProperties(&params->visual_properties, &needs_ack);
   GetWidget()->SetInitialVisualProperties(params->visual_properties, needs_ack);
 
+  // The RenderView is owned by this process. This call must be accompanied by a
+  // DestroyView [see destructor] or else there will be a leak in the renderer
+  // process.
   GetProcess()->GetRendererInterface()->CreateView(std::move(params));
 
   // Let our delegate know that we created a RenderView.

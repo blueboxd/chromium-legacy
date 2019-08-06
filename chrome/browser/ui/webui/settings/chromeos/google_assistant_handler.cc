@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
@@ -77,7 +77,7 @@ void GoogleAssistantHandler::RegisterMessages() {
 void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
     const base::ListValue* args) {
   CHECK_EQ(0U, args->GetSize());
-  if (chromeos::switches::IsAssistantEnabled())
+  if (chromeos::features::IsAssistantEnabled())
     ash::OpenAssistantSettings();
 }
 

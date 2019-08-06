@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirectio
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
@@ -45,9 +44,6 @@ import java.util.List;
  */
 public class OverlayPanel extends OverlayPanelAnimation implements ActivityStateListener,
         EdgeSwipeHandler, GestureHandler, OverlayPanelContentFactory, SceneOverlay {
-
-    /** The extra dp added around the close button touch target. */
-    private static final int CLOSE_BUTTON_TOUCH_SLOP_DP = 5;
 
     /** The delay after which the hide progress will be hidden. */
     private static final long HIDE_PROGRESS_BAR_DELAY_MS = 1000 / 60 * 4;
@@ -154,7 +150,6 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     /**
      * @param context The current Android {@link Context}.
      * @param updateHost The {@link LayoutUpdateHost} used to request updates in the Layout.
-     * @param eventHost The {@link EventFilterHost} used to propagate events.
      * @param panelManager The {@link OverlayPanelManager} responsible for showing panels.
      */
     public OverlayPanel(
@@ -643,9 +638,9 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      */
     protected boolean isCoordinateInsideCloseButton(float x) {
         if (LocalizationUtils.isLayoutRtl()) {
-            return x <= (getCloseIconX() + getCloseIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP);
+            return x <= (getCloseIconX() + getCloseIconDimension() + mButtonPaddingDps);
         } else {
-            return x >= (getCloseIconX() - CLOSE_BUTTON_TOUCH_SLOP_DP);
+            return x >= (getCloseIconX() - mButtonPaddingDps);
         }
     }
 
@@ -654,9 +649,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * @return Whether the given |x| coordinate is inside the close button.
      */
     protected boolean isCoordinateInsideOpenTabButton(float x) {
-        float width = getOpenTabIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP;
-        return getOpenTabIconX() - CLOSE_BUTTON_TOUCH_SLOP_DP <= x
-                && x <= getOpenTabIconX() + width;
+        float width = getOpenTabIconDimension() + 2 * mButtonPaddingDps;
+        return getOpenTabIconX() - mButtonPaddingDps <= x && x <= getOpenTabIconX() + width;
     }
 
     /**

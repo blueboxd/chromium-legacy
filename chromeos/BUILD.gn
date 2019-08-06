@@ -239,6 +239,7 @@ if (is_cros_chrome_sdk) {
   tast_test("chrome_all_tast_tests") {
     # To disable a specific test, add it the following list.
     tast_disabled_tests = [
+      "security.SELinuxFilesARC",  # crbug.com/968155
       "ui.MashLogin",
       "ui.SingleProcessMashLogin",
     ]

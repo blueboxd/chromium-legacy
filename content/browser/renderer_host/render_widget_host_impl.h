@@ -120,6 +120,34 @@ struct TextInputState;
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
+//
+// Several core rendering primitives are mirrored between the browser and
+// renderer. These are RenderWidget, RenderFrame and RenderView. Their browser
+// counterparts are RenderWidgetHost, RenderFrameHost and RenderViewHost.
+//
+// For simplicity and clarity, we want the object ownership graph in the
+// renderer to mirror the object ownership graph in the browser. The IPC message
+// that tears down the renderer object graph should be targeted at the root
+// object, and should be sent by the destructor/finalizer of the root object in
+// the browser.
+//
+// Note: We must tear down the renderer object graph with a single IPC to avoid
+// inconsistencies in renderer state.
+//
+// RenderWidget represents a surface that can paint and receive input. It is
+// used in four contexts:
+//   * Main frame for webpage
+//   * Child frame for webpage
+//   * Popups
+//   * Pepper Fullscreen
+//
+// In the first two cases, the RenderFrame is not the root of the renderer
+// object graph. For the main frame, the root is the RenderView. For child
+// frames, the root is RenderFrame. As such, for the first two cases,
+// destruction of the RenderWidgetHost will not trigger destruction of the
+// RenderWidget.
+//
+// Note: We want to converge on RenderFrame always being the root.
 class CONTENT_EXPORT RenderWidgetHostImpl
     : public RenderWidgetHost,
       public FrameTokenMessageQueue::Client,
@@ -960,6 +988,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   RenderWidgetHostDelegate* delegate_;
 
   // The delegate of the owner of this object.
+  // This member is non-null if and only if this RenderWidgetHost is associated
+  // with a main frame RenderWidget.
   RenderWidgetHostOwnerDelegate* owner_delegate_ = nullptr;
 
   // Created during construction and guaranteed never to be NULL, but its

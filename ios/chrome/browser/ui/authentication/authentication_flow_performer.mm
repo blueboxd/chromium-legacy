@@ -139,11 +139,12 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
 - (void)fetchManagedStatus:(ios::ChromeBrowserState*)browserState
                forIdentity:(ChromeIdentity*)identity {
-  if (gaia::ExtractDomainName(gaia::CanonicalizeEmail(
-          base::SysNSStringToUTF8(identity.userEmail))) == "gmail.com") {
-    // Do nothing for @gmail.com addresses as they can't have a hosted domain.
-    // This avoids waiting for this step to complete (and a network call).
-    [_delegate didFetchManagedStatus:nil];
+  ios::ChromeIdentityService* identityService =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  NSString* hostedDomain =
+      identityService->GetCachedHostedDomainForIdentity(identity);
+  if (hostedDomain) {
+    [_delegate didFetchManagedStatus:hostedDomain];
     return;
   }
 

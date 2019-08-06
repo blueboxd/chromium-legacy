@@ -12,6 +12,23 @@ function runGenericSensorTests(sensorType,
                                verifyReading,
                                verifyRemappedReading,
                                featurePolicies) {
+  // Wraps callback and calls rejectFunc if callback throws an error.
+  class CallbackWrapper {
+    constructor(callback, rejectFunc) {
+      this.wrapperFunc_ = (args) => {
+        try {
+          callback(args);
+        } catch (e) {
+          rejectFunc(e);
+        }
+      }
+    }
+
+    get callback() {
+      return this.wrapperFunc_;
+    }
+  }
+
   sensor_test(sensorProvider => {
     sensorProvider.setGetSensorShouldFail(sensorType.name, true);
     let sensorObject = new sensorType;

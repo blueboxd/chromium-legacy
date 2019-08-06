@@ -26,7 +26,7 @@
 namespace cups_proxy {
 namespace {
 
-using ValueType = cups_ipp_parser::mojom::ValueType;
+using ValueType = ipp_parser::mojom::ValueType;
 
 // Initial version only supports english lcoales.
 // TODO(crbug.com/945409): Extending to supporting arbitrary locales.
@@ -56,8 +56,7 @@ std::vector<const char*> ConvertStrings(
 }
 
 // Depending on |type|, returns the number of values associated with |attr|.
-size_t GetAttributeValuesSize(
-    const cups_ipp_parser::mojom::IppAttributePtr& attr) {
+size_t GetAttributeValuesSize(const ipp_parser::mojom::IppAttributePtr& attr) {
   const auto& attr_value = attr->value;
   switch (attr->type) {
     case ValueType::DATE:
@@ -145,7 +144,7 @@ IppValidator::ValidateHttpHeaders(
 // ipp_attribute_validator.cc is unaware of, we drop unknown attributes, rather
 // than fail the request.
 ipp_t* IppValidator::ValidateIppMessage(
-    cups_ipp_parser::mojom::IppMessagePtr ipp_message) {
+    ipp_parser::mojom::IppMessagePtr ipp_message) {
   printing::ScopedIppPtr ipp = printing::WrapIpp(ippNew());
 
   // Fill ids.
@@ -164,7 +163,7 @@ ipp_t* IppValidator::ValidateIppMessage(
 
   // Fill attributes.
   for (size_t i = 0; i < ipp_message->attributes.size(); ++i) {
-    cups_ipp_parser::mojom::IppAttributePtr attribute =
+    ipp_parser::mojom::IppAttributePtr attribute =
         std::move(ipp_message->attributes[i]);
 
     size_t num_values = GetAttributeValuesSize(attribute);
@@ -284,7 +283,7 @@ IppValidator::IppValidator(base::WeakPtr<CupsProxyServiceDelegate> delegate)
 IppValidator::~IppValidator() = default;
 
 base::Optional<IppRequest> IppValidator::ValidateIppRequest(
-    cups_ipp_parser::mojom::IppRequestPtr to_validate) {
+    ipp_parser::mojom::IppRequestPtr to_validate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!delegate_) {
     // TODO(crbug/495409): Add fatal error option to bring down service.

@@ -149,6 +149,10 @@ Polymer({
     this.browserProxy_ = settings.SecurityKeysPINBrowserProxyImpl.getInstance();
     this.$.dialog.showModal();
 
+    Polymer.RenderStatus.afterNextRender(this, function() {
+      Polymer.IronA11yAnnouncer.requestAvailability();
+    });
+
     this.browserProxy_.startSetPIN().then(([success, errorCode]) => {
       if (success) {
         // Operation is complete. errorCode is a CTAP error code. See
@@ -335,6 +339,7 @@ Polymer({
       this.currentPINError_ = this.isValidPIN_(this.currentPIN_);
       if (this.currentPINError_ != '') {
         this.focusOn_(this.$.currentPIN);
+        this.fire('iron-announce', {message: this.currentPINError_});
         this.fire('ui-ready');  // for test synchronization.
         return;
       }
@@ -343,6 +348,7 @@ Polymer({
     this.newPINError_ = this.isValidPIN_(this.newPIN_);
     if (this.newPINError_ != '') {
       this.focusOn_(this.$.newPIN);
+      this.fire('iron-announce', {message: this.newPINError_});
       this.fire('ui-ready');  // for test synchronization.
       return;
     }
@@ -350,6 +356,7 @@ Polymer({
     if (this.newPIN_ != this.confirmPIN_) {
       this.confirmPINError_ = this.i18n('securityKeysPINMismatch');
       this.focusOn_(this.$.confirmPIN);
+      this.fire('iron-announce', {message: this.confirmPINError_});
       this.fire('ui-ready');  // for test synchronization.
       return;
     }
@@ -374,6 +381,7 @@ Polymer({
         this.currentPINError_ = this.mismatchError_(this.retries_);
         this.setPINButtonValid_ = true;
         this.focusOn_(this.$.currentPIN);
+        this.fire('iron-announce', {message: this.currentPINError_});
         this.fire('ui-ready');  // for test synchronization.
       } else {
         // Unknown error.

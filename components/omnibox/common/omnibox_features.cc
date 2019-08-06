@@ -240,17 +240,6 @@ const base::Feature kUIExperimentSwapTitleAndUrl{
 #endif
 };
 
-// Feature used for the vertical margin UI experiment, currently only used on
-// desktop platforms.
-const base::Feature kUIExperimentVerticalMargin{
-    "OmniboxUIExperimentVerticalMargin", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to limit the vertical margin UI experiment to non-touch
-// devices only. Has no effect if kUIExperimentVerticalMargin is not enabled.
-const base::Feature kUIExperimentVerticalMarginLimitToNonTouchOnly{
-    "OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Shows the "Search Google or type a URL" omnibox placeholder even when the
 // caret (text edit cursor) is showing / when focused. views::Textfield works
 // this way, as does <input placeholder="">. Omnibox and the NTP's "fakebox"

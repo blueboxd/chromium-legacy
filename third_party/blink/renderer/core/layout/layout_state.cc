@@ -116,12 +116,4 @@ LayoutState::~LayoutState() {
   }
 }
 
-LayoutUnit LayoutState::PageLogicalOffset(
-    const LayoutBox& child,
-    const LayoutUnit& child_logical_offset) const {
-  if (child.IsHorizontalWritingMode())
-    return pagination_offset_.Height() + child_logical_offset;
-  return pagination_offset_.Width() + child_logical_offset;
-}
-
 }  // namespace blink

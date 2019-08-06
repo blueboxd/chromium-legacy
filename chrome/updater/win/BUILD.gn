@@ -5,9 +5,11 @@
 import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
 
+# This target build the updater executable and its installer.
 group("win") {
   deps = [
     ":updater",
+    "//chrome/updater/win/installer:installer",
   ]
 }
 
@@ -25,6 +27,10 @@ executable("updater") {
     ":version_resources",
     "//build/win:default_exe_manifest",
     "//chrome/updater:common",
+  ]
+
+  data_deps = [
+    ":uninstall.cmd",
   ]
 }
 
@@ -67,14 +73,6 @@ source_set("code") {
     "//chrome/installer/util:with_no_strings",
     "//components/update_client",
   ]
-
-  data = [
-    "setup/uninstall.cmd",
-  ]
-
-  data_deps = [
-    ":uninstall.cmd",
-  ]
 }
 
 source_set("unittest") {
@@ -89,5 +87,9 @@ source_set("unittest") {
     ":code",
     "//base/test:test_support",
     "//testing/gtest",
+  ]
+
+  data_deps = [
+    "//chrome/updater/win/installer:installer_unittest",
   ]
 }

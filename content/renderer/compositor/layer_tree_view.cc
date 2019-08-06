@@ -198,23 +198,6 @@ void LayerTreeView::SetLayerTreeFrameSink(
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
-void LayerTreeView::UpdateBrowserControlsState(
-    cc::BrowserControlsState constraints,
-    cc::BrowserControlsState current,
-    bool animate) {
-  layer_tree_host_->UpdateBrowserControlsState(constraints, current, animate);
-}
-
-void LayerTreeView::SetBrowserControlsHeight(float top_height,
-                                             float bottom_height,
-                                             bool shrink) {
-  layer_tree_host_->SetBrowserControlsHeight(top_height, bottom_height, shrink);
-}
-
-void LayerTreeView::SetBrowserControlsShownRatio(float ratio) {
-  layer_tree_host_->SetBrowserControlsShownRatio(ratio);
-}
-
 void LayerTreeView::WillBeginMainFrame() {
   delegate_->WillBeginCompositorFrame();
 }

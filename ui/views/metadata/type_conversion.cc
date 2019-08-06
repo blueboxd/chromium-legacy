@@ -72,6 +72,12 @@ base::string16 TypeConverter<gfx::ShadowValues>::ToString(
   return ret;
 }
 
+base::string16 TypeConverter<gfx::Range>::ToString(
+    const gfx::Range& source_value) {
+  return base::ASCIIToUTF16(base::StringPrintf(
+      "{%i, %i}", source_value.GetMin(), source_value.GetMax()));
+}
+
 base::Optional<int8_t> TypeConverter<int8_t>::FromString(
     const base::string16& source_value) {
   int32_t ret = 0;
@@ -208,6 +214,19 @@ base::Optional<gfx::ShadowValues> TypeConverter<gfx::ShadowValues>::FromString(
       ret.emplace_back(gfx::Vector2d(x, y), blur, SkColorSetARGB(a, r, g, b));
   }
   return ret;
+}
+
+base::Optional<gfx::Range> TypeConverter<gfx::Range>::FromString(
+    const base::string16& source_value) {
+  const auto values =
+      base::SplitStringPiece(source_value, base::ASCIIToUTF16("{,}"),
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  int min, max;
+  if ((values.size() == 2) && base::StringToInt(values[0], &min) &&
+      base::StringToInt(values[1], &max)) {
+    return gfx::Range(min, max);
+  }
+  return base::nullopt;
 }
 
 }  // namespace metadata

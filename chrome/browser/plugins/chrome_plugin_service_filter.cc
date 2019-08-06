@@ -22,7 +22,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 
@@ -117,20 +116,18 @@ ChromePluginServiceFilter* ChromePluginServiceFilter::GetInstance() {
   return base::Singleton<ChromePluginServiceFilter>::get();
 }
 
-void ChromePluginServiceFilter::RegisterResourceContext(Profile* profile,
-                                                        const void* context) {
+void ChromePluginServiceFilter::RegisterProfile(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
-  resource_context_map_[context] = std::make_unique<ContextInfo>(
+  browser_context_map_[profile] = std::make_unique<ContextInfo>(
       PluginPrefs::GetForProfile(profile),
       HostContentSettingsMapFactory::GetForProfile(profile),
       FlashTemporaryPermissionTracker::Get(profile), profile);
 }
 
-void ChromePluginServiceFilter::UnregisterResourceContext(
-    const void* context) {
+void ChromePluginServiceFilter::UnregisterProfile(Profile* profile) {
   base::AutoLock lock(lock_);
-  resource_context_map_.erase(context);
+  browser_context_map_.erase(profile);
 }
 
 void ChromePluginServiceFilter::OverridePluginForFrame(
@@ -165,7 +162,6 @@ void ChromePluginServiceFilter::AuthorizeAllPlugins(
 bool ChromePluginServiceFilter::IsPluginAvailable(
     int render_process_id,
     int render_frame_id,
-    const void* context,
     const GURL& plugin_content_url,
     const url::Origin& main_frame_origin,
     content::WebPluginInfo* plugin) {
@@ -184,12 +180,17 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
     }
   }
 
+  content::RenderProcessHost* rph =
+      content::RenderProcessHost::FromID(render_process_id);
+  if (!rph)
+    return false;
+
   // Check whether the plugin is disabled.
-  auto context_info_it = resource_context_map_.find(context);
+  auto context_info_it = browser_context_map_.find(rph->GetBrowserContext());
   // The context might not be found because RenderFrameMessageFilter might
   // outlive the Profile (the context is unregistered during the Profile
   // destructor).
-  if (context_info_it == resource_context_map_.end())
+  if (context_info_it == browser_context_map_.end())
     return false;
 
   const ContextInfo* context_info = context_info_it->second.get();

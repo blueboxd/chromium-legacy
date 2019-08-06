@@ -28,7 +28,8 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
       NGLayoutInputNode node,
       LayoutUnit used_block_size,
       const NGBreakTokenVector& child_break_tokens,
-      bool has_last_resort_break = false) {
+      bool has_last_resort_break,
+      bool has_seen_all_children) {
     // We store the children list inline in the break token as a flexible
     // array. Therefore, we need to make sure to allocate enough space for
     // that array here, which requires a manual allocation + placement new.
@@ -37,17 +38,8 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
             child_break_tokens.size() * sizeof(NGBreakToken*),
         ::WTF::GetStringWithTypeName<NGBlockBreakToken>());
     new (data) NGBlockBreakToken(node, used_block_size, child_break_tokens,
-                                 has_last_resort_break);
+                                 has_last_resort_break, has_seen_all_children);
     return base::AdoptRef(static_cast<NGBlockBreakToken*>(data));
-  }
-
-  // Creates a break token for a node which cannot produce any more fragments.
-  static scoped_refptr<NGBlockBreakToken> Create(
-      NGLayoutInputNode node,
-      LayoutUnit used_block_size,
-      bool has_last_resort_break = false) {
-    return base::AdoptRef(
-        new NGBlockBreakToken(node, used_block_size, has_last_resort_break));
   }
 
   // Creates a break token for a node that needs to produce its first fragment
@@ -80,6 +72,12 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
 
   bool HasLastResortBreak() const { return has_last_resort_break_; }
 
+  // Return true if all children have been "seen". When we have reached this
+  // point, and resume layout in a fragmentainer, we should only process child
+  // break tokens, if any, and not attempt to start laying out nodes that don't
+  // have one (since all children are either finished, or have a break token).
+  bool HasSeenAllChildren() const { return has_seen_all_children_; }
+
   // The break tokens for children of the layout node.
   //
   // Each child we have visited previously in the block-flow layout algorithm
@@ -106,11 +104,8 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   NGBlockBreakToken(NGLayoutInputNode node,
                     LayoutUnit used_block_size,
                     const NGBreakTokenVector& child_break_tokens,
-                    bool has_last_resort_break);
-
-  NGBlockBreakToken(NGLayoutInputNode node,
-                    LayoutUnit used_block_size,
-                    bool has_last_resort_break);
+                    bool has_last_resort_break,
+                    bool has_seen_all_children);
 
   explicit NGBlockBreakToken(NGLayoutInputNode node);
 

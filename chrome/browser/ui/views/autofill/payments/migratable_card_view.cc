@@ -63,9 +63,11 @@ MigratableCardView::MigratableCardView(
       CONTEXT_BODY_TEXT_SMALL, ChromeTextStyle::STYLE_RED);
 
   checkbox_uncheck_text_container_->AddChildView(checkbox_uncheck_text_);
+  // TODO(estade): Check whether kColorId_BubbleFooterBackground can be used for
+  // the colors here.
   checkbox_uncheck_text_container_->SetBackground(views::CreateSolidBackground(
-      GetNativeTheme()->SystemDarkModeEnabled() ? gfx::kGoogleGrey800
-                                                : gfx::kGoogleGrey050));
+      GetNativeTheme()->ShouldUseDarkColors() ? gfx::kGoogleGrey800
+                                              : gfx::kGoogleGrey050));
   checkbox_uncheck_text_container_->SetVisible(false);
 
   AddChildView(checkbox_uncheck_text_container_);
@@ -123,8 +125,8 @@ MigratableCardView::GetMigratableCardDescriptionView(
       auto* migration_succeeded_image = new views::ImageView();
       migration_succeeded_image->SetImage(gfx::CreateVectorIcon(
           vector_icons::kCheckCircleIcon, kMigrationResultImageSize,
-          GetNativeTheme()->SystemDarkModeEnabled() ? gfx::kGoogleGreen200
-                                                    : gfx::kGoogleGreen700));
+          GetNativeTheme()->ShouldUseDarkColors() ? gfx::kGoogleGreen200
+                                                  : gfx::kGoogleGreen700));
       migratable_card_description_view->AddChildView(migration_succeeded_image);
       break;
     }
@@ -132,8 +134,8 @@ MigratableCardView::GetMigratableCardDescriptionView(
       auto* migration_failed_image = new views::ImageView();
       migration_failed_image->SetImage(gfx::CreateVectorIcon(
           vector_icons::kErrorIcon, kMigrationResultImageSize,
-          GetNativeTheme()->SystemDarkModeEnabled() ? gfx::kGoogleRed300
-                                                    : gfx::kGoogleRed700));
+          GetNativeTheme()->ShouldUseDarkColors() ? gfx::kGoogleRed300
+                                                  : gfx::kGoogleRed700));
       migratable_card_description_view->AddChildView(migration_failed_image);
       break;
     }

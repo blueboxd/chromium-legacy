@@ -1617,6 +1617,7 @@
       'ANGLE GPU Win10 x64 Release (Intel HD 630)',
       'Optional Win10 x64 Release (Intel HD 630)',
       'Win10 FYI x64 Release (Intel HD 630)',
+      'Win10 FYI x64 Release (Intel UHD 630)',
       'Win10 FYI x64 Exp Release (Intel HD 630)',
     ],
   },
@@ -1771,7 +1772,7 @@
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'args': [
           '--release',
-          '--additional-driver-flag=--enable-blink-features=HeapConcurrentMarking',
+          '--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking',
         ],
       },
       'linux-blink-heap-unified-gc': {
@@ -1831,11 +1832,6 @@
       'WebKit Linux layout_ng Dummy Builder': {
         'args': [
           '--additional-driver-flag=--disable-blink-features=LayoutNG',
-        ],
-      },
-      'WebKit Linux root_layer_scrolls Dummy Builder': {
-        'args': [
-          '--additional-driver-flag=--root-layer-scrolls',
         ],
       },
       # chromium.linux
@@ -1932,11 +1928,6 @@
           '--enable-sanitizer',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            },
-          ],
           'shards': 20,
         },
       },
@@ -1949,11 +1940,6 @@
           '--enable-leak-detection',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            },
-          ],
           'shards': 10,
         },
       },
@@ -1966,24 +1952,10 @@
           '--enable-sanitizer',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            },
-          ],
           'expiration': 36000,
           'hard_timeout': 10800,
           'io_timeout': 3600,
           'shards': 20,
-        },
-      },
-      'WebKit Win10': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-10-15063',
-            },
-          ],
         },
       },
       # chromium.win

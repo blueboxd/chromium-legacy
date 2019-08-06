@@ -34,6 +34,7 @@ test("fuchsia_mojo_unittests") {
   deps = [
     ":example_interfaces",
     "//base:testfidl",
+    "//base/test:test_support",
     "//mojo/core/test:run_all_unittests",
     "//mojo/public/cpp/test_support:test_utils",
     "//testing/gtest",

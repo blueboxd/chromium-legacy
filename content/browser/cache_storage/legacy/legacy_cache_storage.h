@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage_cache_observer.h"
+#include "content/browser/cache_storage/cache_storage_scheduler_types.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage_cache.h"
 
 namespace base {
@@ -119,8 +120,8 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
 
   // The functions below are for tests to verify that the operations run
   // serially.
-  void StartAsyncOperationForTesting();
-  void CompleteAsyncOperationForTesting();
+  CacheStorageSchedulerId StartAsyncOperationForTesting();
+  void CompleteAsyncOperationForTesting(CacheStorageSchedulerId id);
 
   // Removes the manager reference. Called before this storage is deleted by the
   // manager, since it is removed from manager's storage map before deleting.
@@ -294,6 +295,8 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
 
   // The owner that this CacheStorage is associated with.
   CacheStorageOwner owner_;
+
+  CacheStorageSchedulerId init_id_ = -1;
 
   // The manager that owns this cache storage. Only set to null by
   // RemoveManager() when this cache storage is being deleted.

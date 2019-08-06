@@ -36,6 +36,7 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
 
  private:
   void CreateView(mojom::CreateViewParamsPtr) override { NOTREACHED(); }
+  void DestroyView(int32_t) override { NOTREACHED(); }
   void CreateFrame(mojom::CreateFrameParamsPtr) override { NOTREACHED(); }
   void SetUpEmbeddedWorkerChannelForServiceWorker(
       blink::mojom::EmbeddedWorkerInstanceClientRequest client_request)

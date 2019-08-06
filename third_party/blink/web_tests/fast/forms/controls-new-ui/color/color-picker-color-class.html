@@ -18,11 +18,17 @@
 
 testEquals();
 testHexToRGB();
-testRGBToHex()
+testRGBToHex();
+testRGBToHSL();
+testHSLToRGB();
+testHexToHSL();
+testHSLToHex();
 testHexValueGetter();
 testRGBValueGetters();
+testHSLValueGetters();
 testAsHex();
 testAsRGB();
+testAsHSL();
 
 function testEquals() {
   test(() => {
@@ -34,12 +40,32 @@ function testEquals() {
   }, 'new Color(\'rgb(255,255,255)\').equals(new Color(ColorFormat.RGB, 255, 255, 255))');
 
   test(() => {
+    assert_true(new Color('hsl(117,82%,55%)').equals(new Color(ColorFormat.HSL, 117, 82, 55)));
+  }, 'new Color(\'hsl(117,82%,55%)\').equals(new Color(ColorFormat.RGB, 117, 82, 55))');
+
+  test(() => {
     assert_true(new Color('#caebca').equals(new Color(ColorFormat.RGB, 202, 235, 202)));
   }, 'new Color(\'#caebca\').equals(new Color(ColorFormat.RGB, 202, 235, 202))');
 
   test(() => {
     assert_true(new Color(ColorFormat.RGB, 46, 224, 255).equals(new Color('#2ee0ff')));
   }, 'new Color(\'new Color(\'rgb(46,224,255)\').equals(new Color(\'#2ee0ff\')))');
+
+  test(() => {
+    assert_true(new Color('hsl(195, 100%, 50%)').equals(new Color(ColorFormat.HEX, '00bfff')));
+  }, 'new Color(\'hsl(195, 100%, 50%)\').equals(new Color(ColorFormat.HEX, \'00bfff\'))');
+
+  test(() => {
+    assert_true(new Color('#140221').equals(new Color(ColorFormat.HSL, 275, 86, 7)));
+  }, 'new Color(\'#140221\').equals(new Color(ColorFormat.HSL, 275, 86, 7))');
+
+  test(() => {
+    assert_true(new Color(ColorFormat.RGB, 81, 97, 164).equals(new Color(ColorFormat.HSL, 228, 34, 48)));
+  }, 'new Color(\'new Color(ColorFormat.RGB, 81, 97, 164).equals(new Color(ColorFormat.HSL, 228, 34, 48)))');
+
+  test(() => {
+    assert_true(new Color('rgb(142, 197, 32)').equals(new Color('hsl(80,72%,45%)')));
+  }, 'new Color(\'rgb(142, 197, 32)\').equals(new Color(\'hsl(80,72%,45%)\'))');
 }
 
 function testHexToRGB() {
@@ -118,6 +144,90 @@ function testRGBToHex() {
   }, 'Color.rgbToHex(169, 245, 192)');
 }
 
+function testRGBToHSL() {
+  test(() => {
+    assert_equals(JSON.stringify([0, 0, 0]), JSON.stringify(Color.rgbToHSL(0, 0, 0).map(Math.round)));
+  }, 'Color.rgbToHSL(0, 0, 0).map(Math.round)');
+
+  test(() => {
+    assert_equals(JSON.stringify([0, 0, 100]), JSON.stringify(Color.rgbToHSL(255, 255, 255).map(Math.round)));
+  }, 'Color.rgbToHSL(255, 255, 255).map(Math.round)');
+
+  test(() => {
+    assert_equals(JSON.stringify([98, 49, 31]), JSON.stringify(Color.rgbToHSL(70, 119, 41).map(Math.round)));
+  }, 'Color.rgbToHSL(70, 119, 41).map(Math.round)');
+
+  test(() => {
+    assert_equals(JSON.stringify([299, 91, 44]), JSON.stringify(Color.rgbToHSL(212, 10, 214).map(Math.round)));
+  }, 'Color.rgbToHSL(212, 10, 214).map(Math.round)');
+
+  test(() => {
+    assert_equals(JSON.stringify([80, 72, 45]), JSON.stringify(Color.rgbToHSL(142, 197, 32).map(Math.round)));
+  }, 'Color.rgbToHSL(142, 197, 32).map(Math.round)');
+}
+
+function testHSLToRGB() {
+  test(() => {
+    assert_equals(JSON.stringify([0, 0, 0]), JSON.stringify(Color.hslToRGB(0, 0, 0).map(Math.round)));
+  }, 'Color.hslToRGB(0, 0, 0).map(Math.round)');
+
+  test(() => {
+    assert_equals(JSON.stringify([255, 255, 255]), JSON.stringify(Color.hslToRGB(0, 0, 100).map(Math.round)));
+  }, 'Color.hslToRGB(0, 0, 100).map(Math.round)');
+
+  test(() => {
+    assert_equals(JSON.stringify([63, 75, 65]), JSON.stringify(Color.hslToRGB(133, 9, 27).map(Math.round)));
+  }, 'Color.hslToRGB(133, 9, 27).map(Math.round)');
+
+  test(() => {
+    assert_equals(JSON.stringify([37, 250, 254]), JSON.stringify(Color.hslToRGB(181, 99, 57).map(Math.round)));
+  }, 'Color.hslToRGB(181, 99, 57).map(Math.round)');
+
+  test(() => {
+    assert_equals(JSON.stringify([142, 197, 32]), JSON.stringify(Color.hslToRGB(80, 72, 45).map(Math.round)));
+  }, 'Color.hslToRGB(80, 72, 45).map(Math.round)');
+}
+
+function testHexToHSL() {
+  test(() => {
+    assert_equals(JSON.stringify([0, 0, 0]), JSON.stringify(Color.hexToHSL('000000').map(Math.round)));
+  }, 'Color.hexToHSL(\'000000\').map(Math.round)');
+
+  test(() => {
+    assert_equals(JSON.stringify([0, 0, 100]), JSON.stringify(Color.hexToHSL('ffffff').map(Math.round)));
+  }, 'Color.hexToHSL(\'ffffff\').map(Math.round)');
+
+  test(() => {
+    assert_equals(JSON.stringify([162, 43, 66]), JSON.stringify(Color.hexToHSL('83ceb7').map(Math.round)));
+  }, 'Color.hexToHSL(\'83ceb7\').map(Math.round)');
+
+  test(() => {
+    assert_equals(JSON.stringify([80, 72, 45]), JSON.stringify(Color.hexToHSL('8ec520').map(Math.round)));
+  }, 'Color.hexToHSL(\'8ec520\').map(Math.round)');
+}
+
+function testHSLToHex() {
+  test(() => {
+    assert_equals('000000', Color.hslToHex(0, 0, 0));
+  }, 'Color.hslToHex(0, 0, 0)');
+
+  test(() => {
+    assert_equals('ffffff', Color.hslToHex(0, 0, 100));
+  }, 'Color.hslToHex(0, 0, 100)');
+
+  test(() => {
+    assert_equals('672caf', Color.hslToHex(267, 60, 43));
+  }, 'Color.hslToHex(267, 60, 43)');
+
+  test(() => {
+    assert_equals('dddecf', Color.hslToHex(63, 18, 84));
+  }, 'Color.hslToHex(63, 18, 84)');
+
+  test(() => {
+    assert_equals('8ec520', Color.hslToHex(80, 72, 45));
+  }, 'Color.hslToHex(80, 72, 45)');
+}
+
 function testHexValueGetter() {
   test(() => {
     assert_equals('1f8069', new Color('#1f8069').hexValue);
@@ -134,6 +244,14 @@ function testHexValueGetter() {
   test(() => {
     assert_equals('17679c', new Color(ColorFormat.RGB, 23, 103, 156).hexValue);
   }, 'new Color(ColorFormat.RGB, 23, 103, 156).hexValue');
+
+  test(() => {
+    assert_equals('c505f5', new Color('hsl(288,96%,49%)').hexValue);
+  }, 'new Color(\'hsl(288,96%,49%)\').hexValue');
+
+  test(() => {
+    assert_equals('388f50', new Color(ColorFormat.HSL, 137, 44, 39).hexValue);
+  }, 'new Color(ColorFormat.HSL, 137, 44, 39).hexValue');
 }
 
 function testRGBValueGetters() {
@@ -184,6 +302,104 @@ function testRGBValueGetters() {
   test(() => {
     assert_equals(72, new Color(ColorFormat.RGB, 65, 84, 72).bValue);
   }, 'new Color(ColorFormat.RGB, 65, 84, 72).bValue');
+
+  test(() => {
+    assert_equals(20, new Color('hsl(116,79%,25%)').rValue);
+  }, 'new Color(\'hsl(116,79%,25%)\').rValue');
+
+  test(() => {
+    assert_equals(114, new Color('hsl(116,79%,25%)').gValue);
+  }, 'new Color(\'hsl(116,79%,25%)\').gValue');
+
+  test(() => {
+    assert_equals(13, new Color('hsl(116,79%,25%)').bValue);
+  }, 'new Color(\'hsl(116,79%,25%)\').bValue');
+
+  test(() => {
+    assert_equals(236, new Color(ColorFormat.HSL, 301, 64, 79).rValue);
+  }, 'new Color(ColorFormat.HSL, 301, 64, 79).rValue');
+
+  test(() => {
+    assert_equals(167, new Color(ColorFormat.HSL, 301, 64, 79).gValue);
+  }, 'new Color(ColorFormat.HSL, 301, 64, 79).gValue');
+
+  test(() => {
+    assert_equals(235, new Color(ColorFormat.HSL, 301, 64, 79).bValue);
+  }, 'new Color(ColorFormat.HSL, 301, 64, 79).bValue');
+}
+
+function testHSLValueGetters() {
+  test(() => {
+    assert_equals(61, new Color('#e5e73d').hValue);
+  }, 'new Color(\'#e5e73d\').hValue');
+
+  test(() => {
+    assert_equals(78, new Color('#e5e73d').sValue);
+  }, 'new Color(\'#e5e73d\').sValue');
+
+  test(() => {
+    assert_equals(57, new Color('#e5e73d').lValue);
+  }, 'new Color(\'#e5e73d\').lValue');
+
+  test(() => {
+    assert_equals(111, new Color(ColorFormat.HEX, '61a755').hValue);
+  }, 'new Color(ColorFormat.HEX, \'61a755\').hValue');
+
+  test(() => {
+    assert_equals(33, new Color(ColorFormat.HEX, '61a755').sValue);
+  }, 'new Color(ColorFormat.HEX, \'61a755\').sValue');
+
+  test(() => {
+    assert_equals(49, new Color(ColorFormat.HEX, '61a755').lValue);
+  }, 'new Color(ColorFormat.HEX, \'61a755\').lValue');
+
+  test(() => {
+    assert_equals(210, new Color('rgb(156,172,188)').hValue);
+  }, 'new Color(\'rgb(156,172,188)\').hValue');
+
+  test(() => {
+    assert_equals(19, new Color('rgb(156,172,188)').sValue);
+  }, 'new Color(\'rgb(156,172,188)\').sValue');
+
+  test(() => {
+    assert_equals(67, new Color('rgb(156,172,188)').lValue);
+  }, 'new Color(\'rgb(156,172,188)\').lValue');
+
+  test(() => {
+    assert_equals(3, new Color(ColorFormat.RGB, 212, 34, 24).hValue);
+  }, 'new Color(ColorFormat.RGB, 212, 34, 24).hValue');
+
+  test(() => {
+    assert_equals(80, new Color(ColorFormat.RGB, 212, 34, 24).sValue);
+  }, 'new Color(ColorFormat.RGB, 212, 34, 24).sValue');
+
+  test(() => {
+    assert_equals(46, new Color(ColorFormat.RGB, 212, 34, 24).lValue);
+  }, 'new Color(ColorFormat.RGB, 212, 34, 24).lValue');
+
+  test(() => {
+    assert_equals(178, new Color('hsl(178,70%,63%)').hValue);
+  }, 'new Color(\'hsl(178,70%,63%)\').hValue');
+
+  test(() => {
+    assert_equals(70, new Color('hsl(178,70%,63%)').sValue);
+  }, 'new Color(\'hsl(178,70%,63%)\').sValue');
+
+  test(() => {
+    assert_equals(63, new Color('hsl(178,70%,63%)').lValue);
+  }, 'new Color(\'hsl(178,70%,63%)\').lValue');
+
+  test(() => {
+    assert_equals(104, new Color(ColorFormat.HSL, 104, 88, 63).hValue);
+  }, 'new Color(ColorFormat.HSL, 104, 88, 63).hValue');
+
+  test(() => {
+    assert_equals(88, new Color(ColorFormat.HSL, 104, 88, 63).sValue);
+  }, 'new Color(ColorFormat.HSL, 104, 88, 63).sValue');
+
+  test(() => {
+    assert_equals(63, new Color(ColorFormat.HSL, 104, 88, 63).lValue);
+  }, 'new Color(ColorFormat.HSL, 104, 88, 63).lValue');
 }
 
 function testAsHex() {
@@ -202,6 +418,14 @@ function testAsHex() {
   test(() => {
     assert_equals('#6e1026', new Color(ColorFormat.RGB, 110, 16, 38).asHex());
   }, 'new Color(ColorFormat.RGB, 110, 16, 38).asHex()');
+
+  test(() => {
+    assert_equals('#ffe6e8', new Color('hsl(355,99,95)').asHex());
+  }, 'new Color(\'hsl(355,99,95)\').asHex()');
+
+  test(() => {
+    assert_equals('#2d0b06', new Color(ColorFormat.HSL, 7, 75, 10).asHex());
+  }, 'new Color(ColorFormat.HSL, 7, 75, 10).asHex()');
 }
 
 function testAsRGB() {
@@ -220,8 +444,41 @@ function testAsRGB() {
   test(() => {
     assert_equals('rgb(15,117,15)', new Color(ColorFormat.RGB, 15, 117, 15).asRGB());
   }, 'new Color(ColorFormat.RGB, 15, 117, 15).asRGB()');
+
+  test(() => {
+    assert_equals('rgb(168,209,168)', new Color('hsl(120,31,74)').asRGB());
+  }, 'new Color(\'hsl(120,31,74)\').asRGB()');
+
+  test(() => {
+    assert_equals('rgb(251,231,9)', new Color(ColorFormat.HSL, 55, 97, 51).asRGB());
+  }, 'new Color(ColorFormat.HSL, 55, 97, 51).asRGB()');
 }
 
+function testAsHSL() {
+  test(() => {
+    assert_equals('hsl(132,2%,48%)', new Color('#787d79').asHSL());
+  }, 'new Color(\'#00fff2\').asHSL()');
+
+  test(() => {
+    assert_equals('hsl(305,24%,68%)', new Color(ColorFormat.HEX, 'c099bd').asHSL());
+  }, 'new Color(ColorFormat.HEX, \'c099bd\').asHSL()');
+
+  test(() => {
+    assert_equals('hsl(259,70%,44%)', new Color('rgb(85,34,192)').asHSL());
+  }, 'new Color(\'rgb(85,34,192)\').asHSL()');
+
+  test(() => {
+    assert_equals('hsl(86,87%,48%)', new Color(ColorFormat.RGB, 139, 230, 16).asHSL());
+  }, 'new Color(ColorFormat.RGB, 139, 230, 16).asHSL()');
+
+  test(() => {
+    assert_equals('hsl(225,41%,44%)', new Color('hsl(225,41,44)').asHSL());
+  }, 'new Color(\'hsl(225,41,44)\').asHSL()');
+
+  test(() => {
+    assert_equals('hsl(307,64%,54%)', new Color(ColorFormat.HSL, 307, 64, 54).asHSL());
+  }, 'new Color(ColorFormat.HSL, 307, 64, 54).asHSL()');
+}
 </script>
 </body>
 </html>

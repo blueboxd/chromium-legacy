@@ -94,7 +94,7 @@ SkColor GetIconColor(const ThemeBackgroundInfo& theme_info) {
   if (has_background_image)
     return kNTPLightIconColor;
 
-  if (theme_info.using_dark_mode && theme_info.using_default_theme)
+  if (theme_info.using_dark_colors && theme_info.using_default_theme)
     return kNTPDarkIconColor;
 
   SkColor bg_color = theme_info.background_color;

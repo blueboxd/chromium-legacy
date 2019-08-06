@@ -27,8 +27,8 @@ IndexWriter::IndexWriter(
     : index_metadata_(index_metadata) {}
 
 IndexWriter::IndexWriter(const IndexedDBIndexMetadata& index_metadata,
-                         const IndexedDBIndexKeys& index_keys)
-    : index_metadata_(index_metadata), index_keys_(index_keys) {}
+                         const std::vector<IndexedDBKey>& keys)
+    : index_metadata_(index_metadata), keys_(keys) {}
 
 IndexWriter::~IndexWriter() {}
 
@@ -42,8 +42,7 @@ bool IndexWriter::VerifyIndexKeys(
     const IndexedDBKey& primary_key,
     base::string16* error_message) const {
   *can_add_keys = false;
-  DCHECK_EQ(index_id, index_keys_.id);
-  for (const auto& key : index_keys_.keys) {
+  for (const auto& key : keys_) {
     bool ok = AddingKeyAllowed(backing_store, transaction, database_id,
                                object_store_id, index_id, key, primary_key,
                                can_add_keys);
@@ -70,8 +69,7 @@ void IndexWriter::WriteIndexKeys(
     int64_t database_id,
     int64_t object_store_id) const {
   int64_t index_id = index_metadata_.id;
-  DCHECK_EQ(index_id, index_keys_.id);
-  for (const auto& key : index_keys_.keys) {
+  for (const auto& key : keys_) {
     leveldb::Status s = backing_store->PutIndexDataForRecord(
         transaction, database_id, object_store_id, index_id, key,
         record_identifier);
@@ -130,12 +128,13 @@ bool MakeIndexWriters(IndexedDBTransaction* transaction,
     if (found == object_store.indexes.end())
       continue;
     const IndexedDBIndexMetadata& index = found->second;
-    IndexedDBIndexKeys keys = it;
+    // A copy is made because additional keys may be added.
+    std::vector<IndexedDBKey> keys = it.keys;
 
     // If the object_store is using auto_increment, then any indexes with an
     // identical key_path need to also use the primary (generated) key as a key.
     if (key_was_generated && (index.key_path == object_store.key_path))
-      keys.keys.push_back(primary_key);
+      keys.push_back(primary_key);
 
     std::unique_ptr<IndexWriter> index_writer(
         std::make_unique<IndexWriter>(index, keys));

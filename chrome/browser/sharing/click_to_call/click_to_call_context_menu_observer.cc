@@ -148,10 +148,9 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
 }
 
 gfx::ImageSkia ClickToCallContextMenuObserver::GetContextMenuIcon() const {
-  bool dark_mode_enabled =
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled();
   const views::MenuConfig& menu_config = views::MenuConfig::instance();
   return gfx::CreateVectorIcon(
       vector_icons::kCallIcon, menu_config.touchable_icon_size,
-      dark_mode_enabled ? gfx::kGoogleGrey500 : gfx::kChromeIconGrey);
+      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+          ui::NativeTheme::kColorId_DefaultIconColor));
 }

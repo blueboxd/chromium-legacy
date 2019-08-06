@@ -20,9 +20,6 @@
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_factory.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -63,59 +60,6 @@ class ProtocolHandlerRegistry : public KeyedService {
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnProtocolHandlerRegistryChanged() = 0;
-  };
-
-  // IOThreadDelegate is an IO thread specific object. Access to the class
-  // should all be done via the IO thread. The registry living on the UI thread
-  // makes a best effort to update the IO object after local updates are
-  // completed.
-  class IOThreadDelegate : public base::RefCountedThreadSafe<IOThreadDelegate> {
-   public:
-    // Creates a new instance. If |enabled| is true the registry is considered
-    // enabled on the IO thread.
-    explicit IOThreadDelegate(bool enabled);
-
-    // Returns true if the protocol has a default protocol handler.
-    // Should be called only from the IO thread.
-    bool IsHandledProtocol(const std::string& scheme) const;
-
-    // Clears the default for the provided protocol.
-    // Should be called only from the IO thread.
-    void ClearDefault(const std::string& scheme);
-
-    // Makes this ProtocolHandler the default handler for its protocol.
-    // Should be called only from the IO thread.
-    void SetDefault(const ProtocolHandler& handler);
-
-    // Returns a translated URL if |url| is handled by a protocol handler,
-    // otherwise it returns an empty URL.
-    GURL Translate(const GURL& url) const;
-
-    // Creates a URL request job for the given request if there is a matching
-    // protocol handler, returns NULL otherwise.
-    net::URLRequestJob* MaybeCreateJob(
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const;
-
-    // Indicate that the registry has been enabled in the IO thread's
-    // copy of the data.
-    void Enable();
-
-    // Indicate that the registry has been disabled in the IO thread's copy of
-    // the data.
-    void Disable();
-
-   private:
-    friend class base::RefCountedThreadSafe<IOThreadDelegate>;
-    virtual ~IOThreadDelegate();
-
-    // Copy of protocol handlers use only on the IO thread.
-    ProtocolHandlerRegistry::ProtocolHandlerMap default_handlers_;
-
-    // Is the registry enabled on the IO thread.
-    bool enabled_;
-
-    DISALLOW_COPY_AND_ASSIGN(IOThreadDelegate);
   };
 
   // Creates a new instance. Assumes ownership of |delegate|.
@@ -244,10 +188,6 @@ class ProtocolHandlerRegistry : public KeyedService {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   bool enabled() const { return enabled_; }
-
-  scoped_refptr<IOThreadDelegate> io_thread_delegate() {
-    return io_thread_delegate_;
-  }
 
   // Add a predefined protocol handler. This has to be called before the first
   // load command was issued, otherwise the command will be ignored.
@@ -395,10 +335,6 @@ class ProtocolHandlerRegistry : public KeyedService {
   // When the table gets loaded this flag will be set and any further calls to
   // AddPredefinedHandler will be rejected.
   bool is_loaded_;
-
-  // Copy of registry data for use on the IO thread. Changes to the registry
-  // are posted to the IO thread where updates are applied to this object.
-  scoped_refptr<IOThreadDelegate> io_thread_delegate_;
 
   base::ObserverList<Observer> observers_;
 

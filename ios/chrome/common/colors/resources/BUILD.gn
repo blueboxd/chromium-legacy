@@ -18,6 +18,8 @@ group("resources") {
     ":red_dark_color",
     ":scrim_background_color",
     ":solid_button_text_color",
+    ":table_view_row_highlight_color",
+    ":table_view_row_highlight_dark_color",
     ":text_primary_color",
     ":text_primary_dark_color",
     ":text_secondary_color",
@@ -97,6 +99,18 @@ colorset("scrim_background_color") {
 colorset("solid_button_text_color") {
   sources = [
     "solid_button_text_color.colorset/Contents.json",
+  ]
+}
+
+colorset("table_view_row_highlight_color") {
+  sources = [
+    "table_view_row_highlight_color.colorset/Contents.json",
+  ]
+}
+
+colorset("table_view_row_highlight_dark_color") {
+  sources = [
+    "table_view_row_highlight_dark_color.colorset/Contents.json",
   ]
 }
 

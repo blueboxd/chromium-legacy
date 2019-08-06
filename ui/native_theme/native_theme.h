@@ -426,8 +426,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // system accessibility settings and the system theme.
   virtual bool UsesHighContrastColors() const;
 
-  // Whether OS-level dark mode (as in macOS Mojave or Windows 10) is enabled.
-  virtual bool SystemDarkModeEnabled() const;
+  // Returns true when the NativeTheme uses a light-on-dark color scheme. If
+  // you're considering using this function to choose between two hard-coded
+  // colors, you probably shouldn't. Instead, use GetSystemColor().
+  virtual bool ShouldUseDarkColors() const;
 
   // Whether OS-level dark mode is available in the current OS.
   virtual bool SystemDarkModeSupported() const;
@@ -466,7 +468,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // be set to no-preference.
   virtual PreferredColorScheme CalculatePreferredColorScheme() const;
 
-  void set_dark_mode(bool is_dark_mode) { is_dark_mode_ = is_dark_mode; }
+  void set_use_dark_colors(bool should_use_dark_colors) {
+    should_use_dark_colors_ = should_use_dark_colors;
+  }
   void set_high_contrast(bool is_high_contrast) {
     is_high_contrast_ = is_high_contrast;
   }
@@ -498,7 +502,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Observers to notify when the native theme changes.
   base::ObserverList<NativeThemeObserver>::Unchecked native_theme_observers_;
 
-  bool is_dark_mode_ = false;
+  bool should_use_dark_colors_ = false;
   bool is_high_contrast_ = false;
   PreferredColorScheme preferred_color_scheme_ =
       PreferredColorScheme::kNoPreference;

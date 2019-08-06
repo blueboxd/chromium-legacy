@@ -265,11 +265,8 @@ class NET_EXPORT HttpNetworkSession {
   // Populates |*alpn_protos| with protocols to be used with ALPN.
   void GetAlpnProtos(NextProtoVector* alpn_protos) const;
 
-  // Populates |server_config| and |proxy_config| based on this session and
-  // |request|.
-  void GetSSLConfig(const HttpRequestInfo& request,
-                    SSLConfig* server_config,
-                    SSLConfig* proxy_config) const;
+  // Populates |server_config| and |proxy_config| based on this session.
+  void GetSSLConfig(SSLConfig* server_config, SSLConfig* proxy_config) const;
 
   // Dumps memory allocation stats. |parent_dump_absolute_name| is the name
   // used by the parent MemoryAllocatorDump in the memory dump hierarchy.

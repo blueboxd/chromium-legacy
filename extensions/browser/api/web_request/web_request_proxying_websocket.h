@@ -18,6 +18,7 @@
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/network_delegate.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -61,10 +62,12 @@ class WebRequestProxyingWebSocket
       network::mojom::WebSocketHandshakeRequestPtr request) override;
   void OnResponseReceived(
       network::mojom::WebSocketHandshakeResponsePtr response) override;
-  void OnConnectionEstablished(network::mojom::WebSocketPtr websocket,
-                               const std::string& selected_protocol,
-                               const std::string& extensions,
-                               uint64_t receive_quota_threshold) override;
+  void OnConnectionEstablished(
+      network::mojom::WebSocketPtr websocket,
+      mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
+      const std::string& selected_protocol,
+      const std::string& extensions,
+      uint64_t receive_quota_threshold) override;
 
   // network::mojom::AuthenticationHandler method:
   void OnAuthRequired(const net::AuthChallengeInfo& auth_info,

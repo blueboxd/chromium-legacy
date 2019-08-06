@@ -55,14 +55,14 @@ TEST(SearchboxExtensionTest, TestGetContrastingColor) {
 TEST(SearchboxExtensionTest, TestGetIconColor) {
   ThemeBackgroundInfo theme_info;
   theme_info.using_default_theme = true;
-  theme_info.using_dark_mode = false;
+  theme_info.using_dark_colors = false;
   theme_info.background_color = SK_ColorRED;
 
   // Default theme in light mode.
   EXPECT_EQ(kNTPLightIconColor, GetIconColor(theme_info));
 
   // Default theme in dark mode.
-  theme_info.using_dark_mode = true;
+  theme_info.using_dark_colors = true;
   EXPECT_EQ(kNTPDarkIconColor, GetIconColor(theme_info));
 
   // Default theme with custom background, in dark mode.
@@ -70,7 +70,7 @@ TEST(SearchboxExtensionTest, TestGetIconColor) {
   EXPECT_EQ(kNTPLightIconColor, GetIconColor(theme_info));
 
   // Default theme with custom background.
-  theme_info.using_dark_mode = false;
+  theme_info.using_dark_colors = false;
   EXPECT_EQ(kNTPLightIconColor, GetIconColor(theme_info));
 
   // Theme with image.
@@ -80,7 +80,7 @@ TEST(SearchboxExtensionTest, TestGetIconColor) {
   EXPECT_EQ(kNTPLightIconColor, GetIconColor(theme_info));
 
   // Theme with image in dark mode.
-  theme_info.using_dark_mode = true;
+  theme_info.using_dark_colors = true;
   EXPECT_EQ(kNTPLightIconColor, GetIconColor(theme_info));
 
   SkColor red_icon_color = GetContrastingColorForBackground(SK_ColorRED, 0.2f);
@@ -90,7 +90,7 @@ TEST(SearchboxExtensionTest, TestGetIconColor) {
   EXPECT_EQ(red_icon_color, GetIconColor(theme_info));
 
   // Theme with no image.
-  theme_info.using_dark_mode = false;
+  theme_info.using_dark_colors = false;
   EXPECT_EQ(red_icon_color, GetIconColor(theme_info));
 }
 
@@ -104,12 +104,12 @@ TEST(SearchboxExtensionTest, TestGetLogoColor) {
   EXPECT_EQ(kNTPLightLogoColor, GetLogoColor(theme_info));
 
   // Default theme in dark mode.
-  theme_info.using_dark_mode = true;
+  theme_info.using_dark_colors = true;
   theme_info.background_color = SK_ColorBLACK;
   EXPECT_EQ(kNTPLightLogoColor, GetLogoColor(theme_info));
 
   // Default theme with custom background.
-  theme_info.using_dark_mode = false;
+  theme_info.using_dark_colors = false;
   theme_info.background_color = SK_ColorWHITE;
   theme_info.custom_background_url = GURL("https://www.foo.com");
   EXPECT_EQ(kNTPLightLogoColor, GetLogoColor(theme_info));

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/language/core/browser/pref_names.h"
@@ -24,7 +25,7 @@ namespace assistant {
 
 ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     const Profile* profile) {
-  if (!chromeos::switches::IsAssistantEnabled())
+  if (!chromeos::features::IsAssistantEnabled())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_FLAG;
 
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile))

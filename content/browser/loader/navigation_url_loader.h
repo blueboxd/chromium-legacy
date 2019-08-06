@@ -27,7 +27,6 @@ class NavigationUIData;
 class NavigationURLLoaderDelegate;
 class NavigationURLLoaderFactory;
 class PrefetchedSignedExchangeCache;
-class ResourceContext;
 class ServiceWorkerNavigationHandle;
 class StoragePartition;
 struct NavigationRequestInfo;
@@ -51,7 +50,6 @@ class CONTENT_EXPORT NavigationURLLoader {
   // should_replace_current_entry shouldn't be needed at this layer.
   static std::unique_ptr<NavigationURLLoader> Create(
       BrowserContext* browser_context,
-      ResourceContext* resource_context,
       StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,

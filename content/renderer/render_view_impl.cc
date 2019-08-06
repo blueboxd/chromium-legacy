@@ -470,20 +470,14 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 }
 
 void RenderViewImpl::Initialize(
-    RenderWidget* render_widget,
+    std::unique_ptr<RenderWidget> render_widget,
     mojom::CreateViewParamsPtr params,
     RenderWidget::ShowCallback show_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(RenderThread::IsMainThread());
 
-  // RenderView used to inherit from RenderWidget. Creating a delegate
-  // interface and explicitly passing ownership of ourselves to the
-  // RenderWidget preserves the lifetime semantics. This is a stepping
-  // stone to having RenderWidget creation taken out of the RenderViewImpl
-  // constructor. See the corresponding explicit reset() of the delegate
-  // in the ~RenderWidget(). Also, I hate inheritance.
-  render_widget_ = render_widget;
-  GetWidget()->set_delegate(base::WrapUnique(this));
+  render_widget_ = std::move(render_widget);
+  GetWidget()->set_delegate(this);
   RenderThread::Get()->AddRoute(routing_id_, this);
 
 #if defined(OS_ANDROID)
@@ -544,7 +538,7 @@ void RenderViewImpl::Initialize(
                                        params->devtools_main_frame_token);
     // TODO(danakj): Make WebViewImpl not need a WebWidgetClient when there is a
     // remote main frame (when the RenderWidget is frozen).
-    webview_->DidAttachRemoteMainFrame(render_widget_);
+    webview_->DidAttachRemoteMainFrame(render_widget_.get());
   }
 
   // TODO(davidben): Move this state from Blink into content.
@@ -1030,7 +1024,7 @@ RenderViewImpl* RenderViewImpl::Create(
   DCHECK(params->main_frame_widget_routing_id != MSG_ROUTING_NONE);
   RenderViewImpl* render_view;
 
-  auto render_widget = RenderWidget::CreateForFrame(
+  std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
       params->visual_properties.screen_info,
       params->visual_properties.display_mode,
@@ -1048,9 +1042,22 @@ RenderViewImpl* RenderViewImpl::Create(
   //
   // TODO(http://crbug.com/419087): This refcoutning is messy. get the
   // RenderWidget initialization out of the render_view::Initialize() function.
-  render_view->Initialize(render_widget.get(), std::move(params),
+  render_view->Initialize(std::move(render_widget), std::move(params),
                           std::move(show_callback), std::move(task_runner));
   return render_view;
+}
+
+void RenderViewImpl::Destroy() {
+  GetWidget()->PrepareForClose();
+  GetWidget()->Close(std::move(render_widget_));
+
+  // The webview_ is already destroyed by the time we get here, remove any
+  // references to it.
+  g_view_map.Get().erase(webview_);
+  webview_ = nullptr;
+  g_routing_id_view_map.Get().erase(GetRoutingID());
+
+  delete this;
 }
 
 // static
@@ -1113,18 +1120,6 @@ bool RenderViewImpl::ShouldAckSyntheticInputImmediately() {
   if (webkit_preferences_.immersive_mode_enabled)
     return true;
   return false;
-}
-
-void RenderViewImpl::DidCloseWidget() {
-  // The webview_ is already destroyed by the time we get here, remove any
-  // references to it.
-  g_view_map.Get().erase(webview_);
-  webview_ = nullptr;
-  g_routing_id_view_map.Get().erase(GetRoutingID());
-
-  // The |render_widget_| is deleted after DidCloseWidget() returns. Drop the
-  // reference to it to avoid a UaF.
-  render_widget_ = nullptr;
 }
 
 void RenderViewImpl::CancelPagePopupForWidget() {
@@ -1492,7 +1487,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   // RenderWidget for the frame making the popup.
   RenderWidget* view_render_widget = GetWidget();
 
-  auto popup_widget = RenderWidget::CreateForPopup(
+  RenderWidget* popup_widget = RenderWidget::CreateForPopup(
       widget_routing_id, view_render_widget->compositor_deps(),
       view_render_widget->screen_info(), blink::kWebDisplayModeUndefined,
       /*is_frozen=*/false,
@@ -1502,7 +1497,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   // The returned WebPagePopup is self-referencing, so the pointer here is not
   // an owning pointer. It is de-referenced by calling Close().
   blink::WebPagePopup* popup_web_widget =
-      blink::WebPagePopup::Create(popup_widget.get());
+      blink::WebPagePopup::Create(popup_widget);
 
   // Adds a self-reference on the |popup_widget| so it will not be destroyed
   // when leaving scope. The WebPagePopup takes responsibility for Close()ing
@@ -1786,8 +1781,11 @@ void RenderViewImpl::UpdateBrowserControlsState(
                        "animated", animate);
 
   if (GetWidget() && GetWidget()->layer_tree_view()) {
-    GetWidget()->layer_tree_view()->UpdateBrowserControlsState(
-        ContentToCc(constraints), ContentToCc(current), animate);
+    GetWidget()
+        ->layer_tree_view()
+        ->layer_tree_host()
+        ->UpdateBrowserControlsState(ContentToCc(constraints),
+                                     ContentToCc(current), animate);
   }
 
   top_controls_constraints_ = constraints;
@@ -1862,11 +1860,11 @@ bool RenderViewImpl::Send(IPC::Message* message) {
 }
 
 RenderWidget* RenderViewImpl::GetWidget() {
-  return render_widget_;
+  return render_widget_.get();
 }
 
 const RenderWidget* RenderViewImpl::GetWidget() const {
-  return render_widget_;
+  return render_widget_.get();
 }
 
 RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {

@@ -10,11 +10,6 @@
           "object": "LayoutTextControl TEXTAREA",
           "rect": [8, 8, 106, 106],
           "reason": "subtree"
-        },
-        {
-          "object": "LayoutTextControl TEXTAREA",
-          "rect": [8, 8, 106, 106],
-          "reason": "subtree"
         }
       ]
     }

@@ -30,14 +30,6 @@ ExtensionsMenuView* g_extensions_dialog = nullptr;
 
 constexpr int EXTENSIONS_SETTINGS_ID = 42;
 
-gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon) {
-  return gfx::CreateVectorIcon(
-      icon, 16,
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
-          ? gfx::kGoogleGrey500
-          : gfx::kChromeIconGrey);
-}
-
 }  // namespace
 
 ExtensionsMenuView::ExtensionsMenuView(
@@ -103,7 +95,10 @@ void ExtensionsMenuView::Repopulate() {
 
   AddChildView(std::make_unique<views::Separator>());
   auto icon_view = CreateFixedSizeIconView();
-  icon_view->SetImage(CreateVectorIcon(vector_icons::kSettingsIcon));
+  icon_view->SetImage(
+      gfx::CreateVectorIcon(vector_icons::kSettingsIcon, 16,
+                            GetNativeTheme()->GetSystemColor(
+                                ui::NativeTheme::kColorId_DefaultIconColor)));
   auto footer = std::make_unique<HoverButton>(
       this, std::move(icon_view),
       l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION), base::string16());

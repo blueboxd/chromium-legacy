@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -149,6 +150,18 @@ class CONTENT_EXPORT SessionStorageContextMojo
   FRIEND_TEST_ALL_PREFIXES(SessionStorageContextMojoTest,
                            PurgeMemoryDoesNotCrashOrHang);
 
+  // These values are written to logs.  New enum values can be added, but
+  // existing enums must never be renumbered or deleted and reused.
+  enum class OpenResult {
+    kDirectoryOpenFailed = 0,
+    kDatabaseOpenFailed = 1,
+    kInvalidVersion = 2,
+    kVersionReadError = 3,
+    kNamespacesReadError = 4,
+    kSuccess = 6,
+    kMaxValue = kSuccess
+  };
+
   // Object deletion is done through |ShutdownAndDelete()|.
   ~SessionStorageContextMojo() override;
 
@@ -187,16 +200,20 @@ class CONTENT_EXPORT SessionStorageContextMojo
   void InitiateConnection(bool in_memory_only = false);
   void OnDirectoryOpened(base::File::Error err);
   void OnDatabaseOpened(bool in_memory, leveldb::mojom::DatabaseError status);
-  void OnGotDatabaseVersion(leveldb::mojom::DatabaseError status,
-                            const std::vector<uint8_t>& value);
-  void OnGotNamespaces(
-      base::OnceClosure done,
-      std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations,
-      leveldb::mojom::DatabaseError status,
-      std::vector<leveldb::mojom::KeyValuePtr> values);
-  void OnGotNextMapId(base::OnceClosure done,
-                      leveldb::mojom::DatabaseError status,
-                      const std::vector<uint8_t>& map_id);
+
+  void OnGotDatabaseMetadata(
+      std::vector<leveldb::mojom::GetManyResultPtr> results);
+
+  using OpenResultAndHistogramName = std::tuple<OpenResult, const char*>;
+  OpenResultAndHistogramName ParseDatabaseVersion(
+      const leveldb::mojom::GetManyResultPtr& result,
+      std::vector<leveldb::mojom::BatchedOperationPtr>* migration_operations);
+  OpenResultAndHistogramName ParseNamespaces(
+      const leveldb::mojom::GetManyResultPtr& result,
+      std::vector<leveldb::mojom::BatchedOperationPtr> migration_operations);
+  OpenResultAndHistogramName ParseNextMapId(
+      const leveldb::mojom::GetManyResultPtr& result);
+
   void OnConnectionFinished();
   void DeleteAndRecreateDatabase(const char* histogram_name);
   void OnDBDestroyed(bool recreate_in_memory,
@@ -211,17 +228,6 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_areas_count);
 
-  // These values are written to logs.  New enum values can be added, but
-  // existing enums must never be renumbered or deleted and reused.
-  enum class OpenResult {
-    kDirectoryOpenFailed = 0,
-    kDatabaseOpenFailed = 1,
-    kInvalidVersion = 2,
-    kVersionReadError = 3,
-    kNamespacesReadError = 4,
-    kSuccess = 6,
-    kMaxValue = kSuccess
-  };
 
   void LogDatabaseOpenResult(OpenResult result);
 

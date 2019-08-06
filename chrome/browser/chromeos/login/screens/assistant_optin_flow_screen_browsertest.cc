@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_paths.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -336,7 +337,7 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
   ~AssistantOptInFlowTest() override = default;
 
   virtual void InitializeFeatureList() {
-    feature_list_.InitAndEnableFeature(switches::kAssistantFeature);
+    feature_list_.InitAndEnableFeature(features::kAssistantFeature);
   }
 
   void SetUp() override {
@@ -505,7 +506,7 @@ class AssistantOptInFlowTestWithDisabledAssistant
   ~AssistantOptInFlowTestWithDisabledAssistant() override = default;
 
   void InitializeFeatureList() override {
-    feature_list_.InitAndDisableFeature(switches::kAssistantFeature);
+    feature_list_.InitAndDisableFeature(features::kAssistantFeature);
   }
 };
 

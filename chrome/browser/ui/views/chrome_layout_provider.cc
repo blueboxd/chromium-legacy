@@ -143,6 +143,8 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return kHarmonyLayoutUnit * 12;
     case DISTANCE_SUBSECTION_HORIZONTAL_INDENT:
       return 0;
+    case DISTANCE_TAB_GROUP_TITLE_CHIP_MARGIN:
+      return 8;
     case DISTANCE_TOAST_CONTROL_VERTICAL:
       return 8;
     case DISTANCE_TOAST_LABEL_VERTICAL:

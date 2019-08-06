@@ -84,6 +84,20 @@ namespace views {
 
 namespace {
 
+// An enum giving different model properties unique keys for the
+// OnPropertyChanged call.
+enum TextfieldPropertyKey {
+  kTextfieldText = 1,
+  kTextfieldTextColor,
+  kTextfieldSelectionTextColor,
+  kTextfieldBackgroundColor,
+  kTextfieldSelectionBackgroundColor,
+  kTextfieldCursorEnabled,
+  kTextfieldHorizontalAlignment,
+  kTextfieldSelectedRange,
+
+};
+
 #if defined(OS_MACOSX)
 constexpr gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_EXTEND;
 constexpr gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_CARET;
@@ -447,6 +461,9 @@ SkColor Textfield::GetBackgroundColor() const {
 }
 
 void Textfield::SetBackgroundColor(SkColor color) {
+  if (background_color_ == color)
+    return;
+
   background_color_ = color;
   use_default_background_color_ = false;
   UpdateBackgroundColor();
@@ -465,16 +482,20 @@ SkColor Textfield::GetSelectionTextColor() const {
 }
 
 void Textfield::SetSelectionTextColor(SkColor color) {
+  if (selection_text_color_ == color)
+    return;
+
   selection_text_color_ = color;
   use_default_selection_text_color_ = false;
-  GetRenderText()->set_selection_color(GetSelectionTextColor());
-  SchedulePaint();
+  UpdateSelectionTextColor();
 }
 
 void Textfield::UseDefaultSelectionTextColor() {
+  if (use_default_selection_text_color_ == true)
+    return;
+
   use_default_selection_text_color_ = true;
-  GetRenderText()->set_selection_color(GetSelectionTextColor());
-  SchedulePaint();
+  UpdateSelectionTextColor();
 }
 
 SkColor Textfield::GetSelectionBackgroundColor() const {
@@ -486,18 +507,20 @@ SkColor Textfield::GetSelectionBackgroundColor() const {
 }
 
 void Textfield::SetSelectionBackgroundColor(SkColor color) {
+  if (selection_background_color_ == color)
+    return;
+
   selection_background_color_ = color;
   use_default_selection_background_color_ = false;
-  GetRenderText()->set_selection_background_focused_color(
-      GetSelectionBackgroundColor());
-  SchedulePaint();
+  UpdateSelectionBackgroundColor();
 }
 
 void Textfield::UseDefaultSelectionBackgroundColor() {
+  if (use_default_selection_background_color_ == true)
+    return;
+
   use_default_selection_background_color_ = true;
-  GetRenderText()->set_selection_background_focused_color(
-      GetSelectionBackgroundColor());
-  SchedulePaint();
+  UpdateSelectionBackgroundColor();
 }
 
 bool Textfield::GetCursorEnabled() const {
@@ -511,6 +534,7 @@ void Textfield::SetCursorEnabled(bool enabled) {
   GetRenderText()->SetCursorEnabled(enabled);
   UpdateCursorViewPosition();
   UpdateCursorVisibility();
+  OnPropertyChanged(&model_ + kTextfieldCursorEnabled, kPropertyEffectsPaint);
 }
 
 const gfx::FontList& Textfield::GetFontList() const {
@@ -542,6 +566,7 @@ void Textfield::SetPlaceholderText(const base::string16& text) {
     return;
 
   placeholder_text_ = text;
+  OnPropertyChanged(&placeholder_text_, kPropertyEffectsPaint);
 }
 
 gfx::HorizontalAlignment Textfield::GetHorizontalAlignment() const {
@@ -550,6 +575,8 @@ gfx::HorizontalAlignment Textfield::GetHorizontalAlignment() const {
 
 void Textfield::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   GetRenderText()->SetHorizontalAlignment(alignment);
+  OnPropertyChanged(&model_ + kTextfieldHorizontalAlignment,
+                    kPropertyEffectsNone);
 }
 
 void Textfield::ShowVirtualKeyboardIfEnabled() {
@@ -569,6 +596,7 @@ const gfx::Range& Textfield::GetSelectedRange() const {
 void Textfield::SetSelectedRange(const gfx::Range& range) {
   model_->SelectRange(range);
   UpdateAfterChange(false, true);
+  OnPropertyChanged(&model_ + kTextfieldSelectedRange, kPropertyEffectsPaint);
 }
 
 const gfx::SelectionModel& Textfield::GetSelectionModel() const {
@@ -587,7 +615,7 @@ size_t Textfield::GetCursorPosition() const {
 void Textfield::SetColor(SkColor value) {
   GetRenderText()->SetColor(value);
   cursor_view_.layer()->SetColor(value);
-  SchedulePaint();
+  OnPropertyChanged(&model_ + kTextfieldTextColor, kPropertyEffectsPaint);
 }
 
 void Textfield::ApplyColor(SkColor value, const gfx::Range& range) {
@@ -618,6 +646,7 @@ void Textfield::SetInvalid(bool invalid) {
   UpdateBorder();
   if (focus_ring_)
     focus_ring_->SetInvalid(invalid);
+  OnPropertyChanged(&invalid_, kPropertyEffectsNone);
 }
 
 void Textfield::ClearEditHistory() {
@@ -629,7 +658,11 @@ base::string16 Textfield::GetAccessibleName() const {
 }
 
 void Textfield::SetAccessibleName(const base::string16& name) {
+  if (accessible_name_ == name)
+    return;
+
   accessible_name_ = name;
+  OnPropertyChanged(&accessible_name_, kPropertyEffectsNone);
 }
 
 void Textfield::SetGlyphSpacing(int spacing) {
@@ -1185,7 +1218,7 @@ gfx::Point Textfield::GetKeyboardContextMenuLocation() {
 
 void Textfield::OnThemeChanged() {
   gfx::RenderText* render_text = GetRenderText();
-  render_text->SetColor(GetTextColor());
+  SetColor(GetTextColor());
   UpdateBackgroundColor();
   render_text->set_selection_color(GetSelectionTextColor());
   render_text->set_selection_background_focused_color(
@@ -1202,7 +1235,7 @@ void Textfield::OnCompositionTextConfirmedOrCleared() {
 }
 
 void Textfield::OnTextChanged() {
-  OnPropertyChanged(&model_ + kTextProperty, kPropertyEffectsPaint);
+  OnPropertyChanged(&model_ + kTextfieldText, kPropertyEffectsPaint);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2072,7 +2105,7 @@ bool Textfield::ShouldShowPlaceholderText() const {
 
 views::PropertyChangedSubscription Textfield::AddTextChangedCallback(
     views::PropertyChangedCallback callback) {
-  return AddPropertyChangedCallback(&model_ + kTextProperty,
+  return AddPropertyChangedCallback(&model_ + kTextfieldText,
                                     std::move(callback));
 }
 
@@ -2166,7 +2199,7 @@ void Textfield::UpdateBackgroundColor() {
   // See crbug.com/115198
   GetRenderText()->set_subpixel_rendering_suppressed(SkColorGetA(color) !=
                                                      SK_AlphaOPAQUE);
-  SchedulePaint();
+  OnPropertyChanged(&model_ + kTextfieldBackgroundColor, kPropertyEffectsPaint);
 }
 
 void Textfield::UpdateBorder() {
@@ -2184,6 +2217,19 @@ void Textfield::UpdateBorder() {
   if (invalid_)
     border->SetColorId(ui::NativeTheme::kColorId_AlertSeverityHigh);
   View::SetBorder(std::move(border));
+}
+
+void Textfield::UpdateSelectionTextColor() {
+  GetRenderText()->set_selection_color(GetSelectionTextColor());
+  OnPropertyChanged(&model_ + kTextfieldSelectionTextColor,
+                    kPropertyEffectsPaint);
+}
+
+void Textfield::UpdateSelectionBackgroundColor() {
+  GetRenderText()->set_selection_background_focused_color(
+      GetSelectionBackgroundColor());
+  OnPropertyChanged(&model_ + kTextfieldSelectionBackgroundColor,
+                    kPropertyEffectsPaint);
 }
 
 void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
@@ -2433,6 +2479,16 @@ ADD_PROPERTY_METADATA(Textfield, bool, ReadOnly)
 ADD_PROPERTY_METADATA(Textfield, base::string16, Text)
 ADD_PROPERTY_METADATA(Textfield, ui::TextInputType, TextInputType)
 ADD_PROPERTY_METADATA(Textfield, int, TextInputFlags)
+ADD_PROPERTY_METADATA(Textfield, SkColor, TextColor)
+ADD_PROPERTY_METADATA(Textfield, SkColor, SelectionTextColor)
+ADD_PROPERTY_METADATA(Textfield, SkColor, BackgroundColor)
+ADD_PROPERTY_METADATA(Textfield, SkColor, SelectionBackgroundColor)
+ADD_PROPERTY_METADATA(Textfield, bool, CursorEnabled)
+ADD_PROPERTY_METADATA(Textfield, base::string16, PlaceholderText)
+ADD_PROPERTY_METADATA(Textfield, bool, Invalid)
+ADD_PROPERTY_METADATA(Textfield, gfx::HorizontalAlignment, HorizontalAlignment)
+ADD_PROPERTY_METADATA(Textfield, gfx::Range, SelectedRange)
+ADD_PROPERTY_METADATA(Textfield, base::string16, AccessibleName)
 END_METADATA()
 
 }  // namespace views

@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/devtools_util.h"
+#include "chrome/browser/file_util_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,7 +67,6 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/zoom/page_zoom.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
@@ -342,7 +342,7 @@ FileManagerPrivateInternalZipSelectionFunction::Run() {
        base::Bind(&FileManagerPrivateInternalZipSelectionFunction::OnZipDone,
                   this),
        src_dir, src_relative_paths, dest_file))
-      ->Start(content::GetSystemConnector());
+      ->Start(LaunchFileUtilService());
   return RespondLater();
 }
 

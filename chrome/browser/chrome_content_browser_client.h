@@ -576,7 +576,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #endif
 
   base::flat_set<std::string> GetPluginMimeTypesWithExternalHandlers(
-      content::ResourceContext* resource_context) override;
+      content::BrowserContext* browser_context) override;
 
   void AugmentNavigationDownloadPolicy(
       const content::WebContents* web_contents,

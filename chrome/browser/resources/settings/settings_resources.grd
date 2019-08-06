@@ -647,6 +647,14 @@
                  file="icons.html"
                  type="chrome_html"
                  preprocess="true" />
+      <if expr="chromeos">
+       <!-- TODO(crbug.com/986596): Remove OS icons when SplitSettings
+            is complete. -->
+        <structure name="IDR_SETTINGS_CHROMEOS_OS_ICONS"
+                  file="chromeos/os_icons.html"
+                  type="chrome_html"
+                  preprocess="true" />
+      </if>
       <structure name="IDR_SETTINGS_POWERWASH_DIALOG_HTML"
                  file="reset_page/powerwash_dialog.html"
                  type="chrome_html" />

@@ -32,7 +32,9 @@ class PageInfoBubbleViewBrowserTest;
 
 // A button taking the full width of its parent that shows a background color
 // when hovered over.
-class HoverButton : public views::MenuButton, public views::MenuButtonListener {
+// TODO (cyan): HoverButton should extend ButtonListener.
+class HoverButton : public views::LabelButton,
+                    public views::MenuButtonListener {
  public:
   enum Style { STYLE_PROMINENT, STYLE_ERROR };
 
@@ -62,8 +64,7 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
 
   ~HoverButton() override;
 
-  // views::MenuButton:
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
+  // views::LabelButton:
   void SetBorder(std::unique_ptr<views::Border> b) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Insets GetInsets() const override;

@@ -33,9 +33,9 @@ class CONTENT_EXPORT ContentIndexContextImpl
   ContentIndexDatabase& database();
 
   // ContentIndexContent implementation.
-  void GetIcon(int64_t service_worker_registration_id,
-               const std::string& description_id,
-               base::OnceCallback<void(SkBitmap)> icon_callback) override;
+  void GetIcons(int64_t service_worker_registration_id,
+                const std::string& description_id,
+                GetIconsCallback callback) override;
   void GetAllEntries(GetAllEntriesCallback callback) override;
   void GetEntry(int64_t service_worker_registration_id,
                 const std::string& description_id,

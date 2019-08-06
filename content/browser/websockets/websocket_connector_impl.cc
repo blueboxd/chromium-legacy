@@ -25,8 +25,7 @@ void WebSocketConnectorImpl::Connect(
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
     const base::Optional<std::string>& user_agent,
-    network::mojom::WebSocketHandshakeClientPtr handshake_client,
-    network::mojom::WebSocketClientPtr websocket_client) {
+    network::mojom::WebSocketHandshakeClientPtr handshake_client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
   if (!process) {
@@ -41,7 +40,7 @@ void WebSocketConnectorImpl::Connect(
         frame,
         base::BindOnce(ConnectCalledByContentBrowserClient, requested_protocols,
                        site_for_cookies, process_id_, frame_id_, origin_,
-                       options, std::move(websocket_client)),
+                       options),
         url, site_for_cookies, user_agent, std::move(handshake_client));
     return;
   }
@@ -53,7 +52,7 @@ void WebSocketConnectorImpl::Connect(
   process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
       url, requested_protocols, site_for_cookies, std::move(headers),
       process_id_, frame_id_, origin_, options, std::move(handshake_client),
-      std::move(websocket_client), nullptr, nullptr);
+      nullptr, nullptr);
 }
 
 void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
@@ -63,7 +62,6 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
     int frame_id,
     const url::Origin& origin,
     uint32_t options,
-    network::mojom::WebSocketClientPtr websocket_client,
     const GURL& url,
     std::vector<network::mojom::HttpHeaderPtr> additional_headers,
     network::mojom::WebSocketHandshakeClientPtr handshake_client,
@@ -77,7 +75,6 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
   process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
       url, requested_protocols, site_for_cookies, std::move(additional_headers),
       process_id, frame_id, origin, options, std::move(handshake_client),
-      std::move(websocket_client), std::move(auth_handler),
-      std::move(trusted_header_client));
+      std::move(auth_handler), std::move(trusted_header_client));
 }
 }  // namespace content

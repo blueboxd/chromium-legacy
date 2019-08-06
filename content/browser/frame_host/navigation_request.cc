@@ -1898,7 +1898,7 @@ void NavigationRequest::OnStartChecksComplete(
   if (bundled_exchanges_handle_)
     interceptor.push_back(bundled_exchanges_handle_->CreateInterceptor());
   loader_ = NavigationURLLoader::Create(
-      browser_context, browser_context->GetResourceContext(), partition,
+      browser_context, partition,
       std::make_unique<NavigationRequestInfo>(
           common_params_.Clone(), begin_params_.Clone(), site_for_cookies,
           net::NetworkIsolationKey(top_frame_origin, frame_origin),

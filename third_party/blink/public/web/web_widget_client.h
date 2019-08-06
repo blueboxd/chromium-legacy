@@ -353,6 +353,19 @@ class WebWidgetClient {
   // A stable numeric Id for the local root's compositor. For tracing/debugging
   // purposes.
   virtual int GetLayerTreeId() const { return 0; }
+
+  // Sets the amount that the browser controls are showing, from 0 (hidden) to 1
+  // (fully shown).
+  virtual void SetBrowserControlsShownRatio(float) {}
+
+  // Set browser controls height. If |shrink_viewport| is set to true, then
+  // Blink shrunk the viewport clip layers by the top and bottom browser
+  // controls height. Top controls will translate the web page down and do not
+  // immediately scroll when hiding. The bottom controls scroll immediately and
+  // never translate the content (only clip it).
+  virtual void SetBrowserControlsHeight(float top_height,
+                                        float bottom_height,
+                                        bool shrink_viewport) {}
 };
 
 }  // namespace blink

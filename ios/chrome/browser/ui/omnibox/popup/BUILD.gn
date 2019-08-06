@@ -84,6 +84,10 @@ source_set("popup_ui") {
   deps = [
     ":popup_accessibility_identifier_constants",
     "resources:omnibox_popup_tab_match",
+    "resources:omnibox_suggestion_answer_icon_color",
+    "resources:omnibox_suggestion_answer_icon_dark_color",
+    "resources:omnibox_suggestion_icon_color",
+    "resources:omnibox_suggestion_icon_dark_color",
     "//base",
     "//components/omnibox/common",
     "//ios/chrome/app/strings:ios_strings_grit",
@@ -98,6 +102,7 @@ source_set("popup_ui") {
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/images",
@@ -123,6 +128,7 @@ source_set("popup_internal") {
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/omnibox:omnibox_util",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/third_party/material_components_ios",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

@@ -851,12 +851,6 @@ extern const char kOmniboxUIShowSuggestionFaviconsDescription[];
 extern const char kOmniboxUISwapTitleAndUrlName[];
 extern const char kOmniboxUISwapTitleAndUrlDescription[];
 
-extern const char kOmniboxUIVerticalMarginName[];
-extern const char kOmniboxUIVerticalMarginDescription[];
-
-extern const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyName[];
-extern const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyDescription[];
-
 extern const char kOmniboxZeroSuggestionsOnNTPName[];
 extern const char kOmniboxZeroSuggestionsOnNTPDescription[];
 
@@ -1521,8 +1515,8 @@ extern const char kStrictSiteIsolationDescription[];
 extern const char kTranslateAndroidManualTriggerName[];
 extern const char kTranslateAndroidManualTriggerDescription[];
 
-extern const char kTwoPanesStartSurfaceAndroidName[];
-extern const char kTwoPanesStartSurfaceAndroidDescription[];
+extern const char kStartSurfaceAndroidName[];
+extern const char kStartSurfaceAndroidDescription[];
 
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
@@ -1988,6 +1982,9 @@ extern const char kImeInputLogicFstDescription[];
 
 extern const char kListAllDisplayModesName[];
 extern const char kListAllDisplayModesDescription[];
+
+extern const char kLockScreenMediaControlsName[];
+extern const char kLockScreenMediaControlsDescription[];
 
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];

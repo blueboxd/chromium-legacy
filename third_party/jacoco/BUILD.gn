@@ -21,6 +21,7 @@ java_prebuilt("jacocoagent_java") {
   include_java_resources = true
   supports_android = true
   jar_path = "lib/jacocoagent.jar"
+  proguard_configs = [ "jacoco_instrument.flags" ]
 }
 
 java_prebuilt("jacocoant_java") {

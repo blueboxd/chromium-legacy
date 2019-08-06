@@ -365,21 +365,29 @@ void ExtensionMessageBubbleBrowserTest::TestBubbleWithMultipleWindows() {
 
 void ExtensionMessageBubbleBrowserTest::TestClickingLearnMoreButton() {
   CheckBubbleIsNotPresent(browser(), false, false);
-  LoadExtension(test_data_dir_.AppendASCII("simple_with_popup"));
+  scoped_refptr<const extensions::Extension> no_action_extension =
+      extensions::ExtensionBuilder("no_action_extension")
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .Build();
+  extension_service()->AddExtension(no_action_extension.get());
+
+  extension_service()->DisableExtension(
+      no_action_extension->id(),
+      extensions::disable_reason::DISABLE_NOT_VERIFIED);
+
   Browser* second_browser = new Browser(Browser::CreateParams(profile(), true));
   ASSERT_TRUE(second_browser);
   second_browser->window()->Show();
   base::RunLoop().RunUntilIdle();
-  CheckBubble(second_browser, ANCHOR_BROWSER_ACTION, true);
   ClickLearnMoreButton(second_browser);
   base::RunLoop().RunUntilIdle();
   CheckBubbleIsNotPresent(second_browser, false, false);
-  // The learn more link goes to the chrome://extensions page, so it should be
-  // opened in the active tab.
+  // The learn more link goes to the information page about 'suspicious
+  // extensions', so it should be opened in the active tab.
   content::WebContents* active_web_contents =
       second_browser->tab_strip_model()->GetActiveWebContents();
   content::WaitForLoadStop(active_web_contents);
-  EXPECT_EQ(GURL(chrome::kChromeUIExtensionsURL),
+  EXPECT_EQ(GURL(chrome::kRemoveNonCWSExtensionURL),
             active_web_contents->GetLastCommittedURL());
 }
 

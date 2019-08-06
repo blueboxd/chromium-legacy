@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_features.h"
@@ -72,6 +73,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -666,6 +668,12 @@ void Tab::OnBlur() {
 
 void Tab::OnThemeChanged() {
   UpdateForegroundColors();
+}
+
+TabSizeInfo Tab::GetTabSizeInfo() const {
+  return {TabStyle::GetPinnedWidth(), TabStyleViews::GetMinimumActiveWidth(),
+          TabStyleViews::GetMinimumInactiveWidth(),
+          TabStyle::GetStandardWidth()};
 }
 
 void Tab::SetClosing(bool closing) {

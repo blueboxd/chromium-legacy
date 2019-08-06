@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
@@ -82,7 +82,7 @@ class ChromiumSocketFactoryTest : public testing::Test,
     while (last_packet_.empty() && attempts++ < kMaxAttempts) {
       sender->SendTo(test_packet.data(), test_packet.size(),
                      socket_->GetLocalAddress(), options);
-      message_loop_.task_runner()->PostDelayedTask(
+      scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
           FROM_HERE, run_loop_.QuitClosure(), kAttemptPeriod);
       run_loop_.Run();
     }
@@ -91,7 +91,8 @@ class ChromiumSocketFactoryTest : public testing::Test,
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   base::RunLoop run_loop_;
 
   std::unique_ptr<rtc::PacketSocketFactory> socket_factory_;

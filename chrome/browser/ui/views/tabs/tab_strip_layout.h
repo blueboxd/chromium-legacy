@@ -7,14 +7,14 @@
 
 #include <vector>
 
+#include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class Rect;
 }
 
-class TabAnimationState;
-
+// Sizing info for individual tabs.
 struct TabSizeInfo {
   // The width of pinned tabs.
   int pinned_tab_width;
@@ -23,15 +23,24 @@ struct TabSizeInfo {
   int min_active_width;
   int min_inactive_width;
 
-  // The size of a standard tab, which is the max size active or inactive tabs
-  // have.
-  gfx::Size standard_size;
+  // The width of a standard tab, which is the largest size active or inactive
+  // tabs ever have.
+  int standard_width;
+};
 
-  // The overlap between adjacent tabs. When positioning tabs the x-coordinate
-  // of a tab is calculated as the x-coordinate of the previous tab plus the
-  // previous tab's width minus the |tab_overlap|, e.g.
-  // next_tab_x = previous_tab.bounds().right() - tab_overlap.
+// Sizing info global to the tabstrip.
+struct TabLayoutConstants {
+  // The height of tabs.
+  int tab_height;
+
+  // The amount adjacent tabs overlap each other.
   int tab_overlap;
+};
+
+// Animation and sizing information for one tab.
+struct TabLayoutInfo {
+  TabAnimationState animation_state;
+  TabSizeInfo size_info;
 };
 
 // Calculates and returns the bounds of the tabs. |width| is the available
@@ -39,12 +48,12 @@ struct TabSizeInfo {
 // minimum widths in TabSizeInfo, and as a result the calculated bounds may go
 // beyond |width|.
 std::vector<gfx::Rect> CalculateTabBounds(
-    const TabSizeInfo& tab_size_info,
-    const std::vector<TabAnimationState>& tabs,
+    const TabLayoutConstants& layout_constants,
+    const std::vector<TabLayoutInfo>& tabs,
     int width);
 
 std::vector<gfx::Rect> CalculatePinnedTabBounds(
-    const TabSizeInfo& tab_size_info,
-    const std::vector<TabAnimationState>& pinned_tabs);
+    const TabLayoutConstants& layout_constants,
+    const std::vector<TabLayoutInfo>& pinned_tabs);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_LAYOUT_H_

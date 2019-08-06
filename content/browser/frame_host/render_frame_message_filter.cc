@@ -299,6 +299,15 @@ void RenderFrameMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
+void RenderFrameMessageFilter::OverrideThreadForMessage(
+    const IPC::Message& message,
+    BrowserThread::ID* thread) {
+#if BUILDFLAG(ENABLE_PLUGINS)
+  if (message.type() == FrameHostMsg_GetPluginInfo::ID)
+    *thread = BrowserThread::UI;
+#endif  // ENABLE_PLUGINS
+}
+
 void RenderFrameMessageFilter::DownloadUrl(
     int render_view_id,
     int render_frame_id,
@@ -462,14 +471,10 @@ void RenderFrameMessageFilter::OnGetPluginInfo(
     bool* found,
     WebPluginInfo* info,
     std::string* actual_mime_type) {
-  if (!resource_context_)
-    return;
-
   bool allow_wildcard = true;
   *found = plugin_service_->GetPluginInfo(
-      render_process_id_, render_frame_id, resource_context_, url,
-      main_frame_origin, mime_type, allow_wildcard, nullptr, info,
-      actual_mime_type);
+      render_process_id_, render_frame_id, url, main_frame_origin, mime_type,
+      allow_wildcard, nullptr, info, actual_mime_type);
 }
 
 void RenderFrameMessageFilter::OnOpenChannelToPepperPlugin(

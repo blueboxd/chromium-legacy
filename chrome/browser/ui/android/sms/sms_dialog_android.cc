@@ -25,9 +25,9 @@ SmsDialogAndroid::~SmsDialogAndroid() {
 }
 
 void SmsDialogAndroid::Open(content::RenderFrameHost* host,
-                            base::OnceClosure on_continue,
+                            base::OnceClosure on_confirm,
                             base::OnceClosure on_cancel) {
-  on_continue_ = std::move(on_continue);
+  on_confirm_ = std::move(on_confirm);
   on_cancel_ = std::move(on_cancel);
 
   content::WebContents* web_contents =
@@ -48,8 +48,8 @@ void SmsDialogAndroid::SmsReceived() {
   Java_SmsReceiverDialog_smsReceived(AttachCurrentThread(), java_dialog_);
 }
 
-void SmsDialogAndroid::OnContinue(JNIEnv* env) {
-  std::move(on_continue_).Run();
+void SmsDialogAndroid::OnConfirm(JNIEnv* env) {
+  std::move(on_confirm_).Run();
 }
 
 void SmsDialogAndroid::OnCancel(JNIEnv* env) {

@@ -152,6 +152,8 @@ void SafeBrowsingQuietErrorUI::PopulatePhishingLoadTimeData(
 void SafeBrowsingQuietErrorUI::PopulateBillingLoadTimeData(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetBoolean("phishing", false);
+  load_time_data->SetString("tabTitle",
+                            l10n_util::GetStringUTF16(IDS_BILLING_TITLE));
   load_time_data->SetString(
       "heading", l10n_util::GetStringUTF16(IDS_BILLING_WEBVIEW_HEADING));
   load_time_data->SetString(

@@ -367,7 +367,7 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
     suggestions->back().icon = "googlePay";
 #else
     suggestions->back().icon =
-        ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+        ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()
             ? "googlePayDark"
             : "googlePay";
 #endif

@@ -1516,6 +1516,84 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseDragAppListItemOpacity) {
   }
 }
 
+// Tests that ending of the mouse dragging of app-list destroys the layers for
+// the items which are in the second page. See https://crbug.com/990529.
+TEST_F(AppListPresenterDelegateHomeLauncherTest, LayerOnSecondPage) {
+  const int items_in_page =
+      app_list::AppListConfig::instance().preferred_cols() *
+      app_list::AppListConfig::instance().preferred_rows();
+  app_list::AppListModel* model =
+      Shell::Get()->app_list_controller()->GetModel();
+  for (int i = 0; i < items_in_page; ++i) {
+    std::unique_ptr<app_list::AppListItem> item(
+        new app_list::AppListItem(base::StringPrintf("fake id %02d", i)));
+    model->AddItem(std::move(item));
+  }
+
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+
+  const gfx::Point start_point = GetAppListView()->GetBoundsInScreen().origin();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(start_point);
+  generator->PressLeftButton();
+  app_list::AppsGridView* apps_grid_view = GetAppListView()
+                                               ->app_list_main_view()
+                                               ->contents_view()
+                                               ->GetAppsContainerView()
+                                               ->apps_grid_view();
+
+  // Drags the mouse a bit above (twice as shelf's height). This should show the
+  // item vaguely.
+  const int shelf_height =
+      GetPrimaryShelf()->GetShelfViewForTesting()->height();
+  generator->MoveMouseBy(0, -shelf_height * 2);
+  // All of the item should have the layer at this point.
+  for (int i = 0; i < items_in_page; ++i) {
+    views::View* item_view = apps_grid_view->view_model()->view_at(i);
+    EXPECT_TRUE(item_view->layer()) << "at " << i;
+    EXPECT_LE(0.f, item_view->layer()->opacity()) << "at " << i;
+    EXPECT_GE(1.f, item_view->layer()->opacity()) << "at " << i;
+  }
+
+  // Add items at the front of the items.
+  const int additional_items = 10;
+  syncer::StringOrdinal prev_position =
+      model->top_level_item_list()->item_at(0)->position();
+  for (int i = 0; i < additional_items; ++i) {
+    std::unique_ptr<app_list::AppListItem> item(new app_list::AppListItem(
+        base::StringPrintf("fake id %02d", i + items_in_page)));
+    // Update the position so that the item is added at the front of the list.
+    auto metadata = item->CloneMetadata();
+    metadata->position = prev_position.CreateBefore();
+    prev_position = metadata->position;
+    item->SetMetadata(std::move(metadata));
+    model->AddItem(std::move(item));
+  }
+
+  generator->MoveMouseBy(0, -1);
+
+  // At this point, some items move out from the first page.
+  EXPECT_LT(1, apps_grid_view->pagination_model()->total_pages());
+
+  // The items on the first page should have layers.
+  for (int i = 0; i < items_in_page; ++i) {
+    views::View* item_view = apps_grid_view->view_model()->view_at(i);
+    EXPECT_TRUE(item_view->layer()) << "at " << i;
+    EXPECT_LE(0.f, item_view->layer()->opacity()) << "at " << i;
+    EXPECT_GE(1.f, item_view->layer()->opacity()) << "at " << i;
+  }
+
+  // Drag to the top of the screen and finish the drag. It should destroy all
+  // of the layers, including items on the second page.
+  generator->MoveMouseTo(start_point.x(), 0);
+  generator->ReleaseLeftButton();
+  for (int i = 0; i < apps_grid_view->view_model()->view_size(); ++i) {
+    views::View* item_view = apps_grid_view->view_model()->view_at(i);
+    EXPECT_FALSE(item_view->layer()) << "at " << i;
+  }
+}
+
 // Tests that the app list is shown automatically when the tablet mode is on.
 // The app list is dismissed when the tablet mode is off.
 TEST_F(AppListPresenterDelegateHomeLauncherTest, ShowAppListForTabletMode) {

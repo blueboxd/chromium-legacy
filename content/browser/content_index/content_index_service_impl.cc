@@ -60,16 +60,18 @@ ContentIndexServiceImpl::~ContentIndexServiceImpl() = default;
 void ContentIndexServiceImpl::Add(
     int64_t service_worker_registration_id,
     blink::mojom::ContentDescriptionPtr description,
-    const SkBitmap& icon,
+    const std::vector<SkBitmap>& icons,
     const GURL& launch_url,
     AddCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (icon.isNull() || icon.width() > kMaxIconDimension ||
-      icon.height() > kMaxIconDimension) {
-    mojo::ReportBadMessage("Invalid icon");
-    std::move(callback).Run(blink::mojom::ContentIndexError::INVALID_PARAMETER);
-    return;
+  for (const auto& icon : icons) {
+    if (icon.isNull() || icon.width() * icon.height() > kMaxIconResolution) {
+      mojo::ReportBadMessage("Invalid icon");
+      std::move(callback).Run(
+          blink::mojom::ContentIndexError::INVALID_PARAMETER);
+      return;
+    }
   }
 
   if (!launch_url.is_valid() ||
@@ -80,7 +82,7 @@ void ContentIndexServiceImpl::Add(
   }
 
   content_index_context_->database().AddEntry(
-      service_worker_registration_id, origin_, std::move(description), icon,
+      service_worker_registration_id, origin_, std::move(description), icons,
       launch_url, std::move(callback));
 }
 

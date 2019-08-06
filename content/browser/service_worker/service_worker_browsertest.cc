@@ -3680,18 +3680,6 @@ class ThrottlingContentBrowserClient : public TestContentBrowserClient {
 
   // ContentBrowserClient overrides:
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-  CreateURLLoaderThrottlesOnIO(
-      const network::ResourceRequest& request,
-      ResourceContext* resource_context,
-      const base::RepeatingCallback<WebContents*()>& wc_getter,
-      NavigationUIData* navigation_ui_data,
-      int frame_tree_node_id) override {
-    return CreateURLLoaderThrottles(request, /*browser_context=*/nullptr,
-                                    wc_getter, navigation_ui_data,
-                                    frame_tree_node_id);
-  }
-
-  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const network::ResourceRequest& request,
       BrowserContext* browser_context,

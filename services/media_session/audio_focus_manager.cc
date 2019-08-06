@@ -63,19 +63,30 @@ void AudioFocusManager::RequestAudioFocus(
     mojom::MediaSessionInfoPtr session_info,
     mojom::AudioFocusType type,
     RequestAudioFocusCallback callback) {
-  RequestGroupedAudioFocus(
-      std::move(receiver), std::move(media_session), std::move(session_info),
-      type, base::UnguessableToken::Create(), std::move(callback));
+  auto request_id = base::UnguessableToken::Create();
+
+  RequestAudioFocusInternal(
+      std::make_unique<AudioFocusRequest>(
+          weak_ptr_factory_.GetWeakPtr(), std::move(receiver),
+          std::move(media_session), std::move(session_info), type, request_id,
+          GetBindingSourceName(), base::UnguessableToken::Create()),
+      type);
+
+  std::move(callback).Run(request_id);
 }
 
 void AudioFocusManager::RequestGroupedAudioFocus(
+    const base::UnguessableToken& request_id,
     mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
     mojo::PendingRemote<mojom::MediaSession> media_session,
     mojom::MediaSessionInfoPtr session_info,
     mojom::AudioFocusType type,
     const base::UnguessableToken& group_id,
     RequestGroupedAudioFocusCallback callback) {
-  base::UnguessableToken request_id = base::UnguessableToken::Create();
+  if (IsFocusEntryPresent(request_id)) {
+    std::move(callback).Run(false /* success */);
+    return;
+  }
 
   RequestAudioFocusInternal(
       std::make_unique<AudioFocusRequest>(
@@ -84,7 +95,7 @@ void AudioFocusManager::RequestGroupedAudioFocus(
           GetBindingSourceName(), group_id),
       type);
 
-  std::move(callback).Run(request_id);
+  std::move(callback).Run(true /* success */);
 }
 
 void AudioFocusManager::GetFocusRequests(GetFocusRequestsCallback callback) {
@@ -312,6 +323,16 @@ std::unique_ptr<AudioFocusRequest> AudioFocusManager::RemoveFocusEntryIfPresent(
   }
 
   return row;
+}
+
+bool AudioFocusManager::IsFocusEntryPresent(
+    const base::UnguessableToken& id) const {
+  for (auto& row : audio_focus_stack_) {
+    if (row->id() == id)
+      return true;
+  }
+
+  return false;
 }
 
 const std::string& AudioFocusManager::GetBindingSourceName() const {

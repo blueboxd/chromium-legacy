@@ -14,6 +14,7 @@ extern NSString* const kDisabledTintColor;
 extern NSString* const kMDCInkColor;
 extern NSString* const kScrimBackgroundColor;
 extern NSString* const kSolidButtonTextColor;
+extern NSString* const kTableViewRowHighlightColor;
 extern NSString* const kTextPrimaryColor;
 extern NSString* const kTextSecondaryColor;
 extern NSString* const kTextfieldBackgroundColor;
@@ -34,7 +35,9 @@ extern NSString* const kRedColor;
 // available in iOS 12, any views that should always be dark (e.g. incognito)
 // need to use colorsets that always use the dark variant.
 // TODO(crbug.com/981889): Clean up after iOS 12 support is dropped.
+
 extern NSString* const kBackgroundDarkColor;
+extern NSString* const kTableViewRowHighlightDarkColor;
 extern NSString* const kTextPrimaryDarkColor;
 extern NSString* const kTextfieldBackgroundDarkColor;
 extern NSString* const kTextfieldPlaceholderDarkColor;

@@ -2021,6 +2021,12 @@ void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
                          GetWebMainThreadScheduler()->DefaultTaskRunner());
 }
 
+void RenderThreadImpl::DestroyView(int32_t view_id) {
+  RenderViewImpl* view = RenderViewImpl::FromRoutingID(view_id);
+  DCHECK(view);
+  view->Destroy();
+}
+
 void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
   CompositorDependencies* compositor_deps = this;
   service_manager::mojom::InterfaceProviderPtr interface_provider(

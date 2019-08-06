@@ -771,6 +771,10 @@ IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestControllerInputRegistered) {
   // Press and release the trigger, ensuring the Gamepad API detects both.
   my_mock.TogglePrimaryTrigger(controller_index);
   WaitOnJavaScriptStep();
+  // Re-register the callback since it unregisters itself after finishing the
+  // step.
+  RunJavaScriptOrFail(
+      "onPresentingAnimationFrameCallback = gamepadFrameCallback");
   my_mock.TogglePrimaryTrigger(controller_index);
   WaitOnJavaScriptStep();
   EndTest();

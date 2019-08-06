@@ -15,6 +15,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -62,12 +63,22 @@ abstract class OverlayPanelBase {
 
     /** The opacity of the arrow icon when the Panel is expanded. */
     private static final float ARROW_ICON_OPACITY_STATE_EXPANDED = 0.f;
+    private static final float ARROW_ICON_OPACITY_TRANSPARENT = 0.f;
 
     /** The opacity of the arrow icon when the Panel is maximized. */
     private static final float ARROW_ICON_OPACITY_STATE_MAXIMIZED = 0.f;
 
     /** The rotation of the arrow icon. */
     private static final float ARROW_ICON_ROTATION = -90.f;
+
+    /** The opacity of the Open-Tab icon when the Panel is peeking. */
+    private static final float OPEN_TAB_ICON_OPACITY_STATE_PEEKED = 1.f;
+
+    /** The opacity of the Open-Tab icon when the Panel is expanded. */
+    private static final float OPEN_TAB_ICON_OPACITY_STATE_EXPANDED = 0.f;
+
+    /** The opacity of the Open-Tab icon when the Panel is maximized. */
+    private static final float OPEN_TAB_ICON_OPACITY_STATE_MAXIMIZED = 0.f;
 
     /** The opacity of the close icon when the Panel is peeking. */
     private static final float CLOSE_ICON_OPACITY_STATE_PEEKED = 0.f;
@@ -111,7 +122,7 @@ abstract class OverlayPanelBase {
     /** The background color of the Bar. */
     private final @ColorInt int mBarBackgroundColor;
 
-    /** The tint used for icons (e.g. arrow icon, close icon). */
+    /** The tint used for icons (e.g. close icon, etc). */
     private final @ColorInt int mIconColor;
 
     /** The tint used for drag handlebar. */
@@ -128,6 +139,9 @@ abstract class OverlayPanelBase {
 
     /** The current state of the Overlay Panel. */
     private @PanelState int mPanelState = PanelState.UNDEFINED;
+
+    /** The padding on each side of the close and open-tab icons. */
+    protected final int mButtonPaddingDps;
 
     // ============================================================================================
     // Constructor
@@ -159,6 +173,8 @@ abstract class OverlayPanelBase {
         mIconColor = ApiCompatibilityUtils.getColor(resources, R.color.default_icon_color);
         mDragHandlebarColor =
                 ApiCompatibilityUtils.getColor(resources, R.color.drag_handlebar_color);
+        mButtonPaddingDps =
+                (int) (mPxToDp * resources.getDimension(R.dimen.overlay_panel_button_padding));
     }
 
     // ============================================================================================
@@ -405,8 +421,8 @@ abstract class OverlayPanelBase {
     // --------------------------------------------------------------------------------------------
     // Panel Bar states
     // --------------------------------------------------------------------------------------------
-    private float mBarMarginSide;
-    private float mBarMarginTop;
+    private final float mBarMarginSide;
+    private final float mBarMarginTop;
     private float mBarHeight;
     private boolean mIsBarBorderVisible;
     private float mBarBorderHeight;
@@ -495,7 +511,9 @@ abstract class OverlayPanelBase {
      * @return The opacity of the arrow icon.
      */
     public float getArrowIconOpacity() {
-        return mArrowIconOpacity;
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)
+                ? ARROW_ICON_OPACITY_TRANSPARENT
+                : mArrowIconOpacity;
     }
 
     /**
@@ -550,7 +568,7 @@ abstract class OverlayPanelBase {
      * @return The left X coordinate of the open new tab icon.
      */
     public float getOpenTabIconX() {
-        float offset = getCloseIconDimension() + getBarMarginSide();
+        float offset = getCloseIconDimension() + 2 * mButtonPaddingDps;
         if (LocalizationUtils.isLayoutRtl()) {
             return getCloseIconX() + offset;
         } else {

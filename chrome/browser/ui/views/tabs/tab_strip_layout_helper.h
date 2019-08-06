@@ -19,6 +19,7 @@
 class Tab;
 class TabGroupHeader;
 class TabGroupId;
+struct TabLayoutInfo;
 class TabStripController;
 
 // Helper class for TabStrip, that is responsible for calculating and assigning
@@ -88,6 +89,7 @@ class TabStripLayoutHelper {
   // Inserts a new group header for |group|. |header_removed_callback| will be
   // invoked if the group is removed at the end of a remove animation.
   void InsertGroupHeader(TabGroupId group,
+                         TabGroupHeader* header,
                          base::OnceClosure header_removed_callback);
 
   // Removes the group header for |group|.
@@ -133,8 +135,8 @@ class TabStripLayoutHelper {
   // in |slots_|.
   int GetSlotIndexForGroupHeader(TabGroupId group) const;
 
-  // Returns the current animation progress for each View.
-  std::vector<TabAnimationState> GetCurrentTabStates() const;
+  // Returns the current layout info (animation and sizing) for each View.
+  std::vector<TabLayoutInfo> CreateTabLayoutInfo() const;
 
   // Runs an animation for the View at |slot_index| towards |target_state|.
   void AnimateSlot(int slot_index, TabAnimationState target_state);

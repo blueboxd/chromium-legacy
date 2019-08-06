@@ -5,7 +5,7 @@
 import("//build/config/features.gni")
 import("//components/safe_browsing/buildflags.gni")
 
-source_set("lib") {
+source_set("file_util") {
   sources = [
     "file_util_service.cc",
     "file_util_service.h",
@@ -19,8 +19,8 @@ source_set("lib") {
 
   public_deps = [
     "//chrome/services/file_util/public/mojom",
+    "//mojo/public/cpp/bindings",
     "//mojo/public/mojom/base",
-    "//services/service_manager/public/cpp",
   ]
 
   if (is_chromeos) {

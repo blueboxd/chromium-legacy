@@ -40,8 +40,8 @@ public class EphemeralTabBarControl {
         mCaption = panel.canPromoteToNewTab()
                 ? new EphemeralTabCaptionControl(panel, context, container, loader)
                 : null;
-        mTextLayerMinHeight = context.getResources().getDimension(
-                R.dimen.contextual_search_text_layer_min_height);
+        mTextLayerMinHeight =
+                context.getResources().getDimension(R.dimen.overlay_panel_text_layer_min_height);
         mTitleCaptionSpacing =
                 context.getResources().getDimension(R.dimen.contextual_search_term_caption_spacing);
     }

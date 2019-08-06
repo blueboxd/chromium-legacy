@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "remoting/host/security_key/fake_security_key_ipc_server.h"
@@ -74,7 +74,8 @@ class SecurityKeyIpcClientTest : public testing::Test {
   mojo::NamedPlatformChannel::ServerName GenerateUniqueTestChannelName();
 
   // IPC tests require a valid MessageLoop to run.
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
 
   // Used to allow |message_loop_| to run during tests.  The instance is reset
   // after each stage of the tests has been completed.

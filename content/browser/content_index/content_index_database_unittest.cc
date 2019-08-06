@@ -93,10 +93,11 @@ void GetDescriptionsCallback(
   std::move(quit_closure).Run();
 }
 
-SkBitmap CreateTestIcon() {
-  SkBitmap icon;
-  icon.allocN32Pixels(42, 42);
-  return icon;
+std::vector<SkBitmap> CreateTestIcons() {
+  std::vector<SkBitmap> icons(2);
+  icons[0].allocN32Pixels(42, 42);
+  icons[1].allocN32Pixels(24, 24);
+  return icons;
 }
 
 }  // namespace
@@ -125,12 +126,13 @@ class ContentIndexDatabaseTest : public ::testing::Test {
   }
 
   blink::mojom::ContentIndexError AddEntry(
-      blink::mojom::ContentDescriptionPtr description) {
+      blink::mojom::ContentDescriptionPtr description,
+      std::vector<SkBitmap> icons = CreateTestIcons()) {
     base::RunLoop run_loop;
     blink::mojom::ContentIndexError error;
     database_->AddEntry(
         service_worker_registration_id_, origin_, std::move(description),
-        CreateTestIcon(), launch_url(),
+        std::move(icons), launch_url(),
         base::BindOnce(&DatabaseErrorCallback, run_loop.QuitClosure(), &error));
     run_loop.Run();
 
@@ -160,16 +162,17 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     return descriptions;
   }
 
-  SkBitmap GetIcon(const std::string& id) {
+  std::vector<SkBitmap> GetIcons(const std::string& id) {
     base::RunLoop run_loop;
-    SkBitmap out_icon;
-    database_->GetIcon(service_worker_registration_id_, id,
-                       base::BindLambdaForTesting([&](SkBitmap icon) {
-                         out_icon = std::move(icon);
-                         run_loop.Quit();
-                       }));
+    std::vector<SkBitmap> out_icons;
+    database_->GetIcons(
+        service_worker_registration_id_, id,
+        base::BindLambdaForTesting([&](std::vector<SkBitmap> icons) {
+          out_icons = std::move(icons);
+          run_loop.Quit();
+        }));
     run_loop.Run();
-    return out_icon;
+    return out_icons;
   }
 
   std::vector<ContentIndexEntry> GetAllEntries() {
@@ -358,18 +361,38 @@ TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
 
 TEST_F(ContentIndexDatabaseTest, IconLifetimeTiedToEntry) {
   // Initially we don't have an icon.
-  EXPECT_TRUE(GetIcon("id").isNull());
+  EXPECT_TRUE(GetIcons("id").empty());
 
   EXPECT_EQ(AddEntry(CreateDescription("id")),
             blink::mojom::ContentIndexError::NONE);
-  SkBitmap icon = GetIcon("id");
-  EXPECT_FALSE(icon.isNull());
-  EXPECT_FALSE(icon.drawsNothing());
-  EXPECT_EQ(icon.width(), 42);
-  EXPECT_EQ(icon.height(), 42);
+  auto icons = GetIcons("id");
+  ASSERT_EQ(icons.size(), 2u);
+  if (icons[0].width() > icons[1].width())
+    std::swap(icons[0], icons[1]);
+
+  EXPECT_FALSE(icons[0].isNull());
+  EXPECT_FALSE(icons[0].drawsNothing());
+  EXPECT_EQ(icons[0].width(), 24);
+  EXPECT_EQ(icons[0].height(), 24);
+  EXPECT_FALSE(icons[1].isNull());
+  EXPECT_FALSE(icons[1].drawsNothing());
+  EXPECT_EQ(icons[1].width(), 42);
+  EXPECT_EQ(icons[1].height(), 42);
 
   EXPECT_EQ(DeleteEntry("id"), blink::mojom::ContentIndexError::NONE);
-  EXPECT_TRUE(GetIcon("id").isNull());
+  EXPECT_TRUE(GetIcons("id").empty());
+}
+
+TEST_F(ContentIndexDatabaseTest, NoIconsAreSupported) {
+  // Initially we don't have an icon.
+  EXPECT_TRUE(GetIcons("id").empty());
+
+  // Create an entry with no icons.
+  EXPECT_EQ(AddEntry(CreateDescription("id"), /* icons= */ {}),
+            blink::mojom::ContentIndexError::NONE);
+
+  // No icons should be found.
+  EXPECT_TRUE(GetIcons("id").empty());
 }
 
 TEST_F(ContentIndexDatabaseTest, GetEntries) {
@@ -446,7 +469,7 @@ TEST_F(ContentIndexDatabaseTest, UmaRecorded) {
   histogram_tester.ExpectBucketCount("ContentIndex.Database.Add",
                                      blink::ServiceWorkerStatusCode::kOk, 1);
 
-  EXPECT_FALSE(GetIcon("id").isNull());
+  EXPECT_FALSE(GetIcons("id").empty());
   histogram_tester.ExpectBucketCount("ContentIndex.Database.GetIcon",
                                      blink::ServiceWorkerStatusCode::kOk, 1);
 

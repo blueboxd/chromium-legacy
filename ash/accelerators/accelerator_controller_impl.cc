@@ -82,7 +82,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/user_manager/user_type.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -800,7 +800,7 @@ bool CanHandleShowStylusTools() {
 }
 
 bool CanHandleStartAmbientMode() {
-  return chromeos::switches::IsAmbientModeEnabled();
+  return chromeos::features::IsAmbientModeEnabled();
 }
 
 void HandleToggleAmbientMode(const ui::Accelerator& accelerator) {
@@ -808,7 +808,7 @@ void HandleToggleAmbientMode(const ui::Accelerator& accelerator) {
 }
 
 bool CanHandleStartVoiceInteraction() {
-  return chromeos::switches::IsAssistantEnabled();
+  return chromeos::features::IsAssistantEnabled();
 }
 
 void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {

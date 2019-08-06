@@ -60,7 +60,9 @@ void SafeBundledExchangesParser::ParseMetadata(
   // simultaneous request is fine enough.
   if (disconnected_ || !metadata_callback_.is_null()) {
     std::move(callback).Run(
-        nullptr, mojom::BundleMetadataParseError::New(kConnectionError));
+        nullptr, mojom::BundleMetadataParseError::New(
+                     mojom::BundleParseErrorType::kParserInternalError,
+                     GURL() /* fallback_url */, kConnectionError));
     return;
   }
   metadata_callback_ = std::move(callback);
@@ -78,7 +80,9 @@ void SafeBundledExchangesParser::ParseResponse(
   if (disconnected_ ||
       response_callbacks_.contains(response_callback_next_id_)) {
     std::move(callback).Run(
-        nullptr, mojom::BundleResponseParseError::New(kConnectionError));
+        nullptr, mojom::BundleResponseParseError::New(
+                     mojom::BundleParseErrorType::kParserInternalError,
+                     kConnectionError));
     return;
   }
   size_t callback_id = response_callback_next_id_++;
@@ -93,10 +97,14 @@ void SafeBundledExchangesParser::OnDisconnect() {
   disconnected_ = true;
   if (!metadata_callback_.is_null())
     std::move(metadata_callback_)
-        .Run(nullptr, mojom::BundleMetadataParseError::New(kConnectionError));
+        .Run(nullptr, mojom::BundleMetadataParseError::New(
+                          mojom::BundleParseErrorType::kParserInternalError,
+                          GURL() /* fallback_url */, kConnectionError));
   for (auto& callback : response_callbacks_)
     std::move(callback.second)
-        .Run(nullptr, mojom::BundleResponseParseError::New(kConnectionError));
+        .Run(nullptr, mojom::BundleResponseParseError::New(
+                          mojom::BundleParseErrorType::kParserInternalError,
+                          kConnectionError));
   response_callbacks_.clear();
 }
 

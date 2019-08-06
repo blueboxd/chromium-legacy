@@ -9,11 +9,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/views/hover_button_controller.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/test/button_test_api.h"
 
 class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
  protected:
@@ -61,10 +61,10 @@ class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
   }
 
   void TriggerNotifyClick() {
-    ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                               base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-    views::test::ButtonTestApi test_api(button_.get());
-    test_api.NotifyClick(click_event);
+    ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
+                               gfx::Point(), base::TimeTicks(),
+                               ui::EF_LEFT_MOUSE_BUTTON, 0);
+    button_->button_controller()->OnMouseReleased(click_event);
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

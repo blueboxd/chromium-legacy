@@ -27,6 +27,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/win_util.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
@@ -405,13 +406,16 @@ bool ServiceUtilityProcessHost::Launch(base::CommandLine* cmd_line,
   const base::CommandLine& service_command_line =
       *base::CommandLine::ForCurrentProcess();
   static const char* const kForwardSwitches[] = {
-      switches::kDisableLogging,
-      switches::kEnableLogging,
-      switches::kIPCConnectionTimeout,
-      switches::kLoggingLevel,
-      switches::kUtilityStartupDialog,
-      switches::kV,
-      switches::kVModule,
+    switches::kDisableLogging,
+    switches::kEnableLogging,
+    switches::kIPCConnectionTimeout,
+    switches::kLoggingLevel,
+    switches::kUtilityStartupDialog,
+    switches::kV,
+    switches::kVModule,
+#if defined(OS_WIN)
+    switches::kDisableHighResTimer,
+#endif
   };
   cmd_line->CopySwitchesFrom(service_command_line, kForwardSwitches,
                              base::size(kForwardSwitches));

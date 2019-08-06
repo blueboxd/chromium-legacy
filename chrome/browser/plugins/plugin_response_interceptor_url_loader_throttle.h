@@ -11,11 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
-namespace content {
-class BrowserContext;
-class ResourceContext;
-}
-
 // Used to watch navigation responses to look for mime types that are handled by
 // extensions. When it finds such a response, it will intercept it by extracting
 // the URLLoader interface pointer. It will create a random string and send that
@@ -28,11 +23,6 @@ class PluginResponseInterceptorURLLoaderThrottle
     : public blink::URLLoaderThrottle {
  public:
   PluginResponseInterceptorURLLoaderThrottle(
-      content::ResourceContext* resource_context,
-      int resource_type,
-      int frame_tree_node_id);
-  PluginResponseInterceptorURLLoaderThrottle(
-      content::BrowserContext* browser_context,
       int resource_type,
       int frame_tree_node_id);
   ~PluginResponseInterceptorURLLoaderThrottle() override;
@@ -46,8 +36,6 @@ class PluginResponseInterceptorURLLoaderThrottle
   // layer chance to initialize its browser side state.
   void ResumeLoad();
 
-  content::ResourceContext* const resource_context_ = nullptr;
-  content::BrowserContext* const browser_context_ = nullptr;
   const int resource_type_;
   const int frame_tree_node_id_;
 

@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/arc/arc_util.h"
@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, UnknownDeviceType) {
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, AssistantSupported) {
   // Enable native Assistant.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(chromeos::switches::kAssistantFeature);
+  feature_list.InitAndEnableFeature(chromeos::features::kAssistantFeature);
 
   ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
                                         "assistant supported"))
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, AssistantSupported) {
 IN_PROC_BROWSER_TEST_F(ChromeOSInfoPrivateTest, AssistantUnsupported) {
   // Disable native Assistant.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(chromeos::switches::kAssistantFeature);
+  feature_list.InitAndDisableFeature(chromeos::features::kAssistantFeature);
 
   ASSERT_TRUE(RunPlatformAppTestWithArg("chromeos_info_private/extended",
                                         "assistant unsupported"))

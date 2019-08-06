@@ -25,7 +25,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 
 namespace ash {
 namespace mojo_interface_factory {
@@ -106,7 +106,7 @@ void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
 void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
-  if (chromeos::switches::IsAssistantEnabled()) {
+  if (chromeos::features::IsAssistantEnabled()) {
     registry->AddInterface(
         base::BindRepeating(
             &BindAssistantAlarmTimerControllerRequestOnMainThread),

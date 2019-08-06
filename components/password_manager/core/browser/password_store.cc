@@ -459,6 +459,12 @@ void PasswordStore::ClearAllEnterprisePasswordHash() {
       &PasswordStore::ClearAllEnterprisePasswordHashImpl, this));
 }
 
+std::unique_ptr<StateSubscription>
+PasswordStore::RegisterStateCallbackOnHashPasswordManager(
+    const base::Callback<void(const std::string& username)>& callback) {
+  return hash_password_manager_.RegisterStateCallback(callback);
+}
+
 void PasswordStore::SetPasswordStoreSigninNotifier(
     std::unique_ptr<PasswordStoreSigninNotifier> notifier) {
   DCHECK(!notifier_);

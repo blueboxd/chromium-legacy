@@ -20,7 +20,9 @@
 
 namespace {
 // Returns the account info for |identity| (which must not be nil).
-DeviceAccountsProvider::AccountInfo GetAccountInfo(ChromeIdentity* identity) {
+DeviceAccountsProvider::AccountInfo GetAccountInfo(
+    ChromeIdentity* identity,
+    ios::ChromeIdentityService* identity_service) {
   DCHECK(identity);
   DeviceAccountsProvider::AccountInfo account_info;
   account_info.gaia = base::SysNSStringToUTF8([identity gaiaID]);
@@ -30,7 +32,8 @@ DeviceAccountsProvider::AccountInfo GetAccountInfo(ChromeIdentity* identity) {
   // fetched from gaia; in that case, set account_info.hosted_domain to
   // an empty string. Otherwise, set it to the value of the hostedDomain
   // or kNoHostedDomainFound if the string is empty.
-  NSString* hostedDomain = [identity hostedDomain];
+  NSString* hostedDomain =
+      identity_service->GetCachedHostedDomainForIdentity(identity);
   if (hostedDomain) {
     account_info.hosted_domain = [hostedDomain length]
                                      ? base::SysNSStringToUTF8(hostedDomain)
@@ -68,11 +71,11 @@ void DeviceAccountsProviderImpl::GetAccessToken(
 std::vector<DeviceAccountsProvider::AccountInfo>
 DeviceAccountsProviderImpl::GetAllAccounts() const {
   std::vector<AccountInfo> accounts;
-  NSArray* identities = ios::GetChromeBrowserProvider()
-                            ->GetChromeIdentityService()
-                            ->GetAllIdentities();
+  ios::ChromeIdentityService* identity_service =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  NSArray* identities = identity_service->GetAllIdentities();
   for (ChromeIdentity* identity in identities) {
-    accounts.push_back(GetAccountInfo(identity));
+    accounts.push_back(GetAccountInfo(identity, identity_service));
   }
   return accounts;
 }

@@ -958,7 +958,7 @@ void GpuBenchmarking::SetBrowserControlsShown(bool show) {
   GpuBenchmarkingContext context;
   if (!context.Init(true))
     return;
-  context.layer_tree_view()->UpdateBrowserControlsState(
+  context.layer_tree_view()->layer_tree_host()->UpdateBrowserControlsState(
       cc::BrowserControlsState::kBoth,
       show ? cc::BrowserControlsState::kShown
            : cc::BrowserControlsState::kHidden,

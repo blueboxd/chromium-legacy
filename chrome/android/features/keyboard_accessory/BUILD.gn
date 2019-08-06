@@ -86,6 +86,7 @@ junit_binary("keyboard_accessory_junit_tests") {
     "junit/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingControllerTest.java",
     "junit/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryControllerTest.java",
     "junit/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/AddressAccessorySheetControllerTest.java",
+    "junit/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/CreditCardAccessorySheetControllerTest.java",
     "junit/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/PasswordAccessorySheetControllerTest.java",
     "junit/src/org/chromium/chrome/browser/keyboard_accessory/tab_layout_component/KeyboardAccessoryTabLayoutControllerTest.java",
   ]

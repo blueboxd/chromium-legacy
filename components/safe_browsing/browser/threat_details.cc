@@ -381,7 +381,6 @@ ThreatDetails::ThreatDetails(
       cache_result_(false),
       did_proceed_(false),
       num_visits_(0),
-      ambiguous_dom_(false),
       trim_to_ad_tags_(trim_to_ad_tags),
       cache_collector_(new ThreatDetailsCacheCollector),
       done_callback_(done_callback),
@@ -398,7 +397,6 @@ ThreatDetails::ThreatDetails()
     : cache_result_(false),
       did_proceed_(false),
       num_visits_(0),
-      ambiguous_dom_(false),
       trim_to_ad_tags_(false),
       all_done_expected_(false),
       is_all_done_(false) {}
@@ -676,10 +674,8 @@ void ThreatDetails::OnReceivedThreatDOMDetails(
     int child_frame_tree_node_id =
         content::RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
             sender_process_id, node->child_frame_routing_id);
-    if (child_frame_tree_node_id ==
+    if (child_frame_tree_node_id !=
         content::RenderFrameHost::kNoFrameTreeNodeId) {
-      ambiguous_dom_ = true;
-    } else {
       child_frame_tree_map[cur_element_key] = child_frame_tree_node_id;
     }
   }
@@ -821,12 +817,6 @@ void ThreatDetails::OnCacheCollectionReady() {
   }
   for (auto& element_pair : elements_) {
     report_->add_dom()->Swap(element_pair.second.get());
-  }
-  if (!elements_.empty()) {
-    // TODO(lpz): Consider including the ambiguous_dom_ bit in the report
-    // itself.
-    UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.ThreatReport.DomIsAmbiguous",
-                          ambiguous_dom_);
   }
 
   report_->set_did_proceed(did_proceed_);

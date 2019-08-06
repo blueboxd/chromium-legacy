@@ -145,8 +145,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       GetScrollAnimator().SetCurrentOffset(scroll_offset_);
     element->SetSavedLayerScrollOffset(ScrollOffset());
   }
-  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
-    UpdateResizerAreaSet();
+  UpdateResizerAreaSet();
 }
 
 PaintLayerScrollableArea::~PaintLayerScrollableArea() {
@@ -185,11 +184,9 @@ void PaintLayerScrollableArea::DisposeImpl() {
       element->SetSavedLayerScrollOffset(scroll_offset_);
   }
 
-  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-    if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
-      if (LocalFrameView* frame_view = frame->View())
-        frame_view->RemoveResizerArea(*GetLayoutBox());
-    }
+  if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
+    if (LocalFrameView* frame_view = frame->View())
+      frame_view->RemoveResizerArea(*GetLayoutBox());
   }
 
   // Note: it is not safe to call ScrollAnchor::clear if the document is being
@@ -1224,8 +1221,7 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
     VerticalScrollbar()->StyleChanged();
 
   UpdateScrollCornerStyle();
-  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
-    UpdateResizerAreaSet();
+  UpdateResizerAreaSet();
   UpdateResizerStyle(old_style);
 }
 

@@ -85,8 +85,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
   default_title_->SetVisible(false);
   AddChildView(default_title_);
 
-  auto close =
-      CreateCloseButton(this, GetNativeTheme()->SystemDarkModeEnabled());
+  auto close = CreateCloseButton(this, GetNativeTheme()->ShouldUseDarkColors());
   close->SetVisible(false);
 #if defined(OS_WIN)
   // Windows will automatically create a tooltip for the close button based on
@@ -111,11 +110,12 @@ std::unique_ptr<Label> BubbleFrameView::CreateDefaultTitleLabel(
 // static
 std::unique_ptr<Button> BubbleFrameView::CreateCloseButton(
     ButtonListener* listener,
-    bool is_dark_mode) {
+    bool should_use_dark_colors) {
   auto close_button = CreateVectorImageButton(listener);
   SetImageFromVectorIconWithColor(
       close_button.get(), vector_icons::kCloseRoundedIcon,
-      is_dark_mode ? SkColorSetA(SK_ColorWHITE, 0xDD) : gfx::kGoogleGrey700);
+      should_use_dark_colors ? SkColorSetA(SK_ColorWHITE, 0xDD)
+                             : gfx::kGoogleGrey700);
   close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SizeToPreferredSize();
 

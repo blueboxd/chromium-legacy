@@ -24,6 +24,7 @@ android_library("gcm_driver_java") {
     "java/src/org/chromium/components/gcm_driver/GoogleCloudMessagingSubscriber.java",
     "java/src/org/chromium/components/gcm_driver/GoogleCloudMessagingV2.java",
     "java/src/org/chromium/components/gcm_driver/LazySubscriptionsManager.java",
+    "java/src/org/chromium/components/gcm_driver/SubscriptionFlagManager.java",
   ]
 }
 

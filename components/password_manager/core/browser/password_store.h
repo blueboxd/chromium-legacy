@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
@@ -42,6 +43,9 @@ class ModelTypeControllerDelegate;
 class ProxyModelTypeControllerDelegate;
 class SyncableService;
 }
+
+using StateSubscription =
+    base::CallbackList<void(const std::string& username)>::Subscription;
 
 namespace password_manager {
 
@@ -283,6 +287,12 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Clears all (non-Gaia) enterprise password hash.
   virtual void ClearAllEnterprisePasswordHash();
+
+  // Adds a listener on |hash_password_manager_| for when |kHashPasswordData|
+  // list might have changed. Should only be called on the UI thread.
+  virtual std::unique_ptr<StateSubscription>
+  RegisterStateCallbackOnHashPasswordManager(
+      const base::Callback<void(const std::string& username)>& callback);
 
   // Shouldn't be called more than once, |notifier| must be not nullptr.
   void SetPasswordStoreSigninNotifier(

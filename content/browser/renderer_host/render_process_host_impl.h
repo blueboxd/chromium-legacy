@@ -866,8 +866,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       push_messaging_manager_;
 
   std::unique_ptr<EmbeddedFrameSinkProviderImpl> embedded_frame_sink_provider_;
-  std::unique_ptr<PluginRegistryImpl, BrowserThread::DeleteOnIOThread>
-      plugin_registry_;
+  std::unique_ptr<PluginRegistryImpl> plugin_registry_;
 
   mojo::Remote<mojom::ChildProcess> child_process_;
   mojom::RouteProviderAssociatedPtr remote_route_provider_;

@@ -76,7 +76,7 @@ void ShareToSingleTarget(content::WebContents* tab, const GURL& link_url) {
 gfx::ImageSkia* GetImageSkia() {
   const ui::NativeTheme* native_theme =
       ui::NativeTheme::GetInstanceForNativeUi();
-  bool is_dark = native_theme && native_theme->SystemDarkModeEnabled();
+  bool is_dark = native_theme && native_theme->ShouldUseDarkColors();
   int resource_id = is_dark ? IDR_SEND_TAB_TO_SELF_ICON_DARK
                             : IDR_SEND_TAB_TO_SELF_ICON_LIGHT;
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);

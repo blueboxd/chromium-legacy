@@ -11,9 +11,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread.h"
 #include "net/base/ip_address.h"
@@ -259,7 +258,9 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   testing::StrictMock<MockConnectionTypeObserver> observer_;
   testing::StrictMock<MockIPAddressObserver> ip_observer_;
   fuchsia::netstack::NetstackPtr netstack_ptr_;

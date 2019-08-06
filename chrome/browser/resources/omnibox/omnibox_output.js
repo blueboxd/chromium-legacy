@@ -1054,6 +1054,10 @@ cr.define('omnibox_output', function() {
         ],
         OutputAnswerProperty),
     new Column(
+        ['S'], '', 'swapContentsAndDescription', false,
+        'Swap Contents and Description', ['swapContentsAndDescription'],
+        OutputBooleanProperty),
+    new Column(
         ['D'], '', 'allowedToBeDefaultMatch', true,
         'Can be Default\nA green checkmark indicates that the result can be ' +
             'the default match (i.e., can be the match that pressing enter ' +

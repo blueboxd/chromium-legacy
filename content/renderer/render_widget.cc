@@ -398,7 +398,7 @@ void RenderWidget::InstallCreateForFrameHook(
   g_create_render_widget_for_frame = create_widget;
 }
 
-scoped_refptr<RenderWidget> RenderWidget::CreateForFrame(
+std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
     const ScreenInfo& screen_info,
@@ -412,12 +412,12 @@ scoped_refptr<RenderWidget> RenderWidget::CreateForFrame(
         is_frozen, never_visible, std::move(widget_request));
   }
 
-  return base::WrapRefCounted(new RenderWidget(
+  return std::make_unique<RenderWidget>(
       widget_routing_id, compositor_deps, screen_info, display_mode, is_frozen,
-      /*hidden=*/true, never_visible, std::move(widget_request)));
+      /*hidden=*/true, never_visible, std::move(widget_request));
 }
 
-scoped_refptr<RenderWidget> RenderWidget::CreateForPopup(
+RenderWidget* RenderWidget::CreateForPopup(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
     const ScreenInfo& screen_info,
@@ -426,9 +426,9 @@ scoped_refptr<RenderWidget> RenderWidget::CreateForPopup(
     bool hidden,
     bool never_visible,
     mojom::WidgetRequest widget_request) {
-  return base::WrapRefCounted(new RenderWidget(
-      widget_routing_id, compositor_deps, screen_info, display_mode, is_frozen,
-      hidden, never_visible, std::move(widget_request)));
+  return new RenderWidget(widget_routing_id, compositor_deps, screen_info,
+                          display_mode, is_frozen, hidden, never_visible,
+                          std::move(widget_request));
 }
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
@@ -466,6 +466,8 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 
 RenderWidget::~RenderWidget() {
   DCHECK(!webwidget_internal_) << "Leaking our WebWidget!";
+  DCHECK(closed_)
+      << " RenderWidget must be destroyed via RenderWidget::Close()";
 
   // TODO(ajwong): Add in check that routing_id_ has been removed from
   // g_routing_id_widget_map once the shutdown semantics for RenderWidget
@@ -484,8 +486,7 @@ RenderWidget* RenderWidget::FromRoutingID(int32_t routing_id) {
 
 void RenderWidget::InitForPopup(ShowCallback show_callback,
                                 blink::WebPagePopup* web_page_popup) {
-  // Init() increments the reference count on |this|, making it
-  // self-referencing.
+  popup_ = true;
   Init(std::move(show_callback), web_page_popup);
 }
 
@@ -497,9 +498,17 @@ void RenderWidget::InitForChildLocalRoot(
   Init(base::NullCallback(), web_frame_widget);
 }
 
-void RenderWidget::CloseForFrame() {
+void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
   DCHECK(for_child_local_root_frame_);
-  OnClose();
+  PrepareForClose();
+
+  // The RenderWidget may be deattached from JS, which in turn may be called
+  // in a re-entrant context. We cannot synchronously destroy the object, so we
+  // post a task to do so later.
+  GetCleanupTaskRunner()->PostNonNestableTask(
+      FROM_HERE,
+      base::BindOnce(&RenderWidget::Close, close_weak_ptr_factory_.GetWeakPtr(),
+                     std::move(widget)));
 }
 
 void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
@@ -545,9 +554,6 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
   RenderThread::Get()->AddRoute(routing_id_, this);
-  // Take a reference on behalf of the RenderThread.  This will be balanced
-  // when we receive WidgetMsg_Close.
-  AddRef();
 }
 
 void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
@@ -679,6 +685,16 @@ bool RenderWidget::ShouldHandleImeEvents() const {
 }
 
 void RenderWidget::OnClose() {
+  DCHECK(popup_ || pepper_fullscreen_);
+
+  // It is always safe to synchronously destroy this object from an IPC message.
+  // That's because the IPC message is asynchronous, which means it can never be
+  // called from a nested context.
+  PrepareForClose();
+  Close(base::WrapUnique(this));
+}
+
+void RenderWidget::PrepareForClose() {
   DCHECK(RenderThread::IsMainThread());
   if (closing_)
     return;
@@ -697,32 +713,7 @@ void RenderWidget::OnClose() {
   if (input_event_queue_)
     input_event_queue_->ClearClient();
 
-  if (for_child_local_root_frame_) {
-    // Widgets for frames may be created and closed at any time while the frame
-    // is alive. However, WebWidget must be closed synchronously because frame
-    // widgets and frames hold pointers to each other. The deferred call to
-    // Close() will complete cleanup and release |this|, but CloseWebWidget()
-    // prevents Close() from attempting to access members of an
-    // already-deleted frame.
-    CloseWebWidget();
-  }
-  // If there is a Send call on the stack, then it could be dangerous to close
-  // now.  Post a task that only gets invoked when there are no nested message
-  // loops.
-  //
-  // The asynchronous Close() takes an owning reference to |this| keeping the
-  // object alive beyond the Release() below. It is the last reference to this
-  // object.
-  //
-  // TODO(https://crbug.com/545684): The actual lifetime for RenderWidget
-  // seems to be single-owner. It is either owned by "IPC" events (popup,
-  // mainframe, and fullscreen), or a RenderFrame. If Close() self-deleting,
-  // all the ref-counting mess could be removed.
-  GetCleanupTaskRunner()->PostNonNestableTask(
-      FROM_HERE, base::BindOnce(&RenderWidget::Close, this));
-
-  // Balances the AddRef taken when we called AddRoute.
-  Release();
+  CloseWebWidget();
 }
 
 void RenderWidget::OnSynchronizeVisualProperties(
@@ -1621,7 +1612,7 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
                              new_compositor_viewport_pixel_size,
                              params.screen_info);
   UpdateCaptureSequenceNumber(params.capture_sequence_number);
-  layer_tree_view_->SetBrowserControlsHeight(
+  layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
       params.top_controls_height, params.bottom_controls_height,
       params.browser_controls_shrink_blink_size);
 
@@ -1930,18 +1921,14 @@ void RenderWidget::CloseWidgetSoon() {
       FROM_HERE, base::BindOnce(&RenderWidget::DoDeferredClose, routing_id_));
 }
 
-void RenderWidget::Close() {
-  // This was done immediately in the |for_child_local_root_frame_| case in the
-  // OnClose() IPC handler.
-  if (!for_child_local_root_frame_)
-    CloseWebWidget();
-
+void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
   layer_tree_view_.reset();
-  if (delegate())
-    delegate()->DidCloseWidget();
   // Note the ACK is a control message going to the RenderProcessHost.
   RenderThread::Get()->Send(new WidgetHostMsg_Close_ACK(routing_id()));
   closed_ = true;
+
+  // At the end of this method, |widget| which points to this is deleted.
+  DCHECK_EQ(widget.get(), this);
 }
 
 void RenderWidget::CloseWebWidget() {
@@ -3570,6 +3557,17 @@ void RenderWidget::RequestBeginMainFrameNotExpected(bool request) {
 
 int RenderWidget::GetLayerTreeId() const {
   return layer_tree_view_->layer_tree_host()->GetId();
+}
+
+void RenderWidget::SetBrowserControlsShownRatio(float ratio) {
+  layer_tree_view_->layer_tree_host()->SetBrowserControlsShownRatio(ratio);
+}
+
+void RenderWidget::SetBrowserControlsHeight(float top_height,
+                                            float bottom_height,
+                                            bool shrink_viewport) {
+  layer_tree_view_->layer_tree_host()->SetBrowserControlsHeight(
+      top_height, bottom_height, shrink_viewport);
 }
 
 void RenderWidget::NotifySwapAndPresentationTime(

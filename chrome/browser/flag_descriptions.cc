@@ -1410,16 +1410,6 @@ const char kOmniboxUISwapTitleAndUrlDescription[] =
     "In the omnibox dropdown, shows titles before URLs when both are "
     "available.";
 
-const char kOmniboxUIVerticalMarginName[] = "Omnibox UI Vertical Margin";
-const char kOmniboxUIVerticalMarginDescription[] =
-    "Changes the vertical margin in the Omnibox UI.";
-
-const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyName[] =
-    "Omnibox UI Vertical Margin - Limit to Non-Touch Only";
-const char kOmniboxUIVerticalMarginLimitToNonTouchOnlyDescription[] =
-    "Limits the vertical margin UI experiment to non-touch devices only. Has "
-    "no effect if the Omnibox Vertical Margin experiment is not enabled.";
-
 const char kOmniboxZeroSuggestionsOnNTPName[] =
     "Omnibox Zero Suggestions on New Tab Page";
 const char kOmniboxZeroSuggestionsOnNTPDescription[] =
@@ -2583,9 +2573,9 @@ const char kTranslateAndroidManualTriggerName[] =
 const char kTranslateAndroidManualTriggerDescription[] =
     "Show a menu item in the main menu that triggers page translation.";
 
-const char kTwoPanesStartSurfaceAndroidName[] = "Two Panes Start Surface";
-const char kTwoPanesStartSurfaceAndroidDescription[] =
-    "Enable showing two panes start surface when launching Chrome via the "
+const char kStartSurfaceAndroidName[] = "Start Surface";
+const char kStartSurfaceAndroidDescription[] =
+    "Enable showing the start surface when launching Chrome via the "
     "launcher.";
 
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
@@ -3324,6 +3314,10 @@ const char kImeInputLogicFstDescription[] =
 const char kListAllDisplayModesName[] = "List all display modes";
 const char kListAllDisplayModesDescription[] =
     "Enables listing all external displays' modes in the display settings.";
+
+const char kLockScreenMediaControlsName[] = "Lock screen media controls";
+const char kLockScreenMediaControlsDescription[] =
+    "Enable media controls on the lock screen.";
 
 const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =

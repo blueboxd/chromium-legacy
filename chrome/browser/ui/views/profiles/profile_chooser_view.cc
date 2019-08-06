@@ -387,7 +387,13 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         browser(), dice_signin_button_view_->account().value(), access_point_,
         true /* is_default_promo_account */);
   } else if (sender == signout_button_) {
-    SignOutAllWebAccounts();
+    Hide();
+
+    // Sign out from all accounts.
+    IdentityManagerFactory::GetForProfile(browser()->profile())
+        ->GetAccountsMutator()
+        ->RemoveAllAccounts(signin_metrics::SourceForRefreshTokenOperation::
+                                kUserMenu_SignOutAllAccounts);
     base::RecordAction(base::UserMetricsAction("Signin_Signout_FromUserMenu"));
   } else {
     // Either one of the "other profiles", or one of the profile accounts
@@ -843,25 +849,6 @@ void ProfileChooserView::PostActionPerformed(
     ProfileMetrics::ProfileDesktopMenu action_performed) {
   ProfileMetrics::LogProfileDesktopMenu(action_performed, gaia_service_type_);
   gaia_service_type_ = signin::GAIA_SERVICE_TYPE_NONE;
-}
-
-void ProfileChooserView::EnableSync(
-    const base::Optional<AccountInfo>& account) {
-  Hide();
-  if (account)
-    signin_ui_util::EnableSyncFromPromo(browser(), account.value(),
-                                        access_point_,
-                                        false /* is_default_promo_account */);
-  else
-    ShowViewOrOpenTab(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
-}
-
-void ProfileChooserView::SignOutAllWebAccounts() {
-  Hide();
-  IdentityManagerFactory::GetForProfile(browser()->profile())
-      ->GetAccountsMutator()
-      ->RemoveAllAccounts(signin_metrics::SourceForRefreshTokenOperation::
-                              kUserMenu_SignOutAllAccounts);
 }
 
 int ProfileChooserView::GetDiceSigninPromoShowCount() const {

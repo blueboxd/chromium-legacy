@@ -13,9 +13,8 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -169,7 +168,8 @@ class SecurityKeyAuthHandlerPosixTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<base::RunLoop> run_loop_;
 
   base::Thread file_thread_;

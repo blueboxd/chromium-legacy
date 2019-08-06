@@ -57,7 +57,7 @@ enum class MinimumFlexSizeRule {
 
 // Describes a simple rule for how a child view should grow in a layout when
 // there is extra size avaialble for that view to occupy.
-enum MaximumFlexSizeRule {
+enum class MaximumFlexSizeRule {
   kPreferred,  // Don't resize above preferred size.
   kUnbounded   // Allow resize to arbitrary size.
 };

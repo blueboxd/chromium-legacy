@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/barrier_closure.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -33,7 +34,7 @@ std::string EntryKey(const std::string& id) {
   return kEntryPrefix + id;
 }
 
-std::string IconKey(const std::string& id) {
+std::string IconsKey(const std::string& id) {
   return kIconPrefix + id;
 }
 
@@ -117,7 +118,7 @@ void ContentIndexDatabase::AddEntry(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     blink::mojom::ContentDescriptionPtr description,
-    const SkBitmap& icon,
+    const std::vector<SkBitmap>& icons,
     const GURL& launch_url,
     blink::mojom::ContentIndexService::AddCallback callback) {
   if (blocked_origins_.count(origin)) {
@@ -127,25 +128,42 @@ void ContentIndexDatabase::AddEntry(
     return;
   }
 
-  SerializeIcon(icon, base::BindOnce(&ContentIndexDatabase::DidSerializeIcon,
-                                     weak_ptr_factory_io_.GetWeakPtr(),
-                                     service_worker_registration_id, origin,
-                                     std::move(description), launch_url,
-                                     std::move(callback)));
+  auto serialized_icons = std::make_unique<proto::SerializedIcons>();
+  proto::SerializedIcons* serialized_icons_ptr = serialized_icons.get();
+
+  auto barrier_closure = base::BarrierClosure(
+      icons.size(),
+      base::BindOnce(&ContentIndexDatabase::DidSerializeIcons,
+                     weak_ptr_factory_io_.GetWeakPtr(),
+                     service_worker_registration_id, origin,
+                     std::move(description), launch_url,
+                     std::move(serialized_icons), std::move(callback)));
+
+  for (const auto& icon : icons) {
+    SerializeIcon(icon,
+                  base::BindOnce(
+                      [](base::OnceClosure done_closure,
+                         proto::SerializedIcons* icons, std::string icon) {
+                        icons->add_icons()->set_icon(std::move(icon));
+                        std::move(done_closure).Run();
+                      },
+                      barrier_closure, serialized_icons_ptr));
+  }
 }
 
-void ContentIndexDatabase::DidSerializeIcon(
+void ContentIndexDatabase::DidSerializeIcons(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     blink::mojom::ContentDescriptionPtr description,
     const GURL& launch_url,
-    blink::mojom::ContentIndexService::AddCallback callback,
-    std::string serialized_icon) {
+    std::unique_ptr<proto::SerializedIcons> serialized_icons,
+    blink::mojom::ContentIndexService::AddCallback callback) {
   base::Time entry_time = base::Time::Now();
   std::string entry_key = EntryKey(description->id);
-  std::string icon_key = IconKey(description->id);
+  std::string icon_key = IconsKey(description->id);
   std::string entry_value =
       CreateSerializedContentEntry(*description, launch_url, entry_time);
+  std::string icons_value = serialized_icons->SerializeAsString();
 
   // Entry to pass over to the provider.
   ContentIndexEntry entry(service_worker_registration_id,
@@ -154,7 +172,7 @@ void ContentIndexDatabase::DidSerializeIcon(
   service_worker_context_->StoreRegistrationUserData(
       service_worker_registration_id, origin.GetURL(),
       {{std::move(entry_key), std::move(entry_value)},
-       {std::move(icon_key), std::move(serialized_icon)}},
+       {std::move(icon_key), std::move(icons_value)}},
       base::BindOnce(&ContentIndexDatabase::DidAddEntry,
                      weak_ptr_factory_io_.GetWeakPtr(), std::move(callback),
                      std::move(entry)));
@@ -187,7 +205,7 @@ void ContentIndexDatabase::DeleteEntry(
     const std::string& entry_id,
     blink::mojom::ContentIndexService::DeleteCallback callback) {
   service_worker_context_->ClearRegistrationUserData(
-      service_worker_registration_id, {EntryKey(entry_id), IconKey(entry_id)},
+      service_worker_registration_id, {EntryKey(entry_id), IconsKey(entry_id)},
       base::BindOnce(&ContentIndexDatabase::DidDeleteEntry,
                      weak_ptr_factory_io_.GetWeakPtr(),
                      service_worker_registration_id, origin, entry_id,
@@ -267,36 +285,73 @@ void ContentIndexDatabase::DidGetDescriptions(
                           std::move(descriptions));
 }
 
-void ContentIndexDatabase::GetIcon(
+void ContentIndexDatabase::GetIcons(
     int64_t service_worker_registration_id,
     const std::string& description_id,
-    base::OnceCallback<void(SkBitmap)> icon_callback) {
+    ContentIndexContext::GetIconsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context_->GetRegistrationUserData(
-      service_worker_registration_id, {IconKey(description_id)},
-      base::BindOnce(&ContentIndexDatabase::DidGetSerializedIcon,
-                     weak_ptr_factory_io_.GetWeakPtr(),
-                     std::move(icon_callback)));
+      service_worker_registration_id, {IconsKey(description_id)},
+      base::BindOnce(&ContentIndexDatabase::DidGetSerializedIcons,
+                     weak_ptr_factory_io_.GetWeakPtr(), std::move(callback)));
 }
 
-void ContentIndexDatabase::DidGetSerializedIcon(
-    base::OnceCallback<void(SkBitmap)> icon_callback,
+void ContentIndexDatabase::DidGetSerializedIcons(
+    ContentIndexContext::GetIconsCallback callback,
     const std::vector<std::string>& data,
     blink::ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   content_index::RecordDatabaseOperationStatus("GetIcon", status);
 
   if (status != blink::ServiceWorkerStatusCode::kOk || data.empty()) {
-    std::move(icon_callback).Run(SkBitmap());
+    std::move(callback).Run({});
     return;
   }
 
   DCHECK_EQ(data.size(), 1u);
+  proto::SerializedIcons serialized_icons;
+  if (!serialized_icons.ParseFromString(data.front())) {
+    // TODO(crbug.com/973844): Clear the storage if there is data corruption.
+    std::move(callback).Run({});
+    return;
+  }
 
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&DeserializeIcon, std::make_unique<std::string>(data[0]),
-                     std::move(icon_callback)));
+  if (serialized_icons.icons_size() == 0u) {
+    // There are no icons.
+    std::move(callback).Run({});
+    return;
+  }
+
+  auto icons = std::make_unique<std::vector<SkBitmap>>();
+  std::vector<SkBitmap>* icons_ptr = icons.get();
+
+  auto barrier_closure = base::BarrierClosure(
+      serialized_icons.icons_size(),
+      base::BindOnce(&ContentIndexDatabase::DidDeserializeIcons,
+                     weak_ptr_factory_io_.GetWeakPtr(), std::move(callback),
+                     std::move(icons)));
+
+  for (auto& serialized_icon : *serialized_icons.mutable_icons()) {
+    DeserializeIcon(base::WrapUnique(serialized_icon.release_icon()),
+                    base::BindOnce(
+                        [](base::OnceClosure done_closure,
+                           std::vector<SkBitmap>* icons, SkBitmap icon) {
+                          icons->push_back(std::move(icon));
+                          std::move(done_closure).Run();
+                        },
+                        barrier_closure, icons_ptr));
+  }
+}
+
+void ContentIndexDatabase::DidDeserializeIcons(
+    ContentIndexContext::GetIconsCallback callback,
+    std::unique_ptr<std::vector<SkBitmap>> icons) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), std::move(*icons)));
 }
 
 void ContentIndexDatabase::GetAllEntries(

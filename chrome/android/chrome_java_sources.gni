@@ -193,6 +193,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanelContentViewDelegate.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanelInflater.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanelManager.java",
+  "java/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanelRepaddingTextView.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanelTextViewInflater.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/contextualsearch/ContextualSearchBarBannerControl.java",
   "java/src/org/chromium/chrome/browser/compositor/bottombar/contextualsearch/ContextualSearchBarControl.java",

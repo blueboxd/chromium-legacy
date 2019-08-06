@@ -742,7 +742,7 @@ group("gn_all") {
   if ((is_linux && !is_chromecast) || (is_win && use_libfuzzer) ||
       (use_libfuzzer && is_mac)) {
     deps += [
-      "//chrome/services/cups_ipp_parser/public/cpp:fuzzers",
+      "//chrome/services/ipp_parser/public/cpp:fuzzers",
       "//testing/libfuzzer/fuzzers",
       "//third_party/grpc:fuzzers",
       "//third_party/icu/fuzzers",

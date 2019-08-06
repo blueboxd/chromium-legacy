@@ -121,7 +121,6 @@
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/auth/password_visibility_utils.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
@@ -163,7 +162,7 @@ bool ShouldShowParentalControls(Profile* profile) {
   // primary profile.  Do not show it to any secondary profiles, managed
   // accounts that aren't child accounts (i.e. enterprise and EDU accounts),
   // OTR accounts, or legacy supervised user accounts.
-  return chromeos::switches::IsParentalControlsSettingsEnabled() &&
+  return chromeos::features::IsParentalControlsSettingsEnabled() &&
          profile == ProfileManager::GetPrimaryUserProfile() &&
          !profile->IsLegacySupervised() && !profile->IsGuestSession() &&
          (profile->IsChild() ||
@@ -412,7 +411,7 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
       chromeos::settings::DateTimeHandler::Create(html_source)));
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::FingerprintHandler>(profile));
-  if (chromeos::switches::IsAssistantEnabled()) {
+  if (chromeos::features::IsAssistantEnabled()) {
     web_ui->AddMessageHandler(
         std::make_unique<chromeos::settings::GoogleAssistantHandler>(profile));
   }
@@ -513,7 +512,7 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
                           chromeos::DemoSession::IsDeviceInDemoMode());
 
   html_source->AddBoolean("assistantEnabled",
-                          chromeos::switches::IsAssistantEnabled());
+                          chromeos::features::IsAssistantEnabled());
 
   // We have 2 variants of Android apps settings. Default case, when the Play
   // Store app exists we show expandable section that allows as to

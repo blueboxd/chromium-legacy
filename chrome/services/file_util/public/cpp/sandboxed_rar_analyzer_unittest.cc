@@ -18,12 +18,11 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/services/file_util/file_util_service.h"
-#include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #include "components/safe_browsing/features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,17 +47,16 @@ class SandboxedRarAnalyzerTest : public testing::Test {
 
  public:
   SandboxedRarAnalyzerTest()
-      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        file_util_service_(test_connector_factory_.RegisterInstance(
-            chrome::mojom::kFileUtilServiceName)) {}
+      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void AnalyzeFile(const base::FilePath& path,
                    safe_browsing::ArchiveAnalyzerResults* results) {
+    mojo::PendingRemote<chrome::mojom::FileUtilService> remote;
+    FileUtilService service(remote.InitWithNewPipeAndPassReceiver());
     base::RunLoop run_loop;
     ResultsGetter results_getter(run_loop.QuitClosure(), results);
     scoped_refptr<SandboxedRarAnalyzer> analyzer(new SandboxedRarAnalyzer(
-        path, results_getter.GetCallback(),
-        test_connector_factory_.GetDefaultConnector()));
+        path, results_getter.GetCallback(), std::move(remote)));
     analyzer->Start();
     run_loop.Run();
   }
@@ -124,9 +122,6 @@ class SandboxedRarAnalyzerTest : public testing::Test {
   };
 
   content::TestBrowserThreadBundle browser_thread_bundle_;
-  content::InProcessUtilityThreadHelper utility_thread_helper_;
-  service_manager::TestConnectorFactory test_connector_factory_;
-  FileUtilService file_util_service_;
 };
 
 // static

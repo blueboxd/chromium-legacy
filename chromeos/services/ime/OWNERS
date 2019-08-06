@@ -3,4 +3,4 @@ shuchen@chromium.org
 
 per-file ime_sandbox_hook.*=file://sandbox/linux/OWNERS
 
-# COMPONENTS: UI>Input>Text>IME
+# COMPONENT: UI>Input>Text>IME

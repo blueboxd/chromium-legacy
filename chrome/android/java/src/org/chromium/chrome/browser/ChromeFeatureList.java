@@ -308,6 +308,7 @@ public abstract class ChromeFeatureList {
     public static final String SHOPPING_ASSIST = "ShoppingAssist";
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
     public static final String SPANNABLE_INLINE_AUTOCOMPLETE = "SpannableInlineAutocomplete";
+    public static final String START_SURFACE_ANDROID = "StartSurfaceAndroid";
     public static final String SUBRESOURCE_FILTER = "SubresourceFilter";
     public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
             "SwapPixelFormatToFixConvertFromTranslucent";
@@ -325,7 +326,6 @@ public abstract class ChromeFeatureList {
     public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
     public static final String TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT =
             "TrustedWebActivityNotificationDelegationAutoEnrolment";
-    public static final String TWO_PANES_START_SURFACE_ANDROID = "TwoPanesStartSurfaceAndroid";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";
     public static final String USAGE_STATS = "UsageStats";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";

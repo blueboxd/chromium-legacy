@@ -120,6 +120,7 @@ struct UserActionData {
                  const std::string& guid);
   UserActionData(const UserActionData& other);
   ~UserActionData();
+  bool operator==(const UserActionData& other) const;
 
   // The type of the client that sent the notification.
   const SchedulerClientType client_type;

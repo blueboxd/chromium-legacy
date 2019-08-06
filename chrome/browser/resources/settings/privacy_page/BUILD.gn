@@ -76,6 +76,7 @@ js_library("security_keys_subpage") {
 js_library("security_keys_set_pin_dialog") {
   deps = [
     ":security_keys_browser_proxy",
+    "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//ui/webui/resources/js:i18n_behavior",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]

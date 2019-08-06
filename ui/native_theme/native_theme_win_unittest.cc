@@ -16,7 +16,7 @@ class TestNativeThemeWin : public NativeThemeWin {
 
   // NativeTheme:
   bool UsesHighContrastColors() const override { return high_contrast_; }
-  bool SystemDarkModeEnabled() const override { return dark_mode_; }
+  bool ShouldUseDarkColors() const override { return dark_mode_; }
 
   void SetDarkMode(bool dark_mode) { dark_mode_ = dark_mode; }
   void SetUsesHighContrastColors(bool high_contrast) {

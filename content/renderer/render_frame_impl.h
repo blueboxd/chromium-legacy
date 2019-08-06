@@ -123,6 +123,7 @@ class WebMediaStreamDeviceObserver;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
+class WebUserMediaClient;
 struct FramePolicy;
 struct WebContextMenuData;
 struct WebCursorInfo;
@@ -168,7 +169,6 @@ class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
-class UserMediaClientImpl;
 struct CSPViolationParams;
 struct CustomContextMenuContext;
 struct FrameOwnerProperties;
@@ -1549,7 +1549,12 @@ class CONTENT_EXPORT RenderFrameImpl
   // Non-null when the RenderFrame is a local root for compositing, input,
   // layout, etc. A local frame is also a local root iff it does not have a
   // parent that is a local frame.
-  scoped_refptr<RenderWidget> render_widget_;
+  RenderWidget* render_widget_ = nullptr;
+
+  // If this is a main frame, the RenderView owns the RenderWidget and this
+  // member is null. If this is a child frame, then this object owns the
+  // RenderWidget and this member is not null.
+  std::unique_ptr<RenderWidget> owned_render_widget_;
 
   // Keeps track of which future subframes the browser process has history items
   // for during a history navigation, as well as whether those items are for
@@ -1609,7 +1614,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool handling_select_range_;
 
   // Implements getUserMedia() and related functionality.
-  std::unique_ptr<UserMediaClientImpl> web_user_media_client_;
+  std::unique_ptr<blink::WebUserMediaClient> web_user_media_client_;
 
   mojom::RendererAudioInputStreamFactoryPtr audio_input_stream_factory_;
 

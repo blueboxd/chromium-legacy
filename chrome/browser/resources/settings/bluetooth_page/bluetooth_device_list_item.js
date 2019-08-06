@@ -132,24 +132,24 @@ Polymer({
       case 'computer':
         return 'cr:computer';
       case 'phone':
-        return 'settings:smartphone';
+        return 'os-settings:smartphone';
       case 'audio':
       case 'carAudio':
-        return 'settings:headset';
+        return 'os-settings:headset';
       case 'video':
         return 'cr:videocam';
       case 'joystick':
       case 'gamepad':
-        return 'settings:gamepad';
+        return 'os-settings:gamepad';
       case 'keyboard':
       case 'keyboardMouseCombo':
-        return 'settings:keyboard';
+        return 'os-settings:keyboard';
       case 'tablet':
-        return 'settings:tablet';
+        return 'os-settings:tablet';
       case 'mouse':
-        return 'settings:mouse';
+        return 'os-settings:mouse';
       default:
-        return device.connected ? 'settings:bluetooth-connected' :
+        return device.connected ? 'os-settings:bluetooth-connected' :
                                   'cr:bluetooth';
     }
   },

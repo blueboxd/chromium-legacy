@@ -17,6 +17,8 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -57,19 +59,21 @@ const CGFloat kClearButtonSize = 28.0f;
 #pragma mark - UIViewController
 
 - (void)loadView {
-  UIColor* textColor = self.incognito ? [UIColor whiteColor]
-                                      : [UIColor colorWithWhite:0 alpha:0.7];
-  UIColor* textFieldTintColor = self.incognito
-                                    ? [UIColor whiteColor]
-                                    : UIColorFromRGB(kLocationBarTintBlue);
+  UIColor* textColor = color::IncognitoDynamicColor(
+      self.incognito, [UIColor colorNamed:kTextPrimaryColor],
+      [UIColor colorNamed:kTextPrimaryDarkColor]);
+  UIColor* textFieldTintColor = color::IncognitoDynamicColor(
+      self.incognito, [UIColor colorNamed:kBlueColor],
+      [UIColor colorNamed:kBlueDarkColor]);
   UIColor* iconTintColor;
   if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
-    iconTintColor = self.incognito
-                        ? [UIColor.whiteColor colorWithAlphaComponent:0.7]
-                        : [UIColor.blackColor colorWithAlphaComponent:0.5];
+    iconTintColor = color::IncognitoDynamicColor(
+        self.incognito, [UIColor colorNamed:@"tab_toolbar_button_color"],
+        [UIColor colorNamed:@"tab_toolbar_button_color_incognito"]);
   } else {
-    iconTintColor = self.incognito ? [UIColor whiteColor]
-                                   : [UIColor colorWithWhite:0 alpha:0.7];
+    iconTintColor = color::IncognitoDynamicColor(
+        self.incognito, [UIColor colorNamed:@"tab_toolbar_button_color"],
+        [UIColor colorNamed:@"tab_toolbar_button_color_incognito"]);
   }
 
   self.view = [[OmniboxContainerView alloc]
@@ -188,9 +192,9 @@ const CGFloat kClearButtonSize = 28.0f;
 
 // Tint color for the textfield placeholder and the clear button.
 - (UIColor*)placeholderAndClearButtonColor {
-  return self.incognito
-             ? [UIColor colorWithWhite:1 alpha:0.5]
-             : [UIColor colorWithWhite:0 alpha:kOmniboxPlaceholderAlpha];
+  return color::IncognitoDynamicColor(
+      self.incognito, [UIColor colorNamed:kTextfieldPlaceholderColor],
+      [UIColor colorNamed:kTextfieldPlaceholderDarkColor]);
 }
 
 #pragma mark notification callbacks

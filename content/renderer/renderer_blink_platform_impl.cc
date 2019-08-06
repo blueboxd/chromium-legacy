@@ -48,6 +48,7 @@
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/p2p/port_allocator.h"
@@ -95,6 +96,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "ui/gl/buildflags.h"
 #include "url/gurl.h"
@@ -680,6 +682,12 @@ base::Optional<int> RendererBlinkPlatformImpl::GetAgcStartupMinimumVolume() {
     return base::Optional<int>();
   }
   return base::Optional<int>(startup_min_volume);
+}
+
+void RendererBlinkPlatformImpl::TrackGetUserMedia(
+    const blink::WebUserMediaRequest& web_request) {
+  RenderThreadImpl::current()->peer_connection_tracker()->TrackGetUserMedia(
+      web_request);
 }
 
 blink::WebVideoCaptureImplManager*

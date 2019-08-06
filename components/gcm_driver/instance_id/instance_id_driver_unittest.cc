@@ -181,7 +181,7 @@ std::string InstanceIDDriverTest::GetToken(
   result_ = InstanceID::UNKNOWN_ERROR;
   instance_id->GetToken(
       authorized_entity, scope, options,
-      /*is_lazy=*/false,
+      /*flags=*/{},
       base::BindRepeating(&InstanceIDDriverTest::GetTokenCompleted,
                           base::Unretained(this)));
   WaitForAsyncOperation();

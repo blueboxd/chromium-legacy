@@ -668,16 +668,6 @@ std::vector<std::string> ContentBrowserClient::GetStartupServices() {
 }
 
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-ContentBrowserClient::CreateURLLoaderThrottlesOnIO(
-    const network::ResourceRequest& request,
-    ResourceContext* resource_context,
-    const base::RepeatingCallback<WebContents*()>& wc_getter,
-    NavigationUIData* navigation_ui_data,
-    int frame_tree_node_id) {
-  return std::vector<std::unique_ptr<blink::URLLoaderThrottle>>();
-}
-
-std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 ContentBrowserClient::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
     BrowserContext* browser_context,
@@ -958,7 +948,7 @@ ContentBrowserClient::GetWideColorGamutHeuristic() {
 
 base::flat_set<std::string>
 ContentBrowserClient::GetPluginMimeTypesWithExternalHandlers(
-    ResourceContext* resource_context) {
+    BrowserContext* browser_context) {
   return base::flat_set<std::string>();
 }
 

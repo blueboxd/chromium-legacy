@@ -67,7 +67,7 @@ base::string16 NativeFileSystemPermissionView::GetWindowTitle() const {
 }
 
 int NativeFileSystemPermissionView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_NONE;
+  return ui::DIALOG_BUTTON_OK;
 }
 
 base::string16 NativeFileSystemPermissionView::GetDialogButtonLabel(
@@ -101,6 +101,10 @@ gfx::Size NativeFileSystemPermissionView::CalculatePreferredSize() const {
 
 ui::ModalType NativeFileSystemPermissionView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
+}
+
+views::View* NativeFileSystemPermissionView::GetInitiallyFocusedView() {
+  return GetDialogClientView()->cancel_button();
 }
 
 void ShowNativeFileSystemPermissionDialog(

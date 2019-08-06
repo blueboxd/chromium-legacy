@@ -1144,9 +1144,9 @@ class ThrottleContentBrowserClient : public TestContentBrowserClient {
 
   // ContentBrowserClient overrides:
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-  CreateURLLoaderThrottlesOnIO(
+  CreateURLLoaderThrottles(
       const network::ResourceRequest& request,
-      ResourceContext* resource_context,
+      BrowserContext* browser_context,
       const base::RepeatingCallback<WebContents*()>& wc_getter,
       NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) override {
@@ -1155,16 +1155,6 @@ class ThrottleContentBrowserClient : public TestContentBrowserClient {
         std::make_unique<URLModifyingThrottle>(modify_start_, modify_redirect_);
     throttles.push_back(std::move(throttle));
     return throttles;
-  }
-  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
-  CreateURLLoaderThrottles(
-      const network::ResourceRequest& request,
-      BrowserContext* browser_context,
-      const base::RepeatingCallback<WebContents*()>& wc_getter,
-      NavigationUIData* navigation_ui_data,
-      int frame_tree_node_id) override {
-    return CreateURLLoaderThrottlesOnIO(request, nullptr, wc_getter,
-                                        navigation_ui_data, frame_tree_node_id);
   }
 
  private:

@@ -448,7 +448,7 @@ cr.define('settings_about_page', function() {
               const icon = page.$$('iron-icon');
               assertTrue(!!icon);
               assertEquals(null, icon.src);
-              assertEquals('settings:end-of-life', icon.icon);
+              assertEquals('os-settings:end-of-life', icon.icon);
 
               const checkForUpdates = page.$.checkForUpdates;
               assertTrue(!!checkForUpdates);

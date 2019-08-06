@@ -146,8 +146,8 @@ void CheckPdfPluginForRenderFrame(content::RenderFrameHost* frame) {
 
   ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
   EXPECT_TRUE(filter->IsPluginAvailable(
-      frame->GetProcess()->GetID(), frame->GetRoutingID(), nullptr,
-      GURL(kDummyPrintUrl), url::Origin(), &pdf_plugin_info));
+      frame->GetProcess()->GetID(), frame->GetRoutingID(), GURL(kDummyPrintUrl),
+      url::Origin(), &pdf_plugin_info));
 }
 
 }  // namespace
@@ -308,8 +308,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   content::WebPluginInfo dummy_pdf_plugin_info = pdf_plugin_info;
   EXPECT_FALSE(filter->IsPluginAvailable(
       initiator()->GetMainFrame()->GetProcess()->GetID(),
-      initiator()->GetMainFrame()->GetRoutingID(),
-      browser()->profile()->GetResourceContext(), GURL(),
+      initiator()->GetMainFrame()->GetRoutingID(), GURL(),
       url::Origin::Create(GURL("http://google.com")), &dummy_pdf_plugin_info));
 
   PrintPreview();

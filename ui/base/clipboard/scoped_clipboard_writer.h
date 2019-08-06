@@ -69,15 +69,12 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) ScopedClipboardWriter {
   // Removes all objects that would be written to the clipboard.
   void Reset();
 
-  void set_type(ClipboardType type) { type_ = type; }
-
  private:
   // We accumulate the data passed to the various targets in the |objects_|
   // vector, and pass it to Clipboard::WriteObjects() during object destruction.
   Clipboard::ObjectMap objects_;
 
-  // The type is set at construction, and can be changed before committing.
-  ClipboardType type_;
+  const ClipboardType type_;
 
   SkBitmap bitmap_;
 

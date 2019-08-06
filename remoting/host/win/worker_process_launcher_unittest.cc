@@ -11,9 +11,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "ipc/ipc_channel.h"
@@ -158,7 +158,8 @@ class WorkerProcessLauncherTest
  protected:
   void DoLaunchProcess();
 
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 
   // Receives messages sent to the worker process.
@@ -195,7 +196,7 @@ WorkerProcessLauncherTest::~WorkerProcessLauncherTest() {
 
 void WorkerProcessLauncherTest::SetUp() {
   task_runner_ = new AutoThreadTaskRunner(
-      message_loop_.task_runner(),
+      scoped_task_environment_.GetMainThreadTaskRunner(),
       base::Bind(&WorkerProcessLauncherTest::QuitMainMessageLoop,
                  base::Unretained(this)));
 
@@ -340,7 +341,7 @@ void WorkerProcessLauncherTest::StopWorker() {
 }
 
 void WorkerProcessLauncherTest::QuitMainMessageLoop() {
-  message_loop_.task_runner()->PostTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 

@@ -1611,6 +1611,7 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessSetTarget(
   // with the target value.
   if (HasSetTargetConverged(value, target, current_frame / sample_rate, time1,
                             time_constant)) {
+    current_frame += fill_to_frame - write_index;
     for (; write_index < fill_to_frame; ++write_index)
       values[write_index] = target;
   } else {

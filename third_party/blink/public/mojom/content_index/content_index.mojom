@@ -50,11 +50,11 @@ struct ContentDescription {
 // TODO(crbug.com/976962): Register interfaces that are exposed only on
 // Service Workers.
 interface ContentIndexService {
-  const int32 kMaxIconDimension = 256;
+  const int32 kMaxIconResolution = 65536;  // 256x256
 
   Add(int64 service_worker_registration_id,
       ContentDescription description,
-      skia.mojom.Bitmap icon,
+      array<skia.mojom.Bitmap> icon,
       url.mojom.Url launchUrl)
       => (ContentIndexError error);
   Delete(int64 service_worker_registration_id, string id)

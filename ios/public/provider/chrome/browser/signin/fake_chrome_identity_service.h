@@ -56,6 +56,9 @@ class FakeChromeIdentityService : public ChromeIdentityService {
       ChromeIdentity* identity,
       GetHostedDomainCallback callback) override;
 
+  virtual NSString* GetCachedHostedDomainForIdentity(
+      ChromeIdentity* identity) override;
+
   MOCK_METHOD1(GetMDMDeviceStatus,
                ios::MDMDeviceStatus(NSDictionary* user_info));
 

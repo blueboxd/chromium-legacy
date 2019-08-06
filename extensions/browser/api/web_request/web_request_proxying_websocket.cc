@@ -193,6 +193,7 @@ void WebRequestProxyingWebSocket::ContinueToHeadersReceived() {
 
 void WebRequestProxyingWebSocket::OnConnectionEstablished(
     network::mojom::WebSocketPtr websocket,
+    mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
     const std::string& selected_protocol,
     const std::string& extensions,
     uint64_t receive_quota_threshold) {
@@ -203,8 +204,8 @@ void WebRequestProxyingWebSocket::OnConnectionEstablished(
       browser_context_, &info_, net::ERR_WS_UPGRADE);
 
   forwarding_handshake_client_->OnConnectionEstablished(
-      std::move(websocket), selected_protocol, extensions,
-      receive_quota_threshold);
+      std::move(websocket), std::move(client_receiver), selected_protocol,
+      extensions, receive_quota_threshold);
 
   // Deletes |this|.
   proxies_->RemoveProxy(this);
@@ -374,8 +375,6 @@ void WebRequestProxyingWebSocket::ContinueToStartRequest(int error_code) {
 
   // Here we detect mojo connection errors on |handshake_client|. See also
   // CreateWebSocket in //network/services/public/mojom/network_context.mojom.
-  // Here we don't have |connection_client| so using |handshake_client| is the
-  // best.
   network::mojom::WebSocketHandshakeClientPtr handshake_client;
   binding_as_handshake_client_.Bind(mojo::MakeRequest(&handshake_client));
   binding_as_handshake_client_.set_connection_error_with_reason_handler(

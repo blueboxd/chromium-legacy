@@ -51,3 +51,15 @@ var CrElementsToggleV3Test = class extends CrElementsV3FocusTest {
 TEST_F('CrElementsToggleV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrElementsInputV3Test = class extends CrElementsV3FocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_input_test.m.js';
+  }
+};
+
+TEST_F('CrElementsInputV3Test', 'All', function() {
+  mocha.run();
+});

@@ -34,8 +34,10 @@ GURL GetTargetTabUrl(SessionID session_id, int index) {
         browser->tab_strip_model()->GetWebContentsAt(index);
     if (target_tab) {
       if (browser->is_devtools()) {
-        target_tab = DevToolsWindow::AsDevToolsWindow(target_tab)
-                         ->GetInspectedWebContents();
+        if (auto* dev_tools_window =
+                DevToolsWindow::AsDevToolsWindow(target_tab)) {
+          target_tab = dev_tools_window->GetInspectedWebContents();
+        }
       }
       if (target_tab)
         return target_tab->GetURL();

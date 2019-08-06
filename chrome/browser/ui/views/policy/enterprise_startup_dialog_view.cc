@@ -56,7 +56,9 @@ std::unique_ptr<views::Label> CreateText(const base::string16& message) {
   auto text = std::make_unique<views::Label>(message);
   text->SetFontList(gfx::FontList().Derive(kFontSizeDelta, gfx::Font::NORMAL,
                                            gfx::Font::Weight::MEDIUM));
-  text->SetEnabledColor(gfx::kGoogleGrey700);
+  text->SetEnabledColor(
+      views::style::GetColor(*text, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
+                             views::style::STYLE_PRIMARY));
   text->SetLineHeight(kLineHeight);
   return text;
 }

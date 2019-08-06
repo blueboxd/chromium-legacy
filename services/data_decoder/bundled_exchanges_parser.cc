@@ -38,8 +38,17 @@ constexpr uint64_t kMaxResponseHeaderLength = 512 * 1024;
 // The initial buffer size for reading an item from the response section.
 constexpr uint64_t kInitialBufferSizeForResponse = 4096;
 
+// Step 2. of
+// https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
 const uint8_t kBundleMagicBytes[] = {
-    0x84, 0x48, 0xF0, 0x9F, 0x8C, 0x90, 0xF0, 0x9F, 0x93, 0xA6,
+    0x86, 0x48, 0xF0, 0x9F, 0x8C, 0x90, 0xF0, 0x9F, 0x93, 0xA6,
+};
+
+// Step 7. of
+// https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
+// We use an implementation-specific version string "b1\0\0".
+const uint8_t kVersionB1MagicBytes[] = {
+    0x44, 0x62, 0x31, 0x00, 0x00,
 };
 
 // Section names.
@@ -49,6 +58,7 @@ constexpr char kResponsesSection[] = "responses";
 // https://tools.ietf.org/html/draft-ietf-cbor-7049bis-05#section-3.1
 enum class CBORType {
   kByteString = 2,
+  kTextString = 3,
   kArray = 4,
 };
 
@@ -173,6 +183,17 @@ class InputReader {
     return result;
   }
 
+  base::Optional<base::StringPiece> ReadString(size_t n) {
+    auto bytes = ReadBytes(n);
+    if (!bytes)
+      return base::nullopt;
+    base::StringPiece str(reinterpret_cast<const char*>(bytes->data()),
+                          bytes->size());
+    if (!base::IsStringUTF8(str))
+      return base::nullopt;
+    return str;
+  }
+
   // Parses the type and argument of a CBOR item from the input head. If parsed
   // successfully and the type matches |expected_type|, returns the argument.
   // Otherwise returns nullopt.
@@ -269,23 +290,23 @@ class BundledExchangesParser::MetadataParser
   void DidGetSize(uint64_t size) {
     size_ = size;
 
-    // In the next step, we will parse `magic`, `section-lengths`, and the CBOR
-    // header of `sections`.
+    // In the next step, we will parse `magic`, `version`, and the CBOR
+    // header of `primary-url`.
     // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#top-level
-    const uint64_t length =
-        std::min(size, sizeof(kBundleMagicBytes) + kMaxSectionLengthsCBORSize +
-                           kMaxCBORItemHeaderSize * 2);
+    const uint64_t length = std::min(size, sizeof(kBundleMagicBytes) +
+                                               sizeof(kVersionB1MagicBytes) +
+                                               kMaxCBORItemHeaderSize);
     data_source_->Read(0, length,
-                       base::BindOnce(&MetadataParser::ParseBundleHeader,
+                       base::BindOnce(&MetadataParser::ParseMagicBytes,
                                       weak_factory_.GetWeakPtr(), length));
   }
 
-  // Step 1-15 of
+  // Step 1-4 of
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
-  void ParseBundleHeader(uint64_t expected_data_length,
-                         const base::Optional<std::vector<uint8_t>>& data) {
+  void ParseMagicBytes(uint64_t expected_data_length,
+                       const base::Optional<std::vector<uint8_t>>& data) {
     if (!data || data->size() != expected_data_length) {
-      RunErrorCallbackAndDestroy("Error reading bundle header.");
+      RunErrorCallbackAndDestroy("Error reading bundle magic bytes.");
       return;
     }
 
@@ -294,9 +315,9 @@ class BundledExchangesParser::MetadataParser
     InputReader input(*data);
 
     // Step 2. "If reading 10 bytes from stream returns an error or doesn't
-    // return the bytes with hex encoding "84 48 F0 9F 8C 90 F0 9F 93 A6"
-    // (the CBOR encoding of the 4-item array initial byte and 8-byte bytestring
-    // initial byte, followed by 🌐📦 in UTF-8), return an error."
+    // return the bytes with hex encoding "86 48 F0 9F 8C 90 F0 9F 93 A6"
+    // (the CBOR encoding of the 6-item array initial byte and 8-byte bytestring
+    // initial byte, followed by 🌐📦 in UTF-8), return a "format error"."
     const auto magic = input.ReadBytes(sizeof(kBundleMagicBytes));
     if (!magic ||
         !std::equal(magic->begin(), magic->end(), std::begin(kBundleMagicBytes),
@@ -305,43 +326,125 @@ class BundledExchangesParser::MetadataParser
       return;
     }
 
-    // Step 3. "Let sectionLengthsLength be the result of getting the length of
+    // Step 3. "Let version be the result of reading 5 bytes from stream. If
+    // this is an error, return a "format error"."
+    const auto version = input.ReadBytes(sizeof(kVersionB1MagicBytes));
+    if (!version) {
+      RunErrorCallbackAndDestroy("Cannot read version bytes.");
+      return;
+    }
+    if (!std::equal(version->begin(), version->end(),
+                    std::begin(kVersionB1MagicBytes),
+                    std::end(kVersionB1MagicBytes))) {
+      version_mismatch_ = true;
+      // Continue parsing until Step 7 where we get a fallback URL, and
+      // then return "version error" with the fallback URL.
+    }
+
+    // Step 4. "Let urlType and urlLength be the result of reading the type and
+    // argument of a CBOR item from stream (Section 3.5.3). If this is an error
+    // or urlType is not 3 (a CBOR text string), return a "format error"."
+    const auto url_length = input.ReadCBORHeader(CBORType::kTextString);
+    if (!url_length) {
+      RunErrorCallbackAndDestroy("Cannot parse the size of fallback URL.");
+      return;
+    }
+
+    // In the next step, we will parse the content of `primary-url`,
+    // `section-lengths`, and the CBOR header of `sections`.
+    const uint64_t length = std::min(
+        size_ - input.CurrentOffset(),
+        *url_length + kMaxSectionLengthsCBORSize + kMaxCBORItemHeaderSize * 2);
+    data_source_->Read(input.CurrentOffset(), length,
+                       base::BindOnce(&MetadataParser::ParseBundleHeader,
+                                      weak_factory_.GetWeakPtr(), length,
+                                      *url_length, input.CurrentOffset()));
+  }
+
+  // Step 5-20 of
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
+  void ParseBundleHeader(uint64_t expected_data_length,
+                         uint64_t url_length,
+                         uint64_t offset_in_stream,
+                         const base::Optional<std::vector<uint8_t>>& data) {
+    if (!data || data->size() != expected_data_length) {
+      RunErrorCallbackAndDestroy("Error reading bundle header.");
+      return;
+    }
+    InputReader input(*data);
+
+    // Step 5. "Let fallbackUrlBytes be the result of reading urlLength bytes
+    // from stream. If this is an error, return a "format error"."
+    const auto fallback_url_string = input.ReadString(url_length);
+    if (!fallback_url_string) {
+      RunErrorCallbackAndDestroy("Cannot read fallback URL.");
+      return;
+    }
+
+    // Step 6. "Let fallbackUrl be the result of parsing ([URL]) the UTF-8
+    // decoding of fallbackUrlBytes with no base URL. If either the UTF-8
+    // decoding or parsing fails, return a "format error"."
+    // Note: ReadString() ensures that |fallback_url_string| is a valid UTF-8.
+    GURL fallback_url(*fallback_url_string);
+    if (!fallback_url.is_valid()) {
+      RunErrorCallbackAndDestroy("Cannot parse fallback URL.");
+      return;
+    }
+
+    // "Note: From this point forward, errors also include the fallback URL to
+    // help clients recover."
+    fallback_url_ = std::move(fallback_url);
+
+    // Step 7. "If version does not have the hex encoding "44 31 00 00 00" (the
+    // CBOR encoding of a 4-byte byte string holding an ASCII "1" followed by
+    // three 0 bytes), return a "version error" with fallbackUrl. "
+    // Note: We use an implementation-specific version string
+    // kVersionB1MagicBytes.
+    if (version_mismatch_) {
+      RunErrorCallbackAndDestroy(
+          "Version error: this implementation only supports "
+          "bundle format of version b1.",
+          mojom::BundleParseErrorType::kVersionError);
+      return;
+    }
+
+    // Step 8. "Let sectionLengthsLength be the result of getting the length of
     // the CBOR bytestring header from stream (Section 3.5.2). If this is an
-    // error, return that error."
+    // error, return a "format error" with fallbackUrl."
     const auto section_lengths_length =
         input.ReadCBORHeader(CBORType::kByteString);
     if (!section_lengths_length) {
       RunErrorCallbackAndDestroy("Cannot parse the size of section-lengths.");
       return;
     }
-    // Step 4. "If sectionLengthsLength is 8192 (8*1024) or greater, return an
-    // error."
+    // Step 9. "If sectionLengthsLength is 8192 (8*1024) or greater, return a
+    // "format error" with fallbackUrl."
     if (*section_lengths_length >= kMaxSectionLengthsCBORSize) {
       RunErrorCallbackAndDestroy(
           "The section-lengths CBOR must be smaller than 8192 bytes.");
       return;
     }
 
-    // Step 5. "Let sectionLengthsBytes be the result of reading
+    // Step 10. "Let sectionLengthsBytes be the result of reading
     // sectionLengthsLength bytes from stream. If sectionLengthsBytes is an
-    // error, return that error."
+    // error, return a "format error" with fallbackUrl."
     const auto section_lengths_bytes = input.ReadBytes(*section_lengths_length);
     if (!section_lengths_bytes) {
       RunErrorCallbackAndDestroy("Cannot read section-lengths.");
       return;
     }
 
-    // Step 6. "Let sectionLengths be the result of parsing one CBOR item
+    // Step 11. "Let sectionLengths be the result of parsing one CBOR item
     // (Section 3.5) from sectionLengthsBytes, matching the section-lengths
     // rule in the CDDL ([I-D.ietf-cbor-cddl]) above. If sectionLengths is an
-    // error, return an error."
+    // error, return a "format error" with fallbackUrl."
     const auto section_lengths = ParseSectionLengths(*section_lengths_bytes);
     if (!section_lengths) {
       RunErrorCallbackAndDestroy("Cannot parse section-lengths.");
       return;
     }
 
-    // Step 7. "Let (sectionsType, numSections) be the result of parsing the
+    // Step 12. "Let (sectionsType, numSections) be the result of parsing the
     // type and argument of a CBOR item from stream (Section 3.5.3)."
     const auto num_sections = input.ReadCBORHeader(CBORType::kArray);
     if (!num_sections) {
@@ -349,44 +452,46 @@ class BundledExchangesParser::MetadataParser
       return;
     }
 
-    // Step 8. "If sectionsType is not 4 (a CBOR array) or numSections is not
-    // half of the length of sectionLengths, return an error."
+    // Step 13. "If sectionsType is not 4 (a CBOR array) or numSections is not
+    // half of the length of sectionLengths, return a "format error" with
+    // fallbackUrl."
     if (*num_sections != section_lengths->size()) {
       RunErrorCallbackAndDestroy("Unexpected number of sections.");
       return;
     }
 
-    // Step 9. "Let sectionsStart be the current offset within stream."
-    const uint64_t sections_start = input.CurrentOffset();
+    // Step 14. "Let sectionsStart be the current offset within stream."
+    // Note: This doesn't exceed |size_|.
+    const uint64_t sections_start = offset_in_stream + input.CurrentOffset();
 
-    // Step 10. "Let knownSections be the subset of the Section 6.2 that this
+    // Step 15. "Let knownSections be the subset of the Section 6.2 that this
     // client has implemented."
-    // Step 11. "Let ignoredSections be an empty set."
+    // Step 16. "Let ignoredSections be an empty set."
 
     // This implementation doesn't use knownSections nor ignoredSections.
 
-    // Step 12. "Let sectionOffsets be an empty map ([INFRA]) from section names
+    // Step 17. "Let sectionOffsets be an empty map ([INFRA]) from section names
     // to (offset, length) pairs. These offsets are relative to the start of
     // stream."
 
     // |section_offsets_| is defined as a class member field.
 
-    // Step 13. "Let currentOffset be sectionsStart."
+    // Step 18. "Let currentOffset be sectionsStart."
     uint64_t current_offset = sections_start;
 
-    // Step 14. "For each ("name", length) pair of adjacent elements in
+    // Step 19. "For each ("name", length) pair of adjacent elements in
     // sectionLengths:"
     for (const auto& pair : *section_lengths) {
       const std::string& name = pair.first;
       const uint64_t length = pair.second;
-      // Step 14.1. "If "name"'s specification in knownSections says not to
+      // Step 19.1. "If "name"'s specification in knownSections says not to
       // process other sections, add those sections' names to ignoredSections."
 
       // There're no such sections at the moment.
 
-      // Step 14.2. "If sectionOffsets["name"] exists, return an error. That is,
-      // duplicate sections are forbidden."
-      // Step 14.3. "Set sectionOffsets["name"] to (currentOffset, length)."
+      // Step 19.2. "If sectionOffsets["name"] exists, return a "format error"
+      // with fallbackUrl. That is, duplicate sections are forbidden."
+      // Step 19.3. "Set sectionOffsets["name"] to (currentOffset, length)."
       bool added = section_offsets_
                        .insert(std::make_pair(
                            name, std::make_pair(current_offset, length)))
@@ -396,7 +501,7 @@ class BundledExchangesParser::MetadataParser
         return;
       }
 
-      // Step 14.4. "Set currentOffset to currentOffset + length."
+      // Step 19.4. "Set currentOffset to currentOffset + length."
       if (!base::CheckAdd(current_offset, length)
                .AssignIfValid(&current_offset) ||
           current_offset > size_) {
@@ -405,9 +510,10 @@ class BundledExchangesParser::MetadataParser
       }
     }
 
-    // Step 15. "If the "responses" section is not last in sectionLengths,
-    // return an error. This allows a streaming parser to assume that it'll
-    // know the requests by the time their responses arrive."
+    // Step 20. "If the "responses" section is not last in sectionLengths,
+    // return a "format error" with fallbackUrl. This allows a streaming parser
+    // to assume that it'll know the requests by the time their responses
+    // arrive."
     if (section_lengths->empty() ||
         section_lengths->back().first != kResponsesSection) {
       RunErrorCallbackAndDestroy(
@@ -618,8 +724,8 @@ class BundledExchangesParser::MetadataParser
     }
 
     // We're done.
-    RunSuccessCallbackAndDestroy(
-        mojom::BundleMetadata::New(std::move(items_), manifest_url_));
+    RunSuccessCallbackAndDestroy(mojom::BundleMetadata::New(
+        fallback_url_, std::move(items_), manifest_url_));
   }
 
   void RunSuccessCallbackAndDestroy(mojom::BundleMetadataPtr metadata) {
@@ -627,9 +733,14 @@ class BundledExchangesParser::MetadataParser
     delete this;
   }
 
-  void RunErrorCallbackAndDestroy(const std::string& message) {
-    std::move(callback_).Run(nullptr,
-                             mojom::BundleMetadataParseError::New(message));
+  void RunErrorCallbackAndDestroy(
+      const base::Optional<std::string>& error_message,
+      mojom::BundleParseErrorType error_type =
+          mojom::BundleParseErrorType::kFormatError) {
+    mojom::BundleMetadataParseErrorPtr err =
+        mojom::BundleMetadataParseError::New(error_type, fallback_url_,
+                                             *error_message);
+    std::move(callback_).Run(nullptr, std::move(err));
     delete this;
   }
 
@@ -641,6 +752,8 @@ class BundledExchangesParser::MetadataParser
   scoped_refptr<SharedBundleDataSource> data_source_;
   ParseMetadataCallback callback_;
   uint64_t size_;
+  bool version_mismatch_ = false;
+  GURL fallback_url_;
   // name -> (offset, length)
   std::map<std::string, std::pair<uint64_t, uint64_t>> section_offsets_;
   std::vector<mojom::BundleIndexItemPtr> items_;
@@ -814,9 +927,12 @@ class BundledExchangesParser::ResponseParser
     delete this;
   }
 
-  void RunErrorCallbackAndDestroy(const std::string& message) {
-    std::move(callback_).Run(nullptr,
-                             mojom::BundleResponseParseError::New(message));
+  void RunErrorCallbackAndDestroy(
+      const std::string& message,
+      mojom::BundleParseErrorType error_type =
+          mojom::BundleParseErrorType::kFormatError) {
+    std::move(callback_).Run(
+        nullptr, mojom::BundleResponseParseError::New(error_type, message));
     delete this;
   }
 

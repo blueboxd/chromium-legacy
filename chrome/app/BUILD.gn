@@ -555,7 +555,6 @@ source_set("builtin_service_manifests") {
     "//base",
     "//chrome/common:buildflags",
     "//chrome/common:mojo_bindings",
-    "//chrome/services/file_util/public/cpp:manifest",
     "//components/services/quarantine",
     "//components/services/quarantine/public/cpp:manifest",
     "//components/startup_metric_utils/common:interfaces",

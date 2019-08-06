@@ -849,11 +849,6 @@ void LayoutTable::UpdateLayout() {
 
     ComputeLayoutOverflow(ClientLogicalBottom());
     UpdateAfterLayout();
-
-    if (state.IsPaginated() && IsPageLogicalHeightKnown()) {
-      block_offset_to_first_repeatable_header_ = state.PageLogicalOffset(
-          *this, top_section ? top_section->LogicalTop() : LayoutUnit());
-    }
   }
 
   // FIXME: This value isn't the intrinsic content logical height, but we need

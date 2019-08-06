@@ -30,11 +30,17 @@ function sensorMocks() {
       });
     }
 
+    // device.mojom.Sensor implementation
+    // Mojo functions that return a value must be async and return an object
+    // whose keys match the names declared in Mojo.
+
+    // GetDefaultConfiguration() => (SensorConfiguration configuration)
     // Returns default configuration.
     async getDefaultConfiguration() {
       return { frequency: DEFAULT_FREQUENCY };
     }
 
+    // AddConfiguration(SensorConfiguration configuration) => (bool success)
     // Adds configuration for the sensor and starts reporting fake data
     // through setSensorReading function.
     async addConfiguration(configuration) {
@@ -54,6 +60,7 @@ function sensorMocks() {
       return { success: !this.startShouldFail_ };
     }
 
+    // RemoveConfiguration(SensorConfiguration configuration)
     // Removes sensor configuration from the list of active configurations and
     // stops notification about sensor reading changes if
     // requestedFrequencies_ is empty.
@@ -71,7 +78,7 @@ function sensorMocks() {
         this.stopReading();
     }
 
-    // Suspends sensor.
+    // Suspend()
     suspend() {
       this.stopReading();
       if (this.suspendCalled_ != null) {
@@ -79,13 +86,20 @@ function sensorMocks() {
       }
     }
 
-    // Resumes sensor.
+    // Resume()
     resume() {
       assert_equals(this.sensorReadingTimerId_, null);
       this.startReading();
       if (this.resumeCalled_ != null) {
         this.resumeCalled_(this);
       }
+    }
+
+    // ConfigureReadingChangeNotifications(bool enabled)
+    // Configures whether to report a reading change when in ON_CHANGE
+    // reporting mode.
+    configureReadingChangeNotifications(notifyOnReadingChange) {
+      this.notifyOnReadingChange_ = notifyOnReadingChange;
     }
 
     // Mock functions
@@ -121,12 +135,6 @@ function sensorMocks() {
     // Sets flag that forces sensor to fail when addConfiguration is invoked.
     setStartShouldFail(shouldFail) {
       this.startShouldFail_ = shouldFail;
-    }
-
-    // Configures whether to report a reading change when in ON_CHANGE
-    // reporting mode.
-    configureReadingChangeNotifications(notifyOnReadingChange) {
-      this.notifyOnReadingChange_ = notifyOnReadingChange;
     }
 
     // Returns resolved promise if suspend() was called, rejected otherwise.
@@ -190,6 +198,63 @@ function sensorMocks() {
     }
   }
 
+  // This class aggregates information about a given sensor type that is used by
+  // MockSensorProvider when it is asked to create a new MockSensor.
+  class SensorTypeSettings {
+    constructor(mojoSensorType) {
+      this.mojoSensorType_ = mojoSensorType;
+      assert_true(device.mojom.SensorType.isKnownEnumValue(mojoSensorType));
+
+      this.shouldDenyRequests_ = false;
+      this.unavailable_ = false;
+    }
+
+    get mojoSensorType() {
+      return this.mojoSensorType_;
+    }
+
+    get shouldDenyRequests() {
+      return this.shouldDenyRequests_;
+    }
+
+    set shouldDenyRequests(deny) {
+      this.shouldDenyRequests_ = deny;
+    }
+
+    get unavailable() {
+      return this.unavailable_;
+    }
+
+    set unavailable(is_unavailable) {
+      this.unavailable_ = is_unavailable;
+    }
+  }
+
+  // Maps a given device.mojom.SensorType enum value to a suitable name as a
+  // string.
+  function getSensorTypeName(mojoSensorType) {
+    switch (mojoSensorType) {
+      case device.mojom.SensorType.ACCELEROMETER:
+        return 'Accelerometer';
+      case device.mojom.SensorType.LINEAR_ACCELERATION:
+        return 'LinearAccelerationSensor';
+      case device.mojom.SensorType.AMBIENT_LIGHT:
+        return 'AmbientLightSensor';
+      case device.mojom.SensorType.GYROSCOPE:
+        return 'Gyroscope';
+      case device.mojom.SensorType.MAGNETOMETER:
+        return 'Magnetometer';
+      case device.mojom.SensorType.ABSOLUTE_ORIENTATION_QUATERNION:
+        return 'AbsoluteOrientationSensor';
+      case device.mojom.SensorType.ABSOLUTE_ORIENTATION_EULER_ANGLES:
+        return 'AbsoluteOrientationEulerAngles';
+      case device.mojom.SensorType.RELATIVE_ORIENTATION_QUATERNION:
+        return 'RelativeOrientationSensor';
+      case device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES:
+        return 'RelativeOrientationEulerAngles';
+    }
+  }
+
   // Class that mocks SensorProvider interface defined in
   // sensor_provider.mojom
   class MockSensorProvider {
@@ -203,24 +268,11 @@ function sensorMocks() {
       this.sharedBufferHandle_ = rv.handle;
       this.activeSensors_ = new Map();
       this.resolveFuncs_ = new Map();
-      this.getSensorShouldFail_ = new Map();
-      this.permissionsDenied_ = new Map();
       this.isContinuous_ = false;
       this.maxFrequency_ = 60;
       this.minFrequency_ = 1;
-      this.mojomSensorType_ = new Map([
-        ['Accelerometer', device.mojom.SensorType.ACCELEROMETER],
-        ['LinearAccelerationSensor', device.mojom.SensorType.LINEAR_ACCELERATION],
-        ['AmbientLightSensor', device.mojom.SensorType.AMBIENT_LIGHT],
-        ['Gyroscope', device.mojom.SensorType.GYROSCOPE],
-        ['Magnetometer', device.mojom.SensorType.MAGNETOMETER],
-        ['AbsoluteOrientationSensor', device.mojom.SensorType.ABSOLUTE_ORIENTATION_QUATERNION],
-        ['AbsoluteOrientationEulerAngles', device.mojom.SensorType.ABSOLUTE_ORIENTATION_EULER_ANGLES],
-        ['RelativeOrientationSensor', device.mojom.SensorType.RELATIVE_ORIENTATION_QUATERNION],
-        ['RelativeOrientationEulerAngles', device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES]
-      ]);
+      this.resetSensorTypeSettings();
       this.binding_ = new mojo.Binding(device.mojom.SensorProvider, this);
-
       this.interceptor_ = new MojoInterfaceInterceptor(
           device.mojom.SensorProvider.name);
       this.interceptor_.oninterfacerequest = e => {
@@ -229,29 +281,36 @@ function sensorMocks() {
       this.interceptor_.start();
     }
 
+    // device.mojom.SensorProvider implementation
+    // Mojo functions that return a value must be async and return an object
+    // whose keys match the names declared in Mojo.
+
+    // GetSensor(SensorType type) => (SensorCreationResult result,
+    //                                SensorInitParams? init_params)
     // Returns initialized Sensor proxy to the client.
-    async getSensor(type) {
-      if (this.getSensorShouldFail_.get(type)) {
+    async getSensor(mojoSensorType) {
+      const sensorSettings = this.sensorTypeSettings_.get(getSensorTypeName(mojoSensorType));
+      if (sensorSettings.unavailable) {
         return {result: device.mojom.SensorCreationResult.ERROR_NOT_AVAILABLE,
                 initParams: null};
       }
-      if (this.permissionsDenied_.get(type)) {
+      if (sensorSettings.shouldDenyRequests) {
         return {result: device.mojom.SensorCreationResult.ERROR_NOT_ALLOWED,
                 initParams: null};
       }
 
-      const offset = type * this.readingSizeInBytes_;
+      const offset = mojoSensorType * this.readingSizeInBytes_;
       const reportingMode = this.isContinuous_ ?
           device.mojom.ReportingMode.CONTINUOUS :
           device.mojom.ReportingMode.ON_CHANGE;
 
       const sensorPtr = new device.mojom.SensorPtr();
-      if (!this.activeSensors_.has(type)) {
+      if (!this.activeSensors_.has(mojoSensorType)) {
         const mockSensor = new MockSensor(
             mojo.makeRequest(sensorPtr), this.sharedBufferHandle_, offset,
             this.readingSizeInBytes_, reportingMode);
-        this.activeSensors_.set(type, mockSensor);
-        this.activeSensors_.get(type).client_ = new device.mojom.SensorClientPtr();
+        this.activeSensors_.set(mojoSensorType, mockSensor);
+        this.activeSensors_.get(mojoSensorType).client_ = new device.mojom.SensorClientPtr();
       }
 
       const rv = this.sharedBufferHandle_.duplicateBufferHandle();
@@ -261,14 +320,14 @@ function sensorMocks() {
       const defaultConfig = { frequency: DEFAULT_FREQUENCY };
       // Consider sensor traits to meet assertions in C++ code (see
       // services/device/public/cpp/generic_sensor/sensor_traits.h)
-      if (type == device.mojom.SensorType.AMBIENT_LIGHT ||
-          type == device.mojom.SensorType.MAGNETOMETER) {
+      if (mojoSensorType == device.mojom.SensorType.AMBIENT_LIGHT ||
+          mojoSensorType == device.mojom.SensorType.MAGNETOMETER) {
         this.maxFrequency_ = Math.min(10, this.maxFrequency_);
       }
 
       const initParams = new device.mojom.SensorInitParams({
         sensor: sensorPtr,
-        clientRequest: mojo.makeRequest(this.activeSensors_.get(type).client_),
+        clientRequest: mojo.makeRequest(this.activeSensors_.get(mojoSensorType).client_),
         memory: rv.handle,
         bufferOffset: offset,
         mode: reportingMode,
@@ -277,11 +336,11 @@ function sensorMocks() {
         maximumFrequency: this.maxFrequency_
       });
 
-      if (this.resolveFuncs_.has(type)) {
-        for (let resolveFunc of this.resolveFuncs_.get(type)) {
-          resolveFunc(this.activeSensors_.get(type));
+      if (this.resolveFuncs_.has(mojoSensorType)) {
+        for (let resolveFunc of this.resolveFuncs_.get(mojoSensorType)) {
+          resolveFunc(this.activeSensors_.get(mojoSensorType));
         }
-        this.resolveFuncs_.delete(type);
+        this.resolveFuncs_.delete(mojoSensorType);
       }
 
       return {result: device.mojom.SensorCreationResult.SUCCESS,
@@ -298,6 +357,28 @@ function sensorMocks() {
 
     // Mock functions
 
+    // Returns a SensorTypeSettings instance corresponding to the name |type|, a
+    // string.
+    getSensorTypeSettings(type) {
+      return this.sensorTypeSettings_.get(type);
+    }
+
+    // Recreates |this.sensorTypeSettings_| with a new map and values reset to
+    // their defaults.
+    resetSensorTypeSettings() {
+      this.sensorTypeSettings_ = new Map([
+        ['Accelerometer', new SensorTypeSettings(device.mojom.SensorType.ACCELEROMETER)],
+        ['LinearAccelerationSensor', new SensorTypeSettings(device.mojom.SensorType.LINEAR_ACCELERATION)],
+        ['AmbientLightSensor', new SensorTypeSettings(device.mojom.SensorType.AMBIENT_LIGHT)],
+        ['Gyroscope', new SensorTypeSettings(device.mojom.SensorType.GYROSCOPE)],
+        ['Magnetometer', new SensorTypeSettings(device.mojom.SensorType.MAGNETOMETER)],
+        ['AbsoluteOrientationSensor', new SensorTypeSettings(device.mojom.SensorType.ABSOLUTE_ORIENTATION_QUATERNION)],
+        ['AbsoluteOrientationEulerAngles', new SensorTypeSettings(device.mojom.SensorType.ABSOLUTE_ORIENTATION_EULER_ANGLES)],
+        ['RelativeOrientationSensor', new SensorTypeSettings(device.mojom.SensorType.RELATIVE_ORIENTATION_QUATERNION)],
+        ['RelativeOrientationEulerAngles', new SensorTypeSettings(device.mojom.SensorType.RELATIVE_ORIENTATION_EULER_ANGLES)]
+      ]);
+    }
+
     // Resets state of mock SensorProvider between test runs.
     reset() {
       for (const sensor of this.activeSensors_.values()) {
@@ -305,8 +386,7 @@ function sensorMocks() {
       }
       this.activeSensors_.clear();
       this.resolveFuncs_.clear();
-      this.getSensorShouldFail_.clear();
-      this.permissionsDenied_.clear();
+      this.resetSensorTypeSettings();
       this.maxFrequency_ = 60;
       this.minFrequency_ = 1;
       this.isContinuous_ = false;
@@ -314,20 +394,9 @@ function sensorMocks() {
       this.interceptor_.stop();
     }
 
-    // Sets flag that forces mock SensorProvider to fail when getSensor() is
-    // invoked.
-    setGetSensorShouldFail(sensorType, shouldFail) {
-      this.getSensorShouldFail_.set(this.mojomSensorType_.get(sensorType), shouldFail);
-    }
-
-    setPermissionsDenied(sensorType, permissionsDenied) {
-      this.permissionsDenied_.set(this.mojomSensorType_.get(sensorType), permissionsDenied);
-    }
-
     // Returns mock sensor that was created in getSensor to the layout test.
-    getCreatedSensor(sensorType) {
-      const type = this.mojomSensorType_.get(sensorType);
-      assert_equals(typeof type, "number", "A sensor type must be specified.");
+    getCreatedSensor(sensorName) {
+      const type = this.sensorTypeSettings_.get(sensorName).mojoSensorType;
 
       if (this.activeSensors_.has(type)) {
         return Promise.resolve(this.activeSensors_.get(type));

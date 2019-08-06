@@ -1671,6 +1671,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.DirectAction.List">
+  <owner>szermatt@chromium.org</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <description>
+    Call to Activity.onListDirectActions made by the system on behalf of the
+    assist app. Available starting with Android Q.
+  </description>
+</action>
+
 <action name="Android.Download.InfoBar.Accelerated">
   <owner>shaktisahu@chromium.org</owner>
   <description>
@@ -21506,6 +21515,11 @@ should be able to be added at any place in this file.
 <action name="Terminate_ProcessMismatch_CreateNewWindow">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Test_Action">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <description>Please enter the description of the metric.</description>
 </action>
 
 <action name="TextToSpeech.Pause">

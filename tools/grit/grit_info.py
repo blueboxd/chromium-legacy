@@ -37,20 +37,6 @@ def Outputs(filename, defines, ids_file, target_platform=None):
     if output.attrs['lang']:
       lang_folders[output.attrs['lang']] = os.path.dirname(path)
 
-  # Add all generated files, once for each output language.
-  for node in grd:
-    if node.name == 'structure':
-      with node:
-        # TODO(joi) Should remove the "if sconsdep is true" thing as it is a
-        # hack - see grit/node/structure.py
-        if node.HasFileForLanguage() and node.attrs['sconsdep'] == 'true':
-          for lang in lang_folders:
-            path = node.FileForLanguage(lang, lang_folders[lang],
-                                        create_file=False,
-                                        return_if_not_generated=False)
-            if path:
-              target.append(path)
-
   return [t.replace('\\', '/') for t in target]
 
 

@@ -1379,7 +1379,7 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
     return !Traversal<HTMLImageElement>::FirstWithin(element);
 
   // A button element
-  if (IsHTMLButtonElement(element))
+  if (IsA<HTMLButtonElement>(element))
     return true;
 
   // An input element whose type attribute is in one of the Checkbox or Radio

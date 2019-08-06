@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/web_application_info.h"
@@ -17,7 +16,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -119,8 +117,6 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, DenyWhenFeatureDisabled) {
 }
 
 TEST_F(PeriodicBackgroundSyncPermissionContextTest, DenyForInsecureOrigin) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPeriodicBackgroundSync);
   GURL url("http://example.com");
   SetBackgroundSyncContentSetting(url, CONTENT_SETTING_ALLOW);
   EXPECT_EQ(GetPermissionStatus(url, /* with_frame= */ false),
@@ -128,8 +124,6 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, DenyForInsecureOrigin) {
 }
 
 TEST_F(PeriodicBackgroundSyncPermissionContextTest, AllowWithFrame) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPeriodicBackgroundSync);
   GURL url("https://example.com");
   SetUpPwaAndContentSettings(url);
   SetBackgroundSyncContentSetting(url, CONTENT_SETTING_ALLOW);
@@ -139,8 +133,6 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, AllowWithFrame) {
 }
 
 TEST_F(PeriodicBackgroundSyncPermissionContextTest, AllowWithoutFrame) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPeriodicBackgroundSync);
   GURL url("https://example.com");
   SetUpPwaAndContentSettings(url);
 
@@ -149,8 +141,6 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, AllowWithoutFrame) {
 }
 
 TEST_F(PeriodicBackgroundSyncPermissionContextTest, DesktopPwa) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPeriodicBackgroundSync);
   GURL url("https://example.com");
   SetUpPwaAndContentSettings(url);
 
@@ -163,8 +153,6 @@ TEST_F(PeriodicBackgroundSyncPermissionContextTest, DesktopPwa) {
 
 #if defined(OS_ANDROID)
 TEST_F(PeriodicBackgroundSyncPermissionContextTest, Twa) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPeriodicBackgroundSync);
   GURL url("https://example.com");
 
   // No TWA or PWA installed.

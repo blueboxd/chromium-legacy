@@ -1,4 +1,11 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
+
+# Nullptr exception in TestNavigationURLLoader::CallOnresponseStarted().
+#
+# Updating the NavigationSimulator is needed to take into account the ones using
+# the BackForwardCache.
+#
+# See https://crbug.com/989924
 -BackFwdMenuModelTest.BasicCase
 -BackFwdMenuModelTest.ChapterStops
 -DownloadRequestLimiterTest.HistoryBack

@@ -77,9 +77,7 @@ WebSharedWorkerImpl::WebSharedWorkerImpl(
     WebSharedWorkerClient* client,
     const base::UnguessableToken& appcache_host_id)
     : client_(client),
-      creation_address_space_(mojom::IPAddressSpace::kPublic),
-      parent_execution_context_task_runners_(
-          ParentExecutionContextTaskRunners::Create()),
+      creation_address_space_(network::mojom::IPAddressSpace::kPublic),
       appcache_host_(MakeGarbageCollected<ApplicationCacheHostForSharedWorker>(
           appcache_host_id,
           Thread::Current()->GetTaskRunner())) {
@@ -197,7 +195,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebString& user_agent,
     const WebString& content_security_policy,
     mojom::ContentSecurityPolicyType policy_type,
-    mojom::IPAddressSpace creation_address_space,
+    network::mojom::IPAddressSpace creation_address_space,
     const base::UnguessableToken& devtools_worker_token,
     PrivacyPreferences privacy_preferences,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
@@ -313,7 +311,7 @@ void WebSharedWorkerImpl::StartWorkerThread(
     const FetchClientSettingsObjectSnapshot& outside_settings_object) {
   DCHECK(IsMainThread());
   reporting_proxy_ = MakeGarbageCollected<SharedWorkerReportingProxy>(
-      this, parent_execution_context_task_runners_);
+      this, ParentExecutionContextTaskRunners::Create());
   worker_thread_ = std::make_unique<SharedWorkerThread>(*reporting_proxy_);
 
   auto thread_startup_data = WorkerBackingThreadStartupData::CreateDefault();
@@ -324,8 +322,7 @@ void WebSharedWorkerImpl::StartWorkerThread(
       name_);
 
   GetWorkerThread()->Start(std::move(global_scope_creation_params),
-                           thread_startup_data, std::move(devtools_params),
-                           parent_execution_context_task_runners_);
+                           thread_startup_data, std::move(devtools_params));
 
   GetWorkerThread()->FetchAndRunClassicScript(
       script_request_url_, outside_settings_object.CopyData(),
@@ -358,11 +355,6 @@ void WebSharedWorkerImpl::BindDevToolsAgent(
           mojom::blink::DevToolsAgentHost::Version_),
       mojom::blink::DevToolsAgentAssociatedRequest(
           std::move(devtools_agent_request)));
-}
-
-scoped_refptr<base::SingleThreadTaskRunner> WebSharedWorkerImpl::GetTaskRunner(
-    TaskType task_type) {
-  return parent_execution_context_task_runners_->Get(task_type);
 }
 
 std::unique_ptr<WebSharedWorker> WebSharedWorker::Create(

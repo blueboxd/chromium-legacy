@@ -352,6 +352,14 @@ bool IsOnlyNewParserEnabled() {
 #endif
 }
 
+bool HasSingleUsernameVote(const FormStructure& form) {
+  for (const auto& field : form) {
+    if (field->server_type() == autofill::SINGLE_USERNAME)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 // static
@@ -1307,18 +1315,38 @@ void PasswordManager::MaybeSavePasswordHash(
 }
 
 void PasswordManager::ProcessAutofillPredictions(
-    password_manager::PasswordManagerDriver* driver,
-    const std::vector<autofill::FormStructure*>& forms) {
+    PasswordManagerDriver* driver,
+    const std::vector<FormStructure*>& forms) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (password_manager_util::IsLoggingActive(client_))
+  if (password_manager_util::IsLoggingActive(client_)) {
     logger.reset(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+  }
 
   if (IsNewFormParsingForFillingEnabled()) {
-    for (const autofill::FormStructure* form : forms)
+    for (const FormStructure* form : forms)
       predictions_[form->form_signature()] = ConvertToFormPredictions(*form);
     for (auto& manager : form_managers_)
       manager->ProcessServerPredictions(predictions_);
+
+    // Create form managers for non-password forms with single usernames.
+    for (const FormStructure* form : forms) {
+      if (form->has_password_field())
+        continue;
+
+      if (!HasSingleUsernameVote(*form))
+        continue;
+
+      if (FindMatchedManagerByRendererId(form->unique_renderer_id(),
+                                         form_managers_, driver)) {
+        // The form manager is already created.
+        continue;
+      }
+
+      FormData form_data = form->ToFormData();
+      auto* manager = CreateFormManager(driver, form_data);
+      manager->ProcessServerPredictions(predictions_);
+    }
   }
 
   // Leave only forms that contain fields that are useful for password manager.

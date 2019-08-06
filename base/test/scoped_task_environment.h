@@ -104,10 +104,6 @@ class ScopedTaskEnvironment {
     //     runners.
     MOCK_TIME,
 
-    // TODO(gab): MOCK_TIME is now equivalent to MOCK_TIME_AND_NOW. Mass migrate
-    // users of MOCK_TIME_AND_NOW to MOCK_TIME.
-    MOCK_TIME_AND_NOW = MOCK_TIME,
-
     // TODO(gab): Consider making MOCK_TIME the default mode.
     DEFAULT = SYSTEM_TIME
   };
@@ -232,10 +228,11 @@ class ScopedTaskEnvironment {
   // process. See time.h.
   const Clock* GetMockClock() const;
 
-  // Only valid for instances using TimeSource::MOCK_TIME. Returns the
-  // current virtual tick time (based on a realistic Now(), sampled when this
+  // Only valid for instances using TimeSource::MOCK_TIME. Returns the current
+  // virtual tick time (based on a realistic Now(), sampled when this
   // ScopedTaskEnvironment was created, and manually advanced from that point
-  // on).
+  // on). This is always equivalent to base::TimeTicks::Now() under
+  // TimeSource::MOCK_TIME.
   base::TimeTicks NowTicks() const;
 
   // Only valid for instances using TimeSource::MOCK_TIME. Returns the

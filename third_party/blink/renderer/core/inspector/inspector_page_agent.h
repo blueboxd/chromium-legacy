@@ -183,7 +183,7 @@ class CORE_EXPORT InspectorPageAgent final
                                 ClientNavigationReason);
   void FrameScheduledNavigation(LocalFrame*,
                                 const KURL&,
-                                double delay,
+                                base::TimeDelta delay,
                                 ClientNavigationReason);
   void FrameClearedScheduledNavigation(LocalFrame*);
   void WillRunJavaScriptDialog();

@@ -37,10 +37,10 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom-blink.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -49,10 +49,6 @@
 #include "third_party/blink/renderer/core/workers/shared_worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -98,7 +94,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
       const WebString& user_agent,
       const WebString& content_security_policy,
       mojom::ContentSecurityPolicyType,
-      mojom::IPAddressSpace,
+      network::mojom::IPAddressSpace,
       const base::UnguessableToken& devtools_worker_token,
       PrivacyPreferences privacy_preferences,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
@@ -110,7 +106,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void BindDevToolsAgent(
       mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
   // Callback methods for SharedWorkerReportingProxy.
   void CountFeature(WebFeature);
@@ -157,19 +152,10 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   WebURL script_request_url_;
   WebString name_;
   WebString user_agent_;
-  mojom::IPAddressSpace creation_address_space_;
+  network::mojom::IPAddressSpace creation_address_space_;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       pending_interface_provider_;
-
-  // SharedWorker can sometimes run tasks that are initiated by/associated with
-  // a document's frame but these documents can be from a different process. So
-  // we intentionally populate the task runners with default task runners of the
-  // main thread. Note that |shadow_page_| should not be used as it's a dummy
-  // document for loading that doesn't represent the frame of any associated
-  // document.
-  Persistent<ParentExecutionContextTaskRunners>
-      parent_execution_context_task_runners_;
 
   Persistent<ApplicationCacheHostForSharedWorker> appcache_host_;
 

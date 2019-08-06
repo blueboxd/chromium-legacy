@@ -26,6 +26,7 @@ _typemap_imports = [
   "//gpu/ipc/common/typemaps.gni",
   "//ipc/typemaps.gni",
   "//media/capture/mojom/typemaps.gni",
+  "//media/fuchsia/mojom/typemaps.gni",
   "//media/learning/mojo/public/cpp/typemaps.gni",
   "//media/mojo/mojom/typemaps.gni",
   "//mojo/public/cpp/base/typemaps.gni",

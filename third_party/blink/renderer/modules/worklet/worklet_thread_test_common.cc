@@ -39,8 +39,7 @@ CreateAnimationAndPaintWorkletThread(
           base::UnguessableToken::Create(), nullptr /* worker_settings */,
           kV8CacheOptionsDefault,
           MakeGarbageCollected<WorkletModuleResponsesMap>()),
-      base::nullopt, std::make_unique<WorkerDevToolsParams>(),
-      ParentExecutionContextTaskRunners::Create());
+      base::nullopt, std::make_unique<WorkerDevToolsParams>());
   return thread;
 }
 

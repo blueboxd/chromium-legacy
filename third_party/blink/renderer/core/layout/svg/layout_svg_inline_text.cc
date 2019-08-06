@@ -73,7 +73,7 @@ void LayoutSVGInlineText::StyleDidChange(StyleDifference diff,
   bool old_preserves =
       old_style ? old_style->WhiteSpace() == EWhiteSpace::kPre : false;
   if (old_preserves != new_preserves) {
-    SetText(OriginalText(), true);
+    ForceSetText(OriginalText());
     return;
   }
 

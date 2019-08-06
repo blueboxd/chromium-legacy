@@ -154,8 +154,9 @@ ChromeCleanerFetcher::ChromeCleanerFetcher(
     network::mojom::URLLoaderFactory* url_loader_factory)
     : fetched_callback_(std::move(fetched_callback)),
       url_loader_factory_(url_loader_factory),
-      blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      blocking_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       scoped_temp_dir_(new base::ScopedTempDir(),
                        base::OnTaskRunnerDeleter(blocking_task_runner_)) {

@@ -619,13 +619,11 @@ void LegacyCacheStorage::OpenCache(const std::string& cache_name,
   //       operations to better support use by internal code that may
   //       start a single operation without explicitly maintaining a
   //       handle.
-  auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive, CacheStorageSchedulerOp::kOpen,
-      base::BindOnce(
-          &LegacyCacheStorage::OpenCacheImpl, weak_factory_.GetWeakPtr(),
-          cache_name, trace_id,
-          scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
+      CacheStorageSchedulerOp::kOpen,
+      base::BindOnce(&LegacyCacheStorage::OpenCacheImpl,
+                     weak_factory_.GetWeakPtr(), cache_name, trace_id,
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void LegacyCacheStorage::HasCache(const std::string& cache_name,
@@ -640,13 +638,11 @@ void LegacyCacheStorage::HasCache(const std::string& cache_name,
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
-      id, CacheStorageSchedulerMode::kShared, CacheStorageSchedulerOp::kHas,
-      base::BindOnce(
-          &LegacyCacheStorage::HasCacheImpl, weak_factory_.GetWeakPtr(),
-          cache_name, trace_id,
-          scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
+      CacheStorageSchedulerOp::kHas,
+      base::BindOnce(&LegacyCacheStorage::HasCacheImpl,
+                     weak_factory_.GetWeakPtr(), cache_name, trace_id,
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void LegacyCacheStorage::DoomCache(const std::string& cache_name,
@@ -661,14 +657,11 @@ void LegacyCacheStorage::DoomCache(const std::string& cache_name,
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kDelete,
-      base::BindOnce(
-          &LegacyCacheStorage::DoomCacheImpl, weak_factory_.GetWeakPtr(),
-          cache_name, trace_id,
-          scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
+      base::BindOnce(&LegacyCacheStorage::DoomCacheImpl,
+                     weak_factory_.GetWeakPtr(), cache_name, trace_id,
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void LegacyCacheStorage::EnumerateCaches(int64_t trace_id,
@@ -682,13 +675,11 @@ void LegacyCacheStorage::EnumerateCaches(int64_t trace_id,
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
-      id, CacheStorageSchedulerMode::kShared, CacheStorageSchedulerOp::kKeys,
-      base::BindOnce(
-          &LegacyCacheStorage::EnumerateCachesImpl, weak_factory_.GetWeakPtr(),
-          trace_id,
-          scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
+      CacheStorageSchedulerOp::kKeys,
+      base::BindOnce(&LegacyCacheStorage::EnumerateCachesImpl,
+                     weak_factory_.GetWeakPtr(), trace_id,
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void LegacyCacheStorage::MatchCache(
@@ -706,13 +697,12 @@ void LegacyCacheStorage::MatchCache(
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
-      id, CacheStorageSchedulerMode::kShared, CacheStorageSchedulerOp::kMatch,
-      base::BindOnce(
-          &LegacyCacheStorage::MatchCacheImpl, weak_factory_.GetWeakPtr(),
-          cache_name, std::move(request), std::move(match_options), trace_id,
-          scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
+      CacheStorageSchedulerOp::kMatch,
+      base::BindOnce(&LegacyCacheStorage::MatchCacheImpl,
+                     weak_factory_.GetWeakPtr(), cache_name, std::move(request),
+                     std::move(match_options), trace_id,
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void LegacyCacheStorage::MatchAllCaches(
@@ -729,14 +719,12 @@ void LegacyCacheStorage::MatchAllCaches(
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
-      id, CacheStorageSchedulerMode::kShared,
       CacheStorageSchedulerOp::kMatchAll,
-      base::BindOnce(
-          &LegacyCacheStorage::MatchAllCachesImpl, weak_factory_.GetWeakPtr(),
-          std::move(request), std::move(match_options), trace_id,
-          scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
+      base::BindOnce(&LegacyCacheStorage::MatchAllCachesImpl,
+                     weak_factory_.GetWeakPtr(), std::move(request),
+                     std::move(match_options), trace_id,
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void LegacyCacheStorage::WriteToCache(
@@ -754,16 +742,12 @@ void LegacyCacheStorage::WriteToCache(
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
-  // Note, this is a shared operation since it only reads CacheStorage data.
-  // The CacheStorageCache is responsible for making its put operation
-  // exclusive.
-  auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
-      id, CacheStorageSchedulerMode::kShared, CacheStorageSchedulerOp::kPut,
-      base::BindOnce(
-          &LegacyCacheStorage::WriteToCacheImpl, weak_factory_.GetWeakPtr(),
-          cache_name, std::move(request), std::move(response), trace_id,
-          scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
+      CacheStorageSchedulerOp::kPut,
+      base::BindOnce(&LegacyCacheStorage::WriteToCacheImpl,
+                     weak_factory_.GetWeakPtr(), cache_name, std::move(request),
+                     std::move(response), trace_id,
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void LegacyCacheStorage::GetSizeThenCloseAllCaches(SizeCallback callback) {
@@ -772,17 +756,11 @@ void LegacyCacheStorage::GetSizeThenCloseAllCaches(SizeCallback callback) {
   if (!initialized_)
     LazyInit();
 
-  // Note, this is a shared operation since it only reads CacheStorage data.
-  // The CacheStorageCache is responsible for making its close operation
-  // exclusive.
-  auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
-      id, CacheStorageSchedulerMode::kShared,
       CacheStorageSchedulerOp::kSizeThenClose,
-      base::BindOnce(
-          &LegacyCacheStorage::GetSizeThenCloseAllCachesImpl,
-          weak_factory_.GetWeakPtr(),
-          scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
+      base::BindOnce(&LegacyCacheStorage::GetSizeThenCloseAllCachesImpl,
+                     weak_factory_.GetWeakPtr(),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void LegacyCacheStorage::Size(LegacyCacheStorage::SizeCallback callback) {
@@ -791,12 +769,10 @@ void LegacyCacheStorage::Size(LegacyCacheStorage::SizeCallback callback) {
   if (!initialized_)
     LazyInit();
 
-  auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
-      id, CacheStorageSchedulerMode::kShared, CacheStorageSchedulerOp::kSize,
-      base::BindOnce(
-          &LegacyCacheStorage::SizeImpl, weak_factory_.GetWeakPtr(),
-          scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
+      CacheStorageSchedulerOp::kSize,
+      base::BindOnce(&LegacyCacheStorage::SizeImpl, weak_factory_.GetWeakPtr(),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void LegacyCacheStorage::ResetManager() {
@@ -822,19 +798,16 @@ void LegacyCacheStorage::ScheduleWriteIndex() {
 
 void LegacyCacheStorage::WriteIndex(base::OnceCallback<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto id = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
-      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kWriteIndex,
-      base::BindOnce(
-          &LegacyCacheStorage::WriteIndexImpl, weak_factory_.GetWeakPtr(),
-          scheduler_->WrapCallbackToRunNext(id, std::move(callback))));
+      base::BindOnce(&LegacyCacheStorage::WriteIndexImpl,
+                     weak_factory_.GetWeakPtr(),
+                     scheduler_->WrapCallbackToRunNext(std::move(callback))));
 }
 
 void LegacyCacheStorage::WriteIndexImpl(
     base::OnceCallback<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(scheduler_->IsRunningExclusiveOperation());
   cache_loader_->WriteIndex(*cache_index_, std::move(callback));
 }
 
@@ -898,17 +871,13 @@ void LegacyCacheStorage::CacheUnreferenced(LegacyCacheStorageCache* cache) {
   cache_map_it->second.reset();
 }
 
-CacheStorageSchedulerId LegacyCacheStorage::StartAsyncOperationForTesting() {
-  auto id = scheduler_->CreateId();
-  scheduler_->ScheduleOperation(id, CacheStorageSchedulerMode::kExclusive,
-                                CacheStorageSchedulerOp::kTest,
+void LegacyCacheStorage::StartAsyncOperationForTesting() {
+  scheduler_->ScheduleOperation(CacheStorageSchedulerOp::kTest,
                                 base::DoNothing());
-  return id;
 }
 
-void LegacyCacheStorage::CompleteAsyncOperationForTesting(
-    CacheStorageSchedulerId id) {
-  scheduler_->CompleteOperationAndRunNext(id);
+void LegacyCacheStorage::CompleteAsyncOperationForTesting() {
+  scheduler_->CompleteOperationAndRunNext();
 }
 
 // Init is run lazily so that it is called on the proper MessageLoop.
@@ -922,9 +891,7 @@ void LegacyCacheStorage::LazyInit() {
   DCHECK(!scheduler_->ScheduledOperations());
 
   initializing_ = true;
-  init_id_ = scheduler_->CreateId();
   scheduler_->ScheduleOperation(
-      init_id_, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kInit,
       base::BindOnce(&LegacyCacheStorage::LazyInitImpl,
                      weak_factory_.GetWeakPtr()));
@@ -940,7 +907,6 @@ void LegacyCacheStorage::LazyInitImpl() {
   // 3. Once each load is complete, update the map variables.
   // 4. Call the list of waiting callbacks.
 
-  DCHECK(scheduler_->IsRunningExclusiveOperation());
   cache_loader_->LoadIndex(base::BindOnce(
       &LegacyCacheStorage::LazyInitDidLoadIndex, weak_factory_.GetWeakPtr()));
 }
@@ -960,7 +926,7 @@ void LegacyCacheStorage::LazyInitDidLoadIndex(
   initializing_ = false;
   initialized_ = true;
 
-  scheduler_->CompleteOperationAndRunNext(init_id_);
+  scheduler_->CompleteOperationAndRunNext();
 }
 
 void LegacyCacheStorage::OpenCacheImpl(const std::string& cache_name,
@@ -977,7 +943,6 @@ void LegacyCacheStorage::OpenCacheImpl(const std::string& cache_name,
     return;
   }
 
-  DCHECK(scheduler_->IsRunningExclusiveOperation());
   cache_loader_->PrepareNewCacheDestination(
       cache_name, base::BindOnce(&LegacyCacheStorage::CreateCacheDidCreateCache,
                                  weak_factory_.GetWeakPtr(), cache_name,
@@ -1069,7 +1034,6 @@ void LegacyCacheStorage::DoomCacheImpl(const std::string& cache_name,
     return;
   }
 
-  DCHECK(scheduler_->IsRunningExclusiveOperation());
   LegacyCacheStorageCache::From(cache_handle)->SetObserver(nullptr);
   cache_index_->DoomCache(cache_name);
   cache_loader_->WriteIndex(

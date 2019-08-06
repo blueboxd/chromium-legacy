@@ -1296,7 +1296,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   enum HttpRefreshType { kHttpRefreshFromHeader, kHttpRefreshFromMetaTag };
   void MaybeHandleHttpRefresh(const String&, HttpRefreshType);
-  bool IsHttpRefreshScheduledWithin(double interval_in_seconds);
+  bool IsHttpRefreshScheduledWithin(base::TimeDelta interval);
 
   void SetHasViewportUnits() { has_viewport_units_ = true; }
   bool HasViewportUnits() const { return has_viewport_units_; }

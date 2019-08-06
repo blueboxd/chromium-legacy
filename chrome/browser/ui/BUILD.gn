@@ -2400,6 +2400,8 @@ jumbo_split_static_library("ui") {
       "views/first_run_dialog.cc",
       "views/first_run_dialog.h",
       "views/frame/browser_desktop_window_tree_host.h",
+      "views/frame/desktop_browser_frame_aura_linux.cc",
+      "views/frame/desktop_browser_frame_aura_linux.h",
       "views/status_icons/status_icon_linux_wrapper.cc",
       "views/status_icons/status_icon_linux_wrapper.h",
       "webui/help/version_updater_basic.cc",
@@ -2429,8 +2431,6 @@ jumbo_split_static_library("ui") {
       sources += [
         "views/frame/browser_desktop_window_tree_host_x11.cc",
         "views/frame/browser_desktop_window_tree_host_x11.h",
-        "views/frame/desktop_browser_frame_aurax11.cc",
-        "views/frame/desktop_browser_frame_aurax11.h",
         "views/frame/global_menu_bar_registrar_x11.cc",
         "views/frame/global_menu_bar_registrar_x11.h",
         "views/frame/global_menu_bar_x11.cc",

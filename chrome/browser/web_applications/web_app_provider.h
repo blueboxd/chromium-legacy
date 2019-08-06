@@ -78,11 +78,10 @@ class WebAppProvider : public WebAppProviderBase {
 
   WebAppDatabaseFactory& database_factory() { return *database_factory_; }
   WebAppSyncManager& sync_manager() { return *sync_manager_; }
+  SystemWebAppManager& system_web_app_manager();
 
   // KeyedService:
   void Shutdown() override;
-
-  SystemWebAppManager& system_web_app_manager();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static WebAppTabHelperBase* CreateTabHelper(

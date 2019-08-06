@@ -108,6 +108,6 @@ LayoutUnit LayoutButton::BaselinePosition(
 
 // For compatibility with IE/FF we only clip overflow on input elements.
 bool LayoutButton::HasControlClip() const {
-  return !IsHTMLButtonElement(GetNode());
+  return !IsA<HTMLButtonElement>(GetNode());
 }
 }  // namespace blink

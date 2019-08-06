@@ -139,22 +139,23 @@ def EnsureDirExists(path):
     os.makedirs(path)
 
 
-def DownloadAndUnpack(url, output_dir, path_prefix=None):
-  """Download an archive from url and extract into output_dir. If path_prefix is
-     not None, only extract files whose paths within the archive start with
-     path_prefix."""
+def DownloadAndUnpack(url, output_dir, path_prefixes=None):
+  """Download an archive from url and extract into output_dir. If path_prefixes
+     is not None, only extract files whose paths within the archive start with
+     any prefix in path_prefixes."""
   with tempfile.TemporaryFile() as f:
     DownloadUrl(url, f)
     f.seek(0)
     EnsureDirExists(output_dir)
     if url.endswith('.zip'):
-      assert path_prefix is None
+      assert path_prefixes is None
       zipfile.ZipFile(f).extractall(path=output_dir)
     else:
       t = tarfile.open(mode='r:gz', fileobj=f)
       members = None
-      if path_prefix is not None:
-        members = [m for m in t.getmembers() if m.name.startswith(path_prefix)]
+      if path_prefixes is not None:
+        members = [m for m in t.getmembers()
+                   if any(m.name.startswith(p) for p in path_prefixes)]
       t.extractall(path=output_dir, members=members)
 
 
@@ -167,14 +168,11 @@ def GetPlatformUrlPrefix(platform):
   return CDS_URL + '/Linux_x64/'
 
 
-def DownloadAndUnpackClangPackage(platform, output_dir, runtimes_only=False):
+def DownloadAndUnpackClangPackage(platform, output_dir, path_prefixes=None):
   cds_file = "clang-%s.tgz" %  PACKAGE_VERSION
   cds_full_url = GetPlatformUrlPrefix(platform) + cds_file
   try:
-    path_prefix = None
-    if runtimes_only:
-      path_prefix = 'lib/clang/' + RELEASE_VERSION + '/lib/'
-    DownloadAndUnpack(cds_full_url, output_dir, path_prefix)
+    DownloadAndUnpack(cds_full_url, output_dir, path_prefixes)
   except URLError:
     print('Failed to download prebuilt clang %s' % cds_file)
     print('Use --force-local-build if you want to build locally.')
@@ -263,7 +261,12 @@ def UpdateClang():
 
   DownloadAndUnpackClangPackage(sys.platform, LLVM_BUILD_DIR)
   if 'win' in target_os:
-    DownloadAndUnpackClangPackage('win32', LLVM_BUILD_DIR, runtimes_only=True)
+    # When doing win/cross builds on other hosts, get the Windows runtime
+    # libraries, and llvm-symbolizer.exe (needed in asan builds).
+    path_prefixes =  [ 'lib/clang/' + RELEASE_VERSION + '/lib/',
+                       'bin/llvm-symbolizer.exe' ]
+    DownloadAndUnpackClangPackage('win32', LLVM_BUILD_DIR,
+                                  path_prefixes=path_prefixes)
   if sys.platform == 'win32':
     CopyDiaDllTo(os.path.join(LLVM_BUILD_DIR, 'bin'))
   WriteStampFile(expected_stamp, STAMP_FILE)

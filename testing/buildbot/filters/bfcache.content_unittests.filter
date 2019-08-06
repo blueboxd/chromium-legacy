@@ -1,27 +1,56 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
+
+# FrameService expects the old document to be deleted, but it isn't, because of
+# the BackForwardCache.
+-FrameServiceBaseTest.DidFinishNavigation
+
+# During WebContent destructor, in RenderFrameHost:
+# Check failed: !is_active().
+-NavigationControllerTest.Back_NewPending
+-NavigationControllerTest.CopyStateFromAndPruneSourcePending
+
+# Expects the process used by the previous document to exit.
+-RenderFrameHostManagerTest.DeleteFrameAfterSwapOutACK
+
+# Check failed: is_waiting_for_swapout_ack_.
+# The swap out mechanism isn't used with the BackForwardCache.
+-RenderFrameHostManagerTest.CommitNewNavigationBeforeSendingSwapOut
+-RenderFrameHostManagerTest.SwapOutFrameAfterSwapOutACK
+
+# WebSerial:
+#
+# WebContentsImpl::IsConnectedToSerialPort() returns true, because the previous
+# document uses the WebSerial and continue to do so after entering the
+# BackForwardCache.
+-SerialTest.OpenAndNavigateCrossOrigin
+
+# Nullptr exception in TestNavigationURLLoader::CallOnresponseStarted().
+#
+# Updating the NavigationSimulator is needed to take into account the ones using
+# the BackForwardCache.
 -BackForwardCacheMetricsTest.HistoryNavigationUKM
 -BackForwardCacheMetricsTest.LongDurationsAreClamped
 -BackForwardCacheMetricsTest.TimeRecordedAtStart
--FrameServiceBaseTest.DidFinishNavigation
 -NavigationControllerTest.Back
--NavigationControllerTest.Back_NewPending
 -NavigationControllerTest.ClearHistoryList
 -NavigationControllerTest.CopyStateFrom
 -NavigationControllerTest.CopyStateFromAndPrune2
 -NavigationControllerTest.CopyStateFromAndPruneNotLast
--NavigationControllerTest.CopyStateFromAndPruneSourcePending
 -NavigationControllerTest.CopyStateFromAndPruneTargetPending
 -NavigationControllerTest.Forward
 -NavigationControllerTest.Forward_GeneratesNewPage
 -NavigationControllerTest.LoadURL_PrivilegedPending
 -NavigationControllerTest.LoadURL_WithBindings
--RenderFrameHostManagerTest.CommitNewNavigationBeforeSendingSwapOut
--RenderFrameHostManagerTest.DeleteFrameAfterSwapOutACK
 -RenderFrameHostManagerTest.NavigateAfterMissingSwapOutACK
--RenderFrameHostManagerTest.SwapOutFrameAfterSwapOutACK
 -RenderProcessHostUnitTest.DoNotReuseError
--SerialTest.OpenAndNavigateCrossOrigin
--WebContentsImplTest.CrossSiteBoundaries
 -WebContentsImplTest.CrossSiteNavigationBackOldNavigationIgnored
+
+# Expect a speculative RenderFrameHost to exist. This is probably going to be
+# fixed by:
+# https://chromium-review.googlesource.com/c/chromium/src/+/1735379
 -WebContentsImplTest.CrossSiteNavigationBackPreempted
+
+# Test expect a proxy for the old RFH's SiteInstance after a normal navigation
+# to exist.
+-WebContentsImplTest.CrossSiteBoundaries
 -WebContentsImplTest.NavigateFromSitelessUrl

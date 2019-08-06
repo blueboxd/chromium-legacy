@@ -65,7 +65,7 @@ class IsolatedWorldCSPDelegate final
   // since isolated worlds don't have their own ExecutionContext, these are not
   // supported.
   void SetSandboxFlags(SandboxFlags) override {}
-  void SetAddressSpace(mojom::IPAddressSpace) override {}
+  void SetAddressSpace(network::mojom::IPAddressSpace) override {}
   void SetRequireTrustedTypes() override {}
   void AddInsecureRequestPolicy(WebInsecureRequestPolicy) override {}
 

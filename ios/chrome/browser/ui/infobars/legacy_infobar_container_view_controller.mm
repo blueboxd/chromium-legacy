@@ -92,6 +92,11 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
   ]];
 }
 
+- (void)infobarManagerWillChange {
+  // NO-OP. This legacy container doesn't need to clean up any state after the
+  // InfobarManager has changed.
+}
+
 - (void)setUserInteractionEnabled:(BOOL)enabled {
   [self.view setUserInteractionEnabled:enabled];
 }

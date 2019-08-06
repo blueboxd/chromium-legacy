@@ -29,9 +29,7 @@ const uint32_t kRedirectResponseOverheadBytes = 300;
 // forwards it to the default loader.
 class WebURLLoaderMock : public WebURLLoader {
  public:
-  // This object becomes the owner of |default_loader|.
-  WebURLLoaderMock(WebURLLoaderMockFactoryImpl* factory,
-                   std::unique_ptr<WebURLLoader> default_loader);
+  explicit WebURLLoaderMock(WebURLLoaderMockFactoryImpl* factory);
   ~WebURLLoaderMock() override;
 
   // Simulates the asynchronous request being served.
@@ -70,8 +68,6 @@ class WebURLLoaderMock : public WebURLLoader {
 
   WebURLLoaderMockFactoryImpl* factory_ = nullptr;
   WebURLLoaderClient* client_ = nullptr;
-  std::unique_ptr<WebURLLoader> default_loader_;
-  bool using_default_loader_ = false;
   bool is_deferred_ = false;
 
   base::WeakPtrFactory<WebURLLoaderMock> weak_factory_{this};

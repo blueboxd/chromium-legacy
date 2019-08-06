@@ -559,17 +559,18 @@ cr.define('settings_passwords_section', function() {
       const passwordEntry = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
       const passwordsSection = elementFactory.createPasswordsSection(
           passwordManager, [passwordEntry], []);
+      const toastManager = cr.toastManager.getInstance();
 
       // Click the remove button on the first password and assert that an undo
       // toast is shown.
       getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
       passwordsSection.$.menuRemovePassword.click();
-      assertTrue(passwordsSection.$.undoToast.open);
+      assertTrue(toastManager.isToastOpen);
 
       // Remove the passwords section from the DOM and check that this closes
       // the undo toast.
       document.body.removeChild(passwordsSection);
-      assertFalse(passwordsSection.$.undoToast.open);
+      assertFalse(toastManager.isToastOpen);
 
       done();
     });

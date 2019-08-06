@@ -484,10 +484,11 @@ void RenderFrameDevToolsAgentHost::DidStartNavigation(
 void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
-  if (old_host != frame_host_)
+  auto* new_host_impl = static_cast<RenderFrameHostImpl*>(new_host);
+  FrameTreeNode* frame_tree_node = new_host_impl->frame_tree_node();
+  if (frame_tree_node != frame_tree_node_)
     return;
-
-  UpdateFrameHost(nullptr);
+  UpdateFrameHost(new_host_impl);
   // UpdateFrameHost may destruct |this|.
 }
 

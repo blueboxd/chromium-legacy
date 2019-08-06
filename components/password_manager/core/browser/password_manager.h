@@ -277,7 +277,7 @@ class PasswordManager : public FormSubmissionObserver {
   // Create NewPasswordFormManager for |form|, adds the newly created one to
   // |form_managers_| and returns it.
   NewPasswordFormManager* CreateFormManager(PasswordManagerDriver* driver,
-                                            const autofill::FormData& forms);
+                                            const autofill::FormData& form);
 
   // Passes |form| to NewPasswordFormManager that manages it for using it after
   // detecting submission success for saving. |driver| is needed to determine

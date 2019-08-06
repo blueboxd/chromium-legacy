@@ -98,7 +98,7 @@ PLATFORM_EXPORT bool IsValidHTTPToken(const String&);
 // is specified, ' ' and '\t' are treated as whitespace characters.
 PLATFORM_EXPORT bool ParseHTTPRefresh(const String& refresh,
                                       WTF::CharacterMatchFunctionPtr matcher,
-                                      double& delay,
+                                      base::TimeDelta& delay,
                                       String& url);
 PLATFORM_EXPORT double ParseDate(const String&);
 

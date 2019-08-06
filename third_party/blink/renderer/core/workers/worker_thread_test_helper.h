@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
@@ -63,7 +63,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
   // WorkerGlobalScope
   void Initialize(const KURL& response_url,
                   network::mojom::ReferrerPolicy response_referrer_policy,
-                  mojom::IPAddressSpace response_address_space,
+                  network::mojom::IPAddressSpace response_address_space,
                   const Vector<CSPHeaderAndType>& response_csp_headers,
                   const Vector<String>* response_origin_trial_tokens) override {
     InitializeURL(response_url);
@@ -117,7 +117,6 @@ class WorkerThreadForTest : public WorkerThread {
   void StartWithSourceCode(
       const SecurityOrigin* security_origin,
       const String& source,
-      ParentExecutionContextTaskRunners* parent_execution_context_task_runners,
       const KURL& script_url = KURL("http://fake.url/"),
       WorkerClients* worker_clients = nullptr) {
     Vector<CSPHeaderAndType> headers{
@@ -130,15 +129,15 @@ class WorkerThreadForTest : public WorkerThread {
         network::mojom::ReferrerPolicy::kDefault, security_origin,
         false /* starter_secure_context */,
         CalculateHttpsState(security_origin), worker_clients,
-        nullptr /* content_settings_client */, mojom::IPAddressSpace::kLocal,
-        nullptr, base::UnguessableToken::Create(),
+        nullptr /* content_settings_client */,
+        network::mojom::IPAddressSpace::kLocal, nullptr,
+        base::UnguessableToken::Create(),
         std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),
         kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 
     Start(std::move(creation_params),
           WorkerBackingThreadStartupData::CreateDefault(),
-          std::make_unique<WorkerDevToolsParams>(),
-          parent_execution_context_task_runners);
+          std::make_unique<WorkerDevToolsParams>());
     EvaluateClassicScript(script_url, source, nullptr /* cached_meta_data */,
                           v8_inspector::V8StackTraceId());
   }

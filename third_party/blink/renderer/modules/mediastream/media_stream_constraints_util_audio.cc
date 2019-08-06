@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_audio.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -974,13 +975,15 @@ class DeviceContainer {
                   bool is_device_capture,
                   bool is_reconfiguration_allowed)
       : device_parameters_(capability.Parameters()) {
-    if (!capability.DeviceID().empty()) {
+    if (!capability.DeviceID().IsEmpty()) {
       device_id_container_ =
-          StringContainer(StringSet({capability.DeviceID()}));
+          StringContainer(StringSet({capability.DeviceID().Utf8()}));
     }
 
-    if (!capability.GroupID().empty())
-      group_id_container_ = StringContainer(StringSet({capability.GroupID()}));
+    if (!capability.GroupID().IsEmpty()) {
+      group_id_container_ =
+          StringContainer(StringSet({capability.GroupID().Utf8()}));
+    }
 
     // If the device is in use, a source will be provided and all containers
     // must be initialized such that their only supported values correspond to
@@ -1343,25 +1346,26 @@ AudioDeviceCaptureCapability::AudioDeviceCaptureCapability(
     : source_(source) {}
 
 AudioDeviceCaptureCapability::AudioDeviceCaptureCapability(
-    std::string device_id,
-    std::string group_id,
+    String device_id,
+    String group_id,
     const media::AudioParameters& parameters)
     : device_id_(std::move(device_id)),
       group_id_(std::move(group_id)),
       parameters_(parameters) {
-  DCHECK(!device_id_.empty());
+  DCHECK(!device_id_.IsEmpty());
 }
 
 AudioDeviceCaptureCapability::AudioDeviceCaptureCapability(
     const AudioDeviceCaptureCapability& other) = default;
 
-const std::string& AudioDeviceCaptureCapability::DeviceID() const {
-  return source_ ? source_->device().id : device_id_;
+String AudioDeviceCaptureCapability::DeviceID() const {
+  return source_ ? String(source_->device().id.data()) : device_id_;
 }
 
-const std::string& AudioDeviceCaptureCapability::GroupID() const {
-  return source_ && source_->device().group_id ? *source_->device().group_id
-                                               : group_id_;
+String AudioDeviceCaptureCapability::GroupID() const {
+  return source_ && source_->device().group_id
+             ? String(source_->device().group_id->data())
+             : group_id_;
 }
 
 const media::AudioParameters& AudioDeviceCaptureCapability::Parameters() const {
@@ -1373,14 +1377,14 @@ AudioCaptureSettings SelectSettingsAudioCapture(
     const blink::WebMediaConstraints& constraints,
     bool should_disable_hardware_noise_suppression,
     bool is_reconfiguration_allowed) {
-  if (capabilities.empty())
+  if (capabilities.IsEmpty())
     return AudioCaptureSettings();
 
   std::string media_stream_source = GetMediaStreamSource(constraints);
   std::string default_device_id;
   bool is_device_capture = media_stream_source.empty();
   if (is_device_capture)
-    default_device_id = capabilities.begin()->DeviceID();
+    default_device_id = capabilities.begin()->DeviceID().Utf8();
 
   CandidatesContainer candidates(capabilities, media_stream_source,
                                  default_device_id, is_reconfiguration_allowed);

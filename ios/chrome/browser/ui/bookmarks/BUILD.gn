@@ -48,7 +48,6 @@ source_set("bookmarks") {
   ]
   deps = [
     ":bookmarks_ui",
-    "resources:bookmark_bar_shadow",
     "resources:bookmark_blue_check",
     "resources:bookmark_blue_folder",
     "resources:bookmark_blue_new_folder",

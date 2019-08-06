@@ -863,8 +863,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteCrash) {
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectorTargetCrashedNavigate) {
   set_agent_host_can_close();
-  GURL url = GURL("data:text/html,<body></body>");
-  NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url_a, 1);
   Attach();
   SendCommand("Inspector.enable", nullptr);
 
@@ -875,7 +877,32 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectorTargetCrashedNavigate) {
   }
 
   ClearNotifications();
-  shell()->LoadURL(url);
+  shell()->LoadURL(url_a);
+  WaitForNotification("Inspector.targetReloadedAfterCrash", true);
+}
+
+// Same as in DevToolsProtocolTest.InspectorTargetCrashedNavigate, but with a
+// cross-process navigation at the end.
+// Regression test for https://crbug.com/990315
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+                       InspectorTargetCrashedNavigateCrossProcess) {
+  set_agent_host_can_close();
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url_a, 1);
+  Attach();
+  SendCommand("Inspector.enable", nullptr);
+
+  {
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
+    shell()->LoadURL(GURL(content::kChromeUICrashURL));
+    WaitForNotification("Inspector.targetCrashed");
+  }
+
+  ClearNotifications();
+  shell()->LoadURL(url_b);
   WaitForNotification("Inspector.targetReloadedAfterCrash", true);
 }
 

@@ -339,8 +339,8 @@ class DownloadMetadataManager::ManagerContext
 // DownloadMetadataManager -----------------------------------------------------
 
 DownloadMetadataManager::DownloadMetadataManager()
-    : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BEST_EFFORT,
+    : task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
            base::MayBlock()})) {}
 

@@ -240,6 +240,10 @@ void ArcAccessibilityHelperBridge::OnConnectionClosed() {
     surface_manager->RemoveObserver(this);
 }
 
+extensions::EventRouter* ArcAccessibilityHelperBridge::GetEventRouter() const {
+  return extensions::EventRouter::Get(profile_);
+}
+
 void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
     mojom::AccessibilityEventDataPtr event_data) {
   arc::mojom::AccessibilityFilterType filter_type =
@@ -250,6 +254,25 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
       arc::mojom::AccessibilityFilterType::WHITELISTED_PACKAGE_NAME_DEPRECATED);
 
   if (filter_type == arc::mojom::AccessibilityFilterType::ALL) {
+    if (event_data->event_type ==
+        arc::mojom::AccessibilityEventType::ANNOUNCEMENT) {
+      if (!event_data->eventText.has_value())
+        return;
+
+      extensions::EventRouter* event_router = GetEventRouter();
+      std::unique_ptr<base::ListValue> event_args(
+          extensions::api::accessibility_private::OnAnnounceForAccessibility::
+              Create(*(event_data->eventText)));
+      std::unique_ptr<extensions::Event> event(new extensions::Event(
+          extensions::events::
+              ACCESSIBILITY_PRIVATE_ON_ANNOUNCE_FOR_ACCESSIBILITY,
+          extensions::api::accessibility_private::OnAnnounceForAccessibility::
+              kEventName,
+          std::move(event_args)));
+      event_router->BroadcastEvent(std::move(event));
+      return;
+    }
+
     if (event_data->node_data.empty())
       return;
 
@@ -279,21 +302,6 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
       }
 
       tree_source = input_method_tree_.get();
-    } else if (event_data->event_type ==
-                   arc::mojom::AccessibilityEventType::ANNOUNCEMENT &&
-               event_data->eventText.has_value()) {
-      extensions::EventRouter* event_router =
-          extensions::EventRouter::Get(profile_);
-      std::unique_ptr<base::ListValue> event_args(
-          extensions::api::accessibility_private::OnAnnounceForAccessibility::
-              Create(*(event_data->eventText)));
-      std::unique_ptr<extensions::Event> event(new extensions::Event(
-          extensions::events::
-              ACCESSIBILITY_PRIVATE_ON_ANNOUNCE_FOR_ACCESSIBILITY,
-          extensions::api::accessibility_private::OnAnnounceForAccessibility::
-              kEventName,
-          std::move(event_args)));
-      event_router->BroadcastEvent(std::move(event));
     } else {
       if (event_data->task_id == kNoTaskId)
         return;

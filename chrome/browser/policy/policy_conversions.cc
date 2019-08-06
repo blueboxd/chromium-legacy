@@ -127,8 +127,9 @@ PolicyConversions& PolicyConversions::EnableConvertValues(bool enabled) {
   return *this;
 }
 
-PolicyConversions& PolicyConversions::EnableDevicePolicies(bool enabled) {
-  device_policies_enabled_ = enabled;
+PolicyConversions& PolicyConversions::EnableDeviceLocalAccountPolicies(
+    bool enabled) {
+  device_local_account_policies_enabled_ = enabled;
   return *this;
 }
 
@@ -230,12 +231,16 @@ Value PolicyConversions::GetDeviceLocalAccountPolicies() {
   Value policies(Value::Type::LIST);
   // DeviceLocalAccount policies are only available for affiliated users and for
   // system logs.
-  if (!device_policies_enabled_ &&
+  if (!device_local_account_policies_enabled_ &&
       (!user_manager::UserManager::IsInitialized() ||
        !user_manager::UserManager::Get()->GetPrimaryUser() ||
        !user_manager::UserManager::Get()->GetPrimaryUser()->IsAffiliated())) {
     return policies;
   }
+
+  // Always includes user policies for device local account policies.
+  bool current_use_policy_setup = user_policies_enabled_;
+  user_policies_enabled_ = true;
 
   BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -294,6 +299,10 @@ Value PolicyConversions::GetDeviceLocalAccountPolicies() {
                                          std::move(current_account_policies));
     policies.GetList().push_back(std::move(current_account_policies_data));
   }
+
+  // Reset |user_policies_enabled_| setup.
+  user_policies_enabled_ = current_use_policy_setup;
+
   return policies;
 }
 
@@ -604,7 +613,7 @@ base::Value GetAllPolicyValuesAsArray(content::BrowserContext* context,
       .WithBrowserContext(context)
       .EnableConvertTypes(convert_types)
       .EnableConvertValues(convert_values)
-      .EnableDevicePolicies(with_device_data)
+      .EnableDeviceLocalAccountPolicies(with_device_data)
       .EnableDeviceInfo(false)
       .EnablePrettyPrint(is_pretty_print)
       .EnableUserPolicies(with_user_policies)
@@ -621,7 +630,7 @@ base::Value GetAllPolicyValuesAsDictionary(content::BrowserContext* context,
       .WithBrowserContext(context)
       .EnableConvertTypes(convert_types)
       .EnableConvertValues(convert_values)
-      .EnableDevicePolicies(with_device_data)
+      .EnableDeviceLocalAccountPolicies(with_device_data)
       .EnableDeviceInfo(with_device_data)
       .EnablePrettyPrint(is_pretty_print)
       .EnableUserPolicies(with_user_policies)
@@ -636,7 +645,7 @@ std::string GetAllPolicyValuesAsJSON(content::BrowserContext* context,
       .WithBrowserContext(context)
       .EnableConvertTypes(true)
       .EnableConvertValues(false)
-      .EnableDevicePolicies(with_device_data)
+      .EnableDeviceLocalAccountPolicies(with_device_data)
       .EnableDeviceInfo(with_device_data)
       .EnablePrettyPrint(is_pretty_print)
       .EnableUserPolicies(with_user_policies)

@@ -187,9 +187,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   PhysicalOffset FirstLineBoxTopLeft() const;
 
-  virtual void SetText(scoped_refptr<StringImpl>,
-                       bool force = false,
-                       bool avoid_layout_and_only_paint = false);
+  void SetTextIfNeeded(scoped_refptr<StringImpl>);
+  virtual void ForceSetText(scoped_refptr<StringImpl>,
+                            bool avoid_layout_and_only_paint = false);
   void SetTextWithOffset(scoped_refptr<StringImpl>,
                          unsigned offset,
                          unsigned len);

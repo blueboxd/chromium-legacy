@@ -36,7 +36,7 @@ struct CrossThreadFetchClientSettingsObjectData {
       String outgoing_referrer,
       HttpsState https_state,
       AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script,
-      mojom::IPAddressSpace address_space,
+      network::mojom::IPAddressSpace address_space,
       WebInsecureRequestPolicy insecure_requests_policy,
       FetchClientSettingsObject::InsecureNavigationsSet
           insecure_navigations_set,
@@ -62,7 +62,7 @@ struct CrossThreadFetchClientSettingsObjectData {
   const HttpsState https_state;
   const AllowedByNosniff::MimeTypeCheck
       mime_type_check_for_classic_worker_script;
-  const mojom::IPAddressSpace address_space;
+  const network::mojom::IPAddressSpace address_space;
   const WebInsecureRequestPolicy insecure_requests_policy;
   const FetchClientSettingsObject::InsecureNavigationsSet
       insecure_navigations_set;
@@ -96,7 +96,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
       const String& outgoing_referrer,
       HttpsState https_state,
       AllowedByNosniff::MimeTypeCheck,
-      mojom::IPAddressSpace,
+      network::mojom::IPAddressSpace,
       WebInsecureRequestPolicy,
       InsecureNavigationsSet,
       bool mixed_autoupgrade_opt_out);
@@ -116,7 +116,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   }
   HttpsState GetHttpsState() const override { return https_state_; }
 
-  mojom::IPAddressSpace GetAddressSpace() const override {
+  network::mojom::IPAddressSpace GetAddressSpace() const override {
     return address_space_;
   }
 
@@ -158,7 +158,7 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   const HttpsState https_state_;
   const AllowedByNosniff::MimeTypeCheck
       mime_type_check_for_classic_worker_script_;
-  const mojom::IPAddressSpace address_space_;
+  const network::mojom::IPAddressSpace address_space_;
 
   const WebInsecureRequestPolicy insecure_requests_policy_;
   const InsecureNavigationsSet insecure_navigations_set_;

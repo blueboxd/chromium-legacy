@@ -50,6 +50,11 @@ class CORE_EXPORT UnderlyingSinkBase : public ScriptWrappable {
     ScriptWrappable::Trace(visitor);
   }
 
+ protected:
+  WritableStreamDefaultControllerInterface* Controller() const {
+    return controller_;
+  }
+
  private:
   Member<WritableStreamDefaultControllerInterface> controller_;
 };

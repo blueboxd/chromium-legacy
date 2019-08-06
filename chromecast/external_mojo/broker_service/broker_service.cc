@@ -14,6 +14,7 @@
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread.h"
+#include "chromecast/external_mojo/public/cpp/common.h"
 #include "chromecast/external_mojo/public/cpp/external_mojo_broker.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
@@ -68,7 +69,8 @@ BrokerService::BrokerService(service_manager::mojom::ServiceRequest request)
   for (const auto& sub_manifest : manifest.packaged_services) {
     external_services_to_proxy.push_back(sub_manifest.service_name);
   }
-  broker_ = base::SequenceBound<ExternalMojoBroker>(io_thread_->task_runner());
+  broker_ = base::SequenceBound<ExternalMojoBroker>(io_thread_->task_runner(),
+                                                    GetBrokerPath());
   broker_.Post(FROM_HERE, &ExternalMojoBroker::InitializeChromium,
                service_binding_.GetConnector()->Clone(),
                external_services_to_proxy);

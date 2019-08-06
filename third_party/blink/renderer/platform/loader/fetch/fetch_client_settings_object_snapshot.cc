@@ -46,7 +46,7 @@ FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     const String& outgoing_referrer,
     HttpsState https_state,
     AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script,
-    mojom::IPAddressSpace address_space,
+    network::mojom::IPAddressSpace address_space,
     WebInsecureRequestPolicy insecure_requests_policy,
     InsecureNavigationsSet insecure_navigations_set,
     bool mixed_autoupgrade_opt_out)

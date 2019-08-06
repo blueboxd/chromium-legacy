@@ -948,10 +948,10 @@ void InspectorPageAgent::FrameRequestedNavigation(
 void InspectorPageAgent::FrameScheduledNavigation(
     LocalFrame* frame,
     const KURL& url,
-    double delay,
+    base::TimeDelta delay,
     ClientNavigationReason reason) {
   GetFrontend()->frameScheduledNavigation(
-      IdentifiersFactory::FrameId(frame), delay,
+      IdentifiersFactory::FrameId(frame), delay.InSecondsF(),
       ClientNavigationReasonToProtocol(reason), url.GetString());
 }
 

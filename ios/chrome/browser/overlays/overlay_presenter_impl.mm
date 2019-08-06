@@ -279,10 +279,12 @@ void OverlayPresenterImpl::BrowserDestroyed(Browser* browser) {
 
 void OverlayPresenterImpl::RequestAddedToQueue(OverlayRequestQueueImpl* queue,
                                                OverlayRequest* request) {
-  // If |queue| is active and the added request is the front request, trigger
-  // the UI presentation for that request.
-  if (queue == GetActiveQueue() && request == queue->front_request())
+  // If |queue| is active, the added request is frontmost, and an overlay is not
+  // currently being presented, trigger the UI presentation for that request.
+  if (queue == GetActiveQueue() && request == queue->front_request() &&
+      !presenting_) {
     PresentOverlayForActiveRequest();
+  }
 }
 
 void OverlayPresenterImpl::QueuedRequestCancelled(

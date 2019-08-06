@@ -26,7 +26,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     HttpsState starter_https_state,
     WorkerClients* worker_clients,
     std::unique_ptr<WebContentSettingsClient> content_settings_client,
-    base::Optional<mojom::IPAddressSpace> response_address_space,
+    base::Optional<network::mojom::IPAddressSpace> response_address_space,
     const Vector<String>* origin_trial_tokens,
     const base::UnguessableToken& parent_devtools_token,
     std::unique_ptr<WorkerSettings> worker_settings,

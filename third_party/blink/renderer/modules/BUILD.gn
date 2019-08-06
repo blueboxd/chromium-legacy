@@ -417,6 +417,8 @@ jumbo_source_set("unit_tests") {
     "webdatabase/quota_tracker_test.cc",
     "webshare/navigator_share_test.cc",
     "websockets/dom_websocket_test.cc",
+    "websockets/mock_websocket_channel.cc",
+    "websockets/mock_websocket_channel.h",
     "websockets/websocket_channel_impl_test.cc",
     "websockets/websocket_common_test.cc",
     "worklet/animation_and_paint_worklet_thread_test.cc",

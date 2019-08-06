@@ -1,5 +1,3 @@
-CONSOLE WARNING: '-webkit-appearance: progress-bar' for elements other than progress is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
-CONSOLE WARNING: '-webkit-appearance: meter' for elements other than meter is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
 PASS if it doesn't crash. See Bug 40158.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

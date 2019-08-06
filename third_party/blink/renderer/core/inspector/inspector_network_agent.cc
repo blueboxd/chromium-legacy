@@ -1567,7 +1567,7 @@ void InspectorNetworkAgent::DidCommitLoad(LocalFrame* frame,
 
 void InspectorNetworkAgent::FrameScheduledNavigation(LocalFrame* frame,
                                                      const KURL&,
-                                                     double,
+                                                     base::TimeDelta,
                                                      ClientNavigationReason) {
   // For navigations, we limit async stack trace to depth 1 to avoid the
   // base::Value depth limits with Mojo serialization / parsing.

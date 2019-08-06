@@ -1725,7 +1725,7 @@ are declared in tools/grit/grit_rule.gni.
                desc="Indicates a download was started in Incognito mode.">
         Downloaded in Incognito
       </message>
-      <message name="IDS_DOWNLOAD_UNDO_DESCRIPTION" desc="Shortcut description for undoing an operation, used as a hint for keyboard users">
+      <message name="IDS_UNDO_DESCRIPTION" desc="Shortcut description for undoing an operation, used as a hint for keyboard users">
         Press <ph name="MODIFIER_KEY_DESCRIPTION">$1<ex>Control Z</ex></ph> to undo
       </message>
       <message name="IDS_DOWNLOAD_UNDO" desc="Menu title for undoing an operation">

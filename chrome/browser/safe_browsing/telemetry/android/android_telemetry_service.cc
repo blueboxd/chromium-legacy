@@ -247,7 +247,7 @@ void AndroidTelemetryService::MaybeCaptureSafetyNetId() {
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&SafeBrowsingDatabaseManager::GetSafetyNetId,
                      sb_service_->database_manager()),
@@ -266,7 +266,7 @@ void AndroidTelemetryService::MaybeSendApkDownloadReport(
   }
   sb_service_->ping_manager()->ReportThreatDetails(serialized);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&WebUIInfoSingleton::AddToCSBRRsSent,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),

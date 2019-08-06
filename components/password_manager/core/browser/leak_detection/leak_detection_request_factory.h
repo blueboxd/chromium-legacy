@@ -7,9 +7,15 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
+
 namespace signin {
 class IdentityManager;
 }  // namespace signin
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace password_manager {
 
@@ -37,7 +43,9 @@ class LeakDetectionRequestFactory {
   // |identity_manager| is used to obtain the token.
   virtual std::unique_ptr<LeakDetectionCheck> TryCreateLeakCheck(
       LeakDetectionDelegateInterface* delegate,
-      signin::IdentityManager* identity_manager) const = 0;
+      signin::IdentityManager* identity_manager,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      const = 0;
 };
 
 }  // namespace password_manager

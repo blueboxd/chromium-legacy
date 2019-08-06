@@ -13,8 +13,6 @@
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
@@ -103,7 +101,7 @@ WebAppPolicyManager* WebAppProvider::policy_manager() {
 }
 
 WebAppUiManager& WebAppProvider::ui_manager() {
-  DCHECK(ui_manager_);
+  DCHECK_IS_CONNECTED();
   return *ui_manager_;
 }
 
@@ -125,37 +123,27 @@ void WebAppProvider::CreateCommonSubsystems(Profile* profile) {
   audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
   install_manager_ = std::make_unique<WebAppInstallManager>(profile);
   pending_app_manager_ = std::make_unique<PendingAppManagerImpl>(profile);
+  system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
   ui_manager_ = WebAppUiManager::Create(profile);
 }
 
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
-  auto web_app_registrar =
-      std::make_unique<WebAppRegistrar>(profile, database_.get());
+  registrar_ = std::make_unique<WebAppRegistrar>(profile, database_.get());
   icon_manager_ = std::make_unique<WebAppIconManager>(
       profile, std::make_unique<FileUtilsWrapper>());
-
   install_finalizer_ =
       std::make_unique<WebAppInstallFinalizer>(icon_manager_.get());
   sync_manager_ = std::make_unique<WebAppSyncManager>();
-
-  system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
-
-  registrar_ = std::move(web_app_registrar);
 }
 
 void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
+  registrar_ = std::make_unique<extensions::BookmarkAppRegistrar>(profile);
   install_finalizer_ =
       std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile);
-
   external_web_app_manager_ = std::make_unique<ExternalWebAppManager>(profile);
-
   web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(profile);
-
-  system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
-
-  registrar_ = std::make_unique<extensions::BookmarkAppRegistrar>(profile);
 }
 
 void WebAppProvider::ConnectSubsystems() {
@@ -163,16 +151,15 @@ void WebAppProvider::ConnectSubsystems() {
 
   install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
   install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get());
+  pending_app_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
+                                      install_finalizer_.get());
+  system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
+                                         registrar_.get(), ui_manager_.get());
 
-  // TODO(crbug.com/877898): Port all other managers to support BMO.
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-    pending_app_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
-                                        install_finalizer_.get());
     external_web_app_manager_->SetSubsystems(pending_app_manager_.get());
     web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
   }
-  system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
-                                         registrar_.get(), ui_manager_.get());
 
   connected_ = true;
 }
@@ -185,6 +172,7 @@ void WebAppProvider::StartRegistry() {
 void WebAppProvider::OnRegistryReady() {
   DCHECK(!on_registry_ready_.is_signaled());
 
+  // TODO(crbug.com/877898): Port all these managers to support BMO. Start them.
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
     external_web_app_manager_->Start();
     web_app_policy_manager_->Start();

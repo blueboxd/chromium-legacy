@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -18,7 +19,9 @@ UnifiedHeapMarkingVisitorBase::UnifiedHeapMarkingVisitorBase(
     v8::Isolate* isolate)
     : MarkingVisitor(thread_state, mode),
       isolate_(isolate),
-      controller_(thread_state->unified_heap_controller()) {
+      controller_(thread_state->unified_heap_controller()),
+      is_concurrent_marking_enabled_(base::FeatureList::IsEnabled(
+          blink::features::kBlinkHeapConcurrentMarking)) {
   DCHECK(controller_);
 }
 

@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/websockets/mock_websocket_channel.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -40,45 +41,6 @@ namespace {
 
 typedef testing::StrictMock<testing::MockFunction<void(int)>>
     Checkpoint;  // NOLINT
-
-class MockWebSocketChannel : public WebSocketChannel {
- public:
-  static MockWebSocketChannel* Create() {
-    return MakeGarbageCollected<testing::StrictMock<MockWebSocketChannel>>();
-  }
-
-  ~MockWebSocketChannel() override = default;
-
-  MOCK_METHOD2(Connect, bool(const KURL&, const String&));
-  MOCK_METHOD2(Send,
-               WebSocketChannel::SendResult(const std::string&,
-                                            base::OnceClosure));
-  MOCK_METHOD4(Send,
-               WebSocketChannel::SendResult(const DOMArrayBuffer&,
-                                            unsigned,
-                                            unsigned,
-                                            base::OnceClosure));
-  MOCK_METHOD1(SendMock, void(BlobDataHandle*));
-  void Send(scoped_refptr<BlobDataHandle> handle) override {
-    SendMock(handle.get());
-  }
-  MOCK_CONST_METHOD0(BufferedAmount, unsigned());
-  MOCK_METHOD2(Close, void(int, const String&));
-  MOCK_METHOD3(FailMock,
-               void(const String&,
-                    mojom::ConsoleMessageLevel,
-                    SourceLocation*));
-  void Fail(const String& reason,
-            mojom::ConsoleMessageLevel level,
-            std::unique_ptr<SourceLocation> location) override {
-    FailMock(reason, level, location.get());
-  }
-  MOCK_METHOD0(Disconnect, void());
-  MOCK_METHOD0(ApplyBackpressure, void());
-  MOCK_METHOD0(RemoveBackpressure, void());
-
-  MockWebSocketChannel() = default;
-};
 
 class DOMWebSocketWithMockChannel final : public DOMWebSocket {
  public:

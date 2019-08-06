@@ -24,7 +24,6 @@
 #include "content/app/mojo/mojo_init.h"
 #include "content/child/child_process.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/test/mock_clipboard_host.h"
 #include "media/base/media.h"
@@ -103,12 +102,7 @@ class WebURLLoaderFactoryWithMock : public blink::WebURLLoaderFactory {
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
           task_runner_handle) override {
     DCHECK(platform_);
-    // This loader should be used only for process-local resources such as
-    // data URLs.
-    auto default_loader = std::make_unique<content::WebURLLoaderImpl>(
-        nullptr, std::move(task_runner_handle), nullptr);
-    return platform_->GetURLLoaderMockFactory()->CreateURLLoader(
-        std::move(default_loader));
+    return platform_->GetURLLoaderMockFactory()->CreateURLLoader();
   }
 
  private:

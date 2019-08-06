@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_directive_list.h"
@@ -101,26 +101,30 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
 
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled) {
   ScopedCorsRFC1918ForTest cors_rfc1918(false);
-  execution_context->SetAddressSpace(mojom::IPAddressSpace::kPrivate);
-  EXPECT_EQ(mojom::IPAddressSpace::kPrivate, execution_context->AddressSpace());
+  execution_context->SetAddressSpace(network::mojom::IPAddressSpace::kPrivate);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
+            execution_context->AddressSpace());
 
   csp->DidReceiveHeader("treat-as-public-address",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
-  EXPECT_EQ(mojom::IPAddressSpace::kPrivate, execution_context->AddressSpace());
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
+            execution_context->AddressSpace());
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressEnabled) {
   ScopedCorsRFC1918ForTest cors_rfc1918(true);
-  execution_context->SetAddressSpace(mojom::IPAddressSpace::kPrivate);
-  EXPECT_EQ(mojom::IPAddressSpace::kPrivate, execution_context->AddressSpace());
+  execution_context->SetAddressSpace(network::mojom::IPAddressSpace::kPrivate);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPrivate,
+            execution_context->AddressSpace());
 
   csp->DidReceiveHeader("treat-as-public-address",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
-  EXPECT_EQ(mojom::IPAddressSpace::kPublic, execution_context->AddressSpace());
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            execution_context->AddressSpace());
 }
 
 TEST_F(ContentSecurityPolicyTest, CopyStateFrom) {

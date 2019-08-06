@@ -13,8 +13,8 @@ namespace blink {
 
 class HTMLPortalElement;
 
-class DocumentPortals : public GarbageCollected<DocumentPortals>,
-                        public Supplement<Document> {
+class DocumentPortals final : public GarbageCollected<DocumentPortals>,
+                              public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(DocumentPortals);
 
  public:

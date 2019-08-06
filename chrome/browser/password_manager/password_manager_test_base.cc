@@ -62,6 +62,26 @@ class PasswordStoreResultsObserver
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreResultsObserver);
 };
 
+// Custom class is required to enable password generation.
+class CustomPasswordManagerClient : public ChromePasswordManagerClient {
+ public:
+  using ChromePasswordManagerClient::ChromePasswordManagerClient;
+
+  static void CreateForWebContentsWithAutofillClient(
+      content::WebContents* contents,
+      autofill::AutofillClient* autofill_client) {
+    ASSERT_FALSE(FromWebContents(contents));
+    contents->SetUserData(UserDataKey(),
+                          base::WrapUnique(new CustomPasswordManagerClient(
+                              contents, autofill_client)));
+  }
+
+  // PasswordManagerClient:
+  password_manager::SyncState GetPasswordSyncState() const override {
+    return password_manager::SYNCING_NORMAL_ENCRYPTION;
+  }
+};
+
 // ManagePasswordsUIController subclass to capture the UI events.
 class CustomManagePasswordsUIController : public ManagePasswordsUIController {
  public:
@@ -283,25 +303,6 @@ enum ReturnCodes {  // Possible results of the JavaScript code.
 };
 
 }  // namespace
-void CustomPasswordManagerClient::CreateForWebContentsWithAutofillClient(
-    content::WebContents* contents,
-    autofill::AutofillClient* autofill_client) {
-  ASSERT_FALSE(FromWebContents(contents));
-  contents->SetUserData(UserDataKey(),
-                        base::WrapUnique(new CustomPasswordManagerClient(
-                            contents, autofill_client)));
-}
-
-// PasswordManagerClient:
-password_manager::SyncState CustomPasswordManagerClient::GetPasswordSyncState()
-    const {
-  return password_manager::SYNCING_NORMAL_ENCRYPTION;
-}
-
-void CustomPasswordManagerClient::OnPaste() {
-  pasted_value_ = ChromePasswordManagerClient::GetTextFromClipboard();
-  ChromePasswordManagerClient::OnPaste();
-}
 
 NavigationObserver::NavigationObserver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

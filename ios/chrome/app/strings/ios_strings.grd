@@ -204,6 +204,12 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON" desc="Title of the button to validate the user consent [Length: 15m] [iOS only]">
         YES, I'M IN
       </message>
+      <message name="IDS_IOS_ADD_CREDIT_CARD_INVALID_CARD_NUMBER_ALERT" desc="The title of the alert view displaying invalid card number when a user enters invalid card number for the new credit card to save. [iOS only]">
+          Invalid Card Number
+      </message>
+      <message name="IDS_IOS_ADD_CREDIT_CARD_INVALID_EXPIRATION_DATE_ALERT" desc="The title of the alert view displaying invalid expiration date when a user enters invalid expiration date for the new credit card to save. [iOS only]">
+          Invalid Expiration Date
+      </message>
       <message name="IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_SYNC_ALERT_BACK_BUTTON" desc="Alert button title to ask if the user really wants to cancel sign-in and sync. This button would let the user return to the sync settings, and let them choose again.">
         Back
       </message>

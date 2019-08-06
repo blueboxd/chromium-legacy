@@ -68,7 +68,8 @@ class SessionCountMatchChecker : public SingleClientStatusChangeChecker {
 // In the second phase, we take down client 1 and while it's down upload more
 // data from client 0. That second phase will rely on polling on client 1 to
 // receive the update.
-IN_PROC_BROWSER_TEST_F(TwoClientPollingSyncTest, ShouldPollOnStartup) {
+// Flaky: crbug.com/988161
+IN_PROC_BROWSER_TEST_F(TwoClientPollingSyncTest, DISABLED_ShouldPollOnStartup) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   // Choose larger interval to verify the poll-on-start logic.

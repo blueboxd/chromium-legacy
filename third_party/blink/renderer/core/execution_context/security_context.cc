@@ -90,7 +90,7 @@ SecurityContext::SecurityContext(scoped_refptr<SecurityOrigin> origin,
     : sandbox_flags_(sandbox_flags),
       security_origin_(std::move(origin)),
       feature_policy_(std::move(feature_policy)),
-      address_space_(mojom::IPAddressSpace::kPublic),
+      address_space_(network::mojom::IPAddressSpace::kPublic),
       insecure_request_policy_(kLeaveInsecureRequestsAlone),
       require_safe_types_(false) {}
 
@@ -153,13 +153,13 @@ bool SecurityContext::IsSandboxed(WebSandboxFlags mask) const {
 
 String SecurityContext::addressSpaceForBindings() const {
   switch (address_space_) {
-    case mojom::IPAddressSpace::kPublic:
+    case network::mojom::IPAddressSpace::kPublic:
       return "public";
 
-    case mojom::IPAddressSpace::kPrivate:
+    case network::mojom::IPAddressSpace::kPrivate:
       return "private";
 
-    case mojom::IPAddressSpace::kLocal:
+    case network::mojom::IPAddressSpace::kLocal:
       return "local";
   }
   NOTREACHED();

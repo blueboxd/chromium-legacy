@@ -400,7 +400,7 @@ void Text::RecalcTextStyle(const StyleRecalcChange change) {
     } else {
       layout_text->SetStyle(std::move(new_style));
       if (NeedsStyleRecalc())
-        layout_text->SetText(DataImpl());
+        layout_text->SetTextIfNeeded(DataImpl());
     }
   } else if (new_style && (NeedsStyleRecalc() || change.ReattachLayoutTree() ||
                            GetForceReattachLayoutTree() ||

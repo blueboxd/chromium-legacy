@@ -528,8 +528,8 @@ bool Internals::isValidContentSelect(Element* insertion_point,
     return false;
   }
 
-  return IsHTMLContentElement(*insertion_point) &&
-         ToHTMLContentElement(*insertion_point).IsSelectValid();
+  auto* html_content_element = DynamicTo<HTMLContentElement>(insertion_point);
+  return html_content_element && html_content_element->IsSelectValid();
 }
 
 Node* Internals::treeScopeRootNode(Node* node) {

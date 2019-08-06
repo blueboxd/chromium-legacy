@@ -8,14 +8,11 @@
 #error "This file requires ARC support."
 #endif
 
-#include "components/signin/public/identity_manager/account_info.h"
-
 @implementation FakeChromeIdentity {
   NSString* _userEmail;
   NSString* _gaiaID;
   NSString* _userFullName;
   NSString* _hashedGaiaID;
-  NSString* _hostedDomain;
 }
 
 + (FakeChromeIdentity*)identityWithEmail:(NSString*)email
@@ -23,31 +20,18 @@
                                     name:(NSString*)name {
   return [[FakeChromeIdentity alloc] initWithEmail:email
                                             gaiaID:gaiaID
-                                              name:name
-                                      hostedDomain:@(kNoHostedDomainFound)];
-}
-
-+ (FakeChromeIdentity*)identityWithEmail:(NSString*)email
-                                  gaiaID:(NSString*)gaiaID
-                                    name:(NSString*)name
-                            hostedDomain:(NSString*)hostedDomain {
-  return [[FakeChromeIdentity alloc] initWithEmail:email
-                                            gaiaID:gaiaID
-                                              name:name
-                                      hostedDomain:hostedDomain];
+                                              name:name];
 }
 
 - (instancetype)initWithEmail:(NSString*)email
                        gaiaID:(NSString*)gaiaID
-                         name:(NSString*)name
-                 hostedDomain:(NSString*)hostedDomain {
+                         name:(NSString*)name {
   self = [super init];
   if (self) {
     _userEmail = [email copy];
     _gaiaID = [gaiaID copy];
     _userFullName = [name copy];
     _hashedGaiaID = [NSString stringWithFormat:@"%@_hashID", name];
-    _hostedDomain = hostedDomain;
   }
   return self;
 }
@@ -66,10 +50,6 @@
 
 - (NSString*)hashedGaiaID {
   return _hashedGaiaID;
-}
-
-- (NSString*)hostedDomain {
-  return _hostedDomain;
 }
 
 @end

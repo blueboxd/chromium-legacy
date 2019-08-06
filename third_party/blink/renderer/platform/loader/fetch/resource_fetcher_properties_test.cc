@@ -16,7 +16,7 @@ namespace {
 class DetachableResourceFetcherPropertiesTest : public testing::Test {
  public:
   const FetchClientSettingsObjectSnapshot& CreateFetchClientSettingsObject(
-      mojom::IPAddressSpace address_space) {
+      network::mojom::IPAddressSpace address_space) {
     return *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
         KURL("https://example.com/foo.html"),
         KURL("https://example.com/foo.html"),
@@ -32,7 +32,7 @@ class DetachableResourceFetcherPropertiesTest : public testing::Test {
 
 TEST_F(DetachableResourceFetcherPropertiesTest, DetachWithDefaultValues) {
   const auto& original_client_settings_object =
-      CreateFetchClientSettingsObject(mojom::IPAddressSpace::kPublic);
+      CreateFetchClientSettingsObject(network::mojom::IPAddressSpace::kPublic);
   auto& properties = *MakeGarbageCollected<DetachableResourceFetcherProperties>(
       *MakeGarbageCollected<TestResourceFetcherProperties>(
           original_client_settings_object));
@@ -71,7 +71,7 @@ TEST_F(DetachableResourceFetcherPropertiesTest, DetachWithDefaultValues) {
 
 TEST_F(DetachableResourceFetcherPropertiesTest, DetachWithNonDefaultValues) {
   const auto& original_client_settings_object =
-      CreateFetchClientSettingsObject(mojom::IPAddressSpace::kPublic);
+      CreateFetchClientSettingsObject(network::mojom::IPAddressSpace::kPublic);
   auto& original_properties =
       *MakeGarbageCollected<TestResourceFetcherProperties>(
           original_client_settings_object);

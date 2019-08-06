@@ -21,6 +21,7 @@
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "net/cert/cert_status_flags.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -182,6 +183,12 @@ WebViewPasswordManagerClient::GetMetricsRecorder() {
 }
 
 signin::IdentityManager* WebViewPasswordManagerClient::GetIdentityManager() {
+  NOTREACHED();
+  return nullptr;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+WebViewPasswordManagerClient::GetURLLoaderFactory() {
   NOTREACHED();
   return nullptr;
 }

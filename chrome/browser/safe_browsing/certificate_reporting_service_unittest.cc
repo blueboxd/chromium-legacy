@@ -367,8 +367,8 @@ class CertificateReportingServiceTest : public ::testing::Test {
  public:
   CertificateReportingServiceTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
-        io_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::IO})) {}
+        io_task_runner_(
+            base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})) {}
 
   ~CertificateReportingServiceTest() override {}
 

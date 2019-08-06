@@ -2139,11 +2139,11 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveProtocolHandler) {
   base::Time one_hour_ago = base::Time::Now() - base::TimeDelta::FromHours(1);
   base::Time yesterday = base::Time::Now() - base::TimeDelta::FromDays(1);
   registry->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler::CreateProtocolHandler("test1", kOrigin1));
+      ProtocolHandler::CreateProtocolHandler("news", kOrigin1));
   registry->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("test2", kOrigin1, yesterday));
-  EXPECT_TRUE(registry->IsHandledProtocol("test1"));
-  EXPECT_TRUE(registry->IsHandledProtocol("test2"));
+      ProtocolHandler("mailto", kOrigin1, yesterday));
+  EXPECT_TRUE(registry->IsHandledProtocol("news"));
+  EXPECT_TRUE(registry->IsHandledProtocol("mailto"));
   EXPECT_EQ(
       2U,
       registry->GetUserDefinedHandlers(base::Time(), base::Time::Max()).size());
@@ -2151,8 +2151,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveProtocolHandler) {
   BlockUntilBrowsingDataRemoved(
       one_hour_ago, base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
-  EXPECT_FALSE(registry->IsHandledProtocol("test1"));
-  EXPECT_TRUE(registry->IsHandledProtocol("test2"));
+  EXPECT_FALSE(registry->IsHandledProtocol("news"));
+  EXPECT_TRUE(registry->IsHandledProtocol("mailto"));
   EXPECT_EQ(
       1U,
       registry->GetUserDefinedHandlers(base::Time(), base::Time::Max()).size());
@@ -2160,8 +2160,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveProtocolHandler) {
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS, false);
-  EXPECT_FALSE(registry->IsHandledProtocol("test1"));
-  EXPECT_FALSE(registry->IsHandledProtocol("test2"));
+  EXPECT_FALSE(registry->IsHandledProtocol("news"));
+  EXPECT_FALSE(registry->IsHandledProtocol("mailto"));
   EXPECT_EQ(
       0U,
       registry->GetUserDefinedHandlers(base::Time(), base::Time::Max()).size());

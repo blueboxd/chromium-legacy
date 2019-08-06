@@ -240,7 +240,7 @@ class WebLocalFrame : public WebFrame {
   bool IsLoading() const override = 0;
 
   // Returns true if there is a pending redirect or location change
-  // within specified interval (in seconds). This could be caused by:
+  // within specified interval. This could be caused by:
   // * an HTTP Refresh header
   // * an X-Frame-Options header
   // * the respective http-equiv meta tags
@@ -248,8 +248,7 @@ class WebLocalFrame : public WebFrame {
   // * CSP policy block
   // * reload
   // * form submission
-  virtual bool IsNavigationScheduledWithin(
-      double interval_in_seconds) const = 0;
+  virtual bool IsNavigationScheduledWithin(base::TimeDelta interval) const = 0;
 
   // Reports a list of Blink features used, performed or encountered by the
   // browser during the current page load happening on the frame.

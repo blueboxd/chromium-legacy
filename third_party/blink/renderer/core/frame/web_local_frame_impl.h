@@ -266,7 +266,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void ReportContentSecurityPolicyViolation(
       const blink::WebContentSecurityPolicyViolation&) override;
   bool IsLoading() const override;
-  bool IsNavigationScheduledWithin(double interval) const override;
+  bool IsNavigationScheduledWithin(base::TimeDelta interval) const override;
   void NotifyUserActivation() override;
   void BlinkFeatureUsageReport(
       const std::set<blink::mojom::WebFeature>& features) override;

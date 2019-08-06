@@ -60,6 +60,7 @@
 #include "net/base/url_util.h"
 #include "services/device/public/cpp/device_features.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -1769,6 +1770,12 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
               ProfileSyncServiceFactory::GetForProfile(profile),
               /*is_test_mode=*/false,
               /*log_manager=*/nullptr));
+
+  ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
+  html_source->AddString(
+      "undoDescription",
+      l10n_util::GetStringFUTF16(IDS_UNDO_DESCRIPTION,
+                                 undoAccelerator.GetShortcutText()));
 
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));

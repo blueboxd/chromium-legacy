@@ -86,7 +86,8 @@
   self.bannerIsPresenting = YES;
   [self.infobarCoordinator presentInfobarBannerAnimated:NO completion:nil];
 }
-
+- (void)infobarManagerWillChange {
+}
 - (void)setUserInteractionEnabled:(BOOL)enabled {
 }
 - (void)updateLayoutAnimated:(BOOL)animated {

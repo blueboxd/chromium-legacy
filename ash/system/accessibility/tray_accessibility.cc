@@ -80,9 +80,11 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(select_to_speak_view_,
                                             select_to_speak_enabled_);
 
-  dictation_enabled_ = controller->dictation_enabled();
-  TrayPopupUtils::UpdateCheckMarkVisibility(dictation_view_,
-                                            dictation_enabled_);
+  if (dictation_view_ && controller->GetTrayVisiblityOfDictationSetting()) {
+    dictation_enabled_ = controller->dictation_enabled();
+    TrayPopupUtils::UpdateCheckMarkVisibility(dictation_view_,
+                                              dictation_enabled_);
+  }
 
   if (high_contrast_view_ &&
       controller->GetTrayVisiblityOfHighContrastSetting()) {
@@ -171,11 +173,13 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK),
       select_to_speak_enabled_);
 
-  dictation_enabled_ = controller->dictation_enabled();
-  dictation_view_ = AddScrollListCheckableItem(
-      kDictationMenuIcon,
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION),
-      dictation_enabled_);
+  if (controller->GetTrayVisiblityOfDictationSetting()) {
+    dictation_enabled_ = controller->dictation_enabled();
+    dictation_view_ = AddScrollListCheckableItem(
+        kDictationMenuIcon,
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION),
+        dictation_enabled_);
+  }
 
   if (controller->GetTrayVisiblityOfHighContrastSetting()) {
     high_contrast_enabled_ = controller->high_contrast_enabled();

@@ -30,7 +30,7 @@ function runGenericSensorTests(sensorType,
   }
 
   sensor_test(sensorProvider => {
-    sensorProvider.setGetSensorShouldFail(sensorType.name, true);
+    sensorProvider.getSensorTypeSettings(sensorType.name).unavailable = true;
     let sensorObject = new sensorType;
     sensorObject.start();
     return new Promise((resolve, reject) => {
@@ -46,7 +46,7 @@ function runGenericSensorTests(sensorType,
   }, `${sensorType.name}: Test that onerror is sent when sensor is not supported.`);
 
   sensor_test(sensorProvider => {
-    sensorProvider.setPermissionsDenied(sensorType.name, true);
+    sensorProvider.getSensorTypeSettings(sensorType.name).shouldDenyRequests = true;
     let sensorObject = new sensorType;
     sensorObject.start();
     return new Promise((resolve, reject) => {

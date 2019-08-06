@@ -491,6 +491,11 @@ void AccessibilityControllerImpl::SetDictationEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
+bool AccessibilityControllerImpl::GetTrayVisiblityOfDictationSetting() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityDictationEnabled);
+}
+
 void AccessibilityControllerImpl::SetFocusHighlightEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;

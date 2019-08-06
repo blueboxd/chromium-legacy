@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
@@ -34,6 +35,10 @@ class LogManager;
 namespace favicon {
 class FaviconService;
 }
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace signin {
 class IdentityManager;
@@ -308,6 +313,11 @@ class PasswordManagerClient {
 
   // Returns the identity manager for profile.
   virtual signin::IdentityManager* GetIdentityManager() = 0;
+
+  // Returns a pointer to the URLLoaderFactory owned by the storage partition of
+  // the current profile.
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactory() = 0;
 
   // Whether the primary account of the current profile is under Advanced
   // Protection - a type of Google Account that helps protect our most at-risk

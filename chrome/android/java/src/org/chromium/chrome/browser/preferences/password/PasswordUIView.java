@@ -68,6 +68,12 @@ public final class PasswordUIView implements PasswordManagerHandler {
     }
 
     @Override
+    public void changeSavedPasswordEntry(int index, String newUsername, String newPassword) {
+        nativeHandleChangeSavedPasswordEntry(
+                mNativePasswordUIViewAndroid, index, newUsername, newPassword);
+    }
+
+    @Override
     public void removeSavedPasswordException(int index) {
         nativeHandleRemoveSavedPasswordException(mNativePasswordUIViewAndroid, index);
     }
@@ -110,6 +116,9 @@ public final class PasswordUIView implements PasswordManagerHandler {
 
     private native void nativeHandleRemoveSavedPasswordEntry(
             long nativePasswordUIViewAndroid, int index);
+
+    private native void nativeHandleChangeSavedPasswordEntry(
+            long nativePasswordUIViewAndroid, int index, String newUsername, String newPassword);
 
     private native void nativeHandleRemoveSavedPasswordException(
             long nativePasswordUIViewAndroid, int index);

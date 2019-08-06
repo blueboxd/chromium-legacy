@@ -45,7 +45,6 @@
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/http_auth_observer.h"
-#include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -61,14 +60,12 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/web_contents_tester.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include "ui/base/clipboard/test/test_clipboard.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
@@ -4031,23 +4028,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, FormDynamicallyChanged) {
 
   WaitForElementValue("username_field", "temp");
   WaitForElementValue("password_field", "pw");
-}
-
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       CheckOnPasteCalledForPasteEvent) {
-  ::ui::Clipboard::SetClipboardForCurrentThread(
-      std::make_unique<::ui::TestClipboard>());
-  const std::string password = "password";
-  static_cast<::ui::TestClipboard*>(::ui::Clipboard::GetForCurrentThread())
-      ->WriteText(password.data(), password.length());
-  NavigateToFile("/password/password_form.html");
-  CustomPasswordManagerClient* client =
-      static_cast<CustomPasswordManagerClient*>(
-          ChromePasswordManagerClient::FromWebContents(WebContents()));
-  content::SimulateKeyPress(WebContents(), ::ui::DomKey::PASTE,
-                            ::ui::DomCode::PASTE, ::ui::VKEY_PASTE, true, true,
-                            false, true);
-  EXPECT_EQ(client->pasted_value(), base::ASCIIToUTF16("password"));
 }
 
 }  // namespace

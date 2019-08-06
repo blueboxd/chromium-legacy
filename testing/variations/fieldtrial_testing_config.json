@@ -1020,27 +1020,6 @@
             ]
         }
     ],
-    "AutofillUpstreamDisallowEloAndJcb": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillUpstreamDisallowElo",
-                        "AutofillUpstreamDisallowJcb"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillUpstreamEditableCardholderName": [
         {
             "platforms": [
@@ -2489,6 +2468,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "HardwareMediaKeyHandling"
+                    ]
+                }
+            ]
+        }
+    ],
+    "HarfBuzzPdfSubsetter": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "HarfBuzzPdfSubsetter"
                     ]
                 }
             ]
@@ -5404,6 +5404,10 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "zooming-min-memory-mb": "2048",
+                        "zooming-min-sdk-version": "23"
+                    },
                     "enable_features": [
                         "TabToGTSAnimation"
                     ]
@@ -6209,6 +6213,22 @@
             "experiments": [
                 {
                     "name": "SwitchEnabled"
+                }
+            ]
+        }
+    ],
+    "WebRTC-Audio-NetEqDecelerationTargetLevelOffset": [
+        {
+            "platforms": [
+                "android",
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled-85"
                 }
             ]
         }

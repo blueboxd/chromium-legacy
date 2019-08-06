@@ -178,8 +178,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), special_storage_policy_, quota_manager_proxy_,
-        base::DefaultClock::GetInstance());
-    idb_context_->SetTaskRunnerForTesting(
+        base::DefaultClock::GetInstance(),
         base::SequencedTaskRunnerHandle::Get());
 
     CreateFactoryAndBackingStore();
@@ -260,6 +259,16 @@ class IndexedDBBackingStoreTest : public testing::Test {
     }
     if (temp_dir_.IsValid())
       ASSERT_TRUE(temp_dir_.Delete());
+
+    // Wait until the context has fully destroyed.
+    scoped_refptr<base::SequencedTaskRunner> task_runner =
+        idb_context_->TaskRunner();
+    idb_context_.reset();
+    {
+      base::RunLoop loop;
+      task_runner->PostTask(FROM_HERE, loop.QuitClosure());
+      loop.Run();
+    }
   }
 
   TestableIndexedDBBackingStore* backing_store() { return backing_store_; }

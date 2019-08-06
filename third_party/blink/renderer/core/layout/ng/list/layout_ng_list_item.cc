@@ -121,7 +121,7 @@ void LayoutNGListItem::UpdateMarkerText(LayoutText* text) {
   DCHECK(text);
   StringBuilder marker_text_builder;
   marker_type_ = MarkerText(&marker_text_builder, kWithSuffix);
-  text->SetText(marker_text_builder.ToString().ReleaseImpl());
+  text->SetTextIfNeeded(marker_text_builder.ToString().ReleaseImpl());
   is_marker_text_updated_ = true;
 }
 

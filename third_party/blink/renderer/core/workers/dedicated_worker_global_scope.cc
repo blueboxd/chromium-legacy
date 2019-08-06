@@ -77,7 +77,7 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
   KURL response_script_url = creation_params->script_url;
   network::mojom::ReferrerPolicy response_referrer_policy =
       creation_params->referrer_policy;
-  mojom::IPAddressSpace response_address_space =
+  network::mojom::IPAddressSpace response_address_space =
       *creation_params->response_address_space;
   auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
       std::move(creation_params), thread, time_origin,
@@ -114,7 +114,7 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
 void DedicatedWorkerGlobalScope::Initialize(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
-    mojom::IPAddressSpace response_address_space,
+    network::mojom::IPAddressSpace response_address_space,
     const Vector<CSPHeaderAndType>& /* response_csp_headers */,
     const Vector<String>* /* response_origin_trial_tokens */) {
   // Step 12.3. "Set worker global scope's url to response's url."

@@ -291,6 +291,8 @@ static_library("csv") {
     "import/csv_field_parser.h",
     "import/csv_password.cc",
     "import/csv_password.h",
+    "import/csv_password_iterator.cc",
+    "import/csv_password_iterator.h",
   ]
   deps = [
     ":affiliation",
@@ -304,6 +306,7 @@ source_set("csv_unittests") {
   testonly = true
   sources = [
     "import/csv_field_parser_unittest.cc",
+    "import/csv_password_iterator_unittest.cc",
     "import/csv_password_unittest.cc",
   ]
   deps = [

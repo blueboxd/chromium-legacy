@@ -7,15 +7,15 @@
 
 #import <Foundation/Foundation.h>
 
+enum class InfobarType;
+
 // Protocol for the InfobarCoordinators to communicate with the InfobarContainer
 // Coordinator.
 @protocol InfobarContainer
 
-// Informs the InfobarContainer Coordinator that its child coordinator has
-// stopped.
-// TODO(crbug.com/961343): Add support to indicate which Coordinator has
-// stopped.
-- (void)childCoordinatorStopped;
+// Informs the InfobarContainer Coordinator that its child coordinator of type
+// |infobarType| has stopped.
+- (void)childCoordinatorStopped:(InfobarType)infobarType;
 
 @end
 

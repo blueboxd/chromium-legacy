@@ -117,7 +117,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   // definitions from JS to C++.
   ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   source->AddString("undoDescription", l10n_util::GetStringFUTF16(
-                                           IDS_DOWNLOAD_UNDO_DESCRIPTION,
+                                           IDS_UNDO_DESCRIPTION,
                                            undoAccelerator.GetShortcutText()));
 
   PrefService* prefs = profile->GetPrefs();

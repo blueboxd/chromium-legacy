@@ -108,16 +108,6 @@ BOOL bookmarkMenuIsInSlideInPanel() {
   return !IsIPadIdiom() || IsCompactTablet();
 }
 
-UIView* dropShadowWithWidth(CGFloat width) {
-  UIImage* shadowImage = [UIImage imageNamed:@"bookmark_bar_shadow"];
-  UIImageView* shadow = [[UIImageView alloc] initWithImage:shadowImage];
-  CGRect shadowFrame = CGRectMake(0, 0, width, 4);
-  shadow.frame = shadowFrame;
-  shadow.autoresizingMask =
-      UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
-  return shadow;
-}
-
 #pragma mark - Updating Bookmarks
 
 // Deletes all subnodes of |node|, including |node|, that are in |bookmarks|.

@@ -200,6 +200,8 @@ public final class MultiprocessTestClientLauncher {
     @CalledByNative
     private static int launchClient(
             final String[] commandLine, final FileDescriptorInfo[] filesToMap) {
+        assert Looper.myLooper() != Looper.getMainLooper();
+
         initLauncherThread();
 
         final MultiprocessTestClientLauncher launcher =

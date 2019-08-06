@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -24,7 +23,6 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
-#include "third_party/blink/public/platform/modules/video_capture/local_video_capturer_source.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -34,9 +32,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/local_media_stream_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_content.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
@@ -44,7 +40,10 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
+#include "third_party/blink/renderer/platform/video_capture/local_video_capturer_source.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -217,20 +216,16 @@ media::VideoFacingMode ToMediaVideoFacingMode(
   return media::MEDIA_VIDEO_FACING_NONE;
 }
 
-std::vector<blink::VideoInputDeviceCapabilities> ToVideoInputDeviceCapabilities(
+Vector<blink::VideoInputDeviceCapabilities> ToVideoInputDeviceCapabilities(
     const Vector<blink::mojom::blink::VideoInputDeviceCapabilitiesPtr>&
         input_capabilities) {
-  std::vector<blink::VideoInputDeviceCapabilities> capabilities;
+  Vector<blink::VideoInputDeviceCapabilities> capabilities;
   for (const auto& capability : input_capabilities) {
-    // TODO(crbug.com/704136): Change VideoInputDeviceCapabilities to operate
-    // over WTF::Vector and WTF::String, in its ctor's.
-    //
     // TODO(crbug.com/704136): Make the conversion from mojom::blink::FacingMode
     // to be handled automatically, eg by making media_devices.typemap work in
     // blink/renderer/platform/mojo/blink_typemaps.gni.
-    capabilities.emplace_back(capability->device_id.Utf8(),
-                              capability->group_id.Utf8(),
-                              ToStdVector(capability->formats),
+    capabilities.emplace_back(capability->device_id, capability->group_id,
+                              capability->formats,
                               ToMediaVideoFacingMode(capability->facing_mode));
   }
 
@@ -316,15 +311,15 @@ class UserMediaProcessor::RequestInfo
 
   void AddNativeVideoFormats(const String& device_id,
                              Vector<media::VideoCaptureFormat> formats) {
-    video_formats_map_[device_id.Utf8()] = std::move(formats);
+    video_formats_map_.insert(device_id, std::move(formats));
   }
 
   // Do not store or delete the returned pointer.
   Vector<media::VideoCaptureFormat>* GetNativeVideoFormats(
       const String& device_id) {
-    auto it = video_formats_map_.find(device_id.Utf8());
+    auto it = video_formats_map_.find(device_id);
     CHECK(it != video_formats_map_.end());
-    return &it->second;
+    return &it->value;
   }
 
   const Vector<MediaStreamDevice>& audio_devices() const {
@@ -372,12 +367,9 @@ class UserMediaProcessor::RequestInfo
   MediaStreamRequestResult request_result_ = MediaStreamRequestResult::OK;
   blink::WebString request_result_name_;
   // Sources used in this request.
-  // TODO(crbug.com/704136): Switch away from std::vector.
-  std::vector<blink::WebMediaStreamSource> sources_;
-  std::vector<blink::WebPlatformMediaStreamSource*>
-      sources_waiting_for_callback_;
-  // TODO(crbug.com/704136): Switch away from std::string and std::map.
-  std::map<std::string, Vector<media::VideoCaptureFormat>> video_formats_map_;
+  Vector<blink::WebMediaStreamSource> sources_;
+  Vector<blink::WebPlatformMediaStreamSource*> sources_waiting_for_callback_;
+  HashMap<String, Vector<media::VideoCaptureFormat>> video_formats_map_;
   Vector<MediaStreamDevice> audio_devices_;
   Vector<MediaStreamDevice> video_devices_;
 };
@@ -443,8 +435,8 @@ void UserMediaProcessor::RequestInfo::OnTrackStarted(
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
   DVLOG(1) << "OnTrackStarted result " << result;
-  auto it = std::find(sources_waiting_for_callback_.begin(),
-                      sources_waiting_for_callback_.end(), source);
+  auto** it = std::find(sources_waiting_for_callback_.begin(),
+                        sources_waiting_for_callback_.end(), source);
   DCHECK(it != sources_waiting_for_callback_.end());
   sources_waiting_for_callback_.erase(it);
   // All tracks must be started successfully. Otherwise the request is a
@@ -458,7 +450,7 @@ void UserMediaProcessor::RequestInfo::OnTrackStarted(
 }
 
 void UserMediaProcessor::RequestInfo::CheckAllTracksStarted() {
-  if (ready_callback_ && sources_waiting_for_callback_.empty()) {
+  if (ready_callback_ && sources_waiting_for_callback_.IsEmpty()) {
     std::move(ready_callback_).Run(this, request_result_, request_result_name_);
     // NOTE: |this| might now be deleted.
   }
@@ -576,10 +568,8 @@ void UserMediaProcessor::SelectAudioDeviceSettings(
     if (audio_source) {
       capabilities.emplace_back(audio_source);
     } else {
-      // TODO(crbug.com/704136): Change AudioDeviceCaptureCapabilities to
-      // operate over WTF::String.
-      capabilities.emplace_back(device->device_id.Utf8(),
-                                device->group_id.Utf8(), device->parameters);
+      capabilities.emplace_back(device->device_id, device->group_id,
+                                device->parameters);
     }
   }
 
@@ -588,7 +578,7 @@ void UserMediaProcessor::SelectAudioDeviceSettings(
 
 void UserMediaProcessor::SelectAudioSettings(
     const blink::WebUserMediaRequest& web_request,
-    const std::vector<blink::AudioDeviceCaptureCapability>& capabilities) {
+    const blink::AudioDeviceCaptureCapabilities& capabilities) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The frame might reload or |web_request| might be cancelled while
   // capabilities are queried. Do nothing if a different request is being
@@ -714,9 +704,6 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
       current_request_info_->stream_controls()->video.stream_type));
 
   blink::VideoDeviceCaptureCapabilities capabilities;
-  // TODO(crbug.com/704136): Change
-  // VideoDeviceCaptureCapabilities.device_capabilities to operate over
-  // WTF::Vector.
   capabilities.device_capabilities =
       ToVideoInputDeviceCapabilities(video_input_capabilities);
   capabilities.noise_reduction_capabilities = {base::Optional<bool>(),

@@ -27,6 +27,10 @@ class PLATFORM_EXPORT UnifiedHeapMarkingVisitorBase : public MarkingVisitor {
   // Visitation methods that announce reachable wrappers to V8.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
 
+  bool is_concurrent_marking_enabled() const {
+    return is_concurrent_marking_enabled_;
+  }
+
  protected:
   UnifiedHeapMarkingVisitorBase(ThreadState*, MarkingMode, v8::Isolate*);
 
@@ -34,6 +38,9 @@ class PLATFORM_EXPORT UnifiedHeapMarkingVisitorBase : public MarkingVisitor {
   v8::EmbedderHeapTracer* const controller_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedHeapMarkingVisitorBase);
+
+ private:
+  bool is_concurrent_marking_enabled_;
 };
 
 // Same as the base visitor with the difference that it is bound to main thread.

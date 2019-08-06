@@ -137,6 +137,7 @@ class WorkerThread::InterruptData {
 };
 
 WorkerThread::~WorkerThread() {
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   MutexLocker lock(ThreadSetMutex());
   DCHECK(WorkerThreads().Contains(this));
   WorkerThreads().erase(this);
@@ -152,12 +153,8 @@ WorkerThread::~WorkerThread() {
 void WorkerThread::Start(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
-    std::unique_ptr<WorkerDevToolsParams> devtools_params,
-    ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
+    std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
-  DCHECK(!parent_execution_context_task_runners_);
-  parent_execution_context_task_runners_ =
-      parent_execution_context_task_runners;
   devtools_worker_token_ = devtools_params->devtools_worker_token;
 
   // Synchronously initialize the per-global-scope scheduler to prevent someone
@@ -440,16 +437,21 @@ WorkerThread::WorkerThread(WorkerReportingProxy& worker_reporting_proxy)
       worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
       worker_reporting_proxy_(worker_reporting_proxy),
+      parent_thread_default_task_runner_(Thread::Current()->GetTaskRunner()),
       shutdown_event_(RefCountedWaitableEvent::Create()) {
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   MutexLocker lock(ThreadSetMutex());
   WorkerThreads().insert(this);
 }
 
 void WorkerThread::ScheduleToTerminateScriptExecution() {
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   DCHECK(!forcible_termination_task_handle_.IsActive());
+  // It's safe to post a task bound with |this| to the parent thread default
+  // task runner because this task is canceled on the destructor of this
+  // class on the parent thread.
   forcible_termination_task_handle_ = PostDelayedCancellableTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
-      FROM_HERE,
+      *parent_thread_default_task_runner_, FROM_HERE,
       WTF::Bind(&WorkerThread::EnsureScriptExecutionTerminates,
                 WTF::Unretained(this), ExitCode::kAsyncForciblyTerminated),
       forcible_termination_delay_);

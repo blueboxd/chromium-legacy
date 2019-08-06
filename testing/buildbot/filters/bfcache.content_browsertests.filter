@@ -1,6 +1,28 @@
-# These tests currently fail when run with --enable-features=BackForwardCache
--BackForwardCacheMetricsBrowserTest.Features_MainFrame_CrossOriginNavigation
+# These tests currently fail when run with --enable-features=BackForwardCache.
+
+# Terminating renderer for bad IPC message, reason 205.
+-NavigationControllerBrowserTest.VerifyBlockedErrorPageURL_SessionHistory
+
+# Same-document navigation pointing to a URL that would cause a redirect if it
+# was reloaded. It never happen, because the document is restored directly.
+-NavigationControllerBrowserTest.SiteInstanceChangeOnHistoryNavigation
+
+# Expect an iframe to load again. It isn't because the page was restored from
+# the BackForwardCache.
 -BackForwardCacheMetricsBrowserTest.Features_SameOriginSubframes_CrossOriginNavigation
+-NavigationControllerBrowserTest.FrameNavigationEntry_DynamicSubframeHistoryFallback
+-NavigationControllerBrowserTest.FrameNavigationEntry_RecreatedSubframeBackForward
+-NavigationControllerBrowserTest.FrameNavigationEntry_SubframeHistoryFallback
+
+# Create a URLLoaderInterceptor. It should cause the navigation to fail, but it
+# isn't using an URLLoader anymore.
+-RenderFrameHostManagerTest.ErrorPageNavigationHistoryNavigationSuccess
+-RenderFrameHostManagerTest.ErrorPageNavigationHistoryNavigationFailure
+
+# Document expects javascript to run again from the beginning.
+-WebContentsImplBrowserTest.JavaScriptDialogsInMainAndSubframes
+
+# See https://crbug.com/989922.
 -DumpAccessibilityEventsTest.AccessibilityEventsTbodyFocus/linux
 -DumpAccessibilityEventsTest.AccessibilityEventsTfootFocus/linux
 -DumpAccessibilityEventsTest.AccessibilityEventsTheadFocus/linux
@@ -30,31 +52,42 @@
 -DumpAccessibilityTreeTest.AccessibilityTableTbodyTfoot/linux
 -DumpAccessibilityTreeTest.AccessibilityTableThColHeader/linux
 -DumpAccessibilityTreeTest.AccessibilityTableThRowHeader/linux
--DynamicIsolatedOriginTest.LockedProcessNotReusedForNonisolatedSameSiteNavigation
--DynamicIsolatedOriginTest.MainFrameNavigations
--NavigationControllerBrowserTest.FrameNavigationEntry_DynamicSubframeHistoryFallback
--NavigationControllerBrowserTest.FrameNavigationEntry_RecreatedSubframeBackForward
--NavigationControllerBrowserTest.FrameNavigationEntry_SubframeHistoryFallback
--NavigationControllerBrowserTest.HistoryBackTwiceFromRendererWithoutUserGesture
--NavigationControllerBrowserTest.NoDialogsFromSwappedOutFrames
+
+# Histogram not recorded. It will probably be fixed by https://crbug.com/976697.
+-NavigationHandleImplBrowserTest.StartToCommitMetrics
+
+# render_view_impl.cc. Check failed: !frame_widget_.
 -NavigationControllerBrowserTest.PageStateAfterForwardInCompetingFrames
 -NavigationControllerBrowserTest.PageStateWithIframeAfterForwardInCompetingFrames
--NavigationControllerBrowserTest.SiteInstanceChangeOnHistoryNavigation
--NavigationControllerBrowserTest.UtilizationOfSpareRenderProcessHost
--NavigationControllerBrowserTest.VerifyBlockedErrorPageURL_SessionHistory
 -NavigationControllerHistoryInterventionBrowserTest.NoUserActivationSetSkipOnBackForwardCrossSite
--NavigationHandleImplBrowserTest.StartToCommitMetrics
--RFHMProcessPerTabTest.BackFromWebUI
+-NavigationControllerHistoryInterventionBrowserTest.NoUserActivationSetSkipOnBackForwardCrossSite
 -RenderFrameHostManagerTest.BackForwardNotStale
+
+# Javascript dialog is shown from a page in the BackForwardCache.
+-NavigationControllerBrowserTest.NoDialogsFromSwappedOutFrames
+
+# history.back(); history.back() causes the tab to go back twice instead of
+# once. The navigations are now committing synchronously, which is too fast.
+-NavigationControllerBrowserTest.HistoryBackTwiceFromRendererWithoutUserGesture
+
+# Test expects the RenderFrameHost to be deleted after a navigation. It is now
+# stored into the BackForwardCache instead. It isn't deleted.
 -RenderFrameHostManagerTest.CleanupOnCrossProcessNavigation
--RenderFrameHostManagerTest.DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted2
--RenderFrameHostManagerTest.DontSelectInvalidFiles
--RenderFrameHostManagerTest.ErrorPageNavigationHistoryNavigationFailure
--RenderFrameHostManagerTest.ErrorPageNavigationHistoryNavigationSuccess
 -RenderFrameHostManagerTest.LastCommittedOrigin
+-SitePerProcessBrowserTest.PendingDeletionCheckCompletedOnSubtree
+-SitePerProcessBrowserTest.SlowUnloadHandlerInIframe
+-WebContentsBindingSetBrowserTest.CloseOnFrameDeletion
+
+# This test waits for a network request after a back navigation. It won't be
+# made, because the document is restored from the BackForwardCache.
+-RenderFrameHostManagerTest.DeleteSpeculativeRFHPendingCommitOfPendingEntryOnInterrupted2
+
+# Wait for the old process to exit. It won't, because it is still used by a
+# bfcached document.
+-DynamicIsolatedOriginTest.LockedProcessNotReusedForNonisolatedSameSiteNavigation
+-RenderFrameHostManagerTest.DontSelectInvalidFiles
 -RenderFrameHostManagerTest.NavigateWithUnassignedSiteInstance
 -RenderFrameHostManagerTest.PostMessageFromSubframeUnloadHandler
--RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill
 -RenderFrameHostManagerTest.RestoreFileAccessForHistoryNavigation
 -RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation
 -RenderFrameHostManagerTest.UnloadPushStateOnCrossProcessNavigation
@@ -63,19 +96,29 @@
 -RenderFrameHostManagerUnloadBrowserTest.SubframeTerminationPing_Image
 -RenderFrameHostManagerUnloadBrowserTest.SubframeTerminationPing_SendBeacon
 -RenderProcessHostTest.KeepAliveRendererProcess
--SecFetchBrowserTest.BackNavigation
--SessionHistoryTest.GoBackToCrossSitePostWithRedirect
--SitePerProcessBrowserTest.PartialUnloadHandler
--SitePerProcessBrowserTest.PendingDeletionCheckCompletedOnSubtree
--SitePerProcessBrowserTest.RenderViewHostIsNotReusedAfterDelayedSwapOutACK
--SitePerProcessBrowserTest.SlowUnloadHandlerInIframe
 -SitePerProcessBrowserTest.SubframePendingAndBackToSameSiteInstance
 -SitePerProcessBrowserTest.SwapOutACKArrivesPriorToProcessShutdownRequest
--SitePerProcessBrowserTest.TwoCrossSitePendingNavigationsAndMainFrameWins
+
+# Expect the swapped out RenderFrameHost to have a replacement proxy. This won't
+# happen when the BackForwardCache is used to store the old document.
+-RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill
+
+# Waiting for unload handler, but they aren't executed.
+-SitePerProcessBrowserTest.PartialUnloadHandler
 -SitePerProcessBrowserTest.Unload_ABAB
--WebContentsBindingSetBrowserTest.CloseOnFrameDeletion
--WebContentsImplBrowserTest.JavaScriptDialogsInMainAndSubframes
+
+# Expect the old RenderView to be removed. It isn't, because it it still used
+# by a bfcached document.
+-SitePerProcessBrowserTest.RenderViewHostIsNotReusedAfterDelayedSwapOutACK
+
+# Check failed: false. Navigation in an inactive frame
+-SitePerProcessBrowserTest.TwoCrossSitePendingNavigationsAndMainFrameWins
+
+# Unload handler not run => Title not updated.
 -WebContentsImplBrowserTest.SetTitleOnUnload
+
+# FATAL:casting.h Security DCHECK failed: IsA<Derived>(from).
+# In content::RenderFrameProxy::OnSetFrameOwnerProperties()
 -WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkers/0
 -WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkers/1
 -WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCache

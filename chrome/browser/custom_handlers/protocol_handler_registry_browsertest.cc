@@ -52,8 +52,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     return menu;
   }
 
-  void AddProtocolHandler(const std::string& protocol,
-                          const GURL& url) {
+  void AddProtocolHandler(const std::string& protocol, const GURL& url) {
     ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(protocol,
                                                                      url);
     ProtocolHandlerRegistry* registry =
@@ -120,17 +119,17 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, CustomHandler) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL handler_url = embedded_test_server()->GetURL("/custom_handler_foo.html");
-  AddProtocolHandler("foo", handler_url);
+  GURL handler_url = embedded_test_server()->GetURL("/custom_handler.html");
+  AddProtocolHandler("news", handler_url);
 
-  ui_test_utils::NavigateToURL(browser(), GURL("foo:test"));
+  ui_test_utils::NavigateToURL(browser(), GURL("news:test"));
 
   ASSERT_EQ(handler_url,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
   // Also check redirects.
   GURL redirect_url =
-      embedded_test_server()->GetURL("/server-redirect?foo:test");
+      embedded_test_server()->GetURL("/server-redirect?news:test");
   ui_test_utils::NavigateToURL(browser(), redirect_url);
 
   ASSERT_EQ(handler_url,

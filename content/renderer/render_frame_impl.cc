@@ -6305,7 +6305,7 @@ blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
   bool interrupted_by_client_redirect =
       // IsNavigationScheduleWithin() checks that we have something just
       // started, sent to the browser or loading.
-      (frame_->IsNavigationScheduledWithin(0) &&
+      (frame_->IsNavigationScheduledWithin(base::TimeDelta()) &&
        // The current navigation however is just returning from the browser. To
        // check that it is not the current navigation, we verify the "initial
        // history navigation in a subframe" flag of ClientNavigationState.

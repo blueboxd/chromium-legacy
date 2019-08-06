@@ -38,9 +38,3 @@ imageset("table_view_cell_edit_icon") {
     "table_view_cell_edit_icon.imageset/table_view_cell_edit_icon@3x.png",
   ]
 }
-
-colorset("table_view_favicon_background_color") {
-  sources = [
-    "table_view_favicon_background_color.colorset/Contents.json",
-  ]
-}

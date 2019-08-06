@@ -312,14 +312,16 @@ void ResourceRequest::ClearHttpHeaderField(const AtomicString& name) {
 }
 
 void ResourceRequest::SetExternalRequestStateFromRequestorAddressSpace(
-    mojom::IPAddressSpace requestor_space) {
-  static_assert(mojom::IPAddressSpace::kLocal < mojom::IPAddressSpace::kPrivate,
+    network::mojom::IPAddressSpace requestor_space) {
+  static_assert(network::mojom::IPAddressSpace::kLocal <
+                    network::mojom::IPAddressSpace::kPrivate,
                 "Local is inside Private");
-  static_assert(mojom::IPAddressSpace::kLocal < mojom::IPAddressSpace::kPublic,
+  static_assert(network::mojom::IPAddressSpace::kLocal <
+                    network::mojom::IPAddressSpace::kPublic,
                 "Local is inside Public");
-  static_assert(
-      mojom::IPAddressSpace::kPrivate < mojom::IPAddressSpace::kPublic,
-      "Private is inside Public");
+  static_assert(network::mojom::IPAddressSpace::kPrivate <
+                    network::mojom::IPAddressSpace::kPublic,
+                "Private is inside Public");
 
   // TODO(mkwst): This only checks explicit IP addresses. We'll have to move all
   // this up to //net and //content in order to have any real impact on gateway
@@ -329,11 +331,12 @@ void ResourceRequest::SetExternalRequestStateFromRequestorAddressSpace(
     return;
   }
 
-  mojom::IPAddressSpace target_space = mojom::IPAddressSpace::kPublic;
+  network::mojom::IPAddressSpace target_space =
+      network::mojom::IPAddressSpace::kPublic;
   if (network_utils::IsReservedIPAddress(url_.Host()))
-    target_space = mojom::IPAddressSpace::kPrivate;
+    target_space = network::mojom::IPAddressSpace::kPrivate;
   if (SecurityOrigin::Create(url_)->IsLocalhost())
-    target_space = mojom::IPAddressSpace::kLocal;
+    target_space = network::mojom::IPAddressSpace::kLocal;
 
   is_external_request_ = requestor_space > target_space;
 }

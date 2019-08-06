@@ -837,7 +837,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   base::FilePath path = in_memory ? base::FilePath() : partition_path;
   partition->indexed_db_context_ = new IndexedDBContextImpl(
       path, context->GetSpecialStoragePolicy(), quota_manager_proxy,
-      base::DefaultClock::GetInstance());
+      base::DefaultClock::GetInstance(), /*task_runner=*/nullptr);
 
   partition->cache_storage_context_ = new CacheStorageContextImpl(context);
   partition->cache_storage_context_->Init(

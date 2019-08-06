@@ -357,6 +357,8 @@ class FormStructure {
     value_from_dynamic_change_form_ = v;
   }
 
+  uint32_t unique_renderer_id() const { return unique_renderer_id_; }
+
  private:
   friend class AutofillMergeTest;
   friend class FormStructureTest;
@@ -624,6 +626,8 @@ class FormStructure {
   bool is_rich_query_enabled_ = false;
 
   bool value_from_dynamic_change_form_ = false;
+
+  uint32_t unique_renderer_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

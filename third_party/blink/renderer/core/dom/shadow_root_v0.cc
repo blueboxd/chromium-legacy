@@ -88,8 +88,8 @@ void DistributionPool::DistributeTo(V0InsertionPoint* insertion_point,
     if (distributed_[i])
       continue;
 
-    if (IsHTMLContentElement(*insertion_point) &&
-        !ToHTMLContentElement(insertion_point)->CanSelectNode(nodes_, i))
+    auto* html_content_element = DynamicTo<HTMLContentElement>(insertion_point);
+    if (html_content_element && !html_content_element->CanSelectNode(nodes_, i))
       continue;
 
     Node* node = nodes_[i];
@@ -235,7 +235,7 @@ void ShadowRootV0::CollectSelectFeatureSetFrom() {
       if (!shadow_root->IsV1())
         select_features.Add(shadow_root->V0().EnsureSelectFeatureSet());
     }
-    if (auto* content = ToHTMLContentElementOrNull(element))
+    if (auto* content = DynamicTo<HTMLContentElement>(element))
       select_features.CollectFeaturesFromSelectorList(content->SelectorList());
   }
 }

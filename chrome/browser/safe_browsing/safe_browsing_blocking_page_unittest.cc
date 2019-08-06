@@ -405,8 +405,8 @@ class SafeBrowsingBlockingPageTestBase
     resource->callback =
         base::Bind(&SafeBrowsingBlockingPageTestBase::OnBlockingPageComplete,
                    base::Unretained(this));
-    resource->callback_thread = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::IO});
+    resource->callback_thread =
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
     resource->url = url;
     resource->is_subresource = is_subresource;
     resource->threat_type = type;
@@ -1168,8 +1168,8 @@ class SafeBrowsingBlockingQuietPageTest
     resource->callback =
         base::Bind(&SafeBrowsingBlockingQuietPageTest::OnBlockingPageComplete,
                    base::Unretained(this));
-    resource->callback_thread = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::IO});
+    resource->callback_thread =
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
     resource->url = url;
     resource->is_subresource = is_subresource;
     resource->threat_type = type;

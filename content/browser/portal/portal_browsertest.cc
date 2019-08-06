@@ -974,7 +974,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchStateClearedBeforeActivation) {
 #endif
 
 // TODO(crbug.com/985078): Fix on Mac.
-#if !defined(OS_MACOSX)
+// TODO(crbug.com/991192): Flaky on Android
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, GestureCleanedUpBeforeActivation) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));

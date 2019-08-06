@@ -221,6 +221,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
               MaybeRenderEarlyManager::Create(gpu_task_runner_)));
 
 #elif defined(OS_CHROMEOS)
+      std::unique_ptr<VideoDecoder> cros_video_decoder;
       if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
 #if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
         auto frame_pool = std::make_unique<PlatformVideoFramePool>();
@@ -232,9 +233,21 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                            media_gpu_channel_manager_,
                            command_buffer_id->channel_token,
                            command_buffer_id->route_id));
-        video_decoder = ChromeosVideoDecoderFactory::Create(
+        cros_video_decoder = ChromeosVideoDecoderFactory::Create(
             task_runner, std::move(frame_pool), std::move(frame_converter));
 #endif  // BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
+      }
+
+      if (cros_video_decoder) {
+        video_decoder = std::move(cros_video_decoder);
+      } else {
+        video_decoder = VdaVideoDecoder::Create(
+            task_runner, gpu_task_runner_, media_log->Clone(),
+            target_color_space, gpu_preferences_, gpu_workarounds_,
+            base::BindRepeating(&GetCommandBufferStub, gpu_task_runner_,
+                                media_gpu_channel_manager_,
+                                command_buffer_id->channel_token,
+                                command_buffer_id->route_id));
       }
 
 #elif defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)

@@ -1212,7 +1212,8 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::TryMark() {
   }
   internal::AsanUnpoisonScope unpoison_scope(
       static_cast<const void*>(&encoded_low_), sizeof(encoded_low_));
-  auto* atomic_encoded = reinterpret_cast<std::atomic<uint16_t>*>(encoded_low_);
+  auto* atomic_encoded =
+      reinterpret_cast<std::atomic<uint16_t>*>(&encoded_low_);
   uint16_t old_value = atomic_encoded->load(std::memory_order_relaxed);
   if (old_value & kHeaderMarkBitMask)
     return false;

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .composition_parts import Identifier
 from .database import Database
 from .database import DatabaseBody
 from .dictionary import Dictionary
@@ -9,6 +10,7 @@ from .identifier_ir_map import IdentifierIRMap
 from .idl_type import IdlTypeFactory
 from .reference import RefByIdFactory
 from .typedef import Typedef
+from .union import Union
 from .user_defined_type import UserDefinedType
 
 
@@ -74,12 +76,16 @@ class IdlCompiler(object):
         self._merge_interface_mixins()
         # Process inheritances.
         self._process_interface_inheritances()
+
         # Updates on IRs are finished.  Create API objects.
         self._create_public_objects()
 
         # Resolve references.
         self._resolve_references_to_idl_def()
         self._resolve_references_to_idl_type()
+
+        # Build union API objects.
+        self._create_public_unions()
 
         return Database(self._db)
 
@@ -223,3 +229,37 @@ class IdlCompiler(object):
             ref.set_target_object(idl_type)
 
         self._ref_to_idl_type_factory.for_each(resolve)
+
+    def _create_public_unions(self):
+        all_union_types = []  # all instances of UnionType
+
+        def collect_unions(idl_type):
+            if idl_type.is_union:
+                all_union_types.append(idl_type)
+
+        self._idl_type_factory.for_each(collect_unions)
+
+        def unique_key(union_type):
+            """
+            Returns an unique (but meaningless) key.  Returns the same key for
+            the identical union types.
+            """
+            key_pieces = sorted([
+                idl_type.syntactic_form
+                for idl_type in union_type.flattened_member_types
+            ])
+            if union_type.does_include_nullable_type:
+                key_pieces.append('type null')  # something unique
+            return '|'.join(key_pieces)
+
+        grouped_unions = {}  # {unique key: list of union types, ...}
+        for union_type in all_union_types:
+            key = unique_key(union_type)
+            grouped_unions.setdefault(key, []).append(union_type)
+
+        for key, union_types in grouped_unions.iteritems():
+            self._db.register(
+                DatabaseBody.Kind.UNION,
+                Union(
+                    Identifier(key),  # dummy identifier
+                    union_types))

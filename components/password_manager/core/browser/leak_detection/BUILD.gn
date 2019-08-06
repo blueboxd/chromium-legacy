@@ -35,6 +35,7 @@ jumbo_source_set("leak_detection") {
 
   public_deps = [
     ":leak_detection_interface_headers",
+    "//services/network/public/cpp",
   ]
 
   deps = [

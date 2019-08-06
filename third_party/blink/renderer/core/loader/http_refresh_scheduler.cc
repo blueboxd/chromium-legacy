@@ -41,6 +41,9 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
+static constexpr base::TimeDelta kMaxScheduledDelay =
+    base::TimeDelta::FromSeconds(INT32_MAX / 1000);
+
 namespace blink {
 
 static ClientNavigationReason ToReason(
@@ -60,18 +63,18 @@ static ClientNavigationReason ToReason(
 HttpRefreshScheduler::HttpRefreshScheduler(Document* document)
     : document_(document) {}
 
-bool HttpRefreshScheduler::IsScheduledWithin(double interval) const {
+bool HttpRefreshScheduler::IsScheduledWithin(base::TimeDelta interval) const {
   return refresh_ && refresh_->delay <= interval;
 }
 
 void HttpRefreshScheduler::Schedule(
-    double delay,
+    base::TimeDelta delay,
     const KURL& url,
     Document::HttpRefreshType http_refresh_type) {
   DCHECK(document_->GetFrame());
   if (!document_->GetFrame()->IsNavigationAllowed())
     return;
-  if (delay < 0 || delay > INT_MAX / 1000)
+  if (delay < base::TimeDelta() || delay > kMaxScheduledDelay)
     return;
   if (url.IsEmpty())
     return;
@@ -102,7 +105,7 @@ void HttpRefreshScheduler::NavigateTask() {
     request.GetResourceRequest().SetCacheMode(
         mojom::FetchCacheMode::kValidateCache);
     load_type = WebFrameLoadType::kReload;
-  } else if (refresh->delay <= 1) {
+  } else if (refresh->delay <= base::TimeDelta::FromSeconds(1)) {
     load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
 
@@ -123,7 +126,7 @@ void HttpRefreshScheduler::MaybeStartTimer() {
   navigate_task_handle_ = PostDelayedCancellableTask(
       *document_->GetTaskRunner(TaskType::kInternalLoading), FROM_HERE,
       WTF::Bind(&HttpRefreshScheduler::NavigateTask, WrapWeakPersistent(this)),
-      base::TimeDelta::FromSecondsD(refresh_->delay));
+      refresh_->delay);
 
   probe::FrameScheduledNavigation(document_->GetFrame(), refresh_->url,
                                   refresh_->delay, refresh_->reason);

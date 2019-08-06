@@ -194,11 +194,14 @@ class PanelItem extends HTMLElement {
         buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
         break;
       case this.panelTypeSummary:
+        // TODO(crbug.com/989322) i18n for this string.
+        const fbWindow = ' Files feedback panels';
         this.setAttribute('indicator', 'largeprogress');
         primaryButton = document.createElement('xf-button');
         primaryButton.id = 'primary-action';
         primaryButton.dataset.category = 'expand';
-        primaryButton.setAttribute('aria-label', '$i18n{EXPAND_LABEL}');
+        primaryButton.setAttribute(
+            'aria-label', '$i18n{EXPAND_LABEL}' + fbWindow);
         buttonSpacer.insertAdjacentElement('afterend', primaryButton);
         break;
       case this.panelTypeDone:

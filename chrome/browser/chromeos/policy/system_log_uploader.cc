@@ -176,7 +176,7 @@ std::string SystemLogDelegate::GetPolicyAsJSON() {
   return policy::DictionaryPolicyConversions()
       .WithBrowserContext(ProfileManager::GetActiveUserProfile())
       .EnableUserPolicies(include_user_policies)
-      .EnableDevicePolicies(true)
+      .EnableDeviceLocalAccountPolicies(true)
       .EnableDeviceInfo(true)
       .ToJSON();
 }

@@ -28,7 +28,7 @@
 #include <memory>
 #include <utility>
 
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -201,7 +201,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
     delegate_->SetSandboxFlags(sandbox_mask_);
   }
   if (treat_as_public_address_)
-    delegate_->SetAddressSpace(mojom::IPAddressSpace::kPublic);
+    delegate_->SetAddressSpace(network::mojom::IPAddressSpace::kPublic);
 
   if (require_trusted_types_)
     delegate_->SetRequireTrustedTypes();

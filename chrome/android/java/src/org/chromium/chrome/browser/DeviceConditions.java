@@ -117,6 +117,23 @@ public class DeviceConditions {
     }
 
     /**
+     * @return Whether the device is in idle / doze mode. This feature is only available in M and
+     * later versions of Android devices so it will return false for earlier versions.
+     */
+    public static boolean isCurrentlyInIdleMode(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return false;
+        }
+        return isCurrentlyInIdleModeM(context);
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private static boolean isCurrentlyInIdleModeM(Context context) {
+        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        return powerManager.isDeviceIdleMode();
+    }
+
+    /**
      * @return Network connection type, where possible values are defined by
      *     org.chromium.net.ConnectionType.
      */

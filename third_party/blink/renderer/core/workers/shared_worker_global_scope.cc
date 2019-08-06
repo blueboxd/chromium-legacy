@@ -77,7 +77,7 @@ const AtomicString& SharedWorkerGlobalScope::InterfaceName() const {
 void SharedWorkerGlobalScope::Initialize(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
-    mojom::IPAddressSpace response_address_space,
+    network::mojom::IPAddressSpace response_address_space,
     const Vector<CSPHeaderAndType>& response_csp_headers,
     const Vector<String>* response_origin_trial_tokens) {
   // Step 12.3. "Set worker global scope's url to response's url."

@@ -186,17 +186,18 @@ public class SavePasswordsPreferencesTest {
         }
 
         @Override
+        public void changeSavedPasswordEntry(int index, String newUsername, String newPassword) {
+            assert false : "Define this method before starting to use it in tests.";
+        }
+
+        @Override
         public void removeSavedPasswordEntry(int index) {
-            // Define this method before starting to use it in tests.
-            assert false;
-            return;
+            assert false : "Define this method before starting to use it in tests.";
         }
 
         @Override
         public void removeSavedPasswordException(int index) {
-            // Define this method before starting to use it in tests.
-            assert false;
-            return;
+            assert false : "Define this method before starting to use it in tests.";
         }
 
         @Override

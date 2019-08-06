@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -30,7 +30,8 @@ struct StorageUsageInfo;
 // Call these methods only via the exposed TaskRunner.
 // Refcounted because this class is used throughout the codebase on different
 // threads.
-class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
+class IndexedDBContext
+    : public base::RefCountedDeleteOnSequence<IndexedDBContext> {
  public:
   // Only call the below methods by posting to this TaskRunner.
   virtual base::SequencedTaskRunner* TaskRunner() = 0;
@@ -56,7 +57,13 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
   virtual void SetForceKeepSessionState() = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<IndexedDBContext>;
+  friend class base::RefCountedDeleteOnSequence<IndexedDBContext>;
+  friend class base::DeleteHelper<IndexedDBContext>;
+
+  IndexedDBContext(scoped_refptr<base::SequencedTaskRunner> owning_task_runner)
+      : base::RefCountedDeleteOnSequence<IndexedDBContext>(
+            std::move(owning_task_runner)) {}
+
   virtual ~IndexedDBContext() {}
 };
 

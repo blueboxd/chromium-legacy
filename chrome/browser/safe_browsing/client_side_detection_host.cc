@@ -147,7 +147,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // csd-whitelist check has to be done on the IO thread because it
     // uses the SafeBrowsing service class.
     if (ShouldClassifyForPhishing() || ShouldClassifyForMalware()) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&ShouldClassifyUrlRequest::CheckSafeBrowsingDatabase,
                          this, url_));
@@ -263,10 +263,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
                << " because it matches the csd whitelist";
       phishing_reason = NO_CLASSIFY_MATCH_CSD_WHITELIST;
     }
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&ShouldClassifyUrlRequest::CheckCache, this,
-                       phishing_reason, malware_reason));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&ShouldClassifyUrlRequest::CheckCache, this,
+                                  phishing_reason, malware_reason));
   }
 
   void CheckCache(PreClassificationCheckFailures phishing_reason,

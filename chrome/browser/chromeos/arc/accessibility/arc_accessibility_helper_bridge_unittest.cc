@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -25,6 +26,7 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/shell_surface_util.h"
+#include "extensions/browser/test_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -55,7 +57,9 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
     TestArcAccessibilityHelperBridge(content::BrowserContext* browser_context,
                                      ArcBridgeService* arc_bridge_service)
         : ArcAccessibilityHelperBridge(browser_context, arc_bridge_service),
-          window_(new aura::Window(nullptr)) {
+          window_(new aura::Window(nullptr)),
+          event_router_(
+              extensions::CreateAndUseTestEventRouter(browser_context)) {
       window_->Init(ui::LAYER_NOT_DRAWN);
     }
 
@@ -65,11 +69,19 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
       exo::SetShellApplicationId(window_.get(), id);
     }
 
+    int GetEventCount(const std::string& event_name) const {
+      return event_router_->GetEventCount(event_name);
+    }
+
    protected:
     aura::Window* GetActiveWindow() override { return window_.get(); }
+    extensions::EventRouter* GetEventRouter() const override {
+      return event_router_;
+    }
 
    private:
     std::unique_ptr<aura::Window> window_;
+    extensions::TestEventRouter* const event_router_;
 
     DISALLOW_COPY_AND_ASSIGN(TestArcAccessibilityHelperBridge);
   };
@@ -256,6 +268,24 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
 
   helper_bridge->OnTaskDestroyed(2);
   ASSERT_EQ(0U, task_id_to_tree.size());
+}
+
+TEST_F(ArcAccessibilityHelperBridgeTest, EventAnnoucement) {
+  TestArcAccessibilityHelperBridge* helper_bridge =
+      accessibility_helper_bridge();
+  helper_bridge->set_filter_type_all_for_test();
+
+  std::vector<std::string> text({"Str"});
+  auto event = arc::mojom::AccessibilityEventData::New();
+  event->event_type = arc::mojom::AccessibilityEventType::ANNOUNCEMENT;
+  event->eventText =
+      base::make_optional<std::vector<std::string>>(std::move(text));
+
+  helper_bridge->OnAccessibilityEvent(event.Clone());
+
+  ASSERT_EQ(1, helper_bridge->GetEventCount(
+                   extensions::api::accessibility_private::
+                       OnAnnounceForAccessibility::kEventName));
 }
 
 // Accessibility event and surface creation/removal are sent in different

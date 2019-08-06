@@ -101,6 +101,7 @@ class WebViewPasswordManagerClient
   password_manager::PasswordManagerMetricsRecorder* GetMetricsRecorder()
       override;
   signin::IdentityManager* GetIdentityManager() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsIsolationForPasswordSitesEnabled() const override;
   bool IsNewTabPage() const override;
 

@@ -14,11 +14,11 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_content.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -32,14 +32,6 @@ void RequestFailed(blink::WebApplyConstraintsRequest request,
 
 void RequestSucceeded(blink::WebApplyConstraintsRequest request) {
   request.RequestSucceeded();
-}
-
-media::VideoCaptureFormats ToVideoCaptureFormats(
-    const Vector<media::VideoCaptureFormat>& format_vector) {
-  media::VideoCaptureFormats formats;
-  std::copy(format_vector.begin(), format_vector.end(),
-            std::back_inserter(formats));
-  return formats;
 }
 
 }  // namespace
@@ -248,16 +240,12 @@ blink::VideoCaptureSettings ApplyConstraintsProcessor::SelectVideoSettings(
   DCHECK_GT(formats.size(), 0U);
 
   blink::VideoInputDeviceCapabilities device_capabilities;
-  device_capabilities.device_id =
-      current_request_.Track().Source().Id().Ascii();
-  device_capabilities.group_id =
-      current_request_.Track().Source().GroupId().Ascii();
+  device_capabilities.device_id = current_request_.Track().Source().Id();
+  device_capabilities.group_id = current_request_.Track().Source().GroupId();
   device_capabilities.facing_mode =
       GetCurrentVideoSource() ? GetCurrentVideoSource()->device().video_facing
                               : media::MEDIA_VIDEO_FACING_NONE;
-  // TODO(crbug.com/704136): Eliminate need for this extra conversion
-  // round from WTF::Vector to std::vector.
-  device_capabilities.formats = ToVideoCaptureFormats(formats);
+  device_capabilities.formats = std::move(formats);
 
   blink::VideoDeviceCaptureCapabilities video_capabilities;
   video_capabilities.noise_reduction_capabilities.push_back(

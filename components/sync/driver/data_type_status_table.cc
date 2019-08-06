@@ -42,8 +42,10 @@ void DataTypeStatusTable::UpdateFailedDataTypes(const TypeErrorMap& errors) {
         unrecoverable_errors_.insert(*iter);
         break;
       case SyncError::DATATYPE_ERROR:
-      case SyncError::DATATYPE_POLICY_ERROR:
         data_type_errors_.insert(*iter);
+        break;
+      case SyncError::DATATYPE_POLICY_ERROR:
+        data_type_policy_errors_.insert(*iter);
         break;
       case SyncError::CRYPTO_ERROR:
         crypto_errors_.insert(*iter);
@@ -62,6 +64,7 @@ void DataTypeStatusTable::Reset() {
   DVLOG(1) << "Resetting data type errors.";
   unrecoverable_errors_.clear();
   data_type_errors_.clear();
+  data_type_policy_errors_.clear();
   crypto_errors_.clear();
   persistence_errors_.clear();
   unready_errors_.clear();
@@ -78,8 +81,8 @@ void DataTypeStatusTable::ResetPersistenceErrorsFrom(
   }
 }
 
-bool DataTypeStatusTable::ResetDataTypeErrorFor(ModelType type) {
-  return data_type_errors_.erase(type) > 0;
+bool DataTypeStatusTable::ResetDataTypePolicyErrorFor(ModelType type) {
+  return data_type_policy_errors_.erase(type) > 0;
 }
 
 bool DataTypeStatusTable::ResetUnreadyErrorFor(ModelType type) {
@@ -89,6 +92,8 @@ bool DataTypeStatusTable::ResetUnreadyErrorFor(ModelType type) {
 DataTypeStatusTable::TypeErrorMap DataTypeStatusTable::GetAllErrors() const {
   TypeErrorMap result;
   result.insert(data_type_errors_.begin(), data_type_errors_.end());
+  result.insert(data_type_policy_errors_.begin(),
+                data_type_policy_errors_.end());
   result.insert(crypto_errors_.begin(), crypto_errors_.end());
   result.insert(persistence_errors_.begin(), persistence_errors_.end());
   result.insert(unready_errors_.begin(), unready_errors_.end());
@@ -106,6 +111,7 @@ ModelTypeSet DataTypeStatusTable::GetFailedTypes() const {
 ModelTypeSet DataTypeStatusTable::GetFatalErrorTypes() const {
   ModelTypeSet result;
   result.PutAll(GetTypesFromErrorMap(data_type_errors_));
+  result.PutAll(GetTypesFromErrorMap(data_type_policy_errors_));
   result.PutAll(GetTypesFromErrorMap(unrecoverable_errors_));
   return result;
 }

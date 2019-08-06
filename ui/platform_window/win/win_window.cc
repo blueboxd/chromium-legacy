@@ -133,6 +133,8 @@ void WinWindow::Deactivate() {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+void WinWindow::SetUseNativeFrame(bool use_native_frame) {}
+
 void WinWindow::SetCursor(PlatformCursor cursor) {
   ::SetCursor(cursor);
 }

@@ -55,6 +55,7 @@ class X11WindowOzone : public PlatformWindow,
   void Restore() override;
   void Activate() override;
   void Deactivate() override;
+  void SetUseNativeFrame(bool use_native_frame) override;
   PlatformWindowState GetPlatformWindowState() const override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;

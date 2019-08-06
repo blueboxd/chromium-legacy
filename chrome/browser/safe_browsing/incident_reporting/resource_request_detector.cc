@@ -72,10 +72,9 @@ class ResourceRequestDetectorClient
       OnResultCallback callback) {
     auto client = base::WrapRefCounted(new ResourceRequestDetectorClient(
         std::move(database_manager), std::move(callback)));
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&ResourceRequestDetectorClient::StartCheck, client,
-                       resource_url));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&ResourceRequestDetectorClient::StartCheck,
+                                  client, resource_url));
   }
 
  private:
@@ -112,7 +111,7 @@ class ResourceRequestDetectorClient
           new ResourceRequestIncidentMessage());
       incident_data->set_type(ResourceRequestIncidentMessage::TYPE_PATTERN);
       incident_data->set_digest(threat_hash);
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(std::move(callback_), std::move(incident_data)));
     }

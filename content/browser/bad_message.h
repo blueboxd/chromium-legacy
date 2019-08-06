@@ -244,6 +244,7 @@ enum BadMessageReason {
   RFH_NO_MATCHING_NAVIGATION_REQUEST_ON_COMMIT = 216,
   AUTH_INVALID_ICON_URL = 217,
   MDDH_INVALID_STREAM_SELECTION_INFO = 218,
+  REGISTER_PROTOCOL_HANDLER_INVALID_URL = 219,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

@@ -19,8 +19,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -145,10 +145,7 @@ public class ChromeGcmListenerService extends GcmListenerService {
             LazySubscriptionsManager.persistMessage(subscriptionId, message);
         }
 
-        // Use {@link CachedMetrics} so this gets reported when native is
-        // loaded instead of calling native right away.
-        new CachedMetrics.TimesHistogramSample("PushMessaging.TimeToCheckIfSubscriptionLazy")
-                .record(SystemClock.elapsedRealtime() - time);
+        GcmUma.recordSubscriptionLazyCheckTime(SystemClock.elapsedRealtime() - time);
 
         return shouldPersistMessage;
     }
@@ -167,6 +164,23 @@ public class ChromeGcmListenerService extends GcmListenerService {
                 ContextUtils.getApplicationContext(), backgroundTask);
     }
 
+    private static void recordWebPushMetrics(GCMMessage message) {
+        Context context = ContextUtils.getApplicationContext();
+        boolean inIdleMode = DeviceConditions.isCurrentlyInIdleMode(context);
+        boolean isHighPriority = message.getOriginalPriority() == GCMMessage.Priority.HIGH;
+
+        @GcmUma.WebPushDeviceState
+        int state;
+        if (inIdleMode) {
+            state = isHighPriority ? GcmUma.WebPushDeviceState.IDLE_HIGH_PRIORITY
+                                   : GcmUma.WebPushDeviceState.IDLE_NOT_HIGH_PRIORITY;
+        } else {
+            state = isHighPriority ? GcmUma.WebPushDeviceState.NOT_IDLE_HIGH_PRIORITY
+                                   : GcmUma.WebPushDeviceState.NOT_IDLE_NOT_HIGH_PRIORITY;
+        }
+        GcmUma.recordWebPushReceivedDeviceState(state);
+    }
+
     /**
      * If Chrome is backgrounded, messages coming from lazy subscriptions are
      * persisted on disk and replayed next time Chrome is forgrounded. If Chrome is forgrounded or
@@ -179,6 +193,11 @@ public class ChromeGcmListenerService extends GcmListenerService {
      */
     static void scheduleOrDispatchMessageToDriver(GCMMessage message) {
         ThreadUtils.assertOnUiThread();
+
+        // GCMMessage#getAppId never returns null.
+        if (message.getAppId().startsWith("wp:")) {
+            recordWebPushMetrics(message);
+        }
 
         // Check if we should only persist the message for now.
         if (maybePersistLazyMessage(message)) {

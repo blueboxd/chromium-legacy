@@ -28,6 +28,10 @@ void X11Window::PrepareForShutdown() {
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 }
 
+void X11Window::SetUseNativeFrame(bool use_native_frame) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void X11Window::SetCursor(PlatformCursor cursor) {
   XDefineCursor(xdisplay(), xwindow(), cursor);
 }

@@ -15,6 +15,11 @@
 // Adds |infoBarDelegate|'s Infobar to the InfobarContainer.
 - (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate;
 
+// Informs InfobarContainerConsumer that the backing infobarManager will change.
+// This most likely means that the WebState is changing and a new set of
+// Infobars will/may be presented.
+- (void)infobarManagerWillChange;
+
 // Sets the Infobar container user interaction to |enabled|.
 - (void)setUserInteractionEnabled:(BOOL)enabled;
 

@@ -66,6 +66,11 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
+    self.selectedBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+    self.selectedBackgroundView.backgroundColor = color::IncognitoDynamicColor(
+        _incognito, [UIColor colorNamed:kTableViewRowHighlightColor],
+        [UIColor colorNamed:kTableViewRowHighlightDarkColor]);
+
     _textTruncatingLabel =
         [[OmniboxPopupTruncatingLabel alloc] initWithFrame:CGRectZero];
     _textTruncatingLabel.translatesAutoresizingMaskIntoConstraints = NO;

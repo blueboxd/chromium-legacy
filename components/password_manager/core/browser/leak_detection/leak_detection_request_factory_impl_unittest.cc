@@ -8,6 +8,7 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {
@@ -33,7 +34,7 @@ TEST(LeakDetectionRequestFactoryImpl, DisabledFeature) {
 
   LeakDetectionRequestFactoryImpl factory;
   TestLeakDetectionDelegateInterface delegate;
-  EXPECT_FALSE(factory.TryCreateLeakCheck(&delegate, nullptr));
+  EXPECT_FALSE(factory.TryCreateLeakCheck(&delegate, nullptr, nullptr));
 }
 
 }  // namespace password_manager

@@ -259,7 +259,8 @@ void LocalFrame::Navigate(const FrameLoadRequest& request,
     return;
   if (request.ClientRedirectReason() != ClientNavigationReason::kNone) {
     probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(),
-                                    0.0, request.ClientRedirectReason());
+                                    base::TimeDelta(),
+                                    request.ClientRedirectReason());
     // Non-user navigation before the page has finished firing onload should not
     // create a new back/forward item. The spec only explicitly mentions this in
     // the context of navigating an iframe.
@@ -448,7 +449,8 @@ void LocalFrame::Reload(WebFrameLoadType load_type) {
       nullptr, loader_.ResourceRequestForReload(
                    load_type, ClientRedirectPolicy::kClientRedirect));
   request.SetClientRedirectReason(ClientNavigationReason::kReload);
-  probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(), 0.0,
+  probe::FrameScheduledNavigation(this, request.GetResourceRequest().Url(),
+                                  base::TimeDelta(),
                                   ClientNavigationReason::kReload);
   loader_.StartNavigation(request, load_type);
   probe::FrameClearedScheduledNavigation(this);

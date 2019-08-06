@@ -27,7 +27,7 @@ TestResourceFetcherProperties::TestResourceFetcherProperties(
               String(),
               HttpsState::kNone,
               AllowedByNosniff::MimeTypeCheck::kStrict,
-              mojom::IPAddressSpace::kPublic,
+              network::mojom::IPAddressSpace::kPublic,
               kLeaveInsecureRequestsAlone,
               FetchClientSettingsObject::InsecureNavigationsSet(),
               false /* mixed_autoupgrade_opt_out */)) {}

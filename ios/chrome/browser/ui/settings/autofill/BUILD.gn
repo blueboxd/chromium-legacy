@@ -5,8 +5,14 @@
 source_set("autofill") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "autofill_add_credit_card_coordinator.h",
+    "autofill_add_credit_card_coordinator.mm",
+    "autofill_add_credit_card_mediator.h",
+    "autofill_add_credit_card_mediator.mm",
+    "autofill_add_credit_card_mediator_delegate.h",
     "autofill_add_credit_card_view_controller.h",
     "autofill_add_credit_card_view_controller.mm",
+    "autofill_add_credit_card_view_controller_delegate.h",
     "autofill_credit_card_edit_table_view_controller.h",
     "autofill_credit_card_edit_table_view_controller.mm",
     "autofill_credit_card_table_view_controller.h",
@@ -31,10 +37,12 @@ source_set("autofill") {
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/autofill",
     "//ios/chrome/browser/ui/autofill:autofill_ui",
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/autofill/cells",
     "//ios/chrome/browser/ui/settings/cells",

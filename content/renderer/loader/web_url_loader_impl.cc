@@ -348,29 +348,16 @@ WebURLLoaderFactoryImpl::WebURLLoaderFactoryImpl(
     base::WeakPtr<ResourceDispatcher> resource_dispatcher,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
     : resource_dispatcher_(std::move(resource_dispatcher)),
-      loader_factory_(std::move(loader_factory)) {}
+      loader_factory_(std::move(loader_factory)) {
+  DCHECK(resource_dispatcher_);
+  DCHECK(loader_factory_);
+}
 
 WebURLLoaderFactoryImpl::~WebURLLoaderFactoryImpl() = default;
 
 std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
     std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle) {
-  if (!loader_factory_) {
-    // In some tests like RenderViewTests loader_factory_ is not available.
-    // These tests can still use data URLs to bypass the ResourceDispatcher.
-    if (!task_runner_handle) {
-      // TODO(altimin): base::ThreadTaskRunnerHandle::Get is deprecated in
-      // the renderer. Fix this for frame and non-frame clients.
-      task_runner_handle =
-          WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
-              base::ThreadTaskRunnerHandle::Get());
-    }
-
-    return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
-                                              std::move(task_runner_handle),
-                                              nullptr /* factory */);
-  }
-
   DCHECK(task_runner_handle);
   DCHECK(resource_dispatcher_);
   return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
@@ -583,14 +570,14 @@ WebURLLoaderImpl::Context::Context(
       defers_loading_(NOT_DEFERRING),
       request_id_(-1),
       url_loader_factory_(std::move(url_loader_factory)) {
-  DCHECK(url_loader_factory_ || !resource_dispatcher);
+  DCHECK(resource_dispatcher_);
+  DCHECK(url_loader_factory_);
 }
 
 void WebURLLoaderImpl::Context::Cancel() {
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Cancel", this,
                          TRACE_EVENT_FLAG_FLOW_IN);
-  if (resource_dispatcher_ && // NULL in unittest.
-      request_id_ != -1) {
+  if (request_id_ != -1) {
     resource_dispatcher_->Cancel(request_id_, task_runner_);
     request_id_ = -1;
   }

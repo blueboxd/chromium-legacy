@@ -97,7 +97,7 @@ class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
 
   // Directives support.
   virtual void SetSandboxFlags(SandboxFlags) = 0;
-  virtual void SetAddressSpace(mojom::IPAddressSpace) = 0;
+  virtual void SetAddressSpace(network::mojom::IPAddressSpace) = 0;
   virtual void SetRequireTrustedTypes() = 0;
   virtual void AddInsecureRequestPolicy(WebInsecureRequestPolicy) = 0;
 

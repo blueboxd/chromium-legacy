@@ -51,8 +51,8 @@ class CORE_EXPORT HttpRefreshScheduler final
   explicit HttpRefreshScheduler(Document*);
   ~HttpRefreshScheduler() = default;
 
-  bool IsScheduledWithin(double interval_in_seconds) const;
-  void Schedule(double delay, const KURL&, Document::HttpRefreshType);
+  bool IsScheduledWithin(base::TimeDelta interval) const;
+  void Schedule(base::TimeDelta delay, const KURL&, Document::HttpRefreshType);
   void MaybeStartTimer();
   void Cancel();
 
@@ -66,7 +66,7 @@ class CORE_EXPORT HttpRefreshScheduler final
 
   struct ScheduledHttpRefresh {
    public:
-    ScheduledHttpRefresh(double delay,
+    ScheduledHttpRefresh(base::TimeDelta delay,
                          const KURL& url,
                          ClientNavigationReason reason,
                          base::TimeTicks input_timestamp)
@@ -75,7 +75,7 @@ class CORE_EXPORT HttpRefreshScheduler final
           reason(reason),
           input_timestamp(input_timestamp) {}
 
-    double delay;
+    base::TimeDelta delay;
     KURL url;
     ClientNavigationReason reason;
     base::TimeTicks input_timestamp;

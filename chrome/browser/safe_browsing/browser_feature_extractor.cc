@@ -243,7 +243,7 @@ void BrowserFeatureExtractor::ExtractMalwareFeatures(
   IPUrlMap* ips_ptr = ips.get();
 
   // IP blacklist lookups have to happen on the IO thread.
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&FilterBenignIpsOnIOThread, host_->database_manager(),
                      ips_ptr),

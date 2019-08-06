@@ -113,6 +113,10 @@ void DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
   native_widget_delegate_->OnNativeWidgetCreated();
 
+  platform_window()->SetUseNativeFrame(params.type ==
+                                           Widget::InitParams::TYPE_WINDOW &&
+                                       !params.remove_standard_frame);
+
 #if defined(OS_LINUX)
   // Setup a non_client_window_event_filter, which handles resize/move, double
   // click and other events.
@@ -422,7 +426,21 @@ bool DesktopWindowTreeHostPlatform::ShouldWindowContentsBeTransparent() const {
   return false;
 }
 
-void DesktopWindowTreeHostPlatform::FrameTypeChanged() {}
+void DesktopWindowTreeHostPlatform::FrameTypeChanged() {
+  Widget::FrameType new_type =
+      native_widget_delegate_->AsWidget()->frame_type();
+  if (new_type == Widget::FRAME_TYPE_DEFAULT) {
+    // The default is determined by Widget::InitParams::remove_standard_frame
+    // and does not change.
+    return;
+  }
+  platform_window()->SetUseNativeFrame(new_type ==
+                                       Widget::FRAME_TYPE_FORCE_NATIVE);
+  // Replace the frame and layout the contents. Even though we don't have a
+  // swappable glass frame like on Windows, we still replace the frame because
+  // the button assets don't update otherwise.
+  native_widget_delegate_->AsWidget()->non_client_view()->UpdateFrame();
+}
 
 void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen) {
   if (IsFullscreen() != fullscreen)

@@ -28,9 +28,8 @@ namespace web_app {
 enum class InstallResultCode;
 class InstallFinalizer;
 
-// Class to install a BookmarkApp-based Shortcut or WebApp from a WebContents.
-// Can only be called from the UI thread.
-// TODO(loyso): Erase this class and use InstallManager directly.
+// Class to install WebApp from a WebContents. A queue of such tasks is owned by
+// PendingAppManager. Can only be called from the UI thread.
 class PendingAppInstallTask {
  public:
   // TODO(loyso): Use InstallManager::OnceInstallCallback directly.

@@ -29,9 +29,9 @@
 
 #include <memory>
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -148,7 +148,7 @@ class CORE_EXPORT WorkerGlobalScope
   virtual void Initialize(
       const KURL& response_url,
       network::mojom::ReferrerPolicy response_referrer_policy,
-      mojom::IPAddressSpace response_address_space,
+      network::mojom::IPAddressSpace response_address_space,
       const Vector<CSPHeaderAndType>& response_csp_headers,
       const Vector<String>* response_origin_trial_tokens) = 0;
 

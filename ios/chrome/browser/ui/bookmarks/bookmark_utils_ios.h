@@ -48,9 +48,6 @@ CGFloat StatusBarHeight();
 // Returns whether the bookmark menu should be presented in a slide in panel.
 BOOL bookmarkMenuIsInSlideInPanel();
 
-// Creates a drop shadow with the given width.
-UIView* dropShadowWithWidth(CGFloat width);
-
 #pragma mark - Updating Bookmarks
 
 // Creates the bookmark if |node| is NULL. Otherwise updates |node|.

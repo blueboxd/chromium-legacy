@@ -50,9 +50,9 @@ class PolicyConversions {
   // Set to get dictionary policy value as JSON string.
   // Disabled by default.
   PolicyConversions& EnableConvertValues(bool enabled);
-  // Set to get device policies on ChromeOS.
+  // Set to get device local account policies on ChromeOS.
   // Disabled by default.
-  PolicyConversions& EnableDevicePolicies(bool enabled);
+  PolicyConversions& EnableDeviceLocalAccountPolicies(bool enabled);
   // Set to get device basic information on ChromeOS.
   // Disabled by default.
   PolicyConversions& EnableDeviceInfo(bool enabled);
@@ -122,7 +122,7 @@ class PolicyConversions {
 
   bool convert_types_enabled_ = true;
   bool convert_values_enabled_ = false;
-  bool device_policies_enabled_ = false;
+  bool device_local_account_policies_enabled_ = false;
   bool device_info_enabled_ = false;
   bool pretty_print_enabled_ = true;
   bool user_policies_enabled_ = true;

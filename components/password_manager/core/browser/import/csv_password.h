@@ -24,7 +24,7 @@ class CSVPassword {
   // Number of values in the Label enum.
   static constexpr size_t kLabelCount = 3;
 
-  CSVPassword(const ColumnMap& map, base::StringPiece csv_row);
+  explicit CSVPassword(const ColumnMap& map, base::StringPiece csv_row);
   CSVPassword(const CSVPassword&) = delete;
   CSVPassword(CSVPassword&&) = delete;
   CSVPassword& operator=(const CSVPassword&) = delete;

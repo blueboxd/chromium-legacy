@@ -1,4 +1,3 @@
-CONSOLE WARNING: '-webkit-appearance: square-button' for elements other than input[type=color] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
 Tests internal components of a file upload control correctly inherit the style of the container input element.
 
 PASS document.defaultView.getComputedStyle(button1, null).getPropertyValue("font-size") is "30px"

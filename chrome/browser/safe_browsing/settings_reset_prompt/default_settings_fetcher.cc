@@ -93,7 +93,7 @@ void DefaultSettingsFetcher::PostCallbackAndDeleteSelf(
   if (!default_settings)
     default_settings.reset(new BrandcodedDefaultSettings());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(std::move(callback_), std::move(default_settings)));
   delete this;

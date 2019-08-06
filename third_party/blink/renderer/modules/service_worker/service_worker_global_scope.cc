@@ -208,7 +208,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
   KURL response_url = creation_params->script_url;
   network::mojom::ReferrerPolicy response_referrer_policy =
       creation_params->referrer_policy;
-  mojom::IPAddressSpace response_address_space =
+  network::mojom::IPAddressSpace response_address_space =
       *creation_params->response_address_space;
   std::unique_ptr<Vector<String>> response_origin_trial_tokens =
       std::move(creation_params->origin_trial_tokens);
@@ -518,7 +518,7 @@ void ServiceWorkerGlobalScope::DidFetchClassicScript(
 void ServiceWorkerGlobalScope::Initialize(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
-    mojom::IPAddressSpace response_address_space,
+    network::mojom::IPAddressSpace response_address_space,
     const Vector<CSPHeaderAndType>& response_csp_headers,
     const Vector<String>* response_origin_trial_tokens) {
   // Step 4.5. "Set workerGlobalScope's url to serviceWorker's script url."
@@ -565,7 +565,7 @@ void ServiceWorkerGlobalScope::Initialize(
 void ServiceWorkerGlobalScope::RunClassicScript(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
-    mojom::IPAddressSpace response_address_space,
+    network::mojom::IPAddressSpace response_address_space,
     const Vector<CSPHeaderAndType> response_csp_headers,
     const Vector<String>* response_origin_trial_tokens,
     const String& source_code,

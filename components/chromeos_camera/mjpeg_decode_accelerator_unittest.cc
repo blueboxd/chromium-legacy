@@ -562,7 +562,7 @@ void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
         supported_formats[0], image_file->coded_size, image_file->visible_size);
     ASSERT_TRUE(hw_out_dmabuf_frame_);
     frame_mapper_ = media::VideoFrameMapperFactory::CreateMapper(
-        hw_out_dmabuf_frame_->format(), true);
+        hw_out_dmabuf_frame_->format());
     ASSERT_TRUE(frame_mapper_);
   } else {
     // MJDA only supports I420 format for SHM output buffer.

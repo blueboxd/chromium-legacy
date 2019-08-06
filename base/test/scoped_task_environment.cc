@@ -357,7 +357,7 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
           time_source != TimeSource::SYSTEM_TIME
               ? MockTimeDomain::CreateAndRegister(sequence_manager_.get())
               : nullptr),
-      time_overrides_(time_source == TimeSource::MOCK_TIME_AND_NOW
+      time_overrides_(time_source == TimeSource::MOCK_TIME
                           ? std::make_unique<subtle::ScopedTimeClockOverrides>(
                                 &MockTimeDomain::GetTime,
                                 &MockTimeDomain::GetTimeTicks,

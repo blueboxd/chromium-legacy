@@ -90,7 +90,8 @@ class IndexedDBTest : public testing::Test {
             CreateAndReturnTempDir(&temp_dir_),
             /*special_storage_policy=*/special_storage_policy_.get(),
             quota_manager_proxy_.get(),
-            base::DefaultClock::GetInstance())) {
+            base::DefaultClock::GetInstance(),
+            base::SequencedTaskRunnerHandle::Get())) {
     special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin.GetURL());
   }
   ~IndexedDBTest() override {

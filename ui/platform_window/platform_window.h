@@ -15,7 +15,7 @@
 namespace gfx {
 class Point;
 class Rect;
-}
+}  // namespace gfx
 
 namespace ui {
 
@@ -55,6 +55,12 @@ class PlatformWindow : public PropertyHandler {
 
   virtual void Activate() = 0;
   virtual void Deactivate() = 0;
+
+  // Sets whether the window should have the standard title bar provided by the
+  // underlying windowing system.  For the main browser window, this may be
+  // changed by the user at any time via 'Show system title bar' option in the
+  // tab strip menu.
+  virtual void SetUseNativeFrame(bool use_native_frame) = 0;
 
   virtual void SetCursor(PlatformCursor cursor) = 0;
 

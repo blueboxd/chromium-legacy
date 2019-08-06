@@ -732,21 +732,11 @@ void ChromePasswordManagerClient::DidStartNavigation(
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void ChromePasswordManagerClient::OnPaste() {
-  // TODO(vakh): This method should just call |GetTextFromClipboard()| directly
-  // but it seems to be causing crbug.com/973928 so for now, call the clipboard
-  // API directly to see if that fixes the issue.
-  // See https://crbug.com/973928#c21 for details.
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   base::string16 text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
-                                                 &text);
+  clipboard->ReadText(ui::ClipboardType::kCopyPaste, &text);
+  was_on_paste_called_ = true;
   password_reuse_detection_manager_.OnPaste(std::move(text));
-}
-
-base::string16 ChromePasswordManagerClient::GetTextFromClipboard() {
-  base::string16 text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
-                                                 &text);
-  return text;
 }
 #endif
 
@@ -970,6 +960,12 @@ favicon::FaviconService* ChromePasswordManagerClient::GetFaviconService() {
 
 signin::IdentityManager* ChromePasswordManagerClient::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(profile_->GetOriginalProfile());
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromePasswordManagerClient::GetURLLoaderFactory() {
+  return content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetURLLoaderFactoryForBrowserProcess();
 }
 
 bool ChromePasswordManagerClient::IsUnderAdvancedProtection() const {

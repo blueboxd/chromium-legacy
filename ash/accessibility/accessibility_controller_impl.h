@@ -94,6 +94,10 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   void SetDictationEnabled(bool enabled);
   bool dictation_enabled() const { return dictation_enabled_; }
+  // Returns true if the dictation is being controlled by a policy which
+  // enforces turning it on or its not being controlled by any type of policy
+  // and false otherwise.
+  bool GetTrayVisiblityOfDictationSetting();
 
   void SetFocusHighlightEnabled(bool enabled);
   bool focus_highlight_enabled() const { return focus_highlight_enabled_; }

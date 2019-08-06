@@ -85,15 +85,21 @@ IndexedDBContextImpl::IndexedDBContextImpl(
     const base::FilePath& data_path,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-    base::Clock* clock)
-    : force_keep_session_state_(false),
+    base::Clock* clock,
+    scoped_refptr<base::SequencedTaskRunner> custom_task_runner)
+    : IndexedDBContext(
+          custom_task_runner
+              ? custom_task_runner
+              : (base::CreateSequencedTaskRunner(
+                    {base::ThreadPool(), base::MayBlock(),
+                     base::WithBaseSyncPrimitives(),
+                     base::TaskPriority::USER_VISIBLE,
+                     // BLOCK_SHUTDOWN to support clearing session-only storage.
+                     base::TaskShutdownBehavior::BLOCK_SHUTDOWN}))),
+      force_keep_session_state_(false),
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy),
-      task_runner_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
-           base::TaskPriority::USER_VISIBLE,
-           // BLOCK_SHUTDOWN to support clearing session-only storage.
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+      task_runner_(owning_task_runner()),
       clock_(clock) {
   IDB_TRACE("init");
   if (!data_path.empty())
@@ -435,11 +441,6 @@ base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
   return GetLevelDBPath(origin);
 }
 
-void IndexedDBContextImpl::SetTaskRunnerForTesting(
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  task_runner_ = std::move(task_runner);
-}
-
 void IndexedDBContextImpl::ResetCachesForTesting() {
   origin_set_.reset();
   origin_size_map_.clear();
@@ -532,11 +533,9 @@ void IndexedDBContextImpl::SetLevelDBFactoryForTesting(
 }
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {
-  if (indexeddb_factory_.get()) {
-    TaskRunner()->PostTask(FROM_HERE,
-                           base::BindOnce(&IndexedDBFactory::ContextDestroyed,
-                                          std::move(indexeddb_factory_)));
-  }
+  DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
+  if (indexeddb_factory_.get())
+    indexeddb_factory_->ContextDestroyed();
 }
 
 void IndexedDBContextImpl::Shutdown() {

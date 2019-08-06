@@ -65,7 +65,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include "media/cdm/fuchsia/fuchsia_cdm_factory.h"
+#include "media/fuchsia/cdm/fuchsia_cdm_factory.h"
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
 #include "media/mojo/clients/mojo_cdm_factory.h"  // nogncheck
 #else
@@ -610,7 +610,7 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
     return cdm_factory_.get();
 
 #if defined(OS_FUCHSIA)
-  cdm_factory_ = std::make_unique<media::FuchsiaCdmFactory>();
+  cdm_factory_ = std::make_unique<media::FuchsiaCdmFactory>(remote_interfaces_);
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
   cdm_factory_ =
       std::make_unique<media::MojoCdmFactory>(GetMediaInterfaceFactory());

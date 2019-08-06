@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 
 #include <algorithm>
 #include <cmath>
@@ -17,6 +17,7 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace blink {
 
@@ -407,14 +408,13 @@ bool DeviceSatisfiesConstraintSet(
     const DeviceInfo& device,
     const WebMediaTrackConstraintSet& constraint_set,
     const char** failed_constraint_name = nullptr) {
-  if (!constraint_set.device_id.Matches(
-          WebString::FromUTF8(device.device_id))) {
+  if (!constraint_set.device_id.Matches(WebString(device.device_id))) {
     UpdateFailedConstraintName(constraint_set.device_id,
                                failed_constraint_name);
     return false;
   }
 
-  if (!constraint_set.group_id.Matches(WebString::FromUTF8(device.group_id))) {
+  if (!constraint_set.group_id.Matches(WebString(device.group_id))) {
     UpdateFailedConstraintName(constraint_set.group_id, failed_constraint_name);
     return false;
   }
@@ -448,9 +448,9 @@ bool OptionalBoolSatisfiesConstraint(
 
 double DeviceFitness(const DeviceInfo& device,
                      const WebMediaTrackConstraintSet& constraint_set) {
-  return StringConstraintFitnessDistance(WebString::FromUTF8(device.device_id),
+  return StringConstraintFitnessDistance(WebString(device.device_id),
                                          constraint_set.device_id) +
-         StringConstraintFitnessDistance(WebString::FromUTF8(device.group_id),
+         StringConstraintFitnessDistance(WebString(device.group_id),
                                          constraint_set.group_id) +
          StringConstraintFitnessDistance(ToWebString(device.facing_mode),
                                          constraint_set.facing_mode);
@@ -488,7 +488,8 @@ void AppendDistancesFromDefault(
     double default_frame_rate,
     DistanceVector* distance_vector) {
   // Favor IDs that appear first in the enumeration.
-  for (size_t i = 0; i < capabilities.device_capabilities.size(); ++i) {
+  for (WTF::wtf_size_t i = 0; i < capabilities.device_capabilities.size();
+       ++i) {
     if (device.device_id == capabilities.device_capabilities[i].device_id) {
       distance_vector->push_back(i);
       break;
@@ -518,9 +519,9 @@ void AppendDistancesFromDefault(
 VideoInputDeviceCapabilities::VideoInputDeviceCapabilities() = default;
 
 VideoInputDeviceCapabilities::VideoInputDeviceCapabilities(
-    std::string device_id,
-    std::string group_id,
-    std::vector<media::VideoCaptureFormat> formats,
+    String device_id,
+    String group_id,
+    Vector<media::VideoCaptureFormat> formats,
     media::VideoFacingMode facing_mode)
     : device_id(std::move(device_id)),
       group_id(std::move(group_id)),
@@ -655,8 +656,8 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
           media::VideoCaptureParams capture_params;
           capture_params.requested_format = candidate_format.format();
           result = VideoCaptureSettings(
-              device.device_id, capture_params, noise_reduction, track_settings,
-              candidate_format.constrained_frame_rate().Min(),
+              device.device_id.Utf8(), capture_params, noise_reduction,
+              track_settings, candidate_format.constrained_frame_rate().Min(),
               candidate_format.constrained_frame_rate().Max());
         }
       }

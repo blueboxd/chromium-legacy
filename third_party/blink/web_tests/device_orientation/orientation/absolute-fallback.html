@@ -15,7 +15,7 @@ sensor_test(async sensorProvider => {
 
   // Make the relative orientation sensor unavailable and set mock data for
   // the absolute one.
-  sensorProvider.setGetSensorShouldFail('RelativeOrientationEulerAngles', true);
+  sensorProvider.getSensorTypeSettings('RelativeOrientationEulerAngles').unavailable = true;
   setMockOrientationData(sensorProvider, orientationData);
   return waitForOrientation(orientationData);
 }, 'Tests that deviceorientation falls back to using absolute orientation data if relative is unavailable.');

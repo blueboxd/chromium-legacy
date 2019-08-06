@@ -4,6 +4,8 @@
 
 #include "chromeos/dbus/upstart/upstart_client.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
@@ -91,11 +93,11 @@ class UpstartClientImpl : public UpstartClient {
   using UpstartClient::StopJob;
 
   void StopMediaAnalytics() override {
-    StopJob(kMediaAnalyticsJob, EmptyVoidDBusMethodCallback());
+    StopJob(kMediaAnalyticsJob, {}, EmptyVoidDBusMethodCallback());
   }
 
   void StopMediaAnalytics(VoidDBusMethodCallback callback) override {
-    StopJob(kMediaAnalyticsJob, std::move(callback));
+    StopJob(kMediaAnalyticsJob, {}, std::move(callback));
   }
 
   void StartWilcoDtcService(VoidDBusMethodCallback callback) override {
@@ -103,7 +105,7 @@ class UpstartClientImpl : public UpstartClient {
   }
 
   void StopWilcoDtcService(VoidDBusMethodCallback callback) override {
-    StopJob(kWilcoDtcDispatcherJob, std::move(callback));
+    StopJob(kWilcoDtcDispatcherJob, {}, std::move(callback));
   }
 
  private:

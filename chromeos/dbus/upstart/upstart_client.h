@@ -68,10 +68,6 @@ class COMPONENT_EXPORT(UPSTART_CLIENT) UpstartClient {
                        const std::vector<std::string>& upstart_env,
                        VoidDBusMethodCallback callback) = 0;
 
-  void StopJob(const std::string& job, VoidDBusMethodCallback callback) {
-    StopJob(job, {}, std::move(callback));
-  }
-
   // Starts authpolicyd.
   virtual void StartAuthPolicyService() = 0;
 

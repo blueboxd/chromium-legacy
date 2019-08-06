@@ -8,8 +8,8 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "services/network/public/mojom/ip_address_space.mojom.h"
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_creation_context_type.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -26,7 +26,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
       const url::Origin& constructor_origin,
       const std::string& content_security_policy,
       blink::mojom::ContentSecurityPolicyType content_security_policy_type,
-      blink::mojom::IPAddressSpace creation_address_space,
+      network::mojom::IPAddressSpace creation_address_space,
       blink::mojom::SharedWorkerCreationContextType creation_context_type);
   SharedWorkerInstance(const SharedWorkerInstance& other);
   ~SharedWorkerInstance();
@@ -50,7 +50,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
   blink::mojom::ContentSecurityPolicyType content_security_policy_type() const {
     return content_security_policy_type_;
   }
-  blink::mojom::IPAddressSpace creation_address_space() const {
+  network::mojom::IPAddressSpace creation_address_space() const {
     return creation_address_space_;
   }
   blink::mojom::SharedWorkerCreationContextType creation_context_type() const {
@@ -68,7 +68,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
 
   const std::string content_security_policy_;
   const blink::mojom::ContentSecurityPolicyType content_security_policy_type_;
-  const blink::mojom::IPAddressSpace creation_address_space_;
+  const network::mojom::IPAddressSpace creation_address_space_;
   const blink::mojom::SharedWorkerCreationContextType creation_context_type_;
 };
 

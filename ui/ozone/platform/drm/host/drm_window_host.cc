@@ -126,6 +126,8 @@ void DrmWindowHost::Deactivate() {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+void DrmWindowHost::SetUseNativeFrame(bool use_native_frame) {}
+
 void DrmWindowHost::SetCursor(PlatformCursor cursor) {
   cursor_->SetCursor(widget_, cursor);
 }

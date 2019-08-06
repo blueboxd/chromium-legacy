@@ -1,0 +1,73 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef MEDIA_FUCHSIA_CDM_FUCHSIA_CDM_H_
+#define MEDIA_FUCHSIA_CDM_FUCHSIA_CDM_H_
+
+#include <fuchsia/media/drm/cpp/fidl.h>
+
+#include "base/macros.h"
+#include "media/base/cdm_context.h"
+#include "media/base/content_decryption_module.h"
+
+namespace media {
+
+class FuchsiaCdm : public ContentDecryptionModule, public CdmContext {
+ public:
+  struct SessionCallbacks {
+    SessionCallbacks();
+    SessionCallbacks(SessionCallbacks&&);
+    ~SessionCallbacks();
+
+    SessionCallbacks& operator=(SessionCallbacks&&);
+
+    SessionMessageCB message_cb;
+    SessionClosedCB closed_cb;
+    SessionKeysChangeCB keys_change_cb;
+    SessionExpirationUpdateCB expiration_update_cb;
+
+    DISALLOW_COPY_AND_ASSIGN(SessionCallbacks);
+  };
+
+  FuchsiaCdm(fuchsia::media::drm::ContentDecryptionModulePtr cdm,
+             SessionCallbacks callbacks);
+
+  // ContentDecryptionModule implementation:
+  void SetServerCertificate(const std::vector<uint8_t>& certificate,
+                            std::unique_ptr<SimpleCdmPromise> promise) override;
+  void CreateSessionAndGenerateRequest(
+      CdmSessionType session_type,
+      EmeInitDataType init_data_type,
+      const std::vector<uint8_t>& init_data,
+      std::unique_ptr<NewSessionCdmPromise> promise) override;
+  void LoadSession(CdmSessionType session_type,
+                   const std::string& session_id,
+                   std::unique_ptr<NewSessionCdmPromise> promise) override;
+  void UpdateSession(const std::string& session_id,
+                     const std::vector<uint8_t>& response,
+                     std::unique_ptr<SimpleCdmPromise> promise) override;
+  void CloseSession(const std::string& session_id,
+                    std::unique_ptr<SimpleCdmPromise> promise) override;
+  void RemoveSession(const std::string& session_id,
+                     std::unique_ptr<SimpleCdmPromise> promise) override;
+  CdmContext* GetCdmContext() override;
+
+  // CdmContext implementation:
+  std::unique_ptr<CallbackRegistration> RegisterEventCB(
+      EventCB event_cb) override;
+  Decryptor* GetDecryptor() override;
+  int GetCdmId() const override;
+
+ private:
+  ~FuchsiaCdm() override;
+
+  fuchsia::media::drm::ContentDecryptionModulePtr cdm_;
+  SessionCallbacks session_callbacks_;
+
+  DISALLOW_COPY_AND_ASSIGN(FuchsiaCdm);
+};
+
+}  // namespace media
+
+#endif  // MEDIA_FUCHSIA_CDM_FUCHSIA_CDM_H_

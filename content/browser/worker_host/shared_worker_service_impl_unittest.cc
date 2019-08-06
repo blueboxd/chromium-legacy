@@ -49,7 +49,7 @@ void ConnectToSharedWorker(blink::mojom::SharedWorkerConnectorPtr connector,
   blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
       url, name, std::string(),
       blink::mojom::ContentSecurityPolicyType::kReport,
-      blink::mojom::IPAddressSpace::kPublic));
+      network::mojom::IPAddressSpace::kPublic));
 
   mojo::MessagePipe message_pipe;
   *local_port = MessagePortChannel(std::move(message_pipe.handle0));

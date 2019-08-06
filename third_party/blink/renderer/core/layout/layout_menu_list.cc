@@ -283,10 +283,10 @@ void LayoutMenuList::SetText(const String& s) {
     // s.impl() into the text and have things align correctly...
     // crbug.com/485982
     is_empty_ = true;
-    button_text_->SetText(StringImpl::Create(" ", 1), true);
+    button_text_->ForceSetText(StringImpl::Create(" ", 1));
   } else {
     is_empty_ = false;
-    button_text_->SetText(s.Impl(), true);
+    button_text_->ForceSetText(s.Impl());
   }
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
   SetNeedsPaintPropertyUpdate();

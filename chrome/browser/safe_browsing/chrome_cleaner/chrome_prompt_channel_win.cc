@@ -369,7 +369,7 @@ class ChromePromptImpl : public chrome_cleaner::mojom::ChromePrompt {
            ChromePromptActions::PromptAcceptance acceptance) {
           auto mojo_acceptance =
               static_cast<chrome_cleaner::mojom::PromptAcceptance>(acceptance);
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO})
               ->PostTask(FROM_HERE, base::BindOnce(std::move(mojo_callback),
                                                    mojo_acceptance));
         };
@@ -546,7 +546,8 @@ void ChromePromptChannelProtobuf::ConnectToCleaner(
   // ServiceChromePromptRequests will return.
   base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ServiceChromePromptRequests, weak_factory_.GetWeakPtr(),
                      task_runner_, request_read_handle_.Get(),
                      std::move(cleaner_process),

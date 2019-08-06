@@ -60,6 +60,7 @@ const char* const kDefaultAppOrder[] = {
     app_list::kInternalAppIdCamera,
     extension_misc::kCameraAppId,
     extension_misc::kGooglePhotosAppId,
+    arc::kGoogleDuo,
     app_list::kDefaultPageBreak1,  // First default page break
     extension_misc::kGoogleMapsAppId,
     app_list::kInternalAppIdSettings,
@@ -70,7 +71,6 @@ const char* const kDefaultAppOrder[] = {
     extension_misc::kCalculatorAppId,
     default_web_apps::kCanvasAppId,
     extension_misc::kTextEditorAppId,
-    arc::kGoogleDuo,
     default_web_apps::kYoutubeTVAppId,
     arc::kLightRoom,
     arc::kInfinitePainter,

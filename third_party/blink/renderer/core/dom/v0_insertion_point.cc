@@ -188,7 +188,7 @@ bool V0InsertionPoint::IsActive() const {
 }
 
 bool V0InsertionPoint::IsContentInsertionPoint() const {
-  return IsHTMLContentElement(*this) && IsActive();
+  return IsA<HTMLContentElement>(*this) && IsActive();
 }
 
 StaticNodeList* V0InsertionPoint::getDistributedNodes() {

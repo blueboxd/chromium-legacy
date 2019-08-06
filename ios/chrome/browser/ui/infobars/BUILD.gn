@@ -18,6 +18,7 @@ source_set("infobars") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:badge",
+    "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/fullscreen",

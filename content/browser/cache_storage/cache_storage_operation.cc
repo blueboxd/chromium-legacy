@@ -14,16 +14,12 @@ const int kNumSecondsForSlowOperation = 10;
 
 CacheStorageOperation::CacheStorageOperation(
     base::OnceClosure closure,
-    CacheStorageSchedulerId id,
     CacheStorageSchedulerClient client_type,
-    CacheStorageSchedulerMode mode,
     CacheStorageSchedulerOp op_type,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : closure_(std::move(closure)),
       creation_ticks_(base::TimeTicks::Now()),
-      id_(id),
       client_type_(client_type),
-      mode_(mode),
       op_type_(op_type),
       task_runner_(std::move(task_runner)) {}
 

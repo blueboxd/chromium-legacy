@@ -488,7 +488,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kAnchor;
   }
 
-  if (IsHTMLButtonElement(*GetNode()))
+  if (IsA<HTMLButtonElement>(*GetNode()))
     return ButtonRoleType();
 
   if (IsHTMLDetailsElement(*GetNode()))

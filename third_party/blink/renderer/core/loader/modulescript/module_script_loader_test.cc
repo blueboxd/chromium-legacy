@@ -194,7 +194,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
       security_origin_.get(), true /* is_secure_context */, HttpsState::kModern,
       nullptr /* worker_clients */, nullptr /* content_settings_client */,
-      mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_token */,
+      network::mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_token */,
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault,
       MakeGarbageCollected<WorkletModuleResponsesMap>());

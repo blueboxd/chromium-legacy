@@ -116,6 +116,7 @@ class IOSChromePasswordManagerClient
   password_manager::PasswordManagerMetricsRecorder* GetMetricsRecorder()
       override;
   signin::IdentityManager* GetIdentityManager() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   password_manager::PasswordRequirementsService*
   GetPasswordRequirementsService() override;
   bool IsIsolationForPasswordSitesEnabled() const override;

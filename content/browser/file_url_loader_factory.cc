@@ -226,6 +226,7 @@ class FileURLDirectoryLoader
   }
 
   void OnConnectionError() {
+    lister_.reset();
     data_producer_.reset();
     binding_.Close();
     client_.reset();

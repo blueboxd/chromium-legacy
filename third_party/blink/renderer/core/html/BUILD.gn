@@ -121,6 +121,8 @@ blink_core_sources("html") {
     "forms/checkbox_input_type.h",
     "forms/chooser_only_temporal_input_type_view.cc",
     "forms/chooser_only_temporal_input_type_view.h",
+    "forms/chooser_resource_loader.cc",
+    "forms/chooser_resource_loader.h",
     "forms/clear_button_element.cc",
     "forms/clear_button_element.h",
     "forms/color_chooser.cc",

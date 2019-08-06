@@ -4,12 +4,13 @@
 
 #include "components/password_manager/core/browser/leak_detection/authenticated_leak_check.h"
 
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {
 
 TEST(AuthenticatedLeakCheck, Create) {
-  AuthenticatedLeakCheck check(nullptr, nullptr);
+  AuthenticatedLeakCheck check(nullptr, nullptr, nullptr);
 }
 
 }  // namespace password_manager

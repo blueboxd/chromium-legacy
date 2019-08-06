@@ -114,12 +114,10 @@ class BASE_EXPORT TimerBase {
   // this Timer is running. This method can only be called while this Timer
   // isn't running. This is an alternative (old) approach to mock time in tests.
   // The modern and preferred approach is to use
-  // ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW (more reliable than
-  // TimeSource::MOCK_TIME if the Timer is ever restarted and needs to compare
-  // with the current TimeTicks::Now()). To avoid racy usage of Timer,
+  // ScopedTaskEnvironment::TimeSource::MOCK_TIME. To avoid racy usage of Timer,
   // |task_runner| must run tasks on the same sequence which this Timer is bound
   // to (started from). TODO(gab): Migrate all callers to
-  // ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW.
+  // ScopedTaskEnvironment::TimeSource::MOCK_TIME.
   virtual void SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner);
 
   // Call this method to stop and cancel the timer.  It is a no-op if the timer

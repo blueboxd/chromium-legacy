@@ -17,21 +17,8 @@
 
 namespace blink {
 
-namespace {
-
-void AssertFallbackLoaderAvailability(const WebURL& url,
-                                      const WebURLLoader* default_loader) {
-  DCHECK(KURL(url).ProtocolIsData())
-      << "shouldn't be falling back: " << url.GetString().Utf8();
-  DCHECK(default_loader) << "default_loader wasn't set: "
-                         << url.GetString().Utf8();
-}
-
-}  // namespace
-
-WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactoryImpl* factory,
-                                   std::unique_ptr<WebURLLoader> default_loader)
-    : factory_(factory), default_loader_(std::move(default_loader)) {}
+WebURLLoaderMock::WebURLLoaderMock(WebURLLoaderMockFactoryImpl* factory)
+    : factory_(factory) {}
 
 WebURLLoaderMock::~WebURLLoaderMock() {
   Cancel();
@@ -42,7 +29,6 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
     const WebURLResponse& response,
     const WebData& data,
     const base::Optional<WebURLError>& error) {
-  DCHECK(!using_default_loader_);
   if (!client_)
     return;
 
@@ -115,47 +101,26 @@ void WebURLLoaderMock::LoadSynchronously(
     int64_t& encoded_data_length,
     int64_t& encoded_body_length,
     blink::WebBlobInfo& downloaded_blob) {
-  if (factory_->IsMockedURL(request.Url())) {
-    factory_->LoadSynchronously(request, &response, &error, &data,
-                                &encoded_data_length);
-    return;
-  }
-  AssertFallbackLoaderAvailability(request.Url(), default_loader_.get());
-  using_default_loader_ = true;
-  default_loader_->LoadSynchronously(request, client, response, error, data,
-                                     encoded_data_length, encoded_body_length,
-                                     downloaded_blob);
+  DCHECK(factory_->IsMockedURL(request.Url()));
+  factory_->LoadSynchronously(request, &response, &error, &data,
+                              &encoded_data_length);
 }
 
 void WebURLLoaderMock::LoadAsynchronously(const WebURLRequest& request,
                                           WebURLLoaderClient* client) {
   DCHECK(client);
-  if (factory_->IsMockedURL(request.Url())) {
-    client_ = client;
-    factory_->LoadAsynchronouly(request, this);
-    return;
-  }
-  AssertFallbackLoaderAvailability(request.Url(), default_loader_.get());
-  using_default_loader_ = true;
-  default_loader_->LoadAsynchronously(request, client);
+  DCHECK(factory_->IsMockedURL(request.Url()));
+  client_ = client;
+  factory_->LoadAsynchronouly(request, this);
 }
 
 void WebURLLoaderMock::Cancel() {
-  if (using_default_loader_ && default_loader_) {
-    default_loader_.reset();
-    return;
-  }
   client_ = nullptr;
   factory_->CancelLoad(this);
 }
 
 void WebURLLoaderMock::SetDefersLoading(bool deferred) {
   is_deferred_ = deferred;
-  if (using_default_loader_) {
-    default_loader_->SetDefersLoading(deferred);
-    return;
-  }
-
   // Ignores setDefersLoading(false) safely.
   if (!deferred)
     return;

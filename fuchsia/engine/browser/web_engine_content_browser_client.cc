@@ -16,7 +16,7 @@
 
 WebEngineContentBrowserClient::WebEngineContentBrowserClient(
     fidl::InterfaceRequest<fuchsia::web::Context> request)
-    : request_(std::move(request)) {}
+    : request_(std::move(request)), cdm_service_(&mojo_service_registry_) {}
 
 WebEngineContentBrowserClient::~WebEngineContentBrowserClient() = default;
 
@@ -59,4 +59,12 @@ void WebEngineContentBrowserClient::OverrideWebkitPrefs(
     content::WebPreferences* web_prefs) {
   // Disable WebSQL support since it's being removed from the web platform.
   web_prefs->databases_enabled = false;
+}
+
+void WebEngineContentBrowserClient::BindInterfaceRequestFromFrame(
+    content::RenderFrameHost* render_frame_host,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  mojo_service_registry_.BindInterface(
+      interface_name, std::move(interface_pipe), render_frame_host);
 }

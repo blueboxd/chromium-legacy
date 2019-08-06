@@ -43,13 +43,14 @@ namespace blink {
 class StyleSheet;
 
 class CORE_EXPORT StyleSheetCollection
-    : public GarbageCollected<StyleSheetCollection>,
+    : public GarbageCollectedFinalized<StyleSheetCollection>,
       public NameClient {
  public:
   friend class ActiveDocumentStyleSheetCollector;
   friend class ImportedDocumentStyleSheetCollector;
 
   StyleSheetCollection();
+  virtual ~StyleSheetCollection() = default;
 
   const ActiveStyleSheetVector& ActiveAuthorStyleSheets() const {
     return active_author_style_sheets_;

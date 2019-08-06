@@ -40,6 +40,12 @@
 
 #include <memory>
 
+namespace network {
+namespace mojom {
+enum class IPAddressSpace : int32_t;
+}
+}  // namespace network
+
 namespace blink {
 
 class ContentSecurityPolicy;
@@ -57,7 +63,6 @@ enum class FeatureEnabledState { kDisabled, kReportOnly, kEnabled };
 namespace mojom {
 enum class FeaturePolicyDisposition : int32_t;
 enum class FeaturePolicyFeature : int32_t;
-enum class IPAddressSpace : int32_t;
 }
 
 // Defines the security properties (such as the security origin, content
@@ -93,8 +98,10 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   WebSandboxFlags GetSandboxFlags() const { return sandbox_flags_; }
   bool IsSandboxed(WebSandboxFlags mask) const;
 
-  void SetAddressSpace(mojom::IPAddressSpace space) { address_space_ = space; }
-  mojom::IPAddressSpace AddressSpace() const { return address_space_; }
+  void SetAddressSpace(network::mojom::IPAddressSpace space) {
+    address_space_ = space;
+  }
+  network::mojom::IPAddressSpace AddressSpace() const { return address_space_; }
   String addressSpaceForBindings() const;
 
   void SetRequireTrustedTypes();
@@ -180,7 +187,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
  private:
   Member<ContentSecurityPolicy> content_security_policy_;
 
-  mojom::IPAddressSpace address_space_;
+  network::mojom::IPAddressSpace address_space_;
   WebInsecureRequestPolicy insecure_request_policy_;
   bool mixed_autoupgrade_opt_out_;
   InsecureNavigationsSet insecure_navigations_to_upgrade_;

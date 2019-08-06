@@ -100,7 +100,8 @@ void IdentityAccessorImpl::OnPrimaryAccountSet(
   OnAccountStateChange(primary_account_info.account_id);
 }
 
-void IdentityAccessorImpl::OnAccountStateChange(const std::string& account_id) {
+void IdentityAccessorImpl::OnAccountStateChange(
+    const CoreAccountId& account_id) {
   base::Optional<AccountInfo> account_info =
       identity_manager_
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(

@@ -150,7 +150,7 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
     _faviconContainerView =
         [[UIImageView alloc] initWithImage:containerBackground];
     _faviconContainerView.tintColor =
-        [UIColor colorNamed:@"table_view_favicon_background_color"];
+        [UIColor colorNamed:kFaviconBackgroundColor];
 
     _faviconView = [[FaviconView alloc] init];
     _faviconView.contentMode = UIViewContentModeScaleAspectFit;

@@ -60,6 +60,7 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   PlatformWindowState GetPlatformWindowState() const override;
   void Activate() override;
   void Deactivate() override;
+  void SetUseNativeFrame(bool use_native_frame) override;
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;

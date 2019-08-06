@@ -29,8 +29,8 @@ class WebContents;
 
 namespace web_app {
 
-// WebAppProvider creates an instance of this class and manages its
-// lifetime. This class should only be used from the UI thread.
+// Installs, uninstalls, and updates any External Web Apps. This class should
+// only be used from the UI thread.
 class PendingAppManagerImpl : public PendingAppManager {
  public:
   using WebContentsFactory =

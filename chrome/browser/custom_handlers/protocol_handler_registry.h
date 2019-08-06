@@ -242,7 +242,7 @@ class ProtocolHandlerRegistry : public KeyedService {
   void NotifyChanged();
 
   // Registers a new protocol handler.
-  void RegisterProtocolHandler(const ProtocolHandler& handler,
+  bool RegisterProtocolHandler(const ProtocolHandler& handler,
                                const HandlerSource source);
 
   // Registers protocol handlers from the preference.

@@ -92,7 +92,8 @@ static const char kTranslateCaptureText[] = "Translate.CaptureText";
 
 // For a page that auto-refreshes, we still show the bubble, if
 // the refresh delay is less than this value (in seconds).
-static const double kLocationChangeIntervalInSeconds = 10;
+static constexpr base::TimeDelta kLocationChangeInterval =
+    base::TimeDelta::FromSeconds(10);
 
 // For the context menu, we want to keep transparency as is instead of
 // replacing transparent pixels with black ones
@@ -432,7 +433,7 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
     return;
 
   // Don't capture pages that have pending redirect or location change.
-  if (frame->IsNavigationScheduledWithin(kLocationChangeIntervalInSeconds))
+  if (frame->IsNavigationScheduledWithin(kLocationChangeInterval))
     return;
 
   // Don't index/capture pages that are in view source mode.

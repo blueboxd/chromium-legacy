@@ -64,7 +64,8 @@ void ExecutionContextCSPDelegate::SetSandboxFlags(SandboxFlags mask) {
   CHECK_EQ(flags | mask, flags);
 }
 
-void ExecutionContextCSPDelegate::SetAddressSpace(mojom::IPAddressSpace space) {
+void ExecutionContextCSPDelegate::SetAddressSpace(
+    network::mojom::IPAddressSpace space) {
   GetSecurityContext().SetAddressSpace(space);
 }
 

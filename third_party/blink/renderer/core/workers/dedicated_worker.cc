@@ -421,7 +421,7 @@ void DedicatedWorker::ContinueStart(
     const KURL& script_url,
     OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option,
     network::mojom::ReferrerPolicy referrer_policy,
-    base::Optional<mojom::IPAddressSpace> response_address_space,
+    base::Optional<network::mojom::IPAddressSpace> response_address_space,
     const String& source_code) {
   context_proxy_->StartWorkerGlobalScope(
       CreateGlobalScopeCreationParams(script_url, off_main_thread_fetch_option,
@@ -435,7 +435,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
     const KURL& script_url,
     OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option,
     network::mojom::ReferrerPolicy referrer_policy,
-    base::Optional<mojom::IPAddressSpace> response_address_space) {
+    base::Optional<network::mojom::IPAddressSpace> response_address_space) {
   base::UnguessableToken parent_devtools_token;
   std::unique_ptr<WorkerSettings> settings;
   if (auto* document = DynamicTo<Document>(GetExecutionContext())) {

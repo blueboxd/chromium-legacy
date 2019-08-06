@@ -246,9 +246,8 @@ Polymer({
          * @type {function(!Array<PasswordManagerProxy.ExceptionEntry>):void}
          */
         (this.setPasswordExceptionsListener_));
-
-    if (this.$.undoToast.open) {
-      this.$.undoToast.hide();
+    if (cr.toastManager.getInstance().isToastOpen) {
+      cr.toastManager.getInstance().hide();
     }
   },
 
@@ -338,8 +337,7 @@ Polymer({
   onMenuRemovePasswordTap_: function() {
     this.passwordManager_.removeSavedPassword(
         this.activePassword.item.entry.id);
-    this.fire('iron-announce', {text: this.$.undoLabel.textContent});
-    this.$.undoToast.show();
+    cr.toastManager.getInstance().show(this.i18n('passwordDeleted'));
     /** @type {CrActionMenuElement} */ (this.$.menu).close();
   },
 
@@ -352,7 +350,7 @@ Polymer({
     const activeElement = getDeepActiveElement();
     if (!activeElement || !isEditable(activeElement)) {
       this.passwordManager_.undoRemoveSavedPasswordOrException();
-      this.$.undoToast.hide();
+      cr.toastManager.getInstance().hide();
       // Preventing the default is necessary to not conflict with a possible
       // search action.
       event.preventDefault();
@@ -361,7 +359,7 @@ Polymer({
 
   onUndoButtonTap_: function() {
     this.passwordManager_.undoRemoveSavedPasswordOrException();
-    this.$.undoToast.hide();
+    cr.toastManager.getInstance().hide();
   },
   /**
    * Fires an event that should delete the password exception.

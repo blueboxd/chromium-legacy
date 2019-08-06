@@ -8,6 +8,7 @@
 
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace password_manager {
 
@@ -113,6 +114,11 @@ StubPasswordManagerClient::GetMetricsRecorder() {
 }
 
 signin::IdentityManager* StubPasswordManagerClient::GetIdentityManager() {
+  return nullptr;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+StubPasswordManagerClient::GetURLLoaderFactory() {
   return nullptr;
 }
 

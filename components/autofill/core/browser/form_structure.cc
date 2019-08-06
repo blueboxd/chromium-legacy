@@ -585,7 +585,8 @@ FormStructure::FormStructure(const FormData& form)
       form_parsed_timestamp_(base::TimeTicks::Now()),
       passwords_were_revealed_(false),
       password_symbol_vote_(0),
-      developer_engagement_metrics_(0) {
+      developer_engagement_metrics_(0),
+      unique_renderer_id_(form.unique_renderer_id) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
   for (const FormFieldData& field : form.fields) {
@@ -1360,6 +1361,7 @@ FormData FormStructure::ToFormData() const {
   data.url = source_url_;
   data.action = target_url_;
   data.main_frame_origin = main_frame_origin_;
+  data.unique_renderer_id = unique_renderer_id_;
 
   for (size_t i = 0; i < fields_.size(); ++i) {
     data.fields.push_back(FormFieldData(*fields_[i]));

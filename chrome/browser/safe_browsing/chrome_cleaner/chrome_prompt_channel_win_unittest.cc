@@ -71,7 +71,8 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
   ~ChromePromptChannelProtobufTest() override = default;
 
   void SetUp() override {
-    auto task_runner = base::CreateSequencedTaskRunner({base::MayBlock()});
+    auto task_runner =
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
     channel_ = ChromePromptChannelPtr(
         new ChromePromptChannelProtobuf(
             /*on_connection_closed=*/run_loop_.QuitClosure(),

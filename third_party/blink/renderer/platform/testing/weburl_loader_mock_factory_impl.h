@@ -35,8 +35,7 @@ class WebURLLoaderMockFactoryImpl : public WebURLLoaderMockFactory {
   ~WebURLLoaderMockFactoryImpl() override;
 
   // WebURLLoaderMockFactory:
-  std::unique_ptr<WebURLLoader> CreateURLLoader(
-      std::unique_ptr<WebURLLoader> default_loader) override;
+  std::unique_ptr<WebURLLoader> CreateURLLoader() override;
   void RegisterURL(const WebURL& url,
                    const WebURLResponse& response,
                    const WebString& file_path = WebString()) override;

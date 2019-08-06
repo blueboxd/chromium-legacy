@@ -24,6 +24,12 @@ InfoBarContainerIOS::~InfoBarContainerIOS() {
   RemoveAllInfoBarsForDestruction();
 }
 
+void InfoBarContainerIOS::ChangeInfoBarManager(
+    infobars::InfoBarManager* infobar_manager) {
+  [consumer_ infobarManagerWillChange];
+  InfoBarContainer::ChangeInfoBarManager(infobar_manager);
+}
+
 void InfoBarContainerIOS::PlatformSpecificAddInfoBar(infobars::InfoBar* infobar,
                                                      size_t position) {
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);

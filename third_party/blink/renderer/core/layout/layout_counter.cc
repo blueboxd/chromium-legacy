@@ -512,7 +512,7 @@ scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
 }
 
 void LayoutCounter::UpdateCounter() {
-  SetText(OriginalText());
+  SetTextIfNeeded(OriginalText());
 }
 
 void LayoutCounter::Invalidate() {

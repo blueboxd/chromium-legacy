@@ -212,8 +212,6 @@ jumbo_static_library("test_support") {
     "../public/test/web_contents_binding_set_test_binder.h",
     "../public/test/web_contents_tester.cc",
     "../public/test/web_contents_tester.h",
-    "../renderer/media/stream/mock_mojo_media_stream_dispatcher_host.cc",
-    "../renderer/media/stream/mock_mojo_media_stream_dispatcher_host.h",
     "../renderer/media/webrtc/mock_data_channel_impl.cc",
     "../renderer/media/webrtc/mock_data_channel_impl.h",
     "../renderer/media/webrtc/mock_peer_connection_dependency_factory.cc",

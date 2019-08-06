@@ -41,13 +41,13 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom-blink.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom-blink.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/ukm/ukm.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -3578,13 +3578,14 @@ void Document::open() {
   // want to treat ongoing navigation and queued navigation the same way.
   // However, we don't want to consider navigations scheduled too much into the
   // future through Refresh headers or a <meta> refresh pragma to be a current
-  // navigation. Thus, we cut it off with IsHttpRefreshScheduledWithin(0).
+  // navigation. Thus, we cut it off with
+  // IsHttpRefreshScheduledWithin(base::TimeDelta()).
   //
   // This also prevents window.open(url) -- eg window.open("about:blank") --
   // from blowing away results from a subsequent window.document.open /
   // window.document.write call.
   if (frame_ && (frame_->Loader().HasProvisionalNavigation() ||
-                 IsHttpRefreshScheduledWithin(0))) {
+                 IsHttpRefreshScheduledWithin(base::TimeDelta()))) {
     frame_->Loader().StopAllLoaders();
     // Navigations handled by the client should also be cancelled.
     if (frame_ && frame_->Client())
@@ -4652,7 +4653,7 @@ void Document::MaybeHandleHttpRefresh(const String& content,
   if (is_view_source_ || !frame_)
     return;
 
-  double delay;
+  base::TimeDelta delay;
   String refresh_url_string;
   if (!ParseHTTPRefresh(content,
                         http_refresh_type == kHttpRefreshFromMetaTag
@@ -4689,8 +4690,8 @@ void Document::MaybeHandleHttpRefresh(const String& content,
   http_refresh_scheduler_->Schedule(delay, refresh_url, http_refresh_type);
 }
 
-bool Document::IsHttpRefreshScheduledWithin(double interval_in_seconds) {
-  return http_refresh_scheduler_->IsScheduledWithin(interval_in_seconds);
+bool Document::IsHttpRefreshScheduledWithin(base::TimeDelta interval) {
+  return http_refresh_scheduler_->IsScheduledWithin(interval);
 }
 
 // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
@@ -6875,16 +6876,16 @@ void Document::InitSecurityContext(
   // https://wicg.github.io/cors-rfc1918/#csp).
   if (initializer.IsHostedInReservedIPRange()) {
     SetAddressSpace(GetSecurityOrigin()->IsLocalhost()
-                        ? mojom::IPAddressSpace::kLocal
-                        : mojom::IPAddressSpace::kPrivate);
+                        ? network::mojom::IPAddressSpace::kLocal
+                        : network::mojom::IPAddressSpace::kPrivate);
   } else if (GetSecurityOrigin()->IsLocal()) {
     // "Local" security origins (like 'file://...') are treated as having
     // a local address space.
     //
     // TODO(mkwst): It's not entirely clear that this is a good idea.
-    SetAddressSpace(mojom::IPAddressSpace::kLocal);
+    SetAddressSpace(network::mojom::IPAddressSpace::kLocal);
   } else {
-    SetAddressSpace(mojom::IPAddressSpace::kPublic);
+    SetAddressSpace(network::mojom::IPAddressSpace::kPublic);
   }
 
   if (Settings* settings = initializer.GetSettings()) {

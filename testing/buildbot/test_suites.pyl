@@ -4357,6 +4357,12 @@
     'ozone_linux_gtests': {
       'services_unittests': {},
       'ozone_unittests': {},
+      'content_unittests': {
+        'experiment_percentage': 100,
+        'args': [
+          '--ozone-platform=headless',
+        ],
+      },
     },
 
     'performance_smoke_test_isolated_scripts': {

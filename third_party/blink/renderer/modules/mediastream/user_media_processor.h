@@ -22,6 +22,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -32,7 +33,6 @@ class Size;
 
 namespace blink {
 class AudioCaptureSettings;
-class AudioDeviceCaptureCapability;
 class LocalFrame;
 class MediaStreamAudioSource;
 class MediaStreamVideoSource;
@@ -265,7 +265,7 @@ class MODULES_EXPORT UserMediaProcessor
           audio_input_capabilities);
   void SelectAudioSettings(
       const blink::WebUserMediaRequest& web_request,
-      const std::vector<blink::AudioDeviceCaptureCapability>& capabilities);
+      const blink::AudioDeviceCaptureCapabilities& capabilities);
 
   void SetupVideoInput();
   void SelectVideoDeviceSettings(

@@ -53,9 +53,8 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
   void CountFeature(WebFeature feature) {
     EXPECT_TRUE(IsCurrentThread());
     GlobalScope()->CountFeature(feature);
-    PostCrossThreadTask(
-        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
-        FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+    PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
+                        CrossThreadBindOnce(&test::ExitRunLoop));
   }
 
   // Emulates deprecated API use on DedicatedWorkerGlobalScope.
@@ -68,9 +67,8 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     String console_message = GetConsoleMessageStorage()->at(0)->Message();
     EXPECT_TRUE(console_message.Contains("deprecated"));
 
-    PostCrossThreadTask(
-        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
-        FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+    PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
+                        CrossThreadBindOnce(&test::ExitRunLoop));
   }
 
   void TestTaskRunner() {
@@ -78,9 +76,8 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         GlobalScope()->GetTaskRunner(TaskType::kInternalTest);
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
-    PostCrossThreadTask(
-        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
-        FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+    PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
+                        CrossThreadBindOnce(&test::ExitRunLoop));
   }
 };
 
@@ -141,9 +138,10 @@ class DedicatedWorkerMessagingProxyForTest
             false /* starter_secure_context */,
             CalculateHttpsState(security_origin_.get()),
             nullptr /* worker_clients */, nullptr /* content_settings_client */,
-            mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_tokens */,
-            base::UnguessableToken::Create(), std::move(worker_settings),
-            kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */),
+            network::mojom::IPAddressSpace::kLocal,
+            nullptr /* origin_trial_tokens */, base::UnguessableToken::Create(),
+            std::move(worker_settings), kV8CacheOptionsDefault,
+            nullptr /* worklet_module_responses_map */),
         WorkerBackingThreadStartupData(
             WorkerBackingThreadStartupData::HeapLimitMode::kDefault,
             WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow));

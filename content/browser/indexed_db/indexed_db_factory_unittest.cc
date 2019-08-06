@@ -112,25 +112,25 @@ class IndexedDBFactoryTest : public testing::Test {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
-        base::DefaultClock::GetInstance());
-    context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
+        base::DefaultClock::GetInstance(),
+        base::SequencedTaskRunnerHandle::Get());
   }
 
   void SetupInMemoryContext() {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         base::FilePath(),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
-        base::DefaultClock::GetInstance());
-    context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
+        base::DefaultClock::GetInstance(),
+        base::SequencedTaskRunnerHandle::Get());
   }
 
   void SetupContextWithFactories(indexed_db::LevelDBFactory* factory,
                                  base::Clock* clock) {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         CreateAndReturnTempDir(&temp_dir_),
-        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock);
+        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock,
+        base::SequencedTaskRunnerHandle::Get());
     context_->SetLevelDBFactoryForTesting(factory);
-    context_->SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());
   }
 
   // Runs through the upgrade flow to create a basic database connection. There

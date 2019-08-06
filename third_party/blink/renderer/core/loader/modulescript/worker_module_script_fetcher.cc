@@ -103,13 +103,13 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     // TODO(https://crbug.com/955213): Make this consistent with the spec.
     // TODO(https://crbug.com/955213): Move this function to a more appropriate
     // place so that this is shareable out of worker code.
-    auto response_address_space = mojom::IPAddressSpace::kPublic;
+    auto response_address_space = network::mojom::IPAddressSpace::kPublic;
     if (network_utils::IsReservedIPAddress(
             resource->GetResponse().RemoteIPAddress())) {
-      response_address_space = mojom::IPAddressSpace::kPrivate;
+      response_address_space = network::mojom::IPAddressSpace::kPrivate;
     }
     if (SecurityOrigin::Create(response_url)->IsLocalhost())
-      response_address_space = mojom::IPAddressSpace::kLocal;
+      response_address_space = network::mojom::IPAddressSpace::kLocal;
 
     auto* response_content_security_policy =
         MakeGarbageCollected<ContentSecurityPolicy>();

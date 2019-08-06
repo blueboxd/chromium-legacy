@@ -139,6 +139,7 @@ class ChromePasswordManagerClient
   GetPasswordRequirementsService() override;
   favicon::FaviconService* GetFaviconService() override;
   signin::IdentityManager* GetIdentityManager() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsUnderAdvancedProtection() const override;
   void UpdateFormManagers() override;
   void NavigateToManagePasswordsPage(
@@ -200,6 +201,7 @@ class ChromePasswordManagerClient
   bool has_binding_for_credential_manager() const {
     return content_credential_manager_.HasBinding();
   }
+  bool was_on_paste_called() const { return was_on_paste_called_; }
 #endif
 #if defined(OS_ANDROID)
   PasswordAccessoryController* GetOrCreatePasswordAccessory();
@@ -214,12 +216,6 @@ class ChromePasswordManagerClient
   ChromePasswordManagerClient(content::WebContents* web_contents,
                               autofill::AutofillClient* autofill_client);
 
-  // content::WebContentsObserver override
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  void OnPaste() override;
-  base::string16 GetTextFromClipboard();
-#endif
-
  private:
   friend class content::WebContentsUserData<ChromePasswordManagerClient>;
 
@@ -228,6 +224,9 @@ class ChromePasswordManagerClient
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  void OnPaste() override;
+#endif
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID)
@@ -317,6 +316,9 @@ class ChromePasswordManagerClient
   // Whether navigator.credentials.store() was ever called from this
   // WebContents. Used for testing.
   bool was_store_ever_called_ = false;
+
+  // Whether OnPaste() was called from this ChromePasswordManagerClient
+  bool was_on_paste_called_ = false;
 
   // Helper for performing logic that is common between
   // ChromePasswordManagerClient and IOSChromePasswordManagerClient.

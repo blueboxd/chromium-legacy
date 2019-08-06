@@ -32,8 +32,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EMBEDDED_WORKER_START_DATA_H_
 
 #include "base/unguessable_token.h"
+#include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-shared.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -61,7 +61,7 @@ struct WebEmbeddedWorkerStartData {
   base::UnguessableToken devtools_worker_token;
   WebSettings::V8CacheOptions v8_cache_options;
 
-  mojom::IPAddressSpace address_space;
+  network::mojom::IPAddressSpace address_space;
 
   PrivacyPreferences privacy_preferences;
 

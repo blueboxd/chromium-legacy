@@ -557,17 +557,20 @@ public class NfcImpl implements Nfc {
         try {
             mTagHandler.connect();
             message = mTagHandler.read();
+            if (message == null) {
+                Log.w(TAG, "Cannot read data from NFC tag. Tag is empty.");
+                return;
+            }
             if (message.getByteArrayLength() > NdefMessage.MAX_SIZE) {
                 Log.w(TAG, "Cannot read data from NFC tag. NdefMessage exceeds allowed size.");
                 return;
             }
+            notifyMatchingWatchers(message, mTagHandler.compatibility());
         } catch (TagLostException e) {
             Log.w(TAG, "Cannot read data from NFC tag. Tag is lost.");
         } catch (FormatException | IllegalStateException | IOException e) {
             Log.w(TAG, "Cannot read data from NFC tag. IO_ERROR.");
         }
-
-        if (message != null) notifyMatchingWatchers(message, mTagHandler.compatibility());
     }
 
     /**

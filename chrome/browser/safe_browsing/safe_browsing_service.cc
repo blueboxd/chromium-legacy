@@ -305,7 +305,7 @@ void SafeBrowsingService::Start() {
         PingManager::Create(GetURLLoaderFactory(), GetV4ProtocolConfig());
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &SafeBrowsingService::StartOnIOThread, this,
@@ -316,7 +316,7 @@ void SafeBrowsingService::Start() {
 void SafeBrowsingService::Stop(bool shutdown) {
   ping_manager_.reset();
   ui_manager_->Stop(shutdown);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&SafeBrowsingService::StopOnIOThread, this, shutdown));
 }

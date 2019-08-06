@@ -59,8 +59,8 @@ class SharedWorkerHostTest : public testing::Test {
     std::string content_security_policy;
     blink::mojom::ContentSecurityPolicyType content_security_policy_type =
         blink::mojom::ContentSecurityPolicyType::kReport;
-    blink::mojom::IPAddressSpace creation_address_space =
-        blink::mojom::IPAddressSpace::kPublic;
+    network::mojom::IPAddressSpace creation_address_space =
+        network::mojom::IPAddressSpace::kPublic;
     blink::mojom::SharedWorkerCreationContextType creation_context_type =
         blink::mojom::SharedWorkerCreationContextType::kSecure;
 

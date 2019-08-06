@@ -97,8 +97,8 @@ inline bool IsASCIILowerAlphaOrDigitOrHyphen(CharType c) {
 }
 
 // Parse a number with ignoring trailing [0-9.].
-// Returns NaN if the source contains invalid characters.
-double ParseRefreshTime(const String& source) {
+// Returns false if the source contains invalid characters.
+bool ParseRefreshTime(const String& source, base::TimeDelta& delay) {
   int full_stop_count = 0;
   unsigned number_end = source.length();
   for (unsigned i = 0; i < source.length(); ++i) {
@@ -109,12 +109,15 @@ double ParseRefreshTime(const String& source) {
       if (++full_stop_count == 2)
         number_end = i;
     } else if (!IsASCIIDigit(ch)) {
-      return std::numeric_limits<double>::quiet_NaN();
+      return false;
     }
   }
   bool ok;
   double time = source.Left(number_end).ToDouble(&ok);
-  return ok ? time : std::numeric_limits<double>::quiet_NaN();
+  if (!ok)
+    return false;
+  delay = base::TimeDelta::FromSecondsD(time);
+  return true;
 }
 
 }  // namespace
@@ -147,7 +150,7 @@ bool IsContentDispositionAttachment(const String& content_disposition) {
 // https://html.spec.whatwg.org/C/#attr-meta-http-equiv-refresh
 bool ParseHTTPRefresh(const String& refresh,
                       WTF::CharacterMatchFunctionPtr matcher,
-                      double& delay,
+                      base::TimeDelta& delay,
                       String& url) {
   unsigned len = refresh.length();
   unsigned pos = 0;
@@ -162,11 +165,9 @@ bool ParseHTTPRefresh(const String& refresh,
 
   if (pos == len) {  // no URL
     url = String();
-    delay = ParseRefreshTime(refresh.StripWhiteSpace());
-    return std::isfinite(delay);
+    return ParseRefreshTime(refresh.StripWhiteSpace(), delay);
   } else {
-    delay = ParseRefreshTime(refresh.Left(pos).StripWhiteSpace());
-    if (!std::isfinite(delay))
+    if (!ParseRefreshTime(refresh.Left(pos).StripWhiteSpace(), delay))
       return false;
 
     SkipWhiteSpace(refresh, pos, matcher);

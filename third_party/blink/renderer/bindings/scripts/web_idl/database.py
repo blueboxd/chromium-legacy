@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from .typedef import Typedef
+from .union import Union
 from .user_defined_type import UserDefinedType
 
 
@@ -30,7 +31,7 @@ class DatabaseBody(object):
         INTERFACE = 'interface'
         NAMESPACE = 'namespace'
         TYPEDEF = 'typedef'
-        UNION_TYPE = 'union type'
+        UNION = 'union'
 
         _ALL_ENTRIES = (
             CALLBACK_FUNCTION,
@@ -40,7 +41,7 @@ class DatabaseBody(object):
             INTERFACE,
             NAMESPACE,
             TYPEDEF,
-            UNION_TYPE,
+            UNION,
         )
 
         @classmethod
@@ -53,7 +54,7 @@ class DatabaseBody(object):
             self._defs[kind] = {}
 
     def register(self, kind, user_defined_type):
-        assert isinstance(user_defined_type, (UserDefinedType, Typedef))
+        assert isinstance(user_defined_type, (Typedef, Union, UserDefinedType))
         assert kind in DatabaseBody.Kind.itervalues()
         try:
             self.find_by_identifier(user_defined_type.identifier)
@@ -130,7 +131,7 @@ class Database(object):
     @property
     def union_types(self):
         """Returns all union type definitions."""
-        return self._view_by_kind(Database._Kind.UNION_TYPE)
+        return self._view_by_kind(Database._Kind.UNION)
 
     def _view_by_kind(self, kind):
         return self._impl.find_by_kind(kind).viewvalues()

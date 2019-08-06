@@ -78,15 +78,6 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
 
 @implementation StopLoadingTestCase
 
-- (void)tearDown {
-  // |testStopLoading| Disables synchronization, so make sure that it is enabled
-  // if that test has failed and did not enable it back.
-  [[GREYConfiguration sharedInstance]
-          setValue:@YES
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  [super tearDown];
-}
-
 // Tests that tapping "Stop" button stops the loading.
 - (void)testStopLoading {
   // Load a page which never finishes loading.
@@ -107,34 +98,31 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
     // Disable EG synchronization so the framework does not wait until the tab
     // loading spinner becomes idle (which will not happen until the stop button
     // is tapped).
-    [[GREYConfiguration sharedInstance]
-            setValue:@NO
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  }
-
-  // Wait until the page is half loaded.
-  [ChromeEarlGrey waitForWebStateContainingText:kPageText];
-
-  // On iPhone Stop/Reload button is a part of tools menu, so open it.
-  if (![ChromeEarlGrey isIPadIdiom]) {
+    ScopedSynchronizationDisabler disabler;
+    // Wait until the page is half loaded.
+    [ChromeEarlGrey waitForWebStateContainingText:kPageText];
+    // Verify that stop button is visible and reload button is hidden.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
+        assertWithMatcher:grey_sufficientlyVisible()];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
+        assertWithMatcher:grey_notVisible()];
+    // Stop the page loading.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
+        performAction:grey_tap()];
+  } else {
+    // Wait until the page is half loaded.
+    [ChromeEarlGrey waitForWebStateContainingText:kPageText];
+    // On iPhone Stop/Reload button is a part of tools menu, so open it.
     [ChromeEarlGreyUI openToolsMenu];
+    // Verify that stop button is visible and reload button is hidden.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
+        assertWithMatcher:grey_sufficientlyVisible()];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
+        assertWithMatcher:grey_notVisible()];
+    // Stop the page loading.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
+        performAction:grey_tap()];
   }
-
-  // Verify that stop button is visible and reload button is hidden.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
-      assertWithMatcher:grey_notVisible()];
-
-  // Stop the page loading.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
-      performAction:grey_tap()];
-
-  // Enable synchronization back. The spinner should become idle and test
-  // should wait for it.
-  [[GREYConfiguration sharedInstance]
-          setValue:@YES
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
   // Verify that stop button is hidden and reload button is visible.
   if (![ChromeEarlGrey isIPadIdiom]) {

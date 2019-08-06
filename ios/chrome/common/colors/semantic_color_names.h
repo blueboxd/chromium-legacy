@@ -11,6 +11,8 @@
 
 extern NSString* const kBackgroundColor;
 extern NSString* const kDisabledTintColor;
+// Background color used in the rounded squares behind favicons.
+extern NSString* const kFaviconBackgroundColor;
 extern NSString* const kMDCInkColor;
 extern NSString* const kScrimBackgroundColor;
 extern NSString* const kSolidButtonTextColor;
@@ -39,6 +41,7 @@ extern NSString* const kRedColor;
 extern NSString* const kBackgroundDarkColor;
 extern NSString* const kTableViewRowHighlightDarkColor;
 extern NSString* const kTextPrimaryDarkColor;
+extern NSString* const kTextSecondaryDarkColor;
 extern NSString* const kTextfieldBackgroundDarkColor;
 extern NSString* const kTextfieldPlaceholderDarkColor;
 

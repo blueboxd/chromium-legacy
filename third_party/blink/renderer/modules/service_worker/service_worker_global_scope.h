@@ -95,7 +95,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // Implements WorkerGlobalScope:
   void Initialize(const KURL& response_url,
                   network::mojom::ReferrerPolicy response_referrer_policy,
-                  mojom::IPAddressSpace response_address_space,
+                  network::mojom::IPAddressSpace response_address_space,
                   const Vector<CSPHeaderAndType>& response_csp_headers,
                   const Vector<String>* response_origin_trial_tokens) override;
   // Fetches and runs the top-level classic worker script for the 'new' or
@@ -311,7 +311,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
   void RunClassicScript(const KURL& response_url,
                         network::mojom::ReferrerPolicy response_referrer_policy,
-                        mojom::IPAddressSpace response_address_space,
+                        network::mojom::IPAddressSpace response_address_space,
                         const Vector<CSPHeaderAndType> response_csp_headers,
                         const Vector<String>* response_origin_trial_tokens,
                         const String& source_code,

@@ -33,6 +33,7 @@
 #include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/chooser_resource_loader.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
@@ -120,15 +121,15 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   }
 
   AddString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
-  if (!RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
-    data->Append(Platform::Current()->GetDataResource("pickerButton.css"));
-  }
-  data->Append(Platform::Current()->GetDataResource("suggestionPicker.css"));
-  data->Append(Platform::Current()->GetDataResource("calendarPicker.css"));
+
+  AddString(ChooserResourceLoader::GetPickerCommonStyleSheet(), data);
+  if (!RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+    AddString(ChooserResourceLoader::GetPickerButtonStyleSheet(), data);
+  AddString(ChooserResourceLoader::GetSuggestionPickerStyleSheet(), data);
+  AddString(ChooserResourceLoader::GetCalendarPickerStyleSheet(), data);
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
-    data->Append(
-        Platform::Current()->GetDataResource("calendar_picker_refresh.css"));
+    AddString(ChooserResourceLoader::GetCalendarPickerRefreshStyleSheet(),
+              data);
   }
   AddString(
       "</style></head><body><div id=main>Loading...</div><script>\n"
@@ -214,9 +215,9 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   }
   AddString("}\n", data);
 
-  data->Append(Platform::Current()->GetDataResource("pickerCommon.js"));
-  data->Append(Platform::Current()->GetDataResource("suggestionPicker.js"));
-  data->Append(Platform::Current()->GetDataResource("calendarPicker.js"));
+  AddString(ChooserResourceLoader::GetPickerCommonJS(), data);
+  AddString(ChooserResourceLoader::GetSuggestionPickerJS(), data);
+  AddString(ChooserResourceLoader::GetCalendarPickerJS(), data);
   AddString("</script></body>\n", data);
 }
 

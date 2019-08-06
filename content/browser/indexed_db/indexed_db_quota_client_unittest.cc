@@ -57,7 +57,8 @@ class IndexedDBQuotaClientTest : public testing::Test {
     idb_context_ = new IndexedDBContextImpl(
         browser_context_->GetPath(),
         browser_context_->GetSpecialStoragePolicy(), quota_manager->proxy(),
-        base::DefaultClock::GetInstance());
+        base::DefaultClock::GetInstance(),
+        base::SequencedTaskRunnerHandle::Get());
     base::RunLoop().RunUntilIdle();
     setup_temp_dir();
   }

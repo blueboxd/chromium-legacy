@@ -67,7 +67,8 @@ FetchClientSettingsObjectImpl::MimeTypeCheckForClassicWorkerScript() const {
   return AllowedByNosniff::MimeTypeCheck::kStrict;
 }
 
-mojom::IPAddressSpace FetchClientSettingsObjectImpl::GetAddressSpace() const {
+network::mojom::IPAddressSpace FetchClientSettingsObjectImpl::GetAddressSpace()
+    const {
   return execution_context_->GetSecurityContext().AddressSpace();
 }
 

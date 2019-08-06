@@ -393,14 +393,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // with values from |fill_data|. The |username_element| and |password_element|
   // will only have the suggestedValue set. If a match is found, return true and
   // |field_data_manager| will be modified with the autofilled credentials and
-  // |FieldPropertiesFlags::AUTOFILLED| flag.
-  // If |username_may_use_prefilled_placeholder| then this function may
-  // overwrite the value of username field.
-  bool FillUserNameAndPassword(blink::WebInputElement* username_element,
-                               blink::WebInputElement* password_element,
+  // |FieldPropertiesFlags::AUTOFILLED| flag. Returns true if the password is
+  // filled.
+  bool FillUserNameAndPassword(blink::WebInputElement username_element,
+                               blink::WebInputElement password_element,
                                const PasswordFormFillData& fill_data,
-                               bool exact_username_match,
-                               bool username_may_use_prefilled_placeholder,
                                FieldDataManager* field_data_manager,
                                RendererSavePasswordProgressLogger* logger);
 
@@ -408,18 +405,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // overridden when trying to fill with an existing credential. This logs
   // only one value per |PasswordAutofillAgent| instance.
   void LogPrefilledUsernameFillOutcome(PrefilledUsernameFillOutcome outcome);
-
-  // Attempts to fill |username_element| and |password_element| with the
-  // |fill_data|. Will use the data corresponding to the preferred username,
-  // unless the |username_element| already has a value set. In that case,
-  // attempts to fill the password matching the already filled username, if
-  // such a password exists. The |password_element| will have the
-  // |suggestedValue| set. Returns true if the password is filled.
-  bool FillFormOnPasswordReceived(const PasswordFormFillData& fill_data,
-                                  blink::WebInputElement username_element,
-                                  blink::WebInputElement password_element,
-                                  FieldDataManager* field_data_manager,
-                                  RendererSavePasswordProgressLogger* logger);
 
   // Helper function called when form submission is successful.
   void FireSubmissionIfFormDisappear(mojom::SubmissionIndicatorEvent event);

@@ -9,10 +9,10 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
@@ -55,7 +55,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       HttpsState starter_https_state,
       WorkerClients*,
       std::unique_ptr<WebContentSettingsClient>,
-      base::Optional<mojom::IPAddressSpace>,
+      base::Optional<network::mojom::IPAddressSpace>,
       const Vector<String>* origin_trial_tokens,
       const base::UnguessableToken& parent_devtools_token,
       std::unique_ptr<WorkerSettings>,
@@ -139,7 +139,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // Worker script response's address space. This is valid only when the worker
   // script is fetched on the main thread (i.e., when
   // |off_main_thread_fetch_option| is kDisabled).
-  base::Optional<mojom::IPAddressSpace> response_address_space;
+  base::Optional<network::mojom::IPAddressSpace> response_address_space;
 
   base::UnguessableToken parent_devtools_token;
 

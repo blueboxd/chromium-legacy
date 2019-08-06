@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CLIENT_SETTINGS_OBJECT_H_
 
 #include "base/optional.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -78,7 +78,7 @@ class PLATFORM_EXPORT FetchClientSettingsObject
       const = 0;
 
   // https://wicg.github.io/cors-rfc1918/#address-space
-  virtual mojom::IPAddressSpace GetAddressSpace() const = 0;
+  virtual network::mojom::IPAddressSpace GetAddressSpace() const = 0;
 
   // https://w3c.github.io/webappsec-upgrade-insecure-requests/#insecure-requests-policy
   virtual WebInsecureRequestPolicy GetInsecureRequestsPolicy() const = 0;

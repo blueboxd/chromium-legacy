@@ -17,7 +17,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
@@ -77,6 +77,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Button to add a new credit card.
 @property(nonatomic, strong) UIBarButtonItem* addPaymentMethodButton;
+
+// Coordinator to add new credit card.
+@property(nonatomic, strong)
+    AutofillAddCreditCardCoordinator* addCreditCardCoordinator;
 
 @end
 
@@ -424,13 +428,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // credit card details.
 - (void)handleAddPayment:(id)sender {
   DCHECK(base::FeatureList::IsEnabled(kSettingsAddPaymentMethod));
-  AutofillAddCreditCardViewController* addCreditCardViewController =
-      [[AutofillAddCreditCardViewController alloc] init];
 
-  UINavigationController* navigationController = [[UINavigationController alloc]
-      initWithRootViewController:addCreditCardViewController];
+  self.addCreditCardCoordinator = [[AutofillAddCreditCardCoordinator alloc]
+      initWithBaseViewController:self
+                    browserState:_browserState];
 
-  [self presentViewController:navigationController animated:YES completion:nil];
+  [self.addCreditCardCoordinator start];
 }
 
 #pragma mark PersonalDataManagerObserver

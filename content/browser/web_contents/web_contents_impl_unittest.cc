@@ -3384,6 +3384,8 @@ class MockWebContentsDelegate : public WebContentsDelegate {
  public:
   MOCK_METHOD2(HandleContextMenu,
                bool(RenderFrameHost*, const ContextMenuParams&));
+  MOCK_METHOD4(RegisterProtocolHandler,
+               void(WebContents*, const std::string&, const GURL&, bool));
 };
 
 }  // namespace
@@ -3398,6 +3400,63 @@ TEST_F(WebContentsImplTest, HandleContextMenuDelegate) {
 
   ContextMenuParams params;
   contents()->ShowContextMenu(rfh, params);
+
+  contents()->SetDelegate(nullptr);
+}
+
+TEST_F(WebContentsImplTest, RegisterProtocolHandlerDifferentOrigin) {
+  MockWebContentsDelegate delegate;
+  contents()->SetDelegate(&delegate);
+
+  GURL url("https://www.google.com");
+  GURL handler_url1("https://www.google.com/handler/%s");
+  GURL handler_url2("https://www.example.com/handler/%s");
+
+  contents()->NavigateAndCommit(url);
+
+  // Only the first call to RegisterProtocolHandler should register because the
+  // other call has a handler from a different origin.
+  EXPECT_CALL(delegate,
+              RegisterProtocolHandler(contents(), "mailto", handler_url1, true))
+      .Times(1);
+
+  {
+    FrameHostMsg_RegisterProtocolHandler message(
+        main_test_rfh()->GetRoutingID(), "mailto", handler_url1,
+        base::string16(), /*user_gesture=*/true);
+    contents()->OnMessageReceived(main_test_rfh(), message);
+  }
+
+  {
+    FrameHostMsg_RegisterProtocolHandler message(
+        main_test_rfh()->GetRoutingID(), "mailto", handler_url2,
+        base::string16(), /*user_gesture=*/true);
+    contents()->OnMessageReceived(main_test_rfh(), message);
+  }
+
+  contents()->SetDelegate(nullptr);
+}
+
+TEST_F(WebContentsImplTest, RegisterProtocolHandlerDataURL) {
+  MockWebContentsDelegate delegate;
+  contents()->SetDelegate(&delegate);
+
+  GURL data("data:text/html,<html><body><b>hello world</b></body></html>");
+  GURL data_handler(data.spec() + "%s");
+
+  contents()->NavigateAndCommit(data);
+
+  // Data URLs should fail.
+  EXPECT_CALL(delegate,
+              RegisterProtocolHandler(contents(), "mailto", data_handler, true))
+      .Times(0);
+
+  {
+    FrameHostMsg_RegisterProtocolHandler message(
+        main_test_rfh()->GetRoutingID(), "mailto", data_handler,
+        base::string16(), /*user_gesture=*/true);
+    contents()->OnMessageReceived(main_test_rfh(), message);
+  }
 
   contents()->SetDelegate(nullptr);
 }

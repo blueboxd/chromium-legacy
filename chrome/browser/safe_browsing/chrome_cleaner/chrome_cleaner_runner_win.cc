@@ -68,11 +68,11 @@ void ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
       base::Unretained(extension_service));
   auto process_done =
       base::BindOnce(&ChromeCleanerRunner::OnProcessDone, cleaner_runner);
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
       // LaunchAndWaitForExitOnBackgroundThread creates (MayBlock()) and joins
       // (WithBaseSyncPrimitives()) a process.
-      {base::MayBlock(), base::WithBaseSyncPrimitives(),
+      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
        base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       std::move(launch_and_wait), std::move(process_done));
@@ -171,7 +171,8 @@ ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread(
   ChromePromptChannelPtr channel(nullptr, base::OnTaskRunnerDeleter(nullptr));
   if (base::FeatureList::IsEnabled(kChromeCleanupProtobufIPCFeature)) {
     // The channel will make blocking calls to ::WriteFile.
-    channel_task_runner = base::CreateSequencedTaskRunner({base::MayBlock()});
+    channel_task_runner =
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
     channel =
         ChromePromptChannelPtr(new ChromePromptChannelProtobuf(
                                    std::move(on_connection_closed),
@@ -179,8 +180,8 @@ ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread(
                                base::OnTaskRunnerDeleter(channel_task_runner));
   } else {
     // Mojo uses the IO thread.
-    channel_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::IO});
+    channel_task_runner =
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
     channel = ChromePromptChannelPtr(
         new ChromePromptChannelMojo(std::move(on_connection_closed),
                                     std::move(actions), channel_task_runner),

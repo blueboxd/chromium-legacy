@@ -55,8 +55,7 @@ class FakeServiceWorkerNetworkProvider final
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest& request,
       std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>) override {
-    return Platform::Current()->GetURLLoaderMockFactory()->CreateURLLoader(
-        nullptr);
+    return Platform::Current()->GetURLLoaderMockFactory()->CreateURLLoader();
   }
 
   blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()

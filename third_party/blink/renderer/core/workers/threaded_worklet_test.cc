@@ -89,9 +89,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     // the owner Document's SecurityOrigin shouldn't.
     EXPECT_TRUE(global_scope->GetSecurityOrigin()->IsOpaque());
     EXPECT_FALSE(global_scope->DocumentSecurityOrigin()->IsOpaque());
-    PostCrossThreadTask(
-        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
-        FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+    PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
+                        CrossThreadBindOnce(&test::ExitRunLoop));
   }
 
   void TestContentSecurityPolicy() {
@@ -112,9 +111,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
         KURL("https://disallowed.example.com"), String(),
         IntegrityMetadataSet(), kParserInserted));
 
-    PostCrossThreadTask(
-        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
-        FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+    PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
+                        CrossThreadBindOnce(&test::ExitRunLoop));
   }
 
   // Test that having an invalid CSP does not result in an exception.
@@ -129,18 +127,16 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     EXPECT_EQ(kContentSecurityPolicyHeaderTypeEnforce,
               csp->Headers().at(0).second);
 
-    PostCrossThreadTask(
-        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
-        FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+    PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
+                        CrossThreadBindOnce(&test::ExitRunLoop));
   }
 
   // Emulates API use on threaded WorkletGlobalScope.
   void CountFeature(WebFeature feature) {
     EXPECT_TRUE(IsCurrentThread());
     GlobalScope()->CountFeature(feature);
-    PostCrossThreadTask(
-        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
-        FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+    PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
+                        CrossThreadBindOnce(&test::ExitRunLoop));
   }
 
   // Emulates deprecated API use on threaded WorkletGlobalScope.
@@ -153,9 +149,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     String console_message = GetConsoleMessageStorage()->at(0)->Message();
     EXPECT_TRUE(console_message.Contains("deprecated"));
 
-    PostCrossThreadTask(
-        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
-        FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+    PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
+                        CrossThreadBindOnce(&test::ExitRunLoop));
   }
 
   void TestTaskRunner() {
@@ -163,9 +158,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
         GlobalScope()->GetTaskRunner(TaskType::kInternalTest);
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
-    PostCrossThreadTask(
-        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
-        FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+    PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
+                        CrossThreadBindOnce(&test::ExitRunLoop));
   }
 
  private:

@@ -19,7 +19,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static blink::BlinkFuzzerTestSupport test_support;
 
   blink::CommaDelimitedHeaderSet set;
-  double delay;
+  base::TimeDelta delay;
   String url;
   blink::ResourceResponse response;
   wtf_size_t end;

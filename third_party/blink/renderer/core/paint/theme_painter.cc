@@ -152,7 +152,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
       Deprecation::CountDeprecation(
           doc, WebFeature::kCSSValueAppearanceButtonForAnchor);
       COUNT_APPEARANCE(doc, ButtonForNonButton);
-    } else if (IsHTMLButtonElement(node)) {
+    } else if (IsA<HTMLButtonElement>(node)) {
       UseCounter::Count(doc, WebFeature::kCSSValueAppearanceButtonForButton);
     } else if (IsHTMLInputElement(node) &&
                ToHTMLInputElement(node)->IsTextButton()) {

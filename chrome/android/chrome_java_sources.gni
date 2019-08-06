@@ -451,6 +451,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/directactions/DirectActionHandler.java",
   "java/src/org/chromium/chrome/browser/directactions/DirectActionInitializer.java",
   "java/src/org/chromium/chrome/browser/directactions/DirectActionReporter.java",
+  "java/src/org/chromium/chrome/browser/directactions/DirectActionUsageHistogram.java",
   "java/src/org/chromium/chrome/browser/directactions/GoBackDirectActionHandler.java",
   "java/src/org/chromium/chrome/browser/directactions/CloseTabDirectActionHandler.java",
   "java/src/org/chromium/chrome/browser/directactions/SimpleDirectActionHandler.java",

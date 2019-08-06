@@ -28,6 +28,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/chooser_resource_loader.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser_client.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
@@ -98,8 +99,9 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
 
   PagePopupClient::AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
-  data->Append(Platform::Current()->GetDataResource("color_picker.css"));
+  AddString(ChooserResourceLoader::GetPickerCommonStyleSheet(), data);
+  AddString(ChooserResourceLoader::GetColorPickerStyleSheet(), data);
+
   PagePopupClient::AddString(
       "</style></head><body>\n"
       "<div id='main'>Loading...</div><script>\n"
@@ -111,9 +113,9 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
   AddProperty("zoomFactor", ZoomFactor(), data);
   AddProperty("shouldShowColorSuggestionPicker", false, data);
   PagePopupClient::AddString("};\n", data);
-  data->Append(Platform::Current()->GetDataResource("pickerCommon.js"));
-  data->Append(Platform::Current()->GetDataResource("color_picker.js"));
-  data->Append(Platform::Current()->GetDataResource("color_picker_common.js"));
+  AddString(ChooserResourceLoader::GetPickerCommonJS(), data);
+  AddString(ChooserResourceLoader::GetColorPickerJS(), data);
+  AddString(ChooserResourceLoader::GetColorPickerCommonJS(), data);
   PagePopupClient::AddString("</script></body>\n", data);
 }
 
@@ -129,12 +131,11 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
 
   PagePopupClient::AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
-  data->Append(
-      Platform::Current()->GetDataResource("colorSuggestionPicker.css"));
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
-    data->Append(Platform::Current()->GetDataResource("color_picker.css"));
-  }
+  AddString(ChooserResourceLoader::GetPickerCommonStyleSheet(), data);
+  AddString(ChooserResourceLoader::GetColorSuggestionPickerStyleSheet(), data);
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+    AddString(ChooserResourceLoader::GetColorPickerStyleSheet(), data);
+
   PagePopupClient::AddString(
       "</style></head><body>\n"
       "<div id='main'>Loading...</div><script>\n"
@@ -154,13 +155,11 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
   AddProperty("isFormControlsRefreshEnabled",
               RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);
   PagePopupClient::AddString("};\n", data);
-  data->Append(Platform::Current()->GetDataResource("pickerCommon.js"));
-  data->Append(
-      Platform::Current()->GetDataResource("colorSuggestionPicker.js"));
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
-    data->Append(Platform::Current()->GetDataResource("color_picker.js"));
-  }
-  data->Append(Platform::Current()->GetDataResource("color_picker_common.js"));
+  AddString(ChooserResourceLoader::GetPickerCommonJS(), data);
+  AddString(ChooserResourceLoader::GetColorSuggestionPickerJS(), data);
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
+    AddString(ChooserResourceLoader::GetColorPickerJS(), data);
+  AddString(ChooserResourceLoader::GetColorPickerCommonJS(), data);
   PagePopupClient::AddString("</script></body>\n", data);
 }
 

@@ -35,8 +35,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninEarlGreyUtilsAppInterface)
 - (ChromeIdentity*)fakeManagedIdentity {
   return [FakeChromeIdentity identityWithEmail:@"foo@managed.com"
                                         gaiaID:@"fooManagedID"
-                                          name:@"Fake Managed"
-                                  hostedDomain:@"managed.com"];
+                                          name:@"Fake Managed"];
 }
 
 - (void)checkSignedInWithIdentity:(ChromeIdentity*)identity {

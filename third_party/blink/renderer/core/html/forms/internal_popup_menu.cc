@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/chooser_resource_loader.h"
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
@@ -232,8 +233,8 @@ void InternalPopupMenu::WriteDocument(SharedBuffer* data) {
   float scale_factor = chrome_client_->WindowToViewportScalar(1.f);
   PagePopupClient::AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
-  data->Append(Platform::Current()->GetDataResource("listPicker.css"));
+  AddString(ChooserResourceLoader::GetPickerCommonStyleSheet(), data);
+  AddString(ChooserResourceLoader::GetListPickerStyleSheet(), data);
   if (!RuntimeEnabledFeatures::ForceTallerSelectPopupEnabled())
     PagePopupClient::AddString("@media (any-pointer:coarse) {", data);
   int padding = static_cast<int>(roundf(4 * scale_factor));
@@ -288,8 +289,9 @@ void InternalPopupMenu::WriteDocument(SharedBuffer* data) {
                      : owner_element.ClientPaddingLeft().ToDouble(),
               data);
   PagePopupClient::AddString("};\n", data);
-  data->Append(Platform::Current()->GetDataResource("pickerCommon.js"));
-  data->Append(Platform::Current()->GetDataResource("listPicker.js"));
+  AddString(ChooserResourceLoader::GetPickerCommonJS(), data);
+  AddString(ChooserResourceLoader::GetListPickerJS(), data);
+
   PagePopupClient::AddString("</script></body>\n", data);
 }
 

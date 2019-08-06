@@ -165,7 +165,7 @@ class CORE_EXPORT InspectorNetworkAgent final
 
   void FrameScheduledNavigation(LocalFrame*,
                                 const KURL&,
-                                double delay,
+                                base::TimeDelta delay,
                                 ClientNavigationReason);
   void FrameClearedScheduledNavigation(LocalFrame*);
 

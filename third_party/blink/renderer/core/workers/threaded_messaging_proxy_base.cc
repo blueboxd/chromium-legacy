@@ -75,8 +75,7 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
       global_scope_creation_params->global_scope_name.IsolatedCopy());
 
   worker_thread_->Start(std::move(global_scope_creation_params),
-                        thread_startup_data, std::move(devtools_params),
-                        GetParentExecutionContextTaskRunners());
+                        thread_startup_data, std::move(devtools_params));
 
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_)) {
     scope->GetThread()->ChildThreadStartedOnWorkerThread(worker_thread_.get());

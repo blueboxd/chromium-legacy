@@ -206,6 +206,10 @@ void X11WindowOzone::Deactivate() {
   x11_window_->Deactivate();
 }
 
+void X11WindowOzone::SetUseNativeFrame(bool use_native_frame) {
+  x11_window_->SetUseNativeFrame(use_native_frame);
+}
+
 void X11WindowOzone::MoveCursorTo(const gfx::Point& location) {
   x11_window_->MoveCursorTo(location);
 }

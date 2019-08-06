@@ -923,7 +923,7 @@ TEST_F(NGInlineNodeTest, InvalidateSetText) {
   EXPECT_FALSE(layout_block_flow_->NeedsCollectInlines());
 
   LayoutText* text = ToLayoutText(layout_block_flow_->FirstChild());
-  text->SetText(String("after").Impl());
+  text->SetTextIfNeeded(String("after").Impl());
   EXPECT_TRUE(layout_block_flow_->NeedsCollectInlines());
 }
 

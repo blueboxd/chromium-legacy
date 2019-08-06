@@ -106,7 +106,8 @@ void MarkingVisitor::WriteBarrierSlow(void* value) {
   }
 
   // Mark and push trace callback.
-  header->Mark();
+  if (!header->TryMark<HeapObjectHeader::AccessMode::kAtomic>())
+    return;
   MarkingVisitor* visitor = thread_state->CurrentVisitor();
   visitor->AccountMarkedBytes(header);
   visitor->marking_worklist_.Push(

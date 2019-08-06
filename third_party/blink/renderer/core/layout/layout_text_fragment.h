@@ -74,9 +74,8 @@ class CORE_EXPORT LayoutTextFragment : public LayoutText {
 
   scoped_refptr<StringImpl> OriginalText() const override;
 
-  void SetText(scoped_refptr<StringImpl>,
-               bool force = false,
-               bool avoid_layout_and_only_paint = false) override;
+  void ForceSetText(scoped_refptr<StringImpl>,
+                    bool avoid_layout_and_only_paint = false) override;
   void SetTextFragment(scoped_refptr<StringImpl>,
                        unsigned start,
                        unsigned length);

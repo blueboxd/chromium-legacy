@@ -21,6 +21,7 @@ class X11_WINDOW_EXPORT X11Window : public X11WindowBase,
 
   // PlatformWindow:
   void PrepareForShutdown() override;
+  void SetUseNativeFrame(bool use_native_frame) override;
   void SetCursor(PlatformCursor cursor) override;
 
  private:

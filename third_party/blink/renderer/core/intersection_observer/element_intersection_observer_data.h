@@ -14,7 +14,7 @@ namespace blink {
 class IntersectionObservation;
 class IntersectionObserver;
 
-class ElementIntersectionObserverData
+class ElementIntersectionObserverData final
     : public GarbageCollected<ElementIntersectionObserverData>,
       public NameClient {
  public:

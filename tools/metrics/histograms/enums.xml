@@ -4985,6 +4985,7 @@ Unknown properties are collapsed to zero. -->
   <int value="216" label="RFH_NO_MATCHING_NAVIGATION_REQUEST_ON_COMMIT"/>
   <int value="217" label="AUTH_INVALID_ICON_URL"/>
   <int value="218" label="MDDH_INVALID_STREAM_SELECTION_INFO"/>
+  <int value="219" label="REGISTER_PROTOCOL_HANDLER_INVALID_URL"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -13457,6 +13458,22 @@ Called by update_net_error_codes.py.-->
 <enum name="DircryptoMigrationStartStatus">
   <int value="1" label="Migration started"/>
   <int value="2" label="Migration resumed"/>
+</enum>
+
+<enum name="DirectActionId">
+  <int value="0" label="Unknown action"/>
+  <int value="1" label="A direct action not on this enum"/>
+  <int value="2" label="go_back"/>
+  <int value="3" label="reload"/>
+  <int value="4" label="go_forward"/>
+  <int value="5" label="bookmark_this_page"/>
+  <int value="6" label="downloads"/>
+  <int value="7" label="preferences"/>
+  <int value="8" label="open_history"/>
+  <int value="9" label="help"/>
+  <int value="10" label="new_tab"/>
+  <int value="11" label="close_tab"/>
+  <int value="12" label="close_all_tabs"/>
 </enum>
 
 <enum name="DirectCompositionVideoPresentationMode">
@@ -61835,6 +61852,13 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Extended File Format - Animation"/>
   <int value="4" label="Extended File Format - Animation and Alpha"/>
   <int value="5" label="Unknown"/>
+</enum>
+
+<enum name="WebPushDeviceState">
+  <int value="0" label="Not idle, not high priority"/>
+  <int value="1" label="Not idle, high priority"/>
+  <int value="2" label="Idle, not high priority"/>
+  <int value="3" label="Idle, high priority"/>
 </enum>
 
 <enum name="WebRequest.RequestHeader">

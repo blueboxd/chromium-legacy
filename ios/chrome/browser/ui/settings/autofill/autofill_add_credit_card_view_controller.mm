@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller.h"
 
 #include "base/feature_list.h"
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
@@ -37,14 +38,28 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
+@interface AutofillAddCreditCardViewController ()
+
+// The AddCreditCardViewControllerDelegate for this ViewController.
+@property(nonatomic, weak) id<AddCreditCardViewControllerDelegate> delegate;
+
+@end
+
 @implementation AutofillAddCreditCardViewController
 
-- (instancetype)init {
+- (instancetype)initWithDelegate:
+    (id<AddCreditCardViewControllerDelegate>)delegate {
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
                                : UITableViewStyleGrouped;
-  return [super initWithTableViewStyle:style
+  self = [super initWithTableViewStyle:style
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+
+  if (self) {
+    _delegate = delegate;
+  }
+
+  return self;
 }
 
 - (void)viewDidLoad {
@@ -66,7 +81,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_ADD_BUTTON)
               style:UIBarButtonItemStyleDone
              target:self
-             action:nil];
+             action:@selector(didTapAddButton:)];
   [self loadModel];
 }
 
@@ -139,9 +154,46 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Private
 
+// Reads the data from text fields and sends it to the mediator.
+- (void)didTapAddButton:(id)sender {
+  NSString* cardHolderName = [self readTextFromItemtype:ItemTypeName
+                                      sectionIdentifier:SectionIdentifierName];
+
+  NSString* cardNumber =
+      [self readTextFromItemtype:ItemTypeCardNumber
+               sectionIdentifier:SectionIdentifierCreditCardDetails];
+
+  NSString* expirationMonth =
+      [self readTextFromItemtype:ItemTypeExpirationMonth
+               sectionIdentifier:SectionIdentifierCreditCardDetails];
+
+  NSString* expirationYear =
+      [self readTextFromItemtype:ItemTypeExpirationYear
+               sectionIdentifier:SectionIdentifierCreditCardDetails];
+
+  [self.delegate addCreditCardViewController:self
+                 addCreditCardWithHolderName:cardHolderName
+                                  cardNumber:cardNumber
+                             expirationMonth:expirationMonth
+                              expirationYear:expirationYear];
+}
+
+// Reads and returns the data from the item with passed |itemType| and
+// |sectionIdentifier|.
+- (NSString*)readTextFromItemtype:(NSInteger)itemType
+                sectionIdentifier:(NSInteger)sectionIdentifier {
+  NSIndexPath* path =
+      [self.tableViewModel indexPathForItemType:itemType
+                              sectionIdentifier:sectionIdentifier];
+  AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
+      [self.tableViewModel itemAtIndexPath:path]);
+  NSString* text = item.textFieldValue;
+  return text;
+}
+
 // Dimisses this view controller.
 - (void)handleCancelButton:(id)sender {
-  [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+  [self.delegate addCreditCardViewControllerDidCancel:self];
 }
 
 // Returns initialized tableViewItem with passed arguments.

@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -21,26 +20,6 @@ struct PasswordForm;
 }
 
 class ManagePasswordsUIController;
-
-// Custom class is required to enable password generation.
-class CustomPasswordManagerClient : public ChromePasswordManagerClient {
- public:
-  using ChromePasswordManagerClient::ChromePasswordManagerClient;
-  static void CreateForWebContentsWithAutofillClient(
-      content::WebContents* contents,
-      autofill::AutofillClient* autofill_client);
-
-  // PasswordManagerClient:
-  password_manager::SyncState GetPasswordSyncState() const override;
-
-  void OnPaste() override;
-
-  base::string16 pasted_value() { return pasted_value_; }
-
- private:
-  // Represents the text passed to PasswordResuseManager's OnPaste() method.
-  base::string16 pasted_value_;
-};
 
 class NavigationObserver : public content::WebContentsObserver {
  public:

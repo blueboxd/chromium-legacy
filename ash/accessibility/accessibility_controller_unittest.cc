@@ -310,6 +310,48 @@ TEST_F(AccessibilityControllerTest, MonoAudioTrayMenuVisibility) {
   EXPECT_FALSE(controller->GetTrayVisiblityOfMonoAudioSetting());
 }
 
+TEST_F(AccessibilityControllerTest, DictationTrayMenuVisibility) {
+  // Check that when the pref isn't being controlled by any policy will be
+  // visible in the accessibility tray menu despite its value.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  // Required to set the dialog to be true to change the value of the pref from
+  // the |AccessibilityControllerImpl|.
+  prefs->SetBoolean(prefs::kDictationAcceleratorDialogHasBeenAccepted, true);
+  // Check when the value is true and not being controlled by any policy.
+  controller->SetDictationEnabled(true);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityDictationEnabled));
+  EXPECT_TRUE(controller->dictation_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfDictationSetting());
+  // Check when the value is false and not being controlled by any policy.
+  controller->SetDictationEnabled(false);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityDictationEnabled));
+  EXPECT_FALSE(controller->dictation_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfDictationSetting());
+
+  // Check that when the pref is managed and being forced on then it will be
+  // visible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityDictationEnabled,
+      std::make_unique<base::Value>(true));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityDictationEnabled));
+  EXPECT_TRUE(controller->GetTrayVisiblityOfDictationSetting());
+  // Check that when the pref is managed and only being forced off then it will
+  // be invisible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityDictationEnabled,
+      std::make_unique<base::Value>(false));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityDictationEnabled));
+  EXPECT_FALSE(controller->dictation_enabled());
+  EXPECT_FALSE(controller->GetTrayVisiblityOfDictationSetting());
+}
+
 TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();

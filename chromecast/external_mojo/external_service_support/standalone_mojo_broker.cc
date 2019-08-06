@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "chromecast/external_mojo/external_service_support/process_setup.h"
+#include "chromecast/external_mojo/public/cpp/common.h"
 #include "chromecast/external_mojo/public/cpp/external_mojo_broker.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
@@ -32,7 +33,8 @@ int main(int argc, char** argv) {
       io_task_executor.task_runner(),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
-  chromecast::external_mojo::ExternalMojoBroker broker;
+  chromecast::external_mojo::ExternalMojoBroker broker(
+      chromecast::external_mojo::GetBrokerPath());
 
   run_loop.Run();
 

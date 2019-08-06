@@ -236,11 +236,11 @@ TEST_F(SiteSettingsCounterTest, AllSiteSettingsMixed) {
 
   base::Time now = base::Time::Now();
   handler_registry()->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("test1", GURL("http://www.google.com"), now));
+      ProtocolHandler("news", GURL("http://www.google.com"), now));
   handler_registry()->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("test1", GURL("http://docs.google.com"), now));
+      ProtocolHandler("news", GURL("http://docs.google.com"), now));
   handler_registry()->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("test1", GURL("http://slides.google.com"), now));
+      ProtocolHandler("news", GURL("http://slides.google.com"), now));
 
   auto translate_prefs =
       ChromeTranslateClient::CreateTranslatePrefs(profile()->GetPrefs());
@@ -256,12 +256,12 @@ TEST_F(SiteSettingsCounterTest, ProtocolHandlerCounting) {
   base::Time now = base::Time::Now();
 
   handler_registry()->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("test1", GURL("http://www.google.com"), now));
+      ProtocolHandler("news", GURL("http://www.google.com"), now));
   handler_registry()->OnAcceptRegisterProtocolHandler(
-      ProtocolHandler("test2", GURL("http://maps.google.com"),
+      ProtocolHandler("mailto", GURL("http://maps.google.com"),
                       now - base::TimeDelta::FromMinutes(90)));
-  EXPECT_TRUE(handler_registry()->IsHandledProtocol("test1"));
-  EXPECT_TRUE(handler_registry()->IsHandledProtocol("test2"));
+  EXPECT_TRUE(handler_registry()->IsHandledProtocol("news"));
+  EXPECT_TRUE(handler_registry()->IsHandledProtocol("mailto"));
 
   SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
   EXPECT_EQ(2, GetResult());

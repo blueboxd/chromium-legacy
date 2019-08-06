@@ -55,6 +55,10 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
   if (self) {
     self.isAccessibilityElement = YES;
     self.backgroundColor = UIColor.clearColor;
+    self.selectedBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+    self.selectedBackgroundView.backgroundColor = color::IncognitoDynamicColor(
+        _incognito, [UIColor colorNamed:kTableViewRowHighlightColor],
+        [UIColor colorNamed:kTableViewRowHighlightDarkColor]);
 
     _incognito = incognito;
 
@@ -141,27 +145,6 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
   CGRect frame = _imageView.frame;
   frame.origin.y = floor((_rowHeight - imageViewSize) / 2);
   _imageView.frame = frame;
-}
-
-- (void)updateHighlightBackground:(BOOL)highlighted {
-  // Set the background color to match the color of selected table view cells
-  // when their selection style is UITableViewCellSelectionStyleGray.
-  if (highlighted) {
-    self.backgroundColor = _incognito ? [UIColor colorWithWhite:1 alpha:0.1]
-                                      : [UIColor colorWithWhite:0 alpha:0.05];
-  } else {
-    self.backgroundColor = [UIColor clearColor];
-  }
-}
-
-- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
-  [super setHighlighted:highlighted animated:animated];
-  [self updateHighlightBackground:highlighted];
-}
-
-- (void)setHighlighted:(BOOL)highlighted {
-  [super setHighlighted:highlighted];
-  [self updateHighlightBackground:highlighted];
 }
 
 - (void)setTabMatch:(BOOL)tabMatch {

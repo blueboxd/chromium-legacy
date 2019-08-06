@@ -92,6 +92,28 @@ class PrefetchBrowserTestRedirectMode
   DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTestRedirectMode);
 };
 
+class PrefetchBrowserTestSplitCache : public PrefetchBrowserTestBase {
+ public:
+  PrefetchBrowserTestSplitCache()
+      : cross_origin_server_(std::make_unique<net::EmbeddedTestServer>(
+            net::EmbeddedTestServer::TYPE_HTTPS)) {}
+  ~PrefetchBrowserTestSplitCache() override = default;
+
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        net::features::kSplitCacheByNetworkIsolationKey);
+    PrefetchBrowserTestBase::SetUp();
+  }
+
+ protected:
+  std::unique_ptr<net::EmbeddedTestServer> cross_origin_server_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrefetchBrowserTestSplitCache);
+};
+
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTestRedirectMode, RedirectNotFollowed) {
   const char* prefetch_path = "/prefetch.html";
   const char* redirect_path = "/redirect.html";
@@ -130,6 +152,251 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTestRedirectMode, RedirectNotFollowed) {
   EXPECT_EQ(redirect_mode_is_error_ ? 1 : 2,
             destination_counter->GetRequestCount());
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+}
+
+// TODO(domfarolino): Re-enable this when the implementation for cross-origin
+// main resource prefetches lands. See crbug.com/939317.
+IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
+                       DISABLED_CrossOriginDocumentReusedAsNavigation) {
+  const char* prefetch_path = "/prefetch.html";
+  const char* target_path = "/target.html";
+  RegisterResponse(
+      target_path,
+      ResponseEntry("<head><title>Prefetch Target</title></head>"));
+
+  base::RunLoop prefetch_waiter;
+  auto request_counter = RequestCounter::CreateAndMonitor(
+      cross_origin_server_.get(), target_path, &prefetch_waiter);
+  RegisterRequestHandler(cross_origin_server_.get());
+  ASSERT_TRUE(cross_origin_server_->Start());
+
+  const GURL cross_origin_target_url =
+      cross_origin_server_->GetURL(target_path);
+  RegisterResponse(
+      prefetch_path,
+      ResponseEntry(base::StringPrintf(
+          "<body><link rel='prefetch' as='document' href='%s'></body>",
+          cross_origin_target_url.spec().c_str())));
+  RegisterRequestHandler(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_EQ(0, request_counter->GetRequestCount());
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
+
+  // Loading a page that prefetches the target URL would increment the
+  // |request_counter|.
+  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  prefetch_waiter.Run();
+  EXPECT_EQ(1, request_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
+
+  // Shutdown the servers.
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  EXPECT_TRUE(cross_origin_server_->ShutdownAndWaitUntilComplete());
+
+  // Subsequent navigation to the cross-origin target URL shouldn't hit the
+  // network, and should be loaded from cache.
+  NavigateToURLAndWaitTitle(cross_origin_target_url, "Prefetch Target");
+}
+
+IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
+                       CrossOriginDocumentNotReusedAsNestedFrameNavigation) {
+  const char* prefetch_path = "/prefetch.html";
+  const char* host_path = "/host.html";
+  const char* iframe_path = "/iframe.html";
+  RegisterResponse(
+      host_path,
+      ResponseEntry(base::StringPrintf(
+          "<head><title>Cross-Origin Host</title></head><body><iframe "
+          "onload='document.title=\"Host Loaded\"' src='%s'></iframe></body>",
+          iframe_path)));
+  RegisterResponse(iframe_path, ResponseEntry("<h1>I am an iframe</h1>"));
+
+  base::RunLoop prefetch_waiter;
+  auto cross_origin_iframe_counter = RequestCounter::CreateAndMonitor(
+      cross_origin_server_.get(), iframe_path, &prefetch_waiter);
+  RegisterRequestHandler(cross_origin_server_.get());
+  ASSERT_TRUE(cross_origin_server_->Start());
+
+  const GURL cross_origin_host_url = cross_origin_server_->GetURL(host_path);
+  const GURL cross_origin_iframe_url =
+      cross_origin_server_->GetURL(iframe_path);
+  RegisterResponse(
+      prefetch_path,
+      ResponseEntry(base::StringPrintf(
+          "<body><link rel='prefetch' as='document' href='%s'></body>",
+          cross_origin_iframe_url.spec().c_str())));
+  RegisterRequestHandler(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_EQ(0, cross_origin_iframe_counter->GetRequestCount());
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
+
+  // Loading a page that prefetches the cross-origin iframe URL increments its
+  // counter.
+  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  prefetch_waiter.Run();
+  EXPECT_EQ(1, cross_origin_iframe_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
+
+  // Subsequent navigation to the cross-origin host site will trigger an iframe
+  // load which will not reuse the iframe that was prefetched from
+  // |prefetch_path|. This is because cross-origin document prefetches must
+  // only be reused for top-level navigations, and cannot be reused as
+  // cross-origin iframes.
+  NavigateToURLAndWaitTitle(cross_origin_host_url, "Host Loaded");
+  EXPECT_EQ(2, cross_origin_iframe_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
+
+  // Shutdown the servers.
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  EXPECT_TRUE(cross_origin_server_->ShutdownAndWaitUntilComplete());
+}
+
+IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
+                       CrossOriginSubresourceNotReused) {
+  const char* prefetch_path = "/prefetch.html";
+  const char* host_path = "/host.html";
+  const char* subresource_path = "/subresource.js";
+  RegisterResponse(
+      host_path,
+      ResponseEntry(base::StringPrintf(
+          "<head><title>Cross-Origin Host</title></head><body><script src='%s' "
+          "onload='document.title=\"Host Loaded\"'></script></body>",
+          subresource_path)));
+  RegisterResponse(subresource_path, ResponseEntry("console.log('I loaded')"));
+
+  base::RunLoop prefetch_waiter;
+  auto cross_origin_subresource_counter = RequestCounter::CreateAndMonitor(
+      cross_origin_server_.get(), subresource_path, &prefetch_waiter);
+  RegisterRequestHandler(cross_origin_server_.get());
+  ASSERT_TRUE(cross_origin_server_->Start());
+
+  const GURL cross_origin_host_url = cross_origin_server_->GetURL(host_path);
+  const GURL cross_origin_subresource_url =
+      cross_origin_server_->GetURL(subresource_path);
+  RegisterResponse(prefetch_path,
+                   ResponseEntry(base::StringPrintf(
+                       "<body><link rel='prefetch' href='%s'></body>",
+                       cross_origin_subresource_url.spec().c_str())));
+  RegisterRequestHandler(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_EQ(0, cross_origin_subresource_counter->GetRequestCount());
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
+
+  // Loading a page that prefetches the cross-origin subresource URL
+  // increments its counter.
+  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  prefetch_waiter.Run();
+  EXPECT_EQ(1, cross_origin_subresource_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
+
+  // Subsequent navigation to the cross-origin host attempting to reuse the
+  // resource that was prefetched results in the request hitting the network.
+  // This is because cross-origin subresources must only be reused within the
+  // frame they were fetched from.
+  NavigateToURLAndWaitTitle(cross_origin_host_url, "Host Loaded");
+  EXPECT_EQ(2, cross_origin_subresource_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
+
+  // Shutdown the servers.
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  EXPECT_TRUE(cross_origin_server_->ShutdownAndWaitUntilComplete());
+}
+
+IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
+                       CrossOriginSubresourceReusedByCurrentFrame) {
+  const char* prefetch_path = "/prefetch.html";
+  const char* use_prefetch_path = "/use-prefetch.html";
+  const char* subresource_path = "/subresource.js";
+  RegisterResponse(subresource_path, ResponseEntry("console.log('I loaded')"));
+
+  base::RunLoop prefetch_waiter;
+  auto cross_origin_subresource_counter = RequestCounter::CreateAndMonitor(
+      cross_origin_server_.get(), subresource_path, &prefetch_waiter);
+  RegisterRequestHandler(cross_origin_server_.get());
+  ASSERT_TRUE(cross_origin_server_->Start());
+
+  const GURL cross_origin_subresource_url =
+      cross_origin_server_->GetURL(subresource_path);
+  RegisterResponse(prefetch_path,
+                   ResponseEntry(base::StringPrintf(
+                       "<body><link rel='prefetch' href='%s'></body>",
+                       cross_origin_subresource_url.spec().c_str())));
+  RegisterResponse(use_prefetch_path,
+                   ResponseEntry(base::StringPrintf(
+                       "<body><script src='%s' onload='document.title=\"Use "
+                       "Prefetch Loaded\"'></script></body>",
+                       cross_origin_subresource_url.spec().c_str())));
+  RegisterRequestHandler(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_EQ(0, cross_origin_subresource_counter->GetRequestCount());
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
+
+  // Loading a page that prefetches the cross-origin subresource URL
+  // increments its counter.
+  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  prefetch_waiter.Run();
+  EXPECT_EQ(1, cross_origin_subresource_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
+
+  // Shut down the cross-origin server.
+  EXPECT_TRUE(cross_origin_server_->ShutdownAndWaitUntilComplete());
+
+  // Subsequent navigation to the same-origin document that attempts to reuse
+  // the cross-origin prefetch is able to reuse the resource from the cache.
+  NavigateToURLAndWaitTitle(embedded_test_server()->GetURL(use_prefetch_path),
+                            "Use Prefetch Loaded");
+
+  // Shutdown the same-origin server.
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+}
+
+// This tests more of an implementation detail than anything. A single resource
+// must be committed to the cache partition corresponding to a single
+// NetworkIsolationKey. This means that even though it is considered "safe" to
+// reused cross-origin subresource prefetches for top-level navigations, we
+// can't actually do this, because the subresource is only reusable from the
+// frame that fetched it.
+IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestSplitCache,
+                       CrossOriginSubresourceNotReusedAsNavigation) {
+  const char* prefetch_path = "/prefetch.html";
+  const char* subresource_path = "/subresource.js";
+  RegisterResponse(subresource_path, ResponseEntry("console.log('I loaded');"));
+
+  base::RunLoop prefetch_waiter;
+  auto cross_origin_subresource_counter = RequestCounter::CreateAndMonitor(
+      cross_origin_server_.get(), subresource_path, &prefetch_waiter);
+  RegisterRequestHandler(cross_origin_server_.get());
+  ASSERT_TRUE(cross_origin_server_->Start());
+
+  const GURL cross_origin_subresource_url =
+      cross_origin_server_->GetURL(subresource_path);
+  RegisterResponse(prefetch_path,
+                   ResponseEntry(base::StringPrintf(
+                       "<body><link rel='prefetch' href='%s'></body>",
+                       cross_origin_subresource_url.spec().c_str())));
+  RegisterRequestHandler(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_EQ(0, cross_origin_subresource_counter->GetRequestCount());
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
+
+  // Loading a page that prefetches the cross-origin subresource URL
+  // increments its counter.
+  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+  prefetch_waiter.Run();
+  EXPECT_EQ(1, cross_origin_subresource_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
+
+  // Shutdown the same-origin server.
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  // Subsequent navigation to the cross-origin subresource itself will not be
+  // reused from the cache, because the cached resource is not partitioned under
+  // the cross-origin it is served from.
+  NavigateToURL(shell(), cross_origin_subresource_url);
+  EXPECT_EQ(2, cross_origin_subresource_counter->GetRequestCount());
+  EXPECT_EQ(1, GetPrefetchURLLoaderCallCount());
+
+  // Shutdown the cross-origin server.
+  EXPECT_TRUE(cross_origin_server_->ShutdownAndWaitUntilComplete());
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, Simple) {

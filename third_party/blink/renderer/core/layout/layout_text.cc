@@ -114,9 +114,8 @@ class SecureTextTimer final : public TimerBase {
  private:
   void Fired() override {
     DCHECK(g_secure_text_timers->Contains(layout_text_));
-    layout_text_->SetText(
-        layout_text_->GetText().Impl(),
-        true /* forcing setting text as it may be masked later */);
+    // Forcing setting text as it may be masked later
+    layout_text_->ForceSetText(layout_text_->GetText().Impl());
   }
 
   LayoutText* layout_text_;
@@ -1653,9 +1652,8 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
       FirstTextBox()->ManuallySetStartLenAndLogicalWidth(
           offset, text->length(), LayoutUnit(text_width));
       SetFirstTextBoxLogicalLeft(text_width);
-      const bool force = false;
       const bool avoid_layout_and_only_paint = true;
-      SetText(std::move(text), force, avoid_layout_and_only_paint);
+      ForceSetText(std::move(text), avoid_layout_and_only_paint);
       lines_dirty_ = false;
       valid_ng_items_ = false;
       return;
@@ -1735,7 +1733,7 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
   }
 
   lines_dirty_ = dirtied_lines;
-  SetText(std::move(text), dirtied_lines);
+  ForceSetText(std::move(text));
 
   // TODO(layout-dev): Invalidation is currently all or nothing in LayoutNG,
   // this is probably fine for NGInlineItem reuse as recreating the individual
@@ -1746,7 +1744,7 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
 
 void LayoutText::TransformText() {
   if (scoped_refptr<StringImpl> text_to_transform = OriginalText())
-    SetText(std::move(text_to_transform), true);
+    ForceSetText(std::move(text_to_transform));
 }
 
 static inline bool IsInlineFlowOrEmptyText(const LayoutObject* o) {
@@ -1831,14 +1829,17 @@ void LayoutText::SecureText(UChar mask) {
   }
 }
 
-void LayoutText::SetText(scoped_refptr<StringImpl> text,
-                         bool force,
-                         bool avoid_layout_and_only_paint) {
+void LayoutText::SetTextIfNeeded(scoped_refptr<StringImpl> text) {
   DCHECK(text);
 
-  if (!force && Equal(text_.Impl(), text.get()))
+  if (Equal(text_.Impl(), text.get()))
     return;
+  ForceSetText(std::move(text));
+}
 
+void LayoutText::ForceSetText(scoped_refptr<StringImpl> text,
+                              bool avoid_layout_and_only_paint) {
+  DCHECK(text);
   SetTextInternal(std::move(text));
   // If preferredLogicalWidthsDirty() of an orphan child is true,
   // LayoutObjectChildList::insertChildNode() fails to set true to owner.

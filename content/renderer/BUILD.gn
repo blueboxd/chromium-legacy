@@ -620,6 +620,8 @@ target(link_target_type, "renderer") {
       "render_view_fuchsia.cc",
       "renderer_main_platform_delegate_fuchsia.cc",
     ]
+
+    deps += [ "//media/fuchsia/cdm" ]
   }
 
   if (enable_media_remoting) {

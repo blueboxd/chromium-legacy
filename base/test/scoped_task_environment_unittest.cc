@@ -449,7 +449,7 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceMockClock) {
 TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTime) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+      ScopedTaskEnvironment::TimeSource::MOCK_TIME);
 
   const Time start_time = base::Time::Now();
   scoped_task_environment.FastForwardBy(kDelay);
@@ -459,7 +459,7 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTime) {
 TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTimeTicks) {
   constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
   ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+      ScopedTaskEnvironment::TimeSource::MOCK_TIME);
 
   const TimeTicks start_time = base::TimeTicks::Now();
   scoped_task_environment.FastForwardBy(kDelay);
@@ -471,7 +471,7 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTimeTicks) {
 // of time when out of tasks.
 TEST_F(ScopedTaskEnvironmentTest, FastForwardOnlyAdvancesWhenIdle) {
   ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+      ScopedTaskEnvironment::TimeSource::MOCK_TIME);
 
   const TimeTicks start_time = base::TimeTicks::Now();
 
@@ -573,7 +573,7 @@ TEST_F(ScopedTaskEnvironmentTest, NestedRunInFastForwardBy) {
 TEST_F(ScopedTaskEnvironmentTest,
        CrossThreadImmediateTaskPostingDoesntAffectMockTime) {
   ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+      ScopedTaskEnvironment::TimeSource::MOCK_TIME);
 
   int count = 0;
 
@@ -1104,16 +1104,19 @@ TEST_F(ScopedTaskEnvironmentTest,
             scoped_task_environment.NextMainThreadPendingTaskDelay());
 }
 
-TEST_F(ScopedTaskEnvironmentTest, TimeSourceMockTimeAndNow) {
+TEST_F(ScopedTaskEnvironmentTest, TimeSourceMockTimeAlsoMocksNow) {
   ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+      ScopedTaskEnvironment::TimeSource::MOCK_TIME);
 
-  const TimeTicks start_time = scoped_task_environment.NowTicks();
-  EXPECT_EQ(TimeTicks::Now(), start_time);
+  const TimeTicks start_ticks = scoped_task_environment.NowTicks();
+  EXPECT_EQ(TimeTicks::Now(), start_ticks);
+
+  const Time start_time = Time::Now();
 
   constexpr TimeDelta kDelay = TimeDelta::FromSeconds(10);
   scoped_task_environment.FastForwardBy(kDelay);
-  EXPECT_EQ(TimeTicks::Now(), start_time + kDelay);
+  EXPECT_EQ(TimeTicks::Now(), start_ticks + kDelay);
+  EXPECT_EQ(Time::Now(), start_time + kDelay);
 }
 
 }  // namespace test

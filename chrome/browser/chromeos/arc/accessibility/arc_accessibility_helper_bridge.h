@@ -111,6 +111,7 @@ class ArcAccessibilityHelperBridge
 
  protected:
   virtual aura::Window* GetActiveWindow();
+  virtual extensions::EventRouter* GetEventRouter() const;
 
  private:
   // wm::ActivationChangeObserver overrides.

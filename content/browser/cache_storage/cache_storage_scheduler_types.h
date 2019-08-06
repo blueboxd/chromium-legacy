@@ -5,11 +5,7 @@
 #ifndef CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_SCHEDULER_TYPES_H_
 #define CONTENT_BROWSER_CACHE_STORAGE_CACHE_STORAGE_SCHEDULER_TYPES_H_
 
-#include <stdint.h>
-
 namespace content {
-
-using CacheStorageSchedulerId = int64_t;
 
 // Define the types of clients that might own a scheduler.  This enum is used
 // to populate histogram names and must be kept in sync with the function
@@ -20,11 +16,6 @@ enum class CacheStorageSchedulerClient {
   kBackgroundSync = 0,
   kCache = 1,
   kStorage = 2,
-};
-
-enum class CacheStorageSchedulerMode {
-  kExclusive,
-  kShared,
 };
 
 // Define the different types of operations that can be scheduled.  This enum

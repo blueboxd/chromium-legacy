@@ -101,10 +101,10 @@ class WithComponent(object):
                                       and all(
                                           isinstance(component, Component)
                                           for component in components))
-        assert (component or components) and not (component and components)
-        if components:
+        assert int(component is not None) + int(components is not None) == 1
+        if components is not None:
             self._components = list(components)
-        else:
+        elif component is not None:
             self._components = [component]
 
     @property

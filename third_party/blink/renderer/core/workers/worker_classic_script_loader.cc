@@ -29,7 +29,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
@@ -97,7 +97,7 @@ String CheckSameOriginEnforcement(const KURL& request_url,
 }  // namespace
 
 WorkerClassicScriptLoader::WorkerClassicScriptLoader()
-    : response_address_space_(mojom::IPAddressSpace::kPublic) {}
+    : response_address_space_(network::mojom::IPAddressSpace::kPublic) {}
 
 void WorkerClassicScriptLoader::LoadSynchronously(
     ExecutionContext& execution_context,
@@ -211,8 +211,8 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
   if (network_utils::IsReservedIPAddress(response.RemoteIPAddress())) {
     response_address_space_ =
         SecurityOrigin::Create(response_url_)->IsLocalhost()
-            ? mojom::IPAddressSpace::kLocal
-            : mojom::IPAddressSpace::kPrivate;
+            ? network::mojom::IPAddressSpace::kLocal
+            : network::mojom::IPAddressSpace::kPrivate;
   }
 
   if (response_callback_)

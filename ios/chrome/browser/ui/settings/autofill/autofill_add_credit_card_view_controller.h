@@ -7,14 +7,20 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 // The view controller for adding new credit card.
 @interface AutofillAddCreditCardViewController : SettingsRootTableViewController
 
-// Initializes a AutofillAddCreditCardViewController with
-// A default style and |ChromeTableViewControllerStyleNoAppBar|.
-- (instancetype)init;
+// Initializes a AutofillAddCreditCardViewController with passed delegate.
+- (instancetype)initWithDelegate:
+    (id<AddCreditCardViewControllerDelegate>)delegate NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
+                           appBarStyle:
+                               (ChromeTableViewControllerStyle)appBarStyle
+    NS_UNAVAILABLE;
 
 @end
 

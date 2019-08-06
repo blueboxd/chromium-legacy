@@ -14,7 +14,7 @@ namespace blink {
 class ModuleTreeLinker;
 
 // ModuleTreeLinkerRegistry keeps active ModuleTreeLinkers alive.
-class CORE_EXPORT ModuleTreeLinkerRegistry
+class CORE_EXPORT ModuleTreeLinkerRegistry final
     : public GarbageCollected<ModuleTreeLinkerRegistry>,
       public NameClient {
  public:

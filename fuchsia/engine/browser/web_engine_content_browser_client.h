@@ -12,6 +12,8 @@
 
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
+#include "fuchsia/engine/browser/web_engine_cdm_service.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 class WebEngineBrowserMainParts;
 
@@ -31,12 +33,20 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
   std::string GetUserAgent() override;
   void OverrideWebkitPrefs(content::RenderViewHost* rvh,
                            content::WebPreferences* web_prefs) override;
+  void BindInterfaceRequestFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
   fidl::InterfaceRequest<fuchsia::web::Context> request_;
 
   // Owned by content::BrowserMainLoop.
   WebEngineBrowserMainParts* main_parts_;
+
+  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>
+      mojo_service_registry_;
+  WebEngineCdmService cdm_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WebEngineContentBrowserClient);
 };

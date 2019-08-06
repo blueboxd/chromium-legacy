@@ -35,6 +35,7 @@
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -222,6 +223,11 @@ IOSChromePasswordManagerClient::GetMetricsRecorder() {
 
 signin::IdentityManager* IOSChromePasswordManagerClient::GetIdentityManager() {
   return IdentityManagerFactory::GetForBrowserState(delegate_.browserState);
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+IOSChromePasswordManagerClient::GetURLLoaderFactory() {
+  return (delegate_.browserState)->GetSharedURLLoaderFactory();
 }
 
 password_manager::PasswordRequirementsService*

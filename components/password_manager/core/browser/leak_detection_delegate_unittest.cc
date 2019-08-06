@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,10 +46,11 @@ class MockLeakDetectionCheck : public LeakDetectionCheck {
 
 class MockLeakDetectionRequestFactory : public LeakDetectionRequestFactory {
  public:
-  MOCK_CONST_METHOD2(
-      TryCreateLeakCheck,
-      std::unique_ptr<LeakDetectionCheck>(LeakDetectionDelegateInterface*,
-                                          signin::IdentityManager*));
+  MOCK_CONST_METHOD3(TryCreateLeakCheck,
+                     std::unique_ptr<LeakDetectionCheck>(
+                         LeakDetectionDelegateInterface*,
+                         signin::IdentityManager*,
+                         scoped_refptr<network::SharedURLLoaderFactory>));
 };
 
 }  // namespace

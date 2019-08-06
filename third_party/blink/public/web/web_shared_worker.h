@@ -36,15 +36,11 @@
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom-shared.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_common.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -74,7 +70,7 @@ class BLINK_EXPORT WebSharedWorker {
       const WebString& user_agent,
       const WebString& content_security_policy,
       mojom::ContentSecurityPolicyType,
-      mojom::IPAddressSpace,
+      network::mojom::IPAddressSpace,
       const base::UnguessableToken& devtools_worker_token,
       PrivacyPreferences privacy_preferences,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
@@ -92,9 +88,6 @@ class BLINK_EXPORT WebSharedWorker {
   virtual void BindDevToolsAgent(
       mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) = 0;
-
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
-      TaskType) = 0;
 };
 
 }  // namespace blink

@@ -16,13 +16,6 @@
                                   gaiaID:(NSString*)gaiaID
                                     name:(NSString*)name;
 
-// Returns a ChromeIdentity based on |email|, |gaiaID|, |name| and
-// |hostedDomain|. The |hashedGaiaID| property will be derived from |name|.
-+ (FakeChromeIdentity*)identityWithEmail:(NSString*)email
-                                  gaiaID:(NSString*)gaiaID
-                                    name:(NSString*)name
-                            hostedDomain:(NSString*)hostedDomain;
-
 @end
 
 #endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_SIGNIN_FAKE_CHROME_IDENTITY_H_

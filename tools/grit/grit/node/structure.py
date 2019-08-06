@@ -139,12 +139,6 @@ class StructureNode(base.Node):
              'preprocess': 'false',
              'flattenhtml': 'false',
              'fallback_to_low_resolution': 'default',
-             # TODO(joi) this is a hack - should output all generated files
-             # as SCons dependencies; however, for now there is a bug I can't
-             # find where GRIT doesn't build the matching fileset, therefore
-             # this hack so that only the files you really need are marked as
-             # dependencies.
-             'sconsdep' : 'false',
              'variables': '',
              'compress': 'false',
              'use_base_dir': 'true',

@@ -10,6 +10,7 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory_impl.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace password_manager {
 
@@ -24,8 +25,8 @@ LeakDetectionDelegate::~LeakDetectionDelegate() = default;
 void LeakDetectionDelegate::StartLeakCheck(const autofill::PasswordForm& form) {
   if (client_->IsIncognito())
     return;
-  leak_check_ =
-      leak_factory_->TryCreateLeakCheck(this, client_->GetIdentityManager());
+  leak_check_ = leak_factory_->TryCreateLeakCheck(
+      this, client_->GetIdentityManager(), client_->GetURLLoaderFactory());
   if (leak_check_)
     leak_check_->Start(form.origin, form.username_value, form.password_value);
 }

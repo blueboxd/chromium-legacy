@@ -375,11 +375,13 @@ class ExternalMojoBroker::ReadWatcher
   DISALLOW_COPY_AND_ASSIGN(ReadWatcher);
 };
 
-ExternalMojoBroker::ExternalMojoBroker() {
+ExternalMojoBroker::ExternalMojoBroker(const std::string& broker_path) {
   connector_ = std::make_unique<ConnectorImpl>();
 
+  LOG(INFO) << "Initializing external mojo broker at: " << broker_path;
+
   mojo::NamedPlatformChannel::Options channel_options;
-  channel_options.server_name = GetBrokerPath();
+  channel_options.server_name = broker_path;
   mojo::NamedPlatformChannel named_channel(channel_options);
 
   mojo::PlatformChannelServerEndpoint server_endpoint =
@@ -394,6 +396,12 @@ void ExternalMojoBroker::InitializeChromium(
     const std::vector<std::string>& external_services_to_proxy) {
   connector_->InitializeChromium(std::move(connector),
                                  external_services_to_proxy);
+}
+
+mojom::ExternalConnectorPtr ExternalMojoBroker::CreateConnector() {
+  mojom::ExternalConnectorPtrInfo info;
+  connector_->AddBinding(mojo::MakeRequest(&info));
+  return mojom::ExternalConnectorPtr(std::move(info));
 }
 
 ExternalMojoBroker::~ExternalMojoBroker() = default;

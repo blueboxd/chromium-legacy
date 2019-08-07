@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/tts_controller.h"
@@ -143,7 +144,8 @@ void TtsHandler::HandlePreviewTtsVoice(const base::ListValue* args) {
   utterance->SetText(text);
   utterance->SetVoiceName(name);
   utterance->SetEngineId(extension_id);
-  utterance->SetSrcUrl(GURL("chrome://settings/manageAccessibility/tts"));
+  utterance->SetSrcUrl(
+      GURL(chrome::GetOSSettingsUrl("manageAccessibility/tts")));
   utterance->SetEventDelegate(this);
   content::TtsController::GetInstance()->Stop();
 

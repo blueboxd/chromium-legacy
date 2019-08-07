@@ -8,9 +8,6 @@
 #import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
 
-// Changes the EarlGrey synchronization status to |enabled|.
-void SetEarlGreySynchronizationEnabled(BOOL enabled);
-
 // Taps the button with accessibility label |label|.
 void TapButtonWithAccessibilityLabel(NSString* label);
 

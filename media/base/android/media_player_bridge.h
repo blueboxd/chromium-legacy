@@ -80,7 +80,8 @@ class MEDIA_EXPORT MediaPlayerBridge {
                     const std::string& user_agent,
                     bool hide_url_log,
                     Client* client,
-                    bool allow_credentials);
+                    bool allow_credentials,
+                    bool is_hls);
   virtual ~MediaPlayerBridge();
 
   // Initialize this object and extract the metadata from the media.
@@ -188,6 +189,11 @@ class MEDIA_EXPORT MediaPlayerBridge {
   // Sets the underlying MediaPlayer's volume.
   void UpdateVolumeInternal();
 
+  // Watch time reporting.
+  void StartWatchTimeTimer();
+  void StopWatchTimeTimer();
+  void UpdateWatchTime();
+
   base::WeakPtr<MediaPlayerBridge> WeakPtrForUIThread();
 
   // Whether the player is prepared for playback.
@@ -247,6 +253,12 @@ class MEDIA_EXPORT MediaPlayerBridge {
 
   // The flag is set if Start() has been called at least once.
   bool has_ever_started_;
+
+  // State for watch time reporting.
+  bool is_hls_;
+  int unreported_watch_time_ms_;
+  base::TimeDelta last_current_time_;
+  base::RepeatingTimer watch_time_timer_;
 
   // A reference to the owner of |this|.
   Client* client_;

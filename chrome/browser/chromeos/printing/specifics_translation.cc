@@ -48,14 +48,6 @@ void MergeReferenceToSpecifics(sync_pb::PrinterPPDReference* specifics,
   }
 }
 
-// Combines |make| and |model| with a space to generate a make and model string.
-// If |model| already represents the make and model, the string is just |model|.
-// This is to prevent strings of the form '<make> <make> <model>'.
-std::string MakeAndModel(base::StringPiece make, base::StringPiece model) {
-  return model.starts_with(make) ? model.as_string()
-                                 : base::JoinString({make, model}, " ");
-}
-
 }  // namespace
 
 std::unique_ptr<Printer> SpecificsToPrinter(
@@ -119,6 +111,11 @@ void MergePrinterToSpecifics(const Printer& printer,
 
   MergeReferenceToSpecifics(specifics->mutable_ppd_reference(),
                             printer.ppd_reference());
+}
+
+std::string MakeAndModel(base::StringPiece make, base::StringPiece model) {
+  return model.starts_with(make) ? model.as_string()
+                                 : base::JoinString({make, model}, " ");
 }
 
 }  // namespace chromeos

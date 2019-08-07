@@ -24,6 +24,16 @@ class PreviewsLitePageNavigationThrottleManager {
   // unavailable.
   virtual bool IsServerUnavailable() = 0;
 
+  // Returns true if a Preview server probe has completed for the current
+  // network ID. This is session-agnostic because cached values from previous
+  // sessions will be used if they exist for the current network ID.
+  virtual bool IsServerProbeResultAvailable() = 0;
+
+  // Returns true if the Preview server is reachable on the network according to
+  // a network probe. This will return the result of the most recent probe,
+  // either from this session or a previous cached session's.
+  virtual bool IsServerReachableByProbe() = 0;
+
   // Informs the manager that the given URL should be bypassed one time.
   virtual void AddSingleBypass(std::string url) = 0;
 

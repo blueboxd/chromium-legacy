@@ -37,7 +37,7 @@ namespace blink {
 ColorChooserUIController::ColorChooserUIController(
     LocalFrame* frame,
     blink::ColorChooserClient* client)
-    : client_(client), frame_(frame), binding_(this) {}
+    : client_(client), frame_(frame) {}
 
 ColorChooserUIController::~ColorChooserUIController() {}
 
@@ -48,7 +48,7 @@ void ColorChooserUIController::Trace(Visitor* visitor) {
 }
 
 void ColorChooserUIController::Dispose() {
-  binding_.Close();
+  receiver_.reset();
 }
 
 void ColorChooserUIController::OpenUI() {
@@ -76,14 +76,14 @@ void ColorChooserUIController::DidChooseColor(uint32_t color) {
 
 void ColorChooserUIController::OpenColorChooser() {
   DCHECK(!chooser_);
-  frame_->GetInterfaceProvider().GetInterface(&color_chooser_factory_);
-  mojom::blink::ColorChooserClientPtr mojo_client;
-  binding_.Bind(mojo::MakeRequest(&mojo_client));
-  binding_.set_connection_error_handler(WTF::Bind(
-      &ColorChooserUIController::EndChooser, WrapWeakPersistent(this)));
+  frame_->GetInterfaceProvider().GetInterface(
+      color_chooser_factory_.BindNewPipeAndPassReceiver());
   color_chooser_factory_->OpenColorChooser(
-      mojo::MakeRequest(&chooser_), std::move(mojo_client),
-      client_->CurrentColor().Rgb(), client_->Suggestions());
+      chooser_.BindNewPipeAndPassReceiver(),
+      receiver_.BindNewPipeAndPassRemote(), client_->CurrentColor().Rgb(),
+      client_->Suggestions());
+  receiver_.set_disconnect_handler(WTF::Bind(
+      &ColorChooserUIController::EndChooser, WrapWeakPersistent(this)));
 }
 
 }  // namespace blink

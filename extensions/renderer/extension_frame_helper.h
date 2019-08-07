@@ -125,6 +125,8 @@ class ExtensionFrameHelper
   void DidCreateNewDocument() override;
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
+  void DidCommitProvisionalLoad(bool is_same_document_navigation,
+                                ui::PageTransition transition) override;
   void DidCreateScriptContext(v8::Local<v8::Context>,
                               int32_t world_id) override;
   void WillReleaseScriptContext(v8::Local<v8::Context>,

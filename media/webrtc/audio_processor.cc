@@ -148,8 +148,9 @@ void AudioProcessor::StartEchoCancellationDump(base::File file) {
   if (!audio_processing_) {
     // The destructor of File is blocking. Post it to a task runner to avoid
     // blocking the main thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::LOWEST, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::LOWEST, base::MayBlock()},
         base::BindOnce([](base::File) {}, std::move(file)));
     return;
   }

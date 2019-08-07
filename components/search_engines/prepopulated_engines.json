@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is used during build to generate prepopulated_engine.h/cc.
+// This file is used during build to generate prepopulated_engines.h/cc.
 // For more details see tools/json_to_struct/json_to_struct.py.
 
 // Engine definitions. See prepopulated_engines_schema.json for the field

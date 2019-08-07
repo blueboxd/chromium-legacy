@@ -9,7 +9,9 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 
 namespace url {
@@ -32,13 +34,18 @@ class CONTENT_EXPORT PermissionServiceContext : public WebContentsObserver {
   explicit PermissionServiceContext(RenderProcessHost* render_process_host);
   ~PermissionServiceContext() override;
 
-  void CreateService(blink::mojom::PermissionServiceRequest request);
-  void CreateServiceForWorker(blink::mojom::PermissionServiceRequest request,
-                              const url::Origin& origin);
+  void CreateService(
+      mojo::PendingReceiver<blink::mojom::PermissionService> receiver);
+  void CreateServiceForWorker(
+      mojo::PendingReceiver<blink::mojom::PermissionService> receiver,
+      const url::Origin& origin);
 
-  void CreateSubscription(PermissionType permission_type,
-                          const url::Origin& origin,
-                          blink::mojom::PermissionObserverPtr observer);
+  void CreateSubscription(
+      PermissionType permission_type,
+      const url::Origin& origin,
+      blink::mojom::PermissionStatus current_status,
+      blink::mojom::PermissionStatus last_known_status,
+      mojo::PendingRemote<blink::mojom::PermissionObserver> observer);
 
   // Called when the connection to a PermissionObserver has an error.
   void ObserverHadConnectionError(int subscription_id);
@@ -56,10 +63,6 @@ class CONTENT_EXPORT PermissionServiceContext : public WebContentsObserver {
  private:
   class PermissionSubscription;
 
-  void CreateServiceForWorkerImpl(
-      blink::mojom::PermissionServiceRequest request,
-      const url::Origin& origin);
-
   // WebContentsObserver
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
@@ -70,7 +73,7 @@ class CONTENT_EXPORT PermissionServiceContext : public WebContentsObserver {
 
   RenderFrameHost* render_frame_host_;
   RenderProcessHost* render_process_host_;
-  mojo::StrongBindingSet<blink::mojom::PermissionService> services_;
+  mojo::UniqueReceiverSet<blink::mojom::PermissionService> services_;
   std::unordered_map<int, std::unique_ptr<PermissionSubscription>>
       subscriptions_;
 

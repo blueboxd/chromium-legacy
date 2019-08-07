@@ -35,7 +35,7 @@ class MockPointerLockWebContentsDelegate : public WebContentsDelegate {
   void RequestToLockMouse(WebContents* web_contents,
                           bool user_gesture,
                           bool last_unlocked_by_target) override {
-    web_contents->GotResponseToLockMouseRequest(true);
+    web_contents->GotResponseToLockMouseRequest(user_gesture);
   }
 
   void LostMouseLock() override {}
@@ -115,7 +115,7 @@ class PointerLockBrowserTest : public ContentBrowserTest {
   MockPointerLockWebContentsDelegate web_contents_delegate_;
 };
 
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLock) {
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockBasic) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -145,6 +145,46 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLock) {
   // Child frame should have been granted pointer lock.
   EXPECT_EQ(true,
             EvalJs(child, "document.pointerLockElement == document.body"));
+}
+
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockAndUserActivation) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(b))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  FrameTreeNode* grand_child = child->child_at(0);
+
+  // Without user activation, pointer lock request from any (child or
+  // grand_child) frame fails.
+  EXPECT_TRUE(ExecJs(child, "document.body.requestPointerLock()",
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_EQ(false, EvalJs(child, "document.pointerLockElement == document.body",
+                          EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_TRUE(ExecJs(grand_child, "document.body.requestPointerLock()",
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_EQ(false,
+            EvalJs(grand_child, "document.pointerLockElement == document.body",
+                   EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  // Execute a empty (dummy) JS to activate the child frame.
+  EXPECT_TRUE(ExecJs(child, ""));
+
+  // With user activation in the child frame, pointer lock from the same frame
+  // succeeds.
+  EXPECT_TRUE(ExecJs(child, "document.body.requestPointerLock()",
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_EQ(true, EvalJs(child, "document.pointerLockElement == document.body",
+                         EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  // But with user activation in the child frame, pointer lock from the
+  // grand_child frame fails.
+  EXPECT_TRUE(ExecJs(grand_child, "document.body.requestPointerLock()",
+                     EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_EQ(false,
+            EvalJs(grand_child, "document.pointerLockElement == document.body",
+                   EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
 IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {

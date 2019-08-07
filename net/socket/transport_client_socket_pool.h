@@ -31,6 +31,7 @@
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/priority_queue.h"
+#include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_handle.h"
@@ -42,7 +43,6 @@
 #include "net/socket/stream_socket.h"
 
 namespace base {
-class DictionaryValue;
 namespace trace_event {
 class ProcessMemoryDump;
 }
@@ -52,7 +52,6 @@ namespace net {
 
 struct CommonConnectJobParams;
 struct NetLogSource;
-class ProxyServer;
 struct NetworkTrafficAnnotationTag;
 
 // TransportClientSocketPool establishes network connections through using
@@ -176,6 +175,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       int max_sockets_per_group,
       base::TimeDelta unused_idle_socket_timeout,
       base::TimeDelta used_idle_socket_timeout,
+      const ProxyServer& proxy_server,
       std::unique_ptr<ConnectJobFactory> connect_job_factory,
       SSLClientContext* ssl_client_context,
       bool connect_backup_jobs_enabled);
@@ -224,9 +224,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   size_t IdleSocketCountInGroup(const GroupId& group_id) const override;
   LoadState GetLoadState(const GroupId& group_id,
                          const ClientSocketHandle* handle) const override;
-  std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
-      const std::string& name,
-      const std::string& type) const override;
+  base::Value GetInfoAsValue(const std::string& name,
+                             const std::string& type) const override;
   void DumpMemoryStats(
       base::trace_event::ProcessMemoryDump* pmd,
       const std::string& parent_dump_absolute_name) const override;
@@ -260,13 +259,15 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     return HasGroup(group_id);
   }
 
-  void RefreshGroupForTesting(const GroupId& group_id);
-
   static bool connect_backup_jobs_enabled();
   static bool set_connect_backup_jobs_enabled(bool enabled);
 
   // NetworkChangeNotifier::IPAddressObserver methods:
   void OnIPAddressChanged() override;
+
+  // SSLClientContext::Observer methods.
+  void OnSSLConfigChanged(bool is_cert_database_change) override;
+  void OnSSLConfigForServerChanged(const HostPortPair& server) override;
 
  private:
   class ConnectJobFactoryImpl;
@@ -598,12 +599,10 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       int max_sockets_per_group,
       base::TimeDelta unused_idle_socket_timeout,
       base::TimeDelta used_idle_socket_timeout,
+      const ProxyServer& proxy_server,
       std::unique_ptr<ConnectJobFactory> connect_job_factory,
       SSLClientContext* ssl_client_context,
       bool connect_backup_jobs_enabled);
-
-  // SSLClientContext::Observer methods.
-  void OnSSLConfigChanged(bool is_cert_database_change) override;
 
   base::TimeDelta ConnectRetryInterval() const {
     // TODO(mbelshe): Make this tuned dynamically based on measured RTT.
@@ -747,14 +746,18 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // this pool is stalled.
   void TryToCloseSocketsInLayeredPools();
 
-  // If the specified group exists, closes all idle sockets and cancels all
-  // unbound ConnectJobs associated with the group. Also increments the group's
-  // generation number, ensuring any currently existing handed out socket will
-  // be siletly closed when its returned to the socket pool. Bound ConnectJobs
-  // will only be destroyed on once they compelete, as they may be waiting on
-  // user input. No request (including bound ones) will be failed as a result of
-  // this call - instead, new ConnectJobs will be created.
-  void RefreshGroup(const GroupId& group_id);
+  // Closes all idle sockets and cancels all unbound ConnectJobs associated with
+  // |it->second|. Also increments the group's generation number, ensuring any
+  // currently existing handed out socket will be silently closed when it is
+  // returned to the socket pool. Bound ConnectJobs will only be destroyed on
+  // once they complete, as they may be waiting on user input. No request
+  // (including bound ones) will be failed as a result of this call - instead,
+  // new ConnectJobs will be created.
+  //
+  // The group may be removed if this leaves the group empty. The caller must
+  // call CheckForStalledSocketGroups() after all applicable groups have been
+  // refreshed.
+  void RefreshGroup(GroupMap::iterator it, const base::TimeTicks& now);
 
   GroupMap group_map_;
 
@@ -781,6 +784,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // The time to wait until closing idle sockets.
   const base::TimeDelta unused_idle_socket_timeout_;
   const base::TimeDelta used_idle_socket_timeout_;
+
+  const ProxyServer proxy_server_;
 
   const std::unique_ptr<ConnectJobFactory> connect_job_factory_;
 

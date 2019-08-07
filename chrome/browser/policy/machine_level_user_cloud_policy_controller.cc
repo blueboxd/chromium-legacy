@@ -134,8 +134,9 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager(
   std::unique_ptr<MachineLevelUserCloudPolicyStore> policy_store =
       MachineLevelUserCloudPolicyStore::Create(
           dm_token, client_id, policy_dir, cloud_policy_has_priority,
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::MayBlock(),
+               base::TaskPriority::BEST_EFFORT,
                // Block shutdown to make sure the policy cache update is always
                // finished.
                base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));

@@ -165,9 +165,9 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
 
  protected:
   // AXTreeObserver overrides.
-  void OnNodeDataWillChange(AXTree* tree,
-                            const AXNodeData& old_node_data,
-                            const AXNodeData& new_node_data) override;
+  void OnNodeDataChanged(AXTree* tree,
+                         const AXNodeData& old_node_data,
+                         const AXNodeData& new_node_data) override;
   void OnRoleChanged(AXTree* tree,
                      AXNode* node,
                      ax::mojom::Role old_role,

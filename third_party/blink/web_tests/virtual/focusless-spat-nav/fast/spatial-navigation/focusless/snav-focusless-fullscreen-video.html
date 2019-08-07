@@ -12,6 +12,9 @@
 <script>
   let video = document.getElementById("video");
   let button = document.getElementById("button");
+  let fullscreened = new Promise((resolve) => {
+    document.addEventListener('fullscreenchange', resolve);
+  });
 
   button.addEventListener('click', function() {
     video.requestFullscreen();
@@ -22,6 +25,13 @@
     eventSender.keyDown('Enter');
 
     await snavCallback();
+
+    await fullscreened;
+
+    // snav state racily may have changed once or twice when fullscreen state
+    // changes. Waiting until a rAF after fullscreen changes should give snav
+    // state time to update properly.
+    await snav.rAF();
 
     assert_equals(window.internals.interestedElement,
                   video,

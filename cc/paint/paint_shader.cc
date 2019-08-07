@@ -178,11 +178,16 @@ sk_sp<PaintShader> PaintShader::MakeSweepGradient(SkScalar cx,
 sk_sp<PaintShader> PaintShader::MakeImage(const PaintImage& image,
                                           SkTileMode tx,
                                           SkTileMode ty,
-                                          const SkMatrix* local_matrix) {
+                                          const SkMatrix* local_matrix,
+                                          const SkRect* tile_rect) {
   sk_sp<PaintShader> shader(new PaintShader(Type::kImage));
 
   shader->image_ = image;
   shader->SetMatrixAndTiling(local_matrix, tx, ty);
+  if (tile_rect) {
+    DCHECK(image.IsPaintWorklet());
+    shader->tile_ = *tile_rect;
+  }
 
   shader->CreateSkShader();
   return shader;
@@ -433,7 +438,7 @@ void PaintShader::CreateSkShader(const gfx::SizeF* raster_scale,
           flags_, base::OptionalOrNullptr(local_matrix_));
       break;
     case Type::kImage:
-      if (image_) {
+      if (image_ && !image_.IsPaintWorklet()) {
         cached_shader_ = image_.GetSkImage()->makeShader(
             tx_, ty_, base::OptionalOrNullptr(local_matrix_));
       }

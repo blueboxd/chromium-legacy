@@ -324,7 +324,7 @@ void SharedResourcesDataSource::StartDataRequest(
     bytes = GetContentClient()->GetDataResourceBytes(idr);
   }
 
-  callback.Run(bytes.get());
+  callback.Run(std::move(bytes));
 }
 
 bool SharedResourcesDataSource::AllowCaching() {
@@ -412,10 +412,6 @@ std::string SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
     return "null";
   }
   return origin;
-}
-
-bool SharedResourcesDataSource::IsGzipped(const std::string& path) {
-  return GetContentClient()->IsDataResourceGzipped(GetIdrForPath(path));
 }
 
 #if defined(OS_CHROMEOS)

@@ -614,53 +614,48 @@ id<GREYMatcher> ResendPostButtonMatcher() {
 - (void)submitFormUsingKeyboardGoButtonWithInputID:(const std::string&)ID {
   // Disable EarlGrey's synchronization since it is blocked by opening the
   // keyboard from a web view.
-  [[GREYConfiguration sharedInstance]
-          setValue:@NO
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  {
+    ScopedSynchronizationDisabler disabler;
 
-  // Wait for web view to be interactable before tapping.
-  GREYCondition* interactableCondition = [GREYCondition
-      conditionWithName:@"Wait for web view to be interactable."
-                  block:^BOOL {
-                    NSError* error = nil;
-                    id<GREYMatcher> webViewMatcher = WebViewInWebState(
-                        chrome_test_util::GetCurrentWebState());
-                    [[EarlGrey selectElementWithMatcher:webViewMatcher]
-                        assertWithMatcher:grey_interactable()
-                                    error:&error];
-                    return !error;
-                  }];
-  GREYAssert([interactableCondition
-                 waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-             @"Web view did not become interactable.");
+    // Wait for web view to be interactable before tapping.
+    GREYCondition* interactableCondition = [GREYCondition
+        conditionWithName:@"Wait for web view to be interactable."
+                    block:^BOOL {
+                      NSError* error = nil;
+                      id<GREYMatcher> webViewMatcher = WebViewInWebState(
+                          chrome_test_util::GetCurrentWebState());
+                      [[EarlGrey selectElementWithMatcher:webViewMatcher]
+                          assertWithMatcher:grey_interactable()
+                                      error:&error];
+                      return !error;
+                    }];
+    GREYAssert([interactableCondition
+                   waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
+               @"Web view did not become interactable.");
 
-  web::WebState* currentWebState = chrome_test_util::GetCurrentWebState();
-  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
-      performAction:web::WebViewTapElement(
-                        currentWebState,
-                        [ElementSelector selectorWithElementID:ID])];
+    web::WebState* currentWebState = chrome_test_util::GetCurrentWebState();
+    [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
+        performAction:web::WebViewTapElement(
+                          currentWebState,
+                          [ElementSelector selectorWithElementID:ID])];
 
-  // Wait until the keyboard shows up before tapping.
-  GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for the keyboard to show up."
-                  block:^BOOL {
-                    NSError* error = nil;
-                    [[EarlGrey selectElementWithMatcher:GoButtonMatcher()]
-                        assertWithMatcher:grey_notNil()
-                                    error:&error];
-                    return (error == nil);
-                  }];
-  GREYAssert(
-      [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
-      @"No keyboard with 'Go' button showed up.");
+    // Wait until the keyboard shows up before tapping.
+    GREYCondition* condition = [GREYCondition
+        conditionWithName:@"Wait for the keyboard to show up."
+                    block:^BOOL {
+                      NSError* error = nil;
+                      [[EarlGrey selectElementWithMatcher:GoButtonMatcher()]
+                          assertWithMatcher:grey_notNil()
+                                      error:&error];
+                      return (error == nil);
+                    }];
+    GREYAssert(
+        [condition waitWithTimeout:base::test::ios::kWaitForUIElementTimeout],
+        @"No keyboard with 'Go' button showed up.");
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
-      performAction:grey_tap()];
-
-  // Reenable synchronization now that the keyboard has been closed.
-  [[GREYConfiguration sharedInstance]
-          setValue:@YES
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
+        performAction:grey_tap()];
+  }
 }
 
 @end

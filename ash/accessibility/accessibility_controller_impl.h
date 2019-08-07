@@ -91,6 +91,10 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   void SetCursorHighlightEnabled(bool enabled);
   bool cursor_highlight_enabled() const { return cursor_highlight_enabled_; }
+  // Returns true if the cursor highlight is being controlled by a policy
+  // which enforces turning it on or its not being controlled by any type of
+  // policy and false otherwise.
+  bool GetTrayVisiblityOfCursorHighlightSetting();
 
   void SetDictationEnabled(bool enabled);
   bool dictation_enabled() const { return dictation_enabled_; }

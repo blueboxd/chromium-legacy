@@ -76,10 +76,15 @@ public final class DownloadNotificationFactory {
     public static Notification buildNotification(Context context,
             @DownloadNotificationService.DownloadStatus int downloadStatus,
             DownloadUpdate downloadUpdate, int notificationId) {
+        String channelId = ChannelDefinitions.ChannelId.DOWNLOADS;
+        if (LegacyHelpers.isLegacyDownload(downloadUpdate.getContentId())
+                && downloadStatus == DownloadNotificationService.DownloadStatus.COMPLETED
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_NOTIFICATION_BADGE)) {
+            channelId = ChannelDefinitions.ChannelId.COMPLETED_DOWNLOADS;
+        }
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
-                        .createChromeNotificationBuilder(true /* preferCompat */,
-                                ChannelDefinitions.ChannelId.DOWNLOADS,
+                        .createChromeNotificationBuilder(true /* preferCompat */, channelId,
                                 null /* remoteAppPackageName */,
                                 new NotificationMetadata(LegacyHelpers.isLegacyDownload(
                                                                  downloadUpdate.getContentId())

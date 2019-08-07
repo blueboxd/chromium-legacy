@@ -73,7 +73,6 @@ class AvailabilityProber
   // enum is mapped to a string value which is then used in histograms and
   // prefs.
   enum class ClientName {
-    // TODO(crbug.com/971918): Use in litepages.
     kLitepages = 0,
 
     kMaxValue = kLitepages,

@@ -4,17 +4,17 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 
 /** Interface to communicate with the start surface. */
 public interface StartSurface {
     /**
      * Defines an interface to pass out tab selecting event.
      */
-    interface OnTabSelectingListener extends GridTabSwitcher.OnTabSelectingListener {}
+    interface OnTabSelectingListener extends TabSwitcher.OnTabSelectingListener {}
 
     /**
-     * Set the listener to get the {@link Layout#onTabSelecting} event from the Grid Tab Switcher.
+     * Set the listener to get the {@link Layout#onTabSelecting} event from the Tab Switcher.
      * @param listener The {@link OnTabSelectingListener} to use.
      */
     void setOnTabSelectingListener(OnTabSelectingListener listener);
@@ -76,8 +76,8 @@ public interface StartSurface {
         void showOverview(boolean animate);
 
         /**
-         * Called by the GridTabSwitcherLayout when the system back button is pressed.
-         * @return Whether or not the GridTabSwitcher consumed the event.
+         * Called by the TabSwitcherLayout when the system back button is pressed.
+         * @return Whether or not the TabSwitcher consumed the event.
          */
         boolean onBackPressed();
     }
@@ -89,7 +89,7 @@ public interface StartSurface {
     Controller getController();
 
     /**
-     * @return TabGridDelegate implementation that can be used to access the Tab Grid.
+     * @return TabListDelegate implementation that can be used to access the Tab List.
      */
-    GridTabSwitcher.TabGridDelegate getTabGridDelegate();
+    TabSwitcher.TabListDelegate getTabListDelegate();
 }

@@ -204,10 +204,10 @@ bool ShouldShowPermission(
   if (info.type == CONTENT_SETTINGS_TYPE_AUTOPLAY)
     return false;
 
-  // Only display the Native File System write permission if it's currently
-  // being used.
+  // Display the Native File System write permission if the Native File System
+  // API is currently being used.
   if (info.type == CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD &&
-      web_contents->HasWritableNativeFileSystemHandles()) {
+      web_contents->HasNativeFileSystemHandles()) {
     return true;
   }
 #endif

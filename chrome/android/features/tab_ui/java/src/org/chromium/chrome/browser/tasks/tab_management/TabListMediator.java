@@ -612,7 +612,7 @@ class TabListMediator {
             from = TabClosedFrom.TAB_STRIP;
         } else if (fromComponent.equals(TabGridSheetCoordinator.COMPONENT_NAME)) {
             from = TabClosedFrom.TAB_GRID_SHEET;
-        } else if (fromComponent.equals(GridTabSwitcherCoordinator.COMPONENT_NAME)) {
+        } else if (fromComponent.equals(TabSwitcherCoordinator.COMPONENT_NAME)) {
             from = TabClosedFrom.GRID_TAB_SWITCHER;
         } else {
             Log.w(TAG, "Attempting to close tab from Unknown UI");

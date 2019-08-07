@@ -8,6 +8,9 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout_types.h"
+
+class TabWidthConstraints;
 
 // Interpolates between TabAnimationStates. Apply the current state to a tab
 // to animate that tab.
@@ -22,11 +25,17 @@ class TabAnimation {
 
   ~TabAnimation();
 
-  // Animates this tab from its current state to |target_state|.
+  // Returns whether this tab is currently animating closed.
+  bool IsClosing() const;
+
+  // Returns whether this tab has finished animating closed.
+  bool IsClosed() const;
+
+  // Animates this tab from its current state to |target_state_|.
   // If an animation is already running, the duration is reset.
   void AnimateTo(TabAnimationState target_state);
 
-  // Animates this tab from its current state to |target_state|.
+  // Animates this tab from its current state to |target_state_|.
   // Keeps the current remaining animation duration.
   void RetargetTo(TabAnimationState target_state);
 
@@ -36,11 +45,20 @@ class TabAnimation {
   // has completed and the tab can be cleaned up.
   void NotifyCloseCompleted();
 
-  TabAnimationState GetCurrentState() const;
   TabAnimationState target_state() const { return target_state_; }
   base::TimeDelta GetTimeRemaining() const;
 
+  // Returns the TabWidthConstraints for the current state of the animation.
+  TabWidthConstraints GetCurrentTabWidthConstraints(
+      const TabLayoutConstants& layout_constants,
+      const TabSizeInfo& size_info) const;
+
  private:
+  friend class TabAnimationTest;
+  FRIEND_TEST_ALL_PREFIXES(TabAnimationTest, ReplacedAnimationRestartsDuration);
+
+  TabAnimationState GetCurrentState() const;
+
   TabAnimationState initial_state_;
   TabAnimationState target_state_;
   base::TimeTicks start_time_;

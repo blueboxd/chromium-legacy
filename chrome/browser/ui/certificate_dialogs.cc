@@ -152,8 +152,8 @@ void Exporter::FileSelected(const base::FilePath& path,
   }
 
   if (!data.empty()) {
-    base::PostTaskWithTraits(FROM_HERE, {base::MayBlock()},
-                             base::BindOnce(&WriterCallback, path, data));
+    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                   base::BindOnce(&WriterCallback, path, data));
   }
 
   delete this;

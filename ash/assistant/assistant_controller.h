@@ -115,6 +115,8 @@ class ASH_EXPORT AssistantController
   void GetNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver);
 
+  AssistantStateBase* state() { return &assistant_prefs_controller_; }
+
   AssistantAlarmTimerController* alarm_timer_controller() {
     return &assistant_alarm_timer_controller_;
   }
@@ -129,10 +131,6 @@ class ASH_EXPORT AssistantController
 
   AssistantNotificationController* notification_controller() {
     return &assistant_notification_controller_;
-  }
-
-  AssistantPrefsController* prefs_controller() {
-    return &assistant_prefs_controller_;
   }
 
   AssistantScreenContextController* screen_context_controller() {

@@ -377,7 +377,16 @@ void DesktopWindowTreeHostWin::SetZOrderLevel(ui::ZOrderLevel order) {
 }
 
 ui::ZOrderLevel DesktopWindowTreeHostWin::GetZOrderLevel() const {
-  return z_order_;
+  bool window_always_on_top = message_handler_->IsAlwaysOnTop();
+  bool level_always_on_top = z_order_ != ui::ZOrderLevel::kNormal;
+
+  if (window_always_on_top == level_always_on_top)
+    return z_order_;
+
+  // If something external has forced a window to be always-on-top, map it to
+  // kFloatingWindow as a reasonable equivalent.
+  return window_always_on_top ? ui::ZOrderLevel::kFloatingWindow
+                              : ui::ZOrderLevel::kNormal;
 }
 
 void DesktopWindowTreeHostWin::SetVisibleOnAllWorkspaces(bool always_visible) {

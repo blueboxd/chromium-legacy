@@ -55,6 +55,13 @@ AudioContext* AudioContext::Create(Document& document,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
+  if (document.IsDetached()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Cannot create AudioContext on a detached document.");
+    return nullptr;
+  }
+
   document.CountUseOnlyInCrossOriginIframe(
       WebFeature::kAudioContextCrossOriginIframe);
 

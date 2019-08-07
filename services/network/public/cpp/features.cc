@@ -93,10 +93,6 @@ const base::Feature kCrossOriginEmbedderPolicy{
     "CrossOriginEmbedderPolicy", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool ShouldEnableOutOfBlinkCors() {
-  // OOR-CORS requires NetworkService.
-  if (!base::FeatureList::IsEnabled(features::kNetworkService))
-    return false;
-
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);
 }
 

@@ -157,9 +157,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
   // Wait a little bit and check it's still running.
   {
     base::RunLoop run_loop;
-    base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                    run_loop.QuitClosure(),
-                                    kServiceShutdownTimeout);
+    base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                          run_loop.QuitClosure(), kServiceShutdownTimeout);
     run_loop.Run();
   }
 
@@ -202,9 +201,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
   // Wait a little bit and check it's still running.
   {
     base::RunLoop run_loop;
-    base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                    run_loop.QuitClosure(),
-                                    kServiceShutdownTimeout);
+    base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                          run_loop.QuitClosure(), kServiceShutdownTimeout);
     run_loop.Run();
   }
 

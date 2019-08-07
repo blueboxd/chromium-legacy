@@ -352,6 +352,45 @@ TEST_F(AccessibilityControllerTest, DictationTrayMenuVisibility) {
   EXPECT_FALSE(controller->GetTrayVisiblityOfDictationSetting());
 }
 
+TEST_F(AccessibilityControllerTest, CursorHighlightTrayMenuVisibility) {
+  // Check that when the pref isn't being controlled by any policy will be
+  // visible in the accessibility tray menu despite its value.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  // Check when the value is true and not being controlled by any policy.
+  controller->SetCursorHighlightEnabled(true);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityCursorHighlightEnabled));
+  EXPECT_TRUE(controller->cursor_highlight_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfCursorHighlightSetting());
+  // Check when the value is false and not being controlled by any policy.
+  controller->SetCursorHighlightEnabled(false);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityCursorHighlightEnabled));
+  EXPECT_FALSE(controller->cursor_highlight_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfCursorHighlightSetting());
+
+  // Check that when the pref is managed and being forced on then it will be
+  // visible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityCursorHighlightEnabled,
+      std::make_unique<base::Value>(true));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityCursorHighlightEnabled));
+  EXPECT_TRUE(controller->GetTrayVisiblityOfCursorHighlightSetting());
+  // Check that when the pref is managed and only being forced off then it will
+  // be invisible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityCursorHighlightEnabled,
+      std::make_unique<base::Value>(false));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityCursorHighlightEnabled));
+  EXPECT_FALSE(controller->cursor_highlight_enabled());
+  EXPECT_FALSE(controller->GetTrayVisiblityOfCursorHighlightSetting());
+}
+
 TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();

@@ -18,14 +18,15 @@ MouseLockDispatcher::MouseLockDispatcher()
 MouseLockDispatcher::~MouseLockDispatcher() {
 }
 
-bool MouseLockDispatcher::LockMouse(LockTarget* target) {
+bool MouseLockDispatcher::LockMouse(LockTarget* target,
+                                    blink::WebLocalFrame* requester_frame) {
   if (MouseLockedOrPendingAction())
     return false;
 
   pending_lock_request_ = true;
   target_ = target;
 
-  SendLockMouseRequest();
+  SendLockMouseRequest(requester_frame);
   return true;
 }
 

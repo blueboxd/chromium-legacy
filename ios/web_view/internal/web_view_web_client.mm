@@ -79,10 +79,6 @@ base::RefCountedMemory* WebViewWebClient::GetDataResourceBytes(
       resource_id);
 }
 
-bool WebViewWebClient::IsDataResourceGzipped(int resource_id) const {
-  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
-}
-
 NSString* WebViewWebClient::GetDocumentStartScriptForMainFrame(
     web::BrowserState* browser_state) const {
   NSMutableArray* scripts = [NSMutableArray array];

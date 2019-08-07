@@ -4,52 +4,64 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.tab_ui.R;
 
 /**
- * Coordinator for displaying task-related surfaces (Grid Tab Switcher, MV Tiles, Omnibox, etc.).
+ * Coordinator for displaying task-related surfaces (Tab Switcher, MV Tiles, Omnibox, etc.).
  *  Concrete implementation of {@link TasksSurface}.
  */
 public class TasksSurfaceCoordinator implements TasksSurface {
-    private final GridTabSwitcher mGridTabSwitcher;
+    private final TabSwitcher mTabSwitcher;
     private final LinearLayout mLayout;
     private final FrameLayout mGridContainerLayout;
 
-    public TasksSurfaceCoordinator(ChromeActivity activity) {
-        mLayout = new LinearLayout(activity);
-        mLayout.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-        mLayout.setOrientation(LinearLayout.VERTICAL);
+    public TasksSurfaceCoordinator(ChromeActivity activity, boolean isTabCarousel) {
+        mLayout = (LinearLayout) LayoutInflater.from(activity).inflate(
+                R.layout.tasks_surface_layout, null);
+        mGridContainerLayout = (FrameLayout) mLayout.findViewById(R.id.tab_switcher_container);
 
-        mGridContainerLayout = new FrameLayout(activity);
-        mGridContainerLayout.setLayoutParams(new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-
-        mLayout.addView(mGridContainerLayout);
-
-        activity.getCompositorViewHolder().addView(mLayout);
-
-        mGridTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
-                activity, mGridContainerLayout);
+        if (isTabCarousel) {
+            // TODO(crbug.com/982018): Change view according to incognito and dark mode.
+            // TODO(crbug.com/982018): Add the section title.
+            mLayout.setLayoutParams(
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT));
+            mGridContainerLayout.setLayoutParams(
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT));
+            mTabSwitcher = TabManagementModuleProvider.getDelegate().createCarouselTabSwitcher(
+                    activity, mGridContainerLayout);
+        } else {
+            mTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
+                    activity, mGridContainerLayout);
+        }
     }
 
     @Override
-    public void setOnTabSelectingListener(GridTabSwitcher.OnTabSelectingListener listener) {
-        mGridTabSwitcher.setOnTabSelectingListener(listener);
+    public void setOnTabSelectingListener(TabSwitcher.OnTabSelectingListener listener) {
+        mTabSwitcher.setOnTabSelectingListener(listener);
     }
 
     @Override
-    public GridTabSwitcher.GridController getGridController() {
-        return mGridTabSwitcher.getGridController();
+    public TabSwitcher.Controller getController() {
+        return mTabSwitcher.getController();
     }
 
     @Override
-    public GridTabSwitcher.TabGridDelegate getTabGridDelegate() {
-        return mGridTabSwitcher.getTabGridDelegate();
+    public TabSwitcher.TabListDelegate getTabListDelegate() {
+        return mTabSwitcher.getTabListDelegate();
+    }
+
+    @Override
+    public View getView() {
+        return mLayout;
     }
 }

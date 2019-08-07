@@ -14,6 +14,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
@@ -99,27 +100,19 @@ void TapOnWebElementWithID(const std::string& elementID) {
       "http://ios/testing/data/http_server_files/multi_field_form.html");
   [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGrey waitForWebStateContainingText:"hello!"];
-
-  // Opening the keyboard from a webview blocks EarlGrey's synchronization.
-  [[GREYConfiguration sharedInstance]
-          setValue:@NO
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
 }
 
 - (void)tearDown {
   self.notificationToken = nil;
   self.keyboardObserverDelegateMock = nil;
   self.keyboardObserver = nil;
-
-  // |setUp| disables synchronization.  Reenable here.
-  [[GREYConfiguration sharedInstance]
-          setValue:@YES
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
   [super tearDown];
 }
 
 // Tests the observer correctly identifies when the keyboard stays on screen.
 - (void)testKeyboardDidStayOnScreen {
+  // Opening the keyboard from a webview blocks EarlGrey's synchronization.
+  ScopedSynchronizationDisabler disabler;
   // Brings up the keyboard by tapping on one of the form's field.
   TapOnWebElementWithID(kFormElementID1);
 
@@ -166,6 +159,8 @@ void TapOnWebElementWithID(const std::string& elementID) {
 // Tests that when the keyboard actually dismiss the right callback is done.
 // TODO(crbug.com/914374): Address flakiness and reenable.
 - (void)DISABLED_testKeyboardDidHide {
+  // Opening the keyboard from a webview blocks EarlGrey's synchronization.
+  ScopedSynchronizationDisabler disabler;
   // Brings up the keyboard by tapping on one of the form's field.
   TapOnWebElementWithID(kFormElementID1);
 

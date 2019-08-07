@@ -26,33 +26,33 @@ class AXPlatformNodeTextChildProviderTest : public ui::AXPlatformNodeWinTest {
   // nontext    text    text
   void SetUp() override {
     ui::AXNodeData root;
-    root.id = 0;
+    root.id = 1;
     root.role = ax::mojom::Role::kRootWebArea;
 
     ui::AXNodeData nontext_child_of_root;
-    nontext_child_of_root.id = 1;
+    nontext_child_of_root.id = 2;
     nontext_child_of_root.role = ax::mojom::Role::kGroup;
-    root.child_ids.push_back(1);
+    root.child_ids.push_back(nontext_child_of_root.id);
 
     ui::AXNodeData text_child_of_root;
-    text_child_of_root.id = 2;
+    text_child_of_root.id = 3;
     text_child_of_root.role = ax::mojom::Role::kStaticText;
-    root.child_ids.push_back(2);
+    root.child_ids.push_back(text_child_of_root.id);
 
     ui::AXNodeData nontext_child_of_nontext;
-    nontext_child_of_nontext.id = 3;
+    nontext_child_of_nontext.id = 4;
     nontext_child_of_nontext.role = ax::mojom::Role::kGroup;
-    nontext_child_of_root.child_ids.push_back(3);
+    nontext_child_of_root.child_ids.push_back(nontext_child_of_nontext.id);
 
     ui::AXNodeData text_child_of_nontext;
-    text_child_of_nontext.id = 4;
+    text_child_of_nontext.id = 5;
     text_child_of_nontext.role = ax::mojom::Role::kStaticText;
-    nontext_child_of_root.child_ids.push_back(4);
+    nontext_child_of_root.child_ids.push_back(text_child_of_nontext.id);
 
     ui::AXNodeData text_child_of_text;
-    text_child_of_text.id = 5;
+    text_child_of_text.id = 6;
     text_child_of_text.role = ax::mojom::Role::kStaticText;
-    text_child_of_root.child_ids.push_back(5);
+    text_child_of_root.child_ids.push_back(text_child_of_text.id);
 
     ui::AXTreeUpdate update;
     ui::AXTreeData tree_data;

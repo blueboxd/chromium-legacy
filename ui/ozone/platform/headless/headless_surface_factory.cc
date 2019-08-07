@@ -63,10 +63,10 @@ class FileSurface : public SurfaceOzoneCanvas {
     // TODO(dnicoara) Use SkImage instead to potentially avoid a copy.
     // See crbug.com/361605 for details.
     if (surface_->getCanvas()->readPixels(bitmap, 0, 0)) {
-      base::PostTaskWithTraits(
-          FROM_HERE,
-          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-          base::BindOnce(&WriteDataToFile, base_path_, bitmap));
+      base::PostTask(FROM_HERE,
+                     {base::ThreadPool(), base::MayBlock(),
+                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                     base::BindOnce(&WriteDataToFile, base_path_, bitmap));
     }
   }
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {

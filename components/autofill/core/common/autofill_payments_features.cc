@@ -112,6 +112,10 @@ const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{
     "AutofillSendExperimentIdsInPaymentsRPCs",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether to show updated UI for the card unmask prompt.
+const base::Feature kAutofillUpdatedCardUnmaskPromptUi{
+    "AutofillUpdatedCardUnmaskPromptUi", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because it's a country-specific whitelist. There are
 // countries we simply can't turn this on for, and they change over time, so

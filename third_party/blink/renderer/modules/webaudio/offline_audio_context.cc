@@ -58,6 +58,13 @@ OfflineAudioContext* OfflineAudioContext::Create(
     return nullptr;
   }
 
+  if (document->IsDetached()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Cannot create OfflineAudioContext on a detached document.");
+    return nullptr;
+  }
+
   if (!number_of_frames) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,

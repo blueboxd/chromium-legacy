@@ -2458,7 +2458,13 @@ public class AwContents implements SmartClipProvider {
 
     /**
      * Controls if we need to inject a JavaScript object to receive postMessage() call, i.e. the
-     * {@link AwContents#onPostMessage} callback.
+     * {@link AwContents#onPostMessage} callback. Note that this call doesn't inject the JavaScript
+     * object immediately. We are going to do the actual injection until the next navigation
+     * (DidClearWindowObject) happens.
+     *
+     * Caution: Setting a different {@code listener} or {@code allowedOriginRules} will make that
+     * new {@code listener} receives messages immediately if the message's origin also matches the
+     * new {@code allowedOriginRules}. {@code jsObjectName} will take effect since next navigation.
      *
      * @param listener        The {@link WebMessageListener} to be called when received
      *                        onPostMessage().

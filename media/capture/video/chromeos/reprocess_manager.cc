@@ -45,8 +45,8 @@ int ReprocessManager::GetReprocessReturnCode(
 }
 
 ReprocessManager::ReprocessManager(CameraInfoGetter get_camera_info)
-    : sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::USER_VISIBLE})),
+    : sequenced_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE})),
       impl(std::make_unique<ReprocessManager::ReprocessManagerImpl>(
           std::move(get_camera_info))) {}
 

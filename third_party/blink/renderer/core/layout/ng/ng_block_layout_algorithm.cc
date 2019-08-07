@@ -983,10 +983,12 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       // block offset.
       bfc_offset_already_resolved = true;
       child_bfc_offset_estimate = *ConstraintSpace().ForcedBfcBlockOffset();
-      // We require that the BFC block offset be the one we'd get with either
-      // margins adjoining or margins separated. Anything else is a bug.
+      // We require that the BFC block offset be the one we'd get with margins
+      // adjoining, margins separated, or if clearance was applied to either of
+      // these. Anything else is a bug.
       DCHECK(child_bfc_offset_estimate == adjoining_bfc_offset_estimate ||
-             child_bfc_offset_estimate == non_adjoining_bfc_offset_estimate);
+             child_bfc_offset_estimate == non_adjoining_bfc_offset_estimate ||
+             child_bfc_offset_estimate == ConstraintSpace().ClearanceOffset());
       // Figure out if the child margin has already got separated from the
       // margin strut or not.
       child_margin_got_separated =

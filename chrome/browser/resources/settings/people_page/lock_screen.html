@@ -66,10 +66,10 @@
           label="$i18n{enableScreenlock}">
       </settings-toggle-button>
 
-      <settings-toggle-button id="enableLockScreenMediaKeys"
-          hidden="[[!lockScreenMediaKeysPreferenceEnabled_]]"
-          pref="{{prefs.ash.lock_screen_media_keys_enabled}}"
-          label="$i18n{lockScreenMediaKeys}">
+      <settings-toggle-button id="enableLockScreenMediaControls"
+          hidden="[[!lockScreenMediaControlsPreferenceEnabled_]]"
+          pref="{{prefs.ash.lock_screen_media_controls_enabled}}"
+          label="$i18n{lockScreenMediaControls}">
       </settings-toggle-button>
 
       <template is="dom-if" if="[[quickUnlockEnabled_]]">

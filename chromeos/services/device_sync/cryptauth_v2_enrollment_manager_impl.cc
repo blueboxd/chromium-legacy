@@ -53,6 +53,27 @@ enum class UserKeyPairState {
   kMaxValue = kYesV1KeyYesV2KeyDisagree
 };
 
+UserKeyPairState GetUserKeyPairState(const std::string& public_key_v1,
+                                     const std::string& private_key_v1,
+                                     const CryptAuthKey* key_v2) {
+  bool v1_key_exists = !public_key_v1.empty() && !private_key_v1.empty();
+
+  if (v1_key_exists && key_v2) {
+    if (public_key_v1 == key_v2->public_key() &&
+        private_key_v1 == key_v2->private_key()) {
+      return UserKeyPairState::kYesV1KeyYesV2KeyAgree;
+    } else {
+      return UserKeyPairState::kYesV1KeyYesV2KeyDisagree;
+    }
+  } else if (v1_key_exists && !key_v2) {
+    return UserKeyPairState::kYesV1KeyNoV2Key;
+  } else if (!v1_key_exists && key_v2) {
+    return UserKeyPairState::kNoV1KeyYesV2Key;
+  } else {
+    return UserKeyPairState::kNoV1KeyNoV2Key;
+  }
+}
+
 cryptauthv2::ClientMetadata::InvocationReason ConvertInvocationReasonV1ToV2(
     cryptauth::InvocationReason invocation_reason_v1) {
   switch (invocation_reason_v1) {
@@ -96,31 +117,6 @@ void RecordEnrollmentResult(CryptAuthEnrollmentResult result) {
                             result.IsSuccess());
   base::UmaHistogramEnumeration("CryptAuth.EnrollmentV2.Result.ResultCode",
                                 result.result_code());
-}
-
-void RecordUserKeyPairState(const std::string& public_key_v1,
-                            const std::string& private_key_v1,
-                            const CryptAuthKey* key_v2) {
-  bool v1_key_exists = !public_key_v1.empty() && !private_key_v1.empty();
-
-  UserKeyPairState key_pair_state;
-  if (v1_key_exists && key_v2) {
-    if (public_key_v1 == key_v2->public_key() &&
-        private_key_v1 == key_v2->private_key()) {
-      key_pair_state = UserKeyPairState::kYesV1KeyYesV2KeyAgree;
-    } else {
-      key_pair_state = UserKeyPairState::kYesV1KeyYesV2KeyDisagree;
-    }
-  } else if (v1_key_exists && !key_v2) {
-    key_pair_state = UserKeyPairState::kYesV1KeyNoV2Key;
-  } else if (!v1_key_exists && key_v2) {
-    key_pair_state = UserKeyPairState::kNoV1KeyYesV2Key;
-  } else {
-    key_pair_state = UserKeyPairState::kNoV1KeyNoV2Key;
-  }
-
-  base::UmaHistogramEnumeration("CryptAuth.EnrollmentV2.UserKeyPairState",
-                                key_pair_state);
 }
 
 }  // namespace
@@ -234,6 +230,14 @@ CryptAuthV2EnrollmentManagerImpl::~CryptAuthV2EnrollmentManagerImpl() {
 void CryptAuthV2EnrollmentManagerImpl::Start() {
   scheduler_->StartEnrollmentScheduling(
       scheduler_weak_ptr_factory_.GetWeakPtr());
+
+  // If the v1 and v2 user key pairs initially disagreed, force a re-enrollment
+  // with the v1 user key pair that replaced the v2 user key pair.
+  if (initial_v1_and_v2_user_key_pairs_disagree_) {
+    ForceEnrollmentNow(
+        cryptauth::InvocationReason::INVOCATION_REASON_INITIALIZATION,
+        base::nullopt /* session_id */);
+  }
 
   // It is possible, though unlikely, that |scheduler_| has previously enrolled
   // successfully but |key_registry_| no longer holds the enrolled keys, for
@@ -509,24 +513,31 @@ void CryptAuthV2EnrollmentManagerImpl::AddV1UserKeyPairToRegistryIfNecessary() {
   std::string private_key_v1 = GetV1UserPrivateKey();
   const CryptAuthKey* key_v2 =
       key_registry_->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair);
+  UserKeyPairState user_key_pair_state =
+      GetUserKeyPairState(public_key_v1, private_key_v1, key_v2);
 
-  RecordUserKeyPairState(public_key_v1, private_key_v1, key_v2);
+  base::UmaHistogramEnumeration("CryptAuth.EnrollmentV2.UserKeyPairState",
+                                user_key_pair_state);
 
-  // If the v1 user key pair does not exist, no action is needed.
-  if (public_key_v1.empty() || private_key_v1.empty())
-    return;
+  initial_v1_and_v2_user_key_pairs_disagree_ =
+      user_key_pair_state == UserKeyPairState::kYesV1KeyYesV2KeyDisagree;
 
-  // If the v1 and v2 user key pairs already agree, no action is needed.
-  if (key_v2 && key_v2->public_key() == public_key_v1 &&
-      key_v2->private_key() == private_key_v1) {
-    return;
-  }
-
-  key_registry_->AddKey(
-      CryptAuthKeyBundle::Name::kUserKeyPair,
-      CryptAuthKey(public_key_v1, private_key_v1, CryptAuthKey::Status::kActive,
-                   cryptauthv2::KeyType::P256,
-                   kCryptAuthFixedUserKeyPairHandle));
+  switch (user_key_pair_state) {
+    case (UserKeyPairState::kNoV1KeyNoV2Key):
+      FALLTHROUGH;
+    case (UserKeyPairState::kNoV1KeyYesV2Key):
+      FALLTHROUGH;
+    case (UserKeyPairState::kYesV1KeyYesV2KeyAgree):
+      return;
+    case (UserKeyPairState::kYesV1KeyNoV2Key):
+      FALLTHROUGH;
+    case (UserKeyPairState::kYesV1KeyYesV2KeyDisagree):
+      key_registry_->AddKey(CryptAuthKeyBundle::Name::kUserKeyPair,
+                            CryptAuthKey(public_key_v1, private_key_v1,
+                                         CryptAuthKey::Status::kActive,
+                                         cryptauthv2::KeyType::P256,
+                                         kCryptAuthFixedUserKeyPairHandle));
+  };
 }
 
 std::ostream& operator<<(std::ostream& stream,

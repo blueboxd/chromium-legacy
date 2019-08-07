@@ -297,7 +297,7 @@ bool ShelfWidget::GetHitTestRects(aura::Window* target,
   return true;
 }
 
-ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
+ShelfWidget::ShelfWidget(Shelf* shelf)
     : shelf_(shelf),
       background_animator_(SHELF_BACKGROUND_DEFAULT,
                            shelf_,
@@ -305,12 +305,21 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
       shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
       delegate_view_(new DelegateView(this)),
       shelf_view_(new ShelfView(ShelfModel::Get(), shelf_)),
-      login_shelf_view_(
-          new LoginShelfView(RootWindowController::ForWindow(shelf_container)
-                                 ->lock_screen_action_background_controller())),
       scoped_session_observer_(this) {
-  DCHECK(shelf_container);
   DCHECK(shelf_);
+}
+
+ShelfWidget::~ShelfWidget() {
+  // Must call Shutdown() before destruction.
+  DCHECK(!status_area_widget_);
+}
+
+void ShelfWidget::Initialize(aura::Window* shelf_container) {
+  DCHECK(shelf_container);
+
+  login_shelf_view_ =
+      new LoginShelfView(RootWindowController::ForWindow(shelf_container)
+                             ->lock_screen_action_background_controller());
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -342,14 +351,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
 
   background_animator_.AddObserver(delegate_view_);
   shelf_->AddObserver(this);
-}
 
-ShelfWidget::~ShelfWidget() {
-  // Must call Shutdown() before destruction.
-  DCHECK(!status_area_widget_);
-}
-
-void ShelfWidget::Initialize() {
   // Sets initial session state to make sure the UI is properly shown.
   OnSessionStateChanged(Shell::Get()->session_controller()->GetSessionState());
   GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);

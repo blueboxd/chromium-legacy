@@ -1420,6 +1420,7 @@
       'Linux FYI Experimental Release (Intel HD 630)',
       'Linux FYI Release (Intel HD 630)',
       'Linux FYI Release (NVIDIA)',
+      'Linux FYI SkiaRenderer Vulkan (Intel HD 630)',
       'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
       'Linux Release (NVIDIA)',
       'Linux Release Code Coverage (NVIDIA)',
@@ -1625,8 +1626,6 @@
     'remove_from': [
       # chromium.win
       'Win10 Tests x64',
-      # chromium.linux
-      'Fuchsia x64',  # https://crbug.com/961455
     ],
   },
   'vr_android_unittests': {
@@ -1773,12 +1772,6 @@
         'args': [
           '--release',
           '--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking',
-        ],
-      },
-      'linux-blink-heap-unified-gc': {
-        'args': [
-          '--debug',
-          '--additional-driver-flag=--enable-blink-features=HeapUnifiedGarbageCollection',
         ],
       },
       'mac10.10-blink-rel-dummy': {

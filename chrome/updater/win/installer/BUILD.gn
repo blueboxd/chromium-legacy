@@ -23,6 +23,10 @@ source_set("lib") {
     "string.cc",
     "string.h",
   ]
+
+  deps = [
+    "//base",
+  ]
 }
 
 process_version_rc_template("version") {

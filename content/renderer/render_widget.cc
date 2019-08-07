@@ -3653,8 +3653,9 @@ gfx::Point RenderWidget::ConvertWindowPointToViewport(const gfx::Point& point) {
   return gfx::ToRoundedPoint(ConvertWindowPointToViewport(gfx::PointF(point)));
 }
 
-bool RenderWidget::RequestPointerLock() {
-  return mouse_lock_dispatcher_->LockMouse(webwidget_mouse_lock_target_.get());
+bool RenderWidget::RequestPointerLock(WebLocalFrame* requester_frame) {
+  return mouse_lock_dispatcher_->LockMouse(webwidget_mouse_lock_target_.get(),
+                                           requester_frame);
 }
 
 void RenderWidget::RequestPointerUnlock() {

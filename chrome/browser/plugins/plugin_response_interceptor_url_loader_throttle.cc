@@ -105,7 +105,7 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
 
   bool embedded =
       resource_type_ != static_cast<int>(content::ResourceType::kMainFrame);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,

@@ -23,6 +23,7 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_store.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
+#include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 #include "chrome/browser/notifications/scheduler/internal/webui_client.h"
 #include "chrome/browser/notifications/scheduler/public/display_agent.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
@@ -87,9 +88,16 @@ KeyedService* CreateNotificationScheduleService(
       notification_store_dir, task_runner);
   auto notification_store =
       std::make_unique<NotificationStore>(std::move(notification_db));
+
+  auto encode_icons_callback =
+      base::BindRepeating(&notifications::ConvertIconToString);
+  auto decode_icons_callback =
+      base::BindRepeating(&notifications::ConvertStringToIcon);
+
   auto notification_manager = ScheduledNotificationManager::Create(
       std::move(notification_store), std::move(icon_store), registered_clients,
-      *config.get());
+      *config.get(), std::move(encode_icons_callback),
+      std::move(decode_icons_callback));
 
   auto background_task_coordinator = BackgroundTaskCoordinator::Create(
       std::move(background_task_scheduler), config.get(),

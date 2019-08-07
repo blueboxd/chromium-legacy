@@ -171,25 +171,78 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   AXTableInfo* GetTableInfo(const AXNode* table_node) const override;
 
   AXNode* CreateNode(AXNode* parent,
-                     int32_t id,
+                     AXNode::AXID id,
                      size_t index_in_parent,
                      AXTreeUpdateState* update_state);
+
+  // Accumulates the work that will be required to update the AXTree.
+  // This allows us to notify observers of structure changes when the
+  // tree is still in a stable and unchanged state.
+  bool ComputePendingChanges(const AXTreeUpdate& update,
+                             AXTreeUpdateState& update_state);
+
+  // Populates |update_state| with information about actions that will
+  // be performed on the tree during the update, such as adding or
+  // removing nodes in the tree. Returns true on success.
+  // Nothing within this call should modify tree structure or node data.
+  bool ComputePendingChangesToNode(const AXNodeData& new_data,
+                                   bool is_new_root,
+                                   AXTreeUpdateState* update_state);
 
   // This is called from within Unserialize(), it returns true on success.
   bool UpdateNode(const AXNodeData& src,
                   bool is_new_root,
                   AXTreeUpdateState* update_state);
 
-  void CallNodeChangeCallbacks(AXNode* node,
-                               const AXNodeData& old_data,
-                               const AXNodeData& new_data);
+  // Notify the delegate that the subtree rooted at |node| will be
+  // destroyed or reparented.
+  void NotifySubtreeWillBeReparentedOrDeleted(
+      AXNode* node,
+      const AXTreeUpdateState* update_state);
+
+  // Notify the delegate that |node| will be destroyed or reparented.
+  void NotifyNodeWillBeReparentedOrDeleted(
+      AXNode* node,
+      const AXTreeUpdateState* update_state);
+
+  // Notify the delegate that |node| and all of its descendants will be
+  // destroyed.
+  void RecursivelyNotifyNodeWillBeDeleted(AXNode* node);
+
+  // Notify the delegate that |node| has been created or reparented.
+  void NotifyNodeHasBeenReparentedOrCreated(
+      AXNode* node,
+      const AXTreeUpdateState* update_state);
+
+  // Notify the delegate that a node will change its data.
+  void NotifyNodeDataWillChange(const AXNodeData& old_data,
+                                const AXNodeData& new_data);
+
+  // Notify the delegate that |node| has changed its data.
+  void NotifyNodeDataHasBeenChanged(AXNode* node,
+                                    const AXNodeData& old_data,
+                                    const AXNodeData& new_data);
 
   void UpdateReverseRelations(AXNode* node, const AXNodeData& new_data);
 
-  void OnRootChanged();
+  // Returns true if all pending changes in the |update_state| have been
+  // handled. If this returns false, the |error_| message will be populated.
+  // It's a fatal error to have pending changes after exhausting
+  // the AXTreeUpdate.
+  bool ValidatePendingChangesComplete(const AXTreeUpdateState& update_state);
 
-  // Notify the delegate that the subtree rooted at |node| will be destroyed,
-  // then call DestroyNodeAndSubtree on it.
+  // Modifies |update_state| so that it knows what subtree and nodes are
+  // going to be destroyed for the subtree rooted at |node|.
+  void MarkSubtreeForDestruction(AXNode::AXID node_id,
+                                 AXTreeUpdateState* update_state);
+
+  // Modifies |update_state| so that it knows what nodes are
+  // going to be destroyed for the subtree rooted at |node|.
+  void MarkNodesForDestructionRecursive(AXNode::AXID node_id,
+                                        AXTreeUpdateState* update_state);
+
+  // Validates that destroying the subtree rooted at |node| has required
+  // information in |update_state|, then calls DestroyNodeAndSubtree on it.
   void DestroySubtree(AXNode* node, AXTreeUpdateState* update_state);
 
   // Call Destroy() on |node|, and delete it from the id map, and then
@@ -197,9 +250,8 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   void DestroyNodeAndSubtree(AXNode* node, AXTreeUpdateState* update_state);
 
   // Iterate over the children of |node| and for each child, destroy the
-  // child and its subtree if its id is not in |new_child_ids|. Returns
-  // true on success, false on fatal error.
-  bool DeleteOldChildren(AXNode* node,
+  // child and its subtree if its id is not in |new_child_ids|.
+  void DeleteOldChildren(AXNode* node,
                          const std::vector<int32_t>& new_child_ids,
                          AXTreeUpdateState* update_state);
 

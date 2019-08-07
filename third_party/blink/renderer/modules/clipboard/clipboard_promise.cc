@@ -263,8 +263,9 @@ void ClipboardPromise::HandleWriteTextWithPermission(PermissionStatus status) {
 PermissionService* ClipboardPromise::GetPermissionService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!permission_service_) {
-    ConnectToPermissionService(ExecutionContext::From(script_state_),
-                               mojo::MakeRequest(&permission_service_));
+    ConnectToPermissionService(
+        ExecutionContext::From(script_state_),
+        permission_service_.BindNewPipeAndPassReceiver());
   }
   return permission_service_.get();
 }

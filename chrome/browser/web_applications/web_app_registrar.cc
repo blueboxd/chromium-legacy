@@ -79,13 +79,13 @@ WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {
   return this;
 }
 
-bool WebAppRegistrar::IsInstalled(const GURL& start_url) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
   return GetAppById(app_id) != nullptr;
+}
+
+bool WebAppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool WebAppRegistrar::WasExternalAppUninstalledByUser(

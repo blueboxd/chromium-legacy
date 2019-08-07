@@ -186,16 +186,8 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   OverviewAnimationType GetExitTransformAnimationType();
 
   // CaptionContainerView::EventDelegate:
-  void HandlePressEvent(const gfx::PointF& location_in_screen,
-                        bool from_touch_gesture) override;
-  void HandleReleaseEvent(const gfx::PointF& location_in_screen) override;
-  void HandleDragEvent(const gfx::PointF& location_in_screen) override;
-  void HandleLongPressEvent(const gfx::PointF& location_in_screen) override;
-  void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
-                             float velocity_x,
-                             float velocity_y) override;
-  void HandleTapEvent() override;
-  void HandleGestureEndEvent() override;
+  void HandleMouseEvent(const ui::MouseEvent& event) override;
+  void HandleGestureEvent(ui::GestureEvent* event) override;
   bool ShouldIgnoreGestureEvents() override;
   void OnHighlightedViewActivated() override;
   void OnHighlightedViewClosed() override;
@@ -288,6 +280,20 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // selection and stacks the window at the top of the Z order in order to keep
   // it visible while dragging around.
   void StartDrag();
+
+  // TODO(sammiequon): Current events go from CaptionContainerView to
+  // OverviewItem to OverviewSession to OverviewWindowDragController. We may be
+  // able to shorten this pipeline.
+  void HandlePressEvent(const gfx::PointF& location_in_screen,
+                        bool from_touch_gesture);
+  void HandleReleaseEvent(const gfx::PointF& location_in_screen);
+  void HandleDragEvent(const gfx::PointF& location_in_screen);
+  void HandleLongPressEvent(const gfx::PointF& location_in_screen);
+  void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
+                             float velocity_x,
+                             float velocity_y);
+  void HandleTapEvent();
+  void HandleGestureEndEvent();
 
   // Returns the list of windows that we want to slide up or down when swiping
   // on the shelf in tablet mode.

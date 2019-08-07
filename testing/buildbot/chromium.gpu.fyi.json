@@ -10283,6 +10283,551 @@
       }
     ]
   },
+  "Linux FYI SkiaRenderer Vulkan (Intel HD 630)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0",
+          "--no-xvfb"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "angle_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "angle_white_box_tests"
+      },
+      {
+        "args": [
+          "--enable-gpu",
+          "--test-launcher-bot-mode",
+          "--test-launcher-jobs=1",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
+          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
+          "--use-vulkan=native",
+          "--enable-oop-rasterization",
+          "--enable-gpu-rasterization",
+          "--force-gpu-rasterization",
+          "--disable-software-compositing-fallback",
+          "--disable-vulkan-fallback-to-gl-for-testing",
+          "--disable-headless-mode",
+          "--no-xvfb"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "vulkan_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--use-cmd-decoder=validating"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "gl_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--no-xvfb"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "gl_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "gles2_conform_test"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        },
+        "test": "swiftshader_unittests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "context_lost",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "context_lost_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "depth_capture",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "depth_capture_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "gpu_process",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "gpu_process_launch_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "hardware_accelerated_feature",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "hardware_accelerated_feature_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "maps",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--dont-restore-color-profile-after-test",
+          "--os-type",
+          "linux",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "maps_pixel_test",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "screenshot_sync",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--dont-restore-color-profile-after-test"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "screenshot_sync_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--use-gl=any",
+          "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--force-gpu-rasterization",
+          "--additional-driver-flag=--enable-oop-rasterization",
+          "--additional-driver-flag=--disable-software-compositing-fallback",
+          "--additional-driver-flag=--disable-headless-mode",
+          "--no-xvfb",
+          "--fuzzy-diff",
+          "--skipped=always",
+          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "skia_renderer_gl_blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "pixel",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--dont-restore-color-profile-after-test",
+          "--os-type",
+          "linux",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
+        ],
+        "experiment_percentage": 100,
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "skia_renderer_pixel_skia_gold_test",
+        "precommit_args": [
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
+        ],
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
+        }
+      },
+      {
+        "args": [
+          "--num-retries=3",
+          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--use-gl=any",
+          "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--force-gpu-rasterization",
+          "--additional-driver-flag=--enable-oop-rasterization",
+          "--additional-driver-flag=--disable-software-compositing-fallback",
+          "--additional-driver-flag=--use-vulkan=native",
+          "--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing",
+          "--additional-driver-flag=--disable-headless-mode",
+          "--no-xvfb",
+          "--fuzzy-diff",
+          "--skipped=always",
+          "--driver-logging",
+          "--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer",
+          "--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=native"
+        ],
+        "isolate_name": "blink_web_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "vulkan_native_blink_web_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "pixel",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc \"--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback\"",
+          "--dont-restore-color-profile-after-test",
+          "--os-type",
+          "linux",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "vulkan_pixel_skia_gold_test",
+        "precommit_args": [
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
+        ],
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
+        }
+      }
+    ]
+  },
   "Linux FYI SkiaRenderer Vulkan (NVIDIA)": {
     "gtest_tests": [
       {
@@ -27249,6 +27794,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "shards": 4
         },
         "test": "angle_end2end_tests"
@@ -27270,7 +27816,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "angle_gles1_conformance_tests"
       },
@@ -27293,7 +27840,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "angle_unittests"
       },
@@ -27315,7 +27863,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "angle_white_box_tests"
       },
@@ -27340,7 +27889,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "browser_tests"
       },
@@ -27362,7 +27912,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_tests"
       },
@@ -27385,7 +27936,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_tests"
       },
@@ -27406,7 +27958,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gl_unittests"
       },
@@ -27427,7 +27980,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gles2_conform_test"
       },
@@ -27450,7 +28004,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gles2_conform_test"
       },
@@ -27474,7 +28029,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gles2_conform_test"
       },
@@ -27492,7 +28048,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "gpu_unittests"
       },
@@ -27510,7 +28067,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "swiftshader_unittests"
       },
@@ -27534,7 +28092,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "video_decode_accelerator_unittest"
       },
@@ -27558,7 +28117,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "video_decode_accelerator_unittest"
       },
@@ -27580,7 +28140,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         },
         "test": "xr_browser_tests"
       }
@@ -27609,7 +28170,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -27638,6 +28200,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27667,6 +28230,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27696,6 +28260,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27725,6 +28290,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27758,6 +28324,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27794,6 +28361,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27838,6 +28406,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
@@ -27868,6 +28437,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27892,7 +28462,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "expiration": 10800
         }
       },
       {
@@ -27922,6 +28493,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27951,6 +28523,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false
         }
       },
@@ -27982,6 +28555,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 20
         }
@@ -28014,6 +28588,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 20
         }
@@ -28046,6 +28621,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 20
         }
@@ -28076,6 +28652,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 2
         }
@@ -28106,6 +28683,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 2
         }
@@ -28136,6 +28714,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 2
         }
@@ -28166,6 +28745,7 @@
               "pool": "Chrome-GPU"
             }
           ],
+          "expiration": 10800,
           "idempotent": false,
           "shards": 2
         }

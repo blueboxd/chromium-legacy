@@ -26,21 +26,19 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
   const url::Origin& lock = request_initiator_site_lock.value();
 
   if (!request_initiator.has_value()) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // SECURITY CHECK: Renderer processes should always provide a
-      // |request_initiator|.  Similarly, browser-side features acting on
-      // behalf of a renderer process (like AppCache), should always provide a
-      // |request_initiator|.
-      //
-      // Callers associated with features (e.g. Sec-Fetch-Site) that may handle
-      // browser-initiated requests (e.g. navigations and/or SafeBrowsing
-      // traffic) need to take extra care to avoid calling
-      // VerifyRequestInitiatorLock (and/or GetTrustworthyInitiator) with no
-      // |request_initiator|.  Such features should return early when handling
-      // request with no |request_initiator| but only when the request comes
-      // through a URLLoaderFactory associated with kBrowserProcessId.
-      CHECK(false);
-    }
+    // SECURITY CHECK: Renderer processes should always provide a
+    // |request_initiator|.  Similarly, browser-side features acting on
+    // behalf of a renderer process (like AppCache), should always provide a
+    // |request_initiator|.
+    //
+    // Callers associated with features (e.g. Sec-Fetch-Site) that may handle
+    // browser-initiated requests (e.g. navigations and/or SafeBrowsing
+    // traffic) need to take extra care to avoid calling
+    // VerifyRequestInitiatorLock (and/or GetTrustworthyInitiator) with no
+    // |request_initiator|.  Such features should return early when handling
+    // request with no |request_initiator| but only when the request comes
+    // through a URLLoaderFactory associated with kBrowserProcessId.
+    CHECK(false);
     return InitiatorLockCompatibility::kNoInitiator;
   }
   const url::Origin& initiator = request_initiator.value();
@@ -80,10 +78,8 @@ url::Origin GetTrustworthyInitiator(
   if (!request_initiator.has_value())
     return unique_origin_fallback;
 
-  if (!base::FeatureList::IsEnabled(features::kNetworkService) ||
-      !base::FeatureList::IsEnabled(features::kRequestInitiatorSiteLock)) {
+  if (!base::FeatureList::IsEnabled(features::kRequestInitiatorSiteLock))
     return request_initiator.value();
-  }
 
   InitiatorLockCompatibility initiator_compatibility =
       VerifyRequestInitiatorLock(request_initiator_site_lock,

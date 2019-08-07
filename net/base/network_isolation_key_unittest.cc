@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "net/base/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -148,6 +149,143 @@ TEST(NetworkIsolationKeyTest, OpaqueOriginKeyWithFrameOrigin) {
   EXPECT_EQ(origin_data.GetDebugString(), key2.ToDebugString());
   EXPECT_NE(origin_data.DeriveNewOpaqueOrigin().GetDebugString(),
             key2.ToDebugString());
+}
+
+TEST(NetworkIsolationKeyTest, ValueRoundTripEmpty) {
+  const url::Origin kJunkOrigin =
+      url::Origin::Create(GURL("data:text/html,junk"));
+
+  // Convert empty key to value and back, expecting the same value.
+  NetworkIsolationKey no_frame_origin_key;
+  base::Value no_frame_origin_value;
+  ASSERT_TRUE(no_frame_origin_key.ToValue(&no_frame_origin_value));
+
+  // Fill initial value with junk data, to make sure it's overwritten.
+  NetworkIsolationKey out_key(kJunkOrigin, kJunkOrigin);
+  EXPECT_TRUE(NetworkIsolationKey::FromValue(no_frame_origin_value, &out_key));
+  EXPECT_EQ(no_frame_origin_key, out_key);
+
+  // Perform same checks when frame origins are enabled.
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      net::features::kAppendFrameOriginToNetworkIsolationKey);
+
+  NetworkIsolationKey frame_origin_key;
+  base::Value frame_origin_value;
+  ASSERT_TRUE(frame_origin_key.ToValue(&frame_origin_value));
+
+  // Fill initial value with junk data, to make sure it's overwritten.
+  out_key = NetworkIsolationKey(kJunkOrigin, kJunkOrigin);
+  EXPECT_TRUE(NetworkIsolationKey::FromValue(frame_origin_value, &out_key));
+  EXPECT_EQ(frame_origin_key, out_key);
+
+  // The Values should also be the same in both cases.
+  EXPECT_EQ(no_frame_origin_key, frame_origin_key);
+}
+
+TEST(NetworkIsolationKeyTest, ValueRoundTripNoFrameOrigin) {
+  const url::Origin kJunkOrigin =
+      url::Origin::Create(GURL("data:text/html,junk"));
+
+  NetworkIsolationKey key1(url::Origin::Create(GURL("https://foo.test/")),
+                           kJunkOrigin);
+  base::Value value;
+  ASSERT_TRUE(key1.ToValue(&value));
+
+  // Fill initial value with junk data, to make sure it's overwritten.
+  NetworkIsolationKey key2(kJunkOrigin, kJunkOrigin);
+  EXPECT_TRUE(NetworkIsolationKey::FromValue(value, &key2));
+  EXPECT_EQ(key1, key2);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      net::features::kAppendFrameOriginToNetworkIsolationKey);
+
+  // Loading should fail when frame origins are enabled.
+  EXPECT_FALSE(NetworkIsolationKey::FromValue(value, &key2));
+}
+
+TEST(NetworkIsolationKeyTest, ValueRoundTripFrameOrigin) {
+  const url::Origin kJunkOrigin =
+      url::Origin::Create(GURL("data:text/html,junk"));
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      net::features::kAppendFrameOriginToNetworkIsolationKey);
+
+  NetworkIsolationKey key1(url::Origin::Create(GURL("https://foo.test/")),
+                           url::Origin::Create(GURL("https://foo.test/")));
+  base::Value value;
+  ASSERT_TRUE(key1.ToValue(&value));
+
+  // Fill initial value with junk data, to make sure it's overwritten.
+  NetworkIsolationKey key2(kJunkOrigin, kJunkOrigin);
+  EXPECT_TRUE(NetworkIsolationKey::FromValue(value, &key2));
+  EXPECT_EQ(key1, key2);
+
+  feature_list.Reset();
+
+  // Loading should fail when frame origins are disabled.
+  EXPECT_FALSE(NetworkIsolationKey::FromValue(value, &key2));
+}
+
+TEST(NetworkIsolationKeyTest, ToValueTransientOrigin) {
+  const url::Origin kTransientOrigin =
+      url::Origin::Create(GURL("data:text/html,transient"));
+
+  for (bool use_frame_origins : {false, true}) {
+    SCOPED_TRACE(use_frame_origins);
+    base::test::ScopedFeatureList feature_list;
+    if (use_frame_origins) {
+      feature_list.InitAndEnableFeature(
+          net::features::kAppendFrameOriginToNetworkIsolationKey);
+    }
+
+    NetworkIsolationKey key1(kTransientOrigin, kTransientOrigin);
+    EXPECT_TRUE(key1.IsTransient());
+    base::Value value;
+    EXPECT_FALSE(key1.ToValue(&value));
+  }
+}
+
+TEST(NetworkIsolationKeyTest, FromValueBadData) {
+  // Can't create these inline, since vector initialization lists require a
+  // copy, and base::Value has no copy operator, only move.
+  base::Value::ListStorage not_a_url_list;
+  not_a_url_list.emplace_back(base::Value("not-a-url"));
+
+  base::Value::ListStorage transient_origin_list;
+  transient_origin_list.emplace_back(base::Value("data:text/html,transient"));
+
+  base::Value::ListStorage too_many_origins_list;
+  too_many_origins_list.emplace_back(base::Value("https://too/"));
+  too_many_origins_list.emplace_back(base::Value("https://many/"));
+  too_many_origins_list.emplace_back(base::Value("https://origins/"));
+
+  const base::Value kTestCases[] = {
+      base::Value(base::Value::Type::STRING),
+      base::Value(base::Value::Type::DICTIONARY),
+      base::Value(std::move(not_a_url_list)),
+      base::Value(std::move(transient_origin_list)),
+      base::Value(std::move(too_many_origins_list)),
+  };
+
+  for (bool use_frame_origins : {false, true}) {
+    SCOPED_TRACE(use_frame_origins);
+    base::test::ScopedFeatureList feature_list;
+    if (use_frame_origins) {
+      feature_list.InitAndEnableFeature(
+          net::features::kAppendFrameOriginToNetworkIsolationKey);
+    }
+
+    for (const auto& test_case : kTestCases) {
+      NetworkIsolationKey key;
+      // Write the value on failure.
+      EXPECT_FALSE(NetworkIsolationKey::FromValue(test_case, &key))
+          << test_case;
+    }
+  }
 }
 
 class NetworkIsolationKeyWithFrameOriginTest : public testing::Test {

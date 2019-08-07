@@ -1339,28 +1339,6 @@
             ]
         }
     ],
-    "BufferingBytesConsumerDelay": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "milliseconds": "50"
-                    },
-                    "enable_features": [
-                        "BufferingBytesConsumerDelay"
-                    ]
-                }
-            ]
-        }
-    ],
     "CertDualVerificationTrial": [
         {
             "platforms": [
@@ -4049,6 +4027,24 @@
             ]
         }
     ],
+    "PolicyAtomicGroup": [
+        {
+            "platforms": [
+                "windows",
+                "chromeos",
+                "mac",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PolicyAtomicGroup"
+                    ]
+                }
+            ]
+        }
+    ],
     "Precache": [
         {
             "platforms": [
@@ -4523,7 +4519,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "ad_popup_trigger_quota": "5"
+                        "ad_popup_trigger_quota": "10"
                     },
                     "enable_features": [
                         "SafeBrowsingAdPopupTrigger"
@@ -4545,7 +4541,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "ad_redirect_trigger_quota": "5"
+                        "ad_redirect_trigger_quota": "10"
                     },
                     "enable_features": [
                         "SafeBrowsingAdRedirectTrigger"

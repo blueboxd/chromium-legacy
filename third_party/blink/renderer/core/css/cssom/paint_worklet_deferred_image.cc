@@ -46,4 +46,21 @@ void PaintWorkletDeferredImage::DrawTile(GraphicsContext& context,
                kClampImageToSourceRect, input_);
 }
 
+sk_sp<PaintShader> PaintWorkletDeferredImage::CreateShader(
+    const FloatRect& tile_rect,
+    const SkMatrix* pattern_matrix,
+    const FloatRect& src_rect) {
+  PaintImage image = PaintImageBuilder::WithDefault()
+                         .set_paint_worklet_input(std::move(input_))
+                         .set_id(PaintImage::GetNextId())
+                         .TakePaintImage();
+
+  SkRect tile = SkRect::MakeXYWH(tile_rect.X(), tile_rect.Y(),
+                                 tile_rect.Width(), tile_rect.Height());
+  sk_sp<PaintShader> shader = PaintShader::MakeImage(
+      image, SkTileMode::kRepeat, SkTileMode::kRepeat, pattern_matrix, &tile);
+
+  return shader;
+}
+
 }  // namespace blink

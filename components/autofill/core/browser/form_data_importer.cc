@@ -475,6 +475,8 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
     const FormStructure& form,
     bool* has_duplicate_field_type) {
   *has_duplicate_field_type = false;
+  has_non_focusable_field_ = false;
+  from_dynamic_change_form_ = false;
 
   CreditCard candidate_credit_card;
 

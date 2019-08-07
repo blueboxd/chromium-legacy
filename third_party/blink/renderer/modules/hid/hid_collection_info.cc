@@ -9,16 +9,28 @@
 namespace blink {
 
 HIDCollectionInfo::HIDCollectionInfo(
-    const device::mojom::blink::HidCollectionInfo& info) {}
+    const device::mojom::blink::HidCollectionInfo& info)
+    : usage_page_(info.usage->usage_page),
+      usage_(info.usage->usage),
+      collection_type_(info.collection_type) {
+  for (const auto& child : info.children)
+    children_.push_back(MakeGarbageCollected<HIDCollectionInfo>(*child));
+  for (const auto& report : info.input_reports)
+    input_reports_.push_back(MakeGarbageCollected<HIDReportInfo>(*report));
+  for (const auto& report : info.output_reports)
+    output_reports_.push_back(MakeGarbageCollected<HIDReportInfo>(*report));
+  for (const auto& report : info.feature_reports)
+    feature_reports_.push_back(MakeGarbageCollected<HIDReportInfo>(*report));
+}
 
 HIDCollectionInfo::~HIDCollectionInfo() = default;
 
 uint16_t HIDCollectionInfo::usagePage() const {
-  return 0;
+  return usage_page_;
 }
 
 uint16_t HIDCollectionInfo::usage() const {
-  return 0;
+  return usage_;
 }
 
 const HeapVector<Member<HIDCollectionInfo>>& HIDCollectionInfo::children()
@@ -42,7 +54,7 @@ const HeapVector<Member<HIDReportInfo>>& HIDCollectionInfo::featureReports()
 }
 
 uint32_t HIDCollectionInfo::collectionType() const {
-  return 0;
+  return collection_type_;
 }
 
 void HIDCollectionInfo::Trace(blink::Visitor* visitor) {

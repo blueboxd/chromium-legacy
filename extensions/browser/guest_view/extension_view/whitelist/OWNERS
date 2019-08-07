@@ -1,8 +1,0 @@
-# Whitelisting new extension ids for ExtensionView use requires approval from
-# chrome-eng-review@google.com.
-set noparent
-
-file://ENG_REVIEW_OWNERS
-
-# TEAM: extensions-dev@chromium.org
-# COMPONENT: Platform>Extensions

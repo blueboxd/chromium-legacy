@@ -28,7 +28,6 @@
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 #include "components/prefs/pref_service.h"
-#include "services/network/public/cpp/features.h"
 
 namespace data_reduction_proxy {
 
@@ -70,8 +69,7 @@ DataReductionProxyService::DataReductionProxyService(
   }
   network_quality_tracker_->AddEffectiveConnectionTypeObserver(this);
   network_quality_tracker_->AddRTTAndThroughputEstimatesObserver(this);
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      data_use_measurement_) {  // null in unit tests.
+  if (data_use_measurement_) {  // null in unit tests.
     data_use_measurement_->AddServicesDataUseObserver(this);
   }
 
@@ -90,8 +88,7 @@ DataReductionProxyService::~DataReductionProxyService() {
   network_connection_tracker_->RemoveNetworkConnectionObserver(this);
   compression_stats_.reset();
   db_task_runner_->DeleteSoon(FROM_HERE, db_data_owner_.release());
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      data_use_measurement_) {  // null in unit tests.
+  if (data_use_measurement_) {  // null in unit tests.
     data_use_measurement_->RemoveServicesDataUseObserver(this);
   }
 }
@@ -384,7 +381,6 @@ void DataReductionProxyService::OnServicesDataUse(int32_t service_hash_code,
   if (compression_stats_) {
     // Record non-content initiated traffic to the Other bucket for data saver
     // site-breakdown.
-    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     compression_stats_->RecordDataUseByHost(
         util::GetSiteBreakdownOtherHostName(), sent_bytes, sent_bytes,
         base::Time::Now());

@@ -36,7 +36,6 @@ class TestWebClient : public web::WebClient {
   base::string16 GetPluginNotSupportedText() const override;
 
   base::RefCountedMemory* GetDataResourceBytes(int id) const override;
-  bool IsDataResourceGzipped(int resource_id) const override;
 
   NSString* GetDocumentStartScriptForMainFrame(
       BrowserState* browser_state) const override;

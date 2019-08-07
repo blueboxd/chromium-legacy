@@ -51,24 +51,13 @@
                     expirationMonth:(NSString*)expirationMonth
                      expirationYear:(NSString*)expirationYear {
   autofill::CreditCard creditCard = autofill::CreditCard();
+  [self updateCreditCard:&creditCard
+          cardHolderName:cardHolderName
+              cardNumber:cardNumber
+         expirationMonth:expirationMonth
+          expirationYear:expirationYear];
 
-  const std::string& appLocal = GetApplicationContext()->GetApplicationLocale();
-  creditCard.SetInfo(autofill::AutofillType(AutofillTypeFromAutofillUIType(
-                         AutofillUITypeCreditCardHolderFullName)),
-                     base::SysNSStringToUTF16(cardHolderName), appLocal);
-
-  creditCard.SetInfo(autofill::AutofillType(AutofillTypeFromAutofillUIType(
-                         AutofillUITypeCreditCardNumber)),
-                     base::SysNSStringToUTF16(cardNumber), appLocal);
-
-  creditCard.SetInfo(autofill::AutofillType(AutofillTypeFromAutofillUIType(
-                         AutofillUITypeCreditCardExpMonth)),
-                     base::SysNSStringToUTF16(expirationMonth), appLocal);
-
-  creditCard.SetInfo(autofill::AutofillType(AutofillTypeFromAutofillUIType(
-                         AutofillUITypeCreditCardExpYear)),
-                     base::SysNSStringToUTF16(expirationYear), appLocal);
-
+  // Validates the credit card number and expiration date.
   if (!creditCard.HasValidCardNumber()) {
     [self.addCreditCardMediatorDelegate
         creditCardMediatorHasInvalidCardNumber:self];
@@ -81,12 +70,69 @@
     return;
   }
 
-  self.personalDataManager->AddCreditCard(creditCard);
+  autofill::CreditCard* savedCreditCard =
+      self.personalDataManager->GetCreditCardByNumber(
+          base::SysNSStringToUTF8(cardNumber));
+
+  // If the credit card number already exist in saved credit card
+  // |savedCreditCard| then update saved credit card |savedCreditCardCopy|
+  // with the new data.
+  if (savedCreditCard != nil) {
+    autofill::CreditCard savedCreditCardCopy(*savedCreditCard);
+
+    [self updateCreditCard:&savedCreditCardCopy
+            cardHolderName:cardHolderName
+                cardNumber:cardNumber
+           expirationMonth:expirationMonth
+            expirationYear:expirationYear];
+
+    self.personalDataManager->UpdateCreditCard(savedCreditCardCopy);
+  } else {
+    self.personalDataManager->AddCreditCard(creditCard);
+  }
+
   [self.addCreditCardMediatorDelegate creditCardMediatorDidFinish:self];
 }
 
 - (void)addCreditCardViewControllerDidCancel:(UIViewController*)viewController {
   [self.addCreditCardMediatorDelegate creditCardMediatorDidFinish:self];
+}
+
+#pragma mark - Private
+
+// Updates received credit card with received data.
+- (void)updateCreditCard:(autofill::CreditCard*)creditCard
+          cardHolderName:(NSString*)cardHolderName
+              cardNumber:(NSString*)cardNumber
+         expirationMonth:(NSString*)expirationMonth
+          expirationYear:(NSString*)expirationYear {
+  [self updateCreditCard:creditCard
+            cardProperty:cardHolderName
+          autofillUIType:AutofillUITypeCreditCardHolderFullName];
+
+  [self updateCreditCard:creditCard
+            cardProperty:cardNumber
+          autofillUIType:AutofillUITypeCreditCardNumber];
+
+  [self updateCreditCard:creditCard
+            cardProperty:expirationMonth
+          autofillUIType:AutofillUITypeCreditCardExpMonth];
+
+  [self updateCreditCard:creditCard
+            cardProperty:expirationYear
+          autofillUIType:AutofillUITypeCreditCardExpYear];
+}
+
+// Updates the |AutofillUIType| of the |creditCard| with the value of
+// |cardProperty|.
+- (void)updateCreditCard:(autofill::CreditCard*)creditCard
+            cardProperty:(NSString*)cardValue
+          autofillUIType:(AutofillUIType)fieldType {
+  const std::string& appLocal = GetApplicationContext()->GetApplicationLocale();
+
+  creditCard->SetInfo(
+      autofill::AutofillType(AutofillTypeFromAutofillUIType(fieldType)),
+      base::SysNSStringToUTF16(cardValue), appLocal);
 }
 
 @end

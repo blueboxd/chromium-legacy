@@ -68,7 +68,7 @@ class PipeReaderBase {
 
   void ReadLoop() {
     ReadLoopInternal();
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&DevToolsPipeHandler::Shutdown, devtools_handler_));
   }
@@ -103,10 +103,9 @@ class PipeReaderBase {
   }
 
   void HandleMessage(std::string buffer) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&DevToolsPipeHandler::HandleMessage, devtools_handler_,
-                       std::move(buffer)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&DevToolsPipeHandler::HandleMessage,
+                                  devtools_handler_, std::move(buffer)));
   }
 
  protected:
@@ -298,8 +297,9 @@ void DevToolsPipeHandler::Shutdown() {
 
   // If there is no write thread, only take care of the read thread.
   if (!write_thread_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce([](base::Thread* rthread) { delete rthread; },
                        read_thread_.release()));
     return;
@@ -328,8 +328,9 @@ void DevToolsPipeHandler::Shutdown() {
                                 pipe_reader_.release()));
 
   // Post background task that would join and destroy the threads.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           [](base::Thread* rthread, base::Thread* wthread) {
             delete rthread;

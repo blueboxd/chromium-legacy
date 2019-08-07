@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 
-#include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout_types.h"
 #include "ui/gfx/animation/tween.h"
 
 TabAnimationState TabAnimationState::ForIdealTabState(TabOpenness open,
@@ -46,39 +46,6 @@ TabAnimationState TabAnimationState::WithActiveness(
   return TabAnimationState(openness_, pinnedness_,
                            active == TabActiveness::kActive ? 1 : 0,
                            normalized_leading_edge_x_);
-}
-
-float TabAnimationState::GetMinimumWidth(
-    const TabLayoutConstants& layout_constants,
-    const TabSizeInfo& size_info) const {
-  const float min_width = gfx::Tween::FloatValueBetween(
-      activeness_, size_info.min_inactive_width, size_info.min_active_width);
-  return TransformForPinnednessAndOpenness(layout_constants, size_info,
-                                           min_width);
-}
-
-float TabAnimationState::GetLayoutCrossoverWidth(
-    const TabLayoutConstants& layout_constants,
-    const TabSizeInfo& size_info) const {
-  return TransformForPinnednessAndOpenness(layout_constants, size_info,
-                                           size_info.min_active_width);
-}
-
-float TabAnimationState::GetPreferredWidth(
-    const TabLayoutConstants& layout_constants,
-    const TabSizeInfo& size_info) const {
-  return TransformForPinnednessAndOpenness(layout_constants, size_info,
-                                           size_info.standard_width);
-}
-
-float TabAnimationState::TransformForPinnednessAndOpenness(
-    const TabLayoutConstants& layout_constants,
-    const TabSizeInfo& size_info,
-    float width) const {
-  const float pinned_width = gfx::Tween::FloatValueBetween(
-      pinnedness_, width, size_info.pinned_tab_width);
-  return gfx::Tween::FloatValueBetween(openness_, layout_constants.tab_overlap,
-                                       pinned_width);
 }
 
 int TabAnimationState::GetLeadingEdgeOffset(std::vector<int> tab_widths,

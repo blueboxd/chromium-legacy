@@ -195,18 +195,6 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "contexts": ["blessed_extension"]
   },
-  "extensionViewInternal": [
-    {
-      "internal": true,
-      "contexts": ["blessed_extension"],
-      "dependencies": ["permission:extensionview"]
-    }, {
-      "internal": true,
-      "channel": "stable",
-      "contexts": ["webui"],
-      "matches": ["chrome://cast/*"]
-    }
-  ],
   "events": {
     "internal": true,
     "channel": "stable",

@@ -23,7 +23,9 @@ class TabAnimationTest : public testing::Test {
   TabAnimationTest()
       : env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
-  float PinnednessOf(TabAnimationState state) { return state.pinnedness_; }
+  float CurrentPinnedness(const TabAnimation& animation) {
+    return animation.GetCurrentState().pinnedness();
+  }
 
   base::test::ScopedTaskEnvironment env_;
 };
@@ -38,12 +40,10 @@ TEST_F(TabAnimationTest, StaticAnimationDoesNotChange) {
   EXPECT_EQ(kZeroDuration, static_animation.GetTimeRemaining());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(0),
             static_animation.GetTimeRemaining());
-  EXPECT_EQ(PinnednessOf(static_state),
-            PinnednessOf(static_animation.GetCurrentState()));
+  EXPECT_EQ(static_state.pinnedness(), CurrentPinnedness(static_animation));
 
   env_.FastForwardBy(TabAnimation::kAnimationDuration);
-  EXPECT_EQ(PinnednessOf(static_state),
-            PinnednessOf(static_animation.GetCurrentState()));
+  EXPECT_EQ(static_state.pinnedness(), CurrentPinnedness(static_animation));
 }
 
 TEST_F(TabAnimationTest, AnimationAnimates) {
@@ -57,21 +57,17 @@ TEST_F(TabAnimationTest, AnimationAnimates) {
   animation.AnimateTo(target_state);
 
   EXPECT_LT(kZeroDuration, animation.GetTimeRemaining());
-  EXPECT_EQ(PinnednessOf(initial_state),
-            PinnednessOf(animation.GetCurrentState()));
+  EXPECT_EQ(initial_state.pinnedness(), CurrentPinnedness(animation));
 
   env_.FastForwardBy(TabAnimation::kAnimationDuration / 2.0);
 
   EXPECT_LT(kZeroDuration, animation.GetTimeRemaining());
-  EXPECT_LT(PinnednessOf(initial_state),
-            PinnednessOf(animation.GetCurrentState()));
-  EXPECT_LT(PinnednessOf(animation.GetCurrentState()),
-            PinnednessOf(target_state));
+  EXPECT_LT(initial_state.pinnedness(), CurrentPinnedness(animation));
+  EXPECT_LT(CurrentPinnedness(animation), target_state.pinnedness());
 
   env_.FastForwardBy(TabAnimation::kAnimationDuration / 2.0);
 
-  EXPECT_EQ(PinnednessOf(target_state),
-            PinnednessOf(animation.GetCurrentState()));
+  EXPECT_EQ(target_state.pinnedness(), CurrentPinnedness(animation));
 }
 
 TEST_F(TabAnimationTest, CompletedAnimationSnapsToTarget) {
@@ -88,8 +84,7 @@ TEST_F(TabAnimationTest, CompletedAnimationSnapsToTarget) {
 
   EXPECT_EQ(kZeroDuration, animation.GetTimeRemaining());
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(0), animation.GetTimeRemaining());
-  EXPECT_EQ(PinnednessOf(target_state),
-            PinnednessOf(animation.GetCurrentState()));
+  EXPECT_EQ(target_state.pinnedness(), CurrentPinnedness(animation));
 }
 
 TEST_F(TabAnimationTest, ReplacedAnimationRestartsDuration) {
@@ -106,8 +101,7 @@ TEST_F(TabAnimationTest, ReplacedAnimationRestartsDuration) {
   TabAnimationState reversal_state = animation.GetCurrentState();
   animation.AnimateTo(initial_state);
 
-  EXPECT_EQ(PinnednessOf(reversal_state),
-            PinnednessOf(animation.GetCurrentState()));
+  EXPECT_EQ(reversal_state.pinnedness(), CurrentPinnedness(animation));
 
   EXPECT_EQ(TabAnimation::kAnimationDuration, animation.GetTimeRemaining());
 }
@@ -131,8 +125,7 @@ TEST_F(TabAnimationTest, RetargetedAnimationKeepsDuration) {
             animation.GetTimeRemaining());
 
   env_.FastForwardBy(TabAnimation::kAnimationDuration);
-  EXPECT_EQ(PinnednessOf(initial_state),
-            PinnednessOf(animation.GetCurrentState()));
+  EXPECT_EQ(initial_state.pinnedness(), CurrentPinnedness(animation));
 }
 
 TEST_F(TabAnimationTest, TestNotifyCloseCompleted) {

@@ -41,8 +41,8 @@ const base::Feature kSystemMonitorMetricLogger{
 
 SystemMonitor::SystemMonitor(
     std::unique_ptr<MetricEvaluatorsHelper> metric_evaluators_helper)
-    : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(),
+    : blocking_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       metric_evaluators_helper_(
           metric_evaluators_helper.release(),

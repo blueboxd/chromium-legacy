@@ -10,11 +10,14 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/message_loop/message_pump_type.h"
 #include "build/build_config.h"
 #include "gpu/gpu_export.h"
 #include "media/media_buildflags.h"
 #include "ui/gfx/buffer_types.h"
+
+#if defined(USE_OZONE)
+#include "base/message_loop/message_pump_type.h"
+#endif
 
 namespace gpu {
 
@@ -215,8 +218,10 @@ struct GPU_EXPORT GpuPreferences {
   // Enable the WebGPU command buffer.
   bool enable_webgpu = false;
 
+#if defined(USE_OZONE)
   // Determines message pump type for the GPU thread.
   base::MessagePumpType message_pump_type = base::MessagePumpType::DEFAULT;
+#endif
 
   // Please update gpu_preferences_unittest.cc when making additions or
   // changes to this struct.

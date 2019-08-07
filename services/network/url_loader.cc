@@ -380,15 +380,6 @@ URLLoader::URLLoader(
           request.update_network_isolation_key_on_redirect) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
-    CHECK(!url_loader_client_.internal_state()
-               ->handle()
-               .QuerySignalsState()
-               .peer_remote())
-        << "URLLoader must not be used by the renderer when network service is "
-        << "disabled, as that skips security checks in ResourceDispatcherHost. "
-        << "The only acceptable usage is the browser using SimpleURLLoader.";
-  }
   if (url_loader_header_client &&
       (options_ & mojom::kURLLoadOptionUseHeaderClient)) {
     url_loader_header_client->OnLoaderCreated(

@@ -119,8 +119,8 @@ void AssistantController::SendAssistantFeedback(
 }
 
 void AssistantController::StartSpeakerIdEnrollmentFlow() {
-  if (prefs_controller()->prefs()->GetInteger(
-          chromeos::assistant::prefs::kAssistantConsentStatus) ==
+  if (state()->consent_status().value_or(
+          chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
       chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted) {
     // If activity control has been accepted, launch the enrollment flow.
     setup_controller()->StartOnboarding(false /* relaunch */,

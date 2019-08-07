@@ -13,15 +13,9 @@ generate_token.py http://127.0.0.1:8000 WebComponentsV0 --expire-timestamp=20000
 test(() => {
   // From blink/public/mojom/web_feature/web_feature.mojom
   const ElementCreateShadowRootOnReverseOriginTrials = 2848;
-  assert_false(internals.isUseCounted(document,
-    ElementCreateShadowRootOnReverseOriginTrials));
+  assert_false(internals.isUseCounted(document, ElementCreateShadowRootOnReverseOriginTrials));
   div.createShadowRoot();
-  const isCounted = internals.isUseCounted(document,
-    ElementCreateShadowRootOnReverseOriginTrials);
-  // Behavior is different depending on if the runtime flag is enabled.
-  if (self.internals.runtimeFlags.shadowDOMV0Enabled)
-    assert_false(isCounted);
-  else
-    assert_true(isCounted);
+  const isCounted = internals.isUseCounted(document, ElementCreateShadowRootOnReverseOriginTrials);
+  assert_true(isCounted);
 }, 'Comfirm ElementCreateShadowRootOnReverseOriginTrials counter');
 </script>

@@ -28,6 +28,8 @@ if (enable_vr) {
       "util/sample_queue.h",
       "util/sliding_average.cc",
       "util/sliding_average.h",
+      "util/xr_standard_gamepad_builder.cc",
+      "util/xr_standard_gamepad_builder.h",
       "vr_device.h",
       "vr_device_base.cc",
       "vr_device_base.h",

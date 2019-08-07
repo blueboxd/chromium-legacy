@@ -17,10 +17,10 @@
 namespace net {
 
 base::Value NetLogSocketErrorParams(int net_error, int os_error) {
-  base::DictionaryValue dict;
-  dict.SetInteger("net_error", net_error);
-  dict.SetInteger("os_error", os_error);
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("net_error", net_error);
+  dict.SetIntKey("os_error", os_error);
+  return dict;
 }
 
 void NetLogSocketError(const NetLogWithSource& net_log,
@@ -32,25 +32,25 @@ void NetLogSocketError(const NetLogWithSource& net_log,
 }
 
 base::Value CreateNetLogHostPortPairParams(const HostPortPair* host_and_port) {
-  base::DictionaryValue dict;
-  dict.SetString("host_and_port", host_and_port->ToString());
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("host_and_port", host_and_port->ToString());
+  return dict;
 }
 
 base::Value CreateNetLogIPEndPointParams(const IPEndPoint* address) {
-  base::DictionaryValue dict;
-  dict.SetString("address", address->ToString());
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("address", address->ToString());
+  return dict;
 }
 
 base::Value CreateNetLogSourceAddressParams(const struct sockaddr* net_address,
                                             socklen_t address_len) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   IPEndPoint ipe;
   bool result = ipe.FromSockAddr(net_address, address_len);
   DCHECK(result);
-  dict.SetString("source_address", ipe.ToString());
-  return std::move(dict);
+  dict.SetStringKey("source_address", ipe.ToString());
+  return dict;
 }
 
 }  // namespace net

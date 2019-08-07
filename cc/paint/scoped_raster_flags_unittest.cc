@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/paint_shader.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/test_paint_worklet_input.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -41,7 +43,39 @@ class MockImageProvider : public ImageProvider {
  private:
   int ref_count_ = 0;
 };
+
+class MockPaintWorkletImageProvider : public ImageProvider {
+ public:
+  MockPaintWorkletImageProvider() = default;
+  ~MockPaintWorkletImageProvider() override = default;
+
+  ScopedResult GetRasterContent(const DrawImage& draw_image) override {
+    auto record = sk_make_sp<PaintOpBuffer>();
+    return ScopedResult(std::move(record));
+  }
+};
 }  // namespace
+
+TEST(ScopedRasterFlagsTest, DecodePaintWorkletImageShader) {
+  float width = 100;
+  float height = 100;
+  scoped_refptr<TestPaintWorkletInput> input =
+      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(width, height));
+  auto image = CreatePaintWorkletPaintImage(input);
+  SkMatrix pattern_matrix;
+  SkRect tile_rect = SkRect::MakeXYWH(0, 0, width, height);
+  auto shader =
+      PaintShader::MakeImage(image, SkTileMode::kRepeat, SkTileMode::kRepeat,
+                             &pattern_matrix, &tile_rect);
+  PaintFlags flags;
+  flags.setShader(shader);
+
+  MockPaintWorkletImageProvider provider;
+  ScopedRasterFlags scoped_flags(&flags, &provider, SkMatrix::I(), 0, 255);
+  ASSERT_TRUE(scoped_flags.flags());
+  EXPECT_TRUE(scoped_flags.flags()->getShader()->shader_type() ==
+              PaintShader::Type::kPaintRecord);
+}
 
 TEST(ScopedRasterFlagsTest, KeepsDecodesAlive) {
   auto record = sk_make_sp<PaintOpBuffer>();

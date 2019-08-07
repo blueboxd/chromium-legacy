@@ -231,10 +231,10 @@ class UI_BASE_EXPORT ResourceBundle {
   bool IsBrotli(int resource_id) const;
 
   // Loads the raw bytes of a data resource nearest the scale factor
-  // |scale_factor| into |bytes|, without doing any processing or
-  // interpretation of the resource. Use ResourceHandle::SCALE_FACTOR_NONE
-  // for scale independent image resources (such as wallpaper).
-  // Returns NULL if we fail to read the resource.
+  // |scale_factor| into |bytes|. If the resource is compressed, decompress
+  // before returning. Use ResourceHandle::SCALE_FACTOR_NONE for scale
+  // independent image resources (such as wallpaper). Returns nullptr if we fail
+  // to read the resource.
   base::RefCountedMemory* LoadDataResourceBytesForScale(
       int resource_id,
       ScaleFactor scale_factor) const;

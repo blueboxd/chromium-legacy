@@ -108,7 +108,6 @@ class CORE_EXPORT AXObjectCache
   virtual void HandleLoadComplete(Document*) = 0;
   virtual void HandleLayoutComplete(Document*) = 0;
   virtual void HandleClicked(Node*) = 0;
-  virtual void HandleAutofillStateChanged(Element*, bool) = 0;
   virtual void HandleValidationMessageVisibilityChanged(
       const Element* form_control) = 0;
 

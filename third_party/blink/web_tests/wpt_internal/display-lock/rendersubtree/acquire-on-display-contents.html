@@ -1,0 +1,47 @@
+<!doctype HTML>
+<html>
+<meta charset="utf8">
+<title>Display Locking: acquire, display:contents</title>
+<link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<body></body>
+<script>
+const REJECTION_MESSAGE = "Element has unsupported display type (display: contents).";
+
+async_test(async (t) => {
+  let div = document.createElement("div");
+  div.style = "display: contents; contain: style layout;";
+  document.body.appendChild(div);
+  await div.displayLock.acquire({ timeout: Infinity }).then(
+    null, (e) => {
+      t.step(() => assert_equals(e.message, REJECTION_MESSAGE));
+      t.done();
+    });
+}, "Elements with display:contents can't be locked");
+
+async_test(async (t) => {
+  let slot = document.createElement("slot");
+  slot.style = "contain: style layout;";
+  document.body.appendChild(slot);
+  await slot.displayLock.acquire({ timeout: Infinity }).then(
+   null, (e) => {
+      t.step(() => assert_equals(e.message, REJECTION_MESSAGE));
+      t.done();
+    });
+}, "<slot> can't be locked");
+
+async_test(async (t) => {
+  let slot = document.createElement("slot");
+  slot.style = "display: block; contain: style layout;";
+  document.body.appendChild(slot);
+  await slot.displayLock.acquire({ timeout: Infinity }).then(
+   () => {
+    t.done();
+  });
+}, "<slot> with changed display type can be locked");
+</script>
+</html>

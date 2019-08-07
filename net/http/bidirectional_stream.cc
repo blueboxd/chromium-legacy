@@ -418,11 +418,8 @@ void BidirectionalStream::OnNeedsClientAuth(const SSLConfig& used_ssl_config,
   // BidirectionalStream doesn't support client auth. It ignores client auth
   // requests with null client cert and key.
   SSLConfig ssl_config = used_ssl_config;
-  ssl_config.send_client_cert = true;
-  ssl_config.client_cert = nullptr;
-  ssl_config.client_private_key = nullptr;
-  session_->ssl_client_auth_cache()->Add(cert_info->host_and_port, nullptr,
-                                         nullptr);
+  session_->ssl_client_context()->SetClientCertificate(cert_info->host_and_port,
+                                                       nullptr, nullptr);
   stream_request_ = nullptr;
   StartRequest(ssl_config);
 }

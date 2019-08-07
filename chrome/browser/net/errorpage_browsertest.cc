@@ -331,10 +331,9 @@ class DNSErrorPageTest : public ErrorPageTest {
                 EXPECT_EQ(origin, "null");
                 // Send RequestCreated so that anyone blocking on
                 // WaitForRequests can continue.
-                base::PostTaskWithTraits(
-                    FROM_HERE, {BrowserThread::UI},
-                    base::BindOnce(&DNSErrorPageTest::RequestCreated,
-                                   base::Unretained(owner)));
+                base::PostTask(FROM_HERE, {BrowserThread::UI},
+                               base::BindOnce(&DNSErrorPageTest::RequestCreated,
+                                              base::Unretained(owner)));
                 content::URLLoaderInterceptor::WriteResponse(
                     "chrome/test/data/mock-link-doctor.json",
                     params->client.get());

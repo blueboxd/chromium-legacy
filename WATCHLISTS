@@ -1670,8 +1670,9 @@
         'content/browser/tab_contents/|'\
         'chrome/browser/ui/tab_contents/',
     },
-    'tab_ui': {
-      'filepath': 'chrome/android/features/tab_ui/'
+    'tab_ui_and_start_surface': {
+      'filepath': 'chrome/android/features/tab_ui/'\
+        'chrome/android/features/start_surface/',
     },
     'tbmv2_metrics': {
       'filepath': 'third_party/catapult/tracing/tracing/metrics'
@@ -2322,8 +2323,7 @@
     'fuchsia': ['sergeyu@chromium.org', 'wez@chromium.org'],
     'fuzzing': ['fuzzing@chromium.org'],
     'gamepad': ['mattreynolds+watch@chromium.org'],
-    'gcm': ['peter@chromium.org',
-            'zea+watch@chromium.org'],
+    'gcm': ['peter@chromium.org'],
     'generic_sensor': ['juncai+watch@chromium.org',
                        'mattreynolds+watch@chromium.org',
                        'raphael.kubo.da.costa@intel.com',
@@ -2581,10 +2581,11 @@
     'tab_contents': ['ajwong+watch@chromium.org',
                      'avi@chromium.org',
                      'creis+watch@chromium.org'],
-    'tab_ui': ['meiliang@chromium.org',
-               'yuezhanggg@chromium.org',
-               'wychen@chromium.org',
-               'yusufo@chromium.org'],
+    'tab_ui_and_start_surface': ['meiliang@chromium.org',
+                                 'yuezhanggg@chromium.org',
+                                 'wychen@chromium.org',
+                                 'yusufo@chromium.org',
+                                 'gogerald@chromium.org'],
     'tbmv2_metrics': ['speed-metrics-reviews@chromium.org'],
     'tcmalloc': ['dmikurube@chromium.org'],
     'telemetry': ['telemetry-reviews@chromium.org'],

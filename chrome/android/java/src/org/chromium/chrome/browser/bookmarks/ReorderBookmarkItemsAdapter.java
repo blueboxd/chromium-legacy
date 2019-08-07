@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserve
 import org.chromium.chrome.browser.bookmarks.BookmarkManager.ItemsAdapter;
 import org.chromium.chrome.browser.bookmarks.BookmarkRow.Location;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.widget.dragreorder.DragReorderableListAdapter;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -36,7 +37,7 @@ import java.util.List;
  * BaseAdapter for {@link RecyclerView}. It manages bookmarks to list there.
  */
 class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
-        implements BookmarkUIObserver, ItemsAdapter {
+        implements BookmarkUIObserver, ProfileSyncService.SyncStateChangedListener, ItemsAdapter {
     /**
      * Specifies the view types that the bookmark delegate screen can contain.
      */
@@ -63,6 +64,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     private BookmarkPromoHeader mPromoHeaderManager;
     private String mSearchText;
     private BookmarkId mCurrentFolder;
+    private ProfileSyncService mProfileSyncService;
 
     // For metrics
     private int mDragReorderCount;
@@ -110,6 +112,8 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
 
     ReorderBookmarkItemsAdapter(Context context) {
         super(context);
+        mProfileSyncService = ProfileSyncService.get();
+        mProfileSyncService.addSyncStateChangedListener(this);
     }
 
     /**
@@ -229,7 +233,11 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         mDelegate.getModel().addObserver(mBookmarkModelObserver);
 
         Runnable promoHeaderChangeAction = () -> {
-            updateHeader(true);
+            // If top level folders are not showing, update the header and notify.
+            // Otherwise, update header without notifying; we are going to update the bookmarks
+            // list, in case other top-level folders appeared because of the sync, and then
+            // redraw.
+            updateHeader(!topLevelFoldersShowing());
         };
 
         mPromoHeaderManager = new BookmarkPromoHeader(mContext, promoHeaderChangeAction);
@@ -249,6 +257,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         mDelegate.getSelectionDelegate().removeObserver(this);
         mDelegate = null;
         mPromoHeaderManager.destroy();
+        mProfileSyncService.removeSyncStateChangedListener(this);
     }
 
     @Override
@@ -264,7 +273,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         }
         enableDrag();
 
-        if (folder.equals(mDelegate.getModel().getRootFolderId())) {
+        if (topLevelFoldersShowing()) {
             setBookmarks(mTopLevelFolders);
         } else {
             setBookmarks(mDelegate.getModel().getChildIDs(folder, true, true));
@@ -323,10 +332,17 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         setOrder(mElements);
     }
 
+    // SyncStateChangedListener implementation.
+    @Override
+    public void syncStateChanged() {
+        mTopLevelFolders.clear();
+        populateTopLevelFoldersList();
+    }
+
     private void recordSessionReorderInfo() {
         // Record metrics when we are exiting a folder (mCurrentFolder must not be null)
         // Cannot reorder top level folders or partner bookmarks
-        if (mCurrentFolder != null && !mCurrentFolder.equals(mDelegate.getModel().getRootFolderId())
+        if (mCurrentFolder != null && !topLevelFoldersShowing()
                 && mCurrentFolder.getType() != BookmarkType.PARTNER) {
             RecordHistogram.recordCount1000Histogram(
                     "BookmarkManager.NumDraggedInSession", mDragReorderCount);
@@ -419,8 +435,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
 
     @Override
     protected void setOrder(List<BookmarkItem> bookmarkItems) {
-        assert !mCurrentFolder.equals(mDelegate.getModel().getRootFolderId())
-            : "Cannot reorder top-level folders!";
+        assert !topLevelFoldersShowing() : "Cannot reorder top-level folders!";
         assert mCurrentFolder.getType()
                 != BookmarkType.PARTNER : "Cannot reorder partner bookmarks!";
         assert mDelegate.getCurrentState()
@@ -494,5 +509,19 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         } else {
             return Location.MIDDLE;
         }
+    }
+
+    /**
+     * @return True iff the currently-open folder is the root folder
+     *         (which is true iff the top-level folders are showing)
+     */
+    private boolean topLevelFoldersShowing() {
+        return mCurrentFolder.equals(mDelegate.getModel().getRootFolderId());
+    }
+
+    @VisibleForTesting
+    void simulateSignInForTests() {
+        syncStateChanged();
+        onFolderStateSet(mCurrentFolder);
     }
 }

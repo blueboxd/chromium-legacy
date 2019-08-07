@@ -21,6 +21,8 @@
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_constant.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace notifications {
 namespace {
@@ -40,12 +42,16 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
       NotificationStore notification_store,
       std::unique_ptr<IconStore> icon_store,
       const std::vector<SchedulerClientType>& clients,
-      const SchedulerConfig& config)
+      const SchedulerConfig& config,
+      EncodeIconsCallback encode_icons_callback,
+      DecodeIconsCallback decode_icons_callback)
       : notification_store_(std::move(notification_store)),
         icon_store_(std::move(icon_store)),
         clients_(clients.begin(), clients.end()),
         delegate_(nullptr),
-        config_(config) {}
+        config_(config),
+        encode_icons_callback_(std::move(encode_icons_callback)),
+        decode_icons_callback_(std::move(decode_icons_callback)) {}
 
  private:
   void Init(Delegate* delegate, InitCallback callback) override {
@@ -225,7 +231,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     // in following CLs.
     if (entry->notification_data.icons.empty())
       return;
-    notifications::ConvertIconToString(
+
+    encode_icons_callback_.Run(
         std::move(entry->notification_data.icons.front()),
         base::BindOnce(&ScheduledNotificationManagerImpl::OnIconEncoded,
                        weak_ptr_factory_.GetWeakPtr(), type, std::move(guid)));
@@ -281,15 +288,18 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   // Create two default buttons {Helpful, Unhelpful} for notification.
   void CreateInhrButtonsPair(std::vector<NotificationData::Button>* buttons) {
     buttons->clear();
-    // TODO(hesen): Fill button text field with GRD string resource.
     NotificationData::Button helpful_button;
     helpful_button.type = ActionButtonType::kHelpful;
     helpful_button.id = notifications::kDefaultHelpfulButtonId;
+    helpful_button.text =
+        l10n_util::GetStringUTF16(IDS_NOTIFICATION_DEFAULT_HELPFUL_BUTTON_TEXT);
     buttons->emplace_back(std::move(helpful_button));
 
     NotificationData::Button unhelpful_button;
     unhelpful_button.type = ActionButtonType::kUnhelpful;
     unhelpful_button.id = notifications::kDefaultUnhelpfulButtonId;
+    unhelpful_button.text = l10n_util::GetStringUTF16(
+        IDS_NOTIFICATION_DEFAULT_UNHELPFUL_BUTTON_TEXT);
     buttons->emplace_back(std::move(unhelpful_button));
   }
 
@@ -301,6 +311,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
            std::map<std::string, std::unique_ptr<NotificationEntry>>>
       notifications_;
   const SchedulerConfig& config_;
+  EncodeIconsCallback encode_icons_callback_;
+  DecodeIconsCallback decode_icons_callback_;
   base::WeakPtrFactory<ScheduledNotificationManagerImpl> weak_ptr_factory_{
       this};
   DISALLOW_COPY_AND_ASSIGN(ScheduledNotificationManagerImpl);
@@ -313,9 +325,12 @@ ScheduledNotificationManager::Create(
     std::unique_ptr<CollectionStore<NotificationEntry>> notification_store,
     std::unique_ptr<IconStore> icon_store,
     const std::vector<SchedulerClientType>& clients,
-    const SchedulerConfig& config) {
+    const SchedulerConfig& config,
+    EncodeIconsCallback encode_icons_callback,
+    DecodeIconsCallback decode_icons_callback) {
   return std::make_unique<ScheduledNotificationManagerImpl>(
-      std::move(notification_store), std::move(icon_store), clients, config);
+      std::move(notification_store), std::move(icon_store), clients, config,
+      std::move(encode_icons_callback), std::move(decode_icons_callback));
 }
 
 ScheduledNotificationManager::ScheduledNotificationManager() = default;

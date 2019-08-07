@@ -54,6 +54,7 @@ table {
 }
 
 .body td {
+  white-space: pre-wrap;
   word-break: break-all;
 }
 
@@ -62,7 +63,7 @@ table {
 }
 
 .body td.elided:not(:hover) {
-  white-space: nowrap;
+  white-space: pre;
 }
 
 .body td:not(:hover) * {

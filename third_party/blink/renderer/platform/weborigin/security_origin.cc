@@ -173,6 +173,7 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
           other->block_local_access_from_local_origin_),
       is_opaque_origin_potentially_trustworthy_(
           other->is_opaque_origin_potentially_trustworthy_),
+      cross_agent_cluster_access_(other->cross_agent_cluster_access_),
       precursor_origin_(other->precursor_origin_
                             ? other->precursor_origin_->IsolatedCopy()
                             : nullptr) {}
@@ -484,6 +485,10 @@ void SecurityOrigin::GrantLoadLocalResources() {
 
 void SecurityOrigin::GrantUniversalAccess() {
   universal_access_ = true;
+}
+
+void SecurityOrigin::GrantCrossAgentClusterAccess() {
+  cross_agent_cluster_access_ = true;
 }
 
 void SecurityOrigin::BlockLocalAccessFromLocalOrigin() {

@@ -247,7 +247,7 @@ TEST_F(AXTableInfoTest, AuthorRowAndColumnCountsAreRespected) {
   initial_state.nodes[0].child_ids = {2};
   MakeRow(&initial_state.nodes[1], 2, 0);
   initial_state.nodes[1].child_ids = {3};
-  MakeCell(&initial_state.nodes[2], 2, 0, 1);
+  MakeCell(&initial_state.nodes[2], 3, 0, 1);
   AXTree tree(initial_state);
 
   AXTableInfo* table_info = GetTableInfo(&tree, tree.root());

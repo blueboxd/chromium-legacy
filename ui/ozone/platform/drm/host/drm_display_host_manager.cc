@@ -252,9 +252,9 @@ void DrmDisplayHostManager::ProcessEvent() {
     switch (event.action_type) {
       case DeviceEvent::ADD:
         if (drm_devices_.find(event.path) == drm_devices_.end()) {
-          base::PostTaskWithTraits(
+          base::PostTask(
               FROM_HERE,
-              {base::MayBlock(),
+              {base::ThreadPool(), base::MayBlock(),
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
               base::BindOnce(
                   &OpenDeviceAsync, event.path,

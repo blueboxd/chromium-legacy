@@ -35,7 +35,7 @@ class AssistantSetup : public ash::AssistantSetup,
   // arc::VoiceInteractionControllerClient::Observer overrides
   void OnStateChanged(ash::mojom::VoiceInteractionState state) override;
 
-  void SyncActivityControlState();
+  void SyncSettingsState();
   void OnGetSettingsResponse(const std::string& settings);
 
   service_manager::Connector* connector_;

@@ -62,8 +62,9 @@ BudgetDatabase::BudgetDatabase(Profile* profile)
   db_ = protodb_provider->GetDB<budget_service::Budget>(
       leveldb_proto::ProtoDbType::BUDGET_DATABASE,
       profile->GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase")),
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
   db_->Init(base::BindOnce(&BudgetDatabase::OnDatabaseInit,
                            weak_ptr_factory_.GetWeakPtr()));

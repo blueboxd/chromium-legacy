@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "third_party/webrtc/rtc_base/ref_counted_object.h"
 
 namespace content {
 

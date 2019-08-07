@@ -61,7 +61,6 @@ void NGFlexLayoutAlgorithm::HandleOutOfFlowPositioned(NGBlockNode child) {
 }
 
 void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
-  const bool is_horizontal_flow = algorithm_->IsHorizontalFlow();
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
     auto child = To<NGBlockNode>(generic_child);
@@ -92,11 +91,11 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         border_scrollbar_padding_in_child_writing_mode.ConvertToPhysical(
             child_style.GetWritingMode(), child_style.Direction()));
     LayoutUnit main_axis_border_scrollbar_padding =
-        is_horizontal_flow ? physical_border_padding.HorizontalSum()
-                           : physical_border_padding.VerticalSum();
+        is_horizontal_flow_ ? physical_border_padding.HorizontalSum()
+                            : physical_border_padding.VerticalSum();
     LayoutUnit main_axis_border_and_padding =
         main_axis_border_scrollbar_padding -
-        (is_horizontal_flow
+        (is_horizontal_flow_
              ? child.GetLayoutBox()->VerticalScrollbarWidth()
              : child.GetLayoutBox()->HorizontalScrollbarHeight());
 
@@ -114,7 +113,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 
     LayoutUnit flex_base_border_box;
     const Length& specified_length_in_main_axis =
-        is_horizontal_flow ? child_style.Width() : child_style.Height();
+        is_horizontal_flow_ ? child_style.Width() : child_style.Height();
     const Length& flex_basis = child_style.FlexBasis();
     // TODO(dgrogan): Generalize IsAuto: See the <'width'> section of
     // https://drafts.csswg.org/css-flexbox/#valdef-flex-flex-basis
@@ -157,13 +156,13 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 
     NGPhysicalBoxStrut physical_child_margins =
         ComputePhysicalMargins(child_space, child_style);
-    LayoutUnit main_axis_margin = is_horizontal_flow
+    LayoutUnit main_axis_margin = is_horizontal_flow_
                                       ? physical_child_margins.HorizontalSum()
                                       : physical_child_margins.VerticalSum();
 
     MinMaxSize min_max_sizes_in_main_axis_direction{LayoutUnit(),
                                                     LayoutUnit::Max()};
-    const Length& max_property_in_main_axis = is_horizontal_flow
+    const Length& max_property_in_main_axis = is_horizontal_flow_
                                                   ? child.Style().MaxWidth()
                                                   : child.Style().MaxHeight();
     if (MainAxisIsInlineAxis(child)) {
@@ -180,8 +179,8 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           LengthResolvePhase::kLayout);
     }
 
-    const Length& min = is_horizontal_flow ? child.Style().MinWidth()
-                                           : child.Style().MinHeight();
+    const Length& min = is_horizontal_flow_ ? child.Style().MinWidth()
+                                            : child.Style().MinHeight();
     if (min.IsAuto()) {
       if (algorithm_->ShouldApplyMinSizeAutoForChild(*child.GetLayoutBox())) {
         // TODO(dgrogan): Do the aspect ratio parts of
@@ -264,7 +263,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
   const LayoutUnit line_break_length = MainAxisContentExtent(LayoutUnit::Max());
   algorithm_.emplace(&Style(), line_break_length);
-  const bool is_horizontal_flow = algorithm_->IsHorizontalFlow();
+  is_horizontal_flow_ = algorithm_->IsHorizontalFlow();
 
   ConstructAndAppendFlexItems();
 
@@ -313,7 +312,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       flex_item.layout_result =
           flex_item.ng_input_node.Layout(child_space, nullptr /*break token*/);
       flex_item.cross_axis_size =
-          is_horizontal_flow
+          is_horizontal_flow_
               ? flex_item.layout_result->PhysicalFragment().Size().height
               : flex_item.layout_result->PhysicalFragment().Size().width;
     }

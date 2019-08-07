@@ -48,8 +48,9 @@ FileDownloader::FileDownloader(
                        base::Unretained(this)));
   } else {
     base::PostTaskAndReplyWithResult(
-        base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        base::CreateTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
             .get(),
         FROM_HERE, base::Bind(&base::PathExists, local_path_),
@@ -75,9 +76,9 @@ void FileDownloader::OnSimpleDownloadComplete(base::FilePath response_path) {
   }
 
   base::PostTaskAndReplyWithResult(
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
+      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                              base::TaskPriority::BEST_EFFORT,
+                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
           .get(),
       FROM_HERE, base::Bind(&base::Move, response_path, local_path_),
       base::Bind(&FileDownloader::OnFileMoveDone,

@@ -37,8 +37,8 @@ class SessionChangeObserver::WtsRegistrationNotificationManager {
         base::IgnoreResult(&WTSRegisterSessionNotification),
         gfx::SingletonHwnd::GetInstance()->hwnd(), NOTIFY_FOR_THIS_SESSION);
 
-    base::CreateCOMSTATaskRunnerWithTraits({})->PostTask(
-        FROM_HERE, std::move(wts_register));
+    base::CreateCOMSTATaskRunner({base::ThreadPool()})
+        ->PostTask(FROM_HERE, std::move(wts_register));
   }
 
   ~WtsRegistrationNotificationManager() { RemoveSingletonHwndObserver(); }

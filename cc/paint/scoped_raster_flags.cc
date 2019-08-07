@@ -46,6 +46,23 @@ void ScopedRasterFlags::DecodeImageShader(const SkMatrix& ctm) {
       flags()->getShader()->shader_type() != PaintShader::Type::kImage)
     return;
 
+  PaintImage image = flags()->getShader()->paint_image();
+  if (image.IsPaintWorklet()) {
+    ImageProvider::ScopedResult result =
+        decode_stashing_image_provider_->GetRasterContent(DrawImage(image));
+    if (result && result.paint_record()) {
+      const PaintShader* shader = flags()->getShader();
+      SkMatrix local_matrix = shader->GetLocalMatrix();
+      auto decoded_shader = PaintShader::MakePaintRecord(
+          sk_ref_sp<PaintRecord>(result.paint_record()), shader->tile(),
+          shader->tx(), shader->tx(), &local_matrix);
+      MutableFlags()->setShader(decoded_shader);
+    } else {
+      decode_failed_ = true;
+    }
+    return;
+  }
+
   uint32_t transfer_cache_entry_id = kInvalidImageTransferCacheEntryId;
   SkFilterQuality raster_quality = flags()->getFilterQuality();
   bool transfer_cache_entry_needs_mips = false;

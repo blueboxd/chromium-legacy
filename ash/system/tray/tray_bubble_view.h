@@ -11,7 +11,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"

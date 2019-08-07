@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 
 #include "components/arc/mojom/accessibility_helper.mojom.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace arc {
 

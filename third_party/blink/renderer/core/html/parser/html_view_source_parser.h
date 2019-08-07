@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/html/parser/html_input_stream.h"
 #include "third_party/blink/renderer/core/html/parser/html_source_tracker.h"
 #include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
-#include "third_party/blink/renderer/core/html/parser/xss_auditor.h"
 
 namespace blink {
 
@@ -61,7 +60,6 @@ class CORE_EXPORT HTMLViewSourceParser final
   HTMLToken token_;
   HTMLSourceTracker source_tracker_;
   std::unique_ptr<HTMLTokenizer> tokenizer_;
-  XSSAuditor xss_auditor_;
 };
 
 }  // namespace blink

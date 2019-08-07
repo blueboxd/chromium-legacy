@@ -208,7 +208,7 @@ void ClientAppMetadataProviderService::OnInstanceIdFetched(
   DCHECK(!instance_id.empty());
   instance_id_->GetToken(
       device_sync::
-          kCryptAuthGcmInstanceIdAuthorizedEntity /* authorized_entity */,
+          kCryptAuthV2EnrollmentAuthorizedEntity /* authorized_entity */,
       kInstanceIdScope /* scope */,
       std::map<std::string, std::string>() /* options */, {} /* flags */,
       base::Bind(&ClientAppMetadataProviderService::OnInstanceIdTokenFetched,

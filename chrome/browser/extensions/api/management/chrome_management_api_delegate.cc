@@ -370,7 +370,7 @@ bool ChromeManagementAPIDelegate::IsWebAppInstalled(
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(
       Profile::FromBrowserContext(context));
   DCHECK(provider);
-  return provider->registrar().IsInstalled(web_app_url);
+  return provider->registrar().IsLocallyInstalled(web_app_url);
 }
 
 bool ChromeManagementAPIDelegate::CanContextInstallWebApps(

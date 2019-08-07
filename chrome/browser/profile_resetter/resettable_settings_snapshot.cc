@@ -137,8 +137,8 @@ void ResettableSettingsSnapshot::RequestShortcuts(
   cancellation_flag_ = new SharedCancellationFlag;
 #if defined(OS_WIN)
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+      base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock(),
+                                    base::TaskPriority::USER_VISIBLE})
           .get(),
       FROM_HERE, base::Bind(&GetChromeLaunchShortcuts, cancellation_flag_),
       base::Bind(&ResettableSettingsSnapshot::SetShortcutsAndReport,

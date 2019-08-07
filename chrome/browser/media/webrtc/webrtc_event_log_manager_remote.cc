@@ -542,8 +542,8 @@ void WebRtcRemoteEventLogManager::GetHistory(
 
   if (!BrowserContextEnabled(browser_context_id)) {
     LOG(ERROR) << "Unknown |browser_context_id|.";
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(std::move(reply), history));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(std::move(reply), history));
     return;
   }
 
@@ -591,8 +591,8 @@ void WebRtcRemoteEventLogManager::GetHistory(
   };
   std::sort(history.begin(), history.end(), cmp);
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(std::move(reply), history));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(reply), history));
 }
 
 void WebRtcRemoteEventLogManager::RemovePendingLogsForNotEnabledBrowserContext(
@@ -664,17 +664,16 @@ void WebRtcRemoteEventLogManager::SetWebRtcEventLogUploaderFactoryForTesting(
 void WebRtcRemoteEventLogManager::UploadConditionsHoldForTesting(
     base::OnceCallback<void(bool)> callback) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(callback), UploadConditionsHold()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(callback), UploadConditionsHold()));
 }
 
 void WebRtcRemoteEventLogManager::ShutDownForTesting(base::OnceClosure reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   weak_ptr_factory_->InvalidateWeakPtrs();
   weak_ptr_factory_.reset();
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(std::move(reply)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(reply)));
 }
 
 bool WebRtcRemoteEventLogManager::AreLogParametersValid(

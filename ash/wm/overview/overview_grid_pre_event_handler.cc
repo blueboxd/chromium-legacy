@@ -3,18 +3,36 @@
 // found in the LICENSE file.
 
 #include "ash/wm/overview/overview_grid_pre_event_handler.h"
+
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_view.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/window_util.h"
 #include "ui/events/event.h"
 
 namespace ash {
 
-OverviewGridPreEventHandler::OverviewGridPreEventHandler() = default;
+namespace {
 
-OverviewGridPreEventHandler::~OverviewGridPreEventHandler() = default;
+WallpaperView* GetWallpaperViewForRoot(const aura::Window* root_window) {
+  return RootWindowController::ForWindow(root_window)
+      ->wallpaper_widget_controller()
+      ->wallpaper_view();
+}
+
+}  // namespace
+
+OverviewGridPreEventHandler::OverviewGridPreEventHandler(OverviewGrid* grid)
+    : grid_(grid) {
+  GetWallpaperViewForRoot(grid_->root_window())->AddPreTargetHandler(this);
+}
+
+OverviewGridPreEventHandler::~OverviewGridPreEventHandler() {
+  GetWallpaperViewForRoot(grid_->root_window())->RemovePreTargetHandler(this);
+}
 
 void OverviewGridPreEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_RELEASED)
@@ -22,8 +40,6 @@ void OverviewGridPreEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void OverviewGridPreEventHandler::OnGestureEvent(ui::GestureEvent* event) {
-  // TODO(sammiequon): Investigate why scrolling on the bottom of the grid exits
-  // overview.
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
       HandleClickOrTap(event);
@@ -53,23 +69,14 @@ void OverviewGridPreEventHandler::OnGestureEvent(ui::GestureEvent* event) {
 
 void OverviewGridPreEventHandler::HandleClickOrTap(ui::Event* event) {
   CHECK_EQ(ui::EP_PRETARGET, event->phase());
-  auto* controller = Shell::Get()->overview_controller();
-  if (!controller->InOverviewSession())
-    return;
   // Events that happen while app list is sliding out during overview should
   // be ignored to prevent overview from disappearing out from under the user.
   if (!IsSlidingOutOverviewFromShelf())
-    controller->EndOverview();
+    Shell::Get()->overview_controller()->EndOverview();
   event->StopPropagation();
 }
 
 void OverviewGridPreEventHandler::StartDrag(const gfx::Point& location) {
-  // TODO(sammiequon): Investigate if this can be passed in the constructor.
-  auto* controller = Shell::Get()->overview_controller();
-  if (!controller->InOverviewSession())
-    return;
-  grid_ = controller->overview_session()->GetGridWithRootWindow(
-      window_util::GetRootWindowAt(location));
   grid_->PrepareScrollLimitMin();
 }
 

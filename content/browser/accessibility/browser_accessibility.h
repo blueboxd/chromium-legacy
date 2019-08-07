@@ -91,8 +91,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // its data changes.
   virtual void OnDataChanged() {}
 
-  virtual void OnSubtreeWillBeDeleted() {}
-
   // Called when the location changed.
   virtual void OnLocationChanged() {}
 

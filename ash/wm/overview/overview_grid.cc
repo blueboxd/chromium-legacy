@@ -28,6 +28,7 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_delegate.h"
+#include "ash/wm/overview/overview_grid_pre_event_handler.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
@@ -367,6 +368,7 @@ OverviewGrid::~OverviewGrid() = default;
 
 void OverviewGrid::Shutdown() {
   ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
+  grid_pre_event_handler_.reset();
 
   bool has_non_cover_animating = false;
   int animate_count = 0;
@@ -408,6 +410,8 @@ void OverviewGrid::PrepareForOverview() {
   if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     ScreenRotationAnimator::GetForRootWindow(root_window_)->AddObserver(this);
   }
+
+  grid_pre_event_handler_ = std::make_unique<OverviewGridPreEventHandler>(this);
 }
 
 void OverviewGrid::PositionWindows(

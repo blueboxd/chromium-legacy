@@ -22,7 +22,6 @@ class SharedResourcesDataSourceIOS : public URLDataSourceIOS {
       const std::string& path,
       const URLDataSourceIOS::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) const override;
-  bool IsGzipped(const std::string& path) const override;
 
  private:
   ~SharedResourcesDataSourceIOS() override;

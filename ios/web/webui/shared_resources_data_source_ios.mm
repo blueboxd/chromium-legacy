@@ -74,10 +74,4 @@ std::string SharedResourcesDataSourceIOS::GetMimeType(
   return mime_type;
 }
 
-bool SharedResourcesDataSourceIOS::IsGzipped(const std::string& path) const {
-  const GritResourceMap* resource = PathToResource(path);
-  int idr = resource ? resource->value : -1;
-  return idr == -1 ? false : GetWebClient()->IsDataResourceGzipped(idr);
-}
-
 }  // namespace web

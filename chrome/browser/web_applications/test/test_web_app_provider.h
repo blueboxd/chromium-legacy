@@ -58,6 +58,8 @@ class TestWebAppProvider : public WebAppProvider {
       std::unique_ptr<WebAppPolicyManager> web_app_policy_manager);
 
  private:
+  void CheckNotStarted() const;
+
   // WebAppProvider:
   void StartImpl() override;
 

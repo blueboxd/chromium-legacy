@@ -118,9 +118,9 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
     CalculateScaledClipBoxOffset(gfx_content_rect, source_clip_box, &offset_x,
                                  &offset_y);
   } else {
-    CalculateNonScaledClipBoxOffset(gfx_content_rect, src_page_rotation,
-                                    actual_page_width, actual_page_height,
-                                    source_clip_box, &offset_x, &offset_y);
+    CalculateNonScaledClipBoxOffset(src_page_rotation, actual_page_width,
+                                    actual_page_height, source_clip_box,
+                                    &offset_x, &offset_y);
   }
 
   // Reset the media box and crop box. When the page has crop box and media box,

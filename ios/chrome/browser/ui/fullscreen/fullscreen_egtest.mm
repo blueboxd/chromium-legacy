@@ -19,6 +19,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server/error_page_response_provider.h"
@@ -123,31 +124,28 @@ void AssertURLIs(const GURL& expectedURL) {
       "http://ios/testing/data/http_server_files/single_page_wide.pdf");
   [ChromeEarlGrey loadURL:URL];
 
-  // TODO(crbug.com/852393): Investigate why synchronization isn't working.  Is
-  // an animation going on forever?
-  if (@available(iOS 12, *)) {
-    [[GREYConfiguration sharedInstance]
-            setValue:@NO
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  }
+  {
+    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+        std::make_unique<ScopedSynchronizationDisabler>();
+    // TODO(crbug.com/852393): Investigate why synchronization isn't working. Is
+    // an animation going on forever?
+    if (@available(iOS 12, *)) {
+      // Disabled synchonization needs only for iOS 12.
+    } else {
+      disabler.reset();
+    }
 
-  // Test that the toolbar is still visible after a user swipes down.
-  [[EarlGrey
-      selectElementWithMatcher:WebViewScrollView(
-                                   chrome_test_util::GetCurrentWebState())]
-      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
-  [ChromeEarlGreyUI waitForToolbarVisible:YES];
+    // Test that the toolbar is still visible after a user swipes down.
+    [[EarlGrey
+        selectElementWithMatcher:WebViewScrollView(
+                                     chrome_test_util::GetCurrentWebState())]
+        performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+    [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
-  // Test that the toolbar is still visible even after attempting to hide it
-  // on swipe up.
-  HideToolbarUsingUI();
-  [ChromeEarlGreyUI waitForToolbarVisible:YES];
-
-  // Reenable synchronization.
-  if (@available(iOS 12, *)) {
-    [[GREYConfiguration sharedInstance]
-            setValue:@YES
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
+    // Test that the toolbar is still visible even after attempting to hide it
+    // on swipe up.
+    HideToolbarUsingUI();
+    [ChromeEarlGreyUI waitForToolbarVisible:YES];
   }
 }
 

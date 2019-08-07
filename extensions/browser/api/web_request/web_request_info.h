@@ -62,7 +62,7 @@ struct WebRequestInfoInitParams {
   std::string method;
   bool is_navigation_request = false;
   base::Optional<url::Origin> initiator;
-  base::Optional<content::ResourceType> type;
+  content::ResourceType type = content::ResourceType::kSubResource;
   WebRequestResourceType web_request_type = WebRequestResourceType::OTHER;
   bool is_async = false;
   net::HttpRequestHeaders extra_request_headers;
@@ -123,9 +123,8 @@ struct WebRequestInfo {
   // initiate this request.
   ExtensionApiFrameIdMap::FrameData frame_data;
 
-  // The type of the request (e.g. main frame, subresource, XHR, etc). May have
-  // no value if the request did not originate from a ResourceDispatcher.
-  const base::Optional<content::ResourceType> type;
+  // The type of the request (e.g. main frame, subresource, XHR, etc).
+  const content::ResourceType type;
 
   // A partially mirrored copy of |type| which is slightly less granular and
   // which also identifies WebSocket requests separately from other types.

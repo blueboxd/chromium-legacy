@@ -100,7 +100,7 @@ void PDFiumFormFiller::Form_Invalidate(FPDF_FORMFILLINFO* param,
 
   pp::Rect rect = engine->pages_[page_index]->PageToScreen(
       engine->GetVisibleRect().point(), engine->current_zoom_, left, top, right,
-      bottom, engine->layout_.default_page_orientation());
+      bottom, engine->layout_.options().default_page_orientation());
   engine->client_->Invalidate(rect);
 }
 
@@ -119,7 +119,7 @@ void PDFiumFormFiller::Form_OutputSelectedRect(FPDF_FORMFILLINFO* param,
   }
   pp::Rect rect = engine->pages_[page_index]->PageToScreen(
       engine->GetVisibleRect().point(), engine->current_zoom_, left, top, right,
-      bottom, engine->layout_.default_page_orientation());
+      bottom, engine->layout_.options().default_page_orientation());
   if (rect.IsEmpty())
     return;
 

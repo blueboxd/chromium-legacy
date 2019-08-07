@@ -8,6 +8,10 @@
 
 namespace content {
 
+void RecordSmsReceiveTime(base::TimeDelta duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Blink.Sms.Receive.TimeSmsReceive", duration);
+}
+
 void RecordCancelOnSuccessTime(base::TimeDelta duration) {
   UMA_HISTOGRAM_MEDIUM_TIMES("Blink.Sms.Receive.TimeCancelOnSuccess", duration);
 }

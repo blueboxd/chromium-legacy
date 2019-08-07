@@ -149,18 +149,16 @@ bool BrotliDecompress(base::StringPiece input, std::string* output) {
 }
 
 // Helper function for decompressing resource.
-std::string Decompress(base::StringPiece data) {
-  std::string response;
-  if (HasBrotliHeader(data)) {
-    bool success = BrotliDecompress(data, &response);
+void Decompress(base::StringPiece data, std::string* output) {
+  if (HasGzipHeader(data)) {
+    bool success = compression::GzipUncompress(data, output);
     DCHECK(success);
-  } else if (HasGzipHeader(data)) {
-    bool success = compression::GzipUncompress(data, &response);
+  } else if (HasBrotliHeader(data)) {
+    bool success = BrotliDecompress(data, output);
     DCHECK(success);
   } else {
     NOTREACHED() << "Resource is not compressed";
   }
-  return response;
 }
 
 }  // namespace
@@ -580,17 +578,23 @@ base::RefCountedMemory* ResourceBundle::LoadDataResourceBytes(
 base::RefCountedMemory* ResourceBundle::LoadDataResourceBytesForScale(
     int resource_id,
     ScaleFactor scale_factor) const {
-  base::RefCountedMemory* bytes = NULL;
+  base::RefCountedMemory* bytes = nullptr;
   if (delegate_)
     bytes = delegate_->LoadDataResourceBytes(resource_id, scale_factor);
 
   if (!bytes) {
     base::StringPiece data =
         GetRawDataResourceForScale(resource_id, scale_factor);
-    if (!data.empty())
-      bytes = new base::RefCountedStaticMemory(data.data(), data.length());
+    if (!data.empty()) {
+      if (HasGzipHeader(data) || HasBrotliHeader(data)) {
+        base::RefCountedString* bytes_string = new base::RefCountedString();
+        Decompress(data, &(bytes_string->data()));
+        bytes = bytes_string;
+      } else {
+        bytes = new base::RefCountedStaticMemory(data.data(), data.length());
+      }
+    }
   }
-
   return bytes;
 }
 
@@ -635,7 +639,9 @@ std::string ResourceBundle::DecompressDataResource(int resource_id) {
 std::string ResourceBundle::DecompressDataResourceScaled(
     int resource_id,
     ScaleFactor scaling_factor) {
-  return Decompress(GetRawDataResourceForScale(resource_id, scaling_factor));
+  std::string output;
+  Decompress(GetRawDataResourceForScale(resource_id, scaling_factor), &output);
+  return output;
 }
 
 std::string ResourceBundle::DecompressLocalizedDataResource(int resource_id) {
@@ -653,7 +659,9 @@ std::string ResourceBundle::DecompressLocalizedDataResource(int resource_id) {
       data = GetRawDataResource(resource_id);
     }
   }
-  return Decompress(data);
+  std::string output;
+  Decompress(data, &output);
+  return output;
 }
 
 bool ResourceBundle::IsGzipped(int resource_id) const {

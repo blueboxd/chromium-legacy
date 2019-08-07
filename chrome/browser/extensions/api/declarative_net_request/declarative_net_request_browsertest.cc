@@ -2570,6 +2570,72 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   test_referrer_blocked(false);
 }
 
+// Tests rules using the Redirect dictionary.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, Redirect) {
+  TestRule rule1 = CreateGenericRule();
+  rule1.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule1.id = kMinValidID;
+  rule1.condition->url_filter = std::string("ex");
+  rule1.action->type = std::string("redirect");
+  rule1.priority = kMinValidPriority;
+  rule1.action->redirect.emplace();
+  rule1.action->redirect->url =
+      embedded_test_server()
+          ->GetURL("google.com", "/pages_with_script/index.html")
+          .spec();
+
+  TestRule rule2 = CreateGenericRule();
+  rule2.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule2.id = kMinValidID + 1;
+  rule2.condition->url_filter = std::string("example.com");
+  rule2.action->type = std::string("redirect");
+  rule2.priority = kMinValidPriority + 1;
+  rule2.action->redirect.emplace();
+  rule2.action->redirect->extension_path = "/manifest.json?query#fragment";
+
+  TestRule rule3 = CreateGenericRule();
+  rule3.condition->resource_types = std::vector<std::string>({"main_frame"});
+  rule3.id = kMinValidID + 2;
+  rule3.condition->url_filter = std::string("||example.com");
+  rule3.action->type = std::string("redirect");
+  rule3.priority = kMinValidPriority + 2;
+  rule3.action->redirect.emplace();
+  rule3.action->redirect->transform.emplace();
+  auto& transform = rule3.action->redirect->transform;
+  transform->host = "new.host.com";
+  transform->path = "/pages_with_script/page.html";
+  transform->query = "?new_query";
+  transform->fragment = "#new_fragment";
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      {rule1, rule2, rule3}, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  struct {
+    GURL url;
+    GURL expected_url;
+  } cases[] = {{embedded_test_server()->GetURL("example.com",
+                                               "/pages_with_script/index.html"),
+                // Because of higher priority, the transform rule is chosen.
+                embedded_test_server()->GetURL(
+                    "new.host.com",
+                    "/pages_with_script/page.html?new_query#new_fragment")},
+               // Because of higher priority, the extensionPath rule is chosen.
+               {embedded_test_server()->GetURL(
+                    "xyz.com", "/pages_with_script/index.html?example.com"),
+                GURL("chrome-extension://" + last_loaded_extension_id() +
+                     "/manifest.json?query#fragment")},
+               {embedded_test_server()->GetURL("ex.com",
+                                               "/pages_with_script/index.html"),
+                embedded_test_server()->GetURL(
+                    "google.com", "/pages_with_script/index.html")}};
+
+  for (const auto& test_case : cases) {
+    SCOPED_TRACE("Testing " + test_case.url.spec());
+    ui_test_utils::NavigateToURL(browser(), test_case.url);
+    EXPECT_EQ(test_case.expected_url, web_contents()->GetLastCommittedURL());
+  }
+}
+
 // Test fixture to verify that host permissions for the request url and the
 // request initiator are properly checked when redirecting requests. Loads an
 // example.com url with four sub-frames named frame_[1..4] from hosts

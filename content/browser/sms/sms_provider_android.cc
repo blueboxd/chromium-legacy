@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/sms/sms_provider_android.h"
+
 #include <string>
 
 #include "base/bind.h"
-#include "content/browser/sms/sms_provider_android.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -13,7 +14,6 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
-using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
@@ -45,5 +45,10 @@ void SmsProviderAndroid::OnReceive(
 }
 
 void SmsProviderAndroid::OnTimeout(JNIEnv* env) {}
+
+base::android::ScopedJavaGlobalRef<jobject>
+SmsProviderAndroid::GetSmsReceiverForTesting() const {
+  return j_sms_receiver_;
+}
 
 }  // namespace content

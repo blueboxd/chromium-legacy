@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -68,9 +69,9 @@ class MODULES_EXPORT WakeLockController final
   void ObtainPermission(
       WakeLockType type,
       base::OnceCallback<void(mojom::blink::PermissionStatus)> callback);
-  mojom::blink::PermissionService& GetPermissionService();
+  mojom::blink::PermissionService* GetPermissionService();
 
-  mojom::blink::PermissionServicePtr permission_service_;
+  mojo::Remote<mojom::blink::PermissionService> permission_service_;
 
   // https://w3c.github.io/wake-lock/#concepts-and-state-record
   // Each platform wake lock (one per wake lock type) has an associated state

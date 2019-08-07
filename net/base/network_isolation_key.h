@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/values.h"
 #include "net/base/net_export.h"
 #include "url/origin.h"
 
@@ -64,8 +65,9 @@ class NET_EXPORT NetworkIsolationKey {
   // Returns true if all parts of the key are non-empty.
   bool IsFullyPopulated() const;
 
-  // Returns true if this key's lifetime is short-lived. It may not make sense
-  // to persist state to disk related to it (e.g., disk cache).
+  // Returns true if this key's lifetime is short-lived, or if
+  // IsFullyPopulated() returns true. It may not make sense to persist state to
+  // disk related to it (e.g., disk cache).
   bool IsTransient() const;
 
   // APIs for serialization to and from the mojo structure.
@@ -79,6 +81,19 @@ class NET_EXPORT NetworkIsolationKey {
 
   // Returns true if all parts of the key are empty.
   bool IsEmpty() const;
+
+  // Returns a representation of |this| as a base::Value. Returns false on
+  // failure. Succeeds if either IsEmpty() or !IsTransient().
+  bool ToValue(base::Value* out_value) WARN_UNUSED_RESULT;
+
+  // Inverse of ToValue(). Writes the result to |network_isolation_key|. Returns
+  // false on failure. Fails on values that could not have been produced by
+  // ToValue(), like transient origins. If the value of
+  // net::features::kAppendFrameOriginToNetworkIsolationKey has changed between
+  // saving and loading the data, fails.
+  static bool FromValue(const base::Value& value,
+                        NetworkIsolationKey* out_network_isolation_key)
+      WARN_UNUSED_RESULT;
 
  private:
   // Whether or not to use the |frame_origin_| as part of the key.

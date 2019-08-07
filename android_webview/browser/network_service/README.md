@@ -1,25 +1,23 @@
 # Android WebView Network Service
 
 This folder contains Android WebView's code for interacting with the Network
-Service (including code shared with the legacy code path, while that path is
-still supported). For details on the Network Service in general, see
+Service. For details on the Network Service in general, see
 [`//services/network/`](/services/network/README.md).
+
+*** note
+**Note:** M77 is the last milestone to support the legacy (non-Network-Service)
+code path.
+***
 
 ## In-process
 
 Android WebView aims to run with the Network Service in-process
 (`features::kNetworkServiceInProcess`). For details, see
-https://crbug.com/882650.
+https://crbug.com/882650. This feature is enabled by default, so there's no need
+to locally enable it.
 
 ## Testing with the Network Service
 
 Please see [general testing
-instructions](/android_webview/docs/test-instructions.md). Until the feature is
-on-by-default, you can enable the Network Service in tests like so:
-
-```shell
-$ autoninja -C out/Default webview_instrumentation_test_apk
-$ out/Default/bin/run_webview_instrumentation_test_apk \
-    --enable-features="NetworkService,NetworkServiceInProcess" \
-    -f <some test filter>  # See general instructions for test filtering
-```
+instructions](/android_webview/docs/test-instructions.md). There is no need to
+modify flags because the Network Service is always enabled.

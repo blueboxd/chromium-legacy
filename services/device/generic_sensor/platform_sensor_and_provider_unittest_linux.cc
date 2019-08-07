@@ -340,7 +340,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, SensorIsSupported) {
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
   EXPECT_EQ(SensorType::AMBIENT_LIGHT, sensor->GetType());
 }
 
@@ -354,7 +354,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, StartFails) {
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
 
   auto client =
       std::make_unique<NiceMock<LinuxMockPlatformSensorClient>>(sensor);
@@ -372,7 +372,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, SensorStarted) {
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
 
   auto client =
       std::make_unique<NiceMock<LinuxMockPlatformSensorClient>>(sensor);
@@ -391,7 +391,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, SensorRemoved) {
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
 
   auto client =
       std::make_unique<NiceMock<LinuxMockPlatformSensorClient>>(sensor);
@@ -476,7 +476,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, GetMaximumSupportedFrequency) {
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::ACCELEROMETER);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
   EXPECT_THAT(sensor->GetMaximumSupportedFrequency(),
               kAccelerometerFrequencyValue);
 }
@@ -492,7 +492,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
   EXPECT_EQ(SensorType::AMBIENT_LIGHT, sensor->GetType());
   EXPECT_THAT(sensor->GetMaximumSupportedFrequency(),
               SensorTraits<SensorType::AMBIENT_LIGHT>::kDefaultFrequency);
@@ -513,7 +513,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckAmbientLightReadings) {
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
   EXPECT_EQ(sensor->GetReportingMode(), mojom::ReportingMode::ON_CHANGE);
 
   auto client =
@@ -555,7 +555,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::ACCELEROMETER);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
   // The reporting mode is ON_CHANGE only for this test.
   EXPECT_EQ(sensor->GetReportingMode(), mojom::ReportingMode::ON_CHANGE);
 
@@ -616,7 +616,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckLinearAcceleration) {
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::LINEAR_ACCELERATION);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
   EXPECT_EQ(sensor->GetReportingMode(), mojom::ReportingMode::CONTINUOUS);
 
   auto client =
@@ -662,7 +662,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckGyroscopeReadingConversion) {
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::GYROSCOPE);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
   // The reporting mode is ON_CHANGE only for this test.
   EXPECT_EQ(sensor->GetReportingMode(), mojom::ReportingMode::ON_CHANGE);
 
@@ -716,7 +716,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckMagnetometerReadingConversion) {
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::MAGNETOMETER);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
   // The reporting mode is ON_CHANGE only for this test.
   EXPECT_EQ(sensor->GetReportingMode(), mojom::ReportingMode::ON_CHANGE);
 
@@ -760,7 +760,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   SetServiceStart();
 
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
-  EXPECT_TRUE(sensor);
+  ASSERT_TRUE(sensor);
   EXPECT_EQ(mojom::ReportingMode::CONTINUOUS, sensor->GetReportingMode());
 
   auto client =

@@ -23,8 +23,6 @@ table UrlTransform {
    port : string;
 
    clear_path : bool = false;
-
-   /// Includes the '/' separator for standard (http/https etc.) urls.
    path : string;
 
    clear_query : bool = false;

@@ -48,7 +48,6 @@ const char kSessionMaxECTTrigger[] = "session_max_ect_trigger";
 const char kNoScriptInflationPercent[] = "NoScriptInflationPercent";
 const char kNoScriptInflationBytes[] = "NoScriptInflationBytes";
 
-
 // Inflation parameters for estimating ResourceLoadingHints data savings.
 const char kResourceLoadingHintsInflationPercent[] =
     "ResourceLoadingHintsInflationPercent";
@@ -226,6 +225,20 @@ bool LitePageRedirectPreviewShouldPresolve() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kLitePageServerPreviews, "preresolve_on_slow_connections",
       true);
+}
+
+bool LitePageRedirectOnlyTriggerOnSuccessfulProbe() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "only_trigger_after_probe_success",
+      true);
+}
+
+GURL LitePageRedirectProbeURL() {
+  GURL url(GetFieldTrialParamValueByFeature(features::kLitePageServerPreviews,
+                                            "full_probe_url"));
+  if (url.is_valid())
+    return url;
+  return GURL("https://litepages.googlezip.net/e2e_probe");
 }
 
 base::TimeDelta LitePageRedirectPreviewPresolveInterval() {

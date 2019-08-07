@@ -63,8 +63,6 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
 
   int PathToIdrOrDefault(const std::string& path) const;
 
-  bool IsGzipped(const std::string& path) const;
-
   // The name of this source.
   // E.g., for favicons, this could be "favicon", which results in paths for
   // specific resources like "favicon/34" getting sent to this source.

@@ -767,6 +767,12 @@ class WebLocalFrame : public WebFrame {
   virtual void WasHidden() = 0;
   virtual void WasShown() = 0;
 
+  // Grants ability to lookup a named frame via the FindFrame
+  // WebLocalFrameClient API. Enhanced binding security checks that check the
+  // agent cluster will be enabled for windows that do not have this permission.
+  // This should only be used for extensions and the webview tag.
+  virtual void SetAllowsCrossBrowsingInstanceFrameLookup() = 0;
+
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}
 

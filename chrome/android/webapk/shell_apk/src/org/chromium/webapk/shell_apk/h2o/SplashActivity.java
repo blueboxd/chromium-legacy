@@ -22,6 +22,7 @@ import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
 import org.chromium.webapk.shell_apk.HostBrowserLauncherParams;
+import org.chromium.webapk.shell_apk.HostBrowserUtils;
 import org.chromium.webapk.shell_apk.LaunchHostBrowserSelector;
 import org.chromium.webapk.shell_apk.WebApkUtils;
 
@@ -183,7 +184,7 @@ public class SplashActivity extends Activity {
 
         Context appContext = getApplicationContext();
 
-        if (!H2OLauncher.shouldIntentLaunchSplashActivity(params)) {
+        if (!HostBrowserUtils.shouldIntentLaunchSplashActivity(params)) {
             HostBrowserLauncher.launch(this, params);
             H2OLauncher.changeEnabledComponentsAndKillShellApk(appContext,
                     new ComponentName(appContext, H2OMainActivity.class),

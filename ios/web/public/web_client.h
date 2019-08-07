@@ -101,9 +101,6 @@ class WebClient {
   // Returns the raw bytes of a scale independent data resource.
   virtual base::RefCountedMemory* GetDataResourceBytes(int resource_id) const;
 
-  // Returns whether the contents of a resource are compressed (with gzip).
-  virtual bool IsDataResourceGzipped(int resource_id) const;
-
   // Returns a list of additional WebUI schemes, if any. These additional
   // schemes act as aliases to the about: scheme. The additional schemes may or
   // may not serve specific WebUI pages depending on the particular

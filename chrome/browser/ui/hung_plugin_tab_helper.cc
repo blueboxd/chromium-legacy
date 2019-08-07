@@ -167,8 +167,8 @@ void HungPluginTabHelper::OnManagerShuttingDown(
 }
 
 void HungPluginTabHelper::KillPlugin(int child_id) {
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(&KillPluginOnIOThread, child_id));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&KillPluginOnIOThread, child_id));
 }
 
 HungPluginTabHelper::HungPluginTabHelper(content::WebContents* contents)

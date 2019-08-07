@@ -106,7 +106,7 @@ class NotificationManager final
   void OnPermissionServiceConnectionError();
 
   mojo::Remote<mojom::blink::NotificationService> notification_service_;
-  mojom::blink::PermissionServicePtr permission_service_;
+  mojo::Remote<mojom::blink::PermissionService> permission_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationManager);
 };

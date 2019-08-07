@@ -25,7 +25,6 @@ class WebViewWebClient : public web::WebClient {
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
-  bool IsDataResourceGzipped(int resource_id) const override;
   NSString* GetDocumentStartScriptForMainFrame(
       web::BrowserState* browser_state) const override;
   base::string16 GetPluginNotSupportedText() const override;

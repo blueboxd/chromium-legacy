@@ -48,7 +48,8 @@ const char kHTMLURL[] = "http://test";
 // loaded.
 // TODO(crbug.com/683280): Does this test serve any purpose on iOS11?
 - (void)testPrintNormalPage {
-  EARL_GREY_TEST_SKIPPED(@"Dispatcher-based printing does not work.");
+  // TODO(crbug.com/990947): Delete or enable the test.
+  EARL_GREY_TEST_DISABLED(@"Dispatcher-based printing does not work.");
 
   GURL url = web::test::HttpServer::MakeUrl(kHTMLURL);
   std::map<GURL, std::string> responses;
@@ -65,7 +66,8 @@ const char kHTMLURL[] = "http://test";
 // Tests that the AirPrint menu successfully loads when a PDF is loaded.
 // TODO(crbug.com/683280): Does this test serve any purpose on iOS11?
 - (void)testPrintPDF {
-  EARL_GREY_TEST_SKIPPED(@"Dispatcher-based printing does not work.");
+  // TODO(crbug.com/990947): Delete or enable the test.
+  EARL_GREY_TEST_DISABLED(@"Dispatcher-based printing does not work.");
 
   web::test::SetUpFileBasedHttpServer();
   GURL url = web::test::HttpServer::MakeUrl(kPDFURL);

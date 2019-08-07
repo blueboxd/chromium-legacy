@@ -171,19 +171,25 @@
   <message name="IDS_SETTINGS_CAPTIONS" desc="Name of the settings page which displays caption preferences.">
     Captions
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SIZE" desc="Name of the settings page which displays caption text size preferences.">
+  <message name="IDS_SETTINGS_CAPTIONS_SETTINGS" desc="Name of settings section of the caption settings page.">
+    Settings
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_PREVIEW" desc="Name of preview section of the caption settings page.">
+    Preview
+  </message>
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SIZE" desc="Name of the caption text size preference.">
     Text size
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_TEXT_FONT" desc="Name of the settings page which displays caption text font preferences.">
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_FONT" desc="Name of the caption text font preference.">
     Text font
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_TEXT_COLOR" desc="Name of the settings page which displays caption text color preferences.">
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_COLOR" desc="Name of the caption text color preference.">
     Text color
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_TEXT_OPACITY" desc="Name of the settings page which displays caption text opacity preferences.">
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_OPACITY" desc="Name of the caption text opacity preference.">
     Text opacity
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_BACKGROUND_OPACITY" desc="Name of the settings page which displays caption background opacity preferences.">
+  <message name="IDS_SETTINGS_CAPTIONS_BACKGROUND_OPACITY" desc="Name of the caption background opacity preference.">
     Background opacity
   </message>
   <message name="IDS_SETTINGS_CAPTIONS_OPACITY_MIN" desc="Value of the minimum captions text opacity setting.">
@@ -192,7 +198,7 @@
   <message name="IDS_SETTINGS_CAPTIONS_OPACITY_MAX" desc="Value of the maximum captions text opacity setting.">
     100
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SHADOW" desc="Name of the settings page which displays caption text shadow preferences.">
+  <message name="IDS_SETTINGS_CAPTIONS_TEXT_SHADOW" desc="Name of the caption text shadow preference.">
     Text shadow
   </message>
   <message name="IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_NONE" desc="Name of the None option for the caption text shadow.">
@@ -210,7 +216,7 @@
   <message name="IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_DROP_SHADOW" desc="Name of the Drop shadow option for the caption text shadow.">
     Drop shadow
   </message>
-  <message name="IDS_SETTINGS_CAPTIONS_BACKGROUND_COLOR" desc="Name of the settings page which displays caption background color preferences.">
+  <message name="IDS_SETTINGS_CAPTIONS_BACKGROUND_COLOR" desc="Name of the caption background color preference.">
     Background color
   </message>
   <message name="IDS_SETTINGS_CAPTIONS_COLOR_BLACK" desc="Name of the Black color for the caption text or background.">
@@ -3824,7 +3830,7 @@
     <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME" desc="The default name (plus a number for a newly added fingerprint).">
       Finger <ph name="NEW_FINGER_NUMBER">$1<ex>1</ex></ph>
     </message>
-    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_MEDIA_KEYS" desc="Label for the checkbox which enables or disables media keys on the lock screen.">
+    <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_MEDIA_CONTROLS" desc="Label for the checkbox which enables or disables media controls on the lock screen.">
       Enable Chrome media playback at lock screen
     </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL" desc="Label of the Add account button in Account Manager.">

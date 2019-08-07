@@ -1653,12 +1653,10 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthSendNullCert) {
 
   // Our test server accepts certificate-less connections.
   // TODO(davidben): Add a test which requires them and verify the error.
-  SSLConfig ssl_config;
-  ssl_config.send_client_cert = true;
-  ssl_config.client_cert = nullptr;
+  context_->SetClientCertificate(host_port_pair(), nullptr, nullptr);
 
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsOk());
 
   // We responded to the server's certificate request with a Certificate
@@ -3663,13 +3661,10 @@ TEST_F(SSLClientSocketTest, SendEmptyCert) {
 
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig ssl_config;
-  ssl_config.send_client_cert = true;
-  ssl_config.client_cert = nullptr;
-  ssl_config.client_private_key = nullptr;
+  context_->SetClientCertificate(host_port_pair(), nullptr, nullptr);
 
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
 
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(sock_->IsConnected());
@@ -3690,14 +3685,12 @@ TEST_F(SSLClientSocketTest, SendGoodCert) {
   ASSERT_TRUE(StartTestServer(ssl_options));
 
   base::FilePath certs_dir = GetTestCertsDirectory();
-  SSLConfig ssl_config;
-  ssl_config.send_client_cert = true;
-  ssl_config.client_cert = ImportCertFromFile(certs_dir, "client_1.pem");
-  ssl_config.client_private_key =
-      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key"));
+  context_->SetClientCertificate(
+      host_port_pair(), ImportCertFromFile(certs_dir, "client_1.pem"),
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key")));
 
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
 
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(sock_->IsConnected());
@@ -3708,6 +3701,74 @@ TEST_F(SSLClientSocketTest, SendGoodCert) {
 
   sock_->Disconnect();
   EXPECT_FALSE(sock_->IsConnected());
+}
+
+// When client certificate preferences change, the session cache should be
+// cleared so the client certificate preferences are applied.
+TEST_F(SSLClientSocketTest, ClearSessionCacheOnClientCertChange) {
+  SSLServerConfig server_config;
+  // TLS 1.3 reports client certificate errors after the handshake, so test at
+  // TLS 1.2 for simplicity.
+  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  server_config.client_cert_type = SSLServerConfig::REQUIRE_CLIENT_CERT;
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
+
+  // Connecting without a client certificate will fail with
+  // ERR_SSL_CLIENT_AUTH_CERT_NEEDED.
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
+
+  // Configure a client certificate.
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  context_->SetClientCertificate(
+      host_port_pair(), ImportCertFromFile(certs_dir, "client_1.pem"),
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key")));
+
+  // Now the connection succeeds.
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(sock_->IsConnected());
+
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_TRUE(ssl_info.client_cert_sent);
+  EXPECT_EQ(ssl_info.handshake_type, SSLInfo::HANDSHAKE_FULL);
+
+  // Make a second connection. This should resume the session from the previous
+  // connection.
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsOk());
+  EXPECT_TRUE(sock_->IsConnected());
+
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_TRUE(ssl_info.client_cert_sent);
+  EXPECT_EQ(ssl_info.handshake_type, SSLInfo::HANDSHAKE_RESUME);
+
+  // Clear the client certificate preference.
+  context_->ClearClientCertificate(host_port_pair());
+
+  // Connections return to failing, rather than resume the previous session.
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
+
+  // Establish a new session with the correct client certificate.
+  context_->SetClientCertificate(
+      host_port_pair(), ImportCertFromFile(certs_dir, "client_1.pem"),
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key")));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsOk());
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_TRUE(ssl_info.client_cert_sent);
+  EXPECT_EQ(ssl_info.handshake_type, SSLInfo::HANDSHAKE_FULL);
+
+  // Switch to continuing without a client certificate.
+  context_->SetClientCertificate(host_port_pair(), nullptr, nullptr);
+
+  // This also clears the session cache and the new preference is applied.
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
+  EXPECT_THAT(rv, IsError(ERR_BAD_SSL_CLIENT_AUTH_CERT));
 }
 
 HashValueVector MakeHashValueVector(uint8_t value) {
@@ -4507,10 +4568,11 @@ TEST_F(SSLClientSocketTest, LateHandshakeFailureMissingClientCerts) {
   ASSERT_THAT(rv, IsOk());
 
   // Send no client certificate.
-  SSLConfig config;
-  config.send_client_cert = true;
+  context_->SetClientCertificate(spawned_test_server()->host_port_pair(),
+                                 nullptr, nullptr);
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      std::move(transport), spawned_test_server()->host_port_pair(), config));
+      std::move(transport), spawned_test_server()->host_port_pair(),
+      SSLConfig()));
 
   // Connect. Stop before the client processes ServerHello.
   raw_transport->BlockReadResult();
@@ -4557,13 +4619,13 @@ TEST_F(SSLClientSocketTest, LateHandshakeFailureSendClientCerts) {
 
   // Send a client certificate.
   base::FilePath certs_dir = GetTestCertsDirectory();
-  SSLConfig config;
-  config.send_client_cert = true;
-  config.client_cert = ImportCertFromFile(certs_dir, "client_1.pem");
-  config.client_private_key =
-      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key"));
+  context_->SetClientCertificate(
+      spawned_test_server()->host_port_pair(),
+      ImportCertFromFile(certs_dir, "client_1.pem"),
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key")));
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      std::move(transport), spawned_test_server()->host_port_pair(), config));
+      std::move(transport), spawned_test_server()->host_port_pair(),
+      SSLConfig()));
 
   // Connect. Stop before the client processes ServerHello.
   raw_transport->BlockReadResult();
@@ -4653,13 +4715,13 @@ TEST_F(SSLClientSocketTest, AccessDeniedClientCerts) {
 
   // Send a client certificate.
   base::FilePath certs_dir = GetTestCertsDirectory();
-  SSLConfig config;
-  config.send_client_cert = true;
-  config.client_cert = ImportCertFromFile(certs_dir, "client_1.pem");
-  config.client_private_key =
-      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key"));
+  context_->SetClientCertificate(
+      spawned_test_server()->host_port_pair(),
+      ImportCertFromFile(certs_dir, "client_1.pem"),
+      key_util::LoadPrivateKeyOpenSSL(certs_dir.AppendASCII("client_1.key")));
   std::unique_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-      std::move(transport), spawned_test_server()->host_port_pair(), config));
+      std::move(transport), spawned_test_server()->host_port_pair(),
+      SSLConfig()));
 
   // Connect. Stop before the client processes ServerHello.
   raw_transport->BlockReadResult();

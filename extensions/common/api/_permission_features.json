@@ -252,14 +252,6 @@
     "extension_types": ["extension", "platform_app"],
     "platforms": ["chromeos"]
   },
-  "extensionview": {
-    "channel": "stable",
-    "extension_types": ["platform_app"],
-    "whitelist": [
-      // Used in browser tests: http://crbug.com/515284
-      "BD2EB5085B5324203BCCC3DF3CF102B8AB850402"
-    ]
-  },
   "externally_connectable.all_urls": {
     "channel": "stable",
     "extension_types": [

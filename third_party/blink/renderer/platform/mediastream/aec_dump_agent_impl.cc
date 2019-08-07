@@ -6,14 +6,12 @@
 
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/platform/modules/mediastream/aec_dump_agent_impl_delegate.h"
 #include "third_party/blink/public/platform/platform.h"
 
 namespace blink {
 
 // static
-std::unique_ptr<AecDumpAgentImpl> AecDumpAgentImpl::Create(
-    AecDumpAgentImplDelegate* delegate) {
+std::unique_ptr<AecDumpAgentImpl> AecDumpAgentImpl::Create(Delegate* delegate) {
   // TODO(crbug.com/704136): Use GetInterfaceProvider() here.
   if (!Platform::Current()->GetConnector())  // Can be true in unit tests.
     return nullptr;
@@ -32,7 +30,7 @@ std::unique_ptr<AecDumpAgentImpl> AecDumpAgentImpl::Create(
 }
 
 AecDumpAgentImpl::AecDumpAgentImpl(
-    AecDumpAgentImplDelegate* delegate,
+    Delegate* delegate,
     mojo::PendingReceiver<mojom::blink::AecDumpAgent> receiver)
     : delegate_(delegate), receiver_(this, std::move(receiver)) {}
 

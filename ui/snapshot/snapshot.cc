@@ -42,8 +42,9 @@ void EncodeImageAndScheduleCallback(
     const base::Callback<void(scoped_refptr<base::RefCountedMemory> data)>&
         callback,
     gfx::Image image) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(encode_func, std::move(image)), callback);
 }
 

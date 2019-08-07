@@ -74,10 +74,6 @@ base::RefCountedMemory* ShellWebClient::GetDataResourceBytes(
       resource_id);
 }
 
-bool ShellWebClient::IsDataResourceGzipped(int resource_id) const {
-  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
-}
-
 void ShellWebClient::BindInterfaceReceiverFromMainFrame(
     WebState* web_state,
     mojo::GenericPendingReceiver receiver) {

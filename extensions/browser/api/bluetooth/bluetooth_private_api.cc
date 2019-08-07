@@ -697,6 +697,8 @@ void BluetoothPrivateRecordPairingFunction::DoWork(
   RecordPairingResult(params_->success, params_->transport,
                       params_->pairing_duration_ms);
   RecordPairingTransport(params_->transport);
+
+  Respond(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -720,6 +722,8 @@ void BluetoothPrivateRecordReconnectionFunction::DoWork(
   base::UmaHistogramBoolean(
       "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result.Settings",
       params_->success);
+
+  Respond(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -758,6 +762,8 @@ void BluetoothPrivateRecordDeviceSelectionFunction::DoWork(
       base::TimeDelta::FromMilliseconds(params_->selection_duration_ms),
       device::BluetoothUiSurface::kSettings, params_->was_paired, transport);
 #endif
+
+  Respond(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

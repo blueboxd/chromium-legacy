@@ -74,13 +74,13 @@ struct ThemeBackgroundInfo {
   std::string collection_id;
 
   // The theme background color. Always valid.
-  SkColor background_color;
+  SkColor background_color = gfx::kPlaceholderColor;
 
   // The theme text color.
-  SkColor text_color;
+  SkColor text_color = gfx::kPlaceholderColor;
 
   // The theme text color light.
-  SkColor text_color_light;
+  SkColor text_color_light = gfx::kPlaceholderColor;
 
   // The theme id for the theme background image.
   // Value is only valid if there's a custom theme background image.
@@ -115,13 +115,17 @@ struct ThemeBackgroundInfo {
   // The color id for Chrome Colors. It is -1 if Chrome Colors is not set, 0
   // when Chrome Colors is set but not from predefined color list, and > 0 if
   // Chrome Colors is set from predefined color list.
-  int color_id = 0;
+  int color_id = -1;
 
   // The dark color for Chrome Colors. Valid only if Chrome Colors is set.
   SkColor color_dark = gfx::kPlaceholderColor;
 
   // The light color for Chrome Colors. Valid only if Chrome Colors is set.
   SkColor color_light = gfx::kPlaceholderColor;
+
+  // The picked custom color for Chrome Colors. Valid only if Chrome Colors is
+  // set.
+  SkColor color_picked = gfx::kPlaceholderColor;
 };
 
 struct InstantMostVisitedItem {

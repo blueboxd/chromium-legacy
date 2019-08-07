@@ -77,10 +77,6 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   friend class WebUIDataSource;
   friend class WebUIDataSourceTest;
 
-  FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzipped);
-  FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzippedNoDefaultResource);
-  FRIEND_TEST_ALL_PREFIXES(WebUIDataSourceTest, IsGzippedWithRequestFiltering);
-
   // Methods that match URLDataSource which are called by
   // InternalDataSource.
   std::string GetMimeType(const std::string& path) const;
@@ -94,8 +90,6 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void disable_load_time_data_defaults_for_testing() {
     add_load_time_data_defaults_ = false;
   }
-
-  bool IsGzipped(const std::string& path) const;
 
   // The name of this source.
   // E.g., for favicons, this could be "favicon", which results in paths for

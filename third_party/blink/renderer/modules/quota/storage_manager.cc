@@ -97,7 +97,7 @@ ScriptPromise StorageManager::persist(ScriptState* script_state) {
 
   Document* doc = To<Document>(execution_context);
   GetPermissionService(ExecutionContext::From(script_state))
-      .RequestPermission(
+      ->RequestPermission(
           CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
           LocalFrame::HasTransientUserActivation(doc->GetFrame()),
           WTF::Bind(&StorageManager::PermissionRequestComplete,
@@ -120,7 +120,7 @@ ScriptPromise StorageManager::persisted(ScriptState* script_state) {
   }
 
   GetPermissionService(ExecutionContext::From(script_state))
-      .HasPermission(
+      ->HasPermission(
           CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
           WTF::Bind(&StorageManager::PermissionRequestComplete,
                     WrapPersistent(this), WrapPersistent(resolver)));
@@ -151,18 +151,18 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
   return promise;
 }
 
-PermissionService& StorageManager::GetPermissionService(
+PermissionService* StorageManager::GetPermissionService(
     ExecutionContext* execution_context) {
   if (!permission_service_) {
     ConnectToPermissionService(
-        execution_context, mojo::MakeRequest(&permission_service_,
-                                             execution_context->GetTaskRunner(
-                                                 TaskType::kMiscPlatformAPI)));
-    permission_service_.set_connection_error_handler(
+        execution_context,
+        permission_service_.BindNewPipeAndPassReceiver(
+            execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+    permission_service_.set_disconnect_handler(
         WTF::Bind(&StorageManager::PermissionServiceConnectionError,
                   WrapWeakPersistent(this)));
   }
-  return *permission_service_;
+  return permission_service_.get();
 }
 
 void StorageManager::PermissionServiceConnectionError() {

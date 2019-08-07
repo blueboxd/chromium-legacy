@@ -40,7 +40,7 @@ void BackgroundFetchServiceImpl::CreateForWorker(
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           BackgroundFetchServiceImpl::CreateOnIoThread,
@@ -72,7 +72,7 @@ void BackgroundFetchServiceImpl::CreateForFrame(
                                     render_frame_host->GetFrameTreeNodeId());
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           BackgroundFetchServiceImpl::CreateOnIoThread,

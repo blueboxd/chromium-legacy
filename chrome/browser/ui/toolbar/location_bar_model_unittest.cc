@@ -50,17 +50,20 @@ struct TestItem {
     {
         GetViewSourceURL("http://www.google.com"),
         "view-source:www.google.com",
-        "view-source:google.com",
+        "view-source:www.google.com",
     },
     {
-        GURL(chrome::kChromeUINewTabURL), "",
+        GURL(chrome::kChromeUINewTabURL),
+        "",
     },
     {
         GetViewSourceURL(chrome::kChromeUINewTabURL),
-        "view-source:" + content::GetWebUIURLString(chrome::kChromeUINewTabHost)
+        "view-source:" +
+            content::GetWebUIURLString(chrome::kChromeUINewTabHost),
     },
     {
-        GURL("chrome-search://local-ntp/local-ntp.html"), "",
+        GURL("chrome-search://local-ntp/local-ntp.html"),
+        "",
     },
     {
         GURL("view-source:chrome-search://local-ntp/local-ntp.html"),
@@ -71,7 +74,8 @@ struct TestItem {
         "chrome-extension://fooooooooooooooooooooooooooooooo/bar.html",
     },
     {
-        GURL(url::kAboutBlankURL), url::kAboutBlankURL,
+        GURL(url::kAboutBlankURL),
+        url::kAboutBlankURL,
     },
     {
         GURL("http://searchurl/?q=tractor+supply"),

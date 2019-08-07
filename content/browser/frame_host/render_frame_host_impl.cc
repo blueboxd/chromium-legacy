@@ -4176,9 +4176,12 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   if (!permission_service_context_)
     permission_service_context_.reset(new PermissionServiceContext(this));
 
-  registry_->AddInterface(
-      base::Bind(&PermissionServiceContext::CreateService,
-                 base::Unretained(permission_service_context_.get())));
+  registry_->AddInterface(base::BindRepeating(
+      [](PermissionServiceContext* context,
+         blink::mojom::PermissionServiceRequest request) {
+        context->CreateService(std::move(request));
+      },
+      base::Unretained(permission_service_context_.get())));
 
   registry_->AddInterface(
       base::Bind(&RenderFrameHostImpl::BindPresentationServiceRequest,

@@ -13,6 +13,7 @@
 #include "ash/app_list/views/search_result_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/numerics/ranges.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"

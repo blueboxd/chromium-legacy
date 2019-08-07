@@ -196,8 +196,9 @@ DisplayColorManager::DisplayColorManager(
     display::Screen* screen_to_observe)
     : configurator_(configurator),
       matrix_buffer_(9, 0.0f),  // 3x3 matrix.
-      sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      sequenced_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       displays_ctm_support_(DisplayCtmSupport::kNone),
       screen_to_observe_(screen_to_observe),

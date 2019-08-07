@@ -1,10 +1,22 @@
 # Certificate Blocklist
 
 This directory contains a number of certificates and public keys which are
-considered blocked within Chromium-based products. 
+considered blocked within Chromium-based products.
 
 When applicable, additional information and the full certificate or key
 are included.
+
+## Adding a New Entry
+
+Entries are recorded in [cert_verify_proc_blocklist.inc](../../../cert/cert_verify_proc_blocklist.inc).
+The filename is the SHA-256 hash of the DER-encoded certificate, which can be
+obtained via:
+
+    openssl x509 -in path/to/cert.pem -outform DER | openssl dgst -sha256
+
+The entries in the `cert_verify_proc_blocklist.inc` file can be generated via:
+
+    openssl x509 -in path/to/cert.pem -noout -pubkey | openssl pkey -pubin -outform DER | openssl dgst -sha256 -c | awk '{print "0x" $2}' | sed 's/:/, 0x/g'
 
 ## Compromises & Misissuances
 
@@ -106,6 +118,10 @@ others.
   * [a2e3bdaacaaf2d2e8204b3bc7eddc805d54d3ab8bdfe7bf102c035f67d8f898a.pem](a2e3bdaacaaf2d2e8204b3bc7eddc805d54d3ab8bdfe7bf102c035f67d8f898a.pem)
   * [c71f33c36d8efeefbed9d44e85e21cfe96b36fb0e132c52dca2415868492bf8a.pem](c71f33c36d8efeefbed9d44e85e21cfe96b36fb0e132c52dca2415868492bf8a.pem)
   * [fa5a828c9a7e732692682e60b14c634309cbb2bb79eb12aef44318d853ee97e3.pem](fa5a828c9a7e732692682e60b14c634309cbb2bb79eb12aef44318d853ee97e3.pem)
+
+Another incident in August 2019.
+
+  * [82a4cedbc7f61ce5cb04482aa27ea3145bb0cea58ab63ba1931a1654bfbdbb4f.pem](82a4cedbc7f61ce5cb04482aa27ea3145bb0cea58ab63ba1931a1654bfbdbb4f.pem)
 
 ### Trustwave
 

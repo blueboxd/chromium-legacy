@@ -131,14 +131,14 @@ Polymer({
     },
 
     /**
-     * Whether the lock screen media keys preference is enabled by the
+     * Whether the lock screen media controls preference is enabled by the
      * feature flag.
      * @private
      */
-    lockScreenMediaKeysPreferenceEnabled_: {
+    lockScreenMediaControlsPreferenceEnabled_: {
       type: Boolean,
       value: function() {
-        return loadTimeData.getBoolean('lockScreenMediaKeysEnabled');
+        return loadTimeData.getBoolean('lockScreenMediaControlsEnabled');
       },
       readOnly: true,
     },

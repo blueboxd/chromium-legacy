@@ -646,7 +646,7 @@ TEST_F(BidirectionalStreamTest, ClientAuthRequestIgnored) {
   // Ensure the certificate was added to the client auth cache.
   scoped_refptr<X509Certificate> client_cert;
   scoped_refptr<SSLPrivateKey> client_private_key;
-  ASSERT_TRUE(http_session_->ssl_client_auth_cache()->Lookup(
+  ASSERT_TRUE(http_session_->ssl_client_context()->GetClientCertificate(
       host_port_pair_, &client_cert, &client_private_key));
   ASSERT_FALSE(client_cert);
   ASSERT_FALSE(client_private_key);

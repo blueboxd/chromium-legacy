@@ -22,10 +22,6 @@
 
 namespace web_app {
 
-#define CHECK_NOT_STARTED()                                                \
-  CHECK(!started_) << "Attempted to set a WebAppProvider subsystem after " \
-                      "Start() was called.";
-
 // static
 std::unique_ptr<KeyedService> TestWebAppProvider::BuildDefault(
     content::BrowserContext* context) {
@@ -58,50 +54,55 @@ TestWebAppProvider::TestWebAppProvider(Profile* profile,
 
 TestWebAppProvider::~TestWebAppProvider() = default;
 
-void TestWebAppProvider::StartImpl() {
-  if (run_subsystem_startup_tasks_)
-    WebAppProvider::StartImpl();
-}
-
 void TestWebAppProvider::SetRegistrar(std::unique_ptr<AppRegistrar> registrar) {
-  CHECK_NOT_STARTED();
+  CheckNotStarted();
   registrar_ = std::move(registrar);
 }
 
 void TestWebAppProvider::SetInstallManager(
     std::unique_ptr<WebAppInstallManager> install_manager) {
-  CHECK_NOT_STARTED();
+  CheckNotStarted();
   install_manager_ = std::move(install_manager);
 }
 
 void TestWebAppProvider::SetInstallFinalizer(
     std::unique_ptr<InstallFinalizer> install_finalizer) {
-  CHECK_NOT_STARTED();
+  CheckNotStarted();
   install_finalizer_ = std::move(install_finalizer);
 }
 
 void TestWebAppProvider::SetPendingAppManager(
     std::unique_ptr<PendingAppManager> pending_app_manager) {
-  CHECK_NOT_STARTED();
+  CheckNotStarted();
   pending_app_manager_ = std::move(pending_app_manager);
 }
 
 void TestWebAppProvider::SetWebAppUiManager(
     std::unique_ptr<WebAppUiManager> ui_manager) {
-  CHECK_NOT_STARTED();
+  CheckNotStarted();
   ui_manager_ = std::move(ui_manager);
 }
 
 void TestWebAppProvider::SetSystemWebAppManager(
     std::unique_ptr<SystemWebAppManager> system_web_app_manager) {
-  CHECK_NOT_STARTED();
+  CheckNotStarted();
   system_web_app_manager_ = std::move(system_web_app_manager);
 }
 
 void TestWebAppProvider::SetWebAppPolicyManager(
     std::unique_ptr<WebAppPolicyManager> web_app_policy_manager) {
-  CHECK_NOT_STARTED();
+  CheckNotStarted();
   web_app_policy_manager_ = std::move(web_app_policy_manager);
+}
+
+void TestWebAppProvider::CheckNotStarted() const {
+  CHECK(!started_) << "Attempted to set a WebAppProvider subsystem after "
+                      "Start() was called.";
+}
+
+void TestWebAppProvider::StartImpl() {
+  if (run_subsystem_startup_tasks_)
+    WebAppProvider::StartImpl();
 }
 
 TestWebAppProviderCreator::TestWebAppProviderCreator(

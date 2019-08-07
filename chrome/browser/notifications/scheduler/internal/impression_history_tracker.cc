@@ -61,14 +61,21 @@ void ImpressionHistoryTrackerImpl::Init(Delegate* delegate,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void ImpressionHistoryTrackerImpl::AddImpression(SchedulerClientType type,
-                                                 const std::string& guid) {
+void ImpressionHistoryTrackerImpl::AddImpression(
+    SchedulerClientType type,
+    const std::string& guid,
+    const Impression::ImpressionResultMap& impression_mapping,
+    const Impression::CustomData& custom_data) {
   DCHECK(initialized_);
   auto it = client_states_.find(type);
   if (it == client_states_.end())
     return;
 
-  it->second->impressions.emplace_back(Impression(type, guid, clock_->Now()));
+  Impression impression(type, guid, clock_->Now());
+  impression.impression_mapping = impression_mapping;
+  impression.custom_data = custom_data;
+  it->second->impressions.emplace_back(std::move(impression));
+
   impression_map_.emplace(guid, &it->second->impressions.back());
   SetNeedsUpdate(type, true /*needs_update*/);
   MaybeUpdateDb(type);
@@ -91,6 +98,12 @@ void ImpressionHistoryTrackerImpl::GetClientStates(
   for (const auto& pair : client_states_) {
     client_states->emplace(pair.first, pair.second.get());
   }
+}
+
+const Impression* ImpressionHistoryTrackerImpl::GetImpression(
+    const std::string& guid) const {
+  auto it = impression_map_.find(guid);
+  return it == impression_map_.end() ? nullptr : it->second;
 }
 
 void ImpressionHistoryTrackerImpl::GetImpressionDetail(

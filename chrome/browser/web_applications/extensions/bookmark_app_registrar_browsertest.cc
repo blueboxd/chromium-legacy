@@ -31,6 +31,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppRegistrarBrowserTest, HostedAppIsInstalled) {
   // BookmarkAppRegistrar should not consider app.com as having installed PWAs.
   web_app::AppRegistrar& registrar =
       web_app::WebAppProviderBase::GetProviderBase(profile())->registrar();
-  EXPECT_FALSE(registrar.IsInstalled(GURL("https://app.com/")));
-  EXPECT_FALSE(registrar.IsInstalled(GURL("https://app.com/inner_page.html")));
+  EXPECT_FALSE(registrar.IsLocallyInstalled(GURL("https://app.com/")));
+  EXPECT_FALSE(
+      registrar.IsLocallyInstalled(GURL("https://app.com/inner_page.html")));
 }

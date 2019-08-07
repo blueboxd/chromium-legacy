@@ -186,11 +186,6 @@ class QuicTestPacketMaker {
       bool should_include_version,
       bool fin,
       quic::QuicStringPiece data);
-  std::unique_ptr<quic::QuicReceivedPacket> MakeHeadersDataPacket(
-      uint64_t packet_number,
-      bool should_include_version,
-      bool fin,
-      quic::QuicStringPiece data);
   std::unique_ptr<quic::QuicReceivedPacket> MakeForceHolDataPacket(
       uint64_t packet_number,
       quic::QuicStreamId stream_id,
@@ -383,6 +378,11 @@ class QuicTestPacketMaker {
 
   bool ShouldIncludeVersion(bool include_version) const;
 
+  // This mirrors quic_framer.cc::{anonymous namespace}::GenerateErrorString()
+  // behavior.
+  std::string MaybePrependErrorCode(const std::string& quic_error_details,
+                                    quic::QuicErrorCode quic_error_code) const;
+
   quic::QuicStreamFrame GenerateNextStreamFrame(quic::QuicStreamId stream_id,
                                                 bool fin,
                                                 quic::QuicStringPiece data);
@@ -399,6 +399,9 @@ class QuicTestPacketMaker {
 
   quic::QuicConnectionIdIncluded HasDestinationConnectionId() const;
   quic::QuicConnectionIdIncluded HasSourceConnectionId() const;
+
+  quic::QuicStreamId GetFirstBidirectionalStreamId() const;
+  quic::QuicStreamId GetHeadersStreamId() const;
 
   quic::ParsedQuicVersion version_;
   quic::QuicConnectionId connection_id_;

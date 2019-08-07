@@ -279,10 +279,9 @@ void WebRtcEventLogUploaderImpl::StartUpload(const std::string& upload_data) {
   // immediately, even though it needs to finish initialization on the UI
   // thread.
   network::mojom::URLLoaderFactoryPtr url_loader_factory_ptr;
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(BindURLLoaderFactoryRequest,
-                     mojo::MakeRequest(&url_loader_factory_ptr)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(BindURLLoaderFactoryRequest,
+                                mojo::MakeRequest(&url_loader_factory_ptr)));
 
   url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), kWebrtcEventLogUploaderTrafficAnnotation);

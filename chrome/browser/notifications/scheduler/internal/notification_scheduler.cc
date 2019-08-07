@@ -221,15 +221,17 @@ class NotificationSchedulerImpl : public NotificationScheduler,
   void AfterClientUpdateData(
       std::unique_ptr<NotificationEntry> entry,
       std::unique_ptr<NotificationData> updated_notification_data) {
+    // Tracks user impression on the notification to be shown.
+    context_->impression_tracker()->AddImpression(
+        entry->type, entry->guid, entry->schedule_params.impression_mapping,
+        updated_notification_data->custom_data);
+
     // Show the notification in UI.
     auto system_data = std::make_unique<DisplayAgent::SystemData>();
     system_data->type = entry->type;
     system_data->guid = entry->guid;
     context_->display_agent()->ShowNotification(
         std::move(updated_notification_data), std::move(system_data));
-
-    // Tracks user impression on the notification to be shown.
-    context_->impression_tracker()->AddImpression(entry->type, entry->guid);
   }
 
   // ImpressionHistoryTracker::Delegate implementation.
@@ -283,7 +285,16 @@ class NotificationSchedulerImpl : public NotificationScheduler,
     if (!client)
       return;
 
-    client->OnUserAction(action_data);
+    auto client_action_data = action_data;
+
+    // Attach custom data if the impression is not expired.
+    const auto* impression =
+        context_->impression_tracker()->GetImpression(action_data.guid);
+    if (impression) {
+      client_action_data.custom_data = impression->custom_data;
+    }
+
+    client->OnUserAction(client_action_data);
   }
 
   std::unique_ptr<NotificationSchedulerContext> context_;

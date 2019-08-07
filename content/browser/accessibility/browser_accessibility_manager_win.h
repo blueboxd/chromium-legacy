@@ -43,9 +43,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // Get the closest containing HWND.
   HWND GetParentHWND();
 
-  // AXEventGenerator methods
-  void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
-
   // BrowserAccessibilityManager methods
   void UserIsReloading() override;
   BrowserAccessibility* GetFocus() const override;
@@ -82,6 +79,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
  protected:
   // AXTreeObserver methods.
+  void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,

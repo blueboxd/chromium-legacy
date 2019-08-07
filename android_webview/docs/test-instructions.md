@@ -108,7 +108,7 @@ $ out/Default/bin/run_webview_instrumentation_test_apk \ # Any test runner
 ```sh
 $ out/Default/bin/run_webview_instrumentation_test_apk \ # Any test runner
     # Desired Features; see commandline-flags.md for more information
-    --enable-features="NetworkService,NetworkServiceInProcess" \
+    --enable-features="MyFeature,MyOtherFeature" \
     -f=AwContentsTest#testClearCacheInQuickSuccession
 ```
 

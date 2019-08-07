@@ -86,6 +86,42 @@ std::unique_ptr<SSLClientSocket> SSLClientContext::CreateSSLClientSocket(
                                                host_and_port, ssl_config);
 }
 
+bool SSLClientContext::GetClientCertificate(
+    const HostPortPair& server,
+    scoped_refptr<X509Certificate>* client_cert,
+    scoped_refptr<SSLPrivateKey>* private_key) {
+  return ssl_client_auth_cache_.Lookup(server, client_cert, private_key);
+}
+
+void SSLClientContext::SetClientCertificate(
+    const HostPortPair& server,
+    scoped_refptr<X509Certificate> client_cert,
+    scoped_refptr<SSLPrivateKey> private_key) {
+  ssl_client_auth_cache_.Add(server, std::move(client_cert),
+                             std::move(private_key));
+
+  if (ssl_client_session_cache_) {
+    // Session resumption bypasses client certificate negotiation, so flush all
+    // associated sessions when preferences change.
+    ssl_client_session_cache_->FlushForServer(server);
+  }
+  NotifySSLConfigForServerChanged(server);
+}
+
+bool SSLClientContext::ClearClientCertificate(const HostPortPair& server) {
+  if (!ssl_client_auth_cache_.Remove(server)) {
+    return false;
+  }
+
+  if (ssl_client_session_cache_) {
+    // Session resumption bypasses client certificate negotiation, so flush all
+    // associated sessions when preferences change.
+    ssl_client_session_cache_->FlushForServer(server);
+  }
+  NotifySSLConfigForServerChanged(server);
+  return true;
+}
+
 void SSLClientContext::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -104,6 +140,8 @@ void SSLClientContext::OnSSLContextConfigChanged() {
 }
 
 void SSLClientContext::OnCertDBChanged() {
+  // Both the trust store and client certificate store may have changed.
+  ssl_client_auth_cache_.Clear();
   if (ssl_client_session_cache_) {
     ssl_client_session_cache_->Flush();
   }
@@ -113,6 +151,13 @@ void SSLClientContext::OnCertDBChanged() {
 void SSLClientContext::NotifySSLConfigChanged(bool is_cert_database_change) {
   for (Observer& observer : observers_) {
     observer.OnSSLConfigChanged(is_cert_database_change);
+  }
+}
+
+void SSLClientContext::NotifySSLConfigForServerChanged(
+    const HostPortPair& server) {
+  for (Observer& observer : observers_) {
+    observer.OnSSLConfigForServerChanged(server);
   }
 }
 

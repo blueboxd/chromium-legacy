@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/devtools_session.h"
+#include "third_party/blink/renderer/core/inspector/inspector_media_context_impl.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -195,6 +196,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
     // Only main frame has ImageDownloader service.
     ImageDownloaderImpl::ProvideTo(frame);
   }
+  MediaInspectorContextImpl::ProvideToLocalFrame(frame);
 }
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(

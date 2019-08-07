@@ -24,9 +24,9 @@ using mojom::blink::PermissionName;
 
 void ConnectToPermissionService(
     ExecutionContext* execution_context,
-    mojom::blink::PermissionServiceRequest request) {
+    mojo::PendingReceiver<mojom::blink::PermissionService> receiver) {
   if (auto* interface_provider = execution_context->GetInterfaceProvider())
-    interface_provider->GetInterface(std::move(request));
+    interface_provider->GetInterface(std::move(receiver));
 }
 
 String PermissionStatusToString(mojom::blink::PermissionStatus status) {

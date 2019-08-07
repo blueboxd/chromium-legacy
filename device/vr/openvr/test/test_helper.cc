@@ -136,10 +136,10 @@ static const std::map<device::XrButtonId, vr::EVRButtonId>
         {device::XrButtonId::kA, vr::EVRButtonId::k_EButton_A},
         {device::XrButtonId::kProximitySensor,
          vr::EVRButtonId::k_EButton_ProximitySensor},
-        {device::XrButtonId::kAxisPrimary, vr::EVRButtonId::k_EButton_Axis0},
+        {device::XrButtonId::kAxisTrackpad, vr::EVRButtonId::k_EButton_Axis0},
         {device::XrButtonId::kAxisTrigger,
          vr::EVRButtonId::k_EButton_SteamVR_Trigger},
-        {device::XrButtonId::kAxisSecondary, vr::EVRButtonId::k_EButton_Axis2},
+        {device::XrButtonId::kAxisThumbstick, vr::EVRButtonId::k_EButton_Axis2},
         {device::XrButtonId::kAxisTertiary, vr::EVRButtonId::k_EButton_Axis3},
         {device::XrButtonId::kAxisQuaternary, vr::EVRButtonId::k_EButton_Axis4},
 };

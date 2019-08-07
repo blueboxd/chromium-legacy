@@ -36,6 +36,7 @@ import org.robolectric.shadows.ShadowPackageManager;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.shell_apk.CustomAndroidOsShadowAsyncTask;
+import org.chromium.webapk.shell_apk.HostBrowserUtils;
 import org.chromium.webapk.shell_apk.LaunchHostBrowserSelector;
 import org.chromium.webapk.test.WebApkTestHelper;
 
@@ -97,8 +98,8 @@ public final class SplashActivityTest {
         WebApkTestHelper.registerWebApkWithMetaData(appContext.getPackageName(), metadata, null);
 
         // Install browser.
-        mShadowPackageManager.addPackage(newPackageInfo(
-                BROWSER_PACKAGE_NAME, H2OLauncher.MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH));
+        mShadowPackageManager.addPackage(newPackageInfo(BROWSER_PACKAGE_NAME,
+                HostBrowserUtils.MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH));
     }
 
     /**

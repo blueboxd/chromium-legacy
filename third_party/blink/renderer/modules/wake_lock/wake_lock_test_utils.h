@@ -7,8 +7,9 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/wake_lock.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
@@ -115,13 +116,14 @@ class MockPermissionService final : public mojom::blink::PermissionService {
       RequestPermissionsCallback) override;
   void RevokePermission(mojom::blink::PermissionDescriptorPtr permission,
                         RevokePermissionCallback) override;
-  void AddPermissionObserver(mojom::blink::PermissionDescriptorPtr permission,
-                             mojom::blink::PermissionStatus last_known_status,
-                             mojom::blink::PermissionObserverPtr) override;
+  void AddPermissionObserver(
+      mojom::blink::PermissionDescriptorPtr permission,
+      mojom::blink::PermissionStatus last_known_status,
+      mojo::PendingRemote<mojom::blink::PermissionObserver>) override;
 
   void OnConnectionError();
 
-  mojo::Binding<mojom::blink::PermissionService> binding_{this};
+  mojo::Receiver<mojom::blink::PermissionService> receiver_{this};
 
   base::Optional<mojom::blink::PermissionStatus>
       permission_responses_[kWakeLockTypeCount];

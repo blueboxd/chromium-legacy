@@ -29,7 +29,6 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 
@@ -63,30 +62,15 @@ scoped_refptr<base::RefCountedMemory> GetResource(
                 ->GetTemplateReplacementsForExtension(extension_id)
           : nullptr;
 
-  bool is_gzipped = rb.IsGzipped(resource_id);
-  if (!bytes->size() || (!replacements && !is_gzipped)) {
+  if (replacements) {
+    base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
+                            bytes->size());
+    std::string temp_str = ui::ReplaceTemplateExpressions(input, *replacements);
+    DCHECK(!temp_str.empty());
+    return base::RefCountedString::TakeString(&temp_str);
+  } else {
     return bytes;
   }
-
-  base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
-                          bytes->size());
-
-  std::string temp_str;
-
-  base::StringPiece source = input;
-  if (is_gzipped) {
-    temp_str.resize(compression::GetUncompressedSize(input));
-    source = temp_str;
-    CHECK(compression::GzipUncompress(input, source));
-  }
-
-  if (replacements) {
-    temp_str = ui::ReplaceTemplateExpressions(source, *replacements);
-  }
-
-  DCHECK(!temp_str.empty());
-
-  return base::RefCountedString::TakeString(&temp_str);
 }
 
 // Loads an extension resource in a Chrome .pak file. These are used by

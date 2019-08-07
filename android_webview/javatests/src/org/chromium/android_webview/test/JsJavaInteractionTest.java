@@ -230,6 +230,57 @@ public class JsJavaInteractionTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    public void testFragmentNavigationWontDoJsInjection() throws Throwable {
+        String url = loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
+
+        // Set WebMessageListener after the page loaded won't affect the current page.
+        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+
+        // Load with fragment url.
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), url + "#fragment");
+
+        // Check that we don't have a JavaScript object named JS_OBJECT_NAME
+        Assert.assertFalse(hasJavaScriptObject(
+                JS_OBJECT_NAME, mActivityTestRule, mAwContents, mContentsClient));
+
+        // We shouldn't have executed postMessage on JS_OBJECT_NAME either.
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    public void testSetDifferentWebMessageListenerWillTakeEffectImmediately() throws Throwable {
+        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+
+        loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
+
+        // Verify the first listener receives message.
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+        Assert.assertEquals(HELLO, data.mMessage);
+
+        // Set a second listener.
+        TestWebMessageListener secondListener = new TestWebMessageListener();
+        setWebMessageListenerOnUiThread(mAwContents, secondListener, new String[] {"*"});
+
+        // Call JavaScript postMessage.
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mAwContents.evaluateJavaScriptForTests(
+                                "myObject.postMessage('second')", null));
+
+        // Verify the second listener receives message.
+        TestWebMessageListener.Data data2 = secondListener.waitForOnPostMessage();
+        Assert.assertEquals("second", data2.mMessage);
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+        Assert.assertTrue(secondListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInterfaction"})
     public void testSetWebMessageListenerAffectsRendererInitiatedNavigation() throws Throwable {
         // TODO(crbug.com/969842): We'd either replace the following html file with a file contains
         // no JavaScript code or add a test to ensure that evaluateJavascript() won't

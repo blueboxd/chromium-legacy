@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
+#include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "ui/gfx/image/image_skia.h"
@@ -89,13 +91,20 @@ base::string16 WebAppBrowserController::GetFormattedUrlOrigin() const {
 }
 
 bool WebAppBrowserController::CanUninstall() const {
-  // TODO(https://crbug.com/966290): Complete implementation.
-  return false;
+  return WebAppUiManagerImpl::Get(browser()->profile())
+      ->dialog_manager()
+      .CanUninstallWebApp(app_id_);
+}
+
+void WebAppBrowserController::Uninstall() {
+  WebAppUiManagerImpl::Get(browser()->profile())
+      ->dialog_manager()
+      .UninstallWebApp(app_id_, WebAppDialogManager::UninstallSource::kAppMenu,
+                       browser()->window(), base::DoNothing());
 }
 
 bool WebAppBrowserController::IsInstalled() const {
-  // TODO(https://crbug.com/966290): Complete implementation.
-  return true;
+  return registrar_.IsInstalled(app_id_);
 }
 
 }  // namespace web_app

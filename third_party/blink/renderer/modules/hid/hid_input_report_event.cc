@@ -4,37 +4,32 @@
 
 #include "third_party/blink/renderer/modules/hid/hid_input_report_event.h"
 
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
-#include "third_party/blink/renderer/modules/hid/hid_input_report_event_init.h"
+#include "third_party/blink/renderer/modules/hid/hid_device.h"
 
 namespace blink {
-
-HIDInputReportEvent* HIDInputReportEvent::Create(
-    const AtomicString& type,
-    const HIDInputReportEventInit* initializer) {
-  return MakeGarbageCollected<HIDInputReportEvent>(type, initializer);
-}
-
-HIDInputReportEvent* HIDInputReportEvent::Create(const AtomicString& type,
-                                                 HIDDevice* device,
-                                                 uint8_t report_id,
-                                                 const Vector<uint8_t>& data) {
-  return MakeGarbageCollected<HIDInputReportEvent>(type, device, report_id,
-                                                   data);
-}
-
-HIDInputReportEvent::HIDInputReportEvent(
-    const AtomicString& type,
-    const HIDInputReportEventInit* initializer)
-    : Event(type, initializer) {}
 
 HIDInputReportEvent::HIDInputReportEvent(const AtomicString& type,
                                          HIDDevice* device,
                                          uint8_t report_id,
                                          const Vector<uint8_t>& data)
-    : Event(type, Bubbles::kNo, Cancelable::kNo) {}
+    : Event(type, Bubbles::kNo, Cancelable::kNo),
+      device_(device),
+      report_id_(report_id) {
+  DOMArrayBuffer* dom_buffer = DOMArrayBuffer::Create(data.data(), data.size());
+  data_ = DOMDataView::Create(dom_buffer, 0, data.size());
+}
+
+HIDInputReportEvent::~HIDInputReportEvent() = default;
+
+const AtomicString& HIDInputReportEvent::InterfaceName() const {
+  return event_interface_names::kHIDInputReportEvent;
+}
 
 void HIDInputReportEvent::Trace(blink::Visitor* visitor) {
+  visitor->Trace(device_);
+  visitor->Trace(data_);
   Event::Trace(visitor);
 }
 

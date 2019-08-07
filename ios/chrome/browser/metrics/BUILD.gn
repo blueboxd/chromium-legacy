@@ -271,6 +271,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web_state_list",
+    "//ios/chrome/test:eg_test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ui/base",

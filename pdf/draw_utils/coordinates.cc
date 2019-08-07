@@ -88,6 +88,17 @@ pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
                   bottom_separator);
 }
 
+pp::Rect GetRectForSingleView(const pp::Size& rect_size,
+                              const pp::Size& document_size,
+                              const PageInsetSizes& page_insets) {
+  pp::Rect page_rect({0, document_size.height()}, rect_size);
+  CenterRectHorizontally(document_size.width(), &page_rect);
+  page_rect.Inset(page_insets.left, page_insets.top, page_insets.right,
+                  page_insets.bottom);
+
+  return page_rect;
+}
+
 pp::Rect GetScreenRect(const pp::Rect& rect,
                        const pp::Point& position,
                        double zoom) {

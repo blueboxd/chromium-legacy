@@ -11,6 +11,10 @@ class TimeDelta;
 
 namespace content {
 
+// Records the time from when a call to the API was made to when an SMS has been
+// successfully received.
+void RecordSmsReceiveTime(base::TimeDelta duration);
+
 // Records the time from when a successful SMS was retrieved to when the user
 // presses the Cancel button.
 void RecordCancelOnSuccessTime(base::TimeDelta duration);

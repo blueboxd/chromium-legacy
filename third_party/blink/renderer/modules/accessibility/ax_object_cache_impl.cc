@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -113,8 +114,7 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
       modification_count_(0),
       validation_message_axid_(0),
       relation_cache_(std::make_unique<AXRelationCache>(this)),
-      accessibility_event_permission_(mojom::PermissionStatus::ASK),
-      permission_observer_binding_(this) {
+      accessibility_event_permission_(mojom::PermissionStatus::ASK) {
   if (document_->LoadEventFinished())
     AddPermissionStatusListener();
   documents_.insert(&document);
@@ -1323,12 +1323,6 @@ void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
   }
 }
 
-void AXObjectCacheImpl::HandleAutofillStateChanged(Element* elem,
-                                                   bool is_available) {
-  if (AXObject* obj = Get(elem))
-    obj->HandleAutofillStateChanged(is_available);
-}
-
 AXObject* AXObjectCacheImpl::GetOrCreateValidationMessageObject() {
   AXObject* message_ax_object = nullptr;
   // Create only if it does not already exist.
@@ -1724,14 +1718,17 @@ void AXObjectCacheImpl::AddPermissionStatusListener() {
     return;
   }
 
+  if (permission_service_.is_bound())
+    permission_service_.reset();
+
   ConnectToPermissionService(document_->GetExecutionContext(),
-                             mojo::MakeRequest(&permission_service_));
+                             permission_service_.BindNewPipeAndPassReceiver());
 
-  if (permission_observer_binding_.is_bound())
-    permission_observer_binding_.Close();
+  if (permission_observer_receiver_.is_bound())
+    permission_observer_receiver_.reset();
 
-  mojom::blink::PermissionObserverPtr observer;
-  permission_observer_binding_.Bind(mojo::MakeRequest(&observer));
+  mojo::PendingRemote<mojom::blink::PermissionObserver> observer;
+  permission_observer_receiver_.Bind(observer.InitWithNewPipeAndPassReceiver());
   permission_service_->AddPermissionObserver(
       CreatePermissionDescriptor(
           mojom::blink::PermissionName::ACCESSIBILITY_EVENTS),
@@ -1774,7 +1771,7 @@ void AXObjectCacheImpl::DidFinishLifecycleUpdate(const LocalFrameView& view) {
 
 void AXObjectCacheImpl::ContextDestroyed(ExecutionContext*) {
   permission_service_.reset();
-  permission_observer_binding_.Close();
+  permission_observer_receiver_.reset();
 }
 
 void AXObjectCacheImpl::Trace(blink::Visitor* visitor) {

@@ -896,6 +896,10 @@ interface CSSTransformValue : CSSStyleValue
     method keys
     method toMatrix
     method values
+interface CSSTransition : Animation
+    attribute @@toStringTag
+    getter transitionProperty
+    method constructor
 interface CSSTranslate : CSSTransformComponent
     attribute @@toStringTag
     getter x

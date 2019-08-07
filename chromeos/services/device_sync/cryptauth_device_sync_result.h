@@ -31,13 +31,9 @@ class CryptAuthDeviceSyncResult {
     kErrorNoMetadataInResponse,
     kErrorAllResponseMetadataInvalid,
     kErrorNoLocalDeviceMetadataInResponse,
-    kErrorMissingFeatureStatuses,
+    kErrorMissingLocalDeviceFeatureStatuses,
     kErrorMissingLocalDeviceSyncBetterTogetherKey,
     kErrorDecryptingGroupPrivateKey,
-    kErrorInconsistentGroupPrivateKeys,
-    kErrorDecryptingMetadata,
-    kErrorParsingMetadata,
-    kErrorInconsistentLocalDeviceMetadata,
     kErrorEncryptingGroupPrivateKey,
     kErrorSyncMetadataApiCallOffline,
     kErrorSyncMetadataApiCallEndpointNotFound,
@@ -73,6 +69,10 @@ class CryptAuthDeviceSyncResult {
     kMaxValue = kErrorTimeoutWaitingForShareGroupPrivateKeyResponse
   };
 
+  enum class ResultType { kSuccess, kNonFatalError, kFatalError };
+
+  static ResultType GetResultType(const ResultCode& result_code);
+
   CryptAuthDeviceSyncResult(
       ResultCode result_code,
       bool did_device_registry_change,
@@ -91,6 +91,7 @@ class CryptAuthDeviceSyncResult {
     return did_device_registry_change_;
   }
 
+  ResultType GetResultType() const;
   bool IsSuccess() const;
 
   bool operator==(const CryptAuthDeviceSyncResult& other) const;

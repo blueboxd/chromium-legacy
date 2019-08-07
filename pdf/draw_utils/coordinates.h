@@ -82,6 +82,13 @@ pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
                            const PageInsetSizes& inset_sizes,
                            int bottom_separator);
 
+// Given |rect_size| and |document_size| create a horizontally centered
+// pp::Rect placed at the bottom of the current document, and then inset it with
+// |page_insets|.
+pp::Rect GetRectForSingleView(const pp::Size& rect_size,
+                              const pp::Size& document_size,
+                              const PageInsetSizes& page_insets);
+
 // Given |rect| in document coordinates, a |position| in screen coordinates,
 // and a |zoom| factor, returns the rectangle in screen coordinates (i.e.
 // 0,0 is top left corner of plugin area). An empty |rect| will always

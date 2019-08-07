@@ -78,7 +78,7 @@ XrSessionRequestConsentDialogDelegate::GetDefaultDialogButton() {
 
 base::Optional<int>
 XrSessionRequestConsentDialogDelegate::GetInitiallyFocusedButton() {
-  return ui::DIALOG_BUTTON_CANCEL;
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 }  // namespace vr

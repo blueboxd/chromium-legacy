@@ -515,6 +515,12 @@ const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =
     "If enabled, adds the status of certain experiment variations when making "
     "calls to Google Payments.";
 
+const char kEnableAutofillUpdatedCardUnmaskPromptUiName[] =
+    "Enable new card unmask prompt UI";
+const char kEnableAutofillUpdatedCardUnmaskPromptUiDescription[] =
+    "If enabled, shows the updated card unmask prompt when performing CVC "
+    "verification.";
+
 const char kEnableDeferAllScriptName[] = "DeferAllScript previews";
 const char kEnableDeferAllScriptDescription[] =
     "Enable deferring synchronous script on slow pages.";
@@ -1534,6 +1540,12 @@ const char kPerMethodCanMakePaymentQuotaName[] =
 const char kPerMethodCanMakePaymentQuotaDescription[] =
     "Allow calling canMakePayment() for different payment methods, as long as "
     "method-specific parameters remain unchanged.";
+
+const char kPolicyAtomicGroupsEnabledName[] = "Policy Atomic Groups Enabled";
+const char kPolicyAtomicGroupsEnabledDescription[] =
+    "Enables the concept of policy atomic groups that makes policies of an "
+    "atomic group that do not share the highest priority source from that group"
+    "ignored.";
 
 const char kPreviewsAllowedName[] = "Previews Allowed";
 const char kPreviewsAllowedDescription[] =
@@ -3243,12 +3255,6 @@ const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[] =
 const char kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[] =
     "Enable ChromeVox language switching, which changes ChromeVox's "
     "output language upon detection of new language.";
-
-const char kExperimentalAccessibilityChromeVoxRichTextIndicationName[] =
-    "Enable experimental ChromeVox rich text indication.";
-const char kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[] =
-    "Enable ChromeVox rich text indication, which automatically notifies the "
-    "user of text styling.";
 
 const char kExperimentalAccessibilitySwitchAccessName[] =
     "Experimental feature Switch Access";

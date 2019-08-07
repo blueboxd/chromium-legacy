@@ -13,13 +13,13 @@
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
+#include "chrome/browser/ui/views/tabs/tab_width_constraints.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view_model.h"
 
 class Tab;
 class TabGroupHeader;
 class TabGroupId;
-struct TabLayoutInfo;
 class TabStripController;
 
 // Helper class for TabStrip, that is responsible for calculating and assigning
@@ -135,8 +135,8 @@ class TabStripLayoutHelper {
   // in |slots_|.
   int GetSlotIndexForGroupHeader(TabGroupId group) const;
 
-  // Returns the current layout info (animation and sizing) for each View.
-  std::vector<TabLayoutInfo> CreateTabLayoutInfo() const;
+  // Returns the current width constraints for each View.
+  std::vector<TabWidthConstraints> GetCurrentTabWidthConstraints() const;
 
   // Runs an animation for the View at |slot_index| towards |target_state|.
   void AnimateSlot(int slot_index, TabAnimationState target_state);

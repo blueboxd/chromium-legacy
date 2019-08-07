@@ -17,12 +17,6 @@
 #error "This file requires ARC support."
 #endif
 
-void SetEarlGreySynchronizationEnabled(BOOL enabled) {
-  [[GREYConfiguration sharedInstance]
-          setValue:[NSNumber numberWithBool:enabled]
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
-}
-
 void TapButtonWithAccessibilityLabel(NSString* label) {
   id<GREYMatcher> matcher =
       chrome_test_util::ButtonWithAccessibilityLabel(label);

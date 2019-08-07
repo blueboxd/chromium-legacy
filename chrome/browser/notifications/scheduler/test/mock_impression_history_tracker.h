@@ -20,10 +20,15 @@ class MockImpressionHistoryTracker : public ImpressionHistoryTracker {
   ~MockImpressionHistoryTracker() override;
 
   MOCK_METHOD2(Init, void(Delegate*, base::OnceCallback<void(bool)>));
-  MOCK_METHOD2(AddImpression, void(SchedulerClientType, const std::string&));
+  MOCK_METHOD4(AddImpression,
+               void(SchedulerClientType,
+                    const std::string&,
+                    const Impression::ImpressionResultMap&,
+                    const Impression::CustomData&));
   MOCK_METHOD0(AnalyzeImpressionHistory, void());
   MOCK_CONST_METHOD1(GetClientStates,
                      void(std::map<SchedulerClientType, const ClientState*>*));
+  MOCK_CONST_METHOD1(GetImpression, Impression*(const std::string&));
   MOCK_METHOD2(GetImpressionDetail,
                void(SchedulerClientType,
                     ImpressionDetail::ImpressionDetailCallback));

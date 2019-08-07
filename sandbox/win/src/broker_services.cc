@@ -518,9 +518,4 @@ ResultCode BrokerServicesBase::WaitForAllTargets() {
   return SBOX_ALL_OK;
 }
 
-bool BrokerServicesBase::IsActiveTarget(DWORD process_id) {
-  AutoLock lock(&lock_);
-  return child_process_ids_.find(process_id) != child_process_ids_.end();
-}
-
 }  // namespace sandbox

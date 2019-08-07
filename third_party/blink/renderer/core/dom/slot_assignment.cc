@@ -22,7 +22,7 @@ namespace blink {
 
 namespace {
 bool ShouldAssignToCustomSlot(const Node& node) {
-  if (IsHTMLDetailsElement(node.parentElement()))
+  if (IsA<HTMLDetailsElement>(node.parentElement()))
     return HTMLDetailsElement::IsFirstSummary(node);
   if (IsHTMLSelectElement(node.parentElement()))
     return HTMLSelectElement::CanAssignToSelectSlot(node);

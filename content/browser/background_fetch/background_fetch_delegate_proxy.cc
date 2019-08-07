@@ -45,8 +45,8 @@ class BackgroundFetchDelegateProxy::Core
       BackgroundFetchDelegate::GetPermissionForOriginCallback callback,
       BackgroundFetchPermission permission) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(std::move(callback), permission));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(std::move(callback), permission));
   }
 
   void GetPermissionForOrigin(
@@ -69,8 +69,8 @@ class BackgroundFetchDelegateProxy::Core
       BackgroundFetchDelegate::GetIconDisplaySizeCallback callback,
       const gfx::Size& display_size) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(std::move(callback), display_size));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(std::move(callback), display_size));
   }
 
   void GetIconDisplaySize(
@@ -82,9 +82,8 @@ class BackgroundFetchDelegateProxy::Core
           base::BindOnce(&Core::ForwardGetIconDisplaySizeCallbackToIO,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     } else {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(std::move(callback), gfx::Size(0, 0)));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(std::move(callback), gfx::Size(0, 0)));
     }
   }
 
@@ -223,10 +222,9 @@ void BackgroundFetchDelegateProxy::Core::OnJobCancelled(
     const std::string& job_unique_id,
     blink::mojom::BackgroundFetchFailureReason reason_to_abort) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&BackgroundFetchDelegateProxy::OnJobCancelled, io_parent_,
-                     job_unique_id, reason_to_abort));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&BackgroundFetchDelegateProxy::OnJobCancelled,
+                                io_parent_, job_unique_id, reason_to_abort));
 }
 
 void BackgroundFetchDelegateProxy::Core::OnDownloadUpdated(
@@ -235,7 +233,7 @@ void BackgroundFetchDelegateProxy::Core::OnDownloadUpdated(
     uint64_t bytes_uploaded,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BackgroundFetchDelegateProxy::OnDownloadUpdated,
                      io_parent_, job_unique_id, guid, bytes_uploaded,
@@ -247,7 +245,7 @@ void BackgroundFetchDelegateProxy::Core::OnDownloadComplete(
     const std::string& guid,
     std::unique_ptr<BackgroundFetchResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BackgroundFetchDelegateProxy::OnDownloadComplete,
                      io_parent_, job_unique_id, guid, std::move(result)));
@@ -259,7 +257,7 @@ void BackgroundFetchDelegateProxy::Core::OnDownloadStarted(
     std::unique_ptr<content::BackgroundFetchResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&BackgroundFetchDelegateProxy::DidStartRequest, io_parent_,
                      job_unique_id, guid, std::move(response)));
@@ -269,20 +267,18 @@ void BackgroundFetchDelegateProxy::Core::OnUIActivated(
     const std::string& job_unique_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&BackgroundFetchDelegateProxy::DidActivateUI, io_parent_,
-                     job_unique_id));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&BackgroundFetchDelegateProxy::DidActivateUI,
+                                io_parent_, job_unique_id));
 }
 
 void BackgroundFetchDelegateProxy::Core::OnUIUpdated(
     const std::string& job_unique_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&BackgroundFetchDelegateProxy::DidUpdateUI, io_parent_,
-                     job_unique_id));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&BackgroundFetchDelegateProxy::DidUpdateUI,
+                                io_parent_, job_unique_id));
 }
 
 void BackgroundFetchDelegateProxy::Core::GetUploadData(
@@ -297,17 +293,16 @@ void BackgroundFetchDelegateProxy::Core::GetUploadData(
       base::BindOnce(
           [](BackgroundFetchDelegate::GetUploadDataCallback callback,
              blink::mojom::SerializedBlobPtr blob) {
-            base::PostTaskWithTraits(
+            base::PostTask(
                 FROM_HERE, {BrowserThread::UI},
                 base::BindOnce(std::move(callback), std::move(blob)));
           },
           std::move(callback));
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&BackgroundFetchDelegateProxy::GetUploadData, io_parent_,
-                     job_unique_id, download_guid,
-                     std::move(wrapped_callback)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&BackgroundFetchDelegateProxy::GetUploadData,
+                                io_parent_, job_unique_id, download_guid,
+                                std::move(wrapped_callback)));
 }
 
 BackgroundFetchDelegateProxy::BackgroundFetchDelegateProxy(
@@ -336,9 +331,9 @@ void BackgroundFetchDelegateProxy::SetClickEventDispatcher(
 void BackgroundFetchDelegateProxy::GetIconDisplaySize(
     BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&Core::GetIconDisplaySize,
-                                          ui_core_ptr_, std::move(callback)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&Core::GetIconDisplaySize, ui_core_ptr_,
+                                std::move(callback)));
 }
 
 void BackgroundFetchDelegateProxy::GetPermissionForOrigin(
@@ -346,10 +341,9 @@ void BackgroundFetchDelegateProxy::GetPermissionForOrigin(
     const WebContents::Getter& wc_getter,
     BackgroundFetchDelegate::GetPermissionForOriginCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&Core::GetPermissionForOrigin, ui_core_ptr_, origin,
-                     wc_getter, std::move(callback)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&Core::GetPermissionForOrigin, ui_core_ptr_,
+                                origin, wc_getter, std::move(callback)));
 }
 
 void BackgroundFetchDelegateProxy::CreateDownloadJob(
@@ -360,10 +354,9 @@ void BackgroundFetchDelegateProxy::CreateDownloadJob(
   DCHECK(!controller_map_.count(fetch_description->job_unique_id));
   controller_map_[fetch_description->job_unique_id] = std::move(controller);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&Core::CreateDownloadJob, ui_core_ptr_,
-                     std::move(fetch_description)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&Core::CreateDownloadJob, ui_core_ptr_,
+                                std::move(fetch_description)));
 }
 
 void BackgroundFetchDelegateProxy::StartRequest(
@@ -376,9 +369,9 @@ void BackgroundFetchDelegateProxy::StartRequest(
   DCHECK(request);
   DCHECK(!request->download_guid().empty());
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&Core::StartRequest, ui_core_ptr_,
-                                          job_unique_id, origin, request));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&Core::StartRequest, ui_core_ptr_,
+                                job_unique_id, origin, request));
 }
 
 void BackgroundFetchDelegateProxy::UpdateUI(
@@ -392,22 +385,21 @@ void BackgroundFetchDelegateProxy::UpdateUI(
   DCHECK(!update_ui_callback_map_.count(job_unique_id));
   update_ui_callback_map_.emplace(job_unique_id, std::move(update_ui_callback));
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&Core::UpdateUI, ui_core_ptr_,
-                                          job_unique_id, title, icon));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&Core::UpdateUI, ui_core_ptr_, job_unique_id,
+                                title, icon));
 }
 
 void BackgroundFetchDelegateProxy::Abort(const std::string& job_unique_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&Core::Abort, ui_core_ptr_, job_unique_id));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&Core::Abort, ui_core_ptr_, job_unique_id));
 }
 
 void BackgroundFetchDelegateProxy::MarkJobComplete(
     const std::string& job_unique_id) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&Core::MarkJobComplete, ui_core_ptr_, job_unique_id));
   controller_map_.erase(job_unique_id);

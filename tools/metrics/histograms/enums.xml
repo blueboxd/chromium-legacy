@@ -20629,7 +20629,7 @@ Called by update_net_error_codes.py.-->
   <int value="59" label="kEnterprisePlatformKeysPrivate"/>
   <int value="60" label="kDeleted_ExperienceSamplingPrivate"/>
   <int value="61" label="kExperimental"/>
-  <int value="62" label="kExtensionView"/>
+  <int value="62" label="kDeleted_ExtensionView"/>
   <int value="63" label="kExternallyConnectableAllUrls"/>
   <int value="64" label="kFeedbackPrivate"/>
   <int value="65" label="kFileBrowserHandler"/>
@@ -30171,12 +30171,20 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="IDBKeyPathType">
+  <obsolete>
+    Removed August 2019. Was added to measure use of features which not all
+    actively developed browser engines supported. No longer relevant.
+  </obsolete>
   <int value="0" label="None">No key path.</int>
   <int value="1" label="String">Key path is a string.</int>
   <int value="2" label="Array">Key path is an array of strings.</int>
 </enum>
 
 <enum name="IDBKeyType">
+  <obsolete>
+    Removed August 2019. Was added to measure use of features which not all
+    actively developed browser engines supported. No longer relevant.
+  </obsolete>
   <int value="0" label="Invalid">Invalid key.</int>
   <int value="1" label="Array">Key is an array.</int>
   <int value="2" label="Binary">Key is a binary buffer.</int>
@@ -34121,6 +34129,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2058762785"
       label="AllowDownloadResumptionWithoutStrongValidators:disabled"/>
   <int value="-2058656447" label="ContextualSearchUrlActions:enabled"/>
+  <int value="-2056351013" label="AutofillUpdatedCardUnmaskPromptUi:enabled"/>
   <int value="-2054612904" label="BuiltInModuleInfra:enabled"/>
   <int value="-2053860791" label="XGEOVisibleNetworks:enabled"/>
   <int value="-2048927838" label="AutoplayWhitelistSettings:enabled"/>
@@ -34921,6 +34930,7 @@ from previous Chrome versions.
   <int value="-1027124889" label="NtlmV2Enabled:enabled"/>
   <int value="-1022971520" label="enable-search-button-in-omnibox-for-str"/>
   <int value="-1022165708" label="BreakingNewsPush:disabled"/>
+  <int value="-1021097344" label="PolicyAtomicGroup:disabled"/>
   <int value="-1020450980" label="gesture-deletion"/>
   <int value="-1019967332" label="VrBrowsing:enabled"/>
   <int value="-1019492310"
@@ -35331,8 +35341,6 @@ from previous Chrome versions.
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
   <int value="-426815606" label="HomepageTile:enabled"/>
   <int value="-424701311" label="SignedHTTPExchange:disabled"/>
-  <int value="-424544273"
-      label="enable-experimental-accessibility-chromevox-rich-text-indication"/>
   <int value="-424134004" label="WebPaymentsExperimentalFeatures:disabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-416660617" label="EnforceTLS13Downgrade:disabled"/>
@@ -35472,6 +35480,7 @@ from previous Chrome versions.
   <int value="-234687894"
       label="NonValidatingReloadOnRefreshContentV2:disabled"/>
   <int value="-234231190" label="SharingDeviceRegistration:enabled"/>
+  <int value="-231967261" label="AutofillUpdatedCardUnmaskPromptUi:disabled"/>
   <int value="-231922000" label="enable-renderer-mojo-channel"/>
   <int value="-231426350" label="AutofillEnableToolbarStatusChip:enabled"/>
   <int value="-230824955" label="NTPMostLikelyFaviconsFromServer:enabled"/>
@@ -36606,6 +36615,7 @@ from previous Chrome versions.
   <int value="1384614036" label="disable-unified-media-pipeline"/>
   <int value="1386300777"
       label="OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains:disabled"/>
+  <int value="1387356699" label="PolicyAtomicGroup:enabled"/>
   <int value="1389729816" label="data-reduction-proxy-lo-fi"/>
   <int value="1392935139" label="KidsManagementUrlClassification:enabled"/>
   <int value="1393500952" label="EnableVirtualKeyboardUkm:disabled"/>
@@ -38958,6 +38968,12 @@ Called by update_use_counter_css.py.-->
 <enum name="MediaPlayerExitStatus">
   <int value="0" label="No errors"/>
   <int value="1" label="Has errors"/>
+</enum>
+
+<enum name="MediaPlayerWatchTimeType">
+  <int value="0" label="Non-HLS"/>
+  <int value="1" label="HLS audio-only"/>
+  <int value="2" label="HLS video"/>
 </enum>
 
 <enum name="MediaRecorderVEAUsed">
@@ -47269,9 +47285,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Local-Memory Failure"/>
   <int value="2" label="Mapped-File Success"/>
   <int value="3" label="Mapped-File Failure"/>
-  <int value="5" label="Mapped-File Already Exists"/>
-  <int value="6" label="No Spare File"/>
-  <int value="7" label="Could Not Create Upload Directory"/>
+  <int value="4" label="Mapped-File Already Exists"/>
+  <int value="5" label="No Spare File"/>
+  <int value="6" label="Could Not Create Upload Directory"/>
 </enum>
 
 <enum name="PhotoEditorFileType">
@@ -48706,6 +48722,8 @@ Called by update_net_trust_anchors.py.-->
              loop was detected"/>
   <int value="10" label="(DEPRECATED IN M74) Disallowed by PreviewsState"/>
   <int value="11" label="The chrome-proxy header is invalid"/>
+  <int value="12" label="The network probe has not completed yet"/>
+  <int value="13" label="The network probe completed and failed"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">

@@ -672,10 +672,6 @@ base::RefCountedMemory* ChromeContentClient::GetDataResourceBytes(
       resource_id);
 }
 
-bool ChromeContentClient::IsDataResourceGzipped(int resource_id) {
-  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
-}
-
 gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);

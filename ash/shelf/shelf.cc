@@ -124,8 +124,8 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
   DCHECK(!shelf_widget_);
   aura::Window* shelf_container =
       root->GetChildById(kShellWindowId_ShelfContainer);
-  shelf_widget_.reset(new ShelfWidget(shelf_container, this));
-  shelf_widget_->Initialize();
+  shelf_widget_.reset(new ShelfWidget(this));
+  shelf_widget_->Initialize(shelf_container);
 
   DCHECK(!shelf_layout_manager_);
   shelf_layout_manager_ = shelf_widget_->shelf_layout_manager();

@@ -723,6 +723,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   display: inline-block;
   height: 384px;
   left: 0;
+  margin-top: 80px;
   vertical-align: top;
   width: 192px;
 }
@@ -843,7 +844,6 @@ html[dir=rtl] .menu-option {
   height: 80px;
   line-height: 80px;
   padding-inline-end: 24px;
-  padding-inline-start: 232px;
 }
 
 #menu-title {
@@ -889,14 +889,14 @@ html[dir=rtl] .menu-option {
 
 #menu-contents {
   display: inline-block;
-  height: 384px;
+  height: 464px;
   margin-inline-start: 40px;
   position: relative;
   width: 568px;
 }
 
 .menu-panel {
-  height: 100%;
+  height: 384px;
   left: 0;
   /* Pad the content by 5px top/left. This will prevent the focus outline on
    * tiles from being cut off by overflow-y. */
@@ -906,7 +906,7 @@ html[dir=rtl] .menu-option {
   padding-inline-start: 5px;
   padding-top: 5px;
   position: absolute;
-  top: 0;
+  top: 80px;
   visibility: hidden;
   width: 100%;
 }
@@ -1569,7 +1569,6 @@ input:checked + .toggle .highlight {
 
 #colors-menu {
   --check-mark-size: 20px;
-  --check-mark-top: 2px;
   --custom-color-border: rgb(var(--GG300-rgb));
   --custom-color-dark: rgb(var(--GG100-rgb));
   --custom-color-light: white;
@@ -1581,6 +1580,7 @@ input:checked + .toggle .highlight {
   background-color: unset;
   border-radius: 50%;
   box-sizing: border-box;
+  cursor: pointer;
   height: var(--tile-size);
   margin-bottom: var(--tile-margin);
   margin-inline-end: var(--tile-margin);
@@ -1590,12 +1590,12 @@ input:checked + .toggle .highlight {
 }
 
 #colors-menu .bg-sel-tile-bg.selected {
-  border: 4px solid rgba(var(--GB600-rgb), 0.4);
+  box-shadow: 0 0 0 4px rgba(var(--GB600-rgb), .4);
 }
 
 @media (prefers-color-scheme: dark) {
   #colors-menu .bg-sel-tile-bg.selected {
-    border: 4px solid rgb(var(--GB200-rgb));
+    box-shadow: 0 0 0 4px rgba(var(--GB600-rgb), .4);
   }
 }
 
@@ -1606,7 +1606,7 @@ input:checked + .toggle .highlight {
 #colors-menu .bg-sel-tile .selected-circle {
   height: calc(var(--check-mark-size) - 2px);
   right: 0;
-  top: calc(var(--check-mark-top) + 1px);
+  top: 1px;
   width: calc(var(--check-mark-size) - 2px);
 }
 
@@ -1619,7 +1619,7 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-circle {
   background-size: var(--check-mark-size) var(--check-mark-size);
   height: var(--check-mark-size);
   right: 0;
-  top: var(--check-mark-top);
+  top: 0;
   width: var(--check-mark-size);
 }
 

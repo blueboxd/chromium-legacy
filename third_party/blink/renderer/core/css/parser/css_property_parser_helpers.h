@@ -59,6 +59,7 @@ CSSPrimitiveValue* ConsumeLength(CSSParserTokenRange&,
                                  ValueRange,
                                  UnitlessQuirk = UnitlessQuirk::kForbid);
 CSSPrimitiveValue* ConsumePercent(CSSParserTokenRange&, ValueRange);
+CSSPrimitiveValue* ConsumeAlphaValue(CSSParserTokenRange&);
 CSSPrimitiveValue* ConsumeLengthOrPercent(
     CSSParserTokenRange&,
     CSSParserMode,

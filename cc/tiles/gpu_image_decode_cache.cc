@@ -1233,6 +1233,17 @@ void GpuImageDecodeCache::ClearCache() {
   paint_image_entries_.clear();
 }
 
+void GpuImageDecodeCache::RecordStats() {
+  base::AutoLock lock(lock_);
+  double cache_usage;
+  if (base::CheckDiv(static_cast<double>(working_set_bytes_),
+                     max_working_set_bytes_).AssignIfValid(&cache_usage)) {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Renderer4.GpuImageDecodeState.CachePeakUsagePercent",
+        cache_usage * 100);
+  }
+}
+
 void GpuImageDecodeCache::AddToPersistentCache(const DrawImage& draw_image,
                                                scoped_refptr<ImageData> data) {
   lock_.AssertAcquired();

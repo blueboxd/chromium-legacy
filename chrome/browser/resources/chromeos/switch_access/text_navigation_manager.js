@@ -152,6 +152,13 @@ class TextNavigationManager {
   }
 
   /**
+   * Reset the selectionStartIndex to NO_SELECT_INDEX.
+   */
+  resetSelStartIndex() {
+    this.selectionStartIndex_ = NO_SELECT_INDEX;
+  }
+
+  /**
    * Returns the selection start index.
    * @return {number}
    * @public
@@ -172,11 +179,11 @@ class TextNavigationManager {
   }
 
   /**
-   * Returns if the selection start index is set.
+   * Returns if the selection start index is set in the current node.
    * @return {boolean}
    * @public
    */
-  isSelStartIndexSet() {
+  isSelectionStarted() {
     return this.selectionStartIndex_ !== NO_SELECT_INDEX;
   }
 

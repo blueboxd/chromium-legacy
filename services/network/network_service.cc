@@ -655,8 +655,7 @@ net::HttpAuthHandlerFactory* NetworkService::GetHttpAuthHandlerFactory() {
 }
 
 void NetworkService::OnBeforeURLRequest() {
-  if (base::FeatureList::IsEnabled(features::kNetworkService))
-    MaybeStartUpdateLoadInfoTimer();
+  MaybeStartUpdateLoadInfoTimer();
 }
 
 void NetworkService::OnBindInterface(

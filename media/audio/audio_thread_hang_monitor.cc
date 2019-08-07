@@ -47,7 +47,7 @@ AudioThreadHangMonitor::Ptr AudioThreadHangMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> audio_thread_task_runner,
     scoped_refptr<base::SequencedTaskRunner> monitor_task_runner) {
   if (!monitor_task_runner)
-    monitor_task_runner = base::CreateSequencedTaskRunnerWithTraits({});
+    monitor_task_runner = base::CreateSequencedTaskRunner({base::ThreadPool()});
 
   auto monitor =
       Ptr(new AudioThreadHangMonitor(hang_action, hang_deadline, clock,

@@ -170,34 +170,6 @@ XrBrowserTestBase::RuntimeType XrBrowserTestBase::GetRuntimeType() const {
   return XrBrowserTestBase::RuntimeType::RUNTIME_NONE;
 }
 
-device::XrAxisType XrBrowserTestBase::GetPrimaryAxisType() const {
-  auto runtime = GetRuntimeType();
-  switch (runtime) {
-    case XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR:
-      return device::XrAxisType::kTrackpad;
-    case XrBrowserTestBase::RuntimeType::RUNTIME_WMR:
-    case XrBrowserTestBase::RuntimeType::RUNTIME_OPENXR:
-      return device::XrAxisType::kJoystick;
-    case XrBrowserTestBase::RuntimeType::RUNTIME_NONE:
-      return device::XrAxisType::kNone;
-  }
-  NOTREACHED();
-}
-
-device::XrAxisType XrBrowserTestBase::GetSecondaryAxisType() const {
-  auto runtime = GetRuntimeType();
-  switch (runtime) {
-    case XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR:
-      return device::XrAxisType::kJoystick;
-    case XrBrowserTestBase::RuntimeType::RUNTIME_WMR:
-    case XrBrowserTestBase::RuntimeType::RUNTIME_OPENXR:
-      return device::XrAxisType::kTrackpad;
-    case XrBrowserTestBase::RuntimeType::RUNTIME_NONE:
-      return device::XrAxisType::kNone;
-  }
-  NOTREACHED();
-}
-
 GURL XrBrowserTestBase::GetFileUrlForHtmlTestFile(
     const std::string& test_name) {
   return ui_test_utils::GetTestUrl(

@@ -8,6 +8,19 @@ namespace chromeos {
 
 namespace device_sync {
 
+// static
+CryptAuthDeviceSyncResult::ResultType CryptAuthDeviceSyncResult::GetResultType(
+    const ResultCode& result_code) {
+  switch (result_code) {
+    case CryptAuthDeviceSyncResult::ResultCode::kSuccess:
+      return CryptAuthDeviceSyncResult::ResultType::kSuccess;
+    case CryptAuthDeviceSyncResult::ResultCode::kFinishedWithNonFatalErrors:
+      return CryptAuthDeviceSyncResult::ResultType::kNonFatalError;
+    default:
+      return CryptAuthDeviceSyncResult::ResultType::kFatalError;
+  }
+}
+
 CryptAuthDeviceSyncResult::CryptAuthDeviceSyncResult(
     ResultCode result_code,
     bool did_device_registry_change,
@@ -21,8 +34,13 @@ CryptAuthDeviceSyncResult::CryptAuthDeviceSyncResult(
 
 CryptAuthDeviceSyncResult::~CryptAuthDeviceSyncResult() = default;
 
+CryptAuthDeviceSyncResult::ResultType CryptAuthDeviceSyncResult::GetResultType()
+    const {
+  return GetResultType(result_code_);
+}
+
 bool CryptAuthDeviceSyncResult::IsSuccess() const {
-  return result_code_ == ResultCode::kSuccess;
+  return GetResultType(result_code_) == ResultType::kSuccess;
 }
 
 bool CryptAuthDeviceSyncResult::operator==(
@@ -70,28 +88,14 @@ std::ostream& operator<<(
     case ResultCode::kErrorNoLocalDeviceMetadataInResponse:
       stream << "[Error: No local device metadata in SyncMetadata response]";
       break;
-    case ResultCode::kErrorMissingFeatureStatuses:
-      stream << "[Error: Feature statuses not received for device(s)]";
+    case ResultCode::kErrorMissingLocalDeviceFeatureStatuses:
+      stream << "[Error: No local device feature statuses]";
       break;
     case ResultCode::kErrorMissingLocalDeviceSyncBetterTogetherKey:
       stream << "[Error: No DeviceSync:BetterTogether key in registry]";
       break;
     case ResultCode::kErrorDecryptingGroupPrivateKey:
       stream << "[Error: Could not decrypt group private key]";
-      break;
-    case ResultCode::kErrorInconsistentGroupPrivateKeys:
-      stream << "[Error: Group private key from SyncMetadata response "
-             << "unexpectedly disagrees with the one in local storage]";
-      break;
-    case ResultCode::kErrorDecryptingMetadata:
-      stream << "[Error: Could not decrypt device metadata]";
-      break;
-    case ResultCode::kErrorParsingMetadata:
-      stream << "[Error: Could not parse device metadata]";
-      break;
-    case ResultCode::kErrorInconsistentLocalDeviceMetadata:
-      stream << "[Error: Local device metadata disagrees with that in "
-             << "SyncMetadata response]";
       break;
     case ResultCode::kErrorEncryptingGroupPrivateKey:
       stream << "[Error: Could not encrypt group private key]";

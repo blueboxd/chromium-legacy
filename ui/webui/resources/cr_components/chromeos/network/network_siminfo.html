@@ -53,7 +53,7 @@
 
     <!-- SIM missing UI -->
     <div class="property-box two-line"
-        hidden$="[[hasSim_(deviceStateProperties_)]]">
+        hidden$="[[!showSimMissing_(deviceStateProperties_)]]">
       <div class="start layout horizontal center">
         <iron-icon icon="cr:sim-card-alert"></iron-icon>
         <div class="error">[[i18n('networkSimCardMissing')]]</div>

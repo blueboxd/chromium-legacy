@@ -234,20 +234,20 @@ static void EstablishEmbeddedRelationship(AtkObject* document_object) {
   document_platform_node->SetEmbeddingWindow(window);
 }
 
-void BrowserAccessibilityManagerAuraLinux::OnStateChanged(
+void BrowserAccessibilityManagerAuraLinux::OnNodeDataWillChange(
     ui::AXTree* tree,
-    ui::AXNode* node,
-    ax::mojom::State state,
-    bool new_value) {
+    const ui::AXNodeData& old_node_data,
+    const ui::AXNodeData& new_node_data) {
   DCHECK_EQ(ax_tree(), tree);
 
   // Since AuraLinux needs to send the children-changed::remove event with the
   // index in parent, the event must be fired before the node becomes ignored.
   // children-changed:add is handled with the generated Event::IGNORED_CHANGED.
-  if (state == ax::mojom::State::kIgnored && new_value) {
-    DCHECK(!node->data().HasState(ax::mojom::State::kIgnored));
-    BrowserAccessibility* obj = GetFromAXNode(node);
+  if (!old_node_data.HasState(ax::mojom::State::kIgnored) &&
+      new_node_data.HasState(ax::mojom::State::kIgnored)) {
+    BrowserAccessibility* obj = GetFromID(old_node_data.id);
     if (obj && obj->IsNative() && obj->GetParent()) {
+      DCHECK(!obj->HasState(ax::mojom::State::kIgnored));
       g_signal_emit_by_name(obj->GetParent(), "children-changed::remove",
                             obj->GetIndexInParent(),
                             obj->GetNativeViewAccessible());
@@ -258,7 +258,6 @@ void BrowserAccessibilityManagerAuraLinux::OnStateChanged(
 void BrowserAccessibilityManagerAuraLinux::OnSubtreeWillBeDeleted(
     ui::AXTree* tree,
     ui::AXNode* node) {
-  BrowserAccessibilityManager::OnSubtreeWillBeDeleted(tree, node);
   // Sending events on load/destruction would create a lot of spam, avoid that.
   if (!GetTreeData().loaded)
     return;

@@ -2292,15 +2292,15 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderMoveEndpointByUnitTextField) {
   ui::AXNodeData root_data;
-  root_data.id = 0;
+  root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
 
   ui::AXNodeData group1_data;
-  group1_data.id = 1;
+  group1_data.id = 2;
   group1_data.role = ax::mojom::Role::kGenericContainer;
 
   ui::AXNodeData text_data;
-  text_data.id = 2;
+  text_data.id = 3;
   text_data.role = ax::mojom::Role::kStaticText;
   std::string text_content = "some text";
   text_data.SetName(text_content);
@@ -2313,15 +2313,15 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                 word_end_offsets);
 
   ui::AXNodeData text_input_data;
-  text_input_data.id = 3;
+  text_input_data.id = 4;
   text_input_data.role = ax::mojom::Role::kTextField;
 
   ui::AXNodeData group2_data;
-  group2_data.id = 4;
+  group2_data.id = 5;
   group2_data.role = ax::mojom::Role::kGenericContainer;
 
   ui::AXNodeData more_text_data;
-  more_text_data.id = 5;
+  more_text_data.id = 6;
   more_text_data.role = ax::mojom::Role::kStaticText;
   text_content = "more text";
   more_text_data.SetName(text_content);
@@ -2333,7 +2333,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                                      word_end_offsets);
 
   ui::AXNodeData empty_text_data;
-  empty_text_data.id = 6;
+  empty_text_data.id = 7;
   empty_text_data.role = ax::mojom::Role::kStaticText;
   text_content = "";
   empty_text_data.SetName(text_content);
@@ -2344,10 +2344,10 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   empty_text_data.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
                                       word_end_offsets);
 
-  root_data.child_ids = {1, 3, 4};
-  group1_data.child_ids = {2};
-  text_input_data.child_ids = {6};
-  group2_data.child_ids = {5};
+  root_data.child_ids = {group1_data.id, text_input_data.id, group2_data.id};
+  group1_data.child_ids = {text_data.id};
+  text_input_data.child_ids = {empty_text_data.id};
+  group2_data.child_ids = {more_text_data.id};
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -2839,28 +2839,28 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderGetChildren) {
   // |            |
   // text_node3   text_node4
   ui::AXNodeData root_data;
-  root_data.id = 0;
+  root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
 
   ui::AXNodeData text_node1;
-  text_node1.id = 1;
+  text_node1.id = 2;
   text_node1.role = ax::mojom::Role::kStaticText;
-  root_data.child_ids.push_back(1);
+  root_data.child_ids.push_back(text_node1.id);
 
   ui::AXNodeData text_node2;
-  text_node2.id = 2;
+  text_node2.id = 3;
   text_node2.role = ax::mojom::Role::kStaticText;
-  root_data.child_ids.push_back(2);
+  root_data.child_ids.push_back(text_node2.id);
 
   ui::AXNodeData text_node3;
-  text_node3.id = 3;
+  text_node3.id = 4;
   text_node3.role = ax::mojom::Role::kStaticText;
-  text_node1.child_ids.push_back(3);
+  text_node1.child_ids.push_back(text_node3.id);
 
   ui::AXNodeData text_node4;
-  text_node4.id = 4;
+  text_node4.id = 5;
   text_node4.role = ax::mojom::Role::kStaticText;
-  text_node1.child_ids.push_back(4);
+  text_node1.child_ids.push_back(text_node4.id);
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -3261,19 +3261,20 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderGetAttributeValueNotSupported) {
   ui::AXNodeData root_data;
-  root_data.id = 0;
+  root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
-  root_data.child_ids = {1, 2};
 
   ui::AXNodeData text_data_first;
-  text_data_first.id = 1;
+  text_data_first.id = 2;
   text_data_first.role = ax::mojom::Role::kStaticText;
   text_data_first.SetName("first");
+  root_data.child_ids.push_back(text_data_first.id);
 
   ui::AXNodeData text_data_second;
-  text_data_second.id = 2;
+  text_data_second.id = 3;
   text_data_second.role = ax::mojom::Role::kStaticText;
   text_data_second.SetName("second");
+  root_data.child_ids.push_back(text_data_second.id);
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
@@ -4024,7 +4025,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, ElementNotAvailable) {
   AXNodeData root_ax_node_data;
-  root_ax_node_data.id = 0;
+  root_ax_node_data.id = 1;
   root_ax_node_data.role = ax::mojom::Role::kRootWebArea;
 
   Init(root_ax_node_data);

@@ -29,9 +29,9 @@ enum XrButtonId {
   kDpadDown = 6,
   kA = 7,
   kProximitySensor = 31,
-  kAxisPrimary = 32,
+  kAxisTrackpad = 32,
   kAxisTrigger = 33,
-  kAxisSecondary = 34,
+  kAxisThumbstick = 34,
   kAxisTertiary = 35,
   kAxisQuaternary = 36,
   kMax = 64
@@ -49,10 +49,10 @@ inline uint64_t XrButtonMaskFromId(XrButtonId id) {
 }
 
 inline unsigned int XrAxisOffsetFromId(XrButtonId id) {
-  DCHECK(XrButtonId::kAxisPrimary <= id &&
-         id < XrButtonId::kAxisPrimary + kMaxNumAxes);
+  DCHECK(XrButtonId::kAxisTrackpad <= id &&
+         id < XrButtonId::kAxisTrackpad + kMaxNumAxes);
   return static_cast<unsigned int>(id) -
-         static_cast<unsigned int>(XrButtonId::kAxisPrimary);
+         static_cast<unsigned int>(XrButtonId::kAxisTrackpad);
 }
 
 struct Color {

@@ -128,10 +128,9 @@ void SpellingRequest::OnLocalCheckCompletedOnAnyThread(
     base::WeakPtr<SpellingRequest> request,
     const std::vector<SpellCheckResult>& results) {
   // Local checking can happen on any thread - don't DCHECK thread.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&SpellingRequest::OnLocalCheckCompleted, request,
-                     results));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&SpellingRequest::OnLocalCheckCompleted,
+                                request, results));
 }
 
 void SpellingRequest::OnLocalCheckCompleted(

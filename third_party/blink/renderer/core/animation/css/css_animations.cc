@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation.h"
+#include "third_party/blink/renderer/core/animation/css/css_transition.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -605,15 +606,13 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
 
     KeyframeEffectModelBase* model = inert_animation->Model();
 
-    auto* transition = MakeGarbageCollected<KeyframeEffect>(
+    auto* transition_effect = MakeGarbageCollected<KeyframeEffect>(
         element, model, inert_animation->SpecifiedTiming(),
         KeyframeEffect::kTransitionPriority, event_delegate);
-    Animation* animation = element->GetDocument().Timeline().Play(transition);
-    if (property.IsCSSCustomProperty()) {
-      animation->setId(property.CustomPropertyName());
-    } else {
-      animation->setId(property.GetCSSProperty().GetPropertyName());
-    }
+    Animation* animation = CSSTransition::Create(
+        transition_effect, &(element->GetDocument().Timeline()), property);
+    animation->play();
+
     // Set the current time as the start time for retargeted transitions
     if (retargeted_compositor_transitions.Contains(property)) {
       animation->setStartTime(element->GetDocument().Timeline().currentTime(),

@@ -70,7 +70,7 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
     job_id_to_client_[job_unique_id]->OnDownloadStarted(job_unique_id, guid,
                                                         std::move(response));
     if (complete_downloads_) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&FakeBackgroundFetchDelegate::CompleteDownload,
                          base::Unretained(this), job_unique_id, guid));

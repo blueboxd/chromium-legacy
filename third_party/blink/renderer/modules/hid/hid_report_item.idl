@@ -70,7 +70,7 @@ enum HIDUnitSystem {
 
     // The base 10 exponent of the units for this report item. For instance, for
     // kilograms |unitExponent| would be 3 and for micrograms it would be -6.
-    readonly attribute unsigned long unitExponent;
+    readonly attribute byte unitExponent;
 
     // The unit system determines which units are used for length, mass, time,
     // temperature, current, and luminous intensity. May be "none" if the values

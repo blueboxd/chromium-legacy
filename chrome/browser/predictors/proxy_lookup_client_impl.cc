@@ -26,7 +26,7 @@ ProxyLookupClientImpl::ProxyLookupClientImpl(
   network::mojom::ProxyLookupClientPtr proxy_lookup_client_ptr;
   binding_.Bind(
       mojo::MakeRequest(&proxy_lookup_client_ptr),
-      base::CreateSingleThreadTaskRunnerWithTraits(
+      base::CreateSingleThreadTaskRunner(
           {content::BrowserThread::UI, content::BrowserTaskType::kPreconnect}));
   network_context->LookUpProxyForURL(url, std::move(proxy_lookup_client_ptr));
   binding_.set_connection_error_handler(

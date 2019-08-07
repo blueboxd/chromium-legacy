@@ -20,9 +20,6 @@ class AudioBus;
 
 namespace blink {
 
-// TODO(crbug.com/704136): Move the classes below out of the Blink exposed
-// API when all users of it have been Onion souped.
-
 // PeerConnectionRemoteAudioTrack is a WebRTC specific implementation of an
 // audio track whose data is sourced from a PeerConnection.
 class PLATFORM_EXPORT PeerConnectionRemoteAudioTrack final
@@ -57,7 +54,7 @@ class PLATFORM_EXPORT PeerConnectionRemoteAudioTrack final
 };
 
 // Represents the audio provided by the receiving end of a PeerConnection.
-class BLINK_PLATFORM_EXPORT PeerConnectionRemoteAudioSource final
+class PLATFORM_EXPORT PeerConnectionRemoteAudioSource final
     : public MediaStreamAudioSource,
       protected webrtc::AudioTrackSinkInterface {
  public:

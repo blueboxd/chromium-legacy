@@ -329,6 +329,16 @@ void ExtensionFrameHelper::ReadyToCommitNavigation(
   // TODO(devlin): Add constants for main world id, no extension group.
 }
 
+void ExtensionFrameHelper::DidCommitProvisionalLoad(
+    bool is_same_document_navigation,
+    ui::PageTransition transition) {
+  // Grant cross browsing instance frame lookup if we are an extension. This
+  // should match the conditions in FindFrame.
+  content::RenderFrame* frame = render_frame();
+  if (GetExtensionFromFrame(frame))
+    frame->SetAllowsCrossBrowsingInstanceFrameLookup();
+}
+
 void ExtensionFrameHelper::DidCreateScriptContext(
     v8::Local<v8::Context> context,
     int32_t world_id) {

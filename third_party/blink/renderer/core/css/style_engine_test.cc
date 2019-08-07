@@ -11,6 +11,7 @@
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
@@ -1563,6 +1564,9 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColors) {
   ScopedForcedColorsForTest scoped_feature(true);
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
+      body {
+        forced-color-adjust: none;
+      }
       @media (forced-colors: none) {
         body { color: red }
       }
@@ -1589,6 +1593,9 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
   ScopedForcedColorsForTest scoped_feature(true);
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
+      body {
+        forced-color-adjust: none;
+      }
       @media (forced-colors: none) and (prefers-color-scheme: light) {
         body { color: red }
       }
@@ -2026,6 +2033,47 @@ TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(Color::kBlack, GetDocument().View()->BaseBackgroundColor());
+}
+
+TEST_F(StyleEngineTest, PseudoElementBaseComputedStyle) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      @keyframes anim {
+        from { background-color: white }
+        to { background-color: blue }
+      }
+      #anim::before {
+        content:"";
+        animation: anim 1s;
+      }
+    </style>
+    <div id="anim"></div>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+
+  auto* anim_element = GetDocument().getElementById("anim");
+  auto* before = anim_element->GetPseudoElement(kPseudoIdBefore);
+  auto* animations = before->GetElementAnimations();
+
+  ASSERT_TRUE(animations);
+
+  before->SetNeedsAnimationStyleRecalc();
+  UpdateAllLifecyclePhases();
+
+  scoped_refptr<ComputedStyle> base_computed_style =
+      animations->base_computed_style_;
+  EXPECT_TRUE(base_computed_style);
+
+  before->SetNeedsAnimationStyleRecalc();
+  UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(animations->base_computed_style_);
+#if !DCHECK_IS_ON()
+  // When DCHECK is enabled, BaseComputedStyle() returns null and we repeatedly
+  // create new instances which means the pointers will be different here.
+  EXPECT_EQ(base_computed_style, animations->base_computed_style_);
+#endif
 }
 
 }  // namespace blink

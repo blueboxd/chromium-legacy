@@ -39,6 +39,9 @@ class CORE_EXPORT PaintWorkletDeferredImage : public GeneratedImage {
             ImageClampingMode,
             ImageDecodingMode) override;
   void DrawTile(GraphicsContext&, const FloatRect&) override;
+  sk_sp<cc::PaintShader> CreateShader(const FloatRect& tile_rect,
+                                      const SkMatrix* pattern_matrix,
+                                      const FloatRect& src_rect) final;
 
  private:
   PaintWorkletDeferredImage(scoped_refptr<PaintWorkletInput> input,

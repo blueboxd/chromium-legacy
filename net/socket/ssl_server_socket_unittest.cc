@@ -412,6 +412,8 @@ class SSLServerSocketTest : public PlatformTest,
         server_cert_.get(), server_ssl_private_key_, server_ssl_config_);
   }
 
+  static HostPortPair GetHostAndPort() { return HostPortPair("unittest", 0); }
+
   void CreateSockets() {
     client_socket_.reset();
     server_socket_.reset();
@@ -422,10 +424,8 @@ class SSLServerSocketTest : public PlatformTest,
     std::unique_ptr<StreamSocket> server_socket =
         std::make_unique<FakeSocket>(channel_2_.get(), channel_1_.get());
 
-    HostPortPair host_and_pair("unittest", 0);
-
     client_socket_ = client_context_->CreateSSLClientSocket(
-        std::move(client_connection), host_and_pair, client_ssl_config_);
+        std::move(client_connection), GetHostAndPort(), client_ssl_config_);
     ASSERT_TRUE(client_socket_);
 
     server_socket_ =
@@ -435,17 +435,17 @@ class SSLServerSocketTest : public PlatformTest,
 
   void ConfigureClientCertsForClient(const char* cert_file_name,
                                      const char* private_key_file_name) {
-    client_ssl_config_.send_client_cert = true;
-    client_ssl_config_.client_cert =
+    scoped_refptr<X509Certificate> client_cert =
         ImportCertFromFile(GetTestCertsDirectory(), cert_file_name);
-    ASSERT_TRUE(client_ssl_config_.client_cert);
+    ASSERT_TRUE(client_cert);
 
     std::unique_ptr<crypto::RSAPrivateKey> key =
         ReadTestKey(private_key_file_name);
     ASSERT_TRUE(key);
 
-    client_ssl_config_.client_private_key =
-        WrapOpenSSLPrivateKey(bssl::UpRef(key->key()));
+    client_context_->SetClientCertificate(
+        GetHostAndPort(), std::move(client_cert),
+        WrapOpenSSLPrivateKey(bssl::UpRef(key->key())));
   }
 
   void ConfigureClientCertsForServer() {

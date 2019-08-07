@@ -259,6 +259,8 @@ crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.ht
 
 # virtual-scroller failures
 crbug.com/986574 wpt_internal/virtual-scroller/ [ Failure ]
+# Skip tests for rendersubtree for now.
+crbug.com/991095 wpt_internal/display-lock/rendersubtree/ [ Skip ]
 
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
@@ -2764,10 +2766,6 @@ crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/
 ####crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Skip ]
 ####crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Skip ]
 
-crbug.com/802067 [ Mac ] external/wpt/pointerlock/movementX_Y_basic.html [ Failure ]
-crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy.html [ Failure ]
-crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy_with_pointerlock.html [ Failure ]
-
 # Since there is no compositor thread when running tests then there is no main thread event queue. Hence the
 # logic for this test will be skipped when running Layout tests.
 crbug.com/770028 external/wpt/pointerevents/extension/pointerevent_pointerrawupdate_in_pointerlock-manual.html [ Skip ]
@@ -3143,6 +3141,7 @@ crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.ht
 crbug.com/832071 virtual/blink-cors/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
+crbug.com/832071 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # failures in external/wpt/css/css-animations/ and web-animations/ from Mozilla tests
@@ -3291,7 +3290,37 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-linet
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-underline-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 
+# Flaky because of timestamps in error messages.
+crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Pass Failure ]
+
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/unsafe-url/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-015.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/line-break/line-break-anywhere-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-002.html [ Failure ]
+crbug.com/626703 [ Win7 ] external/wpt/IndexedDB/structured-clone.any.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-004.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-011.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-007.html [ Failure ]
+crbug.com/626703 [ Win7 ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/unsafe-url/attr-referrer/same-origin/http-http/img-tag/no-redirect/generic.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/unset-referrer-policy/attr-referrer/cross-origin/http-http/img-tag/no-redirect/insecure-protocol.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/unsafe-url/http-rp/same-origin/http-http/img-tag/swap-origin-redirect/generic.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/unset-referrer-policy/attr-referrer/cross-origin/http-http/img-tag/keep-origin-redirect/insecure-protocol.http.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-012.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-010.html [ Failure ]
+crbug.com/626703 [ Win7 ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-http/img-tag/no-redirect/same-insecure.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/unsafe-url/meta-referrer/same-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-006.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-014.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-004.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-008.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-003.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-005.html [ Failure ]
+crbug.com/626703 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/unsafe-url/attr-referrer/same-origin/http-http/img-tag/swap-origin-redirect/generic.http.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-003.html [ Failure ]
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-rule-nested-balancing-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-multicol/multicol-breaking-000.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-multicol/multicol-breaking-001.html [ Failure ]
@@ -3587,6 +3616,7 @@ crbug.com/626703 external/wpt/service-workers/service-worker/ready.https.html [ 
 crbug.com/626703 virtual/blink-cors/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
+crbug.com/626703 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/ready.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/math-script-level-and-math-style/math-script-level-auto-and-math-style-002.tentative.html [ Failure ]
@@ -4407,6 +4437,7 @@ crbug.com/648295 external/wpt/service-workers/service-worker/update-bytecheck.ht
 crbug.com/648295 virtual/blink-cors/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/648295 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/648295 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
+crbug.com/648295 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/648295 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up.html [ Failure ]
@@ -4633,8 +4664,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-
 crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
 
 # Failure due to on-going off-thread paint worklet project.
-crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/background-image-tiled.https.html [ Crash ]
-crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/geometry-background-image-tiled-001.https.html [ Crash ]
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
 
 crbug.com/982116 http/tests/devtools/elements/styles-4/styles-new-API.js [ Pass Timeout ]
@@ -4805,6 +4834,7 @@ crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday
 crbug.com/691944 virtual/blink-cors/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
+crbug.com/691944 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
 # These tests (erroneously) see a platform-specific User-Agent header
@@ -4812,6 +4842,7 @@ crbug.com/595993 external/wpt/service-workers/service-worker/fetch-header-visibi
 crbug.com/595993 virtual/blink-cors/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
+crbug.com/595993 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 
 crbug.com/619427 [ Mac ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
@@ -4944,7 +4975,7 @@ crbug.com/916975 virtual/threaded/http/tests/devtools/tracing/timeline-misc/time
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 crbug.com/820334 external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 
-crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Failure Timeout ]
+crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.https.html [ Failure Timeout ]
 
 crbug.com/874302 external/wpt/wasm/serialization/module/broadcastchannel-success-and-failure.html [ Timeout ]
 crbug.com/874302 external/wpt/wasm/serialization/module/broadcastchannel-success.html [ Timeout ]
@@ -5063,6 +5094,7 @@ crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failu
 # Service worker updates need to handle redirect appropriately.
 crbug.com/889798 external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/blink-cors/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
+crbug.com/889798 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 crbug.com/889798 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
@@ -5615,6 +5647,8 @@ crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainti
 crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
+crbug.com/873873 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
+crbug.com/873873 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 
@@ -5964,6 +5998,7 @@ crbug.com/933880 external/wpt/service-workers/service-worker/request-end-to-end.
 crbug.com/933880 virtual/blink-cors/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
+crbug.com/933880 virtual/cache-storage-parallel/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/interception-take-stream.js [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]

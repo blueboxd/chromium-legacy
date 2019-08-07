@@ -81,6 +81,16 @@ void AssistantViewDelegateImpl::RemoveNotificationModelObserver(
       observer);
 }
 
+void AssistantViewDelegateImpl::AddStateObserver(
+    AssistantStateObserver* observer) {
+  assistant_controller_->state()->AddObserver(observer);
+}
+
+void AssistantViewDelegateImpl::RemoveStateObserver(
+    AssistantStateObserver* observer) {
+  assistant_controller_->state()->RemoveObserver(observer);
+}
+
 void AssistantViewDelegateImpl::AddUiModelObserver(
     AssistantUiModelObserver* observer) {
   assistant_controller_->ui_controller()->AddModelObserver(observer);
@@ -89,16 +99,6 @@ void AssistantViewDelegateImpl::AddUiModelObserver(
 void AssistantViewDelegateImpl::RemoveUiModelObserver(
     AssistantUiModelObserver* observer) {
   assistant_controller_->ui_controller()->RemoveModelObserver(observer);
-}
-
-void AssistantViewDelegateImpl::AddAssistantPrefsObserver(
-    AssistantPrefsObserver* observer) {
-  assistant_controller_->prefs_controller()->AddObserver(observer);
-}
-
-void AssistantViewDelegateImpl::RemoveAssistantPrefsObserver(
-    AssistantPrefsObserver* observer) {
-  assistant_controller_->prefs_controller()->RemoveObserver(observer);
 }
 
 CaptionBarDelegate* AssistantViewDelegateImpl::GetCaptionBarDelegate() {
@@ -111,9 +111,8 @@ void AssistantViewDelegateImpl::DownloadImage(
   assistant_controller_->DownloadImage(url, std::move(callback));
 }
 
-int AssistantViewDelegateImpl::GetConsentStatus() const {
-  return assistant_controller_->prefs_controller()->prefs()->GetInteger(
-      chromeos::assistant::prefs::kAssistantConsentStatus);
+AssistantStateBase* AssistantViewDelegateImpl::GetState() const {
+  return assistant_controller_->state();
 }
 
 ::wm::CursorManager* AssistantViewDelegateImpl::GetCursorManager() {
@@ -127,11 +126,6 @@ void AssistantViewDelegateImpl::GetNavigableContentsFactoryForView(
 
 aura::Window* AssistantViewDelegateImpl::GetRootWindowForNewWindows() {
   return Shell::Get()->GetRootWindowForNewWindows();
-}
-
-bool AssistantViewDelegateImpl::IsLaunchWithMicOpen() const {
-  return assistant_controller_->prefs_controller()->prefs()->GetBoolean(
-      chromeos::assistant::prefs::kAssistantLaunchWithMicOpen);
 }
 
 bool AssistantViewDelegateImpl::IsTabletMode() const {

@@ -95,8 +95,8 @@ NativeWindowOcclusionTrackerWin::NativeWindowOcclusionTrackerWin()
        // event hooks will happen on the same thread, as required by Windows,
        // and the task runner will have a message loop to call
        // EventHookCallback.
-      update_occlusion_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
-          {base::MayBlock(),
+      update_occlusion_task_runner_(base::CreateCOMSTATaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
            // This may be needed to determine that a window is no longer
            // occluded.
            base::TaskPriority::USER_VISIBLE,

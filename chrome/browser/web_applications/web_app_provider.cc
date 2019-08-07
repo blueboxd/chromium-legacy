@@ -35,10 +35,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/web_contents.h"
 
-#define DCHECK_IS_CONNECTED()                                          \
-  DCHECK(connected_) << "Attempted to access Web App subsystem while " \
-                        "WebAppProvider is not connected."
-
 namespace web_app {
 
 // static
@@ -81,32 +77,32 @@ void WebAppProvider::Start() {
 }
 
 AppRegistrar& WebAppProvider::registrar() {
-  DCHECK_IS_CONNECTED();
+  CheckIsConnected();
   return *registrar_;
 }
 
 InstallManager& WebAppProvider::install_manager() {
-  DCHECK_IS_CONNECTED();
+  CheckIsConnected();
   return *install_manager_;
 }
 
 PendingAppManager& WebAppProvider::pending_app_manager() {
-  DCHECK_IS_CONNECTED();
+  CheckIsConnected();
   return *pending_app_manager_;
 }
 
 WebAppPolicyManager* WebAppProvider::policy_manager() {
-  DCHECK_IS_CONNECTED();
+  CheckIsConnected();
   return web_app_policy_manager_.get();
 }
 
 WebAppUiManager& WebAppProvider::ui_manager() {
-  DCHECK_IS_CONNECTED();
+  CheckIsConnected();
   return *ui_manager_;
 }
 
 SystemWebAppManager& WebAppProvider::system_web_app_manager() {
-  DCHECK_IS_CONNECTED();
+  CheckIsConnected();
   return *system_web_app_manager_;
 }
 
@@ -180,6 +176,11 @@ void WebAppProvider::OnRegistryReady() {
   }
 
   on_registry_ready_.Signal();
+}
+
+void WebAppProvider::CheckIsConnected() const {
+  DCHECK(connected_) << "Attempted to access Web App subsystem while "
+                        "WebAppProvider is not connected.";
 }
 
 // static

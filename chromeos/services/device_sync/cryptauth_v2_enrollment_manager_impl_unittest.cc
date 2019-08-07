@@ -727,6 +727,24 @@ TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,
             enrollment_manager()->GetUserPublicKey());
   EXPECT_EQ(expected_user_key_pair_v1.private_key(),
             enrollment_manager()->GetUserPrivateKey());
+
+  // Expect re-enrollment using newly added v1 key.
+  enrollment_manager()->Start();
+  cryptauthv2::ClientMetadata expected_client_metadata =
+      cryptauthv2::BuildClientMetadata(
+          0 /* retry_count */, cryptauthv2::ClientMetadata::INITIALIZATION,
+          base::nullopt /* session_id */);
+  CryptAuthEnrollmentResult expected_enrollment_result(
+      CryptAuthEnrollmentResult::ResultCode::kSuccessNewKeysEnrolled,
+      base::nullopt /* client_directive */);
+  CompleteGcmRegistration(true /* success */);
+  HandleGetClientAppMetadataRequest(true /* success */);
+  FinishEnrollmentAttempt(0u /* expected_enroller_instance_index */,
+                          expected_client_metadata, expected_enrollment_result);
+
+  VerifyInvocationReasonHistogram(
+      {expected_client_metadata.invocation_reason()});
+  VerifyEnrollmentResults({expected_enrollment_result});
 }
 
 TEST_F(DeviceSyncCryptAuthV2EnrollmentManagerImplTest,

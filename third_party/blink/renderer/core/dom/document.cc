@@ -8417,19 +8417,15 @@ void Document::CountDeprecation(mojom::WebFeature feature) {
           GetOriginTrialContext()) {
     if (feature == WebFeature::kHTMLImports &&
         origin_trial_context->IsFeatureEnabled(
-            OriginTrialFeature::kHTMLImports) &&
-        !RuntimeEnabledFeatures::HTMLImportsEnabledByRuntimeFlag()) {
+            OriginTrialFeature::kHTMLImports)) {
       CountUse(WebFeature::kHTMLImportsOnReverseOriginTrials);
     } else if (feature == WebFeature::kElementCreateShadowRoot &&
                origin_trial_context->IsFeatureEnabled(
-                   OriginTrialFeature::kShadowDOMV0) &&
-               !RuntimeEnabledFeatures::ShadowDOMV0EnabledByRuntimeFlag()) {
+                   OriginTrialFeature::kShadowDOMV0)) {
       CountUse(WebFeature::kElementCreateShadowRootOnReverseOriginTrials);
     } else if (feature == WebFeature::kDocumentRegisterElement &&
                origin_trial_context->IsFeatureEnabled(
-                   OriginTrialFeature::kCustomElementsV0) &&
-               !RuntimeEnabledFeatures::
-                   CustomElementsV0EnabledByRuntimeFlag()) {
+                   OriginTrialFeature::kCustomElementsV0)) {
       CountUse(WebFeature::kDocumentRegisterElementOnReverseOriginTrials);
     }
   }

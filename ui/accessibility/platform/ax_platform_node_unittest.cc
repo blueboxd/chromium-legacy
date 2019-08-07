@@ -200,14 +200,14 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
   */
 
   AXNodeData table;
-  table.id = 0;
+  table.id = 1;
   table.role = ax::mojom::Role::kTable;
 
   table.AddIntAttribute(ax::mojom::IntAttribute::kTableRowCount, 3);
   table.AddIntAttribute(ax::mojom::IntAttribute::kTableColumnCount, 3);
 
   table.child_ids.push_back(50);  // Header
-  table.child_ids.push_back(1);   // Row 1
+  table.child_ids.push_back(2);   // Row 1
   table.child_ids.push_back(10);  // Row 2
 
   // Table column header
@@ -249,44 +249,41 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
 
   // Row 1
   AXNodeData table_row_1;
-  table_row_1.id = 1;
+  table_row_1.id = 2;
   table_row_1.role = ax::mojom::Role::kRow;
-  table_row_1.child_ids.push_back(2);
-  table_row_1.child_ids.push_back(3);
-  table_row_1.child_ids.push_back(4);
 
   AXNodeData table_row_header_1;
-  table_row_header_1.id = 2;
+  table_row_header_1.id = 3;
   table_row_header_1.role = ax::mojom::Role::kRowHeader;
   table_row_header_1.SetName("row header 1");
   table_row_header_1.AddIntAttribute(
       ax::mojom::IntAttribute::kTableCellRowIndex, 1);
   table_row_header_1.AddIntAttribute(
       ax::mojom::IntAttribute::kTableCellColumnIndex, 0);
+  table_row_1.child_ids.push_back(table_row_header_1.id);
 
   AXNodeData table_cell_1;
-  table_cell_1.id = 3;
+  table_cell_1.id = 4;
   table_cell_1.role = ax::mojom::Role::kCell;
   table_cell_1.SetName("1");
   table_cell_1.AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, 1);
   table_cell_1.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
                                1);
+  table_row_1.child_ids.push_back(table_cell_1.id);
 
   AXNodeData table_cell_2;
-  table_cell_2.id = 4;
+  table_cell_2.id = 5;
   table_cell_2.role = ax::mojom::Role::kCell;
   table_cell_2.SetName("2");
   table_cell_2.AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, 1);
   table_cell_2.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
                                2);
+  table_row_1.child_ids.push_back(table_cell_2.id);
 
   // Row 2
   AXNodeData table_row_2;
   table_row_2.id = 10;
   table_row_2.role = ax::mojom::Role::kRow;
-  table_row_2.child_ids.push_back(11);
-  table_row_2.child_ids.push_back(12);
-  table_row_2.child_ids.push_back(13);
 
   AXNodeData table_row_header_2;
   table_row_header_2.id = 11;
@@ -299,6 +296,7 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
       ax::mojom::IntAttribute::kTableCellRowIndex, 2);
   table_row_header_2.AddIntAttribute(
       ax::mojom::IntAttribute::kTableCellColumnIndex, 0);
+  table_row_2.child_ids.push_back(table_row_header_2.id);
 
   AXNodeData table_cell_3;
   table_cell_3.id = 12;
@@ -307,6 +305,7 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
   table_cell_3.AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, 2);
   table_cell_3.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
                                1);
+  table_row_2.child_ids.push_back(table_cell_3.id);
 
   AXNodeData table_cell_4;
   table_cell_4.id = 13;
@@ -315,6 +314,7 @@ AXTreeUpdate AXPlatformNodeTest::AXPlatformNodeTest::Build3X3Table() {
   table_cell_4.AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, 2);
   table_cell_4.AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
                                2);
+  table_row_2.child_ids.push_back(table_cell_4.id);
 
   AXTreeUpdate update;
   update.root_id = table.id;
@@ -411,14 +411,14 @@ AXTreeUpdate AXPlatformNodeTest::BuildListBox(
     bool option_3_is_selected,
     ax::mojom::State additional_state /* ax::mojom::State::kNone */) {
   AXNodeData listbox;
-  listbox.id = 0;
+  listbox.id = 1;
   listbox.SetName("ListBox");
   listbox.role = ax::mojom::Role::kListBox;
   if (additional_state != ax::mojom::State::kNone)
     listbox.AddState(additional_state);
 
   AXNodeData option_1;
-  option_1.id = 1;
+  option_1.id = 2;
   option_1.SetName("Option1");
   option_1.role = ax::mojom::Role::kListBoxOption;
   if (option_1_is_selected)
@@ -426,7 +426,7 @@ AXTreeUpdate AXPlatformNodeTest::BuildListBox(
   listbox.child_ids.push_back(option_1.id);
 
   AXNodeData option_2;
-  option_2.id = 2;
+  option_2.id = 3;
   option_2.SetName("Option2");
   option_2.role = ax::mojom::Role::kListBoxOption;
   if (option_2_is_selected)
@@ -434,7 +434,7 @@ AXTreeUpdate AXPlatformNodeTest::BuildListBox(
   listbox.child_ids.push_back(option_2.id);
 
   AXNodeData option_3;
-  option_3.id = 3;
+  option_3.id = 4;
   option_3.SetName("Option3");
   option_3.role = ax::mojom::Role::kListBoxOption;
   if (option_3_is_selected)

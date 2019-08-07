@@ -54,7 +54,7 @@ HTMLDetailsElement::~HTMLDetailsElement() = default;
 
 // static
 bool HTMLDetailsElement::IsFirstSummary(const Node& node) {
-  DCHECK(IsHTMLDetailsElement(node.parentElement()));
+  DCHECK(IsA<HTMLDetailsElement>(node.parentElement()));
   if (!IsHTMLSummaryElement(node))
     return false;
   return node.parentElement() &&

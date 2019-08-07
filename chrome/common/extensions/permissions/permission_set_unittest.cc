@@ -766,7 +766,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kDns);
   skip.insert(APIPermission::kDownloadsShelf);
   skip.insert(APIPermission::kEmbeddedExtensionOptions);
-  skip.insert(APIPermission::kExtensionView);
   skip.insert(APIPermission::kFontSettings);
   skip.insert(APIPermission::kFullscreen);
   skip.insert(APIPermission::kGcm);

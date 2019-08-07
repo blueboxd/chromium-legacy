@@ -282,10 +282,10 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, InstallableWebApp) {
 
   auto* provider =
       web_app::WebAppProviderBase::GetProviderBase(browser()->profile());
-  EXPECT_FALSE(provider->registrar().IsInstalled(good_web_app_url));
+  EXPECT_FALSE(provider->registrar().IsLocallyInstalled(good_web_app_url));
 
   RunTest(kManifest, kGoodWebAppURL, kBackground, true /* from_webstore */);
-  EXPECT_TRUE(provider->registrar().IsInstalled(good_web_app_url));
+  EXPECT_TRUE(provider->registrar().IsLocallyInstalled(good_web_app_url));
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
 }
 
@@ -319,10 +319,10 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest,
 
   auto* provider =
       web_app::WebAppProviderBase::GetProviderBase(browser()->profile());
-  EXPECT_FALSE(provider->registrar().IsInstalled(good_web_app_url));
+  EXPECT_FALSE(provider->registrar().IsLocallyInstalled(good_web_app_url));
 
   RunTest(kAppManifest, kGoodWebAppURL, kBackground, true /* from_webstore */);
-  EXPECT_TRUE(provider->registrar().IsInstalled(good_web_app_url));
+  EXPECT_TRUE(provider->registrar().IsLocallyInstalled(good_web_app_url));
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
 }
 

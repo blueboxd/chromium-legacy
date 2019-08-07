@@ -22,7 +22,6 @@
 
 using blink::mojom::PermissionDescriptorPtr;
 using blink::mojom::PermissionName;
-using blink::mojom::PermissionObserverPtr;
 using blink::mojom::PermissionStatus;
 
 namespace content {
@@ -267,20 +266,15 @@ void PermissionServiceImpl::RevokePermission(
 void PermissionServiceImpl::AddPermissionObserver(
     PermissionDescriptorPtr permission,
     PermissionStatus last_known_status,
-    PermissionObserverPtr observer) {
-  PermissionStatus current_status = GetPermissionStatus(permission);
-  if (current_status != last_known_status) {
-    observer->OnPermissionStatusChange(current_status);
-    last_known_status = current_status;
-  }
-
+    mojo::PendingRemote<blink::mojom::PermissionObserver> observer) {
   PermissionType type;
   if (!PermissionDescriptorToPermissionType(permission, &type)) {
     ReceivedBadMessage();
     return;
   }
 
-  context_->CreateSubscription(type, origin_, std::move(observer));
+  context_->CreateSubscription(type, origin_, GetPermissionStatus(permission),
+                               last_known_status, std::move(observer));
 }
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatus(

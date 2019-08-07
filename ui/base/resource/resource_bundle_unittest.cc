@@ -398,9 +398,40 @@ class ResourceBundleImageTest : public ResourceBundleTest {
   DISALLOW_COPY_AND_ASSIGN(ResourceBundleImageTest);
 };
 
+TEST_F(ResourceBundleImageTest, LoadDataResourceBytes) {
+  base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
+
+  // Dump contents into the pak files.
+  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
+                            kSampleCompressPakSizeV5),
+            static_cast<int>(kSampleCompressPakSizeV5));
+
+  // Load pak file.
+  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
+  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_NONE);
+
+  // Test normal uncompressed data.
+  scoped_refptr<base::RefCountedMemory> resource =
+      resource_bundle->LoadDataResourceBytes(4);
+  EXPECT_EQ("this is id 4",
+            std::string(resource->front_as<char>(), resource->size()));
+
+  // Test the brotli data.
+  scoped_refptr<base::RefCountedMemory> brotli_resource =
+      resource_bundle->LoadDataResourceBytes(6);
+  EXPECT_EQ("this is id 6", std::string(brotli_resource->front_as<char>(),
+                                        brotli_resource->size()));
+
+  // Test the gzipped data.
+  scoped_refptr<base::RefCountedMemory> gzip_resource =
+      resource_bundle->LoadDataResourceBytes(8);
+  EXPECT_EQ("this is id 8", std::string(gzip_resource->front_as<char>(),
+                                        gzip_resource->size()));
+}
+
 // Verify that we don't crash when trying to load a resource that is not found.
 // In some cases, we fail to mmap resources.pak, but try to keep going anyway.
-TEST_F(ResourceBundleImageTest, LoadDataResourceBytes) {
+TEST_F(ResourceBundleImageTest, LoadDataResourceBytesNotFound) {
   base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak files.

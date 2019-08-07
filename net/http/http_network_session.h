@@ -34,7 +34,6 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/spdy/spdy_session_pool.h"
-#include "net/ssl/ssl_client_auth_cache.h"
 #include "net/ssl/ssl_client_session_cache.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
@@ -195,9 +194,7 @@ class NET_EXPORT HttpNetworkSession {
   ~HttpNetworkSession();
 
   HttpAuthCache* http_auth_cache() { return &http_auth_cache_; }
-  SSLClientAuthCache* ssl_client_auth_cache() {
-    return &ssl_client_auth_cache_;
-  }
+  SSLClientContext* ssl_client_context() { return &ssl_client_context_; }
 
   void AddResponseDrainer(std::unique_ptr<HttpResponseBodyDrainer> drainer);
 
@@ -312,7 +309,6 @@ class NET_EXPORT HttpNetworkSession {
   SSLConfigService* const ssl_config_service_;
 
   HttpAuthCache http_auth_cache_;
-  SSLClientAuthCache ssl_client_auth_cache_;
   SSLClientSessionCache ssl_client_session_cache_;
   SSLClientContext ssl_client_context_;
   WebSocketEndpointLockManager websocket_endpoint_lock_manager_;

@@ -106,12 +106,16 @@
         <div id="browserSettingsBanner" class="settings-box banner">
           <div class="start">
             <span>$i18nRaw{browserSettingsBannerText}</span>
-            <a href="chrome://settings" target="_blank">
+            <!-- Use role="presentation" because the <span> has an accessible
+                 link to settings.-->
+            <a href="chrome://settings" target="_blank"
+                tabindex="-1" role="presentation">
               <iron-icon id="openInNewBrowserSettingsIcon"
                   icon="cr:open-in-new"></iron-icon>
             </a>
           </div>
           <cr-icon-button class="icon-clear"
+              aria-label="$i18n{clear}"
               on-click="onHideBrowserSettingsBannerClick_">
           </cr-icon-button>
         </div>

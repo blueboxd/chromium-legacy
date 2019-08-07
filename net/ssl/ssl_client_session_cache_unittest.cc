@@ -12,9 +12,11 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/traced_value.h"
+#include "net/base/network_isolation_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
+#include "url/gurl.h"
 
 using testing::ByRef;
 using testing::Contains;
@@ -407,6 +409,80 @@ TEST_F(SSLClientSessionCacheTest, TestFlushOnMemoryNotifications) {
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, cache.size());
+}
+
+TEST_F(SSLClientSessionCacheTest, FlushForServer) {
+  SSLClientSessionCache::Config config;
+  SSLClientSessionCache cache(config);
+
+  const url::Origin kOriginA = url::Origin::Create(GURL("https://a.test"));
+  const url::Origin kOriginB = url::Origin::Create(GURL("https://b.test"));
+
+  // Insert a number of cache entries.
+  SSLClientSessionCache::Key key1;
+  key1.server = HostPortPair("a.test", 443);
+  auto session1 = NewSSLSession();
+  cache.Insert(key1, bssl::UpRef(session1));
+
+  SSLClientSessionCache::Key key2;
+  key2.server = HostPortPair("a.test", 443);
+  key2.dest_ip_addr = IPAddress::IPv4Localhost();
+  key2.network_isolation_key = NetworkIsolationKey(kOriginB, kOriginB);
+  key2.privacy_mode = PRIVACY_MODE_ENABLED;
+  auto session2 = NewSSLSession();
+  cache.Insert(key2, bssl::UpRef(session2));
+
+  SSLClientSessionCache::Key key3;
+  key3.server = HostPortPair("a.test", 444);
+  auto session3 = NewSSLSession();
+  cache.Insert(key3, bssl::UpRef(session3));
+
+  SSLClientSessionCache::Key key4;
+  key4.server = HostPortPair("b.test", 443);
+  auto session4 = NewSSLSession();
+  cache.Insert(key4, bssl::UpRef(session4));
+
+  SSLClientSessionCache::Key key5;
+  key5.server = HostPortPair("b.test", 443);
+  key5.network_isolation_key = NetworkIsolationKey(kOriginA, kOriginA);
+  auto session5 = NewSSLSession();
+  cache.Insert(key5, bssl::UpRef(session5));
+
+  // Flush an unrelated server. The cache should be unaffected.
+  cache.FlushForServer(HostPortPair("c.test", 443));
+  EXPECT_EQ(5u, cache.size());
+  EXPECT_EQ(session1.get(), cache.Lookup(key1).get());
+  EXPECT_EQ(session2.get(), cache.Lookup(key2).get());
+  EXPECT_EQ(session3.get(), cache.Lookup(key3).get());
+  EXPECT_EQ(session4.get(), cache.Lookup(key4).get());
+  EXPECT_EQ(session5.get(), cache.Lookup(key5).get());
+
+  // Flush a.test:443. |key1| and |key2| should match, but not the others.
+  cache.FlushForServer(HostPortPair("a.test", 443));
+  EXPECT_EQ(3u, cache.size());
+  EXPECT_EQ(nullptr, cache.Lookup(key1).get());
+  EXPECT_EQ(nullptr, cache.Lookup(key2).get());
+  EXPECT_EQ(session3.get(), cache.Lookup(key3).get());
+  EXPECT_EQ(session4.get(), cache.Lookup(key4).get());
+  EXPECT_EQ(session5.get(), cache.Lookup(key5).get());
+
+  // Flush b.test:443. |key4| and |key5| match, but not |key3|.
+  cache.FlushForServer(HostPortPair("b.test", 443));
+  EXPECT_EQ(1u, cache.size());
+  EXPECT_EQ(nullptr, cache.Lookup(key1).get());
+  EXPECT_EQ(nullptr, cache.Lookup(key2).get());
+  EXPECT_EQ(session3.get(), cache.Lookup(key3).get());
+  EXPECT_EQ(nullptr, cache.Lookup(key4).get());
+  EXPECT_EQ(nullptr, cache.Lookup(key5).get());
+
+  // Flush the last host, a.test:444.
+  cache.FlushForServer(HostPortPair("a.test", 444));
+  EXPECT_EQ(0u, cache.size());
+  EXPECT_EQ(nullptr, cache.Lookup(key1).get());
+  EXPECT_EQ(nullptr, cache.Lookup(key2).get());
+  EXPECT_EQ(nullptr, cache.Lookup(key3).get());
+  EXPECT_EQ(nullptr, cache.Lookup(key4).get());
+  EXPECT_EQ(nullptr, cache.Lookup(key5).get());
 }
 
 class SSLClientSessionCacheMemoryDumpTest

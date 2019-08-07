@@ -274,7 +274,7 @@ cr.define('settings_people_page_quick_unlock', function() {
             value: 'hide'
           },
           {
-            key: 'ash.lock_screen_media_keys_enabled',
+            key: 'ash.lock_screen_media_controls_enabled',
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: true
           }

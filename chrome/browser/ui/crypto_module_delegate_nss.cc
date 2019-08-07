@@ -31,7 +31,7 @@ std::string ChromeNSSCryptoModuleDelegate::RequestPassword(
   DCHECK(!event_.IsSignaled());
   event_.Reset();
 
-  if (base::PostTaskWithTraits(
+  if (base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&ChromeNSSCryptoModuleDelegate::ShowDialog,
                          // This method blocks on |event_| until the task

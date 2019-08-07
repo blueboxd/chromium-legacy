@@ -308,11 +308,6 @@ static Vector<std::unique_ptr<IDBKey>> GenerateIndexKeysForValue(
   if (!index_key)
     return Vector<std::unique_ptr<IDBKey>>();
 
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      EnumerationHistogram, key_type_histogram,
-      ("WebCore.IndexedDB.ObjectStore.IndexEntry.KeyType",
-       static_cast<int>(mojom::IDBKeyType::kMaxValue)));
-
   if (!index_metadata.multi_entry ||
       index_key->GetType() != mojom::IDBKeyType::Array) {
     if (!index_key->IsValid())
@@ -321,15 +316,12 @@ static Vector<std::unique_ptr<IDBKey>> GenerateIndexKeysForValue(
     Vector<std::unique_ptr<IDBKey>> index_keys;
     index_keys.ReserveInitialCapacity(1);
     index_keys.emplace_back(std::move(index_key));
-    key_type_histogram.Count(static_cast<int>(index_keys[0]->GetType()));
     return index_keys;
   } else {
     DCHECK(index_metadata.multi_entry);
     DCHECK_EQ(index_key->GetType(), mojom::IDBKeyType::Array);
     Vector<std::unique_ptr<IDBKey>> index_keys =
         IDBKey::ToMultiEntryArray(std::move(index_key));
-    for (std::unique_ptr<IDBKey>& key : index_keys)
-      key_type_histogram.Count(static_cast<int>(key->GetType()));
     return index_keys;
   }
 }
@@ -540,14 +532,6 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       IDBDatabase::kDatabaseClosedErrorMessage);
     return nullptr;
-  }
-
-  if (key && uses_in_line_keys) {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        EnumerationHistogram, key_type_histogram,
-        ("WebCore.IndexedDB.ObjectStore.Record.KeyType",
-         static_cast<int>(mojom::IDBKeyType::kMaxValue)));
-    key_type_histogram.Count(static_cast<int>(key->GetType()));
   }
 
   Vector<IDBIndexKeys> index_keys;

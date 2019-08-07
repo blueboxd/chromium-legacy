@@ -133,9 +133,12 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(caret_highlight_view_,
                                             caret_highlight_enabled_);
 
-  highlight_mouse_cursor_enabled_ = controller->cursor_highlight_enabled();
-  TrayPopupUtils::UpdateCheckMarkVisibility(highlight_mouse_cursor_view_,
-                                            highlight_mouse_cursor_enabled_);
+  if (highlight_mouse_cursor_view_ &&
+      controller->GetTrayVisiblityOfCursorHighlightSetting()) {
+    highlight_mouse_cursor_enabled_ = controller->cursor_highlight_enabled();
+    TrayPopupUtils::UpdateCheckMarkVisibility(highlight_mouse_cursor_view_,
+                                              highlight_mouse_cursor_enabled_);
+  }
 
   if (highlight_keyboard_focus_view_) {
     highlight_keyboard_focus_enabled_ = controller->focus_highlight_enabled();
@@ -256,12 +259,13 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_CARET_HIGHLIGHT),
       caret_highlight_enabled_);
 
-  highlight_mouse_cursor_enabled_ = controller->cursor_highlight_enabled();
-  highlight_mouse_cursor_view_ = AddScrollListCheckableItem(
-      l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_MOUSE_CURSOR),
-      highlight_mouse_cursor_enabled_);
-
+  if (controller->GetTrayVisiblityOfCursorHighlightSetting()) {
+    highlight_mouse_cursor_enabled_ = controller->cursor_highlight_enabled();
+    highlight_mouse_cursor_view_ = AddScrollListCheckableItem(
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_MOUSE_CURSOR),
+        highlight_mouse_cursor_enabled_);
+  }
   // Focus highlighting can't be on when spoken feedback is on because
   // ChromeVox does its own focus highlighting.
   if (!spoken_feedback_enabled_) {

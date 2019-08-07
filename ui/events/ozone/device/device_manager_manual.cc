@@ -34,8 +34,8 @@ void ScanDevicesOnWorkerThread(std::vector<base::FilePath>* result) {
 }  // namespace
 
 DeviceManagerManual::DeviceManagerManual()
-    : blocking_task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+    : blocking_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock()})),
       watcher_(new base::FilePathWatcher,
                base::OnTaskRunnerDeleter(blocking_task_runner_)),
       weak_ptr_factory_(this) {}
@@ -81,9 +81,10 @@ void DeviceManagerManual::StartWatching() {
 
 void DeviceManagerManual::InitiateScanDevices() {
   std::vector<base::FilePath>* result = new std::vector<base::FilePath>();
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ScanDevicesOnWorkerThread, result),
       base::BindOnce(&DeviceManagerManual::OnDevicesScanned,
                      weak_ptr_factory_.GetWeakPtr(), base::Owned(result)));

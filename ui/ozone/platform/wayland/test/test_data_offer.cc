@@ -62,8 +62,8 @@ const struct wl_data_offer_interface kTestDataOfferImpl = {
 
 TestDataOffer::TestDataOffer(wl_resource* resource)
     : ServerObject(resource),
-      task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+      task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock()})),
       write_data_weak_ptr_factory_(this) {}
 
 TestDataOffer::~TestDataOffer() {}

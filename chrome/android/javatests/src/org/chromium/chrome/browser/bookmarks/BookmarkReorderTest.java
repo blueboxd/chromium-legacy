@@ -32,6 +32,8 @@ import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -74,7 +76,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
         addBookmark(TEST_TITLE_A, TEST_URL_A);
 
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         BookmarkRow test =
@@ -116,7 +118,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
         addFolder(TEST_TITLE_A);
 
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View searchButton = mManager.getToolbarForTests().findViewById(R.id.search_menu_id);
@@ -187,7 +189,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         expected.add(aId);
         expected.add(googleId);
 
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         // Callback occurs upon changes inside of the bookmark model.
@@ -252,7 +254,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         expected.add(aId);
         expected.add(testId);
 
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         // Callback occurs upon changes inside of the bookmark model.
@@ -315,7 +317,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         expected.add(testId);
         expected.add(aId);
 
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         // Callback occurs upon changes inside of the bookmark model.
@@ -359,7 +361,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testPromoDraggability() throws Exception {
         BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
 
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         ViewHolder promo = mItemsContainer.findViewHolderForAdapterPosition(0);
@@ -379,7 +381,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     @MediumTest
     public void testPartnerFolderDraggability() throws Exception {
         BookmarkId testId = addFolderWithPartner(TEST_FOLDER_TITLE);
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         ViewHolder partner = mItemsContainer.findViewHolderForAdapterPosition(2);
@@ -401,7 +403,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         BookmarkId aId = addBookmark("a", "http://a.com");
         addFolder(TEST_FOLDER_TITLE);
 
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         ViewHolder test = mItemsContainer.findViewHolderForAdapterPosition(1);
@@ -424,7 +426,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testCannotSelectPromo() throws Exception {
         addFolder(TEST_FOLDER_TITLE);
 
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View promo = mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
@@ -439,7 +441,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     @MediumTest
     public void testCannotSelectPartner() throws Exception {
         addFolderWithPartner(TEST_FOLDER_TITLE);
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View partner = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
@@ -455,7 +457,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testMoveUpMenuItem() throws Exception {
         addBookmark(TEST_PAGE_TITLE_GOOGLE, TEST_URL_A);
         addFolder(TEST_FOLDER_TITLE);
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View google = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
@@ -481,7 +483,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testMoveDownMenuItem() throws Exception {
         addBookmark(TEST_PAGE_TITLE_GOOGLE, TEST_URL_A);
         addFolder(TEST_FOLDER_TITLE);
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
@@ -507,7 +509,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testMoveDownGoneForBottomElement() throws Exception {
         addBookmarkWithPartner(TEST_PAGE_TITLE_GOOGLE, TEST_URL_A);
         addFolderWithPartner(TEST_FOLDER_TITLE);
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View google = mItemsContainer.findViewHolderForAdapterPosition(2).itemView;
@@ -523,7 +525,7 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testMoveUpGoneForTopElement() throws Exception {
         addBookmark(TEST_PAGE_TITLE_GOOGLE, TEST_URL_A);
         addFolder(TEST_FOLDER_TITLE);
-        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
+        forceSyncHeaderState();
         openBookmarkManager();
 
         View testFolder = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
@@ -572,6 +574,34 @@ public class BookmarkReorderTest extends BookmarkTest {
 
         onView(withText("Move up")).check(doesNotExist());
         onView(withText("Move down")).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    public void testTopLevelFolderUpdateAfterSync() throws Exception {
+        // Set up the test and open the bookmark manager to the Mobile Bookmarks folder.
+        MockSyncContentResolverDelegate syncDelegate = new MockSyncContentResolverDelegate();
+        syncDelegate.setMasterSyncAutomatically(true);
+        AndroidSyncSettings.overrideForTests(syncDelegate, null);
+        readPartnerBookmarks();
+        openBookmarkManager();
+        ReorderBookmarkItemsAdapter adapter = getReorderAdapter();
+
+        // Open the root folder.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mManager.openFolder(mBookmarkModel.getRootFolderId()));
+
+        // Add a bookmark to the Other Bookmarks folder.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mBookmarkModel.addBookmark(
+                    mBookmarkModel.getOtherFolderId(), 0, TEST_TITLE_A, TEST_URL_A);
+        });
+
+        // Dismiss promo header and simulate a sign in.
+        syncDelegate.setMasterSyncAutomatically(false);
+        TestThreadUtils.runOnUiThreadBlocking(adapter::simulateSignInForTests);
+        Assert.assertEquals(
+                "Expected \"Other Bookmarks\" folder to appear!", 2, adapter.getItemCount());
     }
 
     @Override
@@ -623,6 +653,16 @@ public class BookmarkReorderTest extends BookmarkTest {
         loadEmptyPartnerBookmarksForTesting();
         return TestThreadUtils.runOnUiThreadBlocking(
                 () -> mBookmarkModel.addFolder(mBookmarkModel.getDefaultFolder(), 0, title));
+    }
+
+    /**
+     * Ignores the Android sync settings, and forces a sync header for tests.
+     */
+    private void forceSyncHeaderState() {
+        MockSyncContentResolverDelegate syncDelegate = new MockSyncContentResolverDelegate();
+        syncDelegate.setMasterSyncAutomatically(true);
+        AndroidSyncSettings.overrideForTests(syncDelegate, null);
+        BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
     }
 
     private ReorderBookmarkItemsAdapter getReorderAdapter() {

@@ -7,9 +7,12 @@ package org.chromium.chrome.browser.contextmenu;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -45,6 +48,8 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
             iconBridge.getLargeIconForUrl(mPlainUrl,
                     context.getResources().getDimensionPixelSize(R.dimen.default_favicon_min_size),
                     this::onFaviconAvailable);
+        } else if (params.isVideo()) {
+            setVideoIcon();
         }
     }
 
@@ -135,6 +140,20 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
         canvas.drawBitmap(image, new Matrix(), paint);
 
         return bitmap;
+    }
+
+    private void setVideoIcon() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inMutable = true;
+        Bitmap bitmap = BitmapFactory.decodeResource(
+                mContext.getResources(), R.drawable.ic_videocam_white_24dp, options);
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint();
+        paint.setColorFilter(new PorterDuffColorFilter(
+                ApiCompatibilityUtils.getColor(mContext.getResources(), R.color.default_icon_color),
+                PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, new Matrix(), paint);
+        setHeaderImage(bitmap, false);
     }
 
     private void setHeaderImage(Bitmap bitmap, boolean isThumbnail) {

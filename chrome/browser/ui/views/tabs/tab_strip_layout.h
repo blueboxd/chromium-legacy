@@ -7,41 +7,12 @@
 
 #include <vector>
 
-#include "chrome/browser/ui/views/tabs/tab_animation_state.h"
-#include "ui/gfx/geometry/size.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout_types.h"
+#include "chrome/browser/ui/views/tabs/tab_width_constraints.h"
 
 namespace gfx {
 class Rect;
 }
-
-// Sizing info for individual tabs.
-struct TabSizeInfo {
-  // The width of pinned tabs.
-  int pinned_tab_width;
-
-  // The min width of active/inactive tabs.
-  int min_active_width;
-  int min_inactive_width;
-
-  // The width of a standard tab, which is the largest size active or inactive
-  // tabs ever have.
-  int standard_width;
-};
-
-// Sizing info global to the tabstrip.
-struct TabLayoutConstants {
-  // The height of tabs.
-  int tab_height;
-
-  // The amount adjacent tabs overlap each other.
-  int tab_overlap;
-};
-
-// Animation and sizing information for one tab.
-struct TabLayoutInfo {
-  TabAnimationState animation_state;
-  TabSizeInfo size_info;
-};
 
 // Calculates and returns the bounds of the tabs. |width| is the available
 // width to use for tab layout. This never sizes the tabs smaller then the
@@ -49,11 +20,11 @@ struct TabLayoutInfo {
 // beyond |width|.
 std::vector<gfx::Rect> CalculateTabBounds(
     const TabLayoutConstants& layout_constants,
-    const std::vector<TabLayoutInfo>& tabs,
+    const std::vector<TabWidthConstraints>& tabs,
     int width);
 
 std::vector<gfx::Rect> CalculatePinnedTabBounds(
     const TabLayoutConstants& layout_constants,
-    const std::vector<TabLayoutInfo>& pinned_tabs);
+    const std::vector<TabWidthConstraints>& pinned_tabs);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_LAYOUT_H_

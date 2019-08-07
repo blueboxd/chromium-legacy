@@ -913,8 +913,9 @@ FFmpegDemuxer::FFmpegDemuxer(
       // FFmpeg has no asynchronous API, so we use base::WaitableEvents inside
       // the BlockingUrlProtocol to handle hops to the render thread for network
       // reads and seeks.
-      blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING})),
+      blocking_task_runner_(
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::USER_BLOCKING})),
       stopped_(false),
       pending_read_(false),
       data_source_(data_source),

@@ -141,6 +141,11 @@ std::string DebugString(const ClientState* client_state) {
              << " : " << static_cast<int>(mapping.second);
     }
 
+    for (const auto& pair : impression.custom_data) {
+      stream << " \n custom data, key: " << pair.first
+             << " value: " << pair.second;
+    }
+
     log += stream.str();
   }
 

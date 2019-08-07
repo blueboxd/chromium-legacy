@@ -421,8 +421,10 @@ void CreditCardSaveManager::OfferCardLocalSave() {
       observer_for_testing_->OnOfferLocalSave();
     client_->ConfirmSaveCreditCardLocally(
         local_card_save_candidate_,
-        AutofillClient::SaveCreditCardOptions().with_show_prompt(
-            show_save_prompt_.value_or(true)),
+        AutofillClient::SaveCreditCardOptions()
+            .with_show_prompt(show_save_prompt_.value_or(true))
+            .with_from_dynamic_change_form(from_dynamic_change_form_)
+            .with_has_non_focusable_field(has_non_focusable_field_),
         base::BindOnce(&CreditCardSaveManager::OnUserDidDecideOnLocalSave,
                        weak_ptr_factory_.GetWeakPtr()));
 

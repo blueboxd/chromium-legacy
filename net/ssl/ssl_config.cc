@@ -27,7 +27,6 @@ SSLConfig::SSLConfig()
       require_ecdhe(false),
       ignore_certificate_errors(false),
       disable_cert_verification_network_fetches(false),
-      send_client_cert(false),
       renego_allowed_default(false),
       privacy_mode(PRIVACY_MODE_DISABLED) {}
 

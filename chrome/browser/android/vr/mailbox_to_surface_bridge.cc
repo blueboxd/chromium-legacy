@@ -137,7 +137,7 @@ GLuint ConsumeTexture(gpu::gles2::GLES2Interface* gl,
   TRACE_EVENT0("gpu", "MailboxToSurfaceBridge::ConsumeTexture");
   gl->WaitSyncTokenCHROMIUM(mailbox.sync_token.GetConstData());
 
-  return gl->CreateAndConsumeTextureCHROMIUM(mailbox.mailbox.name);
+  return gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.mailbox.name);
 }
 
 }  // namespace
@@ -321,8 +321,13 @@ bool MailboxToSurfaceBridge::CopyMailboxToSurfaceAndSwap(
     needs_resize_ = false;
   }
 
+  DCHECK(mailbox.mailbox.IsSharedImage());
+
   GLuint sourceTexture = ConsumeTexture(gl_, mailbox);
+  gl_->BeginSharedImageAccessDirectCHROMIUM(
+      sourceTexture, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   DrawQuad(sourceTexture);
+  gl_->EndSharedImageAccessDirectCHROMIUM(sourceTexture);
   gl_->DeleteTextures(1, &sourceTexture);
   gl_->SwapBuffers(swap_id_++);
   return true;

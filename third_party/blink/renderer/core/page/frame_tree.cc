@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -289,7 +290,15 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
   }
 
   // Ask the embedder as a fallback.
-  return To<LocalFrame>(this_frame_.Get())->Client()->FindFrame(name);
+  LocalFrame* local_frame = To<LocalFrame>(this_frame_.Get());
+  Frame* named_frame = local_frame->Client()->FindFrame(name);
+  // The embedder can return a frame from another agent cluster. Make sure
+  // that the returned frame, if any, has explicitly allowed cross-agent
+  // cluster access.
+  DCHECK(!named_frame || local_frame->GetDocument()
+                             ->GetSecurityOrigin()
+                             ->IsGrantedCrossAgentClusterAccess());
+  return named_frame;
 }
 
 bool FrameTree::IsDescendantOf(const Frame* ancestor) const {

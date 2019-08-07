@@ -178,6 +178,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   class AtomicPauseScope;
   class GCForbiddenScope;
+  class LsanDisabledScope;
   class MainThreadGCForbiddenScope;
   class NoAllocationScope;
   class SweepForbiddenScope;
@@ -377,11 +378,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void RegisterStaticPersistentNode(PersistentNode*, PersistentClearCallback);
   void ReleaseStaticPersistentNodes();
 
-#if defined(LEAK_SANITIZER)
-  void enterStaticReferenceRegistrationDisabledScope();
-  void leaveStaticReferenceRegistrationDisabledScope();
-#endif
-
   v8::Isolate* GetIsolate() const { return isolate_; }
 
   // Use CollectAllGarbageForTesting below for testing!
@@ -477,6 +473,9 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     DCHECK_GT(gc_forbidden_count_, 0u);
     gc_forbidden_count_--;
   }
+
+  void EnterStaticReferenceRegistrationDisabledScope();
+  void LeaveStaticReferenceRegistrationDisabledScope();
 
   // The following methods are used to compose RunAtomicPause. Public users
   // should use the CollectGarbage entrypoint. Internal users should use these
@@ -586,6 +585,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   bool should_optimize_for_load_time_ = false;
   size_t no_allocation_count_ = 0;
   size_t gc_forbidden_count_ = 0;
+  size_t static_persistent_registration_disabled_count_ = 0;
 
   base::TimeDelta next_incremental_marking_step_duration_;
   base::TimeDelta previous_incremental_marking_time_left_;
@@ -619,11 +619,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // detaching from Oilpan and shutting down or references we
   // have to clear before initiating LSan's leak detection.
   HashMap<PersistentNode*, PersistentClearCallback> static_persistents_;
-
-#if defined(LEAK_SANITIZER)
-  // Count that controls scoped disabling of persistent registration.
-  size_t disabled_static_persistent_registration_;
-#endif
 
   size_t reported_memory_to_v8_;
 

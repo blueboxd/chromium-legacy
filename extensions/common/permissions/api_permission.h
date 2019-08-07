@@ -103,7 +103,7 @@ class APIPermission {
     kEnterprisePlatformKeysPrivate = 59,
     kDeleted_ExperienceSamplingPrivate = 60,
     kExperimental = 61,
-    kExtensionView = 62,
+    kDeleted_ExtensionView = 62,  // crbug.com/982858
     kExternallyConnectableAllUrls = 63,
     kFeedbackPrivate = 64,
     kFileBrowserHandler = 65,

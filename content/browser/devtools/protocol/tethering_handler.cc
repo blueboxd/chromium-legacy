@@ -288,7 +288,7 @@ TetheringHandler::TetheringImpl::~TetheringImpl() = default;
 void TetheringHandler::TetheringImpl::Bind(
     uint16_t port, std::unique_ptr<BindCallback> callback) {
   if (bound_sockets_.find(port) != bound_sockets_.end()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&BindCallback::sendFailure, std::move(callback),
                        Response::Error("Port already bound")));
@@ -300,7 +300,7 @@ void TetheringHandler::TetheringImpl::Bind(
   std::unique_ptr<BoundSocket> bound_socket =
       std::make_unique<BoundSocket>(std::move(accepted), socket_callback_);
   if (!bound_socket->Listen(port)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&BindCallback::sendFailure, std::move(callback),
                        Response::Error("Could not bind port")));
@@ -308,7 +308,7 @@ void TetheringHandler::TetheringImpl::Bind(
   }
 
   bound_sockets_[port] = std::move(bound_socket);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BindCallback::sendSuccess, std::move(callback)));
 }
@@ -317,7 +317,7 @@ void TetheringHandler::TetheringImpl::Unbind(
     uint16_t port, std::unique_ptr<UnbindCallback> callback) {
   auto it = bound_sockets_.find(port);
   if (it == bound_sockets_.end()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&UnbindCallback::sendFailure, std::move(callback),
                        Response::InvalidParams("Port is not bound")));
@@ -325,14 +325,14 @@ void TetheringHandler::TetheringImpl::Unbind(
   }
 
   bound_sockets_.erase(it);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&UnbindCallback::sendSuccess, std::move(callback)));
 }
 
 void TetheringHandler::TetheringImpl::Accepted(uint16_t port,
                                                const std::string& name) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&TetheringHandler::Accepted, handler_, port, name));
 }

@@ -400,8 +400,8 @@ bool DownloadRequestLimiter::TabDownloadState::NotifyCallbacks(bool allow) {
 
   for (auto& callback : callbacks) {
     // When callback runs, it can cause the WebContents to be destroyed.
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(std::move(callback), allow));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(std::move(callback), allow));
   }
 
   return throttled;

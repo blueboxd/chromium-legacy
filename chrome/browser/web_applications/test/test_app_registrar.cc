@@ -38,13 +38,13 @@ void TestAppRegistrar::SimulateExternalAppUninstalledByUser(
 
 void TestAppRegistrar::Init(base::OnceClosure callback) {}
 
-bool TestAppRegistrar::IsInstalled(const GURL& start_url) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool TestAppRegistrar::IsInstalled(const AppId& app_id) const {
   return base::Contains(installed_apps_, app_id);
+}
+
+bool TestAppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool TestAppRegistrar::WasExternalAppUninstalledByUser(

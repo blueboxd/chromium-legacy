@@ -110,9 +110,6 @@ struct NET_EXPORT SSLConfig {
   // deadlock.
   bool disable_cert_verification_network_fetches;
 
-  // True if we should send client_cert to the server.
-  bool send_client_cert;
-
   // The list of application level protocols supported with ALPN (Application
   // Layer Protocol Negotiation), in decreasing order of preference.  Protocols
   // will be advertised in this order during TLS handshake.
@@ -124,9 +121,6 @@ struct NET_EXPORT SSLConfig {
 
   // The list of application-level protocols to enable renegotiation for.
   NextProtoVector renego_allowed_for_protos;
-
-  scoped_refptr<X509Certificate> client_cert;
-  scoped_refptr<SSLPrivateKey> client_private_key;
 
   // If the PartitionSSLSessionsByNetworkIsolationKey feature is enabled, the
   // session cache is partitioned by this value.

@@ -44,7 +44,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -102,8 +102,8 @@ public class StartSurfaceLayoutTest {
         mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
         mRepeat = 3;
 
-        GridTabSwitcher.TabGridDelegate delegate =
-                mStartSurfaceLayout.getStartSurfaceForTesting().getTabGridDelegate();
+        TabSwitcher.TabListDelegate delegate =
+                mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
         delegate.setBitmapCallbackForTesting(mBitmapListener);
         Assert.assertEquals(0, delegate.getBitmapFetchCountForTesting());
 
@@ -115,8 +115,8 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
-        GridTabSwitcher.TabGridDelegate delegate =
-                mStartSurfaceLayout.getStartSurfaceForTesting().getTabGridDelegate();
+        TabSwitcher.TabListDelegate delegate =
+                mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
         assertEquals(0, delegate.getSoftCleanupDelayForTesting());
         assertEquals(0, delegate.getCleanupDelayForTesting());
 
@@ -143,8 +143,8 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
-        GridTabSwitcher.TabGridDelegate delegate =
-                mStartSurfaceLayout.getStartSurfaceForTesting().getTabGridDelegate();
+        TabSwitcher.TabListDelegate delegate =
+                mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
         assertEquals(10000, delegate.getSoftCleanupDelayForTesting());
         assertEquals(10000, delegate.getCleanupDelayForTesting());
 
@@ -427,8 +427,8 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testRestoredTabsDontFetch() throws Exception {
         prepareTabs(2, mUrl);
-        GridTabSwitcher.TabGridDelegate delegate =
-                mStartSurfaceLayout.getStartSurfaceForTesting().getTabGridDelegate();
+        TabSwitcher.TabListDelegate delegate =
+                mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
         int oldCount = delegate.getBitmapFetchCountForTesting();
 
         // Restart Chrome.
@@ -608,7 +608,7 @@ public class StartSurfaceLayoutTest {
     /**
      * Should be the same as {@link ValueAnimator#areAnimatorsEnabled}, which requires API level 26.
      * TODO(crbug.com/982018): put this interface in a place to share with
-     * TabGridContainerViewBinderTest.areAnimatorsEnabled.
+     * TabListContainerViewBinderTest.areAnimatorsEnabled.
      */
     private static boolean areAnimatorsEnabled() {
         // We default to assuming that animations are enabled in case ANIMATOR_DURATION_SCALE is not

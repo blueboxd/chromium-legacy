@@ -24,6 +24,7 @@ namespace notifications {
 namespace {
 
 const char kGuid1[] = "guid1";
+const char kGuid2[] = "guid2";
 const char kButtonId[] = "button_id_1";
 const char kTimeStr[] = "04/25/20 01:00:00 AM";
 
@@ -233,17 +234,37 @@ TEST_F(ImpressionHistoryTrackerTest, AddImpression) {
   InitTrackerWithData(test_case);
 
   // No-op for unregistered client.
-  tracker()->AddImpression(SchedulerClientType::kTest2, kGuid1);
+  tracker()->AddImpression(SchedulerClientType::kTest2, kGuid2,
+                           Impression::ImpressionResultMap(),
+                           Impression::CustomData());
   VerifyClientStates(test_case);
 
   SetNow(kTimeStr);
 
+  Impression::ImpressionResultMap impression_mapping = {
+      {UserFeedback::kDismiss, ImpressionResult::kNegative}};
+  Impression::CustomData custom_data = {{"url", "https://www.example.com"}};
   EXPECT_CALL(*store(), Update(_, _, _));
   EXPECT_CALL(*delegate(), OnImpressionUpdated());
-  tracker()->AddImpression(SchedulerClientType::kTest1, kGuid1);
-  test_case.expected.back().impressions.emplace_back(
-      Impression(SchedulerClientType::kTest1, kGuid1, clock()->Now()));
+  tracker()->AddImpression(SchedulerClientType::kTest1, kGuid1,
+                           impression_mapping, custom_data);
+  Impression expected_impression(SchedulerClientType::kTest1, kGuid1,
+                                 clock()->Now());
+  expected_impression.impression_mapping = impression_mapping;
+  expected_impression.custom_data = custom_data;
+  test_case.expected.back().impressions.emplace_back(expected_impression);
   VerifyClientStates(test_case);
+  EXPECT_EQ(*tracker()->GetImpression(kGuid1), expected_impression);
+}
+
+// Verifies that impression loaded from the database can be retrieved correctly.
+TEST_F(ImpressionHistoryTrackerTest, GetImpressionLoadedFromDb) {
+  TestCase test_case = CreateDefaultTestCase();
+  Impression impression(SchedulerClientType::kTest1, kGuid1, clock()->Now());
+  test_case.input.front().impressions.emplace_back(impression);
+  CreateTracker(test_case);
+  InitTrackerWithData(test_case);
+  EXPECT_EQ(*tracker()->GetImpression(kGuid1), impression);
 }
 
 // If impression has been deleted, click should have no result.

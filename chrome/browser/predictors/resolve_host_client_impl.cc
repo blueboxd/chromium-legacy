@@ -28,7 +28,7 @@ ResolveHostClientImpl::ResolveHostClientImpl(
   network::mojom::ResolveHostClientPtr resolve_host_client_ptr;
   binding_.Bind(
       mojo::MakeRequest(&resolve_host_client_ptr),
-      base::CreateSingleThreadTaskRunnerWithTraits(
+      base::CreateSingleThreadTaskRunner(
           {content::BrowserThread::UI, content::BrowserTaskType::kPreconnect}));
   network::mojom::ResolveHostParametersPtr parameters =
       network::mojom::ResolveHostParameters::New();

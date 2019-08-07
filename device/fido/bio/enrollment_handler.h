@@ -42,8 +42,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
       base::OnceClosure ready_callback,
       ErrorCallback error_callback,
       GetPINCallback get_pin_callback,
-      FidoDiscoveryFactory* factory =
-          std::make_unique<FidoDiscoveryFactory>().get());
+      FidoDiscoveryFactory* factory);
   ~BioEnrollmentHandler() override;
 
   // Returns the modality of the authenticator's user verification.
@@ -103,10 +102,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   void OnEnumerateTemplates(EnumerationCallback,
                             CtapDeviceResponseCode,
                             base::Optional<BioEnrollmentResponse>);
-  void OnRenameTemplate(StatusCallback,
-                        CtapDeviceResponseCode,
-                        base::Optional<BioEnrollmentResponse>);
-  void OnDeleteTemplate(StatusCallback,
+  void OnStatusCallback(StatusCallback,
                         CtapDeviceResponseCode,
                         base::Optional<BioEnrollmentResponse>);
 

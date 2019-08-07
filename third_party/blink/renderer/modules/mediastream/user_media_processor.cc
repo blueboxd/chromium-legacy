@@ -20,7 +20,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
@@ -30,9 +29,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/web/modules/mediastream/local_media_stream_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
@@ -40,9 +37,12 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/modules/mediastream/local_media_stream_audio_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor.h"
 #include "third_party/blink/renderer/platform/video_capture/local_video_capturer_source.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 #include "ui/gfx/geometry/size.h"
@@ -1133,13 +1133,6 @@ UserMediaProcessor::CreateAudioSource(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
 
-  // TODO(crbug.com/c/704136): Convert both LocalMediaStreamAudioSource and
-  // ProcessedLocalAudioSource ctors to operate over LocalFrame instead of
-  // WebLocalFrame.
-  WebLocalFrame* web_frame =
-      frame_ ? static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame_))
-             : nullptr;
-
   StreamControls* stream_controls = current_request_info_->stream_controls();
   // If the audio device is a loopback device (for screen capture), or if the
   // constraints/effects parameters indicate no audio processing is needed,
@@ -1151,7 +1144,7 @@ UserMediaProcessor::CreateAudioSource(
       !blink::MediaStreamAudioProcessor::WouldModifyAudio(
           audio_processing_properties)) {
     return std::make_unique<blink::LocalMediaStreamAudioSource>(
-        web_frame, device,
+        frame_, device,
         base::OptionalOrNullptr(current_request_info_->audio_capture_settings()
                                     .requested_buffer_size()),
         stream_controls->disable_local_echo, std::move(source_ready),
@@ -1160,6 +1153,12 @@ UserMediaProcessor::CreateAudioSource(
 
   // The audio device is not associated with screen capture and also requires
   // processing.
+  //
+  // TODO(crbug.com/c/704136): Convert ProcessedLocalAudioSource ctor to
+  // operate over LocalFrame instead of WebLocalFrame.
+  WebLocalFrame* web_frame =
+      frame_ ? static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame_))
+             : nullptr;
   return std::make_unique<blink::ProcessedLocalAudioSource>(
       web_frame, device, stream_controls->disable_local_echo,
       audio_processing_properties, std::move(source_ready), task_runner_);

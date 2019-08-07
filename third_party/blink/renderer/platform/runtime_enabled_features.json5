@@ -1036,9 +1036,6 @@
       // Only Android, ChromeOS support NetInfo downlinkMax, type and ontypechange now
       status: {"Android": "stable", "ChromeOS": "stable"},
     },
-    {
-      name: "NetworkService",
-    },
     // Not a web exposed feature, enabled from the command line.
     {
       name: "NewRemotePlaybackPipeline",

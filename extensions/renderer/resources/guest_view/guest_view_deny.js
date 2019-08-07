@@ -19,7 +19,6 @@ var ERROR_MESSAGE = 'You do not have permission to use the %1 element.' +
 var VIEW_TYPES = [
   'AppView',
   'ExtensionOptions',
-  'ExtensionView',
   'WebView'
 ];
 

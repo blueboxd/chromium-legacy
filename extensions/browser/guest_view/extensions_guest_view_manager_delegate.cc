@@ -19,7 +19,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
-#include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
 #include "extensions/browser/guest_view/guest_view_events.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -114,7 +113,6 @@ void ExtensionsGuestViewManagerDelegate::RegisterAdditionalGuestViewTypes() {
   GuestViewManager* manager = GuestViewManager::FromBrowserContext(context_);
   manager->RegisterGuestViewType<AppViewGuest>();
   manager->RegisterGuestViewType<ExtensionOptionsGuest>();
-  manager->RegisterGuestViewType<ExtensionViewGuest>();
   manager->RegisterGuestViewType<MimeHandlerViewGuest>();
   manager->RegisterGuestViewType<WebViewGuest>();
 }

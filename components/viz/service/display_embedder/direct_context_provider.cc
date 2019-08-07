@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/service/command_buffer_direct.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
@@ -43,9 +44,10 @@ DirectContextProvider::DirectContextProvider(
 
   auto limits = gpu::SharedMemoryLimits::ForMailboxContext();
   auto group = base::MakeRefCounted<gpu::gles2::ContextGroup>(
-      gpu_preferences, true, &mailbox_manager_, /*memory_tracker=*/nullptr,
-      &translator_cache_, &completeness_cache_, feature_info, true,
-      &image_manager_, /*image_factory=*/nullptr,
+      gpu_preferences, gpu::gles2::PassthroughCommandDecoderSupported(),
+      &mailbox_manager_, /*memory_tracker=*/nullptr, &translator_cache_,
+      &completeness_cache_, feature_info, true, &image_manager_,
+      /*image_factory=*/nullptr,
       /*progress_reporter=*/nullptr, gpu_feature_info_, &discardable_manager_,
       &passthrough_discardable_manager_, delegate_->GetSharedImageManager());
 

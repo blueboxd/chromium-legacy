@@ -36,8 +36,7 @@ public class HostBrowserLauncher {
     public static void launch(Activity activity, HostBrowserLauncherParams params) {
         Log.v(TAG, "WebAPK Launch URL: " + params.getStartUrl());
 
-        if (HostBrowserUtils.shouldLaunchInTab(params.getHostBrowserPackageName(),
-                    params.getHostBrowserMajorChromiumVersion())) {
+        if (HostBrowserUtils.shouldLaunchInTab(params)) {
             launchInTab(activity.getApplicationContext(), params);
             return;
         }

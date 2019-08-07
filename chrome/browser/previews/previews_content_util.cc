@@ -108,6 +108,17 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
                                      IneligibleReason::kInvalidProxyHeaders);
   }
 
+  if (previews::params::LitePageRedirectOnlyTriggerOnSuccessfulProbe()) {
+    if (!decider->IsServerProbeResultAvailable()) {
+      ineligible_reasons.push_back(
+          PreviewsLitePageNavigationThrottle::IneligibleReason::
+              kServiceProbeIncomplete);
+    } else if (!decider->IsServerReachableByProbe()) {
+      ineligible_reasons.push_back(PreviewsLitePageNavigationThrottle::
+                                       IneligibleReason::kServiceProbeFailed);
+    }
+  }
+
   // Record UMA.
   for (PreviewsLitePageNavigationThrottle::IneligibleReason reason :
        ineligible_reasons) {

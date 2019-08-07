@@ -32,7 +32,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
-#include "third_party/blink/renderer/core/html/parser/xss_auditor.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -95,7 +94,6 @@ BackgroundHTMLParser::BackgroundHTMLParser(
       tree_builder_simulator_(config->options),
       options_(config->options),
       parser_(config->parser),
-      xss_auditor_(std::move(config->xss_auditor)),
       decoder_(std::move(config->decoder)),
       loading_task_runner_(std::move(loading_task_runner)),
       pending_csp_meta_token_index_(
@@ -130,15 +128,11 @@ void BackgroundHTMLParser::Flush() {
 
 void BackgroundHTMLParser::UpdateDocument(const String& decoded_data) {
   DocumentEncodingData encoding_data(*decoder_.get());
-
   if (encoding_data != last_seen_encoding_data_) {
     last_seen_encoding_data_ = encoding_data;
-
-    xss_auditor_->SetEncoding(encoding_data.Encoding());
     if (parser_)
       parser_->DidReceiveEncodingDataFromBackgroundParser(encoding_data);
   }
-
   if (decoded_data.IsEmpty())
     return;
 
@@ -196,31 +190,12 @@ void BackgroundHTMLParser::PumpTokenizer() {
   if (input_.TotalCheckpointTokenCount() > kOutstandingTokenLimit)
     return;
 
-  while (true) {
-    if (xss_auditor_->IsEnabled())
-      source_tracker_.Start(input_.Current(), tokenizer_.get(), *token_);
-
-    if (!tokenizer_->NextToken(input_.Current(), *token_)) {
-      // We've reached the end of our current input.
-      break;
-    }
-
-    if (xss_auditor_->IsEnabled())
-      source_tracker_.end(input_.Current(), tokenizer_.get(), *token_);
-
+  while (tokenizer_->NextToken(input_.Current(), *token_)) {
     {
       TextPosition position = TextPosition(input_.Current().CurrentLine(),
                                            input_.Current().CurrentColumn());
 
-      if (std::unique_ptr<XSSInfo> xss_info =
-              xss_auditor_->FilterToken(FilterTokenRequest(
-                  *token_, source_tracker_, tokenizer_->ShouldAllowCDATA()))) {
-        xss_info->text_position_ = position;
-        pending_xss_infos_.push_back(std::move(xss_info));
-      }
-
       CompactHTMLToken token(token_.get(), position);
-
       bool is_csp_meta_tag = false;
       preload_scanner_->Scan(token, input_.Current(), pending_preloads_,
                              &viewport_description_, &is_csp_meta_tag);
@@ -273,7 +248,6 @@ void BackgroundHTMLParser::EnqueueTokenizedChunk() {
   chunk->preloads.swap(pending_preloads_);
   if (viewport_description_.has_value())
     chunk->viewport = viewport_description_;
-  chunk->xss_infos.swap(pending_xss_infos_);
   chunk->tokenizer_state = tokenizer_->GetState();
   chunk->tree_builder_state = tree_builder_simulator_.GetState();
   chunk->input_checkpoint = input_.CreateCheckpoint(pending_tokens_.size());

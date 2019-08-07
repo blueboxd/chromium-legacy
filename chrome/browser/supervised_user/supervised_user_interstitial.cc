@@ -79,9 +79,9 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
   friend class content::WebContentsUserData<TabCloser>;
 
   explicit TabCloser(WebContents* web_contents) : web_contents_(web_contents) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(&TabCloser::CloseTabImpl,
-                                            weak_ptr_factory_.GetWeakPtr()));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&TabCloser::CloseTabImpl,
+                                  weak_ptr_factory_.GetWeakPtr()));
   }
 
   void CloseTabImpl() {

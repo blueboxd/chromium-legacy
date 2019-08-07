@@ -22,7 +22,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_status_code.h"
-#include "services/network/public/cpp/features.h"
 #include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
@@ -364,9 +363,8 @@ GURL GetSecureProxyCheckURL() {
 
 bool IsEnabledWithNetworkService() {
   return base::FeatureList::IsEnabled(
-             data_reduction_proxy::features::
-                 kDataReductionProxyEnabledWithNetworkService) &&
-         base::FeatureList::IsEnabled(network::features::kNetworkService);
+      data_reduction_proxy::features::
+          kDataReductionProxyEnabledWithNetworkService);
 }
 
 base::Optional<DataReductionProxyTypeInfo> FindConfiguredProxyInVector(

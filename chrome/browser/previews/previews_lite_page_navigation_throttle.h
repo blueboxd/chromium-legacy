@@ -13,7 +13,7 @@
 namespace content {
 struct OpenURLParams;
 class BrowserContext;
-}
+}  // namespace content
 
 // If the given URL is a LitePage Preview URL, this returns true but does not
 // change the |url|. This will set |update_virtual_url_with_url| on
@@ -64,7 +64,9 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kExceededMaxNavigationRestarts = 9,
     kPreviewsState_DEPRECATED = 10,
     kInvalidProxyHeaders = 11,
-    kMaxValue = kInvalidProxyHeaders,
+    kServiceProbeIncomplete = 12,
+    kServiceProbeFailed = 13,
+    kMaxValue = kServiceProbeFailed,
   };
 
   // The response type from the previews server. This enum must

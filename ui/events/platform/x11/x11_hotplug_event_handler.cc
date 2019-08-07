@@ -444,9 +444,10 @@ void X11HotplugEventHandler::OnHotplugEvent() {
   // Parse the device information asynchronously since this operation may block.
   // Once the device information is extracted the parsed devices will be
   // returned via the callbacks.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&HandleHotplugEventInWorker, device_infos, display_state,
                      base::ThreadTaskRunnerHandle::Get(), callbacks));
 }

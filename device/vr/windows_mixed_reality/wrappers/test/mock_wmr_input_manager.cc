@@ -27,11 +27,11 @@ static const std::map<
         {device::XrButtonMaskFromId(device::XrButtonId::kGrip),
          ABI::Windows::UI::Input::Spatial::SpatialInteractionPressKind_Grasp},
         // Touchpad.
-        {device::XrButtonMaskFromId(device::XrButtonId::kAxisSecondary),
+        {device::XrButtonMaskFromId(device::XrButtonId::kAxisTrackpad),
          ABI::Windows::UI::Input::Spatial::
              SpatialInteractionPressKind_Touchpad},
         // Joystick.
-        {device::XrButtonMaskFromId(device::XrButtonId::kAxisPrimary),
+        {device::XrButtonMaskFromId(device::XrButtonId::kAxisThumbstick),
          ABI::Windows::UI::Input::Spatial::
              SpatialInteractionPressKind_Thumbstick},
 };

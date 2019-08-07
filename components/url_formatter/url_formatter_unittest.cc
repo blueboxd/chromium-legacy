@@ -241,6 +241,12 @@ TEST(UrlFormatterTest, FormatUrl) {
       {"view-source omit slash when it's the entire path",
        "view-source:http://a.b/", kFormatUrlOmitDefaults,
        net::UnescapeRule::NORMAL, L"view-source:a.b", 12},
+      {"view-source never applies destructive elisions to its inner URL",
+       "view-source:https://www.google.com/foo",
+       kFormatUrlOmitDefaults | kFormatUrlOmitHTTPS |
+           kFormatUrlOmitTrivialSubdomains | kFormatUrlTrimAfterHost,
+       net::UnescapeRule::NORMAL, L"view-source:https://www.google.com/foo",
+       20},
 
       // -------- omit https --------
       {"omit https", "https://www.google.com/", kFormatUrlOmitHTTPS,

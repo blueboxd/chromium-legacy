@@ -1236,6 +1236,7 @@ jumbo_source_set("unit_tests") {
     "html/forms/file_input_type_test.cc",
     "html/forms/form_controller_test.cc",
     "html/forms/form_data_test.cc",
+    "html/forms/html_data_list_element_test.cc",
     "html/forms/html_form_control_element_test.cc",
     "html/forms/html_form_element_test.cc",
     "html/forms/html_input_element_test.cc",

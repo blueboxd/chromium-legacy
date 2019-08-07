@@ -374,21 +374,20 @@ class NetworkContextTest : public testing::Test {
   // Looks up a value with the given name from the NetworkContext's
   // TransportSocketPool info dictionary.
   int GetSocketPoolInfo(NetworkContext* context, base::StringPiece name) {
-    int value = -1;
-    context->url_request_context()
+    return context->url_request_context()
         ->http_transaction_factory()
         ->GetSession()
         ->GetSocketPool(
             net::HttpNetworkSession::SocketPoolType::NORMAL_SOCKET_POOL,
             net::ProxyServer::Direct())
         ->GetInfoAsValue("", "")
-        ->GetInteger(name, &value);
-    return value;
+        .FindIntPath(name)
+        .value_or(-1);
   }
 
   int GetSocketCountForGroup(NetworkContext* context,
                              const std::string& group_name) {
-    std::unique_ptr<base::Value> pool_info =
+    base::Value pool_info =
         context->url_request_context()
             ->http_transaction_factory()
             ->GetSession()
@@ -398,19 +397,19 @@ class NetworkContextTest : public testing::Test {
             ->GetInfoAsValue("", "");
 
     int count = 0;
-    base::Value* active_socket_count = pool_info->FindPathOfType(
+    base::Value* active_socket_count = pool_info.FindPathOfType(
         base::span<const base::StringPiece>{
             {"groups", group_name, "active_socket_count"}},
         base::Value::Type::INTEGER);
     if (active_socket_count)
       count += active_socket_count->GetInt();
-    base::Value* idle_sockets = pool_info->FindPathOfType(
+    base::Value* idle_sockets = pool_info.FindPathOfType(
         base::span<const base::StringPiece>{
             {"groups", group_name, "idle_sockets"}},
         base::Value::Type::LIST);
     if (idle_sockets)
       count += idle_sockets->GetList().size();
-    base::Value* connect_jobs = pool_info->FindPathOfType(
+    base::Value* connect_jobs = pool_info.FindPathOfType(
         base::span<const base::StringPiece>{
             {"groups", group_name, "connect_jobs"}},
         base::Value::Type::LIST);
@@ -597,9 +596,8 @@ TEST_F(NetworkContextTest, DataUrlSupport) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(context_params));
-  EXPECT_EQ(
-      base::FeatureList::IsEnabled(features::kNetworkService),
-      !network_context->url_request_context()->job_factory()->IsHandledProtocol(
+  EXPECT_FALSE(
+      network_context->url_request_context()->job_factory()->IsHandledProtocol(
           url::kDataScheme));
 }
 

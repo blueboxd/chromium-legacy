@@ -213,7 +213,7 @@ BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
 
 BrowserDMTokenStorageWin::BrowserDMTokenStorageWin()
     : com_sta_task_runner_(
-          base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})),
+          base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})),
       weak_factory_(this) {}
 
 BrowserDMTokenStorageWin::~BrowserDMTokenStorageWin() {}

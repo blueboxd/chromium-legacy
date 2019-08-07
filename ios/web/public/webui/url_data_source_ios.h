@@ -77,9 +77,6 @@ class URLDataSourceIOS {
   // happening, return false. It is OK to return false as needed.
   virtual bool ShouldDenyXFrameOptions() const;
 
-  // Whether |path| is gzipped (and should be transmitted gzipped).
-  virtual bool IsGzipped(const std::string& path) const;
-
   // By default, only chrome: requests are allowed.  Override in specific WebUI
   // data sources to enable for additional schemes or to implement fancier
   // access control.  Typically used in concert with

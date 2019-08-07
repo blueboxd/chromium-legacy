@@ -15,20 +15,37 @@ import re
 import shutil
 import subprocess
 import stat
-import string
 import sys
 
-# tool_wrapper.py doesn't get invoked through python.bat so the Python bin
-# directory doesn't get added to the path. The Python module search logic
-# handles this fine and finds win32file.pyd. However the Windows module
-# search logic then looks for pywintypes27.dll and other DLLs in the path and
-# if it finds versions with a different bitness first then win32file.pyd will
-# fail to load with a cryptic error:
-#     ImportError: DLL load failed: %1 is not a valid Win32 application.
-if sys.platform == 'win32':
-  os.environ['PATH'] = os.path.dirname(sys.executable) + \
-                       os.pathsep + os.environ['PATH']
-  import win32file    # pylint: disable=import-error
+# Embedded vpython spec to provide `win32file` when this is invoked with
+# vpython.
+#
+# [VPYTHON:BEGIN]
+# wheel: <
+#   name: "infra/python/wheels/pypiwin32/${vpython_platform}"
+#   version: "version:219"
+# >
+# [VPYTHON:END]
+
+try:
+  # First, try the normal way. This will work for python installations which
+  # have win32file already, or for vpython invocations of this script.
+  import win32file
+except ImportError:
+  # Otherwise, do a hack to locate the depot_tools specific version of
+  # win32file.
+  #
+  # tool_wrapper.py doesn't get invoked through python.bat so the Python bin
+  # directory doesn't get added to the path. The Python module search logic
+  # handles this fine and finds win32file.pyd. However the Windows module
+  # search logic then looks for pywintypes27.dll and other DLLs in the path and
+  # if it finds versions with a different bitness first then win32file.pyd will
+  # fail to load with a cryptic error:
+  #     ImportError: DLL load failed: %1 is not a valid Win32 application.
+  if sys.platform == 'win32':
+    os.environ['PATH'] = os.path.dirname(sys.executable) + \
+                         os.pathsep + os.environ['PATH']
+    import win32file    # pylint: disable=import-error
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

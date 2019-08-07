@@ -217,6 +217,9 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // moved to center.
   bool ShouldMoveToCenter(gfx::PointF mouse_screen_position);
 
+  // Return whether the event is a synthesized move from |MoveCursorTo|.
+  bool MatchesSynthesizedMovePosition(const blink::WebMouseEvent& event);
+
   // Returns true when we can hit test input events with location data to be
   // sent to the targeted RenderWidgetHost.
   bool ShouldRouteEvents() const;
@@ -268,12 +271,11 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   gfx::PointF global_mouse_position_;
   // In mouse locked mode, we synthetically move the mouse cursor to the center
   // of the window when it reaches the window borders to avoid it going outside.
-  // This flag is used to differentiate between these synthetic mouse move
+  // This value is used to differentiate between these synthetic mouse move
   // events vs. normal mouse move events.
-  bool synthetic_move_sent_;
+  base::Optional<gfx::Point> synthetic_move_position_;
 
   bool enable_consolidated_movement_;
-  base::Optional<gfx::Point> synthetic_move_position_;
 
   // Stores the current state of the active pointers targeting this
   // object.

@@ -550,6 +550,8 @@ customize.createTileWithTitle = function(
     id, imageUrl, name, dataset, onClickInteraction, onKeyInteraction) {
   const tile = customize.createTileThumbnail(
       id, imageUrl, dataset, onClickInteraction, onKeyInteraction);
+  tile.setAttribute('aria-label', name);
+  tile.title = name;
   customize.fadeInImageTile(tile, imageUrl, null);
 
   const title = document.createElement('div');
@@ -702,7 +704,8 @@ customize.getNextTile = function(deltaX, deltaY, currentElem) {
  */
 customize.tileOnKeyDownInteraction = function(event) {
   const tile = event.currentTarget;
-  if (event.keyCode === customize.KEYCODES.ENTER) {
+  if (event.keyCode === customize.KEYCODES.ENTER ||
+      event.keyCode === customize.KEYCODES.SPACE) {
     event.preventDefault();
     event.stopPropagation();
     if (tile.onClickOverride) {
@@ -989,6 +992,9 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
         customize.selectedOptions.background);
   }
 
+  // Remove any existing preview.
+  customize.richerPicker_unpreviewImage();
+
   customize.selectedOptions.background = tile;
   customize.selectedOptions.backgroundData = {
     id: tile.id,
@@ -1203,6 +1209,7 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
         customize.tileOnKeyDownInteraction);
 
     tile.setAttribute('aria-label', collImg[i].attributions[0]);
+    tile.title = collImg[i].attributions[0];
 
     // Load the first |ROWS_TO_PRELOAD| rows of tiles.
     if (i < firstNTile) {
@@ -1992,6 +1999,14 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   const clOption = $(customize.IDS.SHORTCUTS_OPTION_CUSTOM_LINKS);
+  const mvOption = $(customize.IDS.SHORTCUTS_OPTION_MOST_VISITED);
+  const hideToggle = $(customize.IDS.SHORTCUTS_HIDE_TOGGLE);
+  $(customize.IDS.SHORTCUTS_MENU).onkeydown = function(event) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
+      clOption.focus();
+    }
+  };
+
   clOption.onclick = function() {
     if (customize.selectedOptions.shortcutType !== clOption) {
       ntpApiHandle.logEvent(
@@ -2003,10 +2018,18 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     if (event.keyCode === customize.KEYCODES.ENTER ||
         event.keyCode === customize.KEYCODES.SPACE) {
       clOption.click();
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
+      // Handle arrow key navigation.
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.keyCode === customize.KEYCODES.RIGHT) {
+        mvOption.focus();
+      } else if (event.keyCode === customize.KEYCODES.DOWN) {
+        hideToggle.focus();
+      }
     }
   };
 
-  const mvOption = $(customize.IDS.SHORTCUTS_OPTION_MOST_VISITED);
   mvOption.onclick = function() {
     if (customize.selectedOptions.shortcutType !== mvOption) {
       ntpApiHandle.logEvent(
@@ -2018,10 +2041,20 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     if (event.keyCode === customize.KEYCODES.ENTER ||
         event.keyCode === customize.KEYCODES.SPACE) {
       mvOption.click();
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
+      // Handle arrow key navigation.
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.keyCode === customize.KEYCODES.LEFT) {
+        clOption.focus();
+      } else if (
+          event.keyCode === customize.KEYCODES.RIGHT ||
+          event.keyCode === customize.KEYCODES.DOWN) {
+        hideToggle.focus();
+      }
     }
   };
 
-  const hideToggle = $(customize.IDS.SHORTCUTS_HIDE_TOGGLE);
   hideToggle.onchange = function(event) {
     customize.richerPicker_toggleShortcutHide(hideToggle.checked);
     ntpApiHandle.logEvent(
@@ -2031,6 +2064,14 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     if (event.keyCode === customize.KEYCODES.ENTER ||
         event.keyCode === customize.KEYCODES.SPACE) {
       hideToggle.onchange(event);
+    } else if (customize.arrowKeys.includes(event.keyCode)) {
+      // Handle arrow key navigation.
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.keyCode === customize.KEYCODES.LEFT ||
+          event.keyCode === customize.KEYCODES.UP) {
+        mvOption.focus();
+      }
     }
   };
   hideToggle.onclick = function(event) {
@@ -2278,12 +2319,13 @@ customize.colorsMenuPreselectTile = function() {
     }
   } else if (
       configData.chromeColorsCustomColorPicker && themeInfo.colorDark &&
-      themeInfo.colorLight) {
+      themeInfo.colorLight && themeInfo.colorPicked) {
     // Custom color is selected.
     tile = $(customize.IDS.COLOR_PICKER_TILE);
 
     // Update color picker tile colors.
-    $(customize.IDS.COLOR_PICKER).value = colorArrayToHex(themeInfo.colorDark);
+    $(customize.IDS.COLOR_PICKER).value =
+        colorArrayToHex(themeInfo.colorPicked);
     $(customize.IDS.COLORS_MENU)
         .style.setProperty(
             '--custom-color-border', colorArrayToHex(themeInfo.colorDark));

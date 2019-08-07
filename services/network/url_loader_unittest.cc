@@ -3392,7 +3392,6 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithValidSignature) {
   ASSERT_TRUE(identity);
   scoped_refptr<TestSSLPrivateKey> private_key =
       base::MakeRefCounted<TestSSLPrivateKey>(identity->ssl_private_key());
-  TestSSLPrivateKey* private_key_ptr = private_key.get();
 
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   net::SSLServerConfig ssl_config;
@@ -3407,7 +3406,7 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithValidSignature) {
   network_service_client.set_certificate_response(
       MockNetworkServiceClient::CertificateResponse::
           VALID_CERTIFICATE_SIGNATURE);
-  network_service_client.set_private_key(std::move(private_key));
+  network_service_client.set_private_key(private_key);
   scoped_refptr<net::X509Certificate> certificate =
       test_server.GetCertificate();
   network_service_client.set_certificate(std::move(certificate));
@@ -3431,13 +3430,13 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithValidSignature) {
   ASSERT_TRUE(url_loader);
 
   EXPECT_EQ(0, network_service_client.on_certificate_requested_counter());
-  EXPECT_EQ(0, private_key_ptr->sign_count());
+  EXPECT_EQ(0, private_key->sign_count());
 
   client()->RunUntilComplete();
 
   EXPECT_EQ(1, network_service_client.on_certificate_requested_counter());
   // The private key should have been used.
-  EXPECT_EQ(1, private_key_ptr->sign_count());
+  EXPECT_EQ(1, private_key->sign_count());
 }
 
 TEST_F(URLLoaderTest, ClientAuthCertificateWithInvalidSignature) {
@@ -3448,7 +3447,6 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithInvalidSignature) {
   scoped_refptr<TestSSLPrivateKey> private_key =
       base::MakeRefCounted<TestSSLPrivateKey>(identity->ssl_private_key());
   private_key->set_fail_signing(true);
-  TestSSLPrivateKey* private_key_ptr = private_key.get();
 
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   net::SSLServerConfig ssl_config;
@@ -3463,7 +3461,7 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithInvalidSignature) {
   network_service_client.set_certificate_response(
       MockNetworkServiceClient::CertificateResponse::
           VALID_CERTIFICATE_SIGNATURE);
-  network_service_client.set_private_key(std::move(private_key));
+  network_service_client.set_private_key(private_key);
   scoped_refptr<net::X509Certificate> certificate =
       test_server.GetCertificate();
   network_service_client.set_certificate(std::move(certificate));
@@ -3487,13 +3485,13 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithInvalidSignature) {
   ASSERT_TRUE(url_loader);
 
   EXPECT_EQ(0, network_service_client.on_certificate_requested_counter());
-  EXPECT_EQ(0, private_key_ptr->sign_count());
+  EXPECT_EQ(0, private_key->sign_count());
 
   client()->RunUntilComplete();
 
   EXPECT_EQ(1, network_service_client.on_certificate_requested_counter());
   // The private key should have been used.
-  EXPECT_EQ(1, private_key_ptr->sign_count());
+  EXPECT_EQ(1, private_key->sign_count());
   EXPECT_EQ(net::ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED,
             client()->completion_status().error_code);
 }

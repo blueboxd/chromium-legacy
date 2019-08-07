@@ -199,9 +199,18 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
 
 void WorkspaceLayoutManager::SetChildBounds(aura::Window* child,
                                             const gfx::Rect& requested_bounds) {
+  WindowState* window_state = WindowState::Get(child);
   SetBoundsWMEvent event(requested_bounds);
-  WindowState::Get(child)->OnWMEvent(&event);
-  UpdateShelfVisibility();
+  window_state->OnWMEvent(&event);
+
+  // Setting bounds shouldn't trigger UpdateShelfVisibility(), especially for
+  // PIP because it can cause an unexpected call of updatePipBounds(). So avoid
+  // calling this for PIP windows for now.
+  // TODO(takise): Remove UpdateShelfVisibility() completely, which may be
+  // obsolete now.
+  if (!window_state->IsPip()) {
+    UpdateShelfVisibility();
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////

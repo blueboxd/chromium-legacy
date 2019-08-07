@@ -4,14 +4,27 @@
 
 #include "services/device/serial/serial_device_enumerator.h"
 
-#include <memory>
 #include <vector>
 
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
 
-TEST(SerialDeviceEnumeratorTest, GetDevices) {
+namespace {
+
+class SerialDeviceEnumeratorTest : public testing::Test {
+ public:
+  SerialDeviceEnumeratorTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+  ~SerialDeviceEnumeratorTest() override = default;
+
+ private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+};
+
+TEST_F(SerialDeviceEnumeratorTest, GetDevices) {
   // There is no guarantee that a test machine will have a serial device
   // available. The purpose of this test is to ensure that the process of
   // attempting to enumerate devices does not cause a crash.
@@ -19,5 +32,7 @@ TEST(SerialDeviceEnumeratorTest, GetDevices) {
   ASSERT_TRUE(enumerator);
   std::vector<mojom::SerialPortInfoPtr> devices = enumerator->GetDevices();
 }
+
+}  // namespace
 
 }  // namespace device

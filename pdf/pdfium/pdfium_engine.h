@@ -239,13 +239,13 @@ class PDFiumEngine : public PDFEngine,
                              size_t page_index,
                              bool reload);
 
-  // Formats the pages of |page_rects| for single-view and appends them to
+  // Formats the pages of |page_sizes| for single-view and appends them to
   // |pages_|.
-  void LoadPagesInSingleView(std::vector<pp::Rect> page_rects, bool reload);
+  void LoadPagesInSingleView(std::vector<pp::Size> page_sizes, bool reload);
 
-  // Formats the pages of |page_rects| for two-up view and appends them to
+  // Formats the pages of |page_sizes| for two-up view and appends them to
   // |pages_|.
-  void LoadPagesInTwoUpView(std::vector<pp::Rect> page_rects, bool reload);
+  void LoadPagesInTwoUpView(std::vector<pp::Size> page_sizes, bool reload);
 
   // Loads information about the pages in the document and calculate the
   // document size.
@@ -528,6 +528,9 @@ class PDFiumEngine : public PDFEngine,
 
   // The current document layout.
   DocumentLayout layout_;
+
+  // The options for the desired document layout.
+  DocumentLayout::Options desired_layout_options_;
 
   // The scroll position in screen coordinates.
   pp::Point position_;

@@ -7,9 +7,22 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "base/logging.h"
+#include "base/memory/singleton.h"
+#include "base/metrics/single_sample_metrics.h"
+#include "base/one_shot_event.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_restore.h"
+#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/session/arc_stop_reason.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_system_provider.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "ui/wm/public/activation_client.h"
-
 namespace arc {
 
 namespace {
@@ -24,23 +37,85 @@ bool IsAppListWindow(const aura::Window* window) {
          parent->id() == ash::ShellWindowId::kShellWindowId_AppListContainer;
 }
 
-void ThrottleInstance(const aura::Window* active) {
-  SetArcCpuRestriction(!IsArcAppWindow(active));
-}
+class DefaultDelegateImpl : public ArcInstanceThrottle::Delegate {
+ public:
+  DefaultDelegateImpl() = default;
+  ~DefaultDelegateImpl() override = default;
+  void SetCpuRestriction(bool restrict) override {
+    SetArcCpuRestriction(restrict);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DefaultDelegateImpl);
+};
+
+// Singleton factory for ArcInstanceThrottle.
+class ArcInstanceThrottleFactory
+    : public internal::ArcBrowserContextKeyedServiceFactoryBase<
+          ArcInstanceThrottle,
+          ArcInstanceThrottleFactory> {
+ public:
+  static constexpr const char* kName = "ArcInstanceThrottleFactory";
+  static ArcInstanceThrottleFactory* GetInstance() {
+    return base::Singleton<ArcInstanceThrottleFactory>::get();
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<ArcInstanceThrottleFactory>;
+  ArcInstanceThrottleFactory() {
+    DependsOn(extensions::ExtensionsBrowserClient::Get()
+                  ->GetExtensionSystemFactory());
+    DependsOn(ArcBootPhaseMonitorBridgeFactory::GetInstance());
+  }
+  ~ArcInstanceThrottleFactory() override = default;
+};
 
 }  // namespace
 
-ArcInstanceThrottle::ArcInstanceThrottle() {
-  if (!ash::Shell::HasInstance())  // for unit testing.
-    return;
-  ash::Shell::Get()->activation_client()->AddObserver(this);
-  ThrottleInstance(ash::window_util::GetActiveWindow());
+// static
+ArcInstanceThrottle* ArcInstanceThrottle::GetForBrowserContext(
+    content::BrowserContext* context) {
+  return ArcInstanceThrottleFactory::GetForBrowserContext(context);
 }
 
-ArcInstanceThrottle::~ArcInstanceThrottle() {
-  if (!ash::Shell::HasInstance())
-    return;
-  ash::Shell::Get()->activation_client()->RemoveObserver(this);
+// static
+ArcInstanceThrottle* ArcInstanceThrottle::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcInstanceThrottleFactory::GetForBrowserContextForTesting(context);
+}
+
+ArcInstanceThrottle::ArcInstanceThrottle(content::BrowserContext* context,
+                                         ArcBridgeService* arc_bridge_service)
+    : context_(context),
+      delegate_for_testing_(std::make_unique<DefaultDelegateImpl>()),
+      weak_ptr_factory_(this) {
+  auto* arc_session_manager = ArcSessionManager::Get();
+  DCHECK(arc_session_manager);
+  arc_session_manager->AddObserver(this);
+  SessionRestore::AddObserver(this);
+  auto* boot_phase_monitor =
+      ArcBootPhaseMonitorBridge::GetForBrowserContext(context_);
+  if (boot_phase_monitor)  // for unit testing.
+    boot_phase_monitor->AddObserver(this);
+
+  auto* profile = Profile::FromBrowserContext(context);
+  auto* extension_system = extensions::ExtensionSystem::Get(profile);
+  DCHECK(extension_system);
+  extension_system->ready().Post(
+      FROM_HERE, base::BindOnce(&ArcInstanceThrottle::OnExtensionsReady,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+ArcInstanceThrottle::~ArcInstanceThrottle() {}
+
+void ArcInstanceThrottle::Shutdown() {
+  auto* arc_session_manager = ArcSessionManager::Get();
+  arc_session_manager->RemoveObserver(this);
+  SessionRestore::RemoveObserver(this);
+  auto* boot_phase_monitor =
+      ArcBootPhaseMonitorBridge::GetForBrowserContext(context_);
+  if (boot_phase_monitor)  // for unit testing.
+    boot_phase_monitor->RemoveObserver(this);
 }
 
 void ArcInstanceThrottle::OnWindowActivated(ActivationReason reason,
@@ -73,8 +148,91 @@ void ArcInstanceThrottle::OnWindowActivated(ActivationReason reason,
   // app was a native one then the instance was throttled anyway.
   if (IsAppListWindow(lost_active) || IsAppListWindow(gained_active))
     return;
-
-  ThrottleInstance(gained_active);
+  delegate_for_testing_->SetCpuRestriction(!IsArcAppWindow(gained_active));
 }
 
+void ArcInstanceThrottle::StartObservingWindowActivations() {
+  observing_window_activations_ = true;
+  if (!ash::Shell::HasInstance())  // for unit testing.
+    return;
+  ash::Shell::Get()->activation_client()->AddObserver(this);
+}
+
+void ArcInstanceThrottle::StopObservingWindowActivations() {
+  observing_window_activations_ = false;
+  delegate_for_testing_->SetCpuRestriction(false);
+  if (!ash::Shell::HasInstance())
+    return;
+  ash::Shell::Get()->activation_client()->RemoveObserver(this);
+  VLOG(1) << "ArcInstanceThrottle has stopped observing and "
+             "delegate_for_testing_->SetCpuRestriction(false)";
+}
+
+void ArcInstanceThrottle::OnExtensionsReady() {
+  VLOG(2) << "All extensions are loaded";
+  if (!boot_completed_ && !provisioning_finished_) {
+    VLOG(1) << "Allowing the instance to use more CPU resources";
+    delegate_for_testing_->SetCpuRestriction(false);
+  }
+}
+
+void ArcInstanceThrottle::OnArcStarted() {
+  VLOG(1) << "ArcInstanceThrottle "
+             "delegate_for_testing_->SetCpuRestriction(false) in "
+             "OnArcStarted()";
+  delegate_for_testing_->SetCpuRestriction(false);
+}
+
+// Called after provisioning is finished
+void ArcInstanceThrottle::OnArcInitialStart() {
+  provisioning_finished_ = true;
+  if (observing_window_activations_)
+    return;
+  StartObservingWindowActivations();
+  VLOG(1) << "ArcInstanceThrottle started observing in OnArcInitialStart()";
+}
+
+void ArcInstanceThrottle::OnArcSessionStopped(ArcStopReason stop_reason) {
+  // Stop observing so that the window observer won't interfere with the
+  // container startup when the user opts in to ARC. Will remove once we have
+  // locks to cover container stopping/restarting.
+  if (!observing_window_activations_)
+    return;
+  StopObservingWindowActivations();
+  VLOG(1) << "ArcInstanceThrottle stopped observing in OnArcSessionStopped()";
+}
+
+void ArcInstanceThrottle::OnArcSessionRestarting() {
+  // Stop observing so that the window observer won't interfere with the
+  // container restart.
+  if (!observing_window_activations_)
+    return;
+  StopObservingWindowActivations();
+  VLOG(1)
+      << "ArcInstanceThrottle stopped observing in OnArcSessionRestarting()";
+}
+
+void ArcInstanceThrottle::OnArcPlayStoreEnabledChanged(bool enabled) {
+  if (enabled)
+    delegate_for_testing_->SetCpuRestriction(false);
+}
+
+void ArcInstanceThrottle::OnSessionRestoreFinishedLoadingTabs() {
+  VLOG(1) << "All tabs have been restored";
+  // If OnArcInitialStart() or OnBootCompleted haven't been called, relax the
+  // restriction to let the instance fully start.
+  if (!boot_completed_ && !provisioning_finished_) {
+    VLOG(1) << "Allowing the instance to use more CPU resources";
+    delegate_for_testing_->SetCpuRestriction(false);
+  }
+}
+
+// Called after boot is completed.
+void ArcInstanceThrottle::OnBootCompleted() {
+  boot_completed_ = true;
+  if (observing_window_activations_)
+    return;
+  StartObservingWindowActivations();
+  VLOG(1) << "ArcInstanceThrottle started observing in OnBootCompleted()";
+}
 }  // namespace arc

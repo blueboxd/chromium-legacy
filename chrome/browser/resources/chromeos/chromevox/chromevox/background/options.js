@@ -108,14 +108,6 @@ cvox.OptionsPage.init = function() {
         }
       });
 
-  chrome.commandLinePrivate.hasSwitch(
-      'enable-experimental-accessibility-chromevox-rich-text-indication',
-      function(enabled) {
-        if (!enabled) {
-          $('richTextIndicationOption').style.display = 'none';
-        }
-      });
-
   var registerEventStreamFiltersListener = function() {
     $('toggleEventStreamFilters').addEventListener('click', function(evt) {
       if ($('eventStreamFilters').hidden) {

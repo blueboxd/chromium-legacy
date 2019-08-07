@@ -491,8 +491,8 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
       "lockScreenHideSensitiveNotificationsSupported",
       ash::features::IsLockScreenHideSensitiveNotificationsSupported());
   html_source->AddBoolean(
-      "lockScreenMediaKeysEnabled",
-      base::FeatureList::IsEnabled(ash::features::kLockScreenMediaKeys));
+      "lockScreenMediaControlsEnabled",
+      base::FeatureList::IsEnabled(ash::features::kLockScreenMediaControls));
   html_source->AddBoolean("showTechnologyBadge",
                           !ash::features::IsSeparateNetworkIconsEnabled());
   html_source->AddBoolean("hasInternalStylus",

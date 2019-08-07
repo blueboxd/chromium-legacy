@@ -653,10 +653,6 @@ void NativeExtensionBindingsSystem::HandleResponse(
   ipc_message_sender_->SendOnRequestResponseReceivedIPC(request_id);
 }
 
-RequestSender* NativeExtensionBindingsSystem::GetRequestSender() {
-  return nullptr;
-}
-
 IPCMessageSender* NativeExtensionBindingsSystem::GetIPCMessageSender() {
   return ipc_message_sender_.get();
 }

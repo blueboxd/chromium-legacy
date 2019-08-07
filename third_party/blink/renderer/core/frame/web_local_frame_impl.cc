@@ -2676,4 +2676,17 @@ void WebLocalFrameImpl::WasShown() {
     frame_->WasShown();
 }
 
+void WebLocalFrameImpl::SetAllowsCrossBrowsingInstanceFrameLookup() {
+  DCHECK(GetFrame());
+
+  // Allow the frame's security origin to access other SecurityOrigins
+  // that match everything except the agent cluster check. This is needed
+  // for embedders that hand out frame references outside of a browsing
+  // instance, for example extensions and webview tag.
+  GetFrame()
+      ->GetDocument()
+      ->GetMutableSecurityOrigin()
+      ->GrantCrossAgentClusterAccess();
+}
+
 }  // namespace blink

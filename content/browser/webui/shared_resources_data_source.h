@@ -32,7 +32,6 @@ class SharedResourcesDataSource : public URLDataSource {
       const std::string& path) override;
   std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) override;
-  bool IsGzipped(const std::string& path) override;
 #if defined(OS_CHROMEOS)
   void DisablePolymer2ForHost(const std::string& host) override;
 #endif  // defined (OS_CHROMEOS)

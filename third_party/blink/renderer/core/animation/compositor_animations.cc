@@ -197,13 +197,6 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
 
   LayoutObject* layout_object = target_element.GetLayoutObject();
   if (paint_artifact_compositor) {
-    // If we are going to check that we can animate these below, we need
-    // to have the UniqueID to compute the target ID.  Let's check it
-    // once in common in advance.
-    if (!layout_object || !layout_object->UniqueId()) {
-      reasons |= kTargetHasInvalidCompositingState;
-    }
-
     // Elements with subtrees containing will-change: contents are not
     // composited for animations as if the contents change the tiles
     // would need to be rerastered anyways.
@@ -308,8 +301,14 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
       }
 
       if (paint_artifact_compositor) {
-        if (!layout_object || !layout_object->UniqueId())
+        // If we don't have paint properties, we won't have a UniqueId to use
+        // for checking here.
+        if (!target_element.GetLayoutObject() ||
+            !target_element.GetLayoutObject()
+                 ->FirstFragment()
+                 .PaintProperties()) {
           continue;
+        }
 
         CompositorElementId target_element_id =
             CompositorElementIdFromUniqueObjectId(

@@ -431,8 +431,9 @@ VaapiJpegEncodeAccelerator::Initialize(
     return PLATFORM_FAILURE;
   }
 
-  encoder_task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
+  encoder_task_runner_ =
+      base::CreateSingleThreadTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                          base::TaskPriority::USER_BLOCKING});
   if (!encoder_task_runner_) {
     VLOGF(1) << "Failed to create encoder task runner.";
     return THREAD_CREATION_FAILED;

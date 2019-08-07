@@ -23,7 +23,7 @@ class AssistantViewDelegate;
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOptInView
     : public views::View,
       public views::ButtonListener,
-      public AssistantPrefsObserver {
+      public AssistantStateObserver {
  public:
   explicit AssistantOptInView(AssistantViewDelegate* delegate_);
   ~AssistantOptInView() override;
@@ -36,8 +36,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOptInView
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // AssistantPrefsObserver:
-  void OnAssistantConsentStatusUpdated(int consent_status) override;
+  // AssistantStateObserver:
+  void OnAssistantConsentStatusChanged(int consent_status) override;
 
  private:
   void InitLayout();

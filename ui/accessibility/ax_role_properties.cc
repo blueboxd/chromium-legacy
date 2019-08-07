@@ -5,6 +5,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 
 #include "build/build_config.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
 

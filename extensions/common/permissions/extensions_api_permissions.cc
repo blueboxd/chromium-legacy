@@ -50,8 +50,6 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kDisplaySource, "displaySource"},
     {APIPermission::kDns, "dns"},
     {APIPermission::kDocumentScan, "documentScan"},
-    {APIPermission::kExtensionView, "extensionview",
-     APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kExternallyConnectableAllUrls,
      "externally_connectable.all_urls"},
     {APIPermission::kFeedbackPrivate, "feedbackPrivate",

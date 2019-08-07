@@ -270,7 +270,7 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
   explicit SystemInfoHandlerGpuObserver(
       std::unique_ptr<GetInfoCallback> callback)
       : callback_(std::move(callback)) {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SystemInfoHandlerGpuObserver::ObserverWatchdogCallback,
                        weak_factory_.GetWeakPtr()),
@@ -410,7 +410,7 @@ void SystemInfoHandler::GetProcessInfo(
   AddRendererProcessInfo(process_info.get());
 
   // Collect child processes info on the IO thread.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&AddChildProcessInfo, std::move(process_info)),
       base::BindOnce(&GetProcessInfoCallback::sendSuccess,

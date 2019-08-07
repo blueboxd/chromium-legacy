@@ -53,6 +53,8 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
                                            "Invalid timeout."));
   }
 
+  RecordSMSRequestedTimeout(options->hasTimeout() ? options->timeout() : 0);
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   requests_.insert(resolver);
 

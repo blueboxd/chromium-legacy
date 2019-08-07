@@ -78,6 +78,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/codec/png_codec.h"
 
 #if defined(OS_MACOSX)
@@ -564,6 +565,10 @@ void BlinkTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
       if (!command_line.HasSwitch(switches::kDisableGpu))
         prefs->accelerated_2d_canvas_enabled = true;
       prefs->mock_scrollbars_enabled = true;
+    }
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kForceHighContrast)) {
+      prefs->forced_colors = blink::ForcedColors::kActive;
     }
   }
 }

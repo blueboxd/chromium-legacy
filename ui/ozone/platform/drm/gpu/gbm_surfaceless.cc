@@ -155,10 +155,11 @@ void GbmSurfaceless::SwapBuffersAsync(
   base::OnceClosure fence_retired_callback = base::BindOnce(
       &GbmSurfaceless::FenceRetired, weak_factory_.GetWeakPtr(), frame);
 
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      std::move(fence_wait_task), std::move(fence_retired_callback));
+  base::PostTaskAndReply(FROM_HERE,
+                         {base::ThreadPool(), base::MayBlock(),
+                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                         std::move(fence_wait_task),
+                         std::move(fence_retired_callback));
 }
 
 void GbmSurfaceless::PostSubBufferAsync(

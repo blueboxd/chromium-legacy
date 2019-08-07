@@ -1,7 +1,7 @@
 Name: R8
 URL: https://r8.googlesource.com/r8
-Revision: 09516867c67b961f861308bceec63243b5cb7d1a
-Version: 1.6.11-dev
+Revision: 49dbca6424489d4320727bbd731175a310d7aa35
+Version: 1.6.19-dev
 License: BSD 3-Clause
 License File: NOT_SHIPPED
 Security Critical: no
@@ -14,9 +14,6 @@ Local Modifications:
 Turning off vertical and horizontal class merging, as described in
 https://issuetracker.google.com/122902374#comment11. We should no longer make
 this modification once the linked bug is fixed.
-
-Turning off nullable inlining since it caused a performance regression here:
-crbug.com/965189. If R8 ever mitigates this, we can re-enable this.
 
 Turning off outlining because it caused issues when synchronized proguarding
 Trichrome due to illegal dex references (crbug.com/956839). Will only be used

@@ -70,10 +70,6 @@ base::RefCountedMemory* ShellContentClient::GetDataResourceBytes(
       resource_id);
 }
 
-bool ShellContentClient::IsDataResourceGzipped(int resource_id) {
-  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
-}
-
 gfx::Image& ShellContentClient::GetNativeImageNamed(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);

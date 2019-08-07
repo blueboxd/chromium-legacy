@@ -56,7 +56,7 @@ class WebRequestPermissions {
       bool crosses_incognito,
       HostPermissionsCheck host_permissions_check,
       const base::Optional<url::Origin>& initiator,
-      const base::Optional<content::ResourceType>& resource_type);
+      content::ResourceType resource_type);
 
   static bool CanExtensionAccessInitiator(
       extensions::PermissionHelper* permission_helper,

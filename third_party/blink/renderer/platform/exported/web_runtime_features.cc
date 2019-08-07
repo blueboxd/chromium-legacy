@@ -272,10 +272,6 @@ void WebRuntimeFeatures::EnableNetInfoDownlinkMax(bool enable) {
   RuntimeEnabledFeatures::SetNetInfoDownlinkMaxEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableNetworkService(bool enable) {
-  RuntimeEnabledFeatures::SetNetworkServiceEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableOnDeviceChange(bool enable) {
   RuntimeEnabledFeatures::SetOnDeviceChangeEnabled(enable);
 }

@@ -86,21 +86,6 @@ void RemoveStaleBlacklistEntries(base::DictionaryValue* dict) {
   DCHECK_GE(kMaxBlacklistEntries, dict->DictSize());
 }
 
-void PreconnectToLitePagesServer(content::BrowserContext* browser_context) {
-  predictors::LoadingPredictor* loading_predictor =
-      predictors::LoadingPredictorFactory::GetForProfile(
-          Profile::FromBrowserContext(browser_context));
-
-  if (!loading_predictor || !loading_predictor->preconnect_manager())
-    return;
-
-  url::Origin previews_origin =
-      url::Origin::Create(previews::params::GetLitePagePreviewsDomainURL());
-  loading_predictor->preconnect_manager()->StartPreconnectUrl(
-      previews::params::GetLitePagePreviewsDomainURL(), true,
-      net::NetworkIsolationKey(previews_origin, previews_origin));
-}
-
 }  // namespace
 
 // This WebContentsObserver watches the rest of the current navigation shows a
@@ -163,6 +148,8 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
   if (!browser_context)
     return;
 
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+
   DataReductionProxyChromeSettings* drp_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
           browser_context);
@@ -171,12 +158,7 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
 
   DCHECK(!browser_context->IsOffTheRecord());
 
-  // TODO(crbug.com/971918): Remove once a more robust prober is setup.
-  if (drp_settings->IsDataReductionProxyEnabled()) {
-    PreconnectToLitePagesServer(browser_context);
-  }
-
-  pref_service_ = Profile::FromBrowserContext(browser_context)->GetPrefs();
+  pref_service_ = profile->GetPrefs();
   host_bypass_blacklist_ =
       pref_service_->GetDictionary(kHostBlacklist)->CreateDeepCopy();
 
@@ -196,6 +178,47 @@ PreviewsLitePageDecider::PreviewsLitePageDecider(
     OnSettingsInitialized();
     OnProxyRequestHeadersChanged(drp_settings->GetProxyRequestHeaders());
   }
+
+  // This section depends on |pref_service_| being set so it must come after
+  // that.
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("previews_litepage_prober", R"(
+        semantics {
+          sender: "Previews Litepage Prober"
+          description:
+            "Requests a small resource to test network connectivity to a "
+            "Google domain."
+          trigger:
+            "Requested when Lite mode and Previews are enabled on startup and "
+            "on every network change."
+          data: "None."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "Users can control Lite mode on Android via the settings menu. "
+            "Lite mode is not available on iOS, and on desktop only for "
+            "developer testing."
+          policy_exception_justification: "Not implemented."
+        })");
+
+  AvailabilityProber::TimeoutPolicy timeout_policy;
+  AvailabilityProber::RetryPolicy retry_policy;
+  retry_policy.backoff = AvailabilityProber::Backoff::kExponential;
+  retry_policy.base_interval = base::TimeDelta::FromSeconds(30);
+  retry_policy.use_random_urls = true;
+
+  litepages_service_prober_ = std::make_unique<AvailabilityProber>(
+      this, profile->GetURLLoaderFactory(), profile->GetPrefs(),
+      AvailabilityProber::ClientName::kLitepages,
+      previews::params::LitePageRedirectProbeURL(),
+      AvailabilityProber::HttpMethod::kHead, net::HttpRequestHeaders(),
+      retry_policy, timeout_policy, traffic_annotation,
+      10 /* max_cache_entries */,
+      base::TimeDelta::FromHours(24) /* revalidate_cache_after */);
+  litepages_service_prober_->SendNowIfInactive(
+      true /* send_only_in_foreground */);
 }
 
 PreviewsLitePageDecider::~PreviewsLitePageDecider() = default;
@@ -454,4 +477,33 @@ bool PreviewsLitePageDecider::HostBlacklistedFromBypass(
   DCHECK(value->is_double());
   base::Time expiry = base::Time::FromDoubleT(value->GetDouble());
   return expiry > base::Time::Now();
+}
+
+bool PreviewsLitePageDecider::ShouldSendNextProbe() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return data_reduction_proxy::DataReductionProxySettings::
+             IsDataSaverEnabledByUser(pref_service_) &&
+         previews::params::ArePreviewsAllowed() &&
+         previews::params::IsLitePageServerPreviewsEnabled();
+}
+
+bool PreviewsLitePageDecider::IsResponseSuccess(
+    net::Error net_error,
+    const network::ResourceResponseHead* head,
+    std::unique_ptr<std::string> body) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Any HTTP response is fine, so long as we got it.
+  return net_error == net::OK && head && head->headers;
+}
+
+bool PreviewsLitePageDecider::IsServerProbeResultAvailable() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return litepages_service_prober_->LastProbeWasSuccessful().has_value();
+}
+
+bool PreviewsLitePageDecider::IsServerReachableByProbe() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::Optional<bool> probe =
+      litepages_service_prober_->LastProbeWasSuccessful();
+  return probe.value_or(false);
 }

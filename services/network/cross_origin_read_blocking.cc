@@ -236,7 +236,6 @@ base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
       "application/gzip",
       "application/x-gzip",
       "application/x-protobuf",
-      "application/x-www-form-urlencoded",
       "application/zip",
       // Block multipart responses because a protected type (e.g. JSON) can
       // become multipart if returned in a range request with multiple parts.

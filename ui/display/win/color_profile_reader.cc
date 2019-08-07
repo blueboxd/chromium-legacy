@@ -61,8 +61,9 @@ void ColorProfileReader::UpdateIfNeeded() {
     return;
 
   update_in_flight_ = true;
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&ColorProfileReader::ReadProfilesOnBackgroundThread,
                  new_device_to_path_map),
       base::Bind(&ColorProfileReader::ReadProfilesCompleted,

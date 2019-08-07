@@ -194,6 +194,20 @@ TEST(CoordinateTest, GetBottomFillRect) {
                                                    kBottomSeparator));
 }
 
+TEST(CoordinateTest, GetRectForSingleView) {
+  // Test portrait pages.
+  CompareRect({55, 503, 190, 390},
+              GetRectForSingleView({200, 400}, {300, 500}, kSingleViewInsets));
+  CompareRect({55, 603, 90, 330},
+              GetRectForSingleView({100, 340}, {200, 600}, kSingleViewInsets));
+
+  // Test landscape pages.
+  CompareRect({5, 1003, 490, 440},
+              GetRectForSingleView({500, 450}, {500, 1000}, kSingleViewInsets));
+  CompareRect({30, 1503, 640, 190},
+              GetRectForSingleView({650, 200}, {700, 1500}, kSingleViewInsets));
+}
+
 TEST(CoordinateTest, GetScreenRect) {
   const pp::Rect rect(10, 20, 200, 300);
 

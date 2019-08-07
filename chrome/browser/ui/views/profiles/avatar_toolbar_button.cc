@@ -326,6 +326,12 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
     // This can happen if the user deletes the current profile.
     return true;
   }
+
+  // If the profile is using the placeholder avatar, fall back on the themeable
+  // vector icon instead.
+  if (entry->GetAvatarIconIndex() == profiles::GetPlaceholderAvatarIndex())
+    return true;
+
   return entry->GetAvatarIconIndex() == 0 &&
          g_browser_process->profile_manager()
                  ->GetProfileAttributesStorage()

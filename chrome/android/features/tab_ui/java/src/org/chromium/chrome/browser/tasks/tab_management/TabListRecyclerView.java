@@ -14,6 +14,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -21,7 +22,6 @@ import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -163,6 +163,9 @@ class TabListRecyclerView extends RecyclerView {
                 if (mDynamicView != null) {
                     mDynamicView.dropCachedBitmap();
                     unregisterDynamicView();
+                }
+                if (mRecyclerViewFooter != null) {
+                    mRecyclerViewFooter.setVisibility(VISIBLE);
                 }
             }
         });
@@ -336,6 +339,25 @@ class TabListRecyclerView extends RecyclerView {
         }
     }
 
+    @Override
+    public void onDraw(Canvas c) {
+        super.onDraw(c);
+        if (mRecyclerViewFooter == null || getVisibility() != View.VISIBLE) return;
+        // Always put the recyclerView footer below the recyclerView if there is one.
+        ViewHolder viewHolder = findViewHolderForAdapterPosition(getAdapter().getItemCount() - 1);
+        if (viewHolder == null) {
+            mRecyclerViewFooter.setVisibility(INVISIBLE);
+        } else {
+            if (mRecyclerViewFooter.getVisibility() != VISIBLE) {
+                mRecyclerViewFooter.setVisibility(VISIBLE);
+            }
+            final int padding =
+                    (int) getResources().getDimension(R.dimen.tab_grid_iph_card_padding);
+            mRecyclerViewFooter.setY(
+                    viewHolder.itemView.getBottom() + mRecyclerViewFooter.getHeight() + padding);
+        }
+    }
+
     /**
      * Start hiding the tab list.
      * @param animate Whether the visibility change should be animated.
@@ -360,6 +382,9 @@ class TabListRecyclerView extends RecyclerView {
         setShadowVisibility(false);
         mFadeOutAnimator.start();
         if (!animate) mFadeOutAnimator.end();
+        if (mRecyclerViewFooter != null) {
+            mRecyclerViewFooter.setVisibility(INVISIBLE);
+        }
     }
 
     void postHiding() {
@@ -447,35 +472,28 @@ class TabListRecyclerView extends RecyclerView {
     }
 
     /**
-     * This method creates a {@link TabListMediator.IphProvider} that can show IPH for drag-and-drop
-     * in GridTabSwitcher.
-     * @return The {@link TabListMediator.IphProvider} that can be used to show IPH.
-     * TODO(yuezhanggg): Replace this workaround with a footer itemView after we have generic list
-     * view adapter (crbug: 909779).
+     * This method setup the footer of {@code recyclerView}.
+     * @param footer  The {@link View} of the footer.
      */
-    TabListMediator.IphProvider setupIphProvider() {
+    void setupRecyclerViewFooter(View footer) {
+        if (mRecyclerViewFooter != null) return;
         final int height = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_height);
         final int padding = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_padding);
-        // Listener to close the footer.
-        View.OnClickListener closeListener = view -> {
-            ((ViewGroup) mRecyclerViewFooter.getParent()).removeView(mRecyclerViewFooter);
-            mRecyclerViewFooter = null;
-            // Restore the recyclerview to its original state.
-            setPadding(0, 0, 0, 0);
-            setScrollBarStyle(SCROLLBARS_INSIDE_OVERLAY);
-        };
+        mRecyclerViewFooter = footer;
+        setPadding(0, 0, 0, height + padding);
+        setScrollBarStyle(SCROLLBARS_OUTSIDE_OVERLAY);
+        mRecyclerViewFooter.setVisibility(INVISIBLE);
+    }
 
-        return anchor -> {
-            if (getChildCount() == 0) return;
-            if (mRecyclerViewFooter != null) return;
-            TabGridIphItemView iphView =
-                    (TabGridIphItemView) LayoutInflater.from(getContext())
-                            .inflate(R.layout.iph_card_item_layout, (ViewGroup) anchor, false);
-            ((ViewGroup) anchor).addView(iphView);
-            mRecyclerViewFooter = iphView;
-            iphView.setupCloseIphEntranceButtonOnclickListener(closeListener);
-            setPadding(0, 0, 0, height + padding);
-            setScrollBarStyle(SCROLLBARS_OUTSIDE_OVERLAY);
-        };
+    /**
+     * This method removes the footer of {@code recyclerView} if there is one.
+     */
+    void removeRecyclerViewFooter() {
+        if (mRecyclerViewFooter == null) return;
+        ((ViewGroup) mRecyclerViewFooter.getParent()).removeView(mRecyclerViewFooter);
+        mRecyclerViewFooter = null;
+        // Restore the recyclerView to its original state.
+        setPadding(0, 0, 0, 0);
+        setScrollBarStyle(SCROLLBARS_INSIDE_OVERLAY);
     }
 }

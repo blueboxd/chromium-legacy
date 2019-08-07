@@ -14,8 +14,6 @@ class Window;
 
 namespace ash {
 
-class OverviewGridPreEventHandler;
-
 // The desktop wallpaper view that, in addition to painting the wallpaper, can
 // also add blur and dimming effects, as well as handle context menu requests.
 class WallpaperView : public WallpaperBaseView,
@@ -59,10 +57,6 @@ class WallpaperView : public WallpaperBaseView,
   // A cached downsampled image of the wallpaper image. It will help wallpaper
   // blur/brightness animations be more performant.
   base::Optional<gfx::ImageSkia> small_image_;
-
-  // A event handler that handles taps and closes overview if we are in that
-  // mode.
-  std::unique_ptr<OverviewGridPreEventHandler> overview_grid_pre_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperView);
 };

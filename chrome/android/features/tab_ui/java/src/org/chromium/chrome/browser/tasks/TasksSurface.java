@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import android.view.View;
+
 import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 
 /**
  * Interface for the Tasks-related Start Surface. The tasks surface displays information related to
@@ -15,17 +17,23 @@ import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 public interface TasksSurface {
     /**
      * Set the listener to get the {@link Layout#onTabSelecting} event from the Grid Tab Switcher.
-     * @param listener The {@link GridTabSwitcher.OnTabSelectingListener} to use.
+     * @param listener The {@link TabSwitcher.OnTabSelectingListener} to use.
      */
-    void setOnTabSelectingListener(GridTabSwitcher.OnTabSelectingListener listener);
+    void setOnTabSelectingListener(TabSwitcher.OnTabSelectingListener listener);
 
     /**
      * @return Controller implementation for overview observation and visibility changes.
      */
-    GridTabSwitcher.GridController getGridController();
+    TabSwitcher.Controller getController();
 
     /**
-     * @return TabGridDelegate implementation to access the tab grid.
+     * @return TabListDelegate implementation to access the tab grid.
      */
-    GridTabSwitcher.TabGridDelegate getTabGridDelegate();
+    TabSwitcher.TabListDelegate getTabListDelegate();
+
+    /**
+     * Get the {@link View} of the surface.
+     * @return The surface view.
+     */
+    View getView();
 }

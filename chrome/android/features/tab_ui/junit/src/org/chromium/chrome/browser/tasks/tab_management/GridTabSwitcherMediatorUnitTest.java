@@ -92,7 +92,7 @@ public class GridTabSwitcherMediatorUnitTest {
     private static final int TAB4_ID = 357;
 
     @Mock
-    GridTabSwitcherMediator.ResetHandler mResetHandler;
+    TabSwitcherMediator.ResetHandler mResetHandler;
     @Mock
     TabContentManager mTabContentManager;
     @Mock
@@ -112,7 +112,7 @@ public class GridTabSwitcherMediatorUnitTest {
     @Mock
     PropertyObservable.PropertyObserver<PropertyKey> mPropertyObserver;
     @Mock
-    GridTabSwitcher.GridOverviewModeObserver mOverviewModeObserver;
+    TabSwitcher.OverviewModeObserver mOverviewModeObserver;
     @Mock
     CompositorViewHolder mCompositorViewHolder;
     @Mock
@@ -130,7 +130,7 @@ public class GridTabSwitcherMediatorUnitTest {
     private Tab mTab1;
     private Tab mTab2;
     private Tab mTab3;
-    private GridTabSwitcherMediator mMediator;
+    private TabSwitcherMediator mMediator;
     private PropertyModel mModel;
 
     @Before
@@ -182,8 +182,9 @@ public class GridTabSwitcherMediatorUnitTest {
 
         mModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         mModel.addObserver(mPropertyObserver);
-        mMediator = new GridTabSwitcherMediator(mResetHandler, mModel, mTabModelSelector,
-                mFullscreenManager, mCompositorViewHolder, null);
+        mMediator = new TabSwitcherMediator(mResetHandler, mModel, mTabModelSelector,
+                mFullscreenManager, mCompositorViewHolder, null,
+                TabListCoordinator.TabListMode.GRID);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
         mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
     }
@@ -229,10 +230,10 @@ public class GridTabSwitcherMediatorUnitTest {
         assertThat(mMediator.overviewVisible(), equalTo(true));
 
         assertThat(ShadowRecordHistogram.getHistogramValueCountForTesting(
-                           GridTabSwitcherMediator.TAB_COUNT_HISTOGRAM, 3),
+                           TabSwitcherMediator.TAB_COUNT_HISTOGRAM, 3),
                 equalTo(1));
         assertThat(ShadowRecordHistogram.getHistogramValueCountForTesting(
-                           GridTabSwitcherMediator.TAB_ENTRIES_HISTOGRAM, 3),
+                           TabSwitcherMediator.TAB_ENTRIES_HISTOGRAM, 3),
                 equalTo(1));
     }
 
@@ -257,10 +258,10 @@ public class GridTabSwitcherMediatorUnitTest {
         assertThat(mMediator.overviewVisible(), equalTo(true));
 
         assertThat(ShadowRecordHistogram.getHistogramValueCountForTesting(
-                           GridTabSwitcherMediator.TAB_COUNT_HISTOGRAM, 3),
+                           TabSwitcherMediator.TAB_COUNT_HISTOGRAM, 3),
                 equalTo(1));
         assertThat(ShadowRecordHistogram.getHistogramValueCountForTesting(
-                           GridTabSwitcherMediator.TAB_ENTRIES_HISTOGRAM, 2),
+                           TabSwitcherMediator.TAB_ENTRIES_HISTOGRAM, 2),
                 equalTo(1));
     }
 
@@ -489,7 +490,7 @@ public class GridTabSwitcherMediatorUnitTest {
 
     private void initAndAssertAllProperties() {
         assertThat(mModel.get(TabListContainerProperties.VISIBILITY_LISTENER),
-                instanceOf(GridTabSwitcherMediator.class));
+                instanceOf(TabSwitcherMediator.class));
         assertThat(
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
         assertThat(mModel.get(TabListContainerProperties.IS_INCOGNITO),

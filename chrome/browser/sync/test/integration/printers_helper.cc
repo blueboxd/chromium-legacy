@@ -110,6 +110,16 @@ chromeos::Printer CreateTestPrinter(int index) {
   return printer;
 }
 
+std::unique_ptr<sync_pb::PrinterSpecifics> CreateTestPrinterSpecifics(
+    int index) {
+  auto specifics = std::make_unique<sync_pb::PrinterSpecifics>();
+  specifics->set_id(PrinterId(index));
+  specifics->set_description("Description");
+  specifics->set_uri(base::StringPrintf("ipp://192.168.1.%d", index));
+
+  return specifics;
+}
+
 void WaitForPrinterStoreToLoad(content::BrowserContext* context) {
   GetPrinterStore(context);
   // Run tasks to allow a ModelTypeStore to be associated with the

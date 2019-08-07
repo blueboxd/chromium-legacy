@@ -42,19 +42,24 @@ The sheriff should *not* feel like responsible for investigating hard problems. 
 
 ## Workflow
 
-Incoming failures are shown in [Sheriff-o-matic](https://sheriff-o-matic.appspot.com/chromium.perf), which acts as a task management system for bot health sheriffs. Failures are divided into three groups on the dashboard:
+~~Incoming failures are shown in [Sheriff-o-matic](https://sheriff-o-matic.appspot.com/chromium.perf), which acts as a task management system for bot health sheriffs. Failures are divided into three groups on the dashboard:~~
 
-* **Infra failures** show general infrastructure problems that are affecting benchmarks.  Besides surfacing in Sheriff-o-matic, we also need to check for down bots in the lame duck pool.  Please file a ticket for any bots you see in [this list](https://chrome-swarming.appspot.com/botlist?c=id&c=os&c=task&c=status&c=os&c=task&c=status&c=pool&f=status%3Adead&f=pool%3Achrome.tests.perf&l=100&q=pool%3Achrome.tests.perf&s=id%3Aasc) or [this list for webview](https://chrome-swarming.appspot.com/botlist?c=id&c=os&c=task&c=status&c=os&c=task&c=status&c=pool&f=status%3Adead&f=pool%3Achrome.tests.perf-webview&l=100&q=pool%3Achrome.tests.perf&s=id%3Aasc) as they will not show up in Sheriff-o-matic.
+* ~~**Infra failures** show general infrastructure problems that are affecting benchmarks.  Besides surfacing in Sheriff-o-matic, we also need to check for down bots in the lame duck pool.  Please file a ticket for any bots you see in [this list](https://chrome-swarming.appspot.com/botlist?c=id&c=os&c=task&c=status&c=os&c=task&c=status&c=pool&f=status%3Adead&f=pool%3Achrome.tests.perf&l=100&q=pool%3Achrome.tests.perf&s=id%3Aasc) or [this list for webview](https://chrome-swarming.appspot.com/botlist?c=id&c=os&c=task&c=status&c=os&c=task&c=status&c=pool&f=status%3Adead&f=pool%3Achrome.tests.perf-webview&l=100&q=pool%3Achrome.tests.perf&s=id%3Aasc) as they will not show up in Sheriff-o-matic.~~
 
-* **Consistent failures** show benchmarks that have been failing for a while.
+* ~~**Consistent failures** show benchmarks that have been failing for a while.~~
 
-* **New failures** show benchmarks that benchmarks that have recently started failing.
+* ~~**New failures** show benchmarks that benchmarks that have recently started failing.~~
 
-Of these three groups, the sheriff should only be concerned with **infra failures** and **consistent failures.** New failures are too likely to be one-off flakes to warrant investigation.
+~~Of these three groups, the sheriff should only be concerned with **infra failures** and **consistent failures.** New failures are too likely to be one-off flakes to warrant investigation.~~
 
-The high-level workflow is to start at the top of the list of the list of failures and address one alert at a time. The alerts are ordered roughly in order of their impact.
+~~The high-level workflow is to start at the top of the list of the list of failures and address one alert at a time. The alerts are ordered roughly in order of their impact.~~
 
-As the sheriff addresses alerts, the number of alerts will generally decrease as problems with the same cause get grouped together and failures get fixed. Addressed alerts will also move to the bottom of the list. Ideally, Sheriff-o-matic should reflect the work you've done so that a new sheriff could potentially take over at any time and pick up at the top of the list.
+~~As the sheriff addresses alerts, the number of alerts will generally decrease as problems with the same cause get grouped together and failures get fixed. Addressed alerts will also move to the bottom of the list. Ideally, Sheriff-o-matic should reflect the work you've done so that a new sheriff could potentially take over at any time and pick up at the top of the list.~~
+
+**Note that Sheriff-O-Matic currently doesn't work for the perf waterfall
+[crbug.com/984159](https://crbug.com/984159).
+Please use [Milo chrome.perf
+console](https://ci.chromium.org/p/chrome/g/chrome.perf/console) instead.**
 
 ## How to address each alert
 

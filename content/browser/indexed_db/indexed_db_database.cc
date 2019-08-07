@@ -69,30 +69,6 @@ using leveldb::Status;
 namespace content {
 namespace {
 
-// Used for WebCore.IndexedDB.Schema.ObjectStore.KeyPathType and
-// WebCore.IndexedDB.Schema.Index.KeyPathType histograms. Do not
-// modify (delete, re-order, renumber) these values other than
-// the _MAX value.
-enum HistogramIDBKeyPathType {
-  KEY_PATH_TYPE_NONE = 0,
-  KEY_PATH_TYPE_STRING = 1,
-  KEY_PATH_TYPE_ARRAY = 2,
-  KEY_PATH_TYPE_MAX = 3,  // Keep as last/max entry, for histogram range.
-};
-
-HistogramIDBKeyPathType HistogramKeyPathType(const IndexedDBKeyPath& key_path) {
-  switch (key_path.type()) {
-    case blink::mojom::IDBKeyPathType::Null:
-      return KEY_PATH_TYPE_NONE;
-    case blink::mojom::IDBKeyPathType::String:
-      return KEY_PATH_TYPE_STRING;
-    case blink::mojom::IDBKeyPathType::Array:
-      return KEY_PATH_TYPE_ARRAY;
-  }
-  NOTREACHED();
-  return KEY_PATH_TYPE_NONE;
-}
-
 IndexedDBDatabaseError CreateError(uint16_t code,
                                    const char* message,
                                    IndexedDBTransaction* transaction) {
@@ -723,11 +699,6 @@ void IndexedDBDatabase::CreateObjectStore(IndexedDBTransaction* transaction,
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("WebCore.IndexedDB.Schema.ObjectStore.KeyPathType",
-                            HistogramKeyPathType(key_path), KEY_PATH_TYPE_MAX);
-  UMA_HISTOGRAM_BOOLEAN("WebCore.IndexedDB.Schema.ObjectStore.AutoIncrement",
-                        auto_increment);
-
   // Store creation is done synchronously, as it may be followed by
   // index creation (also sync) since preemptive OpenCursor/SetIndexKeys
   // may follow.
@@ -820,12 +791,6 @@ void IndexedDBDatabase::CreateIndex(IndexedDBTransaction* transaction,
 
   if (!ValidateObjectStoreIdAndNewIndexId(object_store_id, index_id))
     return;
-
-  UMA_HISTOGRAM_ENUMERATION("WebCore.IndexedDB.Schema.Index.KeyPathType",
-                            HistogramKeyPathType(key_path), KEY_PATH_TYPE_MAX);
-  UMA_HISTOGRAM_BOOLEAN("WebCore.IndexedDB.Schema.Index.Unique", unique);
-  UMA_HISTOGRAM_BOOLEAN("WebCore.IndexedDB.Schema.Index.MultiEntry",
-                        multi_entry);
 
   // TODO(dmurph): Remove this call once this method is asynchronous (scheduled
   // on the transaction).

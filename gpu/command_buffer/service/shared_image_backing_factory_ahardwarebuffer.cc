@@ -766,23 +766,17 @@ SharedImageBackingFactoryAHB::SharedImageBackingFactoryAHB(
 
 SharedImageBackingFactoryAHB::~SharedImageBackingFactoryAHB() = default;
 
-std::unique_ptr<SharedImageBacking>
-SharedImageBackingFactoryAHB::CreateSharedImage(
-    const Mailbox& mailbox,
-    viz::ResourceFormat format,
-    const gfx::Size& size,
-    const gfx::ColorSpace& color_space,
+bool SharedImageBackingFactoryAHB::ValidateUsage(
     uint32_t usage,
-    bool is_thread_safe) {
-  DCHECK(base::AndroidHardwareBufferCompat::IsSupportAvailable());
-
+    const gfx::Size& size,
+    viz::ResourceFormat format) const {
   const FormatInfo& format_info = format_info_[format];
 
   // Check if the format is supported by AHardwareBuffer.
   if (!format_info.ahb_supported) {
     LOG(ERROR) << "viz::ResourceFormat " << format
                << " not supported by AHardwareBuffer";
-    return nullptr;
+    return false;
   }
 
   // SHARED_IMAGE_USAGE_RASTER is set when we want to write on Skia
@@ -802,7 +796,7 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
       LOG(ERROR)
           << "viz::ResourceFormat " << format
           << " can not be used to create a GL texture from AHardwareBuffer.";
-      return nullptr;
+      return false;
     }
   }
 
@@ -814,6 +808,23 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
       size.width() > max_gl_texture_size_ ||
       size.height() > max_gl_texture_size_) {
     LOG(ERROR) << "CreateSharedImage: invalid size";
+    return false;
+  }
+
+  return true;
+}
+
+std::unique_ptr<SharedImageBacking>
+SharedImageBackingFactoryAHB::CreateSharedImage(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    bool is_thread_safe) {
+  DCHECK(base::AndroidHardwareBufferCompat::IsSupportAvailable());
+
+  if (!ValidateUsage(usage, size, format)) {
     return nullptr;
   }
 
@@ -823,6 +834,8 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
     LOG(ERROR) << "Failed to calculate SharedImage size";
     return nullptr;
   }
+
+  const FormatInfo& format_info = format_info_[format];
 
   // Setup AHardwareBuffer.
   AHardwareBuffer* buffer = nullptr;
@@ -875,7 +888,7 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
 
 bool SharedImageBackingFactoryAHB::CanImportGpuMemoryBuffer(
     gfx::GpuMemoryBufferType memory_buffer_type) {
-  return false;
+  return memory_buffer_type == gfx::ANDROID_HARDWARE_BUFFER;
 }
 
 SharedImageBackingFactoryAHB::FormatInfo::FormatInfo() = default;
@@ -891,8 +904,28 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  // TODO(vasilyt): support SHARED_MEMORY_BUFFER?
+  if (handle.type != gfx::ANDROID_HARDWARE_BUFFER) {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
+  auto resource_format = viz::GetResourceFormat(buffer_format);
+
+  if (!ValidateUsage(usage, size, resource_format)) {
+    return nullptr;
+  }
+
+  size_t estimated_size;
+  if (!viz::ResourceSizes::MaybeSizeInBytes(size, resource_format,
+                                            &estimated_size)) {
+    LOG(ERROR) << "Failed to calculate SharedImage size";
+    return nullptr;
+  }
+
+  return std::make_unique<SharedImageBackingAHB>(
+      mailbox, resource_format, size, color_space, usage,
+      std::move(handle.android_hardware_buffer), estimated_size, false);
 }
 
 }  // namespace gpu

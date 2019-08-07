@@ -58,6 +58,7 @@ void HTMLDataListElement::ChildrenChanged(const ChildrenChange& change) {
 }
 
 void HTMLDataListElement::FinishParsingChildren() {
+  HTMLElement::FinishParsingChildren();
   GetTreeScope().GetIdTargetObserverRegistry().NotifyObservers(
       GetIdAttribute());
 }

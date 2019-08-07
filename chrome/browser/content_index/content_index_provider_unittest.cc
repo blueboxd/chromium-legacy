@@ -37,6 +37,8 @@ class ContentIndexProviderImplTest : public testing::Test,
                                      public OfflineContentProvider::Observer {
  public:
   void SetUp() override {
+    ASSERT_TRUE(profile_.CreateHistoryService(/* delete_file= */ true,
+                                              /* no_db= */ false));
     provider_ = std::make_unique<ContentIndexProviderImpl>(&profile_);
     provider_->AddObserver(this);
   }

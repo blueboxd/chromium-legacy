@@ -160,12 +160,16 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kExcludeWindowFromEventHandling, false)
 // RenderHostWindow in order to handle events in context of app list.
 class AppListEventTargeter : public aura::WindowTargeter {
  public:
-  AppListEventTargeter() = default;
+  explicit AppListEventTargeter(AppListViewDelegate* delegate)
+      : delegate_(delegate) {}
   ~AppListEventTargeter() override = default;
 
   // aura::WindowTargeter:
   bool SubtreeShouldBeExploredForEvent(aura::Window* window,
                                        const ui::LocatedEvent& event) override {
+    if (delegate_ && !delegate_->CanProcessEventsOnApplistViews())
+      return false;
+
     if (window->GetProperty(kExcludeWindowFromEventHandling)) {
       // Allow routing to sub-windows for ET_MOUSE_MOVED event which is used by
       // accessibility to enter the mode of exploration of WebView contents.
@@ -184,6 +188,8 @@ class AppListEventTargeter : public aura::WindowTargeter {
   }
 
  private:
+  AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
+
   DISALLOW_COPY_AND_ASSIGN(AppListEventTargeter);
 };
 
@@ -582,7 +588,7 @@ void AppListView::InitWidget(gfx::NativeView parent) {
   widget->Init(std::move(params));
   DCHECK_EQ(widget, GetWidget());
   widget->GetNativeWindow()->SetEventTargeter(
-      std::make_unique<AppListEventTargeter>());
+      std::make_unique<AppListEventTargeter>(delegate_));
 
   // Enable arrow key in FocusManager. Arrow left/right and up/down triggers
   // the same focus movement as tab/shift+tab.
@@ -703,13 +709,6 @@ void AppListView::OnPaint(gfx::Canvas* canvas) {
 
 const char* AppListView::GetClassName() const {
   return "AppListView";
-}
-
-bool AppListView::CanProcessEventsWithinSubtree() const {
-  if (!delegate_->CanProcessEventsOnApplistViews())
-    return false;
-
-  return views::View::CanProcessEventsWithinSubtree();
 }
 
 bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {

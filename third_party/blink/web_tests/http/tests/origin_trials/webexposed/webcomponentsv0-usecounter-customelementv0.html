@@ -5,21 +5,17 @@ generate_token.py http://127.0.0.1:8000 WebComponentsV0 --expire-timestamp=20000
 -->
 <meta http-equiv="origin-trial" content="Ar9dxxaQ+S9WJDVAL5PqZEtGNqgN2jeewmtzi1+9TK2oavYps7dKu36815FgbztKvcJJ2QATr2g0k0U6nQaDOAMAAABXeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiV2ViQ29tcG9uZW50c1YwIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9" />
 
+<div id="div"></div>
+
 <script src="../../../../resources/testharness.js"></script>
 <script src="../../../../resources/testharnessreport.js"></script>
 <script>
 test(() => {
   // From blink/public/mojom/web_feature/web_feature.mojom
   const DocumentRegisterElementOnReverseOriginTrials = 2849;
-  assert_false(internals.isUseCounted(document,
-  DocumentRegisterElementOnReverseOriginTrials));
+  assert_false(internals.isUseCounted(document, DocumentRegisterElementOnReverseOriginTrials));
   document.registerElement('my-tag');
-  const isCounted = internals.isUseCounted(document,
-    DocumentRegisterElementOnReverseOriginTrials);
-  // Behavior is different depending on if the runtime flag is enabled.
-  if (self.internals.runtimeFlags.customElementsV0Enabled)
-    assert_false(isCounted);
-  else
-    assert_true(isCounted);
+  const isCounted = internals.isUseCounted(document, DocumentRegisterElementOnReverseOriginTrials);
+  assert_true(isCounted);
 }, 'Comfirm DocumentRegisterElementOnReverseOriginTrials counter');
 </script>

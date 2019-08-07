@@ -56,12 +56,6 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
     @Override
     public void createNotificationChannel(NotificationChannel channel) {
         assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-        // Suppress the notification dot/number that may appear on the browser app launcher. We
-        // suppress this because showing it may imply that tapping the launch icon will lead
-        // to some way of dismissing the dot, which is generally not the case. We don't want to
-        // show a number either because users may have notifications from various websites, so an
-        // aggregate figure is probably not useful.
-        channel.setShowBadge(false);
         mNotificationManager.createNotificationChannel(channel);
     }
 

@@ -6,6 +6,7 @@
 #define ASH_ASSISTANT_ASSISTANT_PREFS_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
@@ -14,42 +15,35 @@ class PrefChangeRegistrar;
 
 namespace ash {
 
-// A checked observer which receives Assistant prefs change.
-class ASH_EXPORT AssistantPrefsObserver : public base::CheckedObserver {
- public:
-  AssistantPrefsObserver() = default;
-  ~AssistantPrefsObserver() override = default;
-
-  virtual void OnAssistantConsentStatusUpdated(int consent_status) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AssistantPrefsObserver);
-};
-
-class ASH_EXPORT AssistantPrefsController : public SessionObserver {
+// Provide access of Assistant related preferences to clients in ash.
+class ASH_EXPORT AssistantPrefsController : public SessionObserver,
+                                            public AssistantStateBase {
  public:
   AssistantPrefsController();
   ~AssistantPrefsController() override;
 
-  void AddObserver(AssistantPrefsObserver* observer);
-  void RemoveObserver(AssistantPrefsObserver* observer);
-  void InitObserver(AssistantPrefsObserver* observer);
-
-  PrefService* prefs();
+  // AssistantStateBase:
+  void InitializeObserver(AssistantStateObserver* observer) override;
 
  private:
+  // Update pref cache and notify observers when primary user prefs becomes
+  // active.
+  void UpdateState();
+
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
-  // Called when the consent status is obtained from the pref service.
-  void NotifyConsentStatus();
+  // Called when the related preferences are obtained from the pref service.
+  void UpdateConsentStatus();
+  void UpdateHotwordAlwaysOn();
+  void UpdateLaunchWithMicOpen();
+  void UpdateNotificationEnabled();
 
+  // TODO(b/138679823): Move related logics into AssistantStateBase.
   // Observes user profile prefs for the Assistant.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   ScopedSessionObserver session_observer_;
-
-  base::ObserverList<AssistantPrefsObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantPrefsController);
 };

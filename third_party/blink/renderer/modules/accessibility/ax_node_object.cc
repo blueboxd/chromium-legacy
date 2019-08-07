@@ -498,7 +498,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*GetNode());
     if (parent && IsHTMLSlotElement(parent))
       parent = LayoutTreeBuilderTraversal::Parent(*parent);
-    if (parent && IsHTMLDetailsElement(parent))
+    if (parent && IsA<HTMLDetailsElement>(parent))
       return ax::mojom::Role::kDisclosureTriangle;
     return ax::mojom::Role::kUnknown;
   }
@@ -1223,7 +1223,7 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
 
   if (GetNode() && IsHTMLSummaryElement(*GetNode())) {
     if (GetNode()->parentNode() &&
-        IsHTMLDetailsElement(GetNode()->parentNode()))
+        IsA<HTMLDetailsElement>(GetNode()->parentNode()))
       return To<Element>(GetNode()->parentNode())->hasAttribute(kOpenAttr)
                  ? kExpandedExpanded
                  : kExpandedCollapsed;

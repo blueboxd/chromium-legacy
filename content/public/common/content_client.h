@@ -165,9 +165,6 @@ class CONTENT_EXPORT ContentClient {
   // Returns the raw bytes of a scale independent data resource.
   virtual base::RefCountedMemory* GetDataResourceBytes(int resource_id);
 
-  // Returns whether the contents of a resource are compressed (with gzip).
-  virtual bool IsDataResourceGzipped(int resource_id);
-
   // Returns a native image given its id.
   virtual gfx::Image& GetNativeImageNamed(int resource_id);
 

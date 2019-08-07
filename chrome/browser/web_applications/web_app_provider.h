@@ -109,6 +109,8 @@ class WebAppProvider : public WebAppProviderBase {
   void StartRegistry();
   void OnRegistryReady();
 
+  void CheckIsConnected() const;
+
   // New extension-independent subsystems:
   std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;

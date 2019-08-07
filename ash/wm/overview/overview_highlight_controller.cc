@@ -18,6 +18,7 @@
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

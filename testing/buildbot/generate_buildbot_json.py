@@ -1037,6 +1037,7 @@ class BBJSONGenerator(object):
       # Defined in internal configs.
       'chromeos-amd64-generic-google-rel',
       'chromeos-betty-google-rel',
+      'chromeos-kevin-google-rel',
       # code coverage, see see https://crbug.com/930364
       'Linux Builder Code Coverage',
       'Linux Tests Code Coverage',

@@ -45,11 +45,11 @@ AssistantFooterView::AssistantFooterView(AssistantViewDelegate* delegate)
               &AssistantFooterView::OnAnimationEnded,
               base::Unretained(this)))) {
   InitLayout();
-  delegate_->AddAssistantPrefsObserver(this);
+  delegate_->AddStateObserver(this);
 }
 
 AssistantFooterView::~AssistantFooterView() {
-  delegate_->RemoveAssistantPrefsObserver(this);
+  delegate_->RemoveStateObserver(this);
 }
 
 const char* AssistantFooterView::GetClassName() const {
@@ -69,7 +69,8 @@ void AssistantFooterView::InitLayout() {
 
   // Initial view state is based on user consent state.
   const bool consent_given =
-      delegate_->GetConsentStatus() ==
+      delegate_->GetState()->consent_status().value_or(
+          chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
       chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
 
   // Suggestion container.
@@ -97,7 +98,7 @@ void AssistantFooterView::InitLayout() {
   AddChildView(opt_in_view_);
 }
 
-void AssistantFooterView::OnAssistantConsentStatusUpdated(int consent_status) {
+void AssistantFooterView::OnAssistantConsentStatusChanged(int consent_status) {
   using assistant::util::CreateLayerAnimationSequence;
   using assistant::util::CreateOpacityElement;
   using assistant::util::StartLayerAnimationSequence;
@@ -152,7 +153,8 @@ void AssistantFooterView::OnAnimationStarted(
 bool AssistantFooterView::OnAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
   const bool consent_given =
-      delegate_->GetConsentStatus() ==
+      delegate_->GetState()->consent_status().value_or(
+          chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
       chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
 
   // Only the view relevant to our consent state should process events.

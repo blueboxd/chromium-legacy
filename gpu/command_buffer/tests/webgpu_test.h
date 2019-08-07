@@ -56,6 +56,7 @@ class WebGPUTest : public testing::Test {
  private:
   std::unique_ptr<viz::TestGpuServiceHolder> gpu_service_holder_;
   std::unique_ptr<WebGPUInProcessContext> context_;
+  bool is_initialized_ = false;
 };
 
 }  // namespace gpu

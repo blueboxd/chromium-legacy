@@ -38,78 +38,107 @@ std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create() {
 }
 
 SerialDeviceEnumeratorLinux::SerialDeviceEnumeratorLinux() {
-  udev_.reset(udev_new());
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+
+  watcher_ = UdevWatcher::StartWatching(this);
+  watcher_->EnumerateExistingDevices();
 }
 
-SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() = default;
+SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 std::vector<mojom::SerialPortInfoPtr>
 SerialDeviceEnumeratorLinux::GetDevices() {
+  std::vector<mojom::SerialPortInfoPtr> ports;
+  ports.reserve(ports_.size());
+  for (const auto& map_entry : ports_)
+    ports.push_back(map_entry.second->Clone());
+  return ports;
+}
+
+base::Optional<base::FilePath> SerialDeviceEnumeratorLinux::GetPathFromToken(
+    const base::UnguessableToken& token) {
+  auto it = ports_.find(token);
+  if (it == ports_.end())
+    return base::nullopt;
+  return it->second->path;
+}
+
+void SerialDeviceEnumeratorLinux::OnDeviceAdded(ScopedUdevDevicePtr device) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  std::vector<mojom::SerialPortInfoPtr> devices;
-  ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));
-  if (!enumerate) {
-    LOG(ERROR) << "Serial device enumeration failed.";
-    return devices;
+  const char* subsystem = udev_device_get_subsystem(device.get());
+  if (!subsystem || strcmp(subsystem, kSerialSubsystem) != 0)
+    return;
+
+  const char* syspath = udev_device_get_syspath(device.get());
+  if (!syspath)
+    return;
+
+  const char* path = udev_device_get_property_value(device.get(), kHostPathKey);
+  if (!path)
+    return;
+
+  // TODO(rockot): There may be a better way to filter serial devices here,
+  // but it's not clear what that would be. Udev will list lots of virtual
+  // devices with no real endpoint to back them anywhere. The presence of
+  // a bus identifier (e.g., "pci" or "usb") seems to be a good heuristic
+  // for detecting actual devices.
+  const char* bus = udev_device_get_property_value(device.get(), kHostBusKey);
+  if (!bus) {
+    const char* major = udev_device_get_property_value(device.get(), kMajorKey);
+    if (!major || strcmp(major, kRfcommMajor) != 0)
+      return;
   }
-  if (udev_enumerate_add_match_subsystem(enumerate.get(), kSerialSubsystem)) {
-    LOG(ERROR) << "Serial device enumeration failed.";
-    return devices;
+
+  auto token = base::UnguessableToken::Create();
+  auto info = mojom::SerialPortInfo::New();
+  info->path = base::FilePath(path);
+  info->token = token;
+
+  const char* vendor_id =
+      udev_device_get_property_value(device.get(), kVendorIDKey);
+  const char* product_id =
+      udev_device_get_property_value(device.get(), kProductIDKey);
+  const char* product_name =
+      udev_device_get_property_value(device.get(), kProductNameKey);
+
+  uint32_t int_value;
+  if (vendor_id && base::HexStringToUInt(vendor_id, &int_value)) {
+    info->vendor_id = int_value;
+    info->has_vendor_id = true;
   }
-  if (udev_enumerate_scan_devices(enumerate.get())) {
-    LOG(ERROR) << "Serial device enumeration failed.";
-    return devices;
+  if (product_id && base::HexStringToUInt(product_id, &int_value)) {
+    info->product_id = int_value;
+    info->has_product_id = true;
   }
+  if (product_name)
+    info->display_name.emplace(product_name);
 
-  udev_list_entry* entry = udev_enumerate_get_list_entry(enumerate.get());
-  for (; entry != NULL; entry = udev_list_entry_get_next(entry)) {
-    ScopedUdevDevicePtr device(udev_device_new_from_syspath(
-        udev_.get(), udev_list_entry_get_name(entry)));
-    // TODO(rockot): There may be a better way to filter serial devices here,
-    // but it's not clear what that would be. Udev will list lots of virtual
-    // devices with no real endpoint to back them anywhere. The presence of
-    // a bus identifier (e.g., "pci" or "usb") seems to be a good heuristic
-    // for detecting actual devices.
-    const char* path =
-        udev_device_get_property_value(device.get(), kHostPathKey);
-    if (!path)
-      continue;
+  ports_.insert(std::make_pair(token, std::move(info)));
+  paths_.insert(std::make_pair(syspath, token));
+}
 
-    const char* bus = udev_device_get_property_value(device.get(), kHostBusKey);
-    if (!bus) {
-      const char* major =
-          udev_device_get_property_value(device.get(), kMajorKey);
-      if (!major || strcmp(major, kRfcommMajor) != 0)
-        continue;
-    }
+void SerialDeviceEnumeratorLinux::OnDeviceChanged(ScopedUdevDevicePtr device) {}
 
-    auto info = mojom::SerialPortInfo::New();
-    info->path = base::FilePath(path);
-    info->token = GetTokenFromPath(info->path);
+void SerialDeviceEnumeratorLinux::OnDeviceRemoved(ScopedUdevDevicePtr device) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
-    const char* vendor_id =
-        udev_device_get_property_value(device.get(), kVendorIDKey);
-    const char* product_id =
-        udev_device_get_property_value(device.get(), kProductIDKey);
-    const char* product_name =
-        udev_device_get_property_value(device.get(), kProductNameKey);
+  const char* syspath = udev_device_get_syspath(device.get());
+  if (!syspath)
+    return;
 
-    uint32_t int_value;
-    if (vendor_id && base::HexStringToUInt(vendor_id, &int_value)) {
-      info->vendor_id = int_value;
-      info->has_vendor_id = true;
-    }
-    if (product_id && base::HexStringToUInt(product_id, &int_value)) {
-      info->product_id = int_value;
-      info->has_product_id = true;
-    }
-    if (product_name)
-      info->display_name.emplace(product_name);
-    devices.push_back(std::move(info));
-  }
-  return devices;
+  auto it = paths_.find(syspath);
+  if (it == paths_.end())
+    return;
+
+  ports_.erase(it->second);
+  paths_.erase(it);
 }
 
 }  // namespace device

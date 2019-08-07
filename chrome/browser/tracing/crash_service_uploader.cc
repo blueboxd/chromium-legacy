@@ -101,9 +101,8 @@ void TraceCrashServiceUploader::OnSimpleURLLoaderComplete(
                base::NumberToString(response_code);
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(done_callback_), success, feedback));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(done_callback_), success, feedback));
   simple_url_loader_.reset();
 }
 
@@ -116,8 +115,8 @@ void TraceCrashServiceUploader::OnURLLoaderUploadProgress(uint64_t current,
 
   if (progress_callback_.is_null())
     return;
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(progress_callback_, current, total));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(progress_callback_, current, total));
 }
 
 void TraceCrashServiceUploader::DoUpload(
@@ -131,8 +130,8 @@ void TraceCrashServiceUploader::DoUpload(
   progress_callback_ = progress_callback;
   done_callback_ = std::move(done_callback);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&TraceCrashServiceUploader::DoCompressOnBackgroundThread,
                      base::Unretained(this), file_contents, upload_mode,
                      upload_url_, std::move(metadata)));
@@ -207,7 +206,7 @@ void TraceCrashServiceUploader::DoCompressOnBackgroundThread(
   SetupMultipart(product, version, std::move(metadata), "trace.json.gz",
                  compressed_contents, &post_data);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&TraceCrashServiceUploader::CreateAndStartURLLoader,
                      base::Unretained(this), upload_url, post_data));
@@ -216,7 +215,7 @@ void TraceCrashServiceUploader::DoCompressOnBackgroundThread(
 void TraceCrashServiceUploader::OnUploadError(
     const std::string& error_message) {
   LOG(ERROR) << error_message;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(std::move(done_callback_), false, error_message));
 }

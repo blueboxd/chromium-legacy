@@ -138,6 +138,15 @@ size_t LitePageRedirectPreviewMaxNavigationRestarts();
 // Whether we should preresolve the lite page redirect server.
 bool LitePageRedirectPreviewShouldPresolve();
 
+// Whether to only trigger a lite page preview if there has been a successful
+// probe to the server. This is returns true, lite page redirect previews should
+// only been attempted when a probe to the previews server has completed
+// successfully.
+bool LitePageRedirectOnlyTriggerOnSuccessfulProbe();
+
+// The URL to probe on the lite pages server.
+GURL LitePageRedirectProbeURL();
+
 // The duration in between preresolving the lite page redirect server.
 base::TimeDelta LitePageRedirectPreviewPresolveInterval();
 

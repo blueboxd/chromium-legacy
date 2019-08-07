@@ -97,6 +97,8 @@ jumbo_source_set("internal") {
     "external_data_fetcher.cc",
     "external_data_fetcher.h",
     "external_data_manager.h",
+    "features.cc",
+    "features.h",
     "json_schema_constants.cc",
     "json_schema_constants.h",
     "plist_writer.cc",

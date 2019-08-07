@@ -14,9 +14,9 @@ cr.define('multidevice_setup', function() {
     constructor() {
       /**
        * @private {?chromeos.multideviceSetup.mojom.
-       *               PrivilegedHostDeviceSetterProxy}
+       *               PrivilegedHostDeviceSetterRemote}
        */
-      this.proxy_ = null;
+      this.remote_ = null;
     }
 
     /** @override */
@@ -30,13 +30,13 @@ cr.define('multidevice_setup', function() {
       // required.
       assert(!opt_authToken);
 
-      if (!this.proxy_) {
-        this.proxy_ = chromeos.multideviceSetup.mojom.PrivilegedHostDeviceSetter
-                          .getProxy();
+      if (!this.remote_) {
+        this.remote_ = chromeos.multideviceSetup.mojom
+                           .PrivilegedHostDeviceSetter.getRemote();
       }
 
       return /** @type {!Promise<{success: boolean}>} */ (
-          this.proxy_.setHostDevice(hostDeviceId));
+          this.remote_.setHostDevice(hostDeviceId));
     }
 
     /** @override */

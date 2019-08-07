@@ -88,8 +88,6 @@ namespace declarativeNetRequest {
      DOMString? port;
 
      // The new path for the request. If empty, the existing path is cleared.
-     // For urls with schemes like "http" or "https", this should include the
-     // preceding slash '/'.
      DOMString? path;
 
      // The new query for the request. Should be either empty, in which case the

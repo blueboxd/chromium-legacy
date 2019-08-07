@@ -223,9 +223,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // response to a CONNECT request.
   void LogBlockedTunnelResponse(int response_code) const;
 
-  // Called to handle a client certificate request.
-  int HandleCertificateRequest(int error);
-
   // Called wherever ERR_HTTP_1_1_REQUIRED or
   // ERR_PROXY_HTTP_1_1_REQUIRED has to be handled.
   int HandleHttp11Required(int error);
@@ -339,9 +336,9 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // True if we can send the request over early data.
   bool can_send_early_data_;
 
-  // True if |server_ssl_config_.client_cert| was looked up from the
-  // SSLClientAuthCache, rather than provided externally by the caller.
-  bool server_ssl_client_cert_was_cached_;
+  // True if the client certificate for the server (rather than the proxy) was
+  // configured in this transaction.
+  bool configured_client_cert_for_server_;
 
   // SSL configuration used for the server and proxy, respectively. Note
   // |server_ssl_config_| may be updated from the HttpStreamFactory, which will

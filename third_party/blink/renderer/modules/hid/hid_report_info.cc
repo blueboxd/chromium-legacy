@@ -9,12 +9,16 @@
 namespace blink {
 
 HIDReportInfo::HIDReportInfo(
-    const device::mojom::blink::HidReportDescription& report) {}
+    const device::mojom::blink::HidReportDescription& report)
+    : report_id_(report.report_id) {
+  for (const auto& item : report.items)
+    items_.push_back(MakeGarbageCollected<HIDReportItem>(*item));
+}
 
 HIDReportInfo::~HIDReportInfo() {}
 
 uint8_t HIDReportInfo::reportId() const {
-  return 0;
+  return report_id_;
 }
 
 const HeapVector<Member<HIDReportItem>>& HIDReportInfo::items() const {

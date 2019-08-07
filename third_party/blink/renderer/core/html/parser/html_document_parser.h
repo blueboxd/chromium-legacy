@@ -44,8 +44,6 @@
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/html/parser/preload_request.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
-#include "third_party/blink/renderer/core/html/parser/xss_auditor.h"
-#include "third_party/blink/renderer/core/html/parser/xss_auditor_delegate.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/script/html_parser_script_runner_host.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -114,7 +112,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
     CompactHTMLTokenStream tokens;
     PreloadRequestStream preloads;
     base::Optional<ViewportDescription> viewport;
-    XSSInfoStream xss_infos;
     HTMLTokenizer::State tokenizer_state;
     HTMLTreeBuilderSimulator::State tree_builder_state;
     HTMLInputCheckpoint input_checkpoint;
@@ -234,8 +231,6 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   Member<HTMLParserScheduler> parser_scheduler_;
   HTMLSourceTracker source_tracker_;
   TextPosition text_position_;
-  XSSAuditor xss_auditor_;
-  XSSAuditorDelegate xss_auditor_delegate_;
 
   // FIXME: last_chunk_before_pause_, tokenizer_, token_, and input_ should be
   // combined into a single state object so they can be set and cleared together

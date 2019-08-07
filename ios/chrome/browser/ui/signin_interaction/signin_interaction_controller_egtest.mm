@@ -29,6 +29,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -162,12 +163,13 @@ void RemoveBrowsingData() {
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
   [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
 
-  // Synchronization off due to an infinite spinner.
-  SetEarlGreySynchronizationEnabled(NO);
-  WaitForMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
-      IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON));
-  TapButtonWithLabelId(IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON);
-  SetEarlGreySynchronizationEnabled(YES);
+  {
+    // Synchronization off due to an infinite spinner.
+    ScopedSynchronizationDisabler disabler;
+    WaitForMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
+        IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON));
+    TapButtonWithLabelId(IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON);
+  }
 
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
   [SigninEarlGreyUtils checkSignedInWithIdentity:identity];

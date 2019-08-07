@@ -83,8 +83,8 @@ class AshContentTest::Tracer {
       // TODO(oshima): Figure out how interactive_ui_tests allows IO operation
       // in teardown.
       base::RunLoop runloop;
-      base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {base::MayBlock()},
+      base::PostTaskAndReply(
+          FROM_HERE, {base::ThreadPool(), base::MayBlock()},
           base::BindOnce(&Tracer::CreateTmp, base::Unretained(this)),
           runloop.QuitClosure());
       runloop.Run();

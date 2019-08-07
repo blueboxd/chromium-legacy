@@ -57,6 +57,7 @@ class CC_EXPORT SoftwareImageDecodeCache
   void ClearCache() override;
   size_t GetMaximumMemoryLimitBytes() const override;
   bool UseCacheForDrawImage(const DrawImage& image) const override;
+  void RecordStats() override {}
 
   // Decode the given image and store it in the cache. This is only called by an
   // image decode task from a worker thread.

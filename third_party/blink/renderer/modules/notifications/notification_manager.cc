@@ -76,8 +76,8 @@ ScriptPromise NotificationManager::RequestPermission(
         context->GetTaskRunner(TaskType::kMiscPlatformAPI);
     ConnectToPermissionService(
         context,
-        mojo::MakeRequest(&permission_service_, std::move(task_runner)));
-    permission_service_.set_connection_error_handler(
+        permission_service_.BindNewPipeAndPassReceiver(std::move(task_runner)));
+    permission_service_.set_disconnect_handler(
         WTF::Bind(&NotificationManager::OnPermissionServiceConnectionError,
                   WrapWeakPersistent(this)));
   }

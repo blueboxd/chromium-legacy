@@ -165,7 +165,7 @@ ASH_PUBLIC_EXPORT extern const char kUsbPowerShareEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoShownInLauncher[];
 ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoDismissedInLauncher[];
 
-ASH_PUBLIC_EXPORT extern const char kLockScreenMediaKeysEnabled[];
+ASH_PUBLIC_EXPORT extern const char kLockScreenMediaControlsEnabled[];
 
 }  // namespace prefs
 

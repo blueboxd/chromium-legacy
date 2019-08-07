@@ -171,22 +171,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
 
           if (gamepad.mapping == "xr-standard") {
-            // Invert the y axis because gamepads follow the convention that -1
-            // is up/forwards, but we want to have a forward joystick/touchpad
-            // input result in forward motion for the box.
+            if (gamepad.buttons.length >= 3 && gamepad.axes.length >= 2) {
+              // Handle touchpad movement.
+              // Invert the y axis because gamepads follow the convention that -1
+              // is up/forwards, but we want to have a forward joystick/touchpad
+              // input result in forward motion for the box.
+              let dx = gamepad.axes[0];
+              let dy = -gamepad.axes[1];
+              this.boxes[2].move(dx, dy);
+            }
 
-            // xr-standard Gamepads always have at least one touchpad/joystick.
-            // Its button will always be in the second slot.
-            let dx = gamepad.axes[0];
-            let dy = -gamepad.axes[1];
-            this.boxes[1].move(dx, dy);
-
-            if (gamepad.axes.length >= 4 && gamepad.buttons.length >= 4) {
-              // If an xr-standard Gamepad has a secondary touchpad/joystick, its
-              // button will be in the 4th slot and it will use the second pair
-              // of input axes.
-              dx = gamepad.axes[2];
-              dy = -gamepad.axes[3];
+            if (gamepad.buttons.length >= 4 && gamepad.axes.length >= 4) {
+              // Handle thumbstick movement.
+              let dx = gamepad.axes[2];
+              let dy = -gamepad.axes[3];
               this.boxes[3].move(dx, dy);
             }
           }

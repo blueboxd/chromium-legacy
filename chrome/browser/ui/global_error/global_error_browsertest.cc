@@ -165,8 +165,8 @@ void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
         ->OnBlacklistUpdated();
     base::RunLoop().RunUntilIdle();
     base::RunLoop flush_io;
-    base::PostTaskWithTraitsAndReply(FROM_HERE, {content::BrowserThread::IO},
-                                     base::DoNothing(), flush_io.QuitClosure());
+    base::PostTaskAndReply(FROM_HERE, {content::BrowserThread::IO},
+                           base::DoNothing(), flush_io.QuitClosure());
     flush_io.Run();
 
     // Oh no! This relies on RunUntilIdle() to show the bubble. The bubble is

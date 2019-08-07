@@ -104,10 +104,10 @@ RequestResult RuntimeHooksDelegate::GetURL(
   std::string url = base::StringPrintf(
       "chrome-extension://%s%s%s", script_context->extension()->id().c_str(),
       !path.empty() && path[0] == '/' ? "" : "/", path.c_str());
+  // GURL considers any possible path valid. Since the argument is only appended
+  // as part of the path, there should be no way this could conceivably fail.
+  DCHECK(GURL(url).is_valid());
   result.return_value = gin::StringToV8(isolate, url);
-  // TODO(tjudkins): Gather data on how often this is passed a bad URL (i.e. not
-  // a relative file path for the extension), so we can decide if it's fine to
-  // throw an error in those cases.
   return result;
 }
 

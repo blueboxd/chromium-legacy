@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout_types.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/view_model.h"
@@ -259,7 +260,8 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
       pinned_tab_count > 0 ? GetSlotIndexForTabModelIndex(pinned_tab_count - 1)
                            : TabStripModel::kNoTab;
 
-  std::vector<TabLayoutInfo> tab_layout_info;
+  TabLayoutConstants layout_constants = GetTabLayoutConstants();
+  std::vector<TabWidthConstraints> tab_widths;
   for (int i = 0; i < int{slots_.size()}; i++) {
     auto active = i == active_tab_slot_index
                       ? TabAnimationState::TabActiveness::kActive
@@ -267,17 +269,18 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
     auto pinned = i <= last_pinned_tab_slot_index
                       ? TabAnimationState::TabPinnedness::kPinned
                       : TabAnimationState::TabPinnedness::kUnpinned;
-    auto open = slots_[i].animation->target_state().IsFullyClosed()
+    auto open = slots_[i].animation->IsClosing()
                     ? TabAnimationState::TabOpenness::kClosed
                     : TabAnimationState::TabOpenness::kOpen;
     TabAnimationState ideal_animation_state =
         TabAnimationState::ForIdealTabState(open, pinned, active, 0);
-    tab_layout_info.push_back(
-        {ideal_animation_state, slots_[i].view->GetTabSizeInfo()});
+    TabSizeInfo size_info = slots_[i].view->GetTabSizeInfo();
+    tab_widths.push_back(TabWidthConstraints(ideal_animation_state,
+                                             layout_constants, size_info));
   }
 
-  const std::vector<gfx::Rect> bounds = CalculateTabBounds(
-      GetTabLayoutConstants(), tab_layout_info, available_width);
+  const std::vector<gfx::Rect> bounds =
+      CalculateTabBounds(layout_constants, tab_widths, available_width);
   DCHECK_EQ(slots_.size(), bounds.size());
 
   views::ViewModelT<Tab>* tabs = get_tabs_callback_.Run();
@@ -289,7 +292,7 @@ void TabStripLayoutHelper::UpdateIdealBounds(int available_width) {
     const TabSlot& slot = slots_[i];
     switch (slot.type) {
       case ViewType::kTab:
-        if (!slot.animation->target_state().IsFullyClosed()) {
+        if (!slot.animation->IsClosing()) {
           tabs->set_ideal_bounds(current_tab_model_index, bounds[i]);
           UpdateCachedTabWidth(i, bounds[i].width(),
                                i == active_tab_slot_index);
@@ -310,20 +313,22 @@ void TabStripLayoutHelper::UpdateIdealBoundsForPinnedTabs() {
   first_non_pinned_tab_index_ = pinned_tab_count;
   first_non_pinned_tab_x_ = 0;
 
+  TabLayoutConstants layout_constants = GetTabLayoutConstants();
   if (pinned_tab_count > 0) {
-    std::vector<TabLayoutInfo> layout_info;
+    std::vector<TabWidthConstraints> tab_widths;
     for (int tab_index = 0; tab_index < pinned_tab_count; tab_index++) {
       TabAnimationState ideal_animation_state =
           TabAnimationState::ForIdealTabState(
               TabAnimationState::TabOpenness::kOpen,
               TabAnimationState::TabPinnedness::kPinned,
               TabAnimationState::TabActiveness::kInactive, 0);
-      layout_info.push_back(
-          {ideal_animation_state, tabs->view_at(tab_index)->GetTabSizeInfo()});
+      TabSizeInfo size_info = tabs->view_at(tab_index)->GetTabSizeInfo();
+      tab_widths.push_back(TabWidthConstraints(ideal_animation_state,
+                                               layout_constants, size_info));
     }
 
     const std::vector<gfx::Rect> tab_bounds =
-        CalculatePinnedTabBounds(GetTabLayoutConstants(), layout_info);
+        CalculatePinnedTabBounds(layout_constants, tab_widths);
 
     for (int i = 0; i < pinned_tab_count; ++i)
       tabs->set_ideal_bounds(i, tab_bounds[i]);
@@ -331,14 +336,15 @@ void TabStripLayoutHelper::UpdateIdealBoundsForPinnedTabs() {
 }
 
 int TabStripLayoutHelper::LayoutTabs(int available_width) {
-  views::ViewModelT<Tab>* tabs = get_tabs_callback_.Run();
-  std::map<TabGroupId, TabGroupHeader*> group_headers =
-      get_group_headers_callback_.Run();
-
-  std::vector<gfx::Rect> bounds = CalculateTabBounds(
-      GetTabLayoutConstants(), CreateTabLayoutInfo(), available_width);
+  std::vector<gfx::Rect> bounds =
+      CalculateTabBounds(GetTabLayoutConstants(),
+                         GetCurrentTabWidthConstraints(), available_width);
 
   if (DCHECK_IS_ON()) {
+    views::ViewModelT<Tab>* tabs = get_tabs_callback_.Run();
+    std::map<TabGroupId, TabGroupHeader*> group_headers =
+        get_group_headers_callback_.Run();
+
     int num_closing_tabs = 0;
     for (Tab* tab : GetTabs()) {
       if (tab->closing())
@@ -367,7 +373,7 @@ int TabStripLayoutHelper::LayoutTabs(int available_width) {
               current_tab_model_index, bounds[i].width(),
               current_tab_model_index == active_tab_model_index);
         }
-        if (!slots_[i].animation->target_state().IsFullyClosed())
+        if (!slots_[i].animation->IsClosing())
           ++current_tab_model_index;
         break;
       }
@@ -385,8 +391,7 @@ int TabStripLayoutHelper::LayoutTabs(int available_width) {
 int TabStripLayoutHelper::GetSlotIndexForTabModelIndex(int model_index) const {
   int current_model_index = 0;
   for (size_t i = 0; i < slots_.size(); i++) {
-    if (slots_[i].type == ViewType::kTab &&
-        !slots_[i].animation->target_state().IsFullyClosed()) {
+    if (slots_[i].type == ViewType::kTab && !slots_[i].animation->IsClosing()) {
       if (current_model_index == model_index)
         return i;
       ++current_model_index;
@@ -407,11 +412,13 @@ int TabStripLayoutHelper::GetSlotIndexForGroupHeader(TabGroupId group) const {
   return 0;
 }
 
-std::vector<TabLayoutInfo> TabStripLayoutHelper::CreateTabLayoutInfo() const {
-  std::vector<TabLayoutInfo> result;
+std::vector<TabWidthConstraints>
+TabStripLayoutHelper::GetCurrentTabWidthConstraints() const {
+  TabLayoutConstants layout_constants = GetTabLayoutConstants();
+  std::vector<TabWidthConstraints> result;
   for (const TabSlot& slot : slots_) {
-    result.push_back(
-        {slot.animation->GetCurrentState(), slot.view->GetTabSizeInfo()});
+    result.push_back(slot.animation->GetCurrentTabWidthConstraints(
+        layout_constants, slot.view->GetTabSizeInfo()));
   }
   return result;
 }
@@ -442,8 +449,7 @@ void TabStripLayoutHelper::TickAnimations() {
 
 void TabStripLayoutHelper::RemoveClosedTabs() {
   for (auto it = slots_.begin(); it != slots_.end();) {
-    if (it->animation->GetTimeRemaining().is_zero() &&
-        it->animation->GetCurrentState().IsFullyClosed()) {
+    if (it->animation->IsClosed()) {
       it->animation->NotifyCloseCompleted();
       it = slots_.erase(it);
     } else {

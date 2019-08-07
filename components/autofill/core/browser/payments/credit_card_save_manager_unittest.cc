@@ -759,11 +759,350 @@ TEST_F(CreditCardSaveManagerTest, LocalCreditCard_WithNonFocusableField) {
   credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[5].value = ASCIIToUTF16("123");
 
-  base::HistogramTester histogram_tester;
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+}
+
+// Tests that |has_non_focusable_field| is correctly sent to AutofillClient when
+// offering local save.
+TEST_F(CreditCardSaveManagerTest,
+       Local_UploadDisabled_SaveCreditCardOptions_WithNonFocusableField) {
+  credit_card_save_manager_->SetCreditCardUploadEnabled(false);
+
+  // Set up our credit card form data with non_focusable form field.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions()
+                                   .with_split_names(true)
+                                   .with_is_from_non_focusable_form(true));
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
+  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
+  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[5].value = ASCIIToUTF16("123");
 
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().has_non_focusable_field);
+}
+
+// Tests that |has_non_focusable_field| is correctly sent to AutofillClient when
+// upload failed because of unsupported bin and falling back to local save.
+TEST_F(CreditCardSaveManagerTest,
+       Local_UnsupportedCard_SaveCreditCardOptions_WithNonFocusableField) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillDoNotUploadSaveUnsupportedCards);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+  // Set supported bin range so that the used card is unsupported.
+  std::vector<std::pair<int, int>> supported_card_bin_ranges{
+      std::make_pair(34, 34), std::make_pair(300, 305)};
+  payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
+
+  // Set up our credit card form data with non_focusable form field.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions()
+                                   .with_split_names(true)
+                                   .with_is_from_non_focusable_form(true));
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
+  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
+  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[5].value = ASCIIToUTF16("123");
+
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().has_non_focusable_field);
+}
+
+// Tests that |has_non_focusable_field| is correctly sent to AutofillClient when
+// GetDetailsForSaveCard failed and falling back to local save.
+TEST_F(
+    CreditCardSaveManagerTest,
+    Local_GetDetailsForSaveCardFails_SaveCreditCardOptions_WithNonFocusableField) {
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+  // Anything other than "en-US" will cause GetUploadDetails to return a failure
+  // response.
+  credit_card_save_manager_->SetAppLocale("pt-BR");
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ExpectUniqueFillableFormParsedUkm();
+
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data with non_focusable form field.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions()
+                                   .with_split_names(true)
+                                   .with_is_from_non_focusable_form(true));
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
+  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
+  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[5].value = ASCIIToUTF16("123");
+
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().has_non_focusable_field);
+}
+
+// Tests that |has_non_focusable_field| is correctly sent to AutofillClient when
+// offering upload save.
+TEST_F(CreditCardSaveManagerTest,
+       Upload_SaveCreditCardOptions_WithNonFocusableField) {
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ExpectUniqueFillableFormParsedUkm();
+
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data with non_focusable form field.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions()
+                                   .with_split_names(true)
+                                   .with_is_from_non_focusable_form(true));
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
+  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
+  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[5].value = ASCIIToUTF16("123");
+
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().has_non_focusable_field);
+}
+
+// Tests that |has_non_focusable_field| is not sent to AutofillClient when the
+// form does not have any non-focusable fields.
+TEST_F(CreditCardSaveManagerTest,
+       SaveCreditCardOptions_WithoutNonFocusableField) {
+  credit_card_save_manager_->SetCreditCardUploadEnabled(false);
+
+  // Set up our credit card form data without any non_focusable form field.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
+  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
+  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[5].value = ASCIIToUTF16("123");
+
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_FALSE(
+      autofill_client_.get_save_credit_card_options().has_non_focusable_field);
+}
+
+// Tests that |from_dynamic_change_form| is correctly sent to AutofillClient
+// when offering local save.
+TEST_F(CreditCardSaveManagerTest,
+       Local_UploadDisabled_SaveCreditCardOptions_WithDynamicForms) {
+  credit_card_save_manager_->SetCreditCardUploadEnabled(false);
+
+  // Set up our credit card form data without any non_focusable form field.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
+  // Use the two same forms for FormsSeen to mock the dynamic change forms.
+  FormsSeen(std::vector<FormData>(2, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
+  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
+  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[5].value = ASCIIToUTF16("123");
+
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().from_dynamic_change_form);
+}
+
+// Tests that |from_dynamic_change_form| is correctly sent to AutofillClient
+// when upload failed because of unsupported bin and falling back to local save.
+TEST_F(CreditCardSaveManagerTest,
+       Local_UnsupportedCard_SaveCreditCardOptions_WithDynamicForms) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillDoNotUploadSaveUnsupportedCards);
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+  // Set supported bin range so that the used card is unsupported.
+  std::vector<std::pair<int, int>> supported_card_bin_ranges{
+      std::make_pair(34, 34), std::make_pair(300, 305)};
+  payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
+
+  // Set up our credit card form data without any non_focusable form field.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
+  // Use the two same forms for FormsSeen to mock the dynamic change forms.
+  FormsSeen(std::vector<FormData>(2, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
+  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
+  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[5].value = ASCIIToUTF16("123");
+
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().from_dynamic_change_form);
+}
+
+// Tests that |from_dynamic_change_form| is correctly sent to AutofillClient
+// when GetDetailsForSaveCard failed and falling back to local save.
+TEST_F(
+    CreditCardSaveManagerTest,
+    Local_GetDetailsForSaveCardFails_SaveCreditCardOptions_WithDynamicForms) {
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+  // Anything other than "en-US" will cause GetUploadDetails to return a failure
+  // response.
+  credit_card_save_manager_->SetAppLocale("pt-BR");
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ExpectUniqueFillableFormParsedUkm();
+
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data without any non_focusable form field.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
+  // Use the two same forms for FormsSeen to mock the dynamic change forms.
+  FormsSeen(std::vector<FormData>(2, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
+  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
+  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[5].value = ASCIIToUTF16("123");
+
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().from_dynamic_change_form);
+}
+
+// Tests that |from_dynamic_change_form| is correctly sent to AutofillClient
+// when offering upload save.
+TEST_F(CreditCardSaveManagerTest,
+       Upload_SaveCreditCardOptions_WithDynamicForms) {
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ExpectUniqueFillableFormParsedUkm();
+
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data without any non_focusable form field.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
+  // Use the two same forms for FormsSeen to mock the dynamic change forms.
+  FormsSeen(std::vector<FormData>(2, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
+  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
+  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[5].value = ASCIIToUTF16("123");
+
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_TRUE(
+      autofill_client_.get_save_credit_card_options().from_dynamic_change_form);
+}
+
+// Tests that |from_dynamic_change_form| is not sent to AutofillClient when the
+// form is not dynamically changing.
+TEST_F(CreditCardSaveManagerTest, SaveCreditCardOptions_WithoutDynamicForms) {
+  credit_card_save_manager_->SetCreditCardUploadEnabled(false);
+
+  // Set up our credit card form data without any non_focusable form field.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form,
+                               CreditCardFormOptions().with_split_names(true));
+  // Only using one form for FormsSeen will not be treated as dynamic change
+  // form.
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
+  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
+  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
+  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
+  credit_card_form.fields[5].value = ASCIIToUTF16("123");
+
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
+  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
+  EXPECT_FALSE(
+      autofill_client_.get_save_credit_card_options().from_dynamic_change_form);
 }
 
 // Tests that a credit card inferred from a form with a credit card first and

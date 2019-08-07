@@ -158,8 +158,8 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
         View frame = view.findViewById(R.id.context_menu_frame);
         // TODO(sinansahin): Refactor ContextMenuDialog as well.
         final ContextMenuDialog dialog =
-                new ContextMenuDialog(activity, R.style.Theme_Chromium_DialogWhenLarge,
-                        touchPointXPx, touchPointYPx, mTopContentOffsetPx, frame);
+                new ContextMenuDialog(activity, R.style.Theme_Chromium_AlertDialog, touchPointXPx,
+                        touchPointYPx, mTopContentOffsetPx, frame);
         dialog.setContentView(view);
 
         return dialog;

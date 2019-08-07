@@ -111,6 +111,17 @@ void SSLClientSessionCache::Insert(const Key& cache_key,
   iter->second.Push(std::move(session));
 }
 
+void SSLClientSessionCache::FlushForServer(const HostPortPair& server) {
+  auto iter = cache_.begin();
+  while (iter != cache_.end()) {
+    if (iter->first.server == server) {
+      iter = cache_.Erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+}
+
 void SSLClientSessionCache::Flush() {
   cache_.Clear();
 }

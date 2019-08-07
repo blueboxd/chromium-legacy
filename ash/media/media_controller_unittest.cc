@@ -98,11 +98,11 @@ TEST_F(MediaControllerTest, EnableMediaKeysWhenUnlocked) {
 
 TEST_F(MediaControllerTest, EnableLockScreenMediaKeys) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kLockScreenMediaKeys);
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
-  prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, true);
+  prefs->SetBoolean(prefs::kLockScreenMediaControlsEnabled, true);
 
   EXPECT_TRUE(
       Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled());
@@ -110,16 +110,16 @@ TEST_F(MediaControllerTest, EnableLockScreenMediaKeys) {
 
 TEST_F(MediaControllerTest, DisableLockScreenMediaKeysIfFeatureDisabled) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kLockScreenMediaKeys);
+  feature_list.InitAndDisableFeature(features::kLockScreenMediaControls);
 
   PrefService* prefs =
       Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-  prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, true);
+  prefs->SetBoolean(prefs::kLockScreenMediaControlsEnabled, true);
 
   EXPECT_FALSE(
       Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled());
 
-  prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, false);
+  prefs->SetBoolean(prefs::kLockScreenMediaControlsEnabled, false);
 
   EXPECT_FALSE(
       Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled());
@@ -127,23 +127,23 @@ TEST_F(MediaControllerTest, DisableLockScreenMediaKeysIfFeatureDisabled) {
 
 TEST_F(MediaControllerTest, DisableLockScreenMediaKeysIfPreferenceDisabled) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kLockScreenMediaKeys);
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   PrefService* prefs =
       Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-  prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, false);
+  prefs->SetBoolean(prefs::kLockScreenMediaControlsEnabled, false);
 
   EXPECT_FALSE(
       Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled());
 }
 
-TEST_F(MediaControllerTest, EnableMediaKeysWhenLockedAndKeysEnabled) {
+TEST_F(MediaControllerTest, EnableMediaKeysWhenLockedAndControlsEnabled) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kLockScreenMediaKeys);
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   PrefService* prefs =
       Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-  prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, true);
+  prefs->SetBoolean(prefs::kLockScreenMediaControlsEnabled, true);
 
   EXPECT_EQ(0, controller()->suspend_count());
   EXPECT_EQ(0, controller()->previous_track_count());
@@ -158,10 +158,10 @@ TEST_F(MediaControllerTest, EnableMediaKeysWhenLockedAndKeysEnabled) {
   EXPECT_EQ(1, controller()->next_track_count());
 }
 
-TEST_F(MediaControllerTest, DisableMediaKeysWhenLockedAndKeysDisabled) {
+TEST_F(MediaControllerTest, DisableMediaKeysWhenLockedAndControlsDisabled) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-  prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, false);
+  prefs->SetBoolean(prefs::kLockScreenMediaControlsEnabled, false);
 
   EXPECT_EQ(0, controller()->suspend_count());
   EXPECT_EQ(0, controller()->previous_track_count());

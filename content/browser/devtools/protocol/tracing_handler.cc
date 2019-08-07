@@ -143,10 +143,9 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&DevToolsStreamEndpoint::ReceiveTraceChunk, this,
-                         std::move(chunk)));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(&DevToolsStreamEndpoint::ReceiveTraceChunk,
+                                    this, std::move(chunk)));
       return;
     }
 
@@ -156,7 +155,7 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
   void ReceiveTraceFinalContents(
       std::unique_ptr<const base::DictionaryValue> metadata) override {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&DevToolsStreamEndpoint::ReceiveTraceFinalContents,
                          this, std::move(metadata)));
@@ -797,7 +796,7 @@ void TracingHandler::Start(Maybe<std::string> categories,
   }
 
   // GPU process id can only be retrieved on IO thread. Do some thread hopping.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO}, base::BindOnce([]() {
         GpuProcessHost* gpu_process_host =
             GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED,

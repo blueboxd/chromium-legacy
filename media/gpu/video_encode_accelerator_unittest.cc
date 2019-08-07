@@ -559,25 +559,34 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   int64_t src_file_size = 0;
   LOG_ASSERT(base::GetFileSize(src_file, &src_file_size));
 
-  size_t visible_buffer_size =
-      VideoFrame::AllocationSize(pixel_format, test_stream->visible_size);
-  LOG_ASSERT(src_file_size % visible_buffer_size == 0U)
+  // NOTE: VideoFrame::AllocationSize() cannot used here because the width and
+  // height on each plane is aligned by 2 for YUV format.
+  size_t frame_buffer_size = 0;
+  for (size_t i = 0; i < num_planes; ++i) {
+    size_t row_bytes = VideoFrame::RowBytes(i, pixel_format,
+                                            test_stream->visible_size.width());
+    size_t rows =
+        VideoFrame::Rows(i, pixel_format, test_stream->visible_size.height());
+    frame_buffer_size += rows * row_bytes;
+  }
+
+  LOG_ASSERT(src_file_size % frame_buffer_size == 0U)
       << "Stream byte size is not a product of calculated frame byte size";
 
   test_stream->num_frames =
-      static_cast<unsigned int>(src_file_size / visible_buffer_size);
+      static_cast<unsigned int>(src_file_size / frame_buffer_size);
 
   LOG_ASSERT(test_stream->aligned_buffer_size > 0UL);
   test_stream->aligned_in_file_data.resize(test_stream->aligned_buffer_size *
                                            test_stream->num_frames);
 
   base::File src(src_file, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  std::vector<char> src_data(visible_buffer_size);
+  std::vector<char> src_data(frame_buffer_size);
   off_t src_offset = 0, dest_offset = 0;
   for (size_t frame = 0; frame < test_stream->num_frames; frame++) {
     LOG_ASSERT(src.Read(src_offset, &src_data[0],
-                        static_cast<int>(visible_buffer_size)) ==
-               static_cast<int>(visible_buffer_size));
+                        static_cast<int>(frame_buffer_size)) ==
+               static_cast<int>(frame_buffer_size));
     const char* src_ptr = &src_data[0];
     for (size_t i = 0; i < num_planes; i++) {
       // Assert that each plane of frame starts at required byte boundary.
@@ -591,7 +600,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
       }
       dest_offset += static_cast<off_t>(padding_sizes[i]);
     }
-    src_offset += static_cast<off_t>(visible_buffer_size);
+    src_offset += static_cast<off_t>(frame_buffer_size);
   }
   src.Close();
 

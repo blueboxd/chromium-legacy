@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 
+#include <algorithm>
 #include <limits>
 #include <utility>
 
@@ -12,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/public/common/resource_type.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
@@ -20,7 +22,9 @@
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
+#include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/url_util.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -77,8 +81,7 @@ flat_rule::ElementType GetElementType(const WebRequestInfo& request) {
   if (request.url.SchemeIsWSOrWSS())
     return flat_rule::ElementType_WEBSOCKET;
 
-  return request.type.has_value() ? GetElementType(request.type.value())
-                                  : flat_rule::ElementType_OTHER;
+  return GetElementType(request.type);
 }
 
 // Returns whether the request to |url| is third party to its |document_origin|.
@@ -142,6 +145,147 @@ bool IsExtraHeadersMatcherInternal(
   }
 
   return false;
+}
+
+base::StringPiece CreateStringPiece(const ::flatbuffers::String& str) {
+  return base::StringPiece(str.c_str(), str.size());
+}
+
+// Performs any required query transformations on the |url|. Returns true if the
+// query should be modified and populates |modified_query|.
+bool GetModifiedQuery(const GURL& url,
+                      const flat::UrlTransform& transform,
+                      std::string* modified_query) {
+  DCHECK(modified_query);
+
+  // TODO(crbug.com/983685): We should be able to reduce the work here by
+  // storing the escaped query params in the indexed format.
+  const bool use_plus = true;
+  std::set<std::string> escaped_remove_query_params;
+  if (transform.remove_query_params()) {
+    for (const ::flatbuffers::String* str : *transform.remove_query_params()) {
+      escaped_remove_query_params.insert(
+          net::EscapeQueryParamValue(CreateStringPiece(*str), use_plus));
+    }
+  }
+
+  // We don't use a map from keys to vector of values to ensure the relative
+  // order of different params specified by the extension is respected. We use
+  // a std::list to support fast removal from middle of the list.
+  std::list<std::pair<std::string, std::string>>
+      escaped_add_or_replace_query_params;
+  if (transform.add_or_replace_query_params()) {
+    for (const flat::QueryKeyValue* query_pair :
+         *transform.add_or_replace_query_params()) {
+      DCHECK(query_pair->key());
+      DCHECK(query_pair->value());
+      std::string key = net::EscapeQueryParamValue(
+          CreateStringPiece(*query_pair->key()), use_plus);
+      std::string value = net::EscapeQueryParamValue(
+          CreateStringPiece(*query_pair->value()), use_plus);
+      escaped_add_or_replace_query_params.emplace_back(std::move(key),
+                                                       std::move(value));
+    }
+  }
+
+  if (escaped_add_or_replace_query_params.empty() &&
+      escaped_remove_query_params.empty()) {
+    return false;
+  }
+
+  std::vector<std::string> query_parts;
+
+  auto create_query_part = [](base::StringPiece key, base::StringPiece value) {
+    return base::StrCat({key, "=", value});
+  };
+
+  bool query_changed = false;
+  for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
+    std::string key = it.GetKey();
+    // Remove query param.
+    if (base::Contains(escaped_remove_query_params, key)) {
+      query_changed = true;
+      continue;
+    }
+
+    auto replace_iterator =
+        std::find_if(escaped_add_or_replace_query_params.begin(),
+                     escaped_add_or_replace_query_params.end(),
+                     [&key](const std::pair<std::string, std::string>& param) {
+                       return param.first == key;
+                     });
+
+    // Nothing to do.
+    if (replace_iterator == escaped_add_or_replace_query_params.end()) {
+      query_parts.push_back(create_query_part(key, it.GetValue()));
+      continue;
+    }
+
+    // Replace query param.
+    query_changed = true;
+    query_parts.push_back(create_query_part(key, replace_iterator->second));
+    escaped_add_or_replace_query_params.erase(replace_iterator);
+  }
+
+  // Append any remaining query params.
+  for (const auto& params : escaped_add_or_replace_query_params) {
+    query_changed = true;
+    query_parts.push_back(create_query_part(params.first, params.second));
+  }
+
+  if (!query_changed)
+    return false;
+
+  *modified_query = base::JoinString(query_parts, "&");
+  return true;
+}
+
+GURL GetTransformedURL(const RequestParams& params,
+                       const flat::UrlTransform& transform) {
+  GURL::Replacements replacements;
+
+  if (transform.scheme())
+    replacements.SetSchemeStr(CreateStringPiece(*transform.scheme()));
+
+  if (transform.host())
+    replacements.SetHostStr(CreateStringPiece(*transform.host()));
+
+  DCHECK(!(transform.clear_port() && transform.port()));
+  if (transform.clear_port())
+    replacements.ClearPort();
+  else if (transform.port())
+    replacements.SetPortStr(CreateStringPiece(*transform.port()));
+
+  DCHECK(!(transform.clear_path() && transform.path()));
+  if (transform.clear_path())
+    replacements.ClearPath();
+  else if (transform.path())
+    replacements.SetPathStr(CreateStringPiece(*transform.path()));
+
+  // |query| is defined outside the if conditions since url::Replacements does
+  // not own the strings it uses.
+  std::string query;
+  if (transform.clear_query()) {
+    replacements.ClearQuery();
+  } else if (transform.query()) {
+    replacements.SetQueryStr(CreateStringPiece(*transform.query()));
+  } else if (GetModifiedQuery(*params.url, transform, &query)) {
+    replacements.SetQueryStr(query);
+  }
+
+  DCHECK(!(transform.clear_fragment() && transform.fragment()));
+  if (transform.clear_fragment())
+    replacements.ClearRef();
+  else if (transform.fragment())
+    replacements.SetRefStr(CreateStringPiece(*transform.fragment()));
+
+  if (transform.password())
+    replacements.SetPasswordStr(CreateStringPiece(*transform.password()));
+
+  if (transform.username())
+    replacements.SetUsernameStr(CreateStringPiece(*transform.username()));
+
+  return params.url->ReplaceComponents(replacements);
 }
 
 }  // namespace
@@ -256,12 +400,16 @@ const flat_rule::UrlRule* RulesetMatcher::GetRedirectRule(
   // There must be a UrlRuleMetadata object corresponding to each redirect rule.
   DCHECK(metadata);
   DCHECK_EQ(metadata->id(), rule->id());
+  DCHECK(metadata->redirect_url() || metadata->transform());
 
-  *redirect_url = GURL(base::StringPiece(metadata->redirect_url()->c_str(),
-                                         metadata->redirect_url()->size()));
-  DCHECK(redirect_url->is_valid());
+  if (metadata->redirect_url())
+    *redirect_url = GURL(CreateStringPiece(*metadata->redirect_url()));
+  else
+    *redirect_url = GetTransformedURL(params, *metadata->transform());
+
   // Prevent a redirect loop where a URL continuously redirects to itself.
-  return *params.url == *redirect_url ? nullptr : rule;
+  return (redirect_url->is_valid() && *params.url != *redirect_url) ? rule
+                                                                    : nullptr;
 }
 
 const flat_rule::UrlRule* RulesetMatcher::GetUpgradeRule(

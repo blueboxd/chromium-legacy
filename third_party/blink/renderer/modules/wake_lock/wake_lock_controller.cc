@@ -216,18 +216,19 @@ void WakeLockController::ObtainPermission(
                           ? To<Document>(GetExecutionContext())->GetFrame()
                           : nullptr;
 
-  GetPermissionService().RequestPermission(
+  GetPermissionService()->RequestPermission(
       CreateWakeLockPermissionDescriptor(
           static_cast<mojom::blink::WakeLockType>(type)),
       LocalFrame::HasTransientUserActivation(local_frame), std::move(callback));
 }
 
-PermissionService& WakeLockController::GetPermissionService() {
+PermissionService* WakeLockController::GetPermissionService() {
   if (!permission_service_) {
-    ConnectToPermissionService(GetExecutionContext(),
-                               mojo::MakeRequest(&permission_service_));
+    ConnectToPermissionService(
+        GetExecutionContext(),
+        permission_service_.BindNewPipeAndPassReceiver());
   }
-  return *permission_service_;
+  return permission_service_.get();
 }
 
 }  // namespace blink

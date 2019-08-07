@@ -12,16 +12,10 @@ generate_token.py http://127.0.0.1:8000 WebComponentsV0 --expire-timestamp=20000
 <script>
 test(() => {
   // From blink/public/mojom/web_feature/web_feature.mojom
-  var HTMLImportsOnReverseOriginTrials = 2847;
-  assert_false(internals.isUseCounted(document,
-  HTMLImportsOnReverseOriginTrials));
+  const HTMLImportsOnReverseOriginTrials = 2847;
+  assert_false(internals.isUseCounted(document, HTMLImportsOnReverseOriginTrials));
   div.innerHTML = "<link id='target' rel='import' href='resources/html-imports-hello.html'>"
-  var isCounted = internals.isUseCounted(document,
-    HTMLImportsOnReverseOriginTrials);
-  // Behavior is different depending on if the runtime flag is enabled.
-  if (self.internals.runtimeFlags.htmlImportsEnabled)
-    assert_false(isCounted);
-  else
-    assert_true(isCounted);
+  const isCounted = internals.isUseCounted(document, HTMLImportsOnReverseOriginTrials);
+  assert_true(isCounted);
 }, 'Comfirm HTMLImportsOnReverseOriginTrials counter');
 </script>

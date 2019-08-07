@@ -808,6 +808,10 @@ bool HWNDMessageHandler::IsFullscreen() const {
   return fullscreen_handler_->fullscreen();
 }
 
+bool HWNDMessageHandler::IsAlwaysOnTop() const {
+  return (GetWindowLong(hwnd(), GWL_EXSTYLE) & WS_EX_TOPMOST) != 0;
+}
+
 bool HWNDMessageHandler::RunMoveLoop(const gfx::Vector2d& drag_offset,
                                      bool hide_on_escape) {
   ReleaseCapture();

@@ -111,7 +111,7 @@ void ServiceWorkerDevToolsAgentHost::Reload() {
 }
 
 bool ServiceWorkerDevToolsAgentHost::Close() {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&TerminateServiceWorkerOnIO, context_weak_, version_id_));
   return true;
@@ -195,10 +195,9 @@ void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
 }
 
 void ServiceWorkerDevToolsAgentHost::UpdateIsAttached(bool attached) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&SetDevToolsAttachedOnIO, context_weak_, version_id_,
-                     attached));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&SetDevToolsAttachedOnIO, context_weak_,
+                                version_id_, attached));
 }
 
 void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
@@ -213,7 +212,7 @@ void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
       rph, worker_route_id_, origin);
   auto subresource_bundle = EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
       rph, worker_route_id_, origin);
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&UpdateLoaderFactoriesOnIO, context_weak_, version_id_,
                      std::move(script_bundle), std::move(subresource_bundle)),

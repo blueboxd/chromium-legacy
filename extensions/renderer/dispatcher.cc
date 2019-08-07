@@ -659,13 +659,6 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"extensionOptionsAttributes", IDR_EXTENSION_OPTIONS_ATTRIBUTES_JS},
       {"extensionOptionsConstants", IDR_EXTENSION_OPTIONS_CONSTANTS_JS},
       {"extensionOptionsEvents", IDR_EXTENSION_OPTIONS_EVENTS_JS},
-      {"extensionView", IDR_EXTENSION_VIEW_JS},
-      {"extensionViewElement", IDR_EXTENSION_VIEW_ELEMENT_JS},
-      {"extensionViewApiMethods", IDR_EXTENSION_VIEW_API_METHODS_JS},
-      {"extensionViewAttributes", IDR_EXTENSION_VIEW_ATTRIBUTES_JS},
-      {"extensionViewConstants", IDR_EXTENSION_VIEW_CONSTANTS_JS},
-      {"extensionViewEvents", IDR_EXTENSION_VIEW_EVENTS_JS},
-      {"extensionViewInternal", IDR_EXTENSION_VIEW_INTERNAL_CUSTOM_BINDINGS_JS},
       {"feedbackPrivate", IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS},
       {"fileEntryBindingUtil", IDR_FILE_ENTRY_BINDING_UTIL_JS},
       {"fileSystem", IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS},
@@ -1254,9 +1247,6 @@ void Dispatcher::EnableCustomElementWhiteList() {
   blink::WebCustomElement::AddEmbedderCustomElementName("extensionoptions");
   blink::WebCustomElement::AddEmbedderCustomElementName(
       "extensionoptionsbrowserplugin");
-  blink::WebCustomElement::AddEmbedderCustomElementName("extensionview");
-  blink::WebCustomElement::AddEmbedderCustomElementName(
-      "extensionviewbrowserplugin");
   blink::WebCustomElement::AddEmbedderCustomElementName("webview");
   blink::WebCustomElement::AddEmbedderCustomElementName("webviewbrowserplugin");
 }
@@ -1346,12 +1336,6 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   if (context->GetAvailability("extensionOptionsInternal").is_available()) {
     requires_guest_view_module = true;
     module_system->Require("extensionOptionsElement");
-  }
-
-  // Require ExtensionView.
-  if (context->GetAvailability("extensionViewInternal").is_available()) {
-    requires_guest_view_module = true;
-    module_system->Require("extensionViewElement");
   }
 
   // Require WebView.

@@ -38,8 +38,8 @@ class WebAppRegistrar : public AppRegistrar {
   // AppRegistrar:
   void Init(base::OnceClosure callback) override;
   WebAppRegistrar* AsWebAppRegistrar() override;
-  bool IsInstalled(const GURL& start_url) const override;
   bool IsInstalled(const AppId& app_id) const override;
+  bool IsLocallyInstalled(const GURL& start_url) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   base::Optional<AppId> FindAppWithUrlInScope(const GURL& url) const override;
   int CountUserInstalledApps() const override;

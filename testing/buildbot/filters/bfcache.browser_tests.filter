@@ -42,3 +42,10 @@
 -TabHoverCardBubbleViewBrowserTest.WidgetVisibleOnTabFocus
 -URLLoaderImplementation/PreviewsLitePageServerBrowserTest.LitePagePreviewsNavigation/0
 -URLLoaderImplementation/PreviewsLitePageServerBrowserTest.LitePagePreviewsNavigation/1
+
+# Timeout while waiting for a frozen page to execute Javascript.
+# https://crbug.com/991194
+-TabManagerTest.UnfreezeTabOnNavigationEvent
+-TabManagerTest.TabFreezeAndMakeVisible
+-TabManagerTest.TabFreezeAndUnfreeze
+-TabManagerTest.TabFreezeAndUrgentDiscard

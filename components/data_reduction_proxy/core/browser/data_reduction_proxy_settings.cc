@@ -24,7 +24,6 @@
 #include "components/prefs/pref_service.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/public/cpp/features.h"
 
 namespace {
 
@@ -142,8 +141,7 @@ void DataReductionProxySettings::SetDataSaverEnabledForTesting(
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      !params::IsEnabledWithNetworkService()) {
+  if (!params::IsEnabledWithNetworkService()) {
     return false;
   }
   return IsDataSaverEnabledByUser(GetOriginalProfilePrefs());

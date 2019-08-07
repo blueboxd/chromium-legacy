@@ -92,7 +92,7 @@ WebLaunchFilesHelper::WebLaunchFilesHelper(
       web_contents->GetMainFrame()->GetProcess()->GetID(),
       web_contents->GetMainFrame()->GetRoutingID());
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&GetEntries, std::move(entry_factory), std::move(context),
                      std::move(launch_paths)),

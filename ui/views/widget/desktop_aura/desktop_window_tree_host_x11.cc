@@ -683,9 +683,10 @@ ui::ZOrderLevel DesktopWindowTreeHostX11::GetZOrderLevel() const {
   if (window_always_on_top == level_always_on_top)
     return z_order_;
 
-  // Something external has forced a window to be always-on-top; map it to
+  // If something external has forced a window to be always-on-top, map it to
   // kFloatingWindow as a reasonable equivalent.
-  return ui::ZOrderLevel::kFloatingWindow;
+  return window_always_on_top ? ui::ZOrderLevel::kFloatingWindow
+                              : ui::ZOrderLevel::kNormal;
 }
 
 void DesktopWindowTreeHostX11::SetVisible(bool visible) {

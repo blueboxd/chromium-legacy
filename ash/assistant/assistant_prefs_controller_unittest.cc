@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
@@ -16,13 +17,13 @@
 
 namespace ash {
 
-class TestAssistantPrefsObserver : public AssistantPrefsObserver {
+class TestAssistantPrefsObserver : public AssistantStateObserver {
  public:
   TestAssistantPrefsObserver() = default;
   ~TestAssistantPrefsObserver() override = default;
 
   // AssistantPrefsObserver:
-  void OnAssistantConsentStatusUpdated(int consent_status) override {
+  void OnAssistantConsentStatusChanged(int consent_status) override {
     consent_status_ = consent_status;
   }
 
@@ -46,7 +47,7 @@ class AssistantPrefsControllerTest : public AshTestBase {
 
     AshTestBase::SetUp();
 
-    prefs_ = Shell::Get()->assistant_controller()->prefs_controller()->prefs();
+    prefs_ = Shell::Get()->session_controller()->GetPrimaryUserPrefService();
     DCHECK(prefs_);
 
     observer_ = std::make_unique<TestAssistantPrefsObserver>();
@@ -72,15 +73,13 @@ TEST_F(AssistantPrefsControllerTest, InitObserver) {
 
   // The observer class should get an instant notification about the current
   // pref value.
-  Shell::Get()->assistant_controller()->prefs_controller()->AddObserver(
-      observer());
+  Shell::Get()->assistant_controller()->state()->AddObserver(observer());
   EXPECT_EQ(chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted,
             observer()->consent_status());
 }
 
 TEST_F(AssistantPrefsControllerTest, NotifyConsentStatus) {
-  Shell::Get()->assistant_controller()->prefs_controller()->AddObserver(
-      observer());
+  Shell::Get()->assistant_controller()->state()->AddObserver(observer());
 
   prefs()->SetInteger(chromeos::assistant::prefs::kAssistantConsentStatus,
                       chromeos::assistant::prefs::ConsentStatus::kUnauthorized);

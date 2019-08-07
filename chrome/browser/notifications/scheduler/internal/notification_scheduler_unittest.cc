@@ -291,7 +291,7 @@ TEST_F(NotificationSchedulerTest, BackgroundTaskStartShowNotification) {
   DisplayDecider::Results result({kGuid});
   EXPECT_CALL(*display_decider(), FindNotificationsToShow(_, _, _, _))
       .WillOnce(SetArgPointee<3>(result));
-  EXPECT_CALL(*impression_tracker(), AddImpression(_, _));
+  EXPECT_CALL(*impression_tracker(), AddImpression(_, _, _, _));
 
   EXPECT_CALL(*client(), BeforeShowNotification(_, _))
       .WillOnce(Invoke(

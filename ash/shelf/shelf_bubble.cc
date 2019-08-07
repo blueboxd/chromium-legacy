@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_bubble.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 

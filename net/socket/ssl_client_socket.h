@@ -16,6 +16,7 @@
 #include "net/base/net_export.h"
 #include "net/cert/cert_database.h"
 #include "net/socket/ssl_socket.h"
+#include "net/ssl/ssl_client_auth_cache.h"
 #include "net/ssl/ssl_config_service.h"
 
 namespace net {
@@ -87,8 +88,13 @@ class NET_EXPORT SSLClientContext : public SSLConfigService::Observer,
   class NET_EXPORT Observer : public base::CheckedObserver {
    public:
     // Called when SSL configuration for all hosts changed. Newly-created
-    // SSLClientSockets will pick up the new configuration.
+    // SSLClientSockets will pick up the new configuration. Note that changes
+    // which only apply to one server will result in a call to
+    // OnSSLConfigForServerChanged() instead.
     virtual void OnSSLConfigChanged(bool is_cert_database_change) = 0;
+    // Called when SSL configuration for |server| changed. Newly-created
+    // SSLClientSockets to |server| will pick up the new configuration.
+    virtual void OnSSLConfigForServerChanged(const HostPortPair& server) = 0;
   };
 
   // Creates a new SSLClientContext with the specified parameters. The
@@ -127,6 +133,36 @@ class NET_EXPORT SSLClientContext : public SSLConfigService::Observer,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config);
 
+  // Looks up the client certificate preference for |server|. If one is found,
+  // returns true and sets |client_cert| and |private_key| to the certificate
+  // and key. Note these may be null if the preference is to continue with no
+  // client certificate. Returns false if no preferences are configured,
+  // which means client certificate requests should be reported as
+  // ERR_SSL_CLIENT_AUTH_CERT_NEEDED.
+  bool GetClientCertificate(const HostPortPair& server,
+                            scoped_refptr<X509Certificate>* client_cert,
+                            scoped_refptr<SSLPrivateKey>* private_key);
+
+  // Configures all subsequent connections to |server| to authenticate with
+  // |client_cert| and |private_key| when requested. If there is already a
+  // client certificate for |server|, it will be overwritten. |client_cert| and
+  // |private_key| may be null to indicate that no client certificate should be
+  // sent to |server|.
+  //
+  // Note this method will synchronously call OnSSLConfigForServerChanged() on
+  // observers.
+  void SetClientCertificate(const HostPortPair& server,
+                            scoped_refptr<X509Certificate> client_cert,
+                            scoped_refptr<SSLPrivateKey> private_key);
+
+  // Clears a client certificate preference for |server| set by
+  // SetClientCertificate(). Returns true if one was removed and false
+  // otherwise.
+  //
+  // Note this method will synchronously call OnSSLConfigForServerChanged() on
+  // observers.
+  bool ClearClientCertificate(const HostPortPair& server);
+
   // Add an observer to be notified when configuration has changed.
   // RemoveObserver() must be called before |observer| is destroyed.
   void AddObserver(Observer* observer);
@@ -142,6 +178,7 @@ class NET_EXPORT SSLClientContext : public SSLConfigService::Observer,
 
  private:
   void NotifySSLConfigChanged(bool is_cert_database_change);
+  void NotifySSLConfigForServerChanged(const HostPortPair& server);
 
   SSLContextConfig config_;
 
@@ -151,6 +188,8 @@ class NET_EXPORT SSLClientContext : public SSLConfigService::Observer,
   CTVerifier* cert_transparency_verifier_;
   CTPolicyEnforcer* ct_policy_enforcer_;
   SSLClientSessionCache* ssl_client_session_cache_;
+
+  SSLClientAuthCache ssl_client_auth_cache_;
 
   base::ObserverList<Observer, true /* check_empty */> observers_;
 

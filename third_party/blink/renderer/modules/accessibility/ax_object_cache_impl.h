@@ -33,7 +33,8 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
@@ -117,7 +118,6 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   bool HandleAttributeChanged(const QualifiedName& attr_name,
                               Element*) override;
-  void HandleAutofillStateChanged(Element*, bool) override;
   void HandleValidationMessageVisibilityChanged(
       const Element* form_control) override;
   void HandleFocusedUIElementChanged(Element* old_focused_element,
@@ -375,8 +375,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   mojom::PermissionStatus accessibility_event_permission_;
   // The permission service, enabling us to check for event listener
   // permission.
-  mojom::blink::PermissionServicePtr permission_service_;
-  mojo::Binding<mojom::blink::PermissionObserver> permission_observer_binding_;
+  mojo::Remote<mojom::blink::PermissionService> permission_service_;
+  mojo::Receiver<mojom::blink::PermissionObserver>
+      permission_observer_receiver_{this};
 
   // The main document, plus any page popups.
   HeapHashSet<WeakMember<Document>> documents_;

@@ -65,7 +65,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
-  bool CanProcessEventsWithinSubtree() const override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -151,6 +150,12 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
 
   // Clear highlight range.
   void ResetHighlightRange();
+
+  // Key event handler used when SearchBoxSelection feature is disabled. This
+  // should be removed when the app_list_features::IsSearchBoxSelectionEnabled()
+  // flag is removed.
+  bool HandleKeyEventForDisabledSearchBoxSelection(
+      const ui::KeyEvent& key_event);
 
   // The range of highlighted text for autocomplete.
   gfx::Range highlight_range_;

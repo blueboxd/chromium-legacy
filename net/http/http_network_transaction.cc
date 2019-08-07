@@ -117,7 +117,7 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       priority_(priority),
       headers_valid_(false),
       can_send_early_data_(false),
-      server_ssl_client_cert_was_cached_(false),
+      configured_client_cert_for_server_(false),
       request_headers_(),
 #if BUILDFLAG(ENABLE_REPORTING)
       network_error_logging_report_generated_(false),
@@ -234,8 +234,8 @@ int HttpNetworkTransaction::RestartWithCertificate(
     scoped_refptr<X509Certificate> client_cert,
     scoped_refptr<SSLPrivateKey> client_private_key,
     CompletionOnceCallback callback) {
-  // In HandleCertificateRequest(), we always tear down existing stream
-  // requests to force a new connection.  So we shouldn't have one here.
+  // When we receive ERR_SSL_CLIENT_AUTH_CERT_NEEDED, we always tear down
+  // existing streams and stream requests to force a new connection.
   DCHECK(!stream_request_.get());
   DCHECK(!stream_.get());
   DCHECK_EQ(STATE_NONE, next_state_);
@@ -243,14 +243,15 @@ int HttpNetworkTransaction::RestartWithCertificate(
   if (!CheckMaxRestarts())
     return ERR_TOO_MANY_RETRIES;
 
-  SSLConfig* ssl_config = response_.cert_request_info->is_proxy ?
-      &proxy_ssl_config_ : &server_ssl_config_;
-  ssl_config->send_client_cert = true;
-  ssl_config->client_cert = client_cert;
-  ssl_config->client_private_key = client_private_key;
-  session_->ssl_client_auth_cache()->Add(
+  // Add the credentials to the client auth cache. The next stream request will
+  // then pick them up.
+  session_->ssl_client_context()->SetClientCertificate(
       response_.cert_request_info->host_and_port, std::move(client_cert),
       std::move(client_private_key));
+
+  if (!response_.cert_request_info->is_proxy)
+    configured_client_cert_for_server_ = true;
+
   // Reset the other member variables.
   // Note: this is necessary only with SSL renegotiation.
   ResetStateForRestart();
@@ -833,8 +834,6 @@ int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
   if (result == OK) {
     next_state_ = STATE_INIT_STREAM;
     DCHECK(stream_.get());
-  } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
-    result = HandleCertificateRequest(result);
   } else if (result == ERR_HTTP_1_1_REQUIRED ||
              result == ERR_PROXY_HTTP_1_1_REQUIRED) {
     return HandleHttp11Required(result);
@@ -1051,6 +1050,9 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     // We don't handle a certificate error during SSL renegotiation, so we
     // have to return an error that's not in the certificate error range
     // (-2xx).
+    //
+    // TODO(davidben): Remove this error. This is impossible now that server
+    // certificates are forbidden from changing in renegotiation.
     LOG(ERROR) << "Got a server certificate with error " << result
                << " during SSL renegotiation";
     result = ERR_CERT_ERROR_IN_SSL_RENEGOTIATION;
@@ -1059,9 +1061,10 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     DCHECK(IsSecureRequest());
     response_.cert_request_info = base::MakeRefCounted<SSLCertRequestInfo>();
     stream_->GetSSLCertRequestInfo(response_.cert_request_info.get());
-    result = HandleCertificateRequest(result);
-    if (result == OK)
-      return result;
+    total_received_bytes_ += stream_->GetTotalReceivedBytes();
+    total_sent_bytes_ += stream_->GetTotalSentBytes();
+    stream_->Close(true);
+    CacheNetErrorDetailsAndResetStream();
   }
 
   if (result == ERR_HTTP_1_1_REQUIRED ||
@@ -1441,76 +1444,6 @@ void HttpNetworkTransaction::GenerateNetworkErrorLoggingReport(int rv) {
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-int HttpNetworkTransaction::HandleCertificateRequest(int error) {
-  // There are two paths through which the server can request a certificate
-  // from us.  The first is during the initial handshake, the second is
-  // during SSL renegotiation.
-  //
-  // In both cases, we want to close the connection before proceeding.
-  // We do this for two reasons:
-  //   First, we don't want to keep the connection to the server hung for a
-  //   long time while the user selects a certificate.
-  //   Second, even if we did keep the connection open, NSS has a bug where
-  //   restarting the handshake for ClientAuth is currently broken.
-  DCHECK_EQ(error, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
-
-  if (stream_.get()) {
-    // Since we already have a stream, we're being called as part of SSL
-    // renegotiation.
-    DCHECK(!stream_request_.get());
-    total_received_bytes_ += stream_->GetTotalReceivedBytes();
-    total_sent_bytes_ += stream_->GetTotalSentBytes();
-    stream_->Close(true);
-    CacheNetErrorDetailsAndResetStream();
-  }
-
-  // The server is asking for a client certificate during the initial
-  // handshake.
-  stream_request_.reset();
-
-  // If the user selected one of the certificates in client_certs or declined
-  // to provide one for this server before, use the past decision
-  // automatically.
-  scoped_refptr<X509Certificate> client_cert;
-  scoped_refptr<SSLPrivateKey> client_private_key;
-  bool found_cached_cert = session_->ssl_client_auth_cache()->Lookup(
-      response_.cert_request_info->host_and_port, &client_cert,
-      &client_private_key);
-  if (!found_cached_cert)
-    return error;
-
-  // Check that the certificate selected is still a certificate the server
-  // is likely to accept, based on the criteria supplied in the
-  // CertificateRequest message.
-  if (client_cert.get()) {
-    const std::vector<std::string>& cert_authorities =
-        response_.cert_request_info->cert_authorities;
-
-    bool cert_still_valid = cert_authorities.empty() ||
-        client_cert->IsIssuedByEncoded(cert_authorities);
-    if (!cert_still_valid)
-      return error;
-  }
-
-  if (!response_.cert_request_info->is_proxy) {
-    server_ssl_client_cert_was_cached_ = true;
-  }
-
-  // TODO(davidben): Add a unit test which covers this path; we need to be
-  // able to send a legitimate certificate and also bypass/clear the
-  // SSL session cache.
-  SSLConfig* ssl_config = response_.cert_request_info->is_proxy ?
-      &proxy_ssl_config_ : &server_ssl_config_;
-  ssl_config->send_client_cert = true;
-  ssl_config->client_cert = client_cert;
-  ssl_config->client_private_key = client_private_key;
-  next_state_ = STATE_CREATE_STREAM;
-  // Reset the other member variables.
-  // Note: this is necessary only with SSL renegotiation.
-  ResetStateForRestart();
-  return OK;
-}
-
 int HttpNetworkTransaction::HandleHttp11Required(int error) {
   DCHECK(error == ERR_HTTP_1_1_REQUIRED ||
          error == ERR_PROXY_HTTP_1_1_REQUIRED);
@@ -1525,50 +1458,45 @@ int HttpNetworkTransaction::HandleHttp11Required(int error) {
 }
 
 int HttpNetworkTransaction::HandleSSLClientAuthError(int error) {
-  // Most client auth errors here come from the origin server, but they may come
-  // from the proxy if the request is not tunneled (i.e. the origin is HTTP, so
-  // there is no HTTPS connection) and the proxy does not report a bad client
-  // certificate until after the TLS handshake completes. The latter occurs in
-  // TLS 1.3 or TLS 1.2 with False Start (disabled for proxies). The error will
-  // then surface out of Read() rather than Connect() and ultimately surfaced
-  // out of DoReadHeadersComplete().
+  // Client certificate errors may come from either the origin server or the
+  // proxy.
+  //
+  // Origin errors are handled here, while most proxy errors are handled in the
+  // HttpStreamFactory and below. However, if the request is not tunneled (i.e.
+  // the origin is HTTP, so there is no HTTPS connection) and the proxy does not
+  // report a bad client certificate until after the TLS handshake completes.
+  // The latter occurs in TLS 1.3 or TLS 1.2 with False Start (disabled for
+  // proxies). The error will then surface out of Read() rather than Connect()
+  // and ultimately surfaced out of DoReadHeadersComplete().
   //
   // See https://crbug.com/828965.
-  bool is_server;
-  SSLConfig* ssl_config;
-  HostPortPair host_port_pair;
-  if (UsingHttpProxyWithoutTunnel()) {
-    is_server = false;
-    ssl_config = &proxy_ssl_config_;
-    host_port_pair = proxy_info_.proxy_server().host_port_pair();
-  } else {
-    is_server = true;
-    ssl_config = &server_ssl_config_;
-    host_port_pair = HostPortPair::FromURL(request_->url);
-  }
+  bool is_server = !UsingHttpProxyWithoutTunnel();
+  HostPortPair host_port_pair =
+      is_server ? HostPortPair::FromURL(request_->url)
+                : proxy_info_.proxy_server().host_port_pair();
 
-  // Client certificate errors from the proxy are handled in the
-  // HttpStreamFactory and below.
-  if (ssl_config->send_client_cert &&
-      (error == ERR_SSL_PROTOCOL_ERROR || IsClientCertificateError(error))) {
+  if (error == ERR_SSL_PROTOCOL_ERROR || IsClientCertificateError(error)) {
     DCHECK((is_server && IsSecureRequest()) || proxy_info_.is_https());
-    session_->ssl_client_auth_cache()->Remove(host_port_pair);
-
-    // The private key handle may have gone stale due to, e.g., the user
-    // unplugging their smartcard. Operating systems do not provide reliable
-    // notifications for this, so if the signature failed and the private key
-    // came from SSLClientAuthCache, retry to ask the user for a new one.
-    if (is_server && error == ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED &&
-        server_ssl_client_cert_was_cached_ && !HasExceededMaxRetries()) {
-      server_ssl_client_cert_was_cached_ = false;
-      server_ssl_config_.send_client_cert = false;
-      server_ssl_config_.client_cert = nullptr;
-      server_ssl_config_.client_private_key = nullptr;
-      retry_attempts_++;
-      net_log_.AddEventWithNetErrorCode(
-          NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
-      ResetConnectionAndRequestForResend();
-      return OK;
+    if (session_->ssl_client_context()->ClearClientCertificate(
+            host_port_pair)) {
+      // The private key handle may have gone stale due to, e.g., the user
+      // unplugging their smartcard. Operating systems do not provide reliable
+      // notifications for this, so if the signature failed and the user was
+      // not already prompted for certificate on this request, retry to ask
+      // the user for a new one.
+      //
+      // TODO(davidben): There is no corresponding feature for proxy client
+      // certificates. Ideally this would live at a lower level, common to both,
+      // but |configured_client_cert_for_server_| is not accessible below the
+      // socket pools.
+      if (is_server && error == ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED &&
+          !configured_client_cert_for_server_ && !HasExceededMaxRetries()) {
+        retry_attempts_++;
+        net_log_.AddEventWithNetErrorCode(
+            NetLogEventType::HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
+        ResetConnectionAndRequestForResend();
+        return OK;
+      }
     }
   }
   return error;

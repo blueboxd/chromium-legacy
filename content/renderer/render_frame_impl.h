@@ -520,6 +520,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetRenderFrameMediaPlaybackOptions(
       const RenderFrameMediaPlaybackOptions& opts) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
+  void SetAllowsCrossBrowsingInstanceFrameLookup() override;
 
   // blink::mojom::AutoplayConfigurationClient implementation:
   void AddAutoplayFlags(const url::Origin& origin,

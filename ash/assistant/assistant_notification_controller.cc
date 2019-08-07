@@ -205,8 +205,7 @@ void AssistantNotificationController::SetQuietMode(bool enabled) {
 void AssistantNotificationController::OnNotificationAdded(
     const AssistantNotification* notification) {
   // Do not show system notifications if the setting is disabled.
-  if (!assistant_controller_->prefs_controller()->prefs()->GetBoolean(
-          chromeos::assistant::prefs::kAssistantNotificationEnabled)) {
+  if (!assistant_controller_->state()->notification_enabled().value_or(true)) {
     return;
   }
 
@@ -221,8 +220,7 @@ void AssistantNotificationController::OnNotificationAdded(
 void AssistantNotificationController::OnNotificationUpdated(
     const AssistantNotification* notification) {
   // Do not show system notifications if the setting is disabled.
-  if (!assistant_controller_->prefs_controller()->prefs()->GetBoolean(
-          chromeos::assistant::prefs::kAssistantNotificationEnabled)) {
+  if (!assistant_controller_->state()->notification_enabled().value_or(true)) {
     return;
   }
 

@@ -226,9 +226,9 @@ ProfileNetworkContextService::CreateNetworkContext(
     // stable users, which would be after M83 branches.
     base::FilePath media_cache_path = GetPartitionPath(relative_partition_path)
                                           .Append(chrome::kMediaCacheDirname);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
-        {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), media_cache_path,
                        true /* recursive */));

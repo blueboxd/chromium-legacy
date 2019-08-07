@@ -38,7 +38,11 @@ BookmarkAppRegistrar* BookmarkAppRegistrar::AsBookmarkAppRegistrar() {
   return this;
 }
 
-bool BookmarkAppRegistrar::IsInstalled(const GURL& start_url) const {
+bool BookmarkAppRegistrar::IsInstalled(const web_app::AppId& app_id) const {
+  return GetExtension(app_id) != nullptr;
+}
+
+bool BookmarkAppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   const ExtensionSet& extensions = registry->enabled_extensions();
 
@@ -56,10 +60,6 @@ bool BookmarkAppRegistrar::IsInstalled(const GURL& start_url) const {
       return true;
   }
   return false;
-}
-
-bool BookmarkAppRegistrar::IsInstalled(const web_app::AppId& app_id) const {
-  return GetExtension(app_id) != nullptr;
 }
 
 bool BookmarkAppRegistrar::WasExternalAppUninstalledByUser(

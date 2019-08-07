@@ -79,10 +79,9 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
     callbacks_.push_back(std::move(callback));
     if (data_complete_) {
       DCHECK_EQ(1UL, callbacks_.size());
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&BodyReader::DispatchBodyOnUI, std::move(callbacks_),
-                         encoded_body_));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(&BodyReader::DispatchBodyOnUI,
+                                    std::move(callbacks_), encoded_body_));
     }
   }
 
@@ -94,10 +93,9 @@ class BodyReader : public mojo::DataPipeDrainer::Client {
   }
 
   void CancelWithError(std::string error) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&BodyReader::DispatchErrorOnUI, std::move(callbacks_),
-                       std::move(error)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&BodyReader::DispatchErrorOnUI,
+                                  std::move(callbacks_), std::move(error)));
   }
 
  private:
@@ -138,10 +136,9 @@ void BodyReader::OnDataComplete() {
   body_pipe_drainer_.reset();
   // TODO(caseq): only encode if necessary.
   base::Base64Encode(body_->data(), &encoded_body_);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&BodyReader::DispatchBodyOnUI, std::move(callbacks_),
-                     encoded_body_));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&BodyReader::DispatchBodyOnUI,
+                                std::move(callbacks_), encoded_body_));
   std::move(download_complete_callback_).Run();
 }
 
@@ -427,11 +424,10 @@ class DevToolsURLLoaderInterceptor::Impl
     auto it = jobs_.find(id);
     if (it != jobs_.end())
       return it->second;
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            &Callback::sendFailure, std::move(*callback),
-            protocol::Response::InvalidParams("Invalid InterceptionId.")));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&Callback::sendFailure, std::move(*callback),
+                                  protocol::Response::InvalidParams(
+                                      "Invalid InterceptionId.")));
     return nullptr;
   }
 
@@ -503,7 +499,7 @@ DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
       is_download_(is_download),
       interceptor_(std::move(interceptor)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&DevToolsURLLoaderFactoryProxy::StartOnIO,
                      base::Unretained(this), std::move(loader_request),
@@ -596,8 +592,7 @@ DevToolsURLLoaderInterceptor::DevToolsURLLoaderInterceptor(
     : enabled_(false),
       impl_(new DevToolsURLLoaderInterceptor::Impl(std::move(callback)),
             base::OnTaskRunnerDeleter(
-                base::CreateSingleThreadTaskRunnerWithTraits(
-                    {BrowserThread::IO}))),
+                base::CreateSingleThreadTaskRunner({BrowserThread::IO}))),
       weak_impl_(impl_->AsWeakPtr()) {}
 
 DevToolsURLLoaderInterceptor::~DevToolsURLLoaderInterceptor() = default;
@@ -607,7 +602,7 @@ void DevToolsURLLoaderInterceptor::SetPatterns(
     bool handle_auth) {
   enabled_ = !!patterns.size();
   DCHECK(enabled_ || !handle_auth);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::SetPatterns, base::Unretained(impl_.get()),
                      std::move(patterns), handle_auth));
@@ -616,7 +611,7 @@ void DevToolsURLLoaderInterceptor::SetPatterns(
 void DevToolsURLLoaderInterceptor::GetResponseBody(
     const std::string& interception_id,
     std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::GetResponseBody, base::Unretained(impl_.get()),
                      interception_id, std::move(callback)));
@@ -625,7 +620,7 @@ void DevToolsURLLoaderInterceptor::GetResponseBody(
 void DevToolsURLLoaderInterceptor::TakeResponseBodyPipe(
     const std::string& interception_id,
     DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback callback) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::TakeResponseBodyPipe, base::Unretained(impl_.get()),
                      interception_id, std::move(callback)));
@@ -635,11 +630,10 @@ void DevToolsURLLoaderInterceptor::ContinueInterceptedRequest(
     const std::string& interception_id,
     std::unique_ptr<Modifications> modifications,
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&Impl::ContinueInterceptedRequest,
-                     base::Unretained(impl_.get()), interception_id,
-                     std::move(modifications), std::move(callback)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&Impl::ContinueInterceptedRequest,
+                                base::Unretained(impl_.get()), interception_id,
+                                std::move(modifications), std::move(callback)));
 }
 
 bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
@@ -756,7 +750,7 @@ void InterceptionJob::GetResponseBody(
     std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
   std::string error_reason;
   if (!CanGetResponseBody(&error_reason)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&GetResponseBodyForInterceptionCallback::sendFailure,
                        std::move(callback),
@@ -776,7 +770,7 @@ void InterceptionJob::TakeResponseBodyPipe(
     TakeResponseBodyPipeCallback callback) {
   std::string error_reason;
   if (!CanGetResponseBody(&error_reason)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback),
                        Response::Error(std::move(error_reason)),
@@ -802,7 +796,7 @@ void InterceptionJob::ContinueInterceptedRequest(
                                std::move(callback))
               : base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
                                std::move(callback), std::move(response));
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, std::move(task));
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(task));
 }
 
 void InterceptionJob::Detach() {
@@ -1231,10 +1225,9 @@ void InterceptionJob::NotifyClientWithCookies(
           create_loader_params_->request, cookie_line);
 
   waiting_for_resolution_ = true;
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(interceptor_->request_intercepted_callback_,
-                     std::move(request_info)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(interceptor_->request_intercepted_callback_,
+                                std::move(request_info)));
 }
 
 void InterceptionJob::Shutdown() {
@@ -1381,7 +1374,7 @@ void InterceptionJob::OnStartLoadingResponseBody(
   if (pending_response_body_pipe_callback_) {
     DCHECK_EQ(State::kResponseTaken, state_);
     DCHECK(!body_reader_);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(pending_response_body_pipe_callback_),
                        Response::OK(), std::move(body),

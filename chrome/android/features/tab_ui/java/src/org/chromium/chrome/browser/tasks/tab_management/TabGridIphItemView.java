@@ -22,15 +22,17 @@ import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.widget.ChromeImageView;
 
 /**
- * Represents a view that works as the entrance for IPH in {@link TabListRecyclerView}.
+ * Represents a view that works as the entrance for IPH in GridTabSwitcher.
  */
 public class TabGridIphItemView extends FrameLayout {
-    private TextView mShowIPHButton;
-    private ChromeImageView mCloseIphEntranceButton;
-    private PopupWindow mIphWindow;
+    private View mIphDialogView;
+    private TextView mShowIPHDialogButton;
+    private TextView mCloseIPHDialogButton;
+    private ChromeImageView mCloseIPHEntranceButton;
     private ScrimView mScrimView;
     private ScrimView.ScrimParams mScrimParams;
     private Drawable mIphDrawable;
+    private PopupWindow mIphWindow;
 
     public TabGridIphItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -41,46 +43,19 @@ public class TabGridIphItemView extends FrameLayout {
         super.onFinishInflate();
 
         FrameLayout backgroundView = new FrameLayout(getContext());
-        View iphDialogView =
+        mIphDialogView =
                 LayoutInflater.from(getContext())
                         .inflate(R.layout.iph_drag_and_drop_dialog_layout, backgroundView, false);
-        mShowIPHButton = findViewById(R.id.show_me_button);
-        mCloseIphEntranceButton = findViewById(R.id.close_iph_button);
+        mShowIPHDialogButton = findViewById(R.id.show_me_button);
+        mCloseIPHEntranceButton = findViewById(R.id.close_iph_button);
+        mCloseIPHDialogButton =
+                mIphDialogView.findViewById(R.id.iph_drag_and_drop_dialog_close_button);
         mIphDrawable =
-                ((ImageView) iphDialogView.findViewById(R.id.animation_drawable)).getDrawable();
-        TextView closeIphDialogButton =
-                iphDialogView.findViewById(R.id.iph_drag_and_drop_dialog_close_button);
-        backgroundView.addView(iphDialogView);
+                ((ImageView) mIphDialogView.findViewById(R.id.animation_drawable)).getDrawable();
+        backgroundView.addView(mIphDialogView);
         mIphWindow = new PopupWindow(backgroundView, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
         mScrimView = new ScrimView(getContext(), null, backgroundView);
-        ScrimView.ScrimObserver scrimObserver = new ScrimView.ScrimObserver() {
-            @Override
-            public void onScrimClick() {
-                mIphWindow.dismiss();
-                mScrimView.hideScrim(true);
-            }
-            @Override
-            public void onScrimVisibilityChanged(boolean visible) {}
-        };
-        mScrimParams = new ScrimView.ScrimParams(iphDialogView, false, true, 0, scrimObserver);
-        closeIphDialogButton.setOnClickListener(View -> scrimObserver.onScrimClick());
-    }
-
-    /**
-     * Setup the {@link View.OnClickListener} for ShowIPH button.
-     */
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        View parent = (View) getParent();
-        mShowIPHButton.setOnClickListener((View view) -> {
-            // When show me button is clicked, the entrance should be closed.
-            mCloseIphEntranceButton.performClick();
-            mScrimView.showScrim(mScrimParams);
-            mIphWindow.showAtLocation(parent, Gravity.CENTER, 0, 0);
-            ((Animatable) mIphDrawable).start();
-        });
     }
 
     /**
@@ -89,6 +64,52 @@ public class TabGridIphItemView extends FrameLayout {
      * @param listener The {@link View.OnClickListener} used to setup close button in IPH entrance.
      */
     void setupCloseIphEntranceButtonOnclickListener(View.OnClickListener listener) {
-        mCloseIphEntranceButton.setOnClickListener(listener);
+        mCloseIPHEntranceButton.setOnClickListener(listener);
+    }
+
+    /**
+     * Setup the {@link View.OnClickListener} for close button in the IPH dialog.
+     *
+     * @param listener The {@link View.OnClickListener} used to setup close button in IPH dialog.
+     */
+    void setupCloseIphDialogButtonOnclickListener(View.OnClickListener listener) {
+        mCloseIPHDialogButton.setOnClickListener(listener);
+    }
+
+    /**
+     * Setup the {@link View.OnClickListener} for the button that shows the IPH dialog.
+     *
+     * @param listener The {@link View.OnClickListener} used to setup show IPH button.
+     */
+    void setupShowIphButtonOnclickListener(View.OnClickListener listener) {
+        mShowIPHDialogButton.setOnClickListener(listener);
+    }
+
+    /**
+     * Setup the {@link ScrimView.ScrimParams} for the {@link ScrimView}.
+     *
+     * @param observer The {@link ScrimView.ScrimObserver} used to setup the scrim view params.
+     */
+    void setupIPHDialogScrimViewObserver(ScrimView.ScrimObserver observer) {
+        mScrimParams = new ScrimView.ScrimParams(mIphDialogView, false, true, 0, observer);
+    }
+
+    /**
+     * Close the IPH dialog and hide the scrim view.
+     */
+    void closeIphDialog() {
+        mIphWindow.dismiss();
+        mScrimView.hideScrim(true);
+    }
+
+    /**
+     * Show the scrim view and show dialog above it.
+     */
+    void showIPHDialog() {
+        if (mScrimParams != null) {
+            mScrimView.showScrim(mScrimParams);
+        }
+        mIphWindow.showAtLocation((View) getParent(), Gravity.CENTER, 0, 0);
+        ((Animatable) mIphDrawable).start();
     }
 }

@@ -70,6 +70,11 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
 
   base::WeakPtr<AssistantMediaSession> GetWeakPtr();
 
+  // Returns internal audio focus id.
+  base::UnguessableToken internal_audio_focus_id() {
+    return internal_audio_focus_id_;
+  }
+
  private:
   // Ensures that |audio_focus_ptr_| is connected.
   void EnsureServiceConnection();
@@ -128,6 +133,10 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   State audio_focus_state_ = State::INACTIVE;
 
   media_session::mojom::AudioFocusType audio_focus_type_;
+
+  // Audio focus request Id for the internal media which is playing.
+  base::UnguessableToken internal_audio_focus_id_ =
+      base::UnguessableToken::Null();
 
   base::WeakPtrFactory<AssistantMediaSession> weak_factory_;
 

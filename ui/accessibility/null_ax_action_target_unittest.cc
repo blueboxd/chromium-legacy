@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/null_ax_action_target.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
 

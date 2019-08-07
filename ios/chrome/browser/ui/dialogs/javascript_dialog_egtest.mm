@@ -23,6 +23,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #include "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -376,11 +377,6 @@ void TapSuppressDialogsButton() {
       chrome_test_util::ButtonWithAccessibilityLabelId(IDS_OK);
   [[EarlGrey selectElementWithMatcher:OKButton] performAction:grey_tap()
                                                         error:&errorOK];
-  // Reenable synchronization in case it was disabled by a test.  See comments
-  // in testShowJavaScriptAfterNewTabAnimation for details.
-  [[GREYConfiguration sharedInstance]
-          setValue:@(YES)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
   if (!errorOK || !errorCancel) {
     GREYFail(@"There are still alerts");
@@ -607,28 +603,23 @@ void TapSuppressDialogsButton() {
   // continues to animate until the dialog is closed.  Disabling EarlGrey
   // synchronization code for iPad allows the test to detect and dismiss the
   // dialog while this animation is occurring.
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    [[GREYConfiguration sharedInstance]
-            setValue:@(NO)
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  }
+  {
+    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+        std::make_unique<ScopedSynchronizationDisabler>();
+    if (![ChromeEarlGrey isIPadIdiom]) {
+      disabler.reset();
+    }
 
-  // Wait for the alert to be shown.
-  WaitForJavaScriptDialogToBeShown(self.onLoadPageURL);
+    // Wait for the alert to be shown.
+    WaitForJavaScriptDialogToBeShown(self.onLoadPageURL);
 
-  // Verify that the omnibox shows the correct URL when the dialog is visible.
-  std::string title =
-      base::UTF16ToUTF8(web::GetDisplayTitleForUrl(self.onLoadPageURL));
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(title)]
-      assertWithMatcher:grey_notNil()];
+    // Verify that the omnibox shows the correct URL when the dialog is visible.
+    std::string title =
+        base::UTF16ToUTF8(web::GetDisplayTitleForUrl(self.onLoadPageURL));
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(title)]
+        assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
-
-  // Reenable synchronization on iPads now that the dialog has been dismissed.
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    [[GREYConfiguration sharedInstance]
-            setValue:@(YES)
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
+    [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
   }
 }
 

@@ -175,7 +175,7 @@ OnScreenKeyboardDisplayManagerInputPane::
     : hwnd_(hwnd),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       background_task_runner_(
-          base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})),
+          base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})),
       virtual_keyboard_input_pane_(
           base::MakeRefCounted<OnScreenKeyboardDisplayManagerInputPane::
                                    VirtualKeyboardInputPane>(
@@ -236,7 +236,7 @@ bool OnScreenKeyboardDisplayManagerInputPane::IsKeyboardVisible() {
 void OnScreenKeyboardDisplayManagerInputPane::SetInputPaneForTesting(
     Microsoft::WRL::ComPtr<ABI::Windows::UI::ViewManagement::IInputPane> pane) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})
+  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(
                      &OnScreenKeyboardDisplayManagerInputPane::

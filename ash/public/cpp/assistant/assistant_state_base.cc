@@ -44,4 +44,13 @@ std::string AssistantStateBase::ToString() const {
   return result.str();
 }
 
+void AssistantStateBase::AddObserver(AssistantStateObserver* observer) {
+  observers_.AddObserver(observer);
+  InitializeObserver(observer);
+}
+
+void AssistantStateBase::RemoveObserver(AssistantStateObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 }  // namespace ash

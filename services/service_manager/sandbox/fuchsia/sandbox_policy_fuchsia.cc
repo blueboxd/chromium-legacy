@@ -80,7 +80,6 @@ constexpr SandboxConfig kSandboxConfigs[] = {
     {
         SANDBOX_TYPE_NETWORK,
         base::make_span((const char* const[]){
-            fuchsia::net::SocketProvider::Name_,
             fuchsia::net::NameLookup::Name_, fuchsia::netstack::Netstack::Name_,
             "fuchsia.posix.socket.Provider"}),
         kProvideSslConfig,

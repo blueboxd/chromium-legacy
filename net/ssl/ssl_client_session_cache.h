@@ -77,6 +77,9 @@ class NET_EXPORT SSLClientSessionCache {
   // checked for stale entries.
   void Insert(const Key& cache_key, bssl::UniquePtr<SSL_SESSION> session);
 
+  // Removes all entries associated with |server|.
+  void FlushForServer(const HostPortPair& server);
+
   // Removes all entries from the cache.
   void Flush();
 

@@ -122,6 +122,11 @@ class ASH_EXPORT ShelfView : public views::View,
   Shelf* shelf() const { return shelf_; }
   ShelfModel* model() const { return model_; }
 
+  // Returns the size occupied by |count| app icons. If |with_overflow| is
+  // true, returns the size of |count| app icons followed by an overflow
+  // button.
+  static int GetSizeOfAppIcons(int count, bool with_overflow);
+
   // Initializes shelf view elements.
   void Init();
 

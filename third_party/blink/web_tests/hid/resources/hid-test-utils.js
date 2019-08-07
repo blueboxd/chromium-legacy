@@ -1,3 +1,126 @@
+// Compare two DataViews byte-by-byte.
+function compareDataViews(actual, expected) {
+  assert_true(actual instanceof DataView, 'actual is DataView');
+  assert_true(expected instanceof DataView, 'expected is DataView');
+  assert_equals(actual.byteLength, expected.byteLength, 'lengths equal');
+  for (let i = 0; i < expected.byteLength; ++i) {
+    assert_equals(actual.getUint8(i), expected.getUint8(i),
+                  `Mismatch at byte ${i}.`);
+  }
+}
+
+// Returns a Promise that resolves once |device| receives an input report.
+function oninputreport(device) {
+  assert_true(device instanceof HIDDevice)
+  return new Promise(resolve => { device.oninputreport = resolve; });
+}
+
+// Fake implementation of device.mojom.HidConnection. HidConnection represents
+// an open connection to a HID device and can be used to send and receive
+// reports.
+class FakeHidConnection {
+  constructor(client) {
+    this.client_ = client;
+    this.expectedWrites_ = [];
+    this.expectedGetFeatureReports_ = [];
+    this.expectedSendFeatureReports_ = [];
+  }
+
+  bind(request) {
+    assert_equals(this.binding, undefined);
+    this.binding = new mojo.Binding(device.mojom.HidConnection, this, request);
+    this.binding.setConnectionErrorHandler(() => { this.binding = undefined; });
+  }
+
+  // Simulate an input report sent from the device to the host. The connection
+  // client's onInputReport method will be called with the provided |reportId|
+  // and |buffer|.
+  simulateInputReport(reportId, reportData) {
+    if (this.client_) {
+      this.client_.onInputReport(reportId, reportData);
+    }
+  }
+
+  // Specify the result for an expected call to write. If |success| is true the
+  // write will be successful, otherwise it will simulate a failure. The
+  // parameters of the next write call must match |reportId| and |buffer|.
+  queueExpectedWrite(success, reportId, reportData) {
+    this.expectedWrites_.push({
+      params: { reportId: reportId, data: reportData },
+      result: { success: success },
+    });
+  }
+
+  // Specify the result for an expected call to getFeatureReport. If |success|
+  // is true the operation is successful, otherwise it will simulate a failure.
+  // The parameter of the next getFeatureReport call must match |reportId|.
+  queueExpectedGetFeatureReport(success, reportId, reportData) {
+    this.expectedGetFeatureReports_.push({
+      params: { reportId: reportId, },
+      result: { success: success, buffer: reportData },
+    });
+  }
+
+  // Specify the result for an expected call to sendFeatureReport. If |success|
+  // is true the operation is successful, otherwise it will simulate a failure.
+  // The parameters of the next sendFeatureReport call must match |reportId| and
+  // |buffer|.
+  queueExpectedSendFeatureReport(success, reportId, reportData) {
+    this.expectedSendFeatureReports_.push({
+      params: { reportId: reportId, data: reportData },
+      result: { success: success },
+    });
+  }
+
+  // Asserts that there are no more expected operations.
+  assertExpectationsMet() {
+    assert_equals(this.expectedWrites_.length, 0);
+    assert_equals(this.expectedGetFeatureReports_.length, 0);
+    assert_equals(this.expectedSendFeatureReports_.length, 0);
+  }
+
+  // Implementation of HidConnection::Write. Causes an assertion failure if
+  // there are no expected write operations, or if the parameters do not match
+  // the expected call.
+  async write(reportId, buffer) {
+    let expectedWrite = this.expectedWrites_.shift();
+    assert_not_equals(expectedWrite, undefined);
+    assert_equals(reportId, expectedWrite.params.reportId);
+    let actual = new Uint8Array(buffer);
+    compareDataViews(
+        new DataView(actual.buffer, actual.byteOffset),
+        new DataView(expectedWrite.params.data.buffer,
+                     expectedWrite.params.data.byteOffset));
+    return expectedWrite.result;
+  }
+
+  // Implementation of HidConnection::GetFeatureReport. Causes an assertion
+  // failure if there are no expected write operations, or if the parameters do
+  // not match the expected call.
+  async getFeatureReport(reportId) {
+    let expectedGetFeatureReport = this.expectedGetFeatureReports_.shift();
+    assert_not_equals(expectedGetFeatureReport, undefined);
+    assert_equals(reportId, expectedGetFeatureReport.params.reportId);
+    return expectedGetFeatureReport.result;
+  }
+
+  // Implementation of HidConnection::SendFeatureReport. Causes an assertion
+  // failure if there are no expected write operations, or if the parameters do
+  // not match the expected call.
+  async sendFeatureReport(reportId, buffer) {
+    let expectedSendFeatureReport = this.expectedSendFeatureReports_.shift();
+    assert_not_equals(expectedSendFeatureReport, undefined);
+    assert_equals(reportId, expectedSendFeatureReport.params.reportId);
+    let actual = new Uint8Array(buffer);
+    compareDataViews(
+        new DataView(actual.buffer, actual.byteOffset),
+        new DataView(expectedSendFeatureReport.params.data.buffer,
+                     expectedSendFeatureReport.params.data.byteOffset));
+    return expectedSendFeatureReport.result;
+  }
+}
+
+
 // A fake implementation of the HidService mojo interface. HidService manages
 // HID device access for clients in the render process. Typically, when a client
 // requests access to a HID device a chooser dialog is shown with a list of
@@ -28,6 +151,7 @@ class FakeHidService {
 
   reset() {
     this.devices_ = new Map();
+    this.fakeConnections_ = new Map();
     this.selectedDevice_ = null;
   }
 
@@ -66,6 +190,12 @@ class FakeHidService {
     this.selectedDevice_ = this.devices_.get(guid);
   }
 
+  // Returns the fake HidConnection object for this device, if there is one. A
+  // connection is created once the device is opened.
+  getFakeConnection(guid) {
+    return this.fakeConnections_.get(guid);
+  }
+
   bind(handle) {
     this.bindingSet_.addBinding(this, handle);
   }
@@ -81,6 +211,17 @@ class FakeHidService {
   // simulated selection. |filters| is ignored.
   async requestDevice(filters) {
     return { device: this.selectedDevice_ };
+  }
+
+  // Returns a fake connection to the device with the specified GUID. If
+  // |connectionClient| is not null, its onInputReport method will be called
+  // when input reports are received.
+  async connect(guid, connectionClient) {
+    let fakeConnection = new FakeHidConnection(connectionClient);
+    let connectionPtr = new device.mojom.HidConnectionPtr();
+    fakeConnection.bind(mojo.makeRequest(connectionPtr));
+    this.fakeConnections_.set(guid, fakeConnection);
+    return { connection: connectionPtr };
   }
 }
 

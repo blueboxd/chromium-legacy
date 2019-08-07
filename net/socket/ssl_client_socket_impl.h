@@ -44,7 +44,9 @@ namespace net {
 
 class SSLCertRequestInfo;
 class SSLInfo;
+class SSLPrivateKey;
 class SSLKeyLogger;
+class X509Certificate;
 
 class SSLClientSocketImpl : public SSLClientSocket,
                             public SocketBIOAdapter::Delegate {
@@ -274,6 +276,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   bool disconnected_;
 
   NextProto negotiated_protocol_;
+
   // Set to true if a CertificateRequest was received.
   bool certificate_requested_;
 
@@ -291,6 +294,14 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // True if there was a certificate error which should be treated as fatal,
   // and false otherwise.
   bool is_fatal_cert_error_;
+
+  // True if the socket should respond to client certificate requests with
+  // |client_cert_| and |client_private_key_|, which may be null to continue
+  // with no certificate. If false, client certificate requests will result in
+  // ERR_SSL_CLIENT_AUTH_CERT_NEEDED.
+  bool send_client_cert_;
+  scoped_refptr<X509Certificate> client_cert_;
+  scoped_refptr<SSLPrivateKey> client_private_key_;
 
   NetLogWithSource net_log_;
   base::WeakPtrFactory<SSLClientSocketImpl> weak_factory_{this};

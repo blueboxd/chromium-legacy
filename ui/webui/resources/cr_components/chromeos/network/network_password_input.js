@@ -62,6 +62,10 @@ Polymer({
 
   focus: function() {
     this.$$('cr-input').focus();
+
+    // If the input has any contents, the should be selected when focus is
+    // applied.
+    this.$$('cr-input').select();
   },
 
   /**
@@ -164,6 +168,4 @@ Polymer({
   onInput_: function(e) {
     this.restoreUnknown_ = false;
   },
-
-
 });

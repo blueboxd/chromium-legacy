@@ -262,6 +262,10 @@ class MediaRouterViewsUI
   void SendIssueForUnableToCast(MediaCastMode cast_mode,
                                 const MediaSink::Id& sink_id);
 
+  // Creates and sends an issue for notifying the user that the tab audio cannot
+  // be mirrored from their device.
+  void SendIssueForTabAudioNotSupported(const MediaSink::Id& sink_id);
+
   // Returns the IssueManager associated with |router_|.
   IssueManager* GetIssueManager();
 

@@ -2412,6 +2412,44 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ContentIndex.Added">
+  <owner>rayankans@chromium.org</owner>
+  <summary>
+    Collected when a new Content Index entry is registered.
+  </summary>
+  <metric name="Category" enum="ContentIndexCategory">
+    <summary>
+      The type of the content registered. Corresponds to
+      blink.mojom.ContentCategory.
+    </summary>
+  </metric>
+</event>
+
+<event name="ContentIndex.DeletedByUser">
+  <owner>rayankans@chromium.org</owner>
+  <summary>
+    Collected when a Content Index entry is deleted by the user from the
+    Downloads page.
+  </summary>
+  <metric name="Deleted" enum="Boolean">
+    <summary>
+      Always true.
+    </summary>
+  </metric>
+</event>
+
+<event name="ContentIndex.Opened">
+  <owner>rayankans@chromium.org</owner>
+  <summary>
+    Collected when a Content Index entry is opened from the Downloads page.
+  </summary>
+  <metric name="IsOffline" enum="Boolean">
+    <summary>
+      Whether the browser was offline when the content was opened.
+    </summary>
+  </metric>
+</event>
+
 <event name="ContextualSearch">
   <owner>donnd@chromium.org</owner>
   <summary>

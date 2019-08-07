@@ -126,8 +126,7 @@ int main(int argc, const char** argv) {
               << u_errorName(status) << ".\n";
     return 1;
   }
-  GenerateSkeletons("alexa_domains.list", "alexa_domains.skeletons",
-                    spoof_checker.get());
+  GenerateSkeletons("domains.list", "domains.skeletons", spoof_checker.get());
   GenerateSkeletons("test_domains.list", "test_domains.skeletons",
                     spoof_checker.get());
 }

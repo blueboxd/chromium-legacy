@@ -113,11 +113,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void AddUiModelObserver(AssistantUiModelObserver* observer) = 0;
   virtual void RemoveUiModelObserver(AssistantUiModelObserver* observer) = 0;
 
-  // Adds/removes the Assistant prefs observer associated with the view
-  // delegate.
-  virtual void AddAssistantPrefsObserver(AssistantPrefsObserver* observer) = 0;
-  virtual void RemoveAssistantPrefsObserver(
-      AssistantPrefsObserver* observer) = 0;
+  // Adds/removes the state observer associated with the view delegate.
+  virtual void AddStateObserver(AssistantStateObserver* observer) = 0;
+  virtual void RemoveStateObserver(AssistantStateObserver* observer) = 0;
 
   // Gets the caption bar delegate associated with the view delegate.
   virtual CaptionBarDelegate* GetCaptionBarDelegate() = 0;
@@ -129,8 +127,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
       const GURL& url,
       AssistantImageDownloader::DownloadCallback callback) = 0;
 
-  // Returns the status of the user's consent.
-  virtual int GetConsentStatus() const = 0;
+  virtual AssistantStateBase* GetState() const = 0;
 
   // Returns the cursor_manager.
   virtual ::wm::CursorManager* GetCursorManager() = 0;
@@ -143,9 +140,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
 
   // Returns the root window that newly created windows should be added to.
   virtual aura::Window* GetRootWindowForNewWindows() = 0;
-
-  // Returns true if user prefers to start with voice interaction.
-  virtual bool IsLaunchWithMicOpen() const = 0;
 
   // Returns true if in tablet mode.
   virtual bool IsTabletMode() const = 0;

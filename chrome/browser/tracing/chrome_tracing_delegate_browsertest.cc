@@ -104,10 +104,10 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
                     done_callback) {
     receive_count_ += 1;
 
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(std::move(done_callback), true));
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             on_upload_callback_);
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(std::move(done_callback), true));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   on_upload_callback_);
   }
 
   void OnStartedFinalizing(bool success) {
@@ -115,8 +115,8 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
     last_on_started_finalizing_success_ = success;
 
     if (!on_started_finalization_callback_.is_null()) {
-      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                               on_started_finalization_callback_);
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     on_started_finalization_callback_);
     }
   }
 

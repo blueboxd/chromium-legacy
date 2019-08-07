@@ -15142,7 +15142,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_NoFalseStart) {
   // allowing the connection to continue restarting.
   scoped_refptr<X509Certificate> client_cert;
   scoped_refptr<SSLPrivateKey> client_private_key;
-  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_TRUE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
   ASSERT_FALSE(client_cert);
 
@@ -15154,7 +15154,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_NoFalseStart) {
 
   // Ensure that the client certificate is removed from the cache on a
   // handshake failure.
-  ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_FALSE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
 }
 
@@ -15260,7 +15260,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_FalseStart) {
   // allowing the connection to continue restarting.
   scoped_refptr<X509Certificate> client_cert;
   scoped_refptr<SSLPrivateKey> client_private_key;
-  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_TRUE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
   ASSERT_FALSE(client_cert);
 
@@ -15272,7 +15272,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_FalseStart) {
 
   // Ensure that the client certificate is removed from the cache on a
   // handshake failure.
-  ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_FALSE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
 }
 
@@ -15397,12 +15397,12 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
         // allowing the connection to continue restarting.
         scoped_refptr<X509Certificate> client_cert;
         scoped_refptr<SSLPrivateKey> client_private_key;
-        ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+        ASSERT_TRUE(session->ssl_client_context()->GetClientCertificate(
             HostPortPair("proxy", 70), &client_cert, &client_private_key));
         ASSERT_FALSE(client_cert);
         // Ensure the certificate was NOT cached for the endpoint. This only
         // applies to HTTPS requests, but is fine to check for HTTP requests.
-        ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+        ASSERT_FALSE(session->ssl_client_context()->GetClientCertificate(
             HostPortPair("www.example.com", 443), &client_cert,
             &client_private_key));
 
@@ -15414,9 +15414,9 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
 
         // Now that the new handshake has failed, ensure that the client
         // certificate was removed from the client auth cache.
-        ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+        ASSERT_FALSE(session->ssl_client_context()->GetClientCertificate(
             HostPortPair("proxy", 70), &client_cert, &client_private_key));
-        ASSERT_FALSE(session->ssl_client_auth_cache()->Lookup(
+        ASSERT_FALSE(session->ssl_client_context()->GetClientCertificate(
             HostPortPair("www.example.com", 443), &client_cert,
             &client_private_key));
       }
@@ -15493,7 +15493,7 @@ TEST_F(HttpNetworkTransactionTest, CertificateRequestInRenego) {
   // allowing the connection to continue restarting.
   scoped_refptr<X509Certificate> client_cert;
   scoped_refptr<SSLPrivateKey> client_private_key;
-  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_TRUE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
   EXPECT_TRUE(client_cert->EqualsIncludingChain(identity->certificate()));
 
@@ -15503,7 +15503,7 @@ TEST_F(HttpNetworkTransactionTest, CertificateRequestInRenego) {
   EXPECT_EQ(200, trans.GetResponseInfo()->headers->response_code());
 
   // The client certificate remains in the cache.
-  ASSERT_TRUE(session->ssl_client_auth_cache()->Lookup(
+  ASSERT_TRUE(session->ssl_client_context()->GetClientCertificate(
       HostPortPair("www.example.com", 443), &client_cert, &client_private_key));
   EXPECT_TRUE(client_cert->EqualsIncludingChain(identity->certificate()));
 }
@@ -20240,6 +20240,17 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   mock_reads3.emplace_back(
       "HTTP/1.1 200 OK\r\n"
       "Content-Length: 0\r\n\r\n");
+  // The client makes another request. This should reuse the socket with all
+  // credentials cached.
+  mock_writes3.emplace_back(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "Connection: keep-alive\r\n"
+      // Authenticate as user:pass.
+      "Authorization: Basic dXNlcjpwYXNz\r\n\r\n");
+  mock_reads3.emplace_back(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 0\r\n\r\n");
   StaticSocketDataProvider data3(mock_reads3, mock_writes3);
   session_deps_.socket_factory->AddSocketDataProvider(&data3);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy3);
@@ -20297,6 +20308,14 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
 
   // The request completes.
   ASSERT_THAT(rv, IsOk());
+  EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
+
+  // Make a second request. This time all credentials are cached.
+  trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  ASSERT_THAT(callback.GetResult(trans->Start(&request, callback.callback(),
+                                              NetLogWithSource())),
+              IsOk());
   EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
 }
 
@@ -20447,6 +20466,38 @@ TEST_F(HttpNetworkTransactionTest, AuthEverythingWithConnectClose) {
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy5);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin5);
 
+  // The client makes a second request. This needs yet another connection, but
+  // all credentials are cached.
+  SSLSocketDataProvider ssl_proxy6(ASYNC, OK);
+  ssl_proxy6.expected_send_client_cert = true;
+  ssl_proxy6.expected_client_cert = identity_proxy->certificate();
+  std::vector<MockWrite> mock_writes6;
+  std::vector<MockRead> mock_reads6;
+  mock_writes6.emplace_back(
+      "CONNECT www.example.org:443 HTTP/1.1\r\n"
+      "Host: www.example.org:443\r\n"
+      "Proxy-Connection: keep-alive\r\n"
+      // Authenticate as proxyuser:proxypass.
+      "Proxy-Authorization: Basic cHJveHl1c2VyOnByb3h5cGFzcw==\r\n\r\n");
+  mock_reads6.emplace_back("HTTP/1.1 200 Connection Established\r\n\r\n");
+  SSLSocketDataProvider ssl_origin6(ASYNC, OK);
+  ssl_origin6.expected_send_client_cert = true;
+  ssl_origin6.expected_client_cert = identity_origin->certificate();
+  mock_writes6.emplace_back(
+      "GET / HTTP/1.1\r\n"
+      "Host: www.example.org\r\n"
+      "Connection: keep-alive\r\n"
+      // Authenticate as user:pass.
+      "Authorization: Basic dXNlcjpwYXNz\r\n\r\n");
+  mock_reads6.emplace_back(
+      "HTTP/1.1 200 OK\r\n"
+      "Connection: close\r\n"
+      "Content-Length: 0\r\n\r\n");
+  StaticSocketDataProvider data6(mock_reads6, mock_writes6);
+  session_deps_.socket_factory->AddSocketDataProvider(&data6);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy6);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin6);
+
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
   // Start the request.
@@ -20499,6 +20550,14 @@ TEST_F(HttpNetworkTransactionTest, AuthEverythingWithConnectClose) {
 
   // The request completes.
   ASSERT_THAT(rv, IsOk());
+  EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
+
+  // Make a second request. This time all credentials are cached.
+  trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  ASSERT_THAT(callback.GetResult(trans->Start(&request, callback.callback(),
+                                              NetLogWithSource())),
+              IsOk());
   EXPECT_EQ(200, trans->GetResponseInfo()->headers->response_code());
 }
 
@@ -21553,6 +21612,297 @@ TEST_F(HttpNetworkTransactionTest, SSLConfigChangedPendingConnect) {
   ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_context_config);
 
   EXPECT_THAT(callback.GetResult(rv), IsError(ERR_NETWORK_CHANGED));
+}
+
+// Test that HttpNetworkTransaction correctly handles existing sockets when the
+// server requests a client certificate post-handshake (via a TLS
+// renegotiation). This is a regression test for https://crbug.com/829184.
+TEST_F(HttpNetworkTransactionTest, PostHandshakeClientCertWithSockets) {
+  const MutableNetworkTrafficAnnotationTag kTrafficAnnotation(
+      TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  auto cert_request_info = base::MakeRefCounted<SSLCertRequestInfo>();
+  cert_request_info->host_and_port = HostPortPair("foo.test", 443);
+
+  std::unique_ptr<FakeClientCertIdentity> identity =
+      FakeClientCertIdentity::CreateFromCertAndKeyFiles(
+          GetTestCertsDirectory(), "client_1.pem", "client_1.pk8");
+  ASSERT_TRUE(identity);
+
+  // This test will make several requests so that, when the client certificate
+  // request comes in, we have a socket in use, an idle socket, and a socket for
+  // an unrelated host.
+  //
+  // First, two long-lived requests which do not complete until after the client
+  // certificate request. This arranges for sockets to be in use during the
+  // request. They should not be interrupted.
+  HttpRequestInfo request_long_lived;
+  request_long_lived.method = "GET";
+  request_long_lived.url = GURL("https://foo.test/long-lived");
+  request_long_lived.traffic_annotation = kTrafficAnnotation;
+
+  HttpRequestInfo request_long_lived_bar;
+  request_long_lived_bar.method = "GET";
+  request_long_lived_bar.url = GURL("https://bar.test/long-lived");
+  request_long_lived_bar.traffic_annotation = kTrafficAnnotation;
+
+  // Next, make a request that needs client certificates.
+  HttpRequestInfo request_auth;
+  request_auth.method = "GET";
+  request_auth.url = GURL("https://foo.test/auth");
+  request_auth.traffic_annotation = kTrafficAnnotation;
+
+  // Before responding to the challenge, make a request to an unauthenticated
+  // endpoint. This will result in an idle socket when the client certificate
+  // challenge is resolved.
+  HttpRequestInfo request_unauth;
+  request_unauth.method = "GET";
+  request_unauth.url = GURL("https://foo.test/unauth");
+  request_unauth.traffic_annotation = kTrafficAnnotation;
+
+  // After all the preceding requests complete, end with two additional requests
+  // to ensure pre-authentication foo.test sockets are not used and bar.test
+  // sockets are unaffected.
+  HttpRequestInfo request_post_auth;
+  request_post_auth.method = "GET";
+  request_post_auth.url = GURL("https://foo.test/post-auth");
+  request_post_auth.traffic_annotation = kTrafficAnnotation;
+
+  HttpRequestInfo request_post_auth_bar;
+  request_post_auth_bar.method = "GET";
+  request_post_auth_bar.url = GURL("https://bar.test/post-auth");
+  request_post_auth_bar.traffic_annotation = kTrafficAnnotation;
+
+  // The sockets for /long-lived and /unauth complete their request but are
+  // not allocated for /post-auth or /retry because SSL state has since changed.
+  const MockWrite kLongLivedWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /long-lived HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kLongLivedReads[] = {
+      // Pause so /long-lived completes after the client presents client
+      // certificates.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2,
+               "HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 10\r\n\r\n"
+               "long-lived"),
+  };
+  SequencedSocketData data_long_lived(kLongLivedReads, kLongLivedWrites);
+  SSLSocketDataProvider ssl_long_lived(ASYNC, OK);
+  session_deps_.socket_factory->AddSocketDataProvider(&data_long_lived);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_long_lived);
+
+  // Requests for bar.test should be unaffected by foo.test and get allocated
+  // a single socket.
+  const MockWrite kBarWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /long-lived HTTP/1.1\r\n"
+                "Host: bar.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+      MockWrite(ASYNC, 3,
+                "GET /post-auth HTTP/1.1\r\n"
+                "Host: bar.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kBarReads[] = {
+      // Pause on /long-lived so it completes after foo.test's authentication.
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      MockRead(ASYNC, 2,
+               "HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 10\r\n\r\n"
+               "long-lived"),
+      MockRead(ASYNC, 4,
+               "HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 9\r\n\r\n"
+               "post-auth"),
+  };
+  SequencedSocketData data_bar(kBarReads, kBarWrites);
+  SSLSocketDataProvider ssl_bar(ASYNC, OK);
+  session_deps_.socket_factory->AddSocketDataProvider(&data_bar);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_bar);
+
+  // Requesting /auth results in a post-handshake client certificate challenge.
+  const MockWrite kAuthWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /auth HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kAuthReads[] = {
+      MockRead(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED, 1),
+  };
+  SequencedSocketData data_auth(kAuthReads, kAuthWrites);
+  SSLSocketDataProvider ssl_auth(ASYNC, OK);
+  ssl_auth.cert_request_info = cert_request_info.get();
+  session_deps_.socket_factory->AddSocketDataProvider(&data_auth);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_auth);
+
+  // Requesting /unauth completes.
+  const MockWrite kUnauthWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /unauth HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kUnauthReads[] = {
+      MockRead(ASYNC, 1,
+               "HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 6\r\n\r\n"
+               "unauth"),
+  };
+  SequencedSocketData data_unauth(kUnauthReads, kUnauthWrites);
+  SSLSocketDataProvider ssl_unauth(ASYNC, OK);
+  session_deps_.socket_factory->AddSocketDataProvider(&data_unauth);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_unauth);
+
+  // When the client certificate is selected, /auth is retried on a new
+  // connection. In particular, it should not be retried on |data_unauth|,
+  // which would not honor the new client certificate configuration.
+  const MockWrite kRetryWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /auth HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kRetryReads[] = {
+      MockRead(ASYNC, 1,
+               "HTTP/1.1 200 OK\r\n"
+               // Close the connection so we test that /post-auth is not
+               // allocated to |data_unauth| or |data_long_lived|.
+               "Connection: close\r\n"
+               "Content-Length: 4\r\n\r\n"
+               "auth"),
+  };
+  SequencedSocketData data_retry(kRetryReads, kRetryWrites);
+  SSLSocketDataProvider ssl_retry(ASYNC, OK);
+  ssl_retry.expected_send_client_cert = true;
+  ssl_retry.expected_client_cert = identity->certificate();
+  session_deps_.socket_factory->AddSocketDataProvider(&data_retry);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_retry);
+
+  // /post-auth gets its own socket.
+  const MockWrite kPostAuthWrites[] = {
+      MockWrite(ASYNC, 0,
+                "GET /post-auth HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+  const MockRead kPostAuthReads[] = {
+      MockRead(ASYNC, 1,
+               "HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 9\r\n\r\n"
+               "post-auth"),
+  };
+  SequencedSocketData data_post_auth(kPostAuthReads, kPostAuthWrites);
+  SSLSocketDataProvider ssl_post_auth(ASYNC, OK);
+  ssl_post_auth.expected_send_client_cert = true;
+  ssl_post_auth.expected_client_cert = identity->certificate();
+  session_deps_.socket_factory->AddSocketDataProvider(&data_post_auth);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_post_auth);
+
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+
+  // Start the two long-lived requests.
+  TestCompletionCallback callback_long_lived;
+  auto trans_long_lived =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = trans_long_lived->Start(
+      &request_long_lived, callback_long_lived.callback(), NetLogWithSource());
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+  data_long_lived.RunUntilPaused();
+
+  TestCompletionCallback callback_long_lived_bar;
+  auto trans_long_lived_bar =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans_long_lived_bar->Start(&request_long_lived_bar,
+                                   callback_long_lived_bar.callback(),
+                                   NetLogWithSource());
+  ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
+  data_bar.RunUntilPaused();
+
+  // Request /auth. This gives a client certificate challenge.
+  TestCompletionCallback callback_auth;
+  auto trans_auth =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans_auth->Start(&request_auth, callback_auth.callback(),
+                         NetLogWithSource());
+  EXPECT_THAT(callback_auth.GetResult(rv),
+              IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
+
+  // Make an unauthenticated request. This completes.
+  TestCompletionCallback callback_unauth;
+  auto trans_unauth =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans_unauth->Start(&request_unauth, callback_unauth.callback(),
+                           NetLogWithSource());
+  EXPECT_THAT(callback_unauth.GetResult(rv), IsOk());
+  std::string response_unauth;
+  EXPECT_THAT(ReadTransaction(trans_unauth.get(), &response_unauth), IsOk());
+  EXPECT_EQ("unauth", response_unauth);
+  trans_unauth.reset();
+
+  // Complete the authenticated request.
+  rv = trans_auth->RestartWithCertificate(identity->certificate(),
+                                          identity->ssl_private_key(),
+                                          callback_auth.callback());
+  EXPECT_THAT(callback_auth.GetResult(rv), IsOk());
+  std::string response_auth;
+  EXPECT_THAT(ReadTransaction(trans_auth.get(), &response_auth), IsOk());
+  EXPECT_EQ("auth", response_auth);
+  trans_auth.reset();
+
+  // Complete the long-lived requests.
+  data_long_lived.Resume();
+  EXPECT_THAT(callback_long_lived.GetResult(ERR_IO_PENDING), IsOk());
+  std::string response_long_lived;
+  EXPECT_THAT(ReadTransaction(trans_long_lived.get(), &response_long_lived),
+              IsOk());
+  EXPECT_EQ("long-lived", response_long_lived);
+  trans_long_lived.reset();
+
+  data_bar.Resume();
+  EXPECT_THAT(callback_long_lived_bar.GetResult(ERR_IO_PENDING), IsOk());
+  std::string response_long_lived_bar;
+  EXPECT_THAT(
+      ReadTransaction(trans_long_lived_bar.get(), &response_long_lived_bar),
+      IsOk());
+  EXPECT_EQ("long-lived", response_long_lived_bar);
+  trans_long_lived_bar.reset();
+
+  // Run the post-authentication requests.
+  TestCompletionCallback callback_post_auth;
+  auto trans_post_auth =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans_post_auth->Start(&request_post_auth, callback_post_auth.callback(),
+                              NetLogWithSource());
+  EXPECT_THAT(callback_post_auth.GetResult(rv), IsOk());
+  std::string response_post_auth;
+  EXPECT_THAT(ReadTransaction(trans_post_auth.get(), &response_post_auth),
+              IsOk());
+  EXPECT_EQ("post-auth", response_post_auth);
+  trans_post_auth.reset();
+
+  TestCompletionCallback callback_post_auth_bar;
+  auto trans_post_auth_bar =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans_post_auth_bar->Start(&request_post_auth_bar,
+                                  callback_post_auth_bar.callback(),
+                                  NetLogWithSource());
+  EXPECT_THAT(callback_post_auth_bar.GetResult(rv), IsOk());
+  std::string response_post_auth_bar;
+  EXPECT_THAT(
+      ReadTransaction(trans_post_auth_bar.get(), &response_post_auth_bar),
+      IsOk());
+  EXPECT_EQ("post-auth", response_post_auth_bar);
+  trans_post_auth_bar.reset();
 }
 
 }  // namespace net

@@ -28,37 +28,47 @@ void CreateNewEntry(content::WebContents* tab,
                     const std::string& target_device_name,
                     const std::string& target_device_guid,
                     const GURL& link_url) {
+  DCHECK(tab);
+
+  GURL shared_url = link_url;
+  std::string title = "";
+  base::Time navigation_time = base::Time();
+
   content::NavigationEntry* navigation_entry =
       tab->GetController().GetLastCommittedEntry();
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  GURL url = navigation_entry->GetURL();
-  std::string title = base::UTF16ToUTF8(navigation_entry->GetTitle());
-  base::Time navigation_time = navigation_entry->GetTimestamp();
 
+  // This should either be a valid link share or a valid tab share.
+  DCHECK(link_url.is_valid() || navigation_entry);
+
+  if (!link_url.is_valid()) {
+    // This is not link share, get the values from the last navigation entry.
+    shared_url = navigation_entry->GetURL();
+    title = base::UTF16ToUTF8(navigation_entry->GetTitle());
+    navigation_time = navigation_entry->GetTimestamp();
+  }
+
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  DCHECK(profile);
   SendTabToSelfModel* model =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile)
           ->GetSendTabToSelfModel();
+  DCHECK(model);
 
   UMA_HISTOGRAM_BOOLEAN("SendTabToSelf.Sync.ModelLoadedInTime",
                         model->IsReady());
   if (!model->IsReady()) {
-    DesktopNotificationHandler(profile).DisplayFailureMessage(url);
+    DesktopNotificationHandler(profile).DisplayFailureMessage(shared_url);
     return;
   }
 
-  const SendTabToSelfEntry* entry;
-  if (link_url.is_valid()) {
-    // When share a link.
-    entry = model->AddEntry(link_url, "", base::Time(), target_device_guid);
-  } else {
-    // When share a tab.
-    entry = model->AddEntry(url, title, navigation_time, target_device_guid);
-  }
+  const SendTabToSelfEntry* entry =
+      model->AddEntry(shared_url, title, navigation_time, target_device_guid);
+
   if (entry) {
     DesktopNotificationHandler(profile).DisplaySendingConfirmation(
         *entry, target_device_name);
   } else {
-    DesktopNotificationHandler(profile).DisplayFailureMessage(url);
+    DesktopNotificationHandler(profile).DisplayFailureMessage(shared_url);
   }
 }
 

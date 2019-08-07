@@ -15,17 +15,17 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-
-using blink::mojom::PermissionObserverPtr;
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 
 class PermissionServiceContext::PermissionSubscription {
  public:
-  PermissionSubscription(PermissionServiceContext* context,
-                         PermissionObserverPtr observer)
+  PermissionSubscription(
+      PermissionServiceContext* context,
+      mojo::PendingRemote<blink::mojom::PermissionObserver> observer)
       : context_(context), observer_(std::move(observer)) {
-    observer_.set_connection_error_handler(base::BindOnce(
+    observer_.set_disconnect_handler(base::BindOnce(
         &PermissionSubscription::OnConnectionError, base::Unretained(this)));
   }
 
@@ -51,7 +51,7 @@ class PermissionServiceContext::PermissionSubscription {
 
  private:
   PermissionServiceContext* context_;
-  PermissionObserverPtr observer_;
+  mojo::Remote<blink::mojom::PermissionObserver> observer_;
   int id_ = 0;
 };
 
@@ -73,30 +73,38 @@ PermissionServiceContext::~PermissionServiceContext() {
 }
 
 void PermissionServiceContext::CreateService(
-    blink::mojom::PermissionServiceRequest request) {
+    mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
   DCHECK(render_frame_host_);
-  services_.AddBinding(std::make_unique<PermissionServiceImpl>(
-                           this, render_frame_host_->GetLastCommittedOrigin()),
-                       std::move(request));
+  services_.Add(std::make_unique<PermissionServiceImpl>(
+                    this, render_frame_host_->GetLastCommittedOrigin()),
+                std::move(receiver));
 }
 
 void PermissionServiceContext::CreateServiceForWorker(
-    blink::mojom::PermissionServiceRequest request,
+    mojo::PendingReceiver<blink::mojom::PermissionService> receiver,
     const url::Origin& origin) {
-  services_.AddBinding(std::make_unique<PermissionServiceImpl>(this, origin),
-                       std::move(request));
+  services_.Add(std::make_unique<PermissionServiceImpl>(this, origin),
+                std::move(receiver));
 }
 
 void PermissionServiceContext::CreateSubscription(
     PermissionType permission_type,
     const url::Origin& origin,
-    PermissionObserverPtr observer) {
+    blink::mojom::PermissionStatus current_status,
+    blink::mojom::PermissionStatus last_known_status,
+    mojo::PendingRemote<blink::mojom::PermissionObserver> observer) {
   BrowserContext* browser_context = GetBrowserContext();
   if (!browser_context)
     return;
 
   auto subscription =
       std::make_unique<PermissionSubscription>(this, std::move(observer));
+
+  if (current_status != last_known_status) {
+    subscription->OnPermissionStatusChanged(current_status);
+    last_known_status = current_status;
+  }
+
   GURL requesting_origin(origin.Serialize());
   int subscription_id =
       PermissionControllerImpl::FromBrowserContext(browser_context)
@@ -139,7 +147,7 @@ void PermissionServiceContext::CloseBindings(
   if (render_frame_host != render_frame_host_)
     return;
 
-  services_.CloseAllBindings();
+  services_.Clear();
   subscriptions_.clear();
 }
 

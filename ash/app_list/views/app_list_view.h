@@ -172,7 +172,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
-  bool CanProcessEventsWithinSubtree() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
 

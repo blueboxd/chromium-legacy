@@ -319,6 +319,9 @@ extern const char kEnableAutofillNativeDropdownViewsDescription[];
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[];
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
 
+extern const char kEnableAutofillUpdatedCardUnmaskPromptUiName[];
+extern const char kEnableAutofillUpdatedCardUnmaskPromptUiDescription[];
+
 extern const char kEnableDeferAllScriptName[];
 extern const char kEnableDeferAllScriptDescription[];
 
@@ -920,6 +923,9 @@ extern const char kPeriodicBackgroundSyncDescription[];
 
 extern const char kPerMethodCanMakePaymentQuotaName[];
 extern const char kPerMethodCanMakePaymentQuotaDescription[];
+
+extern const char kPolicyAtomicGroupsEnabledName[];
+extern const char kPolicyAtomicGroupsEnabledDescription[];
 
 extern const char kPreviewsAllowedName[];
 extern const char kPreviewsAllowedDescription[];
@@ -1939,10 +1945,6 @@ extern const char kEnableZeroStateSuggestionsDescription[];
 extern const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[];
 extern const char
     kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[];
-
-extern const char kExperimentalAccessibilityChromeVoxRichTextIndicationName[];
-extern const char
-    kExperimentalAccessibilityChromeVoxRichTextIndicationDescription[];
 
 extern const char kExperimentalAccessibilitySwitchAccessName[];
 extern const char kExperimentalAccessibilitySwitchAccessDescription[];

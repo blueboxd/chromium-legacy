@@ -213,7 +213,6 @@ TEST_F(ScrollTimelineUtilTest, GetCompositorScrollElementIdNoUniqueId) {
   SetBodyInnerHTML("<div id='test'></div>");
   Element* test = GetElementById("test");
   ASSERT_TRUE(test->GetLayoutObject());
-  ASSERT_FALSE(test->GetLayoutObject()->UniqueId());
   EXPECT_EQ(GetCompositorScrollElementId(test), base::nullopt);
 }
 

@@ -36,7 +36,6 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
             std::make_unique<ArcSessionRunner>(
                 base::BindRepeating(FakeArcSession::Create)))),
         testing_profile_(std::make_unique<TestingProfile>()),
-        disable_cpu_restriction_counter_(0),
         record_uma_counter_(0) {
     chromeos::SessionManagerClient::InitializeFakeInMemory();
 
@@ -67,9 +66,6 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
   ArcBootPhaseMonitorBridge* boot_phase_monitor_bridge() const {
     return boot_phase_monitor_bridge_;
   }
-  size_t disable_cpu_restriction_counter() const {
-    return disable_cpu_restriction_counter_;
-  }
   size_t record_uma_counter() const { return record_uma_counter_; }
   base::TimeDelta last_time_delta() const { return last_time_delta_; }
 
@@ -84,10 +80,6 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
         : test_(test) {}
     ~TestDelegateImpl() override = default;
 
-    // ArcBootPhaseMonitorBridge::Delegate overrides:
-    void DisableCpuRestriction() override {
-      ++(test_->disable_cpu_restriction_counter_);
-    }
     void RecordFirstAppLaunchDelayUMA(base::TimeDelta delta) override {
       test_->last_time_delta_ = delta;
       ++(test_->record_uma_counter_);
@@ -111,7 +103,6 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
   std::unique_ptr<TestingProfile> testing_profile_;
   ArcBootPhaseMonitorBridge* boot_phase_monitor_bridge_;
 
-  size_t disable_cpu_restriction_counter_;
   size_t record_uma_counter_;
   base::TimeDelta last_time_delta_;
 
@@ -120,59 +111,6 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
 
 // Tests that ArcBootPhaseMonitorBridge can be constructed and destructed.
 TEST_F(ArcBootPhaseMonitorBridgeTest, TestConstructDestruct) {}
-
-// Tests that the throttle is created on BootCompleted.
-TEST_F(ArcBootPhaseMonitorBridgeTest, TestThrottleCreation) {
-  // Tell |arc_session_manager_| that this is not opt-in boot.
-  arc_session_manager()->set_directly_started_for_testing(true);
-
-  // Initially, |throttle_| is null.
-  EXPECT_EQ(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
-  // OnBootCompleted() creates it.
-  boot_phase_monitor_bridge()->OnBootCompleted();
-  EXPECT_NE(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
-  // ..but it's removed when the session stops.
-  boot_phase_monitor_bridge()->OnArcSessionStopped(ArcStopReason::SHUTDOWN);
-  EXPECT_EQ(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
-}
-
-// Tests the same but with OnSessionRestarting().
-TEST_F(ArcBootPhaseMonitorBridgeTest, TestThrottleCreation_Restart) {
-  // Tell |arc_session_manager_| that this is not opt-in boot.
-  arc_session_manager()->set_directly_started_for_testing(true);
-
-  EXPECT_EQ(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
-  boot_phase_monitor_bridge()->OnBootCompleted();
-  EXPECT_NE(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
-  // Call OnArcSessionRestarting() instead, and confirm that |throttle_| is
-  // gone.
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-  boot_phase_monitor_bridge()->OnArcSessionRestarting();
-  EXPECT_EQ(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
-  EXPECT_EQ(1U, disable_cpu_restriction_counter());
-  // Also make sure that |throttle| is created again once restarting id done.
-  boot_phase_monitor_bridge()->OnBootCompleted();
-  EXPECT_NE(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
-}
-
-// Tests that the throttle is created on ArcInitialStart when opting in.
-TEST_F(ArcBootPhaseMonitorBridgeTest, TestThrottleCreation_OptIn) {
-  // Tell |arc_session_manager_| that this *is* opt-in boot.
-  arc_session_manager()->set_directly_started_for_testing(false);
-
-  // Initially, |throttle_| is null.
-  EXPECT_EQ(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
-  // OnArcInitialStart(), which is called when the user accepts ToS, creates
-  // |throttle_|.
-  boot_phase_monitor_bridge()->OnArcInitialStart();
-  EXPECT_NE(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
-  // ..and OnBootCompleted() does not delete it.
-  boot_phase_monitor_bridge()->OnBootCompleted();
-  EXPECT_NE(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
-  // ..but it's removed when the session stops.
-  boot_phase_monitor_bridge()->OnArcSessionStopped(ArcStopReason::SHUTDOWN);
-  EXPECT_EQ(nullptr, boot_phase_monitor_bridge()->throttle_for_testing());
-}
 
 // Tests that the UMA recording function is never called unless
 // RecordFirstAppLaunchDelayUMA is called.
@@ -240,95 +178,6 @@ TEST_F(ArcBootPhaseMonitorBridgeTest, TestRecordUMA_AppLaunchesAfterBoot) {
   boot_phase_monitor_bridge()->RecordFirstAppLaunchDelayUMAForTesting();
   EXPECT_EQ(1U, record_uma_counter());
 }
-
-// Tests that CPU restriction is disabled when tab restoration is done.
-TEST_F(ArcBootPhaseMonitorBridgeTest, TestOnSessionRestoreFinishedLoadingTabs) {
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-  boot_phase_monitor_bridge()->OnSessionRestoreFinishedLoadingTabs();
-  EXPECT_EQ(1U, disable_cpu_restriction_counter());
-}
-
-// Tests that nothing happens if tab restoration is done after ARC boot.
-TEST_F(ArcBootPhaseMonitorBridgeTest,
-       TestOnSessionRestoreFinishedLoadingTabs_BootFirst) {
-  // Tell |arc_session_manager_| that this is not opt-in boot.
-  arc_session_manager()->set_directly_started_for_testing(true);
-
-  // However, OnSessionRestoreFinishedLoadingTabs() should be no-op when the
-  // instance has already fully started.
-  boot_phase_monitor_bridge()->OnBootCompleted();
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-  boot_phase_monitor_bridge()->OnSessionRestoreFinishedLoadingTabs();
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-}
-
-// Tests that OnExtensionsReady() does nothing by default.
-TEST_F(ArcBootPhaseMonitorBridgeTest, TestOnExtensionsReady) {
-  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-}
-
-// Tests that OnExtensionsReady() does nothing when prefs::kArcEnabled is not
-// set.
-TEST_F(ArcBootPhaseMonitorBridgeTest, TestOnExtensionsReady_ArcNotEnabled) {
-  boot_phase_monitor_bridge()->OnArcPlayStoreEnabledChanged(false);
-  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-}
-
-// Tests that OnExtensionsReady() does nothing when prefs::kArcEnabled is not
-// managed.
-TEST_F(ArcBootPhaseMonitorBridgeTest,
-       TestOnExtensionsReady_ArcEnabledButUnmanaged) {
-  GetPrefs()->SetUserPref(prefs::kArcEnabled,
-                          std::make_unique<base::Value>(true));
-  boot_phase_monitor_bridge()->OnArcPlayStoreEnabledChanged(true);
-  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-}
-
-// Tests that OnExtensionsReady() relaxes the CPU restriction when ARC is
-// enabled by policy.
-TEST_F(ArcBootPhaseMonitorBridgeTest,
-       TestOnExtensionsReady_ArcEnabledAndManaged) {
-  GetPrefs()->SetManagedPref(prefs::kArcEnabled,
-                             std::make_unique<base::Value>(true));
-  boot_phase_monitor_bridge()->OnArcPlayStoreEnabledChanged(true);
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
-  EXPECT_EQ(1U, disable_cpu_restriction_counter());
-}
-
-// Does the same but in a reversed event order.
-TEST_F(ArcBootPhaseMonitorBridgeTest,
-       TestOnExtensionsReady_ArcEnabledAndManaged2) {
-  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-  GetPrefs()->SetManagedPref(prefs::kArcEnabled,
-                             std::make_unique<base::Value>(true));
-  boot_phase_monitor_bridge()->OnArcPlayStoreEnabledChanged(true);
-  EXPECT_EQ(1U, disable_cpu_restriction_counter());
-}
-
-// Does the same but after ARC boot is completed. This emulates the
-// situation where ARC instance finishes booting before other conditions
-// (|extentions_ready_| and |enabled_by_policy_|) are met.
-// |disable_cpu_restriction_counter| should stay 0 in this case because
-// ArcInstanceThrottle already has the control.
-TEST_F(ArcBootPhaseMonitorBridgeTest,
-       TestOnExtensionsReady_AfterBootCompleted) {
-  // Tell |arc_session_manager_| that this is not opt-in boot.
-  arc_session_manager()->set_directly_started_for_testing(true);
-
-  GetPrefs()->SetManagedPref(prefs::kArcEnabled,
-                             std::make_unique<base::Value>(true));
-  boot_phase_monitor_bridge()->OnArcPlayStoreEnabledChanged(true);
-
-  boot_phase_monitor_bridge()->OnBootCompleted();
-  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
-  EXPECT_EQ(0U, disable_cpu_restriction_counter());
-}
-
 }  // namespace
 
 }  // namespace arc

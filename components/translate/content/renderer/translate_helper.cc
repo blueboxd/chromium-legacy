@@ -25,7 +25,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
@@ -292,10 +291,8 @@ void TranslateHelper::Translate(
   url::Origin translate_origin =
       url::Origin::Create(GetTranslateSecurityOrigin());
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    render_frame()->MarkInitiatorAsRequiringSeparateURLLoaderFactory(
-        translate_origin, std::move(loader_factory_for_translate_script));
-  }
+  render_frame()->MarkInitiatorAsRequiringSeparateURLLoaderFactory(
+      translate_origin, std::move(loader_factory_for_translate_script));
 
   WebLocalFrame* main_frame = render_frame()->GetWebFrame();
   if (!main_frame) {

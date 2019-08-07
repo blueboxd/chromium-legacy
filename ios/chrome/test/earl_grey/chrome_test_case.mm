@@ -104,6 +104,12 @@ UIDeviceOrientation GetCurrentDeviceOrientation() {
 
 }  // namespace
 
+// Category for overriding private methods on XCTestCase. See crbug.com/991338
+// for more information.
+@interface XCTestCase (Private)
+- (void)_recordFailure:(id)arg1;
+@end
+
 #if defined(CHROME_EARL_GREY_2)
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 #endif
@@ -177,6 +183,16 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
     return [self multitaskingTestNames];
   } else {
     return [super testInvocations];
+  }
+}
+
+- (void)_recordFailure:(id)arg1 {
+  if (@available(iOS 13, *)) {
+    // _recordFailure internally spends a very long time symbolicating
+    // on iOS13. Skipping this seems to be safe. See crbug.com/991338
+    // for more information.
+  } else {
+    [super _recordFailure:arg1];
   }
 }
 

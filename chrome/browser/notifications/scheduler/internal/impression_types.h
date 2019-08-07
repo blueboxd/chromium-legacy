@@ -25,6 +25,7 @@ namespace notifications {
 // an impression result, which may affect notification exposure.
 // 4. The impression is deleted after it expires.
 struct Impression {
+  using ImpressionResultMap = std::map<UserFeedback, ImpressionResult>;
   using CustomData = std::map<std::string, std::string>;
   Impression();
   Impression(SchedulerClientType type,
@@ -63,7 +64,7 @@ struct Impression {
   SchedulerClientType type = SchedulerClientType::kUnknown;
 
   // Used to override default impression result.
-  std::map<UserFeedback, ImpressionResult> impression_mapping;
+  ImpressionResultMap impression_mapping;
 
   // Custom data associated with a notification. Send back to the client when
   // the user interacts with the notification.

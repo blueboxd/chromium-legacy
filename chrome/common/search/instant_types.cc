@@ -29,7 +29,8 @@ bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
          logo_alternate == rhs.logo_alternate &&
          has_theme_image == rhs.has_theme_image &&
          theme_name == rhs.theme_name && color_id == rhs.color_id &&
-         color_dark == rhs.color_dark && color_light == rhs.color_light;
+         color_dark == rhs.color_dark && color_light == rhs.color_light &&
+         color_picked == rhs.color_picked;
 }
 
 InstantMostVisitedItem::InstantMostVisitedItem()

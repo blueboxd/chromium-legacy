@@ -221,6 +221,7 @@ public abstract class ChromeFeatureList {
     public static final String DOWNLOAD_HOME_V2 = "DownloadHomeV2";
     public static final String DOWNLOAD_LOCATION_SHOW_IMAGE_IN_GALLERY =
             "DownloadLocationShowImageInGallery";
+    public static final String DOWNLOAD_NOTIFICATION_BADGE = "DownloadNotificationBadge";
     public static final String DOWNLOAD_PROGRESS_INFOBAR = "DownloadProgressInfoBar";
     public static final String DOWNLOAD_RENAME = "DownloadRename";
     public static final String DOWNLOADS_FOREGROUND = "DownloadsForeground";

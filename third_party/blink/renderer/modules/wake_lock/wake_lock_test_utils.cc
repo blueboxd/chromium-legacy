@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
@@ -147,9 +149,10 @@ MockPermissionService::MockPermissionService() = default;
 MockPermissionService::~MockPermissionService() = default;
 
 void MockPermissionService::BindRequest(mojo::ScopedMessagePipeHandle handle) {
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(mojom::blink::PermissionServiceRequest(std::move(handle)));
-  binding_.set_connection_error_handler(WTF::Bind(
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(mojo::PendingReceiver<mojom::blink::PermissionService>(
+      std::move(handle)));
+  receiver_.set_disconnect_handler(WTF::Bind(
       &MockPermissionService::OnConnectionError, WTF::Unretained(this)));
 }
 
@@ -161,7 +164,7 @@ void MockPermissionService::SetPermissionResponse(WakeLockType type,
 }
 
 void MockPermissionService::OnConnectionError() {
-  binding_.Unbind();
+  ignore_result(receiver_.Unbind());
 }
 
 bool MockPermissionService::GetWakeLockTypeFromDescriptor(
@@ -235,7 +238,7 @@ void MockPermissionService::RevokePermission(PermissionDescriptorPtr permission,
 void MockPermissionService::AddPermissionObserver(
     PermissionDescriptorPtr permission,
     PermissionStatus last_known_status,
-    mojom::blink::PermissionObserverPtr) {
+    mojo::PendingRemote<mojom::blink::PermissionObserver>) {
   NOTREACHED();
 }
 

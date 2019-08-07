@@ -52,8 +52,8 @@ ScriptPromise PushMessagingBridge::GetPermissionState(
     const PushSubscriptionOptionsInit* options) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!permission_service_) {
-    ConnectToPermissionService(context,
-                               mojo::MakeRequest(&permission_service_));
+    ConnectToPermissionService(
+        context, permission_service_.BindNewPipeAndPassReceiver());
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

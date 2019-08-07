@@ -17,7 +17,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -41,7 +40,6 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/network_context.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
@@ -1395,12 +1393,7 @@ TEST_F(NetworkServiceNetworkChangeTest, MAYBE_NetworkChangeManagerRequest) {
 
 class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
  public:
-  NetworkServiceNetworkDelegateTest() {
-    // |NetworkServiceNetworkDelegate::HandleClearSiteDataHeader| requires
-    // Network Service.
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kNetworkService);
-  }
+  NetworkServiceNetworkDelegateTest() = default;
   ~NetworkServiceNetworkDelegateTest() override = default;
 
   void CreateNetworkContext() {
@@ -1480,7 +1473,6 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
   std::unique_ptr<TestURLLoaderClient> client_;
   mojom::NetworkContextPtr network_context_;
   mojom::URLLoaderPtr loader_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegateTest);
 };

@@ -457,6 +457,35 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
   base::MessageLoopCurrent::Get()->SetTaskRunner(old_task_runner);
 }
 
+TEST_F(MessageCenterImplTest, Renotify) {
+  message_center()->SetHasMessageCenterView(true);
+  const std::string id("id");
+
+  // Add notification initially.
+  std::unique_ptr<Notification> notification = CreateSimpleNotification(id);
+  message_center()->AddNotification(std::move(notification));
+  auto popups = message_center()->GetPopupNotifications();
+  EXPECT_EQ(1u, popups.size());
+  EXPECT_TRUE(PopupNotificationsContain(popups, id));
+
+  // Mark notification as shown.
+  message_center()->MarkSinglePopupAsShown(id, true);
+  EXPECT_EQ(0u, message_center()->GetPopupNotifications().size());
+
+  // Add notification again without |renotify| flag. It should not pop-up again.
+  notification = CreateSimpleNotification(id);
+  message_center()->AddNotification(std::move(notification));
+  EXPECT_EQ(0u, message_center()->GetPopupNotifications().size());
+
+  // Add notification again with |renotify| flag. It should pop-up again.
+  notification = CreateSimpleNotification(id);
+  notification->set_renotify(true);
+  message_center()->AddNotification(std::move(notification));
+  popups = message_center()->GetPopupNotifications();
+  EXPECT_EQ(1u, popups.size());
+  EXPECT_TRUE(PopupNotificationsContain(popups, id));
+}
+
 TEST_F(MessageCenterImplTest, NotificationBlocker) {
   NotifierId notifier_id(NotifierType::APPLICATION, "app1");
   // Multiple blockers to verify the case that one blocker blocks but another

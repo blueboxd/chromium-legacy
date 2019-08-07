@@ -1474,6 +1474,78 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ImmediateNavigationEvent) {
   navigation_listener2.RunUntilUrlAndTitleEquals(page_url, kPage1Title);
 }
 
+// Check loading an invalid URL in NavigationController.LoadUrl() sets the right
+// error.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, InvalidUrl) {
+  fuchsia::web::FramePtr frame = CreateFrame();
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  base::RunLoop run_loop;
+  cr_fuchsia::ResultReceiver<fuchsia::web::NavigationController_LoadUrl_Result>
+      result(run_loop.QuitClosure());
+  controller->LoadUrl(
+      "http:google.com:foo", fuchsia::web::LoadUrlParams(),
+      cr_fuchsia::CallbackToFitFunction(result.GetReceiveCallback()));
+  run_loop.Run();
+
+  ASSERT_TRUE(result->is_err());
+  EXPECT_EQ(result->err(),
+            fuchsia::web::NavigationControllerError::INVALID_URL);
+}
+
+// Check setting invalid headers in NavigationController.LoadUrl() sets the
+// right error.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, InvalidHeader) {
+  fuchsia::web::FramePtr frame = CreateFrame();
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  {
+    // Set an invalid header name.
+    fuchsia::web::LoadUrlParams load_url_params;
+    fuchsia::net::http::Header header;
+    header.name = cr_fuchsia::StringToBytes("Invalid:Header");
+    header.value = cr_fuchsia::StringToBytes("1");
+    load_url_params.set_headers({header});
+
+    base::RunLoop run_loop;
+    cr_fuchsia::ResultReceiver<
+        fuchsia::web::NavigationController_LoadUrl_Result>
+        result(run_loop.QuitClosure());
+    controller->LoadUrl(
+        "http://site.ext/", std::move(load_url_params),
+        cr_fuchsia::CallbackToFitFunction(result.GetReceiveCallback()));
+    run_loop.Run();
+
+    ASSERT_TRUE(result->is_err());
+    EXPECT_EQ(result->err(),
+              fuchsia::web::NavigationControllerError::INVALID_HEADER);
+  }
+
+  {
+    // Set an invalid header value.
+    fuchsia::web::LoadUrlParams load_url_params;
+    fuchsia::net::http::Header header;
+    header.name = cr_fuchsia::StringToBytes("Header");
+    header.value = cr_fuchsia::StringToBytes("Invalid\rValue");
+    load_url_params.set_headers({header});
+
+    base::RunLoop run_loop;
+    cr_fuchsia::ResultReceiver<
+        fuchsia::web::NavigationController_LoadUrl_Result>
+        result(run_loop.QuitClosure());
+    controller->LoadUrl(
+        "http://site.ext/", std::move(load_url_params),
+        cr_fuchsia::CallbackToFitFunction(result.GetReceiveCallback()));
+    run_loop.Run();
+
+    ASSERT_TRUE(result->is_err());
+    EXPECT_EQ(result->err(),
+              fuchsia::web::NavigationControllerError::INVALID_HEADER);
+  }
+}
+
 class RequestMonitoringFrameImplBrowserTest : public FrameImplTest {
  public:
   RequestMonitoringFrameImplBrowserTest() = default;

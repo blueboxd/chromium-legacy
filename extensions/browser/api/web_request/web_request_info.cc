@@ -179,7 +179,7 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
   else if (is_download)
     web_request_type = WebRequestResourceType::OTHER;
   else
-    web_request_type = ToWebRequestResourceType(type.value());
+    web_request_type = ToWebRequestResourceType(type);
 
   InitializeWebViewAndFrameData(navigation_ui_data.get());
 

@@ -25,7 +25,7 @@ class OverviewGrid;
 //   - Scrolling through tablet overview mode on scrolling.
 class OverviewGridPreEventHandler : public ui::EventHandler {
  public:
-  OverviewGridPreEventHandler();
+  explicit OverviewGridPreEventHandler(OverviewGrid* grid);
   ~OverviewGridPreEventHandler() override;
 
  private:
@@ -39,8 +39,8 @@ class OverviewGridPreEventHandler : public ui::EventHandler {
   void UpdateDrag(float scroll);
 
   // Cached value of the OverviewGrid that handles a series of gesture scroll
-  // events.
-  OverviewGrid* grid_ = nullptr;
+  // events. Guaranteed to be alive during the lifetime of |this|.
+  OverviewGrid* grid_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewGridPreEventHandler);
 };

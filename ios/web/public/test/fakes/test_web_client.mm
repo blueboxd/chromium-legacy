@@ -51,12 +51,6 @@ base::RefCountedMemory* TestWebClient::GetDataResourceBytes(
       resource_id);
 }
 
-bool TestWebClient::IsDataResourceGzipped(int resource_id) const {
-  if (!ui::ResourceBundle::HasSharedInstance())
-    return false;
-  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
-}
-
 NSString* TestWebClient::GetDocumentStartScriptForMainFrame(
     BrowserState* browser_state) const {
   return early_page_script_ ? early_page_script_ : @"";

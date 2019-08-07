@@ -224,7 +224,14 @@ void OverflowBubbleView::OverflowShelfContainerView::Initialize() {
 
 gfx::Size
 OverflowBubbleView::OverflowShelfContainerView::CalculatePreferredSize() const {
-  return shelf_view_->CalculatePreferredSize();
+  const int width =
+      ShelfView::GetSizeOfAppIcons(shelf_view_->last_visible_index() -
+                                       shelf_view_->first_visible_index() + 1,
+                                   /* with_overflow=*/false);
+  const int height = ShelfConstants::button_size();
+  return shelf_view_->shelf()->IsHorizontalAlignment()
+             ? gfx::Size(width, height)
+             : gfx::Size(height, width);
 }
 
 void OverflowBubbleView::OverflowShelfContainerView::ChildPreferredSizeChanged(
@@ -525,7 +532,7 @@ gfx::Size OverflowBubbleView::CalculatePreferredSize() const {
                              ? preferred_size.width()
                              : preferred_size.height();
   preferred_length += 2 * kEndPadding;
-  int scroll_length =
+  const int scroll_length =
       shelf_->IsHorizontalAlignment() ? scroll_offset_.x() : scroll_offset_.y();
 
   if (preferred_length <= available_length) {

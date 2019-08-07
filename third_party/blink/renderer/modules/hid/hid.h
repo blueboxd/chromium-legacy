@@ -39,6 +39,10 @@ class HID : public EventTargetWithInlineData, public ContextLifecycleObserver {
   ScriptPromise getDevices(ScriptState*);
   ScriptPromise requestDevice(ScriptState*, const HIDDeviceRequestOptions*);
 
+  void Connect(const String& device_guid,
+               device::mojom::blink::HidConnectionClientPtr connection_client,
+               device::mojom::blink::HidManager::ConnectCallback callback);
+
   void Trace(blink::Visitor*) override;
 
  protected:

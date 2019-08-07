@@ -167,6 +167,7 @@ class CryptAuthV2EnrollmentManagerImpl
   base::Clock* clock_;
   std::unique_ptr<base::OneShotTimer> timer_;
 
+  bool initial_v1_and_v2_user_key_pairs_disagree_ = false;
   State state_ = State::kIdle;
   base::Optional<cryptauthv2::ClientMetadata> current_client_metadata_;
   base::Optional<cryptauthv2::PolicyReference>

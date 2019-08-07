@@ -11,7 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/content_index/content_index_metrics.h"
+#include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
@@ -129,7 +129,7 @@ void DidGetAllEntries(base::OnceClosure done_closure,
 void DidGetAllEntriesAcrossStorageParitions(
     std::unique_ptr<ContentIndexProviderImpl::OfflineItemList> item_list,
     ContentIndexProviderImpl::MultipleItemCallback callback) {
-  content_index::RecordContentIndexEntries(item_list->size());
+  ContentIndexMetrics::RecordContentIndexEntries(item_list->size());
   std::move(callback).Run(*item_list);
 }
 
@@ -137,8 +137,9 @@ void DidGetAllEntriesAcrossStorageParitions(
 
 ContentIndexProviderImpl::ContentIndexProviderImpl(Profile* profile)
     : profile_(profile),
-      aggregator_(OfflineContentAggregatorFactory::GetForKey(
-          profile_->GetProfileKey())),
+      metrics_(ukm::UkmBackgroundRecorderFactory::GetForProfile(profile)),
+      aggregator_(
+          OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey())),
       weak_ptr_factory_(this) {
   aggregator_->RegisterProvider(kProviderNamespace, this);
 }
@@ -166,7 +167,8 @@ void ContentIndexProviderImpl::OnContentAdded(
   for (auto& observer : observers_)
     observer.OnItemsAdded(items);
 
-  content_index::RecordContentAdded(entry.description->category);
+  metrics_.RecordContentAdded(url::Origin::Create(entry.launch_url.GetOrigin()),
+                              entry.description->category);
 }
 
 void ContentIndexProviderImpl::OnContentDeleted(
@@ -208,15 +210,21 @@ void ContentIndexProviderImpl::DidGetEntryToOpen(
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK,
                                 /* is_renderer_initiated= */ false);
-  ServiceTabLauncher::GetInstance()->LaunchTab(profile_, params,
-                                               base::DoNothing());
+  ServiceTabLauncher::GetInstance()->LaunchTab(
+      profile_, params,
+      base::BindOnce(&ContentIndexProviderImpl::DidOpenTab,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(*entry)));
 #else
   NavigateParams nav_params(profile_, entry->launch_url,
                             ui::PAGE_TRANSITION_LINK);
   Navigate(&nav_params);
+  DidOpenTab(std::move(*entry), nav_params.navigated_or_inserted_contents);
 #endif
+}
 
-  content_index::RecordContentOpened(entry->description->category);
+void ContentIndexProviderImpl::DidOpenTab(content::ContentIndexEntry entry,
+                                          content::WebContents* web_contents) {
+  metrics_.RecordContentOpened(web_contents, entry.description->category);
 }
 
 void ContentIndexProviderImpl::RemoveItem(const ContentId& id) {
@@ -227,6 +235,8 @@ void ContentIndexProviderImpl::RemoveItem(const ContentId& id) {
 
   if (!storage_partition || !storage_partition->GetContentIndexContext())
     return;
+
+  metrics_.RecordContentDeletedByUser(components.origin);
 
   storage_partition->GetContentIndexContext()->OnUserDeletedItem(
       components.service_worker_registration_id, components.origin,

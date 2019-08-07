@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
 import org.chromium.webapk.shell_apk.HostBrowserLauncherParams;
+import org.chromium.webapk.shell_apk.HostBrowserUtils;
 import org.chromium.webapk.shell_apk.TransparentLauncherActivity;
 
 /**
@@ -36,7 +37,7 @@ public class H2OMainActivity extends TransparentLauncherActivity {
         }
 
         Context appContext = getApplicationContext();
-        if (H2OLauncher.shouldIntentLaunchSplashActivity(params)
+        if (HostBrowserUtils.shouldIntentLaunchSplashActivity(params)
                 && !H2OLauncher.didRequestRelaunchFromHostBrowserWithinLastMs(
                         appContext, MINIMUM_INTERVAL_BETWEEN_RELAUNCHES_MS)) {
             // Request the host browser to relaunch the WebAPK. We cannot relaunch ourselves

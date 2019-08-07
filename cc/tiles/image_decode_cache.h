@@ -143,6 +143,11 @@ class CC_EXPORT ImageDecodeCache {
   // image can directly be used for raster (for instance bitmaps in a software
   // draw).
   virtual bool UseCacheForDrawImage(const DrawImage& image) const = 0;
+
+  // Should be called periodically to record statistics about cache use and
+  // performance.
+  virtual void RecordStats() = 0;
+
 };
 
 }  // namespace cc

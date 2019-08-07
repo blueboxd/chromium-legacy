@@ -33,8 +33,6 @@ enum IDBDataLoss {
 };
 
 // In order of the least to the highest precedent in terms of sort order.
-// These values are written to logs. New enum values can be added, but
-// existing enums must never be renumbered or deleted and reused.
 enum IDBKeyType {
   // Invalid is used in blink bindings code. When converting a V8 value that
   // is not a valid key, key of this type is returned. Outside of testing

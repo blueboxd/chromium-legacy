@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/was_activated_option.mojom.h"
 #include "fuchsia/base/string_util.h"
+#include "net/http/http_util.h"
 #include "ui/base/page_transition_types.h"
 
 namespace {
@@ -141,10 +142,17 @@ void NavigationControllerImpl::LoadUrl(std::string url,
     std::vector<std::string> extra_headers;
     extra_headers.reserve(params.headers().size());
     for (const auto& header : params.headers()) {
-      // TODO(crbug.com/990525): Validate |header.name| and |header.value|.
+      base::StringPiece header_name = cr_fuchsia::BytesAsString(header.name);
+      base::StringPiece header_value = cr_fuchsia::BytesAsString(header.value);
+      if (!net::HttpUtil::IsValidHeaderName(header_name) ||
+          !net::HttpUtil::IsValidHeaderValue(header_value)) {
+        result.set_err(fuchsia::web::NavigationControllerError::INVALID_HEADER);
+        callback(std::move(result));
+        return;
+      }
+
       extra_headers.emplace_back(
-          base::StrCat({cr_fuchsia::BytesAsString(header.name), ": ",
-                        cr_fuchsia::BytesAsString(header.value)}));
+          base::StrCat({header_name, ": ", header_value}));
     }
     params_converted.extra_headers = base::JoinString(extra_headers, "\n");
   }

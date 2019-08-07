@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_HID_HID_COLLECTION_INFO_H_
 
 #include "services/device/public/mojom/hid.mojom-blink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -13,7 +14,7 @@ namespace blink {
 
 class HIDReportInfo;
 
-class HIDCollectionInfo : public ScriptWrappable {
+class MODULES_EXPORT HIDCollectionInfo : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -32,6 +33,9 @@ class HIDCollectionInfo : public ScriptWrappable {
   void Trace(blink::Visitor* visitor) override;
 
  private:
+  uint16_t usage_page_;
+  uint16_t usage_;
+  uint32_t collection_type_;
   HeapVector<Member<HIDCollectionInfo>> children_;
   HeapVector<Member<HIDReportInfo>> input_reports_;
   HeapVector<Member<HIDReportInfo>> output_reports_;

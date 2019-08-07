@@ -43,6 +43,7 @@ core_idl_files =
                     "animation/animation_effect.idl",
                     "animation/animation_timeline.idl",
                     "animation/css/css_animation.idl",
+                    "animation/css/css_transition.idl",
                     "animation/document_timeline.idl",
                     "animation/keyframe_effect.idl",
                     "animation/scroll_timeline.idl",

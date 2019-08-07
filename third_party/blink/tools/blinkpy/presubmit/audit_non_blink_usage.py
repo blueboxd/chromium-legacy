@@ -219,6 +219,7 @@ _CONFIG = [
             # cc painting types.
             'cc::PaintCanvas',
             'cc::PaintFlags',
+            'cc::PaintShader',
             'cc::PaintWorkletInput',
             'cc::NodeId',
 
@@ -678,6 +679,7 @@ _CONFIG = [
             'cc::VideoLayer',
             'gpu::gles2::GLES2Interface',
             'libyuv::.+',
+            'media_constraints::.+',
             "rtc::RefCountedObject",
             'viz::.+',
             "webrtc::AudioProcessorInterface",

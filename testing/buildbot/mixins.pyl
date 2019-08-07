@@ -599,6 +599,12 @@
         'os': 'Windows-10',
         'pool': 'Chrome-GPU',
       },
+      # ~50% of the WebGL2 conformance tests time out with the default
+      # 1 hour expiration, so use 3 times that until more devices are
+      # available.
+      # TODO(https://crbug.com/986939): Remove this when more devices
+      # are added.
+      'expiration': 10800,
     },
   },
   'win10_nvidia_geforce_gtx_1660': {

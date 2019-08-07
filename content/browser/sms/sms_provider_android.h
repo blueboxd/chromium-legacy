@@ -11,19 +11,22 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "content/browser/sms/sms_provider.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
-class SmsProviderAndroid : public SmsProvider {
+class CONTENT_EXPORT SmsProviderAndroid : public SmsProvider {
  public:
   SmsProviderAndroid();
   ~SmsProviderAndroid() override;
 
   void Retrieve() override;
 
-  void OnReceive(JNIEnv*,
-                 jstring message);
+  void OnReceive(JNIEnv*, jstring message);
+
   void OnTimeout(JNIEnv* env);
+
+  base::android::ScopedJavaGlobalRef<jobject> GetSmsReceiverForTesting() const;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_sms_receiver_;

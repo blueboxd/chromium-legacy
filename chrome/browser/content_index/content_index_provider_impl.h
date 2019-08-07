@@ -11,10 +11,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "chrome/browser/content_index/content_index_metrics.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/browser/content_index_provider.h"
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace offline_items_collection {
 class OfflineContentAggregator;
@@ -68,8 +73,11 @@ class ContentIndexProviderImpl
                    VisualsCallback callback,
                    std::vector<SkBitmap> icons);
   void DidGetEntryToOpen(base::Optional<content::ContentIndexEntry> entry);
+  void DidOpenTab(content::ContentIndexEntry entry,
+                  content::WebContents* web_contents);
 
   Profile* profile_;
+  ContentIndexMetrics metrics_;
   offline_items_collection::OfflineContentAggregator* aggregator_;
   base::ObserverList<Observer>::Unchecked observers_;
   base::WeakPtrFactory<ContentIndexProviderImpl> weak_ptr_factory_;

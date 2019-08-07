@@ -97,9 +97,6 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
     return parent_->deny_xframe_options_;
   }
   bool ShouldServeMimeTypeAsContentTypeHeader() override { return true; }
-  bool IsGzipped(const std::string& path) override {
-    return parent_->IsGzipped(path);
-  }
 
  private:
   WebUIDataSourceImpl* parent_;
@@ -298,28 +295,6 @@ void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
 
 const base::DictionaryValue* WebUIDataSourceImpl::GetLocalizedStrings() const {
   return &localized_strings_;
-}
-
-bool WebUIDataSourceImpl::IsGzipped(const std::string& path) const {
-  // Note: In the hypothetical case of requests handled by |filter_callback_|
-  // that involve gzipped data, the callback itself is responsible for
-  // ungzipping, and IsGzipped will return false for such cases.
-  if (!should_handle_request_callback_.is_null() &&
-      should_handle_request_callback_.Run(path)) {
-    return false;
-  }
-
-  if (!json_path_.empty() && path == json_path_) {
-    return false;
-  }
-
-  std::string file_path = CleanUpPath(path);
-  int idr = PathToIdrOrDefault(file_path);
-  if (idr == -1) {
-    return false;
-  }
-
-  return GetContentClient()->IsDataResourceGzipped(idr);
 }
 
 int WebUIDataSourceImpl::PathToIdrOrDefault(const std::string& path) const {

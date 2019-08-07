@@ -410,16 +410,16 @@ class MakeRequestFail {
   // Sets up the filter on IO thread such that requests to |host| fail.
   explicit MakeRequestFail(const std::string& host) : host_(host) {
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(FROM_HERE, {BrowserThread::IO},
-                                     base::BindOnce(MakeRequestFailOnIO, host_),
-                                     run_loop.QuitClosure());
+    base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(MakeRequestFailOnIO, host_),
+                           run_loop.QuitClosure());
     run_loop.Run();
   }
   ~MakeRequestFail() {
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(UndoMakeRequestFailOnIO, host_), run_loop.QuitClosure());
+    base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(UndoMakeRequestFailOnIO, host_),
+                           run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -830,7 +830,7 @@ class PolicyTest : public InProcessBrowserTest {
       return;
     }
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &net::TransportSecurityState::SetShouldRequireCTForTesting,
@@ -846,8 +846,8 @@ class PolicyTest : public InProcessBrowserTest {
     void OnScreenshotCompleted(
         ui::ScreenshotResult screenshot_result,
         const base::FilePath& screenshot_path) override {
-      base::PostTaskWithTraitsAndReply(FROM_HERE, {BrowserThread::IO},
-                                       base::DoNothing(), std::move(done_));
+      base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
+                             std::move(done_));
     }
 
     ~QuitMessageLoopAfterScreenshot() override {}
@@ -4143,10 +4143,9 @@ class RestoreOnStartupPolicyTest
   }
 
   void SetUpOnMainThread() override {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(RedirectHostsToTestData, kRestoredURLs,
-                       base::size(kRestoredURLs)));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(RedirectHostsToTestData, kRestoredURLs,
+                                  base::size(kRestoredURLs)));
   }
 
   void ListOfURLs() {
@@ -4557,7 +4556,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   ConfigurePolicyMap(&policies, key::kAudioCaptureAllowed, NULL, NULL);
   UpdateProviderPolicy(policies);
 
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
@@ -4591,7 +4590,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        key::kAudioCaptureAllowedUrls, allow_pattern[i]);
     UpdateProviderPolicy(policies);
 
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
@@ -4617,7 +4616,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   ConfigurePolicyMap(&policies, key::kVideoCaptureAllowed, NULL, NULL);
   UpdateProviderPolicy(policies);
 
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
@@ -4651,7 +4650,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        key::kVideoCaptureAllowedUrls, allow_pattern[i]);
     UpdateProviderPolicy(policies);
 
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
@@ -5547,8 +5546,8 @@ void ComponentUpdaterPolicyTest::UpdateComponent(
 }
 
 void ComponentUpdaterPolicyTest::CallAsync(TestCaseAction action) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(action, base::Unretained(this)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(action, base::Unretained(this)));
 }
 
 void ComponentUpdaterPolicyTest::OnDemandComplete(update_client::Error error) {

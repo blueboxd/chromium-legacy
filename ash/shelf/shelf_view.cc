@@ -121,27 +121,6 @@ bool IsTabletModeEnabled() {
          Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
-// Returns the size occupied by |count| app icons. If |with_overflow| is
-// true, returns the size of |count| app icons followed by an overflow
-// button.
-int GetSizeOfAppIcons(int count, bool with_overflow) {
-  const int control_size = ShelfConstants::control_size();
-  const int button_spacing = ShelfConstants::button_spacing();
-  const int overflow_button_margin = ShelfConstants::overflow_button_margin();
-
-  if (count == 0)
-    return with_overflow ? control_size + 2 * overflow_button_margin : 0;
-
-  const int app_size = count * ShelfConstants::button_size();
-  int overflow_size = 0;
-  int total_padding = button_spacing * (count - 1);
-  if (with_overflow) {
-    overflow_size += control_size;
-    total_padding += button_spacing + 2 * overflow_button_margin;
-  }
-  return app_size + total_padding + overflow_size;
-}
-
 // A class to temporarily disable a given bounds animator.
 class BoundsAnimatorDisabler {
  public:
@@ -359,6 +338,24 @@ ShelfView::~ShelfView() {
   Shell::Get()->RemoveShellObserver(this);
   bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
+}
+
+int ShelfView::GetSizeOfAppIcons(int count, bool with_overflow) {
+  const int control_size = ShelfConstants::control_size();
+  const int button_spacing = ShelfConstants::button_spacing();
+  const int overflow_button_margin = ShelfConstants::overflow_button_margin();
+
+  if (count == 0)
+    return with_overflow ? control_size + 2 * overflow_button_margin : 0;
+
+  const int app_size = count * ShelfConstants::button_size();
+  int overflow_size = 0;
+  int total_padding = button_spacing * (count - 1);
+  if (with_overflow) {
+    overflow_size += control_size;
+    total_padding += button_spacing + 2 * overflow_button_margin;
+  }
+  return app_size + total_padding + overflow_size;
 }
 
 void ShelfView::Init() {

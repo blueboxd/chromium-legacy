@@ -121,9 +121,9 @@ void DevToolsStreamFile::ReadOnFileSequence(off_t position,
     base::Base64Encode(raw_data, data.get());
     base64_encoded = true;
   }
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), std::move(data),
-                                          base64_encoded, status));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), std::move(data),
+                                base64_encoded, status));
 }
 
 void DevToolsStreamFile::AppendOnFileSequence(

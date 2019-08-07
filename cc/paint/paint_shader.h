@@ -97,10 +97,12 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
       const SkMatrix* local_matrix = nullptr,
       SkColor fallback_color = SK_ColorTRANSPARENT);
 
+  // |tile_rect| is not null only if the |image| is paint worklet backed.
   static sk_sp<PaintShader> MakeImage(const PaintImage& image,
                                       SkTileMode tx,
                                       SkTileMode ty,
-                                      const SkMatrix* local_matrix);
+                                      const SkMatrix* local_matrix,
+                                      const SkRect* tile_rect = nullptr);
 
   static sk_sp<PaintShader> MakePaintRecord(
       sk_sp<PaintRecord> record,

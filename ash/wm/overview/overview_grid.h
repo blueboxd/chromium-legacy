@@ -29,6 +29,7 @@ namespace ash {
 
 class DesksBarView;
 class FpsCounter;
+class OverviewGridPreEventHandler;
 class OverviewItem;
 
 // Represents a grid of windows in the Overview Mode in a particular root
@@ -430,6 +431,9 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Value to clamp |scroll_offset| so scrolling stays limited to windows that
   // are visible in tablet overview mode.
   float scroll_offset_min_ = 0;
+
+  // Handles events that are not handled by the OverviewItems.
+  std::unique_ptr<OverviewGridPreEventHandler> grid_pre_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewGrid);
 };

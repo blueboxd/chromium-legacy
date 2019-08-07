@@ -95,7 +95,6 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/network_service.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -949,7 +948,6 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     bool* bypass_redirect_checks) {
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto proxied_receiver = std::move(*factory_receiver);
@@ -968,7 +966,6 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
 void AwContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
     int render_process_id,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* pending_factory) {
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto pending_proxy = std::move(*pending_factory);

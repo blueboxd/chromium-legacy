@@ -18,7 +18,6 @@
 
 namespace extensions {
 class IPCMessageSender;
-class RequestSender;
 class ScriptContext;
 class ScriptContextSetIterable;
 
@@ -66,10 +65,6 @@ class NativeExtensionBindingsSystem {
                       bool success,
                       const base::ListValue& response,
                       const std::string& error);
-
-  // Returns the associated RequestSender, if any.
-  // TODO(devlin): Factor this out.
-  RequestSender* GetRequestSender();
 
   // Returns the associated IPC message sender.
   IPCMessageSender* GetIPCMessageSender();

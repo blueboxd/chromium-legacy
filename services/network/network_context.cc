@@ -1880,10 +1880,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
         *params_->transport_security_persister_path);
   }
 
-  // With the network service data URLs are handled by clients directly.
-  if (!base::FeatureList::IsEnabled(features::kNetworkService))
-    builder.set_data_enabled(true);
-
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   builder.set_ftp_enabled(params_->enable_ftp_url_support);
 #else  // BUILDFLAG(DISABLE_FTP_SUPPORT)
@@ -1983,11 +1979,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
   builder.set_host_mapping_rules(
       command_line->GetSwitchValueASCII(switches::kHostResolverRules));
-
-  // Allow legacy context CopyFrom() functionality only if network service is
-  // disabled. The new service-enabled world should never do such copying.
-  if (!base::FeatureList::IsEnabled(features::kNetworkService))
-    builder.set_allow_copy();
 
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder.Build());

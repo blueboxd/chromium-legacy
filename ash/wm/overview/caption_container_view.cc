@@ -65,12 +65,6 @@ void AddChildWithLayer(views::View* parent, views::View* child) {
   parent->AddChildView(child);
 }
 
-gfx::PointF ConvertToScreen(views::View* view, const gfx::Point& location) {
-  gfx::Point location_copy(location);
-  views::View::ConvertPointToScreen(view, &location_copy);
-  return gfx::PointF(location_copy);
-}
-
 // Animates |layer| from 0 -> 1 opacity if |visible| and 1 -> 0 opacity
 // otherwise. The tween type differs for |visible| and if |visible| is true
 // there is a slight delay before the animation begins. Does not animate if
@@ -308,15 +302,14 @@ const char* CaptionContainerView::GetClassName() const {
 bool CaptionContainerView::OnMousePressed(const ui::MouseEvent& event) {
   if (!event_delegate_)
     return Button::OnMousePressed(event);
-  event_delegate_->HandlePressEvent(ConvertToScreen(this, event.location()),
-                                    /*from_touch_gesture=*/false);
+  event_delegate_->HandleMouseEvent(event);
   return true;
 }
 
 bool CaptionContainerView::OnMouseDragged(const ui::MouseEvent& event) {
   if (!event_delegate_)
     return Button::OnMouseDragged(event);
-  event_delegate_->HandleDragEvent(ConvertToScreen(this, event.location()));
+  event_delegate_->HandleMouseEvent(event);
   return true;
 }
 
@@ -325,7 +318,7 @@ void CaptionContainerView::OnMouseReleased(const ui::MouseEvent& event) {
     Button::OnMouseReleased(event);
     return;
   }
-  event_delegate_->HandleReleaseEvent(ConvertToScreen(this, event.location()));
+  event_delegate_->HandleMouseEvent(event);
 }
 
 void CaptionContainerView::OnGestureEvent(ui::GestureEvent* event) {
@@ -337,34 +330,7 @@ void CaptionContainerView::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
-  const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
-  switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      event_delegate_->HandlePressEvent(location, /*from_touch_gesture=*/true);
-      break;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      event_delegate_->HandleDragEvent(location);
-      break;
-    case ui::ET_SCROLL_FLING_START:
-      event_delegate_->HandleFlingStartEvent(location,
-                                             event->details().velocity_x(),
-                                             event->details().velocity_y());
-      break;
-    case ui::ET_GESTURE_SCROLL_END:
-      event_delegate_->HandleReleaseEvent(location);
-      break;
-    case ui::ET_GESTURE_LONG_PRESS:
-      event_delegate_->HandleLongPressEvent(location);
-      break;
-    case ui::ET_GESTURE_TAP:
-      event_delegate_->HandleTapEvent();
-      break;
-    case ui::ET_GESTURE_END:
-      event_delegate_->HandleGestureEndEvent();
-      break;
-    default:
-      break;
-  }
+  event_delegate_->HandleGestureEvent(event);
   event->SetHandled();
 }
 

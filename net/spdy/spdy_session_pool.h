@@ -293,6 +293,11 @@ class NET_EXPORT SpdySessionPool
   // We perform the same flushing as described above when SSL settings change.
   void OnSSLConfigChanged(bool is_cert_database_change) override;
 
+  // Makes all sessions using |server|'s SSL configuration unavailable, meaning
+  // they will not be used to service new streams. Does not close any existing
+  // streams.
+  void OnSSLConfigForServerChanged(const HostPortPair& server) override;
+
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_dump_absolute_name) const;
 

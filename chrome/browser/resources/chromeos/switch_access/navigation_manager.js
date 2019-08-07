@@ -357,7 +357,7 @@ class NavigationManager {
    * @public
    */
   selectionStarted() {
-    return this.textNavigationManager_.isSelStartIndexSet();
+    return this.textNavigationManager_.isSelectionStarted();
   }
 
   /**
@@ -559,6 +559,8 @@ class NavigationManager {
 
     // Rebuild scope stack and set scope for focused node.
     this.buildScopeStack_(event.target);
+
+    this.textNavigationManager_.resetSelStartIndex();
 
     // Move to focused node.
     this.node_ = event.target;

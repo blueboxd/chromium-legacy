@@ -357,3 +357,21 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames,
     false)
+
+// If true, static streams should never be closed before QuicSession
+// destruction.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_active_streams_never_negative,
+          false)
+
+// If true and FIFO connection option is received, write_blocked_streams uses
+// FIFO(stream with smallest ID has highest priority) write scheduler.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_enable_fifo_write_scheduler,
+          false)
+
+// If true and LIFO connection option is received, write_blocked_streams uses
+// LIFO(stream with largest ID has highest priority) write scheduler.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_enable_lifo_write_scheduler,
+          false)

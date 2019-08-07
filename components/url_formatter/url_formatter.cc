@@ -195,6 +195,12 @@ base::string16 FormatViewSourceUrl(
   const char kViewSource[] = "view-source:";
   const size_t kViewSourceLength = base::size(kViewSource) - 1;
 
+  // The URL embedded within view-source should never have destructive elisions
+  // applied to it. Users of view-source likely want to see the full URL.
+  format_types &= ~kFormatUrlOmitHTTPS;
+  format_types &= ~kFormatUrlOmitTrivialSubdomains;
+  format_types &= ~kFormatUrlTrimAfterHost;
+
   // Format the underlying URL and record adjustments.
   const std::string& url_str(url.possibly_invalid_spec());
   adjustments->clear();

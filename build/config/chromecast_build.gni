@@ -21,6 +21,10 @@ declare_args() {
 
   # Set this true for an audio-only Chromecast build.
   is_cast_audio_only = false
+
+  # If non empty, rpath of executables is set to this.
+  # If empty, default value is used.
+  target_rpath = ""
 }
 
 # Note(slan): This arg depends on the value of is_chromecast, and thus must be

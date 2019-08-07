@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/render_frame_impl.h"
 #include "media/base/media_permission.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 
 namespace base {
@@ -63,7 +64,7 @@ class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   uint32_t next_request_id_;
   RequestMap requests_;
-  blink::mojom::PermissionServicePtr permission_service_;
+  mojo::Remote<blink::mojom::PermissionService> permission_service_;
 
   // The |RenderFrameImpl| that owns this MediaPermissionDispatcher.  It's okay
   // to hold a raw pointer here because the lifetime of this object is bounded

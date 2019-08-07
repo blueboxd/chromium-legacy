@@ -336,7 +336,7 @@ PermissionsData::PageAccess WebRequestPermissions::CanExtensionAccessURL(
     bool crosses_incognito,
     HostPermissionsCheck host_permissions_check,
     const base::Optional<url::Origin>& initiator,
-    const base::Optional<content::ResourceType>& resource_type) {
+    content::ResourceType resource_type) {
   return CanExtensionAccessURLInternal(
       permission_helper, extension_id, url, tab_id, crosses_incognito,
       host_permissions_check, initiator, resource_type);

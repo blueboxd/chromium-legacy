@@ -143,9 +143,9 @@ void AXEventGenerator::AddEvent(AXNode* node, AXEventGenerator::Event event) {
   node_events.emplace(event, ax::mojom::EventFrom::kNone);
 }
 
-void AXEventGenerator::OnNodeDataWillChange(AXTree* tree,
-                                            const AXNodeData& old_node_data,
-                                            const AXNodeData& new_node_data) {
+void AXEventGenerator::OnNodeDataChanged(AXTree* tree,
+                                         const AXNodeData& old_node_data,
+                                         const AXNodeData& new_node_data) {
   DCHECK_EQ(tree_, tree);
   // Fire CHILDREN_CHANGED events when the list of children updates.
   // Internally we store inline text box nodes as children of a static text
@@ -179,8 +179,6 @@ void AXEventGenerator::OnStateChanged(AXTree* tree,
     case ax::mojom::State::kExpanded:
       AddEvent(node, new_value ? Event::EXPANDED : Event::COLLAPSED);
 
-      // TODO(dtseng): tree in the midst of updates. Disallow access to
-      // |node|.
       if (node->data().role == ax::mojom::Role::kRow ||
           node->data().role == ax::mojom::Role::kTreeItem) {
         AXNode* container = node;
@@ -248,8 +246,6 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
 
       // Fire a LIVE_REGION_CREATED if the previous value was off, and the new
       // value is not-off.
-      // TODO(dtseng): tree in the midst of updates. Disallow access to
-      // |node|.
       if (!IsAlert(node->data().role)) {
         bool old_state = !old_value.empty() && old_value != "off";
         bool new_state = !new_value.empty() && new_value != "off";
@@ -263,8 +259,6 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
       if (node != tree->root())
         AddEvent(node, Event::NAME_CHANGED);
 
-      // TODO(dtseng): tree in the midst of updates. Disallow
-      // access to |node|.
       if (node->data().HasStringAttribute(
               ax::mojom::StringAttribute::kContainerLiveStatus)) {
         FireLiveRegionEvents(node);

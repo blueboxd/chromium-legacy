@@ -58,8 +58,8 @@ void AssistantSetupController::OnDeepLinkReceived(
 }
 
 void AssistantSetupController::OnOptInButtonPressed() {
-  if (assistant_controller_->prefs_controller()->prefs()->GetInteger(
-          chromeos::assistant::prefs::kAssistantConsentStatus) ==
+  if (assistant_controller_->state()->consent_status().value_or(
+          chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
       chromeos::assistant::prefs::ConsentStatus::kUnauthorized) {
     assistant_controller_->OpenUrl(assistant::util::CreateLocalizedGURL(
         kGSuiteAdministratorInstructionsUrl));

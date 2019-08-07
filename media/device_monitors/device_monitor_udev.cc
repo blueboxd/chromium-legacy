@@ -114,8 +114,9 @@ void DeviceMonitorLinux::BlockingTaskRunnerHelper::OnDevicesChanged(
 }
 
 DeviceMonitorLinux::DeviceMonitorLinux()
-    : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    : blocking_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       blocking_task_helper_(new BlockingTaskRunnerHelper,
                             base::OnTaskRunnerDeleter(blocking_task_runner_)) {

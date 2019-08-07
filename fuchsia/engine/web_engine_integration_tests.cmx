@@ -12,7 +12,6 @@
       "fuchsia.fonts.Provider",
       "fuchsia.logger.LogSink",
       "fuchsia.net.NameLookup",
-      "fuchsia.net.SocketProvider",
       "fuchsia.netstack.Netstack",
       "fuchsia.posix.socket.Provider",
       "fuchsia.process.Launcher",

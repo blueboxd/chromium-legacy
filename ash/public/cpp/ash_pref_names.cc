@@ -459,8 +459,9 @@ const char kAssistantPrivacyInfoShownInLauncher[] =
 const char kAssistantPrivacyInfoDismissedInLauncher[] =
     "ash.launcher.assistant_privacy_info_dismissed";
 
-// A boolean pref that indicates whether lock screen media keys are enabled.
-const char kLockScreenMediaKeysEnabled[] = "ash.lock_screen_media_keys_enabled";
+// A boolean pref that indicates whether lock screen media controls are enabled.
+const char kLockScreenMediaControlsEnabled[] =
+    "ash.lock_screen_media_controls_enabled";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

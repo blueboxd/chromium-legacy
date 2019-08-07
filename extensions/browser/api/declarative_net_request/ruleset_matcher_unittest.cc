@@ -9,6 +9,8 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "components/version_info/version_info.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
@@ -208,6 +210,197 @@ TEST_F(RulesetMatcherTest, RemoveHeaders) {
   uint8_t current_mask =
       kRemoveHeadersMask_Referer | kRemoveHeadersMask_SetCookie;
   EXPECT_EQ(current_mask, matcher->GetRemoveHeadersMask(params, current_mask));
+}
+
+// Tests a rule to redirect to an extension path.
+TEST_F(RulesetMatcherTest, RedirectToExtensionPath) {
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("example.com");
+  rule.action->type = std::string("redirect");
+  rule.priority = kMinValidPriority;
+  rule.action->redirect.emplace();
+  rule.action->redirect->extension_path = "/path/newfile.js?query#fragment";
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  const size_t kId = 1;
+  const size_t kPriority = 1;
+  const size_t kRuleCountLimit = 10;
+  const ExtensionId extension_id = "extension_id";
+  ASSERT_TRUE(CreateVerifiedMatcher(
+      {rule},
+      CreateTemporarySource(kId, kPriority, kRuleCountLimit, extension_id),
+      &matcher));
+
+  GURL example_url("http://example.com");
+  RequestParams params;
+  params.url = &example_url;
+
+  GURL redirect_url;
+  EXPECT_TRUE(matcher->GetRedirectRule(params, &redirect_url));
+  GURL expected_redirect_url(
+      "chrome-extension://extension_id/path/newfile.js?query#fragment");
+  EXPECT_EQ(expected_redirect_url, redirect_url);
+}
+
+// Tests a rule to redirect to a static url.
+TEST_F(RulesetMatcherTest, RedirectToStaticUrl) {
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("example.com");
+  rule.action->type = std::string("redirect");
+  rule.priority = kMinValidPriority;
+  rule.action->redirect.emplace();
+  rule.action->redirect->url = "https://google.com";
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
+
+  GURL example_url("http://example.com");
+  RequestParams params;
+  params.url = &example_url;
+
+  GURL redirect_url;
+  GURL expected_redirect_url("https://google.com");
+  EXPECT_TRUE(matcher->GetRedirectRule(params, &redirect_url));
+  EXPECT_EQ(expected_redirect_url, redirect_url);
+}
+
+// Tests url transformation rules.
+TEST_F(RulesetMatcherTest, UrlTransform) {
+  struct TestCase {
+    std::string url;
+    // Valid if a redirect is expected.
+    base::Optional<std::string> expected_redirect_url;
+  };
+
+  std::vector<TestCase> cases;
+  std::vector<TestRule> rules;
+
+  auto create_transform_rule = [](size_t id, const std::string& filter) {
+    TestRule rule = CreateGenericRule();
+    rule.id = id;
+    rule.condition->url_filter = filter;
+    rule.priority = kMinValidPriority;
+    rule.action->type = std::string("redirect");
+    rule.action->redirect.emplace();
+    rule.action->redirect->transform.emplace();
+    return rule;
+  };
+
+  TestRule rule = create_transform_rule(1, "||1.com");
+  rule.action->redirect->transform->scheme = "https";
+  rules.push_back(rule);
+  cases.push_back({"http://1.com/path?query", "https://1.com/path?query"});
+
+  rule = create_transform_rule(2, "||2.com");
+  rule.action->redirect->transform->scheme = "ftp";
+  rule.action->redirect->transform->host = "ftp.host.com";
+  rule.action->redirect->transform->port = "70";
+  rules.push_back(rule);
+  cases.push_back(
+      {"http://2.com:100/path?query", "ftp://ftp.host.com:70/path?query"});
+
+  rule = create_transform_rule(3, "||3.com");
+  rule.action->redirect->transform->port = "";
+  rule.action->redirect->transform->path = "";
+  rule.action->redirect->transform->query = "?new_query";
+  rule.action->redirect->transform->fragment = "#fragment";
+  rules.push_back(rule);
+  // The path separator '/' is output even when cleared, except when there is no
+  // authority, query and fragment.
+  cases.push_back(
+      {"http://3.com:100/path?query", "http://3.com/?new_query#fragment"});
+
+  rule = create_transform_rule(4, "||4.com");
+  rule.action->redirect->transform->scheme = "http";
+  rule.action->redirect->transform->path = " ";
+  rules.push_back(rule);
+  cases.push_back({"http://4.com/xyz", "http://4.com/%20"});
+
+  rule = create_transform_rule(5, "||5.com");
+  rule.action->redirect->transform->path = "/";
+  rule.action->redirect->transform->query = "";
+  rule.action->redirect->transform->fragment = "#";
+  rules.push_back(rule);
+  cases.push_back(
+      {"http://5.com:100/path?query#fragment", "http://5.com:100/#"});
+
+  rule = create_transform_rule(6, "||6.com");
+  rule.action->redirect->transform->path = "/path?query";
+  rules.push_back(rule);
+  // The "?" in path is url encoded since it's not part of the query.
+  cases.push_back({"http://6.com/xyz?q1", "http://6.com/path%3Fquery?q1"});
+
+  rule = create_transform_rule(7, "||7.com");
+  rule.action->redirect->transform->username = "new_user";
+  rule.action->redirect->transform->password = "new_pass";
+  rules.push_back(rule);
+  cases.push_back(
+      {"http://user@7.com/xyz", "http://new_user:new_pass@7.com/xyz"});
+
+  auto make_query = [](const std::string& key, const std::string& value) {
+    TestRuleQueryKeyValue query;
+    query.key = key;
+    query.value = value;
+    return query;
+  };
+
+  rule = create_transform_rule(8, "||8.com");
+  rule.action->redirect->transform->query_transform.emplace();
+  rule.action->redirect->transform->query_transform->remove_params =
+      std::vector<std::string>({"r1", "r2"});
+  rule.action->redirect->transform->query_transform->add_or_replace_params =
+      std::vector<TestRuleQueryKeyValue>(
+          {make_query("a1", "#"), make_query("a2", ""),
+           make_query("a1", "new2"), make_query("a1", "new3")});
+  rules.push_back(rule);
+  cases.push_back(
+      {"http://8.com/"
+       "path?r1&r1=val1&a1=val1&r2=val&x3=val&a1=val2&a2=val&r1=val2",
+       "http://8.com/path?a1=%23&x3=val&a1=new2&a2=&a1=new3"});
+  cases.push_back({"http://8.com/path?query",
+                   "http://8.com/path?query=&a1=%23&a2=&a1=new2&a1=new3"});
+
+  rule = create_transform_rule(9, "||9.com");
+  rule.action->redirect->transform->query_transform.emplace();
+  rule.action->redirect->transform->query_transform->remove_params =
+      std::vector<std::string>({"r1", "r2"});
+  rules.push_back(rule);
+  // No redirect is performed since the url won't change.
+  cases.push_back({"http://9.com/path?query#fragment", base::nullopt});
+
+  rule = create_transform_rule(10, "||10.com");
+  rule.action->redirect->transform->query_transform.emplace();
+  rule.action->redirect->transform->query_transform->remove_params =
+      std::vector<std::string>({"q1"});
+  rule.action->redirect->transform->query_transform->add_or_replace_params =
+      std::vector<TestRuleQueryKeyValue>({make_query("q1", "new")});
+  rules.push_back(rule);
+  cases.push_back(
+      {"https://10.com/path?q1=1&q1=2&q1=3", "https://10.com/path?q1=new"});
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher(rules, CreateTemporarySource(), &matcher));
+
+  for (const auto& test_case : cases) {
+    SCOPED_TRACE(base::StringPrintf("Testing url %s", test_case.url.c_str()));
+
+    GURL url(test_case.url);
+    ASSERT_TRUE(url.is_valid()) << test_case.url;
+    RequestParams params;
+    params.url = &url;
+
+    GURL redirect_url;
+    if (!test_case.expected_redirect_url) {
+      EXPECT_FALSE(matcher->GetRedirectRule(params, &redirect_url))
+          << redirect_url.spec();
+      continue;
+    }
+
+    ASSERT_TRUE(GURL(*test_case.expected_redirect_url).is_valid())
+        << *test_case.expected_redirect_url;
+    EXPECT_TRUE(matcher->GetRedirectRule(params, &redirect_url));
+    EXPECT_EQ(*test_case.expected_redirect_url, redirect_url.spec());
+  }
 }
 
 }  // namespace

@@ -588,7 +588,7 @@ TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
   sms_loop1.Run();
 }
 
-TEST_F(SmsServiceTest, RecordContinueOnSuccessTimeMetric) {
+TEST_F(SmsServiceTest, RecordTimeMetricsForContinueOnSuccess) {
   NavigateAndCommit(GURL(kTestUrl));
 
   Service service(web_contents());
@@ -610,13 +610,17 @@ TEST_F(SmsServiceTest, RecordContinueOnSuccessTimeMetric) {
 
   loop.Run();
 
-  std::unique_ptr<base::HistogramSamples> samples(
+  std::unique_ptr<base::HistogramSamples> continue_samples(
       GetHistogramSamplesSinceTestStart(
           "Blink.Sms.Receive.TimeContinueOnSuccess"));
-  EXPECT_EQ(1, samples->TotalCount());
+  EXPECT_EQ(1, continue_samples->TotalCount());
+
+  std::unique_ptr<base::HistogramSamples> receive_samples(
+      GetHistogramSamplesSinceTestStart("Blink.Sms.Receive.TimeSmsReceive"));
+  EXPECT_EQ(1, receive_samples->TotalCount());
 }
 
-TEST_F(SmsServiceTest, RecordCancelOnSuccessTimeMetric) {
+TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
   NavigateAndCommit(GURL(kTestUrl));
 
   Service service(web_contents());
@@ -652,6 +656,10 @@ TEST_F(SmsServiceTest, RecordCancelOnSuccessTimeMetric) {
         GetHistogramSamplesSinceTestStart(
             "Blink.Sms.Receive.TimeCancelOnSuccess"));
     EXPECT_EQ(0, samples->TotalCount());
+
+    std::unique_ptr<base::HistogramSamples> receive_samples(
+        GetHistogramSamplesSinceTestStart("Blink.Sms.Receive.TimeSmsReceive"));
+    EXPECT_EQ(0, receive_samples->TotalCount());
   }
 
   {
@@ -693,6 +701,10 @@ TEST_F(SmsServiceTest, RecordCancelOnSuccessTimeMetric) {
         GetHistogramSamplesSinceTestStart(
             "Blink.Sms.Receive.TimeCancelOnSuccess"));
     EXPECT_EQ(1, samples->TotalCount());
+
+    std::unique_ptr<base::HistogramSamples> receive_samples(
+        GetHistogramSamplesSinceTestStart("Blink.Sms.Receive.TimeSmsReceive"));
+    EXPECT_EQ(1, receive_samples->TotalCount());
   }
 }
 

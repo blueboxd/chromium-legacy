@@ -13,14 +13,14 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_push_fifo.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_level_calculator.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/pc/media_stream_track.h"

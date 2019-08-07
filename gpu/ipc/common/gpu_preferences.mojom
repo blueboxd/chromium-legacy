@@ -5,7 +5,9 @@
 // gpu/config/gpu_preferences.h
 module gpu.mojom;
 
+[EnableIf=use_ozone]
 import "mojo/public/mojom/base/message_pump_type.mojom";
+
 import "ui/gfx/mojom/buffer_types.mojom";
 
 // Corresponds to gpu::VulkanImplementationName.
@@ -68,5 +70,7 @@ struct GpuPreferences {
   bool enable_metal;
   bool enable_gpu_benchmarking_extension;
   bool enable_webgpu;
+
+  [EnableIf=use_ozone]
   mojo_base.mojom.MessagePumpType message_pump_type;
 };

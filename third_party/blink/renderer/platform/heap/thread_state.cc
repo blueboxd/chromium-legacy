@@ -137,9 +137,6 @@ ThreadState::ThreadState()
 #if defined(ADDRESS_SANITIZER)
       asan_fake_stack_(__asan_get_current_fake_stack()),
 #endif
-#if defined(LEAK_SANITIZER)
-      disabled_static_persistent_registration_(0),
-#endif
       reported_memory_to_v8_(0),
       sweeper_scheduler_(base::MakeRefCounted<WorkerPoolTaskRunner>()) {
   DCHECK(CheckThread());
@@ -1164,13 +1161,20 @@ void ThreadState::ReportMemoryToV8() {
   reported_memory_to_v8_ = current_heap_size;
 }
 
+void ThreadState::EnterStaticReferenceRegistrationDisabledScope() {
+  static_persistent_registration_disabled_count_++;
+}
+
+void ThreadState::LeaveStaticReferenceRegistrationDisabledScope() {
+  DCHECK(static_persistent_registration_disabled_count_);
+  static_persistent_registration_disabled_count_--;
+}
+
 void ThreadState::RegisterStaticPersistentNode(
     PersistentNode* node,
     PersistentClearCallback callback) {
-#if defined(LEAK_SANITIZER)
-  if (disabled_static_persistent_registration_)
+  if (static_persistent_registration_disabled_count_)
     return;
-#endif
 
   DCHECK(!static_persistents_.Contains(node));
   static_persistents_.insert(node, callback);
@@ -1197,17 +1201,6 @@ void ThreadState::FreePersistentNode(PersistentRegion* persistent_region,
   if (persistent_region == GetPersistentRegion())
     DCHECK(!static_persistents_.Contains(persistent_node));
 }
-
-#if defined(LEAK_SANITIZER)
-void ThreadState::enterStaticReferenceRegistrationDisabledScope() {
-  disabled_static_persistent_registration_++;
-}
-
-void ThreadState::leaveStaticReferenceRegistrationDisabledScope() {
-  DCHECK(disabled_static_persistent_registration_);
-  disabled_static_persistent_registration_--;
-}
-#endif
 
 void ThreadState::InvokePreFinalizers() {
   DCHECK(CheckThread());

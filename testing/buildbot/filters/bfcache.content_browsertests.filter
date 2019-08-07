@@ -85,6 +85,7 @@
 # Wait for the old process to exit. It won't, because it is still used by a
 # bfcached document.
 -DynamicIsolatedOriginTest.LockedProcessNotReusedForNonisolatedSameSiteNavigation
+-NavigationControllerBrowserTest.UtilizationOfSpareRenderProcessHost
 -RenderFrameHostManagerTest.DontSelectInvalidFiles
 -RenderFrameHostManagerTest.NavigateWithUnassignedSiteInstance
 -RenderFrameHostManagerTest.PostMessageFromSubframeUnloadHandler
@@ -112,6 +113,7 @@
 -SitePerProcessBrowserTest.RenderViewHostIsNotReusedAfterDelayedSwapOutACK
 
 # Check failed: false. Navigation in an inactive frame
+-NavigationControllerBrowserTest.HistoryBackTwiceFromRendererWithUserGesture
 -SitePerProcessBrowserTest.TwoCrossSitePendingNavigationsAndMainFrameWins
 
 # Unload handler not run => Title not updated.
@@ -123,3 +125,7 @@
 -WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkers/1
 -WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCache
 -WebContentsSplitCacheWithFrameOriginBrowserTest.SplitCacheDedicatedWorkers
+
+# A frozen page failed to execute Javascript.
+# See https://crbug.com/991194
+-WebContentsImplBrowserTest.SetPageFrozen

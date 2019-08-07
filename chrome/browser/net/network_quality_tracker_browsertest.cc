@@ -124,8 +124,7 @@ class NetworkQualityTrackerBrowserTest : public InProcessBrowserTest {
   void SimulateNetworkQualityChange(net::EffectiveConnectionType type) {
     if (!content::IsOutOfProcessNetworkService()) {
       scoped_refptr<base::SequencedTaskRunner> task_runner =
-          base::CreateSequencedTaskRunnerWithTraits(
-              {content::BrowserThread::IO});
+          base::CreateSequencedTaskRunner({content::BrowserThread::IO});
       if (content::IsInProcessNetworkService())
         task_runner = content::GetNetworkTaskRunner();
       task_runner->PostTask(

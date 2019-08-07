@@ -1235,13 +1235,13 @@
     Battery isn't charging
   </message>
   <message name="IDS_WILCO_NOTIFICATION_BATTERY_AUTH_MESSAGE" desc="The message of the notification shown to inform the user that an unauthorized battery is connected to a Chromebook.">
-    To charge, use a battery by the maker of your Chromebook.
+    To charge this Chromebook, use a battery from the same brand.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_TITLE" desc="The title of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
     Power adapter issue
   </message>
   <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_MESSAGE" desc="The message of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
-    To avoid charging or performance issues, use a USB Type-C power adapter or an adapter by the maker of your Chromebook.
+    Please use a USB Type-C power adapter or an adapter from the same brand as your Chromebook.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_TITLE" desc="The title of the notification shown to inform the user that attached dock is incompatible.">
     Not all features on this dock are supported
@@ -3265,9 +3265,6 @@
   </message>
   <message name="IDS_ASSISTANT_DONE_BUTTON" desc="Done button for asssitant optin flow.">
     Done
-  </message>
-  <message name="IDS_ASSISTANT_HOTWORD_NOTIFICATION_TITLE" desc="Title for assistant hotword enable notification.">
-    Turn on 'Ok Google'
   </message>
   <message name="IDS_ASSISTANT_ACTIVITY_CONTROL_POPUP_LINK" desc="Link text for activity control details popup.">
     Learn more

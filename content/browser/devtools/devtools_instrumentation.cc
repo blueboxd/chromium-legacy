@@ -170,16 +170,6 @@ std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
 
   DevToolsAgentHostImpl* agent_host =
       RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
-  if (agent_host) {
-    // Interception might throttle navigations in inspected frames.
-    for (auto* network_handler :
-         protocol::NetworkHandler::ForAgentHost(agent_host)) {
-      std::unique_ptr<NavigationThrottle> throttle =
-          network_handler->CreateThrottleForNavigation(navigation_handle);
-      if (throttle)
-        result.push_back(std::move(throttle));
-    }
-  }
   FrameTreeNode* parent = frame_tree_node->parent();
   if (!parent) {
     if (WebContentsImpl::FromFrameTreeNode(frame_tree_node)->IsPortal() &&

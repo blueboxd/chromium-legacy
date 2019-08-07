@@ -20,6 +20,10 @@ import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//ui/base/mpris/buildflags/buildflags.gni")
 import("//v8/gni/v8.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")  # For generate_jni().
+}
+
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 jumbo_static_library("test_support") {
@@ -2224,12 +2228,15 @@ test("content_unittests") {
       "../browser/font_unique_name_lookup/font_unique_name_lookup_unittest.cc",
       "../browser/media/capture/screen_capture_device_android_unittest.cc",
       "../browser/renderer_host/render_widget_host_view_android_unittest.cc",
+      "../browser/sms/sms_provider_android_unittest.cc",
       "../renderer/java/gin_java_bridge_value_converter_unittest.cc",
       "../renderer/media/android/stream_texture_wrapper_impl_unittest.cc",
     ]
     sources -= [ "../browser/tracing/tracing_ui_unittest.cc" ]
 
     deps += [
+      ":content_unittests_java",
+      ":content_unittests_jni_headers",
       "//base:base_java_unittest_support",
       "//build/config/freetype",
       "//components/download/internal/common:internal_java",
@@ -2394,4 +2401,25 @@ group("test_buildbucket_api_gpu_use_cases") {
     "//content/test/gpu/gather_power_measurement_results.py",
     "//content/test/gpu/gather_swarming_json_results.py",
   ]
+}
+
+if (is_android) {
+  content_java_sources_needing_jni = [ "//content/public/android/javatests/src/org/chromium/content/browser/sms/Fakes.java" ]
+
+  generate_jni("content_unittests_jni_headers") {
+    sources = content_java_sources_needing_jni
+  }
+
+  android_library("content_unittests_java") {
+    testonly = true
+    java_files = content_java_sources_needing_jni
+    deps = [
+      "$google_play_services_package:google_play_services_auth_api_phone_java",
+      "$google_play_services_package:google_play_services_base_java",
+      "$google_play_services_package:google_play_services_basement_java",
+      "$google_play_services_package:google_play_services_tasks_java",
+      "//base:base_java",
+      "//content/public/android:content_java",
+    ]
+  }
 }

@@ -5,6 +5,7 @@
 <org.chromium.chrome.browser.tasks.tab_management.TabGridIphItemView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/tab_grid_iph_item"
     android:layout_width="match_parent"
     android:layout_height="@dimen/tab_grid_iph_card_height"
     android:layout_marginTop="@dimen/tab_grid_iph_card_padding"

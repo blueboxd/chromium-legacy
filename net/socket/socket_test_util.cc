@@ -816,15 +816,20 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
       ssl_config.version_max_override.value_or(context->config().version_max));
 
   if (next_ssl_data->expected_send_client_cert) {
-    EXPECT_EQ(*next_ssl_data->expected_send_client_cert,
-              ssl_config.send_client_cert);
-    DCHECK_EQ(*next_ssl_data->expected_send_client_cert,
-              next_ssl_data->expected_client_cert != nullptr);
-    if (next_ssl_data->expected_client_cert) {
+    // Client certificate preferences come from |context|.
+    scoped_refptr<X509Certificate> client_cert;
+    scoped_refptr<SSLPrivateKey> client_private_key;
+    bool send_client_cert = context->GetClientCertificate(
+        host_and_port, &client_cert, &client_private_key);
+
+    EXPECT_EQ(*next_ssl_data->expected_send_client_cert, send_client_cert);
+    // Note |send_client_cert| may be true while |client_cert| is null if the
+    // socket is configured to continue without a certificate, as opposed to
+    // surfacing the certificate challenge.
+    EXPECT_EQ(!!next_ssl_data->expected_client_cert, !!client_cert);
+    if (next_ssl_data->expected_client_cert && client_cert) {
       EXPECT_TRUE(next_ssl_data->expected_client_cert->EqualsIncludingChain(
-          ssl_config.client_cert.get()));
-    } else {
-      EXPECT_FALSE(ssl_config.client_cert);
+          client_cert.get()));
     }
   }
   if (next_ssl_data->expected_host_and_port) {

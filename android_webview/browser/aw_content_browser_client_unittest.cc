@@ -5,10 +5,8 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 
 #include "android_webview/browser/aw_feature_list_creator.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/core/embedder/embedder.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace android_webview {
@@ -17,11 +15,9 @@ class AwContentBrowserClientTest : public testing::Test {
  protected:
   void SetUp() override {
     mojo::core::Init();
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(AwContentBrowserClientTest, DisableCreatingThreadPool) {

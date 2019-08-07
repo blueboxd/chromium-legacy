@@ -367,15 +367,6 @@ WallpaperManager.prototype.preDownloadDomInit_ = function() {
         }, 500);
       };
     }());
-
-    // Center horizontally after any style changes.
-    const observer = new MutationObserver(function() {
-      centerElement(
-          $('message-container'), $('message-container').parentNode.offsetWidth,
-          null);
-    });
-    observer.observe(
-        $('message-container'), {attributes: true, attributeFilter: ['style']});
 };
 
 /**

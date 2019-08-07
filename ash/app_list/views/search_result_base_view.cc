@@ -8,6 +8,7 @@
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace app_list {
 

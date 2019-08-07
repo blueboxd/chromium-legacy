@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
 #include "third_party/blink/renderer/core/html/parser/html_token.h"
-#include "third_party/blink/renderer/core/html/parser/xss_auditor_delegate.h"
 
 namespace blink {
 
@@ -44,20 +43,14 @@ HTMLViewSourceParser::HTMLViewSourceParser(HTMLViewSourceDocument& document,
 }
 
 void HTMLViewSourceParser::PumpTokenizer() {
-  xss_auditor_.Init(GetDocument(), nullptr);
-
   while (true) {
     source_tracker_.Start(input_.Current(), tokenizer_.get(), token_);
     if (!tokenizer_->NextToken(input_.Current(), token_))
       return;
     source_tracker_.end(input_.Current(), tokenizer_.get(), token_);
 
-    std::unique_ptr<XSSInfo> xss_info =
-        xss_auditor_.FilterToken(FilterTokenRequest(
-            token_, source_tracker_, tokenizer_->ShouldAllowCDATA()));
     HTMLViewSourceDocument::SourceAnnotation annotation =
-        xss_info ? HTMLViewSourceDocument::kAnnotateSourceAsXSS
-                 : HTMLViewSourceDocument::kAnnotateSourceAsSafe;
+        HTMLViewSourceDocument::kAnnotateSourceAsSafe;
     GetDocument()->AddSource(source_tracker_.SourceForToken(token_), token_,
                              annotation);
 

@@ -122,7 +122,7 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
   return web_app::WebAppProvider::Get(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()))
       ->registrar()
-      .IsInstalled(start_url);
+      .IsLocallyInstalled(start_url);
 }
 
 void AppBannerManagerDesktop::ShowBannerUi(WebappInstallSource install_source) {

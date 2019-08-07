@@ -47,6 +47,7 @@ class WebAppBrowserController : public AppBrowserController {
   GURL GetAppLaunchURL() const override;
   bool IsUrlInAppScope(const GURL& url) const override;
   bool CanUninstall() const override;
+  void Uninstall() override;
   bool IsInstalled() const override;
   bool IsHostedApp() const override;
 

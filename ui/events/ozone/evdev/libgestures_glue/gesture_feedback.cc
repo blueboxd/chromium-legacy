@@ -237,9 +237,9 @@ void DumpTouchEventLog(
   }
 
   // Compress touchpad/mouse logs asynchronously
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CompressDumpedLog,
                      base::Passed(&log_paths_to_be_compressed)),

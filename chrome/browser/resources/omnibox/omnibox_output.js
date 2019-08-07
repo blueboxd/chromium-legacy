@@ -727,7 +727,7 @@ cr.define('omnibox_output', function() {
      */
     static renderClassifiedText_(container, string, classes) {
       clearChildren(container);
-      OutputAnswerProperty.classify(string + '\n', classes)
+      OutputAnswerProperty.classify(string, classes)
           .map(
               ({string, style}) => OutputJsonProperty.renderJsonWord(
                   string, OutputAnswerProperty.styleToClasses_(style)))

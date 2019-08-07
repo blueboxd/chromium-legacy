@@ -87,12 +87,9 @@ int NetworkServiceNetworkDelegate::OnHeadersReceived(
   }
 #endif  // !defined(OS_IOS)
 
-  // Clear-Site-Data header will be handled by |ResourceDispatcherHost| if
-  // network service is disabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    chain->AddResult(HandleClearSiteDataHeader(request, chain->CreateCallback(),
-                                               original_response_headers));
-  }
+  chain->AddResult(HandleClearSiteDataHeader(request, chain->CreateCallback(),
+                                             original_response_headers));
+
   return chain->GetResult();
 }
 
@@ -191,7 +188,6 @@ int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(
     net::URLRequest* request,
     net::CompletionOnceCallback callback,
     const net::HttpResponseHeaders* original_response_headers) {
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK(request);
   if (!original_response_headers || !network_context_->client())
     return net::OK;

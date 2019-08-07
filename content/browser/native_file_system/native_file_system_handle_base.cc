@@ -23,12 +23,16 @@ class NativeFileSystemHandleBase::UsageIndicatorTracker
         is_directory_(is_directory),
         directory_path_(directory_path) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (web_contents() && is_directory_)
-      web_contents()->AddNativeFileSystemDirectoryHandle(directory_path_);
+    if (web_contents()) {
+      web_contents()->IncrementNativeFileSystemHandleCount();
+      if (is_directory_)
+        web_contents()->AddNativeFileSystemDirectoryHandle(directory_path_);
+    }
   }
 
   ~UsageIndicatorTracker() override {
     if (web_contents()) {
+      web_contents()->DecrementNativeFileSystemHandleCount();
       if (is_directory_ && is_readable_)
         web_contents()->RemoveNativeFileSystemDirectoryHandle(directory_path_);
       if (is_writable_)

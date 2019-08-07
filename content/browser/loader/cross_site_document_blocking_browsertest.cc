@@ -95,21 +95,15 @@ void InspectHistograms(
     const std::string& resource_name,
     ResourceType resource_type,
     bool special_request_initiator_origin_lock_check_for_appcache = false) {
-  // //services/network doesn't have access to content::ResourceType and
-  // therefore cannot log some CORB UMAs.
-  bool is_restricted_uma_expected = false;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    is_restricted_uma_expected = true;
-    FetchHistogramsFromChildProcesses();
+  FetchHistogramsFromChildProcesses();
 
-    auto expected_lock_compatibility =
-        special_request_initiator_origin_lock_check_for_appcache
-            ? network::InitiatorLockCompatibility::kBrowserProcess
-            : network::InitiatorLockCompatibility::kCompatibleLock;
-    histograms.ExpectUniqueSample(
-        "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
-        expected_lock_compatibility, 1);
-  }
+  auto expected_lock_compatibility =
+      special_request_initiator_origin_lock_check_for_appcache
+          ? network::InitiatorLockCompatibility::kBrowserProcess
+          : network::InitiatorLockCompatibility::kCompatibleLock;
+  histograms.ExpectUniqueSample(
+      "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
+      expected_lock_compatibility, 1);
 
   CorbMimeType expected_mime_type = CorbMimeType::kInvalidMimeType;
   if (base::MatchPattern(resource_name, "*.html")) {
@@ -470,14 +464,9 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
     VerifyImgRequest(resource, expectations,
                      GURL("http://foo.com/title1.html"));
 
-    // Pre-NetworkService CORB implementation doesn't have an equivalent of
-    // URLLoaderFactoryParams::is_corb_enabled and therefore there is no way to
-    // turn off CORB only when allow_universal_access_from_file_urls is false.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // Test from a file: origin.
-      VerifyImgRequest(resource, expectations,
-                       GetTestUrl(nullptr, "title1.html"));
-    }
+    // Test from a file: origin.
+    VerifyImgRequest(resource, expectations,
+                     GetTestUrl(nullptr, "title1.html"));
   }
 
   void VerifyImgRequest(std::string resource,
@@ -956,13 +945,9 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, SharedWorker) {
   )";
   EXPECT_TRUE(ExecJs(shell(), JsReplace(kFetchStartTemplate, bar_url)));
 
-  // Verify the intercepted request (intercepting requests from SharedWorkers is
-  // only possible when NetworkService is enabled).
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    interceptor.WaitForRequestCompletion();
-    interceptor.Verify(kShouldBeBlockedWithoutSniffing,
-                       "no resource body needed for blocking verification");
-  }
+  interceptor.WaitForRequestCompletion();
+  interceptor.Verify(kShouldBeBlockedWithoutSniffing,
+                     "no resource body needed for blocking verification");
 
   // Wait for fetch result (really needed only without NetworkService, if no
   // interceptor.WaitForRequestCompletion was called above).
@@ -1091,11 +1076,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
                        AppCache_InitiatorEnforcement) {
   embedded_test_server()->StartAcceptingConnections();
 
-  // Verification of |request_initiator| is only done in the NetworkService code
-  // path.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // No kills are expected unless the fetch requesting process is locked to a
   // specific site URL.  Therefore, the test should be skipped unless the full
   // Site Isolation is enabled.
@@ -1150,11 +1130,6 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
                        AppCache_NoNavigationsEnforcement) {
   embedded_test_server()->StartAcceptingConnections();
-
-  // Verification of |request_initiator| is only done in the NetworkService code
-  // path.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
 
   // No kills are expected unless the fetch requesting process is locked to a
   // specific site URL.  Therefore, the test should be skipped unless the full
@@ -1362,17 +1337,11 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
     ExecuteScriptAsync(shell()->web_contents(), script);
     interceptor.WaitForRequestCompletion();
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // NetworkService enforices |request_initiator_site_lock| for CORB,
-      // which means that legitimate fetches from HTML Imported scripts may get
-      // incorrectly blocked.
-      interceptor.Verify(CorbExpectations::kShouldBeBlockedWithoutSniffing,
-                         "no resource body needed for blocking verification");
-    } else {
-      // Without |request_initiator_site_lock| no CORB blocking is expected.
-      interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing,
-                         GetTestFileContents("site_isolation", "nosniff.json"));
-    }
+    // NetworkService enforices |request_initiator_site_lock| for CORB,
+    // which means that legitimate fetches from HTML Imported scripts may get
+    // incorrectly blocked.
+    interceptor.Verify(CorbExpectations::kShouldBeBlockedWithoutSniffing,
+                       "no resource body needed for blocking verification");
   }
 }
 
@@ -1620,8 +1589,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
 
   // Make sure that the histograms generated by a service worker registration
   // have been recorded.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    FetchHistogramsFromChildProcesses();
+  FetchHistogramsFromChildProcesses();
 
   // Build a script for XHR-ing a cross-origin, nosniff HTML document.
   GURL cross_origin_url =

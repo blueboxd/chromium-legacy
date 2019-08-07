@@ -459,6 +459,8 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   virtual void Trace(blink::Visitor*);
 
+  void SetAllowsCrossBrowsingInstanceFrameLookup() override;
+
  private:
   friend LocalFrameClientImpl;
 

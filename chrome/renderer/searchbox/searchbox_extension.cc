@@ -445,6 +445,8 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   if (theme_info.color_id != -1) {
     builder.Set("colorDark", SkColorToArray(isolate, theme_info.color_dark));
     builder.Set("colorLight", SkColorToArray(isolate, theme_info.color_light));
+    builder.Set("colorPicked",
+                SkColorToArray(isolate, theme_info.color_picked));
   }
 
   return builder.Build();

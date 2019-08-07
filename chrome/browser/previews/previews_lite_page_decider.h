@@ -16,6 +16,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/availability/availability_prober.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -40,7 +41,8 @@ class PrefRegistrySyncable;
 // current Profile is not incognito before handing off the real legwork of the
 // triggering decision to |PreviewsLitePageNavigationThrottle|.
 class PreviewsLitePageDecider
-    : public PreviewsLitePageNavigationThrottleManager,
+    : public AvailabilityProber::Delegate,
+      public PreviewsLitePageNavigationThrottleManager,
       public PreviewsHTTPSNotificationInfoBarDecider,
       public data_reduction_proxy::DataReductionProxySettingsObserver {
  public:
@@ -96,6 +98,8 @@ class PreviewsLitePageDecider
   void BlacklistBypassedHost(const std::string& host,
                              base::TimeDelta duration) override;
   bool HostBlacklistedFromBypass(const std::string& host) override;
+  bool IsServerReachableByProbe() override;
+  bool IsServerProbeResultAvailable() override;
 
   // data_reduction_proxy::DataReductionProxySettingsObserver:
   void OnProxyRequestHeadersChanged(
@@ -105,6 +109,12 @@ class PreviewsLitePageDecider
   bool has_drp_headers() const { return drp_headers_valid_; }
 
  private:
+  // AvailabilityProber::Delegate:
+  bool ShouldSendNextProbe() override;
+  bool IsResponseSuccess(net::Error net_error,
+                         const network::ResourceResponseHead* head,
+                         std::unique_ptr<std::string> body) override;
+
   // The time after which it is ok to send the server more preview requests.
   base::Optional<base::TimeTicks> retry_at_;
 
@@ -138,6 +148,10 @@ class PreviewsLitePageDecider
   // A bool that tracks if the last call to |OnProxyRequestHeadersChanged| had
   // what looked like a valid chrome-proxy header.
   bool drp_headers_valid_;
+
+  // Probes the litepages service to establish that it is reachable before
+  // attempting a preview.
+  std::unique_ptr<AvailabilityProber> litepages_service_prober_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

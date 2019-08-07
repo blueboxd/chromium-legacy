@@ -746,6 +746,7 @@ void InstantService::BuildThemeInfo() {
         theme_provider.GetColor(ThemeProperties::COLOR_FRAME);
     theme_info_->color_light =
         theme_provider.GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
+    theme_info_->color_picked = theme_service->GetThemeColor();
   }
 }
 

@@ -26,7 +26,6 @@
 #include "net/socket/ssl_client_socket.h"
 
 namespace base {
-class DictionaryValue;
 namespace trace_event {
 class ProcessMemoryDump;
 }
@@ -92,9 +91,8 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   size_t IdleSocketCountInGroup(const GroupId& group_id) const override;
   LoadState GetLoadState(const GroupId& group_id,
                          const ClientSocketHandle* handle) const override;
-  std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
-      const std::string& name,
-      const std::string& type) const override;
+  base::Value GetInfoAsValue(const std::string& name,
+                             const std::string& type) const override;
   void DumpMemoryStats(
       base::trace_event::ProcessMemoryDump* pmd,
       const std::string& parent_dump_absolute_name) const override;

@@ -421,7 +421,7 @@ AutomationAXTreeWrapper::GetChildTreeIDReverseMap() {
   return *child_tree_id_reverse_map;
 }
 
-void AutomationAXTreeWrapper::OnNodeDataWillChange(
+void AutomationAXTreeWrapper::OnNodeDataChanged(
     ui::AXTree* tree,
     const ui::AXNodeData& old_node_data,
     const ui::AXNodeData& new_node_data) {

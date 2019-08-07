@@ -110,8 +110,8 @@ SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
     const std::string& language,
     content::BrowserContext* browser_context,
     SpellcheckService* spellcheck_service)
-    : task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+    : task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock()})),
       language_(language),
       use_browser_spellchecker_(false),
       browser_context_(browser_context),

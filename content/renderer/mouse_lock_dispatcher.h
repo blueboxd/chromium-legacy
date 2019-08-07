@@ -10,6 +10,7 @@
 
 namespace blink {
 class WebMouseEvent;
+class WebLocalFrame;
 }  // namespace blink
 
 namespace content {
@@ -31,9 +32,10 @@ class CONTENT_EXPORT MouseLockDispatcher {
         const blink::WebMouseEvent& event) = 0;
   };
 
-  // Locks the mouse to the |target|. If true is returned, an asynchronous
-  // response to target->OnLockMouseACK() will follow.
-  bool LockMouse(LockTarget* target);
+  // Locks the mouse to |target| if |requester_frame| has transient user
+  // activation. If true is returned, an asynchronous response to
+  // target->OnLockMouseACK() will follow.
+  bool LockMouse(LockTarget* target, blink::WebLocalFrame* requester_frame);
   // Request to unlock the mouse. An asynchronous response to
   // target->OnMouseLockLost() will follow.
   void UnlockMouse(LockTarget* target);
@@ -55,7 +57,7 @@ class CONTENT_EXPORT MouseLockDispatcher {
  protected:
   // Subclasses must implement these methods to send mouse lock requests to the
   // browser.
-  virtual void SendLockMouseRequest() = 0;
+  virtual void SendLockMouseRequest(blink::WebLocalFrame* requester_frame) = 0;
   virtual void SendUnlockMouseRequest() = 0;
 
  private:

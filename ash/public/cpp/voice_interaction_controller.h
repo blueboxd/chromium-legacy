@@ -17,6 +17,7 @@
 
 namespace ash {
 
+// TODO(b/138679823): Merge this with AssistantPrefsController.
 class ASH_PUBLIC_EXPORT VoiceInteractionController
     : public mojom::VoiceInteractionController,
       public AssistantStateBase {

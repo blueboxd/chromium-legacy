@@ -210,6 +210,13 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   void GrantUniversalAccess();
   bool IsGrantedUniversalAccess() const { return universal_access_; }
 
+  // Whether this origin has ability to access another SecurityOrigin
+  // if everything but the agent clusters do not match.
+  void GrantCrossAgentClusterAccess();
+  bool IsGrantedCrossAgentClusterAccess() const {
+    return cross_agent_cluster_access_;
+  }
+
   bool CanAccessDatabase() const { return !IsOpaque(); }
   bool CanAccessLocalStorage() const { return !IsOpaque(); }
   bool CanAccessSharedWorkers() const { return !IsOpaque(); }
@@ -359,6 +366,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   bool can_load_local_resources_ = false;
   bool block_local_access_from_local_origin_ = false;
   bool is_opaque_origin_potentially_trustworthy_ = false;
+  bool cross_agent_cluster_access_ = false;
 
   // For opaque origins, tracks the non-opaque origin from which the opaque
   // origin is derived.

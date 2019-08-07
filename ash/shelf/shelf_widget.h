@@ -40,14 +40,14 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                                public ShelfObserver,
                                public SessionObserver {
  public:
-  ShelfWidget(aura::Window* shelf_container, Shelf* shelf);
+  explicit ShelfWidget(Shelf* shelf);
   ~ShelfWidget() override;
 
   // Sets the initial session state and show the UI. Not part of the constructor
   // because showing the UI triggers the accessibility checks in browser_tests,
   // which will crash unless the constructor returns, allowing the caller
   // to store the constructed widget.
-  void Initialize();
+  void Initialize(aura::Window* shelf_container);
 
   // Clean up prior to deletion.
   void Shutdown();
@@ -168,7 +168,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   // View containing the shelf items for Login/Lock/OOBE/Add User screens.
   // Owned by the views hierarchy.
-  LoginShelfView* const login_shelf_view_;
+  LoginShelfView* login_shelf_view_;
 
   // Set to true when the widget is activated from another widget. Do not
   // focus the default element in this case. This should be set when

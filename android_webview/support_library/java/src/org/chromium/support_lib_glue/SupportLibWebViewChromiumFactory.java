@@ -70,7 +70,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.WEB_VIEW_RENDERER_TERMINATE,
                     Features.TRACING_CONTROLLER_BASIC_USAGE,
                     Features.WEB_VIEW_RENDERER_CLIENT_BASIC_USAGE,
-                    Features.MULTI_PROCESS_QUERY + Features.DEV_SUFFIX,
+                    Features.MULTI_PROCESS_QUERY,
                     Features.FORCE_DARK + Features.DEV_SUFFIX,
             };
     // clang-format on

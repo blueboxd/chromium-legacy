@@ -24,8 +24,9 @@ MetricEvaluatorsHelperWin* g_metric_evaluator_instance = nullptr;
 }  // namespace
 
 MetricEvaluatorsHelperWin::MetricEvaluatorsHelperWin()
-    : wmi_initialization_sequence_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+    : wmi_initialization_sequence_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+           base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       wmi_refresher_(new win::WMIRefresher(),
                      base::OnTaskRunnerDeleter(wmi_initialization_sequence_)),

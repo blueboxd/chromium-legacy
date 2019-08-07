@@ -8,11 +8,13 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/scheduler/internal/collection_store.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace notifications {
 
@@ -24,9 +26,15 @@ class IconStore;
 // Class to manage in-memory scheduled notifications loaded from the storage.
 class ScheduledNotificationManager {
  public:
-  using InitCallback = base::OnceCallback<void(bool)>;
   using Notifications =
       std::map<SchedulerClientType, std::vector<const NotificationEntry*>>;
+  using InitCallback = base::OnceCallback<void(bool)>;
+  using EncodeIconsCallback =
+      base::RepeatingCallback<void(SkBitmap,
+                                   base::OnceCallback<void(std::string)>)>;
+  using DecodeIconsCallback =
+      base::RepeatingCallback<void(std::string,
+                                   base::OnceCallback<void(SkBitmap)>)>;
 
   // Delegate that receives events from the manager.
   class Delegate {
@@ -47,7 +55,9 @@ class ScheduledNotificationManager {
       std::unique_ptr<CollectionStore<NotificationEntry>> notification_store,
       std::unique_ptr<IconStore> icon_store,
       const std::vector<SchedulerClientType>& clients,
-      const SchedulerConfig& config);
+      const SchedulerConfig& config,
+      EncodeIconsCallback encode_icons_callback,
+      DecodeIconsCallback decode_icons_callback);
 
   // Initializes the notification store.
   virtual void Init(Delegate* delegate, InitCallback callback) = 0;

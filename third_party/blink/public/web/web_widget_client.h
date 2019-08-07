@@ -73,6 +73,7 @@ struct WebCursorInfo;
 struct WebFloatPoint;
 struct WebFloatRect;
 struct WebFloatSize;
+class WebLocalFrame;
 
 class WebWidgetClient {
  public:
@@ -145,12 +146,14 @@ class WebWidgetClient {
   // Called when a tooltip should be shown at the current cursor position.
   virtual void SetToolTipText(const WebString&, WebTextDirection hint) {}
 
-  // Requests to lock the mouse cursor. If true is returned, the success
-  // result will be asynchronously returned via a single call to
-  // WebWidget::didAcquirePointerLock() or
+  // Requests to lock the mouse cursor for the |requester_frame| in the
+  // widget. If true is returned, the success result will be asynchronously
+  // returned via a single call to WebWidget::didAcquirePointerLock() or
   // WebWidget::didNotAcquirePointerLock().
   // If false, the request has been denied synchronously.
-  virtual bool RequestPointerLock() { return false; }
+  virtual bool RequestPointerLock(WebLocalFrame* requester_frame) {
+    return false;
+  }
 
   // Cause the pointer lock to be released. This may be called at any time,
   // including when a lock is pending but not yet acquired.

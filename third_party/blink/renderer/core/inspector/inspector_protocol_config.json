@@ -97,6 +97,9 @@
             },
             {
                 "domain": "WebAudio"
+            },
+            {
+                "domain": "Media"
             }
         ]
     },

@@ -226,18 +226,17 @@ LoadState WebSocketTransportClientSocketPool::GetLoadState(
   return LookupConnectJob(handle)->GetLoadState();
 }
 
-std::unique_ptr<base::DictionaryValue>
-WebSocketTransportClientSocketPool::GetInfoAsValue(
+base::Value WebSocketTransportClientSocketPool::GetInfoAsValue(
     const std::string& name,
     const std::string& type) const {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("name", name);
-  dict->SetString("type", type);
-  dict->SetInteger("handed_out_socket_count", handed_out_socket_count_);
-  dict->SetInteger("connecting_socket_count", pending_connects_.size());
-  dict->SetInteger("idle_socket_count", 0);
-  dict->SetInteger("max_socket_count", max_sockets_);
-  dict->SetInteger("max_sockets_per_group", max_sockets_);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("name", name);
+  dict.SetStringKey("type", type);
+  dict.SetIntKey("handed_out_socket_count", handed_out_socket_count_);
+  dict.SetIntKey("connecting_socket_count", pending_connects_.size());
+  dict.SetIntKey("idle_socket_count", 0);
+  dict.SetIntKey("max_socket_count", max_sockets_);
+  dict.SetIntKey("max_sockets_per_group", max_sockets_);
   return dict;
 }
 

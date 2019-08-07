@@ -19,13 +19,6 @@
       <include name="IDR_EXTENSION_OPTIONS_ATTRIBUTES_JS" file="guest_view/extension_options/extension_options_attributes.js" type="BINDATA"/>
       <include name="IDR_EXTENSION_OPTIONS_CONSTANTS_JS" file="guest_view/extension_options/extension_options_constants.js" type="BINDATA"/>
       <include name="IDR_EXTENSION_OPTIONS_EVENTS_JS" file="guest_view/extension_options/extension_options_events.js" type="BINDATA"/>
-      <include name="IDR_EXTENSION_VIEW_JS" file="guest_view/extension_view/extension_view.js" type="BINDATA" />
-      <include name="IDR_EXTENSION_VIEW_ELEMENT_JS" file="guest_view/extension_view/extension_view_element.js" type="BINDATA" />
-      <include name="IDR_EXTENSION_VIEW_API_METHODS_JS" file="guest_view/extension_view/extension_view_api_methods.js" type="BINDATA" />
-      <include name="IDR_EXTENSION_VIEW_ATTRIBUTES_JS" file="guest_view/extension_view/extension_view_attributes.js" type="BINDATA" />
-      <include name="IDR_EXTENSION_VIEW_CONSTANTS_JS" file="guest_view/extension_view/extension_view_constants.js" type="BINDATA" />
-      <include name="IDR_EXTENSION_VIEW_EVENTS_JS" file="guest_view/extension_view/extension_view_events.js" type="BINDATA" />
-      <include name="IDR_EXTENSION_VIEW_INTERNAL_CUSTOM_BINDINGS_JS" file="guest_view/extension_view/extension_view_internal.js" type="BINDATA" />
       <include name="IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS" file="feedback_private_custom_bindings.js" type="BINDATA" />
       <include name="IDR_GUEST_VIEW_ATTRIBUTES_JS" file="guest_view/guest_view_attributes.js" type="BINDATA" />
       <include name="IDR_GUEST_VIEW_CONTAINER_JS" file="guest_view/guest_view_container.js" type="BINDATA" />

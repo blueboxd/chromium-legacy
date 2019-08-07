@@ -166,7 +166,7 @@ Polymer({
     if (this.$.enterPinDialog.open) {
       this.$.enterPin.focus();
     } else if (this.$.changePinDialog.open) {
-      this.$.changePinOld.focus()();
+      this.$.changePinOld.focus();
     } else if (this.$.unlockPinDialog.open) {
       this.$.unlockPin.focus();
     } else if (this.$.unlockPukDialog.open) {
@@ -485,9 +485,9 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasSim_: function() {
+  showSimMissing_: function() {
     return !!this.deviceStateProperties_ &&
-        !!this.deviceStateProperties_.simLockStatus;
+        !this.deviceStateProperties_.simLockStatus;
   },
 
   /**

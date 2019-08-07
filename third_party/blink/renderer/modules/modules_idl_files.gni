@@ -624,7 +624,6 @@ modules_dictionary_idl_files =
           "hid/hid_connection_event_init.idl",
           "hid/hid_device_filter.idl",
           "hid/hid_device_request_options.idl",
-          "hid/hid_input_report_event_init.idl",
           "idle/idle_options.idl",
           "imagecapture/constrain_point_2d_parameters.idl",
           "imagecapture/photo_settings.idl",

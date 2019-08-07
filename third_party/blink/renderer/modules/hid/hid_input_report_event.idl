@@ -6,7 +6,6 @@
 // https://wicg.github.io/webhid/index.html#events
 
 [
-    Constructor(DOMString type, HIDInputReportEventInit eventInitDict),
     Exposed(Window WebHID),
     SecureContext
 ] interface HIDInputReportEvent : Event {

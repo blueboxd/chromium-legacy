@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -716,6 +717,15 @@ void MediaRouterViewsUI::SendIssueForUnableToCast(
   AddIssue(issue_info);
 }
 
+void MediaRouterViewsUI::SendIssueForTabAudioNotSupported(
+    const MediaSink::Id& sink_id) {
+  IssueInfo issue_info(
+      l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_ISSUE_TAB_AUDIO_NOT_SUPPORTED),
+      IssueInfo::Action::DISMISS, IssueInfo::Severity::NOTIFICATION);
+  issue_info.sink_id = sink_id;
+  AddIssue(issue_info);
+}
+
 IssueManager* MediaRouterViewsUI::GetIssueManager() {
   return GetMediaRouter()->GetIssueManager();
 }
@@ -798,7 +808,12 @@ void MediaRouterViewsUI::OnRouteResponseReceived(
   }
 
   current_route_request_.reset();
-  if (result.result_code() == RouteRequestResult::TIMED_OUT) {
+  if (result.result_code() == RouteRequestResult::OK &&
+      cast_mode == TAB_MIRROR && !base::TimeTicks::IsHighResolution()) {
+    // When tab mirroring on a device without a high resolution clock, the audio
+    // is not mirrored.
+    SendIssueForTabAudioNotSupported(sink_id);
+  } else if (result.result_code() == RouteRequestResult::TIMED_OUT) {
     SendIssueForRouteTimeout(cast_mode, sink_id,
                              presentation_request_source_name);
   }

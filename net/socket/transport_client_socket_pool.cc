@@ -41,10 +41,10 @@ bool g_connect_backup_jobs_enabled = true;
 base::Value NetLogCreateConnectJobParams(
     bool backup_job,
     const ClientSocketPool::GroupId* group_id) {
-  base::DictionaryValue dict;
-  dict.SetBoolean("backup_job", backup_job);
-  dict.SetString("group_id", group_id->ToString());
-  return std::move(dict);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetBoolKey("backup_job", backup_job);
+  dict.SetStringKey("group_id", group_id->ToString());
+  return dict;
 }
 
 }  // namespace
@@ -145,6 +145,7 @@ TransportClientSocketPool::TransportClientSocketPool(
           max_sockets_per_group,
           unused_idle_socket_timeout,
           ClientSocketPool::used_idle_socket_timeout(),
+          proxy_server,
           std::make_unique<ConnectJobFactoryImpl>(proxy_server,
                                                   is_for_websockets,
                                                   common_connect_job_params),
@@ -174,14 +175,16 @@ TransportClientSocketPool::CreateForTesting(
     int max_sockets_per_group,
     base::TimeDelta unused_idle_socket_timeout,
     base::TimeDelta used_idle_socket_timeout,
+    const ProxyServer& proxy_server,
     std::unique_ptr<ConnectJobFactory> connect_job_factory,
     SSLClientContext* ssl_client_context,
     bool connect_backup_jobs_enabled) {
   return base::WrapUnique<TransportClientSocketPool>(
       new TransportClientSocketPool(
           max_sockets, max_sockets_per_group, unused_idle_socket_timeout,
-          used_idle_socket_timeout, std::move(connect_job_factory),
-          ssl_client_context, connect_backup_jobs_enabled));
+          used_idle_socket_timeout, proxy_server,
+          std::move(connect_job_factory), ssl_client_context,
+          connect_backup_jobs_enabled));
 }
 
 TransportClientSocketPool::CallbackResultPair::CallbackResultPair()
@@ -652,62 +655,60 @@ LoadState TransportClientSocketPool::GetLoadState(
   return LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET;
 }
 
-std::unique_ptr<base::DictionaryValue>
-TransportClientSocketPool::GetInfoAsValue(const std::string& name,
-                                          const std::string& type) const {
+base::Value TransportClientSocketPool::GetInfoAsValue(
+    const std::string& name,
+    const std::string& type) const {
   // TODO(mmenke): This currently doesn't return bound Requests or ConnectJobs.
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("name", name);
-  dict->SetString("type", type);
-  dict->SetInteger("handed_out_socket_count", handed_out_socket_count_);
-  dict->SetInteger("connecting_socket_count", connecting_socket_count_);
-  dict->SetInteger("idle_socket_count", idle_socket_count_);
-  dict->SetInteger("max_socket_count", max_sockets_);
-  dict->SetInteger("max_sockets_per_group", max_sockets_per_group_);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("name", name);
+  dict.SetStringKey("type", type);
+  dict.SetIntKey("handed_out_socket_count", handed_out_socket_count_);
+  dict.SetIntKey("connecting_socket_count", connecting_socket_count_);
+  dict.SetIntKey("idle_socket_count", idle_socket_count_);
+  dict.SetIntKey("max_socket_count", max_sockets_);
+  dict.SetIntKey("max_sockets_per_group", max_sockets_per_group_);
 
   if (group_map_.empty())
     return dict;
 
-  auto all_groups_dict = std::make_unique<base::DictionaryValue>();
-  for (auto it = group_map_.begin(); it != group_map_.end(); it++) {
-    const Group* group = it->second;
-    auto group_dict = std::make_unique<base::DictionaryValue>();
+  base::Value all_groups_dict(base::Value::Type::DICTIONARY);
+  for (const auto& entry : group_map_) {
+    const Group* group = entry.second;
+    base::Value group_dict(base::Value::Type::DICTIONARY);
 
-    group_dict->SetInteger("pending_request_count",
-                           group->unbound_request_count());
+    group_dict.SetIntKey("pending_request_count",
+                         group->unbound_request_count());
     if (group->has_unbound_requests()) {
-      group_dict->SetString(
+      group_dict.SetStringKey(
           "top_pending_priority",
           RequestPriorityToString(group->TopPendingPriority()));
     }
 
-    group_dict->SetInteger("active_socket_count", group->active_socket_count());
+    group_dict.SetIntKey("active_socket_count", group->active_socket_count());
 
-    auto idle_socket_list = std::make_unique<base::ListValue>();
-    std::list<IdleSocket>::const_iterator idle_socket;
-    for (idle_socket = group->idle_sockets().begin();
-         idle_socket != group->idle_sockets().end(); idle_socket++) {
-      int source_id = idle_socket->socket->NetLog().source().id;
-      idle_socket_list->AppendInteger(source_id);
+    std::vector<base::Value> idle_socket_list;
+    for (const auto& idle_socket : group->idle_sockets()) {
+      int source_id = idle_socket.socket->NetLog().source().id;
+      idle_socket_list.push_back(base::Value(source_id));
     }
-    group_dict->Set("idle_sockets", std::move(idle_socket_list));
+    group_dict.SetKey("idle_sockets", base::Value(std::move(idle_socket_list)));
 
-    auto connect_jobs_list = std::make_unique<base::ListValue>();
-    for (auto job = group->jobs().begin(); job != group->jobs().end(); job++) {
-      int source_id = (*job)->net_log().source().id;
-      connect_jobs_list->AppendInteger(source_id);
+    std::vector<base::Value> connect_jobs_list;
+    for (const auto& job : group->jobs()) {
+      int source_id = job->net_log().source().id;
+      connect_jobs_list.push_back(base::Value(source_id));
     }
-    group_dict->Set("connect_jobs", std::move(connect_jobs_list));
+    group_dict.SetKey("connect_jobs",
+                      base::Value(std::move(connect_jobs_list)));
 
-    group_dict->SetBoolean("is_stalled", group->CanUseAdditionalSocketSlot(
-                                             max_sockets_per_group_));
-    group_dict->SetBoolean("backup_job_timer_is_running",
-                           group->BackupJobTimerIsRunning());
+    group_dict.SetBoolKey("is_stalled", group->CanUseAdditionalSocketSlot(
+                                            max_sockets_per_group_));
+    group_dict.SetBoolKey("backup_job_timer_is_running",
+                          group->BackupJobTimerIsRunning());
 
-    all_groups_dict->SetWithoutPathExpansion(it->first.ToString(),
-                                             std::move(group_dict));
+    all_groups_dict.SetKey(entry.first.ToString(), std::move(group_dict));
   }
-  dict->Set("groups", std::move(all_groups_dict));
+  dict.SetKey("groups", std::move(all_groups_dict));
   return dict;
 }
 
@@ -764,6 +765,7 @@ TransportClientSocketPool::TransportClientSocketPool(
     int max_sockets_per_group,
     base::TimeDelta unused_idle_socket_timeout,
     base::TimeDelta used_idle_socket_timeout,
+    const ProxyServer& proxy_server,
     std::unique_ptr<ConnectJobFactory> connect_job_factory,
     SSLClientContext* ssl_client_context,
     bool connect_backup_jobs_enabled)
@@ -774,6 +776,7 @@ TransportClientSocketPool::TransportClientSocketPool(
       max_sockets_per_group_(max_sockets_per_group),
       unused_idle_socket_timeout_(unused_idle_socket_timeout),
       used_idle_socket_timeout_(used_idle_socket_timeout),
+      proxy_server_(proxy_server),
       connect_job_factory_(std::move(connect_job_factory)),
       connect_backup_jobs_enabled_(connect_backup_jobs_enabled &&
                                    g_connect_backup_jobs_enabled),
@@ -793,6 +796,51 @@ void TransportClientSocketPool::OnSSLConfigChanged(
   // get re-used.
   FlushWithError(is_cert_database_change ? ERR_CERT_DATABASE_CHANGED
                                          : ERR_NETWORK_CHANGED);
+}
+
+void TransportClientSocketPool::OnSSLConfigForServerChanged(
+    const HostPortPair& server) {
+  bool refreshed_any = false;
+  // Current time value. Retrieving it once at the function start rather than
+  // inside the inner loop, since it shouldn't change by any meaningful amount.
+  //
+  // TODO(davidben): This value is not actually needed because
+  // CleanupIdleSocketsInGroup() is called with |force| = true. Tidy up
+  // interfaces so the parameter is not necessary.
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  if (proxy_server_.is_http_like() && !proxy_server_.is_http() &&
+      proxy_server_.host_port_pair() == server) {
+    // If the proxy is |server| and uses SSL settings (HTTPS or QUIC), refresh
+    // every group.
+    refreshed_any = !group_map_.empty();
+    for (auto it = group_map_.begin(); it != group_map_.end();) {
+      auto to_refresh = it++;
+      // Note this call may destroy the group and invalidate |to_refresh|.
+      RefreshGroup(to_refresh, now);
+    }
+  } else {
+    // Refresh the credentialed and uncredentialed pools for |server|.
+    for (auto privacy_mode : {PrivacyMode::PRIVACY_MODE_DISABLED,
+                              PrivacyMode::PRIVACY_MODE_ENABLED}) {
+      auto it =
+          group_map_.find(GroupId(server, SocketType::kSsl, privacy_mode));
+      if (it != group_map_.end()) {
+        refreshed_any = true;
+        // Note this call may destroy the group and invalidate |it|.
+        RefreshGroup(it, now);
+      }
+    }
+  }
+
+  if (refreshed_any) {
+    // Check to see if any group can use the freed up socket slots. It would be
+    // more efficient to give the slots to the refreshed groups, if the still
+    // exists and need them, but this should be rare enough that it doesn't
+    // matter. This will also make sure the slots are given to the group with
+    // the highest priority request without an assigned ConnectJob.
+    CheckForStalledSocketGroups();
+  }
 }
 
 bool TransportClientSocketPool::HasGroup(const GroupId& group_id) const {
@@ -878,11 +926,6 @@ void TransportClientSocketPool::RemoveGroup(const GroupId& group_id) {
 void TransportClientSocketPool::RemoveGroup(GroupMap::iterator it) {
   delete it->second;
   group_map_.erase(it);
-}
-
-void TransportClientSocketPool::RefreshGroupForTesting(
-    const GroupId& group_id) {
-  RefreshGroup(group_id);
 }
 
 // static
@@ -1325,31 +1368,21 @@ void TransportClientSocketPool::TryToCloseSocketsInLayeredPools() {
   }
 }
 
-void TransportClientSocketPool::RefreshGroup(const GroupId& group_id) {
-  auto group_it = group_map_.find(group_id);
-  if (group_it == group_map_.end())
-    return;
-  Group* group = group_it->second;
-
-  CleanupIdleSocketsInGroup(true /* force */, group, base::TimeTicks::Now());
+void TransportClientSocketPool::RefreshGroup(GroupMap::iterator it,
+                                             const base::TimeTicks& now) {
+  Group* group = it->second;
+  CleanupIdleSocketsInGroup(true /* force */, group, now);
 
   connecting_socket_count_ -= group->jobs().size();
   group->RemoveAllUnboundJobs();
 
-  if (group->IsEmpty()) {
-    // Remove group if it's now empty.
-    RemoveGroup(group_id);
-  } else {
-    // Otherwise, prevent reuse of existing sockets.
-    group->IncrementGeneration();
-  }
+  // Otherwise, prevent reuse of existing sockets.
+  group->IncrementGeneration();
 
-  // Check to see if any group (including |group_id|) can use the freed up
-  // socket slots. Would be more efficient to give the slots to |group|, if it
-  // still exists and needs them, but this should be rare enough that it doesn't
-  // matter. This will also make sure the slots are given to the group with the
-  // highest priority request without an assigned ConnectJob.
-  CheckForStalledSocketGroups();
+  // Delete group if no longer needed.
+  if (group->IsEmpty()) {
+    RemoveGroup(it);
+  }
 }
 
 TransportClientSocketPool::Group::Group(

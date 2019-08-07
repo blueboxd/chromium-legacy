@@ -701,8 +701,7 @@ void AssistantInteractionController::OnUiVisible(
             assistant_controller_->ui_controller()->model()->visibility());
 
   const bool launch_with_mic_open =
-      assistant_controller_->prefs_controller()->prefs()->GetBoolean(
-          chromeos::assistant::prefs::kAssistantLaunchWithMicOpen);
+      assistant_controller_->state()->launch_with_mic_open().value_or(false);
   const bool prefer_voice = launch_with_mic_open || IsTabletMode();
 
   // We don't explicitly start a new voice interaction if the entry point

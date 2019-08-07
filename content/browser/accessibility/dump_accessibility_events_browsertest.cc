@@ -283,6 +283,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaHiddenChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-hidden-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaInvalidChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-invalid-changed.html"));
 }
@@ -485,18 +490,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("disabled-state-changed.html"));
 }
 
-// http://crbug.com/982998
-// Test fails on Mac due to https://crbug.com/985925.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_AccessibilityEventsExpandedChange \
-  DISABLED_AccessibilityEventsExpandedChange
-#else
-#define MAYBE_AccessibilityEventsExpandedChange \
-  AccessibilityEventsExpandedChange
-#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       MAYBE_AccessibilityEventsExpandedChange) {
-  RunEventTest(FILE_PATH_LITERAL("expanded-change.html"));
+                       AccessibilityEventsExpandedChanged) {
+  RunEventTest(FILE_PATH_LITERAL("expanded-changed.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
@@ -731,6 +727,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsTbodyFocus) {
   RunEventTest(FILE_PATH_LITERAL("tbody-focus.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsVisibilityHiddenChanged) {
+  RunEventTest(FILE_PATH_LITERAL("visibility-hidden-changed.html"));
 }
 
 // Even with the deflaking in WaitForAccessibilityTreeToContainNodeWithName,

@@ -6218,6 +6218,9 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   DCHECK(!(was_within_same_document && interface_params));
   UpdateStateForCommit(item, commit_type, transition);
 
+  if (render_view_->renderer_wide_named_frame_lookup())
+    GetWebFrame()->SetAllowsCrossBrowsingInstanceFrameLookup();
+
   // This invocation must precede any calls to allowScripts(), allowImages(), or
   // allowPlugins() for the new page. This ensures that when these functions
   // send ViewHostMsg_ContentBlocked messages, those arrive after the browser
@@ -7563,6 +7566,10 @@ void RenderFrameImpl::UpdateAllLifecyclePhasesAndCompositeForTesting() {
   // This is only called for web tests and WebFrameTestProxy overrides this
   // method to implement it there.
   NOTREACHED();
+}
+
+void RenderFrameImpl::SetAllowsCrossBrowsingInstanceFrameLookup() {
+  GetWebFrame()->SetAllowsCrossBrowsingInstanceFrameLookup();
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

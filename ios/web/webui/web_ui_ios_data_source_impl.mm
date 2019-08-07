@@ -56,9 +56,6 @@ class WebUIIOSDataSourceImpl::InternalDataSource : public URLDataSourceIOS {
   bool ShouldDenyXFrameOptions() const override {
     return parent_->deny_xframe_options_;
   }
-  bool IsGzipped(const std::string& path) const override {
-    return parent_->IsGzipped(path);
-  }
 
  private:
   WebUIIOSDataSourceImpl* parent_;
@@ -187,14 +184,6 @@ void WebUIIOSDataSourceImpl::SendLocalizedStringsAsJSON(
 int WebUIIOSDataSourceImpl::PathToIdrOrDefault(const std::string& path) const {
   auto it = path_to_idr_map_.find(path);
   return it == path_to_idr_map_.end() ? default_resource_ : it->second;
-}
-
-bool WebUIIOSDataSourceImpl::IsGzipped(const std::string& path) const {
-  if (!json_path_.empty() && path == json_path_) {
-    return false;
-  }
-
-  return GetWebClient()->IsDataResourceGzipped(PathToIdrOrDefault(path));
 }
 
 }  // namespace web

@@ -579,8 +579,6 @@ source_set("common") {
     "browser/js_java_interaction/js_java_configurator_host.h",
     "browser/memory_metrics_logger.cc",
     "browser/memory_metrics_logger.h",
-    "browser/net/aw_http_user_agent_settings.cc",
-    "browser/net/aw_http_user_agent_settings.h",
     "browser/network_service/android_stream_reader_url_loader.cc",
     "browser/network_service/android_stream_reader_url_loader.h",
     "browser/network_service/aw_network_change_notifier.cc",

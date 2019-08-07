@@ -466,6 +466,11 @@ void AccessibilityControllerImpl::SetCursorHighlightEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
+bool AccessibilityControllerImpl::GetTrayVisiblityOfCursorHighlightSetting() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityCursorHighlightEnabled);
+}
+
 void AccessibilityControllerImpl::SetDictationEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;

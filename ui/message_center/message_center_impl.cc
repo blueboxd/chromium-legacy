@@ -186,15 +186,16 @@ void MessageCenterImpl::AddNotification(
   // |notification_list| will replace the notification instead of adding new.
   // This is essentially an update rather than addition.
   bool already_exists = (notification_list_->GetNotificationById(id) != NULL);
+  if (already_exists) {
+    UpdateNotification(id, std::move(notification));
+    return;
+  }
+
   notification_list_->AddNotification(std::move(notification));
   visible_notifications_ =
       notification_list_->GetVisibleNotifications(blockers_);
-
   for (auto& observer : observer_list_) {
-    if (already_exists)
-      observer.OnNotificationUpdated(id);
-    else
-      observer.OnNotificationAdded(id);
+    observer.OnNotificationAdded(id);
   }
 }
 

@@ -59,6 +59,10 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryAHB
       gfx::GpuMemoryBufferType memory_buffer_type) override;
 
  private:
+  bool ValidateUsage(uint32_t usage,
+                     const gfx::Size& size,
+                     viz::ResourceFormat format) const;
+
   struct FormatInfo {
     FormatInfo();
     ~FormatInfo();

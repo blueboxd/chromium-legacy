@@ -238,8 +238,10 @@ void AssistantPageView::OnUiVisibilityChanged(
     return;
   }
 
-  const bool prefer_voice = assistant_view_delegate_->IsTabletMode() ||
-                            assistant_view_delegate_->IsLaunchWithMicOpen();
+  const bool prefer_voice =
+      assistant_view_delegate_->IsTabletMode() ||
+      assistant_view_delegate_->GetState()->launch_with_mic_open().value_or(
+          false);
   if (!ash::assistant::util::IsVoiceEntryPoint(entry_point.value(),
                                                prefer_voice)) {
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);

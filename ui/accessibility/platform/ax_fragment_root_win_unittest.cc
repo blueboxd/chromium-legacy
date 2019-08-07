@@ -53,18 +53,18 @@ TEST_F(AXFragmentRootTest, TestUIAGetRuntimeId) {
 
 TEST_F(AXFragmentRootTest, TestUIAElementProviderFromPoint) {
   AXNodeData root_data;
-  root_data.id = 0;
-  root_data.child_ids.push_back(1);
-  root_data.child_ids.push_back(2);
+  root_data.id = 1;
   root_data.relative_bounds.bounds = gfx::RectF(0, 0, 80, 80);
 
   AXNodeData element1_data;
-  element1_data.id = 1;
+  element1_data.id = 2;
   element1_data.relative_bounds.bounds = gfx::RectF(0, 0, 50, 50);
+  root_data.child_ids.push_back(element1_data.id);
 
   AXNodeData element2_data;
-  element2_data.id = 2;
+  element2_data.id = 3;
   element2_data.relative_bounds.bounds = gfx::RectF(0, 50, 30, 30);
+  root_data.child_ids.push_back(element2_data.id);
 
   Init(root_data, element1_data, element2_data);
   InitFragmentRoot();
@@ -97,15 +97,15 @@ TEST_F(AXFragmentRootTest, TestUIAElementProviderFromPoint) {
 
 TEST_F(AXFragmentRootTest, TestUIAGetFocus) {
   AXNodeData root_data;
-  root_data.id = 0;
-  root_data.child_ids.push_back(1);
-  root_data.child_ids.push_back(2);
+  root_data.id = 1;
 
   AXNodeData element1_data;
-  element1_data.id = 1;
+  element1_data.id = 2;
+  root_data.child_ids.push_back(element1_data.id);
 
   AXNodeData element2_data;
-  element2_data.id = 2;
+  element2_data.id = 3;
+  root_data.child_ids.push_back(element2_data.id);
 
   Init(root_data, element1_data, element2_data);
   InitFragmentRoot();

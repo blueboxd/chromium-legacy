@@ -35,6 +35,24 @@
           ],
         },
       },
+      'chromeos-kevin-google-rel': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_kevin_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'kevin',
+              'pool': 'luci.chrome.cros-dut',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
       'linux-chromeos-google-rel': {
         'additional_compile_targets': [
           'chrome',
@@ -1453,14 +1471,9 @@
       },
       'WebKit Linux composite_after_paint Dummy Builder': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
           'hard_timeout': 900,
         },
         'test_suites': {
@@ -1469,14 +1482,9 @@
       },
       'WebKit Linux layout_ng Dummy Builder': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
           'hard_timeout': 900,
         },
         'test_suites': {
@@ -1729,18 +1737,6 @@
         'gtest_args': [
           '--enable-features=BlinkHeapConcurrentMarking',
         ]
-      },
-      'linux-blink-heap-unified-gc': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'gtest_args': [
-          '--enable-blink-features=HeapUnifiedGarbageCollection',
-        ],
       },
       'linux-blink-heap-verification': {
         'mixins': [
@@ -2632,7 +2628,19 @@
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
-     'Linux FYI SkiaRenderer Vulkan (NVIDIA)': {
+      'Linux FYI SkiaRenderer Vulkan (Intel HD 630)': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        'mixins': [
+          'linux_intel_hd_630',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_linux_release_gtests',
+          'isolated_scripts': 'gpu_blink_web_tests',
+          'gpu_telemetry_tests': 'gpu_skia_renderer_telemetry_tests',
+        },
+      },
+      'Linux FYI SkiaRenderer Vulkan (NVIDIA)': {
         'os_type': 'linux',
         'browser_config': 'release',
         'mixins': [

@@ -27,7 +27,6 @@
 #include "ios/web/webui/url_data_source_ios_impl.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/filter/gzip_source_stream.h"
 #include "net/filter/source_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -132,8 +131,6 @@ class URLRequestChromeJob : public net::URLRequestJob {
     deny_xframe_options_ = deny_xframe_options;
   }
 
-  void set_is_gzipped(bool is_gzipped) { is_gzipped_ = is_gzipped; }
-
   void set_source(scoped_refptr<URLDataSourceIOSImpl> source) {
     source_ = source;
   }
@@ -179,10 +176,6 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // If true, sets  the "X-Frame-Options: DENY" header.
   bool deny_xframe_options_;
 
-  // True when gzip encoding should be used. NOTE: this requires the original
-  // resources in resources.pak use compress="gzip".
-  bool is_gzipped_;
-
   // The URLDataSourceIOSImpl that is servicing this request. This is a shared
   // pointer so that the request can continue to be served even if the source is
   // detached from the backend that initially owned it.
@@ -218,7 +211,6 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
       content_security_policy_object_source_("object-src 'none';"),
       content_security_policy_frame_source_("frame-src 'none';"),
       deny_xframe_options_(true),
-      is_gzipped_(false),
       send_content_type_header_(false),
       is_incognito_(is_incognito),
       browser_state_(browser_state),
@@ -285,9 +277,6 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
   if (deny_xframe_options_)
     info->headers->AddHeader(kChromeURLXFrameOptionsHeader);
 
-  if (is_gzipped_)
-    info->headers->AddHeader("Content-Encoding: gzip");
-
   if (!allow_caching_)
     info->headers->AddHeader("Cache-Control: no-cache");
 
@@ -301,11 +290,6 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
 std::unique_ptr<net::SourceStream> URLRequestChromeJob::SetUpSourceStream() {
   std::unique_ptr<net::SourceStream> source_stream =
       net::URLRequestJob::SetUpSourceStream();
-
-  if (is_gzipped_) {
-    source_stream = net::GzipSourceStream::Create(std::move(source_stream),
-                                                  net::SourceStream::TYPE_GZIP);
-  }
 
   // The URLRequestJob and the SourceStreams we are creating are owned by the
   // same parent URLRequest, thus it is safe to pass the replacements via a raw
@@ -503,7 +487,6 @@ bool URLDataManagerIOSBackend::StartRequest(const net::URLRequest* request,
       source->source()->GetContentSecurityPolicyObjectSrc());
   job->set_content_security_policy_frame_source("frame-src 'none';");
   job->set_deny_xframe_options(source->source()->ShouldDenyXFrameOptions());
-  job->set_is_gzipped(source->source()->IsGzipped(path));
   job->set_send_content_type_header(false);
 
   // Forward along the request to the data source.

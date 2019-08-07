@@ -16,6 +16,7 @@
     'chrome': {
       'chromeos-amd64-generic-google-rel': 'official_cros_chrome_sdk',
       'chromeos-betty-google-rel': 'official_cros_chrome_sdk_headless_ozone',
+      'chromeos-kevin-google-rel': 'official_cros_chrome_sdk_headless_ozone',
       'linux-chromeos-google-rel': 'official_goma_chromeos_minimal_symbols',
       'linux-google-rel': 'official_goma',
       'mac-google-rel': 'official_goma',
@@ -739,6 +740,7 @@
       'gpu-fyi-try-linux-intel-dqp': 'deqp_release_trybot',
       'gpu-fyi-try-linux-intel-exp': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-linux-intel-rel': 'gpu_fyi_tests_release_trybot',
+      'gpu-fyi-try-linux-intel-skv': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-linux-nvidia-dbg': 'gpu_fyi_tests_debug_trybot',
       'gpu-fyi-try-linux-nvidia-dqp': 'deqp_release_trybot',
       'gpu-fyi-try-linux-nvidia-exp': 'gpu_fyi_tests_release_trybot',
@@ -1971,7 +1973,7 @@
     },
 
     'cast': {
-      'gn_args': 'is_chromecast=true',
+      'gn_args': 'is_chromecast=true use_v4l2=true',
     },
 
     'cast_audio': {

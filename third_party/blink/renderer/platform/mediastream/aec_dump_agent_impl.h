@@ -12,15 +12,18 @@
 
 namespace blink {
 
-class AecDumpAgentImplDelegate;
-
 // An instance of this class connects to the browser process to register for
 // notifications to start / stop writing to a dump file.
 class AecDumpAgentImpl : public mojom::blink::AecDumpAgent {
  public:
+  class Delegate {
+   public:
+    virtual void OnStartDump(base::File file) = 0;
+    virtual void OnStopDump() = 0;
+  };
+
   // This may fail in unit tests, in which case a null object is returned.
-  static std::unique_ptr<AecDumpAgentImpl> Create(
-      AecDumpAgentImplDelegate* delegate);
+  static std::unique_ptr<AecDumpAgentImpl> Create(Delegate* delegate);
 
   ~AecDumpAgentImpl() override;
 
@@ -30,10 +33,10 @@ class AecDumpAgentImpl : public mojom::blink::AecDumpAgent {
 
  private:
   explicit AecDumpAgentImpl(
-      AecDumpAgentImplDelegate* delegate,
+      Delegate* delegate,
       mojo::PendingReceiver<mojom::blink::AecDumpAgent> receiver);
 
-  AecDumpAgentImplDelegate* delegate_;
+  Delegate* delegate_;
   mojo::Receiver<mojom::blink::AecDumpAgent> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AecDumpAgentImpl);

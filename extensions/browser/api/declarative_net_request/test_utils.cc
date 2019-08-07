@@ -49,7 +49,7 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
   IndexAndPersistJSONRulesetResult result =
       source.IndexAndPersistJSONRulesetUnsafe();
   if (!result.success) {
-    DCHECK(result.error.empty());
+    DCHECK(result.error.empty()) << result.error;
     return false;
   }
 

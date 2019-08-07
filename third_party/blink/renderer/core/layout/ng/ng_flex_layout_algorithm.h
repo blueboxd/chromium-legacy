@@ -46,9 +46,10 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   const bool is_column_;
   LogicalSize border_box_size_;
   LogicalSize content_box_size_;
-  // This is populated at the top of Layout(), so isn't available in
+  // These are populated at the top of Layout(), so aren't available in
   // ComputeMinMaxSize() or anything it calls.
   base::Optional<FlexLayoutAlgorithm> algorithm_;
+  bool is_horizontal_flow_;
 };
 
 }  // namespace blink

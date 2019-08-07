@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SMS_SMS_METRICS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SMS_SMS_METRICS_H_
 
+#include <stdint.h>
+
 namespace base {
 class TimeDelta;
 }
@@ -21,12 +23,22 @@ enum class SMSReceiverOutcome {
   kMaxValue = kCancelled
 };
 
+// Records the result of a call to the SMSReceiver API.
 void RecordSMSOutcome(SMSReceiverOutcome outcome);
 
+// Records the time from when the API is called to when the user successfully
+// receives the SMS and presses continue to move on with the verification flow.
 void RecordSMSSuccessTime(base::TimeDelta duration);
 
+// Records the timeout value specified with the API is called. The value of 0
+// indicates that no value was specified.
+void RecordSMSRequestedTimeout(uint32_t timeout_seconds);
+
+// Records the time from when the API is called to when the user gets timed out.
 void RecordSMSTimeoutExceededTime(base::TimeDelta duration);
 
+// Records the time from when the API is called to when the user presses the
+// cancel button to abort SMS retrieval.
 void RecordSMSCancelTime(base::TimeDelta duration);
 
 }  // namespace blink

@@ -161,8 +161,9 @@ V4L2SliceVideoDecoder::V4L2SliceVideoDecoder(
     : device_(std::move(device)),
       frame_pool_(std::move(frame_pool)),
       client_task_runner_(std::move(client_task_runner)),
-      decoder_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE})),
+      decoder_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::WithBaseSyncPrimitives(),
+           base::TaskPriority::USER_VISIBLE})),
       device_poll_thread_("V4L2SliceVideoDecoderDevicePollThread"),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(client_sequence_checker_);

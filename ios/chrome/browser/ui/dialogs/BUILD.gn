@@ -131,6 +131,7 @@ source_set("eg_tests") {
     "//components/url_formatter",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/test:eg_test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing/earl_grey:earl_grey_support",

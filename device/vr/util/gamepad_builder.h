@@ -17,11 +17,13 @@ class GamepadBuilder {
 
   // Helper struct that we don't want to pollute the device namespace
   struct ButtonData {
+    enum class Type { kButton, kThumbstick, kTouchpad };
+
     bool touched = false;
     bool pressed = false;
     double value = 0.0;
 
-    bool has_both_axes = false;
+    Type type = Type::kButton;
     double x_axis = 0.0;
     double y_axis = 0.0;
   };
@@ -32,12 +34,13 @@ class GamepadBuilder {
   virtual ~GamepadBuilder();
 
   virtual bool IsValid() const;
-  base::Optional<Gamepad> GetGamepad() const;
+  virtual base::Optional<Gamepad> GetGamepad();
   void SetAxisDeadzone(double value);
 
   void AddButton(const GamepadButton& button);
   void AddButton(const ButtonData& data);
   void AddAxis(double value);
+  void AddPlaceholderAxes();
   void AddPlaceholderButton();
   void RemovePlaceholderButton();
 
@@ -48,12 +51,14 @@ class GamepadBuilder {
   GamepadHand GetHandedness() const { return gamepad_.hand; }
   GamepadMapping GetMapping() const { return gamepad_.mapping; }
 
+  Gamepad gamepad_;
+
  private:
   double axis_deadzone_ = 0.0;
-  Gamepad gamepad_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadBuilder);
 };
 
 }  // namespace device
+
 #endif  // DEVICE_VR_UTIL_GAMEPAD_BUILDER_H_

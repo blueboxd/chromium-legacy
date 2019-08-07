@@ -35,6 +35,7 @@
 #include "ash/wm/wm_event.h"
 #include "base/auto_reset.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -792,57 +793,52 @@ OverviewAnimationType OverviewItem::GetExitTransformAnimationType() {
                                       : OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }
 
-void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen,
-                                    bool from_touch_gesture) {
-  // We allow switching finger while dragging, but do not allow dragging two or
-  // more items.
-  if (overview_session_->window_drag_controller() &&
-      overview_session_->window_drag_controller()->item()) {
-    return;
+void OverviewItem::HandleMouseEvent(const ui::MouseEvent& event) {
+  const gfx::PointF screen_location = event.target()->GetScreenLocationF(event);
+  switch (event.type()) {
+    case ui::ET_MOUSE_PRESSED:
+      HandlePressEvent(screen_location, /*from_touch_gesture=*/false);
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      HandleReleaseEvent(screen_location);
+      break;
+    case ui::ET_MOUSE_DRAGGED:
+      HandleDragEvent(screen_location);
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
-
-  StartDrag();
-  overview_session_->InitiateDrag(this, location_in_screen,
-                                  /*allow_drag_to_close=*/from_touch_gesture);
 }
 
-void OverviewItem::HandleReleaseEvent(const gfx::PointF& location_in_screen) {
-  if (!IsDragItem())
-    return;
-
-  overview_session_->CompleteDrag(this, location_in_screen);
-}
-
-void OverviewItem::HandleDragEvent(const gfx::PointF& location_in_screen) {
-  if (!IsDragItem())
-    return;
-
-  overview_session_->Drag(this, location_in_screen);
-}
-
-void OverviewItem::HandleLongPressEvent(const gfx::PointF& location_in_screen) {
-  if (ShouldAllowSplitView() || desks_util::ShouldDesksBarBeCreated())
-    overview_session_->StartNormalDragMode(location_in_screen);
-}
-
-void OverviewItem::HandleFlingStartEvent(const gfx::PointF& location_in_screen,
-                                         float velocity_x,
-                                         float velocity_y) {
-  overview_session_->Fling(this, location_in_screen, velocity_x, velocity_y);
-}
-
-void OverviewItem::HandleTapEvent() {
-  if (!IsDragItem())
-    return;
-
-  overview_session_->ActivateDraggedWindow();
-}
-
-void OverviewItem::HandleGestureEndEvent() {
-  if (!IsDragItem())
-    return;
-
-  overview_session_->ResetDraggedWindowGesture();
+void OverviewItem::HandleGestureEvent(ui::GestureEvent* event) {
+  const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      HandlePressEvent(location, /*from_touch_gesture=*/true);
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      HandleDragEvent(location);
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      HandleFlingStartEvent(location, event->details().velocity_x(),
+                            event->details().velocity_y());
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+      HandleReleaseEvent(location);
+      break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      HandleLongPressEvent(location);
+      break;
+    case ui::ET_GESTURE_TAP:
+      HandleTapEvent();
+      break;
+    case ui::ET_GESTURE_END:
+      HandleGestureEndEvent();
+      break;
+    default:
+      break;
+  }
 }
 
 bool OverviewItem::ShouldIgnoreGestureEvents() {
@@ -1051,6 +1047,59 @@ void OverviewItem::AnimateOpacity(float opacity,
         animation_type, cannot_snap_widget_window);
     cannot_snap_widget_window->layer()->SetOpacity(opacity);
   }
+}
+
+void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen,
+                                    bool from_touch_gesture) {
+  // We allow switching finger while dragging, but do not allow dragging two or
+  // more items.
+  if (overview_session_->window_drag_controller() &&
+      overview_session_->window_drag_controller()->item()) {
+    return;
+  }
+
+  StartDrag();
+  overview_session_->InitiateDrag(this, location_in_screen,
+                                  /*allow_drag_to_close=*/from_touch_gesture);
+}
+
+void OverviewItem::HandleReleaseEvent(const gfx::PointF& location_in_screen) {
+  if (!IsDragItem())
+    return;
+
+  overview_session_->CompleteDrag(this, location_in_screen);
+}
+
+void OverviewItem::HandleDragEvent(const gfx::PointF& location_in_screen) {
+  if (!IsDragItem())
+    return;
+
+  overview_session_->Drag(this, location_in_screen);
+}
+
+void OverviewItem::HandleLongPressEvent(const gfx::PointF& location_in_screen) {
+  if (ShouldAllowSplitView() || desks_util::ShouldDesksBarBeCreated())
+    overview_session_->StartNormalDragMode(location_in_screen);
+}
+
+void OverviewItem::HandleFlingStartEvent(const gfx::PointF& location_in_screen,
+                                         float velocity_x,
+                                         float velocity_y) {
+  overview_session_->Fling(this, location_in_screen, velocity_x, velocity_y);
+}
+
+void OverviewItem::HandleTapEvent() {
+  if (!IsDragItem())
+    return;
+
+  overview_session_->ActivateDraggedWindow();
+}
+
+void OverviewItem::HandleGestureEndEvent() {
+  if (!IsDragItem())
+    return;
+
+  overview_session_->ResetDraggedWindowGesture();
 }
 
 void OverviewItem::StartDrag() {

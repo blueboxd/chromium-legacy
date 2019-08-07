@@ -9861,6 +9861,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Your feedback is important to us.
       </message>
     </if>
+    <message name="IDS_NOTIFICATION_DEFAULT_HELPFUL_BUTTON_TEXT" desc="Text body for the helpful button in notifications sent from notification scheduler.">
+      Helpful
+    </message>
+    <message name="IDS_NOTIFICATION_DEFAULT_UNHELPFUL_BUTTON_TEXT" desc="Text body for the unhelpful button in notifications sent from notification scheduler.">
+      Not Helpful
+    </message>
   </messages>
 </release>
 </grit>

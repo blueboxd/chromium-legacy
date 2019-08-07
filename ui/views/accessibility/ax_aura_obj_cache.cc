@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"

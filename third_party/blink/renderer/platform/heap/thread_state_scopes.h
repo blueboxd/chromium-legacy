@@ -7,6 +7,10 @@
 
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
+#if defined(LEAK_SANITIZER)
+#include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
+#endif
+
 namespace blink {
 
 // The NoAllocationScope class is used in debug mode to catch unwanted
@@ -86,6 +90,35 @@ class ThreadState::AtomicPauseScope final {
   ScriptForbiddenScope script_forbidden_scope;
   GCForbiddenScope gc_forbidden_scope;
 };
+
+#if defined(LEAK_SANITIZER)
+class ThreadState::LsanDisabledScope final {
+  STACK_ALLOCATED();
+  DISALLOW_COPY_AND_ASSIGN(LsanDisabledScope);
+
+ public:
+  explicit LsanDisabledScope(ThreadState* thread_state)
+      : thread_state_(thread_state) {
+    __lsan_disable();
+    if (thread_state_)
+      thread_state_->EnterStaticReferenceRegistrationDisabledScope();
+  }
+
+  ~LsanDisabledScope() {
+    __lsan_enable();
+    if (thread_state_)
+      thread_state_->LeaveStaticReferenceRegistrationDisabledScope();
+  }
+
+ private:
+  ThreadState* const thread_state_;
+};
+
+#define LEAK_SANITIZER_DISABLED_SCOPE \
+  ThreadState::LsanDisabledScope lsan_disabled_scope(ThreadState::Current())
+#else
+#define LEAK_SANITIZER_DISABLED_SCOPE
+#endif
 
 }  // namespace blink
 

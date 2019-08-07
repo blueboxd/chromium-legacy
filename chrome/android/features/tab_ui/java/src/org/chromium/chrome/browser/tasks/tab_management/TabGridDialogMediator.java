@@ -74,21 +74,21 @@ public class TabGridDialogMediator {
     private final TabModelObserver mTabModelObserver;
     private final TabCreatorManager mTabCreatorManager;
     private final ResetHandler mDialogResetHandler;
-    private final GridTabSwitcherMediator.ResetHandler mGridTabSwitcherResetHandler;
+    private final TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
     private final AnimationOriginProvider mAnimationOriginProvider;
     private final DialogHandler mTabGridDialogHandler;
     private int mCurrentTabId = Tab.INVALID_TAB_ID;
 
     TabGridDialogMediator(Context context, ResetHandler dialogResetHandler, PropertyModel model,
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
-            GridTabSwitcherMediator.ResetHandler gridTabSwitcherResetHandler,
+            TabSwitcherMediator.ResetHandler tabSwitcherResetHandler,
             AnimationOriginProvider animationOriginProvider) {
         mContext = context;
         mModel = model;
         mTabModelSelector = tabModelSelector;
         mTabCreatorManager = tabCreatorManager;
         mDialogResetHandler = dialogResetHandler;
-        mGridTabSwitcherResetHandler = gridTabSwitcherResetHandler;
+        mTabSwitcherResetHandler = tabSwitcherResetHandler;
         mAnimationOriginProvider = animationOriginProvider;
         mTabGridDialogHandler = new DialogHandler();
 
@@ -187,8 +187,8 @@ public class TabGridDialogMediator {
     }
 
     private void updateGridTabSwitcher() {
-        if (!isVisible() || mGridTabSwitcherResetHandler == null) return;
-        mGridTabSwitcherResetHandler.resetWithTabList(
+        if (!isVisible() || mTabSwitcherResetHandler == null) return;
+        mTabSwitcherResetHandler.resetWithTabList(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(), false);
     }
 

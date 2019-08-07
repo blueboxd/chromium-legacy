@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 
 #include <stddef.h>
+#include <string>
 
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
+#include "chrome/browser/ui/views/tabs/tab_width_constraints.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -53,17 +55,17 @@ constexpr int kPinnedWidth = 10;
 constexpr int kTabOverlap = 4;
 
 std::vector<gfx::Rect> CalculateTabBounds(TestCase test_case) {
+  TabLayoutConstants layout_constants;
+  layout_constants.tab_height = kTabHeight;
+  layout_constants.tab_overlap = kTabOverlap;
+
   TabSizeInfo size_info;
   size_info.pinned_tab_width = kPinnedWidth;
   size_info.min_active_width = kMinActiveWidth;
   size_info.min_inactive_width = kMinInactiveWidth;
   size_info.standard_width = kStandardWidth;
 
-  TabLayoutConstants layout_constants;
-  layout_constants.tab_height = kTabHeight;
-  layout_constants.tab_overlap = kTabOverlap;
-
-  std::vector<TabLayoutInfo> layout_info;
+  std::vector<TabWidthConstraints> tab_states;
   for (int tab_index = 0; tab_index < test_case.num_tabs; tab_index++) {
     TabAnimationState ideal_animation_state =
         TabAnimationState::ForIdealTabState(
@@ -75,10 +77,11 @@ std::vector<gfx::Rect> CalculateTabBounds(TestCase test_case) {
                 ? TabAnimationState::TabActiveness::kActive
                 : TabAnimationState::TabActiveness::kInactive,
             0);
-    layout_info.push_back({ideal_animation_state, size_info});
+    tab_states.push_back(TabWidthConstraints(ideal_animation_state,
+                                             layout_constants, size_info));
   }
 
-  return CalculateTabBounds(layout_constants, layout_info,
+  return CalculateTabBounds(layout_constants, tab_states,
                             test_case.tabstrip_width);
 }
 

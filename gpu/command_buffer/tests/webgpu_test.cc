@@ -24,6 +24,7 @@ WebGPUTest::WebGPUTest() = default;
 WebGPUTest::~WebGPUTest() = default;
 
 bool WebGPUTest::WebGPUSupported() const {
+  DCHECK(is_initialized_);  // Did you call WebGPUTest::Initialize?
   return context_ != nullptr;
 }
 
@@ -48,6 +49,8 @@ void WebGPUTest::TearDown() {
 }
 
 void WebGPUTest::Initialize(const Options& options) {
+  is_initialized_ = true;
+
   // crbug.com(941685): Vulkan driver crashes on Linux FYI Release (AMD R7 240).
   if (GPUTestBotConfig::CurrentConfigMatches("Linux AMD")) {
     return;
@@ -106,12 +109,13 @@ void WebGPUTest::WaitForCompletion(dawn::Device device) {
 }
 
 TEST_F(WebGPUTest, FlushNoCommands) {
+  Initialize(WebGPUTest::Options());
+
   if (!WebGPUSupported()) {
     LOG(ERROR) << "Test skipped because WebGPU isn't supported";
     return;
   }
 
-  Initialize(WebGPUTest::Options());
   webgpu()->FlushCommands();
 }
 

@@ -37,14 +37,14 @@ class AppRegistrar {
   virtual WebAppRegistrar* AsWebAppRegistrar();
   virtual extensions::BookmarkAppRegistrar* AsBookmarkAppRegistrar();
 
+  // Returns true if the app with |app_id| is currently installed.
+  virtual bool IsInstalled(const AppId& app_id) const = 0;
+
   // Returns true if the app with the specified |start_url| is currently fully
   // locally installed. The provided |start_url| must exactly match the launch
   // URL for the app; this method does not consult the app scope or match URLs
   // that fall within the scope.
-  virtual bool IsInstalled(const GURL& start_url) const = 0;
-
-  // Returns true if the app with |app_id| is currently installed.
-  virtual bool IsInstalled(const AppId& app_id) const = 0;
+  virtual bool IsLocallyInstalled(const GURL& start_url) const = 0;
 
   // Returns true if the app with |app_id| was previously uninstalled by the
   // user. For example, if a user uninstalls a default app ('default apps' are

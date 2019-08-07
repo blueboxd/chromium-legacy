@@ -1562,20 +1562,20 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
   AXNodePosition::SetTreeForTesting(nullptr);
 
   AXNodeData root_data;
-  root_data.id = 0;
+  root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
 
   AXNodeData text_data;
-  text_data.id = 1;
+  text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;
   text_data.SetName("some text");
 
   AXNodeData more_text_data;
-  more_text_data.id = 2;
+  more_text_data.id = 3;
   more_text_data.role = ax::mojom::Role::kStaticText;
   more_text_data.SetName("more text");
 
-  root_data.child_ids = {1, 2};
+  root_data.child_ids = {text_data.id, more_text_data.id};
 
   AXTreeUpdate update;
   AXTreeData tree_data;
@@ -2856,30 +2856,30 @@ TEST_F(AXPositionTest, CreateNextAnchorPosition) {
   AXNodePosition::SetTreeForTesting(nullptr);
 
   AXNodeData root_data;
-  root_data.id = 0;
+  root_data.id = 1;
   root_data.role = ax::mojom::Role::kRootWebArea;
 
   AXNodeData text_data;
-  text_data.id = 1;
+  text_data.id = 2;
   text_data.role = ax::mojom::Role::kStaticText;
   text_data.SetName("some text");
 
   AXNodeData text_field_data;
-  text_field_data.id = 2;
+  text_field_data.id = 3;
   text_field_data.role = ax::mojom::Role::kTextField;
 
   AXNodeData empty_text_data;
-  empty_text_data.id = 3;
+  empty_text_data.id = 4;
   empty_text_data.role = ax::mojom::Role::kStaticText;
   empty_text_data.SetName("");
 
   AXNodeData more_text_data;
-  more_text_data.id = 4;
+  more_text_data.id = 5;
   more_text_data.role = ax::mojom::Role::kStaticText;
   more_text_data.SetName("more text");
 
-  root_data.child_ids = {1, 2, 4};
-  text_field_data.child_ids = {3};
+  root_data.child_ids = {text_data.id, text_field_data.id, more_text_data.id};
+  text_field_data.child_ids = {empty_text_data.id};
 
   AXTreeUpdate update;
   AXTreeData tree_data;

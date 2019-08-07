@@ -346,6 +346,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-autofill-updated-card-unmask-prompt-ui",
+    "owners": ["siyua", "payments-autofill-team@google.com"],
+    "expiry_milestone": 87
+  },
+  {
     "name": "enable-force-dark",
     "owners": [ "gilmanmh@google.com" ],
     "expiry_milestone": 80
@@ -1110,11 +1115,6 @@
   {
     "name": "enable-experimental-accessibility-chromevox-language-switching",
     "owners": [ "akihiroota", "dmazzoni", "dtseng" ],
-    "expiry_milestone": 78
-  },
-  {
-    "name": "enable-experimental-accessibility-chromevox-rich-text-indication",
-    "owners": [ "akihiroota", "dtseng" ],
     "expiry_milestone": 78
   },
   {
@@ -2731,6 +2731,11 @@
     "name": "prefetch-redirect-error",
     "owners": [ "dom", "yhirano" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "policy-atomic-group-enabled",
+    "owners": [ "ydago" ],
+    "expiry_milestone": 80
   },
   {
     "name": "postscript-printing",

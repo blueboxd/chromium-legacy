@@ -20,7 +20,6 @@
 #include "base/time/time.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
-#include "content/browser/devtools/devtools_interceptor_controller.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_stream_pipe.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
@@ -63,15 +62,12 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
@@ -520,71 +516,16 @@ String GetProtocol(const GURL& url, const network::ResourceResponseInfo& info) {
   return protocol;
 }
 
-class NetworkNavigationThrottle : public content::NavigationThrottle {
- public:
-  NetworkNavigationThrottle(
-      base::WeakPtr<protocol::NetworkHandler> network_handler,
-      content::NavigationHandle* navigation_handle)
-      : content::NavigationThrottle(navigation_handle),
-        network_handler_(network_handler) {}
-
-  ~NetworkNavigationThrottle() override {}
-
-  // content::NavigationThrottle implementation:
-  NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
-    if (network_handler_ && network_handler_->ShouldCancelNavigation(
-                                navigation_handle()->GetGlobalRequestID())) {
-      return CANCEL_AND_IGNORE;
-    }
-    return PROCEED;
-  }
-
-  const char* GetNameForLogging() override {
-    return "DevToolsNetworkNavigationThrottle";
-  }
-
- private:
-  base::WeakPtr<protocol::NetworkHandler> network_handler_;
-  DISALLOW_COPY_AND_ASSIGN(NetworkNavigationThrottle);
-};
-
-bool GetPostData(const net::URLRequest* request, std::string* post_data) {
-  if (!request->has_upload())
-    return false;
-
-  const net::UploadDataStream* stream = request->get_upload();
-  if (!stream->GetElementReaders())
-    return false;
-
-  const auto* element_readers = stream->GetElementReaders();
-
-  if (element_readers->empty())
-    return false;
-
-  post_data->clear();
-  for (const auto& element_reader : *element_readers) {
-    const net::UploadBytesElementReader* reader =
-        element_reader->AsBytesReader();
-    // TODO(caseq): Also support blobs.
-    if (!reader) {
-      post_data->clear();
-      return false;
-    }
-    // TODO(caseq): This should really be base64 encoded.
-    post_data->append(reader->bytes(), reader->length());
-  }
-  return true;
-}
-
-// TODO(caseq): all problems in the above function should be fixed here as well.
 bool GetPostData(const network::ResourceRequestBody& request_body,
                  std::string* result) {
   const std::vector<network::DataElement>* elements = request_body.elements();
   if (elements->empty())
     return false;
   for (const auto& element : *elements) {
+    // TODO(caseq): Also support blobs.
     if (element.type() != network::mojom::DataElementType::kBytes)
       return false;
+    // TODO(caseq): This should rather be sent as Binary.
     result->append(element.bytes(), element.length());
   }
   return true;
@@ -810,7 +751,7 @@ class BackgroundSyncRestorer {
         static_cast<StoragePartitionImpl*>(storage_partition_)
             ->GetBackgroundSyncContext();
     if (offline) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &SetServiceWorkerOfflineOnIO, sync_context,
@@ -819,10 +760,9 @@ class BackgroundSyncRestorer {
               service_worker_host->version_id(),
               offline_sw_registration_id_.get()));
     } else {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&SetServiceWorkerOnlineOnIO, sync_context,
-                         offline_sw_registration_id_.get()));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(&SetServiceWorkerOnlineOnIO, sync_context,
+                                    offline_sw_registration_id_.get()));
     }
   }
 
@@ -1099,7 +1039,6 @@ Response NetworkHandler::Enable(Maybe<int> max_total_size,
 
 Response NetworkHandler::Disable() {
   enabled_ = false;
-  interception_handle_.reset();
   url_loader_interceptor_.reset();
   SetNetworkConditions(nullptr);
   extra_headers_.clear();
@@ -1792,7 +1731,6 @@ DispatchResponse NetworkHandler::SetRequestInterception(
     std::unique_ptr<protocol::Array<protocol::Network::RequestPattern>>
         patterns) {
   if (patterns->empty()) {
-    interception_handle_.reset();
     if (url_loader_interceptor_) {
       url_loader_interceptor_.reset();
       update_loader_factories_callback_.Run();
@@ -1820,38 +1758,15 @@ DispatchResponse NetworkHandler::SetRequestInterception(
   if (!host_)
     return Response::InternalError();
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    if (!url_loader_interceptor_) {
-      url_loader_interceptor_ = std::make_unique<DevToolsURLLoaderInterceptor>(
-          base::BindRepeating(&NetworkHandler::RequestIntercepted,
-                              weak_factory_.GetWeakPtr()));
-      url_loader_interceptor_->SetPatterns(interceptor_patterns, true);
-      update_loader_factories_callback_.Run();
-    } else {
-      url_loader_interceptor_->SetPatterns(interceptor_patterns, true);
-    }
-    return Response::OK();
-  }
-
-  WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
-  if (!web_contents)
-    return Response::InternalError();
-
-  DevToolsInterceptorController* interceptor =
-      DevToolsInterceptorController::FromBrowserContext(
-          web_contents->GetBrowserContext());
-  if (!interceptor)
-    return Response::Error("Interception not supported");
-
-  if (interception_handle_) {
-    interception_handle_->UpdatePatterns(interceptor_patterns);
+  if (!url_loader_interceptor_) {
+    url_loader_interceptor_ =
+        std::make_unique<DevToolsURLLoaderInterceptor>(base::BindRepeating(
+            &NetworkHandler::RequestIntercepted, weak_factory_.GetWeakPtr()));
+    url_loader_interceptor_->SetPatterns(interceptor_patterns, true);
+    update_loader_factories_callback_.Run();
   } else {
-    interception_handle_ = interceptor->StartInterceptingRequests(
-        host_->frame_tree_node(), interceptor_patterns,
-        base::BindRepeating(&NetworkHandler::RequestIntercepted,
-                            weak_factory_.GetWeakPtr()));
+    url_loader_interceptor_->SetPatterns(interceptor_patterns, true);
   }
-
   return Response::OK();
 }
 
@@ -1949,38 +1864,21 @@ void NetworkHandler::ContinueInterceptedRequest(
           std::move(method), std::move(post_data), std::move(override_headers),
           std::move(override_auth));
 
-  if (url_loader_interceptor_) {
-    url_loader_interceptor_->ContinueInterceptedRequest(
-        interception_id, std::move(modifications), std::move(callback));
+  if (!url_loader_interceptor_)
     return;
-  }
 
-  DevToolsInterceptorController* interceptor =
-      DevToolsInterceptorController::FromBrowserContext(browser_context_);
-  if (!interceptor) {
-    callback->sendFailure(Response::InternalError());
-    return;
-  }
-  interceptor->ContinueInterceptedRequest(
+  url_loader_interceptor_->ContinueInterceptedRequest(
       interception_id, std::move(modifications), std::move(callback));
 }
 
 void NetworkHandler::GetResponseBodyForInterception(
     const String& interception_id,
     std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
-  if (url_loader_interceptor_) {
-    url_loader_interceptor_->GetResponseBody(interception_id,
-                                             std::move(callback));
+  if (!url_loader_interceptor_)
     return;
-  }
 
-  DevToolsInterceptorController* interceptor =
-      DevToolsInterceptorController::FromBrowserContext(browser_context_);
-  if (!interceptor) {
-    callback->sendFailure(Response::InternalError());
-    return;
-  }
-  interceptor->GetResponseBody(interception_id, std::move(callback));
+  url_loader_interceptor_->GetResponseBody(interception_id,
+                                           std::move(callback));
 }
 
 void NetworkHandler::TakeResponseBodyForInterceptionAsStream(
@@ -2058,58 +1956,6 @@ NetworkHandler::CreateRequestFromResourceRequest(
   if (request.request_body && GetPostData(*request.request_body, &post_data))
     request_object->SetPostData(std::move(post_data));
   return request_object;
-}
-
-// static
-std::unique_ptr<Network::Request> NetworkHandler::CreateRequestFromURLRequest(
-    const net::URLRequest* request,
-    const std::string& cookie) {
-  std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
-  for (net::HttpRequestHeaders::Iterator it(request->extra_request_headers());
-       it.GetNext();) {
-    headers_dict->setString(it.name(), it.value());
-  }
-  if (!cookie.empty())
-    headers_dict->setString(net::HttpRequestHeaders::kCookie, cookie);
-  if (!request->referrer().empty()) {
-    headers_dict->setString(net::HttpRequestHeaders::kReferer,
-                            request->referrer());
-  }
-  std::string url_fragment;
-  std::unique_ptr<protocol::Network::Request> request_object =
-      Network::Request::Create()
-          .SetUrl(ExtractFragment(request->url(), &url_fragment))
-          .SetMethod(request->method())
-          .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
-          .SetInitialPriority(resourcePriority(request->priority()))
-          .SetReferrerPolicy(referrerPolicy(request->referrer_policy()))
-          .Build();
-  if (!url_fragment.empty())
-    request_object->SetUrlFragment(url_fragment);
-  std::string post_data;
-  if (GetPostData(request, &post_data))
-    request_object->SetPostData(std::move(post_data));
-  return request_object;
-}
-
-std::unique_ptr<NavigationThrottle> NetworkHandler::CreateThrottleForNavigation(
-    NavigationHandle* navigation_handle) {
-  if (!interception_handle_)
-    return nullptr;
-  std::unique_ptr<NavigationThrottle> throttle(new NetworkNavigationThrottle(
-      weak_factory_.GetWeakPtr(), navigation_handle));
-  return throttle;
-}
-
-bool NetworkHandler::ShouldCancelNavigation(
-    const GlobalRequestID& global_request_id) {
-  WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
-  if (!web_contents)
-    return false;
-  DevToolsInterceptorController* interceptor =
-      DevToolsInterceptorController::FromBrowserContext(
-          web_contents->GetBrowserContext());
-  return interceptor && interceptor->ShouldCancelNavigation(global_request_id);
 }
 
 bool NetworkHandler::MaybeCreateProxyForInterception(

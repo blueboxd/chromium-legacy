@@ -40,11 +40,11 @@ compiled_action("generate_top_domains_trie") {
 
   # Inputs in order expected by the command line of the tool.
   inputs = [
-    "//components/url_formatter/spoof_checks/top_domains/alexa_domains.skeletons",
+    "//components/url_formatter/spoof_checks/top_domains/domains.skeletons",
     "//components/url_formatter/spoof_checks/top_domains/top_domains_trie.template",
   ]
   outputs = [
-    "$target_gen_dir/alexa_domains-trie-inc.cc",
+    "$target_gen_dir/domains-trie-inc.cc",
   ]
   args =
       rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
@@ -113,7 +113,7 @@ compiled_action("generate_top_domains_for_edit_distance") {
 
   # Inputs in order expected by the command line of the tool.
   inputs = [
-    "//components/url_formatter/spoof_checks/top_domains/alexa_domains.list",
+    "//components/url_formatter/spoof_checks/top_domains/domains.list",
   ]
   outputs = [
     "$target_gen_dir/top500-domains-inc.cc",

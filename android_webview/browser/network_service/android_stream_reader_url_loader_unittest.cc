@@ -6,13 +6,11 @@
 
 #include "android_webview/browser/input_stream.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/core/embedder/embedder.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -161,7 +159,6 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
 
   void SetUp() override {
     mojo::core::Init();
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
   }
 
   network::ResourceRequest CreateRequest(const GURL& url) {
@@ -236,7 +233,6 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
     return std::string(buffer.data(), buffer.size());
   }
 
-  base::test::ScopedFeatureList feature_list_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidStreamReaderURLLoaderTest);

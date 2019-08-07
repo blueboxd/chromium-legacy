@@ -800,6 +800,7 @@ test.customizeMenu.testColors_PreselectColorPicker = function() {
     colorId: 0,
     colorDark: [100, 100, 100],
     colorLight: [200, 200, 200],
+    colorPicked: [90, 90, 90],
   };
   init();
   $(test.customizeMenu.IDS.EDIT_BG).click();

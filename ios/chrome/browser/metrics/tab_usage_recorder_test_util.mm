@@ -20,6 +20,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/testing/nserror_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -94,18 +95,15 @@ void SwitchToNormalMode() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(
                                           tab_index)] performAction:grey_tap()];
 
+  BOOL success = NO;
   // Turn off synchronization of GREYAssert to test the pending states.
-  [[GREYConfiguration sharedInstance]
-          setValue:@(NO)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  {
+    ScopedSynchronizationDisabler disabler;
+    success = WaitUntilConditionOrTimeout(kWaitElementTimeout, ^{
+      return ![ChromeEarlGrey isIncognitoMode];
+    });
+  }
 
-  bool success = WaitUntilConditionOrTimeout(kWaitElementTimeout, ^{
-    return ![ChromeEarlGrey isIncognitoMode];
-  });
-
-  [[GREYConfiguration sharedInstance]
-          setValue:@(YES)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
   if (!success) {
     // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
     // due to timing issues.

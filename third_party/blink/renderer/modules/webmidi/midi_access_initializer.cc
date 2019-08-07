@@ -54,7 +54,7 @@ ScriptPromise MIDIAccessInitializer::Start() {
 
   ConnectToPermissionService(
       GetExecutionContext(),
-      mojo::MakeRequest(&permission_service_, std::move(task_runner)));
+      permission_service_.BindNewPipeAndPassReceiver(std::move(task_runner)));
 
   Document& doc = To<Document>(*GetExecutionContext());
   permission_service_->RequestPermission(

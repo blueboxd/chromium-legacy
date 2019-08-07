@@ -145,10 +145,6 @@ base::RefCountedMemory* ChromeWebClient::GetDataResourceBytes(
       resource_id);
 }
 
-bool ChromeWebClient::IsDataResourceGzipped(int resource_id) const {
-  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
-}
-
 void ChromeWebClient::GetAdditionalWebUISchemes(
     std::vector<std::string>* additional_schemes) {
   additional_schemes->push_back(dom_distiller::kDomDistillerScheme);

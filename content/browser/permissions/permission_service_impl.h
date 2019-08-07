@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "url/origin.h"
 
@@ -56,7 +57,7 @@ class CONTENT_EXPORT PermissionServiceImpl
   void AddPermissionObserver(
       blink::mojom::PermissionDescriptorPtr permission,
       blink::mojom::PermissionStatus last_known_status,
-      blink::mojom::PermissionObserverPtr observer) override;
+      mojo::PendingRemote<blink::mojom::PermissionObserver> observer) override;
 
   void OnRequestPermissionsResponse(
       int pending_request_id,

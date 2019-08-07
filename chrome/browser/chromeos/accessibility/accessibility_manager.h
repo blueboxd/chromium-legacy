@@ -28,7 +28,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class Browser;

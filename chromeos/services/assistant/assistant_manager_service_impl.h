@@ -205,7 +205,7 @@ class AssistantManagerServiceImpl
       const std::vector<media_session::mojom::MediaSessionAction>& action)
       override {}
   void MediaSessionChanged(
-      const base::Optional<base::UnguessableToken>& request_id) override {}
+      const base::Optional<base::UnguessableToken>& request_id) override;
   void MediaSessionPositionChanged(
       const base::Optional<media_session::MediaPosition>& position) override {}
 
@@ -337,6 +337,9 @@ class AssistantManagerServiceImpl
   // The metadata for the active media session. It can be null to be reset, e.g.
   // the media that was being played has been stopped.
   base::Optional<media_session::MediaMetadata> media_metadata_ = base::nullopt;
+
+  base::UnguessableToken media_session_audio_focus_id_ =
+      base::UnguessableToken::Null();
 
   bool start_finished_ = false;
 

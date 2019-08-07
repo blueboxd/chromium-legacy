@@ -45,8 +45,8 @@ void ReleaseMediaCodecInternal(std::unique_ptr<MediaCodecBridge> codec) {
 }
 
 scoped_refptr<base::SequencedTaskRunner> CreateCodecTaskRunner() {
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+  return base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 

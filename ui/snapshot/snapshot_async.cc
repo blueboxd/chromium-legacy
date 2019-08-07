@@ -48,8 +48,9 @@ void SnapshotAsync::ScaleCopyOutputResult(
   // from GPU. Image scaling is implemented in content::GlHelper, but it's can't
   // be used here because it's not in content/public. Move the scaling code
   // somewhere so that it can be reused here.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(ScaleBitmap, bitmap, target_size),
       base::Bind(&OnFrameScalingFinished, callback));
 }

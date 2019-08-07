@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "media/midi/midi_service.mojom-blink.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -100,7 +101,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
   Vector<PortDescriptor> port_descriptors_;
   Member<const MIDIOptions> options_;
 
-  mojom::blink::PermissionServicePtr permission_service_;
+  mojo::Remote<mojom::blink::PermissionService> permission_service_;
 };
 
 }  // namespace blink

@@ -25,7 +25,6 @@
 #include "net/socket/socket_tag.h"
 
 namespace base {
-class DictionaryValue;
 class Value;
 namespace trace_event {
 class ProcessMemoryDump;
@@ -326,12 +325,11 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
                                  const ClientSocketHandle* handle) const = 0;
 
   // Retrieves information on the current state of the pool as a
-  // DictionaryValue.
+  // Value.
   // If |include_nested_pools| is true, the states of any nested
   // ClientSocketPools will be included.
-  virtual std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
-      const std::string& name,
-      const std::string& type) const = 0;
+  virtual base::Value GetInfoAsValue(const std::string& name,
+                                     const std::string& type) const = 0;
 
   // Dumps memory allocation stats. |parent_dump_absolute_name| is the name
   // used by the parent MemoryAllocatorDump in the memory dump hierarchy.

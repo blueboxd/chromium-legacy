@@ -341,7 +341,9 @@ void BrowserPlugin::OnSetMouseLock(int browser_plugin_instance_id,
   if (enable) {
     if (mouse_locked_ || !render_widget)
       return;
-    render_widget->mouse_lock_dispatcher()->LockMouse(this);
+    blink::WebLocalFrame* requester_frame =
+        Container()->GetDocument().GetFrame();
+    render_widget->mouse_lock_dispatcher()->LockMouse(this, requester_frame);
   } else {
     if (!mouse_locked_) {
       OnLockMouseACK(false);

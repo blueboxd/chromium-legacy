@@ -405,12 +405,12 @@ class WebContentsImpl::DestructionObserver : public WebContentsObserver {
 class WebContentsImpl::ColorChooser : public blink::mojom::ColorChooser {
  public:
   ColorChooser(content::ColorChooser* chooser,
-               blink::mojom::ColorChooserRequest request,
-               blink::mojom::ColorChooserClientPtr client)
+               mojo::PendingReceiver<blink::mojom::ColorChooser> receiver,
+               mojo::PendingRemote<blink::mojom::ColorChooserClient> client)
       : chooser_(chooser),
-        binding_(this, std::move(request)),
+        receiver_(this, std::move(receiver)),
         client_(std::move(client)) {
-    binding_.set_connection_error_handler(
+    receiver_.set_disconnect_handler(
         base::BindOnce([](content::ColorChooser* chooser) { chooser->End(); },
                        base::Unretained(chooser)));
   }
@@ -429,11 +429,11 @@ class WebContentsImpl::ColorChooser : public blink::mojom::ColorChooser {
   // Color chooser that was opened by this tab.
   std::unique_ptr<content::ColorChooser> chooser_;
 
-  // mojo bindings.
-  mojo::Binding<blink::mojom::ColorChooser> binding_;
+  // mojo receiver.
+  mojo::Receiver<blink::mojom::ColorChooser> receiver_;
 
   // mojo renderer client.
-  blink::mojom::ColorChooserClientPtr client_;
+  mojo::Remote<blink::mojom::ColorChooserClient> client_;
 };
 
 // WebContentsImpl::WebContentsTreeNode ----------------------------------------
@@ -606,7 +606,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(this);
 #endif
 
-  registry_.AddInterface(base::BindRepeating(
+  binders_.Add(base::BindRepeating(
       &WebContentsImpl::OnColorChooserFactoryRequest, base::Unretained(this)));
 
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForWeb();
@@ -1566,6 +1566,9 @@ bool WebContentsImpl::IsConnectedToSerialPort() {
   return serial_active_frame_count_ > 0;
 }
 
+bool WebContentsImpl::HasNativeFileSystemHandles() {
+  return native_file_system_handle_count_ > 0;
+}
 bool WebContentsImpl::HasNativeFileSystemDirectoryHandles() {
   return !native_file_system_directory_handles_.empty();
 }
@@ -4922,13 +4925,13 @@ void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
 }
 
 void WebContentsImpl::OnColorChooserFactoryRequest(
-    blink::mojom::ColorChooserFactoryRequest request) {
-  color_chooser_factory_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<blink::mojom::ColorChooserFactory> receiver) {
+  color_chooser_factory_receivers_.Add(this, std::move(receiver));
 }
 
 void WebContentsImpl::OpenColorChooser(
-    blink::mojom::ColorChooserRequest chooser_request,
-    blink::mojom::ColorChooserClientPtr client,
+    mojo::PendingReceiver<blink::mojom::ColorChooser> chooser_receiver,
+    mojo::PendingRemote<blink::mojom::ColorChooserClient> client,
     SkColor color,
     std::vector<blink::mojom::ColorSuggestionPtr> suggestions) {
   content::ColorChooser* new_color_chooser =
@@ -4939,7 +4942,7 @@ void WebContentsImpl::OpenColorChooser(
 
   color_chooser_.reset();
   color_chooser_ = std::make_unique<ColorChooser>(
-      new_color_chooser, std::move(chooser_request), std::move(client));
+      new_color_chooser, std::move(chooser_receiver), std::move(client));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -5281,7 +5284,7 @@ void WebContentsImpl::OnInterfaceRequest(
     RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
+  binders_.TryBind(interface_name, interface_pipe);
   for (auto& observer : observers_) {
     observer.OnInterfaceRequestFromFrame(render_frame_host, interface_name,
                                          interface_pipe);
@@ -6888,6 +6891,39 @@ void WebContentsImpl::DecrementSerialActiveFrameCount() {
   serial_active_frame_count_--;
   if (serial_active_frame_count_ == 0)
     NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+}
+
+void WebContentsImpl::IncrementNativeFileSystemHandleCount() {
+  // Trying to invalidate the tab state while being destroyed could result in a
+  // use after free.
+  if (IsBeingDestroyed())
+    return;
+
+  // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
+  // to update both the tab-level usage indicator and the usage indicator in the
+  // omnibox.
+  native_file_system_handle_count_++;
+  if (native_file_system_handle_count_ == 1) {
+    NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
+        INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
+  }
+}
+
+void WebContentsImpl::DecrementNativeFileSystemHandleCount() {
+  // Trying to invalidate the tab state while being destroyed could result in a
+  // use after free.
+  if (IsBeingDestroyed())
+    return;
+
+  // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
+  // to update both the tab-level usage indicator and the usage indicator in the
+  // omnibox.
+  DCHECK_NE(0u, native_file_system_handle_count_);
+  native_file_system_handle_count_--;
+  if (native_file_system_handle_count_ == 0) {
+    NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
+        INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
+  }
 }
 
 void WebContentsImpl::AddNativeFileSystemDirectoryHandle(

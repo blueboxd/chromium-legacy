@@ -100,7 +100,8 @@ OptimizationGuideHintsManager::OptimizationGuideHintsManager(
     leveldb_proto::ProtoDatabaseProvider* database_provider)
     : optimization_guide_service_(optimization_guide_service),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT})),
       pref_service_(pref_service),
       hint_cache_(std::make_unique<optimization_guide::HintCache>(
           std::make_unique<optimization_guide::HintCacheStore>(

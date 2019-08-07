@@ -2414,8 +2414,7 @@ TEST_F(LockContentsViewUnitTest, LoginNotReactingOnEventsWithOobeDialogShown) {
 TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsShownIfMediaPlaying) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2438,8 +2437,7 @@ TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsShownIfMediaPlaying) {
 TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsHiddenAfterDelay) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2479,8 +2477,7 @@ TEST_F(LockContentsViewUnitTest,
        MediaControlsHiddenIfScreenLockedWhileMediaPaused) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2503,8 +2500,7 @@ TEST_F(LockContentsViewUnitTest,
 TEST_F(LockContentsViewUnitTest, KeepMediaControlsShownWithinDelay) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2535,8 +2531,7 @@ TEST_F(LockContentsViewUnitTest, KeepMediaControlsShownWithinDelay) {
 TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsHiddenNoMedia) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2557,8 +2552,7 @@ TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsHiddenNoMedia) {
 TEST_F(LockContentsViewUnitTest, ShowMediaControlsIfPausedAndAlreadyShowing) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2587,13 +2581,12 @@ TEST_F(LockContentsViewUnitTest,
        LockScreenMediaControlsHiddenIfPreferenceDisabled) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
-  // Disable user preference for media keys.
+  // Disable user preference for media controls.
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
-  prefs->SetBoolean(prefs::kLockScreenMediaKeysEnabled, false);
+  prefs->SetBoolean(prefs::kLockScreenMediaControlsEnabled, false);
 
   // Build lock screen with 1 user.
   auto* contents = new LockContentsView(
@@ -2616,8 +2609,7 @@ TEST_F(LockContentsViewUnitTest,
 TEST_F(LockContentsViewUnitTest, MediaControlsHiddenOnLoginScreen) {
   // Enable media controls.
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {features::kLockScreenMediaKeys, features::kLockScreenMediaControls}, {});
+  feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
   // Build login screen with 1 user.
   auto* contents = new LockContentsView(

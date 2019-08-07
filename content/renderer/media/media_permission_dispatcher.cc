@@ -131,8 +131,8 @@ blink::mojom::PermissionService*
 MediaPermissionDispatcher::GetPermissionService() {
   if (!permission_service_) {
     render_frame_->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&permission_service_));
-    permission_service_.set_connection_error_handler(base::BindOnce(
+        permission_service_.BindNewPipeAndPassReceiver());
+    permission_service_.set_disconnect_handler(base::BindOnce(
         &MediaPermissionDispatcher::OnConnectionError, base::Unretained(this)));
   }
 

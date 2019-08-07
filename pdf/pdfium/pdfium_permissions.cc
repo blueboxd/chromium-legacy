@@ -6,20 +6,21 @@
 
 namespace chrome_pdf {
 
-namespace {
-
-// See Table 3.20 in
-// http://www.adobe.com/devnet/acrobat/pdfs/pdf_reference_1-7.pdf
-constexpr uint32_t kPDFPermissionPrintLowQualityMask = 1 << 2;
-constexpr uint32_t kPDFPermissionPrintHighQualityMask = 1 << 11;
-constexpr uint32_t kPDFPermissionCopyMask = 1 << 4;
-constexpr uint32_t kPDFPermissionCopyAccessibleMask = 1 << 9;
-
-}  // namespace
+// static
+PDFiumPermissions PDFiumPermissions::CreateForTesting(
+    int permissions_handler_revision,
+    unsigned long permission_bits) {
+  return PDFiumPermissions(permissions_handler_revision, permission_bits);
+}
 
 PDFiumPermissions::PDFiumPermissions(FPDF_DOCUMENT doc)
     : permissions_handler_revision_(FPDF_GetSecurityHandlerRevision(doc)),
       permission_bits_(FPDF_GetDocPermissions(doc)) {}
+
+PDFiumPermissions::PDFiumPermissions(int permissions_handler_revision,
+                                     unsigned long permission_bits)
+    : permissions_handler_revision_(permissions_handler_revision),
+      permission_bits_(permission_bits) {}
 
 bool PDFiumPermissions::HasPermission(
     PDFEngine::DocumentPermission permission) const {

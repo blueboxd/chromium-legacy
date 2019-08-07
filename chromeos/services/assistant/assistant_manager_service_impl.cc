@@ -1180,6 +1180,12 @@ void AssistantManagerServiceImpl::UpdateInternalOptions(
   });
 }
 
+void AssistantManagerServiceImpl::MediaSessionChanged(
+    const base::Optional<base::UnguessableToken>& request_id) {
+  if (request_id.has_value())
+    media_session_audio_focus_id_ = std::move(request_id.value());
+}
+
 void AssistantManagerServiceImpl::MediaSessionInfoChanged(
     media_session::mojom::MediaSessionInfoPtr info) {
   media_session_info_ptr_ = std::move(info);
@@ -1590,11 +1596,15 @@ void AssistantManagerServiceImpl::UpdateMediaState() {
     return;
   }
 
-  // TODO(llin): MediaSession Integrated providers (include the libassistant
-  // internal media provider) will trigger media state change event. Only
-  // update the external media status if the state changes is triggered by
-  // external providers, after the media session API for identifying the source
-  // is available.
+  // MediaSession Integrated providers (include the libassistant internal
+  // media provider) will trigger media state change event. Only update the
+  // external media status if the state changes is triggered by external
+  // providers.
+  if (media_session_ && media_session_->internal_audio_focus_id() ==
+                            media_session_audio_focus_id_) {
+    return;
+  }
+
   MediaStatus media_status;
 
   // Set media metadata.

@@ -26,8 +26,8 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   // AppRegistrar:
   void Init(base::OnceClosure callback) override;
   BookmarkAppRegistrar* AsBookmarkAppRegistrar() override;
-  bool IsInstalled(const GURL& start_url) const override;
   bool IsInstalled(const web_app::AppId& app_id) const override;
+  bool IsLocallyInstalled(const GURL& start_url) const override;
   bool WasExternalAppUninstalledByUser(
       const web_app::AppId& app_id) const override;
   base::Optional<web_app::AppId> FindAppWithUrlInScope(

@@ -1094,7 +1094,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 }
 
 // Tests that PWA menus have an uninstall option.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, UninstallMenuOption) {
+IN_PROC_BROWSER_TEST_P(SharedPWATest, UninstallMenuOption) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 

@@ -414,6 +414,17 @@ CSSPrimitiveValue* ConsumePercent(CSSParserTokenRange& range,
   return nullptr;
 }
 
+CSSPrimitiveValue* ConsumeAlphaValue(CSSParserTokenRange& range) {
+  if (CSSPrimitiveValue* value = ConsumeNumber(range, kValueRangeAll)) {
+    return value;
+  }
+  if (CSSPrimitiveValue* value = ConsumePercent(range, kValueRangeAll)) {
+    return CSSNumericLiteralValue::Create(value->GetDoubleValue() / 100.0,
+                                          CSSPrimitiveValue::UnitType::kNumber);
+  }
+  return nullptr;
+}
+
 bool CanConsumeCalcValue(CalculationCategory category,
                          CSSParserMode css_parser_mode) {
   if (category == kCalcLength || category == kCalcPercent ||

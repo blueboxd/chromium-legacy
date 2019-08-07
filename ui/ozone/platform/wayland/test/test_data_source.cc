@@ -63,8 +63,8 @@ const struct wl_data_source_interface kTestDataSourceImpl = {
 
 TestDataSource::TestDataSource(wl_resource* resource)
     : ServerObject(resource),
-      task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})) {}
+      task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock()})) {}
 
 TestDataSource::~TestDataSource() {}
 

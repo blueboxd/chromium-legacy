@@ -47,21 +47,22 @@ bool MockWMRInputSourceState::SupportsControllerProperties() const {
 }
 
 bool MockWMRInputSourceState::IsThumbstickPressed() const {
-  return IsButtonPressed(XrButtonId::kAxisPrimary);
+  return IsButtonPressed(XrButtonId::kAxisThumbstick);
 }
 
 bool MockWMRInputSourceState::IsTouchpadPressed() const {
-  return IsButtonPressed(XrButtonId::kAxisSecondary);
+  return IsButtonPressed(XrButtonId::kAxisTrackpad);
 }
 
 bool MockWMRInputSourceState::IsTouchpadTouched() const {
   auto touched = data_.supported_buttons & data_.buttons_touched &
-                 XrButtonMaskFromId(XrButtonId::kAxisSecondary);
+                 XrButtonMaskFromId(XrButtonId::kAxisTrackpad);
   return touched != 0;
 }
 
 double MockWMRInputSourceState::ThumbstickX() const {
-  double val = data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisPrimary)].x;
+  double val =
+      data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisThumbstick)].x;
   // Should be in [-1, 1] for joysticks.
   DCHECK(val <= 1);
   DCHECK(val >= -1);
@@ -70,7 +71,8 @@ double MockWMRInputSourceState::ThumbstickX() const {
 
 // Invert the y axis because -1 is up in the Gamepad API, but down in WMR.
 double MockWMRInputSourceState::ThumbstickY() const {
-  double val = data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisPrimary)].y;
+  double val =
+      data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisThumbstick)].y;
   // Should be in [-1, 1] for joysticks.
   DCHECK(val <= 1);
   DCHECK(val >= -1);
@@ -78,8 +80,7 @@ double MockWMRInputSourceState::ThumbstickY() const {
 }
 
 double MockWMRInputSourceState::TouchpadX() const {
-  double val =
-      data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisSecondary)].x;
+  double val = data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisTrackpad)].x;
   // Should be in [-1, 1] for touchpads.
   DCHECK(val <= 1);
   DCHECK(val >= -1);
@@ -88,8 +89,7 @@ double MockWMRInputSourceState::TouchpadX() const {
 
 // Invert the y axis because -1 is up in the Gamepad API, but down in WMR.
 double MockWMRInputSourceState::TouchpadY() const {
-  double val =
-      data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisSecondary)].y;
+  double val = data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisTrackpad)].y;
   // Should be in [-1, 1] for touchpads.
   DCHECK(val <= 1);
   DCHECK(val >= -1);

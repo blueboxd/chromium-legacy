@@ -289,8 +289,13 @@ void XRWebGLDrawingBuffer::UseSharedBuffer(
 
   // Create a texture backed by the shared buffer image.
   DCHECK(!shared_buffer_texture_id_);
-  shared_buffer_texture_id_ =
-      gl->CreateAndConsumeTextureCHROMIUM(buffer_mailbox_holder.mailbox.name);
+  DCHECK(buffer_mailbox_holder.mailbox.IsSharedImage());
+  shared_buffer_texture_id_ = gl->CreateAndTexStorage2DSharedImageCHROMIUM(
+      buffer_mailbox_holder.mailbox.name);
+
+  gl->BeginSharedImageAccessDirectCHROMIUM(
+      shared_buffer_texture_id_,
+      GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
 
   if (WantExplicitResolve()) {
     // Bind the shared texture to the destination framebuffer of
@@ -353,8 +358,10 @@ void XRWebGLDrawingBuffer::DoneWithSharedBuffer() {
   // rendering now.
   gl->BindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  // Done with the texture created by CreateAndConsumeTexture, delete it.
+  // Done with the texture created by CreateAndTexStorage2DSharedImageCHROMIUM
+  // finish accessing and delete it.
   DCHECK(shared_buffer_texture_id_);
+  gl->EndSharedImageAccessDirectCHROMIUM(shared_buffer_texture_id_);
   gl->DeleteTextures(1, &shared_buffer_texture_id_);
   shared_buffer_texture_id_ = 0;
 

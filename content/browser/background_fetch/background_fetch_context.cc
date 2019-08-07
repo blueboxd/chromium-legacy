@@ -174,7 +174,7 @@ void BackgroundFetchContext::DidGetPermission(
     BackgroundFetchPermission permission) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&background_fetch::RecordBackgroundFetchUkmEvent,
                      registration_id.origin(), requests.size(), options.Clone(),
@@ -291,9 +291,8 @@ void BackgroundFetchContext::DidGetMatchingRequests(
 void BackgroundFetchContext::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&BackgroundFetchContext::ShutdownOnIO, this));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&BackgroundFetchContext::ShutdownOnIO, this));
 }
 
 void BackgroundFetchContext::ShutdownOnIO() {

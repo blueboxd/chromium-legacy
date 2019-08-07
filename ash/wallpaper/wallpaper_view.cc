@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
-#include "ash/wm/overview/overview_grid_pre_event_handler.h"
 #include "cc/paint/render_surface_filters.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -71,17 +70,11 @@ class LayerControlView : public views::View {
 // WallpaperView, public:
 
 WallpaperView::WallpaperView(int blur, float opacity)
-    : repaint_blur_(blur),
-      repaint_opacity_(opacity),
-      overview_grid_pre_event_handler_(
-          std::make_unique<OverviewGridPreEventHandler>()) {
+    : repaint_blur_(blur), repaint_opacity_(opacity) {
   set_context_menu_controller(this);
-  AddPreTargetHandler(overview_grid_pre_event_handler_.get());
 }
 
-WallpaperView::~WallpaperView() {
-  RemovePreTargetHandler(overview_grid_pre_event_handler_.get());
-}
+WallpaperView::~WallpaperView() = default;
 
 void WallpaperView::RepaintBlurAndOpacity(int repaint_blur,
                                           float repaint_opacity) {

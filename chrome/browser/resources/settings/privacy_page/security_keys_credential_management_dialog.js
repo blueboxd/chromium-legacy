@@ -166,6 +166,8 @@ Polymer({
         this.confirmButtonVisible_ = false;
         this.closeButtonVisible_ = true;
         break;
+      default:
+        assertNotReached();
     }
     this.fire('credential-management-dialog-ready-for-testing');
   },

@@ -63,6 +63,8 @@ void SmsService::Receive(base::TimeDelta timeout, ReceiveCallback callback) {
   DCHECK(!prompt_);
   DCHECK(!sms_);
 
+  start_time_ = base::TimeTicks::Now();
+
   sms_provider_->AddObserver(this);
 
   callback_ = std::move(callback);
@@ -84,6 +86,9 @@ bool SmsService::OnReceive(const url::Origin& origin, const std::string& sms) {
   DCHECK(prompt_);
   DCHECK(!sms_);
   DCHECK(timer_.IsRunning());
+  DCHECK(!start_time_.is_null());
+
+  RecordSmsReceiveTime(base::TimeTicks::Now() - start_time_);
 
   timer_.Stop();
   sms_provider_->RemoveObserver(this);
@@ -159,6 +164,7 @@ void SmsService::Dismiss() {
   timer_.Stop();
   callback_.Reset();
   sms_.reset();
+  start_time_ = base::TimeTicks();
   receive_time_ = base::TimeTicks();
   sms_provider_->RemoveObserver(this);
 }

@@ -356,27 +356,10 @@ bool IsLocalhost(const GURL& url) {
 }
 
 bool HostStringIsLocalhost(base::StringPiece host) {
-  if (IsLocalHostname(host, nullptr))
-    return true;
-
   IPAddress ip_address;
-  if (ip_address.AssignFromIPLiteral(host)) {
-    size_t size = ip_address.size();
-    switch (size) {
-      case IPAddress::kIPv4AddressSize: {
-        const uint8_t prefix[] = {127};
-        return IPAddressStartsWith(ip_address, prefix);
-      }
-
-      case IPAddress::kIPv6AddressSize:
-        return ip_address == IPAddress::IPv6Localhost();
-
-      default:
-        NOTREACHED();
-    }
-  }
-
-  return false;
+  if (ip_address.AssignFromIPLiteral(host))
+    return ip_address.IsLoopback();
+  return IsLocalHostname(host, nullptr);
 }
 
 GURL SimplifyUrlForRequest(const GURL& url) {

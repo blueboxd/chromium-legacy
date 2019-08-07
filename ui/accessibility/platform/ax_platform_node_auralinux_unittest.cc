@@ -632,20 +632,20 @@ TEST_F(AXPlatformNodeAuraLinuxTest, DISABLED_TestAtkObjectIntAttributes) {
 
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentRefAtPoint) {
   AXNodeData root;
-  root.id = 0;
-  root.child_ids.push_back(1);
-  root.child_ids.push_back(2);
+  root.id = 1;
   root.relative_bounds.bounds = gfx::RectF(0, 0, 30, 30);
 
   AXNodeData node1;
-  node1.id = 1;
+  node1.id = 2;
   node1.relative_bounds.bounds = gfx::RectF(0, 0, 10, 10);
   node1.SetName("Name1");
+  root.child_ids.push_back(node1.id);
 
   AXNodeData node2;
-  node2.id = 2;
+  node2.id = 3;
   node2.relative_bounds.bounds = gfx::RectF(20, 20, 10, 10);
   node2.SetName("Name2");
+  root.child_ids.push_back(node2.id);
 
   Init(root, node1, node2);
 

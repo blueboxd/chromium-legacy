@@ -50,9 +50,9 @@ LearningHelper::LearningHelper(FeatureProviderFactoryCB feature_factory) {
   // it's likely that the session will live on the main thread, and handle
   // delegation of LearningTaskControllers to other threads.  However, for now,
   // do it here.
-  learning_session_ = std::make_unique<LearningSessionImpl>(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BEST_EFFORT,
+  learning_session_ =
+      std::make_unique<LearningSessionImpl>(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   // Register a few learning tasks.

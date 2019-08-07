@@ -125,10 +125,16 @@ class QuicTextUtilsImpl {
     return std::any_of(data.begin(), data.end(), base::IsAsciiUpper<char>);
   }
 
+  // Returns true if |data| contains only decimal digits.
+  static bool IsAllDigits(QuicStringPiece data) {
+    return std::all_of(data.begin(), data.end(),
+                       base::IsAsciiDigit<QuicStringPiece::value_type>);
+  }
+
   // Splits |data| into a vector of pieces delimited by |delim|.
   static std::vector<QuicStringPiece> Split(QuicStringPiece data, char delim) {
     return base::SplitStringPiece(data, QuicStringPiece(&delim, 1),
-                                  base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+                                  base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   }
 };
 

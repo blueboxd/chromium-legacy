@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
@@ -74,7 +75,7 @@ class ClipboardPromise final
 
   std::unique_ptr<ClipboardWriter> clipboard_writer_;
   // Checks for Read and Write permission.
-  mojom::blink::PermissionServicePtr permission_service_;
+  mojo::Remote<mojom::blink::PermissionService> permission_service_;
 
   // Only for use in writeText().
   String plain_text_;

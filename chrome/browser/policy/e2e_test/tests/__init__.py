@@ -14,10 +14,8 @@ from homepage.homepage import *
 from password_manager_enabled.password_manager_enabled import *
 from popups_allowed.popups_allowed import *
 from restore_on_startup.restore_on_startup import *
+from translate_enabled.translate_enabled import *
 from url_blacklist.url_blacklist import *
 from url_whitelist.url_whitelist import *
 from user_data_dir.user_data_dir import *
 from youtube_restrict.youtube_restrict import *
-
-# TODO(mbinette): Fix TranslateEnabledTest on LUCI bots.
-# from translate_enabled.translate_enabled import *

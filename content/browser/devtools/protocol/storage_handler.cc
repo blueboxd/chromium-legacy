@@ -82,7 +82,7 @@ void GotUsageAndQuotaDataCallback(
     int64_t quota,
     blink::mojom::UsageBreakdownPtr usage_breakdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(ReportUsageAndQuotaDataOnUIThread, std::move(callback),
                      code, usage, quota, std::move(usage_breakdown)));
@@ -193,10 +193,9 @@ class StorageHandler::IndexedDBObserver : IndexedDBContextImpl::Observer {
     auto found = origins_.find(origin);
     if (found == origins_.end())
       return;
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&StorageHandler::NotifyIndexedDBListChanged, owner_,
-                       origin.Serialize()));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&StorageHandler::NotifyIndexedDBListChanged,
+                                  owner_, origin.Serialize()));
   }
 
   void OnIndexedDBContentChanged(
@@ -206,7 +205,7 @@ class StorageHandler::IndexedDBObserver : IndexedDBContextImpl::Observer {
     auto found = origins_.find(origin);
     if (found == origins_.end())
       return;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&StorageHandler::NotifyIndexedDBContentChanged, owner_,
                        origin.Serialize(), database_name, object_store_name));
@@ -320,7 +319,7 @@ void StorageHandler::GetUsageAndQuota(
   }
 
   storage::QuotaManager* manager = storage_partition_->GetQuotaManager();
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&GetUsageAndQuotaOnIOThread, base::RetainedRef(manager),
                      url::Origin::Create(origin_url), std::move(callback)));

@@ -66,10 +66,6 @@ base::RefCountedMemory* WebClient::GetDataResourceBytes(int resource_id) const {
   return nullptr;
 }
 
-bool WebClient::IsDataResourceGzipped(int resource_id) const {
-  return false;
-}
-
 NSString* WebClient::GetDocumentStartScriptForAllFrames(
     BrowserState* browser_state) const {
   return @"";

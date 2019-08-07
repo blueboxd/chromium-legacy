@@ -20,8 +20,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_items_collection/core/offline_item.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/common/content_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -267,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, UserDeletedEntryDispatchesEvent) {
   EXPECT_TRUE(GetAllItems().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(ContentIndexTest, UmaCollected) {
+IN_PROC_BROWSER_TEST_F(ContentIndexTest, MetricsCollected) {
   // Inititally there is no content.
   {
     base::HistogramTester histogram_tester;
@@ -279,12 +281,20 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, UmaCollected) {
   // Record that two articles were added.
   {
     base::HistogramTester histogram_tester;
+    ukm::TestAutoSetUkmRecorder ukm_recorder;
+
     RunScript("AddContent('my-id-1')");
     RunScript("AddContent('my-id-2')");
     base::RunLoop()
         .RunUntilIdle();  // Wait for the provider to get the content.
     histogram_tester.ExpectBucketCount(
         "ContentIndex.ContentAdded", blink::mojom::ContentCategory::ARTICLE, 2);
+
+    EXPECT_EQ(
+        ukm_recorder
+            .GetEntriesByName(ukm::builders::ContentIndex_Added::kEntryName)
+            .size(),
+        2u);
   }
 
   // Querying the items should record that there are 2 entries available.
@@ -298,6 +308,8 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, UmaCollected) {
   // User deletion will dispatch an event.
   {
     base::HistogramTester histogram_tester;
+    ukm::TestAutoSetUkmRecorder ukm_recorder;
+
     provider()->RemoveItem(offline_items().at("my-id-1").id);
     EXPECT_EQ(RunScript("waitForMessageFromServiceWorker()"), "my-id-1");
     base::RunLoop().RunUntilIdle();
@@ -309,11 +321,18 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, UmaCollected) {
     histogram_tester.ExpectBucketCount(
         "ContentIndex.ContentDeleteEvent.Dispatch",
         blink::ServiceWorkerStatusCode::kOk, 1);
+    EXPECT_EQ(ukm_recorder
+                  .GetEntriesByName(
+                      ukm::builders::ContentIndex_DeletedByUser::kEntryName)
+                  .size(),
+              1u);
   }
 
   // Opening an article is recorded.
   {
     base::HistogramTester histogram_tester;
+    ukm::TestAutoSetUkmRecorder ukm_recorder;
+
     provider()->OpenItem(
         offline_items_collection::LaunchLocation::DOWNLOAD_HOME,
         offline_items().at("my-id-2").id);
@@ -326,6 +345,12 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, UmaCollected) {
     histogram_tester.ExpectBucketCount("ContentIndex.ContentOpened",
                                        blink::mojom::ContentCategory::ARTICLE,
                                        1);
+
+    EXPECT_EQ(
+        ukm_recorder
+            .GetEntriesByName(ukm::builders::ContentIndex_Opened::kEntryName)
+            .size(),
+        1u);
   }
 }
 

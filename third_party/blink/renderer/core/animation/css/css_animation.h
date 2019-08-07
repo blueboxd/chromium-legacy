@@ -17,15 +17,14 @@ class CORE_EXPORT CSSAnimation : public Animation {
  public:
   static CSSAnimation* Create(AnimationEffect*,
                               AnimationTimeline*,
-                              String animation_name,
-                              ExceptionState& = ASSERT_NO_EXCEPTION);
+                              const String& animation_name);
 
   CSSAnimation(ExecutionContext*,
                AnimationTimeline*,
                AnimationEffect*,
-               String animation_name);
+               const String& animation_name);
 
-  String animationName();
+  const String& animationName() const;
 
  private:
   String animation_name_;

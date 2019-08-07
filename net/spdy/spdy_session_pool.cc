@@ -474,6 +474,24 @@ void SpdySessionPool::OnSSLConfigChanged(bool is_cert_database_change) {
                                                : ERR_NETWORK_CHANGED);
 }
 
+void SpdySessionPool::OnSSLConfigForServerChanged(const HostPortPair& server) {
+  WeakSessionList current_sessions = GetCurrentSessions();
+  for (base::WeakPtr<SpdySession>& session : current_sessions) {
+    if (!session)
+      continue;
+
+    const ProxyServer& proxy_server =
+        session->spdy_session_key().proxy_server();
+    if (session->host_port_pair() == server ||
+        (proxy_server.is_http_like() && !proxy_server.is_http() &&
+         proxy_server.host_port_pair() == server)) {
+      session->MakeUnavailable();
+      session->MaybeFinishGoingAway();
+      DCHECK(!IsSessionAvailable(session));
+    }
+  }
+}
+
 void SpdySessionPool::RemoveRequestForSpdySession(SpdySessionRequest* request) {
   DCHECK_EQ(this, request->spdy_session_pool());
 

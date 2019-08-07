@@ -75,19 +75,6 @@ HWND BrowserAccessibilityManagerWin::GetParentHWND() {
   return delegate->AccessibilityGetAcceleratedWidget();
 }
 
-void BrowserAccessibilityManagerWin::OnSubtreeWillBeDeleted(ui::AXTree* tree,
-                                                            ui::AXNode* node) {
-  BrowserAccessibilityManager::OnSubtreeWillBeDeleted(tree, node);
-
-  BrowserAccessibility* obj = GetFromAXNode(node);
-  FireWinAccessibilityEvent(EVENT_OBJECT_HIDE, obj);
-  FireUiaStructureChangedEvent(StructureChangeType_ChildRemoved, obj);
-  if (obj && obj->GetRole() == ax::mojom::Role::kMenu) {
-    FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPEND, obj);
-    FireUiaAccessibilityEvent(UIA_MenuClosedEventId, obj);
-  }
-}
-
 void BrowserAccessibilityManagerWin::UserIsReloading() {
   if (GetRoot())
     FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_RELOAD, GetRoot());
@@ -261,6 +248,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
         FireUiaStructureChangedEvent(StructureChangeType_ChildAdded, node);
       }
+      aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::IMAGE_ANNOTATION_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
@@ -473,10 +461,16 @@ void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
     return;
   if (!ShouldFireEventForNode(node))
     return;
-  // Suppress events when |IGNORED_CHANGED|
+
+  // Suppress events when |IGNORED_CHANGED| with the exception for firing
+  // UIA_AriaPropertiesPropertyId-hidden event on non-text node marked as
+  // ignored.
   if (node->HasState(ax::mojom::State::kIgnored) ||
-      base::Contains(ignored_changed_nodes_, node))
-    return;
+      base::Contains(ignored_changed_nodes_, node)) {
+    if (uia_property != UIA_AriaPropertiesPropertyId ||
+        node->IsTextOnlyObject())
+      return;
+  }
 
   // The old value is not used by the system
   VARIANT old_value = {};
@@ -574,6 +568,20 @@ gfx::Rect BrowserAccessibilityManagerWin::GetViewBounds() {
     return bounds;
   }
   return gfx::Rect();
+}
+
+void BrowserAccessibilityManagerWin::OnSubtreeWillBeDeleted(ui::AXTree* tree,
+                                                            ui::AXNode* node) {
+  BrowserAccessibility* obj = GetFromAXNode(node);
+  DCHECK(obj);
+  if (obj) {
+    FireWinAccessibilityEvent(EVENT_OBJECT_HIDE, obj);
+    FireUiaStructureChangedEvent(StructureChangeType_ChildRemoved, obj);
+    if (obj->GetRole() == ax::mojom::Role::kMenu) {
+      FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPEND, obj);
+      FireUiaAccessibilityEvent(UIA_MenuClosedEventId, obj);
+    }
+  }
 }
 
 void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(

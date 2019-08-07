@@ -32,7 +32,6 @@
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/template_expressions.h"
 
 namespace content {
@@ -56,7 +55,6 @@ void CallOnError(network::mojom::URLLoaderClientPtrInfo client_info,
 
 void ReadData(scoped_refptr<network::ResourceResponse> headers,
               const ui::TemplateReplacements* replacements,
-              bool gzipped,
               scoped_refptr<URLDataSourceImpl> data_source,
               network::mojom::URLLoaderClientPtrInfo client_info,
               scoped_refptr<base::RefCountedMemory> bytes) {
@@ -69,34 +67,16 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
   client.Bind(std::move(client_info));
   client->OnReceiveResponse(headers->head);
 
-  base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
-                          bytes->size());
-
-  // Treats empty gzipped data as unzipped.
-  if (!bytes->size())
-    gzipped = false;
-
   if (replacements) {
-    std::string temp_string;
     // We won't know the the final output size ahead of time, so we have to
     // use an intermediate string.
-    base::StringPiece source;
-    std::string temp_str;
-    if (gzipped) {
-      temp_str.resize(compression::GetUncompressedSize(input));
-      source.set(temp_str.c_str(), temp_str.size());
-      CHECK(compression::GzipUncompress(input, source));
-      gzipped = false;
-    } else {
-      source = input;
-    }
-    temp_str = ui::ReplaceTemplateExpressions(source, *replacements);
+    base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
+                            bytes->size());
+    std::string temp_str = ui::ReplaceTemplateExpressions(input, *replacements);
     bytes = base::RefCountedString::TakeString(&temp_str);
-    input.set(reinterpret_cast<const char*>(bytes->front()), bytes->size());
   }
 
-  uint32_t output_size =
-      gzipped ? compression::GetUncompressedSize(input) : bytes->size();
+  uint32_t output_size = bytes->size();
 
   mojo::DataPipe data_pipe(output_size);
 
@@ -107,12 +87,7 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
   CHECK_EQ(result, MOJO_RESULT_OK);
   CHECK_GE(num_bytes, output_size);
 
-  if (gzipped) {
-    base::StringPiece output(static_cast<char*>(buffer), output_size);
-    CHECK(compression::GzipUncompress(input, output));
-  } else {
-    memcpy(buffer, bytes->front(), output_size);
-  }
+  memcpy(buffer, bytes->front(), output_size);
   result = data_pipe.producer_handle->EndWriteData(output_size);
   CHECK_EQ(result, MOJO_RESULT_OK);
 
@@ -126,7 +101,6 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
 
 void DataAvailable(scoped_refptr<network::ResourceResponse> headers,
                    const ui::TemplateReplacements* replacements,
-                   bool gzipped,
                    scoped_refptr<URLDataSourceImpl> source,
                    network::mojom::URLLoaderClientPtrInfo client_info,
                    scoped_refptr<base::RefCountedMemory> bytes) {
@@ -137,8 +111,8 @@ void DataAvailable(scoped_refptr<network::ResourceResponse> headers,
       {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
       ->PostTask(FROM_HERE,
-                 base::BindOnce(ReadData, headers, replacements, gzipped,
-                                source, std::move(client_info), bytes));
+                 base::BindOnce(ReadData, headers, replacements, source,
+                                std::move(client_info), bytes));
 }
 
 void StartURLLoader(const network::ResourceRequest& request,
@@ -184,15 +158,14 @@ void StartURLLoader(const network::ResourceRequest& request,
   WebContents::Getter wc_getter =
       base::Bind(WebContents::FromFrameTreeNodeId, frame_tree_node_id);
 
-  bool gzipped = source->source()->IsGzipped(path);
   const ui::TemplateReplacements* replacements = nullptr;
   if (source->source()->GetMimeType(path) == "text/html")
     replacements = source->GetReplacements();
   // To keep the same behavior as the old WebUI code, we call the source to get
-  // the value for |gzipped| and |replacements| on the IO thread. Since
-  // |replacements| is owned by |source| keep a reference to it in the callback.
+  // the value for |replacements| on the IO thread. Since |replacements| is
+  // owned by |source| keep a reference to it in the callback.
   auto data_available_callback =
-      base::Bind(DataAvailable, resource_response, replacements, gzipped,
+      base::Bind(DataAvailable, resource_response, replacements,
                  base::RetainedRef(source), base::Passed(&client_info));
 
   // TODO(jam): once we only have this code path for WebUI, and not the

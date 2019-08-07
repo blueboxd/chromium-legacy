@@ -570,8 +570,9 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   ui::EventHandler::DisableCheckTargets();
 
   AccelerometerReader::GetInstance()->Initialize(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   login_screen_controller_ =

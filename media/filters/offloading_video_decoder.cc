@@ -137,8 +137,8 @@ void OffloadingVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   if (!offload_task_runner_) {
-    offload_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::TaskPriority::USER_BLOCKING});
+    offload_task_runner_ = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING});
   }
 
   offload_task_runner_->PostTask(

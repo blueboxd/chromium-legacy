@@ -42,10 +42,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
 
  protected:
   // AXTreeObserver methods.
-  void OnStateChanged(ui::AXTree* tree,
-                      ui::AXNode* node,
-                      ax::mojom::State state,
-                      bool new_value) override;
+  void OnNodeDataWillChange(ui::AXTree* tree,
+                            const ui::AXNodeData& old_node_data,
+                            const ui::AXNodeData& new_node_data) override;
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,

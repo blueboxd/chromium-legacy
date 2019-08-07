@@ -18,14 +18,14 @@ production builds of Android.
 
 ```shell
 # Optional: set any flags of your choosing before running the script
-$ build/android/adb_system_webview_command_line --enable-features=NetworkService,NetworkServiceInProcess
+$ build/android/adb_system_webview_command_line --enable-features=MyFeature,MyOtherFeature
 Wrote command line file. Current flags (in webview-command-line):
-  005d1ac915b0c7d6 (bullhead-userdebug 6.0 MDB08M 2353240 dev-keys): --enable-features=NetworkService,NetworkServiceInProcess
+  005d1ac915b0c7d6 (bullhead-userdebug 6.0 MDB08M 2353240 dev-keys): --enable-features=MyFeature,MyOtherFeature
 
 # Replace "<app package name>" with your app's package name (ex. the
 # WebView Shell is "org.chromium.webview_shell")
 $ android_webview/tools/record_netlog.py --package="<app package name>"
-Running with flags ['--enable-features=NetworkService,NetworkServiceInProcess', '--log-net-log=netlog.json']
+Running with flags ['--enable-features=MyFeature,MyOtherFeature', '--log-net-log=netlog.json']
 Netlog will start recording as soon as app starts up. Press ctrl-C to stop recording.
 ^C
 Pulling netlog to "netlog.json"
@@ -33,10 +33,6 @@ Pulling netlog to "netlog.json"
 
 Then import the JSON file into [the NetLog
 viewer](https://chromium.googlesource.com/catapult/+/master/netlog_viewer/).
-
-For more details, see the implementation in
-[AwUrlRequestContextGetter](/android_webview/browser/net/aw_url_request_context_getter.cc).
-For support in the network service code path, see http://crbug.com/902039.
 
 ### Manual steps
 

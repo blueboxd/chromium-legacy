@@ -191,7 +191,7 @@ static bool PlanCounter(LayoutObject& object,
         return true;
       }
       if (IsHTMLUListElement(*e) || IsHTMLMenuElement(*e) ||
-          IsHTMLDirectoryElement(*e)) {
+          IsA<HTMLDirectoryElement>(*e)) {
         value = 0;
         is_reset = true;
         return true;

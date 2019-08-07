@@ -319,6 +319,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // a local root.
   virtual void UpdateAllLifecyclePhasesAndCompositeForTesting() = 0;
 
+  // Sets that cross browsing instance frame lookup is allowed.
+  virtual void SetAllowsCrossBrowsingInstanceFrameLookup() = 0;
+
  protected:
   ~RenderFrame() override {}
 

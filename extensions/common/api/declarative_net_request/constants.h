@@ -46,6 +46,23 @@ extern const char kTransformPortPath[];
 extern const char kTransformQueryPath[];
 extern const char kTransformFragmentPath[];
 extern const char kTransformQueryTransformPath[];
+extern const char kRedirectKey[];
+extern const char kExtensionPathKey[];
+extern const char kUrlKey[];
+extern const char kTransformKey[];
+extern const char kTransformSchemeKey[];
+extern const char kTransformHostKey[];
+extern const char kTransformPortKey[];
+extern const char kTransformPathKey[];
+extern const char kTransformQueryKey[];
+extern const char kTransformQueryTransformKey[];
+extern const char kTransformFragmentKey[];
+extern const char kTransformUsernameKey[];
+extern const char kTransformPasswordKey[];
+extern const char kQueryTransformRemoveParamsKey[];
+extern const char kQueryTransformAddReplaceParamsKey[];
+extern const char kQueryKeyKey[];
+extern const char kQueryValueKey[];
 
 }  // namespace declarative_net_request
 }  // namespace extensions

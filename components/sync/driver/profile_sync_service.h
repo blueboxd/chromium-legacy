@@ -132,7 +132,7 @@ class ProfileSyncService : public SyncService,
   void StopAndClear() override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
-  void ReadyForStartChanged(ModelType type) override;
+  void DataTypePreconditionChanged(ModelType type) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
   UserDemographicsResult GetUserDemographics(base::Time now) override;
   void AddObserver(SyncServiceObserver* observer) override;

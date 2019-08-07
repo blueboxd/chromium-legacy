@@ -21,8 +21,9 @@ namespace performance_manager {
 TEST(SiteDataCacheFacadeTest, IsDataCacheRecordingForTesting) {
   content::TestBrowserThreadBundle test_browser_thread_bundle;
   std::unique_ptr<SiteDataCacheFactory, base::OnTaskRunnerDeleter> factory(
-      SiteDataCacheFactory::CreateForTesting(
-          base::CreateSequencedTaskRunner({})));
+      SiteDataCacheFactory::CreateForTesting(base::CreateSequencedTaskRunner({
+          base::ThreadPool(),
+      })));
 
   TestingProfile profile;
   // Uses an in-memory database.

@@ -27,7 +27,7 @@ class SendTabToSelfModelTypeController : public syncer::ModelTypeController,
   ~SendTabToSelfModelTypeController() override;
 
   // DataTypeController overrides.
-  bool ReadyForStart() const override;
+  PreconditionState GetPreconditionState() const override;
 
   // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync) override;

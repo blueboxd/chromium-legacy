@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Checks that default highlighted text style does not get overridden in forced colors mode. assert_equals: expected "rgb(0, 0, 0)" but got "rgb(255, 165, 0)"
-Harness: the test ran to completion.
-

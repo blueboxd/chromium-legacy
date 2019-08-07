@@ -11,7 +11,9 @@ namespace password_manager {
 
 enum class LeakDetectionError {
   // The user isn't signed-in to Chrome.
-  kNotSignIn,
+  kNotSignIn = 0,
+  // Error obtaining a token.
+  kTokenRequestFailure = 1,
   // TODO(crbug.com/986298): add more errors.
 };
 

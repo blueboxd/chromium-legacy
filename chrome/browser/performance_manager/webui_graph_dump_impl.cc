@@ -283,7 +283,7 @@ void WebUIGraphDumpImpl::StartPageFaviconRequest(PageNodeImpl* page_node) {
   if (!page_node->main_frame_url().is_valid())
     return;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&FaviconRequestHelper::RequestFavicon,
                      base::Unretained(EnsureFaviconRequestHelper()),
@@ -295,13 +295,12 @@ void WebUIGraphDumpImpl::StartFrameFaviconRequest(FrameNodeImpl* frame_node) {
   if (!frame_node->url().is_valid())
     return;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&FaviconRequestHelper::RequestFavicon,
-                     base::Unretained(EnsureFaviconRequestHelper()),
-                     frame_node->url(),
-                     frame_node->page_node()->contents_proxy(),
-                     NodeBase::GetSerializationId(frame_node)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&FaviconRequestHelper::RequestFavicon,
+                                base::Unretained(EnsureFaviconRequestHelper()),
+                                frame_node->url(),
+                                frame_node->page_node()->contents_proxy(),
+                                NodeBase::GetSerializationId(frame_node)));
 }
 
 void WebUIGraphDumpImpl::SendFrameNotification(FrameNodeImpl* frame,

@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_package.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -103,7 +104,7 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
         temp_dir_.GetPath().Append(long_file_name + FPL("_files")));
   }
 
-  BrowserContext* CreateBrowserContext() override {
+  std::unique_ptr<BrowserContext> CreateBrowserContext() override {
     // Initialize the SaveFileManager instance which we will use for the tests.
     save_file_manager_ = new SaveFileManager();
     return RenderViewHostImplTestHarness::CreateBrowserContext();

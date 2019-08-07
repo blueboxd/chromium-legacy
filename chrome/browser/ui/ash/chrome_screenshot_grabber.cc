@@ -68,7 +68,7 @@ const char kImageClipboardFormatSuffix[] = "'>";
 
 // User is waiting for the screenshot-taken notification, hence USER_VISIBLE.
 constexpr base::TaskTraits kBlockingTaskTraits = {
-    base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 ChromeScreenshotGrabber* g_chrome_screenshot_grabber_instance = nullptr;
@@ -117,9 +117,8 @@ void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
     return;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&DecodeFileAndCopyToClipboard, png_data));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&DecodeFileAndCopyToClipboard, png_data));
 }
 
 void ReadFileAndCopyToClipboardDrive(
@@ -131,9 +130,8 @@ void ReadFileAndCopyToClipboardDrive(
                << drive::FileErrorToString(error);
     return;
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, kBlockingTaskTraits,
-      base::BindOnce(&ReadFileAndCopyToClipboardLocal, file_path));
+  base::PostTask(FROM_HERE, kBlockingTaskTraits,
+                 base::BindOnce(&ReadFileAndCopyToClipboardLocal, file_path));
 }
 
 // Delegate for a notification. This class has two roles: to implement callback
@@ -176,7 +174,7 @@ class ScreenshotGrabberNotificationDelegate
                                base::Bind(&ReadFileAndCopyToClipboardDrive));
           return;
         }
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, kBlockingTaskTraits,
             base::BindOnce(&ReadFileAndCopyToClipboardLocal, screenshot_path_));
         break;
@@ -254,7 +252,7 @@ void EnsureDirectoryExistsCallback(
   } else {
     LOG(ERROR) << "Failed to ensure the existence of the specified directory "
                << "in Google Drive: " << error;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, kBlockingTaskTraits,
         base::BindOnce(callback, ScreenshotFileResult::CHECK_DIR_FAILED,
                        base::FilePath()));
@@ -508,10 +506,10 @@ void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
     return;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(EnsureLocalDirectoryExists, path, callback));
+  base::PostTask(FROM_HERE,
+                 {base::ThreadPool(), base::MayBlock(),
+                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+                 base::BindOnce(EnsureLocalDirectoryExists, path, callback));
 }
 
 void ChromeScreenshotGrabber::OnScreenshotCompleted(
@@ -528,7 +526,7 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
     return;
 
   if (result != ScreenshotResult::SUCCESS) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted,
@@ -546,7 +544,7 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
     if (!file_system) {
       LOG(ERROR) << "Failed to get file system of current profile";
 
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(
               &ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted,
@@ -560,7 +558,7 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
             &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewDrive,
             weak_factory_.GetWeakPtr(), screenshot_path));
   } else {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewLocal,
@@ -573,7 +571,7 @@ void ChromeScreenshotGrabber::ReadScreenshotFileForPreviewLocal(
     const base::FilePath& screenshot_cache_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, kBlockingTaskTraits,
       base::BindOnce(&ReadFileToString, screenshot_cache_path),
       base::BindOnce(&ChromeScreenshotGrabber::DecodeScreenshotFileForPreview,
@@ -588,7 +586,7 @@ void ChromeScreenshotGrabber::ReadScreenshotFileForPreviewDrive(
   if (error != drive::FILE_ERROR_OK) {
     LOG(ERROR) << "Failed to read the screenshot path on drive: "
                << drive::FileErrorToString(error);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted,
@@ -596,7 +594,7 @@ void ChromeScreenshotGrabber::ReadScreenshotFileForPreviewDrive(
             screenshot_path, gfx::Image()));
     return;
   }
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewLocal,

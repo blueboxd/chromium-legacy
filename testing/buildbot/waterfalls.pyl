@@ -1714,6 +1714,14 @@
           'scripts': 'test_traffic_annotation_auditor_script',
         }
       },
+      'linux-bfcache-rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'bfcache_gtests',
+        },
+      },
       'linux-blink-animation-use-time-delta': {
         'mixins': [
           'linux-xenial',
@@ -1737,6 +1745,18 @@
         'gtest_args': [
           '--enable-features=BlinkHeapConcurrentMarking',
         ]
+      },
+      'linux-blink-heap-unified-gc': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+        'gtest_args': [
+          '--enable-blink-features=HeapUnifiedGarbageCollection',
+        ],
       },
       'linux-blink-heap-verification': {
         'mixins': [
@@ -1811,7 +1831,7 @@
           'linux-xenial',
         ],
         'test_suites': {
-          'gtest_tests': 'fieldtrial_gtests',
+          'gtest_tests': 'fieldtrial_browser_tests',
         },
       },
       'linux-wpt-fyi-rel': {
@@ -4128,28 +4148,18 @@
         ],
       },
       'V8 Blink Linux': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            },
-          ],
-          'hard_timeout': 900,
-        },
+        'mixins': [
+          'linux-xenial',
+        ],
         'test_suites': {
           'gtest_tests': 'layout_ng_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'V8 Blink Linux Debug': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-16.04',
-            },
-          ],
-          'hard_timeout': 900,
-        },
+        'mixins': [
+          'linux-xenial',
+        ],
         'test_suites': {
           'gtest_tests': 'layout_ng_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -4173,10 +4183,9 @@
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Mac-10.13.6',
+              'os': 'Mac-10.13',
             },
           ],
-          'hard_timeout': 900,
         },
         'test_suites': {
           'gtest_tests': 'layout_ng_gtests',
@@ -4184,14 +4193,9 @@
         },
       },
       'V8 Blink Win': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-10-15063',
-            },
-          ],
-          'hard_timeout': 900,
-        },
+        'mixins': [
+          'win7',
+        ],
         'test_suites': {
           'gtest_tests': 'layout_ng_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',

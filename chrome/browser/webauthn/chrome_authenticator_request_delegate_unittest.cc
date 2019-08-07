@@ -130,7 +130,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   if (__builtin_available(macOS 10.12.2, *)) {
     // Different profiles have different secrets. (No way to reset
     // browser_context(), so we have to create our own.)
-    auto browser_context = base::WrapUnique(CreateBrowserContext());
+    auto browser_context = CreateBrowserContext();
     auto web_contents = content::WebContentsTester::CreateTestWebContents(
         browser_context.get(), nullptr);
     ChromeAuthenticatorRequestDelegate delegate1(main_rfh(), kRelyingPartyID);

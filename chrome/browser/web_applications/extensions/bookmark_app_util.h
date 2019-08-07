@@ -48,9 +48,6 @@ const Extension* GetInstalledShortcutForUrl(
 // (non default-installed apps).
 int CountUserInstalledBookmarkApps(content::BrowserContext* browser_context);
 
-// Returns whether the given |url| is a valid user bookmark app url.
-bool IsValidBookmarkAppUrl(const GURL& url);
-
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_UTIL_H_

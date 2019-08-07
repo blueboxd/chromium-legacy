@@ -400,9 +400,9 @@ void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
 
   // Delete the controller in a separate task. This avoids tricky ordering
   // issues when Shutdown is called from the controller.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&ClientAndroid::DestroyController,
-                                          weak_ptr_factory_.GetWeakPtr()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ClientAndroid::DestroyController,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ClientAndroid::FetchAccessToken(

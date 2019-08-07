@@ -82,8 +82,8 @@ void MockAndroidSystemProducer::StartDataSource(
     const perfetto::DataSourceConfig& data_source_config) {
   AndroidSystemProducer::StartDataSource(id, data_source_config);
   CHECK_LT(num_data_sources_active_, num_data_sources_expected_);
-  if (data_source_enabled_callback_ &&
-      ++num_data_sources_active_ == num_data_sources_expected_) {
+  if (++num_data_sources_active_ == num_data_sources_expected_ &&
+      data_source_enabled_callback_) {
     std::move(data_source_enabled_callback_).Run();
   }
 }
@@ -92,7 +92,7 @@ void MockAndroidSystemProducer::StopDataSource(
     perfetto::DataSourceInstanceID id) {
   AndroidSystemProducer::StopDataSource(id);
   CHECK_GT(num_data_sources_active_, 0u);
-  if (data_source_disabled_callback_ && --num_data_sources_active_ == 0) {
+  if (--num_data_sources_active_ == 0 && data_source_disabled_callback_) {
     std::move(data_source_disabled_callback_).Run();
   }
 }

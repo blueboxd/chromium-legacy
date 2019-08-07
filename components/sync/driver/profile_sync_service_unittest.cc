@@ -70,7 +70,7 @@ class FakeDataTypeManager : public DataTypeManager {
     configure_called_.Run(context.reason);
   }
 
-  void ReadyForStartChanged(ModelType type) override {}
+  void DataTypePreconditionChanged(ModelType type) override {}
   void ResetDataTypeErrors() override {}
   void PurgeForMigration(ModelTypeSet undesired_types) override {}
   void Stop(ShutdownReason reason) override {}

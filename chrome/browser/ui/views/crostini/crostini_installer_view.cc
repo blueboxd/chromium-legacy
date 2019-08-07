@@ -96,8 +96,8 @@ base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
 }
 
 void RecordTimeFromDeviceSetupToInstallMetric() {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&chromeos::StartupUtils::GetTimeSinceOobeFlagFileCreation),
       base::BindOnce([](base::TimeDelta time_from_device_setup) {
         if (time_from_device_setup.is_zero())
@@ -143,8 +143,9 @@ void CrostiniInstallerView::Show(Profile* profile) {
   crostini::CrostiniManager::GetForProfile(profile)->SetInstallerViewStatus(
       true);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                      base::FilePath(crostini::kHomeDirectory)),
       base::BindOnce(
@@ -209,11 +210,10 @@ bool CrostiniInstallerView::Accept() {
   // Delay starting the install process until we can check if there's enough
   // disk space.
   if (free_disk_space_ == kUninitializedDiskSpace) {
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&CrostiniInstallerView::PressAccept,
-                       weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(50));
+    base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                          base::BindOnce(&CrostiniInstallerView::PressAccept,
+                                         weak_ptr_factory_.GetWeakPtr()),
+                          base::TimeDelta::FromMilliseconds(50));
     return false;
   }
 
@@ -298,7 +298,7 @@ bool CrostiniInstallerView::Cancel() {
 
     if (do_cleanup_) {
       // Remove anything that got installed
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(
               &crostini::CrostiniManager::RemoveCrostini,

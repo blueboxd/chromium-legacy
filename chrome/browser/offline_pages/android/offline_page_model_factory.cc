@@ -54,7 +54,7 @@ OfflinePageModel* OfflinePageModelFactory::GetForBrowserContext(
 std::unique_ptr<KeyedService> OfflinePageModelFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
 
   base::FilePath store_path =
       key->GetPath().Append(chrome::kOfflinePageMetadataDirname);

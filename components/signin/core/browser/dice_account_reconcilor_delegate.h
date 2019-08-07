@@ -19,7 +19,8 @@ namespace signin {
 class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
  public:
   DiceAccountReconcilorDelegate(SigninClient* signin_client,
-                                AccountConsistencyMethod account_consistency);
+                                AccountConsistencyMethod account_consistency,
+                                bool migration_completed);
   ~DiceAccountReconcilorDelegate() override {}
 
   // AccountReconcilorDelegate:
@@ -39,6 +40,11 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
       bool will_logout) const override;
   RevokeTokenOption ShouldRevokeSecondaryTokensBeforeReconcile(
       const std::vector<gaia::ListedAccount>& gaia_accounts) override;
+  // Returns true if in force migration to dice state.
+  bool ShouldRevokeTokensNotInCookies() const override;
+  // Disables force dice migration and sets dice migration as completed.
+  void OnRevokeTokensNotInCookiesCompleted(
+      RevokeTokenAction revoke_token_action) override;
   void OnReconcileFinished(const CoreAccountId& first_account,
                            bool reconcile_is_noop) override;
   bool ShouldRevokeTokensOnCookieDeleted() override;
@@ -82,6 +88,7 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
 
   SigninClient* signin_client_;
   AccountConsistencyMethod account_consistency_;
+  bool migration_completed_;
 
   // Last known "first account". Used when cookies are lost as a best guess.
   CoreAccountId last_known_first_account_;

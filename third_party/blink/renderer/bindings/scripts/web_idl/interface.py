@@ -2,13 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
-
 from .attribute import Attribute
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
-from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .constant import Constant
 from .identifier_ir_map import IdentifierIRMap
@@ -19,18 +16,12 @@ from .reference import RefById
 from .user_defined_type import UserDefinedType
 
 
-class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
-                WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
-    """A summarized interface definition in IDL.
+class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
+                WithComponent, WithDebugInfo):
+    """https://heycam.github.io/webidl/#idl-interfaces"""
 
-    Interface provides information about an interface, partial interfaces,
-    interface mixins, and partial interface mixins, as if they were all
-    gathered in an interface.
-    https://heycam.github.io/webidl/#idl-interfaces
-    """
-
-    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithExposure,
-             WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
+    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+             WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      is_partial,
@@ -43,7 +34,6 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
                      maplike=None,
                      setlike=None,
                      extended_attributes=None,
-                     exposures=None,
                      code_generator_info=None,
                      component=None,
                      components=None,
@@ -83,7 +73,6 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
                     kind = IdentifierIRMap.IR.Kind.INTERFACE
             IdentifierIRMap.IR.__init__(self, identifier=identifier, kind=kind)
             WithExtendedAttributes.__init__(self, extended_attributes)
-            WithExposure.__init__(self, exposures)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(
                 self, component=component, components=components)
@@ -116,67 +105,81 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
                 components=self.components,
                 debug_info=self.debug_info.make_copy())
 
+    def __init__(self, ir):
+        assert isinstance(ir, Interface.IR)
+        assert not ir.is_partial
+
+        UserDefinedType.__init__(self, ir.identifier)
+        WithExtendedAttributes.__init__(self,
+                                        ir.extended_attributes.make_copy())
+        WithCodeGeneratorInfo.__init__(self,
+                                       ir.code_generator_info.make_copy())
+        WithComponent.__init__(self, components=ir.components)
+        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+
+        self._is_mixin = ir.is_mixin
+        self._inherited = ir.inherited
+        self._attributes = tuple([
+            Attribute(attribute_ir, owner=self)
+            for attribute_ir in ir.attributes
+        ])
+        self._constants = tuple([
+            Constant(constant_ir, owner=self) for constant_ir in ir.constants
+        ])
+        self._iterable = ir.iterable
+        self._maplike = ir.maplike
+        self._setlike = ir.setlike
+
+    @property
+    def is_mixin(self):
+        """Returns True if this is a mixin interface."""
+        return self._is_mixin
 
     @property
     def inherited_interface(self):
-        """
-        Returns an Interface from which this interface inherits. If this
-        interface does not inherit, returns None.
-        @return Interface?
-        """
-        raise exceptions.NotImplementedError()
+        """Returns the inherited interface or None."""
+        return self._inherited.target_object if self._inherited else None
 
     @property
     def attributes(self):
         """
-        Returns a tuple of attributes including [Unforgeable] attributes in
-        ancestors.
-        @return tuple(Attribute)
+        Returns attributes, including [Unforgeable] attributes in ancestors.
         """
-        raise exceptions.NotImplementedError()
+        return self._attributes
 
     @property
     def operation_groups(self):
         """
-        Returns a tuple of OperationGroup. Each OperationGroup has operation(s)
-        defined in this interface and [Unforgeable] operations in ancestors.
-        @return tuple(OperationGroup)
+        Returns groups of operations, including [Unforgeable] operations in
+        ancestors.  Operation groups are sorted by their identifier.
+
+        All operations are grouped by their identifier in OperationGroup's,
+        even when there exists a single operation with that identifier.
         """
-        raise exceptions.NotImplementedError()
+        assert False, "Not implemented yet."
 
     @property
     def constants(self):
-        """
-        Returns a tuple of constants defined in this interface.
-        @return tuple(Constant)
-        """
-        raise exceptions.NotImplementedError()
+        """Returns constants."""
+        return self._constants
 
     @property
     def constructors(self):
-        """
-        Returns ConstructorGroup instance for this interface.
-        @return tuple(ConstructorGroup)
-        """
-        raise exceptions.NotImplementedError()
+        """Returns a constructor group."""
+        assert False, "Not implemented yet."
 
     @property
     def named_constructor(self):
-        """
-        Returns a named constructor, if this interface has it. Otherwise, returns
-        None.
-        @return NamedConstructor?
-        """
-        raise exceptions.NotImplementedError()
+        """Returns a named constructor or None."""
+        assert False, "Not implemented yet."
 
     @property
     def exposed_interfaces(self):
         """
-        Returns a tuple of Interfaces that are exposed to |self|. If |self| is
-        not a global interface, returns an empty tuple.
-        @return tuple(Interface)
+        Returns a tuple of interfaces that are exposed to this interface, if
+        this is a global interface.  Returns None otherwise.
         """
-        raise exceptions.NotImplementedError()
+        assert False, "Not implemented yet."
 
     # Special operations
     @property
@@ -187,7 +190,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
         @return IndexedPropertyHandler?
         """
         # TODO: Include anonymous handlers of ancestors. https://crbug.com/695972
-        raise exceptions.NotImplementedError()
+        assert False, "Not implemented yet."
 
     @property
     def named_property_handler(self):
@@ -197,7 +200,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
         @return NamedPropertyHandler?
         """
         # TODO: Include anonymous handlers of ancestors. https://crbug.com/695972
-        raise exceptions.NotImplementedError()
+        assert False, "Not implemented yet."
 
     @property
     def stringifier(self):
@@ -205,31 +208,22 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
         Returns stringifier if it is defined. Returns None otherwise.
         @return TBD?
         """
-        raise exceptions.NotImplementedError()
+        assert False, "Not implemented yet."
 
     @property
     def iterable(self):
-        """
-        Returns iterable if it is defined. Returns None otherwise.
-        @return Iterable?
-        """
-        raise exceptions.NotImplementedError()
+        """Returns an Iterable or None."""
+        return self._iterable
 
     @property
     def maplike(self):
-        """
-        Returns maplike if it is defined. Returns None otherwise.
-        @return Maplike?
-        """
-        raise exceptions.NotImplementedError()
+        """Returns a Maplike or None."""
+        return self._maplike
 
     @property
     def setlike(self):
-        """
-        Returns setlike if it is defined. Returns None otherwise.
-        @return Setlike?
-        """
-        raise exceptions.NotImplementedError()
+        """Returns a Setlike or None."""
+        return self._setlike
 
     # UserDefinedType overrides
     @property
@@ -261,18 +255,12 @@ class Iterable(WithCodeGeneratorInfo, WithDebugInfo):
 
     @property
     def key_type(self):
-        """
-        Returns the key type or None.
-        @return IdlType?
-        """
+        """Returns the key type or None."""
         return self._key_type
 
     @property
     def value_type(self):
-        """
-        Returns the value type.
-        @return IdlType
-        """
+        """Returns the value type."""
         return self._value_type
 
 
@@ -362,7 +350,7 @@ class IndexedPropertyHandler(IdlMember):
         Returns an Operation for indexed property getter.
         @return Operation?
         """
-        raise exceptions.NotImplementedError()
+        assert False, "Not implemented yet."
 
     @property
     def setter(self):
@@ -370,7 +358,7 @@ class IndexedPropertyHandler(IdlMember):
         Returns an Operation for indexed property setter.
         @return Operation?
         """
-        raise exceptions.NotImplementedError()
+        assert False, "Not implemented yet."
 
     @property
     def deleter(self):
@@ -378,7 +366,7 @@ class IndexedPropertyHandler(IdlMember):
         Returns an Operation for indexed property deleter.
         @return Operation?
         """
-        raise exceptions.NotImplementedError()
+        assert False, "Not implemented yet."
 
 
 class NamedPropertyHandler(IdlMember):
@@ -388,7 +376,7 @@ class NamedPropertyHandler(IdlMember):
         Returns an Operation for named property getter.
         @return Operation?
         """
-        raise exceptions.NotImplementedError()
+        assert False, "Not implemented yet."
 
     @property
     def setter(self):
@@ -396,7 +384,7 @@ class NamedPropertyHandler(IdlMember):
         Returns an Operation for named property setter.
         @return Operation?
         """
-        raise exceptions.NotImplementedError()
+        assert False, "Not implemented yet."
 
     @property
     def deleter(self):
@@ -404,4 +392,4 @@ class NamedPropertyHandler(IdlMember):
         Returns an Operation for named property deleter.
         @return Operation?
         """
-        raise exceptions.NotImplementedError()
+        assert False, "Not implemented yet."

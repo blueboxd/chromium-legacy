@@ -100,13 +100,12 @@
   if (newValue) {
     base::scoped_nsobject<TerminationObserver> scoped_self(
         self, base::scoped_policy::RETAIN);
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(
-            [](base::scoped_nsobject<TerminationObserver> observer) {
-              [observer onTerminated];
-            },
-            scoped_self));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(
+                       [](base::scoped_nsobject<TerminationObserver> observer) {
+                         [observer onTerminated];
+                       },
+                       scoped_self));
   }
 }
 
@@ -415,17 +414,16 @@ void LaunchShimOnFileThread(web_app::LaunchShimUpdateBehavior update_behavior,
             NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation),
         base::scoped_policy::RETAIN);
     if (app) {
-      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                               base::BindOnce(&RunAppLaunchCallbacks, app,
-                                              std::move(launched_callback),
-                                              std::move(terminated_callback)));
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&RunAppLaunchCallbacks, app,
+                                    std::move(launched_callback),
+                                    std::move(terminated_callback)));
       return;
     }
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(launched_callback), base::Process()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(launched_callback), base::Process()));
 }
 
 base::FilePath GetLocalizableAppShortcutsSubdirName() {
@@ -522,9 +520,9 @@ void GetImageResourcesOnUIThread(
     (*result)[id] = ImageRepForGFXImage(image);
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(std::move(io_task), std::move(result)));
 }
@@ -592,11 +590,10 @@ bool UpdateAppShortcutsSubdirLocalizedName(
       base::mac::FilePathToNSString(localized.Append(locale + ".strings"));
   [strings_dict writeToFile:strings_path atomically:YES];
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(
-          &GetImageResourcesOnUIThread,
-          base::BindOnce(&SetWorkspaceIconOnWorkerThread, apps_directory)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&GetImageResourcesOnUIThread,
+                                base::BindOnce(&SetWorkspaceIconOnWorkerThread,
+                                               apps_directory)));
   return true;
 }
 
@@ -1130,7 +1127,7 @@ void LaunchShim(LaunchShimUpdateBehavior update_behavior,
                 ShimTerminatedCallback terminated_callback,
                 std::unique_ptr<web_app::ShortcutInfo> shortcut_info) {
   if (web_app::AppShimLaunchDisabled()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(std::move(launched_callback), base::Process()));
     return;

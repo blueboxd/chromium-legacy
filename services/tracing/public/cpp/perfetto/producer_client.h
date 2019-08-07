@@ -91,6 +91,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
 
   void BindClientAndHostPipesForTesting(mojom::ProducerClientRequest,
                                         mojom::ProducerHostPtrInfo);
+  void ResetSequenceForTesting();
 
  protected:
   perfetto::SharedMemoryArbiter* GetSharedMemoryArbiter() override;

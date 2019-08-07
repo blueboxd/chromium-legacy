@@ -224,8 +224,8 @@ base::CancelableTaskTracker::TaskId FileAccessProvider::StartRead(
   std::string* data = new std::string();
 
   // Post task to a background sequence to read file.
-  auto task_runner = base::CreateTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  auto task_runner = base::CreateTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   return tracker->PostTaskAndReply(
       task_runner.get(), FROM_HERE,
       base::BindOnce(&FileAccessProvider::DoRead, this, path, saved_errno,
@@ -243,8 +243,8 @@ base::CancelableTaskTracker::TaskId FileAccessProvider::StartWrite(
   int* bytes_written = new int(0);
 
   // This task blocks shutdown because it saves critical user data.
-  auto task_runner = base::CreateTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+  auto task_runner = base::CreateTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   return tracker->PostTaskAndReply(
       task_runner.get(), FROM_HERE,

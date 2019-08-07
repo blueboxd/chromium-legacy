@@ -108,9 +108,8 @@ void CreatePlatformShortcutsAndPostCallback(
     const ShortcutInfo& shortcut_info) {
   bool shortcut_created = internals::CreatePlatformShortcuts(
       shortcut_data_path, creation_locations, creation_reason, shortcut_info);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(std::move(callback), shortcut_created));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), shortcut_created));
 }
 
 void ScheduleCreatePlatformShortcut(

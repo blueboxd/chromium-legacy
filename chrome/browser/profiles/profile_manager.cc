@@ -909,9 +909,9 @@ void ProfileManager::CleanUpEphemeralProfiles() {
   // This uses a separate loop, because deleting the profile from the
   // ProfileInfoCache will modify indices.
   for (const base::FilePath& profile_path : profiles_to_delete) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&NukeProfileFromDisk, profile_path));
 
@@ -937,16 +937,17 @@ void ProfileManager::CleanUpDeletedProfiles() {
       if (base::PathExists(profile_path)) {
         LOG(WARNING) << "Files of a deleted profile still exist after restart. "
                         "Cleaning up now.";
-        base::PostTaskWithTraitsAndReply(
+        base::PostTaskAndReply(
             FROM_HERE,
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
             base::BindOnce(&NukeProfileFromDisk, profile_path),
             base::BindOnce(&ProfileCleanedUp, &value));
       } else {
         // Everything is fine, the profile was removed on shutdown.
-        base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                 base::BindOnce(&ProfileCleanedUp, &value));
+        base::PostTask(FROM_HERE, {BrowserThread::UI},
+                       base::BindOnce(&ProfileCleanedUp, &value));
       }
     } else {
       LOG(ERROR) << "Found invalid profile path in deleted_profiles: "
@@ -1278,7 +1279,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // persistent memory.
   PreviewsServiceFactory::GetForProfile(profile)->Initialize(
       g_browser_process->optimization_guide_service(), proto_db_provider,
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
       profile->GetPath());
 
   IdentityManagerFactory::GetForProfile(profile)->OnNetworkInitialized();
@@ -1316,9 +1317,9 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
 #endif
 
   // Log the profile size after a reasonable startup delay.
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ProfileSizeTask, profile->GetPath(), enabled_app_count),
       base::TimeDelta::FromSeconds(112));
@@ -1543,10 +1544,11 @@ void ProfileManager::OnLoadProfileForProfileDeletion(
   } else {
     // We failed to load the profile, but it's safe to delete a not yet loaded
     // Profile from disk.
-    base::PostTaskWithTraits(FROM_HERE,
-                             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-                             base::BindOnce(&NukeProfileFromDisk, profile_dir));
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        base::BindOnce(&NukeProfileFromDisk, profile_dir));
   }
 
   storage.RemoveProfile(profile_dir);
@@ -1628,7 +1630,7 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
 
         // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
         DCHECK(account_mutator);
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {BrowserThread::UI},
             base::BindOnce(
                 base::IgnoreResult(

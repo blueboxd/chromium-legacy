@@ -70,8 +70,8 @@ class CreditCardAccessoryControllerImpl
   content::WebContents* web_contents_;
   base::WeakPtr<ManualFillingController> mf_controller_;
   PersonalDataManager* const personal_data_manager_;
-  autofill::AutofillManager* af_manager_for_testing_;
-  autofill::AutofillDriver* af_driver_for_testing_;
+  autofill::AutofillManager* af_manager_for_testing_ = nullptr;
+  autofill::AutofillDriver* af_driver_for_testing_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

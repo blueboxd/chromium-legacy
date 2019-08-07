@@ -103,7 +103,7 @@ class AccountReconcilorLockWrapper
   }
 
   void DestroyOnUIAfterDelay() {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(base::DoNothing::Once<
                            scoped_refptr<AccountReconcilorLockWrapper>>(),
@@ -386,9 +386,9 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
 
   // Post a task even if we are already on the UI thread to avoid making any
   // requests while processing a throttle event.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(ProcessMirrorHeaderUIThread, params,
-                                          response->GetWebContentsGetter()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(ProcessMirrorHeaderUIThread, params,
+                                response->GetWebContentsGetter()));
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -423,10 +423,9 @@ void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
 
   // Post a task even if we are already on the UI thread to avoid making any
   // requests while processing a throttle event.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(ProcessDiceHeaderUIThread, std::move(params),
-                     response->GetWebContentsGetter()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(ProcessDiceHeaderUIThread, std::move(params),
+                                response->GetWebContentsGetter()));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
@@ -493,7 +492,7 @@ void FixAccountConsistencyRequestHeader(
     if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
       lock_wrapper->CreateLockOnUI(request->GetWebContentsGetter());
     } else {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&AccountReconcilorLockWrapper::CreateLockOnUI,
                          lock_wrapper, request->GetWebContentsGetter()));

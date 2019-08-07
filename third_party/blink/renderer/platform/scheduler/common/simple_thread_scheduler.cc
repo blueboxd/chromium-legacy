@@ -75,11 +75,11 @@ base::TimeTicks SimpleThreadScheduler::MonotonicallyIncreasingVirtualTime() {
   return base::TimeTicks::Now();
 }
 
-void SimpleThreadScheduler::AddTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {}
+void SimpleThreadScheduler::AddTaskObserver(base::TaskObserver* task_observer) {
+}
 
 void SimpleThreadScheduler::RemoveTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {}
+    base::TaskObserver* task_observer) {}
 
 NonMainThreadSchedulerImpl* SimpleThreadScheduler::AsNonMainThreadScheduler() {
   return nullptr;

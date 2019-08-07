@@ -122,10 +122,10 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DataProvider::Query(
     if (!entries->empty()) {
       Context context(history_service_,
                       &history_task_tracker_);
-      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                               base::BindOnce(&QueryUrlsHistoryInUiThread,
-                                              base::Unretained(&context),
-                                              base::Unretained(entries.get())));
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&QueryUrlsHistoryInUiThread,
+                                    base::Unretained(&context),
+                                    base::Unretained(entries.get())));
       std::vector<UrlAndTitle> bookmarks;
       bookmark_model_->model_loader()->BlockTillLoaded();
       bookmark_model_->GetBookmarks(&bookmarks);
@@ -159,12 +159,11 @@ void DataProvider::StartVisitMigrationToUsageBuffer(
   base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
   buffer_service->Clear();
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&StartVisitMigrationToUsageBufferUiThread,
-                     base::Unretained(history_service_), buffer_service,
-                     base::Unretained(&finished),
-                     base::Unretained(&history_task_tracker_)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&StartVisitMigrationToUsageBufferUiThread,
+                                base::Unretained(history_service_),
+                                buffer_service, base::Unretained(&finished),
+                                base::Unretained(&history_task_tracker_)));
   finished.Wait();
 }
 
@@ -178,7 +177,7 @@ void DataProvider::RecreateLog() {
     std::unique_ptr<history::HistoryDBTask> task =
         std::unique_ptr<history::HistoryDBTask>(
             new GetAllUrlsFromHistoryTask(&finished, &urls));
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             base::IgnoreResult(&history::HistoryService::ScheduleDBTask),

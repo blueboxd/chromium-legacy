@@ -31,14 +31,14 @@ namespace {
 scoped_refptr<base::TaskRunner> CreatePrinterHandlerTaskRunner() {
   // USER_VISIBLE because the result is displayed in the print preview dialog.
   static constexpr base::TaskTraits kTraits = {
-      base::MayBlock(), base::TaskPriority::USER_VISIBLE};
+      base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE};
 
 #if defined(OS_WIN)
   // Windows drivers are likely not thread-safe.
-  return base::CreateSingleThreadTaskRunnerWithTraits(kTraits);
+  return base::CreateSingleThreadTaskRunner(kTraits);
 #elif defined(USE_CUPS)
   // CUPS is thread safe.
-  return base::CreateTaskRunnerWithTraits(kTraits);
+  return base::CreateTaskRunner(kTraits);
 #endif
 }
 

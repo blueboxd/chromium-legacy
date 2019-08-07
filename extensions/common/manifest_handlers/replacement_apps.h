@@ -31,7 +31,8 @@ struct ReplacementAppsInfo : public Extension::ManifestData {
   static bool HasReplacementAndroidApp(const Extension* extension);
 
   // Returns the replacement android app package name for |extension|.
-  static std::string GetReplacementAndroidApp(const Extension* extension);
+  static const std::string& GetReplacementAndroidApp(
+      const Extension* extension);
 
   bool Parse(const Extension* extension, base::string16* error);
 

@@ -5777,6 +5777,11 @@ void RenderFrameImpl::HandleAccessibilityFindInPageResult(
   }
 }
 
+void RenderFrameImpl::HandleAccessibilityFindInPageTermination() {
+  if (render_accessibility_)
+    render_accessibility_->HandleAccessibilityFindInPageTermination();
+}
+
 void RenderFrameImpl::EnterFullscreen(
     const blink::WebFullscreenOptions& options) {
   Send(new FrameHostMsg_EnterFullscreen(routing_id_, options));

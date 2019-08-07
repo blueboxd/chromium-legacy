@@ -65,6 +65,13 @@ gaia::ListedAccount AccountForId(const CoreAccountId& account_id) {
   return account;
 }
 
+bool ContainsGaiaAccount(const std::vector<gaia::ListedAccount>& gaia_accounts,
+                         const CoreAccountId& account_id) {
+  return gaia_accounts.end() !=
+         std::find_if(gaia_accounts.begin(), gaia_accounts.end(),
+                      AccountEqualToFunc(AccountForId(account_id)));
+}
+
 // Returns a copy of |accounts| without the unverified accounts.
 std::vector<gaia::ListedAccount> FilterUnverifiedAccounts(
     const std::vector<gaia::ListedAccount>& accounts) {
@@ -123,6 +130,50 @@ bool RevokeAllSecondaryTokens(
     }
   }
   return token_revoked;
+}
+
+// TODO(msalama): Move this code and |RevokeAllSecondaryTokens|
+// to |DiceAccountReconcilorDelegate|.
+signin::RevokeTokenAction RevokeTokensNotInCookies(
+    signin::IdentityManager* identity_manager,
+    const CoreAccountId& primary_account,
+    const std::vector<gaia::ListedAccount>& gaia_accounts) {
+  bool invalidated_primary_account_token = false;
+  bool revoked_token_for_secondary_account = false;
+  signin_metrics::SourceForRefreshTokenOperation source =
+      signin_metrics::SourceForRefreshTokenOperation::
+          kAccountReconcilor_RevokeTokensNotInCookies;
+
+  for (const CoreAccountInfo& account_info :
+       identity_manager->GetAccountsWithRefreshTokens()) {
+    CoreAccountId account = account_info.account_id;
+    if (ContainsGaiaAccount(gaia_accounts, account))
+      continue;
+
+    auto* accounts_mutator = identity_manager->GetAccountsMutator();
+    if (account == primary_account) {
+      invalidated_primary_account_token = true;
+      accounts_mutator->InvalidateRefreshTokenForPrimaryAccount(source);
+    } else {
+      revoked_token_for_secondary_account = true;
+      accounts_mutator->RemoveAccount(account, source);
+    }
+  }
+
+  signin::RevokeTokenAction revoke_token_action =
+      signin::RevokeTokenAction::kNone;
+  if (invalidated_primary_account_token &&
+      revoked_token_for_secondary_account) {
+    revoke_token_action =
+        signin::RevokeTokenAction::kRevokeTokensForPrimaryAndSecondaryAccounts;
+  } else if (invalidated_primary_account_token) {
+    revoke_token_action =
+        signin::RevokeTokenAction::kInvalidatePrimaryAccountToken;
+  } else if (revoked_token_for_secondary_account) {
+    revoke_token_action =
+        signin::RevokeTokenAction::kRevokeSecondaryAccountsTokens;
+  }
+  return revoke_token_action;
 }
 
 // Pick the account will become first after this reconcile is finished.
@@ -592,6 +643,12 @@ void AccountReconcilor::OnAccountsInCookieUpdated(
       << " unverified account(s).";
 
   CoreAccountId primary_account = identity_manager_->GetPrimaryAccountId();
+  if (delegate_->ShouldRevokeTokensNotInCookies()) {
+    signin::RevokeTokenAction revoke_token_action = RevokeTokensNotInCookies(
+        identity_manager_, primary_account, verified_gaia_accounts);
+    delegate_->OnRevokeTokensNotInCookiesCompleted(revoke_token_action);
+  }
+
   // Revoking tokens for secondary accounts causes the AccountTracker to
   // completely remove them from Chrome.
   // Revoking the token for the primary account is not supported (it should be
@@ -758,17 +815,12 @@ void AccountReconcilor::FinishReconcile(
   std::vector<CoreAccountId> add_to_cookie_copy = add_to_cookie_;
   int added_to_cookie = 0;
   for (size_t i = 0; i < add_to_cookie_copy.size(); ++i) {
-    if (gaia_accounts.end() !=
-        std::find_if(gaia_accounts.begin(), gaia_accounts.end(),
-                     AccountEqualToFunc(AccountForId(add_to_cookie_copy[i])))) {
+    if (ContainsGaiaAccount(gaia_accounts, add_to_cookie_copy[i])) {
       OnAddAccountToCookieCompleted(add_to_cookie_copy[i],
                                     GoogleServiceAuthError::AuthErrorNone());
     } else {
       PerformMergeAction(add_to_cookie_copy[i]);
-      if (original_gaia_accounts.end() ==
-          std::find_if(
-              original_gaia_accounts.begin(), original_gaia_accounts.end(),
-              AccountEqualToFunc(AccountForId(add_to_cookie_copy[i])))) {
+      if (!ContainsGaiaAccount(original_gaia_accounts, add_to_cookie_copy[i])) {
         added_to_cookie++;
       }
     }

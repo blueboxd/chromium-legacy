@@ -22,7 +22,6 @@ const char kResourceTypesKey[] = "resourceTypes";
 const char kExcludedResourceTypesKey[] = "excludedResourceTypes";
 const char kDomainTypeKey[] = "domainType";
 const char kRuleActionTypeKey[] = "type";
-const char kRedirectUrlKey[] = "redirectUrl";
 const char kRemoveHeadersListKey[] = "removeHeadersList";
 const char kRedirectPath[] = "action.redirect";
 const char kExtensionPathPath[] = "action.redirect.extensionPath";
@@ -34,7 +33,8 @@ const char kTransformQueryTransformPath[] =
     "action.redirect.transform.queryTransform";
 const char kRedirectKey[] = "redirect";
 const char kExtensionPathKey[] = "extensionPath";
-const char kUrlKey[] = "url";
+const char kRedirectUrlKey[] = "url";
+const char kRedirectUrlPath[] = "action.redirect.url";
 const char kTransformKey[] = "transform";
 const char kTransformSchemeKey[] = "scheme";
 const char kTransformHostKey[] = "host";

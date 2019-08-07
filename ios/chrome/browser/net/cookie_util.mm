@@ -45,10 +45,9 @@ scoped_refptr<net::SQLitePersistentCookieStore> CreatePersistentCookieStore(
     net::CookieCryptoDelegate* crypto_delegate) {
   return scoped_refptr<net::SQLitePersistentCookieStore>(
       new net::SQLitePersistentCookieStore(
-          path,
-          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+          path, base::CreateSingleThreadTaskRunner({web::WebThread::IO}),
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::BEST_EFFORT}),
           restore_old_session_cookies, crypto_delegate));
 }
 
@@ -139,11 +138,11 @@ bool ShouldClearSessionCookies() {
 void ClearSessionCookies(ios::ChromeBrowserState* browser_state) {
   scoped_refptr<net::URLRequestContextGetter> getter =
       browser_state->GetRequestContext();
-  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
-                             getter->GetURLRequestContext()
-                                 ->cookie_store()
-                                 ->DeleteSessionCookiesAsync(base::DoNothing());
-                           }));
+  base::PostTask(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
+                   getter->GetURLRequestContext()
+                       ->cookie_store()
+                       ->DeleteSessionCookiesAsync(base::DoNothing());
+                 }));
 }
 
 }  // namespace cookie_util

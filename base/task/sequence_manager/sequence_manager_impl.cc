@@ -847,14 +847,12 @@ void SequenceManagerImpl::SetTimerSlack(TimerSlack timer_slack) {
   controller_->SetTimerSlack(timer_slack);
 }
 
-void SequenceManagerImpl::AddTaskObserver(
-    MessageLoop::TaskObserver* task_observer) {
+void SequenceManagerImpl::AddTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   main_thread_only().task_observers.AddObserver(task_observer);
 }
 
-void SequenceManagerImpl::RemoveTaskObserver(
-    MessageLoop::TaskObserver* task_observer) {
+void SequenceManagerImpl::RemoveTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   main_thread_only().task_observers.RemoveObserver(task_observer);
 }

@@ -941,7 +941,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowRedirect) {
     rule.condition->url_filter = rule_data.url_filter;
     rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.action->type = rule_data.action_type;
-    rule.action->redirect_url = rule_data.redirect_url;
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = rule_data.redirect_url;
     rules.push_back(rule);
   }
 
@@ -1154,7 +1155,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // Add |kNumExtensions| each redirecting example.com to a different redirect
   // url.
   for (size_t i = 1; i <= kNumExtensions; ++i) {
-    rule.action->redirect_url = redirect_url_for_extension_number(i);
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = redirect_url_for_extension_number(i);
     ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
         {rule}, std::to_string(i), {URLPattern::kAllUrlsPattern}));
 
@@ -1197,7 +1199,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
       {"def.com", 4, "block", base::nullopt},
       {"def.com", 5, "redirect", get_url_for_host("xyz.com")},
       {"ghi*", 6, "redirect", get_url_for_host("ghijk.com")},
-      {"ijk*", 7, "redirect", "/manifest.json?q=1#fragment"},
   };
 
   // Load the extension.
@@ -1209,7 +1210,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
     rule.priority = kMinValidPriority;
     rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.action->type = rule_data.action_type;
-    rule.action->redirect_url = rule_data.redirect_url;
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = rule_data.redirect_url;
     rules.push_back(rule);
   }
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
@@ -1235,13 +1237,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
       // Though ghijk.com still matches the redirect rule for |ghi*|, it will
       // not redirect to itself.
       {"ghi.com", true, GURL(get_url_for_host("ghijk.com")), 2},
-      // ijklm.com -> chrome-extension://<extension_id>/manifest.json.
-      // Since this redirects to a manifest.json, don't expect the frame with
-      // script to load.
-      {"ijklm.com", false,
-       GURL("chrome-extension://" + last_loaded_extension_id() +
-            "/manifest.json?q=1#fragment"),
-       2}};
+  };
 
   for (const auto& test_case : test_cases) {
     std::string url = get_url_for_host(test_case.hostname);
@@ -1298,7 +1294,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RedirectPriority) {
       rule.id = id++;
       rule.priority = j;
       rule.action->type = std::string("redirect");
-      rule.action->redirect_url = redirect_url_for_priority(j);
+      rule.action->redirect.emplace();
+      rule.action->redirect->url = redirect_url_for_priority(j);
       rule.condition->url_filter = pattern;
       rule.condition->resource_types = std::vector<std::string>({"main_frame"});
       rules.push_back(rule);
@@ -1371,7 +1368,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, UpgradeRules) {
     rule.priority = rule_data.priority;
     rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.action->type = rule_data.action_type;
-    rule.action->redirect_url = rule_data.redirect_url;
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = rule_data.redirect_url;
     rules.push_back(rule);
   }
 
@@ -2280,7 +2278,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   rule.condition->resource_types = std::vector<std::string>({"script"});
   rule.priority = kMinValidPriority;
   rule.action->type = std::string("redirect");
-  rule.action->redirect_url =
+  rule.action->redirect.emplace();
+  rule.action->redirect->url =
       embedded_test_server()->GetURL("b.com", "/subresources/script.js").spec();
 
   std::vector<std::string> host_permissions = {"*://a.com/", "*://b.com/*"};
@@ -2476,7 +2475,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, DynamicRules) {
       std::vector<std::string>({"main_frame"});
   redirect_rule.priority = kMinValidPriority;
   redirect_rule.action->type = std::string("redirect");
-  redirect_rule.action->redirect_url = dynamic_redirect_url.spec();
+  redirect_rule.action->redirect.emplace();
+  redirect_rule.action->redirect->url = dynamic_redirect_url.spec();
   redirect_rule.id = kMinValidID + 1;
 
   ASSERT_NO_FATAL_FAILURE(AddDynamicRules(last_loaded_extension_id(),
@@ -2660,7 +2660,8 @@ class DeclarativeNetRequestHostPermissionsBrowserTest
     rule.condition->url_filter = std::string("not_a_valid_child_frame.html");
     rule.condition->resource_types = std::vector<std::string>({"sub_frame"});
     rule.action->type = std::string("redirect");
-    rule.action->redirect_url =
+    rule.action->redirect.emplace();
+    rule.action->redirect->url =
         embedded_test_server()->GetURL("foo.com", "/child_frame.html").spec();
 
     ASSERT_NO_FATAL_FAILURE(

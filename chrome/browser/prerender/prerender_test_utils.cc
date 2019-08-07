@@ -102,7 +102,7 @@ bool FakeSafeBrowsingDatabaseManager::CheckBrowseUrl(
     return true;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
                      this, gurl, client));

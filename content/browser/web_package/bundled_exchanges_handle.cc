@@ -62,10 +62,10 @@ class Interceptor final : public NavigationLoaderInterceptor {
 
 // A class to provide a network::mojom::URLLoader interface to redirect a
 // request to the BundledExchanges to the main resource url.
-class BundledExchangesHandle::StartURLRedirectLoader final
+class BundledExchangesHandle::PrimaryURLRedirectLoader final
     : public network::mojom::URLLoader {
  public:
-  StartURLRedirectLoader(
+  PrimaryURLRedirectLoader(
       const network::ResourceRequest& resource_request,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client)
       : client_(std::move(client)) {
@@ -99,7 +99,7 @@ class BundledExchangesHandle::StartURLRedirectLoader final
     client_->OnReceiveRedirect(redirect_info_, response_head);
   }
 
-  base::WeakPtr<StartURLRedirectLoader> GetWeakPtr() {
+  base::WeakPtr<PrimaryURLRedirectLoader> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
@@ -118,9 +118,9 @@ class BundledExchangesHandle::StartURLRedirectLoader final
   mojo::Remote<network::mojom::URLLoaderClient> client_;
   net::RedirectInfo redirect_info_;
 
-  base::WeakPtrFactory<StartURLRedirectLoader> weak_factory_{this};
+  base::WeakPtrFactory<PrimaryURLRedirectLoader> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(StartURLRedirectLoader);
+  DISALLOW_COPY_AND_ASSIGN(PrimaryURLRedirectLoader);
 };
 
 BundledExchangesHandle::BundledExchangesHandle(
@@ -141,7 +141,7 @@ std::unique_ptr<NavigationLoaderInterceptor>
 BundledExchangesHandle::CreateInterceptor() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return std::make_unique<Interceptor>(
-      base::BindRepeating(&BundledExchangesHandle::CreateStartURLLoader,
+      base::BindRepeating(&BundledExchangesHandle::CreatePrimaryURLLoader,
                           weak_factory_.GetWeakPtr()));
 }
 
@@ -153,7 +153,7 @@ void BundledExchangesHandle::CreateURLLoaderFactory(
   NOTIMPLEMENTED();
 }
 
-void BundledExchangesHandle::CreateStartURLLoader(
+void BundledExchangesHandle::CreatePrimaryURLLoader(
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
@@ -166,7 +166,7 @@ void BundledExchangesHandle::CreateStartURLLoader(
     DCHECK(!redirect_loader_);
     is_redirected_ = true;
     auto redirect_loader =
-        std::make_unique<BundledExchangesHandle::StartURLRedirectLoader>(
+        std::make_unique<BundledExchangesHandle::PrimaryURLRedirectLoader>(
             resource_request, client.PassInterface());
     redirect_loader_ = redirect_loader->GetWeakPtr();
     std::unique_ptr<network::mojom::URLLoader> url_loader(
@@ -174,22 +174,22 @@ void BundledExchangesHandle::CreateStartURLLoader(
     mojo::MakeSelfOwnedReceiver(
         std::move(url_loader),
         mojo::PendingReceiver<network::mojom::URLLoader>(std::move(request)));
-    MayRedirectStartURLLoader();
+    MayRedirectPrimaryURLLoader();
   } else {
     // TODO(crbug.com/966753): Implement.
   }
 }
 
-void BundledExchangesHandle::MayRedirectStartURLLoader() {
+void BundledExchangesHandle::MayRedirectPrimaryURLLoader() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // CreatedStartURLLoader() and OnMetadataReady() both should be called
+  // CreatedPrimaryURLLoader() and OnMetadataReady() both should be called
   // beforehand. Otherwise, do nothing and wait the next call.
-  if (!redirect_loader_ || (!start_url_.is_valid() && !start_url_error_))
+  if (!redirect_loader_ || (!primary_url_.is_valid() && !metadata_error_))
     return;
 
-  redirect_loader_->OnReadyToRedirect(std::move(start_url_),
-                                      std::move(start_url_error_));
+  redirect_loader_->OnReadyToRedirect(std::move(primary_url_),
+                                      std::move(metadata_error_));
   redirect_loader_.reset();
 }
 
@@ -197,9 +197,9 @@ void BundledExchangesHandle::OnMetadataReady(
     data_decoder::mojom::BundleMetadataParseErrorPtr error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  start_url_ = std::move(reader_->GetStartURL());
-  start_url_error_ = std::move(error);
-  MayRedirectStartURLLoader();
+  primary_url_ = std::move(reader_->GetPrimaryURL());
+  metadata_error_ = std::move(error);
+  MayRedirectPrimaryURLLoader();
 }
 
 }  // namespace content

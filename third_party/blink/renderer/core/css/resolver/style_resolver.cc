@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/transition_interpolation.h"
-#include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -54,7 +53,6 @@
 #include "third_party/blink/renderer/core/css/css_selector_watch.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
-#include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/element_rule_collector.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
@@ -541,7 +539,8 @@ void StyleResolver::MatchUARules(ElementRuleCollector& collector) {
 
   // If the system is in forced colors mode, match rules from the forced colors
   // style sheet.
-  if (IsForcedColorsModeEnabled())
+  if (blink::RuntimeEnabledFeatures::ForcedColorsEnabled() &&
+      GetDocument().GetSettings()->GetForcedColors() != ForcedColors::kNone)
     MatchRuleSet(collector, default_style_sheets.DefaultForcedColorStyle());
 
   collector.FinishAddingUARules();
@@ -1558,8 +1557,7 @@ void StyleResolver::ApplyProperties(StyleResolverState& state,
                                     bool inherited_only,
                                     NeedsApplyPass& needs_apply_pass,
                                     ValidPropertyFilter valid_property_filter,
-                                    unsigned apply_mask,
-                                    ForcedColorFilter forced_colors) {
+                                    unsigned apply_mask) {
   unsigned property_count = properties->PropertyCount();
   for (unsigned i = 0; i < property_count; ++i) {
     CSSPropertyValueSet::PropertyReference current = properties->PropertyAt(i);
@@ -1588,9 +1586,6 @@ void StyleResolver::ApplyProperties(StyleResolverState& state,
                               GetDocument()))
       continue;
 
-    if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property_id))
-      continue;
-
     if (inherited_only && !current.IsInherited()) {
       // If the property value is explicitly inherited, we need to apply further
       // non-inherited properties as they might override the value inherited
@@ -1603,11 +1598,8 @@ void StyleResolver::ApplyProperties(StyleResolverState& state,
       continue;
     }
 
-    if (IsForcedColorsModeEnabled() &&
-        forced_colors == ForcedColorFilter::kEnabled &&
-        !current.Property().IsAffectedByForcedColors()) {
+    if (!CSSPropertyPriorityData<priority>::PropertyHasPriority(property_id))
       continue;
-    }
 
     ApplyProperty<priority>(current, state, apply_mask);
   }
@@ -1633,8 +1625,7 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
                                            const MatchedPropertiesRange& range,
                                            bool is_important,
                                            bool inherited_only,
-                                           NeedsApplyPass& needs_apply_pass,
-                                           ForcedColorFilter forced_colors) {
+                                           NeedsApplyPass& needs_apply_pass) {
   if (range.IsEmpty())
     return;
 
@@ -1649,7 +1640,7 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
         inherited_only, needs_apply_pass,
         static_cast<ValidPropertyFilter>(
             matched_properties.types_.valid_property_filter),
-        apply_mask, forced_colors);
+        apply_mask);
   }
 }
 
@@ -1672,48 +1663,6 @@ void StyleResolver::SetResizedForViewportUnits() {
 
 void StyleResolver::ClearResizedForViewportUnits() {
   was_viewport_resized_ = false;
-}
-
-template <CSSPropertyPriority priority>
-void StyleResolver::ApplyForcedColors(StyleResolverState& state,
-                                      const MatchResult& match_result,
-                                      bool apply_inherited_only,
-                                      NeedsApplyPass& needs_apply_pass) {
-  if (!IsForcedColorsModeEnabled())
-    return;
-  if (state.Style()->ForcedColorAdjust() == EForcedColorAdjust::kNone)
-    return;
-
-  const CSSValue* unset = cssvalue::CSSUnsetValue::Create();
-  unsigned apply_mask = kApplyMaskRegular | kApplyMaskVisited;
-
-  // This simulates 'revert !important' in the user origin.
-  // https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties
-  if (priority == kHighPropertyPriority) {
-    ApplyProperty(GetCSSPropertyColor(), state, *unset, apply_mask);
-  } else {
-    DCHECK(priority == kLowPropertyPriority);
-    ApplyProperty(GetCSSPropertyBackgroundColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyBorderBottomColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyBorderLeftColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyBorderRightColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyBorderTopColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyBoxShadow(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyOutlineColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyTextShadow(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyColumnRuleColor(), state, *unset, apply_mask);
-    ApplyProperty(GetCSSPropertyWebkitTapHighlightColor(), state, *unset,
-                  apply_mask);
-    ApplyProperty(GetCSSPropertyOutlineColor(), state, *unset, apply_mask);
-  }
-
-  auto force_colors = ForcedColorFilter::kEnabled;
-  ApplyMatchedProperties<priority, kCheckNeedsApplyPass>(
-      state, match_result.UaRules(), false, apply_inherited_only,
-      needs_apply_pass, force_colors);
-  ApplyMatchedProperties<priority, kCheckNeedsApplyPass>(
-      state, match_result.UaRules(), true, apply_inherited_only,
-      needs_apply_pass, force_colors);
 }
 
 StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
@@ -1866,12 +1815,6 @@ void StyleResolver::ApplyMatchedHighPriorityProperties(
       state, match_result.UaRules(), true, apply_inherited_only,
       needs_apply_pass);
 
-  if (IsForcedColorsModeEnabled() &&
-      state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone) {
-    ApplyForcedColors<kHighPropertyPriority>(
-        state, match_result, apply_inherited_only, needs_apply_pass);
-  }
-
   if (cache_success.cached_matched_properties &&
       cache_success.cached_matched_properties->computed_style
               ->EffectiveZoom() != state.Style()->EffectiveZoom()) {
@@ -1924,12 +1867,6 @@ void StyleResolver::ApplyMatchedLowPriorityProperties(
   ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
       state, match_result.UaRules(), true, apply_inherited_only,
       needs_apply_pass);
-
-  if (IsForcedColorsModeEnabled() &&
-      state.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone) {
-    ApplyForcedColors<kLowPropertyPriority>(
-        state, match_result, apply_inherited_only, needs_apply_pass);
-  }
 
   if (state.Style()->HasAppearance() && !apply_inherited_only) {
     // Check whether the final border and background differs from the cached UA
@@ -2284,11 +2221,6 @@ void StyleResolver::Trace(blink::Visitor* visitor) {
   visitor->Trace(selector_filter_);
   visitor->Trace(document_);
   visitor->Trace(tracker_);
-}
-
-bool StyleResolver::IsForcedColorsModeEnabled() const {
-  return RuntimeEnabledFeatures::ForcedColorsEnabled() &&
-         GetDocument().GetSettings()->GetForcedColors() != ForcedColors::kNone;
 }
 
 }  // namespace blink

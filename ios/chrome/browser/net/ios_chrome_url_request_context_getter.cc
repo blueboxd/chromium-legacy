@@ -119,7 +119,7 @@ void IOSChromeURLRequestContextGetter::NotifyContextShuttingDown() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 IOSChromeURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO});
+  return base::CreateSingleThreadTaskRunner({web::WebThread::IO});
 }
 
 // static

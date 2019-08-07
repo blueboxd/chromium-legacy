@@ -130,10 +130,9 @@ const Extension* CastExtensionSystem::LoadExtension(
       LOG(WARNING) << warning.message;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&CastExtensionSystem::PostLoadExtension,
-                     base::Unretained(this), extension));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&CastExtensionSystem::PostLoadExtension,
+                                base::Unretained(this), extension));
 
   return extension.get();
 }
@@ -246,12 +245,11 @@ AppSorting* CastExtensionSystem::app_sorting() {
 void CastExtensionSystem::RegisterExtensionWithRequestContexts(
     const Extension* extension,
     const base::Closure& callback) {
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&InfoMap::AddExtension, info_map(),
-                     base::RetainedRef(extension), base::Time::Now(), false,
-                     false),
-      callback);
+  base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
+                         base::BindOnce(&InfoMap::AddExtension, info_map(),
+                                        base::RetainedRef(extension),
+                                        base::Time::Now(), false, false),
+                         callback);
 }
 
 void CastExtensionSystem::UnregisterExtensionWithRequestContexts(

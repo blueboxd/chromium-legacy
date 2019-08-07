@@ -43,7 +43,7 @@ CastDialogNoSinksView::CastDialogNoSinksView(Profile* profile)
   AddChildView(looking_for_sinks_view_);
 
   constexpr int kThrobberDurationInSeconds = 3;
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&CastDialogNoSinksView::ShowHelpIconView,
                      weak_factory_.GetWeakPtr()),

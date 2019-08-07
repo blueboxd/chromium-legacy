@@ -284,8 +284,9 @@ void ConvertAndSaveGreyImage(NSString* session_id,
     cacheDirectory_ = cacheDirectory;
     snapshotsScale_ = snapshotsScale;
 
-    taskRunner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+    taskRunner_ =
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                         base::TaskPriority::USER_VISIBLE});
 
     _observers = [SnapshotCacheObservers observers];
     _markedIDs = [[NSMutableSet alloc] init];

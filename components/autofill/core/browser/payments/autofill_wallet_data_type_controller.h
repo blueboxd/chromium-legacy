@@ -44,7 +44,7 @@ class AutofillWalletDataTypeController
 
   // AsyncDirectoryTypeController implementation.
   bool StartModels() override;
-  bool ReadyForStart() const override;
+  PreconditionState GetPreconditionState() const override;
 
  private:
   // Callback for changes to the autofill pref.

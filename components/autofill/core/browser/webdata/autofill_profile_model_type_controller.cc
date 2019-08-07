@@ -20,8 +20,7 @@ AutofillProfileModelTypeController::AutofillProfileModelTypeController(
     : ModelTypeController(syncer::AUTOFILL_PROFILE,
                           std::move(delegate_on_disk)),
       pref_service_(pref_service),
-      sync_service_(sync_service),
-      currently_enabled_(IsEnabled()) {
+      sync_service_(sync_service) {
   pref_registrar_.Init(pref_service_);
   pref_registrar_.Add(
       autofill::prefs::kAutofillProfileEnabled,
@@ -33,27 +32,18 @@ AutofillProfileModelTypeController::AutofillProfileModelTypeController(
 AutofillProfileModelTypeController::~AutofillProfileModelTypeController() =
     default;
 
-bool AutofillProfileModelTypeController::ReadyForStart() const {
+syncer::DataTypeController::PreconditionState
+AutofillProfileModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
-  return currently_enabled_;
+  // Require the user-visible pref to be enabled to sync Autofill Profile data.
+  return autofill::prefs::IsProfileAutofillEnabled(pref_service_)
+             ? PreconditionState::kPreconditionsMet
+             : PreconditionState::kMustStopAndClearData;
 }
 
 void AutofillProfileModelTypeController::OnUserPrefChanged() {
   DCHECK(CalledOnValidThread());
-
-  bool new_enabled = IsEnabled();
-  if (currently_enabled_ == new_enabled)
-    return;
-  currently_enabled_ = new_enabled;
-
-  sync_service_->ReadyForStartChanged(type());
-}
-
-bool AutofillProfileModelTypeController::IsEnabled() {
-  DCHECK(CalledOnValidThread());
-
-  // Require the user-visible pref to be enabled to sync Autofill Profile data.
-  return autofill::prefs::IsProfileAutofillEnabled(pref_service_);
+  sync_service_->DataTypePreconditionChanged(type());
 }
 
 }  // namespace browser_sync

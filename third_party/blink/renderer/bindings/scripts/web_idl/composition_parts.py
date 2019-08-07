@@ -61,14 +61,8 @@ class WithExposure(object):
     """Implements |exposures| as a readonly attribute."""
 
     def __init__(self, exposures=None):
-        assert (exposures is None
-                or (isinstance(exposures, (list, tuple)) and all(
-                    isinstance(exposure, Exposure) for exposure in exposures)))
-        self._exposures = tuple(exposures or ())
-
-    @property
-    def exposures(self):
-        return self._exposures
+        # TODO(peria): Design Exposure and this class.
+        pass
 
 
 class Component(str):

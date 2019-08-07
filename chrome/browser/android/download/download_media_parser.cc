@@ -60,8 +60,8 @@ DownloadMediaParser::DownloadMediaParser(const std::string& mime_type,
                                          const base::FilePath& file_path)
     : mime_type_(mime_type),
       file_path_(file_path),
-      file_task_runner_(
-          base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()})),
+      file_task_runner_(base::CreateSingleThreadTaskRunner(
+          {base::ThreadPool(), base::MayBlock()})),
       decode_done_(false),
       weak_factory_(this) {}
 

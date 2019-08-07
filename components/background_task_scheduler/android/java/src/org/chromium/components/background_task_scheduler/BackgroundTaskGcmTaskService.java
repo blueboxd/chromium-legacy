@@ -98,14 +98,16 @@ public class BackgroundTaskGcmTaskService extends GcmTaskService {
             return GcmNetworkManager.RESULT_FAILURE;
         }
 
+        final TaskParameters taskParams =
+                BackgroundTaskSchedulerGcmNetworkManager.getTaskParametersFromTaskParams(params);
+
         Long deadlineTime =
                 BackgroundTaskSchedulerGcmNetworkManager.getDeadlineTimeFromTaskParams(params);
         if (deadlineTime != null && mClock.currentTimeMillis() >= deadlineTime) {
+            BackgroundTaskSchedulerUma.getInstance().reportTaskExpired(taskParams.getTaskId());
             return GcmNetworkManager.RESULT_FAILURE;
         }
 
-        final TaskParameters taskParams =
-                BackgroundTaskSchedulerGcmNetworkManager.getTaskParametersFromTaskParams(params);
         final Waiter waiter = new Waiter(Waiter.MAX_TIMEOUT_SECONDS);
 
         final AtomicBoolean taskNeedsBackgroundProcessing = new AtomicBoolean();

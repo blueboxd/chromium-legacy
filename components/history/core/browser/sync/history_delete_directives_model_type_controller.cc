@@ -31,9 +31,12 @@ HistoryDeleteDirectivesModelTypeController::
 HistoryDeleteDirectivesModelTypeController::
     ~HistoryDeleteDirectivesModelTypeController() {}
 
-bool HistoryDeleteDirectivesModelTypeController::ReadyForStart() const {
+syncer::DataTypeController::PreconditionState
+HistoryDeleteDirectivesModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
-  return !sync_service_->GetUserSettings()->IsEncryptEverythingEnabled();
+  return sync_service_->GetUserSettings()->IsEncryptEverythingEnabled()
+             ? PreconditionState::kMustStopAndClearData
+             : PreconditionState::kPreconditionsMet;
 }
 
 void HistoryDeleteDirectivesModelTypeController::LoadModels(
@@ -62,7 +65,7 @@ void HistoryDeleteDirectivesModelTypeController::OnStateChanged(
     syncer::SyncService* sync) {
   DCHECK(CalledOnValidThread());
   // Most of these calls will be no-ops but SyncService handles that just fine.
-  sync_service_->ReadyForStartChanged(type());
+  sync_service_->DataTypePreconditionChanged(type());
 }
 
 }  // namespace browser_sync

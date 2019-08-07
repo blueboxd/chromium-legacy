@@ -251,7 +251,7 @@ void RenderViewHostTestHarness::SetUp() {
   sanity_checker_.reset(new ContentBrowserSanityChecker());
 
   DCHECK(!browser_context_);
-  browser_context_.reset(CreateBrowserContext());
+  browser_context_ = CreateBrowserContext();
 
   SetContents(CreateTestWebContents());
   BrowserSideNavigationSetUp();
@@ -295,8 +295,9 @@ void RenderViewHostTestHarness::TearDown() {
   thread_bundle_.reset();
 }
 
-BrowserContext* RenderViewHostTestHarness::CreateBrowserContext() {
-  return new TestBrowserContext();
+std::unique_ptr<BrowserContext>
+RenderViewHostTestHarness::CreateBrowserContext() {
+  return std::make_unique<TestBrowserContext>();
 }
 
 BrowserContext* RenderViewHostTestHarness::GetBrowserContext() {

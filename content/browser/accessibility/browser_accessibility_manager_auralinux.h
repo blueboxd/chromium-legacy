@@ -39,6 +39,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
   void FireNameChangedEvent(BrowserAccessibility* node);
   void FireDescriptionChangedEvent(BrowserAccessibility* node);
   void FireSubtreeCreatedEvent(BrowserAccessibility* node);
+  void OnFindInPageResult(int request_id,
+                          int match_index,
+                          int start_id,
+                          int start_offset,
+                          int end_id,
+                          int end_offset) override;
+  void OnFindInPageTermination() override;
 
  protected:
   // AXTreeObserver methods.

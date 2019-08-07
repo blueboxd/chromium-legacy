@@ -7,11 +7,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
+#include "base/task/task_observer.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -139,7 +139,7 @@ TEST_F(SchedulerHelperTest, GetNumberOfPendingTasks) {
 }
 
 namespace {
-class MockTaskObserver : public base::MessageLoop::TaskObserver {
+class MockTaskObserver : public base::TaskObserver {
  public:
   MOCK_METHOD1(DidProcessTask, void(const base::PendingTask& task));
   MOCK_METHOD1(WillProcessTask, void(const base::PendingTask& task));

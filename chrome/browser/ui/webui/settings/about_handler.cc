@@ -604,8 +604,9 @@ void AboutHandler::HandleGetVersionInfo(const base::ListValue* args) {
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&GetVersionInfo),
       base::Bind(&AboutHandler::OnGetVersionInfoReady,
                  weak_factory_.GetWeakPtr(), callback_id));
@@ -622,8 +623,9 @@ void AboutHandler::HandleGetRegulatoryInfo(const base::ListValue* args) {
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&FindRegulatoryLabelDir),
       base::Bind(&AboutHandler::OnRegulatoryLabelDirFound,
                  weak_factory_.GetWeakPtr(), callback_id));
@@ -801,8 +803,9 @@ void AboutHandler::OnRegulatoryLabelDirFound(
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&ReadRegulatoryLabelText, label_dir_path),
       base::Bind(&AboutHandler::OnRegulatoryLabelTextRead,
                  weak_factory_.GetWeakPtr(), callback_id, label_dir_path));

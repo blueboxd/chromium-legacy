@@ -115,7 +115,8 @@ class DiceResponseHandlerTest : public testing::Test,
     AboutSigninInternals::RegisterPrefs(pref_service_.registry());
     auto account_reconcilor_delegate =
         std::make_unique<signin::DiceAccountReconcilorDelegate>(
-            &signin_client_, signin::AccountConsistencyMethod::kDiceMigration);
+            &signin_client_, signin::AccountConsistencyMethod::kDiceMigration,
+            /*migration_completed=*/false);
     account_reconcilor_ = std::make_unique<AccountReconcilor>(
         identity_test_env_.identity_manager(), &signin_client_,
         std::move(account_reconcilor_delegate));

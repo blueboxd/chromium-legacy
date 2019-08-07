@@ -50,10 +50,9 @@ std::unique_ptr<KeyedService> BuildBookmarkModelWithoutLoad(
 
 void LoadBookmarkModel(Profile* profile,
                        bookmarks::BookmarkModel* bookmark_model) {
-  bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
-                       profile->GetIOTaskRunner(),
-                       base::CreateSingleThreadTaskRunnerWithTraits(
-                           {content::BrowserThread::UI}));
+  bookmark_model->Load(
+      profile->GetPrefs(), profile->GetPath(), profile->GetIOTaskRunner(),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
 }
 
 bookmarks::BookmarkModel* CreateBookmarkModelWithoutLoad(Profile* profile) {

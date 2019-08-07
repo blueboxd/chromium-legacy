@@ -180,6 +180,16 @@ AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
   return nullptr;
 }
 
+AtkObject* FindAtkObjectToplevelParentDocument(AtkObject* atk_object) {
+  AtkObject* toplevel_document = nullptr;
+  while (atk_object) {
+    if (atk_object_get_role(atk_object) == ATK_ROLE_DOCUMENT_WEB)
+      toplevel_document = atk_object;
+    atk_object = atk_object_get_parent(atk_object);
+  }
+  return toplevel_document;
+}
+
 bool EmitsAtkTextEvents(AtkObject* atk_object) {
   // If this node is not a static text node, it supports the full AtkText
   // interface.
@@ -212,6 +222,12 @@ bool IsFrameAncestorOfAtkObject(AtkObject* frame, AtkObject* atk_object) {
 std::vector<AtkObject*>& GetActiveMenus() {
   static base::NoDestructor<std::vector<AtkObject*>> active_menus;
   return *active_menus;
+}
+
+std::map<AtkObject*, FindInPageResultInfo>& GetActiveFindInPageResults() {
+  static base::NoDestructor<std::map<AtkObject*, FindInPageResultInfo>>
+      active_results;
+  return *active_results;
 }
 
 // The currently active frame is g_active_top_level_frame, unless there is an
@@ -1039,8 +1055,15 @@ int GetNSelections(AtkText* atk_text) {
   if (!obj)
     return 0;
 
-  // We only support a single selection.
-  return obj->HasSelection() ? 1 : 0;
+  if (obj->HasSelection())
+    return 1;
+
+  base::Optional<FindInPageResultInfo> result =
+      obj->GetSelectionOffsetsFromFindInPage();
+  if (result.has_value() && result->node == ATK_OBJECT(atk_text))
+    return 1;
+
+  return 0;
 }
 
 gchar* GetSelection(AtkText* atk_text,
@@ -3732,8 +3755,14 @@ base::string16 AXPlatformNodeAuraLinux::GetHypertext() const {
 }
 
 int AXPlatformNodeAuraLinux::GetCaretOffset() {
-  if (!HasCaret())
+  if (!HasCaret()) {
+    base::Optional<FindInPageResultInfo> result =
+        GetSelectionOffsetsFromFindInPage();
+    AtkObject* atk_object = GetOrCreateAtkObject();
+    if (result.has_value() && result->node == atk_object)
+      return UTF16ToUnicodeOffsetInText(result->end_offset);
     return -1;
+  }
 
   int selection_start, selection_end;
   GetSelectionOffsets(&selection_start, &selection_end);
@@ -3830,15 +3859,34 @@ gchar* AXPlatformNodeAuraLinux::GetSelectionWithText(int* start_offset,
                                                      int* end_offset) {
   int selection_start, selection_end;
   GetSelectionExtents(&selection_start, &selection_end);
+
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (selection_start < 0 || selection_end < 0 ||
+      selection_start == selection_end) {
+    base::Optional<FindInPageResultInfo> find_in_page_result =
+        GetSelectionOffsetsFromFindInPage();
+    if (!find_in_page_result.has_value() ||
+        find_in_page_result->node != atk_object) {
+      *start_offset = 0;
+      *end_offset = 0;
+      return nullptr;
+    }
+
+    selection_start = find_in_page_result->start_offset;
+    selection_end = find_in_page_result->end_offset;
+  }
+
+  selection_start = UTF16ToUnicodeOffsetInText(selection_start);
+  selection_end = UTF16ToUnicodeOffsetInText(selection_end);
+  if (selection_start < 0 || selection_end < 0 ||
+      selection_start == selection_end) {
+    return nullptr;
+  }
+
   if (start_offset)
     *start_offset = selection_start;
   if (end_offset)
     *end_offset = selection_end;
-
-  if (selection_start < 0 || selection_end < 0 ||
-      selection_start == selection_end)
-    return nullptr;
-
   return atk_text::GetText(ATK_TEXT(GetOrCreateAtkObject()), selection_start,
                            selection_end);
 }
@@ -4215,6 +4263,104 @@ AtkAttributeSet* AXPlatformNodeAuraLinux::GetTextAttributes(int offset,
 AtkAttributeSet* AXPlatformNodeAuraLinux::GetDefaultTextAttributes() {
   ComputeStylesIfNeeded();
   return default_text_attributes_.get();
+}
+
+void AXPlatformNodeAuraLinux::TerminateFindInPage() {
+  ForgetCurrentFindInPageResult();
+}
+
+void AXPlatformNodeAuraLinux::ActivateFindInPageResult(int start_offset,
+                                                       int end_offset) {
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  DCHECK(ATK_IS_TEXT(atk_object));
+
+  if (!EmitsAtkTextEvents(atk_object)) {
+    ActivateFindInPageInParent(start_offset, end_offset);
+    return;
+  }
+
+  AtkObject* parent_doc = FindAtkObjectToplevelParentDocument(atk_object);
+  if (!parent_doc)
+    return;
+
+  std::map<AtkObject*, FindInPageResultInfo>& active_results =
+      GetActiveFindInPageResults();
+  auto iterator = active_results.find(parent_doc);
+  FindInPageResultInfo new_info = {atk_object, start_offset, end_offset};
+  if (iterator != active_results.end() && iterator->second == new_info)
+    return;
+
+  active_results[parent_doc] = new_info;
+  g_signal_emit_by_name(atk_object, "text-selection-changed");
+  g_signal_emit_by_name(atk_object, "text-caret-moved",
+                        UTF16ToUnicodeOffsetInText(end_offset));
+}
+
+base::Optional<std::pair<int, int>>
+AXPlatformNodeAuraLinux::GetHypertextExtentsOfChild(
+    AXPlatformNodeAuraLinux* child_to_find) {
+  int current_offset = 0;
+  for (auto child_iterator_ptr = GetDelegate()->ChildrenBegin();
+       *child_iterator_ptr != *GetDelegate()->ChildrenEnd();
+       ++(*child_iterator_ptr)) {
+    auto* child = AtkObjectToAXPlatformNodeAuraLinux(
+        child_iterator_ptr->GetNativeViewAccessible());
+    if (!child)
+      continue;
+
+    // If this object is a text only object, it is included directly into this
+    // node's hypertext, otherwise it is represented as an embedded object
+    // character.
+    int size =
+        child->IsTextOnlyObject()
+            ? child->GetString16Attribute(ax::mojom::StringAttribute::kName)
+                  .size()
+            : 1;
+    if (child == child_to_find)
+      return std::make_pair(current_offset, current_offset + size);
+    current_offset += size;
+  }
+
+  return base::nullopt;
+}
+
+void AXPlatformNodeAuraLinux::ActivateFindInPageInParent(int start_offset,
+                                                         int end_offset) {
+  auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent());
+  if (!parent)
+    return;
+
+  base::Optional<std::pair<int, int>> extents_in_parent =
+      parent->GetHypertextExtentsOfChild(this);
+  if (!extents_in_parent.has_value())
+    return;
+
+  DCHECK(IsTextOnlyObject());
+  parent->ActivateFindInPageResult(extents_in_parent->first + start_offset,
+                                   extents_in_parent->first + end_offset);
+}
+
+void AXPlatformNodeAuraLinux::ForgetCurrentFindInPageResult() {
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  AtkObject* parent_doc = FindAtkObjectToplevelParentDocument(atk_object);
+  if (parent_doc)
+    GetActiveFindInPageResults().erase(parent_doc);
+}
+
+base::Optional<FindInPageResultInfo>
+AXPlatformNodeAuraLinux::GetSelectionOffsetsFromFindInPage() {
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  AtkObject* parent_doc = FindAtkObjectToplevelParentDocument(atk_object);
+  if (!parent_doc)
+    return base::nullopt;
+
+  std::map<AtkObject*, FindInPageResultInfo>& active_results =
+      GetActiveFindInPageResults();
+  auto iterator = active_results.find(parent_doc);
+  if (iterator == active_results.end())
+    return base::nullopt;
+
+  return iterator->second;
 }
 
 }  // namespace ui

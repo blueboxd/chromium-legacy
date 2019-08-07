@@ -34,6 +34,13 @@ class Extension;
 
 namespace util {
 
+// Returns true if the site URL corresponds to an extension or app which
+// has isolated storage. This can be either because it is an app that
+// requested this in its manifest, or because it is a policy-installed app or
+// extension running on the Chrome OS sign-in profile.
+bool SiteHasIsolatedStorage(const GURL& extension_site_url,
+                            content::BrowserContext* context);
+
 // Sets whether |extension_id| can run in an incognito window. Reloads the
 // extension if it's enabled since this permission is applied at loading time
 // only. Note that an ExtensionService must exist.

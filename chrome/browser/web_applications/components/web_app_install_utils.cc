@@ -118,19 +118,6 @@ std::vector<GURL> GetValidIconUrlsToDownload(
   return web_app_info_icon_urls;
 }
 
-void MergeInstallableDataIcon(const InstallableData& data,
-                              WebApplicationInfo* web_app_info) {
-  if (data.primary_icon_url.is_valid()) {
-    WebApplicationInfo::IconInfo primary_icon_info;
-    const SkBitmap& icon = *data.primary_icon;
-    primary_icon_info.url = data.primary_icon_url;
-    primary_icon_info.data = icon;
-    primary_icon_info.width = icon.width();
-    primary_icon_info.height = icon.height();
-    web_app_info->icons.push_back(primary_icon_info);
-  }
-}
-
 void FilterSquareIconsFromInfo(const WebApplicationInfo& web_app_info,
                                std::vector<BitmapAndSource>* square_icons) {
   // Add all existing icons from WebApplicationInfo.
@@ -149,15 +136,6 @@ void FilterSquareIconsFromMap(const IconsMap& icons_map,
         square_icons->push_back(BitmapAndSource(url_icon.first, icon));
     }
   }
-}
-
-std::vector<BitmapAndSource> FilterSquareIcons(
-    const IconsMap& icons_map,
-    const WebApplicationInfo& web_app_info) {
-  std::vector<BitmapAndSource> square_icons;
-  FilterSquareIconsFromMap(icons_map, &square_icons);
-  FilterSquareIconsFromInfo(web_app_info, &square_icons);
-  return square_icons;
 }
 
 void ResizeDownloadedIconsGenerateMissing(

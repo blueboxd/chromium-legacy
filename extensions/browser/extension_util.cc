@@ -12,19 +12,10 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/manifest_handlers/app_isolation_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 
 namespace extensions {
 namespace util {
-
-bool SiteHasIsolatedStorage(const GURL& extension_site_url,
-                            content::BrowserContext* context) {
-  const Extension* extension = ExtensionRegistry::Get(context)->
-      enabled_extensions().GetExtensionOrAppByURL(extension_site_url);
-
-  return extension && AppIsolationInfo::HasIsolatedStorage(extension);
-}
 
 bool CanBeIncognitoEnabled(const Extension* extension) {
   return IncognitoInfo::IsIncognitoAllowed(extension) &&

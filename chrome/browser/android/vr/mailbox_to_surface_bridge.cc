@@ -257,7 +257,7 @@ void MailboxToSurfaceBridge::CreateContextProviderInternal() {
       base::BindRepeating(&MailboxToSurfaceBridge::OnContextAvailableOnUiThread,
                           weak_ptr_factory_.GetWeakPtr());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           [](int surface_handle,

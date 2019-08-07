@@ -53,8 +53,8 @@ ElevationIconSetter::ElevationIconSetter(views::LabelButton* button,
     : button_(button) {
 #if defined(OS_WIN)
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING})
+      base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock(),
+                                    base::TaskPriority::USER_BLOCKING})
           .get(),
       FROM_HERE, base::BindOnce(&GetElevationIcon),
       base::BindOnce(&ElevationIconSetter::SetButtonIcon,

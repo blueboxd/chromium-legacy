@@ -895,8 +895,8 @@ class MockSpellCheckHost : spellcheck::mojom::SpellCheckHost {
     if (text_received_)
       return;
 
-    auto ui_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::UI});
+    auto ui_task_runner =
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
     ui_task_runner->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&MockSpellCheckHost::Timeout, base::Unretained(this)),
@@ -1007,8 +1007,8 @@ class SpellCheckBrowserTestHelper {
     if (!spell_check_hosts_.empty())
       return;
 
-    auto ui_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::UI});
+    auto ui_task_runner =
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
     ui_task_runner->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&SpellCheckBrowserTestHelper::Timeout,

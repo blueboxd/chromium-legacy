@@ -82,9 +82,9 @@ class AudioOutputAuthorizationHandlerTest : public RenderViewHostTestHarness {
     audio_manager_->Shutdown();
   }
 
-  BrowserContext* CreateBrowserContext() override {
-    // Caller takes ownership.
-    return new TestBrowserContextWithRealURLRequestContextGetter();
+  std::unique_ptr<BrowserContext> CreateBrowserContext() override {
+    return std::make_unique<
+        TestBrowserContextWithRealURLRequestContextGetter>();
   }
 
   void SetUp() override {

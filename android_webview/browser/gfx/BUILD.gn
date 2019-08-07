@@ -34,6 +34,8 @@ source_set("gfx") {
     "gpu_service_web_view.h",
     "hardware_renderer.cc",
     "hardware_renderer.h",
+    "hardware_renderer_single_thread.cc",
+    "hardware_renderer_single_thread.h",
     "java_browser_view_renderer_helper.cc",
     "java_browser_view_renderer_helper.h",
     "parent_compositor_draw_constraints.cc",

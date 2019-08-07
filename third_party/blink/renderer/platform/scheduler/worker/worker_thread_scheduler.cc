@@ -160,14 +160,13 @@ bool WorkerThreadScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }
 
-void WorkerThreadScheduler::AddTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
+void WorkerThreadScheduler::AddTaskObserver(base::TaskObserver* task_observer) {
   DCHECK(initialized_);
   helper()->AddTaskObserver(task_observer);
 }
 
 void WorkerThreadScheduler::RemoveTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
+    base::TaskObserver* task_observer) {
   DCHECK(initialized_);
   helper()->RemoveTaskObserver(task_observer);
 }

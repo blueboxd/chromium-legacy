@@ -13,17 +13,16 @@
 namespace blink {
 namespace scheduler {
 
-EventLoop::EventLoop(v8::Isolate* isolate)
+EventLoop::EventLoop(v8::Isolate* isolate,
+                     std::unique_ptr<v8::MicrotaskQueue> microtask_queue)
     : isolate_(isolate),
       // TODO(keishi): Create MicrotaskQueue to enable per-EventLoop microtask
       // queue.
-      microtask_queue_(nullptr) {
+      microtask_queue_(std::move(microtask_queue)) {
   DCHECK(isolate_);
 }
 
-EventLoop::~EventLoop() {
-  microtask_queue_ = nullptr;
-}
+EventLoop::~EventLoop() = default;
 
 void EventLoop::EnqueueMicrotask(base::OnceClosure task) {
   pending_microtasks_.push_back(std::move(task));

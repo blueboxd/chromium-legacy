@@ -83,7 +83,7 @@ void OnProfileCreated(PrefetchServiceImpl* prefetch_service, Profile* profile) {
     // https://crbug.com/944952
     // Update is not a priority so make sure it happens after the critical
     // startup path.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&PrefetchServiceImpl::RefreshGCMToken,
@@ -148,7 +148,7 @@ std::unique_ptr<KeyedService> PrefetchServiceFactory::BuildServiceInstanceFor(
           profile_key->GetPrefs());
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::FilePath store_path =
       profile_key->GetPath().Append(chrome::kOfflinePagePrefetchStoreDirname);
   auto prefetch_store =

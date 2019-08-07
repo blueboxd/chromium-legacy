@@ -54,11 +54,6 @@ std::vector<GURL> GetValidIconUrlsToDownload(
     const WebApplicationInfo& web_app_info,
     const InstallableData* data);
 
-// Merge primary icon from installability check phase:
-// Add the primary icon to the final web app creation data.
-void MergeInstallableDataIcon(const InstallableData& data,
-                              WebApplicationInfo* web_app_info);
-
 // Get a list of non-empty square icons from |web_app_info|.
 void FilterSquareIconsFromInfo(const WebApplicationInfo& web_app_info,
                                std::vector<BitmapAndSource>* square_icons);
@@ -66,12 +61,6 @@ void FilterSquareIconsFromInfo(const WebApplicationInfo& web_app_info,
 // Get a list of non-empty square icons from |icons_map|.
 void FilterSquareIconsFromMap(const IconsMap& icons_map,
                               std::vector<BitmapAndSource>* square_icons);
-
-// Get a list of non-empty square icons from downloaded |icons_map| and
-// |web_app_info| (merged together).
-std::vector<BitmapAndSource> FilterSquareIcons(
-    const IconsMap& icons_map,
-    const WebApplicationInfo& web_app_info);
 
 // Ensure that the necessary-sized icons are available by resizing larger
 // icons down to smaller sizes, and generating icons for sizes where resizing

@@ -49,6 +49,7 @@ public class BackgroundTaskSchedulerImplTest {
     private ShadowGcmNetworkManager mGcmNetworkManager;
 
     private TaskInfo mTask;
+    private TaskInfo mExpirationTask;
 
     @Before
     public void setUp() {
@@ -67,6 +68,10 @@ public class BackgroundTaskSchedulerImplTest {
         mTask = TaskInfo.createOneOffTask(
                                 TaskIds.TEST, TestBackgroundTask.class, TimeUnit.DAYS.toMillis(1))
                         .build();
+        mExpirationTask = TaskInfo.createOneOffTask(TaskIds.TEST, TestBackgroundTask.class,
+                                          TimeUnit.DAYS.toMillis(1))
+                                  .setExpiresAfterWindowEndTime(true)
+                                  .build();
     }
 
     @Test
@@ -80,6 +85,19 @@ public class BackgroundTaskSchedulerImplTest {
         verify(mDelegate, times(1)).schedule(eq(RuntimeEnvironment.application), eq(mTask));
         verify(mBackgroundTaskSchedulerUma, times(1))
                 .reportTaskScheduled(eq(TaskIds.TEST), eq(true));
+        verify(mBackgroundTaskSchedulerUma, times(1))
+                .reportTaskCreatedAndExpirationState(eq(TaskIds.TEST), eq(false));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testScheduleTaskWithExpirationSuccessful() {
+        doReturn(true).when(mDelegate).schedule(
+                eq(RuntimeEnvironment.application), eq(mExpirationTask));
+        BackgroundTaskSchedulerFactory.getScheduler().schedule(
+                RuntimeEnvironment.application, mExpirationTask);
+        verify(mBackgroundTaskSchedulerUma, times(1))
+                .reportTaskCreatedAndExpirationState(eq(TaskIds.TEST), eq(true));
     }
 
     @Test

@@ -315,8 +315,7 @@ CastContentBrowserClient::CreateAudioManager(
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
       base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
       GetMediaTaskRunner(), content::GetSystemConnector(),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #else
@@ -325,8 +324,7 @@ CastContentBrowserClient::CreateAudioManager(
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
       base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
       GetMediaTaskRunner(), content::GetSystemConnector(),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #endif  // defined(USE_ALSA)
@@ -396,7 +394,7 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
   // Forcibly trigger I/O-thread URLRequestContext initialization before
   // getting HostResolver.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
       base::Bind(
           &net::URLRequestContextGetter::GetURLRequestContext,
@@ -488,12 +486,11 @@ void CastContentBrowserClient::SiteInstanceGotProcess(
       ->Insert(extension->id(), site_instance->GetProcess()->GetID(),
                site_instance->GetId());
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&extensions::InfoMap::RegisterExtensionProcess,
-                     extension_system->info_map(), extension->id(),
-                     site_instance->GetProcess()->GetID(),
-                     site_instance->GetId()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&extensions::InfoMap::RegisterExtensionProcess,
+                                extension_system->info_map(), extension->id(),
+                                site_instance->GetProcess()->GetID(),
+                                site_instance->GetId()));
 #endif
 }
 
@@ -674,7 +671,7 @@ base::OnceClosure CastContentBrowserClient::SelectClientCertificate(
   std::string session_id =
       CastNavigationUIData::GetSessionIdForWebContents(web_contents);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &CastContentBrowserClient::SelectClientCertificateOnIOThread,

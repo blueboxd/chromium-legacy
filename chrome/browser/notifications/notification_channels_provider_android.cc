@@ -289,7 +289,7 @@ NotificationChannelsProviderAndroid::UpdateCachedChannels() const {
     // underlying state of NotificationChannelsProviderAndroid, and allows us to
     // notify observers as soon as we detect changes to channels.
     auto* provider = const_cast<NotificationChannelsProviderAndroid*>(this);
-    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
         ->PostTask(FROM_HERE,
                    base::BindOnce(
                        &NotificationChannelsProviderAndroid::NotifyObservers,

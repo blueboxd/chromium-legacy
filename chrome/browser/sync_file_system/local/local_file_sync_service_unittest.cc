@@ -117,8 +117,9 @@ class LocalFileSyncServiceTest
 
     file_system_.reset(new CannedSyncableFileSystem(
         GURL(kOrigin), in_memory_env_.get(),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-        base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()})));
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+        base::CreateSingleThreadTaskRunner(
+            {base::ThreadPool(), base::MayBlock()})));
 
     local_service_ = LocalFileSyncService::CreateForTesting(
         &profile_, in_memory_env_.get());
@@ -300,8 +301,9 @@ TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   const char kOrigin2[] = "http://foo";
   CannedSyncableFileSystem file_system2(
       GURL(kOrigin2), in_memory_env_.get(),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-      base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunner(
+          {base::ThreadPool(), base::MayBlock()}));
   file_system2.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
 
   base::RunLoop run_loop;

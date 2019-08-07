@@ -520,8 +520,9 @@ void EncryptionMigrationScreenHandler::UpdateUIState(UIState state) {
 }
 
 void EncryptionMigrationScreenHandler::CheckAvailableStorage() {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       free_disk_space_fetcher_,
       base::Bind(&EncryptionMigrationScreenHandler::OnGetAvailableStorage,
                  weak_ptr_factory_.GetWeakPtr()));

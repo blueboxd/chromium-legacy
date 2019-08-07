@@ -17,11 +17,16 @@ namespace signin {
 
 DiceAccountReconcilorDelegate::DiceAccountReconcilorDelegate(
     SigninClient* signin_client,
-    AccountConsistencyMethod account_consistency)
-    : signin_client_(signin_client), account_consistency_(account_consistency) {
+    AccountConsistencyMethod account_consistency,
+    bool migration_completed)
+    : signin_client_(signin_client),
+      account_consistency_(account_consistency),
+      migration_completed_(migration_completed) {
   DCHECK(signin_client_);
   DCHECK(DiceMethodGreaterOrEqual(account_consistency_,
                                   AccountConsistencyMethod::kDiceMigration));
+  DCHECK(account_consistency == AccountConsistencyMethod::kDice ||
+         !migration_completed);
 }
 
 bool DiceAccountReconcilorDelegate::IsReconcileEnabled() const {
@@ -235,9 +240,22 @@ DiceAccountReconcilorDelegate::ShouldRevokeSecondaryTokensBeforeReconcile(
     return RevokeTokenOption::kRevoke;
   }
 
-  return (account_consistency_ == AccountConsistencyMethod::kDice)
+  return account_consistency_ == AccountConsistencyMethod::kDice
              ? RevokeTokenOption::kRevokeIfInError
              : RevokeTokenOption::kDoNotRevoke;
+}
+
+bool DiceAccountReconcilorDelegate::ShouldRevokeTokensNotInCookies() const {
+  return account_consistency_ == AccountConsistencyMethod::kDice &&
+         !migration_completed_;
+}
+
+void DiceAccountReconcilorDelegate::OnRevokeTokensNotInCookiesCompleted(
+    RevokeTokenAction revoke_token_action) {
+  migration_completed_ = true;
+  signin_client_->SetDiceMigrationCompleted();
+  UMA_HISTOGRAM_ENUMERATION("ForceDiceMigration.RevokeTokenAction",
+                            revoke_token_action);
 }
 
 bool DiceAccountReconcilorDelegate::ShouldRevokeTokensOnCookieDeleted() {

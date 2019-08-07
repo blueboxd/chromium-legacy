@@ -117,8 +117,8 @@ AppSearchResultRanker::AppSearchResultRanker(const base::FilePath& profile_path,
   if (is_ephemeral_user)
     return;
 
-  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   // Loads the predictor from disk asynchronously.

@@ -91,6 +91,14 @@ class NetworkConfigurationUpdater : public chromeos::PolicyCertificateProvider,
                           base::DictionaryValue* global_network_config,
                           base::ListValue* certificates);
 
+  // Determines if |policy_map| contains an ONC policy under |policy_key| that
+  // mandates that at least one additional certificate should be used and
+  // assignd 'Web' trust.
+  static bool PolicyHasWebTrustedAuthorityCertificate(
+      const PolicyMap& policy_map,
+      onc::ONCSource onc_source,
+      const std::string& policy_key);
+
   const std::vector<chromeos::onc::OncParsedCertificates::ClientCertificate>&
   GetClientCertificates() const;
 

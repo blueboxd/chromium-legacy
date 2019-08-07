@@ -104,9 +104,8 @@ scoped_refptr<StringImpl> LayoutTextFragment::OriginalText() const {
   return result->Substring(Start(), FragmentLength());
 }
 
-void LayoutTextFragment::ForceSetText(scoped_refptr<StringImpl> text,
-                                      bool avoid_layout_and_only_paint) {
-  LayoutText::ForceSetText(std::move(text), avoid_layout_and_only_paint);
+void LayoutTextFragment::TextDidChange() {
+  LayoutText::TextDidChange();
 
   start_ = 0;
   fragment_length_ = TextLength();
@@ -125,22 +124,26 @@ void LayoutTextFragment::ForceSetText(scoped_refptr<StringImpl> text,
 void LayoutTextFragment::SetTextFragment(scoped_refptr<StringImpl> text,
                                          unsigned start,
                                          unsigned length) {
-  // Note, we have to call |LayoutText::ForceSetText()| here because, if we
+  // Note, we have to call |LayoutText::TextDidChange()| here because, if we
   // use our version we will, potentially, screw up the first-letter settings
   // where we only use portions of the string.
-  if (!Equal(GetText().Impl(), text.get()))
-    LayoutText::ForceSetText(std::move(text));
+  if (!Equal(GetText().Impl(), text.get())) {
+    SetTextInternal(std::move(text));
+    LayoutText::TextDidChange();
+  }
 
   start_ = start;
   fragment_length_ = length;
 }
 
 void LayoutTextFragment::TransformText() {
-  // Note, we have to call LayoutText::ForceSetText()| here because, if we use
+  // Note, we have to call LayoutText::TextDidChange()| here because, if we use
   // our version we will, potentially, screw up the first-letter settings where
   // we only use portions of the string.
-  if (scoped_refptr<StringImpl> text_to_transform = OriginalText())
-    LayoutText::ForceSetText(std::move(text_to_transform));
+  if (scoped_refptr<StringImpl> text_to_transform = OriginalText()) {
+    SetTextInternal(std::move(text_to_transform));
+    LayoutText::TextDidChange();
+  }
 }
 
 UChar LayoutTextFragment::PreviousCharacter() const {

@@ -170,10 +170,9 @@ void DidGetTPMInfoForUserOnUIThread(
   if (token_info.has_value() && token_info->slot != -1) {
     DVLOG(1) << "Got TPM slot for " << username_hash << ": "
              << token_info->slot;
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&crypto::InitializeTPMForChromeOSUser, username_hash,
-                       token_info->slot));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&crypto::InitializeTPMForChromeOSUser,
+                                  username_hash, token_info->slot));
   } else {
     NOTREACHED() << "TPMTokenInfoGetter reported invalid token.";
   }
@@ -204,7 +203,7 @@ void StartTPMSlotInitializationOnIOThread(const AccountId& account_id,
                                           const std::string& username_hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&GetTPMInfoForUserOnUIThread, account_id, username_hash));
 }
@@ -290,7 +289,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     if (user && !user->username_hash().empty()) {
       params->username_hash = user->username_hash();
       DCHECK(!params->username_hash.empty());
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&StartNSSInitOnIOThread, user->GetAccountId(),
                          user->username_hash(), profile->GetPath()));
@@ -319,10 +318,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   signed_exchange_enabled_.Init(prefs::kSignedHTTPExchangeEnabled,
                                 pref_service);
   signed_exchange_enabled_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
   // These members are used only for sign in, which is not enabled in incognito
   // and guest modes. So no need to initialize them.
@@ -363,9 +362,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   // object to the IO thread after this function.
   BrowserContext::EnsureResourceContextInitialized(profile);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&ProfileIOData::Init, base::Unretained(this)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&ProfileIOData::Init, base::Unretained(this)));
 }
 
 ProfileIOData::ProfileParams::ProfileParams() = default;

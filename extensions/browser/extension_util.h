@@ -23,11 +23,6 @@ namespace util {
 // chrome/browser/extensions/extension_util.h/cc that are only dependent on
 // extensions/ here.
 
-// Returns true if the site URL corresponds to an extension or app and has
-// isolated storage.
-bool SiteHasIsolatedStorage(const GURL& extension_site_url,
-                            content::BrowserContext* context);
-
 // Returns true if the extension can be enabled in incognito mode.
 bool CanBeIncognitoEnabled(const Extension* extension);
 

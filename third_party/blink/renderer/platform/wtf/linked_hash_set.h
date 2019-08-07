@@ -146,6 +146,11 @@ class LinkedHashSetNode : public LinkedHashSetNodeBase {
                     LinkedHashSetNodeBase* next)
       : LinkedHashSetNodeBase(prev, next), value_(value) {}
 
+  LinkedHashSetNode(ValueArg&& value,
+                    LinkedHashSetNodeBase* prev,
+                    LinkedHashSetNodeBase* next)
+      : LinkedHashSetNodeBase(prev, next), value_(std::move(value)) {}
+
   LinkedHashSetNode(LinkedHashSetNode&& other)
       : LinkedHashSetNodeBase(std::move(other)),
         value_(std::move(other.value_)) {}
@@ -445,10 +450,13 @@ struct LinkedHashSetTraits
 
   // The slot is empty when the next_ field is zero so it's safe to zero
   // the backing.
-  static const bool kEmptyValueIsZero = true;
+  static const bool kEmptyValueIsZero = ValueTraits::kEmptyValueIsZero;
 
   static const bool kHasIsEmptyValueFunction = true;
   static bool IsEmptyValue(const Node& node) { return !node.next_; }
+  static Node EmptyValue() {
+    return Node(ValueTraits::EmptyValue(), nullptr, nullptr);
+  }
 
   static const int kDeletedValue = -1;
 

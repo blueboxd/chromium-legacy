@@ -221,8 +221,6 @@ void ServiceWorkerContextWrapper::Init(
     URLLoaderFactoryGetter* loader_factory_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(storage_partition_);
-  if (watcher_)
-    watcher_->Start();
 
   is_incognito_ = user_data_directory.empty();
   // The database task runner is BLOCK_SHUTDOWN in order to support
@@ -234,13 +232,28 @@ void ServiceWorkerContextWrapper::Init(
       base::CreateSequencedTaskRunner(
           {base::ThreadPool(), base::MayBlock(),
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-  InitInternal(user_data_directory, std::move(database_task_runner),
-               quota_manager_proxy, special_storage_policy, blob_context,
-               loader_factory_getter,
-               blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()
-                   ? CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
-                         storage_partition_->browser_context())
-                   : nullptr);
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+      non_network_loader_factory_bundle_info_for_update_check;
+  if (blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()) {
+    non_network_loader_factory_bundle_info_for_update_check =
+        CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
+            storage_partition_->browser_context());
+  }
+  base::PostTask(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::InitOnIO, this, user_data_directory,
+          std::move(database_task_runner),
+          base::RetainedRef(quota_manager_proxy),
+          base::RetainedRef(special_storage_policy),
+          base::RetainedRef(blob_context),
+          base::RetainedRef(loader_factory_getter),
+          std::move(non_network_loader_factory_bundle_info_for_update_check)));
+
+  // The watcher also posts a IO thread task which must run after InitOnIO(), so
+  // start it after posting that task above.
+  if (watcher_)
+    watcher_->Start();
 }
 
 void ServiceWorkerContextWrapper::Shutdown() {
@@ -1127,7 +1140,7 @@ ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
   DCHECK(!resource_context_);
 }
 
-void ServiceWorkerContextWrapper::InitInternal(
+void ServiceWorkerContextWrapper::InitOnIO(
     const base::FilePath& user_data_directory,
     scoped_refptr<base::SequencedTaskRunner> database_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
@@ -1136,21 +1149,9 @@ void ServiceWorkerContextWrapper::InitInternal(
     URLLoaderFactoryGetter* loader_factory_getter,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         non_network_loader_factory_bundle_info_for_update_check) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ServiceWorkerContextWrapper::InitInternal, this,
-            user_data_directory, std::move(database_task_runner),
-            base::RetainedRef(quota_manager_proxy),
-            base::RetainedRef(special_storage_policy),
-            base::RetainedRef(blob_context),
-            base::RetainedRef(loader_factory_getter),
-            std::move(
-                non_network_loader_factory_bundle_info_for_update_check)));
-    return;
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!context_core_);
+
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(new ServiceWorkerQuotaClient(this));
   }
@@ -1535,6 +1536,15 @@ bool ServiceWorkerContextWrapper::HasRegistrationForOrigin(
              registrations_for_origin_.end();
 }
 
+void ServiceWorkerContextWrapper::WaitForRegistrationsInitializedForTest() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (registrations_initialized_)
+    return;
+  base::RunLoop loop;
+  on_registrations_initialized_ = loop.QuitClosure();
+  loop.Run();
+}
+
 void ServiceWorkerContextWrapper::OnRegistrationUpdated(
     const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1553,6 +1563,9 @@ void ServiceWorkerContextWrapper::OnRegistrationUpdated(
       registrations_for_origin_[origin].insert(registration_id);
     }
   }
+
+  if (on_registrations_initialized_)
+    std::move(on_registrations_initialized_).Run();
 }
 
 }  // namespace content

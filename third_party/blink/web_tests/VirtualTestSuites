@@ -1139,11 +1139,6 @@
     "args": ["--enable-blink-features=ForcedColors"]
   },
   {
-    "prefix": "forced-colors",
-    "base": "fast/css/forced-colors-mode",
-    "args": ["--force-high-contrast", "--enable-blink-features=ForcedColors"]
-  },
-  {
     "prefix": "force-defer-script",
     "base": "defer-script",
     "args": ["--enable-blink-features=ForceDeferScriptIntervention"]
@@ -1224,5 +1219,20 @@
     "prefix": "conditional-appcache-delay",
     "base": "http/tests/loading/appcache-delay",
     "args": ["--enable-features=VerifyHTMLFetchedFromAppCacheBeforeDelay"]
+  },
+  {
+    "prefix": "audio-service",
+    "base": "http/tests/media",
+    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox"]
+  },
+  {
+    "prefix": "audio-service",
+    "base": "media",
+    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox"]
+  },
+  {
+    "prefix": "audio-service",
+    "base": "external/wpt/mediacapture-streams",
+    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox"]
   }
 ]

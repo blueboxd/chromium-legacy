@@ -147,7 +147,7 @@ const int kNoActiveCopy = 0;
                  style:UIAlertActionStyleCancel];
 
   // Delays launching alert by |kAlertDelayInMs|.
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
         // Checks that the copy has not finished yet.
         if (callbackID == weakSelf.activeID) {

@@ -130,8 +130,8 @@ MediaRouterFileDialog::MediaRouterFileDialog(
 MediaRouterFileDialog::MediaRouterFileDialog(
     MediaRouterFileDialogDelegate* delegate,
     std::unique_ptr<FileSystemDelegate> file_system_delegate)
-    : task_runner_(base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+    : task_runner_(base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::USER_VISIBLE})),
       file_system_delegate_(std::move(file_system_delegate)),
       delegate_(delegate) {}
 

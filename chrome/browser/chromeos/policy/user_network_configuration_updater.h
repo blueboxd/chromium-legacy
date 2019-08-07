@@ -43,6 +43,7 @@ class CertificateImporter;
 
 namespace policy {
 
+class PolicyMap;
 class PolicyService;
 
 // Implements additional special handling of ONC user policies. Namely string
@@ -72,6 +73,12 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
   // certificates.
   void SetClientCertificateImporterForTest(
       std::unique_ptr<chromeos::onc::CertificateImporter> certificate_importer);
+
+  // Determines if |policy_map| contains a OpenNetworkConfiguration policy that
+  // mandates that at least one additional certificate should be used and
+  // assignd 'Web' trust.
+  static bool PolicyHasWebTrustedAuthorityCertificate(
+      const PolicyMap& policy_map);
 
  private:
   class CrosTrustAnchorProvider;

@@ -393,8 +393,9 @@ void GaiaScreenHandler::OnSetCookieForLoadGaiaWithPartition(
       &GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent,
       weak_factory_.GetWeakPtr(), context, partition_name,
       base::Owned(version.release()), base::Owned(consent.release()));
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       std::move(get_version_and_consent), std::move(load_gaia));
 }
 

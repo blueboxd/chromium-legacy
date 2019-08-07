@@ -88,14 +88,6 @@ const char kSignalNewToolTip[] = "NewToolTip";
 const char kPropertyValueCategory[] = "ApplicationStatus";
 const char kPropertyValueStatus[] = "Active";
 
-scoped_refptr<dbus::Bus> CreateBus() {
-  dbus::Bus::Options bus_options;
-  bus_options.bus_type = dbus::Bus::SESSION;
-  bus_options.connection_type = dbus::Bus::PRIVATE;
-  bus_options.dbus_task_runner = dbus_thread_linux::GetTaskRunner();
-  return base::MakeRefCounted<dbus::Bus>(bus_options);
-}
-
 int NextServiceId() {
   static int status_icon_count = 0;
   return ++status_icon_count;
@@ -141,7 +133,12 @@ auto MakeDbusToolTip(const std::string& text) {
 
 }  // namespace
 
-StatusIconLinuxDbus::StatusIconLinuxDbus() : bus_(CreateBus()) {
+StatusIconLinuxDbus::StatusIconLinuxDbus() {
+  dbus::Bus::Options bus_options;
+  bus_options.bus_type = dbus::Bus::SESSION;
+  bus_options.connection_type = dbus::Bus::PRIVATE;
+  bus_options.dbus_task_runner = dbus_thread_linux::GetTaskRunner();
+  bus_ = base::MakeRefCounted<dbus::Bus>(bus_options);
   CheckStatusNotifierWatcherHasOwner();
 }
 

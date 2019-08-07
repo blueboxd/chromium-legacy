@@ -841,8 +841,10 @@ void LocalNtpSource::StartDataRequest(
   }
 
   if (stripped_path == chrome::kChromeSearchLocalNtpBackgroundFilename) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+         base::MayBlock()},
         base::BindOnce(&ReadBackgroundImageData, profile_->GetPath()),
         base::BindOnce(&ServeBackgroundImageData, callback));
     return;

@@ -21,4 +21,9 @@ const char kEnableLocalSyncBackend[] = "enable-local-sync-backend";
 // flag is present.
 const char kLocalSyncBackendDir[] = "local-sync-backend-dir";
 
+#if defined(OS_ANDROID)
+const base::Feature kSyncManualStartAndroid{"SyncManualStartAndroid",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace switches

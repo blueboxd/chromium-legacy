@@ -10,10 +10,13 @@
 // Element Colors
 
 extern NSString* const kBackgroundColor;
+extern NSString* const kCloseButtonColor;
 extern NSString* const kDisabledTintColor;
 // Background color used in the rounded squares behind favicons.
 extern NSString* const kFaviconBackgroundColor;
 extern NSString* const kMDCInkColor;
+// Color used to tint placeholder images and icons.
+extern NSString* const kPlaceholderImageTintColor;
 extern NSString* const kScrimBackgroundColor;
 extern NSString* const kSolidButtonTextColor;
 extern NSString* const kTableViewRowHighlightColor;
@@ -39,6 +42,7 @@ extern NSString* const kRedColor;
 // TODO(crbug.com/981889): Clean up after iOS 12 support is dropped.
 
 extern NSString* const kBackgroundDarkColor;
+extern NSString* const kCloseButtonDarkColor;
 extern NSString* const kTableViewRowHighlightDarkColor;
 extern NSString* const kTextPrimaryDarkColor;
 extern NSString* const kTextSecondaryDarkColor;

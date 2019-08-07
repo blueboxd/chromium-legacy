@@ -25,7 +25,7 @@ class UserEventModelTypeController : public syncer::ModelTypeController,
   ~UserEventModelTypeController() override;
 
   // syncer::DataTypeController implementation.
-  bool ReadyForStart() const override;
+  PreconditionState GetPreconditionState() const override;
 
   // syncer::SyncServiceObserver implementation.
   void OnStateChanged(syncer::SyncService* sync) override;

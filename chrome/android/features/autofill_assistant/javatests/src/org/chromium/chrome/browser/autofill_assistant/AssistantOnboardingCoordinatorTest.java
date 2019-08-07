@@ -35,6 +35,7 @@ import org.mockito.junit.MockitoRule;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -87,12 +88,14 @@ public class AssistantOnboardingCoordinatorTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testAcceptOnboarding() throws Exception {
         testOnboarding(R.id.button_init_ok, true);
     }
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testRejectOnboarding() throws Exception {
         testOnboarding(R.id.button_init_not_ok, false);
     }
@@ -115,6 +118,7 @@ public class AssistantOnboardingCoordinatorTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testOnboardingWithNoTabs() throws Exception {
         AssistantOnboardingCoordinator coordinator = createCoordinator(/* tab= */ null);
         showOnboardingAndWait(coordinator, mCallback);
@@ -126,6 +130,7 @@ public class AssistantOnboardingCoordinatorTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testTransfertControls() throws Exception {
         AssistantOnboardingCoordinator coordinator = createCoordinator(mTab);
 

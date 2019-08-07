@@ -653,9 +653,9 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
     RenderViewHostTestHarness::TearDown();
   }
 
-  content::BrowserContext* CreateBrowserContext() override {
-    content::BrowserContext* context = new content::TestBrowserContext();
-    CreateVisitedLinkMaster(context);
+  std::unique_ptr<content::BrowserContext> CreateBrowserContext() override {
+    auto context = std::make_unique<content::TestBrowserContext>();
+    CreateVisitedLinkMaster(context.get());
     return context;
   }
 
@@ -848,10 +848,10 @@ TEST_F(VisitedLinkEventsTest, IgnoreRendererCreationFromDifferentContext) {
 
 class VisitedLinkCompletelyResetEventTest : public VisitedLinkEventsTest {
  public:
-  content::BrowserContext* CreateBrowserContext() override {
-    content::BrowserContext* context = new content::TestBrowserContext();
-    CreateVisitedLinkFile(context);
-    CreateVisitedLinkMaster(context);
+  std::unique_ptr<content::BrowserContext> CreateBrowserContext() override {
+    auto context = std::make_unique<content::TestBrowserContext>();
+    CreateVisitedLinkFile(context.get());
+    CreateVisitedLinkMaster(context.get());
     return context;
   }
 

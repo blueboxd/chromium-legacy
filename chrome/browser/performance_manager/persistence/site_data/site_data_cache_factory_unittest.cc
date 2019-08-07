@@ -19,7 +19,9 @@ namespace performance_manager {
 class SiteDataCacheFactoryTest : public ::testing::Test {
  protected:
   SiteDataCacheFactoryTest()
-      : task_runner_(base::CreateSequencedTaskRunner({})),
+      : task_runner_(base::CreateSequencedTaskRunner({
+            base::ThreadPool(),
+        })),
         factory_(SiteDataCacheFactory::CreateForTesting(task_runner_)) {}
 
   ~SiteDataCacheFactoryTest() override {

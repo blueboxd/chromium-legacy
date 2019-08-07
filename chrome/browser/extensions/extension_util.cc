@@ -47,6 +47,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
 
 namespace extensions {
@@ -78,6 +79,25 @@ std::string ReloadExtensionIfEnabled(const std::string& extension_id,
 }
 
 }  // namespace
+
+bool SiteHasIsolatedStorage(const GURL& extension_site_url,
+                            content::BrowserContext* context) {
+  const Extension* extension = ExtensionRegistry::Get(context)
+                                   ->enabled_extensions()
+                                   .GetExtensionOrAppByURL(extension_site_url);
+
+#if defined(OS_CHROMEOS)
+  const bool is_policy_extension =
+      extension && Manifest::IsPolicyLocation(extension->location());
+  Profile* profile = Profile::FromBrowserContext(context);
+  if (profile && chromeos::ProfileHelper::IsSigninProfile(profile) &&
+      is_policy_extension) {
+    return true;
+  }
+#endif
+
+  return extension && AppIsolationInfo::HasIsolatedStorage(extension);
+}
 
 void SetIsIncognitoEnabled(const std::string& extension_id,
                            content::BrowserContext* context,

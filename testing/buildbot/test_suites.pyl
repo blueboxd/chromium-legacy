@@ -190,6 +190,43 @@
       'wm_unittests': {},
     },
 
+    'bfcache_gtests': {
+      'bf_cache_content_unittests': {
+        'args': [
+          '--enable-features=BackForwardCache',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_unittests.filter'
+        ],
+        'test': 'content_unittests',
+      },
+      'bf_cache_unit_tests': {
+        'args': [
+          '--enable-features=BackForwardCache',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.unit_tests.filter'
+        ],
+        'test': 'unit_tests',
+      },
+      'bf_cache_content_browsertests': {
+        'args': [
+          '--enable-features=BackForwardCache',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_browsertests.filter'
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+        'test': 'content_browsertests',
+      },
+      'bf_cache_browser_tests': {
+        'args': [
+          '--enable-features=BackForwardCache',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.browser_tests.filter'
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+       'test': 'browser_tests',
+      },
+    },
+
     'cast_audio_specific_chromium_gtests': {
       'cast_audio_backend_unittests': {},
       'cast_base_unittests': {},
@@ -2681,7 +2718,7 @@
       'blink_python_tests': {},
     },
 
-    'fieldtrial_gtests': {
+    'fieldtrial_browser_tests': {
       'no_fieldtrial_browser_tests': {
         'args': [
           '--disable-field-trial-config',
@@ -2690,40 +2727,6 @@
           'shards': 10,
         },
         'test': 'browser_tests',
-      },
-      'bf_cache_content_unittests': {
-        'args': [
-          '--enable-features=BackForwardCache',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_unittests.filter'
-        ],
-        'test': 'content_unittests',
-      },
-      'bf_cache_unit_tests': {
-        'args': [
-          '--enable-features=BackForwardCache',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.unit_tests.filter'
-        ],
-        'test': 'unit_tests',
-      },
-      'bf_cache_content_browsertests': {
-        'args': [
-          '--enable-features=BackForwardCache',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_browsertests.filter'
-        ],
-        'swarming': {
-          'shards': 10,
-        },
-        'test': 'content_browsertests',
-      },
-      'bf_cache_browser_tests': {
-        'args': [
-          '--enable-features=BackForwardCache',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.browser_tests.filter'
-        ],
-        'swarming': {
-          'shards': 10,
-        },
-       'test': 'browser_tests',
       },
     },
 

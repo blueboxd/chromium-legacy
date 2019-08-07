@@ -191,10 +191,12 @@ TEST_F(AutofillWalletDataTypeControllerTest,
   EXPECT_EQ(syncer::AUTOFILL_WALLET_METADATA, last_type_);
 
   EXPECT_CALL(sync_service_,
-              ReadyForStartChanged(syncer::AUTOFILL_WALLET_METADATA));
+              DataTypePreconditionChanged(syncer::AUTOFILL_WALLET_METADATA));
   autofill::prefs::SetPaymentsIntegrationEnabled(&prefs_, false);
   autofill::prefs::SetCreditCardAutofillEnabled(&prefs_, true);
-  EXPECT_FALSE(autofill_wallet_dtc_->ReadyForStart());
+  EXPECT_EQ(
+      syncer::DataTypeController::PreconditionState::kMustStopAndClearData,
+      autofill_wallet_dtc_->GetPreconditionState());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -213,10 +215,12 @@ TEST_F(AutofillWalletDataTypeControllerTest,
   EXPECT_EQ(syncer::AUTOFILL_WALLET_METADATA, last_type_);
 
   EXPECT_CALL(sync_service_,
-              ReadyForStartChanged(syncer::AUTOFILL_WALLET_METADATA));
+              DataTypePreconditionChanged(syncer::AUTOFILL_WALLET_METADATA));
   autofill::prefs::SetPaymentsIntegrationEnabled(&prefs_, true);
   autofill::prefs::SetCreditCardAutofillEnabled(&prefs_, false);
-  EXPECT_FALSE(autofill_wallet_dtc_->ReadyForStart());
+  EXPECT_EQ(
+      syncer::DataTypeController::PreconditionState::kMustStopAndClearData,
+      autofill_wallet_dtc_->GetPreconditionState());
   base::RunLoop().RunUntilIdle();
 }
 

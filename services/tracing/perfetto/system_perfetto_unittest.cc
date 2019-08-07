@@ -147,6 +147,11 @@ class SystemPerfettoTest : public testing::Test {
               .reset();
         }));
     RunUntilIdle();
+    // The producer client will be destroyed in the next iteration of the test,
+    // but the sequence it was used on disappears with the
+    // |scoped_task_environment_|. So we reset the sequence so it can be freely
+    // destroyed.
+    PerfettoTracedProcess::Get()->producer_client()->ResetSequenceForTesting();
     if (old_tmp_dir_) {
       // Restore the old value back to its initial value.
       setenv("TMPDIR", old_tmp_dir_, true);
@@ -236,6 +241,7 @@ TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
         }
       });
   system_data_source_enabled_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStarted();
 
   // Post a task to ensure we stop the trace after the data is written.
   base::RunLoop stop_tracing;
@@ -248,6 +254,7 @@ TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
 
   system_data_source_disabled_runloop.Run();
   system_no_more_packets_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStopped();
 
   EXPECT_EQ(1u, system_consumer.received_packets());
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
@@ -320,6 +327,7 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
       &system_data_source_disabled_runloop);
 
   system_data_source_enabled_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStarted();
 
   // Now start the local trace and wait for the system trace to stop first.
   base::RunLoop local_data_source_enabled_runloop;
@@ -343,7 +351,9 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
       kPerfettoProducerName, kPerfettoTestDataSourceName,
       local_service()->GetService(), local_producer_client.get());
 
+  system_consumer.WaitForAllDataSourcesStopped();
   system_data_source_disabled_runloop.Run();
+  local_consumer.WaitForAllDataSourcesStarted();
   local_data_source_enabled_runloop.Run();
 
   // Ensures that the Trace data gets written and committed.
@@ -364,11 +374,13 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
 
   local_consumer.StopTracing();
   local_data_source_disabled_runloop.Run();
+  local_consumer.WaitForAllDataSourcesStopped();
   local_no_more_packets_runloop.Run();
 
   // Wait for system tracing to return before stopping the trace on the correct
   // sequence to ensure everything is committed.
   system_data_source_reenabled_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStarted();
   base::RunLoop stop_tracing;
   PerfettoTracedProcess::GetTaskRunner()->PostTask(
       [&system_consumer, &stop_tracing]() {
@@ -378,6 +390,7 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
   stop_tracing.Run();
 
   system_data_source_redisabled_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStopped();
   system_no_more_packets_runloop.Run();
 
   // |local_consumer| should have seen one |send_packet_count_| from each data
@@ -414,12 +427,14 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
       local_service()->GetService(), local_producer_client.get());
 
   local_data_source_enabled_runloop.Run();
+  local_consumer->WaitForAllDataSourcesStarted();
 
   // Ensures that the Trace data gets written and committed.
   RunUntilIdle();
 
   local_consumer->StopTracing();
   local_data_source_disabled_runloop.Run();
+  local_consumer->WaitForAllDataSourcesStopped();
   local_no_more_packets_runloop.Run();
   EXPECT_EQ(7u, local_consumer->received_packets());
 
@@ -457,6 +472,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   for (auto& loop : data_sources_wrote_data) {
     loop.Run();
   }
+  system_consumer.WaitForAllDataSourcesStarted();
 
   // Wait for system tracing to return before stopping the trace on the correct
   // sequence to ensure everything is committed.
@@ -469,6 +485,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   stop_tracing.Run();
 
   system_data_source_disabled_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStopped();
   system_no_more_packets_runloop.Run();
 
   // Once we StopTracing() on the system trace the we want to make sure a new
@@ -485,7 +502,9 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   local_consumer->StartTracing();
 
   local_data_source_reenabled_runloop.Run();
+  local_consumer->WaitForAllDataSourcesStarted();
   local_consumer->StopTracing();
+  local_consumer->WaitForAllDataSourcesStopped();
   local_data_source_redisabled_runloop.Run();
 
   // |local_consumer| should have seen one |send_packet_count_| from each data
@@ -522,6 +541,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
       &system_data_source_disabled_runloop);
 
   system_data_source_enabled_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStarted();
 
   // Now start the local trace and wait for the system trace to stop first.
   base::RunLoop local_data_source_enabled_runloop;
@@ -546,7 +566,9 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
       });
 
   system_data_source_disabled_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStopped();
   local_data_source_enabled_runloop.Run();
+  local_consumer.WaitForAllDataSourcesStarted();
 
   // Ensures that the Trace data gets written and committed.
   RunUntilIdle();
@@ -563,10 +585,12 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
 
   local_consumer.StopTracing();
   local_data_source_disabled_runloop.Run();
+  local_consumer.WaitForAllDataSourcesStopped();
   local_no_more_packets_runloop.Run();
 
   // Wait for system tracing to return before stopping.
   system_data_source_reenabled_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStarted();
 
   base::RunLoop stop_tracing;
   PerfettoTracedProcess::GetTaskRunner()->PostTask(
@@ -624,6 +648,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
       });
 
   local_data_source_enabled_runloop.Run();
+  local_consumer.WaitForAllDataSourcesStarted();
 
   // Ensures that the Trace data gets written and committed.
   RunUntilIdle();
@@ -661,6 +686,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   local_stop_tracing.Run();
 
   local_data_source_disabled_runloop.Run();
+  local_consumer.WaitForAllDataSourcesStopped();
   local_no_more_packets_runloop.Run();
 
   // Now the system trace will start.
@@ -668,6 +694,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   for (auto& loop : data_sources_wrote_data) {
     loop.Run();
   }
+  system_consumer.WaitForAllDataSourcesStarted();
 
   // Wait for system tracing to return before stopping.
   base::RunLoop system_stop_tracing;
@@ -679,6 +706,7 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   system_stop_tracing.Run();
 
   system_data_source_disabled_runloop.Run();
+  system_consumer.WaitForAllDataSourcesStopped();
   system_no_more_packets_runloop.Run();
 
   // |local_consumer| & |system_consumer| should have seen one
@@ -734,6 +762,7 @@ TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
     if (!check_sdk_level) {
       system_data_source_enabled_runloop.Run();
       data_source_started_runloop.Run();
+      system_consumer.WaitForAllDataSourcesStarted();
     }
 
     // Post the task to ensure that the data will have been written and
@@ -748,6 +777,7 @@ TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
 
     if (!check_sdk_level) {
       system_data_source_disabled_runloop.Run();
+      system_consumer.WaitForAllDataSourcesStopped();
     }
     system_no_more_packets_runloop.Run();
 

@@ -285,10 +285,11 @@ void CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
 
   DVLOG(1) << "Creating directory " << path.value();
   if (base::CreateDirectory(path) && create_readme) {
-    base::PostTaskWithTraits(FROM_HERE,
-                             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                              base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                             base::BindOnce(&CreateProfileReadme, path));
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+        base::BindOnce(&CreateProfileReadme, path));
   }
 }
 
@@ -339,8 +340,9 @@ std::unique_ptr<Profile> Profile::CreateProfile(const base::FilePath& path,
   // this profile are executed in expected order (what was previously assured by
   // the FILE thread).
   scoped_refptr<base::SequencedTaskRunner> io_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()});
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
+           base::MayBlock()});
   if (create_mode == CREATE_MODE_ASYNCHRONOUS) {
     DCHECK(delegate);
     CreateProfileDirectory(io_task_runner.get(), path, true);
@@ -719,8 +721,9 @@ void ProfileImpl::DoFinalInit() {
   // Page Load Capping was remove in M74, so the database file should be removed
   // when users upgrade Chrome.
   // TODO(ryansturm): Remove this after M-79. https://crbug.com/937489
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::LOWEST, base::MayBlock()},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::LOWEST, base::MayBlock()},
       base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                      GetPath().Append(chrome::kPageLoadCappingOptOutDBFilename),
                      false));

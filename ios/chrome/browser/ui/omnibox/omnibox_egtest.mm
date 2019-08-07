@@ -105,11 +105,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 - (void)testCopyPaste {
-  // TODO(crbug.com/989550) Disable broken system callout tests on Xc11b5.
-  if (@available(iOS 13, *)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
-  }
-
   [self openPage1];
 
   // Long pressing should allow copying.
@@ -146,18 +141,18 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Visit copied link should now be available.
   NSString* a11yLabelPasteGo =
       l10n_util::GetNSString(IDS_IOS_VISIT_COPIED_LINK);
-  id<GREYMatcher> pasteAndGoMatcher = grey_accessibilityLabel(a11yLabelPasteGo);
+  id<GREYMatcher> pasteAndGoMatcher =
+      grey_allOf(grey_accessibilityLabel(a11yLabelPasteGo),
+                 chrome_test_util::SystemSelectionCallout(), nil);
   [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
       performAction:grey_longPress()];
-  [[[EarlGrey selectElementWithMatcher:pasteAndGoMatcher]
-      inRoot:chrome_test_util::SystemSelectionCallout()]
+  [[EarlGrey selectElementWithMatcher:pasteAndGoMatcher]
       assertWithMatcher:grey_notNil()];
 
   [self checkLocationBarSteadyState];
 
   // Tapping it should navigate to Page 1.
-  [[[EarlGrey selectElementWithMatcher:pasteAndGoMatcher]
-      inRoot:chrome_test_util::SystemSelectionCallout()]
+  [[EarlGrey selectElementWithMatcher:pasteAndGoMatcher]
       performAction:grey_tap()];
 
   [ChromeEarlGrey waitForPageToFinishLoading];

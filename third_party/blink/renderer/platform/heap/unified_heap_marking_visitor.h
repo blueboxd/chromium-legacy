@@ -31,6 +31,9 @@ class PLATFORM_EXPORT UnifiedHeapMarkingVisitorBase : public MarkingVisitor {
     return is_concurrent_marking_enabled_;
   }
 
+  // Flush all V8 references in the private segments to the global pool.
+  void FlushV8References();
+
  protected:
   UnifiedHeapMarkingVisitorBase(ThreadState*, MarkingMode, v8::Isolate*);
 
@@ -41,6 +44,7 @@ class PLATFORM_EXPORT UnifiedHeapMarkingVisitorBase : public MarkingVisitor {
 
  private:
   bool is_concurrent_marking_enabled_;
+  V8ReferencesWorklist::View v8_references_worklist_;
 };
 
 // Same as the base visitor with the difference that it is bound to main thread.

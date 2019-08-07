@@ -62,10 +62,19 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
 
         sort_key = lambda x: x.syntactic_form
 
+        components = set()
+
+        def collect_components(idl_type):
+            user_defined_type = idl_type.type_definition_object
+            if user_defined_type:
+                components.update(user_defined_type.components)
+
+        for idl_type in flattened_members:
+            idl_type.apply_to_all_composing_elements(collect_components)
+
         WithIdentifier.__init__(self, identifier)
         WithCodeGeneratorInfo.__init__(self)
-        # TODO(yukishiino): Set components to the components of member types.
-        WithComponent.__init__(self, components=[])
+        WithComponent.__init__(self, components=sorted(components))
         WithDebugInfo.__init__(self)
 
         # Sort improves reproducibility.

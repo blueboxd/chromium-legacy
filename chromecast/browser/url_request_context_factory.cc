@@ -86,8 +86,7 @@ class URLRequestContextFactory::URLRequestContextGetter
 
   scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const override {
-    return base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::IO});
+    return base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
   }
 
  private:
@@ -127,8 +126,7 @@ class URLRequestContextFactory::MainURLRequestContextGetter
 
   scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const override {
-    return base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::IO});
+    return base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
   }
 
  private:
@@ -166,8 +164,7 @@ void URLRequestContextFactory::InitializeOnUIThread(net::NetLog* net_log) {
   pref_proxy_config_tracker_impl_ =
       std::make_unique<PrefProxyConfigTrackerImpl>(
           CastBrowserProcess::GetInstance()->pref_service(),
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {content::BrowserThread::IO}));
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}));
 
   proxy_config_service_ =
       pref_proxy_config_tracker_impl_->CreateTrackingProxyConfigService(
@@ -263,10 +260,10 @@ void URLRequestContextFactory::InitializeMainContextDependencies(
       switches::kEnableLocalFileAccesses)) {
     set_protocol = job_factory->SetProtocolHandler(
         url::kFileScheme,
-        std::make_unique<net::FileProtocolHandler>(
-            base::CreateTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
+        std::make_unique<net::FileProtocolHandler>(base::CreateTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::BEST_EFFORT,
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
     DCHECK(set_protocol);
   }
 

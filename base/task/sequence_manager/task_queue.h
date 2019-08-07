@@ -21,6 +21,8 @@
 
 namespace base {
 
+class TaskObserver;
+
 namespace trace_event {
 class BlameContext;
 }

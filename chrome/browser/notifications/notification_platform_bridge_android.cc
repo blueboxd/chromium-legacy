@@ -352,7 +352,7 @@ void NotificationPlatformBridgeAndroid::GetDisplayed(
     Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
   std::set<std::string> displayed_notifications;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(std::move(callback), std::move(displayed_notifications),
                      false /* supports_synchronization */));

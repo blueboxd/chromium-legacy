@@ -52,19 +52,15 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using captured_sites_test_utils::CapturedSiteParams;
+using captured_sites_test_utils::GetCapturedSites;
+
 namespace {
 
 const base::TimeDelta autofill_wait_for_action_interval =
     base::TimeDelta::FromSeconds(5);
 
-struct GetParamAsString {
-  template <class ParamType>
-  std::string operator()(const testing::TestParamInfo<ParamType>& info) const {
-    return info.param;
-  }
-};
-
-base::FilePath GetReplayFilesDirectory() {
+base::FilePath GetReplayFilesRootDirectory() {
   base::FilePath src_dir;
   if (base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir)) {
     return src_dir.AppendASCII("chrome")
@@ -78,29 +74,6 @@ base::FilePath GetReplayFilesDirectory() {
   }
 }
 
-// Iterate through Autofill's Web Page Replay capture file directory to look
-// for captures sites and automation recipe files. Return a list of sites for
-// which recipe-based testing is available.
-std::vector<std::string> GetCapturedSites() {
-  std::vector<std::string> sites;
-  base::FileEnumerator capture_files(GetReplayFilesDirectory(), false,
-                                     base::FileEnumerator::FILES);
-  for (base::FilePath file = capture_files.Next(); !file.empty();
-       file = capture_files.Next()) {
-    // If a site capture file is found, also look to see if the directory has
-    // a corresponding recorded action recipe log file.
-    // A site capture file has no extension. A recorded action recipe log file
-    // has the '.test' extension.
-    if (file.Extension().empty() &&
-        base::PathExists(file.AddExtension(FILE_PATH_LITERAL(".test")))) {
-      sites.push_back(
-          captured_sites_test_utils::FilePathToUTF8(file.BaseName().value()));
-    }
-  }
-  std::sort(sites.begin(), sites.end());
-  return sites;
-}
-
 }  // namespace
 
 namespace autofill {
@@ -109,7 +82,7 @@ class AutofillCapturedSitesInteractiveTest
     : public AutofillUiTest,
       public captured_sites_test_utils::
           TestRecipeReplayChromeFeatureActionExecutor,
-      public ::testing::WithParamInterface<std::string> {
+      public ::testing::WithParamInterface<CapturedSiteParams> {
  public:
   // TestRecipeReplayChromeFeatureActionExecutor
   bool AutofillForm(const std::string& focus_element_css_selector,
@@ -226,11 +199,9 @@ class AutofillCapturedSitesInteractiveTest
             browser(), this);
     recipe_replayer()->Setup();
 
-    const base::FilePath capture_file_path =
-        GetReplayFilesDirectory().AppendASCII(GetParam().c_str());
     SetServerUrlLoader(std::make_unique<test::ServerUrlLoader>(
         std::make_unique<test::ServerCacheReplayer>(
-            capture_file_path,
+            GetParam().capture_file_path,
             test::ServerCacheReplayer::kOptionFailOnInvalidJsonRecord)));
   }
 
@@ -321,27 +292,42 @@ class AutofillCapturedSitesInteractiveTest
 
 IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
   // Prints the path of the test to be executed.
-  VLOG(1) << GetParam();
+  VLOG(1) << GetParam().site_name;
 
-  // Craft the capture file path.
   base::FilePath src_dir;
   ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
-  base::FilePath capture_file_path =
-      GetReplayFilesDirectory().AppendASCII(GetParam().c_str());
 
-  // Craft the recipe file path.
-  base::FilePath recipe_file_path = GetReplayFilesDirectory().AppendASCII(
-      base::StringPrintf("%s.test", GetParam().c_str()));
+  bool test_completed = recipe_replayer()->ReplayTest(
+      GetParam().capture_file_path, GetParam().recipe_file_path);
+  if (!test_completed)
+    ADD_FAILURE() << "Full execution was unable to complete.";
 
-  VLOG(1) << "Recipe file path: " << recipe_file_path;
-  VLOG(1) << "Capture file path: " << capture_file_path;
-
-  ASSERT_TRUE(
-      recipe_replayer()->ReplayTest(capture_file_path, recipe_file_path));
+  std::vector<testing::AssertionResult> validation_failures =
+      recipe_replayer()->GetValidationFailures();
+  if (GetParam().expectation == captured_sites_test_utils::kPass) {
+    if (validation_failures.empty()) {
+      VLOG(1) << "No Validation Failures";
+    } else {
+      LOG(INFO) << "There were " << validation_failures.size()
+              << " Validation Failure(s)";
+      for (auto& validation_failure : validation_failures)
+        ADD_FAILURE() << validation_failure.message();
+    }
+  } else {
+    if (validation_failures.empty()) {
+      VLOG(1) << "Expected Validation Failures but still succeeded. "
+              << "Time to update testcases.json file?";
+    } else {
+      VLOG(1) << "Validation Failures expected and received so skipping";
+      for (auto& validation_failure : validation_failures)
+        VLOG(1) << validation_failure.message();
+      GTEST_SKIP();
+    }
+  }
 }
-
-INSTANTIATE_TEST_SUITE_P(,
-                         AutofillCapturedSitesInteractiveTest,
-                         testing::ValuesIn(GetCapturedSites()),
-                         GetParamAsString());
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    AutofillCapturedSitesInteractiveTest,
+    testing::ValuesIn(GetCapturedSites(GetReplayFilesRootDirectory())),
+    captured_sites_test_utils::GetParamAsString());
 }  // namespace autofill

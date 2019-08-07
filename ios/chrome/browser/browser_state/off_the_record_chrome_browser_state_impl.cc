@@ -107,7 +107,7 @@ void OffTheRecordChromeBrowserStateImpl::ClearNetworkingHistorySince(
   // BrowsingDataRemover will never be destroyed and the dialog will never be
   // closed. We must do this asynchronously in order to avoid reentrancy issues.
   if (!completion.is_null()) {
-    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, completion);
+    base::PostTask(FROM_HERE, {web::WebThread::UI}, completion);
   }
 }
 

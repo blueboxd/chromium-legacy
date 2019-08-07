@@ -125,9 +125,9 @@ class ProfileShortcutManagerTest : public testing::Test {
       const base::Location& location,
       const base::FilePath& shortcut_path,
       const base::win::ShortcutProperties& expected_properties) {
-    base::CreateCOMSTATaskRunnerWithTraits({})->PostTask(
-        location, base::Bind(&base::win::ValidateShortcut, shortcut_path,
-                             expected_properties));
+    base::CreateCOMSTATaskRunner({base::ThreadPool()})
+        ->PostTask(location, base::Bind(&base::win::ValidateShortcut,
+                                        shortcut_path, expected_properties));
     thread_bundle_.RunUntilIdle();
   }
 
@@ -202,7 +202,8 @@ class ProfileShortcutManagerTest : public testing::Test {
       ShellUtil::ShortcutLocation shortcut_location,
       const ShellUtil::ShortcutProperties& properties) {
     base::PostTaskAndReplyWithResult(
-        base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()}).get(),
+        base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
+            .get(),
         location,
         base::Bind(&ShellUtil::CreateOrUpdateShortcut, shortcut_location,
                    properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS),

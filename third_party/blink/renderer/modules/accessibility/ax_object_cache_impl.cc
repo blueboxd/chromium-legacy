@@ -361,7 +361,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
   if (NodeHasRole(node, "list") || NodeHasRole(node, "directory") ||
       (NodeHasRole(node, g_null_atom) &&
        (IsHTMLUListElement(node) || IsHTMLOListElement(node) ||
-        IsHTMLDListElement(node))))
+        IsA<HTMLDListElement>(node))))
     return MakeGarbageCollected<AXList>(layout_object, *this);
 
   // media element

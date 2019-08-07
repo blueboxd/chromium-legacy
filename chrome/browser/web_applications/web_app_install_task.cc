@@ -437,8 +437,10 @@ void WebAppInstallTask::OnIconsRetrievedShowDialog(
 
   DCHECK(web_app_info);
 
-  std::vector<BitmapAndSource> downloaded_icons =
-      FilterSquareIcons(icons_map, *web_app_info);
+  std::vector<BitmapAndSource> downloaded_icons;
+  FilterSquareIconsFromMap(icons_map, &downloaded_icons);
+  FilterSquareIconsFromInfo(*web_app_info, &downloaded_icons);
+
   ResizeDownloadedIconsGenerateMissing(std::move(downloaded_icons),
                                        web_app_info.get());
 

@@ -138,10 +138,9 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
   if (![self canTakeSnapshot]) {
     if (completion) {
-      base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
-                               base::BindOnce(^{
-                                 completion(nil);
-                               }));
+      base::PostTask(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
+                       completion(nil);
+                     }));
     }
     return;
   }

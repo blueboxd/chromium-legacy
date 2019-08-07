@@ -39,7 +39,7 @@ const CGFloat kStackViewMargin = 24.0;
     UIImage* image = [[UIImage imageNamed:@"bookmark_empty_star"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
-    imageView.tintColor = [UIColor colorNamed:@"placeholder_image_tint_color"];
+    imageView.tintColor = [UIColor colorNamed:kPlaceholderImageTintColor];
 
     // The explanatory text label.
     self.textLabel = [[UILabel alloc] init];

@@ -193,7 +193,7 @@ void TestSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
 
 void TestSyncService::TriggerRefresh(const ModelTypeSet& types) {}
 
-void TestSyncService::ReadyForStartChanged(ModelType type) {}
+void TestSyncService::DataTypePreconditionChanged(ModelType type) {}
 
 void TestSyncService::AddObserver(SyncServiceObserver* observer) {
   observers_.AddObserver(observer);

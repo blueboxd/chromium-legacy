@@ -221,12 +221,9 @@ class ChromePasswordProtectionServiceTest
         sync_password_hash_provider, cache_manager_.get());
   }
 
-  content::BrowserContext* CreateBrowserContext() override {
-    TestingProfile::Builder builder;
-    std::unique_ptr<TestingProfile> profile =
-        IdentityTestEnvironmentProfileAdaptor::
-            CreateProfileForIdentityTestEnvironment(builder);
-    return profile.release();
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return IdentityTestEnvironmentProfileAdaptor::
+        GetIdentityTestEnvironmentFactories();
   }
 
   syncer::FakeUserEventService* GetUserEventService() {

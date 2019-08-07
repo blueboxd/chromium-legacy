@@ -187,6 +187,7 @@ PerfettoTracedProcess::data_sources() {
 bool PerfettoTracedProcess::CanStartTracing(
     PerfettoProducer* producer,
     base::OnceCallback<void()> start_tracing) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If the |producer| asking is the local producer_client_ it has priority so
   // even if the other endpoint is tracing shut down the other endpoint and let
   // the |producer_client_| go. The system Producer will periodically attempt to

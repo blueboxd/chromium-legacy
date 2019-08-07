@@ -252,9 +252,9 @@ PerfCollector::PerfCollector()
   // in a separate thread.
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   ui_task_runner_ = base::SequencedTaskRunnerHandle::Get();
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&PerfCollector::ParseCPUFrequencies, ui_task_runner_,
                      weak_factory_.GetWeakPtr()));
@@ -437,8 +437,9 @@ void PerfCollector::ParseOutputProtoIfValid(
                   sampled_profile->mutable_cpu_max_frequency_mhz()));
   }
 
-  bool posted = base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  bool posted = base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&OnCollectProcessTypes, sampled_profile.get()),
       base::BindOnce(&PerfCollector::SaveSerializedPerfProto,
                      weak_factory_.GetWeakPtr(), std::move(sampled_profile),

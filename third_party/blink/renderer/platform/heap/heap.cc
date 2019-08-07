@@ -37,6 +37,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/platform/heap/page_memory.h"
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
@@ -101,6 +103,7 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       movable_reference_worklist_(nullptr),
       weak_table_worklist_(nullptr),
       backing_store_callback_worklist_(nullptr),
+      v8_references_worklist_(nullptr),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0) {
   if (ThreadState::Current()->IsMainThread())
@@ -161,6 +164,7 @@ void ThreadHeap::SetupWorklists() {
   movable_reference_worklist_.reset(new MovableReferenceWorklist());
   weak_table_worklist_.reset(new WeakTableWorklist);
   backing_store_callback_worklist_.reset(new BackingStoreCallbackWorklist());
+  v8_references_worklist_.reset(new V8ReferencesWorklist());
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
 
@@ -169,6 +173,7 @@ void ThreadHeap::DestroyMarkingWorklists(BlinkGC::StackState stack_state) {
   previously_not_fully_constructed_worklist_.reset(nullptr);
   weak_callback_worklist_.reset(nullptr);
   weak_table_worklist_.reset();
+  v8_references_worklist_.reset();
   ephemeron_callbacks_.clear();
 
   // The fixed point iteration may have found not-fully-constructed objects.
@@ -300,6 +305,8 @@ bool DrainWorklistWithDeadline(base::TimeTicks deadline,
 
 bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
                                 base::TimeTicks deadline) {
+  FlushV8References(visitor);
+
   bool finished;
   // Ephemeron fixed point loop.
   do {
@@ -335,6 +342,12 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
 
     // Rerun loop if ephemeron processing queued more objects for tracing.
   } while (!marking_worklist_->IsGlobalEmpty());
+
+  // In case we reached here, we might not enter these method again for a
+  // while. Flush all V8 references before returning so we don't get left with
+  /// unflushed references.
+  FlushV8References(visitor);
+
   return true;
 }
 
@@ -611,6 +624,32 @@ void ThreadHeap::ConcurrentSweep() {
   for (size_t i = BlinkGC::kNormalPage1ArenaIndex;
        i < BlinkGC::kNumberOfArenas; i++) {
     arenas_[i]->SweepOnConcurrentThread();
+  }
+}
+
+// TODO(omerkatz): Temporary solution until concurrent marking is ready. see
+// https://crrev.com/c/1730054 for details. Eventually this will be removed.
+void ThreadHeap::FlushV8References(MarkingVisitor* visitor) {
+  if (!thread_state_->IsUnifiedGCMarkingInProgress())
+    return;
+
+  UnifiedHeapMarkingVisitor* unified_visitor =
+      reinterpret_cast<UnifiedHeapMarkingVisitor*>(visitor);
+
+  DCHECK(unified_visitor->is_concurrent_marking_enabled() ||
+         v8_references_worklist_->IsGlobalEmpty());
+
+  // TODO(omerkatz): In concurrent marking, this should flush all visitors
+  unified_visitor->FlushV8References();
+
+  V8ReferencesWorklist::View v8_references(v8_references_worklist_.get(),
+                                           WorklistTaskId::MainThread);
+  V8Reference reference;
+  v8::EmbedderHeapTracer* controller =
+      reinterpret_cast<v8::EmbedderHeapTracer*>(
+          thread_state_->unified_heap_controller());
+  while (v8_references.Pop(&reference)) {
+    controller->RegisterEmbedderReference(reference->Get());
   }
 }
 

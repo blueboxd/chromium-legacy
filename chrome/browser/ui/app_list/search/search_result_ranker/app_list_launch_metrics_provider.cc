@@ -198,8 +198,8 @@ void AppListLaunchMetricsProvider::Initialize() {
   const base::FilePath& proto_filepath = profile_dir.value().AppendASCII(
       AppListLaunchMetricsProvider::kStateProtoFilename);
 
-  PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&LoadStateFromDisk, proto_filepath),
       base::BindOnce(&AppListLaunchMetricsProvider::OnStateLoaded,
                      weak_factory_.GetWeakPtr(), proto_filepath));
@@ -220,9 +220,8 @@ void AppListLaunchMetricsProvider::OnStateLoaded(
     LogMetricsProviderError(MetricsProviderError::kNoStateProto);
 
     AppListLaunchRecorderStateProto new_proto = GenerateStateProto();
-    PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&SaveStateToDisk, proto_filepath, new_proto));
+    PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+             base::BindOnce(&SaveStateToDisk, proto_filepath, new_proto));
 
     secret_ = GetSecretFromProto(new_proto);
     user_id_ = new_proto.recurrence_ranker_user_id();

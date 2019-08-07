@@ -283,9 +283,9 @@ void OfflinePageTabHelper::PresentOfflinePageForOnlineUrl(const GURL& url) {
           .DirName();
 
   base::FilePath offline_path = entry->DistilledPath();
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&GetOfflineData, offline_root, offline_path),
       base::BindOnce(&OfflinePageTabHelper::LoadData, base::Unretained(this),

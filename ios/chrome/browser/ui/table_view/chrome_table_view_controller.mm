@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/table_view/table_view_loading_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -155,8 +156,7 @@ const CGFloat kTableViewSeparatorInsetWithIcon = 56;
   self.emptyView = [[TableViewEmptyView alloc] initWithFrame:self.view.bounds
                                                      message:message
                                                        image:image];
-  self.emptyView.tintColor =
-      [UIColor colorNamed:@"placeholder_image_tint_color"];
+  self.emptyView.tintColor = [UIColor colorNamed:kPlaceholderImageTintColor];
 }
 
 - (void)addEmptyTableViewWithAttributedMessage:
@@ -165,8 +165,7 @@ const CGFloat kTableViewSeparatorInsetWithIcon = 56;
   self.emptyView = [[TableViewEmptyView alloc] initWithFrame:self.view.bounds
                                            attributedMessage:attributedMessage
                                                        image:image];
-  self.emptyView.tintColor =
-      [UIColor colorNamed:@"placeholder_image_tint_color"];
+  self.emptyView.tintColor = [UIColor colorNamed:kPlaceholderImageTintColor];
 }
 
 - (void)updateEmptyTableViewMessageAccessibilityLabel:(NSString*)newLabel {

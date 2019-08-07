@@ -47,7 +47,7 @@ void StartSyncOnUIThread(const base::FilePath& browser_state_path,
 
 void StartSyncProxy(const base::FilePath& browser_state_path,
                     syncer::ModelType type) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {web::WebThread::UI},
       base::BindOnce(&StartSyncOnUIThread, browser_state_path, type));
 }

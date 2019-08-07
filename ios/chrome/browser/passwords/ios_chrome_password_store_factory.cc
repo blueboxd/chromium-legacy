@@ -89,8 +89,8 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
   // TODO(crbug.com/741660): Create the task runner inside password_manager
   // component instead.
   scoped_refptr<base::SequencedTaskRunner> db_task_runner(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::USER_VISIBLE}));
 
   scoped_refptr<password_manager::PasswordStore> store =
       new password_manager::PasswordStoreDefault(std::move(login_db));

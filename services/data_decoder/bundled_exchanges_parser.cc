@@ -542,7 +542,6 @@ class BundledExchangesParser::MetadataParser
                        weak_factory_.GetWeakPtr(), index_section_length));
   }
 
-  // Step 1. of
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#index-section
   void ParseIndexSection(uint64_t expected_data_length,
                          const base::Optional<std::vector<uint8_t>>& data) {
@@ -562,170 +561,131 @@ class BundledExchangesParser::MetadataParser
       RunErrorCallbackAndDestroy("Error parsing index section.");
       return;
     }
-    if (!index_section_value->is_array()) {
-      RunErrorCallbackAndDestroy("Index section must be an array.");
+    if (!index_section_value->is_map()) {
+      RunErrorCallbackAndDestroy("Index section must be a map.");
       return;
     }
 
-    // Read the header of the response section.
+    // Step 2. "Let requests be an initially-empty map ([INFRA]) from URLs to
+    // response descriptions, each of which is either a single
+    // location-in-stream value or a pair of a Variants header field value
+    // ([I-D.ietf-httpbis-variants]) and a map from that value's possible
+    // Variant-Keys to location-in-stream values, as described in Section 2.2."
+    base::flat_map<GURL, mojom::BundleIndexValuePtr> requests;
+
+    // Step 3. "Let MakeRelativeToStream be a function that takes a
+    // location-in-responses value (offset, length) and returns a
+    // ResponseMetadata struct or error by running the following
+    // sub-steps:"
+    // The logic of MakeRelativeToStream is inlined at the callsite below.
     auto responses_section = section_offsets_.find(kResponsesSection);
     DCHECK(responses_section != section_offsets_.end());
     const uint64_t responses_section_offset = responses_section->second.first;
     const uint64_t responses_section_length = responses_section->second.second;
 
-    const uint64_t length =
-        std::min(responses_section_length, kMaxCBORItemHeaderSize);
-    data_source_->Read(
-        responses_section_offset, length,
-        base::BindOnce(&MetadataParser::ParseResponsesSectionHeader,
-                       weak_factory_.GetWeakPtr(),
-                       std::move(*index_section_value), length));
-  }
+    // Step 4. "For each (url, responses) entry in the index map:"
+    for (const auto& item : index_section_value->GetMap()) {
+      if (!item.first.is_string()) {
+        RunErrorCallbackAndDestroy("Index section: key must be a string.");
+        return;
+      }
+      if (!item.second.is_array()) {
+        RunErrorCallbackAndDestroy("Index section: value must be an array.");
+        return;
+      }
+      const std::string& url = item.first.GetString();
+      const cbor::Value::ArrayValue& responses_array = item.second.GetArray();
 
-  // Step 2- of
-  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#index-section
-  void ParseResponsesSectionHeader(
-      cbor::Value index_section_value,
-      uint64_t expected_data_length,
-      const base::Optional<std::vector<uint8_t>>& data) {
-    const cbor::Value::ArrayValue& index_section_array =
-        index_section_value.GetArray();
-
-    // Step 2.1. "Seek to offset sectionOffsets["responses"].offset in stream.
-    // If this fails, return an error."
-    if (!data || data->size() != expected_data_length) {
-      RunErrorCallbackAndDestroy("Error reading responses section header.");
-      return;
-    }
-    InputReader input(*data);
-
-    // Step 2.2. "Let (responsesType, numResponses) be the result of parsing the
-    // type and argument of a CBOR item from the stream (Section 3.5.3). If this
-    // returns an error, return that error."
-    auto num_responses = input.ReadCBORHeader(CBORType::kArray);
-    if (!num_responses) {
-      RunErrorCallbackAndDestroy(
-          "Cannot parse the number of elements of the responses section.");
-      return;
-    }
-    // Step 2.3. "If responsesType is not 4 (a CBOR array) or numResponses is
-    // not half of the length of index, return an error."
-    if (index_section_array.size() % 2 != 0 ||
-        *num_responses != index_section_array.size() / 2) {
-      RunErrorCallbackAndDestroy(
-          "Wrong number of elements in the responses section.");
-      return;
-    }
-
-    // Step 3. "Let currentOffset be the current offset within stream minus
-    // sectionOffsets["responses"].offset."
-    uint64_t current_offset = input.CurrentOffset();
-
-    // Step 4. "Let requests be an initially-empty map ([INFRA]) from HTTP
-    // requests ([FETCH]) to structs ([INFRA]) with items named "offset" and
-    // "length"."
-
-    // Step 5. "For each (cbor-http-request, length) pair of adjacent elements
-    // in index:"
-    for (size_t i = 0; i < index_section_array.size(); i += 2) {
-      const cbor::Value& cbor_http_request_value = index_section_array[i];
-      const cbor::Value& length_value = index_section_array[i + 1];
-
-      // Step 5.1. "Let (headers, pseudos) be the result of converting
-      // cbor-http-request to a header list and pseudoheaders using the
-      // algorithm in Section 3.6. If this returns an error, return that error."
-      auto parsed_headers = ConvertCBORValueToHeaders(cbor_http_request_value);
-      if (!parsed_headers) {
+      // Step 4.1. "Let parsedUrl be the result of parsing ([URL]) url with no
+      // base URL."
+      if (!base::IsStringUTF8(url)) {
         RunErrorCallbackAndDestroy(
-            "Cannot parse headers in the index section.");
+            "Index section: URL must be a valid UTF-8 string.");
         return;
       }
+      GURL parsed_url(url);
 
-      // Step 5.2. "If pseudos does not have keys named ':method' and
-      // ':url', or its size isn't 2, return an error."
-      const auto pseudo_method = parsed_headers->pseudos.find(":method");
-      const auto pseudo_url = parsed_headers->pseudos.find(":url");
-      if (parsed_headers->pseudos.size() != 2 ||
-          pseudo_method == parsed_headers->pseudos.end() ||
-          pseudo_url == parsed_headers->pseudos.end()) {
-        RunErrorCallbackAndDestroy(
-            "Request headers map must have exactly two pseudo-headers, :method "
-            "and :url.");
-        return;
-      }
-
-      // Step 5.3. "If pseudos[':method'] is not 'GET', return an error."
-      if (pseudo_method->second != "GET") {
-        RunErrorCallbackAndDestroy("Request method must be GET.");
-        return;
-      }
-
-      // Step 5.4. "Let parsedUrl be the result of parsing ([URL])
-      // pseudos[':url'] with no base URL."
-      GURL parsed_url(pseudo_url->second);
-
-      // Step 5.5. "If parsedUrl is a failure, its fragment is not null, or it
+      // Step 4.2. "If parsedUrl is a failure, its fragment is not null, or it
       // includes credentials, return an error."
       if (!parsed_url.is_valid() || parsed_url.has_ref() ||
           parsed_url.has_username() || parsed_url.has_password()) {
         RunErrorCallbackAndDestroy(
-            ":url in header map must be a valid URL without fragment or "
-            "credentials.");
+            "Index section: exchange URL must be a valid URL without fragment "
+            "or credentials.");
         return;
       }
 
-      // Step 5.6. "Let http-request be a new request ([FETCH]) whose:
-      // - method is pseudos[':method'],
-      // - url is parsedUrl,
-      // - header list is headers, and
-      // - client is null."
-      mojom::BundleIndexItemPtr item = mojom::BundleIndexItem::New();
-      item->request_method = pseudo_method->second;
-      item->request_url = std::move(parsed_url);
-      item->request_headers = std::move(parsed_headers->headers);
-
-      // Step 5.7. "Let responseOffset be sectionOffsets["responses"].offset +
-      // currentOffset. This is relative to the start of the stream."
-      const uint64_t response_offset =
-          section_offsets_[kResponsesSection].first + current_offset;
-
-      // Step 5.8. "If currentOffset + length is greater than
-      // sectionOffsets["responses"].length, return an error."
-      if (!length_value.is_unsigned()) {
+      // Step 4.3. "If the first element of responses is the empty string:"
+      if (responses_array.empty() || !responses_array[0].is_bytestring()) {
         RunErrorCallbackAndDestroy(
-            "Length value in the index section should be an unsigned.");
+            "Index section: the first element of responses array must be a "
+            "bytestring.");
         return;
       }
-      const uint64_t length = length_value.GetUnsigned();
-
-      uint64_t response_end;
-      if (!base::CheckAdd(current_offset, length)
-               .AssignIfValid(&response_end) ||
-          response_end > section_offsets_[kResponsesSection].second) {
-        RunErrorCallbackAndDestroy(
-            "Index map is invalid: total length of responses exceeds the "
-            "length of the responses section.");
-        return;
+      base::StringPiece variants_value =
+          responses_array[0].GetBytestringAsString();
+      if (variants_value.empty()) {
+        // Step 4.3.1. "If the length of responses is not 3 (i.e. there is more
+        // than one location-in-responses in responses), return an error."
+        if (responses_array.size() != 3) {
+          RunErrorCallbackAndDestroy(
+              "Index section: unexpected size of responses array.");
+          return;
+        }
+      } else {
+        // Step 4.4. "Otherwise:"
+        // TODO(crbug.com/969596): Parse variants_value to compute the number of
+        // variantKeys, and check that responses_array has
+        // (2 * #variantKeys + 1) elements.
+        if (responses_array.size() < 3 || responses_array.size() % 2 != 1) {
+          RunErrorCallbackAndDestroy(
+              "Index section: unexpected size of responses array.");
+          return;
+        }
       }
+      // Instead of constructing a map from Variant-Keys to location-in-stream,
+      // this implementation just returns the responses array's structure as
+      // a BundleIndexValue.
+      std::vector<mojom::BundleResponseLocationPtr> response_locations;
+      for (size_t i = 1; i < responses_array.size(); i += 2) {
+        if (!responses_array[i].is_unsigned() ||
+            !responses_array[i + 1].is_unsigned()) {
+          RunErrorCallbackAndDestroy(
+              "Index section: offset and length values must be unsigned.");
+          return;
+        }
+        uint64_t offset = responses_array[i].GetUnsigned();
+        uint64_t length = responses_array[i + 1].GetUnsigned();
 
-      // Step 5.9. "If requests[http-request] exists, return an error. That is,
-      // duplicate requests are forbidden."
+        // MakeRelativeToStream (Step 3.) is inlined here.
+        // Step 3.1. "If offset + length is larger than
+        // sectionOffsets["responses"].length, return an error."
+        uint64_t response_end;
+        if (!base::CheckAdd(offset, length).AssignIfValid(&response_end) ||
+            response_end > responses_section_length) {
+          RunErrorCallbackAndDestroy("Index section: response out of range.");
+          return;
+        }
+        // Step 3.2. "Otherwise, return a ResponseMetadata struct whose offset
+        // is sectionOffsets["responses"].offset + offset and whose length is
+        // length."
 
-      // TODO(crbug.com/966753): Implement this check.
+        // This doesn't wrap because (offset <= responses_section_length) and
+        // (responses_section_offset + responses_section_length) doesn't wrap.
+        uint64_t offset_within_stream = responses_section_offset + offset;
 
-      // Step 5.10. "Set requests[http-request] to a struct whose "offset"
-      // item is responseOffset and whose "length" item is length."
-      item->response_offset = response_offset;
-      item->response_length = length;
-      items_.push_back(std::move(item));
-
-      // Step 5.11. "Set currentOffset to currentOffset + length."
-      current_offset = response_end;
+        response_locations.push_back(
+            mojom::BundleResponseLocation::New(offset_within_stream, length));
+      }
+      requests.insert(std::make_pair(
+          parsed_url,
+          mojom::BundleIndexValue::New(variants_value.as_string(),
+                                       std::move(response_locations))));
     }
 
     // We're done.
     RunSuccessCallbackAndDestroy(mojom::BundleMetadata::New(
-        fallback_url_, std::move(items_), manifest_url_));
+        fallback_url_, std::move(requests), manifest_url_));
   }
 
   void RunSuccessCallbackAndDestroy(mojom::BundleMetadataPtr metadata) {
@@ -756,7 +716,6 @@ class BundledExchangesParser::MetadataParser
   GURL fallback_url_;
   // name -> (offset, length)
   std::map<std::string, std::pair<uint64_t, uint64_t>> section_offsets_;
-  std::vector<mojom::BundleIndexItemPtr> items_;
   GURL manifest_url_;
 
   base::WeakPtrFactory<MetadataParser> weak_factory_{this};

@@ -21,7 +21,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
@@ -40,6 +40,8 @@
 #include "build/build_config.h"
 
 namespace base {
+
+class TaskObserver;
 
 namespace trace_event {
 class ConvertableToTraceFormat;
@@ -132,8 +134,8 @@ class BASE_EXPORT SequenceManagerImpl
   bool HasPendingHighResolutionTasks() override;
   bool OnSystemIdle() override;
 
-  void AddTaskObserver(MessageLoop::TaskObserver* task_observer);
-  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer);
+  void AddTaskObserver(TaskObserver* task_observer);
+  void RemoveTaskObserver(TaskObserver* task_observer);
   void AddDestructionObserver(
       MessageLoopCurrent::DestructionObserver* destruction_observer);
   void RemoveDestructionObserver(
@@ -272,7 +274,7 @@ class BASE_EXPORT SequenceManagerImpl
     std::uniform_real_distribution<double> uniform_distribution;
 
     internal::TaskQueueSelector selector;
-    ObserverList<MessageLoop::TaskObserver>::Unchecked task_observers;
+    ObserverList<TaskObserver>::Unchecked task_observers;
     ObserverList<TaskTimeObserver>::Unchecked task_time_observers;
     std::set<TimeDomain*> time_domains;
     std::unique_ptr<internal::RealTimeDomain> real_time_domain;

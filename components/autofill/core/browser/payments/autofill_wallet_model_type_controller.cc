@@ -72,22 +72,25 @@ void AutofillWalletModelTypeController::Stop(
   ModelTypeController::Stop(shutdown_reason, std::move(callback));
 }
 
-bool AutofillWalletModelTypeController::ReadyForStart() const {
+syncer::DataTypeController::PreconditionState
+AutofillWalletModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
   // Not being in a persistent error state implies not being in a web signout
   // state.
   // TODO(https://crbug.com/819729): Add integration tests for web signout and
   // other persistent auth errors.
-  return pref_service_->GetBoolean(
-             autofill::prefs::kAutofillWalletImportEnabled) &&
-         pref_service_->GetBoolean(
-             autofill::prefs::kAutofillCreditCardEnabled) &&
-         !sync_service_->GetAuthError().IsPersistentError();
+  bool preconditions_met =
+      pref_service_->GetBoolean(
+          autofill::prefs::kAutofillWalletImportEnabled) &&
+      pref_service_->GetBoolean(autofill::prefs::kAutofillCreditCardEnabled) &&
+      !sync_service_->GetAuthError().IsPersistentError();
+  return preconditions_met ? PreconditionState::kPreconditionsMet
+                           : PreconditionState::kMustStopAndClearData;
 }
 
 void AutofillWalletModelTypeController::OnUserPrefChanged() {
   DCHECK(CalledOnValidThread());
-  sync_service_->ReadyForStartChanged(type());
+  sync_service_->DataTypePreconditionChanged(type());
 }
 
 void AutofillWalletModelTypeController::SubscribeToPrefChanges() {
@@ -105,7 +108,7 @@ void AutofillWalletModelTypeController::SubscribeToPrefChanges() {
 void AutofillWalletModelTypeController::OnStateChanged(
     syncer::SyncService* sync) {
   DCHECK(CalledOnValidThread());
-  sync_service_->ReadyForStartChanged(type());
+  sync_service_->DataTypePreconditionChanged(type());
 }
 
 }  // namespace browser_sync

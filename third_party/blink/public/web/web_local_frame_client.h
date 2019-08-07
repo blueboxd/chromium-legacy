@@ -782,6 +782,10 @@ class BLINK_EXPORT WebLocalFrameClient {
                                                    const WebNode& end_node,
                                                    int end_offset) {}
 
+  // Provides accessibility information about the termination of a find
+  // in page operation.
+  virtual void HandleAccessibilityFindInPageTermination() {}
+
   // Fullscreen ----------------------------------------------------------
 
   // Called to enter/exit fullscreen mode.

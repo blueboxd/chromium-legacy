@@ -33,8 +33,9 @@ void TestDataSource::StartDataRequest(
     const std::string& path,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&TestDataSource::ReadFile, base::Unretained(this), path,
                      callback));
 }

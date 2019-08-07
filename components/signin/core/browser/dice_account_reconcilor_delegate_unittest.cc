@@ -32,17 +32,21 @@ namespace signin {
 TEST(DiceAccountReconcilorDelegateTest, RevokeTokens) {
   sync_preferences::TestingPrefServiceSyncable pref_service;
   TestSigninClient client(&pref_service);
+  gaia::ListedAccount gaia_account;
+  gaia_account.id = CoreAccountId("other");
   {
     // Dice is enabled, revoke only tokens in error state.
-    DiceAccountReconcilorDelegate delegate(&client,
-                                           AccountConsistencyMethod::kDice);
-    EXPECT_EQ(AccountReconcilorDelegate::RevokeTokenOption::kRevokeIfInError,
-              delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
-                  std::vector<gaia::ListedAccount>()));
+    DiceAccountReconcilorDelegate delegate(
+        &client, AccountConsistencyMethod::kDice, /*migration_completed=*/true);
+    EXPECT_EQ(
+        signin::AccountReconcilorDelegate::RevokeTokenOption::kRevokeIfInError,
+        delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
+            std::vector<gaia::ListedAccount>()));
   }
   {
     DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDiceMigration);
+        &client, AccountConsistencyMethod::kDiceMigration,
+        /*migration_completed=*/false);
     // Gaia accounts are not empty, don't revoke.
     gaia::ListedAccount gaia_account;
     gaia_account.id = CoreAccountId("other");
@@ -68,7 +72,8 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     testing::InSequence mock_sequence;
     EXPECT_CALL(client, SetReadyForDiceMigration(false)).Times(1);
     DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDiceMigration);
+        &client, AccountConsistencyMethod::kDiceMigration,
+        /*migration_completed=*/false);
     delegate.OnReconcileFinished(CoreAccountId("account"),
                                  true /* is_reconcile_noop */);
   }
@@ -81,7 +86,8 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     testing::InSequence mock_sequence;
     EXPECT_CALL(client, SetReadyForDiceMigration(false)).Times(1);
     DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDiceMigration);
+        &client, AccountConsistencyMethod::kDiceMigration,
+        /*migration_completed=*/false);
     delegate.OnReconcileFinished(CoreAccountId("account"),
                                  false /* is_reconcile_noop */);
   }
@@ -91,26 +97,38 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     testing::InSequence mock_sequence;
     EXPECT_CALL(client, SetReadyForDiceMigration(true)).Times(1);
     DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDiceMigration);
+        &client, AccountConsistencyMethod::kDiceMigration, false);
     delegate.OnReconcileFinished(CoreAccountId("account"),
                                  true /* is_reconcile_noop */);
   }
 }
 
-TEST(DiceAccountReconcilorDelegateTest, ShouldRevokeTokensOnCookieDeleted) {
+TEST(DiceAccountReconcilorDelegateTest, ShouldRevokeTokensBasedOnCookies) {
   sync_preferences::TestingPrefServiceSyncable pref_service;
   TestSigninClient client(&pref_service);
   {
     // Dice is enabled, revoke tokens when Gaia cookie is deleted.
-    DiceAccountReconcilorDelegate delegate(&client,
-                                           AccountConsistencyMethod::kDice);
+    DiceAccountReconcilorDelegate delegate(
+        &client, AccountConsistencyMethod::kDice, /*migration_completed=*/true);
     EXPECT_EQ(true, delegate.ShouldRevokeTokensOnCookieDeleted());
+    EXPECT_EQ(false, delegate.ShouldRevokeTokensNotInCookies());
+  }
+  {
+    // Dice is enabled, migration not completed, revoke tokens when
+    // Gaia cookie is deleted.
+    DiceAccountReconcilorDelegate delegate(&client,
+                                           AccountConsistencyMethod::kDice,
+                                           /*migration_completed=*/false);
+    EXPECT_EQ(true, delegate.ShouldRevokeTokensOnCookieDeleted());
+    EXPECT_EQ(true, delegate.ShouldRevokeTokensNotInCookies());
   }
   {
     // Dice is not enabled, do not revoke tokens when Gaia cookie is deleted.
     DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDiceMigration);
+        &client, AccountConsistencyMethod::kDiceMigration,
+        /*migration_completed=*/false);
     EXPECT_EQ(false, delegate.ShouldRevokeTokensOnCookieDeleted());
+    EXPECT_EQ(false, delegate.ShouldRevokeTokensNotInCookies());
   }
 }
 

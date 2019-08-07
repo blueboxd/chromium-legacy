@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill_assistant/browser/features.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/download/public/common/download_features.h"
 #include "components/feed/feed_feature_list.h"
@@ -214,6 +215,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &password_manager::features::kPasswordEditingAndroid,
     &safe_browsing::kCaptureSafetyNetId,
     &signin::kMiceFeature,
+    &switches::kSyncManualStartAndroid,
     &switches::kSyncSendTabToSelf,
     &translate::kTranslateMobileManualTrigger,
     &unified_consent::kUnifiedConsent,

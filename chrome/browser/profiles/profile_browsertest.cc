@@ -684,7 +684,7 @@ class FileDestructionWatcher {
   void WaitForDestruction() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK(!watcher_);
-    base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})
+    base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
         ->PostTask(FROM_HERE,
                    base::BindOnce(&FileDestructionWatcher::StartWatchingPath,
                                   base::Unretained(this)));

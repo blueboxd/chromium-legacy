@@ -379,7 +379,7 @@ void DevToolsDataSource::StartFileRequestForDebugDevtools(
 
   base::FilePath full_path = inspector_debug_dir.AppendASCII(path);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::USER_VISIBLE},

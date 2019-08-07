@@ -325,6 +325,15 @@ void ChromeSigninClient::MaybeFetchSigninTokenHandle() {
 #endif
 }
 
+void ChromeSigninClient::SetDiceMigrationCompleted() {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  AccountConsistencyModeManager::GetForProfile(profile_)
+      ->SetDiceMigrationCompleted();
+#else
+  NOTREACHED();
+#endif
+}
+
 void ChromeSigninClient::SetReadyForDiceMigration(bool is_ready) {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   AccountConsistencyModeManager::GetForProfile(profile_)

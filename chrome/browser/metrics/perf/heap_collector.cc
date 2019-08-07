@@ -85,11 +85,12 @@ const char kQuipperHeapProfile[] = "input_heap_profile";
 const char kQuipperProcessPid[] = "pid";
 
 void DeleteFileAsync(const base::FilePath& path) {
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                          std::move(path), false));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(base::IgnoreResult(&base::DeleteFile), std::move(path),
+                     false));
 }
 
 // Deletes the temp file when the object goes out of scope.

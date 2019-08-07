@@ -11,12 +11,15 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.customtabs.content.CustomTabActivityContentTestEnvironment.INITIAL_URL;
 import static org.chromium.chrome.browser.customtabs.content.CustomTabActivityContentTestEnvironment.OTHER_URL;
 import static org.chromium.chrome.browser.customtabs.content.CustomTabActivityContentTestEnvironment.SPECULATED_URL;
+
+import android.content.Intent;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.robolectric.annotation.Config;
 
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -44,13 +48,13 @@ public class CustomTabActivityUrlLoadingTest {
 
     private CustomTabActivityTabController mTabController;
     private CustomTabActivityNavigationController mNavigationController;
-    private CustomTabActivityInitialPageLoader mInitialPageLoader;
+    private CustomTabIntentHandler mIntentHandler;
 
     @Before
     public void setUp() {
         mTabController = env.createTabController();
         mNavigationController = env.createNavigationController(mTabController);
-        mInitialPageLoader = env.createInitialPageLoader(mNavigationController);
+        mIntentHandler = env.createIntentHandler(mNavigationController);
     }
 
     @Test
@@ -126,5 +130,31 @@ public class CustomTabActivityUrlLoadingTest {
         Tab hiddenTab = env.prepareHiddenTab();
         env.reachNativeInit(mTabController);
         verify(hiddenTab).loadUrl(any());
+    }
+
+    @Test
+    public void loadsUrlFromNewIntent() {
+        env.reachNativeInit(mTabController);
+        clearInvocations(env.tabFromFactory);
+
+        mIntentHandler.onNewIntent(createDataProviderForNewIntent(OTHER_URL));
+        verify(env.tabFromFactory).loadUrl(argThat(params -> OTHER_URL.equals(params.getUrl())));
+    }
+
+    @Test
+    public void loadsUrlFromTheLastIntent_IfTwoIntentsArriveBeforeNativeInit() {
+        mIntentHandler.onNewIntent(createDataProviderForNewIntent(OTHER_URL));
+        env.reachNativeInit(mTabController);
+
+        verify(env.tabFromFactory, times(1)).loadUrl(any()); // Check that only one call was made.
+        verify(env.tabFromFactory).loadUrl(argThat(params -> OTHER_URL.equals(params.getUrl())));
+    }
+
+    private CustomTabIntentDataProvider createDataProviderForNewIntent(String url) {
+        CustomTabIntentDataProvider dataProvider = mock(CustomTabIntentDataProvider.class);
+        when(dataProvider.getUrlToLoad()).thenReturn(url);
+        when(dataProvider.getSession()).thenReturn(env.session);
+        when(dataProvider.getIntent()).thenReturn(new Intent().setAction(Intent.ACTION_VIEW));
+        return dataProvider;
     }
 }

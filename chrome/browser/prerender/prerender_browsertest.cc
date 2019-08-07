@@ -306,7 +306,7 @@ class ChannelDestructionWatcher {
 
    private:
     ~DestructionMessageFilter() override {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&ChannelDestructionWatcher::OnChannelDestroyed,
                          base::Unretained(watcher_)));

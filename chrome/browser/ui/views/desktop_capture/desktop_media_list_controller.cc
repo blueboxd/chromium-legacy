@@ -110,7 +110,7 @@ void DesktopMediaListController::OnSourceAdded(DesktopMediaList* list,
       base::ASCIIToUTF16(autoselect_source) != source.name) {
     return;
   }
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&DesktopMediaListController::AcceptSpecificSource,
                      weak_factory_.GetWeakPtr(), source.id));

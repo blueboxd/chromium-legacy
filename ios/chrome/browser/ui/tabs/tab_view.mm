@@ -394,10 +394,8 @@ UIImage* DefaultFaviconImage() {
   // Style the close button tint color.
   NSString* closeButtonColorName;
   if (selected) {
-    closeButtonColorName =
-        useIncognitoFallback
-            ? @"tabstrip_active_tab_incognito_close_button_color"
-            : @"tabstrip_active_tab_close_button_color";
+    closeButtonColorName = useIncognitoFallback ? @"close_button_dark_color"
+                                                : @"close_button_color";
   } else {
     closeButtonColorName = @"tabstrip_inactive_tab_close_button_color";
   }

@@ -103,8 +103,9 @@ bool MaybeRebuildShortcut(const base::CommandLine& command_line) {
   if (!command_line.HasSwitch(app_mode::kAppShimError))
     return false;
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&RecordAppShimErrorAndBuildShortcutInfo,
                      command_line.GetSwitchValuePath(app_mode::kAppShimError)),
       base::BindOnce(&RebuildAppAndLaunch));

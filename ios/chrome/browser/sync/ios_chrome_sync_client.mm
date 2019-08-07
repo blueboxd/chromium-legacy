@@ -108,9 +108,8 @@ IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
 
   component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
       this, ::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
-      db_thread_, profile_web_data_service_, account_web_data_service_,
-      password_store_,
+      base::CreateSingleThreadTaskRunner({web::WebThread::UI}), db_thread_,
+      profile_web_data_service_, account_web_data_service_, password_store_,
       ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_)));
 }
 
@@ -309,7 +308,7 @@ IOSChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
       return new syncer::SequencedModelWorker(db_thread_, syncer::GROUP_DB);
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
-          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
+          base::CreateSingleThreadTaskRunner({web::WebThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
     case syncer::GROUP_PASSWORD: {

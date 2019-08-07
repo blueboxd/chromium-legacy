@@ -319,6 +319,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   void RestoreFromBackForwardCache(std::unique_ptr<RenderFrameHostImpl>);
   void EvictFromBackForwardCache(RenderFrameHostImpl*);
 
+  // BackForwardCache:
+  // Unfreezes the current frame host. This is called after committing a
+  // navigation to a frame that was restored from the back-forward cache.
+  void UnfreezeCurrentFrameHost();
+
   // Deletes any proxy hosts associated with this node. Used during destruction
   // of WebContentsImpl.
   void ResetProxyHosts();
@@ -819,6 +824,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   // behavior. The speculative RenderFrameHost might be discarded later on if
   // the final URL's SiteInstance isn't compatible with the one used to create
   // it.
+  //
+  // This is also used by the BackForwardCache, which
+  // sets speculative_render_frame_host_ to the restored frame before
+  // committing.
   std::unique_ptr<RenderFrameHostImpl> speculative_render_frame_host_;
 
   // This callback is used when attaching an inner Delegate to |delegate_|

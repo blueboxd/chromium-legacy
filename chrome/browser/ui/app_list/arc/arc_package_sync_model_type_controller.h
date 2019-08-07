@@ -31,7 +31,7 @@ class ArcPackageSyncModelTypeController
   ~ArcPackageSyncModelTypeController() override;
 
   // DataTypeController overrides.
-  bool ReadyForStart() const override;
+  PreconditionState GetPreconditionState() const override;
 
   // ArcSessionManager::Observer:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;

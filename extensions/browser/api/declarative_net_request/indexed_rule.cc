@@ -341,31 +341,6 @@ ParseResult ParseRedirect(dnr_api::Redirect redirect,
   return ParseResult::ERROR_INVALID_REDIRECT;
 }
 
-// Parses the "action.redirectUrl" key of a dnr_api::Rule.
-ParseResult ParseRedirectUrl(std::string redirect_url,
-                             const GURL& base_url,
-                             base::Optional<std::string>* parsed_redirect_url) {
-  DCHECK(parsed_redirect_url);
-
-  if (redirect_url.empty())
-    return ParseResult::ERROR_EMPTY_REDIRECT_URL;
-
-  if (IsRedirectUrlRelative(redirect_url)) {
-    GURL url = base_url.Resolve(redirect_url);
-    if (!url.is_valid())
-      return ParseResult::ERROR_INVALID_REDIRECT_URL;
-    *parsed_redirect_url = url.spec();
-    return ParseResult::SUCCESS;
-  }
-
-  if (GURL(redirect_url).is_valid()) {
-    *parsed_redirect_url = std::move(redirect_url);
-    return ParseResult::SUCCESS;
-  }
-
-  return ParseResult::ERROR_INVALID_REDIRECT_URL;
-}
-
 }  // namespace
 
 IndexedRule::IndexedRule() = default;
@@ -398,18 +373,13 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   }
 
   if (is_redirect_rule) {
-    // Either the redirect url or the redirect dictionary should be specified.
     // TODO(crbug.com/983685): Prevent extensions from specifying redirects to
     // Javascript urls.
-    ParseResult result = ParseResult::ERROR_EMPTY_REDIRECT_URL;
-    if (parsed_rule.action.redirect_url) {
-      result = ParseRedirectUrl(std::move(*parsed_rule.action.redirect_url),
-                                base_url, &indexed_rule->redirect_url);
-    } else if (parsed_rule.action.redirect) {
-      result = ParseRedirect(std::move(*parsed_rule.action.redirect), base_url,
-                             indexed_rule);
-    }
+    if (!parsed_rule.action.redirect)
+      return ParseResult::ERROR_INVALID_REDIRECT;
 
+    ParseResult result = ParseRedirect(std::move(*parsed_rule.action.redirect),
+                                       base_url, indexed_rule);
     if (result != ParseResult::SUCCESS)
       return result;
   }

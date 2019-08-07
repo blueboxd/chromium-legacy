@@ -233,7 +233,7 @@ class RenderViewHostTestHarness : public testing::Test {
   // It is invoked by SetUp after threads were started.
   // RenderViewHostTestHarness will take ownership of the returned
   // BrowserContext.
-  virtual BrowserContext* CreateBrowserContext();
+  virtual std::unique_ptr<BrowserContext> CreateBrowserContext();
 
   // Derived classes can override this method to have the test harness use a
   // different BrowserContext than the one owned by this class. This is most

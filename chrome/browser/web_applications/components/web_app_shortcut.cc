@@ -102,14 +102,14 @@ void PostShortcutIOTaskAndReply(
 
 scoped_refptr<base::TaskRunner> GetShortcutIOTaskRunner() {
   constexpr base::TaskTraits traits = {
-      base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
       base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
 
 #if defined(OS_WIN)
-  return base::CreateCOMSTATaskRunnerWithTraits(
+  return base::CreateCOMSTATaskRunner(
       traits, base::SingleThreadTaskRunnerThreadMode::SHARED);
 #else
-  return base::CreateTaskRunnerWithTraits(traits);
+  return base::CreateTaskRunner(traits);
 #endif
 }
 

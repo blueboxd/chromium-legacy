@@ -47,8 +47,9 @@ void TerminalSource::StartDataRequest(
   } else {
     file_path = file_path.Append(path);
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ReadFile, file_path, callback));
 }
 

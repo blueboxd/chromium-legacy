@@ -68,9 +68,14 @@ public class TaskInfo {
 
         @Override
         public String toString() {
-            return "{windowStartTimeMs: " + mWindowStartTimeMs
-                    + ", windowEndTimeMs: " + mWindowEndTimeMs
-                    + "} - expires at window_end_time: " + mExpiresAfterWindowEndTime;
+            StringBuilder sb = new StringBuilder("{");
+            if (hasWindowStartTimeConstraint()) {
+                sb.append("windowStartTimeMs: ").append(mWindowStartTimeMs).append(", ");
+            }
+            sb.append("windowEndTimeMs: ").append(mWindowEndTimeMs).append(", ");
+            sb.append("expiresAfterWindowEndTime (+flex): ").append(mExpiresAfterWindowEndTime);
+            sb.append("}");
+            return sb.toString();
         }
     }
 
@@ -82,11 +87,14 @@ public class TaskInfo {
         private final long mIntervalMs;
         private final long mFlexMs;
         private final boolean mHasFlex;
+        private final boolean mExpiresAfterWindowEndTime;
 
-        private PeriodicInfo(long intervalMs, long flexMs, boolean hasFlex) {
+        private PeriodicInfo(
+                long intervalMs, long flexMs, boolean hasFlex, boolean expiresAfterWindowEndTime) {
             mIntervalMs = intervalMs;
             mFlexMs = flexMs;
             mHasFlex = hasFlex;
+            mExpiresAfterWindowEndTime = expiresAfterWindowEndTime;
         }
 
         /**
@@ -111,14 +119,23 @@ public class TaskInfo {
             return mHasFlex;
         }
 
+        /**
+         * @return whether this periodic task expires after {@link #getIntervalMs()} +
+         * {@link #getFlexMs()}
+         * False by default.
+         */
+        public boolean expiresAfterWindowEndTime() {
+            return mExpiresAfterWindowEndTime;
+        }
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder("{");
-            sb.append("{");
-            sb.append("intervalMs: ").append(mIntervalMs);
+            sb.append("intervalMs: ").append(mIntervalMs).append(", ");
             if (mHasFlex) {
-                sb.append(", flexMs: ").append(mFlexMs);
+                sb.append(", flexMs: ").append(mFlexMs).append(", ");
             }
+            sb.append("expiresAfterWindowEndTime (+flex): ").append(mExpiresAfterWindowEndTime);
             sb.append("}");
             return sb.toString();
         }
@@ -212,8 +229,8 @@ public class TaskInfo {
         mIsPeriodic = builder.mIsPeriodic;
         if (mIsPeriodic) {
             mOneOffInfo = null;
-            mPeriodicInfo =
-                    new PeriodicInfo(builder.mIntervalMs, builder.mFlexMs, builder.mHasFlex);
+            mPeriodicInfo = new PeriodicInfo(builder.mIntervalMs, builder.mFlexMs, builder.mHasFlex,
+                    builder.mExpiresAfterWindowEndTime);
         } else {
             mOneOffInfo = new OneOffInfo(builder.mWindowStartTimeMs, builder.mWindowEndTimeMs,
                     builder.mHasWindowStartTimeConstraint, builder.mExpiresAfterWindowEndTime);
@@ -465,8 +482,7 @@ public class TaskInfo {
          * @param expiresAfterWindowEndTime whether the task expires or not.
          * @return this {@link Builder}.
          */
-        Builder setExpiresAfterWindowEndTime(boolean expiresAfterWindowEndTime) {
-            assert !mIsPeriodic;
+        public Builder setExpiresAfterWindowEndTime(boolean expiresAfterWindowEndTime) {
             mExpiresAfterWindowEndTime = expiresAfterWindowEndTime;
             return this;
         }

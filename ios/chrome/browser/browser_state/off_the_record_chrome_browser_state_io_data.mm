@@ -57,7 +57,7 @@ void OffTheRecordChromeBrowserStateIOData::Handle::DoomIncognitoCache() {
   // The cache for the incognito profile is in RAM.
   scoped_refptr<net::URLRequestContextGetter> getter =
       main_request_context_getter_;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
         DCHECK_CURRENTLY_ON(web::WebThread::IO);
         net::HttpCache* cache = getter->GetURLRequestContext()

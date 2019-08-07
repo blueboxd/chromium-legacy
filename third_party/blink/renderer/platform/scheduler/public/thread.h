@@ -84,7 +84,7 @@ class PLATFORM_EXPORT Thread {
   using IdleTask = base::OnceCallback<void(base::TimeTicks deadline)>;
 
   // TaskObserver is an observer fired before and after a task is executed.
-  using TaskObserver = base::MessageLoop::TaskObserver;
+  using TaskObserver = base::TaskObserver;
 
   // Creates a new thread. This may be called from a non-main thread (e.g.
   // nested Web workers).

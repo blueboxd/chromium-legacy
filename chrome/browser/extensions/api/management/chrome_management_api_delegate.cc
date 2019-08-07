@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -51,15 +52,58 @@
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
-#endif
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
+#include "components/arc/session/arc_bridge_service.h"
+#endif  // OS_CHROMEOS
 
 namespace {
 
+#if defined(OS_CHROMEOS)
+const char kPlayIntentPrefix[] =
+    "https://play.google.com/store/apps/details?id=";
+const char kChromeWebStoreReferrer[] = "&referrer=chrome_web_store";
+#endif  // OS_CHROMEOS
+
+using InstallAndroidAppCallback =
+    extensions::ManagementAPIDelegate::InstallAndroidAppCallback;
+using AndroidAppInstallStatusCallback =
+    extensions::ManagementAPIDelegate::AndroidAppInstallStatusCallback;
 using InstallWebAppCallback =
     extensions::ManagementAPIDelegate::InstallWebAppCallback;
 using InstallWebAppResult =
     extensions::ManagementAPIDelegate::InstallWebAppResult;
+
+#if defined(OS_CHROMEOS)
+void OnDidCheckForIntentToPlayStore(const std::string& intent,
+                                    InstallAndroidAppCallback callback,
+                                    bool installable) {
+  if (!installable) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->intent_helper(), HandleUrl);
+  if (!instance) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  instance->HandleUrl(intent, arc::kPlayStorePackage);
+  std::move(callback).Run(true);
+}
+#endif  // OS_CHROMEOS
 
 class ManagementSetEnabledFunctionInstallPromptDelegate
     : public extensions::InstallPromptDelegate {
@@ -390,6 +434,66 @@ void ChromeManagementAPIDelegate::InstallReplacementWebApp(
   provider->install_manager().LoadWebAppAndCheckInstallability(
       web_app_url, base::BindOnce(&OnDidInstallWebAppInstallableCheck, profile,
                                   std::move(callback)));
+}
+
+bool ChromeManagementAPIDelegate::CanContextInstallAndroidApps(
+    content::BrowserContext* context) const {
+#if defined(OS_CHROMEOS)
+  return arc::IsArcAllowedForProfile(Profile::FromBrowserContext(context));
+#else
+  return false;
+#endif  // defined(OS_CHROMEOS)
+}
+
+void ChromeManagementAPIDelegate::CheckAndroidAppInstallStatus(
+    const std::string& package_name,
+    AndroidAppInstallStatusCallback callback) const {
+#if defined(OS_CHROMEOS)
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->app(), IsInstallable);
+  if (!instance) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  instance->IsInstallable(package_name, std::move(callback));
+#else
+  std::move(callback).Run(false);
+#endif  // OS_CHROMEOS
+}
+
+void ChromeManagementAPIDelegate::InstallReplacementAndroidApp(
+    const std::string& package_name,
+    InstallAndroidAppCallback callback) const {
+#if defined(OS_CHROMEOS)
+  std::string intent =
+      base::StrCat({kPlayIntentPrefix, package_name, kChromeWebStoreReferrer});
+
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_service_manager->arc_bridge_service()->app(), IsInstallable);
+  if (!instance) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  instance->IsInstallable(
+      package_name, base::BindOnce(&OnDidCheckForIntentToPlayStore, intent,
+                                   std::move(callback)));
+#else
+  std::move(callback).Run(false);
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeManagementAPIDelegate::EnableExtension(

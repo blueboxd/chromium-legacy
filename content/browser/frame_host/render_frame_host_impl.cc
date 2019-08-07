@@ -1455,6 +1455,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnAccessibilityLocationChanges)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_FindInPageResult,
                         OnAccessibilityFindInPageResult)
+    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_FindInPageTermination,
+                        OnAccessibilityFindInPageTermination)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_ChildFrameHitTestResult,
                         OnAccessibilityChildFrameHitTestResult)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
@@ -2375,6 +2377,9 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
 
   DidCommitNavigationInternal(std::move(owned_request), validated_params.get(),
                               /*is_same_document_navigation=*/false);
+
+  // Now that the restored frame has been committed, unfreeze it.
+  frame_tree_node()->render_manager()->UnfreezeCurrentFrameHost();
 
   // The page is already loaded since it came from the cache, so fire the stop
   // loading event.
@@ -3447,6 +3452,16 @@ void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
           params.request_id, params.match_index, params.start_id,
           params.start_offset, params.end_id, params.end_offset);
     }
+  }
+}
+
+void RenderFrameHostImpl::OnAccessibilityFindInPageTermination() {
+  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
+    BrowserAccessibilityManager* manager =
+        GetOrCreateBrowserAccessibilityManager();
+    if (manager)
+      manager->OnFindInPageTermination();
   }
 }
 

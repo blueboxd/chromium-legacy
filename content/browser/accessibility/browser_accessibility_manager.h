@@ -287,12 +287,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
 
   // Called when a new find in page result is received. We hold on to this
   // information and don't activate it until the user requests it.
-  void OnFindInPageResult(int request_id,
-                          int match_index,
-                          int start_id,
-                          int start_offset,
-                          int end_id,
-                          int end_offset);
+  virtual void OnFindInPageResult(int request_id,
+                                  int match_index,
+                                  int start_id,
+                                  int start_offset,
+                                  int end_id,
+                                  int end_offset);
 
   // This is called when the user has committed to a find in page query,
   // e.g. by pressing enter or tapping on the next / previous result buttons.
@@ -301,6 +301,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // has not been received, we hold onto this request id and update it
   // when OnFindInPageResult is called.
   void ActivateFindInPageResult(int request_id);
+
+  // This is called when the user finishes a find in page query and all
+  // highlighted matches are deactivated.
+  virtual void OnFindInPageTermination() {}
 
 #if defined(OS_WIN)
   BrowserAccessibilityManagerWin* ToBrowserAccessibilityManagerWin();

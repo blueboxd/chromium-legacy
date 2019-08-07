@@ -161,12 +161,18 @@ void BundledExchangesReader::ReadResponse(const GURL& url,
   DCHECK(metadata_ready_);
 
   auto it = entries_.find(url);
-  if (it == entries_.end()) {
+  if (it == entries_.end() || it->second->response_locations.empty()) {
     PostTask(FROM_HERE, base::BindOnce(std::move(callback), nullptr));
     return;
   }
+
+  // For now, this always reads the first response in |response_locations|.
+  // TODO(crbug.com/966753): This method should take request headers and choose
+  // the most suitable response based on the variant matching algorithm
+  // (https://tools.ietf.org/html/draft-ietf-httpbis-variants-05#section-4).
   parser_.ParseResponse(
-      it->second->response_offset, it->second->response_length,
+      it->second->response_locations[0]->offset,
+      it->second->response_locations[0]->length,
       base::BindOnce(&BundledExchangesReader::OnResponseParsed,
                      base::Unretained(this), std::move(callback)));
 }
@@ -197,11 +203,11 @@ bool BundledExchangesReader::HasEntry(const GURL& url) const {
   return entries_.contains(url);
 }
 
-const GURL& BundledExchangesReader::GetStartURL() const {
+const GURL& BundledExchangesReader::GetPrimaryURL() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(metadata_ready_);
 
-  return start_url_;
+  return primary_url_;
 }
 
 void BundledExchangesReader::SetBundledExchangesParserFactoryForTesting(
@@ -239,13 +245,8 @@ void BundledExchangesReader::OnMetadataParsed(
   metadata_ready_ = true;
 
   if (metadata) {
-    // TODO(crbug.com/966753): Use the primary (fallback) URL that the new
-    // BundledExchanges format defines.
-    if (!metadata->index.empty())
-      start_url_ = metadata->index[0]->request_url;
-
-    for (auto& item : metadata->index)
-      entries_.insert(std::make_pair(item->request_url, std::move(item)));
+    primary_url_ = metadata->primary_url;
+    entries_ = std::move(metadata->requests);
   }
   std::move(callback).Run(std::move(error));
 }

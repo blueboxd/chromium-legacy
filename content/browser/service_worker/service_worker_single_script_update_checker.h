@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_SINGLE_SCRIPT_UPDATE_CHECKER_H_
 
 #include "content/browser/service_worker/service_worker_disk_cache.h"
-#include "content/browser/service_worker/service_worker_new_script_loader.h"
+#include "content/browser/service_worker/service_worker_updated_script_loader.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -61,8 +61,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
         network::mojom::URLLoaderPtr network_loader,
         network::mojom::URLLoaderClientRequest network_client_request,
         mojo::ScopedDataPipeConsumerHandle network_consumer,
-        ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
-        ServiceWorkerNewScriptLoader::WriterState body_writer_state);
+        ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
+        ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state);
     PausedState(const PausedState& other) = delete;
     PausedState& operator=(const PausedState& other) = delete;
     ~PausedState();
@@ -71,8 +71,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
     network::mojom::URLLoaderPtr network_loader;
     network::mojom::URLLoaderClientRequest network_client_request;
     mojo::ScopedDataPipeConsumerHandle network_consumer;
-    ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state;
-    ServiceWorkerNewScriptLoader::WriterState body_writer_state;
+    ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state;
+    ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state;
   };
 
   // This callback is only called after all of the work is done by the checker.
@@ -180,8 +180,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   // CreateLoaderAndStart(): kNotStarted -> kLoadingHeader
   // OnReceiveResponse(): kLoadingHeader -> kWaitingForBody
   // OnComplete(): kWaitingForBody -> kCompleted
-  ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state_ =
-      ServiceWorkerNewScriptLoader::NetworkLoaderState::kNotStarted;
+  ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state_ =
+      ServiceWorkerUpdatedScriptLoader::LoaderState::kNotStarted;
 
   // Represents the state of |cache_writer_|.
   // Set to kWriting when it starts to send the header to |cache_writer_|, and
@@ -189,8 +189,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   //
   // OnReceiveResponse(): kNotStarted -> kWriting (in WriteHeaders())
   // OnWriteHeadersComplete(): kWriting -> kCompleted
-  ServiceWorkerNewScriptLoader::WriterState header_writer_state_ =
-      ServiceWorkerNewScriptLoader::WriterState::kNotStarted;
+  ServiceWorkerUpdatedScriptLoader::WriterState header_writer_state_ =
+      ServiceWorkerUpdatedScriptLoader::WriterState::kNotStarted;
 
   // Represents the state of |cache_writer_| and |network_consumer_|.
   // Set to kWriting when |this| starts watching |network_consumer_|, and set to
@@ -206,8 +206,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   //
   // When response body is empty:
   // OnComplete(): kNotStarted -> kCompleted
-  ServiceWorkerNewScriptLoader::WriterState body_writer_state_ =
-      ServiceWorkerNewScriptLoader::WriterState::kNotStarted;
+  ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state_ =
+      ServiceWorkerUpdatedScriptLoader::WriterState::kNotStarted;
 
   base::WeakPtrFactory<ServiceWorkerSingleScriptUpdateChecker> weak_factory_{
       this};

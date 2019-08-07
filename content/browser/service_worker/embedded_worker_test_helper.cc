@@ -105,7 +105,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
           base::MakeRefCounted<URLLoaderFactoryGetter>()) {
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       base::ThreadTaskRunnerHandle::Get();
-  wrapper_->InitInternal(
+  wrapper_->InitOnIO(
       user_data_directory, std::move(database_task_runner), nullptr, nullptr,
       nullptr, url_loader_factory_getter_.get(),
       blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()

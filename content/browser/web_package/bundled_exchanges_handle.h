@@ -43,20 +43,20 @@ class BundledExchangesHandle final {
       mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory);
 
  private:
-  class StartURLRedirectLoader;
+  class PrimaryURLRedirectLoader;
 
-  void CreateStartURLLoader(const network::ResourceRequest& resource_request,
-                            network::mojom::URLLoaderRequest request,
-                            network::mojom::URLLoaderClientPtr client);
-  void MayRedirectStartURLLoader();
+  void CreatePrimaryURLLoader(const network::ResourceRequest& resource_request,
+                              network::mojom::URLLoaderRequest request,
+                              network::mojom::URLLoaderClientPtr client);
+  void MayRedirectPrimaryURLLoader();
   void OnMetadataReady(data_decoder::mojom::BundleMetadataParseErrorPtr error);
 
   const BundledExchangesSource source_;
 
-  base::WeakPtr<StartURLRedirectLoader> redirect_loader_;
+  base::WeakPtr<PrimaryURLRedirectLoader> redirect_loader_;
   std::unique_ptr<BundledExchangesReader> reader_;
-  GURL start_url_;
-  data_decoder::mojom::BundleMetadataParseErrorPtr start_url_error_;
+  GURL primary_url_;
+  data_decoder::mojom::BundleMetadataParseErrorPtr metadata_error_;
   bool is_redirected_ = false;
 
   base::WeakPtrFactory<BundledExchangesHandle> weak_factory_{this};

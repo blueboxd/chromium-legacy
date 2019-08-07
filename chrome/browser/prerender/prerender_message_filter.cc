@@ -99,7 +99,7 @@ void PrerenderMessageFilter::OverrideThreadForMessage(
 }
 
 void PrerenderMessageFilter::OnChannelClosing() {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PrerenderMessageFilter::OnChannelClosingInUIThread,
                      this));

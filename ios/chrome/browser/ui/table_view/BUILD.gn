@@ -22,10 +22,10 @@ source_set("table_view") {
     ":presentation",
     ":styler",
     ":views",
-    "resources:placeholder_image_tint_color",
     "//base",
     "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/material_components",
+    "//ios/chrome/common/colors",
     "//ios/third_party/material_components_ios",
   ]
   public_deps = [

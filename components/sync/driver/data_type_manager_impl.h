@@ -48,7 +48,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // DataTypeManager interface.
   void Configure(ModelTypeSet desired_types,
                  const ConfigureContext& context) override;
-  void ReadyForStartChanged(ModelType type) override;
+  void DataTypePreconditionChanged(ModelType type) override;
   void ResetDataTypeErrors() override;
 
   // Needed only for backend migration.
@@ -136,14 +136,14 @@ class DataTypeManagerImpl : public DataTypeManager,
   // high priority to low priority.
   TypeSetPriorityList PrioritizeTypes(const ModelTypeSet& types);
 
-  // Update unready state of types in data_type_status_table_ to match value of
-  // DataTypeController::ReadyForStart().
-  void UpdateUnreadyTypeErrors(const ModelTypeSet& desired_types);
+  // Update precondition state of types in data_type_status_table_ to match
+  // value of DataTypeController::GetPreconditionState().
+  void UpdatePreconditionErrors(const ModelTypeSet& desired_types);
 
-  // Update unready state for |type|, such that data_type_status_table_ matches
-  // DataTypeController::ReadyForStart(). Returns true if there was an actual
-  // change.
-  bool UpdateUnreadyTypeError(ModelType type);
+  // Update precondition state for |type|, such that data_type_status_table_
+  // matches DataTypeController::GetPreconditionState(). Returns true if there
+  // was an actual change.
+  bool UpdatePreconditionError(ModelType type);
 
   // Post a task to reconfigure when no downloading or association are running.
   void ProcessReconfigure();

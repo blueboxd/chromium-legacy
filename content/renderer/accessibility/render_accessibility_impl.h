@@ -106,6 +106,10 @@ class CONTENT_EXPORT RenderAccessibilityImpl
       const blink::WebAXObject& end_object,
       int end_offset);
 
+  // Called when a find in page result is terminated and all results are
+  // cleared.
+  void HandleAccessibilityFindInPageTermination();
+
   void AccessibilityFocusedElementChanged(const blink::WebElement& element);
 
   void HandleAXEvent(

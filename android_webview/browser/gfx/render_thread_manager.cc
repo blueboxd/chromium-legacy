@@ -192,7 +192,7 @@ void RenderThreadManager::DrawOnRT(bool save_restore,
   ScopedAllowGL allow_gl;
   if (!hardware_renderer_ && !IsInsideHardwareRelease() &&
       HasFrameForHardwareRendererOnRT()) {
-    hardware_renderer_.reset(new HardwareRenderer(this));
+    hardware_renderer_.reset(new HardwareRendererSingleThread(this));
     hardware_renderer_->CommitFrame();
   }
 

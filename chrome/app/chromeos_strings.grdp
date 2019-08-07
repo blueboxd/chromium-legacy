@@ -4162,4 +4162,12 @@ You can always stop supervision from the Famly Link app. We've sent instructions
   <message name="IDS_LOGIN_EXTENSION_UI_DIALOG_TITLE" desc="Dialog title for windows opened from a login screen extension. These windows will be displayed over the login screen.">
     This authentication service is hosted by <ph name="EXTENSION_NAME">$1<ex>Identity Provider Name</ex></ph>
   </message>
+
+  <!-- Strings for notifications about features which aren't supported in Crostini -->
+  <message name="IDS_CROSTINI_UNSUPPORTED_VIRTUAL_KEYBOARD" desc="Text for notification message shown when a user tries to use a virtual keyboard or tablet mode in a Linux app.">
+    The on-screen keyboard doesn’t work in Linux apps yet
+  </message>
+  <message name="IDS_CROSTINI_UNSUPPORTED_IME" desc="Text for notification message shown when a user tries to use an unsupported Input Method Editor (IME) in a Linux app.">
+    <ph name="IME_NAME">$1<ex>German NEO 2 keyboard</ex></ph> doesn’t work in Linux apps yet
+  </message>
 </grit-part>

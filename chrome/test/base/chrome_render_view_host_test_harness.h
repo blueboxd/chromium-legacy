@@ -10,9 +10,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_renderer_host.h"
-
-class TestingProfile;
 
 // Wrapper around RenderViewHostTestHarness that uses a TestingProfile as
 // browser context instead of a TestBrowserContext.
@@ -33,8 +32,15 @@ class ChromeRenderViewHostTestHarness
   // testing::Test
   void TearDown() override;
 
+  // Returns a list of factories to use when creating the TestingProfile.
+  // Can be overridden by sub-classes if needed.
+  virtual TestingProfile::TestingFactories GetTestingFactories() const;
+
+  // Creates a TestingProfile to use as the browser context.
+  std::unique_ptr<TestingProfile> CreateTestingProfile();
+
   // content::RenderViewHostTestHarness.
-  content::BrowserContext* CreateBrowserContext() override;
+  std::unique_ptr<content::BrowserContext> CreateBrowserContext() final;
 
  private:
   std::vector<std::unique_ptr<base::ScopedTempDir>> temp_dirs_;

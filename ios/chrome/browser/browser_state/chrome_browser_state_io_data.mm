@@ -110,7 +110,7 @@ void ChromeBrowserStateIOData::InitializeOnUIThread(
                                                       pref_service);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO});
+      base::CreateSingleThreadTaskRunner({web::WebThread::IO});
 
   chrome_http_user_agent_settings_.reset(
       new IOSChromeHttpUserAgentSettings(pref_service));
@@ -297,7 +297,7 @@ void ChromeBrowserStateIOData::InitializeMetricsEnabledStateOnUIThread() {
   enable_metrics_.Init(metrics::prefs::kMetricsReportingEnabled,
                        GetApplicationContext()->GetLocalState());
   enable_metrics_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
+      base::CreateSingleThreadTaskRunner({web::WebThread::IO}));
 }
 
 bool ChromeBrowserStateIOData::GetMetricsEnabledStateOnIOThread() const {
@@ -348,8 +348,9 @@ void ChromeBrowserStateIOData::Init(
     transport_security_persister_ =
         std::make_unique<net::TransportSecurityPersister>(
             transport_security_state_.get(), profile_params_->path,
-            base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+            base::CreateSequencedTaskRunner(
+                {base::ThreadPool(), base::MayBlock(),
+                 base::TaskPriority::BEST_EFFORT,
                  base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
   }
 
@@ -418,10 +419,10 @@ ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
   // ChromeBrowserStateIOData::IsHandledProtocol().
   bool set_protocol = job_factory->SetProtocolHandler(
       url::kFileScheme,
-      std::make_unique<net::FileProtocolHandler>(
-          base::CreateTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
+      std::make_unique<net::FileProtocolHandler>(base::CreateTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
   DCHECK(set_protocol);
 
   set_protocol = job_factory->SetProtocolHandler(
@@ -444,10 +445,9 @@ void ChromeBrowserStateIOData::ShutdownOnUIThread(
 
   if (!context_getters->empty()) {
     if (web::WebThread::IsThreadInitialized(web::WebThread::IO)) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {web::WebThread::IO},
-          base::BindOnce(&NotifyContextGettersOfShutdownOnIO,
-                         std::move(context_getters)));
+      base::PostTask(FROM_HERE, {web::WebThread::IO},
+                     base::BindOnce(&NotifyContextGettersOfShutdownOnIO,
+                                    std::move(context_getters)));
     }
   }
 

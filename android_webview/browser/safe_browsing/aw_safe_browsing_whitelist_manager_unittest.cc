@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +30,8 @@ class AwSafeBrowsingWhitelistManagerTest : public testing::Test {
 
   void SetWhitelist(std::vector<std::string>&& whitelist, bool expected);
 
-  base::MessageLoopForIO loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<AwSafeBrowsingWhitelistManager> wm_;
 };
 

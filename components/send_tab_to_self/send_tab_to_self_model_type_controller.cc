@@ -27,16 +27,19 @@ SendTabToSelfModelTypeController::~SendTabToSelfModelTypeController() {
   sync_service_->RemoveObserver(this);
 }
 
-bool SendTabToSelfModelTypeController::ReadyForStart() const {
+syncer::DataTypeController::PreconditionState
+SendTabToSelfModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
-  return !(syncer::IsWebSignout(sync_service_->GetAuthError()));
+  return syncer::IsWebSignout(sync_service_->GetAuthError())
+             ? PreconditionState::kMustStopAndClearData
+             : PreconditionState::kPreconditionsMet;
 }
 
 void SendTabToSelfModelTypeController::OnStateChanged(
     syncer::SyncService* sync) {
   DCHECK(CalledOnValidThread());
   // Most of these calls will be no-ops but SyncService handles that just fine.
-  sync_service_->ReadyForStartChanged(type());
+  sync_service_->DataTypePreconditionChanged(type());
 }
 
 }  // namespace send_tab_to_self

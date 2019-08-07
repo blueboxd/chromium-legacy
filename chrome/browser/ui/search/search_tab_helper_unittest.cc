@@ -59,15 +59,12 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
         .set_embedded_search_client_factory_for_testing(std::move(factory));
   }
 
-  content::BrowserContext* CreateBrowserContext() override {
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        ProfileSyncServiceFactory::GetInstance(),
-        base::BindRepeating(
-            [](content::BrowserContext*) -> std::unique_ptr<KeyedService> {
-              return std::make_unique<syncer::TestSyncService>();
-            }));
-    return builder.Build().release();
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return {{ProfileSyncServiceFactory::GetInstance(),
+             base::BindRepeating(
+                 [](content::BrowserContext*) -> std::unique_ptr<KeyedService> {
+                   return std::make_unique<syncer::TestSyncService>();
+                 })}};
   }
 
   // Configure the account to |sync_history| or not.

@@ -17,16 +17,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeInactivityTracker;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.MockSafeBrowsingApiHandler;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -148,32 +144,5 @@ public class NoTouchActivityTest {
                 ()
                         -> alternateUrl.equals(
                                 mActivity.getActivityTab().getWebContents().getLastCommittedUrl()));
-    }
-
-    /**
-     * Tests that Safe Browsing and interstitials work.
-     */
-    @Test
-    @DisabledTest(message = "crbug.com/947232")
-    public void testSafeBrowsing() throws Throwable {
-        mActivityTestRule.startMainActivityFromLauncher();
-        mActivity = mActivityTestRule.getActivity();
-
-        SafeBrowsingApiBridge.setSafeBrowsingHandlerType(
-                new MockSafeBrowsingApiHandler().getClass());
-        final String url = mTestServer.getURL(TEST_PATH);
-        MockSafeBrowsingApiHandler.addMockResponse(url, "{\"matches\":[{\"threat_type\":\"5\"}]}");
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivity.getActivityTab().loadUrl(new LoadUrlParams(url)));
-        // TODO(carlosil): For now, we check the presence of an interstitial through the title since
-        // isShowingInterstitialPage does not work with committed interstitials. Once we fully
-        // migrate to committed interstitials, this should be changed to a more robust check.
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> mActivity.getActivityTab().getWebContents().getTitle().equals(
-                                "Security error"),
-                "Failed to show Safe Browsing Interstitial page", 5000, 50);
-
-        MockSafeBrowsingApiHandler.clearMockResponses();
     }
 }

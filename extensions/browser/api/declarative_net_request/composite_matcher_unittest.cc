@@ -47,7 +47,8 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
   redirect_rule_1.condition->url_filter = std::string("example.com");
   redirect_rule_1.priority = kMinValidPriority;
   redirect_rule_1.action->type = std::string("redirect");
-  redirect_rule_1.action->redirect_url = std::string("http://ruleset1.com");
+  redirect_rule_1.action->redirect.emplace();
+  redirect_rule_1.action->redirect->url = std::string("http://ruleset1.com");
   redirect_rule_1.id = kMinValidID + 1;
 
   // Create the first ruleset matcher.
@@ -64,7 +65,8 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
   TestRule allow_rule = block_rule;
   allow_rule.action->type = std::string("allow");
   TestRule redirect_rule_2 = redirect_rule_1;
-  redirect_rule_2.action->redirect_url = std::string("http://ruleset2.com");
+  redirect_rule_2.action->redirect.emplace();
+  redirect_rule_2.action->redirect->url = std::string("http://ruleset2.com");
   std::unique_ptr<RulesetMatcher> matcher_2;
   ASSERT_TRUE(CreateVerifiedMatcher(
       {allow_rule, redirect_rule_2},
@@ -158,7 +160,8 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
   redirect_rule_2.condition->url_filter = std::string("google.com");
   redirect_rule_2.priority = kMinValidPriority;
   redirect_rule_2.action->type = std::string("redirect");
-  redirect_rule_2.action->redirect_url = std::string("http://ruleset2.com");
+  redirect_rule_2.action->redirect.emplace();
+  redirect_rule_2.action->redirect->url = std::string("http://ruleset2.com");
   redirect_rule_2.id = kMinValidID + 1;
 
   // Create a second ruleset matcher, which allows requests to example.com and
@@ -243,7 +246,8 @@ TEST_F(CompositeMatcherTest, NotifyWithholdFromPageAccess) {
   redirect_rule.condition->url_filter = std::string("google.com");
   redirect_rule.priority = kMinValidPriority;
   redirect_rule.action->type = std::string("redirect");
-  redirect_rule.action->redirect_url = std::string("http://ruleset1.com");
+  redirect_rule.action->redirect.emplace();
+  redirect_rule.action->redirect->url = std::string("http://ruleset1.com");
   redirect_rule.id = kMinValidID;
 
   TestRule upgrade_rule = CreateGenericRule();
@@ -321,7 +325,8 @@ TEST_F(CompositeMatcherTest, GetRedirectUrlFromPriority) {
   abc_redirect.condition->url_filter = std::string("*abc*");
   abc_redirect.priority = kMinValidPriority;
   abc_redirect.action->type = std::string("redirect");
-  abc_redirect.action->redirect_url = std::string("http://google.com");
+  abc_redirect.action->redirect.emplace();
+  abc_redirect.action->redirect->url = std::string("http://google.com");
   abc_redirect.id = kMinValidID;
 
   TestRule def_upgrade = CreateGenericRule();
@@ -334,7 +339,8 @@ TEST_F(CompositeMatcherTest, GetRedirectUrlFromPriority) {
   ghi_redirect.condition->url_filter = std::string("*ghi*");
   ghi_redirect.priority = kMinValidPriority + 2;
   ghi_redirect.action->type = std::string("redirect");
-  ghi_redirect.action->redirect_url = std::string("http://example.com");
+  ghi_redirect.action->redirect.emplace();
+  ghi_redirect.action->redirect->url = std::string("http://example.com");
   ghi_redirect.id = kMinValidID + 2;
 
   // In terms of priority: ghi > def > abc.

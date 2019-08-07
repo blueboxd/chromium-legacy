@@ -18,10 +18,6 @@
 
 class Profile;
 
-namespace content {
-class RenderFrameHost;
-}
-
 struct AppLaunchParams {
   AppLaunchParams(Profile* profile,
                   const std::string& app_id,
@@ -76,10 +72,6 @@ struct AppLaunchParams {
   // display::kInvalidDisplayId means that the display does not exist or is not
   // set.
   int64_t display_id;
-
-  // The frame that initiated the open. May be null. If set, the new app will
-  // have |opener| as its window.opener.
-  content::RenderFrameHost* opener;
 
   // The files the application was launched with. Empty if the application was
   // not launched with files.

@@ -224,7 +224,7 @@ InstantService::InstantService(Profile* profile)
       pref_service_->GetBoolean(prefs::kNtpShortcutsVisible);
 
   if (profile_ && profile_->GetResourceContext()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstantIOContext::SetUserDataOnIO,
                        profile->GetResourceContext(), instant_io_context_));
@@ -274,10 +274,9 @@ void InstantService::AddInstantProcess(int process_id) {
   process_ids_.insert(process_id);
 
   if (instant_io_context_.get()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&InstantIOContext::AddInstantProcessOnIO,
-                       instant_io_context_, process_id));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&InstantIOContext::AddInstantProcessOnIO,
+                                  instant_io_context_, process_id));
   }
 }
 
@@ -495,8 +494,9 @@ void InstantService::SetBackgroundToLocalResource() {
 }
 
 void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&CopyFileToProfilePath, path, profile_->GetPath()),
       base::BindOnce(&InstantService::SetBackgroundToLocalResource,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -520,10 +520,9 @@ void InstantService::Shutdown() {
   process_ids_.clear();
 
   if (instant_io_context_.get()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&InstantIOContext::ClearInstantProcessesOnIO,
-                       instant_io_context_));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&InstantIOContext::ClearInstantProcessesOnIO,
+                                  instant_io_context_));
   }
 
   if (most_visited_sites_) {
@@ -593,10 +592,9 @@ void InstantService::OnRendererProcessTerminated(int process_id) {
   process_ids_.erase(process_id);
 
   if (instant_io_context_.get()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&InstantIOContext::RemoveInstantProcessOnIO,
-                       instant_io_context_, process_id));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&InstantIOContext::RemoveInstantProcessOnIO,
+                                  instant_io_context_, process_id));
   }
 }
 
@@ -882,8 +880,8 @@ void InstantService::UpdateCustomBackgroundColorAsync(
   // Calculate the bitmap color asynchronously as it is slow (1-2 seconds for
   // the thumbnail). However, prefs should be updated on the main thread.
   if (!fetched_image.IsEmpty()) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&GetBitmapMainColor, *fetched_image.ToSkBitmap()),
         base::BindOnce(&InstantService::UpdateCustomBackgroundPrefsWithColor,
                        weak_ptr_factory_.GetWeakPtr(), timestamp));
@@ -941,8 +939,9 @@ bool InstantService::IsCustomBackgroundPrefValid(GURL& custom_background_url) {
 void InstantService::RemoveLocalBackgroundImageCopy() {
   base::FilePath path = profile_->GetPath().AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(IgnoreResult(&base::DeleteFile), path, false));
 }
 

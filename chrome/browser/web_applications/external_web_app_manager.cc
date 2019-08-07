@@ -257,14 +257,14 @@ void ExternalWebAppManager::ScanForExternalWebApps(ScanCallback callback) {
   //
   // 1. Schedule ScanDir to happen on a background thread, so that we don't
   // block the UI thread. When that's done,
-  // base::PostTaskWithTraitsAndReplyWithResult will bounce us back to the
-  // originating thread (the UI thread).
+  // base::PostTaskAndReplyWithResult will bounce us back to the originating
+  // thread (the UI thread).
   //
   // 2. In |callback|, forward the vector of ExternalInstallOptions on to the
   // pending_app_manager_, which can only be called on the UI thread.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ScanDir, dir, apps::DetermineUserType(profile_)),
       std::move(callback));

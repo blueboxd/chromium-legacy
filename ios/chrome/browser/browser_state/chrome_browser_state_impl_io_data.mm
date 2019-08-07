@@ -131,7 +131,7 @@ void ChromeBrowserStateImplIOData::Handle::ClearNetworkingHistorySince(
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   LazyInitialize();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {web::WebThread::IO},
       base::BindOnce(
           &ChromeBrowserStateImplIOData::ClearNetworkingHistorySinceOnIOThread,
@@ -186,8 +186,9 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
       profile_path_.Append(kIOSChromeNetworkPersistentStateFilename));
   network_json_store_ = new JsonPrefStore(
       network_json_store_filepath, std::unique_ptr<PrefFilter>(),
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
   network_json_store_->ReadPrefsAsync(nullptr);
 

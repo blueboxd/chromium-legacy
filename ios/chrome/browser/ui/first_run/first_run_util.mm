@@ -145,9 +145,10 @@ void WriteFirstRunSentinelAndRecordMetrics(
     ios::ChromeBrowserState* browserState,
     BOOL sign_in_attempted,
     BOOL has_sso_account) {
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-                           base::BindOnce(&CreateSentinel));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&CreateSentinel));
   RecordFirstRunMetricsInternal(browserState, sign_in_attempted,
                                 has_sso_account);
 }

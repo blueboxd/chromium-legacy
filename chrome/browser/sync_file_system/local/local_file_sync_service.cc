@@ -346,10 +346,8 @@ LocalFileSyncService::LocalFileSyncService(Profile* profile,
       sync_context_(new LocalFileSyncContext(
           profile_->GetPath(),
           env_override,
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
-              .get(),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
-              .get())),
+          base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(),
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get())),
       local_change_processor_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   sync_context_->AddOriginChangeObserver(this);

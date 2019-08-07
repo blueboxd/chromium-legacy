@@ -567,11 +567,11 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 #endif
 
   constexpr base::TaskTraits background_task_traits = {
-      base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  base::PostTaskWithTraits(FROM_HERE, background_task_traits,
-                           base::BindOnce(&RecordLinuxDistro));
+  base::PostTask(FROM_HERE, background_task_traits,
+                 base::BindOnce(&RecordLinuxDistro));
 #endif
 
 #if defined(USE_OZONE) || defined(USE_X11)
@@ -595,11 +595,11 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
 #if defined(OS_WIN)
   // RecordStartupMetrics calls into shell_integration::GetDefaultBrowser(),
   // which requires a COM thread on Windows.
-  base::CreateCOMSTATaskRunnerWithTraits(background_task_traits)
+  base::CreateCOMSTATaskRunner(background_task_traits)
       ->PostTask(FROM_HERE, base::BindOnce(&RecordStartupMetrics));
 #else
-  base::PostTaskWithTraits(FROM_HERE, background_task_traits,
-                           base::BindOnce(&RecordStartupMetrics));
+  base::PostTask(FROM_HERE, background_task_traits,
+                 base::BindOnce(&RecordStartupMetrics));
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN)
@@ -607,7 +607,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   // breaking some tests, including all of the ProcessMemoryMetricsEmitterTest
   // tests. Figure out why there is a dependency and fix the tests.
   auto background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(background_task_traits);
+      base::CreateSequencedTaskRunner(background_task_traits);
 
   background_task_runner->PostDelayedTask(
       FROM_HERE, base::BindOnce(&RecordIsPinnedToTaskbarHistogram),

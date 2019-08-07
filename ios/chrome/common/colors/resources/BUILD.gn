@@ -10,11 +10,14 @@ group("resources") {
     ":background_dark_color",
     ":blue_color",
     ":blue_dark_color",
+    ":close_button_color",
+    ":close_button_dark_color",
     ":disabled_tint_color",
     ":favicon_background_color",
     ":green_color",
     ":green_dark_color",
     ":mdc_ink_color",
+    ":placeholder_image_tint_color",
     ":red_color",
     ":red_dark_color",
     ":scrim_background_color",
@@ -98,6 +101,12 @@ colorset("mdc_ink_color") {
   ]
 }
 
+colorset("placeholder_image_tint_color") {
+  sources = [
+    "placeholder_image_tint_color.colorset/Contents.json",
+  ]
+}
+
 colorset("scrim_background_color") {
   sources = [
     "scrim_background_color.colorset/Contents.json",
@@ -167,5 +176,16 @@ colorset("textfield_background_color") {
 colorset("textfield_background_dark_color") {
   sources = [
     "textfield_background_dark_color.colorset/Contents.json",
+  ]
+}
+colorset("close_button_color") {
+  sources = [
+    "close_button_color.colorset/Contents.json",
+  ]
+}
+
+colorset("close_button_dark_color") {
+  sources = [
+    "close_button_dark_color.colorset/Contents.json",
   ]
 }

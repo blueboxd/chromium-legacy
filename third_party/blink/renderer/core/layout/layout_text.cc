@@ -1652,8 +1652,9 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
       FirstTextBox()->ManuallySetStartLenAndLogicalWidth(
           offset, text->length(), LayoutUnit(text_width));
       SetFirstTextBoxLogicalLeft(text_width);
-      const bool avoid_layout_and_only_paint = true;
-      ForceSetText(std::move(text), avoid_layout_and_only_paint);
+      SetTextInternal(std::move(text));
+      SetShouldDoFullPaintInvalidation();
+      TextDidChangeWithoutInvalidation();
       lines_dirty_ = false;
       valid_ng_items_ = false;
       return;
@@ -1780,7 +1781,11 @@ UChar LayoutText::PreviousCharacter() const {
 void LayoutText::SetTextInternal(scoped_refptr<StringImpl> text) {
   DCHECK(text);
   text_ = String(std::move(text));
+  DCHECK(text_);
+  DCHECK(!IsBR() || (TextLength() == 1 && text_[0] == kNewlineCharacter));
+}
 
+void LayoutText::ApplyTextTransform() {
   if (const ComputedStyle* style = Style()) {
     style->ApplyTextTransform(&text_, PreviousCharacter());
 
@@ -1799,9 +1804,6 @@ void LayoutText::SetTextInternal(scoped_refptr<StringImpl> text) {
         SecureText(kBlackSquareCharacter);
     }
   }
-
-  DCHECK(text_);
-  DCHECK(!IsBR() || (TextLength() == 1 && text_[0] == kNewlineCharacter));
 }
 
 void LayoutText::SecureText(UChar mask) {
@@ -1837,22 +1839,26 @@ void LayoutText::SetTextIfNeeded(scoped_refptr<StringImpl> text) {
   ForceSetText(std::move(text));
 }
 
-void LayoutText::ForceSetText(scoped_refptr<StringImpl> text,
-                              bool avoid_layout_and_only_paint) {
+void LayoutText::ForceSetText(scoped_refptr<StringImpl> text) {
   DCHECK(text);
   SetTextInternal(std::move(text));
+  TextDidChange();
+}
+
+void LayoutText::TextDidChange() {
   // If preferredLogicalWidthsDirty() of an orphan child is true,
   // LayoutObjectChildList::insertChildNode() fails to set true to owner.
   // To avoid that, we call setNeedsLayoutAndPrefWidthsRecalc() only if this
   // LayoutText has parent.
   if (Parent()) {
-    if (avoid_layout_and_only_paint) {
-      SetShouldDoFullPaintInvalidation();
-    } else {
-      SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          layout_invalidation_reason::kTextChanged);
-    }
+    SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        layout_invalidation_reason::kTextChanged);
   }
+  TextDidChangeWithoutInvalidation();
+}
+
+void LayoutText::TextDidChangeWithoutInvalidation() {
+  ApplyTextTransform();
   known_to_have_no_overflow_and_no_fallback_fonts_ = false;
 
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())

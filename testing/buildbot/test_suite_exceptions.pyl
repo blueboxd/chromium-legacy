@@ -1774,6 +1774,12 @@
           '--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking',
         ],
       },
+      'linux-blink-heap-unified-gc': {
+        'args': [
+          '--debug',
+          '--additional-driver-flag=--enable-blink-features=HeapUnifiedGarbageCollection',
+        ],
+      },
       'mac10.10-blink-rel-dummy': {
         'swarming': {
           'dimension_sets': [

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Checks that styles defined inside/outside forced-colors are preserved in forced colors mode if forced-color-ajust is none.
-Harness: the test ran to completion.
-

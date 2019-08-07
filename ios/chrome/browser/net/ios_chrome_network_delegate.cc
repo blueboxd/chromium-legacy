@@ -71,7 +71,7 @@ void IOSChromeNetworkDelegate::InitializePrefsOnUIThread(
   if (enable_do_not_track) {
     enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service);
     enable_do_not_track->MoveToSequence(
-        base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
+        base::CreateSingleThreadTaskRunner({web::WebThread::IO}));
   }
 }
 

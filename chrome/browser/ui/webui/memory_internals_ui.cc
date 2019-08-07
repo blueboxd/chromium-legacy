@@ -205,7 +205,7 @@ void MemoryInternalsDOMHandler::HandleRequestProcessList(
     const base::ListValue* args) {
   // This is called on the UI thread, the child process iterator must run on
   // the IO thread, while the render process iterator must run on the UI thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&MemoryInternalsDOMHandler::GetChildProcessesOnIOThread,
                      weak_factory_.GetWeakPtr()));
@@ -292,10 +292,9 @@ void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
     }
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&MemoryInternalsDOMHandler::GetProfiledPids, dom_handler,
-                     std::move(result)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&MemoryInternalsDOMHandler::GetProfiledPids,
+                                dom_handler, std::move(result)));
 }
 
 void MemoryInternalsDOMHandler::GetProfiledPids(
@@ -306,7 +305,7 @@ void MemoryInternalsDOMHandler::GetProfiledPids(
 
   // The supervisor hasn't started, so return an empty list.
   if (!supervisor->HasStarted()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&MemoryInternalsDOMHandler::ReturnProcessListOnUIThread,
                        weak_factory_.GetWeakPtr(), std::move(children),

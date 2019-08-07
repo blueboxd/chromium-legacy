@@ -428,8 +428,9 @@ void ArcGraphicsTracingHandler::OnTracingStopped(
     base::RefCountedString* trace_data) {
   std::string string_data;
   string_data.swap(trace_data->data());
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BuildGraphicsModel, std::move(string_data),
                      std::move(tasks_info_), std::move(system_stat_colletor_),
                      tracing_time_min_, tracing_time_max_,
@@ -450,8 +451,9 @@ void ArcGraphicsTracingHandler::OnGraphicsModelReady(
 }
 
 void ArcGraphicsTracingHandler::HandleReady(const base::ListValue* args) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&MaybeLoadLastGraphicsModel,
                      GetLastTracingModelPath(Profile::FromWebUI(web_ui()))),
       base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,
@@ -476,8 +478,9 @@ void ArcGraphicsTracingHandler::HandleLoadFromText(
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&LoadGraphicsModel,
                      std::move(args->GetList()[0].GetString())),
       base::BindOnce(&ArcGraphicsTracingHandler::OnGraphicsModelReady,

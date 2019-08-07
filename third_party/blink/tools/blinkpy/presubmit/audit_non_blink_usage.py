@@ -206,7 +206,7 @@ _CONFIG = [
             # PartitionAlloc
             'base::PartitionFree',
 
-            # For MessageLoop::TaskObserver.
+            # For TaskObserver.
             'base::PendingTask',
 
             # Time

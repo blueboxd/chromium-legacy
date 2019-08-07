@@ -49,6 +49,9 @@ class ManagementAPIDelegate {
  public:
   virtual ~ManagementAPIDelegate() {}
 
+  using AndroidAppInstallStatusCallback = base::OnceCallback<void(bool)>;
+  using InstallAndroidAppCallback = base::OnceCallback<void(bool)>;
+
   enum class InstallWebAppResult { kSuccess, kInvalidWebApp, kUnknownError };
   typedef base::OnceCallback<void(InstallWebAppResult)> InstallWebAppCallback;
 
@@ -133,6 +136,20 @@ class ManagementAPIDelegate {
       content::BrowserContext* context,
       const GURL& web_app_url,
       InstallWebAppCallback callback) const = 0;
+
+  // Returns whether arc apps can be installed in the given |context|.
+  virtual bool CanContextInstallAndroidApps(
+      content::BrowserContext* context) const = 0;
+
+  // Checks the installation status of |package_name|.
+  virtual void CheckAndroidAppInstallStatus(
+      const std::string& package_name,
+      AndroidAppInstallStatusCallback callback) const = 0;
+
+  // Installs an Arc app for |package_name|.
+  virtual void InstallReplacementAndroidApp(
+      const std::string& package_name,
+      InstallAndroidAppCallback callback) const = 0;
 
   // Forwards the call to ExtensionIconSource::GetIconURL in chrome.
   virtual GURL GetIconURL(const Extension* extension,

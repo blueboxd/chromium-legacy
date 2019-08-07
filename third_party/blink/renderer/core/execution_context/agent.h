@@ -34,14 +34,18 @@ class CORE_EXPORT Agent : public GarbageCollectedFinalized<Agent> {
  public:
   static Agent* CreateForWorkerOrWorklet(
       v8::Isolate* isolate,
-      const base::UnguessableToken& cluster_id) {
-    return MakeGarbageCollected<Agent>(isolate, cluster_id);
+      const base::UnguessableToken& cluster_id,
+      std::unique_ptr<v8::MicrotaskQueue> microtask_queue = nullptr) {
+    return MakeGarbageCollected<Agent>(isolate, cluster_id,
+                                       std::move(microtask_queue));
   }
 
   // Do not create the instance directly.
   // Use Agent::CreateForWorkerOrWorklet() or
   // WindowAgentFactory::GetAgentForOrigin().
-  Agent(v8::Isolate* isolate, const base::UnguessableToken& cluster_id);
+  Agent(v8::Isolate* isolate,
+        const base::UnguessableToken& cluster_id,
+        std::unique_ptr<v8::MicrotaskQueue> microtask_queue = nullptr);
   virtual ~Agent();
 
   const scoped_refptr<scheduler::EventLoop>& event_loop() const {

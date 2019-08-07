@@ -233,7 +233,7 @@ void ThemeSource::SendThemeImage(
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     // Fetching image data in ResourceBundle should happen on the UI thread. See
     // crbug.com/449277
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ProcessResourceOnUiThread, resource_id, scale, data),
         base::BindOnce(callback, data));

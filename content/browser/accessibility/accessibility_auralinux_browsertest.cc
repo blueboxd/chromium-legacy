@@ -1020,4 +1020,80 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_object_unref(section);
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestFindInPageEvents) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+      <div contenteditable="true">
+        Sufficiently long div content
+      </div>
+      <div contenteditable="true">
+        Second sufficiently long div content
+      </div>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+
+  AtkObject* div1 = atk_object_ref_accessible_child(document, 0);
+  AtkObject* div2 = atk_object_ref_accessible_child(document, 1);
+  EXPECT_NE(div1, nullptr);
+  EXPECT_NE(div2, nullptr);
+
+  auto selection_callback =
+      G_CALLBACK(+[](AtkText*, int* count) { *count += 1; });
+  int selection_changed_signals = 0;
+  g_signal_connect(div1, "text-selection-changed", selection_callback,
+                   &selection_changed_signals);
+  g_signal_connect(div2, "text-selection-changed", selection_callback,
+                   &selection_changed_signals);
+
+  auto caret_callback = G_CALLBACK(
+      +[](AtkText*, int new_position, int* caret_position_from_event) {
+        *caret_position_from_event = new_position;
+      });
+  int caret_position_from_event = -1;
+  g_signal_connect(div1, "text-caret-moved", caret_callback,
+                   &caret_position_from_event);
+  g_signal_connect(div2, "text-caret-moved", caret_callback,
+                   &caret_position_from_event);
+
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  atk_text_set_caret_offset(ATK_TEXT(div1), 4);
+  waiter.WaitForNotification();
+
+  ASSERT_EQ(atk_text_get_caret_offset(ATK_TEXT(div1)), 4);
+  ASSERT_EQ(caret_position_from_event, 4);
+  ASSERT_EQ(selection_changed_signals, 0);
+
+  caret_position_from_event = -1;
+  selection_changed_signals = 0;
+  auto* node = static_cast<ui::AXPlatformNodeAuraLinux*>(
+      ui::AXPlatformNode::FromNativeViewAccessible(div2));
+  node->ActivateFindInPageResult(1, 3);
+
+  ASSERT_EQ(selection_changed_signals, 1);
+  ASSERT_EQ(caret_position_from_event, 3);
+  ASSERT_EQ(atk_text_get_caret_offset(ATK_TEXT(div2)), 3);
+  ASSERT_EQ(atk_text_get_caret_offset(ATK_TEXT(div1)), 4);
+
+  caret_position_from_event = -1;
+  selection_changed_signals = 0;
+  node->TerminateFindInPage();
+
+  ASSERT_EQ(selection_changed_signals, 0);
+  ASSERT_EQ(caret_position_from_event, -1);
+  ASSERT_EQ(atk_text_get_caret_offset(ATK_TEXT(div2)), -1);
+  ASSERT_EQ(atk_text_get_caret_offset(ATK_TEXT(div1)), 4);
+
+  g_object_unref(div1);
+  g_object_unref(div2);
+}
+
 }  // namespace content

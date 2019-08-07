@@ -92,10 +92,9 @@ void PrepareAndSetFavicon(jbyte* icon_bytes,
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&SetFaviconCallback, profile, node->url(), fake_icon_url,
-                     image_data, icon_type, &event));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&SetFaviconCallback, profile, node->url(),
+                                fake_icon_url, image_data, icon_type, &event));
   // TODO(aruslan): http://b/6397072 If possible - avoid using favicon service
   event.Wait();
 }
@@ -225,12 +224,11 @@ void PartnerBookmarksReader::GetFavicon(const GURL& page_url,
                                         bool fallback_to_server,
                                         int desired_favicon_size_px,
                                         FaviconFetchedCallback callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&PartnerBookmarksReader::GetFaviconImpl,
-                     base::Unretained(this), page_url, profile,
-                     fallback_to_server, desired_favicon_size_px,
-                     std::move(callback)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&PartnerBookmarksReader::GetFaviconImpl,
+                                base::Unretained(this), page_url, profile,
+                                fallback_to_server, desired_favicon_size_px,
+                                std::move(callback)));
 }
 
 void PartnerBookmarksReader::GetFaviconImpl(const GURL& page_url,

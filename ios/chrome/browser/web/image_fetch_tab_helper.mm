@@ -130,7 +130,7 @@ void ImageFetchTabHelper::GetImageDataByJs(const GURL& url,
   DCHECK_EQ(js_callbacks_.count(call_id_), 0UL);
   js_callbacks_.insert({call_id_, std::move(callback)});
 
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {web::WebThread::UI},
       base::BindRepeating(&ImageFetchTabHelper::OnJsTimeout,
                           weak_ptr_factory_.GetWeakPtr(), call_id_),

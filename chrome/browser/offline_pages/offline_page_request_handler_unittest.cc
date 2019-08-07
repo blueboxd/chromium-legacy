@@ -594,7 +594,7 @@ base::FilePath OfflinePageRequestHandlerTest::CreateFileWithContent(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::RunLoop run_loop;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&OfflinePageRequestHandlerTest::CreateFileWithContentOnIO,
                      base::Unretained(this), content, run_loop.QuitClosure()));

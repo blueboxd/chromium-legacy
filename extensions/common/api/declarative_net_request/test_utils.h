@@ -112,7 +112,6 @@ struct TestRuleAction : public DictionarySource {
   TestRuleAction& operator=(const TestRuleAction&);
 
   base::Optional<std::string> type;
-  base::Optional<std::string> redirect_url;
   base::Optional<std::vector<std::string>> remove_headers_list;
   base::Optional<TestRuleRedirect> redirect;
 

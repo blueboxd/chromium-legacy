@@ -62,6 +62,9 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
       return "MachineLogon::CredentialProvider";
     case SourceForRefreshTokenOperation::kTokenService_ExtractCredentials:
       return "TokenService::ExtractCredentials";
+    case SourceForRefreshTokenOperation::
+        kAccountReconcilor_RevokeTokensNotInCookies:
+      return "AccountReconcilor::RevokeTokensNotInCookies";
   }
 }
 }  // namespace

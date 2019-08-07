@@ -53,7 +53,6 @@ content::WebContents* ShowWebApplicationWindow(
   NavigateParams nav_params(browser, launch_url,
                             ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   nav_params.disposition = disposition;
-  nav_params.opener = params.opener;
   Navigate(&nav_params);
 
   content::WebContents* web_contents =

@@ -1271,8 +1271,7 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ],
-          "hard_timeout": 900
+          ]
         },
         "test": "blink_unittests"
       }
@@ -1298,7 +1297,6 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "hard_timeout": 900,
           "shards": 12
         }
       }
@@ -1321,8 +1319,7 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ],
-          "hard_timeout": 900
+          ]
         },
         "test": "blink_unittests"
       }
@@ -1348,7 +1345,6 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "hard_timeout": 900,
           "shards": 12
         }
       }
@@ -1419,10 +1415,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Mac-10.13.6"
+              "os": "Mac-10.13"
             }
-          ],
-          "hard_timeout": 900
+          ]
         },
         "test": "blink_unittests"
       }
@@ -1445,10 +1440,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Mac-10.13.6"
+              "os": "Mac-10.13"
             }
           ],
-          "hard_timeout": 900,
           "shards": 12
         }
       }
@@ -1469,10 +1463,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-15063"
+              "os": "Windows-7-SP1"
             }
-          ],
-          "hard_timeout": 900
+          ]
         },
         "test": "blink_unittests"
       }
@@ -1495,10 +1488,9 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "os": "Windows-10-15063"
+              "os": "Windows-7-SP1"
             }
           ],
-          "hard_timeout": 900,
           "shards": 12
         }
       }

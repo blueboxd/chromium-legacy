@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/password_manager/core/browser/leak_detection/authenticated_leak_check.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -22,6 +23,11 @@ LeakDetectionRequestFactoryImpl::TryCreateLeakCheck(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) const {
   if (!base::FeatureList::IsEnabled(features::kLeakDetection))
     return nullptr;
+
+  if (!AuthenticatedLeakCheck::HasAccountForRequest(identity_manager)) {
+    delegate->OnError(LeakDetectionError::kNotSignIn);
+    return nullptr;
+  }
   return std::make_unique<AuthenticatedLeakCheck>(
       delegate, identity_manager, std::move(url_loader_factory));
 }

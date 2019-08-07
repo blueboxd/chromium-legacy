@@ -72,8 +72,7 @@ bool SchedulerHelper::GetAndClearSystemIsQuiescentBit() {
   return sequence_manager_->GetAndClearSystemIsQuiescentBit();
 }
 
-void SchedulerHelper::AddTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
+void SchedulerHelper::AddTaskObserver(base::TaskObserver* task_observer) {
   CheckOnValidThread();
   if (sequence_manager_) {
     static_cast<base::sequence_manager::internal::SequenceManagerImpl*>(
@@ -82,8 +81,7 @@ void SchedulerHelper::AddTaskObserver(
   }
 }
 
-void SchedulerHelper::RemoveTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
+void SchedulerHelper::RemoveTaskObserver(base::TaskObserver* task_observer) {
   CheckOnValidThread();
   if (sequence_manager_) {
     static_cast<base::sequence_manager::internal::SequenceManagerImpl*>(

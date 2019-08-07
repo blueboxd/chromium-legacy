@@ -580,15 +580,15 @@ bool RenderFrameHostManager::DeleteFromPendingList(
 
 void RenderFrameHostManager::RestoreFromBackForwardCache(
     std::unique_ptr<RenderFrameHostImpl> rfh) {
-  rfh->GetProcess()->AddPendingView();  // Matched in CommitPending().
-  // Save as a temp variable to check later to match |current_frame_host()|.
-  RenderFrameHostImpl* tmp_rfh = rfh.get();
+  // Matched in CommitPending().
+  rfh->GetProcess()->AddPendingView();
 
-  // Make the frame restored from the back-forward cache the current frame.
-  CommitPending(std::move(rfh));
-  DCHECK_EQ(tmp_rfh, current_frame_host());
+  // speculative_render_frame_host_ will be committed during
+  // CommitPendingIfNecessary.
+  speculative_render_frame_host_ = std::move(rfh);
+}
 
-  // Resume the page after CommitPending.
+void RenderFrameHostManager::UnfreezeCurrentFrameHost() {
   delegate_->GetControllerForRenderManager().back_forward_cache().Resume(
       current_frame_host());
 }

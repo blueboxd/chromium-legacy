@@ -140,6 +140,9 @@ class AccountReconcilor : public KeyedService,
  private:
   friend class AccountReconcilorTest;
   friend class DiceBrowserTest;
+  friend class BaseAccountReconcilorTestTable;
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestForceDiceMigration,
+                           TableRowTestCheckNoOp);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            IdentityManagerRegistration);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest, Reauth);
@@ -237,6 +240,8 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DelegateTimeoutIsNotCalledIfTimeoutIsNotReached);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, MultiloginLogout);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestForceDiceMigration,
+                           TableRowTest);
 
   void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> timer);
 

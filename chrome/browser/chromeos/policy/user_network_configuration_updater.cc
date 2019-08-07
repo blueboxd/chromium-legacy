@@ -58,6 +58,13 @@ void UserNetworkConfigurationUpdater::SetClientCertificateImporterForTest(
   SetClientCertificateImporter(std::move(client_certificate_importer));
 }
 
+// static
+bool UserNetworkConfigurationUpdater::PolicyHasWebTrustedAuthorityCertificate(
+    const PolicyMap& policy_map) {
+  return NetworkConfigurationUpdater::PolicyHasWebTrustedAuthorityCertificate(
+      policy_map, onc::ONC_SOURCE_USER_POLICY, key::kOpenNetworkConfiguration);
+}
+
 UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
     Profile* profile,
     bool allow_trusted_certs_from_policy,

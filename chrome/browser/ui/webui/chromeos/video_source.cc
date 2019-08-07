@@ -55,8 +55,8 @@ void VideoLoaded(
 }  // namespace
 
 VideoSource::VideoSource() : weak_factory_(this) {
-  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
@@ -77,8 +77,9 @@ void VideoSource::StartDataRequest(
 
   const base::FilePath asset_dir(chrome::kChromeOSAssetPath);
   const base::FilePath video_path = asset_dir.AppendASCII(path);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::PathExists, video_path),
       base::BindOnce(&VideoSource::StartDataRequestAfterPathExists,
                      weak_factory_.GetWeakPtr(), video_path,

@@ -1125,7 +1125,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         // Visibly scroll to the regular tabs panel after a slight delay when
         // the user is already in the tab switcher.
         __weak TabGridViewController* weakSelf = self;
-        base::PostDelayedTaskWithTraits(
+        base::PostDelayedTask(
             FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
               [weakSelf setCurrentPageAndPageControlSelectedPage:
                             TabGridPageRegularTabs

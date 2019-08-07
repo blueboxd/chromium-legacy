@@ -6,12 +6,15 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_WEB_MOCK_THREAD_SCHEDULER_H_
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+
+namespace base {
+class TaskObserver;
+}
 
 namespace blink {
 namespace scheduler {
@@ -52,8 +55,8 @@ class WebMockThreadScheduler : public WebThreadScheduler {
 #endif
   MOCK_METHOD0(OnNavigate, void());
   MOCK_METHOD0(IsHighPriorityWorkAnticipated, bool());
-  MOCK_METHOD1(AddTaskObserver, void(base::MessageLoop::TaskObserver*));
-  MOCK_METHOD1(RemoveTaskObserver, void(base::MessageLoop::TaskObserver*));
+  MOCK_METHOD1(AddTaskObserver, void(base::TaskObserver*));
+  MOCK_METHOD1(RemoveTaskObserver, void(base::TaskObserver*));
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD0(VirtualTimePaused, void());
   MOCK_METHOD0(VirtualTimeResumed, void());

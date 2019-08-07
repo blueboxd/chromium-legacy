@@ -495,17 +495,16 @@ void ConflictsDataFetcher::OnModuleDatabaseIdle() {
 
 #if defined(GOOGLE_CHROME_BUILD)
   // The state of third-party features must be determined on the UI thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           OnModuleDataFetched, std::move(on_conflicts_data_fetched_callback_),
           std::move(results), std::move(third_party_conflicts_manager_state_)));
 #else
   // The third-party features are always disabled on Chromium builds.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(OnConflictsDataFetched,
-                     std::move(on_conflicts_data_fetched_callback_),
-                     std::move(results), kNonGoogleChromeBuild));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(OnConflictsDataFetched,
+                                std::move(on_conflicts_data_fetched_callback_),
+                                std::move(results), kNonGoogleChromeBuild));
 #endif
 }

@@ -41,8 +41,8 @@ void ImageLoaded(
 }  // namespace
 
 ImageSource::ImageSource() : weak_factory_(this) {
-  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
@@ -64,8 +64,9 @@ void ImageSource::StartDataRequest(
 
   const base::FilePath asset_dir(chrome::kChromeOSAssetPath);
   const base::FilePath image_path = asset_dir.AppendASCII(path);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&base::PathExists, image_path),
       base::Bind(&ImageSource::StartDataRequestAfterPathExists,
                  weak_factory_.GetWeakPtr(), image_path, got_data_callback));

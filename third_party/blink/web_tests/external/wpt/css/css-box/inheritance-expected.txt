@@ -1,4 +1,8 @@
 This is a testharness.js-based test.
+PASS Property clear has initial value none
+PASS Property clear does not inherit
+PASS Property float has initial value none
+PASS Property float does not inherit
 PASS Property margin-bottom has initial value 0px
 PASS Property margin-bottom does not inherit
 PASS Property margin-left has initial value 0px

@@ -173,7 +173,7 @@ void SharingService::SendMessageToDevice(
   std::string message_guid = base::GenerateGUID();
   send_message_callbacks_.emplace(message_guid, std::move(callback));
 
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, content::BrowserThread::UI},
       base::BindOnce(&SharingService::InvokeSendMessageCallback,
                      weak_ptr_factory_.GetWeakPtr(), message_guid,
@@ -314,7 +314,7 @@ void SharingService::OnDeviceRegistered(
       backoff_entry_.InformOfRequest(false);
       // Transient error - try again after a delay.
       LOG(ERROR) << "Device registration failed with transient error";
-      base::PostDelayedTaskWithTraits(
+      base::PostDelayedTask(
           FROM_HERE,
           {base::TaskPriority::BEST_EFFORT, content::BrowserThread::UI},
           base::BindOnce(&SharingService::RegisterDevice,

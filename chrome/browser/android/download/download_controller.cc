@@ -250,14 +250,14 @@ void DownloadController::AcquireFileAccessPermission(
         StoragePermissionType::STORAGE_PERMISSION_REQUESTED);
     RecordStoragePermission(
         StoragePermissionType::STORAGE_PERMISSION_NO_ACTION_NEEDED);
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(std::move(cb), true));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(std::move(cb), true));
     return;
   } else if (vr::VrTabHelper::IsUiSuppressedInVr(
                  web_contents,
                  vr::UiSuppressedElement::kFileAccessPermission)) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(std::move(cb), false));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(std::move(cb), false));
     return;
   }
 
@@ -275,10 +275,9 @@ void DownloadController::AcquireFileAccessPermission(
 void DownloadController::CreateAndroidDownload(
     const content::WebContents::Getter& wc_getter,
     const DownloadInfo& info) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&DownloadController::StartAndroidDownload,
-                     base::Unretained(this), wc_getter, info));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&DownloadController::StartAndroidDownload,
+                                base::Unretained(this), wc_getter, info));
 }
 
 void DownloadController::AboutToResumeDownload(DownloadItem* download_item) {
@@ -443,7 +442,7 @@ void DownloadController::OnDangerousDownload(DownloadItem* item) {
     auto download_manager_getter = std::make_unique<DownloadManagerGetter>(
         BrowserContext::GetDownloadManager(
             content::DownloadItemUtils::GetBrowserContext(item)));
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&RemoveDownloadItem, std::move(download_manager_getter),
                        item->GetGuid()));

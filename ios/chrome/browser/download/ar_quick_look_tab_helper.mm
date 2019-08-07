@@ -110,8 +110,9 @@ void ARQuickLookTabHelper::Download(
   // Take ownership of |download_task| and start the download.
   download_task_ = std::move(download_task);
   download_task_->AddObserver(this);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::CreateDirectory, download_dir),
       base::BindOnce(&ARQuickLookTabHelper::DownloadWithDestinationDir,
                      AsWeakPtr(), download_dir, download_task_.get()));
@@ -154,8 +155,8 @@ void ARQuickLookTabHelper::DownloadWithDestinationDir(
     return;
   }
 
-  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  auto task_runner = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   base::string16 file_name = download_task_->GetSuggestedFilename();
   base::FilePath path = destination_dir.Append(base::UTF16ToUTF8(file_name));
   auto writer = std::make_unique<net::URLFetcherFileWriter>(task_runner, path);

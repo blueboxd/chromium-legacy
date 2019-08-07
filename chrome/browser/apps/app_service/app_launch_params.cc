@@ -16,8 +16,7 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       disposition(disposition),
       command_line(base::CommandLine::NO_PROGRAM),
       source(source),
-      display_id(display_id),
-      opener(nullptr) {}
+      display_id(display_id) {}
 
 AppLaunchParams::AppLaunchParams(const AppLaunchParams& other) = default;
 

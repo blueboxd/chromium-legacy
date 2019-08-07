@@ -188,8 +188,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   PhysicalOffset FirstLineBoxTopLeft() const;
 
   void SetTextIfNeeded(scoped_refptr<StringImpl>);
-  virtual void ForceSetText(scoped_refptr<StringImpl>,
-                            bool avoid_layout_and_only_paint = false);
+  void ForceSetText(scoped_refptr<StringImpl>);
   void SetTextWithOffset(scoped_refptr<StringImpl>,
                          unsigned offset,
                          unsigned len);
@@ -335,7 +334,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void InLayoutNGInlineFormattingContextWillChange(bool) final;
 
-  virtual void SetTextInternal(scoped_refptr<StringImpl>);
+  void SetTextInternal(scoped_refptr<StringImpl>);
+  virtual void TextDidChange();
 
   virtual InlineTextBox* CreateTextBox(int start,
                                        uint16_t length);  // Subclassed by SVG.
@@ -346,6 +346,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
  private:
   InlineTextBoxList& MutableTextBoxes();
+
+  void TextDidChangeWithoutInvalidation();
 
   // PhysicalRectCollector should be like a function:
   // void (const PhysicalRect&).
@@ -386,6 +388,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                       FloatRect* glyph_bounds_accumulation,
                       float expansion = 0) const;
 
+  void ApplyTextTransform();
   void SecureText(UChar mask);
 
   bool IsText() const =

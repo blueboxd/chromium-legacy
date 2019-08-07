@@ -292,7 +292,7 @@ are true:
   "declarative_net_request" : {
     "rule_resources" : ["rules.json"]
   },
-  "permissions" : ["*://google.com/*", "declarativeNetRequest"],
+  "permissions" : ["*://*.google.com/*", "*://*.abcd.com/*", "*://*.example.com/*", "declarativeNetRequest"],
   "manifest_version" : 2
 }
 </pre>
@@ -313,14 +313,25 @@ are true:
   {
     "id" : 3,
     "priority" : 1,
-    "action" : { "type" : "redirect", "redirectUrl" : "https://example.com" },
+    "action" : { "type" : "redirect", "redirect" : { "url" : "https://example.com" } },
     "condition" : { "urlFilter" : "google.com", "resourceTypes" : ["main_frame"] }
   },
   {
     "id" : 4,
     "priority" : 1,
-    "action" : { "type" : "redirect", "redirectUrl" : "/a.jpg" },
+    "action" : { "type" : "redirect", "redirect" : { "extensionPath" : "/a.jpg" } },
     "condition" : { "urlFilter" : "abcd.com", "resourceTypes" : ["main_frame"] }
+  },
+  {
+    "id" : 5,
+    "priority" : 1,
+    "action" : {
+      "type" : "redirect",
+      "redirect" : {
+        "transform" : { "scheme" : "https", "host" : "new.example.com" }
+      }
+    },
+    "condition" : { "urlFilter" : "||example.com", "resourceTypes" : ["main_frame"] }
   }
 ]
 </pre>
@@ -339,7 +350,12 @@ are true:
   </li>
   <li>
     Consider a navigation to <code>"http://abcd.com"</code>. The rule with id
-    (4) matches. Since rule (4) specifies a relative URL, the request is
+    (4) matches. Since rule (4) specifies an extension path, the request is
     redirected to <code>"chrome-extension://&lt;extension-id&gt;/a.jpg"</code>.
+  </li>
+  <li>
+    Consider a navigation to <code>"http://example.com/path"</code>. The rule
+    with id (5) matches. Since rule (5) specifies a url transform, the request
+    is redirected to <code>"https://new.example.com/path"</code>.
   </li>
 </ul>

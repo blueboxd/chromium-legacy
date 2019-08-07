@@ -43,8 +43,9 @@ enum class ReauthenticationStatus {
 - (void)serializePasswords:
             (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords
                    handler:(void (^)(std::string))serializedPasswordsHandler {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&password_manager::PasswordCSVWriter::SerializePasswords,
                      std::move(passwords)),
       base::BindOnce(serializedPasswordsHandler));
@@ -89,8 +90,9 @@ enum class ReauthenticationStatus {
     }
     return WriteToURLStatus::SUCCESS;
   };
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(writeToFile), base::BindOnce(handler));
 }
 
@@ -324,8 +326,9 @@ enum class ReauthenticationStatus {
 - (void)deleteTemporaryFile:(NSURL*)passwordsTempFileURL {
   NSURL* uniqueDirectoryURL =
       [passwordsTempFileURL URLByDeletingLastPathComponent];
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(^{
         NSFileManager* fileManager = [NSFileManager defaultManager];
         base::ScopedBlockingCall scoped_blocking_call(

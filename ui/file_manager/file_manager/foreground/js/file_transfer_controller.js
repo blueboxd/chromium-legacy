@@ -652,19 +652,14 @@ class FileTransferController {
                 } else {
                   item.sourceMessage = entries.length.toString();
                 }
-                // TODO(crbug.com/947388) Use VolumeManager/getLocationInfo
-                // for i18n translations of the path name.
-                let destinationName = null;
-                if (destinationEntry instanceof VolumeEntry) {
-                  destinationName = destinationEntry.name;
-                } else {
-                  destinationName = destinationEntry.fullPath;
-                }
-                if (destinationName) {
-                  item.destinationMessage = destinationName.replace(/^\//, '');
-                  item.subMessage =
-                      strf('TO_FOLDER_NAME', item.destinationMessage);
-                }
+                // Store the destination name for display in messages.
+                const destinationLocationInfo =
+                    this.volumeManager_.getLocationInfo(destinationEntry);
+                const destinationName = util.getEntryLabel(
+                    destinationLocationInfo, destinationEntry);
+                item.destinationMessage = destinationName;
+                item.subMessage =
+                    strf('TO_FOLDER_NAME', item.destinationMessage);
                 this.progressCenter_.updateItem(item);
                 // Check if cross share is needed or not.
                 return this.getMultiProfileShareEntries_(entries);

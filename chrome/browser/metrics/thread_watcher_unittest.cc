@@ -553,7 +553,7 @@ class ThreadWatcherTestThreadNotResponding
     // a very long time by posting a task on watched thread that keeps it busy.
     // It is safe to use base::Unretained because test is waiting for the method
     // to finish.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&CustomThreadWatcher::VeryLongMethod,
                        base::Unretained(io_watcher_), kUnresponsiveTime * 10));
@@ -627,7 +627,7 @@ class ThreadWatcherTestMultipleThreadsNotResponding
     // a very long time by posting a task on watched thread that keeps it busy.
     // It is safe to use base::Unretained because test is waiting for the method
     // to finish.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&CustomThreadWatcher::VeryLongMethod,
                        base::Unretained(io_watcher_), kUnresponsiveTime * 10));
@@ -730,10 +730,10 @@ TEST_F(ThreadWatcherListTest, Restart) {
   ThreadWatcherList::StopWatchingAll();
   {
     base::RunLoop run_loop;
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI}, run_loop.QuitWhenIdleClosure(),
-        base::TimeDelta::FromSeconds(
-            ThreadWatcherList::g_initialize_delay_seconds));
+    base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                          run_loop.QuitWhenIdleClosure(),
+                          base::TimeDelta::FromSeconds(
+                              ThreadWatcherList::g_initialize_delay_seconds));
     run_loop.Run();
   }
 
@@ -744,7 +744,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
   ThreadWatcherList::StartWatchingAll(*base::CommandLine::ForCurrentProcess());
   {
     base::RunLoop run_loop;
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {BrowserThread::UI}, run_loop.QuitWhenIdleClosure(),
         base::TimeDelta::FromSeconds(
             ThreadWatcherList::g_initialize_delay_seconds + 1));
@@ -758,10 +758,10 @@ TEST_F(ThreadWatcherListTest, Restart) {
   ThreadWatcherList::StopWatchingAll();
   {
     base::RunLoop run_loop;
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI}, run_loop.QuitWhenIdleClosure(),
-        base::TimeDelta::FromSeconds(
-            ThreadWatcherList::g_initialize_delay_seconds));
+    base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                          run_loop.QuitWhenIdleClosure(),
+                          base::TimeDelta::FromSeconds(
+                              ThreadWatcherList::g_initialize_delay_seconds));
     run_loop.Run();
   }
 

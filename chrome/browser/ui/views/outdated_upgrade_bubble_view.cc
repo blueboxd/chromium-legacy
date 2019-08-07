@@ -120,9 +120,9 @@ bool OutdatedUpgradeBubbleView::Accept() {
     }
 
     // Re-enable updates by shelling out to setup.exe asynchronously.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
         base::BindOnce(&google_update::ElevateIfNeededToReenableUpdates));
 #endif  // defined(OS_WIN)

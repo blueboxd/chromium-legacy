@@ -52,6 +52,10 @@ void ProducerClient::BindClientAndHostPipesForTesting(
                      std::move(producer_host_info)));
 }
 
+void ProducerClient::ResetSequenceForTesting() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
+
 // The Mojo binding should run on the same sequence as the one we get
 // callbacks from Perfetto on, to avoid additional PostTasks.
 void ProducerClient::BindClientAndHostPipesOnSequence(
@@ -102,6 +106,7 @@ perfetto::SharedMemoryArbiter* ProducerClient::GetSharedMemoryArbiter() {
 }
 
 bool ProducerClient::IsTracingActive() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return data_sources_tracing_ > 0;
 }
 

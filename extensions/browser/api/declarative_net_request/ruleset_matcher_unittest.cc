@@ -71,7 +71,8 @@ TEST_F(RulesetMatcherTest, RedirectRule) {
   rule.condition->url_filter = std::string("google.com");
   rule.priority = kMinValidPriority;
   rule.action->type = std::string("redirect");
-  rule.action->redirect_url = std::string("http://yahoo.com");
+  rule.action->redirect.emplace();
+  rule.action->redirect->url = std::string("http://yahoo.com");
 
   std::unique_ptr<RulesetMatcher> matcher;
   ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
@@ -103,7 +104,8 @@ TEST_F(RulesetMatcherTest, PreventSelfRedirect) {
   rule.condition->url_filter = std::string("go*");
   rule.priority = kMinValidPriority;
   rule.action->type = std::string("redirect");
-  rule.action->redirect_url = std::string("http://google.com");
+  rule.action->redirect.emplace();
+  rule.action->redirect->url = std::string("http://google.com");
 
   std::unique_ptr<RulesetMatcher> matcher;
   ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));

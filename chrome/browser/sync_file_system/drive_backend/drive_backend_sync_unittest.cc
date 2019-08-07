@@ -89,14 +89,16 @@ class DriveBackendSyncTest : public testing::Test,
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
     in_memory_env_ = leveldb_chrome::NewMemEnv("DriveBackendSyncTest");
 
-    io_task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::IO});
-    worker_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    io_task_runner_ =
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
+    worker_task_runner_ = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     file_task_runner_ = io_task_runner_;
     scoped_refptr<base::SequencedTaskRunner> drive_task_runner =
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+        base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
     RegisterSyncableFileSystem();
     local_sync_service_ = LocalFileSyncService::CreateForTesting(

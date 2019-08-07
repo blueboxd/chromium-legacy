@@ -348,7 +348,7 @@ void ChromeAppDelegate::OnHide() {
 
   // Hold on to the keep alive for some time to give the app a chance to show
   // the window.
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&ChromeAppDelegate::RelinquishKeepAliveAfterTimeout,
                      weak_factory_.GetWeakPtr()),

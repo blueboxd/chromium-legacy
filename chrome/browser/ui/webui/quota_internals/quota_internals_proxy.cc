@@ -27,7 +27,7 @@ void QuotaInternalsProxy::RequestInfo(
     scoped_refptr<storage::QuotaManager> quota_manager) {
   DCHECK(quota_manager.get());
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&QuotaInternalsProxy::RequestInfo, this, quota_manager));
     return;
@@ -69,18 +69,17 @@ void QuotaInternalsProxy::RequestInfo(
 
 QuotaInternalsProxy::~QuotaInternalsProxy() {}
 
-#define RELAY_TO_HANDLER(func, arg_t)                             \
-  void QuotaInternalsProxy::func(arg_t arg) {                     \
-    if (!handler_)                                                \
-      return;                                                     \
-    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {         \
-      base::PostTaskWithTraits(                                   \
-          FROM_HERE, {BrowserThread::UI},                         \
-          base::BindOnce(&QuotaInternalsProxy::func, this, arg)); \
-      return;                                                     \
-    }                                                             \
-                                                                  \
-    handler_->func(arg);                                          \
+#define RELAY_TO_HANDLER(func, arg_t)                                        \
+  void QuotaInternalsProxy::func(arg_t arg) {                                \
+    if (!handler_)                                                           \
+      return;                                                                \
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {                    \
+      base::PostTask(FROM_HERE, {BrowserThread::UI},                         \
+                     base::BindOnce(&QuotaInternalsProxy::func, this, arg)); \
+      return;                                                                \
+    }                                                                        \
+                                                                             \
+    handler_->func(arg);                                                     \
   }
 
 RELAY_TO_HANDLER(ReportAvailableSpace, int64_t)

@@ -169,9 +169,9 @@ void ReadingListDownloadService::SyncWithModel() {
         break;
     }
   }
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::Bind(&::CleanUpFiles, OfflineRoot(), processed_directories),
       base::Bind(&ReadingListDownloadService::DownloadUnprocessedEntries,

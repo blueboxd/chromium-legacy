@@ -386,10 +386,9 @@ void PrintDialogGtk::PrintDocument(const printing::MetafilePlayer& metafile,
   }
 
   // No errors, continue printing.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&PrintDialogGtk::SendDocumentToPrinter, this,
-                     document_name));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&PrintDialogGtk::SendDocumentToPrinter, this,
+                                document_name));
 }
 
 void PrintDialogGtk::AddRefToDialog() {
@@ -512,11 +511,12 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job,
   if (print_job)
     g_object_unref(print_job);
 
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                          path_to_pdf_, false));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(base::IgnoreResult(&base::DeleteFile), path_to_pdf_,
+                     false));
   // Printing finished. Matches AddRef() in PrintDocument();
   Release();
 }

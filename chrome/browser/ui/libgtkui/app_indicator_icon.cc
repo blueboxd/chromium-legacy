@@ -164,8 +164,9 @@ AppIndicatorIcon::~AppIndicatorIcon() {
   if (icon_) {
     app_indicator_set_status(icon_, APP_INDICATOR_STATUS_PASSIVE);
     g_object_unref(icon_);
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&DeleteTempDirectory, temp_dir_));
   }
 }
@@ -187,19 +188,19 @@ void AppIndicatorIcon::SetIcon(const gfx::ImageSkia& image) {
   SkBitmap safe_bitmap = *image.bitmap();
 
   const base::TaskTraits kTraits = {
-      base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
   if (desktop_env_ == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||
       desktop_env_ == base::nix::DESKTOP_ENVIRONMENT_KDE5) {
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, kTraits,
         base::Bind(AppIndicatorIcon::WriteKDE4TempImageOnWorkerThread,
                    safe_bitmap, temp_dir_),
         base::Bind(&AppIndicatorIcon::SetImageFromFile,
                    weak_factory_.GetWeakPtr()));
   } else {
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, kTraits,
         base::Bind(AppIndicatorIcon::WriteUnityTempImageOnWorkerThread,
                    safe_bitmap, icon_change_count_, id_),
@@ -334,8 +335,9 @@ void AppIndicatorIcon::SetImageFromFile(const SetImageFromFileParams& params) {
   }
 
   if (temp_dir_ != params.parent_temp_dir) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&DeleteTempDirectory, temp_dir_));
     temp_dir_ = params.parent_temp_dir;
   }

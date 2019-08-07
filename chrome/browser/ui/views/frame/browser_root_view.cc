@@ -150,8 +150,10 @@ void BrowserRootView::OnDragEntered(const ui::DropTargetEvent& event) {
                                           ->tab_strip_model()
                                           ->GetActiveWebContents()
                                           ->GetMainFrame();
-      base::PostTaskWithTraitsAndReplyWithResult(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::PostTaskAndReplyWithResult(
+          FROM_HERE,
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&FindURLMimeType, url),
           base::BindOnce(&OnFindURLMimeType, url, rfh->GetProcess()->GetID(),
                          rfh->GetRoutingID(),

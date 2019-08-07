@@ -72,8 +72,9 @@ void UsageReportsBufferServiceDoUnregisterMDP(
 namespace history_report {
 
 UsageReportsBufferService::UsageReportsBufferService(const base::FilePath& dir)
-    : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+    : task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       backend_(new UsageReportsBufferBackend(dir)) {
   base::trace_event::MemoryDumpManager::GetInstance()
       ->RegisterDumpProviderWithSequencedTaskRunner(

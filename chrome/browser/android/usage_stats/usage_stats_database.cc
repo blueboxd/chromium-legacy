@@ -44,8 +44,8 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
   base::FilePath usage_stats_dir = profile->GetPath().Append(kNamespace);
 
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT});
 
   website_event_db_ = db_provider->GetDB<WebsiteEvent>(
       leveldb_proto::ProtoDbType::USAGE_STATS_WEBSITE_EVENT,

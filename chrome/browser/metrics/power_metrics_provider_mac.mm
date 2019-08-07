@@ -205,8 +205,9 @@ class PowerMetricsProvider::Impl : public base::RefCountedThreadSafe<Impl> {
  private:
   friend class base::RefCountedThreadSafe<Impl>;
   Impl(base::mac::ScopedIOObject<io_object_t> connect)
-      : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      : task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::USER_VISIBLE,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         system_total_power_key_(connect, SMCParamStruct::SMCKey::TotalPower),
         cpu_package_cpu_power_key_(connect, SMCParamStruct::SMCKey::CPUPower),

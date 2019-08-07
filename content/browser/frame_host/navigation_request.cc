@@ -2148,6 +2148,7 @@ void NavigationRequest::CommitNavigation() {
     frame_tree_node()->render_manager()->RestoreFromBackForwardCache(
         std::move(rfh_restored_from_back_forward_cache_));
 
+    // Commit the restored frame.
     // Note that this will delete the NavigationRequest.
     render_frame_host()->DidCommitBackForwardCacheNavigation(
         this, MakeDidCommitProvisionalLoadParamsForBFCache());

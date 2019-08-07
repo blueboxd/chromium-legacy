@@ -179,8 +179,8 @@ class _IRBuilder(object):
             idl_type = self._build_type_internal(child_nodes)
             return Constant.IR(
                 identifier=Identifier(node.GetName()),
-                value=value,
                 idl_type=idl_type,
+                value=value,
                 extended_attributes=extended_attributes,
                 component=self._component,
                 debug_info=self._build_debug_info(node))

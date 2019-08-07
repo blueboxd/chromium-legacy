@@ -2,23 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
-
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
-from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
-from .idl_member import IdlMember
+from .composition_parts import WithOwner
 from .idl_type import IdlType
 
 
-class Attribute(IdlMember):
+class Attribute(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
+                WithOwner, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-attributes"""
 
-    class IR(WithIdentifier, WithExtendedAttributes, WithExposure,
-             WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
+    class IR(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
+             WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      idl_type,
@@ -26,7 +24,6 @@ class Attribute(IdlMember):
                      is_readonly=False,
                      does_inherit_getter=False,
                      extended_attributes=None,
-                     exposures=None,
                      code_generator_info=None,
                      component=None,
                      components=None,
@@ -38,7 +35,6 @@ class Attribute(IdlMember):
 
             WithIdentifier.__init__(self, identifier)
             WithExtendedAttributes.__init__(self, extended_attributes)
-            WithExposure.__init__(self, exposures)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(
                 self, component=component, components=components)
@@ -61,35 +57,42 @@ class Attribute(IdlMember):
                 components=self.components,
                 debug_info=self.debug_info.make_copy())
 
+    def __init__(self, ir, owner):
+        assert isinstance(ir, Attribute.IR)
+
+        WithIdentifier.__init__(self, ir.identifier)
+        WithExtendedAttributes.__init__(self,
+                                        ir.extended_attributes.make_copy())
+        WithCodeGeneratorInfo.__init__(self,
+                                       ir.code_generator_info.make_copy())
+        WithOwner.__init__(self, owner)
+        WithComponent.__init__(self, components=ir.components)
+        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+
+        self._idl_type = ir.idl_type
+        self._is_static = ir.is_static
+        self._is_readonly = ir.is_readonly
+        self._does_inherit_getter = ir.does_inherit_getter
+
     @property
     def idl_type(self):
-        """
-        Returns type of this attribute.
-        @return IdlType
-        """
-        raise exceptions.NotImplementedError()
+        """Returns the type."""
+        return self._idl_type
 
     @property
     def is_static(self):
-        """
-        Returns True if this attriute is static.
-        @return bool
-        """
-        raise exceptions.NotImplementedError()
+        """Returns True if this attriute is static."""
+        return self._is_static
 
     @property
     def is_readonly(self):
-        """
-        Returns True if this attribute is read only.
-        @return bool
-        """
-        raise exceptions.NotImplementedError()
+        """Returns True if this attribute is read only."""
+        return self._is_readonly
 
     @property
     def does_inherit_getter(self):
         """
-        Returns True if |self| inherits its getter.
+        Returns True if this attribute inherits its getter.
         https://heycam.github.io/webidl/#dfn-inherit-getter
-        @return bool
         """
-        raise exceptions.NotImplementedError()
+        return self._does_inherit_getter

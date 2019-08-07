@@ -140,13 +140,14 @@ void ProfilingProcessHost::SaveTraceWithHeapDumpToFile(
       [](base::FilePath dest, SaveTraceFinishedCallback done, bool success,
          std::string trace) {
         if (!success) {
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {content::BrowserThread::UI})
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
               ->PostTask(FROM_HERE, base::BindOnce(std::move(done), false));
           return;
         }
-        base::PostTaskWithTraits(
-            FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+        base::PostTask(
+            FROM_HERE,
+            {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+             base::MayBlock()},
             base::BindOnce(
                 &ProfilingProcessHost::SaveTraceToFileOnBlockingThread,
                 base::Unretained(ProfilingProcessHost::GetInstance()),
@@ -196,7 +197,7 @@ void ProfilingProcessHost::SaveTraceToFileOnBlockingThread(
   gzFile gz_file = gzdopen(fd, "w");
   if (!gz_file) {
     DLOG(ERROR) << "Cannot compress trace file";
-    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
         ->PostTask(FROM_HERE, base::BindOnce(std::move(done), false));
     return;
   }
@@ -204,7 +205,7 @@ void ProfilingProcessHost::SaveTraceToFileOnBlockingThread(
   size_t written_bytes = gzwrite(gz_file, trace.c_str(), trace.size());
   gzclose(gz_file);
 
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
       ->PostTask(FROM_HERE, base::BindOnce(std::move(done),
                                            written_bytes == trace.size()));
 }

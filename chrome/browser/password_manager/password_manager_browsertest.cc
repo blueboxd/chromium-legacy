@@ -1710,9 +1710,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // is relevant. By the time the reply is executed it is guaranteed that the
   // migration is completed.
   base::RunLoop run_loop;
-  base::PostTaskWithTraitsAndReply(FROM_HERE, {content::BrowserThread::IO},
-                                   base::BindOnce([]() {}),
-                                   run_loop.QuitClosure());
+  base::PostTaskAndReply(FROM_HERE, {content::BrowserThread::IO},
+                         base::BindOnce([]() {}), run_loop.QuitClosure());
   run_loop.Run();
 
   // Migration updates should touch the password store.

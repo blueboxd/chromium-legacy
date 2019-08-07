@@ -1564,6 +1564,9 @@ extern const char kAccountConsistencyDescription[];
 extern const char kAccountConsistencyChoiceMirror[];
 extern const char kAccountConsistencyChoiceDice[];
 
+extern const char kForceDiceMigrationName[];
+extern const char kForceDiceMigrationDescription[];
+
 extern const char kShowSyncPausedReasonCookiesClearedOnExitName[];
 extern const char kShowSyncPausedReasonCookiesClearedOnExitDescription[];
 

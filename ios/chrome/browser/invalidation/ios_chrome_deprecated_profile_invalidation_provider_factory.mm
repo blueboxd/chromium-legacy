@@ -51,7 +51,7 @@ void RequestProxyResolvingSocketFactory(
     ios::ChromeBrowserState* browser_state,
     base::WeakPtr<TiclInvalidationService> service,
     network::mojom::ProxyResolvingSocketFactoryRequest request) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {web::WebThread::UI},
       base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
                      browser_state, std::move(service), std::move(request)));
@@ -103,7 +103,7 @@ IOSChromeDeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
       IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
           ->driver(),
       base::BindRepeating(&RequestProxyResolvingSocketFactory, browser_state),
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),
+      base::CreateSingleThreadTaskRunner({web::WebThread::IO}),
       browser_state->GetSharedURLLoaderFactory(),
       GetApplicationContext()->GetNetworkConnectionTracker()));
   service->Init(

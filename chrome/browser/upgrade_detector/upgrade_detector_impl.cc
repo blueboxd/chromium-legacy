@@ -146,8 +146,8 @@ base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
 UpgradeDetectorImpl::UpgradeDetectorImpl(const base::Clock* clock,
                                          const base::TickClock* tick_clock)
     : UpgradeDetector(clock, tick_clock),
-      blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BEST_EFFORT,
+      blocking_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
            base::MayBlock()})),
       detect_upgrade_timer_(this->tick_clock()),

@@ -332,11 +332,13 @@ class SyncService : public KeyedService {
   // from the sync server. Used by tests and debug UI (sync-internals).
   virtual void TriggerRefresh(const ModelTypeSet& types) = 0;
 
-  // Informs the data type manager that the ready-for-start status of a
-  // controller has changed. If the controller is not ready any more, it will
-  // stop |type|. Otherwise, it will trigger reconfiguration so that |type| gets
-  // started again. No-op if the type's state didn't actually change.
-  virtual void ReadyForStartChanged(ModelType type) = 0;
+  // Informs the data type manager that the preconditions for a controller have
+  // changed. If preconditions are NOT met, the datatype will be stopped
+  // according to the metadata clearing policy returned by the controller's
+  // GetPreconditionState(). Otherwise, if preconditions are newly met,
+  // reconfiguration will be triggered so that |type| gets started again. No-op
+  // if the type's state didn't actually change.
+  virtual void DataTypePreconditionChanged(ModelType type) = 0;
 
   // Enables/disables invalidations for session sync related datatypes.
   // The session sync generates a lot of changes, which results in many

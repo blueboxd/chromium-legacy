@@ -139,8 +139,9 @@ std::unique_ptr<ClientState> CreateNewClientState(
 void ConvertIconToString(SkBitmap image,
                          base::OnceCallback<void(std::string)> callback) {
   DCHECK(callback);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ConvertIconToStringOnIOThread, std::move(image)),
       std::move(callback));
 }
@@ -149,8 +150,9 @@ void ConvertIconToString(SkBitmap image,
 void ConvertStringToIcon(std::string data,
                          base::OnceCallback<void(SkBitmap)> callback) {
   DCHECK(callback);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ConvertStringToIconOnIOThread, std::move(data)),
       std::move(callback));
 }

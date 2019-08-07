@@ -2445,6 +2445,7 @@ jumbo_split_static_library("ui") {
       ]
       configs += [ "//build/config/linux:x11" ]
       deps += [
+        "//components/dbus/menu",
         "//ui/events/devices",
         "//ui/events/devices/x11",
         "//ui/events/platform/x11",
@@ -3849,10 +3850,6 @@ jumbo_split_static_library("ui") {
 
   if (use_dbus) {
     deps += [ "//dbus" ]
-  }
-
-  if (use_gio) {
-    configs += [ "//build/linux:gio_config" ]
   }
 
   if (use_nss_certs) {

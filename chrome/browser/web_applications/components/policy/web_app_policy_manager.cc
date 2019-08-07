@@ -80,7 +80,7 @@ void WebAppPolicyManager::SetSubsystems(
 }
 
 void WebAppPolicyManager::Start() {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&WebAppPolicyManager::
                          InitChangeRegistrarAndRefreshPolicyInstalledApps,

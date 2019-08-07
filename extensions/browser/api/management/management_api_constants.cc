@@ -57,5 +57,13 @@ const char kInstallReplacementWebAppNotFromWebstoreError[] =
     "Only extensions from the web store can install replacement web apps.";
 const char kGestureNeededForInstallReplacementWebAppError[] =
     "chrome.management.installReplacementWebApp requires a user gesture.";
+const char kGestureNeededForInstallReplacementAndroidAppError[] =
+    "chrome.management.installReplacementAndroidApp requires a user gesture.";
+const char kInstallReplacementAndroidAppInvalidContextError[] =
+    "Android apps can't be installed in the current user profile.";
+const char kInstallReplacementAndroidAppNotFromWebstoreError[] =
+    "Only extensions from the web store can install replacement Android apps.";
+const char kInstallReplacementAndroidAppCannotInstallApp[] =
+    "Could not install Android App.";
 
 }  // namespace extension_management_api_constants

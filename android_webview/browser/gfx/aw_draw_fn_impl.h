@@ -13,6 +13,7 @@
 #include "android_webview/public/browser/draw_fn.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/containers/queue.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkRefCnt.h"

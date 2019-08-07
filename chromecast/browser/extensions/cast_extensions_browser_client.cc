@@ -227,7 +227,7 @@ void CastExtensionsBrowserClient::BroadcastEventToRenderers(
     const std::string& event_name,
     std::unique_ptr<base::ListValue> args) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CastExtensionsBrowserClient::BroadcastEventToRenderers,
                        base::Unretained(this), histogram_value, event_name,

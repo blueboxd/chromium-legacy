@@ -673,7 +673,7 @@ TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
 
 namespace {
 
-class TaskObserver : public base::MessageLoop::TaskObserver {
+class TaskObserver : public base::TaskObserver {
  public:
   TaskObserver(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                Vector<scoped_refptr<base::SingleThreadTaskRunner>>* run_order)

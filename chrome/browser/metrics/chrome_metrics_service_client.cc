@@ -244,9 +244,9 @@ void RegisterOrRemovePreviousRunMetricsFile(
   } else {
     // When metrics reporting is not enabled, any existing file should be
     // deleted in order to preserve user privacy.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), metrics_file,
                        /*recursive=*/false));
@@ -298,13 +298,13 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
     } else {
       // When metrics reporting is not enabled, any existing files should be
       // deleted in order to preserve user privacy.
-      base::PostTaskWithTraits(
-          FROM_HERE,
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                         std::move(browser_metrics_upload_dir),
-                         /*recursive=*/true));
+      base::PostTask(FROM_HERE,
+                     {base::ThreadPool(), base::MayBlock(),
+                      base::TaskPriority::BEST_EFFORT,
+                      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+                     base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                    std::move(browser_metrics_upload_dir),
+                                    /*recursive=*/true));
     }
   }
 
@@ -334,9 +334,10 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
               metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
               notification_helper::kNotificationHelperHistogramAllocatorName));
     } else {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE,
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                          std::move(notification_helper_metrics_upload_dir),
@@ -879,7 +880,7 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
 #endif
 
   // Merge histograms from metrics providers into StatisticsRecorder.
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&base::StatisticsRecorder::ImportProvidedHistograms),
       callback);

@@ -789,12 +789,12 @@ bool MainThreadSchedulerImpl::CanExceedIdleDeadlineIfRequired() const {
 }
 
 void MainThreadSchedulerImpl::AddTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
+    base::TaskObserver* task_observer) {
   helper_.AddTaskObserver(task_observer);
 }
 
 void MainThreadSchedulerImpl::RemoveTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
+    base::TaskObserver* task_observer) {
   helper_.RemoveTaskObserver(task_observer);
 }
 

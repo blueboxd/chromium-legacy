@@ -45,6 +45,10 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
             boolean success = mSchedulerDelegate.schedule(context, taskInfo);
             BackgroundTaskSchedulerUma.getInstance().reportTaskScheduled(
                     taskInfo.getTaskId(), success);
+            if (!taskInfo.isPeriodic()) {
+                BackgroundTaskSchedulerUma.getInstance().reportTaskCreatedAndExpirationState(
+                        taskInfo.getTaskId(), taskInfo.getOneOffInfo().expiresAfterWindowEndTime());
+            }
             if (success) {
                 BackgroundTaskSchedulerPrefs.addScheduledTask(taskInfo);
             }

@@ -75,7 +75,7 @@ class TestSyncService : public SyncService {
   void StopAndClear() override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
-  void ReadyForStartChanged(syncer::ModelType type) override;
+  void DataTypePreconditionChanged(syncer::ModelType type) override;
 
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;

@@ -365,27 +365,6 @@ class ServiceWorkerStorageTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  // Creates a registration with a waiting version in INSTALLED state.
-  scoped_refptr<ServiceWorkerRegistration> CreateLiveRegistrationAndVersion(
-      const GURL& scope,
-      const GURL& script) {
-    blink::mojom::ServiceWorkerRegistrationOptions options;
-    options.scope = scope;
-    auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
-        options, storage()->NewRegistrationId(), context()->AsWeakPtr());
-    auto version = base::MakeRefCounted<ServiceWorkerVersion>(
-        registration.get(), script, blink::mojom::ScriptType::kClassic,
-        storage()->NewVersionId(), context()->AsWeakPtr());
-    std::vector<ResourceRecord> records = {
-        ResourceRecord(storage()->NewResourceId(), script, 100)};
-    version->script_cache_map()->SetResources(records);
-    version->set_fetch_handler_existence(
-        ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
-    version->SetStatus(ServiceWorkerVersion::INSTALLED);
-    registration->SetWaitingVersion(version);
-    return registration;
-  }
-
   blink::ServiceWorkerStatusCode StoreRegistration(
       scoped_refptr<ServiceWorkerRegistration> registration,
       scoped_refptr<ServiceWorkerVersion> version) {
@@ -1035,7 +1014,7 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
 
   // Store a registration.
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      CreateLiveRegistrationAndVersion(kScope, kScript);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript);
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             StoreRegistration(live_registration,
                               live_registration->waiting_version()));
@@ -1774,19 +1753,19 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const GURL kScope1("http://www.example.com/scope/");
   const GURL kScript1("http://www.example.com/script1.js");
   scoped_refptr<ServiceWorkerRegistration> live_registration1 =
-      CreateLiveRegistrationAndVersion(kScope1, kScript1);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope1, kScript1);
 
   // Registration for "/scope/foo".
   const GURL kScope2("http://www.example.com/scope/foo");
   const GURL kScript2("http://www.example.com/script2.js");
   scoped_refptr<ServiceWorkerRegistration> live_registration2 =
-      CreateLiveRegistrationAndVersion(kScope2, kScript2);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope2, kScript2);
 
   // Registration for "/scope/foobar".
   const GURL kScope3("http://www.example.com/scope/foobar");
   const GURL kScript3("http://www.example.com/script3.js");
   scoped_refptr<ServiceWorkerRegistration> live_registration3 =
-      CreateLiveRegistrationAndVersion(kScope3, kScript3);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope3, kScript3);
 
   // Notify storage of them being installed.
   storage()->NotifyInstallingRegistration(live_registration1.get());
@@ -2046,7 +2025,7 @@ TEST_F(ServiceWorkerStorageDiskTest, ScriptResponseTime) {
   const GURL kScope("https://example.com/scope");
   const GURL kScript("https://example.com/script.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateLiveRegistrationAndVersion(kScope, kScript);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript);
   ServiceWorkerVersion* version = registration->waiting_version();
 
   // Give it a main script response info.
@@ -2105,8 +2084,8 @@ TEST_F(ServiceWorkerStorageDiskTest, RegisteredOriginCount) {
   };
   std::vector<scoped_refptr<ServiceWorkerRegistration>> registrations;
   for (const auto& pair : scope_and_script_pairs) {
-    registrations.emplace_back(
-        CreateLiveRegistrationAndVersion(pair.first, pair.second));
+    registrations.emplace_back(CreateServiceWorkerRegistrationAndVersion(
+        context(), pair.first, pair.second));
   }
 
   // Store all registrations.
@@ -2142,7 +2121,7 @@ TEST_F(ServiceWorkerStorageDiskTest, DisabledNavigationPreloadState) {
   const GURL kScope("https://valid.example.com/scope");
   const GURL kScript("https://valid.example.com/script.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateLiveRegistrationAndVersion(kScope, kScript);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript);
   ServiceWorkerVersion* version = registration->waiting_version();
   version->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration->SetActiveVersion(version);
@@ -2179,7 +2158,7 @@ TEST_F(ServiceWorkerStorageDiskTest, EnabledNavigationPreloadState) {
   const GURL kScript("https://valid.example.com/script.js");
   const std::string kHeaderValue("custom header value");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateLiveRegistrationAndVersion(kScope, kScript);
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript);
   ServiceWorkerVersion* version = registration->waiting_version();
   version->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration->SetActiveVersion(version);

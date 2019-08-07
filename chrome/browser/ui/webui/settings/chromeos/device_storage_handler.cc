@@ -212,8 +212,9 @@ void StorageHandler::UpdateSizeStat() {
 
   int64_t* total_size = new int64_t(0);
   int64_t* available_size = new int64_t(0);
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::Bind(&GetSizeStatBlocking, downloads_path, total_size,
                  available_size),
       base::Bind(&StorageHandler::OnGetSizeStat, weak_ptr_factory_.GetWeakPtr(),
@@ -247,8 +248,9 @@ void StorageHandler::UpdateDownloadsSize() {
   const base::FilePath downloads_path =
       file_manager::util::GetDownloadsFolderForProfile(profile_);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&base::ComputeDirectorySize, downloads_path),
       base::Bind(&StorageHandler::OnGetDownloadsSize,
                  weak_ptr_factory_.GetWeakPtr()));

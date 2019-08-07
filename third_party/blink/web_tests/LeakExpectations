@@ -78,6 +78,7 @@ crbug.com/878727 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline
 crbug.com/862029 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js [ Pass Leak ]
 
 crbug.com/733494 [ Linux ] media/autoplay/document-user-activation.html [ Pass Leak ]
+crbug.com/733494 [ Linux ] virtual/audio-service/media/autoplay/document-user-activation.html [ Pass Leak ]
 
 # Sheriff 2019-01-04
 crbug.com/919117 [ Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Pass Leak ]

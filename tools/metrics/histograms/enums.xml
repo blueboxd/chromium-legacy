@@ -20251,6 +20251,8 @@ Called by update_net_error_codes.py.-->
   <int value="1364" label="ACTION_DISABLE"/>
   <int value="1365" label="FILEMANAGERPRIVATEINTERNAL_IMPORTCROSTINIIMAGE"/>
   <int value="1366" label="AUTOTESTPRIVATE_GETSHELFITEMS"/>
+  <int value="1367" label="MANAGEMENT_INSTALLREPLACEMENTANDROIDAPP"/>
+  <int value="1368" label="MANAGEMENT_CANINSTALLREPLACEMENTANDROIDAPP"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -36217,6 +36219,7 @@ from previous Chrome versions.
   <int value="834033186" label="enable-data-reduction-proxy-dev"/>
   <int value="834326277" label="enable-answers-in-suggest"/>
   <int value="835018878" label="disable-quic"/>
+  <int value="835324823" label="ForceDiceMigration:enabled"/>
   <int value="836406476" label="EnableTouchableAppContextMenu:enabled"/>
   <int value="838887742" label="manual-enhanced-bookmarks"/>
   <int value="839798268" label="SafeBrowsingTelemetryForApkDownloads:disabled"/>
@@ -36273,6 +36276,7 @@ from previous Chrome versions.
   <int value="926852901" label="DataReductionProxyMainMenu:disabled"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>
   <int value="934292666" label="DownloadRename:enabled"/>
+  <int value="935364646" label="ForceDiceMigration:disabled"/>
   <int value="935655516" label="password-import-export:disabled"/>
   <int value="936341613" label="OfflinePagesCT:disabled"/>
   <int value="936919953" label="bypass-app-banner-engagement-checks"/>
@@ -51591,6 +51595,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Revalidate"/>
   <int value="2" label="Reload"/>
   <int value="3" label="Load"/>
+</enum>
+
+<enum name="RevokeTokenAction">
+  <int value="0" label="None"/>
+  <int value="1" label="Invalidate token for primary account"/>
+  <int value="2" label="Revoke token for secondary accounts"/>
+  <int value="3" label="Revoke tokens for primary and secondary accounts"/>
 </enum>
 
 <enum name="Rollback_OobeRestoreResult">

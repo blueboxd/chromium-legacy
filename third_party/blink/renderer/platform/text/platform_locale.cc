@@ -473,7 +473,6 @@ String Locale::FormatDateTime(const DateComponents& date,
     case DateComponents::kWeek:
       builder.Build(WeekFormatInLDML());
       break;
-    case DateComponents::kDateTime:
     case DateComponents::kDateTimeLocal:
       builder.Build(format_type == kFormatTypeShort
                         ? DateTimeFormatWithoutSeconds()

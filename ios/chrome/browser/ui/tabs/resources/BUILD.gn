@@ -81,18 +81,6 @@ imageset("tabstrip_toggle_button_gradient") {
   ]
 }
 
-colorset("tabstrip_active_tab_close_button_color") {
-  sources = [
-    "tabstrip_active_tab_close_button_color.colorset/Contents.json",
-  ]
-}
-
-colorset("tabstrip_active_tab_incognito_close_button_color") {
-  sources = [
-    "tabstrip_active_tab_incognito_close_button_color.colorset/Contents.json",
-  ]
-}
-
 colorset("tabstrip_inactive_tab_close_button_color") {
   sources = [
     "tabstrip_inactive_tab_close_button_color.colorset/Contents.json",

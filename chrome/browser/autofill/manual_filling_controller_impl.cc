@@ -45,8 +45,7 @@ FillingSource GetSourceForTab(const AccessorySheetData& accessory_sheet) {
     case AccessoryTabType::COUNT:
       break;  // Intentional failure.
   }
-  NOTREACHED() << "Cannot determine filling source for "
-               << accessory_sheet.get_sheet_type();
+  NOTREACHED() << "Cannot determine filling source";
   return FillingSource::PASSWORD_FALLBACKS;
 }
 
@@ -107,6 +106,11 @@ void ManualFillingControllerImpl::RefreshSuggestions(
 void ManualFillingControllerImpl::NotifyFocusedInputChanged(
     autofill::mojom::FocusedFieldType focused_field_type) {
   focused_field_type_ = focused_field_type;
+
+  // Ensure warnings and filling state is updated according to focused field.
+  if (cc_controller_)
+    cc_controller_->RefreshSuggestions();
+
   // Whenever the focus changes, reset the accessory.
   if (ShouldShowAccessory())
     view_->SwapSheetWithKeyboard();

@@ -70,8 +70,8 @@ class SimpleThreadScheduler : public ThreadScheduler {
 
   // Unsupported. The observer won't get called. May break some functionalities
   // that rely on the task observer.
-  void AddTaskObserver(base::MessageLoop::TaskObserver*) override;
-  void RemoveTaskObserver(base::MessageLoop::TaskObserver*) override;
+  void AddTaskObserver(base::TaskObserver*) override;
+  void RemoveTaskObserver(base::TaskObserver*) override;
 
   // Return nullptr.
   NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override;

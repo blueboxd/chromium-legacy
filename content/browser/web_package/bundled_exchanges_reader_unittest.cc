@@ -154,24 +154,22 @@ class BundledExchangesReaderTest : public testing::Test {
         },
         run_loop.QuitClosure()));
 
-    std::vector<data_decoder::mojom::BundleIndexItemPtr> items;
-    data_decoder::mojom::BundleIndexItemPtr item =
-        data_decoder::mojom::BundleIndexItem::New();
-    item->request_url = start_url_;
-    item->response_offset = 573u;
-    item->response_length = 765u;
-    items.push_back(std::move(item));
+    base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> items;
+    data_decoder::mojom::BundleIndexValuePtr item =
+        data_decoder::mojom::BundleIndexValue::New();
+    item->response_locations.push_back(
+        data_decoder::mojom::BundleResponseLocation::New(573u, 765u));
+    items.insert({primary_url_, std::move(item)});
 
     data_decoder::mojom::BundleMetadataPtr metadata =
-        data_decoder::mojom::BundleMetadata::New(GURL() /* primary_url */,
-                                                 std::move(items),
+        data_decoder::mojom::BundleMetadata::New(primary_url_, std::move(items),
                                                  GURL() /* manifest_url */);
     factory_->RunMetadataCallback(std::move(metadata));
     run_loop.Run();
   }
   BundledExchangesReader* GetReader() { return reader_.get(); }
   MockParserFactory* GetFactory() { return factory_; }
-  const GURL& GetStartURL() const { return start_url_; }
+  const GURL& GetPrimaryURL() const { return primary_url_; }
   const std::string& GetBody() const { return body_; }
 
  private:
@@ -180,35 +178,35 @@ class BundledExchangesReaderTest : public testing::Test {
   base::FilePath temp_file_path_;
   std::unique_ptr<BundledExchangesReader> reader_;
   MockParserFactory* factory_;
-  const GURL start_url_ = GURL("https://www.google.com/");
+  const GURL primary_url_ = GURL("https://www.google.com/");
   const std::string body_ = std::string("hello new open world.");
 };
 
 TEST_F(BundledExchangesReaderTest, ReadMetadata) {
   ReadMetadata();
-  EXPECT_EQ(GetStartURL(), GetReader()->GetStartURL());
-  EXPECT_TRUE(GetReader()->HasEntry(GetStartURL()));
+  EXPECT_EQ(GetPrimaryURL(), GetReader()->GetPrimaryURL());
+  EXPECT_TRUE(GetReader()->HasEntry(GetPrimaryURL()));
   EXPECT_FALSE(GetReader()->HasEntry(GURL("https://www.google.com/404")));
 }
 
 TEST_F(BundledExchangesReaderTest, ReadResponse) {
   ReadMetadata();
-  ASSERT_TRUE(GetReader()->HasEntry(GetStartURL()));
+  ASSERT_TRUE(GetReader()->HasEntry(GetPrimaryURL()));
 
   base::RunLoop run_loop;
   GetReader()->ReadResponse(
-      GetStartURL(), base::BindOnce(
-                         [](base::Closure quit_closure,
-                            data_decoder::mojom::BundleResponsePtr response) {
-                           EXPECT_TRUE(response);
-                           if (response) {
-                             EXPECT_EQ(200, response->response_code);
-                             EXPECT_EQ(0xdeadu, response->payload_offset);
-                             EXPECT_EQ(0xbeafu, response->payload_length);
-                           }
-                           std::move(quit_closure).Run();
-                         },
-                         run_loop.QuitClosure()));
+      GetPrimaryURL(), base::BindOnce(
+                           [](base::Closure quit_closure,
+                              data_decoder::mojom::BundleResponsePtr response) {
+                             EXPECT_TRUE(response);
+                             if (response) {
+                               EXPECT_EQ(200, response->response_code);
+                               EXPECT_EQ(0xdeadu, response->payload_offset);
+                               EXPECT_EQ(0xbeafu, response->payload_length);
+                             }
+                             std::move(quit_closure).Run();
+                           },
+                           run_loop.QuitClosure()));
 
   data_decoder::mojom::BundleResponsePtr response =
       data_decoder::mojom::BundleResponse::New();

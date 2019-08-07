@@ -30,6 +30,10 @@ constexpr char kSettingsAppId[] = "inogagmajamaleonmanpkpkkigmklfad";
 // Generated as web_app::GenerateAppIdFromURL(GURL("chrome://os-settings/")).
 constexpr char kOsSettingsAppId[] = "odknhmnlageboeamepcngndbggdpaobj";
 
+// Generated as
+// web_app::GenerateAppIdFromURL(GURL("https://news.google.com/?lfhs=2")).
+constexpr char kGoogleNewsAppId[] = "kfgapjallbhpciobgmlhlhokknljkgho";
+
 }  // namespace default_web_apps
 }  // namespace chromeos
 

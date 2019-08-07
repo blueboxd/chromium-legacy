@@ -140,7 +140,7 @@ std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
     std::unique_ptr<OfflinerPolicy> policy,
     std::unique_ptr<Offliner> offliner) {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::MayBlock()});
   Profile* profile = Profile::FromBrowserContext(context);
   base::FilePath queue_store_path =
       profile->GetPath().Append(kTestRequestQueueDirname);

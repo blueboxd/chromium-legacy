@@ -307,7 +307,8 @@ TEST_P(RulesetManagerTest, Redirect) {
   rule.condition->url_filter = std::string("example.com");
   rule.priority = kMinValidPriority;
   rule.action->type = std::string("redirect");
-  rule.action->redirect_url = std::string("http://google.com");
+  rule.action->redirect.emplace();
+  rule.action->redirect->url = std::string("http://google.com");
   std::unique_ptr<CompositeMatcher> matcher;
   ASSERT_NO_FATAL_FAILURE(
       CreateMatcherForRules({rule}, "test_extension", &matcher,
@@ -373,7 +374,8 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
     rule.condition->url_filter = std::string("*");
     rule.priority = kMinValidPriority;
     rule.action->type = std::string("redirect");
-    rule.action->redirect_url = std::string("http://google.com");
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = std::string("http://google.com");
     ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
         {rule}, "test extension_2", &matcher,
         std::vector<std::string>({URLPattern::kAllUrlsPattern}),
@@ -589,7 +591,8 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
     rule.priority = kMinValidPriority;
     rule.condition->url_filter = std::string("example.com");
     rule.action->type = std::string("redirect");
-    rule.action->redirect_url = std::string("https://foo.com");
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = std::string("https://foo.com");
     std::vector<std::string> host_permissions = {"*://yahoo.com/*",
                                                  "*://example.com/*"};
     ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(

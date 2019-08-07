@@ -2545,11 +2545,13 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, WhitelistedExtension) {
 IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, NetworkCertificate) {
   SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
 
-  // Install and refresh the device policy now. This will also fetch the initial
-  // user policy for the device-local account now.
+  device_local_account_policy_.payload()
+      .mutable_opennetworkconfiguration()
+      ->set_value(kFakeOncWithCertificate);
+
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
-  AddNetworkCertificateToDevicePolicy();
+
   WaitForPolicy();
 
   const user_manager::User* user =

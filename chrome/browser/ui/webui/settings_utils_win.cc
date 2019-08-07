@@ -109,9 +109,10 @@ void ShowNetworkProxySettings(content::WebContents* web_contents) {
         Profile::FromBrowserContext(web_contents->GetBrowserContext()),
         GURL("ms-settings:network-proxy"));
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-        base::BindOnce(&OpenConnectionDialogCallback));
+    base::PostTask(FROM_HERE,
+                   {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+                    base::MayBlock()},
+                   base::BindOnce(&OpenConnectionDialogCallback));
   }
 }
 

@@ -207,8 +207,9 @@ SelectFileDialogImplKDE::SelectFileDialogImplKDE(
     base::nix::DesktopEnvironment desktop)
     : SelectFileDialogImpl(listener, std::move(policy)),
       desktop_(desktop),
-      pipe_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      pipe_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK(desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE3 ||
          desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE4 ||

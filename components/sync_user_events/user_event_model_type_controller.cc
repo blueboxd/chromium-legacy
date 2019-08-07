@@ -27,16 +27,22 @@ UserEventModelTypeController::~UserEventModelTypeController() {
   sync_service_->RemoveObserver(this);
 }
 
-bool UserEventModelTypeController::ReadyForStart() const {
+DataTypeController::PreconditionState
+UserEventModelTypeController::GetPreconditionState() const {
+  if (sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase()) {
+    return PreconditionState::kMustStopAndClearData;
+  }
   // TODO(crbug.com/906995): Remove the syncer::IsWebSignout() check once we
   // stop sync in this state. Also remove the "+google_apis/gaia" include
   // dependency and the "//google_apis" build dependency of sync_user_events.
-  return !sync_service_->GetUserSettings()->IsUsingSecondaryPassphrase() &&
-         !syncer::IsWebSignout(sync_service_->GetAuthError());
+  if (syncer::IsWebSignout(sync_service_->GetAuthError())) {
+    return PreconditionState::kMustStopAndClearData;
+  }
+  return PreconditionState::kPreconditionsMet;
 }
 
 void UserEventModelTypeController::OnStateChanged(syncer::SyncService* sync) {
-  sync->ReadyForStartChanged(type());
+  sync->DataTypePreconditionChanged(type());
 }
 
 }  // namespace syncer

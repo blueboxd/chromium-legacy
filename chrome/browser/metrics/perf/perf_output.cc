@@ -22,9 +22,9 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  perf_data_pipe_reader_ =
-      std::make_unique<chromeos::PipeReader>(base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
+  perf_data_pipe_reader_ = std::make_unique<chromeos::PipeReader>(
+      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                              base::TaskPriority::USER_VISIBLE}));
 
   base::ScopedFD pipe_write_end =
       perf_data_pipe_reader_->StartIO(base::BindOnce(

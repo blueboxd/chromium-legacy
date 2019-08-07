@@ -293,4 +293,31 @@ void BrowserAccessibilityManagerAuraLinux::OnAtomicUpdateFinished(
   }
 }
 
+void BrowserAccessibilityManagerAuraLinux::OnFindInPageResult(int request_id,
+                                                              int match_index,
+                                                              int start_id,
+                                                              int start_offset,
+                                                              int end_id,
+                                                              int end_offset) {
+  BrowserAccessibility* node = GetFromID(start_id);
+  if (!node)
+    return;
+  ui::AXPlatformNodeAuraLinux* platform_node =
+      ToBrowserAccessibilityAuraLinux(node)->GetNode();
+
+  // TODO(accessibility): We should support selections that span multiple
+  // elements, but for now if we see a result that spans multiple elements,
+  // just activate until the end of the node.
+  if (end_id != start_id)
+    end_offset = platform_node->GetHypertext().size();
+
+  platform_node->ActivateFindInPageResult(start_offset, end_offset);
+}
+
+void BrowserAccessibilityManagerAuraLinux::OnFindInPageTermination() {
+  static_cast<BrowserAccessibilityAuraLinux*>(GetRoot())
+      ->GetNode()
+      ->TerminateFindInPage();
+}
+
 }  // namespace content

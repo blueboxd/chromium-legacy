@@ -75,6 +75,8 @@ struct BackingStoreCallbackItem {
   void* callback_data;
 };
 
+using V8Reference = const TraceWrapperV8Reference<v8::Value>*;
+
 // Segment size of 512 entries necessary to avoid throughput regressions. Since
 // the work list is currently a temporary object this is not a problem.
 using MarkingWorklist = Worklist<MarkingItem, 512 /* local entries */>;
@@ -89,6 +91,7 @@ using MovableReferenceWorklist =
 using WeakTableWorklist = Worklist<WeakTableItem, 16 /* local entries */>;
 using BackingStoreCallbackWorklist =
     Worklist<BackingStoreCallbackItem, 16 /* local entries */>;
+using V8ReferencesWorklist = Worklist<V8Reference, 16 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
   STATIC_ONLY(HeapAllocHooks);
@@ -237,6 +240,10 @@ class PLATFORM_EXPORT ThreadHeap {
 
   BackingStoreCallbackWorklist* GetBackingStoreCallbackWorklist() const {
     return backing_store_callback_worklist_.get();
+  }
+
+  V8ReferencesWorklist* GetV8ReferencesWorklist() const {
+    return v8_references_worklist_.get();
   }
 
   // Register an ephemeron table for fixed-point iteration.
@@ -414,6 +421,8 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void InvokeEphemeronCallbacks(MarkingVisitor*);
 
+  void FlushV8References(MarkingVisitor*);
+
   ThreadState* thread_state_;
   std::unique_ptr<ThreadHeapStatsCollector> heap_stats_collector_;
   std::unique_ptr<RegionTree> region_tree_;
@@ -455,6 +464,10 @@ class PLATFORM_EXPORT ThreadHeap {
   // This worklist is used to passing backing store callback to HeapCompact.
   std::unique_ptr<BackingStoreCallbackWorklist>
       backing_store_callback_worklist_;
+
+  // Worklist for storing the V8 references until ThreadHeap can flush them
+  // to V8.
+  std::unique_ptr<V8ReferencesWorklist> v8_references_worklist_;
 
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.

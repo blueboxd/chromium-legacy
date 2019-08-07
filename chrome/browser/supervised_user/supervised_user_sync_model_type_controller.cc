@@ -27,7 +27,9 @@ SupervisedUserSyncModelTypeController::SupervisedUserSyncModelTypeController(
 SupervisedUserSyncModelTypeController::
     ~SupervisedUserSyncModelTypeController() {}
 
-bool SupervisedUserSyncModelTypeController::ReadyForStart() const {
+syncer::DataTypeController::PreconditionState
+SupervisedUserSyncModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
-  return profile_->IsSupervised();
+  return profile_->IsSupervised() ? PreconditionState::kPreconditionsMet
+                                  : PreconditionState::kMustStopAndClearData;
 }

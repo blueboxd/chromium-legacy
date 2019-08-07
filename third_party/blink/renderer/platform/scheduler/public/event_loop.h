@@ -80,7 +80,8 @@ class PLATFORM_EXPORT EventLoop final : public WTF::RefCounted<EventLoop> {
   friend class WTF::RefCounted<EventLoop>;
   friend blink::Agent;
 
-  explicit EventLoop(v8::Isolate* isolate);
+  EventLoop(v8::Isolate* isolate,
+            std::unique_ptr<v8::MicrotaskQueue> microtask_queue = nullptr);
   ~EventLoop();
 
   static void RunPendingMicrotask(void* data);

@@ -45,8 +45,9 @@ std::string DataTypeController::StateToString(State state) {
   return "Invalid";
 }
 
-bool DataTypeController::ReadyForStart() const {
-  return true;
+DataTypeController::PreconditionState DataTypeController::GetPreconditionState()
+    const {
+  return PreconditionState::kPreconditionsMet;
 }
 
 bool DataTypeController::CalledOnValidThread() const {

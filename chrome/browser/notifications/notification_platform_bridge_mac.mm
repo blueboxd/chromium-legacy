@@ -378,7 +378,7 @@ void NotificationPlatformBridgeMac::ProcessNotificationResponse(
     action_index = button_index.intValue;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(DoProcessNotificationResponse,
                      static_cast<NotificationCommon::Operation>(
@@ -595,7 +595,7 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
     for (NSString* alert in alerts)
       displayedNotifications.insert(base::SysNSStringToUTF8(alert));
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(copyable_callback, std::move(displayedNotifications),
                        true /* supports_synchronization */));

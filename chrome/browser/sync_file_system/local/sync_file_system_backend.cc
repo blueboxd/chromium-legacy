@@ -270,7 +270,7 @@ void SyncFileSystemBackend::InitializeSyncFileSystemService(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     // It is safe to pass Unretained(this) (see comments in OpenFileSystem()).
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SyncFileSystemBackend::InitializeSyncFileSystemService,
                        base::Unretained(this), origin_url, callback));
@@ -300,7 +300,7 @@ void SyncFileSystemBackend::DidInitializeSyncFileSystemService(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // It is safe to pass Unretained(this) since |context| owns it.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &SyncFileSystemBackend::DidInitializeSyncFileSystemService,

@@ -132,8 +132,9 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   if (self) {
     _readingListModel = readingListModel;
     _bookmarkModel = bookmarkModel;
-    _taskRunner = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+    _taskRunner =
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                         base::TaskPriority::BEST_EFFORT});
 
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -181,9 +182,9 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   }
 
   __weak ShareExtensionItemReceiver* weakSelf = self;
-  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
-                             [weakSelf readingListFolderCreated];
-                           }));
+  base::PostTask(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
+                   [weakSelf readingListFolderCreated];
+                 }));
 }
 
 - (void)readingListFolderCreated {
@@ -295,8 +296,8 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
                             }));
     }
   };
-  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
-                           base::BindOnce(processEntryBlock));
+  base::PostTask(FROM_HERE, {web::WebThread::UI},
+                 base::BindOnce(processEntryBlock));
   return YES;
 }
 
@@ -392,9 +393,9 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 
   if ([files count]) {
     __weak ShareExtensionItemReceiver* weakSelf = self;
-    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
-                               [weakSelf entriesReceived:files];
-                             }));
+    base::PostTask(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
+                     [weakSelf entriesReceived:files];
+                   }));
   }
 }
 
@@ -411,11 +412,11 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
     _taskRunner->PostTask(FROM_HERE, base::BindOnce(^{
                             [weakSelf handleFileAtURL:fileURL
                                        withCompletion:^{
-                                         base::PostTaskWithTraits(
-                                             FROM_HERE, {web::WebThread::UI},
-                                             base::BindOnce(^{
-                                               batchToken.reset();
-                                             }));
+                                         base::PostTask(FROM_HERE,
+                                                        {web::WebThread::UI},
+                                                        base::BindOnce(^{
+                                                          batchToken.reset();
+                                                        }));
                                        }];
                           }));
   }

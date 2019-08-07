@@ -52,7 +52,7 @@ class MockSyncService : public SyncService {
   MOCK_METHOD0(StopAndClear, void());
   MOCK_METHOD1(OnDataTypeRequestsSyncStartup, void(ModelType type));
   MOCK_METHOD1(TriggerRefresh, void(const ModelTypeSet& types));
-  MOCK_METHOD1(ReadyForStartChanged, void(syncer::ModelType type));
+  MOCK_METHOD1(DataTypePreconditionChanged, void(syncer::ModelType type));
   MOCK_METHOD1(SetInvalidationsForSessionsEnabled, void(bool enabled));
   MOCK_METHOD1(GetUserDemographics, UserDemographicsResult(base::Time now));
 

@@ -72,12 +72,13 @@ const char* const kDefaultAppOrder[] = {
     default_web_apps::kCanvasAppId,
     extension_misc::kTextEditorAppId,
     default_web_apps::kYoutubeTVAppId,
+    default_web_apps::kGoogleNewsAppId,
+    extensions::kWebStoreAppId,
     arc::kLightRoom,
     arc::kInfinitePainter,
     default_web_apps::kShowtimeAppId,
     extension_misc::kGooglePlusAppId,
     extension_misc::kChromeRemoteDesktopAppId,
-    extensions::kWebStoreAppId,
 };
 
 // Reads external ordinal json file and returned the parsed value. Returns NULL

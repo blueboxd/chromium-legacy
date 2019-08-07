@@ -101,7 +101,7 @@ void SaveBitmap(std::unique_ptr<ImageData> data,
     return;
   }
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, callback);
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback);
 }
 
 void RunCallbackIfFileMissing(const base::FilePath& file_path,
@@ -109,7 +109,7 @@ void RunCallbackIfFileMissing(const base::FilePath& file_path,
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   if (!base::PathExists(file_path))
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, callback);
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback);
 }
 
 // Compares two ProfileAttributesEntry using locale-sensitive comparison of
@@ -142,8 +142,9 @@ bool ProfileAttributesSortComparator::operator()(
 
 ProfileAttributesStorage::ProfileAttributesStorage(PrefService* prefs)
     : prefs_(prefs),
-      file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      file_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
 ProfileAttributesStorage::~ProfileAttributesStorage() {

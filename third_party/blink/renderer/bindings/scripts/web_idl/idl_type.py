@@ -166,6 +166,17 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
         """
         raise exceptions.NotImplementedError()
 
+    def apply_to_all_composing_elements(self, callback):
+        """
+        Applies |callback| to all instances of IdlType of which this IdlType
+        consists, including |self|.
+
+        In case of x.apply_to_all_composing_elements(callback), |callback| will
+        be recursively called back on x, x.inner_type, x.element_type,
+        x.result_type.original_type, etc. if any.
+        """
+        callback(self)
+
     @property
     def does_include_nullable_type(self):
         """
@@ -368,6 +379,16 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
         """Returns the inner type of type IdlType if |is_nullable|."""
         return None
 
+    @property
+    def type_definition_object(self):
+        """
+        Returns an object that represents a spec-author-defined type or None.
+
+        Note that a returned object is not an IdlType.  In case of interface,
+        a returned object is an instance of Interface.
+        """
+        return None
+
     def _format_syntactic_form(self, syntactic_form_inner):
         """Helper function to implement |syntactic_form|."""
         optional_form = 'optional ' if self.is_optional else ''
@@ -533,7 +554,7 @@ class DefinitionType(IdlType, WithIdentifier):
             debug_info=debug_info,
             pass_key=pass_key)
         WithIdentifier.__init__(self, user_defined_type.identifier)
-        self._definition = user_defined_type
+        self._type_definition_object = user_defined_type
 
     def __eq__(self, other):
         return (IdlType.__eq__(self, other)
@@ -557,23 +578,27 @@ class DefinitionType(IdlType, WithIdentifier):
 
     @property
     def is_interface(self):
-        return self._definition.is_interface
+        return self.type_definition_object.is_interface
 
     @property
     def is_callback_interface(self):
-        return self._definition.is_callback_interface
+        return self.type_definition_object.is_callback_interface
 
     @property
     def is_dictionary(self):
-        return self._definition.is_dictionary
+        return self.type_definition_object.is_dictionary
 
     @property
     def is_enumeration(self):
-        return self._definition.is_enumeration
+        return self.type_definition_object.is_enumeration
 
     @property
     def is_callback_function(self):
-        return self._definition.is_callback_function
+        return self.type_definition_object.is_callback_function
+
+    @property
+    def type_definition_object(self):
+        return self._type_definition_object
 
 
 class TypedefType(IdlType, WithIdentifier):
@@ -621,6 +646,10 @@ class TypedefType(IdlType, WithIdentifier):
         assert not self.is_optional
         return self.original_type.type_name
 
+    def apply_to_all_composing_elements(self, callback):
+        callback(self)
+        self.original_type.apply_to_all_composing_elements(callback)
+
     @property
     def does_include_nullable_type(self):
         return self.original_type.does_include_nullable_type
@@ -660,6 +689,10 @@ class _ArrayLikeType(IdlType):
         return hash((self.__class__, self.element_type))
 
     # IdlType overrides
+    def apply_to_all_composing_elements(self, callback):
+        callback(self)
+        self.element_type.apply_to_all_composing_elements(callback)
+
     @property
     def element_type(self):
         return self._element_type
@@ -810,6 +843,11 @@ class RecordType(IdlType):
         return self._format_type_name('{}{}Record'.format(
             self.key_type.type_name, self.value_type.type_name))
 
+    def apply_to_all_composing_elements(self, callback):
+        callback(self)
+        self.key_type.apply_to_all_composing_elements(callback)
+        self.value_type.apply_to_all_composing_elements(callback)
+
     @property
     def is_record(self):
         return True
@@ -860,6 +898,10 @@ class PromiseType(IdlType):
     def type_name(self):
         return self._format_type_name('{}Promise'.format(
             self.result_type.type_name))
+
+    def apply_to_all_composing_elements(self, callback):
+        callback(self)
+        self.result_type.apply_to_all_composing_elements(callback)
 
     @property
     def is_promise(self):
@@ -925,6 +967,11 @@ class UnionType(IdlType):
     def type_name(self):
         return self._format_type_name('Or'.join(
             [member.type_name for member in self.member_types]))
+
+    def apply_to_all_composing_elements(self, callback):
+        callback(self)
+        for member_type in self.member_types:
+            member_type.apply_to_all_composing_elements(callback)
 
     @property
     def does_include_nullable_type(self):
@@ -1002,6 +1049,10 @@ class NullableType(IdlType):
         ext_attrs = ''.join(sorted(self.inner_type.extended_attributes.keys()))
         sep_index = len(name) - len(ext_attrs)
         return '{}OrNull{}'.format(name[0:sep_index], name[sep_index:])
+
+    def apply_to_all_composing_elements(self, callback):
+        callback(self)
+        self.inner_type.apply_to_all_composing_elements(callback)
 
     @property
     def does_include_nullable_type(self):

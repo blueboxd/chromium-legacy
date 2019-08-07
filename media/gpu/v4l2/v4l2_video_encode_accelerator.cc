@@ -671,10 +671,20 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
     return true;
   }
 
-  if (new_frame_size != device_input_layout_->coded_size()) {
+  // Here we should compare |device_input_layout_->coded_size()|. However, VEA
+  // requests a client |input_allocated_size_|, which might be a larger size
+  // than |device_input_layout_->coded_size()|. The size is larger if there is
+  // an extra data in planes, that happens on MediaTek.
+  // This comparison will work because VEAClient within Chrome gives the buffer
+  // whose frame size as |input_allocated_size_|. VEAClient for ARC++ might give
+  // a different frame size but |input_allocated_size_| is always the same as
+  // |device_input_layout_->coded_size()|.
+  if (new_frame_size != input_allocated_size_) {
     VLOGF(2) << "Call S_FMT with a new size=" << new_frame_size.ToString()
              << ", the previous size ="
-             << device_input_layout_->coded_size().ToString();
+             << device_input_layout_->coded_size().ToString()
+             << " (the size requested to client="
+             << input_allocated_size_.ToString();
     if (input_streamon_ || output_streamon_) {
       VLOGF(1) << "Input frame size is changed during encoding";
       NOTIFY_ERROR(kInvalidArgumentError);

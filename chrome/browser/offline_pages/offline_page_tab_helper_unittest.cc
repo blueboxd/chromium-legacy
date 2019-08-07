@@ -83,7 +83,7 @@ class OfflinePageTabHelperTest : public content::RenderViewHostTestHarness {
 
   void SetUp() override;
   void TearDown() override;
-  content::BrowserContext* CreateBrowserContext() override;
+  std::unique_ptr<content::BrowserContext> CreateBrowserContext() override;
 
   void CreateNavigationSimulator(const GURL& url);
 
@@ -131,9 +131,9 @@ void OfflinePageTabHelperTest::TearDown() {
   content::RenderViewHostTestHarness::TearDown();
 }
 
-content::BrowserContext* OfflinePageTabHelperTest::CreateBrowserContext() {
-  TestingProfile::Builder builder;
-  return builder.Build().release();
+std::unique_ptr<content::BrowserContext>
+OfflinePageTabHelperTest::CreateBrowserContext() {
+  return TestingProfile::Builder().Build();
 }
 
 void OfflinePageTabHelperTest::CreateNavigationSimulator(const GURL& url) {

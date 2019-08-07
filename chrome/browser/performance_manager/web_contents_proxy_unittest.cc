@@ -53,7 +53,7 @@ TEST_F(WebContentsProxyTest, EndToEnd) {
         base::BindLambdaForTesting(
             [&deref_proxy, page_node,
              quit_loop = run_loop.QuitClosure()](GraphImpl* graph) {
-              base::PostTaskWithTraits(
+              base::PostTask(
                   FROM_HERE, {content::BrowserThread::UI},
                   base::BindOnce(deref_proxy, page_node->contents_proxy(),
                                  std::move(quit_loop)));
@@ -72,10 +72,10 @@ TEST_F(WebContentsProxyTest, EndToEnd) {
         base::BindLambdaForTesting([&contents, &deref_proxy, page_node,
                                     quit_loop = run_loop.QuitClosure()](
                                        GraphImpl* graph) {
-          base::PostTaskWithTraits(
+          base::PostTask(
               FROM_HERE, {content::BrowserThread::UI},
               base::BindLambdaForTesting([&contents]() { contents.reset(); }));
-          base::PostTaskWithTraits(
+          base::PostTask(
               FROM_HERE, {content::BrowserThread::UI},
               base::BindOnce(deref_proxy, page_node->contents_proxy(),
                              std::move(quit_loop)));

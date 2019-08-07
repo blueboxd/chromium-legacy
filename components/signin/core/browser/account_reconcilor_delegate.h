@@ -18,6 +18,15 @@ class AccountReconcilor;
 
 namespace signin {
 
+// Possible revoke token actions taken by the AccountReconcilor.
+enum class RevokeTokenAction {
+  kNone,
+  kInvalidatePrimaryAccountToken,
+  kRevokeSecondaryAccountsTokens,
+  kRevokeTokensForPrimaryAndSecondaryAccounts,
+  kMaxValue = kRevokeTokensForPrimaryAndSecondaryAccounts
+};
+
 // Base class for AccountReconcilorDelegate.
 class AccountReconcilorDelegate {
  public:
@@ -84,6 +93,14 @@ class AccountReconcilorDelegate {
   virtual RevokeTokenOption ShouldRevokeSecondaryTokensBeforeReconcile(
       const std::vector<gaia::ListedAccount>& gaia_accounts);
 
+  // Invalidates primary account token or revokes token for any secondary
+  // account that does not have an equivalent gaia cookie.
+  virtual bool ShouldRevokeTokensNotInCookies() const;
+
+  // Called when |RevokeTokensNotInCookies| is finished.
+  virtual void OnRevokeTokensNotInCookiesCompleted(
+      RevokeTokenAction revoke_token_action) {}
+
   // Returns whether tokens should be revoked when the Gaia cookie has been
   // explicitly deleted by the user.
   // If this returns false, tokens will not be revoked. If this returns true,
@@ -92,9 +109,9 @@ class AccountReconcilorDelegate {
   virtual bool ShouldRevokeTokensOnCookieDeleted();
 
   // Called when reconcile is finished.
-  // |OnReconcileFinished| is always called at the end of reconciliation, even
-  // when there is an error (except in cases where reconciliation times out
-  // before finishing, see |GetReconcileTimeout|).
+  // |OnReconcileFinished| is always called at the end of reconciliation,
+  // even when there is an error (except in cases where reconciliation times
+  // out before finishing, see |GetReconcileTimeout|).
   virtual void OnReconcileFinished(const CoreAccountId& first_account,
                                    bool reconcile_is_noop) {}
 

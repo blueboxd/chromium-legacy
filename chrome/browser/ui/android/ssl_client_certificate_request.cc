@@ -379,8 +379,8 @@ JNI_SSLClientCertificateRequest_NotifyClientCertificatesChangedOnIOThread(
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     NotifyClientCertificatesChanged();
   } else {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&NotifyClientCertificatesChanged));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&NotifyClientCertificatesChanged));
   }
 }
 

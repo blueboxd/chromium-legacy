@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -71,7 +70,6 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Mock public ChromeActivity activity;
     @Mock public CustomTabsConnection connection;
     @Mock public CustomTabIntentDataProvider intentDataProvider;
-    @Mock public TabContentManager tabContentManager;
     @Mock public TabObserverRegistrar tabObserverRegistrar;
     @Mock public CompositorViewHolder compositorViewHolder;
     @Mock public WarmupManager warmupManager;
@@ -132,13 +130,10 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     public CustomTabActivityTabController createTabController() {
         return new CustomTabActivityTabController(activity,
-                ()
-                        -> customTabDelegateFactory,
-                connection, intentDataProvider, activityTabProvider, tabObserverRegistrar,
-                ()
-                        -> compositorViewHolder,
-                lifecycleDispatcher, warmupManager, tabPersistencePolicy, tabFactory,
-                () -> customTabObserver, webContentsFactory, navigationEventObserver, tabProvider);
+                () -> customTabDelegateFactory, connection, intentDataProvider, activityTabProvider,
+                tabObserverRegistrar, () -> compositorViewHolder, lifecycleDispatcher,
+                warmupManager, tabPersistencePolicy, tabFactory, () -> customTabObserver,
+                webContentsFactory, navigationEventObserver, tabProvider);
     }
 
     public CustomTabActivityNavigationController createNavigationController(
@@ -149,11 +144,13 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
                 () -> fullscreenManager);
     }
 
-    public CustomTabActivityInitialPageLoader createInitialPageLoader(
+    public CustomTabIntentHandler createIntentHandler(
             CustomTabActivityNavigationController navigationController) {
-        return new CustomTabActivityInitialPageLoader(tabProvider,
-                intentDataProvider, connection, () -> customTabObserver,
-                navigationEventObserver, navigationController);
+        CustomTabIntentHandlingStrategy strategy = new DefaultCustomTabIntentHandlingStrategy(
+                tabProvider, navigationController, navigationEventObserver,
+                () -> customTabObserver);
+        return new CustomTabIntentHandler(tabProvider,
+                intentDataProvider, strategy, (intent) -> false, activity);
     }
 
 

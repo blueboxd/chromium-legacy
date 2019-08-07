@@ -361,6 +361,8 @@ void JSONTraceExporter::SetTraceStatsMetadata(
                          buf_stats.readaheads_succeeded());
     buf_dict->SetInteger("readaheads_failed", buf_stats.readaheads_failed());
     buf_dict->SetInteger("abi_violations", buf_stats.abi_violations());
+    buf_dict->SetInteger("trace_writer_packet_loss",
+                         buf_stats.trace_writer_packet_loss());
     buf_list->GetList().push_back(std::move(buf_value));
   }
   dict->SetList("buffer_stats", std::move(buf_list));

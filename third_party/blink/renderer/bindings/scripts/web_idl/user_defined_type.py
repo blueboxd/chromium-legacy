@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .composition_parts import WithComponent
 from .composition_parts import WithIdentifier
 
 
@@ -55,3 +56,9 @@ class UserDefinedType(WithIdentifier):
         @return bool
         """
         return False
+
+
+class StubUserDefinedType(UserDefinedType, WithComponent):
+    def __init__(self, identifier):
+        UserDefinedType.__init__(self, identifier)
+        WithComponent.__init__(self, components=[])

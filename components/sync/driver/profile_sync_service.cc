@@ -776,11 +776,11 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
   sync_prefs_.ClearDirectoryConsistencyPreferences();
 }
 
-void ProfileSyncService::ReadyForStartChanged(ModelType type) {
+void ProfileSyncService::DataTypePreconditionChanged(ModelType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!engine_ || !engine_->IsInitialized() || !data_type_manager_)
     return;
-  data_type_manager_->ReadyForStartChanged(type);
+  data_type_manager_->DataTypePreconditionChanged(type);
 }
 
 void ProfileSyncService::UpdateEngineInitUMA(bool success) const {

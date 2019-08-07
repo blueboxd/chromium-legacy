@@ -26,8 +26,6 @@ source_set("tabs") {
   ]
   deps = [
     "resources:open_new_tab_background",
-    "resources:tabstrip_active_tab_close_button_color",
-    "resources:tabstrip_active_tab_incognito_close_button_color",
     "resources:tabstrip_background_tab",
     "resources:tabstrip_foreground_tab",
     "resources:tabstrip_inactive_tab_close_button_color",

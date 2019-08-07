@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_test_utils.h"
@@ -43,6 +44,34 @@ const base::TimeDelta visual_update_timeout = base::TimeDelta::FromSeconds(20);
 const base::TimeDelta cool_off_action_timeout = base::TimeDelta::FromSeconds(1);
 
 std::string FilePathToUTF8(const base::FilePath::StringType& str);
+
+enum ExpectedResult { kPass, kFail };
+struct CapturedSiteParams {
+  std::string scenario_dir;
+  std::string site_name;
+  ExpectedResult expectation = kPass;
+  bool is_disabled = false;
+  base::FilePath capture_file_path;
+  base::FilePath recipe_file_path;
+
+  CapturedSiteParams();
+  ~CapturedSiteParams();
+  CapturedSiteParams(const CapturedSiteParams& other);
+};
+
+std::ostream& operator<<(std::ostream& os, const CapturedSiteParams& data);
+
+std::vector<CapturedSiteParams> GetCapturedSites(
+    const base::FilePath& replay_files_dir_path);
+
+struct GetParamAsString {
+  template <class ParamType>
+  std::string operator()(const testing::TestParamInfo<ParamType>& info) const {
+    if (info.param.scenario_dir.empty())
+      return info.param.site_name;
+    return base::StrCat({info.param.scenario_dir, "_", info.param.site_name});
+  }
+};
 
 // PageActivityObserver
 //
@@ -225,6 +254,8 @@ class TestRecipeReplayer {
   bool ReplayTest(const base::FilePath capture_file_path,
                   const base::FilePath recipe_file_path);
 
+  const std::vector<testing::AssertionResult> GetValidationFailures() const;
+
   static void SetUpCommandLine(base::CommandLine* command_line);
   static bool ScrollElementIntoView(const std::string& element_xpath,
                                     content::RenderFrameHost* frame);
@@ -253,6 +284,7 @@ class TestRecipeReplayer {
       gfx::Rect* output_rect);
 
   Browser* browser();
+
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor();
   content::WebContents* GetWebContents();
   void CleanupSiteData();
@@ -318,6 +350,7 @@ class TestRecipeReplayer {
       const std::string& element_xpath,
       const std::string& get_property_function_body,
       const std::string& expected_value,
+      const std::string& validation_field,
       const bool ignoreCase = false);
   void NavigateAwayAndDismissBeforeUnloadDialog();
   bool HasChromeStoredCredential(const base::DictionaryValue& action,
@@ -328,6 +361,8 @@ class TestRecipeReplayer {
 
   Browser* browser_;
   TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor_;
+
+  std::vector<testing::AssertionResult> validation_failures_;
 
   // The Web Page Replay server that serves the captured sites.
   base::Process web_page_replay_server_;

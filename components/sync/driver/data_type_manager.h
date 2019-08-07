@@ -76,7 +76,7 @@ class DataTypeManager {
   // controller has changed. If the controller is not ready any more, it will
   // stop |type|. Otherwise, it will trigger reconfiguration so that |type| gets
   // started again. No-op if the type's state didn't actually change.
-  virtual void ReadyForStartChanged(ModelType type) = 0;
+  virtual void DataTypePreconditionChanged(ModelType type) = 0;
 
   // Resets all data type error state.
   virtual void ResetDataTypeErrors() = 0;

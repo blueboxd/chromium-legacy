@@ -165,7 +165,7 @@ SkBitmap ReadIconBlocking(std::unique_ptr<FileUtilsWrapper> utils,
 }
 
 constexpr base::TaskTraits kTaskTraits = {
-    base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+    base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 }  // namespace
@@ -184,7 +184,7 @@ void WebAppIconManager::WriteData(
     WriteDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(WriteDataBlocking, utils_->Clone(), web_apps_directory_,
                      std::move(app_id), std::move(web_app_info)),
@@ -198,7 +198,7 @@ bool WebAppIconManager::ReadIcon(const WebApp& web_app,
 
   for (const WebApp::IconInfo& icon_info : web_app.icons()) {
     if (icon_info.size_in_px == icon_size_in_px) {
-      base::PostTaskWithTraitsAndReplyWithResult(
+      base::PostTaskAndReplyWithResult(
           FROM_HERE, kTaskTraits,
           base::BindOnce(ReadIconBlocking, utils_->Clone(), web_apps_directory_,
                          web_app.app_id(), icon_size_in_px),

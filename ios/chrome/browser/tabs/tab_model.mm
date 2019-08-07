@@ -654,7 +654,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // active sessions.
   CleanCertificatePolicyCache(
       &_clearPoliciesTaskTracker,
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),
+      base::CreateSingleThreadTaskRunner({web::WebThread::IO}),
       web::BrowserState::GetCertificatePolicyCache(_browserState),
       _webStateList.get());
 

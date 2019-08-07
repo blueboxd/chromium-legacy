@@ -32,6 +32,8 @@ public class CustomTabActivityTabProvider {
     private Tab mTab;
     @TabCreationMode
     private int mTabCreationMode = TabCreationMode.NONE;
+    @Nullable
+    private String mSpeculatedUrl;
 
     @Inject
     CustomTabActivityTabProvider() {}
@@ -71,14 +73,29 @@ public class CustomTabActivityTabProvider {
         return mTabCreationMode;
     }
 
+    /**
+     * Returns speculated url, if there was one.
+     */
+    @Nullable
+    public String getSpeculatedUrl() {
+        return mSpeculatedUrl;
+    }
+
     void setInitialTab(@NonNull Tab tab, @TabCreationMode int creationMode) {
         assert mTab == null;
         assert creationMode != TabCreationMode.NONE;
         mTab = tab;
         mTabCreationMode = creationMode;
+        if (creationMode != TabCreationMode.HIDDEN) {
+            mSpeculatedUrl = null;
+        }
         for (Observer observer : mObservers) {
             observer.onInitialTabCreated(tab, creationMode);
         }
+    }
+
+    void setSpeculatedUrl(@Nullable String url) {
+        mSpeculatedUrl = url;
     }
 
     void removeTab() {

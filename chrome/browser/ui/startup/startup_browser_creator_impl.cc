@@ -250,13 +250,13 @@ void RecordLaunchModeHistogram(LaunchMode mode) {
       (mode = GetLaunchModeFast()) == LM_TO_BE_DECIDED) {
     // The mode couldn't be determined with a fast path. Perform a more
     // expensive evaluation out of the critical startup path.
-    base::PostTaskWithTraits(FROM_HERE,
-                             {base::TaskPriority::BEST_EFFORT,
-                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                             base::BindOnce([]() {
-                               base::UmaHistogramSparse(kHistogramName,
-                                                        GetLaunchModeSlow());
-                             }));
+    base::PostTask(FROM_HERE,
+                   {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                   base::BindOnce([]() {
+                     base::UmaHistogramSparse(kHistogramName,
+                                              GetLaunchModeSlow());
+                   }));
   } else {
     base::UmaHistogramSparse(kHistogramName, mode);
   }

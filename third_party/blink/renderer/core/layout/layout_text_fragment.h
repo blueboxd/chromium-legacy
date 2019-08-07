@@ -74,8 +74,6 @@ class CORE_EXPORT LayoutTextFragment : public LayoutText {
 
   scoped_refptr<StringImpl> OriginalText() const override;
 
-  void ForceSetText(scoped_refptr<StringImpl>,
-                    bool avoid_layout_and_only_paint = false) override;
   void SetTextFragment(scoped_refptr<StringImpl>,
                        unsigned start,
                        unsigned length);
@@ -109,6 +107,7 @@ class CORE_EXPORT LayoutTextFragment : public LayoutText {
  private:
   LayoutBlock* BlockForAccompanyingFirstLetter() const;
   UChar PreviousCharacter() const override;
+  void TextDidChange() override;
 
   void UpdateHitTestResult(HitTestResult&,
                            const PhysicalOffset&) const override;

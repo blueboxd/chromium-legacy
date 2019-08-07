@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -119,12 +118,12 @@ bool CompositorThreadScheduler::ShouldYieldForHighPriorityWork() {
 }
 
 void CompositorThreadScheduler::AddTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
+    base::TaskObserver* task_observer) {
   helper()->AddTaskObserver(task_observer);
 }
 
 void CompositorThreadScheduler::RemoveTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
+    base::TaskObserver* task_observer) {
   helper()->RemoveTaskObserver(task_observer);
 }
 

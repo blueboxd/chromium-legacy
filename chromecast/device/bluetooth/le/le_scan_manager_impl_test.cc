@@ -49,8 +49,9 @@ class MockLeScanManagerObserver : public LeScanManager::Observer {
 class LeScanManagerTest : public ::testing::Test {
  protected:
   LeScanManagerTest()
-      : io_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
-            {base::TaskPriority::BEST_EFFORT, base::MayBlock()})),
+      : io_task_runner_(base::CreateSingleThreadTaskRunner(
+            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+             base::MayBlock()})),
         le_scan_manager_(&le_scanner_) {
     le_scan_manager_.Initialize(io_task_runner_);
     le_scan_manager_.AddObserver(&mock_observer_);

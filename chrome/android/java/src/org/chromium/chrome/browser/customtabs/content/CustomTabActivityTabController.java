@@ -132,6 +132,9 @@ public class CustomTabActivityTabController implements InflationObserver, Native
         mSession = mIntentDataProvider.getSession();
         mIntent = mIntentDataProvider.getIntent();
 
+        // Save speculated url, because it will be erased later with mConnection.takeHiddenTab().
+        mTabProvider.setSpeculatedUrl(mConnection.getSpeculatedUrl(mSession));
+
         lifecycleDispatcher.register(this);
     }
 

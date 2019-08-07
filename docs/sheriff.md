@@ -86,6 +86,16 @@ enough to appear in the channel at the top level as well - this helps keep the
 main channel clear of smaller status updates and makes it more like an index of
 the threads.
 
+### Monorail
+
+[Monorail] is our bug tracker. Hopefully you are already familiar with it.
+When sheriffing, you use Monorail to:
+
+* Look for existing bugs
+* File bugs when you revert CLs, explaining what happened and including any
+  stack traces or error messages
+* File bugs when you disable tests, again with as much information as practical
+
 ### The Waterfall
 
 The [CI console page], commonly referred to as "the waterfall" because of how it
@@ -267,7 +277,8 @@ If yes:
 * Start a new thread in Slack for one of the failures
 * Investigate the failure and figure out why it happened - see the "diagnosing
   build failures" section below
-* Fix what went wrong
+* Fix what went wrong, remembering to file a bug to document both the failure
+  and your fix
 * Snooze the failure, with a link to the bug if your investigation resulted in a
   bug
 
@@ -364,6 +375,13 @@ but only on these bots, that test might just be slow. For Blink tests there is a
 file called [SlowTests] that lists these tests and gives them more time to run;
 for Chromium tests you can just mark these as `DISABLED_` in those configurations
 if you want.
+
+When marking a Blink test as slow/flaky/etc, it's often not clear who to send
+the CL to, especially if the test is a WPT test imported from another repository
+or hasn't been edited in a while. In those situations, or when you just can't
+find the right owner for a test, feel free to TBR your CL to one of the other
+sheriffs on your rotation and kick it into the Blink triage queue (ie: mark the
+bug as Untriaged with component Blink).
 
 ### Infra Breakage
 

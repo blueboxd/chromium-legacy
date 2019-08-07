@@ -8,9 +8,11 @@ from .database import DatabaseBody
 from .dictionary import Dictionary
 from .identifier_ir_map import IdentifierIRMap
 from .idl_type import IdlTypeFactory
+from .interface import Interface
 from .reference import RefByIdFactory
 from .typedef import Typedef
 from .union import Union
+from .user_defined_type import StubUserDefinedType
 from .user_defined_type import UserDefinedType
 
 
@@ -189,6 +191,11 @@ class IdlCompiler(object):
 
     def _create_public_objects(self):
         """Creates public representations of compiled objects."""
+        interface_irs = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.INTERFACE)
+        for ir in interface_irs.itervalues():
+            self._db.register(DatabaseBody.Kind.INTERFACE, Interface(ir))
+
         dictionary_irs = self._ir_map.find_by_kind(
             IdentifierIRMap.IR.Kind.DICTIONARY)
         for ir in dictionary_irs.itervalues():
@@ -206,7 +213,7 @@ class IdlCompiler(object):
             except KeyError:
                 self._report_error("{}: Unresolved reference to {}".format(
                     ref.ref_own_debug_info.location, ref.identifier))
-                idl_def = UserDefinedType(ref.identifier)  # dummy stub
+                idl_def = StubUserDefinedType(ref.identifier)
             ref.set_target_object(idl_def)
 
         self._ref_to_idl_def_factory.for_each(resolve)
@@ -218,7 +225,7 @@ class IdlCompiler(object):
             except KeyError:
                 self._report_error("{}: Unresolved reference to {}".format(
                     ref.ref_own_debug_info.location, ref.identifier))
-                idl_def = UserDefinedType(ref.identifier)  # dummy stub
+                idl_def = StubUserDefinedType(ref.identifier)
             if isinstance(idl_def, UserDefinedType):
                 idl_type = self._idl_type_factory.definition_type(
                     user_defined_type=idl_def)

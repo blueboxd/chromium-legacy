@@ -150,39 +150,38 @@ TEST_F(SafeBundledExchangesParserTest, ParseGoldenFile) {
     run_loop.Run();
   }
   ASSERT_TRUE(metadata_result);
-  ASSERT_EQ(metadata_result->index.size(), 4u);
-  const auto& index = metadata_result->index;
+  const auto& requests = metadata_result->requests;
+  ASSERT_EQ(requests.size(), 4u);
 
-  std::vector<mojom::BundleResponsePtr> responses;
-  for (auto& entry : index) {
+  std::map<std::string, mojom::BundleResponsePtr> responses;
+  for (auto& entry : requests) {
     base::RunLoop run_loop;
     parser.ParseResponse(
-        entry->response_offset, entry->response_length,
+        entry.second->response_locations[0]->offset,
+        entry.second->response_locations[0]->length,
         base::BindOnce(
-            [](base::Closure quit_closure,
-               std::vector<mojom::BundleResponsePtr>* responses,
+            [](base::Closure quit_closure, const std::string url,
+               std::map<std::string, mojom::BundleResponsePtr>* responses,
                mojom::BundleResponsePtr response,
                mojom::BundleResponseParseErrorPtr error) {
               EXPECT_TRUE(response);
               EXPECT_FALSE(error);
               if (response)
-                responses->push_back(std::move(response));
+                responses->insert({url, std::move(response)});
               std::move(quit_closure).Run();
             },
-            run_loop.QuitClosure(), &responses));
+            run_loop.QuitClosure(), entry.first.spec(), &responses));
     run_loop.Run();
   }
 
-  EXPECT_EQ(index[0]->request_url, "https://test.example.org/");
-  EXPECT_EQ(index[0]->request_method, "GET");
-  EXPECT_EQ(index[0]->request_headers.size(), 0u);
-  EXPECT_EQ(responses[0]->response_code, 200);
-  EXPECT_EQ(responses[0]->response_headers["content-type"],
-            "text/html; charset=utf-8");
-  EXPECT_EQ(index[1]->request_url, "https://test.example.org/index.html");
-  EXPECT_EQ(index[2]->request_url,
-            "https://test.example.org/manifest.webmanifest");
-  EXPECT_EQ(index[3]->request_url, "https://test.example.org/script.js");
+  ASSERT_TRUE(responses["https://test.example.org/"]);
+  EXPECT_EQ(responses["https://test.example.org/"]->response_code, 200);
+  EXPECT_EQ(
+      responses["https://test.example.org/"]->response_headers["content-type"],
+      "text/html; charset=utf-8");
+  EXPECT_TRUE(responses["https://test.example.org/index.html"]);
+  EXPECT_TRUE(responses["https://test.example.org/manifest.webmanifest"]);
+  EXPECT_TRUE(responses["https://test.example.org/script.js"]);
 }
 
 TEST_F(SafeBundledExchangesParserTest, OpenInvalidFile) {

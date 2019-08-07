@@ -306,6 +306,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   // Whether |origin| has any registrations. Must be called on UI thread.
   bool HasRegistrationForOrigin(const GURL& origin) const;
+  void WaitForRegistrationsInitializedForTest();
 
  private:
   friend class BackgroundSyncManagerTest;
@@ -322,15 +323,14 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   ~ServiceWorkerContextWrapper() override;
 
-  void InitInternal(
-      const base::FilePath& user_data_directory,
-      scoped_refptr<base::SequencedTaskRunner> database_task_runner,
-      storage::QuotaManagerProxy* quota_manager_proxy,
-      storage::SpecialStoragePolicy* special_storage_policy,
-      ChromeBlobStorageContext* blob_context,
-      URLLoaderFactoryGetter* url_loader_factory_getter,
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          non_network_loader_factory_bundle_info_for_update_check);
+  void InitOnIO(const base::FilePath& user_data_directory,
+                scoped_refptr<base::SequencedTaskRunner> database_task_runner,
+                storage::QuotaManagerProxy* quota_manager_proxy,
+                storage::SpecialStoragePolicy* special_storage_policy,
+                ChromeBlobStorageContext* blob_context,
+                URLLoaderFactoryGetter* url_loader_factory_getter,
+                std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+                    non_network_loader_factory_bundle_info_for_update_check);
   void ShutdownOnIO();
 
   // If |include_installing_version| is true, |callback| is called if there is
@@ -473,6 +473,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // fully converted to running on the UI thread.
   base::flat_map<GURL, base::flat_set<int64_t>> registrations_for_origin_;
   bool registrations_initialized_ = false;
+  base::OnceClosure on_registrations_initialized_;
 
   scoped_refptr<ServiceWorkerContextWatcher> watcher_;
 

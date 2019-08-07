@@ -46,8 +46,8 @@ void LayoutTextCombine::StyleDidChange(StyleDifference diff,
   UpdateFontStyleForCombinedText();
 }
 
-void LayoutTextCombine::SetTextInternal(scoped_refptr<StringImpl> text) {
-  LayoutText::SetTextInternal(std::move(text));
+void LayoutTextCombine::TextDidChange() {
+  LayoutText::TextDidChange();
 
   bool was_combined = IsCombined();
   UpdateIsCombined();

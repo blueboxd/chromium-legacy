@@ -175,8 +175,9 @@ ArcDefaultAppList::ArcDefaultAppList(Profile* profile,
 
   // Once ready OnAppsReady is called.
   for (const auto& source : sources) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&ReadAppsFromFileThread, source),
         base::BindOnce(&ArcDefaultAppList::OnAppsRead,
                        weak_ptr_factory_.GetWeakPtr()));

@@ -253,14 +253,14 @@ TaskQueue::QueuePriority TaskQueue::GetQueuePriority() const {
   return impl_->GetQueuePriority();
 }
 
-void TaskQueue::AddTaskObserver(MessageLoop::TaskObserver* task_observer) {
+void TaskQueue::AddTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (!impl_)
     return;
   impl_->AddTaskObserver(task_observer);
 }
 
-void TaskQueue::RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) {
+void TaskQueue::RemoveTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (!impl_)
     return;

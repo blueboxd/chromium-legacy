@@ -366,7 +366,7 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
 
 static bool IsListElement(Node* node) {
   return IsHTMLUListElement(*node) || IsHTMLOListElement(*node) ||
-         IsHTMLDListElement(*node);
+         IsA<HTMLDListElement>(*node);
 }
 
 static bool IsRequiredOwnedElement(AXObject* parent,
@@ -596,7 +596,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsHTMLRubyElement(*GetNode()))
     return ax::mojom::Role::kRuby;
 
-  if (IsHTMLDListElement(*GetNode()))
+  if (IsA<HTMLDListElement>(*GetNode()))
     return ax::mojom::Role::kDescriptionList;
 
   if (IsA<HTMLAudioElement>(*GetNode()))

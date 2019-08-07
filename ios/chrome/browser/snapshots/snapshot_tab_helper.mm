@@ -144,7 +144,7 @@ void SnapshotTabHelper::PageLoaded(
         break;
 
       bool was_loading = was_loading_during_last_snapshot_;
-      base::PostDelayedTaskWithTraits(
+      base::PostDelayedTask(
           FROM_HERE, {web::WebThread::UI},
           base::BindOnce(
               &SnapshotTabHelper::UpdateSnapshotWithCallback,

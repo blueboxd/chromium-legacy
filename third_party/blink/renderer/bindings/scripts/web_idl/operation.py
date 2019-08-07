@@ -8,7 +8,6 @@ from .argument import Argument
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
-from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
@@ -20,15 +19,14 @@ class Operation(IdlMember):
     """https://heycam.github.io/webidl/#idl-operations
     https://www.w3.org/TR/WebIDL-1/#idl-special-operations"""
 
-    class IR(WithIdentifier, WithExtendedAttributes, WithExposure,
-             WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
+    class IR(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
+             WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      arguments,
                      return_type,
                      is_static=False,
                      extended_attributes=None,
-                     exposures=None,
                      code_generator_info=None,
                      component=None,
                      components=None,
@@ -40,7 +38,6 @@ class Operation(IdlMember):
 
             WithIdentifier.__init__(self, identifier)
             WithExtendedAttributes.__init__(self, extended_attributes)
-            WithExposure.__init__(self, exposures)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(
                 self, component=component, components=components)

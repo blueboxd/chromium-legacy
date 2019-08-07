@@ -45,22 +45,26 @@ SessionModelTypeController::~SessionModelTypeController() {
   sync_service_->RemoveObserver(this);
 }
 
-bool SessionModelTypeController::ReadyForStart() const {
+syncer::DataTypeController::PreconditionState
+SessionModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
-  return !pref_service_->GetBoolean(history_disabled_pref_name_) &&
-         !(syncer::IsWebSignout(sync_service_->GetAuthError()) &&
-           base::FeatureList::IsEnabled(kStopSessionsIfSyncPaused));
+  bool preconditions_met =
+      !pref_service_->GetBoolean(history_disabled_pref_name_) &&
+      !(syncer::IsWebSignout(sync_service_->GetAuthError()) &&
+        base::FeatureList::IsEnabled(kStopSessionsIfSyncPaused));
+  return preconditions_met ? PreconditionState::kPreconditionsMet
+                           : PreconditionState::kMustStopAndKeepData;
 }
 
 void SessionModelTypeController::OnStateChanged(syncer::SyncService* sync) {
   DCHECK(CalledOnValidThread());
   // Most of these calls will be no-ops but SyncService handles that just fine.
-  sync_service_->ReadyForStartChanged(type());
+  sync_service_->DataTypePreconditionChanged(type());
 }
 
 void SessionModelTypeController::OnSavingBrowserHistoryPrefChanged() {
   DCHECK(CalledOnValidThread());
-  sync_service_->ReadyForStartChanged(type());
+  sync_service_->DataTypePreconditionChanged(type());
 }
 
 }  // namespace sync_sessions

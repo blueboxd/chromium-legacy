@@ -181,8 +181,9 @@ void PasswordUIViewAndroid::HandleSerializePasswords(
   // but still long enough not to block the UI thread. The main concern here is
   // not to avoid the background computation if |this| is about to be deleted
   // but to simply avoid use after free from the background task runner.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(
           &PasswordUIViewAndroid::ObtainAndSerializePasswords,
           base::Unretained(this),

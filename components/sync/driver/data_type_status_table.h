@@ -28,6 +28,11 @@ class DataTypeStatusTable {
   // error map based on their |error_type()|.
   void UpdateFailedDataTypes(const TypeErrorMap& errors);
 
+  // Update an individual failed datatype. The type will be added to its
+  // corresponding error map based on |error.error_type()|. Returns true if
+  // there was an actual change.
+  bool UpdateFailedDataType(ModelType type, const SyncError& error);
+
   // Resets the current set of data type errors.
   void Reset();
 

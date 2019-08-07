@@ -85,7 +85,7 @@ void MediaRouterActionController::OnDialogHidden() {
       observer.DeactivateIcon();
     // Call MaybeAddOrRemoveAction() asynchronously, so that the action icon
     // doesn't get hidden until we have a chance to show a context menu.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&MediaRouterActionController::MaybeAddOrRemoveAction,
                        weak_factory_.GetWeakPtr()));

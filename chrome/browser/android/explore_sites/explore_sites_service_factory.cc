@@ -74,7 +74,7 @@ KeyedService* ExploreSitesServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::FilePath store_path =
       profile->GetPath().Append(kExploreSitesStoreDirname);
   auto explore_sites_store =

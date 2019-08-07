@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_installed_script_loader.h"
 #include "content/browser/service_worker/service_worker_new_script_loader.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_updated_script_loader.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -65,21 +66,18 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   //    storage (use ServiceWorkerInstalledScriptLoader)
   // D) service worker is not installed, script is not installed:
   //    When ServiceWorkerImportedScriptsUpdateCheck is enabled, there are
-  //    three sub cases:
+  //    three sub cases (D.1 to D.3). When not, D.3 always happens.
   //    1) If compared script info exists and specifies that the script is
   //       installed in an old service worker and content is not changed, then
   //       copy the old script into the new service worker and load it using
   //       ServiceWorkerInstalledScriptLoader.
   //    2) If compared script info exists and specifies that the script is
   //       installed in an old service worker but content has changed, then
-  //       ServiceWorkerNewScriptLoader::CreateForResume() is called to create
-  //       a ServiceWorkerNewScriptLoader to resume the paused state in the
-  //       compared script info.
+  //       ServiceWorkerUpdatedScriptLoader::CreateAndStart() is called to
+  //       resume the paused state stored in the compared script info.
   //    3) For other cases or if ServiceWorkerImportedScriptsUpdateCheck is not
-  //       enabled, serve from network with installing the script
-  //       (use ServiceWorkerNewScriptLoader::CreateForNetworkOnly() to
-  //       create a ServiceWorkerNewScriptLoader).
-  //       This is the common case: load the script and install it.
+  //       enabled, serve from network with installing the script by using
+  //       ServiceWorkerNewScriptLoader.
 
   // Case A and C:
   scoped_refptr<ServiceWorkerVersion> version =
@@ -128,7 +126,7 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
         case ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent:
           // Case D.2:
           mojo::MakeStrongBinding(
-              ServiceWorkerNewScriptLoader::CreateForResume(
+              ServiceWorkerUpdatedScriptLoader::CreateAndStart(
                   options, resource_request, std::move(client), version),
               std::move(request));
           return;
@@ -143,7 +141,7 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
 
   // Case D.3:
   mojo::MakeStrongBinding(
-      ServiceWorkerNewScriptLoader::CreateForNetworkOnly(
+      ServiceWorkerNewScriptLoader::CreateAndStart(
           routing_id, request_id, options, resource_request, std::move(client),
           provider_host_->running_hosted_version(),
           loader_factory_for_new_scripts_, traffic_annotation),

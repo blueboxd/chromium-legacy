@@ -182,7 +182,7 @@ const base::Feature kCrostini{"Crostini", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enable additional Crostini session status reporting for
 // managed devices only, i.e. reports of installed apps and kernel version.
 const base::Feature kCrostiniAdditionalEnterpriseReporting{
-    "CrostiniAdditionalEnterpriseReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CrostiniAdditionalEnterpriseReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable advanced access controls for Crostini-related features
 // (e.g. restricting VM CLI tools access, restricting Crostini root access).

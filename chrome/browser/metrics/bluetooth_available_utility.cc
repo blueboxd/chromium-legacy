@@ -57,7 +57,7 @@ void ReportBluetoothAvailability() {
   // GetAdapter must be called on the UI thread, because it creates a
   // WeakPtr, which is checked from that thread on future calls.
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&ReportBluetoothAvailability));

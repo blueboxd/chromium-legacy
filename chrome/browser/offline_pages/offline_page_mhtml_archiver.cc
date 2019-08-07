@@ -31,8 +31,9 @@ namespace offline_pages {
 namespace {
 void DeleteFileOnFileThread(const base::FilePath& file_path,
                             const base::Closure& callback) {
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path,
                      false /* recursive */),
       callback);
@@ -44,8 +45,9 @@ void DeleteFileOnFileThread(const base::FilePath& file_path,
 void ComputeDigestOnFileThread(
     const base::FilePath& file_path,
     base::OnceCallback<void(const std::string&)> callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ArchiveValidator::ComputeDigest, file_path),
       std::move(callback));
 }

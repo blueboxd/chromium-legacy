@@ -182,10 +182,9 @@ class ProfileLaunchObserver : public content::NotificationObserver,
     }
     // Asynchronous post to give a chance to the last window to completely
     // open and activate before trying to activate |profile_to_activate_|.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&ProfileLaunchObserver::ActivateProfile,
-                       base::Unretained(this)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&ProfileLaunchObserver::ActivateProfile,
+                                  base::Unretained(this)));
     // Avoid posting more than once before ActivateProfile gets called.
     registrar_.RemoveAll();
     BrowserList::RemoveObserver(this);
@@ -686,11 +685,11 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     base::FilePath output_file(
         command_line.GetSwitchValuePath(switches::kDumpBrowserHistograms));
     if (!output_file.empty()) {
-      base::PostTaskWithTraits(
-          FROM_HERE,
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-          base::BindOnce(&DumpBrowserHistograms, output_file));
+      base::PostTask(FROM_HERE,
+                     {base::ThreadPool(), base::MayBlock(),
+                      base::TaskPriority::BEST_EFFORT,
+                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                     base::BindOnce(&DumpBrowserHistograms, output_file));
     }
     silent_launch = true;
   }

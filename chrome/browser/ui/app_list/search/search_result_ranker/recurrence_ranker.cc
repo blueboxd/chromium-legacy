@@ -167,8 +167,8 @@ RecurrenceRanker::RecurrenceRanker(const std::string& model_identifier,
       time_of_last_save_(Time::Now()),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   targets_ = std::make_unique<FrecencyStore>(config.target_limit(),

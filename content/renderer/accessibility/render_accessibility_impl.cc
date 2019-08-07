@@ -309,6 +309,10 @@ void RenderAccessibilityImpl::HandleAccessibilityFindInPageResult(
   Send(new AccessibilityHostMsg_FindInPageResult(routing_id(), params));
 }
 
+void RenderAccessibilityImpl::HandleAccessibilityFindInPageTermination() {
+  Send(new AccessibilityHostMsg_FindInPageTermination(routing_id()));
+}
+
 void RenderAccessibilityImpl::AccessibilityFocusedElementChanged(
     const WebElement& element) {
   const WebDocument& document = GetMainDocument();

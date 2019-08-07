@@ -47,7 +47,7 @@ class FakeSyncService : public SyncService {
   base::Time GetAuthErrorTime() const override;
   bool RequiresClientUpgrade() const override;
   UserShare* GetUserShare() const override;
-  void ReadyForStartChanged(syncer::ModelType type) override;
+  void DataTypePreconditionChanged(syncer::ModelType type) override;
   SyncTokenStatus GetSyncTokenStatusForDebugging() const override;
   bool QueryDetailedSyncStatusForDebugging(SyncStatus* result) const override;
   base::Time GetLastSyncedTimeForDebugging() const override;

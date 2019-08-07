@@ -74,9 +74,11 @@ bool AutofillWalletDataTypeController::StartModels() {
   return false;
 }
 
-bool AutofillWalletDataTypeController::ReadyForStart() const {
+syncer::DataTypeController::PreconditionState
+AutofillWalletDataTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
-  return currently_enabled_;
+  return currently_enabled_ ? PreconditionState::kPreconditionsMet
+                            : PreconditionState::kMustStopAndClearData;
 }
 
 void AutofillWalletDataTypeController::OnUserPrefChanged() {
@@ -87,7 +89,7 @@ void AutofillWalletDataTypeController::OnUserPrefChanged() {
     return;  // No change to sync state.
   currently_enabled_ = new_enabled;
 
-  sync_service()->ReadyForStartChanged(type());
+  sync_service()->DataTypePreconditionChanged(type());
 }
 
 bool AutofillWalletDataTypeController::IsEnabled() {

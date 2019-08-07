@@ -50,6 +50,9 @@ void LeakDetectionDelegate::OnError(LeakDetectionError error) {
       case LeakDetectionError::kNotSignIn:
         logger.LogMessage(Logger::STRING_LEAK_DETECTION_SIGNED_OUT_ERROR);
         break;
+      case LeakDetectionError::kTokenRequestFailure:
+        logger.LogMessage(Logger::STRING_LEAK_DETECTION_TOKEN_REQUEST_ERROR);
+        break;
     }
   }
 }

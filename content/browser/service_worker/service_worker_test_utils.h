@@ -135,6 +135,12 @@ CreateProviderHostForServiceWorkerContext(
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint);
 
+// Creates a registration with a waiting version in INSTALLED state.
+scoped_refptr<ServiceWorkerRegistration>
+CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
+                                          const GURL& scope,
+                                          const GURL& script);
+
 // Writes the script down to |storage| synchronously. This should not be used in
 // base::RunLoop since base::RunLoop is used internally to wait for completing
 // all of tasks. If it's in another base::RunLoop, consider to use
@@ -357,8 +363,8 @@ class ServiceWorkerUpdateCheckTestUtils {
   static std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
   CreateUpdateCheckerPausedState(
       std::unique_ptr<ServiceWorkerCacheWriter> cache_writer,
-      ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
-      ServiceWorkerNewScriptLoader::WriterState body_writer_state,
+      ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
+      ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
       mojo::ScopedDataPipeConsumerHandle network_consumer);
 
   static void SetComparedScriptInfoForVersion(
@@ -379,8 +385,8 @@ class ServiceWorkerUpdateCheckTestUtils {
       int64_t old_resource_id,
       int64_t new_resource_id,
       EmbeddedWorkerTestHelper* worker_test_helper,
-      ServiceWorkerNewScriptLoader::NetworkLoaderState network_loader_state,
-      ServiceWorkerNewScriptLoader::WriterState body_writer_state,
+      ServiceWorkerUpdatedScriptLoader::LoaderState network_loader_state,
+      ServiceWorkerUpdatedScriptLoader::WriterState body_writer_state,
       mojo::ScopedDataPipeConsumerHandle network_consumer,
       ServiceWorkerSingleScriptUpdateChecker::Result compare_result,
       ServiceWorkerVersion* version);

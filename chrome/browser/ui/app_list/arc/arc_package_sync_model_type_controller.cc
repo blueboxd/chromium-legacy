@@ -35,18 +35,21 @@ ArcPackageSyncModelTypeController::~ArcPackageSyncModelTypeController() {
   }
 }
 
-bool ArcPackageSyncModelTypeController::ReadyForStart() const {
+syncer::DataTypeController::PreconditionState
+ArcPackageSyncModelTypeController::GetPreconditionState() const {
   DCHECK(CalledOnValidThread());
-  return arc::IsArcPlayStoreEnabledForProfile(profile_);
+  return arc::IsArcPlayStoreEnabledForProfile(profile_)
+             ? PreconditionState::kPreconditionsMet
+             : PreconditionState::kMustStopAndClearData;
 }
 
 void ArcPackageSyncModelTypeController::OnArcPlayStoreEnabledChanged(
     bool enabled) {
   DCHECK(CalledOnValidThread());
-  sync_service_->ReadyForStartChanged(type());
+  sync_service_->DataTypePreconditionChanged(type());
 }
 
 void ArcPackageSyncModelTypeController::OnArcInitialStart() {
   DCHECK(CalledOnValidThread());
-  sync_service_->ReadyForStartChanged(type());
+  sync_service_->DataTypePreconditionChanged(type());
 }

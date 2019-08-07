@@ -91,10 +91,9 @@ void UpdateNetworkTimeOnUIThread(base::Time network_time,
 void UpdateNetworkTime(const base::Time& network_time,
                        const base::TimeDelta& resolution,
                        const base::TimeDelta& latency) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&UpdateNetworkTimeOnUIThread, network_time, resolution,
-                     latency, base::TimeTicks::Now()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&UpdateNetworkTimeOnUIThread, network_time,
+                                resolution, latency, base::TimeTicks::Now()));
 }
 
 }  // anonymous namespace

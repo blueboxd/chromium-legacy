@@ -5888,7 +5888,8 @@ String Document::lastModified() const {
   if (!http_last_modified.IsEmpty()) {
     double date_value = ParseDate(http_last_modified);
     if (!std::isnan(date_value)) {
-      date.SetMillisecondsSinceEpochForDateTime(ConvertToLocalTime(date_value));
+      date.SetMillisecondsSinceEpochForDateTimeLocal(
+          ConvertToLocalTime(date_value));
       found_date = true;
     }
   }
@@ -5896,7 +5897,7 @@ String Document::lastModified() const {
   // specificiation tells us to read the last modification date from the file
   // system.
   if (!found_date) {
-    date.SetMillisecondsSinceEpochForDateTime(
+    date.SetMillisecondsSinceEpochForDateTimeLocal(
         ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
   }
   return String::Format("%02d/%02d/%04d %02d:%02d:%02d", date.Month() + 1,

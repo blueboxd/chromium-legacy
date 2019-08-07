@@ -1013,6 +1013,8 @@ unsigned SVGSMILElement::CalculateAnimationRepeat(double elapsed) const {
   double active_time = std::max(elapsed - interval_.begin.Value(), 0.0);
   SMILTime repeating_duration = RepeatingDuration();
   if (elapsed >= interval_.end || active_time > repeating_duration) {
+    if (!repeating_duration.IsFinite())
+      return 0;
     unsigned repeat = static_cast<unsigned>(repeating_duration.Value() /
                                             simple_duration.Value());
     if (!fmod(repeating_duration.Value(), simple_duration.Value()))

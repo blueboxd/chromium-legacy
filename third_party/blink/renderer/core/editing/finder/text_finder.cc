@@ -321,6 +321,14 @@ void TextFinder::StopFindingAndClearSelection() {
 
   // Let the frame know that we don't want tickmarks anymore.
   InvalidatePaintForTickmarks();
+
+  ReportFindInPageTerminationToAccessibility();
+}
+
+void TextFinder::ReportFindInPageTerminationToAccessibility() {
+  if (OwnerFrame().Client()) {
+    OwnerFrame().Client()->HandleAccessibilityFindInPageTermination();
+  }
 }
 
 void TextFinder::ReportFindInPageResultToAccessibility(int identifier) {

@@ -10,6 +10,7 @@
 #include "components/viz/service/compositor_frame_fuzzer/compositor_frame_fuzzer_util.h"
 #include "components/viz/service/compositor_frame_fuzzer/fuzzer_browser_process.h"
 #include "mojo/core/embedder/embedder.h"
+#include "testing/libfuzzer/libfuzzer_exports.h"
 #include "testing/libfuzzer/proto/lpm_interface.h"
 
 #include "components/viz/service/compositor_frame_fuzzer/compositor_frame_fuzzer.pb.h"

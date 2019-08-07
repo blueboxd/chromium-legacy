@@ -217,8 +217,6 @@ component("ash") {
     "cancel_mode.h",
     "custom_tab/arc_custom_tab_view.cc",
     "custom_tab/arc_custom_tab_view.h",
-    "dbus/ash_dbus_helper.cc",
-    "dbus/ash_dbus_helper.h",
     "dbus/ash_dbus_services.cc",
     "dbus/ash_dbus_services.h",
     "dbus/display_service_provider.cc",

@@ -5,13 +5,12 @@
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
-from .composition_parts import WithExposure
 from .composition_parts import WithExtendedAttributes
 from .composition_parts import WithIdentifier
 from .composition_parts import WithOwner
 
 
 class IdlMember(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
-                WithExposure, WithOwner, WithComponent, WithDebugInfo):
+                WithOwner, WithComponent, WithDebugInfo):
     """IdlMember provides common APIs for IDL members; attributes, operations,
     constants, dictionary members, etc."""

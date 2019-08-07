@@ -24,7 +24,7 @@ IOSChromeHttpUserAgentSettings::IOSChromeHttpUserAgentSettings(
   last_http_accept_language_ =
       net::HttpUtil::GenerateAcceptLanguageHeader(last_pref_accept_language_);
   pref_accept_language_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
+      base::CreateSingleThreadTaskRunner({web::WebThread::IO}));
 }
 
 IOSChromeHttpUserAgentSettings::~IOSChromeHttpUserAgentSettings() {

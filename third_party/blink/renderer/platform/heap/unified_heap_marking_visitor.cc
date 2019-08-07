@@ -21,7 +21,9 @@ UnifiedHeapMarkingVisitorBase::UnifiedHeapMarkingVisitorBase(
       isolate_(isolate),
       controller_(thread_state->unified_heap_controller()),
       is_concurrent_marking_enabled_(base::FeatureList::IsEnabled(
-          blink::features::kBlinkHeapConcurrentMarking)) {
+          blink::features::kBlinkHeapConcurrentMarking)),
+      v8_references_worklist_(Heap().GetV8ReferencesWorklist(),
+                              WorklistTaskId::MainThread) {
   DCHECK(controller_);
 }
 
@@ -30,9 +32,20 @@ void UnifiedHeapMarkingVisitorBase::Visit(
   if (v8_reference.Get().IsEmpty())
     return;
   DCHECK(isolate_);
-  // TODO(mlippautz): Do not call into controller directly but rather use a
-  // Worklist or similar as temporary storage.
+  if (is_concurrent_marking_enabled_) {
+    // This is a temporary solution. Pushing directly from concurrent threads
+    // to V8 marking worklist will currently result in data races. This
+    // solution guarantees correctness until we implement a long-term solution
+    // (i.e. allowing Oilpan concurrent threads concurrent-safe access to V8
+    // marking worklist without data-races)
+    v8_references_worklist_.Push(&v8_reference);
+    return;
+  }
   controller_->RegisterEmbedderReference(v8_reference.Get());
+}
+
+void UnifiedHeapMarkingVisitorBase::FlushV8References() {
+  v8_references_worklist_.FlushToGlobal();
 }
 
 UnifiedHeapMarkingVisitor::UnifiedHeapMarkingVisitor(ThreadState* thread_state,

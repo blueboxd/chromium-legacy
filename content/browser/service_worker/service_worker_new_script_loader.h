@@ -27,16 +27,7 @@ struct HttpResponseInfoIOBuffer;
 // returns the response to |client|, while also writing the response into the
 // service worker script storage.
 //
-// There are two types of ServiceWorkerNewScriptLoader:
-//   1. Network-only type
-//      This is for downloading a new script from network only.
-//   2. Resume type
-//      This loader reads part of the script, which has already been loaded
-//      during an update check, from ServiceWorkerCacheWriter and resumes to
-//      load the rest of the script from the network after that. See also
-//      ServiceWorkerUpdateChecker for more details.
-//
-// In the common case, the network-only type loader works as follows:
+// This loader works as follows:
 //   1. Makes a network request.
 //   2. OnReceiveResponse() is called, writes the response headers to the
 //      service worker script storage and responds with them to the |client|
@@ -47,27 +38,6 @@ struct HttpResponseInfoIOBuffer;
 //   4. OnComplete() for the network load and OnWriteDataComplete() are called,
 //      calls CommitCompleted() and closes the connections with the network
 //      service and the renderer process.
-// In an uncommon case, the response body is empty so
-// OnStartLoadingResponseBody() is not called.
-//
-// The work flow of resume type loader is different from network-only type:
-// OnReceiveResponse() and OnStartLoadingResponseBody() are not called as they
-// must have been called during update check.
-//
-// In the common case, the resume type loader works as follows:
-//   1. The ServiceWorkerCacheWriter used in the update check is resumed. This
-//      will read part of the script data already loaded and respond with it
-//      to the |client| and write to service worker script storage.
-//   2. The network download is resumed. The rest of the script data is
-//      responded to the |client| and written to service worker storage.
-//   3. OnComplete() for the network load and OnWriteDataComplete() are called,
-//      calls CommitCompleted() and closes the connections with the network
-//      service and the renderer process.
-// In an uncommon case, OnComplete() is not called. For example, if a script
-// was changed to have no body. OnComplete() would have been called during
-// update check to find this change, thus it would never be called again.
-// In this case, CommitCompleted() would be called after
-// ServiceWorkerCacheWriter::Resume() is done.
 //
 // A set of |network_loader_state_|, |header_writer_state_|, and
 // |body_writer_state_| is the state of this loader. Each of them is changed
@@ -88,17 +58,11 @@ struct HttpResponseInfoIOBuffer;
 // "network" request in comments and naming. "network" is meant to distinguish
 // from the load this URLLoader does for its client:
 //     "network" <------> SWNewScriptLoader <------> client
-class CONTENT_EXPORT ServiceWorkerNewScriptLoader
+class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
     : public network::mojom::URLLoader,
-      public network::mojom::URLLoaderClient,
-      public ServiceWorkerCacheWriter::WriteObserver {
+      public network::mojom::URLLoaderClient {
  public:
-  enum class Type {
-    kNetworkOnly,  // For loaders created by CreateForNetworkOnly().
-    kResume,       // For loaders created by CreateForResume().
-  };
-
-  enum class NetworkLoaderState {
+  enum class LoaderState {
     kNotStarted,
     kLoadingHeader,
     kWaitingForBody,
@@ -108,8 +72,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
 
   enum class WriterState { kNotStarted, kWriting, kCompleted };
 
-  // Creates a loader for a script to be loaded entirely from the network.
-  static std::unique_ptr<ServiceWorkerNewScriptLoader> CreateForNetworkOnly(
+  static std::unique_ptr<ServiceWorkerNewScriptLoader> CreateAndStart(
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
@@ -118,15 +81,6 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
-
-  // ServiceWorkerImportedScriptUpdateCheck:
-  // Creates a loader to continue downloading of a script paused during update
-  // check.
-  static std::unique_ptr<ServiceWorkerNewScriptLoader> CreateForResume(
-      uint32_t options,
-      const network::ResourceRequest& original_request,
-      network::mojom::URLLoaderClientPtr client,
-      scoped_refptr<ServiceWorkerVersion> version);
 
   ~ServiceWorkerNewScriptLoader() override;
 
@@ -154,24 +108,12 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
-  // Implements ServiceWorkerCacheWriter::WriteObserver.
-  // These two methods are only used for resume loaders.
-  int WillWriteInfo(
-      scoped_refptr<HttpResponseInfoIOBuffer> response_info) override;
-  int WillWriteData(scoped_refptr<net::IOBuffer> data,
-                    int length,
-                    base::OnceCallback<void(net::Error)> callback) override;
-
-  Type type() const { return type_; }
-
   // Buffer size for reading script data from network.
   const static uint32_t kReadBufferSize;
 
  private:
   class WrappedIOBuffer;
 
-  // This is for constructing network-only script loaders.
-  // |loader_factory| is used to load the script, see class comments.
   ServiceWorkerNewScriptLoader(
       int32_t routing_id,
       int32_t request_id,
@@ -181,12 +123,6 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
-
-  // This is for constructing resume loaders.
-  ServiceWorkerNewScriptLoader(uint32_t options,
-                               const network::ResourceRequest& original_request,
-                               network::mojom::URLLoaderClientPtr client,
-                               scoped_refptr<ServiceWorkerVersion> version);
 
   // Writes the given headers into the service worker script storage.
   void WriteHeaders(scoped_refptr<HttpResponseInfoIOBuffer> info_buffer);
@@ -234,13 +170,18 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   // ResourceType::kScript for an imported script.
   const ResourceType resource_type_;
 
+  // Load options originally passed to this loader. The options passed to the
+  // network loader might be different from this.
+  const uint32_t original_options_;
+
   scoped_refptr<ServiceWorkerVersion> version_;
 
   std::unique_ptr<ServiceWorkerCacheWriter> cache_writer_;
 
-  // Used for fetching the script from network, which might not actually
-  // use the direct network factory, see class comments.
+  // Used for fetching the script from network (or other loaders like extensions
+  // sometimes).
   network::mojom::URLLoaderPtr network_loader_;
+
   mojo::Binding<network::mojom::URLLoaderClient> network_client_binding_;
   mojo::ScopedDataPipeConsumerHandle network_consumer_;
   mojo::SimpleWatcher network_watcher_;
@@ -263,7 +204,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   // CreateLoaderAndStart(): kNotStarted -> kLoadingHeader
   // OnReceiveResponse(): kLoadingHeader -> kWaitingForBody
   // OnComplete(): kWaitingForBody -> kCompleted
-  NetworkLoaderState network_loader_state_ = NetworkLoaderState::kNotStarted;
+  LoaderState network_loader_state_ = LoaderState::kNotStarted;
 
   // Represents the state of |cache_writer_|.
   // Set to kWriting when it starts to write the header, and set to kCompleted
@@ -277,39 +218,11 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   // Set to kWriting when |this| starts watching |network_consumer_|, and set to
   // kCompleted when all data has been written to |cache_writer_|.
   //
-  // When response body exists:
   // OnStartLoadingResponseBody() && OnWriteHeadersComplete():
   //     kNotStarted -> kWriting
   // OnNetworkDataAvailable() && MOJO_RESULT_FAILED_PRECONDITION:
   //     kWriting -> kCompleted
-  //
-  // When response body is empty:
-  // OnComplete(): kNotStarted -> kCompleted
   WriterState body_writer_state_ = WriterState::kNotStarted;
-
-  const uint32_t original_options_;
-
-  const Type type_;
-
-  // ---------- Start of Type::kResume loader members ----------
-  mojo::SimpleWatcher client_producer_watcher_;
-  base::TimeTicks request_start_;
-  network::mojom::URLLoaderClientRequest network_client_request_;
-
-  // This is the data notified by OnBeforeWriteData() which would be sent
-  // to |client_|.
-  scoped_refptr<net::IOBuffer> data_to_send_;
-
-  // Length of |data_to_send_| in bytes.
-  int data_length_ = 0;
-
-  // Length of data in |data_to_send_| already sent to |client_|.
-  int bytes_sent_to_client_ = 0;
-
-  // Run this to notify ServiceWorkerCacheWriter that the observer completed
-  // its work. net::OK means all |data_to_send_| has been sent to |client_|.
-  base::OnceCallback<void(net::Error)> write_observer_complete_callback_;
-  // ---------- End of Type::kResume loader members ----------
 
   base::WeakPtrFactory<ServiceWorkerNewScriptLoader> weak_factory_{this};
 

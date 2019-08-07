@@ -189,10 +189,9 @@ void CastDialogView::ButtonPressed(views::Button* sender,
     // SinkPressed() invokes a refresh of the sink list, which deletes the
     // sink button. So we must call this after the button is done handling the
     // press event.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&CastDialogView::SinkPressed, weak_factory_.GetWeakPtr(),
-                       sender->tag()));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&CastDialogView::SinkPressed,
+                                  weak_factory_.GetWeakPtr(), sender->tag()));
   }
 }
 
@@ -465,11 +464,10 @@ void CastDialogView::DisableUnsupportedSinks() {
 void CastDialogView::RecordSinkCountWithDelay() {
   // Record the number of sinks after three seconds. This is consistent with the
   // WebUI dialog.
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&CastDialogView::RecordSinkCount,
-                     weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(3));
+  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                        base::BindOnce(&CastDialogView::RecordSinkCount,
+                                       weak_factory_.GetWeakPtr()),
+                        base::TimeDelta::FromSeconds(3));
 }
 
 void CastDialogView::RecordSinkCount() {

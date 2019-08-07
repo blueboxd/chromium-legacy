@@ -126,7 +126,7 @@ void SubprocessMetricsProvider::BrowserChildProcessHostConnected(
   // managing the child in order to extract the metrics memory from it.
   // Unfortunately, the required lookup can only be performed on the IO
   // thread so do the necessary dance.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
       base::Bind(
           &SubprocessMetricsProvider::GetSubprocessHistogramAllocatorOnIOThread,

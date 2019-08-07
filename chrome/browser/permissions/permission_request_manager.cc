@@ -339,7 +339,7 @@ void PermissionRequestManager::ScheduleShowBubble() {
   if (!main_frame_has_fully_loaded_)
     return;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&PermissionRequestManager::DequeueRequestsAndShowBubble,
                      weak_factory_.GetWeakPtr()));

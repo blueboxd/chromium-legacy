@@ -55,11 +55,6 @@ std::string ParseInfo::GetErrorDescription() const {
       error = ErrorUtils::FormatErrorMessage(kErrorEmptyUpgradeRulePriority,
                                              base::NumberToString(*rule_id_));
       break;
-    case ParseResult::ERROR_EMPTY_REDIRECT_URL:
-      error = ErrorUtils::FormatErrorMessage(kErrorEmptyRedirectRuleKey,
-                                             base::NumberToString(*rule_id_),
-                                             kRedirectUrlKey);
-      break;
     case ParseResult::ERROR_INVALID_RULE_ID:
       error = ErrorUtils::FormatErrorMessage(
           kErrorInvalidRuleKey, base::NumberToString(*rule_id_), kIDKey,
@@ -91,7 +86,7 @@ std::string ParseInfo::GetErrorDescription() const {
     case ParseResult::ERROR_INVALID_REDIRECT_URL:
       error = ErrorUtils::FormatErrorMessage(kErrorInvalidRedirectUrl,
                                              base::NumberToString(*rule_id_),
-                                             kRedirectUrlKey);
+                                             kRedirectUrlPath);
       break;
     case ParseResult::ERROR_DUPLICATE_IDS:
       error = ErrorUtils::FormatErrorMessage(kErrorDuplicateIDs,

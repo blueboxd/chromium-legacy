@@ -494,8 +494,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)
-  crash_reporter_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+  crash_reporter_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   crash_reporter_runner_->PostTask(
       FROM_HERE,
@@ -506,8 +506,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   url_request_context_factory_->InitializeOnUIThread(nullptr);
 
   cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
       url_request_context_factory_->GetSystemGetter()));
 
   cast_browser_process_->SetBrowserContext(

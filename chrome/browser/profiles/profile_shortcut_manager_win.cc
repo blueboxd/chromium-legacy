@@ -247,9 +247,8 @@ base::FilePath CreateOrUpdateShortcutIconForProfile(
   } else {
     SHChangeNotify(SHCNE_CREATE, SHCNF_PATH, icon_path.value().c_str(), NULL);
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&OnProfileIconCreateSuccess, profile_path));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&OnProfileIconCreateSuccess, profile_path));
   return icon_path;
 }
 
@@ -831,7 +830,7 @@ void ProfileShortcutManagerWin::CreateProfileShortcut(
 
 void ProfileShortcutManagerWin::RemoveProfileShortcuts(
     const base::FilePath& profile_path) {
-  base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})
+  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&DeleteDesktopShortcuts, profile_path, false));
 }
@@ -840,7 +839,8 @@ void ProfileShortcutManagerWin::HasProfileShortcuts(
     const base::FilePath& profile_path,
     const base::Callback<void(bool)>& callback) {
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()}).get(),
+      base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
+          .get(),
       FROM_HERE, base::Bind(&HasAnyProfileShortcuts, profile_path), callback);
 }
 
@@ -907,7 +907,7 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
         UPDATE_EXISTING_ONLY, IGNORE_NON_PROFILE_SHORTCUTS);
   }
 
-  base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})
+  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&DeleteDesktopShortcuts, profile_path,
                                 deleting_down_to_last_profile));
@@ -1010,7 +1010,7 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
       }
     }
   }
-  base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})
+  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(
                      &CreateOrUpdateDesktopShortcutsAndIconForProfile, params));

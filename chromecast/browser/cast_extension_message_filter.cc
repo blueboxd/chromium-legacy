@@ -120,8 +120,8 @@ void CastExtensionMessageFilter::OnGetExtMessageBundle(
   }
 
   // This blocks tab loading. Priority is inherited from the calling context.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&CastExtensionMessageFilter::OnGetExtMessageBundleAsync,
                      this, paths_to_load, extension_id, default_locale,
                      reply_msg));

@@ -220,6 +220,11 @@ TEST_F(ManualFillingControllerTest, ShowsAndHidesAccessoryForPasswords) {
                                          /*has_suggestions=*/false);
 }
 
+TEST_F(ManualFillingControllerTest, UpdatesCreditCardControllerOnFocusChange) {
+  EXPECT_CALL(mock_cc_controller_, RefreshSuggestions);
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillableUsernameField);
+}
+
 TEST_F(ManualFillingControllerTest, HidesAccessoryWithoutAvailableSources) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(

@@ -8,7 +8,7 @@
 #include <map>
 
 #include "android_webview/browser/gfx/compositor_frame_consumer.h"
-#include "android_webview/browser/gfx/hardware_renderer.h"
+#include "android_webview/browser/gfx/hardware_renderer_single_thread.h"
 #include "android_webview/browser/gfx/parent_compositor_draw_constraints.h"
 #include "base/logging.h"
 #include "base/macros.h"

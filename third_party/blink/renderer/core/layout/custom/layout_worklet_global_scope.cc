@@ -33,10 +33,15 @@ LayoutWorkletGlobalScope* LayoutWorkletGlobalScope::Create(
   // Enable a separate microtask queue for LayoutWorklet.
   // TODO(yutak): Set agent for all worklets and workers,
   // not just LayoutWorklet.
+  auto* isolate = ToIsolate(frame);
+  auto microtask_queue =
+      v8::MicrotaskQueue::New(isolate, v8::MicrotasksPolicy::kScoped);
   auto* agent = Agent::CreateForWorkerOrWorklet(
-      ToIsolate(frame), creation_params->agent_cluster_id.is_empty()
-                            ? base::UnguessableToken::Create()
-                            : creation_params->agent_cluster_id);
+      isolate,
+      creation_params->agent_cluster_id.is_empty()
+          ? base::UnguessableToken::Create()
+          : creation_params->agent_cluster_id,
+      std::move(microtask_queue));
   auto* global_scope = MakeGarbageCollected<LayoutWorkletGlobalScope>(
       frame, std::move(creation_params), reporting_proxy,
       pending_layout_registry, agent);

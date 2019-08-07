@@ -191,8 +191,8 @@ class DummyThreadScheduler : public ThreadScheduler {
   base::TimeTicks MonotonicallyIncreasingVirtualTime() override {
     return base::TimeTicks::Now();
   }
-  void AddTaskObserver(base::MessageLoop::TaskObserver*) override {}
-  void RemoveTaskObserver(base::MessageLoop::TaskObserver*) override {}
+  void AddTaskObserver(base::TaskObserver*) override {}
+  void RemoveTaskObserver(base::TaskObserver*) override {}
   NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
     return nullptr;
   }

@@ -93,6 +93,9 @@ class SigninClient : public KeyedService {
       GaiaAuthConsumer* consumer,
       gaia::GaiaSource source) = 0;
 
+  // Marks the DICE migration completed.
+  virtual void SetDiceMigrationCompleted() {}
+
   // Schedules migration to happen at next startup.
   virtual void SetReadyForDiceMigration(bool is_ready) {}
 };

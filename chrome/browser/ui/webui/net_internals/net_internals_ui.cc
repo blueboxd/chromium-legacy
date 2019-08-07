@@ -381,7 +381,7 @@ void NetInternalsMessageHandler::ImportONCFileToNSSDB(
     error += network_error;
 
   chromeos::onc::CertificateImporterImpl cert_importer(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}), nssdb);
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}), nssdb);
   auto certs =
       std::make_unique<chromeos::onc::OncParsedCertificates>(certificates);
   if (certs->has_error())
@@ -439,9 +439,9 @@ void NetInternalsMessageHandler::OnStoreDebugLogs(bool combined,
       web_ui()->GetWebContents()->GetBrowserContext(),
       true /* with_user_policies */, false /* with_device_data */,
       true /* is_pretty_print */);
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(DumpPolicyLogs, policies_path, json_policies),
       base::BindOnce(&NetInternalsMessageHandler::OnDumpPolicyLogsCompleted,

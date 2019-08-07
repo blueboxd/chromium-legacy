@@ -67,7 +67,7 @@ bool TtsMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void TtsMessageFilter::OnChannelClosing() {
   base::AutoLock lock(mutex_);
   valid_ = false;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&TtsMessageFilter::OnChannelClosingInUIThread, this));
 }

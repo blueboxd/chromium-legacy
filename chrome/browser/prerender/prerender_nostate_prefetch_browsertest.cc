@@ -133,9 +133,9 @@ class NoStatePrefetchBrowserTest
                       &found_manifest);
       // There seems to be some flakiness in the appcache getting back to us, so
       // use a timeout task to try the appcache query again.
-      base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                      wait_loop.QuitClosure(),
-                                      base::TimeDelta::FromMilliseconds(2000));
+      base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                            wait_loop.QuitClosure(),
+                            base::TimeDelta::FromMilliseconds(2000));
       wait_loop.Run();
     } while (!found_manifest);
   }
@@ -207,7 +207,7 @@ class NoStatePrefetchBrowserTest
         }
       }
     }
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, callback);
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback);
   }
 
   base::test::ScopedFeatureList feature_list_;

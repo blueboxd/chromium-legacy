@@ -149,6 +149,7 @@ class CORE_EXPORT TextFinder final
                                  int identifier);
 
   void ReportFindInPageResultToAccessibility(int identifier);
+  void ReportFindInPageTerminationToAccessibility();
 
   // Clear the find-in-page matches cache forcing rects to be fully
   // calculated again next time updateFindMatchRects is called.

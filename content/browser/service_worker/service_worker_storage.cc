@@ -1176,13 +1176,13 @@ base::FilePath ServiceWorkerStorage::GetDiskCachePath() {
       .Append(kDiskCacheName);
 }
 
-bool ServiceWorkerStorage::LazyInitializeForTest(base::OnceClosure callback) {
+void ServiceWorkerStorage::LazyInitializeForTest(base::OnceClosure callback) {
   if (state_ == STORAGE_STATE_UNINITIALIZED ||
       state_ == STORAGE_STATE_INITIALIZING) {
     LazyInitialize(std::move(callback));
-    return false;
+    return;
   }
-  return !IsDisabled();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void ServiceWorkerStorage::LazyInitialize(base::OnceClosure callback) {

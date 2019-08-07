@@ -75,9 +75,9 @@ bool ThumbnailImage::HasObserver(const Observer* observer) const {
 }
 
 void ThumbnailImage::AssignSkBitmap(SkBitmap bitmap) {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::TaskPriority::USER_VISIBLE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SkBitmapToJPEGData, std::move(bitmap)),
       base::BindOnce(&ThumbnailImage::AssignJPEGData,
@@ -98,9 +98,9 @@ void ThumbnailImage::AssignJPEGData(std::vector<uint8_t> data) {
 bool ThumbnailImage::ConvertJPEGDataToImageSkiaAndNotifyObservers() {
   if (!data_)
     return false;
-  return base::PostTaskWithTraitsAndReplyWithResult(
+  return base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::TaskPriority::USER_VISIBLE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&JPEGDataToImageSkia, data_),
       base::BindOnce(&ThumbnailImage::NotifyObservers,

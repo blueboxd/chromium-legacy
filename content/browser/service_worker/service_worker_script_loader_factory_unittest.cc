@@ -195,9 +195,8 @@ TEST_F(ServiceWorkerScriptLoaderFactoryCopyResumeTest,
                                                  &network_consumer));
   ServiceWorkerUpdateCheckTestUtils::CreateAndSetComparedScriptInfoForVersion(
       script_url_, 0, kNewHeaders, kNewData, kOldResourceId, kNewResourceId,
-      helper_.get(),
-      ServiceWorkerNewScriptLoader::NetworkLoaderState::kCompleted,
-      ServiceWorkerNewScriptLoader::WriterState::kCompleted,
+      helper_.get(), ServiceWorkerUpdatedScriptLoader::LoaderState::kCompleted,
+      ServiceWorkerUpdatedScriptLoader::WriterState::kCompleted,
       std::move(network_consumer),
       ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent,
       version_.get());

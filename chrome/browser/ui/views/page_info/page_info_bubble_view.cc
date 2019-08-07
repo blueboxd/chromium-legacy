@@ -951,10 +951,9 @@ void PageInfoBubbleView::HandleMoreInfoRequest(views::View* source) {
   // The bubble closes automatically when the collected cookies dialog or the
   // certificate viewer opens. So delay handling of the link clicked to avoid
   // a crash in the base class which needs to complete the mouse event handling.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&PageInfoBubbleView::HandleMoreInfoRequestAsync,
-                     weak_factory_.GetWeakPtr(), source->GetID()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&PageInfoBubbleView::HandleMoreInfoRequestAsync,
+                                weak_factory_.GetWeakPtr(), source->GetID()));
 }
 
 void PageInfoBubbleView::HandleMoreInfoRequestAsync(int view_id) {

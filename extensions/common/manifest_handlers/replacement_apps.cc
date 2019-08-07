@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -56,7 +57,7 @@ bool ReplacementAppsInfo::HasReplacementAndroidApp(const Extension* extension) {
 }
 
 // static
-std::string ReplacementAppsInfo::GetReplacementAndroidApp(
+const std::string& ReplacementAppsInfo::GetReplacementAndroidApp(
     const Extension* extension) {
   const ReplacementAppsInfo* info = GetReplacementAppsInfo(extension);
 

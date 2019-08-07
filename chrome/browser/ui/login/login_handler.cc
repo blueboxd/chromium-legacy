@@ -115,10 +115,9 @@ LoginHandler::~LoginHandler() {
     // This may be called as the browser is closing a tab, so run the
     // interstitial logic on a fresh event loop iteration.
     if (interstitial_delegate_) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&LoginInterstitialDelegate::DontProceed,
-                         interstitial_delegate_));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(&LoginInterstitialDelegate::DontProceed,
+                                    interstitial_delegate_));
     }
   }
 }
@@ -161,7 +160,7 @@ void LoginHandler::Start(
   // To avoid reentrancy problems, this function must not call
   // |auth_required_callback_| synchronously. Defer MaybeSetUpLoginPrompt by an
   // event loop iteration.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
                      weak_factory_.GetWeakPtr(), request_url, is_main_frame,
@@ -354,9 +353,9 @@ void LoginHandler::CloseContents() {
   if (interstitial_delegate_) {
     // This may be called as the browser is closing a tab, so run the
     // interstitial logic on a fresh event loop iteration.
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(&LoginInterstitialDelegate::Proceed,
-                                            interstitial_delegate_));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&LoginInterstitialDelegate::Proceed,
+                                  interstitial_delegate_));
   }
 }
 

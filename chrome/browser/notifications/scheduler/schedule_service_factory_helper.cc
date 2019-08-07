@@ -54,8 +54,8 @@ KeyedService* CreateNotificationScheduleService(
     return static_cast<KeyedService*>(new NoopNotificationScheduleService());
 
   auto config = SchedulerConfig::Create();
-  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  auto task_runner = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   client_registrar->RegisterClient(SchedulerClientType::kWebUI,
                                    std::make_unique<WebUIClient>());
 

@@ -262,12 +262,9 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  content::BrowserContext* CreateBrowserContext() override {
-    // Setup the profile.
-    std::unique_ptr<TestingProfile> profile =
-        IdentityTestEnvironmentProfileAdaptor::
-            CreateProfileForIdentityTestEnvironment();
-    return profile.release();
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return IdentityTestEnvironmentProfileAdaptor::
+        GetIdentityTestEnvironmentFactories();
   }
 
   // Setup the expectations for calls made when displaying the config page.

@@ -119,8 +119,8 @@ void MockProducerClient::StartDataSource(
                                   std::move(callback));
 
   CHECK_LT(num_data_sources_active_, num_data_sources_expected_);
-  if (client_enabled_callback_ &&
-      ++num_data_sources_active_ == num_data_sources_expected_) {
+  if (++num_data_sources_active_ == num_data_sources_expected_ &&
+      client_enabled_callback_) {
     std::move(client_enabled_callback_).Run();
   }
 }
@@ -130,7 +130,7 @@ void MockProducerClient::StopDataSource(uint64_t id,
   ProducerClient::StopDataSource(id, std::move(callback));
 
   CHECK_GT(num_data_sources_active_, 0u);
-  if (client_disabled_callback_ && --num_data_sources_active_ == 0) {
+  if (--num_data_sources_active_ == 0 && client_disabled_callback_) {
     std::move(client_disabled_callback_).Run();
   }
 }
@@ -163,9 +163,14 @@ void MockProducerClient::SetAgentDisabledCallback(
 MockConsumer::MockConsumer(std::vector<std::string> data_source_names,
                            perfetto::TracingService* service,
                            PacketReceivedCallback packet_received_callback)
-    : packet_received_callback_(packet_received_callback),
-      data_source_names_(data_source_names) {
-  CHECK(!data_source_names_.empty());
+    : packet_received_callback_(packet_received_callback) {
+  for (const auto& source : data_source_names) {
+    data_sources_.emplace_back(DataSourceStatus{
+        source,
+        perfetto::ObservableEvents::DataSourceInstanceStateChange::
+            DataSourceInstanceState::DATA_SOURCE_INSTANCE_STATE_STOPPED});
+  }
+  CHECK(!data_sources_.empty());
   consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
   CHECK(consumer_endpoint_);
 }
@@ -186,9 +191,9 @@ void MockConsumer::StopTracing() {
 void MockConsumer::StartTracing() {
   perfetto::TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(1024 * 32);
-  for (const auto& name : data_source_names_) {
+  for (const auto& data_source : data_sources_) {
     auto* ds_config = trace_config.add_data_sources()->mutable_config();
-    ds_config->set_name(name);
+    ds_config->set_name(data_source.name);
     ds_config->set_target_buffer(0);
   }
 
@@ -202,6 +207,8 @@ void MockConsumer::FreeBuffers() {
 }
 
 void MockConsumer::OnConnect() {
+  consumer_endpoint_->ObserveEvents(
+      perfetto::ConsumerEndpoint::kDataSourceInstances);
   StartTracing();
 }
 void MockConsumer::OnDisconnect() {}
@@ -223,6 +230,66 @@ void MockConsumer::OnTraceData(std::vector<perfetto::TracePacket> packets,
 void MockConsumer::OnDetach(bool /*success*/) {}
 void MockConsumer::OnAttach(bool /*success*/, const perfetto::TraceConfig&) {}
 void MockConsumer::OnTraceStats(bool /*success*/, const perfetto::TraceStats&) {
+}
+
+void MockConsumer::OnObservableEvents(
+    const perfetto::ObservableEvents& events) {
+  for (const auto& change : events.instance_state_changes()) {
+    for (auto& data_source_status : data_sources_) {
+      if (change.data_source_name() != data_source_status.name) {
+        continue;
+      }
+      data_source_status.state = change.state();
+    }
+    CheckForAllDataSourcesStarted();
+    CheckForAllDataSourcesStopped();
+  }
+}
+
+void MockConsumer::WaitForAllDataSourcesStarted() {
+  base::RunLoop on_started;
+  on_started_runloop_ = &on_started;
+  CheckForAllDataSourcesStarted();
+  if (on_started_runloop_) {
+    on_started_runloop_->Run();
+  }
+}
+
+void MockConsumer::WaitForAllDataSourcesStopped() {
+  base::RunLoop on_stopped;
+  on_stopped_runloop_ = &on_stopped;
+  CheckForAllDataSourcesStopped();
+  if (on_stopped_runloop_) {
+    on_stopped_runloop_->Run();
+  }
+}
+
+void MockConsumer::CheckForAllDataSourcesStarted() {
+  for (auto& data_source_status : data_sources_) {
+    if (data_source_status.state !=
+        perfetto::ObservableEvents::DataSourceInstanceStateChange::
+            DATA_SOURCE_INSTANCE_STATE_STARTED) {
+      return;
+    }
+  }
+  if (on_started_runloop_) {
+    on_started_runloop_->Quit();
+    on_started_runloop_ = nullptr;
+  }
+}
+
+void MockConsumer::CheckForAllDataSourcesStopped() {
+  for (auto& data_source_status : data_sources_) {
+    if (data_source_status.state !=
+        perfetto::ObservableEvents::DataSourceInstanceStateChange::
+            DATA_SOURCE_INSTANCE_STATE_STOPPED) {
+      return;
+    }
+  }
+  if (on_stopped_runloop_) {
+    on_stopped_runloop_->Quit();
+    on_stopped_runloop_ = nullptr;
+  }
 }
 
 MockProducerHost::MockProducerHost(

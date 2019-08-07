@@ -44,6 +44,17 @@ using AtkAttributes = std::unique_ptr<AtkAttributeSet, AtkAttributeSetDeleter>;
 
 namespace ui {
 
+struct FindInPageResultInfo {
+  AtkObject* node;
+  int start_offset;
+  int end_offset;
+
+  bool operator==(const FindInPageResultInfo& other) const {
+    return (node == other.node) && (start_offset == other.start_offset) &&
+           (end_offset == other.end_offset);
+  }
+};
+
 // AtkTableCell was introduced in ATK 2.12. Ubuntu Trusty has ATK 2.10.
 // Compile-time checks are in place for ATK versions that are older than 2.12.
 // However, we also need runtime checks in case the version we are building
@@ -205,6 +216,13 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // atk_attribute_set_free.
   AtkAttributeSet* GetDefaultTextAttributes();
 
+  void ActivateFindInPageResult(int start_offset, int end_offset);
+  void TerminateFindInPage();
+
+  // If there is a find in page result for the toplevel document of this node,
+  // return it, otherwise return base::nullopt;
+  base::Optional<FindInPageResultInfo> GetSelectionOffsetsFromFindInPage();
+
   std::string accessible_name_;
 
  protected:
@@ -257,6 +275,17 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
       std::map<int, AtkAttributes>* text_attributes);
   AtkAttributes ComputeTextAttributes() const;
   int FindStartOfStyle(int start_offset, ui::TextBoundaryDirection direction);
+
+  // Reset any find in page operations for the toplevel document of this node.
+  void ForgetCurrentFindInPageResult();
+
+  // Activate a find in page result for the toplevel document of this node.
+  void ActivateFindInPageInParent(int start_offset, int end_offset);
+
+  // If the given argument can be found as a child of this node, return its
+  // hypertext extents, otherwise return base::nullopt;
+  base::Optional<std::pair<int, int>> GetHypertextExtentsOfChild(
+      AXPlatformNodeAuraLinux* child);
 
   // The AtkStateType for a checkable node can vary depending on the role.
   AtkStateType GetAtkStateTypeForCheckableNode();

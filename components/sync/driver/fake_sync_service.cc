@@ -98,7 +98,7 @@ UserShare* FakeSyncService::GetUserShare() const {
   return user_share_.get();
 }
 
-void FakeSyncService::ReadyForStartChanged(ModelType type) {}
+void FakeSyncService::DataTypePreconditionChanged(ModelType type) {}
 
 syncer::SyncTokenStatus FakeSyncService::GetSyncTokenStatusForDebugging()
     const {

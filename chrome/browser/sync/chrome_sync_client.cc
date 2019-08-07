@@ -191,7 +191,7 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
 
   component_factory_ = std::make_unique<ProfileSyncComponentsFactoryImpl>(
       this, chrome::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
-      base::CreateSequencedTaskRunnerWithTraits({content::BrowserThread::UI}),
+      base::CreateSequencedTaskRunner({content::BrowserThread::UI}),
       web_data_service_thread_, profile_web_data_service_,
       account_web_data_service_, password_store_,
       BookmarkSyncServiceFactory::GetForProfile(profile_));
@@ -586,7 +586,7 @@ ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
                                               syncer::GROUP_DB);
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
+          base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
     case syncer::GROUP_PASSWORD: {

@@ -59,7 +59,7 @@ class WebContentsDestroyedObserver : public WebContentsObserver {
 void PostShowPasswordManagerAndCloseTab(
     content::NavigationHandle* navigation_handle,
     const base::Location& from_here = base::Location::Current()) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       from_here, {content::BrowserThread::UI},
       base::BindOnce(
           [](std::unique_ptr<WebContentsDestroyedObserver> observer) {

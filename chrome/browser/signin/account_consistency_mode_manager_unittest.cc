@@ -190,6 +190,37 @@ TEST(AccountConsistencyModeManagerTest, MigrateAtCreation) {
   }
 }
 
+TEST(AccountConsistencyModeManagerTest, ForceDiceMigration) {
+  content::TestBrowserThreadBundle test_thread_bundle;
+  std::unique_ptr<TestingProfile> profile =
+      BuildTestingProfile(/*is_new_profile=*/false);
+  EXPECT_EQ(signin::AccountConsistencyMethod::kDiceMigration,
+            AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(kForceDiceMigration);
+  profile->GetPrefs()->SetBoolean(prefs::kTokenServiceDiceCompatible, true);
+  {
+    AccountConsistencyModeManager manager(profile.get());
+    EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
+              manager.GetAccountConsistencyMethod());
+    EXPECT_FALSE(manager.IsReadyForDiceMigration(profile.get()));
+    // Migration is not completed yet, |kDiceMigrationCompletePref| should not
+    // be written.
+    EXPECT_FALSE(manager.IsDiceMigrationCompleted(profile.get()));
+  }
+
+  AccountConsistencyModeManager::SetDiceMigrationOnStartup(profile->GetPrefs(),
+                                                           true);
+  {
+    AccountConsistencyModeManager manager(profile.get());
+    EXPECT_TRUE(manager.IsReadyForDiceMigration(profile.get()));
+    EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
+              manager.GetAccountConsistencyMethod());
+    // Migration completed.
+    EXPECT_TRUE(manager.IsDiceMigrationCompleted(profile.get()));
+  }
+}
+
 // Checks that new profiles are migrated at creation.
 TEST(AccountConsistencyModeManagerTest, NewProfile) {
   content::TestBrowserThreadBundle test_thread_bundle;

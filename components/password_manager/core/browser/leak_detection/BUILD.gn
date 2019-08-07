@@ -42,7 +42,22 @@ jumbo_source_set("leak_detection") {
     ":proto",
     "//base",
     "//components/password_manager/core/common",
+    "//components/signin/public/identity_manager",
     "//url",
+  ]
+}
+
+jumbo_source_set("test_support") {
+  testonly = true
+  sources = [
+    "mock_leak_detection_delegate.cc",
+    "mock_leak_detection_delegate.h",
+  ]
+  deps = [
+    ":leak_detection",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
@@ -55,8 +70,10 @@ jumbo_source_set("unit_tests") {
 
   deps = [
     ":leak_detection",
+    ":test_support",
     "//base/test:test_support",
     "//components/password_manager/core/common",
+    "//components/signin/public/identity_manager:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

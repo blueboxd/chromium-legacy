@@ -76,19 +76,21 @@ class BundledExchangesParserFuzzer {
       std::move(quit_loop_).Run();
       return;
     }
-    metadata_ = std::move(metadata);
+    for (const auto& item : metadata->requests) {
+      for (auto& resp_location : item.second->response_locations)
+        locations_.push_back(std::move(resp_location));
+    }
     ParseResponses(0);
   }
 
   void ParseResponses(size_t index) {
-    if (index >= metadata_->index.size()) {
+    if (index >= locations_.size()) {
       std::move(quit_loop_).Run();
       return;
     }
 
     parser_->ParseResponse(
-        metadata_->index[index]->response_offset,
-        metadata_->index[index]->response_length,
+        locations_[index]->offset, locations_[index]->length,
         base::Bind(&BundledExchangesParserFuzzer::OnParseResponse,
                    base::Unretained(this), index));
   }
@@ -103,7 +105,7 @@ class BundledExchangesParserFuzzer {
   mojo::Remote<data_decoder::mojom::BundledExchangesParser> parser_;
   DataSource data_source_;
   base::Closure quit_loop_;
-  data_decoder::mojom::BundleMetadataPtr metadata_;
+  std::vector<data_decoder::mojom::BundleResponseLocationPtr> locations_;
 };
 
 struct Environment {

@@ -158,12 +158,15 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // Unique model type for this data type controller.
   ModelType type() const { return type_; }
 
-  // Whether the DataTypeController is ready to start. This is useful if the
-  // datatype itself must make the decision about whether it should be enabled
-  // at all (and therefore whether the initial download of the sync data for
-  // the type should be performed).
-  // Returns true by default.
-  virtual bool ReadyForStart() const;
+  // Whether preconditions are met for the datatype to start. This is useful for
+  // example if the datatype depends on certain user preferences other than the
+  // ones for sync settings themselves.
+  enum class PreconditionState {
+    kPreconditionsMet,
+    kMustStopAndClearData,
+    kMustStopAndKeepData,
+  };
+  virtual PreconditionState GetPreconditionState() const;
 
   // Returns a ListValue representing all nodes for this data type through
   // |callback| on this thread. Can only be called if state() != NOT_RUNNING.

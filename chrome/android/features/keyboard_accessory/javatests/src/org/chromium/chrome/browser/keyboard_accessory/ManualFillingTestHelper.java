@@ -59,6 +59,7 @@ import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.ServerCertificate;
 import org.chromium.ui.DropdownPopupWindowInterface;
 
 import java.util.concurrent.ExecutionException;
@@ -100,8 +101,9 @@ public class ManualFillingTestHelper {
     public void loadTestPage(String url, boolean isRtl, boolean waitForNode,
             ChromeWindow.KeyboardVisibilityDelegateFactory keyboardDelegate)
             throws InterruptedException {
-        mEmbeddedTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mEmbeddedTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
+                InstrumentationRegistry.getInstrumentation().getContext(),
+                ServerCertificate.CERT_OK);
         ChromeWindow.setKeyboardVisibilityDelegateFactory(keyboardDelegate);
         mActivityTestRule.startMainActivityWithURL(mEmbeddedTestServer.getURL(url));
         setRtlForTesting(isRtl);

@@ -62,8 +62,8 @@ class Singleton {
 Singleton g_performance_manager;
 
 scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::USER_VISIBLE,
+  return base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()});
 }
 

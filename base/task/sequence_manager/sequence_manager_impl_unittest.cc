@@ -1578,7 +1578,7 @@ TEST_P(SequenceManagerTest, WorkBatching) {
   EXPECT_THAT(run_order, ElementsAre(0u, 1u, 2u, 3u));
 }
 
-class MockTaskObserver : public MessageLoop::TaskObserver {
+class MockTaskObserver : public TaskObserver {
  public:
   MOCK_METHOD1(DidProcessTask, void(const PendingTask& task));
   MOCK_METHOD1(WillProcessTask, void(const PendingTask& task));
@@ -1615,8 +1615,7 @@ TEST_P(SequenceManagerTest, TaskObserverRemoving) {
   RunLoop().RunUntilIdle();
 }
 
-void RemoveObserverTask(SequenceManagerImpl* manager,
-                        MessageLoop::TaskObserver* observer) {
+void RemoveObserverTask(SequenceManagerImpl* manager, TaskObserver* observer) {
   manager->RemoveTaskObserver(observer);
 }
 
@@ -1669,7 +1668,7 @@ TEST_P(SequenceManagerTest, QueueTaskObserverRemoving) {
 }
 
 void RemoveQueueObserverTask(scoped_refptr<TestTaskQueue> queue,
-                             MessageLoop::TaskObserver* observer) {
+                             TaskObserver* observer) {
   queue->RemoveTaskObserver(observer);
 }
 
@@ -1963,9 +1962,9 @@ TEST_P(SequenceManagerTest, QuitWhileNested) {
   EXPECT_FALSE(was_nested);
 }
 
-class SequenceNumberCapturingTaskObserver : public MessageLoop::TaskObserver {
+class SequenceNumberCapturingTaskObserver : public TaskObserver {
  public:
-  // MessageLoop::TaskObserver overrides.
+  // TaskObserver overrides.
   void WillProcessTask(const PendingTask& pending_task) override {}
   void DidProcessTask(const PendingTask& pending_task) override {
     sequence_numbers_.push_back(pending_task.sequence_num);
@@ -4162,7 +4161,7 @@ TEST_P(SequenceManagerTest, DeletePendingTasks_Complex) {
 // TODO(altimin): Add a test that posts an infinite number of other tasks
 // from its destructor.
 
-class QueueTimeTaskObserver : public MessageLoop::TaskObserver {
+class QueueTimeTaskObserver : public TaskObserver {
  public:
   void WillProcessTask(const PendingTask& pending_task) override {
     queue_time_ = pending_task.queue_time;

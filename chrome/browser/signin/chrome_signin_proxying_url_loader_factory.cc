@@ -472,12 +472,12 @@ bool ProxyingURLLoaderFactory::MaybeProxyRequest(
       base::BindRepeating(&content::WebContents::FromFrameTreeNodeId,
                           render_frame_host->GetFrameTreeNodeId());
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(&ResourceContextData::StartProxying,
-                                          profile->GetResourceContext(),
-                                          std::move(web_contents_getter),
-                                          std::move(proxied_receiver),
-                                          std::move(target_factory_info)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&ResourceContextData::StartProxying,
+                                profile->GetResourceContext(),
+                                std::move(web_contents_getter),
+                                std::move(proxied_receiver),
+                                std::move(target_factory_info)));
   return true;
 }
 

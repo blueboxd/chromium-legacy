@@ -14,6 +14,11 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/consumer.h"
+#include "third_party/perfetto/protos/perfetto/common/observable_events.pb.h"
+
+namespace base {
+class RunLoop;
+}
 
 namespace tracing {
 
@@ -121,14 +126,27 @@ class MockConsumer : public perfetto::Consumer {
   void OnDetach(bool success) override;
   void OnAttach(bool success, const perfetto::TraceConfig&) override;
   void OnTraceStats(bool success, const perfetto::TraceStats&) override;
-  void OnObservableEvents(const perfetto::ObservableEvents&) override {}
+
+  void OnObservableEvents(const perfetto::ObservableEvents&) override;
+  void WaitForAllDataSourcesStarted();
+  void WaitForAllDataSourcesStopped();
 
  private:
+  void CheckForAllDataSourcesStarted();
+  void CheckForAllDataSourcesStopped();
+
   std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
       consumer_endpoint_;
   size_t received_packets_ = 0;
   PacketReceivedCallback packet_received_callback_;
-  std::vector<std::string> data_source_names_;
+  struct DataSourceStatus {
+    std::string name;
+    perfetto::ObservableEvents::DataSourceInstanceStateChange::
+        DataSourceInstanceState state;
+  };
+  std::vector<DataSourceStatus> data_sources_;
+  base::RunLoop* on_started_runloop_ = nullptr;
+  base::RunLoop* on_stopped_runloop_ = nullptr;
 };
 
 class MockProducerHost : public ProducerHost {

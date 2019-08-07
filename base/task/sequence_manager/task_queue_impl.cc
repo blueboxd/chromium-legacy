@@ -12,6 +12,7 @@
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/sequence_manager/work_queue.h"
+#include "base/task/task_observer.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
@@ -697,12 +698,11 @@ void TaskQueueImpl::AsValueInto(TimeTicks now,
   state->EndDictionary();
 }
 
-void TaskQueueImpl::AddTaskObserver(MessageLoop::TaskObserver* task_observer) {
+void TaskQueueImpl::AddTaskObserver(TaskObserver* task_observer) {
   main_thread_only().task_observers.AddObserver(task_observer);
 }
 
-void TaskQueueImpl::RemoveTaskObserver(
-    MessageLoop::TaskObserver* task_observer) {
+void TaskQueueImpl::RemoveTaskObserver(TaskObserver* task_observer) {
   main_thread_only().task_observers.RemoveObserver(task_observer);
 }
 

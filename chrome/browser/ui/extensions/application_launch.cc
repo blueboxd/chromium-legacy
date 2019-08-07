@@ -413,7 +413,6 @@ WebContents* ShowApplicationWindow(const AppLaunchParams& params,
 
   NavigateParams nav_params(browser, url, transition);
   nav_params.disposition = disposition;
-  nav_params.opener = params.opener;
   Navigate(&nav_params);
 
   WebContents* web_contents = nav_params.navigated_or_inserted_contents;

@@ -216,8 +216,9 @@ void CrostiniAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
       registry_service_->GetIconPath(app_id_, scale_factor);
   DCHECK(!path.empty());
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CrostiniAppIcon::ReadOnFileThread, scale_factor, path),
       base::BindOnce(&CrostiniAppIcon::OnIconRead,
                      weak_ptr_factory_.GetWeakPtr()));

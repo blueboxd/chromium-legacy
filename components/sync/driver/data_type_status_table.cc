@@ -33,31 +33,36 @@ void DataTypeStatusTable::UpdateFailedDataTypes(const TypeErrorMap& errors) {
   DVLOG(1) << "Setting " << errors.size() << " new failed types.";
 
   for (auto iter = errors.begin(); iter != errors.end(); ++iter) {
-    SyncError::ErrorType failure_type = iter->second.error_type();
-    switch (failure_type) {
-      case SyncError::UNSET:
-        NOTREACHED();
-        break;
-      case SyncError::UNRECOVERABLE_ERROR:
-        unrecoverable_errors_.insert(*iter);
-        break;
-      case SyncError::DATATYPE_ERROR:
-        data_type_errors_.insert(*iter);
-        break;
-      case SyncError::DATATYPE_POLICY_ERROR:
-        data_type_policy_errors_.insert(*iter);
-        break;
-      case SyncError::CRYPTO_ERROR:
-        crypto_errors_.insert(*iter);
-        break;
-      case SyncError::PERSISTENCE_ERROR:
-        persistence_errors_.insert(*iter);
-        break;
-      case SyncError::UNREADY_ERROR:
-        unready_errors_.insert(*iter);
-        break;
-    }
+    UpdateFailedDataType(iter->first, iter->second);
   }
+}
+
+bool DataTypeStatusTable::UpdateFailedDataType(ModelType type,
+                                               const SyncError& error) {
+  switch (error.error_type()) {
+    case SyncError::UNSET:
+      NOTREACHED();
+      break;
+    case SyncError::UNRECOVERABLE_ERROR:
+      return unrecoverable_errors_.emplace(type, error).second;
+      break;
+    case SyncError::DATATYPE_ERROR:
+      return data_type_errors_.emplace(type, error).second;
+      break;
+    case SyncError::DATATYPE_POLICY_ERROR:
+      return data_type_policy_errors_.emplace(type, error).second;
+    case SyncError::CRYPTO_ERROR:
+      return crypto_errors_.emplace(type, error).second;
+      break;
+    case SyncError::PERSISTENCE_ERROR:
+      return persistence_errors_.emplace(type, error).second;
+      break;
+    case SyncError::UNREADY_ERROR:
+      return unready_errors_.emplace(type, error).second;
+      break;
+  }
+  NOTREACHED();
+  return false;
 }
 
 void DataTypeStatusTable::Reset() {

@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -119,6 +120,7 @@ public class SyncAndServicesPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest(message = "https://crbug.com/991135")
     public void testSyncSwitchClearsServerAutofillCreditCards() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         mSyncTestRule.setPaymentsIntegrationEnabled(true);

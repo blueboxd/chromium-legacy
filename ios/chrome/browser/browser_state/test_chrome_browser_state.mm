@@ -75,7 +75,7 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
   bookmark_model->Load(
       browser_state->GetPrefs(), browser_state->GetStatePath(),
       browser_state->GetIOTaskRunner(),
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
+      base::CreateSingleThreadTaskRunner({web::WebThread::UI}));
   ios::BookmarkUndoServiceFactory::GetForBrowserState(browser_state)
       ->Start(bookmark_model.get());
   return bookmark_model;
@@ -85,7 +85,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(web::BrowserState* context) {
   const base::FilePath& browser_state_path = context->GetStatePath();
   return std::make_unique<WebDataServiceWrapper>(
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
+      base::CreateSingleThreadTaskRunner({web::WebThread::UI}),
       base::DoNothing());
 }
 
@@ -135,8 +135,9 @@ TestChromeBrowserState::TestChromeBrowserState(
     std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
     TestingFactories testing_factories,
     RefcountedTestingFactories refcounted_testing_factories)
-    : ChromeBrowserState(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+    : ChromeBrowserState(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       state_path_(path),
       prefs_(std::move(prefs)),
       testing_prefs_(nullptr),
@@ -280,7 +281,7 @@ void TestChromeBrowserState::ClearNetworkingHistorySince(
 net::URLRequestContextGetter* TestChromeBrowserState::CreateRequestContext(
     ProtocolHandlerMap* protocol_handlers) {
   return new net::TestURLRequestContextGetter(
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
+      base::CreateSingleThreadTaskRunner({web::WebThread::IO}));
 }
 
 net::URLRequestContextGetter*

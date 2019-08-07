@@ -104,9 +104,8 @@ void ProfileImplIOData::Handle::Init(const base::FilePath& profile_path) {
 
   io_data_->set_data_reduction_proxy_io_data(
       CreateDataReductionProxyChromeIOData(
-          profile_,
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})));
+          profile_, base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+          base::CreateSingleThreadTaskRunner({BrowserThread::UI})));
 
 #if defined(OS_CHROMEOS)
   io_data_->data_reduction_proxy_io_data()
@@ -133,8 +132,9 @@ ProfileImplIOData::Handle::GetResourceContextNoInit() const {
 
 void ProfileImplIOData::Handle::InitializeDataReductionProxy() const {
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   std::unique_ptr<data_reduction_proxy::DataStore> store(
       new data_reduction_proxy::DataStoreImpl(io_data_->profile_path_));
@@ -145,7 +145,7 @@ void ProfileImplIOData::Handle::InitializeDataReductionProxy() const {
           content::BrowserContext::GetDefaultStoragePartition(profile_)
               ->GetURLLoaderFactoryForBrowserProcess(),
           std::move(store),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+          base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
           db_task_runner);
 }
 
@@ -161,12 +161,12 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       pref_service);
   io_data_->safe_browsing_enabled()->MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 #if BUILDFLAG(ENABLE_PLUGINS)
   io_data_->always_open_pdf_externally()->Init(
       prefs::kPluginsAlwaysOpenPdfExternally, pref_service);
   io_data_->always_open_pdf_externally()->MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 #endif
   io_data_->InitializeOnUIThread(profile_);
 }

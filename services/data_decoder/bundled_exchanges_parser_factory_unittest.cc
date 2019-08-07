@@ -167,35 +167,35 @@ TEST_F(BundledExchangesParserFactoryTest, GetParserForFile) {
     run_loop.Run();
   }
   ASSERT_TRUE(metadata);
-  ASSERT_EQ(metadata->index.size(), 4u);
+  ASSERT_EQ(metadata->requests.size(), 4u);
 
-  const auto& index = metadata->index;
-
-  std::vector<mojom::BundleResponsePtr> responses;
-  for (size_t i = 0; i < index.size(); i++) {
+  std::map<std::string, mojom::BundleResponsePtr> responses;
+  for (const auto& item : metadata->requests) {
+    ASSERT_TRUE(item.second->variants_value.empty());
+    ASSERT_EQ(item.second->response_locations.size(), 1u);
     base::RunLoop run_loop;
-    parser->ParseResponse(
-        index[i]->response_offset, index[i]->response_length,
-        base::BindLambdaForTesting(
-            [&responses, &run_loop](mojom::BundleResponsePtr response,
-                                    mojom::BundleResponseParseErrorPtr error) {
-              ASSERT_TRUE(response);
-              ASSERT_FALSE(error);
-              responses.push_back(std::move(response));
-              run_loop.QuitClosure().Run();
-            }));
+    parser->ParseResponse(item.second->response_locations[0]->offset,
+                          item.second->response_locations[0]->length,
+                          base::BindLambdaForTesting(
+                              [&item, &responses, &run_loop](
+                                  mojom::BundleResponsePtr response,
+                                  mojom::BundleResponseParseErrorPtr error) {
+                                ASSERT_TRUE(response);
+                                ASSERT_FALSE(error);
+                                responses[item.first.spec()] =
+                                    std::move(response);
+                                run_loop.QuitClosure().Run();
+                              }));
     run_loop.Run();
   }
-  EXPECT_EQ(index[0]->request_url, "https://test.example.org/");
-  EXPECT_EQ(index[0]->request_method, "GET");
-  EXPECT_EQ(index[0]->request_headers.size(), 0u);
-  EXPECT_EQ(responses[0]->response_code, 200);
-  EXPECT_EQ(responses[0]->response_headers["content-type"],
-            "text/html; charset=utf-8");
-  EXPECT_EQ(index[1]->request_url, "https://test.example.org/index.html");
-  EXPECT_EQ(index[2]->request_url,
-            "https://test.example.org/manifest.webmanifest");
-  EXPECT_EQ(index[3]->request_url, "https://test.example.org/script.js");
+  ASSERT_TRUE(responses["https://test.example.org/"]);
+  EXPECT_EQ(responses["https://test.example.org/"]->response_code, 200);
+  EXPECT_EQ(
+      responses["https://test.example.org/"]->response_headers["content-type"],
+      "text/html; charset=utf-8");
+  EXPECT_TRUE(responses["https://test.example.org/index.html"]);
+  EXPECT_TRUE(responses["https://test.example.org/manifest.webmanifest"]);
+  EXPECT_TRUE(responses["https://test.example.org/script.js"]);
 }
 
 }  // namespace data_decoder

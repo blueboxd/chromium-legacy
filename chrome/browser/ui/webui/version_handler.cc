@@ -139,8 +139,9 @@ void VersionHandler::HandleRequestPathInfo(const base::ListValue* args) {
   // OnGotFilePaths.
   base::string16* exec_path_buffer = new base::string16;
   base::string16* profile_path_buffer = new base::string16;
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&GetFilePaths, Profile::FromWebUI(web_ui())->GetPath(),
                      base::Unretained(exec_path_buffer),
                      base::Unretained(profile_path_buffer)),

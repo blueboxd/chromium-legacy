@@ -234,8 +234,9 @@ class OpenInControllerBridge
         initWithTarget:self
                 action:@selector(handleTapFrom:)];
     [tapRecognizer_ setDelegate:self];
-    sequencedTaskRunner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+    sequencedTaskRunner_ =
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                         base::TaskPriority::BEST_EFFORT});
     isOpenInMenuDisplayed_ = NO;
     _previousScrollViewOffset = 0;
   }

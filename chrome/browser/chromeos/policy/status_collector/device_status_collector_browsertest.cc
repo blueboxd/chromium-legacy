@@ -1617,22 +1617,20 @@ TEST_F(DeviceStatusCollectorTest, CrostiniTerminaVmKernelVersionReporting) {
       crostini::prefs::kCrostiniLastLaunchTerminaKernelVersion,
       kTerminaVmKernelVersion);
 
-  // Check that nothing is reported when the feature flag is not enabled:
+  // Check that the kernel version is reported as to the feature flag default:
+  GetStatus();
+  EXPECT_TRUE(got_session_status_);
+  EXPECT_EQ(kTerminaVmKernelVersion,
+            session_status_.crostini_status().last_launch_vm_kernel_version());
+
+  // Check that nothing is reported when the feature flag is disabled:
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kCrostiniAdditionalEnterpriseReporting);
   GetStatus();
   EXPECT_TRUE(got_session_status_);
   EXPECT_TRUE(session_status_.crostini_status()
                   .last_launch_vm_kernel_version()
                   .empty());
-
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kCrostiniAdditionalEnterpriseReporting);
-
-  // Check that the kernel version is reported now that the feature flag is
-  // enabled:
-  GetStatus();
-  EXPECT_TRUE(got_session_status_);
-  EXPECT_EQ(kTerminaVmKernelVersion,
-            session_status_.crostini_status().last_launch_vm_kernel_version());
 }
 
 TEST_F(DeviceStatusCollectorTest, CrostiniAppUsageReporting) {

@@ -133,6 +133,10 @@ struct FontCacheKeyHash {
 
 struct FontCacheKeyTraits : WTF::SimpleClassHashTraits<FontCacheKey> {
   STATIC_ONLY(FontCacheKeyTraits);
+
+  // std::string's empty state need not be zero in all implementations,
+  // and it is held within FontFaceCreationParams.
+  static const bool kEmptyValueIsZero = false;
 };
 
 }  // namespace blink

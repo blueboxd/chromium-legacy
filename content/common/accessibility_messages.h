@@ -195,6 +195,10 @@ IPC_MESSAGE_ROUTED1(
     AccessibilityHostMsg_FindInPageResult,
     AccessibilityHostMsg_FindInPageResultParams)
 
+// Sent when a Find In Page operation is finished and all highlighted results
+// are cleared.
+IPC_MESSAGE_ROUTED0(AccessibilityHostMsg_FindInPageTermination)
+
 // Sent in response to PerformAction with parameter kHitTest.
 IPC_MESSAGE_ROUTED5(AccessibilityHostMsg_ChildFrameHitTestResult,
                     int /* action request id of initial caller */,

@@ -524,7 +524,7 @@ void OfflinePageRequestHandler::StartAsync() {
                        delegate_->GetTabIdGetter(),
                        weak_ptr_factory_.GetWeakPtr());
   } else {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&GetPagesToServeURL, url_, offline_header_,
                        network_state_, delegate_->GetWebContentsGetter(),
@@ -565,8 +565,8 @@ void OfflinePageRequestHandler::OnOfflinePagesAvailable(
     return;
   }
 
-  file_task_runner_ = base::CreateTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  file_task_runner_ = base::CreateTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   // Start the file validation from the 1st offline page.
@@ -632,7 +632,7 @@ void OfflinePageRequestHandler::VisitTrustedOfflinePage() {
 
   delegate_->SetOfflinePageNavigationUIData(true /*is_offline_page*/);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&VisitTrustedOfflinePageOnUI, offline_header_,
                      network_state_, delegate_->GetWebContentsGetter(),
@@ -994,9 +994,9 @@ void OfflinePageRequestHandler::DidComputeActualDigestForServing(
     // be called before the response is being received. Furthermore, there is
     // no need to clear the offline bit since the error code should already
     // indicate that the offline page is not loaded.
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(&ClearOfflinePageData,
-                                            delegate_->GetWebContentsGetter()));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&ClearOfflinePageData,
+                                  delegate_->GetWebContentsGetter()));
     result = net::ERR_FAILED;
   }
 

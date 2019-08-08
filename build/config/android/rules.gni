@@ -728,8 +728,6 @@ if (enable_java_templates) {
   #   load_library_from_apk: (Optional) Whether libraries should be loaded from
   #     the APK without uncompressing.
   #   enable_chromium_linker_tests: (Optional) Whether to run tests.
-  #   dont_load_shared_libraries: (Optional) List of native libraries to exclude
-  #     from output.
   #   use_final_fields: True to use final fields. When false, all other
   #       variables must not be set.
   template("write_native_libraries_java") {
@@ -786,12 +784,6 @@ if (enable_java_templates) {
         if (defined(invoker.enable_chromium_linker_tests) &&
             invoker.enable_chromium_linker_tests) {
           args += [ "--enable-chromium-linker-tests" ]
-        }
-
-        # TODO(tiborg): Remove once all usages are removed.
-        if (defined(invoker.dont_load_shared_libraries)) {
-          args += [ "--exclude-native-libraries=" +
-                    invoker.dont_load_shared_libraries ]
         }
       }
     }
@@ -2655,7 +2647,6 @@ if (enable_java_templates) {
       write_native_libraries_java("${_template_name}__native_libraries") {
         forward_variables_from(invoker,
                                [
-                                 "dont_load_shared_libraries",
                                  "enable_chromium_linker_tests",
                                ])
         deps = [
@@ -3365,7 +3356,6 @@ if (enable_java_templates) {
                                "dexlayout_profile",
                                "disable_r8_outlining",
                                "dist_ijar_path",
-                               "dont_load_shared_libraries",
                                "enable_chromium_linker_tests",
                                "enable_multidex",
                                "enable_native_mocks",

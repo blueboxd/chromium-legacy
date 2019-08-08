@@ -434,6 +434,9 @@ extern const base::Feature kTreatUnsafeDownloadsAsActive;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const char kTreatUnsafeDownloadsAsActiveParamName[];
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHeavyAdIntervention;
+
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kUsageTimeStateNotifier;

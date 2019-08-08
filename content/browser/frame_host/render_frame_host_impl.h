@@ -690,8 +690,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // process, e.g. by AppCache etc.
   void CommitNavigation(
       NavigationRequest* navigation_request,
-      const mojom::CommonNavigationParams& common_params,
-      const mojom::CommitNavigationParams& commit_params,
+      mojom::CommonNavigationParamsPtr common_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       network::ResourceResponse* response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -1733,6 +1733,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool ShouldAddCookieSameSiteDeprecationMessage(
       const std::string& cookie_url,
       base::circular_deque<size_t>* already_seen_url_hashes);
+
+  // Helper functions for logging crash keys when ValidateDidCommitParams()
+  // determines it cannot commit a URL or origin.
+  void LogCannotCommitUrlCrashKeys(const GURL& url,
+                                   bool is_same_document_navigation,
+                                   NavigationRequest* navigation_request);
+  void LogCannotCommitOriginCrashKeys(bool is_same_document_navigation,
+                                      NavigationRequest* navigation_request);
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

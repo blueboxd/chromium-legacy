@@ -127,7 +127,9 @@ static const BuiltInHost kBuiltInHost[] = {
     {arc::ArcSupportMessageHost::kHostName,
      arc::ArcSupportMessageHost::kHostOrigin, 1,
      &arc::ArcSupportMessageHost::Create},
-    {chromeos::kWilcoDtcSupportdUiMessageHost, nullptr, 0,
+    {chromeos::kWilcoDtcSupportdUiMessageHost,
+     chromeos::kWilcoDtcSupportdHostOrigins,
+     chromeos::kWilcoDtcSupportdHostOriginsSize,
      &chromeos::CreateExtensionOwnedWilcoDtcSupportdMessageHost},
 };
 

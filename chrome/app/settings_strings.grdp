@@ -2392,9 +2392,6 @@
     <message name="IDS_SETTINGS_INTERNET_TOGGLE_WIFI_ACCESSIBILITY_LABEL" desc="Accessibility only label for WiFi enable/disable toggle .">
       Wi-Fi enable
     </message>
-    <message name="IDS_SETTINGS_INTERNET_TOGGLE_WIMAX_ACCESSIBILITY_LABEL" desc="Accessibility only label for WiMAX enable/disable toggle .">
-      WiMAX enable
-    </message>
   </if>
 
   <!-- Network error strings. -->
@@ -2670,9 +2667,6 @@
     </message>
     <message name="IDS_ONC_WIFI_SSID" desc="ONC Property label for WiFi.SSID">
       SSID
-    </message>
-    <message name="IDS_ONC_WIMAX_EAP_IDENTITY" desc="ONC Property label for WiMAX.EAP.Identity">
-      Identity
     </message>
   </if>
 

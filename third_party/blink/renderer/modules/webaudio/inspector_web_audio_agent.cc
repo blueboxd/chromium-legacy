@@ -10,6 +10,9 @@
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
 
 namespace blink {
 
@@ -33,6 +36,21 @@ String GetContextStateEnum(BaseAudioContext* context) {
       NOTREACHED();
       break;
   }
+}
+
+// Strips "Node" from the node name string. For example, "GainNode" will return
+// "Gain".
+String StripNodeSuffix(const String& nodeName) {
+  return nodeName.EndsWith("Node") ? nodeName.Left(nodeName.length() - 4)
+                                   : "Unknown";
+}
+
+// Strips out the prefix and returns the actual parameter name. If the name
+// does not match |NodeName.ParamName| pattern, returns "Unknown" instead.
+String StripParamPrefix(const String& paramName) {
+  Vector<String> name_tokens;
+  paramName.Split('.', name_tokens);
+  return name_tokens.size() == 2 ? name_tokens.at(1) : "Unknown";
 }
 
 }  // namespace
@@ -73,7 +91,7 @@ Response InspectorWebAudioAgent::disable() {
 }
 
 Response InspectorWebAudioAgent::getRealtimeData(
-    const protocol::WebAudio::ContextId& contextId,
+    const protocol::WebAudio::GraphObjectId& contextId,
     std::unique_ptr<ContextRealtimeData>* out_data) {
   auto* const graph_tracer = AudioGraphTracer::FromPage(page_);
   if (!enabled_.Get())
@@ -113,6 +131,104 @@ void InspectorWebAudioAgent::WillDestroyBaseAudioContext(
 void InspectorWebAudioAgent::DidChangeBaseAudioContext(
     BaseAudioContext* context) {
   GetFrontend()->contextChanged(BuildProtocolContext(context));
+}
+
+void InspectorWebAudioAgent::DidCreateAudioListener(AudioListener* listener) {
+  GetFrontend()->audioListenerCreated(
+      protocol::WebAudio::AudioListener::create()
+          .setListenerId(listener->Uuid())
+          .setContextId(listener->ParentUuid())
+          .build());
+}
+
+void InspectorWebAudioAgent::WillDestroyAudioListener(AudioListener* listener) {
+  GetFrontend()->audioListenerWillBeDestroyed(
+      listener->ParentUuid(), listener->Uuid());
+}
+
+void InspectorWebAudioAgent::DidCreateAudioNode(AudioNode* node) {
+  GetFrontend()->audioNodeCreated(
+      protocol::WebAudio::AudioNode::create()
+          .setNodeId(node->Uuid())
+          .setNodeType(StripNodeSuffix(node->GetNodeName()))
+          .setNumberOfInputs(node->numberOfInputs())
+          .setNumberOfOutputs(node->numberOfOutputs())
+          .setChannelCount(node->channelCount())
+          .setChannelCountMode(node->channelCountMode())
+          .setChannelInterpretation(node->channelInterpretation())
+          .setContextId(node->ParentUuid())
+          .build());
+}
+
+void InspectorWebAudioAgent::WillDestroyAudioNode(AudioNode* node) {
+  GetFrontend()->audioNodeWillBeDestroyed(node->ParentUuid(), node->Uuid());
+}
+
+void InspectorWebAudioAgent::DidCreateAudioParam(AudioParam* param) {
+  GetFrontend()->audioParamCreated(
+      protocol::WebAudio::AudioParam::create()
+          .setParamId(param->Uuid())
+          .setParamType(StripParamPrefix(param->GetParamName()))
+          .setRate(param->automationRate())
+          .setDefaultValue(param->defaultValue())
+          .setMinValue(param->minValue())
+          .setMaxValue(param->maxValue())
+          .setContextId(param->Context()->Uuid())
+          .setNodeId(param->ParentUuid())
+          .build());
+}
+
+void InspectorWebAudioAgent::WillDestroyAudioParam(AudioParam* param) {
+  GetFrontend()->audioParamWillBeDestroyed(
+      param->Context()->Uuid(), param->ParentUuid(), param->Uuid());
+}
+
+void InspectorWebAudioAgent::DidConnectNodes(
+    AudioNode* source_node,
+    AudioNode* destination_node,
+    int32_t source_output_index,
+    int32_t destination_input_index) {
+  GetFrontend()->nodesConnected(
+      source_node->ParentUuid(),
+      source_node->Uuid(),
+      destination_node->Uuid(),
+      source_output_index,
+      destination_input_index);
+}
+
+void InspectorWebAudioAgent::DidDisconnectNodes(
+    AudioNode* source_node,
+    AudioNode* destination_node,
+    int32_t source_output_index,
+    int32_t destination_input_index) {
+  GetFrontend()->nodesDisconnected(
+      source_node->ParentUuid(),
+      source_node->Uuid(),
+      destination_node ? destination_node->Uuid() : String(),
+      source_output_index,
+      destination_input_index);
+}
+
+void InspectorWebAudioAgent::DidConnectNodeParam(
+    AudioNode* source_node,
+    AudioParam* destination_param,
+    int32_t source_output_index) {
+  GetFrontend()->nodeParamConnected(
+      source_node->ParentUuid(),
+      source_node->Uuid(),
+      destination_param->Uuid(),
+      source_output_index);
+}
+
+void InspectorWebAudioAgent::DidDisconnectNodeParam(
+    AudioNode* source_node,
+    AudioParam* destination_param,
+    int32_t source_output_index) {
+  GetFrontend()->nodeParamDisconnected(
+      source_node->ParentUuid(),
+      source_node->Uuid(),
+      destination_param->Uuid(),
+      source_output_index);
 }
 
 std::unique_ptr<protocol::WebAudio::BaseAudioContext>

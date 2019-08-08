@@ -42,8 +42,8 @@ class TestLabel : public LabelButtonLabel {
         last_color_(last_color) {}
 
   // LabelButtonLabel:
-  void SchedulePaintInRect(const gfx::Rect& r) override {
-    LabelButtonLabel::SchedulePaintInRect(r);
+  void OnDidSchedulePaint(const gfx::Rect& r) override {
+    LabelButtonLabel::OnDidSchedulePaint(r);
     *last_color_ = GetEnabledColor();
   }
 
@@ -76,8 +76,9 @@ class LabelButtonLabelTest : public ViewsTestBase {
 
 // Test that LabelButtonLabel reacts properly to themed and overridden colors.
 TEST_F(LabelButtonLabelTest, Colors) {
-  // The SchedulePaintInRect override won't be called while the base class is
-  // initialized. Not much we can do about that, so give it the first for free.
+  // The OnDidSchedulePaint() override won't be called while the base
+  // class is initialized. Not much we can do about that, so give it the first
+  // for free.
   EXPECT_EQ(SK_ColorCYAN, last_color_);  // Sanity check.
 
   // At the same time we can check that changing the auto color readability

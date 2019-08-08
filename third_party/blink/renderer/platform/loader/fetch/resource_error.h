@@ -94,9 +94,6 @@ class PLATFORM_EXPORT ResourceError final {
 
   static bool Compare(const ResourceError&, const ResourceError&);
 
-  // Net error code getters are here to avoid unpreferred header inclusion.
-  static int BlockedByXSSAuditorErrorCode();
-
  private:
   void InitializeDescription();
 

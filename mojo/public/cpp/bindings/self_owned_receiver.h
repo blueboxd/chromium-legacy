@@ -12,7 +12,6 @@
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 

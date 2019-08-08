@@ -158,7 +158,7 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
       // Since AuraLinux needs to send the children-changed::add event with the
       // index in parent, the event must be fired after the node is unignored.
       // children-changed:remove is handled in |OnStateChanged|
-      if (!node->HasState(ax::mojom::State::kIgnored)) {
+      if (!node->IsIgnored()) {
         if (node->IsNative() && node->GetParent()) {
           g_signal_emit_by_name(node->GetParent(), "children-changed::add",
                                 node->GetIndexInParent(),

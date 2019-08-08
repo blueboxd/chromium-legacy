@@ -1669,4 +1669,62 @@ TEST_F(APIBindingUnittest,
   EXPECT_FALSE(type_refs().GetCallbackSignature("test.noParamCallback"));
 }
 
+// Tests promise-based APIs exposed on bindings.
+TEST_F(APIBindingUnittest, PromiseBasedAPIs) {
+  constexpr char kFunctions[] =
+      R"([{
+            'name': 'supportsPromises',
+            'supportsPromises': true,
+            'parameters': [{
+              'name': 'int',
+              'type': 'integer'
+            }, {
+              'name': 'callback',
+              'type': 'function',
+              'parameters': [{
+                'name': 'strResult',
+                'type': 'string'
+              }]
+            }]
+          }])";
+  SetFunctions(kFunctions);
+
+  InitializeBinding();
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(context);
+
+  {
+    constexpr char kFunctionCall[] =
+        R"((function(api) {
+             this.apiResult = api.supportsPromises(3);
+             this.apiResult.then((strResult) => {
+               this.strResult = strResult;
+             });
+           }))";
+    v8::Local<v8::Function> promise_api_call =
+        FunctionFromString(context, kFunctionCall);
+    v8::Local<v8::Value> args[] = {binding_object};
+    RunFunctionOnGlobal(promise_api_call, context, base::size(args), args);
+
+    v8::Local<v8::Value> api_result =
+        GetPropertyFromObject(context->Global(), context, "apiResult");
+    ASSERT_FALSE(api_result.IsEmpty());
+    ASSERT_TRUE(api_result->IsPromise());
+    v8::Local<v8::Promise> promise = api_result.As<v8::Promise>();
+    EXPECT_EQ(v8::Promise::kPending, promise->State());
+
+    ASSERT_TRUE(last_request());
+    request_handler()->CompleteRequest(last_request()->request_id,
+                                       *ListValueFromString(R"(["foo"])"),
+                                       std::string());
+
+    EXPECT_EQ(v8::Promise::kFulfilled, promise->State());
+    EXPECT_EQ(R"("foo")", V8ToString(promise->Result(), context));
+    EXPECT_EQ(R"("foo")", GetStringPropertyFromObject(context->Global(),
+                                                      context, "strResult"));
+  }
+}
+
 }  // namespace extensions

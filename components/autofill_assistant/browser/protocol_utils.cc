@@ -170,8 +170,8 @@ std::string ProtocolUtils::CreateNextScriptActionsRequest(
 }
 
 // static
-void ProtocolUtils::ParseActions(ActionDelegate* delegate,
-                                 const ActionsResponseProto& response_proto,
+bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
+                                 const std::string& response,
                                  std::string* return_global_payload,
                                  std::string* return_script_payload,
                                  std::vector<std::unique_ptr<Action>>* actions,
@@ -179,6 +179,12 @@ void ProtocolUtils::ParseActions(ActionDelegate* delegate,
                                  bool* should_update_scripts) {
   DCHECK(actions);
   DCHECK(scripts);
+
+  ActionsResponseProto response_proto;
+  if (!response_proto.ParseFromString(response)) {
+    LOG(ERROR) << "Failed to parse assistant actions response.";
+    return false;
+  }
 
   if (return_global_payload) {
     *return_global_payload = response_proto.global_payload();
@@ -317,6 +323,8 @@ void ProtocolUtils::ParseActions(ActionDelegate* delegate,
        response_proto.update_script_list().scripts()) {
     ProtocolUtils::AddScript(script_proto, scripts);
   }
+
+  return true;
 }
 
 }  // namespace autofill_assistant

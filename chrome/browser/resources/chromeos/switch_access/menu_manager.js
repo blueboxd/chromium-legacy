@@ -45,6 +45,12 @@ class MenuManager {
 
     /**
      * The node that the menu has been opened for.
+     * @private {chrome.automation.AutomationNode}
+     */
+    this.menuOriginNode_;
+
+    /**
+     * The node that the menu has been opened for.
      * @private {!chrome.automation.AutomationNode}
      */
     this.menuOriginNode_ = desktop;
@@ -54,6 +60,12 @@ class MenuManager {
      * @private {boolean}
      */
     this.inMenu_ = false;
+
+    /**
+     * Keeps track of when there's a selection in the current node.
+     * @private {boolean}
+     */
+    this.selectionExists_ = false;
 
     /**
      * Keeps track of when the clipboard is empty.
@@ -111,6 +123,9 @@ class MenuManager {
       chrome.accessibilityPrivate.setSwitchAccessMenuState(
           true, navNode.location, actions.length);
       this.menuOriginNode_ = navNode;
+      this.menuOriginNode_.addEventListener(
+          chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+          this.onSelectionChanged_.bind(this), false /** Don't use capture. */);
     } else {
       console.log('Unable to show Switch Access menu.');
     }
@@ -161,6 +176,7 @@ class MenuManager {
     }
 
     if (actionNode) {
+      this.menuOriginNode_ = navNode;
       this.node_ = actionNode;
       this.updateFocusRing_();
     }
@@ -175,8 +191,11 @@ class MenuManager {
     if (this.node_)
       this.node_ = null;
 
+    this.menuOriginNode_.removeEventListener(
+        chrome.automation.EventType.TEXT_SELECTION_CHANGED,
+        this.onSelectionChanged_.bind(this), false /** Don't use capture. */);
     chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        false, SAConstants.EMPTY_LOCATION, 0);
+        false /** Hide the menu. */, SAConstants.EMPTY_LOCATION, 0);
   }
 
   /**
@@ -301,7 +320,9 @@ class MenuManager {
    */
   updateClipboardHasData() {
     this.clipboardHasData_ = true;
-    this.reloadMenu_(this.menuOriginNode_);
+    if (this.menuOriginNode_) {
+      this.reloadMenu_(this.menuOriginNode_);
+    }
   }
 
   /**
@@ -310,6 +331,39 @@ class MenuManager {
    */
   clearFocusRing_() {
     this.updateFocusRing_(true);
+  }
+
+  /**
+   * Returns if there is a selection in the current node.
+   * @private
+   * @returns {boolean} whether or not there's a selection
+   */
+  nodeHasSelection_() {
+    let previousSelectionState = this.selectionExists_;
+    if (this.menuOriginNode_) {
+      if (this.menuOriginNode_.textSelStart !==
+          this.menuOriginNode_.textSelEnd) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Check to see if there is a change in the selection in the current node and
+   * reload the menu if so.
+   * @private
+   */
+  onSelectionChanged_() {
+    let newSelectionState = this.nodeHasSelection_();
+    if (this.selectionExists_ != newSelectionState) {
+      this.selectionExists_ = newSelectionState;
+      if (this.menuOriginNode_) {
+        this.reloadMenu_(this.menuOriginNode_);
+      }
+    }
   }
 
   /**
@@ -362,8 +416,10 @@ class MenuManager {
         if (this.navigationManager_.selectionStarted()) {
           actions.push(SAConstants.MenuAction.SELECT_END);
         }
-        actions.push(SAConstants.MenuAction.CUT);
-        actions.push(SAConstants.MenuAction.COPY);
+        if (this.selectionExists_) {
+          actions.push(SAConstants.MenuAction.CUT);
+          actions.push(SAConstants.MenuAction.COPY);
+        }
         if (this.clipboardHasData_) {
           actions.push(SAConstants.MenuAction.PASTE);
         }
@@ -470,7 +526,8 @@ class MenuManager {
         break;
       case SAConstants.MenuAction.SELECT_START:
         this.navigationManager_.saveSelectStart();
-        this.reloadMenu_(this.navigationManager_.currentNode());
+        if (this.menuOriginNode_)
+          this.reloadMenu_(this.menuOriginNode_);
         exitAfterAction = false;
         break;
       case SAConstants.MenuAction.SELECT_END:

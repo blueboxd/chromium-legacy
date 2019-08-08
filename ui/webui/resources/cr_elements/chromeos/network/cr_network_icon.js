@@ -132,12 +132,8 @@ Polymer({
     if (!this.networkState) {
       return '';
     }
-    const mojom = chromeos.networkConfig.mojom;
-    const type = this.networkState.type;
-    if (type == mojom.NetworkType.kWiMAX) {
-      return 'network:4g';
-    }
-    if (type == mojom.NetworkType.kCellular) {
+    if (this.networkState.type ==
+        chromeos.networkConfig.mojom.NetworkType.kCellular) {
       assert(this.networkState.cellular);
       const technology =
           this.getTechnologyId_(this.networkState.cellular.networkTechnology);

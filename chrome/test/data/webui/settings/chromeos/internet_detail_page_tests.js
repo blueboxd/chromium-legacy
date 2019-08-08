@@ -49,7 +49,6 @@ suite('InternetDetailPage', function() {
       OncTypeTether: 'OncTypeTether',
       OncTypeVPN: 'OncTypeVPN',
       OncTypeWiFi: 'OncTypeWiFi',
-      OncTypeWiMAX: 'OncTypeWiMAX',
       networkListItemConnected: 'networkListItemConnected',
       networkListItemConnecting: 'networkListItemConnecting',
       networkListItemConnectingTo: 'networkListItemConnectingTo',

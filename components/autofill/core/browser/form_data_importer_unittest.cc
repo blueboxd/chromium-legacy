@@ -1432,8 +1432,11 @@ TEST_F(FormDataImporterTest, ImportCreditCard_InvalidCardNumber) {
   ASSERT_EQ(0U, personal_data_manager_->GetCreditCards().size());
 }
 
-// Tests that an invalid credit card expiration is not extracted.
+// Tests that an invalid credit card expiration is not extracted when the
+// expiration date fix flow experiment is disabled.
 TEST_F(FormDataImporterTest, ImportCreditCard_InvalidExpiryDate) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
   FormData form;
   form.url = GURL("https://wwww.foo.com");
 
@@ -2364,8 +2367,11 @@ TEST_F(FormDataImporterTest,
 }
 
 // Ensures that |imported_credit_card_record_type_| is set correctly.
-TEST_F(FormDataImporterTest,
-       ImportFormData_ImportCreditCardRecordType_NoCard_ExpiredCard) {
+TEST_F(
+    FormDataImporterTest,
+    ImportFormData_ImportCreditCardRecordType_NoCard_ExpiredCard_EditableExpDateOff) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
   // Simulate a form submission with an expired credit card.
   FormData form;
   form.url = GURL("https://wwww.foo.com");
@@ -2385,6 +2391,33 @@ TEST_F(FormDataImporterTest,
   // was successfully imported from the form.
   ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
               FormDataImporter::ImportedCreditCardRecordType::NO_CARD);
+}
+
+// Ensures that |imported_credit_card_record_type_| is set correctly.
+TEST_F(
+    FormDataImporterTest,
+    ImportFormData_ImportCreditCardRecordType_NewCard_ExpiredCard_WithExpDateFixFlow) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillUpstreamEditableExpirationDate);
+  // Simulate a form submission with an expired credit card.
+  FormData form;
+  form.url = GURL("https://wwww.foo.com");
+
+  AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1111", "01",
+                        "1999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes();
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_TRUE(form_data_importer_->ImportFormData(
+      form_structure, /*profile_autofill_enabled=*/true,
+      /*credit_card_autofill_enabled=*/true,
+      /*should_return_local_card=*/true, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  // |imported_credit_card_record_type_| should be NEW_CARD because card was
+  // successfully imported from the form via the expiration date fix flow.
+  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::NEW_CARD);
 }
 
 // Ensures that |imported_credit_card_record_type_| is set correctly.

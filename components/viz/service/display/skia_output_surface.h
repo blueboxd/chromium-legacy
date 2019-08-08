@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/output_surface.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -24,7 +25,6 @@ namespace viz {
 
 class ContextLostObserver;
 class CopyOutputRequest;
-struct ResourceMetadata;
 
 namespace copy_output {
 struct RenderPassGeometry;
@@ -50,24 +50,24 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   // called.
   virtual SkCanvas* BeginPaintCurrentFrame() = 0;
 
-  // Make a promise SkImage from the given |metadata|. The SkiaRenderer can use
-  // the image with SkCanvas returned by |GetSkCanvasForCurrentFrame|, but Skia
-  // will not read the content of the resource until the sync token in the
-  // |metadata| is satisfied. The SwapBuffers should take care of this by
-  // scheduling a GPU task with all resource sync tokens recorded by
+  // Make a promise SkImage from the given |image_context|. The SkiaRenderer can
+  // use the image with SkCanvas returned by |GetSkCanvasForCurrentFrame|, but
+  // Skia will not read the content of the resource until the |sync_token| in
+  // the |image_context| is satisfied. The SwapBuffers should take care of this
+  // by scheduling a GPU task with all resource sync tokens recorded by
   // MakePromiseSkImage for the current frame.
-  virtual sk_sp<SkImage> MakePromiseSkImage(
-      const ResourceMetadata& metadata) = 0;
+  virtual void MakePromiseSkImage(
+      ExternalUseClient::ImageContext* image_context) = 0;
 
-  // Make a promise SkImage from the given |metadata| and the |yuv_color_space|.
-  // For YUV format, at least three resource metadatas should be provided.
-  // metadatas[0] contains pixels from y panel, metadatas[1] contains pixels
-  // from u panel, metadatas[2] contains pixels from v panel. For NV12 format,
-  // at least two resource metadatas should be provided. metadatas[0] contains
-  // pixels from y panel, metadatas[1] contains pixels from u and v panels. If
-  // has_alpha is true, the last item in metadatas contains alpha panel.
+  // Make a promise SkImage from the given |contexts| and the |yuv_color_space|.
+  // For YUV format, at least three resource contexts should be provided.
+  // contexts[0] contains pixels from y panel, contexts[1] contains pixels
+  // from u panel, contexts[2] contains pixels from v panel. For NV12 format,
+  // at least two resource contexts should be provided. contexts[0] contains
+  // pixels from y panel, contexts[1] contains pixels from u and v panels. If
+  // has_alpha is true, the last item in contexts contains alpha panel.
   virtual sk_sp<SkImage> MakePromiseSkImageFromYUV(
-      const std::vector<ResourceMetadata>& metadatas,
+      const std::vector<ExternalUseClient::ImageContext*>& contexts,
       SkYUVColorSpace yuv_color_space,
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) = 0;

@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/strcat.h"
@@ -152,7 +153,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
     cm->SetCanonicalCookieAsync(
         CanonicalCookie::Create(url, cookie_line, creation_time,
-                                CookieOptions()),
+                                base::nullopt /* server_time */),
         url.scheme(), CookieOptions(), callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result() == CanonicalCookie::CookieInclusionStatus::INCLUDE;
@@ -955,7 +956,7 @@ TEST_F(DeferredCookieTaskTest, DeferredSetCookie) {
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> call1;
   cookie_monster_->SetCanonicalCookieAsync(
       CanonicalCookie::Create(http_www_foo_.url(), "A=B", base::Time::Now(),
-                              CookieOptions()),
+                              base::nullopt /* server_time */),
       http_www_foo_.url().scheme(), CookieOptions(), call1.MakeCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(call1.was_run());
@@ -968,7 +969,7 @@ TEST_F(DeferredCookieTaskTest, DeferredSetCookie) {
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> call2;
   cookie_monster_->SetCanonicalCookieAsync(
       CanonicalCookie::Create(http_www_foo_.url(), "X=Y", base::Time::Now(),
-                              CookieOptions()),
+                              base::nullopt /* server_time */),
       http_www_foo_.url().scheme(), CookieOptions(), call2.MakeCallback());
   ASSERT_TRUE(call2.was_run());
   EXPECT_EQ(call2.result(), CanonicalCookie::CookieInclusionStatus::INCLUDE);
@@ -1224,7 +1225,7 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
 
   cookie_monster_->SetCanonicalCookieAsync(
       CanonicalCookie::Create(http_www_foo_.url(), "A=B", base::Time::Now(),
-                              CookieOptions()),
+                              base::nullopt /* server_time */),
       http_www_foo_.url().scheme(), CookieOptions(),
       set_cookies_callback.MakeCallback());
 
@@ -1451,13 +1452,14 @@ TEST_F(CookieMonsterTest, SetCookieableSchemes) {
   GURL http_url("http://host/path");
 
   base::Time now = base::Time::Now();
+  base::Optional<base::Time> server_time = base::nullopt;
   EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
             SetCookieReturnStatus(cm.get(), http_url, "x=1"));
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
-            SetCanonicalCookieReturnStatus(
-                cm.get(),
-                CanonicalCookie::Create(http_url, "y=1", now, CookieOptions()),
-                "http", false /*modify_httponly*/));
+  EXPECT_EQ(
+      CanonicalCookie::CookieInclusionStatus::INCLUDE,
+      SetCanonicalCookieReturnStatus(
+          cm.get(), CanonicalCookie::Create(http_url, "y=1", now, server_time),
+          "http", false /*modify_httponly*/));
 
   EXPECT_EQ(
       CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME,
@@ -1465,16 +1467,15 @@ TEST_F(CookieMonsterTest, SetCookieableSchemes) {
   EXPECT_EQ(
       CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME,
       SetCanonicalCookieReturnStatus(
-          cm.get(),
-          CanonicalCookie::Create(foo_url, "y=1", now, CookieOptions()), "foo",
-          false /*modify_httponly*/));
+          cm.get(), CanonicalCookie::Create(foo_url, "y=1", now, server_time),
+          "foo", false /*modify_httponly*/));
 
   EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
             SetCookieReturnStatus(cm_foo.get(), foo_url, "x=1"));
   EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
             SetCanonicalCookieReturnStatus(
                 cm_foo.get(),
-                CanonicalCookie::Create(foo_url, "y=1", now, CookieOptions()),
+                CanonicalCookie::Create(foo_url, "y=1", now, server_time),
                 "foo", false /*modify_httponly*/));
 
   EXPECT_EQ(
@@ -1484,8 +1485,8 @@ TEST_F(CookieMonsterTest, SetCookieableSchemes) {
       CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME,
       SetCanonicalCookieReturnStatus(
           cm_foo.get(),
-          CanonicalCookie::Create(http_url, "y=1", now, CookieOptions()),
-          "http", false /*modify_httponly*/));
+          CanonicalCookie::Create(http_url, "y=1", now, server_time), "http",
+          false /*modify_httponly*/));
 }
 
 TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
@@ -2198,6 +2199,7 @@ TEST_F(CookieMonsterTest, WhileLoadingLoadCompletesBeforeKeyLoadCompletes) {
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
   cm->SetCookieWithOptionsAsync(kUrl, "a=b", CookieOptions(),
+                                base::nullopt /* server_time */,
                                 set_cookie_callback.MakeCallback());
 
   GetCookieListCallback get_cookie_list_callback1;
@@ -2256,8 +2258,8 @@ TEST_F(CookieMonsterTest, WhileLoadingDeleteAllGetForURL) {
   std::vector<std::unique_ptr<CanonicalCookie>> cookies;
   // When passed to the CookieMonster, it takes ownership of the pointed to
   // cookies.
-  cookies.push_back(
-      CanonicalCookie::Create(kUrl, "a=b", base::Time::Now(), CookieOptions()));
+  cookies.push_back(CanonicalCookie::Create(kUrl, "a=b", base::Time::Now(),
+                                            base::nullopt /* server_time */));
   ASSERT_TRUE(cookies[0]);
   store->TakeCallbackAt(0).Run(std::move(cookies));
 
@@ -2285,6 +2287,7 @@ TEST_F(CookieMonsterTest, WhileLoadingGetAllSetGetAll) {
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
   cm->SetCookieWithOptionsAsync(kUrl, "a=b", CookieOptions(),
+                                base::nullopt /* server_time */,
                                 set_cookie_callback.MakeCallback());
 
   GetCookieListCallback get_cookie_list_callback2;
@@ -2335,6 +2338,7 @@ TEST_F(CookieMonsterTest, CheckOrderOfCookieTaskQueueWhenLoadingCompletes) {
       &RunClosureOnCookieListReceived,
       base::BindOnce(&CookieStore::SetCookieWithOptionsAsync,
                      base::Unretained(cm.get()), kUrl, "a=b", CookieOptions(),
+                     base::nullopt /* server_time */,
                      set_cookie_callback.MakeCallback())));
 
   // Get cookie task. Queued before the delete task is executed, so should not
@@ -2541,8 +2545,9 @@ TEST_F(CookieMonsterTest, HistogramCheck) {
 TEST_F(CookieMonsterTest, InvalidExpiryTime) {
   std::string cookie_line =
       std::string(kValidCookieLine) + "; expires=Blarg arg arg";
-  std::unique_ptr<CanonicalCookie> cookie(CanonicalCookie::Create(
-      http_www_foo_.url(), cookie_line, Time::Now(), CookieOptions()));
+  std::unique_ptr<CanonicalCookie> cookie(
+      CanonicalCookie::Create(http_www_foo_.url(), cookie_line, Time::Now(),
+                              base::nullopt /* server_time */));
   ASSERT_FALSE(cookie->IsPersistent());
 }
 
@@ -3130,7 +3135,7 @@ TEST_F(CookieMonsterTest, SetCanonicalCookieDoesNotBlockForLoadAll) {
       callback_set;
   cm.SetCanonicalCookieAsync(
       CanonicalCookie::Create(GURL("http://a.com/"), "A=B", base::Time::Now(),
-                              CookieOptions()),
+                              base::nullopt /* server_time */),
       "http", CookieOptions(), callback_set.MakeCallback());
 
   // Get cookies for a different URL.
@@ -3204,10 +3209,11 @@ TEST_F(CookieMonsterTest, DeleteCookieWithInheritedTimestamps) {
   GURL url("http://www.example.com");
   std::string cookie_line = "foo=bar";
   CookieOptions options;
+  base::Optional<base::Time> server_time = base::nullopt;
   CookieMonster cm(nullptr, nullptr);
 
   // Write a cookie created at |t1|.
-  auto cookie = CanonicalCookie::Create(url, cookie_line, t1, options);
+  auto cookie = CanonicalCookie::Create(url, cookie_line, t1, server_time);
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_callback_1;
   cm.SetCanonicalCookieAsync(std::move(cookie), url.scheme(), options,
@@ -3215,7 +3221,7 @@ TEST_F(CookieMonsterTest, DeleteCookieWithInheritedTimestamps) {
   set_callback_1.WaitUntilDone();
 
   // Overwrite the cookie at |t2|.
-  cookie = CanonicalCookie::Create(url, cookie_line, t2, options);
+  cookie = CanonicalCookie::Create(url, cookie_line, t2, server_time);
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_callback_2;
   cm.SetCanonicalCookieAsync(std::move(cookie), url.scheme(), options,
@@ -3224,7 +3230,7 @@ TEST_F(CookieMonsterTest, DeleteCookieWithInheritedTimestamps) {
 
   // The second cookie overwrites the first one but it will inherit the creation
   // timestamp |t1|. Test that deleting the new cookie still works.
-  cookie = CanonicalCookie::Create(url, cookie_line, t2, options);
+  cookie = CanonicalCookie::Create(url, cookie_line, t2, server_time);
   ResultSavingCookieCallback<unsigned int> delete_callback;
   cm.DeleteCanonicalCookieAsync(*cookie, delete_callback.MakeCallback());
   delete_callback.WaitUntilDone();
@@ -3236,18 +3242,15 @@ TEST_F(CookieMonsterTest, RejectCreatedSameSiteCookieOnSet) {
   std::string cookie_line = "foo=bar; SameSite=Lax";
 
   CookieMonster cm(nullptr, nullptr);
-  CookieOptions env_same_site;
-  env_same_site.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
-
   CookieOptions env_cross_site;
   env_cross_site.set_same_site_cookie_context(
       CookieOptions::SameSiteCookieContext::CROSS_SITE);
 
   CanonicalCookie::CookieInclusionStatus status;
   // Cookie can be created successfully; SameSite is not checked on Creation.
-  auto cookie = CanonicalCookie::Create(url, cookie_line, base::Time::Now(),
-                                        env_same_site, &status);
+  auto cookie =
+      CanonicalCookie::Create(url, cookie_line, base::Time::Now(),
+                              base::nullopt /* server_time */, &status);
   ASSERT_TRUE(cookie != nullptr);
   ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
 
@@ -3268,8 +3271,9 @@ TEST_F(CookieMonsterTest, RejectCreatedSecureCookieOnSet) {
   CanonicalCookie::CookieInclusionStatus status;
   // Cookie can be created successfully from an any url. Secure is not checked
   // on Create.
-  auto cookie = CanonicalCookie::Create(
-      http_url, cookie_line, base::Time::Now(), CookieOptions(), &status);
+  auto cookie =
+      CanonicalCookie::Create(http_url, cookie_line, base::Time::Now(),
+                              base::nullopt /* server_time */, &status);
 
   ASSERT_TRUE(cookie != nullptr);
   ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
@@ -3290,8 +3294,9 @@ TEST_F(CookieMonsterTest, RejectCreatedHttpOnlyCookieOnSet) {
   CookieMonster cm(nullptr, nullptr);
   CanonicalCookie::CookieInclusionStatus status;
   // Cookie can be created successfully; HttpOnly is not checked on Create.
-  auto cookie = CanonicalCookie::Create(url, cookie_line, base::Time::Now(),
-                                        CookieOptions(), &status);
+  auto cookie =
+      CanonicalCookie::Create(url, cookie_line, base::Time::Now(),
+                              base::nullopt /* server_time */, &status);
 
   ASSERT_TRUE(cookie != nullptr);
   ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);

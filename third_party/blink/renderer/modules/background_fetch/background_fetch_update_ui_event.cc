@@ -100,7 +100,7 @@ void BackgroundFetchUpdateUIEvent::DidGetIcon(
     const String& title,
     const SkBitmap& icon,
     int64_t ideal_to_chosen_icon_size) {
-  registration()->GetRegistrationService()->UpdateUI(
+  registration()->UpdateUI(
       title, icon,
       WTF::Bind(&BackgroundFetchUpdateUIEvent::DidUpdateUI,
                 WrapPersistent(this), WrapPersistent(resolver)));

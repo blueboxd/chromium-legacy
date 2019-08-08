@@ -3744,7 +3744,7 @@ TEST_F(URLLoaderTest, RawRequestCookies) {
 
     context()->cookie_store()->SetCookieWithOptionsAsync(
         test_server()->GetURL("/"), "a=b", net::CookieOptions(),
-        base::DoNothing());
+        base::nullopt /* server_time */, base::DoNothing());
 
     base::RunLoop delete_run_loop;
     mojom::URLLoaderPtr loader;
@@ -3788,7 +3788,8 @@ TEST_F(URLLoaderTest, RawRequestCookiesFlagged) {
     // Set the path to an irrelevant url to block the cookie from sending
     context()->cookie_store()->SetCookieWithOptionsAsync(
         test_server()->GetURL("/"), "a=b;Path=/something-else",
-        net::CookieOptions(), base::DoNothing());
+        net::CookieOptions(), base::nullopt /* server_time */,
+        base::DoNothing());
 
     base::RunLoop delete_run_loop;
     mojom::URLLoaderPtr loader;

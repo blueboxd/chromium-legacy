@@ -1789,6 +1789,8 @@ jumbo_source_set("browser") {
     "storage_partition_impl_map.h",
     "system_connector_impl.cc",
     "system_connector_impl.h",
+    "theme_helper.cc",
+    "theme_helper.h",
     "theme_helper_mac.h",
     "theme_helper_mac.mm",
     "tracing/background_memory_tracing_observer.cc",
@@ -1852,6 +1854,8 @@ jumbo_source_set("browser") {
     "web_package/bundled_exchanges_reader.h",
     "web_package/bundled_exchanges_source.cc",
     "web_package/bundled_exchanges_source.h",
+    "web_package/bundled_exchanges_url_loader_factory.cc",
+    "web_package/bundled_exchanges_url_loader_factory.h",
     "web_package/prefetched_signed_exchange_cache.cc",
     "web_package/prefetched_signed_exchange_cache.h",
     "web_package/prefetched_signed_exchange_cache_adapter.cc",
@@ -1977,6 +1981,8 @@ jumbo_source_set("browser") {
     deps += [
       "//chromeos/resources",
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
+      "//services/data_decoder/public/cpp",
+      "//services/data_decoder/public/mojom",
     ]
   }
 

@@ -32,7 +32,6 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
     private static final String ACTION_NAME = "name";
     private static final String EXPERIMENT_IDS = "experiment_ids";
     private static final String ONBOARDING_ACTION = "onboarding";
-    private static final String SCRIPT_BUNDLE = "script_bundle";
     private static final String USER_NAME = "user_name";
 
     /**
@@ -67,7 +66,6 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
         reporter.addDirectAction(LIST_AA_ACTIONS)
                 .withParameter(USER_NAME, Type.STRING, /* required= */ false)
                 .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
-                .withParameter(SCRIPT_BUNDLE, Type.STRING, /* required= */ false)
                 .withResult(LIST_AA_ACTIONS_RESULT, Type.STRING);
 
         reporter.addDirectAction(PERFORM_AA_ACTION)
@@ -113,15 +111,12 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
         String experimentIds = arguments.getString(EXPERIMENT_IDS, "");
         arguments.remove(EXPERIMENT_IDS);
 
-        String scriptBundle = arguments.getString(SCRIPT_BUNDLE, "");
-        arguments.remove(SCRIPT_BUNDLE);
-
         getDelegate(/* installIfNecessary= */ false, (delegate) -> {
             if (delegate == null) {
                 namesCallback.onResult(FALLBACK_ACTION_SET);
                 return;
             }
-            delegate.listActions(userName, experimentIds, scriptBundle, arguments, namesCallback);
+            delegate.listActions(userName, experimentIds, arguments, namesCallback);
         });
     }
 

@@ -13,9 +13,6 @@ mojom("mojo_bindings") {
   public_deps = [
     "//url/mojom:url_mojom_origin",
   ]
-
-  # TODO(https://crbug.com/968369): Change to use new names.
-  use_old_js_lite_bindings_names = true
 }
 
 proto_library("media_engagement_preload_proto") {

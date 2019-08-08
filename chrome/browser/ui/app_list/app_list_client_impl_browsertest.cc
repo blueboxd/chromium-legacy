@@ -161,6 +161,43 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, CreateNewWindow) {
                     browser()->profile()->GetOffTheRecordProfile()));
 }
 
+// When getting activated, SelfDestroyAppItem has itself removed from the
+// model updater.
+class SelfDestroyAppItem : public ChromeAppListItem {
+ public:
+  SelfDestroyAppItem(Profile* profile,
+                     const std::string& app_id,
+                     AppListModelUpdater* model_updater)
+      : ChromeAppListItem(profile, app_id, model_updater),
+        updater_(model_updater) {}
+  ~SelfDestroyAppItem() override = default;
+
+  // ChromeAppListItem:
+  void Activate(int event_flags) override { updater_->RemoveItem(id()); }
+
+ private:
+  AppListModelUpdater* updater_;
+};
+
+// Verifies that activating an app item which destroys itself during activation
+// will not cause crash (see https://crbug.com/990282).
+IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ActivateSelfDestroyApp) {
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  client->UpdateProfile();
+  ASSERT_TRUE(client);
+  AppListModelUpdater* model_updater = test::GetModelUpdater(client);
+
+  // Add an app item which destroys itself during activation.
+  const std::string app_id("fake_id");
+  model_updater->AddItem(std::make_unique<SelfDestroyAppItem>(
+      browser()->profile(), app_id, model_updater));
+  ChromeAppListItem* item = model_updater->FindItem(app_id);
+  ASSERT_TRUE(item);
+
+  // Activates |item|.
+  client->ActivateItem(/*profile_id=*/0, item->id(), /*event_flags=*/0);
+}
+
 // Test that all the items in the context menu for a hosted app have valid
 // labels.
 IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowContextMenu) {

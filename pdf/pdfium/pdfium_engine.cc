@@ -2392,24 +2392,17 @@ void PDFiumEngine::AppendPageRectToPages(const pp::Rect& page_rect,
   }
 }
 
-// TODO(chinsenj): Merge with LoadPagesInTwoUpView().
-void PDFiumEngine::LoadPagesInSingleView(std::vector<pp::Size> page_sizes,
-                                         bool reload) {
-  std::vector<pp::Rect> single_view_layout =
-      layout_.GetSingleViewLayout(page_sizes);
-
-  for (size_t i = 0; i < single_view_layout.size(); ++i) {
-    AppendPageRectToPages(single_view_layout[i], i, reload);
+void PDFiumEngine::LoadPagesInCurrentLayout(std::vector<pp::Size> page_sizes,
+                                            bool reload) {
+  std::vector<pp::Rect> formatted_pages;
+  if (two_up_view_) {
+    formatted_pages = layout_.GetTwoUpViewLayout(page_sizes);
+  } else {
+    formatted_pages = layout_.GetSingleViewLayout(page_sizes);
   }
-}
 
-void PDFiumEngine::LoadPagesInTwoUpView(std::vector<pp::Size> page_sizes,
-                                        bool reload) {
-  std::vector<pp::Rect> two_up_view_layout =
-      layout_.GetTwoUpViewLayout(page_sizes);
-
-  for (size_t i = 0; i < two_up_view_layout.size(); ++i) {
-    AppendPageRectToPages(two_up_view_layout[i], i, reload);
+  for (size_t i = 0; i < formatted_pages.size(); ++i) {
+    AppendPageRectToPages(formatted_pages[i], i, reload);
   }
 }
 
@@ -2420,7 +2413,6 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     return;
   pending_pages_.clear();
   pp::Size old_document_size = layout_.size();
-  layout_.set_size(pp::Size());
   std::vector<pp::Size> page_sizes;
   size_t new_page_count = FPDF_GetPageCount(doc());
 
@@ -2448,15 +2440,9 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     pp::Size size = page_available ? GetPageSize(i) : default_page_size_;
     EnlargePage(i, new_page_count, &size);
     page_sizes.push_back(size);
-
-    layout_.set_size({std::max(layout_.size().width(), size.width()), 0});
   }
 
-  if (two_up_view_) {
-    LoadPagesInTwoUpView(std::move(page_sizes), reload);
-  } else {
-    LoadPagesInSingleView(std::move(page_sizes), reload);
-  }
+  LoadPagesInCurrentLayout(page_sizes, reload);
 
   // Remove pages that do not exist anymore.
   if (pages_.size() > new_page_count) {
@@ -2632,8 +2618,19 @@ pp::Size PDFiumEngine::GetPageSize(int index) {
         ConvertUnitDouble(width_in_points, kPointsPerInch, kPixelsPerInch));
     int height_in_pixels = static_cast<int>(
         ConvertUnitDouble(height_in_points, kPointsPerInch, kPixelsPerInch));
-    if (layout_.options().default_page_orientation() % 2 == 1)
-      std::swap(width_in_pixels, height_in_pixels);
+
+    switch (layout_.options().default_page_orientation()) {
+      case PageOrientation::kOriginal:
+      case PageOrientation::kClockwise180:
+        // No axis swap needed.
+        break;
+      case PageOrientation::kClockwise90:
+      case PageOrientation::kClockwise270:
+        // Rotated 90 degrees: swap axes.
+        std::swap(width_in_pixels, height_in_pixels);
+        break;
+    }
+
     size = pp::Size(width_in_pixels, height_in_pixels);
   }
   return size;
@@ -2729,8 +2726,8 @@ bool PDFiumEngine::ContinuePaint(int progressive_index,
                         0xFFFFFFFF);
     rv = FPDF_RenderPageBitmap_Start(
         new_bitmap.get(), page, start_x, start_y, size_x, size_y,
-        layout_.options().default_page_orientation(), GetRenderingFlags(),
-        this);
+        ToPDFiumRotation(layout_.options().default_page_orientation()),
+        GetRenderingFlags(), this);
     progressive_paints_[progressive_index].SetBitmapAndImageData(
         std::move(new_bitmap), *image_data);
   }
@@ -2757,7 +2754,8 @@ void PDFiumEngine::FinishPaint(int progressive_index,
 
   // Draw the forms.
   FPDF_FFLDraw(form(), bitmap, pages_[page_index]->GetPage(), start_x, start_y,
-               size_x, size_y, layout_.options().default_page_orientation(),
+               size_x, size_y,
+               ToPDFiumRotation(layout_.options().default_page_orientation()),
                GetRenderingFlags());
 
   FillPageSides(progressive_index);
@@ -3171,8 +3169,8 @@ void PDFiumEngine::DeviceToPage(int page_index,
   FPDF_BOOL ret = FPDF_DeviceToPage(
       pages_[page_index]->GetPage(), 0, 0, pages_[page_index]->rect().width(),
       pages_[page_index]->rect().height(),
-      layout_.options().default_page_orientation(), temp_x, temp_y, page_x,
-      page_y);
+      ToPDFiumRotation(layout_.options().default_page_orientation()), temp_x,
+      temp_y, page_x, page_y);
   DCHECK(ret);
 }
 

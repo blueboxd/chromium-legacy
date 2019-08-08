@@ -1690,7 +1690,7 @@ static scoped_refptr<Image> ImageFromNode(const Node& node) {
     return nullptr;
 
   if (layout_object->IsCanvas()) {
-    return ToHTMLCanvasElement(const_cast<Node&>(node))
+    return To<HTMLCanvasElement>(const_cast<Node&>(node))
         .Snapshot(kFrontBuffer, kPreferNoAcceleration);
   }
 
@@ -1712,7 +1712,7 @@ AtomicString GetUrlStringFromNode(const Node& node) {
   if (IsSVGImageElement(node))
     return To<SVGElement>(node).ImageSourceURL();
   if (IsHTMLEmbedElement(node) || IsHTMLObjectElement(node) ||
-      IsHTMLCanvasElement(node))
+      IsA<HTMLCanvasElement>(node))
     return To<HTMLElement>(node).ImageSourceURL();
   return AtomicString();
 }

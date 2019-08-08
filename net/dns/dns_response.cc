@@ -32,10 +32,6 @@ const size_t kHeaderSize = sizeof(dns_protocol::Header);
 
 const uint8_t kRcodeMask = 0xf;
 
-// RFC 1035, Section 4.1.3.
-// TYPE (2 bytes) + CLASS (2 bytes) + TTL (4 bytes) + RDLENGTH (2 bytes)
-const size_t kResourceRecordSizeInBytesWithoutNameAndRData = 10;
-
 }  // namespace
 
 DnsResourceRecord::DnsResourceRecord() = default;
@@ -109,7 +105,7 @@ size_t DnsResourceRecord::CalculateRecordSize() const {
   // 1 byte (with dot) or 2 bytes larger in size. See RFC 1035, Section 3.1 and
   // DNSDomainFromDot.
   return name.size() + (has_final_dot ? 1 : 2) +
-         kResourceRecordSizeInBytesWithoutNameAndRData +
+         net::dns_protocol::kResourceRecordSizeInBytesWithoutNameAndRData +
          (owned_rdata.empty() ? rdata.size() : owned_rdata.size());
 }
 

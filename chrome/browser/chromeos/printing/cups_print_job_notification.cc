@@ -97,6 +97,7 @@ void CupsPrintJobNotification::Click(
   switch (button_commands_[*button_index]) {
     case ButtonCommand::CANCEL_PRINTING:
       DCHECK(print_job_);
+      cancelled_by_user_ = true;
 
       print_job_manager->CancelPrintJob(print_job_.get());
       // print_job_ was deleted in CancelPrintJob.  Forget the pointer.
@@ -105,7 +106,6 @@ void CupsPrintJobNotification::Click(
       // Clean up the notification.
       NotificationDisplayService::GetForProfile(profile_)->Close(
           NotificationHandler::Type::TRANSIENT, notification_id_);
-      cancelled_by_user_ = true;
       notification_manager_->OnPrintJobNotificationRemoved(this);
       break;
     case ButtonCommand::PAUSE_PRINTING:

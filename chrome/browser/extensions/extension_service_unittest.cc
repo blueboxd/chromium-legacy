@@ -4907,9 +4907,9 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
       extensions::ChromeExtensionCookies::Get(profile())
           ->GetCookieStoreForTesting();
   ASSERT_TRUE(cookie_store);
-  net::CookieOptions options;
   cookie_store->SetCookieWithOptionsAsync(
-      ext_url, "dummy=value", options,
+      ext_url, "dummy=value", net::CookieOptions(),
+      base::nullopt /* server_time */,
       base::BindOnce(&ExtensionCookieCallback::SetCookieCallback,
                      base::Unretained(&callback)));
   content::RunAllTasksUntilIdle();
@@ -5041,8 +5041,9 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   network::mojom::CookieManagerPtr cookie_manager_ptr;
   network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_ptr));
 
-  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
-      origin1, "dummy=value", base::Time::Now(), net::CookieOptions()));
+  std::unique_ptr<net::CanonicalCookie> cc(
+      net::CanonicalCookie::Create(origin1, "dummy=value", base::Time::Now(),
+                                   base::nullopt /* server_time */));
   ASSERT_TRUE(cc.get());
 
   {

@@ -19,7 +19,7 @@ namespace ui {
 // be used to predict one dimension (x, y).
 class KalmanPredictor : public InputPredictor {
  public:
-  explicit KalmanPredictor(bool enable_time_filtering);
+  explicit KalmanPredictor();
   ~KalmanPredictor() override;
 
   const char* GetName() const override;
@@ -53,7 +53,6 @@ class KalmanPredictor : public InputPredictor {
 
   // Filter to smooth time intervals.
   KalmanFilter time_filter_;
-  bool enable_time_filtering_;
 
   // The last input point.
   InputData last_point_;

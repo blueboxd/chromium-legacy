@@ -208,6 +208,7 @@ NaClProcessHost::NaClProcessHost(
     int render_view_id,
     uint32_t permission_bits,
     bool uses_nonsfi_mode,
+    bool nonsfi_mode_allowed,
     bool off_the_record,
     NaClAppProcessType process_type,
     const base::FilePath& profile_directory)
@@ -224,6 +225,7 @@ NaClProcessHost::NaClProcessHost(
       debug_exception_handler_requested_(false),
 #endif
       uses_nonsfi_mode_(uses_nonsfi_mode),
+      nonsfi_mode_allowed_(nonsfi_mode_allowed),
       enable_debug_stub_(false),
       enable_crash_throttling_(false),
       off_the_record_(off_the_record),
@@ -378,18 +380,12 @@ void NaClProcessHost::Launch(
 
   if (uses_nonsfi_mode_) {
     bool nonsfi_mode_forced_by_command_line = false;
-    bool nonsfi_mode_allowed = false;
 #if defined(OS_LINUX)
     nonsfi_mode_forced_by_command_line =
         cmd->HasSwitch(switches::kEnableNaClNonSfiMode);
-#if defined(OS_CHROMEOS) && \
-    (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
-    nonsfi_mode_allowed = NaClBrowser::GetDelegate()->IsNonSfiModeAllowed(
-        nacl_host_message_filter->profile_directory(), manifest_url_);
-#endif
 #endif
     bool nonsfi_mode_enabled =
-        nonsfi_mode_forced_by_command_line || nonsfi_mode_allowed;
+        nonsfi_mode_forced_by_command_line || nonsfi_mode_allowed_;
 
     if (!nonsfi_mode_enabled) {
       SendErrorToRenderer(

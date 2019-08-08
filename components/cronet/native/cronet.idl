@@ -364,7 +364,7 @@ interface Engine {
 
   /**
    * Shuts down the Engine if there are no active requests,
-   * otherwise throws an exception.
+   * otherwise returns a failure RESULT.
    *
    * Cannot be called on network thread - the thread Cronet calls into
    * Executor on (which is different from the thread the Executor invokes
@@ -997,9 +997,7 @@ interface UploadDataProvider {
    * UploadDataSink.onRewindError() on failure. Neither read nor rewind
    * will be called until one of those methods or the other is called.
    * Even if the associated UrlRequest is canceled, one or the other
-   * must still be called before resources can be safely freed. Throwing an
-   * exception will also result in resources being freed and the request being
-   * errored out.
+   * must still be called before resources can be safely freed.
    *
    * If rewinding is not supported, this should call
    * UploadDataSink.onRewindError(). Note that rewinding is required to
@@ -1028,7 +1026,7 @@ interface UrlRequest {
    * Initialized UrlRequest to |url| with |params|. All methods of |callback| for
    * request will be invoked on |executor|. The |executor| must not run tasks on
    * the thread calling Executor.execute() to prevent blocking networking
-   * operations and causing exceptions during shutdown.
+   * operations and causing failure RESULTs during shutdown.
    *
    * @param engine Engine to process the request.
    * @param url URL for the request.

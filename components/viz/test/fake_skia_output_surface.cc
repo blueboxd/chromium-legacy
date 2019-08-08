@@ -13,9 +13,9 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/resource_metadata.h"
 #include "components/viz/service/display/texture_deleter.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -143,25 +143,24 @@ SkCanvas* FakeSkiaOutputSurface::BeginPaintCurrentFrame() {
   return sk_surface->getCanvas();
 }
 
-sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImage(
-    const ResourceMetadata& metadata) {
+void FakeSkiaOutputSurface::MakePromiseSkImage(ImageContext* image_context) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   GrBackendTexture backend_texture;
-  if (!GetGrBackendTexture(metadata, &backend_texture)) {
+  if (!GetGrBackendTexture(*image_context, &backend_texture)) {
     DLOG(ERROR) << "Failed to GetGrBackendTexture from mailbox.";
-    return nullptr;
+    return;
   }
 
   auto sk_color_type = ResourceFormatToClosestSkColorType(
-      true /* gpu_compositing */, metadata.resource_format);
-  return SkImage::MakeFromTexture(
+      true /* gpu_compositing */, image_context->resource_format());
+  image_context->set_image(SkImage::MakeFromTexture(
       gr_context(), backend_texture, kTopLeft_GrSurfaceOrigin, sk_color_type,
-      metadata.alpha_type, metadata.color_space.ToSkColorSpace());
+      image_context->alpha_type(), image_context->color_space()));
 }
 
 sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImageFromYUV(
-    const std::vector<ResourceMetadata>& metadatas,
+    const std::vector<ImageContext*>& contexts,
     SkYUVColorSpace yuv_color_space,
     sk_sp<SkColorSpace> dst_color_space,
     bool has_alpha) {
@@ -170,8 +169,17 @@ sk_sp<SkImage> FakeSkiaOutputSurface::MakePromiseSkImageFromYUV(
   return nullptr;
 }
 
-void FakeSkiaOutputSurface::ReleaseCachedResources(
-    const std::vector<ResourceId>& ids) {}
+void FakeSkiaOutputSurface::ReleaseImageContexts(
+    std::vector<std::unique_ptr<ImageContext>> image_contexts) {}
+
+std::unique_ptr<ExternalUseClient::ImageContext>
+FakeSkiaOutputSurface::CreateImageContext(const gpu::MailboxHolder& holder,
+                                          const gfx::Size& size,
+                                          ResourceFormat format,
+                                          sk_sp<SkColorSpace> color_space) {
+  return std::make_unique<ExternalUseClient::ImageContext>(
+      holder, size, format, std::move(color_space));
+}
 
 void FakeSkiaOutputSurface::SkiaSwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -318,20 +326,21 @@ void FakeSkiaOutputSurface::SetOutOfOrderCallbacks(
 }
 
 bool FakeSkiaOutputSurface::GetGrBackendTexture(
-    const ResourceMetadata& metadata,
+    const ImageContext& image_context,
     GrBackendTexture* backend_texture) {
-  DCHECK(!metadata.mailbox_holder.mailbox.IsZero());
+  DCHECK(!image_context.mailbox_holder().mailbox.IsZero());
 
   auto* gl = context_provider()->ContextGL();
-  gl->WaitSyncTokenCHROMIUM(metadata.mailbox_holder.sync_token.GetConstData());
-  auto texture_id =
-      gl->CreateAndConsumeTextureCHROMIUM(metadata.mailbox_holder.mailbox.name);
-  auto gl_format = TextureStorageFormat(metadata.resource_format);
-  GrGLTextureInfo gl_texture_info = {metadata.mailbox_holder.texture_target,
-                                     texture_id, gl_format};
-  *backend_texture =
-      GrBackendTexture(metadata.size.width(), metadata.size.height(),
-                       GrMipMapped::kNo, gl_texture_info);
+  gl->WaitSyncTokenCHROMIUM(
+      image_context.mailbox_holder().sync_token.GetConstData());
+  auto texture_id = gl->CreateAndConsumeTextureCHROMIUM(
+      image_context.mailbox_holder().mailbox.name);
+  auto gl_format = TextureStorageFormat(image_context.resource_format());
+  GrGLTextureInfo gl_texture_info = {
+      image_context.mailbox_holder().texture_target, texture_id, gl_format};
+  *backend_texture = GrBackendTexture(image_context.size().width(),
+                                      image_context.size().height(),
+                                      GrMipMapped::kNo, gl_texture_info);
   return true;
 }
 

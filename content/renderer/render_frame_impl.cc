@@ -59,6 +59,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
+#include "content/common/navigation_params_mojom_traits.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/common/page_messages.h"
 #include "content/common/renderer_host.mojom.h"
@@ -498,17 +499,17 @@ void FillNavigationParamsRequest(
     for (const auto& exchange : commit_params.prefetched_signed_exchanges) {
       blink::WebURLResponse web_response;
       WebURLLoaderImpl::PopulateURLResponse(
-          exchange.inner_url, exchange.inner_response, &web_response,
+          exchange->inner_url, exchange->inner_response, &web_response,
           false /* report_security_info*/, -1 /* request_id */);
       navigation_params->prefetched_signed_exchanges.emplace_back(
           std::make_unique<
               blink::WebNavigationParams::PrefetchedSignedExchange>(
-              exchange.outer_url,
+              exchange->outer_url,
               WebString::FromLatin1(
                   signed_exchange_utils::CreateHeaderIntegrityHashString(
-                      exchange.header_integrity)),
-              exchange.inner_url, web_response,
-              mojo::ScopedMessagePipeHandle(exchange.loader_factory_handle)));
+                      exchange->header_integrity)),
+              exchange->inner_url, web_response,
+              std::move(exchange->loader_factory_handle)));
     }
   }
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_MESSAGING_H_
 #define CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_WILCO_DTC_SUPPORTD_MESSAGING_H_
 
+#include <stddef.h>
 #include <memory>
 #include <string>
 
@@ -15,6 +16,10 @@ class NativeMessageHost;
 }  // namespace extensions
 
 namespace chromeos {
+
+extern const char* const kWilcoDtcSupportdHostOrigins[];
+
+extern const size_t kWilcoDtcSupportdHostOriginsSize;
 
 extern const char kWilcoDtcSupportdUiMessageHost[];
 

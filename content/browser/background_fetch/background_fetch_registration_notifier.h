@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace content {
@@ -29,7 +30,8 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
   // identified by the |unique_id| progress.
   void AddObserver(
       const std::string& unique_id,
-      blink::mojom::BackgroundFetchRegistrationObserverPtr observer);
+      mojo::PendingRemote<blink::mojom::BackgroundFetchRegistrationObserver>
+          observer);
 
   // Notifies any registered observers for the |registration_data| of the
   // progress. This will cause JavaScript events to fire. Completed fetches must
@@ -68,7 +70,7 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
 
   // Storage of observers keyed by the |unique_id| of a registration.
   std::multimap<std::string,
-                blink::mojom::BackgroundFetchRegistrationObserverPtr>
+                mojo::Remote<blink::mojom::BackgroundFetchRegistrationObserver>>
       observers_;
 
   // URLs the observers care about, indexed by the unique_id of the observer.

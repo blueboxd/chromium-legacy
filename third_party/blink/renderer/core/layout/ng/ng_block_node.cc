@@ -825,7 +825,7 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
     // LayoutNGFieldset for more details.
     LayoutBlock* content_wrapper = rendered_legend->ContainingBlock();
     DCHECK(content_wrapper->IsAnonymous());
-    DCHECK(IsHTMLFieldSetElement(content_wrapper->Parent()->GetNode()));
+    DCHECK(IsA<HTMLFieldSetElement>(content_wrapper->Parent()->GetNode()));
     LayoutPoint location = rendered_legend->Location();
     location -= content_wrapper->Location();
     rendered_legend->SetLocation(location);

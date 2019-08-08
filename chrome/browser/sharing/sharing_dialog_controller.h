@@ -10,12 +10,19 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 
+class BrowserWindow;
 class SharingDeviceInfo;
+class SharingDialog;
 
 namespace gfx {
 struct VectorIcon;
 }  // namespace gfx
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 // The controller for desktop dialog with the list of synced devices and apps.
 class SharingDialogController {
@@ -32,7 +39,7 @@ class SharingDialogController {
     std::string identifier;
   };
 
-  SharingDialogController() = default;
+  explicit SharingDialogController(content::WebContents* web_contents);
   virtual ~SharingDialogController() = default;
 
   // Title of the dialog.
@@ -49,6 +56,36 @@ class SharingDialogController {
 
   // Called when user chooses a local app to complete the task.
   virtual void OnAppChosen(const App& app) = 0;
+
+  virtual PageActionIconType GetIconType() = 0;
+
+  // Called by the ClickToCallDialogView when it is being closed.
+  void OnDialogClosed(SharingDialog* dialog);
+  void StartLoading();
+  void StopLoading(bool send_failed);
+  void InvalidateOldDialog();
+  // Shows an error dialog if we're still on the same tab.
+  void ShowErrorDialog();
+  // Returns the currently open SharingDialog or nullptr if there is no
+  // dialog open.
+  SharingDialog* dialog() const { return dialog_; }
+  bool is_loading() const { return is_loading_; }
+  bool send_failed() const { return send_failed_; }
+  content::WebContents* web_contents() const { return web_contents_; }
+
+ protected:
+  virtual SharingDialog* DoShowDialog(BrowserWindow* window) = 0;
+
+ private:
+  // Updates the omnibox icon if available.
+  void UpdateIcon();
+  // Shows a new ClickToCallDialogView and closes the old one.
+  void ShowNewDialog();
+
+  SharingDialog* dialog_ = nullptr;
+  bool is_loading_ = false;
+  bool send_failed_ = false;
+  content::WebContents* web_contents_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_DIALOG_CONTROLLER_H_

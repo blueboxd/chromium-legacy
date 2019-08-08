@@ -211,7 +211,6 @@ extern const char kWebApkServerUrl[];
 extern const char kCroshCommand[];
 extern const char kDisableLoggingRedirect[];
 extern const char kDisableLoginScreenApps[];
-extern const char kMashServiceName[];
 extern const char kShortMergeSessionTimeoutForTest[];
 extern const char kSchedulerConfiguration[];
 extern const char kSchedulerConfigurationConservative[];

@@ -560,8 +560,6 @@ Polymer({
           'Cellular.MIN');
     } else if (type == CrOnc.Type.WI_FI) {
       fields.push('RestrictedConnectivity');
-    } else if (type == CrOnc.Type.WI_MAX) {
-      fields.push('RestrictedConnectivity', 'WiMAX.EAP.Identity');
     }
     fields.push('MacAddress');
     return fields;

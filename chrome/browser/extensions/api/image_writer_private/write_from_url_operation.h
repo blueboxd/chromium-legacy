@@ -25,7 +25,6 @@ class OperationManager;
 class WriteFromUrlOperation : public Operation {
  public:
   WriteFromUrlOperation(base::WeakPtr<OperationManager> manager,
-                        std::unique_ptr<service_manager::Connector> connector,
                         const ExtensionId& extension_id,
                         network::mojom::URLLoaderFactoryPtrInfo factory_info,
                         GURL url,

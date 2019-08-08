@@ -121,6 +121,7 @@ class GaiaCookieManagerServiceTest : public testing::Test {
         error_(GoogleServiceAuthError::SERVICE_ERROR),
         canceled_(GoogleServiceAuthError::REQUEST_CANCELED) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    GaiaCookieManagerService::RegisterPrefs(pref_service_.registry());
     signin_client_ = std::make_unique<TestSigninClient>(&pref_service_);
     token_service_ =
         std::make_unique<FakeProfileOAuth2TokenService>(&pref_service_);
@@ -650,6 +651,10 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFirstReturnsEmpty) {
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
   ASSERT_TRUE(list_accounts.empty());
   ASSERT_TRUE(signed_out_accounts.empty());
+  ASSERT_TRUE(signin_client()
+                  ->GetPrefs()
+                  ->GetString(prefs::kGaiaCookieLastListAccountsData)
+                  .empty());
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsOneAccount) {
@@ -675,9 +680,12 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsOneAccount) {
 
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
 
-  SimulateListAccountsSuccess(
-      &helper,
-      "[\"f\", [[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"]]]");
+  std::string data =
+      "[\"f\", [[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"]]]";
+  SimulateListAccountsSuccess(&helper, data);
+  EXPECT_EQ(signin_client()->GetPrefs()->GetString(
+                prefs::kGaiaCookieLastListAccountsData),
+            data);
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsSignedOutAccounts) {
@@ -709,12 +717,15 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsSignedOutAccounts) {
 
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
 
-  SimulateListAccountsSuccess(
-      &helper,
+  std::string data =
       "[\"f\","
       "[[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"],"
       " [\"b\", 0, \"n\", \"c@d.com\", \"p\", 0, 0, 0, 0, 1, \"9\","
-      "null,null,null,1]]]");
+      "null,null,null,1]]]";
+  SimulateListAccountsSuccess(&helper, data);
+  EXPECT_EQ(signin_client()->GetPrefs()->GetString(
+                prefs::kGaiaCookieLastListAccountsData),
+            data);
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ListAccountsAcceptsNull) {
@@ -723,12 +734,12 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAcceptsNull) {
 
   ASSERT_FALSE(helper.ListAccounts(nullptr, nullptr));
 
-  SimulateListAccountsSuccess(
-      &helper,
+  std::string data =
       "[\"f\","
       "[[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"],"
       " [\"b\", 0, \"n\", \"c@d.com\", \"p\", 0, 0, 0, 0, 1, \"9\","
-      "null,null,null,1]]]");
+      "null,null,null,1]]]";
+  SimulateListAccountsSuccess(&helper, data);
 
   std::vector<gaia::ListedAccount> signed_out_accounts;
   ASSERT_TRUE(helper.ListAccounts(nullptr, &signed_out_accounts));
@@ -737,6 +748,10 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAcceptsNull) {
   std::vector<gaia::ListedAccount> accounts;
   ASSERT_TRUE(helper.ListAccounts(&accounts, nullptr));
   ASSERT_EQ(1u, accounts.size());
+
+  EXPECT_EQ(signin_client()->GetPrefs()->GetString(
+                prefs::kGaiaCookieLastListAccountsData),
+            data);
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChange) {
@@ -764,14 +779,18 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChange) {
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
   ASSERT_TRUE(list_accounts.empty());
   ASSERT_TRUE(signed_out_accounts.empty());
-  SimulateListAccountsSuccess(
-      &helper,
-      "[\"f\", [[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"]]]");
+
+  std::string data =
+      "[\"f\", [[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"]]]";
+  SimulateListAccountsSuccess(&helper, data);
 
   // Sanity-check that ListAccounts returns the cached data.
   ASSERT_TRUE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
   ASSERT_TRUE(AreAccountListsEqual(nonempty_list_accounts, list_accounts));
   ASSERT_TRUE(signed_out_accounts.empty());
+  EXPECT_EQ(signin_client()->GetPrefs()->GetString(
+                prefs::kGaiaCookieLastListAccountsData),
+            data);
 
   EXPECT_CALL(helper, StartFetchingListAccounts());
   EXPECT_CALL(observer,
@@ -789,7 +808,117 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChange) {
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
   ASSERT_TRUE(AreAccountListsEqual(nonempty_list_accounts, list_accounts));
   ASSERT_TRUE(signed_out_accounts.empty());
-  SimulateListAccountsSuccess(&helper, "[\"f\",[]]");
+  data = "[\"f\",[]]";
+  SimulateListAccountsSuccess(&helper, data);
+  EXPECT_EQ(signin_client()->GetPrefs()->GetString(
+                prefs::kGaiaCookieLastListAccountsData),
+            data);
+}
+
+TEST_F(GaiaCookieManagerServiceTest, GaiaCookieLastListAccountsDataSaved) {
+  std::string data =
+      "[\"f\","
+      "[[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"],"
+      " [\"b\", 0, \"n\", \"c@d.com\", \"p\", 0, 0, 0, 0, 1, \"9\","
+      "null,null,null,1]]]";
+  std::vector<gaia::ListedAccount> expected_accounts;
+  gaia::ListedAccount listed_account;
+  listed_account.email = "a@b.com";
+  listed_account.raw_email = "a@b.com";
+  listed_account.gaia_id = "8";
+  expected_accounts.push_back(listed_account);
+
+  std::vector<gaia::ListedAccount> expected_signed_out_accounts;
+  gaia::ListedAccount signed_out_account;
+  signed_out_account.email = "c@d.com";
+  signed_out_account.raw_email = "c@d.com";
+  signed_out_account.gaia_id = "9";
+  signed_out_account.signed_out = true;
+  expected_signed_out_accounts.push_back(signed_out_account);
+  std::vector<gaia::ListedAccount> list_accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+
+  {
+    InstrumentedGaiaCookieManagerService helper(token_service(),
+                                                signin_client());
+    MockObserver observer(&helper);
+
+    EXPECT_CALL(helper, StartFetchingListAccounts());
+    EXPECT_CALL(observer, OnGaiaAccountsInCookieUpdated(
+                              ListedAccountEquals(expected_accounts),
+                              ListedAccountEquals(expected_signed_out_accounts),
+                              no_error()));
+
+    ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
+    // |kGaiaCookieLastListAccountsData| is empty.
+    EXPECT_TRUE(list_accounts.empty());
+    EXPECT_TRUE(signed_out_accounts.empty());
+    SimulateListAccountsSuccess(&helper, data);
+    // |kGaiaCookieLastListAccountsData| is set.
+    ASSERT_EQ(signin_client()->GetPrefs()->GetString(
+                  prefs::kGaiaCookieLastListAccountsData),
+              data);
+    // List accounts is not stale.
+    ASSERT_TRUE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
+  }
+
+  // Now that the list accounts data is saved to the pref service, test that
+  // starting a new Gaia Service Manager gives synchronous answers to list
+  // accounts.
+  {
+    InstrumentedGaiaCookieManagerService helper(token_service(),
+                                                signin_client());
+    MockObserver observer(&helper);
+    EXPECT_CALL(helper, StartFetchingListAccounts()).Times(3);
+
+    // Though |SimulateListAccountsSuccess| is not yet called, we are able to
+    // retrieve last |list_accounts| and  |expected_accounts| from the pref,
+    // but mark them as stale. A |StartFetchingListAccounts| is triggered.
+    EXPECT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
+    EXPECT_TRUE(AreAccountListsEqual(list_accounts, expected_accounts));
+    EXPECT_TRUE(AreAccountListsEqual(signed_out_accounts,
+                                     expected_signed_out_accounts));
+
+    // |SimulateListAccountsSuccess| and assert list accounts is not stale
+    // anymore.
+    EXPECT_CALL(observer, OnGaiaAccountsInCookieUpdated(
+                              ListedAccountEquals(expected_accounts),
+                              ListedAccountEquals(expected_signed_out_accounts),
+                              no_error()));
+    SimulateListAccountsSuccess(&helper, data);
+    ASSERT_TRUE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
+
+    // Change list account state to be stale, which will trigger list accounts
+    // request.
+    helper.ForceOnCookieChangeProcessing();
+
+    // Receive an unexpected response from the server. Listed accounts as well
+    // as the pref should be cleared.
+    expected_accounts.clear();
+    expected_signed_out_accounts.clear();
+    GoogleServiceAuthError error(
+        GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE);
+    EXPECT_CALL(observer,
+                OnGaiaAccountsInCookieUpdated(
+                    ListedAccountEquals(expected_accounts),
+                    ListedAccountEquals(expected_signed_out_accounts), error));
+    SimulateListAccountsSuccess(&helper, "[]");
+    EXPECT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
+    // |kGaiaCookieLastListAccountsData| is cleared.
+    EXPECT_TRUE(signin_client()
+                    ->GetPrefs()
+                    ->GetString(prefs::kGaiaCookieLastListAccountsData)
+                    .empty());
+  }
+
+  {
+    // On next startup, |kGaiaCookieLastListAccountsData| contains last list
+    // accounts data.
+    EXPECT_TRUE(signin_client()
+                    ->GetPrefs()
+                    ->GetString(prefs::kGaiaCookieLastListAccountsData)
+                    .empty());
+  }
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcher) {

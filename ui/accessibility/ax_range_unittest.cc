@@ -911,6 +911,27 @@ TEST_F(AXRangeTest, GetTextAddingNewlineBetweenParagraphs) {
   TestGetTextForRange(std::move(start), std::move(end), all_text);
 }
 
+TEST_F(AXRangeTest, GetTextWithMaxCount) {
+  TestPositionInstance line1_start = AXNodePosition::CreateTextPosition(
+      tree_->data().tree_id, inline_box1_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance line2_end = AXNodePosition::CreateTextPosition(
+      tree_->data().tree_id, inline_box2_.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  TestPositionRange test_range(line1_start->Clone(), line2_end->Clone());
+  EXPECT_EQ(LINE_1.substr(0, 2),
+            test_range.GetText(AXTextConcatenationBehavior::kAsInnerText, 2));
+
+  // Test the case where an appended newline falls right at max_count.
+  EXPECT_EQ(LINE_1.substr().append(NEWLINE),
+            test_range.GetText(AXTextConcatenationBehavior::kAsInnerText, 7));
+
+  // Test passing -1 for max_count.
+  EXPECT_EQ(LINE_1.substr().append(NEWLINE).append(LINE_2),
+            test_range.GetText(AXTextConcatenationBehavior::kAsInnerText, -1));
+}
+
 TEST_F(AXRangeTest, GetScreenRects) {
   // Setting up ax ranges for testing.
   TestPositionInstance button = AXNodePosition::CreateTextPosition(

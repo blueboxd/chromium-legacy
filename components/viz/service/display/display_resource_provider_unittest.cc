@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "components/viz/service/display/display_resource_provider.h"
-#include "components/viz/client/client_resource_provider.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -24,6 +23,7 @@
 #include "build/build_config.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
+#include "components/viz/client/client_resource_provider.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/returned_resource.h"
@@ -43,6 +43,8 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 
 using testing::_;
+using testing::ByMove;
+using testing::DoAll;
 using testing::Return;
 using testing::SaveArg;
 
@@ -58,6 +60,10 @@ MATCHER_P(MatchesSyncToken, sync_token, "") {
   gpu::SyncToken other;
   memcpy(&other, arg, sizeof(other));
   return other == sync_token;
+}
+
+MATCHER_P(SamePtr, ptr_to_expected, "") {
+  return arg.get() == ptr_to_expected;
 }
 
 static void CollectResources(std::vector<ReturnedResource>* array,
@@ -223,8 +229,13 @@ INSTANTIATE_TEST_SUITE_P(DisplayResourceProviderTests,
 class MockExternalUseClient : public ExternalUseClient {
  public:
   MockExternalUseClient() = default;
-  MOCK_METHOD1(ReleaseCachedResources,
-               void(const std::vector<ResourceId>& resource_ids));
+  MOCK_METHOD1(ReleaseImageContexts,
+               void(std::vector<std::unique_ptr<ImageContext>> image_contexts));
+  MOCK_METHOD4(CreateImageContext,
+               std::unique_ptr<ImageContext>(const gpu::MailboxHolder&,
+                                             const gfx::Size&,
+                                             ResourceFormat,
+                                             sk_sp<SkColorSpace>));
 };
 
 TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
@@ -262,17 +273,29 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
 
   unsigned parent_id = resource_map[list.front().id];
 
+  auto owned_image_context = std::make_unique<ExternalUseClient::ImageContext>(
+      gpu::MailboxHolder(mailbox, sync_token1, GL_TEXTURE_2D), size, RGBA_8888,
+      /*color_space=*/nullptr);
+  auto* image_context = owned_image_context.get();
+
   testing::StrictMock<MockExternalUseClient> client;
   DisplayResourceProvider::LockSetForExternalUse lock_set(
       resource_provider_.get(), &client);
+  gpu::MailboxHolder holder;
+  EXPECT_CALL(client, CreateImageContext(_, _, _, _))
+      .WillOnce(DoAll(SaveArg<0>(&holder),
+                      Return(ByMove(std::move(owned_image_context)))));
 
-  ResourceMetadata metadata = lock_set.LockResource(parent_id);
-  ASSERT_EQ(metadata.mailbox_holder.mailbox, mailbox);
-  ASSERT_TRUE(metadata.mailbox_holder.sync_token.HasData());
+  ExternalUseClient::ImageContext* locked_image_context =
+      lock_set.LockResource(parent_id);
+  EXPECT_EQ(image_context, locked_image_context);
+  ASSERT_EQ(holder.mailbox, mailbox);
+  ASSERT_TRUE(holder.sync_token.HasData());
 
-  // Expect the resource to be passed to ReleaseCachedResources when no longer
-  // used.
-  EXPECT_CALL(client, ReleaseCachedResources(testing::ElementsAre(parent_id)));
+  // Don't release while locked.
+  EXPECT_CALL(client, ReleaseImageContexts(_)).Times(0);
+  // Return the resources back to the child. Nothing should happen because
+  // of the resource lock.
   resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
   // The resource should not be returned due to the external use lock.
   EXPECT_EQ(0u, returned_to_child.size());
@@ -284,7 +307,8 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
 
   // We will get a second release of |parent_id| now that we've released our
   // external lock.
-  EXPECT_CALL(client, ReleaseCachedResources(testing::ElementsAre(parent_id)));
+  EXPECT_CALL(client, ReleaseImageContexts(
+                          testing::ElementsAre(SamePtr(locked_image_context))));
   // UnlockResources will also call DeclareUsedResourcesFromChild.
   lock_set.UnlockResources(sync_token2);
   // The resource should be returned after the lock is released.

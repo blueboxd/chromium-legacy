@@ -51,7 +51,7 @@ class HTMLCanvasElementModuleTest : public PageTestBase,
   void SetUp() override {
     PageTestBase::SetUp();
     SetHtmlInnerHTML("<body><canvas id='c'></canvas></body>");
-    canvas_element_ = ToHTMLCanvasElement(GetElementById("c"));
+    canvas_element_ = To<HTMLCanvasElement>(GetElementById("c"));
   }
 
   HTMLCanvasElement& canvas_element() const { return *canvas_element_; }

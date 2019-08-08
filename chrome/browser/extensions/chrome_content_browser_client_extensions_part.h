@@ -51,7 +51,7 @@ class ChromeContentBrowserClientExtensionsPart
   static bool ShouldUseSpareRenderProcessHost(Profile* profile,
                                               const GURL& site_url);
   static bool DoesSiteRequireDedicatedProcess(
-      content::BrowserOrResourceContext browser_or_resource_context,
+      content::BrowserContext* browser_context,
       const GURL& effective_site_url);
   static bool ShouldLockToOrigin(content::BrowserContext* browser_context,
                                  const GURL& effective_site_url);

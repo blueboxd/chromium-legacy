@@ -17,6 +17,7 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache.h"
+#include "chrome/browser/performance_manager/public/graph/graph.h"
 #include "content/public/browser/browser_context.h"
 
 namespace content {
@@ -30,30 +31,19 @@ class SiteDataCacheInspector;
 // This class is responsible for tracking the SiteDataCache instances associated
 // with each browser context. It is meant to be used as a bridge between the
 // browser contexts living on the UI thread and the PerformanceManager sequence.
-class SiteDataCacheFactory {
+//
+// This can be created on any sequence but it then should be passed to the
+// graph and used on the PerformanceManager sequence.
+class SiteDataCacheFactory : public GraphOwnedDefaultImpl {
  public:
-  ~SiteDataCacheFactory();
+  SiteDataCacheFactory();
+  ~SiteDataCacheFactory() override;
 
   // Retrieves the currently registered instance.
   // The caller needs to ensure that the lifetime of the registered instance
   // exceeds the use of this function and the retrieved pointer.
   // This function can be called from any sequence with those caveats.
   static SiteDataCacheFactory* GetInstance();
-
-  // Creates, initializes and registers an instance. The created instance will
-  // use the task runner from PerformanceManager for all its operations and thus
-  // should be created after the PerformanceManager global instance.
-  // The instance will be deleted on the instance's task runner.
-  //
-  // This function should only be called from the UI thread.
-  static std::unique_ptr<SiteDataCacheFactory, base::OnTaskRunnerDeleter>
-  Create();
-
-  // Create an instance that will live and be destroyed on |task_runner|.
-  //
-  // This function should only be called from the UI thread.
-  static std::unique_ptr<SiteDataCacheFactory, base::OnTaskRunnerDeleter>
-  CreateForTesting(const scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Functions that should be called when a new browser context is created or
   // destroyed. They should be called from the UI thread, a task will then be
@@ -104,24 +94,13 @@ class SiteDataCacheFactory {
   void IsDataCacheRecordingForTesting(const std::string& browser_context_id,
                                       base::OnceCallback<void(bool)> cb);
 
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_for_testing() {
-    return task_runner_;
-  }
-
  private:
-  explicit SiteDataCacheFactory(
-      const scoped_refptr<base::SequencedTaskRunner> task_runner);
-
   // Implementation of the corresponding *OnUIThread public static functions
   // that runs on this object's task runner.
   void OnBrowserContextCreated(const std::string& browser_context_id,
                                const base::FilePath& context_path,
                                base::Optional<std::string> parent_context_id);
   void OnBrowserContextDestroyed(const std::string& browser_context_id);
-
-  // The task runner on which this object lives, this is expected to be the
-  // performance task runner in practice.
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // A map that associates a BrowserContext's ID with a SiteDataCache. This
   // object owns the caches.

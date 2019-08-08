@@ -78,11 +78,9 @@ void BackgroundFetchBridge::DidGetRegistration(
   if (registration) {
     DCHECK_EQ(error, mojom::blink::BackgroundFetchError::NONE);
     DCHECK_EQ(registration->result(), "");
-    mojom::blink::BackgroundFetchRegistrationServicePtr registration_service(
+    registration->Initialize(
+        GetSupplementable(),
         std::move(registration_ptr->registration_interface));
-    DCHECK(registration_service);
-    registration->Initialize(GetSupplementable(),
-                             std::move(registration_service));
   }
 
   std::move(callback).Run(error, registration);

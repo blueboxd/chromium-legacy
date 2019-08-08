@@ -13,15 +13,16 @@
 namespace content {
 
 const service_manager::Manifest& GetContentBrowserManifest() {
+  // clang-format off
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kBrowserServiceName)
           .WithDisplayName("Content (browser process)")
           .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .CanConnectToInstancesInAnyGroup(true)
-                           .CanConnectToInstancesWithAnyId(true)
-                           .CanRegisterOtherServiceInstances(true)
-                           .Build())
+                          .CanConnectToInstancesInAnyGroup(true)
+                          .CanConnectToInstancesWithAnyId(true)
+                          .CanRegisterOtherServiceInstances(true)
+                          .Build())
           .ExposeCapability("field_trials",
                             std::set<const char*>{
                                 "content.mojom.FieldTrialRecorder",
@@ -109,6 +110,9 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("data_decoder", "image_decoder")
           .RequireCapability("data_decoder", "json_parser")
           .RequireCapability("data_decoder", "xml_parser")
+  #if defined(OS_CHROMEOS)
+          .RequireCapability("data_decoder", "ble_scan_parser")
+  #endif  // OS_CHROMEOS
           .RequireCapability("cdm", "media:cdm")
           .RequireCapability("shape_detection", "barcode_detection")
           .RequireCapability("shape_detection", "face_detection")
@@ -123,7 +127,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("content", "navigation")
           .RequireCapability("resource_coordinator", "service_callbacks")
           .RequireCapability("service_manager",
-                             "service_manager:service_manager")
+              "service_manager:service_manager")
           .RequireCapability("chromecast", "multizone")
           .RequireCapability("content_plugin", "browser")
           .RequireCapability("metrics", "url_keyed_metrics")
@@ -182,8 +186,9 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.NotificationService",
                   "blink.mojom.PermissionService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.SerialService", "blink.mojom.WebUsbService",
-                  "blink.mojom.SmsReceiver", "blink.mojom.WebSocketConnector",
+                  "blink.mojom.SerialService",
+                  "blink.mojom.WebUsbService", "blink.mojom.SmsReceiver",
+                  "blink.mojom.WebSocketConnector",
                   "media.mojom.VideoDecodePerfHistory",
                   "payments.mojom.PaymentManager",
                   "shape_detection.mojom.BarcodeDetectionProvider",
@@ -284,6 +289,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .PackageService(file::GetManifest())
           .Build()};
   return *manifest;
+  // clang-format on
 }
 
 }  // namespace content

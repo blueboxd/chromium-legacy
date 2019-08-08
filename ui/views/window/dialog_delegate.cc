@@ -52,6 +52,19 @@ Widget* DialogDelegate::CreateDialogWidget(WidgetDelegate* delegate,
 }
 
 // static
+bool DialogDelegate::CanSupportCustomFrame(gfx::NativeView parent) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // The new style doesn't support unparented dialogs on Linux desktop.
+  return parent != nullptr;
+#elif defined(OS_WIN)
+  // The new style doesn't support unparented dialogs on Windows Classic themes.
+  if (!ui::win::IsAeroGlassEnabled())
+    return parent != nullptr;
+#endif
+  return true;
+}
+
+// static
 Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
     WidgetDelegate* delegate,
     gfx::NativeWindow context,
@@ -62,15 +75,8 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
   params.bounds = bounds;
   DialogDelegate* dialog = delegate->AsDialogDelegate();
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // The new style doesn't support unparented dialogs on Linux desktop.
   if (dialog)
-    dialog->supports_custom_frame_ &= parent != nullptr;
-#elif defined(OS_WIN)
-  // The new style doesn't support unparented dialogs on Windows Classic themes.
-  if (dialog && !ui::win::IsAeroGlassEnabled())
-    dialog->supports_custom_frame_ &= parent != nullptr;
-#endif
+    dialog->supports_custom_frame_ &= CanSupportCustomFrame(parent);
 
   if (!dialog || dialog->ShouldUseCustomFrame()) {
     params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;

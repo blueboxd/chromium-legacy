@@ -93,7 +93,7 @@ String AudioParamHandler::GetParamName() const {
     case kParamTypeBiquadFilterQ:
       return "BiquadFilter.Q";
     case kParamTypeBiquadFilterGain:
-      return "BiquadFilter.Gain";
+      return "BiquadFilter.gain";
     case kParamTypeBiquadFilterDetune:
       return "BiquadFilter.detune";
     case kParamTypeDelayDelayTime:

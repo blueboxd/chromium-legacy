@@ -87,7 +87,6 @@ public class FeatureUtilities {
     private static Boolean sIsTabToGtsAnimationEnabled;
     private static Boolean sFeedEnabled;
     private static Boolean sServiceManagerForBackgroundPrefetch;
-    private static Boolean sIsNetworkServiceEnabled;
     private static Boolean sIsNetworkServiceWarmUpEnabled;
     private static Boolean sIsImmersiveUiModeEnabled;
     private static Boolean sServiceManagerForDownloadResumption;
@@ -187,7 +186,6 @@ public class FeatureUtilities {
         cacheDownloadAutoResumptionEnabledInNative();
         cachePrioritizeBootstrapTasks();
         cacheFeedEnabled();
-        cacheNetworkService();
         cacheServiceManagerForDownloadResumption();
         cacheServiceManagerForBackgroundPrefetch();
         cacheNetworkServiceWarmUpEnabled();
@@ -246,23 +244,6 @@ public class FeatureUtilities {
         sIsHomePageButtonForceEnabled = null;
     }
 
-    private static void cacheNetworkService() {
-        boolean networkService = ChromeFeatureList.isEnabled(ChromeFeatureList.NETWORK_SERVICE);
-
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.NETWORK_SERVICE_KEY, networkService);
-    }
-
-    private static boolean isNetworkServiceEnabled() {
-        if (sIsNetworkServiceEnabled == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sIsNetworkServiceEnabled =
-                    prefManager.readBoolean(ChromePreferenceManager.NETWORK_SERVICE_KEY, false);
-        }
-        return sIsNetworkServiceEnabled;
-    }
-
     private static void cacheServiceManagerForDownloadResumption() {
         boolean resumptionDownloadInReducedMode =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD);
@@ -282,7 +263,7 @@ public class FeatureUtilities {
             sServiceManagerForDownloadResumption = prefManager.readBoolean(
                     ChromePreferenceManager.SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY, false);
         }
-        return sServiceManagerForDownloadResumption && isNetworkServiceEnabled();
+        return sServiceManagerForDownloadResumption;
     }
 
     private static void cacheServiceManagerForBackgroundPrefetch() {
@@ -304,7 +285,7 @@ public class FeatureUtilities {
             sServiceManagerForBackgroundPrefetch = prefManager.readBoolean(
                     ChromePreferenceManager.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY, false);
         }
-        return sServiceManagerForBackgroundPrefetch && isFeedEnabled() && isNetworkServiceEnabled();
+        return sServiceManagerForBackgroundPrefetch && isFeedEnabled();
     }
 
     /**

@@ -9,6 +9,10 @@
 
 #include "url/gurl.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 class BrowserContext;
 class StoragePartition;
@@ -16,6 +20,7 @@ class StoragePartition;
 
 namespace extensions {
 class Extension;
+class ExtensionSet;
 
 namespace util {
 
@@ -43,6 +48,17 @@ GURL GetSiteForExtensionId(const std::string& extension_id,
 content::StoragePartition* GetStoragePartitionForExtensionId(
     const std::string& extension_id,
     content::BrowserContext* browser_context);
+
+// Maps a |file_url| to a |file_path| on the local filesystem, including
+// resources in extensions. Returns true on success. See NaClBrowserDelegate for
+// full details. If |use_blocking_api| is false, only a subset of URLs will be
+// handled. If |use_blocking_api| is true, blocking file operations may be used,
+// and this must be called on threads that allow blocking. Otherwise this can be
+// called on any thread.
+bool MapUrlToLocalFilePath(const ExtensionSet* extensions,
+                           const GURL& file_url,
+                           bool use_blocking_api,
+                           base::FilePath* file_path);
 
 }  // namespace util
 }  // namespace extensions

@@ -263,7 +263,7 @@ class AXTreeSourceWithInvalidId
     return node->parent();
   }
   bool IsIgnored(const AXNode* node) const override {
-    return node->data().HasState(ax::mojom::State::kIgnored);
+    return node->IsIgnored();
   }
   bool IsValid(const AXNode* node) const override {
     return node != nullptr && node->id() != invalid_id_;

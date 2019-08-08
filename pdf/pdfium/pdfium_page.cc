@@ -231,7 +231,7 @@ pp::FloatRect PDFiumPage::GetCharBounds(int char_index) {
 }
 
 PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
-                                          int rotation,
+                                          PageOrientation orientation,
                                           int* char_index,
                                           int* form_type,
                                           LinkTarget* target) {
@@ -240,9 +240,9 @@ PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
   pp::Point point2 = point - rect_.point();
   double new_x;
   double new_y;
-  FPDF_BOOL ret =
-      FPDF_DeviceToPage(GetPage(), 0, 0, rect_.width(), rect_.height(),
-                        rotation, point2.x(), point2.y(), &new_x, &new_y);
+  FPDF_BOOL ret = FPDF_DeviceToPage(
+      GetPage(), 0, 0, rect_.width(), rect_.height(),
+      ToPDFiumRotation(orientation), point2.x(), point2.y(), &new_x, &new_y);
   DCHECK(ret);
 
   // hit detection tolerance, in points.
@@ -426,8 +426,9 @@ int PDFiumPage::GetLink(int char_index, LinkTarget* target) {
   double top;
   FPDFText_GetCharBox(GetTextPage(), char_index, &left, &right, &bottom, &top);
 
-  pp::Point origin(
-      PageToScreen(pp::Point(), 1.0, left, top, right, bottom, 0).point());
+  pp::Point origin(PageToScreen(pp::Point(), 1.0, left, top, right, bottom,
+                                PageOrientation::kOriginal)
+                       .point());
   for (size_t i = 0; i < links_.size(); ++i) {
     for (const auto& rect : links_[i].rects) {
       if (rect.Contains(origin)) {
@@ -490,8 +491,8 @@ void PDFiumPage::CalculateLinks() {
       double right;
       double bottom;
       FPDFLink_GetRect(links, i, j, &left, &top, &right, &bottom);
-      pp::Rect rect =
-          PageToScreen(pp::Point(), 1.0, left, top, right, bottom, 0);
+      pp::Rect rect = PageToScreen(pp::Point(), 1.0, left, top, right, bottom,
+                                   PageOrientation::kOriginal);
       if (rect.IsEmpty())
         continue;
       link.rects.push_back(rect);
@@ -550,7 +551,7 @@ pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
                                   double top,
                                   double right,
                                   double bottom,
-                                  int rotation) const {
+                                  PageOrientation orientation) const {
   if (!available_)
     return pp::Rect();
 
@@ -571,13 +572,13 @@ pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
   int new_bottom;
   FPDF_BOOL ret = FPDF_PageToDevice(
       page(), static_cast<int>(start_x), static_cast<int>(start_y),
-      static_cast<int>(ceil(size_x)), static_cast<int>(ceil(size_y)), rotation,
-      left, top, &new_left, &new_top);
+      static_cast<int>(ceil(size_x)), static_cast<int>(ceil(size_y)),
+      ToPDFiumRotation(orientation), left, top, &new_left, &new_top);
   DCHECK(ret);
   ret = FPDF_PageToDevice(
       page(), static_cast<int>(start_x), static_cast<int>(start_y),
-      static_cast<int>(ceil(size_x)), static_cast<int>(ceil(size_y)), rotation,
-      right, bottom, &new_right, &new_bottom);
+      static_cast<int>(ceil(size_x)), static_cast<int>(ceil(size_y)),
+      ToPDFiumRotation(orientation), right, bottom, &new_right, &new_bottom);
   DCHECK(ret);
 
   // If the PDF is rotated, the horizontal/vertical coordinates could be
@@ -636,5 +637,22 @@ PDFiumPage::Link::Link() = default;
 PDFiumPage::Link::Link(const Link& that) = default;
 
 PDFiumPage::Link::~Link() = default;
+
+int ToPDFiumRotation(PageOrientation orientation) {
+  // Could static_cast<int>(orientation), but using an exhaustive switch will
+  // trigger an error if we ever change the definition of PageOrientation.
+  switch (orientation) {
+    case PageOrientation::kOriginal:
+      return 0;
+    case PageOrientation::kClockwise90:
+      return 1;
+    case PageOrientation::kClockwise180:
+      return 2;
+    case PageOrientation::kClockwise270:
+      return 3;
+  }
+  NOTREACHED();
+  return 0;
+}
 
 }  // namespace chrome_pdf

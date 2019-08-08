@@ -156,7 +156,7 @@ void LayoutGrid::StyleDidChange(StyleDifference diff,
                                    *child) ||
           SelfAlignmentChangedSize(kGridColumnAxis, *old_style, new_style,
                                    *child)) {
-        child->SetSelfNeedsLayoutForAvailableSpace(true);
+        child->SetNeedsLayout(layout_invalidation_reason::kGridChanged);
       }
     }
   }

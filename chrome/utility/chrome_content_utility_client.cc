@@ -26,7 +26,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
 #include "content/public/utility/utility_thread.h"
-#include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -44,22 +43,9 @@
 #include "components/services/quarantine/quarantine_service.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-#include "chrome/services/isolated_xr_device/xr_device_service.h"
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/services/removable_storage_writer/public/mojom/constants.mojom.h"
-#include "chrome/services/removable_storage_writer/removable_storage_writer_service.h"
-#if defined(OS_WIN)
+#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_WIN)
 #include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/wifi_util_win/wifi_util_win_service.h"
-#endif
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-#include "chrome/services/media_gallery_util/media_gallery_util_service.h"
-#include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -77,12 +63,6 @@
 #include "chrome/common/chrome_content_client.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_compositor_service_factory.h"  // nogncheck
 #include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"  // nogncheck
-#endif
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
-    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
-#include "chrome/services/printing/printing_service.h"
-#include "chrome/services/printing/public/mojom/constants.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN)
@@ -198,17 +178,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
     return printing::CreatePdfCompositorService(std::move(request));
 #endif
 
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-  if (service_name == device::mojom::kVrIsolatedServiceName)
-    return std::make_unique<device::XrDeviceService>(std::move(request));
-#endif
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
-    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
-  if (service_name == printing::mojom::kChromePrintingServiceName)
-    return std::make_unique<printing::PrintingService>(std::move(request));
-#endif
-
 #if defined(OS_WIN)
   if (service_name == quarantine::mojom::kServiceName &&
       base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine)) {
@@ -227,17 +196,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
         std::move(request), content::ChildThread::Get()->GetIOTaskRunner());
   }
 #endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
-  // On Windows the service is running elevated.
-  if (service_name == chrome::mojom::kRemovableStorageWriterServiceName)
-    return std::make_unique<RemovableStorageWriterService>(std::move(request));
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS) && !defined(OS_WIN)
-
-#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-  if (service_name == chrome::mojom::kMediaGalleryUtilServiceName)
-    return std::make_unique<MediaGalleryUtilService>(std::move(request));
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
   if (service_name == simple_browser::mojom::kServiceName) {
@@ -270,9 +228,6 @@ ChromeContentUtilityClient::MaybeCreateElevatedService(
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_EXTENSIONS)
   if (service_name == chrome::mojom::kWifiUtilWinServiceName)
     return std::make_unique<WifiUtilWinService>(std::move(request));
-
-  if (service_name == chrome::mojom::kRemovableStorageWriterServiceName)
-    return std::make_unique<RemovableStorageWriterService>(std::move(request));
 #endif
 
   return nullptr;
@@ -286,6 +241,8 @@ void ChromeContentUtilityClient::RegisterNetworkBinders(
 
 mojo::ServiceFactory*
 ChromeContentUtilityClient::GetMainThreadServiceFactory() {
+  if (utility_process_running_elevated_)
+    return ::GetElevatedMainThreadServiceFactory();
   return ::GetMainThreadServiceFactory();
 }
 

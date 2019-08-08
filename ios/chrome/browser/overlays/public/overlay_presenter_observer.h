@@ -20,6 +20,11 @@ class OverlayPresenterObserver : public base::CheckedObserver {
   virtual void WillShowOverlay(OverlayPresenter* presenter,
                                OverlayRequest* request) {}
 
+  // Called when |presenter| has finished showing the overlay UI for
+  // |request|.
+  virtual void DidShowOverlay(OverlayPresenter* presenter,
+                              OverlayRequest* request) {}
+
   // Called when |presenter| is finished dismissing its overlay UI.
   virtual void DidHideOverlay(OverlayPresenter* presenter,
                               OverlayRequest* request) {}

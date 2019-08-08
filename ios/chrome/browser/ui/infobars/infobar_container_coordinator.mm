@@ -175,7 +175,7 @@
   }
 
   [commandDispatcher startDispatchingToTarget:self
-                                  forSelector:@selector(displayModalInfobar)];
+                                  forSelector:@selector(displayModalInfobar:)];
   _commandDispatcher = commandDispatcher;
   self.dispatcher = static_cast<id<ApplicationCommands>>(_commandDispatcher);
 }
@@ -251,7 +251,7 @@
 
 #pragma mark - InfobarCommands
 
-- (void)displayModalInfobar {
+- (void)displayModalInfobar:(InfobarType)infobarType {
   NSArray* allCoordinators = [self.infobarCoordinators allValues];
   InfobarCoordinator* infobarCoordinator = [allCoordinators lastObject];
   [infobarCoordinator presentInfobarModal];

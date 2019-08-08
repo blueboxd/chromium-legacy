@@ -55,6 +55,16 @@ TEST(SmsParserTest, Realistic) {
   ASSERT_EQ(origin, url::Origin::Create(url));
 }
 
+TEST(SmsParserTest, LocalhostForDevelopment) {
+  ASSERT_EQ(SmsParser::Parse("For: http://localhost:8080"),
+            url::Origin::Create(GURL("http://localhost:8080")));
+  ASSERT_EQ(SmsParser::Parse("For: http://localhost:80"),
+            url::Origin::Create(GURL("http://localhost:80")));
+  ASSERT_EQ(SmsParser::Parse("For: http://localhost"),
+            url::Origin::Create(GURL("http://localhost")));
+  ASSERT_FALSE(SmsParser::Parse("For: localhost"));
+}
+
 TEST(SmsParserTest, Paths) {
   base::Optional<url::Origin> origin =
       SmsParser::Parse("For: https://example.com/foobar");
@@ -175,6 +185,10 @@ TEST(SmsParserTest, UsernameAndPassword) {
     GURL url("https://a.com");
     ASSERT_EQ(origin, url::Origin::Create(url));
   }
+}
+
+TEST(SmsParserTest, HarmlessOriginsButInvalid) {
+  ASSERT_FALSE(SmsParser::Parse("For: data://123"));
 }
 
 TEST(SmsParserTest, AppHash) {

@@ -24,6 +24,10 @@ extern NSString* const kTextPrimaryColor;
 extern NSString* const kTextSecondaryColor;
 extern NSString* const kTextfieldBackgroundColor;
 extern NSString* const kTextfieldPlaceholderColor;
+// Color used for buttons on a toolbar.
+extern NSString* const kToolbarButtonColor;
+// Color used for a shadow/separator next to a toolbar.
+extern NSString* const kToolbarShadowColor;
 
 // Standard Colors
 
@@ -48,6 +52,7 @@ extern NSString* const kTextPrimaryDarkColor;
 extern NSString* const kTextSecondaryDarkColor;
 extern NSString* const kTextfieldBackgroundDarkColor;
 extern NSString* const kTextfieldPlaceholderDarkColor;
+extern NSString* const kToolbarButtonDarkColor;
 
 extern NSString* const kBlueDarkColor;
 extern NSString* const kGreenDarkColor;

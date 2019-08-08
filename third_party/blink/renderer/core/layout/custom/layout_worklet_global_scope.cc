@@ -126,29 +126,12 @@ void LayoutWorkletGlobalScope::registerLayout(
       retriever.GetMethodOrThrow("intrinsicSizes", exception_state);
   if (exception_state.HadException())
     return;
-  // TODO(ikilpatrick): Make it clear if we really need to check the function
-  // is a generator function or not.  Non generator function can return an
-  // iterator.
-  if (!v8_intrinsic_sizes->IsGeneratorFunction()) {
-    exception_state.ThrowTypeError(
-        "The 'intrinsicSizes' property on the prototype is not a generator "
-        "function.");
-    return;
-  }
   V8Function* intrinsic_sizes = V8Function::Create(v8_intrinsic_sizes);
 
   v8::Local<v8::Function> v8_layout =
       retriever.GetMethodOrThrow("layout", exception_state);
   if (exception_state.HadException())
     return;
-  // TODO(ikilpatrick): Make it clear if we really need to check the function
-  // is a generator function or not.  Non generator function can return an
-  // iterator.
-  if (!v8_layout->IsGeneratorFunction()) {
-    exception_state.ThrowTypeError(
-        "The 'layout' property on the prototype is not a generator function.");
-    return;
-  }
   V8LayoutCallback* layout = V8LayoutCallback::Create(v8_layout);
 
   CSSLayoutDefinition* definition = MakeGarbageCollected<CSSLayoutDefinition>(

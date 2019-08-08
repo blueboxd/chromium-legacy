@@ -29,20 +29,18 @@ constexpr uint32_t GeneratePermissions3(uint32_t permissions) {
 static_assert(kPDFPermissionCopyAccessibleMask == 0x200, "Wrong permission");
 static_assert(kPDFPermissionCopyMask == 0x10, "Wrong permission");
 static_assert(kPDFPermissionPrintHighQualityMask == 0x800, "Wrong permission");
-static_assert(kPDFPermissionPrintLowQualityMask == 0x4, "Wrong permission");
+static_assert(kPDFPermissionPrintMask == 0x4, "Wrong permission");
 
 // Sanity check the permission generation functions above do the right thing.
 static_assert(GeneratePermissions2(0) == 0xffffffc0, "Wrong permission");
 static_assert(GeneratePermissions2(kPDFPermissionCopyMask |
-                                   kPDFPermissionPrintLowQualityMask) ==
-                  0xffffffd4,
+                                   kPDFPermissionPrintMask) == 0xffffffd4,
               "Wrong permission");
 static_assert(GeneratePermissions3(0) == 0xfffff0c0, "Wrong permission");
 static_assert(GeneratePermissions3(kPDFPermissionCopyAccessibleMask |
                                    kPDFPermissionCopyMask |
                                    kPDFPermissionPrintHighQualityMask |
-                                   kPDFPermissionPrintLowQualityMask) ==
-                  0xfffffad4,
+                                   kPDFPermissionPrintMask) == 0xfffffad4,
               "Wrong permission");
 
 TEST(PDFiumPermissionTest, InvalidSecurityHandler) {
@@ -73,8 +71,8 @@ TEST(PDFiumPermissionTest, Revision2SecurityHandler) {
   EXPECT_FALSE(no_perms.HasPermission(kPermPrintLow));
   EXPECT_FALSE(no_perms.HasPermission(kPermPrintHigh));
 
-  permissions = GeneratePermissions2(kPDFPermissionCopyMask |
-                                     kPDFPermissionPrintLowQualityMask);
+  permissions =
+      GeneratePermissions2(kPDFPermissionCopyMask | kPDFPermissionPrintMask);
   auto all_known_perms = PDFiumPermissions::CreateForTesting(2, permissions);
   EXPECT_TRUE(all_known_perms.HasPermission(kPermCopy));
   EXPECT_TRUE(all_known_perms.HasPermission(kPermCopya11y));
@@ -88,7 +86,7 @@ TEST(PDFiumPermissionTest, Revision2SecurityHandler) {
   EXPECT_FALSE(no_print_perms.HasPermission(kPermPrintLow));
   EXPECT_FALSE(no_print_perms.HasPermission(kPermPrintHigh));
 
-  permissions = GeneratePermissions2(kPDFPermissionPrintLowQualityMask);
+  permissions = GeneratePermissions2(kPDFPermissionPrintMask);
   auto no_copy_perms = PDFiumPermissions::CreateForTesting(2, permissions);
   EXPECT_FALSE(no_copy_perms.HasPermission(kPermCopy));
   // TODO(crbug.com/989408) Should be the same as |PERMISSION_COPY|.
@@ -107,7 +105,7 @@ TEST(PDFiumPermissionTest, Revision3SecurityHandler) {
 
   permissions = GeneratePermissions3(
       kPDFPermissionCopyAccessibleMask | kPDFPermissionCopyMask |
-      kPDFPermissionPrintHighQualityMask | kPDFPermissionPrintLowQualityMask);
+      kPDFPermissionPrintHighQualityMask | kPDFPermissionPrintMask);
   auto all_known_perms = PDFiumPermissions::CreateForTesting(3, permissions);
   EXPECT_TRUE(all_known_perms.HasPermission(kPermCopy));
   EXPECT_TRUE(all_known_perms.HasPermission(kPermCopya11y));
@@ -123,9 +121,9 @@ TEST(PDFiumPermissionTest, Revision3SecurityHandler) {
   EXPECT_FALSE(copy_no_print_perms.HasPermission(kPermPrintLow));
   EXPECT_FALSE(copy_no_print_perms.HasPermission(kPermPrintHigh));
 
-  permissions = GeneratePermissions3(kPDFPermissionCopyAccessibleMask |
-                                     kPDFPermissionCopyMask |
-                                     kPDFPermissionPrintLowQualityMask);
+  permissions =
+      GeneratePermissions3(kPDFPermissionCopyAccessibleMask |
+                           kPDFPermissionCopyMask | kPDFPermissionPrintMask);
   auto copy_low_print_perms =
       PDFiumPermissions::CreateForTesting(3, permissions);
   EXPECT_TRUE(copy_low_print_perms.HasPermission(kPermCopy));
@@ -134,7 +132,7 @@ TEST(PDFiumPermissionTest, Revision3SecurityHandler) {
   EXPECT_FALSE(copy_low_print_perms.HasPermission(kPermPrintHigh));
 
   permissions = GeneratePermissions3(kPDFPermissionPrintHighQualityMask |
-                                     kPDFPermissionPrintLowQualityMask);
+                                     kPDFPermissionPrintMask);
   auto print_no_copy_perms =
       PDFiumPermissions::CreateForTesting(3, permissions);
   EXPECT_FALSE(print_no_copy_perms.HasPermission(kPermCopy));
@@ -144,7 +142,7 @@ TEST(PDFiumPermissionTest, Revision3SecurityHandler) {
 
   permissions = GeneratePermissions3(kPDFPermissionCopyAccessibleMask |
                                      kPDFPermissionPrintHighQualityMask |
-                                     kPDFPermissionPrintLowQualityMask);
+                                     kPDFPermissionPrintMask);
   auto print_a11y_copy_perms =
       PDFiumPermissions::CreateForTesting(3, permissions);
   EXPECT_FALSE(print_a11y_copy_perms.HasPermission(kPermCopy));

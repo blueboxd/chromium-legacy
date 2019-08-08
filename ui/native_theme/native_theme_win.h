@@ -10,9 +10,6 @@
 // NativeThemeWin::instance().
 // For more information on visual style parts and states, see:
 // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/shellcc/platform/commctls/userex/topics/partsandstates.asp
-
-#include <map>
-
 #include <windows.h>
 
 #include "base/compiler_specific.h"
@@ -93,8 +90,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   NativeThemeWin();
   ~NativeThemeWin() override;
-
-  mutable std::map<int, SkColor> system_colors_;
 
  private:
   bool IsUsingHighContrastThemeInternal() const;

@@ -134,7 +134,6 @@ source_set("content_suggestions_ui") {
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/toolbar/resources:tab_toolbar_shadow_color",
     "//ios/chrome/browser/ui/util:util",
     "//ios/chrome/common/colors",
     "//ios/chrome/common/favicon",

@@ -165,28 +165,6 @@ bool HasEffectiveUrl(content::BrowserContext* browser_context,
              Profile::FromBrowserContext(browser_context), url) != url;
 }
 
-const ExtensionSet* GetEnabledExtensions(content::BrowserContext* context) {
-  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
-  return &registry->enabled_extensions();
-}
-
-const ExtensionSet* GetEnabledExtensions(content::ResourceContext* context) {
-  ProfileIOData* profile = ProfileIOData::FromResourceContext(context);
-  if (!profile)
-    return nullptr;
-
-  return &profile->GetExtensionInfoMap()->extensions();
-}
-
-const ExtensionSet* GetEnabledExtensions(
-    content::BrowserOrResourceContext context) {
-  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    return GetEnabledExtensions(context.ToBrowserContext());
-  }
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  return GetEnabledExtensions(context.ToResourceContext());
-}
-
 }  // namespace
 
 ChromeContentBrowserClientExtensionsPart::
@@ -291,10 +269,11 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldUseSpareRenderProcessHost(
 
 // static
 bool ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
-    content::BrowserOrResourceContext browser_or_resource_context,
+    content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
-  const Extension* extension = GetEnabledExtensions(browser_or_resource_context)
-                                   ->GetExtensionOrAppByURL(effective_site_url);
+  const Extension* extension = ExtensionRegistry::Get(browser_context)
+                                   ->enabled_extensions()
+                                   .GetExtensionOrAppByURL(effective_site_url);
   // Isolate all extensions.
   return extension != nullptr;
 }

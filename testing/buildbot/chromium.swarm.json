@@ -710,7 +710,7 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -726,7 +726,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ],
           "shards": 2
@@ -743,7 +743,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -759,7 +759,7 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -775,7 +775,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -791,7 +791,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         },
@@ -807,7 +807,7 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         },

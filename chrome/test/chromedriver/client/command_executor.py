@@ -176,6 +176,9 @@ class Command(object):
   ADD_CREDENTIAL = (
       _Method.POST,
       '/session/:sessionId/webauthn/authenticator/:authenticatorId/credential')
+  GET_CREDENTIALS = (
+      _Method.GET,
+      '/session/:sessionId/webauthn/authenticator/:authenticatorId/credentials')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')

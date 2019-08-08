@@ -75,9 +75,42 @@ bool CalculateQuadSpaceDamageRect(
 
 }  // namespace
 
-std::string SurfaceAggregator::ClipData::ToString() const {
-  return is_clipped ? "clip " + rect.ToString() : "no clip";
-}
+struct SurfaceAggregator::ClipData {
+  std::string ToString() const {
+    return is_clipped ? "clip " + rect.ToString() : "no clip";
+  }
+
+  bool is_clipped = false;
+  gfx::Rect rect;
+};
+
+struct SurfaceAggregator::PrewalkResult {
+  // This is the set of Surfaces that were referenced by another Surface, but
+  // not included in a SurfaceDrawQuad.
+  base::flat_set<SurfaceId> undrawn_surfaces;
+  bool may_contain_video = false;
+};
+
+struct SurfaceAggregator::RoundedCornerInfo {
+  RoundedCornerInfo() = default;
+
+  // |target_transform| is the transform that maps |bounds_arg| from its current
+  // space into the desired target space. It must be a scale+translation matrix.
+  RoundedCornerInfo(const gfx::RRectF& bounds_arg,
+                    bool is_fast_rounded_corner,
+                    const gfx::Transform target_transform)
+      : bounds(bounds_arg), is_fast_rounded_corner(is_fast_rounded_corner) {
+    if (bounds.IsEmpty())
+      return;
+    DCHECK(target_transform.Preserves2dAxisAlignment());
+    SkMatrix matrix = target_transform.matrix();
+    bounds.Scale(matrix.getScaleX(), matrix.getScaleY());
+    bounds.Offset(target_transform.To2dTranslation());
+  }
+
+  gfx::RRectF bounds;
+  bool is_fast_rounded_corner;
+};
 
 SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
                                      DisplayResourceProvider* provider,
@@ -98,10 +131,6 @@ SurfaceAggregator::~SurfaceAggregator() {
   contained_frame_sinks_.clear();
   ProcessAddedAndRemovedSurfaces();
 }
-
-SurfaceAggregator::PrewalkResult::PrewalkResult() {}
-
-SurfaceAggregator::PrewalkResult::~PrewalkResult() {}
 
 // Create a clip rect for an aggregated quad from the original clip rect and
 // the clip rect from the surface it's on.
@@ -487,9 +516,9 @@ void SurfaceAggregator::EmitSurfaceContent(
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
                     surface->GetActiveFrame().device_scale_factor(),
-                    child_to_parent_map, gfx::Transform(), ClipData(),
-                    copy_pass.get(), surface_id, RoundedCornerInfo(),
-                    occluding_damage_rect, occluding_damage_rect_valid);
+                    child_to_parent_map, gfx::Transform(), {}, copy_pass.get(),
+                    surface_id, RoundedCornerInfo(), occluding_damage_rect,
+                    occluding_damage_rect_valid);
 
     // If the render pass has copy requests, or should be cached, or has
     // moving-pixel filters, or in a moving-pixel surface, we should damage the
@@ -528,9 +557,9 @@ void SurfaceAggregator::EmitSurfaceContent(
 
     // Intersect the transformed visible rect and the clip rect to create a
     // smaller cliprect for the quad.
-    ClipData surface_quad_clip_rect(
+    ClipData surface_quad_clip_rect = {
         true, cc::MathUtil::MapEnclosingClippedRect(
-                  source_sqs->quad_to_target_transform, source_visible_rect));
+                  source_sqs->quad_to_target_transform, source_visible_rect)};
     if (source_sqs->is_clipped) {
       surface_quad_clip_rect.rect.Intersect(source_sqs->clip_rect);
     }
@@ -572,8 +601,7 @@ void SurfaceAggregator::EmitSurfaceContent(
                  /* backdrop_filter_quality*/ 1.0f);
   }
 
-  // Need to re-query since referenced_surfaces_ iterators are not stable.
-  referenced_surfaces_.erase(referenced_surfaces_.find(surface_id));
+  referenced_surfaces_.erase(surface_id);
 }
 
 void SurfaceAggregator::EmitDefaultBackgroundColorQuad(
@@ -772,20 +800,6 @@ SharedQuadState* SurfaceAggregator::CopySharedQuadState(
       occluding_damage_rect_valid);
 }
 
-SurfaceAggregator::RoundedCornerInfo::RoundedCornerInfo(
-    const gfx::RRectF& bounds_arg,
-    bool is_fast_rounded_corner_arg,
-    const gfx::Transform target_transform) {
-  is_fast_rounded_corner = is_fast_rounded_corner_arg;
-  if (bounds_arg.IsEmpty())
-    return;
-  DCHECK(target_transform.Preserves2dAxisAlignment());
-  bounds = bounds_arg;
-  SkMatrix matrix = target_transform.matrix();
-  bounds.Scale(matrix.getScaleX(), matrix.getScaleY());
-  bounds.Offset(target_transform.To2dTranslation());
-}
-
 SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
     const SharedQuadState* source_sqs,
     const gfx::Transform& scaled_quad_to_target_transform,
@@ -799,7 +813,7 @@ SharedQuadState* SurfaceAggregator::CopyAndScaleSharedQuadState(
     bool occluding_damage_rect_valid) {
   auto* shared_quad_state = dest_render_pass->CreateAndAppendSharedQuadState();
   ClipData new_clip_rect = CalculateClipRect(
-      clip_rect, ClipData(source_sqs->is_clipped, source_sqs->clip_rect),
+      clip_rect, {source_sqs->is_clipped, source_sqs->clip_rect},
       target_transform);
 
   // target_transform contains any transformation that may exist
@@ -868,7 +882,7 @@ void SurfaceAggregator::CopyQuadsToPass(
     // Both cannot be set at once. If this happens then a surface is being
     // merged when it should not.
     DCHECK(quad->shared_quad_state->rounded_corner_bounds.IsEmpty() ||
-           parent_rounded_corner_info.IsEmpty());
+           parent_rounded_corner_info.bounds.IsEmpty());
 
     if (quad->material == DrawQuad::Material::kSurfaceContent) {
       const auto* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
@@ -879,7 +893,7 @@ void SurfaceAggregator::CopyQuadsToPass(
       if (!surface_quad->surface_range.end().is_valid())
         continue;
 
-      if (parent_rounded_corner_info.IsEmpty()) {
+      if (parent_rounded_corner_info.bounds.IsEmpty()) {
         new_rounded_corner_info = RoundedCornerInfo(
             quad->shared_quad_state->rounded_corner_bounds,
             quad->shared_quad_state->is_fast_rounded_corner, target_transform);
@@ -891,7 +905,7 @@ void SurfaceAggregator::CopyQuadsToPass(
           &damage_rect_in_quad_space_valid, new_rounded_corner_info);
     } else {
       if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
-        if (parent_rounded_corner_info.IsEmpty()) {
+        if (parent_rounded_corner_info.bounds.IsEmpty()) {
           new_rounded_corner_info =
               RoundedCornerInfo(quad->shared_quad_state->rounded_corner_bounds,
                                 quad->shared_quad_state->is_fast_rounded_corner,
@@ -1040,7 +1054,7 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
                     frame.device_scale_factor(), child_to_parent_map,
                     apply_surface_transform_to_root_pass ? surface_transform
                                                          : gfx::Transform(),
-                    ClipData(), copy_pass.get(), surface->surface_id(),
+                    {}, copy_pass.get(), surface->surface_id(),
                     RoundedCornerInfo(), occluding_damage_rect,
                     occluding_damage_rect_valid);
 
@@ -1372,8 +1386,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
       has_cached_render_passes_ = true;
   }
 
-  auto it = referenced_surfaces_.find(surface->surface_id());
-  referenced_surfaces_.erase(it);
+  referenced_surfaces_.erase(surface->surface_id());
   if (!damage_rect.IsEmpty() && frame.metadata.may_contain_video)
     result->may_contain_video = true;
 
@@ -1417,8 +1430,7 @@ void SurfaceAggregator::CopyUndrawnSurfaces(PrewalkResult* prewalk_result) {
       prewalk_result->undrawn_surfaces.erase(surface_id);
       referenced_surfaces_.insert(surface_id);
       CopyPasses(surface->GetActiveFrame(), surface);
-      // CopyPasses may have mutated container, need to re-query to erase.
-      referenced_surfaces_.erase(referenced_surfaces_.find(surface_id));
+      referenced_surfaces_.erase(surface_id);
     }
   }
 }
@@ -1444,7 +1456,7 @@ bool SurfaceAggregator::CanMergeRoundedCorner(
     const RoundedCornerInfo& rounded_corner_info,
     const RenderPass& root_render_pass) {
   // If the quad has no rounded corner, then we do not have to block merging.
-  if (rounded_corner_info.IsEmpty())
+  if (rounded_corner_info.bounds.IsEmpty())
     return true;
 
   // If the quad has rounded corner and it is not a fast rounded corner, we
@@ -1518,8 +1530,7 @@ CompositorFrame SurfaceAggregator::Aggregate(
   CopyUndrawnSurfaces(&prewalk_result);
   referenced_surfaces_.insert(surface_id);
   CopyPasses(root_surface_frame, surface);
-  // CopyPasses may have mutated container, need to re-query to erase.
-  referenced_surfaces_.erase(referenced_surfaces_.find(surface_id));
+  referenced_surfaces_.erase(surface_id);
   AddColorConversionPass();
 
   moved_pixel_passes_.clear();

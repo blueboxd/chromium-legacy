@@ -2737,11 +2737,11 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
       exit_type = ExitType::kOutermost;
   }
 #if defined(OS_MACOSX)
-  SubmenuView* target = exit_type == ExitType::kAll
-                            ? source
-                            : state_.item->GetRootMenuItem()->GetSubmenu();
+  // When doing a menu closure animation, target the deepest submenu - that way
+  // MenuClosureAnimationMac will fade out all the menus in sync, rather than
+  // the shallowest menu only.
   menu_closure_animation_ = std::make_unique<MenuClosureAnimationMac>(
-      nullptr, target,
+      nullptr, state_.item->GetSubmenu(),
       base::BindOnce(&MenuController::Cancel, base::Unretained(this),
                      exit_type));
   menu_closure_animation_->Start();

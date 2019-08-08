@@ -29,7 +29,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_base.h"
 #include "base/path_service.h"
 #include "base/power_monitor/power_monitor.h"
@@ -40,7 +39,6 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -165,7 +163,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/android/build_info.h"
 #include "content/browser/android/browser_startup_controller.h"
 #endif
 
@@ -182,12 +179,6 @@ extern int UtilityMain(const MainFunctionParams&);
 namespace content {
 
 namespace {
-
-#if defined(OS_ANDROID)
-// Finch parameter key value for devices to always run in process.
-const base::FeatureParam<std::string> kDevicesForceInProcessParam{
-    &network::features::kNetworkService, "devices_force_in_process", ""};
-#endif
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
 #if defined __LP64__
@@ -924,29 +915,8 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
     delegate_->PostTaskSchedulerStart();
 
-    bool force_in_process = false;
-    if (should_start_service_manager_only) {
-      force_in_process = true;
-    } else {
-#if defined(OS_ANDROID)
-      auto finch_value = kDevicesForceInProcessParam.Get();
-      auto devices = base::SplitString(finch_value, ";", base::TRIM_WHITESPACE,
-                                       base::SPLIT_WANT_NONEMPTY);
-      auto current_device =
-          std::string(base::android::BuildInfo::GetInstance()->model());
-      for (auto device : devices) {
-        if (device == current_device) {
-          force_in_process = true;
-          break;
-        }
-      }
-#endif
-    }
-
-    if (force_in_process) {
-      // This must be called before creating the ServiceManagerContext.
+    if (should_start_service_manager_only)
       ForceInProcessNetworkService(true);
-    }
 
     discardable_shared_memory_manager_ =
         std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();

@@ -135,8 +135,7 @@ class AutofillAssistantClient {
 
     /** Lists available direct actions. */
     public void listDirectActions(String userName, String experimentIds,
-            @Nullable byte[] scriptBundle, Map<String, String> arguments,
-            Callback<Set<String>> callback) {
+            Map<String, String> arguments, Callback<Set<String>> callback) {
         if (mNativeClientAndroid == 0) {
             callback.onResult(Collections.emptySet());
             return;
@@ -146,7 +145,7 @@ class AutofillAssistantClient {
 
         // The native side calls sendDirectActionList() on the callback once the controller has
         // results.
-        nativeListDirectActions(mNativeClientAndroid, experimentIds, scriptBundle,
+        nativeListDirectActions(mNativeClientAndroid, experimentIds,
                 arguments.keySet().toArray(new String[arguments.size()]),
                 arguments.values().toArray(new String[arguments.size()]), callback);
     }
@@ -335,8 +334,7 @@ class AutofillAssistantClient {
     private native void nativeDestroyUI(long nativeClientAndroid);
     private native void nativeTransferUITo(long nativeClientAndroid, Object otherWebContents);
     private native void nativeListDirectActions(long nativeClientAndroid, String experimentIds,
-            @Nullable byte[] scriptBundle, String[] argumentNames, String[] argumentValues,
-            Object callback);
+            String[] argumentNames, String[] argumentValues, Object callback);
     private native boolean nativePerformDirectAction(long nativeClientAndroid, String actionId,
             String experimentId, String[] argumentNames, String[] argumentValues,
             @Nullable AssistantOnboardingCoordinator onboardingCoordinator);

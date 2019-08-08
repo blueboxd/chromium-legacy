@@ -166,6 +166,13 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
     media_session_->OnPlayerPaused(player_observer, player_id);
   }
 
+  void SetPosition(MockMediaSessionPlayerObserver* player_observer,
+                   int player_id,
+                   media_session::MediaPosition& position) {
+    player_observer->SetPosition(player_id, position);
+    media_session_->RebuildAndNotifyMediaPositionChanged();
+  }
+
   bool IsActive() { return media_session_->IsActive(); }
 
   base::Optional<AudioFocusType> GetSessionAudioFocusType() {
@@ -2536,5 +2543,200 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     observer.WaitForExpectedImagesOfType(
         media_session::mojom::MediaSessionImageType::kSourceIcon,
         expected_images);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
+                       PositionStateRouteWithTwoPlayers) {
+  media_session::MediaPosition expected_position(
+      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+  int player_id = player_observer->StartNewPlayer();
+  SetPosition(player_observer.get(), player_id, expected_position);
+
+  {
+    // With one normal player we should use the position that one provides.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+    AddPlayer(player_observer.get(), player_id,
+              media::MediaContentType::Persistent);
+    observer.WaitForExpectedPosition(expected_position);
+  }
+
+  int player_id_2 = player_observer->StartNewPlayer();
+
+  {
+    // If we add another player then we should become empty again.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+    AddPlayer(player_observer.get(), player_id_2,
+              media::MediaContentType::Persistent);
+    observer.WaitForEmptyPosition();
+  }
+
+  {
+    // If we remove the player then we should use the first player position.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+    RemovePlayer(player_observer.get(), player_id_2);
+    observer.WaitForExpectedPosition(expected_position);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
+                       PositionStateWithOneShotPlayer) {
+  media_session::MediaPosition expected_position(
+      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+  int player_id = player_observer->StartNewPlayer();
+  SetPosition(player_observer.get(), player_id, expected_position);
+  AddPlayer(player_observer.get(), player_id, media::MediaContentType::OneShot);
+
+  // OneShot players should be ignored for position data.
+  media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+  observer.WaitForEmptyPosition();
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
+                       PositionStateWithPepperPlayer) {
+  media_session::MediaPosition expected_position(
+      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+  int player_id = player_observer->StartNewPlayer();
+  SetPosition(player_observer.get(), player_id, expected_position);
+  AddPlayer(player_observer.get(), player_id, media::MediaContentType::Pepper);
+
+  // Pepper players should be ignored for position data.
+  media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+  observer.WaitForEmptyPosition();
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
+                       PositionStateRouteWithTwoPlayers_OneShot) {
+  media_session::MediaPosition expected_position(
+      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+  int player_id = player_observer->StartNewPlayer();
+  SetPosition(player_observer.get(), player_id, expected_position);
+
+  {
+    // With one normal player we should use the position that one provides.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+    AddPlayer(player_observer.get(), player_id,
+              media::MediaContentType::Persistent);
+    observer.WaitForExpectedPosition(expected_position);
+  }
+
+  {
+    // If we add an OneShot player then we should become empty again.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+    StartNewPlayer(player_observer.get(), media::MediaContentType::OneShot);
+    observer.WaitForEmptyPosition();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
+                       PositionStateRouteWithTwoPlayers_Pepper) {
+  media_session::MediaPosition expected_position(
+      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+
+  auto player_observer = std::make_unique<MockMediaSessionPlayerObserver>();
+  int player_id = player_observer->StartNewPlayer();
+  SetPosition(player_observer.get(), player_id, expected_position);
+
+  {
+    // With one normal player we should use the position that one provides.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+    AddPlayer(player_observer.get(), player_id,
+              media::MediaContentType::Persistent);
+    observer.WaitForExpectedPosition(expected_position);
+  }
+
+  {
+    // If we add a Papper player then we should become empty again.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+    StartNewPlayer(player_observer.get(), media::MediaContentType::Pepper);
+    observer.WaitForEmptyPosition();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
+                       PositionStateRouteWithOnePlayer) {
+  NavigateToURL(shell(), embedded_test_server()->GetURL(
+                             "example.com", "/media/session/position.html"));
+
+  auto* main_frame = shell()->web_contents()->GetMainFrame();
+  const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(6060);
+
+  {
+    // By default we should have an empty position.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+    observer.WaitForEmptyPosition();
+  }
+
+  {
+    // With one normal player we should use the position that one provides.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+
+    ASSERT_TRUE(
+        ExecuteScript(main_frame, "document.getElementById('video').play()"));
+
+    observer.WaitForExpectedPosition(
+        media_session::MediaPosition(1.0, duration, base::TimeDelta()));
+  }
+
+  {
+    // If we seek the player then the position should be updated.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+
+    ASSERT_TRUE(ExecuteScript(
+        main_frame, "document.getElementById('video').currentTime = 1"));
+
+    observer.WaitForExpectedPosition(media_session::MediaPosition(
+        1.0, duration, base::TimeDelta::FromSeconds(1)));
+  }
+
+  {
+    // If we pause the player then the position should be updated.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+
+    ASSERT_TRUE(
+        ExecuteScript(main_frame, "document.getElementById('video').pause()"));
+
+    observer.WaitForExpectedPosition(media_session::MediaPosition(
+        0.0, duration, base::TimeDelta::FromSeconds(1)));
+  }
+
+  {
+    // If we resume the player then the position should be updated.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+
+    ASSERT_TRUE(
+        ExecuteScript(main_frame, "document.getElementById('video').play()"));
+
+    observer.WaitForExpectedPosition(media_session::MediaPosition(
+        1.0, duration, base::TimeDelta::FromSeconds(1)));
+  }
+
+  {
+    // If we change the playback rate then the position should be updated.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+
+    ASSERT_TRUE(ExecuteScript(
+        main_frame, "document.getElementById('video').playbackRate = 2"));
+
+    observer.WaitForExpectedPosition(media_session::MediaPosition(
+        2.0, duration, base::TimeDelta::FromSeconds(1)));
+  }
+
+  {
+    // If we remove the player then we should become empty again.
+    media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
+
+    ASSERT_TRUE(
+        ExecuteScript(main_frame, "document.getElementById('video').src = ''"));
+
+    observer.WaitForEmptyPosition();
   }
 }

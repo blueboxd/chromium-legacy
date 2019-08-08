@@ -30,7 +30,10 @@ class NativeFileSystemPermissionViewTest : public DialogBrowserTest {
       NOTREACHED() << "Unimplemented test: " << name;
     }
     widget_ = NativeFileSystemPermissionView::ShowDialog(
-        kTestOrigin, path, is_directory,
+        url::Origin::Create(GURL("https://"
+                                 "totallynotgooglechromelabbutverylongurlthatdo"
+                                 "esnotfitononeline.github.io//")),
+        path, is_directory,
         base::BindLambdaForTesting([&](PermissionAction result) {
           callback_called_ = true;
           callback_result_ = result;

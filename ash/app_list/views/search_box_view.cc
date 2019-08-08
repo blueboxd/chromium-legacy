@@ -493,7 +493,11 @@ void SearchBoxView::ClearAutocompleteText() {
   // Avoid triggering subsequent query by temporarily setting controller to
   // nullptr.
   search_box()->set_controller(nullptr);
-  search_box()->ClearCompositionText();
+  // search_box()->ClearCompositionText() does not work here because
+  // SetAutocompleteText() calls SelectRange(), which comfirms the active
+  // composition text (so there is nothing to clear here). Set empty composition
+  // text to clear the selected range.
+  search_box()->SetCompositionText(ui::CompositionText());
   search_box()->set_controller(this);
   ResetHighlightRange();
 }
@@ -588,8 +592,32 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     return false;
   }
 
+  // Nothing to do if no results are available (the rest of the method handles
+  // result actions and result traversal). This might happen if zero state
+  // suggestions are not enabled, and search box textfield is empty.
+  if (!contents_view_->search_results_page_view()->first_result_view())
+    return false;
+
   ResultSelectionController* selection_controller =
       contents_view_->search_results_page_view()->result_selection_controller();
+
+  // When search box is active, the focus cycles between close button and the
+  // search_box - when close button is focused, traversal keys (arrows and
+  // tab) should move the focus to the search box, and reset the selection
+  // (which might have been cleared when focus moved to the close button).
+  if (!search_box()->HasFocus()) {
+    // Only handle result traversal keys.
+    if (!IsUnhandledArrowKeyEvent(key_event) &&
+        key_event.key_code() != ui::VKEY_TAB) {
+      return false;
+    }
+
+    search_box()->RequestFocus();
+    selection_controller->MoveSelection(key_event);
+    UpdateSearchBoxTextForSelectedResult(
+        selection_controller->selected_result());
+    return true;
+  }
 
   // Handle return - opens the selected result.
   if (key_event.key_code() == ui::VKEY_RETURN) {
@@ -610,14 +638,10 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     views::View* selected_result = selection_controller->selected_result();
     if (selected_result)
       selected_result->OnKeyEvent(&event);
-    selection_controller->ResetSelection();
+    selection_controller->ResetSelection(nullptr);
     search_box()->SetText(base::string16());
     return true;
   }
-
-  // Record the |last_key_pressed_| for autocomplete.
-  if (!search_box()->GetText().empty() && ShouldProcessAutocomplete())
-    last_key_pressed_ = key_event.key_code();
 
   // Do not handle keys intended for result selection traversal here - these
   // should be handled elsewhere, for example by the search box text field.
@@ -631,27 +655,47 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
       key_event.key_code() == ui::VKEY_TAB ||
       IsUnhandledUpDownKeyEvent(key_event) ||
       (IsUnhandledLeftRightKeyEvent(key_event) &&
+       selection_controller->selected_location_details() &&
        selection_controller->selected_location_details()
            ->container_is_horizontal);
-  if (!result_selection_traversal_key_event)
+  if (!result_selection_traversal_key_event) {
+    // Record the |last_key_pressed_| for autocomplete.
+    if (!search_box()->GetText().empty() && ShouldProcessAutocomplete())
+      last_key_pressed_ = key_event.key_code();
     return false;
-
-  // If the |ResultSelectionController| decided not to change selection,
-  // return early, as what follows is actions for updating based on change.
-  if (!selection_controller->MoveSelection(key_event))
-    return true;
-
-  // Fill text on result change.
-  SearchResultBaseView* selected_result_view =
-      selection_controller->selected_result();
-  if (selected_result_view->result()->result_type() ==
-          ash::SearchResultType::kOmnibox &&
-      !selected_result_view->result()->is_omnibox_search()) {
-    // Use details to ensure url results fill url
-    search_box()->SetText(selected_result_view->result()->details());
-  } else {
-    search_box()->SetText(selected_result_view->result()->title());
   }
+
+  // Clear non-auto-complete generated selection to prevent navigation keys from
+  // deleting selected text.
+  if (search_box()->HasSelection() && !HasAutocompleteText())
+    search_box()->ClearSelection();
+
+  ResultSelectionController::MoveResult move_result =
+      selection_controller->MoveSelection(key_event);
+  switch (move_result) {
+    case ResultSelectionController::MoveResult::kNone:
+      // If the |ResultSelectionController| decided not to change selection,
+      // return early, as what follows is actions for updating based on
+      // change.
+      break;
+    case ResultSelectionController::MoveResult::kSelectionCycleRejected:
+      // If move was about to cycle, clear the selection and move the focus to
+      // the next element in the SearchBoxView - close_button() (only
+      // close_button() and search_box() are expected to be in the focus cycle
+      // while the search box is active).
+      if (HasAutocompleteText())
+        ClearAutocompleteText();
+      selection_controller->ClearSelection();
+
+      DCHECK(close_button()->GetVisible());
+      close_button()->RequestFocus();
+      break;
+    case ResultSelectionController::MoveResult::kResultChanged:
+      UpdateSearchBoxTextForSelectedResult(
+          selection_controller->selected_result());
+      break;
+  }
+
   return true;
 }
 
@@ -688,6 +732,18 @@ void SearchBoxView::ButtonPressed(views::Button* sender,
     SetSearchBoxActive(false, ui::ET_UNKNOWN);
   }
   search_box::SearchBoxViewBase::ButtonPressed(sender, event);
+}
+
+void SearchBoxView::UpdateSearchBoxTextForSelectedResult(
+    SearchResultBaseView* selected_result_view) {
+  if (selected_result_view->result()->result_type() ==
+          ash::SearchResultType::kOmnibox &&
+      !selected_result_view->result()->is_omnibox_search()) {
+    // Use details to ensure url results fill url.
+    search_box()->SetText(selected_result_view->result()->details());
+  } else {
+    search_box()->SetText(selected_result_view->result()->title());
+  }
 }
 
 void SearchBoxView::HintTextChanged() {

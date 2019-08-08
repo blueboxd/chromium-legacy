@@ -9,6 +9,13 @@
 
 #include "base/component_export.h"
 
+template <typename T>
+class scoped_refptr;
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
+
 namespace media_message_center {
 
 // MediaNotificationController does the actual hiding and showing of the media
@@ -19,6 +26,14 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationController {
   // MediaNotificationItem when the notification should be shown/hidden.
   virtual void ShowNotification(const std::string& id) = 0;
   virtual void HideNotification(const std::string& id) = 0;
+
+  // Removes a notification item with the given request id. Called by
+  // MediaNotificationItem when it should be destroyed.
+  virtual void RemoveItem(const std::string& id) = 0;
+
+  // Returns a task runner that the MediaNotificationItem should use.
+  // It typically returns null except in tests.
+  virtual scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const = 0;
 };
 
 }  // namespace media_message_center

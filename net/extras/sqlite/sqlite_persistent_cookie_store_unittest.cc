@@ -15,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -1235,7 +1236,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
       set_cookie_callback;
   cookie_monster->SetCookieWithOptionsAsync(
       GURL("gopher://subdomain.gopheriffic.com/page"), "A=B; max-age=3600",
-      CookieOptions(),
+      CookieOptions(), base::nullopt /* server_time */,
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
@@ -1250,7 +1251,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
         set_cookie_callback2;
     cookie_monster->SetCookieWithOptionsAsync(
         GURL(base::StringPrintf("http://example%d.com/", i)),
-        "A=B; max-age=3600", CookieOptions(),
+        "A=B; max-age=3600", CookieOptions(), base::nullopt /* server_time */,
         base::BindOnce(&ResultSavingCookieCallback<
                            CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&set_cookie_callback2)));
@@ -1304,6 +1305,7 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
       set_cookie_callback;
   cookie_monster->SetCookieWithOptionsAsync(
       GURL("http://www.example.com/"), "A=B; max-age=3600", CookieOptions(),
+      base::nullopt /* server_time */,
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
@@ -1335,9 +1337,9 @@ TEST_F(SQLitePersistentCookieStoreTest, Coalescing) {
       {{Op::kDelete, Op::kAdd, Op::kDelete}, 1u},
       {{Op::kDelete, Op::kAdd, Op::kUpdate, Op::kDelete}, 1u}};
 
-  std::unique_ptr<CanonicalCookie> cookie =
-      CanonicalCookie::Create(GURL("http://www.example.com/path"), "Tasty=Yes",
-                              base::Time::Now(), CookieOptions());
+  std::unique_ptr<CanonicalCookie> cookie = CanonicalCookie::Create(
+      GURL("http://www.example.com/path"), "Tasty=Yes", base::Time::Now(),
+      base::nullopt /* server_time */);
 
   for (const TestCase& testcase : testcases) {
     Create(false, false, true /* want current thread to invoke the store. */);
@@ -1388,13 +1390,13 @@ TEST_F(SQLitePersistentCookieStoreTest, NoCoalesceUnrelated) {
                NetLogWithSource());
   run_loop.Run();
 
-  std::unique_ptr<CanonicalCookie> cookie1 =
-      CanonicalCookie::Create(GURL("http://www.example.com/path"), "Tasty=Yes",
-                              base::Time::Now(), CookieOptions());
+  std::unique_ptr<CanonicalCookie> cookie1 = CanonicalCookie::Create(
+      GURL("http://www.example.com/path"), "Tasty=Yes", base::Time::Now(),
+      base::nullopt /* server_time */);
 
-  std::unique_ptr<CanonicalCookie> cookie2 =
-      CanonicalCookie::Create(GURL("http://not.example.com/path"), "Tasty=No",
-                              base::Time::Now(), CookieOptions());
+  std::unique_ptr<CanonicalCookie> cookie2 = CanonicalCookie::Create(
+      GURL("http://not.example.com/path"), "Tasty=No", base::Time::Now(),
+      base::nullopt /* server_time */);
 
   // Wedge the background thread to make sure that it doesn't start consuming
   // the queue.

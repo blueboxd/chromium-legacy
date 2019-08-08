@@ -239,9 +239,6 @@ class AutofillManager : public AutofillHandler,
   // neither on the STABLE nor BETA release channel.
   static bool IsRichQueryEnabled(version_info::Channel channel);
 
-  // Returns the last form the autofill manager considered in this frame.
-  virtual const FormData& last_query_form() const;
-
  protected:
   // Test code should prefer to use this constructor.
   AutofillManager(

@@ -5378,7 +5378,7 @@ bool LayoutBox::ShouldBeConsideredAsReplaced() const {
     // Form control elements are generally replaced objects. Fieldsets are not,
     // though. A fieldset is (almost) a regular block container, and should be
     // treated as such.
-    return !IsHTMLFieldSetElement(element);
+    return !IsA<HTMLFieldSetElement>(element);
   }
   return IsHTMLImageElement(element);
 }

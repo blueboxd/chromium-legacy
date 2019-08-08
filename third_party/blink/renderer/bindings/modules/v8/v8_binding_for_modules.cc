@@ -95,7 +95,7 @@ v8::Local<v8::Value> ToV8(const IDBKey* key,
     case mojom::IDBKeyType::Min:
       NOTREACHED();
       return v8::Local<v8::Value>();
-    case mojom::IDBKeyType::Null:
+    case mojom::IDBKeyType::None:
       return v8::Null(isolate);
     case mojom::IDBKeyType::Number:
       return v8::Number::New(isolate, key->Number());

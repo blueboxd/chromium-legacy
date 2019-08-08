@@ -602,6 +602,9 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
     private void confirmSettings() {
         RecordUserAction.record("Signin_Signin_ConfirmAdvancedSyncSettings");
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
+            ProfileSyncService.get().setFirstSetupComplete();
+        }
         UnifiedConsentServiceBridge.recordSyncSetupDataTypesHistogram();
         // Settings will be applied when mSyncSetupInProgressHandle is released in onDestroy.
         getActivity().finish();

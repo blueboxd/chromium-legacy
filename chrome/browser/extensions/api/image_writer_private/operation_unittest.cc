@@ -16,7 +16,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip.h"
@@ -53,11 +52,7 @@ class OperationForTest : public Operation {
                    const ExtensionId& extension_id,
                    const std::string& device_path,
                    const base::FilePath& download_path)
-      : Operation(manager_,
-                  /*connector=*/nullptr,
-                  extension_id,
-                  device_path,
-                  download_path) {}
+      : Operation(manager_, extension_id, device_path, download_path) {}
 
   void StartImpl() override {}
 

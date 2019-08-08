@@ -166,6 +166,11 @@ public class SplashController extends EmptyTabObserver implements InflationObser
         return mSplashView;
     }
 
+    @VisibleForTesting
+    public boolean wasSplashScreenHiddenForTests() {
+        return mSplashShownTimestamp > 0 && mSplashView == null;
+    }
+
     @Override
     public void onPreInflationStartup() {
         mDidPreInflationStartup = true;

@@ -111,6 +111,11 @@ class MockDeviceManagementService : public DeviceManagementService {
   testing::Action<StartJobFunction> CaptureRequest(
       enterprise_management::DeviceManagementRequest* request);
 
+  // Can be used as an action when mocking the StartJob method.
+  // Makes a copy of the payload of the JobConfiguration
+  // of the Job passed to StartJob.
+  testing::Action<StartJobFunction> CapturePayload(std::string* payload);
+
   // Call after using StartJobFullControl() to respond to the network request.
   // If the job completed successfully, |*job| will be nulled to prevent callers
   // from using the pointer beyond its lifetime.  If the job was retried, then

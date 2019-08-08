@@ -23,6 +23,7 @@ class ApplicationDragAndDropHost;
 namespace ash {
 enum class AnimationChangeType;
 class HomeButton;
+class HotseatWidget;
 class BackButton;
 class FocusCycler;
 class LoginShelfView;
@@ -56,6 +57,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   static bool IsUsingViewsShelf();
 
   void CreateNavigationWidget(aura::Window* container);
+  void CreateHotseatWidget(aura::Window* container);
   void CreateStatusAreaWidget(aura::Window* status_container);
 
   void OnShelfAlignmentChanged();
@@ -72,6 +74,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   ShelfNavigationWidget* navigation_widget() const {
     return navigation_widget_.get();
   }
+  HotseatWidget* hotseat_widget() const { return hotseat_widget_.get(); }
   StatusAreaWidget* status_area_widget() const {
     return status_area_widget_.get();
   }
@@ -155,7 +158,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Owned by the shelf container's window.
   ShelfLayoutManager* shelf_layout_manager_;
 
+  // Pointers to widgets that are visually part of the shelf.
   std::unique_ptr<ShelfNavigationWidget> navigation_widget_;
+  std::unique_ptr<HotseatWidget> hotseat_widget_;
   std::unique_ptr<StatusAreaWidget> status_area_widget_;
 
   // |delegate_view_| is the contents view of this widget and is cleaned up

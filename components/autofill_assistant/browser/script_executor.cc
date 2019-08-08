@@ -99,12 +99,6 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
   callback_ = std::move(callback);
   DCHECK(delegate_->GetService());
 
-  if (initial_actions_) {
-    OnGetActionsProto(true, *initial_actions_);
-    initial_actions_.reset();
-    return;
-  }
-
   DVLOG(2) << "GetActions for " << delegate_->GetCurrentURL().host();
   delegate_->GetService()->GetActions(
       script_path_, delegate_->GetDeeplinkURL(),
@@ -547,19 +541,10 @@ void ScriptExecutor::RequireUI() {
 }
 
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {
-  ActionsResponseProto response_proto;
-  if (result && !response_proto.ParseFromString(response)) {
-    DVLOG(1) << "Failed to parse assistant actions response.";
-    result = false;
-  }
-  OnGetActionsProto(result, response_proto);
-}
-
-void ScriptExecutor::OnGetActionsProto(bool success,
-                                       const ActionsResponseProto& response) {
-  DVLOG(2) << __func__ << " success=" << success;
+  bool success = result && ProcessNextActionResponse(response);
+  DVLOG(2) << __func__ << " result=" << result;
   if (should_stop_script_) {
-    // The last action forced the script to stop. Sending the success of the
+    // The last action forced the script to stop. Sending the result of the
     // action is considered best effort in this situation. Report a successful
     // run to the caller no matter what, so we don't confuse users with an error
     // message.
@@ -572,7 +557,6 @@ void ScriptExecutor::OnGetActionsProto(bool success,
     return;
   }
 
-  ProcessNextActionResponse(response);
   if (!actions_.empty()) {
     ProcessNextAction();
     return;
@@ -581,22 +565,24 @@ void ScriptExecutor::OnGetActionsProto(bool success,
   RunCallback(true);
 }
 
-void ScriptExecutor::ProcessNextActionResponse(
-    const ActionsResponseProto& response) {
+bool ScriptExecutor::ProcessNextActionResponse(const std::string& response) {
   processed_actions_.clear();
   actions_.clear();
-  inhibit_result_report_ = response.inhibit_result_report();
 
   bool should_update_scripts = false;
   std::vector<std::unique_ptr<Script>> scripts;
-  ProtocolUtils::ParseActions(this, response, &last_global_payload_,
-                              &last_script_payload_, &actions_, &scripts,
-                              &should_update_scripts);
+  bool parse_result = ProtocolUtils::ParseActions(
+      this, response, &last_global_payload_, &last_script_payload_, &actions_,
+      &scripts, &should_update_scripts);
+  if (!parse_result) {
+    return false;
+  }
 
   ReportPayloadsToListener();
   if (should_update_scripts) {
     ReportScriptsUpdateToListener(std::move(scripts));
   }
+  return true;
 }
 
 void ScriptExecutor::ReportPayloadsToListener() {
@@ -642,7 +628,7 @@ void ScriptExecutor::ProcessNextAction() {
   if (actions_.size() <= processed_actions_.size()) {
     DCHECK_EQ(actions_.size(), processed_actions_.size());
     DVLOG(2) << __func__ << ", get more actions";
-    GetNextActions(true);
+    GetNextActions();
     return;
   }
 
@@ -672,11 +658,7 @@ void ScriptExecutor::ProcessAction(Action* action) {
                                        base::TimeTicks::Now()));
 }
 
-void ScriptExecutor::GetNextActions(bool success) {
-  if (inhibit_result_report_) {
-    RunCallback(success);
-    return;
-  }
+void ScriptExecutor::GetNextActions() {
   delegate_->GetService()->GetNextActions(
       MergedTriggerContext(
           {delegate_->GetTriggerContext(), additional_context_.get()}),
@@ -708,7 +690,7 @@ void ScriptExecutor::OnProcessedAction(
     DVLOG(1) << "Action failed: " << processed_action.status()
              << ", get more actions";
     // Report error immediately, interrupting action processing.
-    GetNextActions(false);
+    GetNextActions();
     return;
   }
   ProcessNextAction();

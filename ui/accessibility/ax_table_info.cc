@@ -26,7 +26,7 @@ namespace {
 // in-between a table row and its cells.
 void FindCellsInRow(AXNode* node, std::vector<AXNode*>* cell_nodes) {
   for (AXNode* child : node->children()) {
-    if (child->data().HasState(ax::mojom::State::kIgnored) ||
+    if (child->IsIgnored() ||
         child->data().role == ax::mojom::Role::kGenericContainer)
       FindCellsInRow(child, cell_nodes);
     else if (IsCellOrTableHeader(child->data().role))
@@ -47,7 +47,7 @@ void FindRowsAndThenCells(AXNode* node,
                           std::vector<std::vector<AXNode*>>* cell_nodes_per_row,
                           int32_t& caption_node_id) {
   for (AXNode* child : node->children()) {
-    if (child->data().HasState(ax::mojom::State::kIgnored) ||
+    if (child->IsIgnored() ||
         child->data().role == ax::mojom::Role::kGenericContainer ||
         child->data().role == ax::mojom::Role::kGroup) {
       FindRowsAndThenCells(child, row_nodes, cell_nodes_per_row,

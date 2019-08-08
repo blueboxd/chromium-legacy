@@ -936,8 +936,10 @@ void Browser::OpenFile() {
       this, std::make_unique<ChromeSelectFilePolicy>(
                 tab_strip_model_->GetActiveWebContents()));
 
-  const base::FilePath directory = profile_->last_selected_directory();
+  if (!select_file_dialog_)
+    return;
 
+  const base::FilePath directory = profile_->last_selected_directory();
   // TODO(beng): figure out how to juggle this.
   gfx::NativeWindow parent_window = window_->GetNativeWindow();
   ui::SelectFileDialog::FileTypeInfo file_types;
@@ -1065,6 +1067,19 @@ void Browser::OnTabStripModelChanged(TabStripModel* tab_strip_model,
 
   OnActiveTabChanged(selection.old_contents, selection.new_contents,
                      selection.new_model.active(), selection.reason);
+}
+
+void Browser::OnTabGroupVisualDataChanged(
+    TabStripModel* tab_strip_model,
+    TabGroupId group,
+    const TabGroupVisualData* visual_data) {
+  SessionService* const session_service =
+      SessionServiceFactory::GetForProfile(profile_);
+  if (session_service) {
+    session_service->SetTabGroupMetadata(session_id(), group.token(),
+                                         visual_data->title(),
+                                         visual_data->color());
+  }
 }
 
 void Browser::TabPinnedStateChanged(TabStripModel* tab_strip_model,

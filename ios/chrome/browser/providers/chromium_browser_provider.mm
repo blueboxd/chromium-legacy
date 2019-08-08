@@ -61,6 +61,10 @@ ChromiumBrowserProvider::GetChromeIdentityService() {
   return chrome_identity_service_.get();
 }
 
+UITextField* ChromiumBrowserProvider::CreateStyledTextField() const {
+  return [[UITextField alloc] initWithFrame:CGRectZero];
+}
+
 UITextField<TextFieldStyling>* ChromiumBrowserProvider::CreateStyledTextField(
     CGRect frame) const {
   return [[ChromiumStyledTextField alloc] initWithFrame:CGRectZero];

@@ -10,17 +10,22 @@
 #include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
 #include "chrome/browser/ui/views/page_info/safety_tip_page_info_bubble_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -32,6 +37,11 @@ const int kHighEngagement = 20;
 
 // An engagement score below MEDIUM.
 const int kLowEngagement = 1;
+
+class ClickEvent : public ui::Event {
+ public:
+  ClickEvent() : ui::Event(ui::ET_UNKNOWN, base::TimeTicks(), 0) {}
+};
 
 // Simulates a link click navigation. We don't use
 // ui_test_utils::NavigateToURL(const GURL&) because it simulates the user
@@ -65,7 +75,8 @@ bool IsUIShowing() {
 }
 
 void CloseWarningIgnore() {
-  auto* widget = PageInfoBubbleViewBase::GetPageInfoBubble()->GetWidget();
+  auto* widget =
+      PageInfoBubbleViewBase::GetPageInfoBubbleForTesting()->GetWidget();
   views::test::WidgetDestroyedWaiter waiter(widget);
   widget->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
   waiter.Wait();
@@ -82,6 +93,38 @@ void SetEngagementScore(Browser* browser, const GURL& url, double score) {
 void TriggerWarning(Browser* browser, const GURL& navigated_url) {
   SetEngagementScore(browser, navigated_url, kLowEngagement);
   NavigateToURLSync(browser, navigated_url);
+}
+
+// Clicks the location icon to open the page info bubble.
+void OpenPageInfoBubble(Browser* browser) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  LocationIconView* location_icon_view =
+      browser_view->toolbar()->location_bar()->location_icon_view();
+  ASSERT_TRUE(location_icon_view);
+  ClickEvent event;
+  location_icon_view->ShowBubble(event);
+  views::BubbleDialogDelegateView* page_info =
+      PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
+  EXPECT_NE(nullptr, page_info);
+  page_info->set_close_on_deactivate(false);
+}
+
+void CheckPageInfoShowsSafetyTipInfo(Browser* browser) {
+  OpenPageInfoBubble(browser);
+  views::BubbleDialogDelegateView* page_info =
+      PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
+  CHECK(page_info);
+  EXPECT_EQ(page_info->GetWindowTitle(),
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
+}
+
+void CheckPageInfoDoesNotShowSafetyTipInfo(Browser* browser) {
+  OpenPageInfoBubble(browser);
+  views::BubbleDialogDelegateView* page_info =
+      PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
+  CHECK(page_info);
+  EXPECT_NE(page_info->GetWindowTitle(),
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
 }
 
 }  // namespace
@@ -109,7 +152,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
   void ClickLeaveButton() {
     // This class is a friend to SafetyTipPageInfoBubbleView.
     auto* bubble = static_cast<SafetyTipPageInfoBubbleView*>(
-        PageInfoBubbleViewBase::GetPageInfoBubble());
+        PageInfoBubbleViewBase::GetPageInfoBubbleForTesting());
     PerformMouseClickOnView(bubble->GetLeaveButtonForTesting());
   }
 
@@ -132,6 +175,8 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   SetEngagementScore(browser(), kNavigatedUrl, kHighEngagement);
   NavigateToURLSync(browser(), kNavigatedUrl);
   EXPECT_FALSE(IsUIShowing());
+
+  CheckPageInfoDoesNotShowSafetyTipInfo(browser());
 }
 
 // Until we have heuristics, trigger on all low engagement sites.
@@ -141,6 +186,8 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURLSync(browser(), kNavigatedUrl);
   EXPECT_TRUE(IsUIShowing());
+
+  CheckPageInfoShowsSafetyTipInfo(browser());
 }
 
 // After the user clicks 'leave site', the user should end up on a safe domain.
@@ -153,6 +200,8 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_FALSE(IsUIShowing());
   EXPECT_NE(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  CheckPageInfoDoesNotShowSafetyTipInfo(browser());
 }
 
 // If the user clicks 'leave site', the warning should re-appear when the user
@@ -169,6 +218,8 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_TRUE(IsUIShowing());
   EXPECT_EQ(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  CheckPageInfoShowsSafetyTipInfo(browser());
 }
 
 // After the user closes the warning, they should still be on the same domain.
@@ -181,6 +232,8 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_FALSE(IsUIShowing());
   EXPECT_EQ(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  CheckPageInfoShowsSafetyTipInfo(browser());
 }
 
 // If the user closes the bubble, the warning should not re-appear when the user
@@ -197,4 +250,22 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_FALSE(IsUIShowing());
   EXPECT_EQ(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  CheckPageInfoDoesNotShowSafetyTipInfo(browser());
+}
+
+// Non main-frame navigations should be ignored.
+IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
+                       IgnoreIFrameNavigations) {
+  const GURL kNavigatedUrl =
+      embedded_test_server()->GetURL("a.com", "/iframe_cross_site.html");
+  const GURL kFrameUrl =
+      embedded_test_server()->GetURL("b.com", "/title1.html");
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+  SetEngagementScore(browser(), kFrameUrl, kHighEngagement);
+
+  NavigateToURLSync(browser(), kNavigatedUrl);
+  EXPECT_TRUE(IsUIShowing());
+
+  CheckPageInfoShowsSafetyTipInfo(browser());
 }

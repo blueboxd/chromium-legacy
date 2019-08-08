@@ -24,6 +24,16 @@ class ScriptPromiseResolver;
 class XRFrameProvider;
 class XRSessionInit;
 
+enum class XRSessionFeature {
+  kInvalid = 0,
+  kUnknownFeature,
+  kViewer,
+  kLocal,
+  kLocalFloor,
+  kBoundedFloor,
+  kUnbounded,
+};
+
 class XR final : public EventTargetWithInlineData,
                  public ContextLifecycleObserver,
                  public device::mojom::blink::VRServiceClient,
@@ -95,12 +105,14 @@ class XR final : public EventTargetWithInlineData,
   // ScriptPromiseResolver that allows us to add additional logic as certain
   // things related to promise's life cycle happen.
   class PendingRequestSessionQuery final
-      : public GarbageCollected<PendingRequestSessionQuery> {
+      : public GarbageCollectedFinalized<PendingRequestSessionQuery> {
    public:
-    PendingRequestSessionQuery(int64_t ukm_source_id,
-                               ScriptPromiseResolver* resolver,
-                               XRSession::SessionMode mode,
-                               XRSessionInit*);
+    PendingRequestSessionQuery(
+        int64_t ukm_source_id,
+        ScriptPromiseResolver* resolver,
+        XRSession::SessionMode mode,
+        const WTF::HashSet<XRSessionFeature>& required_features,
+        const WTF::HashSet<XRSessionFeature>& optional_features);
     virtual ~PendingRequestSessionQuery() = default;
 
     // Resolves underlying promise with passed in XR session.
@@ -112,7 +124,8 @@ class XR final : public EventTargetWithInlineData,
     void Reject(v8::Local<v8::Value> value);
 
     XRSession::SessionMode mode() const;
-    const XRSessionInit* SessionInit() const;
+    const WTF::HashSet<XRSessionFeature>& RequiredFeatures() const;
+    const WTF::HashSet<XRSessionFeature>& OptionalFeatures() const;
 
     // Returns underlying resolver's script state.
     ScriptState* GetScriptState() const;
@@ -124,7 +137,8 @@ class XR final : public EventTargetWithInlineData,
 
     Member<ScriptPromiseResolver> resolver_;
     const XRSession::SessionMode mode_;
-    Member<XRSessionInit> session_init_;
+    WTF::HashSet<XRSessionFeature> required_features_;
+    WTF::HashSet<XRSessionFeature> optional_features_;
 
     const int64_t ukm_source_id_;
 
@@ -177,6 +191,7 @@ class XR final : public EventTargetWithInlineData,
       device::mojom::blink::XRSessionClientRequest client_request,
       device::mojom::blink::VRDisplayInfoPtr display_info,
       bool uses_input_eventing,
+      const WTF::HashSet<XRSessionFeature>& enabled_features,
       bool sensorless_session = false);
   XRSession* CreateSensorlessInlineSession();
 

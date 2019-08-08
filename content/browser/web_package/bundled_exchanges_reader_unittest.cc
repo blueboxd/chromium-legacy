@@ -14,146 +14,25 @@
 #include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/web_package/bundled_exchanges_source.h"
+#include "content/browser/web_package/mock_bundled_exchanges_reader_factory.h"
 #include "mojo/public/c/system/data_pipe.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 
 namespace {
 
-class MockParser final : public data_decoder::mojom::BundledExchangesParser {
- public:
-  MockParser(mojo::PendingReceiver<data_decoder::mojom::BundledExchangesParser>
-                 receiver)
-      : receiver_(this, std::move(receiver)) {}
-  ~MockParser() override {}
-
-  void RunMetadataCallback(data_decoder::mojom::BundleMetadataPtr metadata) {
-    base::RunLoop().RunUntilIdle();
-    std::move(metadata_callback_).Run(std::move(metadata), nullptr);
-  }
-  void RunResponseCallback(data_decoder::mojom::BundleResponsePtr response) {
-    base::RunLoop().RunUntilIdle();
-    std::move(response_callback_).Run(std::move(response), nullptr);
-  }
-
-  void WaitUntilParseMetadataCalled(base::OnceClosure closure) {
-    if (metadata_callback_.is_null())
-      wait_parse_metadata_callback_ = std::move(closure);
-    else
-      std::move(closure).Run();
-  }
-
- private:
-  // data_decoder::mojom::BundledExchangesParser implementation.
-  void ParseMetadata(ParseMetadataCallback callback) override {
-    metadata_callback_ = std::move(callback);
-    if (!wait_parse_metadata_callback_.is_null())
-      std::move(wait_parse_metadata_callback_).Run();
-  }
-  void ParseResponse(uint64_t response_offset,
-                     uint64_t response_length,
-                     ParseResponseCallback callback) override {
-    response_callback_ = std::move(callback);
-  }
-
-  mojo::Receiver<data_decoder::mojom::BundledExchangesParser> receiver_;
-
-  ParseMetadataCallback metadata_callback_;
-  ParseResponseCallback response_callback_;
-  base::OnceClosure wait_parse_metadata_callback_;
-};
-
-class MockParserFactory final
-    : public data_decoder::mojom::BundledExchangesParserFactory {
- public:
-  MockParserFactory() {}
-  ~MockParserFactory() override {}
-
-  void WaitUntilParseMetadataCalled(base::OnceClosure closure) {
-    if (parser_)
-      parser_->WaitUntilParseMetadataCalled(std::move(closure));
-    else
-      wait_parse_metadata_callback_ = std::move(closure);
-  }
-
-  void RunMetadataCallback(data_decoder::mojom::BundleMetadataPtr metadata) {
-    base::RunLoop run_loop;
-    WaitUntilParseMetadataCalled(run_loop.QuitClosure());
-    run_loop.Run();
-
-    ASSERT_TRUE(parser_);
-    parser_->RunMetadataCallback(std::move(metadata));
-  }
-  void RunResponseCallback(data_decoder::mojom::BundleResponsePtr response) {
-    ASSERT_TRUE(parser_);
-    parser_->RunResponseCallback(std::move(response));
-  }
-
- private:
-  // data_decoder::mojom::BundledExchangesParserFactory implementation.
-  void GetParserForFile(
-      mojo::PendingReceiver<data_decoder::mojom::BundledExchangesParser>
-          receiver,
-      base::File file) override {
-    parser_ = std::make_unique<MockParser>(std::move(receiver));
-    if (!wait_parse_metadata_callback_.is_null()) {
-      parser_->WaitUntilParseMetadataCalled(
-          std::move(wait_parse_metadata_callback_));
-    }
-  }
-  void GetParserForDataSource(
-      mojo::PendingReceiver<data_decoder::mojom::BundledExchangesParser>
-          receiver,
-      mojo::PendingRemote<data_decoder::mojom::BundleDataSource> data_source)
-      override {
-    NOTREACHED();
-  }
-
-  std::unique_ptr<MockParser> parser_;
-  base::OnceClosure wait_parse_metadata_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockParserFactory);
-};
-
 class BundledExchangesReaderTest : public testing::Test {
  public:
   void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(
-        CreateTemporaryFileInDir(temp_dir_.GetPath(), &temp_file_path_));
-
-    ASSERT_EQ(base::checked_cast<int>(body_.size()),
-              base::WriteFile(temp_file_path_, body_.data(), body_.size()));
-
-    BundledExchangesSource source(temp_file_path_);
-    reader_ = std::make_unique<BundledExchangesReader>(source);
-
-    std::unique_ptr<MockParserFactory> factory =
-        std::make_unique<MockParserFactory>();
-    factory_ = factory.get();
-    mojo::Remote<data_decoder::mojom::BundledExchangesParserFactory> remote;
-    mojo::MakeSelfOwnedReceiver(std::move(factory),
-                                remote.BindNewPipeAndPassReceiver());
-    reader_->SetBundledExchangesParserFactoryForTesting(std::move(remote));
+    reader_factory_ = MockBundledExchangesReaderFactory::Create();
+    reader_ = reader_factory_->CreateReader(body_);
   }
 
  protected:
   void ReadMetadata() {
-    base::RunLoop run_loop;
-    reader_->ReadMetadata(base::BindOnce(
-        [](base::Closure quit_closure,
-           data_decoder::mojom::BundleMetadataParseErrorPtr error) {
-          EXPECT_FALSE(error);
-          std::move(quit_closure).Run();
-        },
-        run_loop.QuitClosure()));
-
     base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> items;
     data_decoder::mojom::BundleIndexValuePtr item =
         data_decoder::mojom::BundleIndexValue::New();
@@ -164,21 +43,25 @@ class BundledExchangesReaderTest : public testing::Test {
     data_decoder::mojom::BundleMetadataPtr metadata =
         data_decoder::mojom::BundleMetadata::New(primary_url_, std::move(items),
                                                  GURL() /* manifest_url */);
-    factory_->RunMetadataCallback(std::move(metadata));
-    run_loop.Run();
+    reader_factory_->ReadAndFullfillMetadata(
+        reader_.get(), std::move(metadata),
+        base::BindOnce(
+            [](data_decoder::mojom::BundleMetadataParseErrorPtr error) {
+              EXPECT_FALSE(error);
+            }));
   }
   BundledExchangesReader* GetReader() { return reader_.get(); }
-  MockParserFactory* GetFactory() { return factory_; }
+  MockBundledExchangesReaderFactory* GetMockFactory() {
+    return reader_factory_.get();
+  }
   const GURL& GetPrimaryURL() const { return primary_url_; }
   const std::string& GetBody() const { return body_; }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  base::ScopedTempDir temp_dir_;
-  base::FilePath temp_file_path_;
+  std::unique_ptr<MockBundledExchangesReaderFactory> reader_factory_;
   std::unique_ptr<BundledExchangesReader> reader_;
-  MockParserFactory* factory_;
-  const GURL primary_url_ = GURL("https://www.google.com/");
+  const GURL primary_url_ = GURL("https://test.example.org/");
   const std::string body_ = std::string("hello new open world.");
 };
 
@@ -186,35 +69,80 @@ TEST_F(BundledExchangesReaderTest, ReadMetadata) {
   ReadMetadata();
   EXPECT_EQ(GetPrimaryURL(), GetReader()->GetPrimaryURL());
   EXPECT_TRUE(GetReader()->HasEntry(GetPrimaryURL()));
-  EXPECT_FALSE(GetReader()->HasEntry(GURL("https://www.google.com/404")));
+  EXPECT_TRUE(
+      GetReader()->HasEntry(GURL("https://user:pass@test.example.org/")));
+  EXPECT_TRUE(GetReader()->HasEntry(GURL("https://test.example.org/#ref")));
+  EXPECT_FALSE(GetReader()->HasEntry(GURL("https://test.example.org/404")));
 }
 
 TEST_F(BundledExchangesReaderTest, ReadResponse) {
   ReadMetadata();
   ASSERT_TRUE(GetReader()->HasEntry(GetPrimaryURL()));
 
-  base::RunLoop run_loop;
-  GetReader()->ReadResponse(
-      GetPrimaryURL(), base::BindOnce(
-                           [](base::Closure quit_closure,
-                              data_decoder::mojom::BundleResponsePtr response) {
-                             EXPECT_TRUE(response);
-                             if (response) {
-                               EXPECT_EQ(200, response->response_code);
-                               EXPECT_EQ(0xdeadu, response->payload_offset);
-                               EXPECT_EQ(0xbeafu, response->payload_length);
-                             }
-                             std::move(quit_closure).Run();
-                           },
-                           run_loop.QuitClosure()));
+  data_decoder::mojom::BundleResponsePtr response =
+      data_decoder::mojom::BundleResponse::New();
+  response->response_code = 200;
+  response->payload_offset = 0xdead;
+  response->payload_length = 0xbeaf;
+
+  GetMockFactory()->ReadAndFullfillResponse(
+      GetReader(), GetPrimaryURL(), std::move(response),
+      base::BindOnce([](data_decoder::mojom::BundleResponsePtr response) {
+        EXPECT_TRUE(response);
+        if (response) {
+          EXPECT_EQ(200, response->response_code);
+          EXPECT_EQ(0xdeadu, response->payload_offset);
+          EXPECT_EQ(0xbeafu, response->payload_length);
+        }
+      }));
+}
+
+TEST_F(BundledExchangesReaderTest, ReadResponseForURLContainingUserAndPass) {
+  GURL url = GURL("https://user:pass@test.example.org/");
+
+  ReadMetadata();
+  ASSERT_TRUE(GetReader()->HasEntry(url));
 
   data_decoder::mojom::BundleResponsePtr response =
       data_decoder::mojom::BundleResponse::New();
   response->response_code = 200;
   response->payload_offset = 0xdead;
   response->payload_length = 0xbeaf;
-  GetFactory()->RunResponseCallback(std::move(response));
-  run_loop.Run();
+
+  GetMockFactory()->ReadAndFullfillResponse(
+      GetReader(), url, std::move(response),
+      base::BindOnce([](data_decoder::mojom::BundleResponsePtr response) {
+        EXPECT_TRUE(response);
+        if (response) {
+          EXPECT_EQ(200, response->response_code);
+          EXPECT_EQ(0xdeadu, response->payload_offset);
+          EXPECT_EQ(0xbeafu, response->payload_length);
+        }
+      }));
+}
+
+TEST_F(BundledExchangesReaderTest, ReadResponseForURLContainingFragment) {
+  GURL url = GURL("https://test.example.org/#fragment");
+
+  ReadMetadata();
+  ASSERT_TRUE(GetReader()->HasEntry(url));
+
+  data_decoder::mojom::BundleResponsePtr response =
+      data_decoder::mojom::BundleResponse::New();
+  response->response_code = 200;
+  response->payload_offset = 0xdead;
+  response->payload_length = 0xbeaf;
+
+  GetMockFactory()->ReadAndFullfillResponse(
+      GetReader(), url, std::move(response),
+      base::BindOnce([](data_decoder::mojom::BundleResponsePtr response) {
+        EXPECT_TRUE(response);
+        if (response) {
+          EXPECT_EQ(200, response->response_code);
+          EXPECT_EQ(0xdeadu, response->payload_offset);
+          EXPECT_EQ(0xbeafu, response->payload_length);
+        }
+      }));
 }
 
 TEST_F(BundledExchangesReaderTest, ReadResponseBody) {

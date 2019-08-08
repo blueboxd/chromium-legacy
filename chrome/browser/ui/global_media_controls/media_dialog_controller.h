@@ -45,6 +45,8 @@ class MediaDialogController
   // media_message_center::MediaNotificationController implementation.
   void ShowNotification(const std::string& id) override;
   void HideNotification(const std::string& id) override;
+  void RemoveItem(const std::string& id) override;
+  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override;
 
  private:
   friend class MediaDialogControllerTest;
@@ -68,6 +70,9 @@ class MediaDialogController
   // Used to receive updates to the active media controller.
   mojo::Receiver<media_session::mojom::AudioFocusObserver>
       audio_focus_observer_receiver_{this};
+
+  // Task runner used for testing.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_for_testing_;
 
   base::WeakPtrFactory<MediaDialogController> weak_ptr_factory_{this};
 

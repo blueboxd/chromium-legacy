@@ -79,6 +79,34 @@ void NotifySchedulerAboutPermissionRequest(RenderFrameHost* render_frame_host,
       ->OnSchedulerTrackedFeatureUsed(feature.value());
 }
 
+// Calls |original_cb|, a callback expecting the PermissionStatus of a set of
+// permissions, after joining the results of overridden permissions and
+// non-overridden permissions.
+// |overridden_results| is an array of permissions that have already been
+// overridden by DevTools.
+// |delegated_results| contains results that did not have overrides - they
+// were delegated - their results need to be inserted in order.
+void MergeOverriddenAndDelegatedResults(
+    base::OnceCallback<void(const std::vector<blink::mojom::PermissionStatus>&)>
+        original_cb,
+    std::vector<base::Optional<blink::mojom::PermissionStatus>>
+        overridden_results,
+    const std::vector<blink::mojom::PermissionStatus>& delegated_results) {
+  std::vector<blink::mojom::PermissionStatus> full_results;
+  full_results.reserve(overridden_results.size());
+  auto delegated_it = delegated_results.begin();
+  for (auto& status : overridden_results) {
+    if (!status.has_value()) {
+      CHECK(delegated_it != delegated_results.end());
+      status.emplace(*delegated_it++);
+    }
+    full_results.emplace_back(*status);
+  }
+  CHECK(delegated_it == delegated_results.end());
+
+  std::move(original_cb).Run(full_results);
+}
+
 }  // namespace
 
 PermissionControllerImpl::PermissionControllerImpl(
@@ -153,6 +181,19 @@ void PermissionControllerImpl::NotifyChangedSubscriptions(
   }
   for (const auto& callback : callbacks)
     callback.Run();
+}
+
+void PermissionControllerImpl::SetOverrideForDevTools(
+    const GURL& origin,
+    const PermissionType& permission,
+    const blink::mojom::PermissionStatus& status) {
+  const auto old_statuses = GetSubscriptionsStatuses(origin);
+
+  devtools_permission_overrides_.Set(url::Origin::Create(origin), permission,
+                                     status);
+  NotifyChangedSubscriptions(old_statuses);
+
+  UpdateDelegateOverridesForDevTools(origin);
 }
 
 void PermissionControllerImpl::GrantOverridesForDevTools(
@@ -232,36 +273,37 @@ int PermissionControllerImpl::RequestPermissions(
   for (PermissionType permission : permissions)
     NotifySchedulerAboutPermissionRequest(render_frame_host, permission);
 
-  const PermissionOverrides& overrides = devtools_permission_overrides_.GetAll(
-      url::Origin::Create(requesting_origin));
-  if (!overrides.empty()) {
-    std::vector<blink::mojom::PermissionStatus> results;
-    for (const auto& permission : permissions) {
-      auto it = overrides.find(permission);
-      // TODO(rohpavone): This approach will not work when using SetPermissions,
-      // because can no longer assume that all overrides are specified is
-      // removed.
-      if (it == overrides.end())
-        results.push_back(blink::mojom::PermissionStatus::DENIED);
-      else
-        results.push_back(it->second);
-    }
+  std::vector<PermissionType> permissions_without_overrides;
+  std::vector<base::Optional<blink::mojom::PermissionStatus>> results;
+  url::Origin origin = url::Origin::Create(requesting_origin);
+  for (const auto& permission : permissions) {
+    base::Optional<blink::mojom::PermissionStatus> override_status =
+        devtools_permission_overrides_.Get(origin, permission);
+    if (!override_status)
+      permissions_without_overrides.push_back(permission);
+    results.push_back(override_status);
+  }
 
-    callback.Run(results);
+  auto wrapper = base::BindOnce(&MergeOverriddenAndDelegatedResults,
+                                std::move(callback), results);
+  if (permissions_without_overrides.empty()) {
+    std::move(wrapper).Run({});
     return kNoPendingOperation;
   }
 
+  // Use delegate to find statuses of other permissions that have been requested
+  // but do not have overrides.
   PermissionControllerDelegate* delegate =
       browser_context_->GetPermissionControllerDelegate();
   if (!delegate) {
-    std::vector<blink::mojom::PermissionStatus> result(
-        permissions.size(), blink::mojom::PermissionStatus::DENIED);
-    callback.Run(result);
+    std::move(wrapper).Run(std::vector<blink::mojom::PermissionStatus>(
+        permissions_without_overrides.size(),
+        blink::mojom::PermissionStatus::DENIED));
     return kNoPendingOperation;
   }
-  return delegate->RequestPermissions(permissions, render_frame_host,
-                                      requesting_origin, user_gesture,
-                                      callback);
+  return delegate->RequestPermissions(permissions_without_overrides,
+                                      render_frame_host, requesting_origin,
+                                      user_gesture, std::move(wrapper));
 }
 
 blink::mojom::PermissionStatus PermissionControllerImpl::GetPermissionStatus(

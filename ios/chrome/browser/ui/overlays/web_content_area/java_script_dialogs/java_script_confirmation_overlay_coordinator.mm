@@ -15,7 +15,7 @@
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_confirmation_overlay.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
-#import "ios/chrome/browser/ui/overlays/overlay_ui_dismissal_delegate.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_confirmation_overlay_mediator.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_coordinator+subclassing.h"
 #include "ios/chrome/grit/ios_strings.h"

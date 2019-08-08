@@ -15,19 +15,16 @@ bool NetworkTypeMatchesType(mojom::NetworkType network_type,
       return true;
     case mojom::NetworkType::kMobile:
       return network_type == mojom::NetworkType::kCellular ||
-             network_type == mojom::NetworkType::kTether ||
-             network_type == mojom::NetworkType::kWiMAX;
+             network_type == mojom::NetworkType::kTether;
     case mojom::NetworkType::kWireless:
       return network_type == mojom::NetworkType::kCellular ||
              network_type == mojom::NetworkType::kTether ||
-             network_type == mojom::NetworkType::kWiFi ||
-             network_type == mojom::NetworkType::kWiMAX;
+             network_type == mojom::NetworkType::kWiFi;
     case mojom::NetworkType::kCellular:
     case mojom::NetworkType::kEthernet:
     case mojom::NetworkType::kTether:
     case mojom::NetworkType::kVPN:
     case mojom::NetworkType::kWiFi:
-    case mojom::NetworkType::kWiMAX:
       return network_type == match_type;
   }
   NOTREACHED();
@@ -65,8 +62,6 @@ int GetWirelessSignalStrength(const mojom::NetworkStateProperties* network) {
       return 0;
     case mojom::NetworkType::kWiFi:
       return network->wifi->signal_strength;
-    case mojom::NetworkType::kWiMAX:
-      return network->wimax->signal_strength;
     case mojom::NetworkType::kAll:
     case mojom::NetworkType::kMobile:
     case mojom::NetworkType::kWireless:

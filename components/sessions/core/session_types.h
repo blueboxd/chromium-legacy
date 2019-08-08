@@ -19,6 +19,7 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/sessions_export.h"
 #include "components/variations/variations_associated_data.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -97,6 +98,30 @@ struct SESSIONS_EXPORT SessionTab {
   DISALLOW_COPY_AND_ASSIGN(SessionTab);
 };
 
+// SessionTabGroup -----------------------------------------------------------
+
+// Describes a tab group referenced by some SessionTab entry in its group
+// field. By default, this is initialized with placeholder values that are
+// visually obvious.
+struct SESSIONS_EXPORT SessionTabGroup {
+  explicit SessionTabGroup(base::Token group);
+  ~SessionTabGroup();
+
+  // Uniquely identifies this group. Initialized to zero and must be set be
+  // user. Unlike SessionID this should be globally unique, even across
+  // different sessions.
+  base::Token group_id;
+
+  // A human-readable title for the group.
+  base::string16 title;
+
+  // An accent color used when displaying the group.
+  SkColor color;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SessionTabGroup);
+};
+
 // SessionWindow -------------------------------------------------------------
 
 // Describes a saved window.
@@ -144,6 +169,10 @@ struct SESSIONS_EXPORT SessionWindow {
 
   // The tabs, ordered by visual order.
   std::vector<std::unique_ptr<SessionTab>> tabs;
+
+  // Tab groups in no particular order. For each group in |tab_groups|, there
+  // should be at least one tab in |tabs| in the group.
+  std::vector<std::unique_ptr<SessionTabGroup>> tab_groups;
 
   // Is the window maximized, minimized, or normal?
   ui::WindowShowState show_state;

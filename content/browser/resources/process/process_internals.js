@@ -7,9 +7,9 @@
 
 /**
  * Reference to the backend providing all the data.
- * @type {mojom.ProcessInternalsHandlerProxy}
+ * @type {mojom.ProcessInternalsHandlerRemote}
  */
-let uiHandler = null;
+let pageHandler = null;
 
 /**
  * @param {string} id Tab id.
@@ -170,7 +170,7 @@ function populateWebContentsTab(input) {
  * current browser profile. The result is passed to populateWebContentsTab.
  */
 function loadWebContentsInfo() {
-  uiHandler.getAllWebContentsInfo().then(populateWebContentsTab);
+  pageHandler.getAllWebContentsInfo().then(populateWebContentsTab);
 }
 
 /**
@@ -183,7 +183,7 @@ function loadWebContentsInfo() {
 function loadIsolatedOriginInfo() {
   // Retrieve any persistent isolated origins for the current profile. Insert
   // them into a list on the page if there is at least one such origin.
-  uiHandler.getUserTriggeredIsolatedOrigins().then((response) => {
+  pageHandler.getUserTriggeredIsolatedOrigins().then((response) => {
     const originCount = response.isolatedOrigins.length;
     if (!originCount) {
       return;
@@ -208,7 +208,7 @@ function loadIsolatedOriginInfo() {
   // Retrieve global isolated origins and insert them into a separate list if
   // there is at least one such origin.  Since these origins may come from
   // multiple sources, include the source info for each origin in parens.
-  uiHandler.getGloballyIsolatedOrigins().then((response) => {
+  pageHandler.getGloballyIsolatedOrigins().then((response) => {
     const originCount = response.isolatedOrigins.length;
     if (!originCount) {
       return;
@@ -231,10 +231,10 @@ function loadIsolatedOriginInfo() {
 
 document.addEventListener('DOMContentLoaded', function() {
   // Setup Mojo interface to the backend.
-  uiHandler = mojom.ProcessInternalsHandler.getProxy();
+  pageHandler = mojom.ProcessInternalsHandler.getRemote();
 
   // Get the Site Isolation mode and populate it.
-  uiHandler.getIsolationMode().then((response) => {
+  pageHandler.getIsolationMode().then((response) => {
     $('isolation-mode').innerText = response.mode;
   });
 

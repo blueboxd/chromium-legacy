@@ -78,7 +78,7 @@ void OpenPageInfoBubble(Browser* browser) {
   ClickEvent event;
   location_icon_view->ShowBubble(event);
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleView::GetPageInfoBubble();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
   EXPECT_NE(nullptr, page_info);
   page_info->set_close_on_deactivate(false);
 }
@@ -87,7 +87,7 @@ void OpenPageInfoBubble(Browser* browser) {
 // |view_id|.
 views::View* GetView(Browser* browser, int view_id) {
   views::Widget* page_info_bubble =
-      PageInfoBubbleView::GetPageInfoBubble()->GetWidget();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetWidget();
   EXPECT_TRUE(page_info_bubble);
 
   views::View* view = page_info_bubble->GetRootView()->GetViewByID(view_id);
@@ -261,7 +261,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 
       PageInfoBubbleView* page_info_bubble_view =
           static_cast<PageInfoBubbleView*>(
-              PageInfoBubbleView::GetPageInfoBubble());
+              PageInfoBubbleView::GetPageInfoBubbleForTesting());
       // Normally |PageInfoBubbleView| doesn't update the permissions already
       // shown if they change while it's still open. For this test, manually
       // force an update by clearing the existing permission views here.
@@ -277,7 +277,8 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
         name != kFile) {
       // The bubble may be PageInfoBubbleView or InternalPageInfoBubbleView. The
       // latter is only used for |kInternal|, so it is safe to static_cast here.
-      static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
+      static_cast<PageInfoBubbleView*>(
+          PageInfoBubbleView::GetPageInfoBubbleForTesting())
           ->SetIdentityInfo(identity);
     }
   }
@@ -288,7 +289,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 #if defined(TOOLKIT_VIEWS)
     // Check that each expected View is present in the Page Info bubble.
     views::View* page_info_bubble_view =
-        PageInfoBubbleView::GetPageInfoBubble()->GetContentsView();
+        PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetContentsView();
     for (auto id : expected_identifiers_) {
       views::View* view = GetView(browser(), id);
       if (!page_info_bubble_view->Contains(view))
@@ -331,7 +332,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
   void TriggerReloadPromptOnClose() const {
     PageInfoBubbleView* const page_info_bubble_view =
         static_cast<PageInfoBubbleView*>(
-            PageInfoBubbleView::GetPageInfoBubble());
+            PageInfoBubbleView::GetPageInfoBubbleForTesting());
     ASSERT_NE(nullptr, page_info_bubble_view);
 
     // Set some dummy non-default permissions. This will trigger a reload prompt
@@ -347,7 +348,8 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 
   void SetPageInfoBubbleIdentityInfo(
       const PageInfoUI::IdentityInfo& identity_info) {
-    static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
+    static_cast<PageInfoBubbleView*>(
+        PageInfoBubbleView::GetPageInfoBubbleForTesting())
         ->SetIdentityInfo(identity_info);
   }
 
@@ -356,7 +358,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     // PageInfoBubbleView, or title() in HoverButton.
     PageInfoBubbleView* page_info_bubble_view =
         static_cast<PageInfoBubbleView*>(
-            PageInfoBubbleView::GetPageInfoBubble());
+            PageInfoBubbleView::GetPageInfoBubbleForTesting());
     return page_info_bubble_view->certificate_button_->title()->GetText();
   }
 
@@ -675,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTestWithAutoupgradesDisabled,
   OpenPageInfoBubble(browser());
 
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleView::GetPageInfoBubble();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
 
   EXPECT_EQ(page_info->GetWindowTitle(),
             l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURE_SUMMARY));
@@ -706,7 +708,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, BlockedAndInvalidCert) {
   SetPageInfoBubbleIdentityInfo(identity);
 
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleView::GetPageInfoBubble();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
 
   // Verify bubble complains of malware...
   EXPECT_EQ(page_info->GetWindowTitle(),
@@ -825,8 +827,8 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   web_contents_focus_tracker.WaitForFocus(true);
 
   OpenPageInfoBubble(browser());
-  PageInfoBubbleView* page_info_bubble_view =
-      static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble());
+  PageInfoBubbleView* page_info_bubble_view = static_cast<PageInfoBubbleView*>(
+      PageInfoBubbleView::GetPageInfoBubbleForTesting());
   EXPECT_FALSE(web_contents_focus_tracker.focused());
 
   page_info_bubble_view->GetWidget()->CloseWithReason(
@@ -850,8 +852,8 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   web_contents_focus_tracker.WaitForFocus(true);
 
   OpenPageInfoBubble(browser());
-  PageInfoBubbleView* page_info_bubble_view =
-      static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble());
+  PageInfoBubbleView* page_info_bubble_view = static_cast<PageInfoBubbleView*>(
+      PageInfoBubbleView::GetPageInfoBubbleForTesting());
   EXPECT_FALSE(web_contents_focus_tracker.focused());
 
   TriggerReloadPromptOnClose();

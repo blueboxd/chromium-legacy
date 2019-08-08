@@ -207,8 +207,6 @@ NetworkChangeManagerClient::ConnectionTypeFromShill(
     return net::NetworkChangeNotifier::CONNECTION_ETHERNET;
   if (type == shill::kTypeWifi)
     return net::NetworkChangeNotifier::CONNECTION_WIFI;
-  if (type == shill::kTypeWimax)
-    return net::NetworkChangeNotifier::CONNECTION_4G;
   if (type == shill::kTypeBluetooth)
     return net::NetworkChangeNotifier::CONNECTION_BLUETOOTH;
 

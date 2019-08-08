@@ -13,6 +13,25 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 
+// Resource usage thresholds for the Heavy Ad Intervention feature. These
+// numbers are platform specific and are intended to target 1 in 1000 ad iframes
+// on each platform.
+namespace heavy_ad_thresholds {
+
+// Maximum number of network bytes allowed to be loaded by a frame. These
+// numbers reflect the 99.9th percentile of the
+// PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Network histogram on mobile and
+// desktop.
+const int kMaxNetworkBytes = 4.0 * 1024 * 1024;
+
+// Maximum number of milliseconds of CPU use allowed to be used by a frame.
+// These numbers reflect the 99.9th percentile of the
+// PageLoad.Clients.Ads.Cpu.AdFrames.PerFrame.TotalUsage.Unactivated histogram
+// on mobile and desktop.
+const int kMaxCpuTime = 60 * 1000;
+
+}  // namespace heavy_ad_thresholds
+
 // Store information received for a frame on the page. FrameData is meant
 // to represent a frame along with it's entire subtree.
 class FrameData {
@@ -33,6 +52,15 @@ class FrameData {
     kVisible = 1,
     kAnyVisibility = 2,
     kMaxValue = kAnyVisibility,
+  };
+
+  // The type of heavy ad this frame is classified as per the Heavy Ad
+  // Intervention.
+  enum class HeavyAdStatus {
+    kNone = 0,
+    kNetwork = 1,
+    kCpu = 2,
+    kMaxValue = kCpu,
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -114,6 +142,12 @@ class FrameData {
                       base::TimeDelta update,
                       InteractiveStatus interactive);
 
+  // Returns whether the heavy ad intervention was triggered on this frame.
+  // This intervention is triggered when the frame is considered heavy, has not
+  // received user gesture, and the intervention feature is enabled. This
+  // returns true the first time the criteria is met, and false afterwards.
+  bool MaybeTriggerHeavyAdIntervention();
+
   // Get the cpu usage for the appropriate interactive period.
   base::TimeDelta GetInteractiveCpuUsage(InteractiveStatus status) const;
 
@@ -182,6 +216,8 @@ class FrameData {
     timing_ = std::move(timing);
   }
 
+  HeavyAdStatus heavy_ad_status() const { return heavy_ad_status_; }
+
  private:
   // Time updates for the frame with a timestamp indicating when they arrived.
   // Used for windowed cpu load reporting.
@@ -194,6 +230,10 @@ class FrameData {
 
   // Updates whether or not this frame meets the criteria for visibility.
   void UpdateFrameVisibility();
+
+  // Computes whether this frame meets the criteria for being a heavy frame for
+  // the heavy ad intervention and returns the type of threshold hit if any.
+  HeavyAdStatus ComputeHeavyAdStatus() const;
 
   // The most recently updated timing received for this frame.
   page_load_metrics::mojom::PageLoadTimingPtr timing_;
@@ -261,6 +301,11 @@ class FrameData {
   gfx::Size frame_size_;
   url::Origin origin_;
   MediaStatus media_status_ = MediaStatus::kNotPlayed;
+
+  // Indicates whether or not this frame met the criteria for the heavy ad
+  // intervention. This should be not be set if the Heavy Ad Intervention is
+  // not enabled.
+  HeavyAdStatus heavy_ad_status_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameData);
 };

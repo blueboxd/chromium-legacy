@@ -226,26 +226,35 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
         }
       }
 
+      base::FilePath ssl_key_log_path;
       if (command_line->HasSwitch(network::switches::kSSLKeyLogFile)) {
-        base::FilePath log_path =
+        ssl_key_log_path =
             command_line->GetSwitchValuePath(network::switches::kSSLKeyLogFile);
-        LOG_IF(WARNING, log_path.empty())
+        LOG_IF(WARNING, ssl_key_log_path.empty())
             << "ssl-key-log-file argument missing";
-        if (!log_path.empty())
-          (*g_network_service_ptr)->SetSSLKeyLogFile(log_path);
+      } else {
+        std::unique_ptr<base::Environment> env(base::Environment::Create());
+        std::string env_str;
+        if (env->GetVar("SSLKEYLOGFILE", &env_str)) {
+#if defined(OS_WIN)
+          // base::Environment returns environment variables in UTF-8 on
+          // Windows.
+          ssl_key_log_path = base::FilePath(base::UTF8ToUTF16(env_str));
+#else
+          ssl_key_log_path = base::FilePath(env_str);
+#endif
+        }
       }
 
-      std::unique_ptr<base::Environment> env(base::Environment::Create());
-      std::string env_str;
-      if (env->GetVar("SSLKEYLOGFILE", &env_str)) {
-#if defined(OS_WIN)
-        // base::Environment returns environment variables in UTF-8 on Windows.
-        base::FilePath log_path(base::UTF8ToUTF16(env_str));
-#else
-        base::FilePath log_path(env_str);
-#endif
-        if (!log_path.empty())
-          (*g_network_service_ptr)->SetSSLKeyLogFile(log_path);
+      if (!ssl_key_log_path.empty()) {
+        base::File file(ssl_key_log_path,
+                        base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
+        if (!file.IsValid()) {
+          LOG(ERROR) << "Failed opening SSL key log file: "
+                     << ssl_key_log_path.value();
+        } else {
+          (*g_network_service_ptr)->SetSSLKeyLogFile(std::move(file));
+        }
       }
 
       GetContentClient()->browser()->OnNetworkServiceCreated(

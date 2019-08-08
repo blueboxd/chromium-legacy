@@ -73,7 +73,6 @@ TEST(NetworkChangeManagerClientTest, ConnectionTypeFromShill) {
   TypeMapping type_mappings[] = {
       {shill::kTypeEthernet, "", NetworkChangeNotifier::CONNECTION_ETHERNET},
       {shill::kTypeWifi, "", NetworkChangeNotifier::CONNECTION_WIFI},
-      {shill::kTypeWimax, "", NetworkChangeNotifier::CONNECTION_4G},
       {"unknown type", "unknown technology",
        NetworkChangeNotifier::CONNECTION_UNKNOWN},
       {shill::kTypeCellular, shill::kNetworkTechnology1Xrtt,

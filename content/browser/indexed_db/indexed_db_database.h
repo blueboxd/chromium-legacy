@@ -77,36 +77,20 @@ class CONTENT_EXPORT IndexedDBDatabase {
   int64_t id() const { return metadata_.id; }
   const base::string16& name() const { return metadata_.name; }
   const url::Origin& origin() const { return identifier_.first; }
-
-  void AddObjectStore(blink::IndexedDBObjectStoreMetadata metadata,
-                      int64_t new_max_object_store_id);
-  blink::IndexedDBObjectStoreMetadata RemoveObjectStore(
-      int64_t object_store_id);
-  void AddIndex(int64_t object_store_id,
-                blink::IndexedDBIndexMetadata metadata,
-                int64_t new_max_index_id);
-  blink::IndexedDBIndexMetadata RemoveIndex(int64_t object_store_id,
-                                            int64_t index_id);
-
-  void ScheduleOpenConnection(
-      IndexedDBOriginStateHandle origin_state_handle,
-      std::unique_ptr<IndexedDBPendingConnection> connection);
-  void ScheduleDeleteDatabase(IndexedDBOriginStateHandle origin_state_handle,
-                              scoped_refptr<IndexedDBCallbacks> callbacks,
-                              base::OnceClosure on_deletion_complete);
-
   const blink::IndexedDBDatabaseMetadata& metadata() const { return metadata_; }
 
-  void CreateObjectStore(IndexedDBTransaction* transaction,
-                         int64_t object_store_id,
-                         const base::string16& name,
-                         const blink::IndexedDBKeyPath& key_path,
-                         bool auto_increment);
-  void DeleteObjectStore(IndexedDBTransaction* transaction,
-                         int64_t object_store_id);
-  void RenameObjectStore(IndexedDBTransaction* transaction,
-                         int64_t object_store_id,
-                         const base::string16& new_name);
+  ScopesLockManager* transaction_lock_manager() { return lock_manager_; }
+  const ScopesLockManager* transaction_lock_manager() const {
+    return lock_manager_;
+  }
+
+  const list_set<IndexedDBConnection*>& connections() const {
+    return connections_;
+  }
+
+  base::WeakPtr<IndexedDBDatabase> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
 
   // TODO(dmurph): Remove this method and have transactions be directly
   // scheduled using the lock manager.
@@ -118,26 +102,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
   void ForceClose();
 
   void Commit(IndexedDBTransaction* transaction);
-
-  void CreateIndex(IndexedDBTransaction* transaction,
-                   int64_t object_store_id,
-                   int64_t index_id,
-                   const base::string16& name,
-                   const blink::IndexedDBKeyPath& key_path,
-                   bool unique,
-                   bool multi_entry);
-  void DeleteIndex(IndexedDBTransaction* transaction,
-                   int64_t object_store_id,
-                   int64_t index_id);
-  void RenameIndex(IndexedDBTransaction* transaction,
-                   int64_t object_store_id,
-                   int64_t index_id,
-                   const base::string16& new_name);
-
-  ScopesLockManager* transaction_lock_manager() { return lock_manager_; }
-  const ScopesLockManager* transaction_lock_manager() const {
-    return lock_manager_;
-  }
 
   void TransactionCreated();
   void TransactionFinished(blink::mojom::IDBTransactionMode mode,
@@ -158,6 +122,52 @@ class CONTENT_EXPORT IndexedDBDatabase {
   void SendObservations(
       std::map<int32_t, blink::mojom::IDBObserverChangesPtr> change_map);
 
+  void ScheduleOpenConnection(
+      IndexedDBOriginStateHandle origin_state_handle,
+      std::unique_ptr<IndexedDBPendingConnection> connection);
+  void ScheduleDeleteDatabase(IndexedDBOriginStateHandle origin_state_handle,
+                              scoped_refptr<IndexedDBCallbacks> callbacks,
+                              base::OnceClosure on_deletion_complete);
+
+  void AddObjectStoreToMetadata(blink::IndexedDBObjectStoreMetadata metadata,
+                                int64_t new_max_object_store_id);
+  blink::IndexedDBObjectStoreMetadata RemoveObjectStoreFromMetadata(
+      int64_t object_store_id);
+  void AddIndexToMetadata(int64_t object_store_id,
+                          blink::IndexedDBIndexMetadata metadata,
+                          int64_t new_max_index_id);
+  blink::IndexedDBIndexMetadata RemoveIndexFromMetadata(int64_t object_store_id,
+                                                        int64_t index_id);
+
+  // The following methods all schedule a task on the transaction & modify the
+  // database:
+
+  void CreateObjectStore(IndexedDBTransaction* transaction,
+                         int64_t object_store_id,
+                         const base::string16& name,
+                         const blink::IndexedDBKeyPath& key_path,
+                         bool auto_increment);
+  void DeleteObjectStore(IndexedDBTransaction* transaction,
+                         int64_t object_store_id);
+  void RenameObjectStore(IndexedDBTransaction* transaction,
+                         int64_t object_store_id,
+                         const base::string16& new_name);
+
+  void CreateIndex(IndexedDBTransaction* transaction,
+                   int64_t object_store_id,
+                   int64_t index_id,
+                   const base::string16& name,
+                   const blink::IndexedDBKeyPath& key_path,
+                   bool unique,
+                   bool multi_entry);
+  void DeleteIndex(IndexedDBTransaction* transaction,
+                   int64_t object_store_id,
+                   int64_t index_id);
+  void RenameIndex(IndexedDBTransaction* transaction,
+                   int64_t object_store_id,
+                   int64_t index_id,
+                   const base::string16& new_name);
+
   void Get(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
            IndexedDBTransaction* transaction,
            int64_t object_store_id,
@@ -173,6 +183,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
               bool key_only,
               int64_t max_count,
               blink::mojom::IDBDatabase::GetAllCallback callback);
+  struct PutOperationParams;
   void Put(IndexedDBTransaction* transaction,
            int64_t object_store_id,
            IndexedDBValue* value,
@@ -187,6 +198,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
   void SetIndexesReady(IndexedDBTransaction* transaction,
                        int64_t object_store_id,
                        const std::vector<int64_t>& index_ids);
+  struct OpenCursorOperationParams;
   void OpenCursor(IndexedDBTransaction* transaction,
                   int64_t object_store_id,
                   int64_t index_id,
@@ -224,7 +236,9 @@ class CONTENT_EXPORT IndexedDBDatabase {
   // Number of open/delete calls that are waiting their turn.
   size_t PendingOpenDeleteCount() const { return pending_requests_.size(); }
 
-  // Asynchronous tasks scheduled within transactions:
+  // The following methods are all of the ones actually scheduled asynchronously
+  // within transctions:
+
   void CreateObjectStoreAbortOperation(int64_t object_store_id);
 
   leveldb::Status DeleteObjectStoreOperation(int64_t object_store_id,
@@ -238,10 +252,10 @@ class CONTENT_EXPORT IndexedDBDatabase {
       scoped_refptr<IndexedDBCallbacks> callbacks,
       IndexedDBTransaction* transaction);
   void VersionChangeAbortOperation(int64_t previous_version);
+  void CreateIndexAbortOperation(int64_t object_store_id, int64_t index_id);
   leveldb::Status DeleteIndexOperation(int64_t object_store_id,
                                        int64_t index_id,
                                        IndexedDBTransaction* transaction);
-  void CreateIndexAbortOperation(int64_t object_store_id, int64_t index_id);
   void DeleteIndexAbortOperation(int64_t object_store_id,
                                  blink::IndexedDBIndexMetadata index_metadata);
   void RenameIndexAbortOperation(int64_t object_store_id,
@@ -264,12 +278,10 @@ class CONTENT_EXPORT IndexedDBDatabase {
       int64_t max_count,
       blink::mojom::IDBDatabase::GetAllCallback callback,
       IndexedDBTransaction* transaction);
-  struct PutOperationParams;
   leveldb::Status PutOperation(std::unique_ptr<PutOperationParams> params,
                                IndexedDBTransaction* transaction);
   leveldb::Status SetIndexesReadyOperation(size_t index_count,
                                            IndexedDBTransaction* transaction);
-  struct OpenCursorOperationParams;
   leveldb::Status OpenCursorOperation(
       std::unique_ptr<OpenCursorOperationParams> params,
       const url::Origin& origin,
@@ -293,14 +305,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
   leveldb::Status ClearOperation(int64_t object_store_id,
                                  scoped_refptr<IndexedDBCallbacks> callbacks,
                                  IndexedDBTransaction* transaction);
-
-  const list_set<IndexedDBConnection*>& connections() const {
-    return connections_;
-  }
-
-  base::WeakPtr<IndexedDBDatabase> AsWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
 
  protected:
   friend class IndexedDBTransaction;

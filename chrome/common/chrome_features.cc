@@ -670,6 +670,11 @@ const base::Feature kTreatUnsafeDownloadsAsActive{
     "TreatUnsafeDownloadsAsActive", base::FEATURE_DISABLED_BY_DEFAULT};
 const char kTreatUnsafeDownloadsAsActiveParamName[] = "ExtensionList";
 
+// Enables or disables the intervention that unloads ad iframes with intensive
+// resource usage.
+const base::Feature kHeavyAdIntervention{"HeavyAdIntervention",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Enables or disables usage time state notifier for supervised accounts on
 // Chrome OS.

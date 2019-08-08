@@ -57,7 +57,7 @@ var OSSettingsAboutPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'test_lifetime_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'test_about_page_browser_proxy.js',
@@ -104,7 +104,7 @@ var OSSettingsAdvancedPageBrowserTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       'os_advanced_page_browsertest.js',
     ]);
   }
@@ -397,7 +397,7 @@ var OSSettingsMainTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       'os_settings_main_test.js',
     ]);
@@ -414,7 +414,7 @@ var OSSettingsMenuTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       'os_settings_menu_test.js',
     ]);
   }
@@ -503,7 +503,7 @@ var OSSettingsMultideviceSmartLockSubpageTest =
   get extraLibraries() {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       'test_multidevice_browser_proxy.js',
       'multidevice_smartlock_subpage_test.js',
     ]);
@@ -611,7 +611,7 @@ var OSSettingsPeoplePageLockScreenTest = class extends OSSettingsBrowserTest {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       'fake_quick_unlock_private.js',
       'fake_quick_unlock_uma.js',
       'quick_unlock_authenticate_browsertest_chromeos.js',
@@ -699,6 +699,7 @@ var OSSettingsPersonalizationPageTest = class extends OSSettingsBrowserTest {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/promise_resolver.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'test_wallpaper_browser_proxy.js',
       'personalization_page_test.js',
     ]);
   }
@@ -742,7 +743,7 @@ var OSSettingsPrinterEntryTest = class extends OSSettingsBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/assert.js',
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       'cups_printer_entry_tests.js',
     ]);
@@ -766,7 +767,7 @@ var OSSettingsPrinterLandingPageTest = class extends OSSettingsBrowserTest {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/assert.js',
       '//ui/webui/resources/js/promise_resolver.js',
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       BROWSER_SETTINGS_PATH + '../chromeos/fake_networking_private.js',
@@ -798,7 +799,7 @@ var OSSettingsPrintingPageTest = class extends OSSettingsBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/assert.js',
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       'test_cups_printers_browser_proxy.js',
       'cups_printer_page_tests.js',
@@ -826,7 +827,7 @@ var OSSettingsLanguagesPageTest = class extends OSSettingsBrowserTest {
       BROWSER_SETTINGS_PATH + 'fake_language_settings_private.js',
       BROWSER_SETTINGS_PATH + 'test_languages_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       'fake_input_method_private.js',
       'os_languages_page_tests.js',
     ]);
@@ -854,7 +855,7 @@ var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'test_lifetime_browser_proxy.js',
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       'test_os_reset_browser_proxy.js',
       'os_reset_page_test.js',
     ]);
@@ -899,7 +900,7 @@ var OSSettingsSmbPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      BROWSER_SETTINGS_PATH + 'test_util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       'smb_shares_page_tests.js',
     ]);

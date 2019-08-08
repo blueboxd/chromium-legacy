@@ -94,7 +94,7 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
     return;
 
   doc_info_ = doc_info;
-  doc_node_ = CreateNode(ax::mojom::Role::kGroup);
+  doc_node_ = CreateNode(ax::mojom::Role::kDocument);
 
   // Because all of the coordinates are expressed relative to the
   // doc's coordinates, the origin of the doc must be (0, 0). Its
@@ -119,6 +119,8 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   page_node->AddStringAttribute(
       ax::mojom::StringAttribute::kName,
       l10n_util::GetPluralStringFUTF8(IDS_PDF_PAGE_INDEX, page_index + 1));
+  page_node->AddBoolAttribute(ax::mojom::BoolAttribute::kIsPageBreakingObject,
+                              true);
 
   gfx::RectF page_bounds = ToRectF(page_info.bounds);
   page_node->relative_bounds.bounds = page_bounds;
@@ -479,7 +481,7 @@ ui::AXNode* PdfAccessibilityTree::GetParent(const ui::AXNode* node) const {
 }
 
 bool PdfAccessibilityTree::IsIgnored(const ui::AXNode* node) const {
-  return node->data().HasState(ax::mojom::State::kIgnored);
+  return node->IsIgnored();
 }
 
 bool PdfAccessibilityTree::IsValid(const ui::AXNode* node) const {

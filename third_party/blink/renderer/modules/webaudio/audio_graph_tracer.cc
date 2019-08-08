@@ -7,6 +7,9 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/inspector_web_audio_agent.h"
 
@@ -65,6 +68,77 @@ BaseAudioContext* AudioGraphTracer::GetContextById(String contextId) {
   }
 
   return nullptr;
+}
+
+void AudioGraphTracer::DidCreateAudioListener(AudioListener* listener) {
+  if (inspector_agent_)
+    inspector_agent_->DidCreateAudioListener(listener);
+}
+
+void AudioGraphTracer::WillDestroyAudioListener(AudioListener* listener) {
+  if (inspector_agent_)
+    inspector_agent_->WillDestroyAudioListener(listener);
+}
+
+void AudioGraphTracer::DidCreateAudioNode(AudioNode* node) {
+  if (inspector_agent_)
+    inspector_agent_->DidCreateAudioNode(node);
+}
+
+void AudioGraphTracer::WillDestroyAudioNode(AudioNode* node) {
+  if (inspector_agent_ && contexts_.Contains(node->context()))
+    inspector_agent_->WillDestroyAudioNode(node);
+}
+
+void AudioGraphTracer::DidCreateAudioParam(AudioParam* param) {
+  if (inspector_agent_)
+    inspector_agent_->DidCreateAudioParam(param);
+}
+
+void AudioGraphTracer::WillDestroyAudioParam(AudioParam* param) {
+  if (inspector_agent_ && contexts_.Contains(param->Context()))
+    inspector_agent_->WillDestroyAudioParam(param);
+}
+
+void AudioGraphTracer::DidConnectNodes(AudioNode* source_node,
+                                       AudioNode* destination_node,
+                                       unsigned source_output_index,
+                                       unsigned destination_input_index) {
+  if (inspector_agent_) {
+    inspector_agent_->DidConnectNodes(source_node, destination_node,
+        source_output_index, destination_input_index);
+  }
+}
+
+void AudioGraphTracer::DidDisconnectNodes(
+    AudioNode* source_node,
+    AudioNode* destination_node,
+    unsigned source_output_index,
+    unsigned destination_input_index) {
+  if (inspector_agent_) {
+    inspector_agent_->DidDisconnectNodes(source_node, destination_node,
+        source_output_index, destination_input_index);
+  }
+}
+
+void AudioGraphTracer::DidConnectNodeParam(
+    AudioNode* source_node,
+    AudioParam* destination_param,
+    unsigned source_output_index) {
+  if (inspector_agent_) {
+    inspector_agent_->DidConnectNodeParam(source_node, destination_param,
+        source_output_index);
+  }
+}
+
+void AudioGraphTracer::DidDisconnectNodeParam(
+    AudioNode* source_node,
+    AudioParam* destination_param,
+    unsigned source_output_index) {
+  if (inspector_agent_) {
+    inspector_agent_->DidDisconnectNodeParam(source_node, destination_param,
+        source_output_index);
+  }
 }
 
 AudioGraphTracer* AudioGraphTracer::FromPage(Page* page) {

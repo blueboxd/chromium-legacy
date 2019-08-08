@@ -578,7 +578,7 @@ void ListedElement::UpdateAncestorDisabledState() const {
       continue;
     may_have_field_set_ancestor_ = true;
     if (ancestor->IsDisabledFormControl()) {
-      auto* fieldset = ToHTMLFieldSetElement(ancestor);
+      auto* fieldset = To<HTMLFieldSetElement>(ancestor);
       if (last_legend_ancestor && last_legend_ancestor == fieldset->Legend())
         continue;
       disabled_fieldset_ancestor = fieldset;

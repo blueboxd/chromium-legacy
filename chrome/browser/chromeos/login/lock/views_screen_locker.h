@@ -83,6 +83,7 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
 
  private:
   void UpdatePinKeyboardState(const AccountId& account_id);
+  void UpdateChallengeResponseAuthAvailability(const AccountId& account_id);
   void OnAllowedInputMethodsChanged();
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
   void OnExternalBinaryAuthTimeout();

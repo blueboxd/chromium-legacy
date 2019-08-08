@@ -641,25 +641,6 @@ void PictureLayerImpl::UpdateViewportRectForTilePriorityInContentSpace() {
   }
   viewport_rect_for_tile_priority_in_content_space_ =
       visible_rect_in_content_space;
-
-  float total_controls_height = layer_tree_impl()->top_controls_height() +
-                                layer_tree_impl()->bottom_controls_height();
-  if (total_controls_height) {
-    // If sliding top controls are being used, the pending tree does not
-    // reflect the fact that we may be hiding the top or bottom controls. Thus,
-    // it would believe that the viewport is smaller than it actually is which
-    // can cause activation flickering issues. So, if we're in this situation
-    // adjust the visible rect by the the controls height.
-    if (layer_tree_impl()->IsPendingTree() &&
-        layer_tree_impl()->IsActivelyScrolling() &&
-        layer_tree_impl()->browser_controls_shrink_blink_size()) {
-      viewport_rect_for_tile_priority_in_content_space_.Inset(
-          0,                        // left
-          0,                        // top,
-          0,                        // right,
-          -total_controls_height);  // bottom
-    }
-  }
 }
 
 PictureLayerImpl* PictureLayerImpl::GetPendingOrActiveTwinLayer() const {

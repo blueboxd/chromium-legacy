@@ -29,8 +29,14 @@ class ReputationWebContentsObserver
   ~ReputationWebContentsObserver() override;
 
   // content::WebContentsObserver:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+
+  SafetyTipType last_shown_safety_tip_type() const {
+    return last_shown_safety_tip_type_;
+  }
 
  private:
   friend class content::WebContentsUserData<ReputationWebContentsObserver>;
@@ -44,6 +50,10 @@ class ReputationWebContentsObserver
                                    const GURL& url);
 
   Profile* profile_;
+  // Used to cache the last shown safety tip type so that Page Info can fetch
+  // this information without performing a reputation check. Resets to kNone on
+  // new top frame navigations.
+  safety_tips::SafetyTipType last_shown_safety_tip_type_ = SafetyTipType::kNone;
 
   base::WeakPtrFactory<ReputationWebContentsObserver> weak_factory_;
   WEB_CONTENTS_USER_DATA_KEY_DECL();

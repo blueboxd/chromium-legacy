@@ -332,6 +332,7 @@ PageInfo::PageInfo(
       site_url_(url),
       site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
       safe_browsing_status_(SAFE_BROWSING_STATUS_NONE),
+      safety_tip_status_(security_state::SAFETY_TIP_STATUS_NONE),
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button_(false),
       content_settings_(HostContentSettingsMapFactory::GetForProfile(profile)),
@@ -763,6 +764,13 @@ void PageInfo::ComputeUIInputs(
 #endif
   }
 
+  if (visible_security_state.safety_tip_status !=
+      security_state::SAFETY_TIP_STATUS_NONE) {
+    site_details_message_ = l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
+    safety_tip_status_ = visible_security_state.safety_tip_status;
+  }
+
   // Site Connection
   // We consider anything less than 80 bits encryption to be weak encryption.
   // TODO(wtc): Bug 1198735: report mixed/unsafe content for unencrypted and
@@ -971,6 +979,7 @@ void PageInfo::PresentSiteIdentity() {
   info.connection_status_description = UTF16ToUTF8(site_connection_details_);
   info.identity_status = site_identity_status_;
   info.safe_browsing_status = safe_browsing_status_;
+  info.safety_tip_status = safety_tip_status_;
   info.identity_status_description = UTF16ToUTF8(site_details_message_);
   info.certificate = certificate_;
   info.show_ssl_decision_revoke_button = show_ssl_decision_revoke_button_;

@@ -67,7 +67,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
-      const std::vector<ResourceMetadata>& metadatas,
+      const std::vector<ImageContext*>& contexts,
       SkYUVColorSpace yuv_color_space,
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) override;
@@ -78,7 +78,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
                                  bool mipmap,
                                  sk_sp<SkColorSpace> color_space) override;
   gpu::SyncToken SubmitPaint(base::OnceClosure on_finished) override;
-  sk_sp<SkImage> MakePromiseSkImage(const ResourceMetadata& metadata) override;
+  void MakePromiseSkImage(ImageContext* image_context) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const RenderPassId& id,
       const gfx::Size& size,
@@ -95,7 +95,13 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   void RemoveContextLostObserver(ContextLostObserver* observer) override;
 
   // ExternalUseClient implementation:
-  void ReleaseCachedResources(const std::vector<ResourceId>& ids) override;
+  void ReleaseImageContexts(
+      const std::vector<std::unique_ptr<ImageContext>> image_contexts) override;
+  std::unique_ptr<ImageContext> CreateImageContext(
+      const gpu::MailboxHolder& holder,
+      const gfx::Size& size,
+      ResourceFormat format,
+      sk_sp<SkColorSpace> color_space) override;
 
   // If set true, callbacks triggering will be in a reverse order as SignalQuery
   // calls.
@@ -112,7 +118,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   ContextProvider* context_provider() { return context_provider_.get(); }
   GrContext* gr_context() { return context_provider()->GrContext(); }
 
-  bool GetGrBackendTexture(const ResourceMetadata& metadata,
+  bool GetGrBackendTexture(const ImageContext& image_context,
                            GrBackendTexture* backend_texture);
   void SwapBuffersAck();
 

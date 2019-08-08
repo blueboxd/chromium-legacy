@@ -63,7 +63,7 @@ const char kTether[] = "Tether";
 const char kType[] = "Type";
 const char kVPN[] = "VPN";
 const char kWiFi[] = "WiFi";
-const char kWimax[] = "WiMAX";
+const char kWimaxDeprecated[] = "WiMAX";
 
 std::string CellularProperty(const std::string& property) {
   return std::string(kCellular) + "." + property;
@@ -90,7 +90,7 @@ const char kEthernet[] = "Ethernet";
 const char kTether[] = "Tether";
 const char kVPN[] = "VPN";
 const char kWiFi[] = "WiFi";
-const char kWimax[] = "WiMAX";
+const char kWimaxDeprecated[] = "WiMAX";
 const char kWireless[] = "Wireless";
 }  // namespace network_type
 
@@ -239,11 +239,11 @@ const char kWPA_PSK[] = "WPA-PSK";
 const char kWPA2_PSK[] = "WPA2-PSK";
 }  // namespace wifi
 
-namespace wimax {
+// Deprecated, properties exist for ignoring old ONC config entries.
+namespace wimax_deprecated {
 const char kAutoConnect[] = "AutoConnect";
 const char kEAP[] = "EAP";
-const char kSignalStrength[] = "SignalStrength";
-}  // namespace wimax
+}  // namespace wimax_deprecated
 
 namespace client_cert {
 const char kClientCertPattern[] = "ClientCertPattern";

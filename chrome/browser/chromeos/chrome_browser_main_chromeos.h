@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/chrome_browser_main_linux.h"
-#include "chrome/browser/chromeos/crostini/crosvm_metrics.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chromeos/assistant/buildflags.h"
@@ -34,6 +33,11 @@ class LockToSingleUserManager;
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
 class AssistantClient;
 #endif
+
+namespace crostini {
+class CrostiniUnsupportedActionNotifier;
+class CrosvmMetrics;
+}  // namespace crostini
 
 namespace chromeos {
 
@@ -164,6 +168,9 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
       scheduler_configuration_manager_;
 
   std::unique_ptr<CrosUsbDetector> cros_usb_detector_;
+
+  std::unique_ptr<crostini::CrostiniUnsupportedActionNotifier>
+      crostini_unsupported_action_notifier_;
 
   std::unique_ptr<chromeos::system::DarkResumeController>
       dark_resume_controller_;

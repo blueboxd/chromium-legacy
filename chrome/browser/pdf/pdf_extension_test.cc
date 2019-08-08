@@ -949,7 +949,7 @@ static std::string DumpPdfAccessibilityTree(const ui::AXTreeUpdate& ax_tree) {
 
 static const char kExpectedPDFAXTreePattern[] =
     "embeddedObject\n"
-    "  group\n"
+    "  document\n"
     "    region 'Page 1'\n"
     "      paragraph\n"
     "        staticText '1 First Section'\n"
@@ -2385,7 +2385,11 @@ class PDFExtensionAccessibilityTreeDumpTest
     AddPropertyFilter(property_filters, "value='*'");
     // The value attribute on the document object contains the URL of the
     // current page which will not be the same every time the test is run.
+    // The PDF plugin uses the 'chrome-extension' protocol, so block that as
+    // well.
     AddPropertyFilter(property_filters, "value='http*'", PropertyFilter::DENY);
+    AddPropertyFilter(property_filters, "value='chrome-extension*'",
+                      PropertyFilter::DENY);
     // Object attributes.value
     AddPropertyFilter(property_filters, "layout-guess:*",
                       PropertyFilter::ALLOW);
@@ -2395,6 +2399,7 @@ class PDFExtensionAccessibilityTreeDumpTest
     AddPropertyFilter(property_filters, "check*");
     AddPropertyFilter(property_filters, "horizontal");
     AddPropertyFilter(property_filters, "multiselectable");
+    AddPropertyFilter(property_filters, "isPageBreakingObject*");
 
     // Deny most empty values
     AddPropertyFilter(property_filters, "*=''", PropertyFilter::DENY);
@@ -2434,4 +2439,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, HelloWorld) {
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
                        ParagraphsAndHeadingUntagged) {
   RunPDFTest(FILE_PATH_LITERAL("paragraphs-and-heading-untagged.pdf"));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, MultiPage) {
+  RunPDFTest(FILE_PATH_LITERAL("multi-page.pdf"));
 }

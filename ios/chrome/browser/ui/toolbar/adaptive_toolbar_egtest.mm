@@ -444,7 +444,7 @@ void FocusOmnibox() {
 
 // Tests that tapping a button cancels the focus on the omnibox.
 - (void)testCancelOmniboxEdit {
-  if (IsCompactWidth()) {
+  if ([ChromeEarlGrey isCompactWidth]) {
     EARL_GREY_TEST_SKIPPED(@"No button to tap in compact width.");
   }
 

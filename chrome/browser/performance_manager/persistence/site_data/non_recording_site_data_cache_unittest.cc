@@ -23,11 +23,10 @@ class NonRecordingSiteDataCacheTest : public testing::Test {
   NonRecordingSiteDataCacheTest()
       : use_in_memory_db_for_testing_(
             LevelDBSiteDataStore::UseInMemoryDBForTesting()),
-        factory_(SiteDataCacheFactory::CreateForTesting(
-            test_browser_thread_bundle_.GetMainThreadTaskRunner())),
+        factory_(std::make_unique<SiteDataCacheFactory>()),
         off_the_record_profile_(parent_profile_.GetOffTheRecordProfile()) {}
 
-  ~NonRecordingSiteDataCacheTest() override { factory_.reset(); }
+  ~NonRecordingSiteDataCacheTest() override = default;
 
   void SetUp() override {
     recording_data_cache_ = base::WrapUnique(new SiteDataCacheImpl(
@@ -56,7 +55,7 @@ class NonRecordingSiteDataCacheTest : public testing::Test {
   std::unique_ptr<base::AutoReset<bool>> use_in_memory_db_for_testing_;
 
   // The data cache factory that will be used by the caches tested here.
-  std::unique_ptr<SiteDataCacheFactory, base::OnTaskRunnerDeleter> factory_;
+  std::unique_ptr<SiteDataCacheFactory> factory_;
 
   // The on the record profile.
   TestingProfile parent_profile_;

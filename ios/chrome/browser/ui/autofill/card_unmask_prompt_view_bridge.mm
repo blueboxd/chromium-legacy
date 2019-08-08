@@ -361,10 +361,8 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   }
 
   if ([self inputExpirationIsValid:item]) {
-    item.showDateInputError = NO;
     item.errorMessage = @"";
   } else {
-    item.showDateInputError = NO;
     item.errorMessage = l10n_util::GetNSString(
         IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE);
   }
@@ -436,7 +434,6 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   _CVCItem.errorMessage = @"";
   _CVCItem.showDateInput = YES;
   _CVCItem.showNewCardButton = NO;
-  _CVCItem.showDateInputError = NO;
   _CVCItem.showCVCInputError = NO;
 
   [self reconfigureCellsForItems:@[ _CVCItem ]];

@@ -4,8 +4,8 @@
 
 mojom = "//content/common/navigation_params.mojom"
 public_headers = [
+  "//content/common/content_param_traits.h",
   "//content/common/navigation_params.h",
-  "//content/common/prefetched_signed_exchange_info.h",
   "//content/public/common/page_state.h",
   "//content/public/common/navigation_policy.h",
   "//third_party/blink/public/platform/web_mixed_content_context_type.h",
@@ -24,6 +24,6 @@ type_mappings = [
   "content.mojom.NavigationDownloadPolicy=::content::NavigationDownloadPolicy",
   "content.mojom.PageState=::content::PageState",
   "content.mojom.PageTransition=::ui::PageTransition",
-  "content.mojom.PrefetchedSignedExchangeInfo=::content::PrefetchedSignedExchangeInfo",
+  "content.mojom.SHA256HashValue=::net::SHA256HashValue",
   "content.mojom.SourceLocation=::content::SourceLocation",
 ]

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // The <code>chrome.networkingPrivate</code> API is used for configuring
-// network connections (Cellular, Ethernet, VPN, WiFi or WiMAX). This private
+// network connections (Cellular, Ethernet, VPN or WiFi). This private
 // API is only valid if called from a browser or app associated with the
 // primary user. See the Open Network Configuration (ONC) documentation for
 // descriptions of properties:
@@ -58,7 +58,7 @@ namespace networkingPrivate {
   };
 
   enum NetworkType {
-    All, Cellular, Ethernet, Tether, VPN, Wireless, WiFi, WiMAX
+    All, Cellular, Ethernet, Tether, VPN, Wireless, WiFi
   };
 
   enum ProxySettingsType {
@@ -688,22 +688,6 @@ namespace networkingPrivate {
     DOMString? TetheringState;
   };
 
-  dictionary WiMAXProperties {
-    boolean? AutoConnect;
-    EAPProperties? EAP;
-    long? SignalStrength;
-  };
-
-  dictionary ManagedWiMAXProperties {
-    ManagedBoolean? AutoConnect;
-    ManagedEAPProperties? EAP;
-    long? SignalStrength;
-  };
-
-  dictionary WiMAXStateProperties {
-    long? SignalStrength;
-  };
-
   dictionary NetworkConfigProperties {
     CellularProperties? Cellular;
     EthernetProperties? Ethernet;
@@ -717,7 +701,6 @@ namespace networkingPrivate {
     NetworkType? Type;
     VPNProperties? VPN;
     WiFiProperties? WiFi;
-    WiMAXProperties? WiMAX;
   };
 
   dictionary NetworkProperties {
@@ -746,7 +729,6 @@ namespace networkingPrivate {
     NetworkType Type;
     VPNProperties? VPN;
     WiFiProperties? WiFi;
-    WiMAXProperties? WiMAX;
   };
 
   dictionary ManagedProperties {
@@ -772,7 +754,6 @@ namespace networkingPrivate {
     NetworkType Type;
     ManagedVPNProperties? VPN;
     ManagedWiFiProperties? WiFi;
-    ManagedWiMAXProperties? WiMAX;
   };
 
   dictionary NetworkStateProperties {
@@ -790,7 +771,6 @@ namespace networkingPrivate {
     NetworkType Type;
     VPNStateProperties? VPN;
     WiFiStateProperties? WiFi;
-    WiMAXStateProperties? WiMAX;
   };
 
   dictionary DeviceStateProperties {
@@ -806,8 +786,7 @@ namespace networkingPrivate {
     // The current state of the device.
     DeviceStateType State;
 
-    // The network type associated with the device (Cellular, Ethernet, WiFi, or
-    // WiMAX).
+    // The network type associated with the device (Cellular, Ethernet or WiFi).
     NetworkType Type;
 
     // Whether or not any managed networks are available/visible.

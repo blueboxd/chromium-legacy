@@ -23,9 +23,14 @@ OverlayRequestUIState::~OverlayRequestUIState() {
 }
 
 void OverlayRequestUIState::OverlayPresentionRequested(
-    OverlayDismissalCallback callback) {
+    OverlayPresentationCallback presentation_callback,
+    OverlayDismissalCallback dismissal_callback) {
+  DCHECK(presentation_callback_.is_null());
   DCHECK(dismissal_callback_.is_null());
-  dismissal_callback_ = std::move(callback);
+  DCHECK(!presentation_callback.is_null());
+  DCHECK(!dismissal_callback.is_null());
+  presentation_callback_ = std::move(presentation_callback);
+  dismissal_callback_ = std::move(dismissal_callback);
   // The default dismissal reason is kUserInteraction.  This is to avoid
   // additional bookkeeping for overlays dismissed by user interaction.
   // Overlays explicitly dismissed by OverlayPresenter set the reason to kHide
@@ -41,6 +46,7 @@ void OverlayRequestUIState::OverlayUIWillBePresented(
 
 void OverlayRequestUIState::OverlayUIWasPresented() {
   has_ui_been_presented_ = true;
+  std::move(presentation_callback_).Run();
 }
 
 void OverlayRequestUIState::OverlayUIWasDismissed() {

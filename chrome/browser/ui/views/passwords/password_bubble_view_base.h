@@ -39,7 +39,6 @@ class PasswordBubbleViewBase : public LocationBarBubbleDelegateView {
   static PasswordBubbleViewBase* CreateBubble(
       content::WebContents* web_contents,
       views::View* anchor_view,
-      const gfx::Point& anchor_point,
       DisplayReason reason);
 
   // Closes the existing bubble.
@@ -61,7 +60,6 @@ class PasswordBubbleViewBase : public LocationBarBubbleDelegateView {
  protected:
   PasswordBubbleViewBase(content::WebContents* web_contents,
                          views::View* anchor_view,
-                         const gfx::Point& anchor_point,
                          DisplayReason reason);
 
   ~PasswordBubbleViewBase() override;

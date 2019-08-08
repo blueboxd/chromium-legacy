@@ -99,7 +99,7 @@ class RenderWidgetHostViewChildFrameTest : public ContentBrowserTest {
 // Tests that the screen is properly reflected for RWHVChildFrame.
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest, Screen) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
-  NavigateToURL(shell(), main_url);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
                        PresentationFeedback) {
   base::HistogramTester histogram_tester;
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
-  NavigateToURL(shell(), main_url);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()

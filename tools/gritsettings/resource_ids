@@ -147,7 +147,7 @@
     "structures": [13350],
   },
   "chrome/browser/resources/sync_file_system_internals/sync_file_system_internals_resources.grd": {
-    "includes": [13850],
+    "includes": [13860],
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
     "structures": [13880],

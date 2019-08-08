@@ -68,12 +68,12 @@ public class UsageStatsService {
         mSuspensionTracker = new SuspensionTracker(mBridge, mNotificationSuspender);
         mTokenTracker = new TokenTracker(mBridge);
         mPageViewObservers = new ArrayList<>();
+        mClient = AppHooks.get().createDigitalWellbeingClient();
 
         mSuspensionTracker.getAllSuspendedWebsites().then(
                 (suspendedSites) -> { notifyObserversOfSuspensions(suspendedSites, true); });
 
         mOptInState = getOptInState();
-        mClient = AppHooks.get().createDigitalWellbeingClient();
     }
 
     /* package */ NotificationSuspender getNotificationSuspender() {

@@ -387,6 +387,10 @@ uint32_t GetSourceId(const WMRInputSource* source) {
 
   return id;
 }
+
+const unsigned short kSamsungVendorId = 1118;
+const unsigned short kSamsungOdysseyProductId = 1629;
+
 }  // namespace
 
 MixedRealityInputHelper::MixedRealityInputHelper(
@@ -556,8 +560,19 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
     description->target_ray_mode = device::mojom::XRTargetRayMode::POINTING;
     description->handedness = WindowsToMojoHandedness(source->Handedness());
 
+    // If we know the particular headset/controller model, add this to the
+    // profiles array.
+    if (input_state.vendor_id == kSamsungVendorId &&
+        input_state.product_id == kSamsungOdysseyProductId) {
+      description->profiles.push_back("samsung-odyssey");
+    }
+
     description->profiles.push_back("windows-mixed-reality");
-    description->profiles.push_back("touchpad-thumbstick-controller");
+
+    // This makes it clear that the controller actually has a grip button and
+    // touchpad and thumbstick input. Otherwise, it's ambiguous whether slots
+    // like the touchpad buttons + axes are hooked up vs just placeholders.
+    description->profiles.push_back("grip-touchpad-thumbstick-controller");
 
     source_state->gamepad = GetWebXRGamepad(input_state);
   } else {

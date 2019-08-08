@@ -86,6 +86,8 @@ source_set("headers") {
     "messaging/cloneable_message.h",
     "messaging/cloneable_message_mojom_traits.h",
     "messaging/message_port_channel.h",
+    "messaging/message_port_descriptor.h",
+    "messaging/message_port_descriptor_mojom_traits.h",
     "messaging/string_message_codec.h",
     "messaging/transferable_message.h",
     "messaging/transferable_message_mojom_traits.h",

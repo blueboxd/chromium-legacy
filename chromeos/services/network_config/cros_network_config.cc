@@ -46,8 +46,6 @@ mojom::NetworkType NetworkPatternToMojo(NetworkTypePattern type) {
     return mojom::NetworkType::kVPN;
   if (type.Equals(NetworkTypePattern::WiFi()))
     return mojom::NetworkType::kWiFi;
-  if (type.Equals(NetworkTypePattern::Wimax()))
-    return mojom::NetworkType::kWiMAX;
   NOTREACHED() << "Unsupported network type: " << type.ToDebugString();
   return mojom::NetworkType::kAll;  // Unsupported
 }
@@ -79,8 +77,6 @@ NetworkTypePattern MojoTypeToPattern(mojom::NetworkType type) {
       return NetworkTypePattern::Wireless();
     case mojom::NetworkType::kWiFi:
       return NetworkTypePattern::WiFi();
-    case mojom::NetworkType::kWiMAX:
-      return NetworkTypePattern::Wimax();
   }
   NOTREACHED();
   return NetworkTypePattern::Default();
@@ -255,12 +251,6 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
       wifi->signal_strength = network->signal_strength();
       wifi->ssid = network->name();
       result->wifi = std::move(wifi);
-      break;
-    }
-    case mojom::NetworkType::kWiMAX: {
-      auto wimax = mojom::WiMAXStateProperties::New();
-      wimax->signal_strength = network->signal_strength();
-      result->wimax = std::move(wimax);
       break;
     }
     case mojom::NetworkType::kAll:
@@ -1220,8 +1210,6 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       result->wifi = std::move(wifi);
       break;
     }
-    case mojom::NetworkType::kWiMAX:
-      break;
     case mojom::NetworkType::kAll:
     case mojom::NetworkType::kMobile:
     case mojom::NetworkType::kWireless:
@@ -1237,7 +1225,6 @@ bool NetworkTypeCanBeDisabled(mojom::NetworkType type) {
     case mojom::NetworkType::kCellular:
     case mojom::NetworkType::kTether:
     case mojom::NetworkType::kWiFi:
-    case mojom::NetworkType::kWiMAX:
       return true;
     case mojom::NetworkType::kAll:
     case mojom::NetworkType::kEthernet:

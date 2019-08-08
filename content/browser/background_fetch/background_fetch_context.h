@@ -111,7 +111,8 @@ class CONTENT_EXPORT BackgroundFetchContext
   // will unregister itself when the Mojo endpoint goes away.
   void AddRegistrationObserver(
       const std::string& unique_id,
-      blink::mojom::BackgroundFetchRegistrationObserverPtr observer);
+      mojo::PendingRemote<blink::mojom::BackgroundFetchRegistrationObserver>
+          observer);
 
   // Updates the title or icon of the Background Fetch identified by
   // |registration_id|. The |callback| will be invoked when the title has been

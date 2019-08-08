@@ -659,65 +659,6 @@
         <message name="IDS_PRIVACY_POLICY" desc="The label to access the privacy policy, displayed in navigation menu." formatter_data="android_java">
           Privacy Policy
         </message>
-
-<!-- Play Store listings text. These Android-specific strings are not marked
-     with formatter_data="android_java" since they are used only for the Play
-     Store listings, and should not be bundled in the APK.
--->
-        <message name="IDS_PLAY_STORE_TITLE" desc="Play Store title of the Chrome Remote Desktop app for Android. If needed to meet the 30-char limit, please translate just 'Remote Desktop' instead. [CHAR-LIMIT=30] [NAME=play_store_title]" meaning="Title used in Play Store">
-          Chrome Remote Desktop
-        </message>
-        <message name="IDS_PLAY_STORE_TAGLINE" desc="Play Store tagline for the Chrome Remote Desktop app for Android. [CHAR-LIMIT=80] [NAME=play_store_tagline]">
-          Securely access your computers from your Android device.
-        </message>
-        <message name="IDS_PLAY_STORE_DESCRIPTION" desc="Play Store description of the Chrome Remote Desktop app for Android. [CHAR-LIMIT=4000] [NAME=play_store_description]">
-Securely access your computers from your Android device.
-
-• On each of your computers, set up remote access using the Chrome Remote Desktop app from Chrome Web Store: https://chrome.google.com/remotedesktop
-• On your Android device, open the app and tap on any of your online computers to connect.
-
-For information about privacy, please see the Google Privacy Policy (http://goo.gl/SyrVzj) and the Chrome Privacy Policy (http://goo.gl/0uXE5d).
-        </message>
-        <message name="IDS_PLAY_STORE_DESCRIPTION_ALTERNATE" desc="Play Store description of the Chrome Remote Desktop app for Android. [CHAR-LIMIT=4000] [NAME=play_store_description_alternate]">
-Securely access your computers from your Android device.
-
-• On each of your computers, set up remote access using the Chrome Remote Desktop app from Chrome Web Store: https://chrome.google.com/remotedesktop
-• On your Android device, open the app and tap on any of your online computers to connect.
-
-Remote computers with non US-English keyboards may receive incorrect text input. Support for other keyboard layouts is coming soon!
-
-For information about privacy, please see the Google Privacy Policy (http://goo.gl/SyrVzj) and the Chrome Privacy Policy (http://goo.gl/0uXE5d).
-        </message>
-        <message name="IDS_PLAY_STORE_CHANGES" desc="List of what's changed in this release of Chrome Remote Desktop for Android. [CHAR-LIMIT=500] [NAME=play_store_changes]">
-Stability improvements and bug fixes.
-        </message>
-
-        <!-- iOS App Store metadata text. Won't be bundled into the app. -->
-        <message name="IDS_APP_STORE_TITLE" desc="App Store title of the Chrome Remote Desktop app for iOS. If needed to meet the 50-char limit, please translate just 'Remote Desktop' instead. [CHAR-LIMIT=50] [NAME=app_store_title]" meaning="Title used in App Store">
-          Chrome Remote Desktop
-        </message>
-        <message name="IDS_APP_STORE_SUBTITLE" desc="App Store subtitle text. To be displayed below the app title in App Store. No period at the end. [CHAR-LIMIT=30]" meaning="Please try to keep translation below 30 characters. If not possible, please try to translate 'access your computer' instead.">
-          Securely access your computer
-        </message>
-        <message name="IDS_APP_STORE_KEYWORDS" desc="App Store keywords (to be used to search for the app) for the Chrome Remote Desktop app for iOS. Separate keywords with newline. [NAME=app_store_keywords]">
-Chrome
-Remote
-Desktop
-Access
-Support
-Computer
-PC
-        </message>
-        <message name="IDS_APP_STORE_DESCRIPTION" desc="App Store description of the Chrome Remote Desktop app for iOS. [CHAR-LIMIT=4000] [NAME=app_store_description]">
-Securely access your computer from your iOS device. It's fast, simple and free.
-
-• Download the Chrome Remote Desktop app from the Chrome WebStore on the computer you want to access remotely.
-• Install Chrome Remote Desktop software and follow the instructions to complete setup.
-• On your iOS device, open the app and tap on any of your online computers to connect.
-        </message>
-        <message name="IDS_APP_STORE_CHANGES" desc="List of what's changed in this release of Chrome Remote Desktop for iOS. [CHAR-LIMIT=4000] [NAME=app_store_changes]">
-Stability improvements and bug fixes.
-        </message>
       </if>  <!-- is_android or is_ios -->
 
       <if expr="is_ios">

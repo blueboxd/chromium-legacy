@@ -71,6 +71,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/color_palette.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -928,12 +929,37 @@ std::vector<base::Optional<TabGroupId>> GetTabGroups(
   return result;
 }
 
+// Building session state from scratch and from an existing browser use
+// different code paths. So, create a parametrized test fixture to run each test
+// with and without a command reset. The bool test parameter determines whether
+// to do a command reset when quitting and restoring.
+class SessionRestoreTabGroupsTest : public SessionRestoreTest,
+                                    public testing::WithParamInterface<bool> {
+ protected:
+  void SetUpOnMainThread() override {
+    feature_override_.InitAndEnableFeature(features::kTabGroups);
+    SessionRestoreTest::SetUpOnMainThread();
+  }
+
+  Browser* QuitBrowserAndRestore(Browser* browser, int expected_tab_count) {
+    // The test parameter determines whether to do a command reset.
+    if (GetParam()) {
+      SessionService* const session_service =
+          SessionServiceFactory::GetForProfile(browser->profile());
+      session_service->ResetFromCurrentBrowsers();
+    }
+
+    return SessionRestoreTest::QuitBrowserAndRestore(browser,
+                                                     expected_tab_count);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_override_;
+};
+
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroups) {
-  base::test::ScopedFeatureList feature_override;
-  feature_override.InitAndEnableFeature(features::kTabGroups);
-
+IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, TabsWithGroups) {
   constexpr int kNumTabs = 6;
   const std::array<base::Optional<int>, kNumTabs> group_spec = {
       0, 0, base::nullopt, base::nullopt, 1, 1};
@@ -957,40 +983,47 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroups) {
   EXPECT_EQ(groups, GetTabGroups(new_browser->tab_strip_model()));
 }
 
-// Test that tab groups are restored correctly after the command set is rebuilt
-// from the browser state.
-IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroupsCommandReset) {
-  base::test::ScopedFeatureList feature_override;
-  feature_override.InitAndEnableFeature(features::kTabGroups);
-
-  constexpr int kNumTabs = 6;
-  const std::array<base::Optional<int>, kNumTabs> group_spec = {
-      0, 0, base::nullopt, base::nullopt, 1, 1};
-
-  // Open |kNumTabs| tabs.
-  ui_test_utils::NavigateToURL(browser(), url1_);
-  for (int i = 1; i < kNumTabs; ++i) {
+IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, GroupMetadataRestored) {
+  // Open up 4 more tabs, making 5 including the initial tab.
+  for (int i = 0; i < 4; ++i) {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   }
-  ASSERT_EQ(kNumTabs, browser()->tab_strip_model()->count());
 
-  CreateTabGroups(browser()->tab_strip_model(), group_spec);
-  ASSERT_NO_FATAL_FAILURE(
-      CheckTabGrouping(browser()->tab_strip_model(), group_spec));
-  const auto groups = GetTabGroups(browser()->tab_strip_model());
+  TabStripModel* const tsm = browser()->tab_strip_model();
+  ASSERT_EQ(5, tsm->count());
 
-  // Rebuild commands.
-  SessionService* const session_service =
-      SessionServiceFactory::GetForProfile(browser()->profile());
-  ASSERT_TRUE(session_service);
-  session_service->ResetFromCurrentBrowsers();
+  // Group the first 2 and second 2 tabs, making for 2 groups with 2 tabs and 1
+  // ungrouped tab in the strip.
+  const TabGroupId group1 = tsm->AddToNewGroup({0, 1});
+  const TabGroupId group2 = tsm->AddToNewGroup({2, 3});
 
-  Browser* new_browser = QuitBrowserAndRestore(browser(), kNumTabs);
-  ASSERT_EQ(kNumTabs, new_browser->tab_strip_model()->count());
-  EXPECT_EQ(groups, GetTabGroups(new_browser->tab_strip_model()));
+  // Get the default visual data for the first group and set custom visual data
+  // for the second.
+  const TabGroupVisualData group1_data = *tsm->GetVisualDataForGroup(group1);
+  const TabGroupVisualData group2_data(base::ASCIIToUTF16("Foo"),
+                                       gfx::kGoogleBlue600);
+  tsm->SetVisualDataForGroup(group2, group2_data);
+
+  Browser* const new_browser = QuitBrowserAndRestore(browser(), 5);
+  TabStripModel* const new_tsm = new_browser->tab_strip_model();
+  ASSERT_EQ(5, new_tsm->count());
+
+  // Check that the restored visual data is the same.
+  const TabGroupVisualData* const group1_restored_data =
+      new_tsm->GetVisualDataForGroup(group1);
+  const TabGroupVisualData* const group2_restored_data =
+      new_tsm->GetVisualDataForGroup(group2);
+  EXPECT_EQ(group1_data.title(), group1_restored_data->title());
+  EXPECT_EQ(group1_data.color(), group1_restored_data->color());
+  EXPECT_EQ(group2_data.title(), group2_restored_data->title());
+  EXPECT_EQ(group2_data.color(), group2_restored_data->color());
 }
+
+INSTANTIATE_TEST_SUITE_P(WithAndWithoutReset,
+                         SessionRestoreTabGroupsTest,
+                         testing::Values(false, true));
 
 // Ensure tab groups aren't restored if |features::kTabGroups| is disabled.
 // Regression test for crbug.com/983962.

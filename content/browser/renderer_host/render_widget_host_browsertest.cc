@@ -108,9 +108,9 @@ class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
 
-    NavigateToURL(shell(),
-                  GURL("data:text/html,<!doctype html>"
-                       "<body style='background-color: red;'></body>"));
+    EXPECT_TRUE(NavigateToURL(
+        shell(), GURL("data:text/html,<!doctype html>"
+                      "<body style='background-color: red;'></body>")));
 
     view_ = static_cast<RenderWidgetHostViewBase*>(
         shell()->web_contents()->GetRenderWidgetHostView());
@@ -440,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
   GURL target_child_url = main_url.ReplaceComponents(replacement);
   DocumentLoadObserver child_frame_observer(shell()->web_contents(),
                                             target_child_url);
-  NavigateToURL(shell(), main_url);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
   child_frame_observer.Wait();
   auto* filter = GetTouchActionFilterForWidget(web_contents()
                                                    ->GetFrameTree()

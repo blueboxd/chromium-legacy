@@ -67,7 +67,7 @@ IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest, NoCrashOnFullScreenToggle) {
 
   fullscreen_controller->ToggleBrowserFullscreenMode();
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleView::GetPageInfoBubble();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
   EXPECT_TRUE(page_info);
   views::Widget* page_info_bubble = page_info->GetWidget();
   EXPECT_TRUE(page_info_bubble);
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest,
                      base::BindOnce([](views::Widget::CloseReason, bool) {}));
   EXPECT_EQ(GetParam().bubble_type, PageInfoBubbleView::GetShownBubbleType());
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleView::GetPageInfoBubble();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
   EXPECT_TRUE(page_info);
   EXPECT_TRUE(page_info->GetWidget()->IsVisible());
 
@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest,
   chrome::SelectNextTab(browser());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
-  page_info = PageInfoBubbleView::GetPageInfoBubble();
+  page_info = PageInfoBubbleView::GetPageInfoBubbleForTesting();
   // Check the bubble is no longer visible. BubbleDialogDelegateView's Widget is
   // destroyed when the native widget is destroyed, so it should still be alive.
   EXPECT_TRUE(page_info);
@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_P(PageInfoBubbleViewsMacTest,
   EXPECT_FALSE(page_info->GetWidget()->IsVisible());
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(PageInfoBubbleView::GetPageInfoBubble());
+  EXPECT_FALSE(PageInfoBubbleView::GetPageInfoBubbleForTesting());
 }
 
 INSTANTIATE_TEST_SUITE_P(,

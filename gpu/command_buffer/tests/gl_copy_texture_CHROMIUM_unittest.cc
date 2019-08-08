@@ -278,37 +278,59 @@ void getExpectedColorAndMask(GLenum src_internal_format,
   }
 }
 
-std::unique_ptr<uint8_t[]> getTextureDataAndExpectedRGBA(
-    FormatType src_format_type,
-    FormatType dest_format_type,
-    GLsizei width,
-    GLsizei height,
-    uint8_t* expected_color,
-    uint8_t* expected_mask) {
+void getTextureDataAndExpectedRGBAs(FormatType src_format_type,
+                                    FormatType dest_format_type,
+                                    GLsizei width,
+                                    GLsizei height,
+                                    std::vector<uint8_t>* texture_data,
+                                    std::vector<uint8_t>* expected_rgba_pixels,
+                                    uint8_t* expected_mask) {
+  DCHECK(texture_data);
+  DCHECK(expected_rgba_pixels);
+
   const uint32_t src_channel_count = gles2::GLES2Util::ElementsPerGroup(
       src_format_type.format, src_format_type.type);
   constexpr uint8_t color[4] = {1u, 63u, 127u, 255u};
+  uint8_t expected_color[4];
+  constexpr uint8_t alt_color[4] = {200u, 100u, 0u, 255u};
+
   getExpectedColorAndMask(src_format_type.internal_format,
                           dest_format_type.internal_format, color,
                           expected_color, expected_mask);
+
   const size_t num_pixels = width * height;
-  // TODO(mcasas): use std::make_unique<uint8_t[]> in this function.
+  expected_rgba_pixels->resize(num_pixels * 4, 0);
 
   if (src_format_type.type == GL_UNSIGNED_BYTE) {
-    std::unique_ptr<uint8_t[]> pixels(
-        new uint8_t[num_pixels * src_channel_count]);
-    for (uint32_t i = 0; i < num_pixels * src_channel_count;
-         i += src_channel_count) {
-      for (uint32_t j = 0; j < src_channel_count; ++j)
-        pixels[i + j] = color[j];
+    uint8_t alt_expected_color[4];
+    getExpectedColorAndMask(src_format_type.internal_format,
+                            dest_format_type.internal_format, alt_color,
+                            alt_expected_color, expected_mask);
+
+    texture_data->resize(num_pixels * src_channel_count, 0);
+    // Generate a simple diagonal pattern to be able to catch UV mapping errors.
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x) {
+        bool alt = !((y + x) % 11);
+        for (uint32_t j = 0; j < 4; ++j) {
+          if (j < src_channel_count) {
+            texture_data->at((width * y + x) * src_channel_count + j) =
+                (alt ? alt_color : color)[j];
+          }
+          expected_rgba_pixels->at((width * y + x) * 4 + j) =
+              (alt ? alt_expected_color : expected_color)[j];
+        }
+      }
     }
-    return pixels;
+
+    return;
   } else if (src_format_type.type == GL_UNSIGNED_SHORT) {
     constexpr uint16_t color_16bit[4] = {color[0] << 8, color[1] << 8,
                                          color[2] << 8, color[3] << 8};
-    std::unique_ptr<uint8_t[]> data(
-        new uint8_t[num_pixels * src_channel_count * sizeof(uint16_t)]);
-    uint16_t* pixels = reinterpret_cast<uint16_t*>(data.get());
+
+    texture_data->resize(num_pixels * src_channel_count * sizeof(uint16_t));
+    uint16_t* texture_data16 =
+        reinterpret_cast<uint16_t*>(texture_data->data());
     int16_t flip_sign = -1;
     for (uint32_t i = 0; i < num_pixels * src_channel_count;
          i += src_channel_count) {
@@ -316,23 +338,33 @@ std::unique_ptr<uint8_t[]> getTextureDataAndExpectedRGBA(
         // Introduce an offset to the value to check. Expected value should be
         // the same as without the offset.
         flip_sign *= -1;
-        pixels[i + j] =
-            color_16bit[j] + flip_sign * (0x7F * (i + j)) / num_pixels;
+        int16_t offset = flip_sign * ((i + j) % 0x7F);
+        texture_data16[i + j] = color_16bit[j] + offset;
       }
     }
-    return data;
+    for (uint32_t i = 0; i < num_pixels * 4; i += 4) {
+      for (int c = 0; c < 4; ++c) {
+        expected_rgba_pixels->at(i + c) = expected_color[c];
+      }
+    }
+
+    return;
   } else if (src_format_type.type == GL_UNSIGNED_INT_2_10_10_10_REV) {
     DCHECK_EQ(src_channel_count, 1u);
     constexpr uint32_t color_rgb10_a2 = ((color[3] & 0x3) << 30) +
                                         (color[2] << 20) + (color[1] << 10) +
                                         color[0];
-    std::unique_ptr<uint8_t[]> data(new uint8_t[num_pixels * sizeof(uint32_t)]);
-    uint32_t* pixels = reinterpret_cast<uint32_t*>(data.get());
-    std::fill(pixels, pixels + num_pixels, color_rgb10_a2);
-    return data;
+    texture_data->resize(num_pixels * sizeof(uint32_t));
+    uint32_t* texture_data32 =
+        reinterpret_cast<uint32_t*>(texture_data->data());
+    for (uint32_t p = 0; p < num_pixels; ++p) {
+      texture_data32[p] = color_rgb10_a2;
+      memcpy(expected_rgba_pixels->data() + p * 4, expected_color, 4);
+    }
+    return;
   }
   NOTREACHED() << gl::GLEnums::GetStringEnum(src_format_type.type);
-  return nullptr;
+  return;
 }
 
 }  // namespace
@@ -423,11 +455,12 @@ class GLCopyTextureCHROMIUMTest
                       FormatType dest_format_type,
                       GLint dest_level,
                       bool is_es3) {
-    uint8_t expected_color[4];
+    std::vector<uint8_t> expected_pixels;
+    std::vector<uint8_t> texture_data;
     uint8_t mask[4];
-    std::unique_ptr<uint8_t[]> pixels =
-        getTextureDataAndExpectedRGBA(src_format_type, dest_format_type, width_,
-                                      height_, expected_color, mask);
+    getTextureDataAndExpectedRGBAs(src_format_type, dest_format_type, width_,
+                                   height_, &texture_data, &expected_pixels,
+                                   mask);
     GLenum source_target = GL_TEXTURE_2D;
     glGenTextures(2, textures_);
     glBindTexture(source_target, textures_[0]);
@@ -442,7 +475,7 @@ class GLCopyTextureCHROMIUMTest
 #endif
     glTexImage2D(source_target, source_level, src_format_type.internal_format,
                  width_, height_, 0, src_format_type.format,
-                 src_format_type.type, pixels.get());
+                 src_format_type.type, texture_data.data());
     EXPECT_TRUE(glGetError() == GL_NO_ERROR);
     GLenum dest_binding_target =
         gles2::GLES2Util::GLFaceTargetToTextureTarget(dest_target);
@@ -528,7 +561,7 @@ class GLCopyTextureCHROMIUMTest
 
     uint8_t tolerance = dest_format_type.internal_format == GL_RGBA4 ? 20 : 7;
     EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, width_, height_, tolerance,
-                                          expected_color, mask))
+                                          expected_pixels, mask))
         << " dest_target : " << gles2::GLES2Util::GetStringEnum(dest_target)
         << " src_internal_format: "
         << gles2::GLES2Util::GetStringEnum(src_format_type.internal_format)

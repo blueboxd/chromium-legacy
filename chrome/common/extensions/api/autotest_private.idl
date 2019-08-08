@@ -379,6 +379,11 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void importCrostini(DOMString path, VoidCallback callback);
 
+    // Register a component with CrOSComponentManager.
+    // |name|: The name of the component.
+    // |path|: Path to the component.
+    static void registerComponent(DOMString name, DOMString path);
+
     // Takes a screenshot and returns the data in base64 encoded PNG format.
     static void takeScreenshot(TakeScreenshotCallback callback);
 

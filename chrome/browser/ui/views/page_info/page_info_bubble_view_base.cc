@@ -32,7 +32,8 @@ PageInfoBubbleViewBase::GetShownBubbleType() {
 }
 
 // static
-views::BubbleDialogDelegateView* PageInfoBubbleViewBase::GetPageInfoBubble() {
+views::BubbleDialogDelegateView*
+PageInfoBubbleViewBase::GetPageInfoBubbleForTesting() {
   return g_page_info_bubble;
 }
 

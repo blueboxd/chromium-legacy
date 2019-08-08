@@ -632,7 +632,11 @@ TEST(HttpAuthGSSAPITest, GetContextStateAsValue_ValidContext) {
         "mechanism": {
           "oid": "<Empty OID>"
         },
-        "flags": "00000000",
+        "flags": {
+          "value": "0x00000000",
+          "delegated": false,
+          "mutual": false
+        },
         "open": false
       }
   )");

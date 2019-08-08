@@ -200,6 +200,22 @@ void SessionService::SetTabGroup(const SessionID& window_id,
   ScheduleCommand(sessions::CreateTabGroupCommand(tab_id, group));
 }
 
+void SessionService::SetTabGroupMetadata(const SessionID& window_id,
+                                         const base::Token& group_id,
+                                         const base::string16& title,
+                                         SkColor color) {
+  if (!ShouldTrackChangesToWindow(window_id))
+    return;
+
+  // Any group metadata changes happening in a closing window can be ignored.
+  if (base::Contains(pending_window_close_ids_, window_id) ||
+      base::Contains(window_closing_ids_, window_id))
+    return;
+
+  ScheduleCommand(
+      sessions::CreateTabGroupMetadataUpdateCommand(group_id, title, color));
+}
+
 void SessionService::SetPinnedState(const SessionID& window_id,
                                     const SessionID& tab_id,
                                     bool is_pinned) {
@@ -764,6 +780,14 @@ void SessionService::BuildCommandsForBrowser(
                              : base::nullopt;
     BuildCommandsForTab(browser->session_id(), tab, i, raw_group_id,
                         tab_strip->IsTabPinned(i), tab_to_available_range);
+  }
+
+  // Set the visual data for each tab group.
+  for (const TabGroupId& group_id : tab_strip->ListTabGroups()) {
+    const TabGroupVisualData* data = tab_strip->GetVisualDataForGroup(group_id);
+    base_session_service_->AppendRebuildCommand(
+        sessions::CreateTabGroupMetadataUpdateCommand(
+            group_id.token(), data->title(), data->color()));
   }
 
   base_session_service_->AppendRebuildCommand(

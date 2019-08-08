@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_sampler.h"
 #include "base/profiler/unwinder.h"
 #include "base/synchronization/lock.h"
@@ -191,7 +192,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   // A stack-buffer used by the sampler for its work. This buffer is re-used
   // across multiple sampler objects since their execution is serialized on the
   // sampling thread.
-  std::unique_ptr<StackSampler::StackBuffer> stack_buffer_;
+  std::unique_ptr<StackBuffer> stack_buffer_;
 
   // A map of collection ids to collection contexts. Because this class is a
   // singleton that is never destroyed, context objects will never be destructed

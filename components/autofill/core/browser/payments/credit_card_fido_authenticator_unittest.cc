@@ -210,7 +210,9 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
   void GetRealPan(AutofillClient::PaymentsRpcResult result,
                   const std::string& real_pan) {
     DCHECK(fido_authenticator_->full_card_request_);
-    fido_authenticator_->full_card_request_->OnDidGetRealPan(result, real_pan);
+    payments::PaymentsClient::UnmaskResponseDetails response;
+    fido_authenticator_->full_card_request_->OnDidGetRealPan(
+        result, response.with_real_pan(real_pan));
   }
 
   // Mocks an OptChange response from Payments Client.

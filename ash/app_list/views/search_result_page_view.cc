@@ -338,7 +338,7 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
   if (app_list_features::IsSearchBoxSelectionEnabled()) {
     // Reset selection to first when things change.
-    result_selection_controller_->ResetSelection();
+    result_selection_controller_->ResetSelection(nullptr /*key_event*/);
   } else {
     // Highlight the first result after search results are updated. Note that
     // the focus is not set on the first result to prevent frequent focus switch
@@ -351,6 +351,9 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 void SearchResultPageView::OnSearchResultContainerResultFocused(
     SearchResultBaseView* focused_result_view) {
   if (!focused_result_view->result())
+    return;
+
+  if (app_list_features::IsSearchBoxSelectionEnabled())
     return;
 
   views::Textfield* search_box =

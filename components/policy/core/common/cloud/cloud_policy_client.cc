@@ -555,7 +555,7 @@ void CloudPolicyClient::UploadChromeDesktopReport(
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
-void CloudPolicyClient::UploadRealtimeReport(base::Value event,
+void CloudPolicyClient::UploadRealtimeReport(base::Value report,
                                              const StatusCallback& callback) {
   CHECK(is_registered());
   std::unique_ptr<RealtimeReportingJobConfiguration> config =
@@ -565,7 +565,7 @@ void CloudPolicyClient::UploadRealtimeReport(base::Value event,
               &CloudPolicyClient::OnRealtimeReportUploadCompleted,
               weak_ptr_factory_.GetWeakPtr(), callback));
 
-  config->AddEvent(std::move(event));
+  config->AddReport(std::move(report));
 
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }

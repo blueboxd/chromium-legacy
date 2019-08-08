@@ -309,9 +309,7 @@ interface NetworkService {
   // Starts logging SSL key material to the |file|. This must be called before
   // any SSL connections are made. (See |SSLClientSocket::SetSSLKeyLogger()|
   // for more details).
-  // TODO(crbug.com/841001) This should pass a File which has already been
-  // opened to be sandbox friendly.
-  SetSSLKeyLogFile(mojo_base.mojom.FilePath file);
+  SetSSLKeyLogFile(mojo_base.mojom.File file);
 
   // Creates a new network context with the given parameters.
   CreateNetworkContext(NetworkContext& context,

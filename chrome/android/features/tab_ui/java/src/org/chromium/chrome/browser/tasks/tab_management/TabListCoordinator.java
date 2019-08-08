@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
@@ -155,18 +154,6 @@ public class TabListCoordinator implements Destroyable {
         }
 
         mRecyclerView.setAdapter(adapter);
-
-        if (mMode == TabListMode.GRID) {
-            mRecyclerView.setLayoutManager(new GridLayoutManager(context,
-                    context.getResources().getConfiguration().orientation
-                                    == Configuration.ORIENTATION_PORTRAIT
-                            ? GRID_LAYOUT_SPAN_COUNT_PORTRAIT
-                            : GRID_LAYOUT_SPAN_COUNT_LANDSCAPE));
-        } else if (mMode == TabListMode.STRIP || mMode == TabListMode.CAROUSEL) {
-            mRecyclerView.setLayoutManager(
-                    new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-        }
-
         mRecyclerView.setHasFixedSize(true);
 
         if (dynamicResourceLoader != null) {
@@ -176,10 +163,21 @@ public class TabListCoordinator implements Destroyable {
         TabListFaviconProvider tabListFaviconProvider =
                 new TabListFaviconProvider(context, Profile.getLastUsedProfile());
 
-        mMediator = new TabListMediator(tabListModel, tabModelSelector, thumbnailProvider,
+        mMediator = new TabListMediator(context, tabListModel, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,
                 createGroupButtonProvider, selectionDelegateProvider,
                 gridCardOnClickListenerProvider, dialogHandler, componentName);
+
+        if (mMode == TabListMode.GRID) {
+            mRecyclerView.setLayoutManager(
+                    new GridLayoutManager(context, GRID_LAYOUT_SPAN_COUNT_PORTRAIT));
+            mMediator.updateSpanCountForOrientation(
+                    (GridLayoutManager) mRecyclerView.getLayoutManager(),
+                    context.getResources().getConfiguration().orientation);
+        } else if (mMode == TabListMode.STRIP || mMode == TabListMode.CAROUSEL) {
+            mRecyclerView.setLayoutManager(
+                    new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
+        }
 
         if (mMode == TabListMode.GRID && selectionDelegateProvider == null) {
             ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(

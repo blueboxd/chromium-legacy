@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "content/common/prefetched_signed_exchange_info.mojom";
 import "content/public/common/was_activated_option.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
@@ -13,7 +14,6 @@ import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 import "third_party/blink/public/mojom/referrer.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
-
 
 [Native]
 struct InitiatorCSPInfo;
@@ -29,9 +29,6 @@ struct PageState;
 
 [Native]
 enum PageTransition;
-
-[Native]
-struct PrefetchedSignedExchangeInfo;
 
 [Native]
 struct SourceLocation;

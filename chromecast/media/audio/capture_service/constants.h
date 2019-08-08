@@ -5,17 +5,12 @@
 #ifndef CHROMECAST_MEDIA_AUDIO_CAPTURE_SERVICE_CONSTANTS_H_
 #define CHROMECAST_MEDIA_AUDIO_CAPTURE_SERVICE_CONSTANTS_H_
 
-#include "chromecast/media/audio/capture_service/capture_service_buildflags.h"
-
 namespace chromecast {
 namespace media {
 namespace capture_service {
 
-#if BUILDFLAG(USE_UNIX_SOCKETS)
 constexpr char kDefaultUnixDomainSocketPath[] = "/tmp/capture-service";
-#else
 constexpr int kDefaultTcpPort = 12855;
-#endif
 
 enum SampleFormat {
   INTERLEAVED_INT16 = 0,

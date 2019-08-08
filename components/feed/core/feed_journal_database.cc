@@ -20,9 +20,6 @@ namespace feed {
 
 namespace {
 
-using StorageEntryVector =
-    leveldb_proto::ProtoDatabase<JournalStorageProto>::KeyEntryVector;
-
 const char kJournalDatabaseFolder[] = "journal";
 
 const size_t kDatabaseWriteBufferSizeBytes = 64 * 1024;                 // 64KB
@@ -39,19 +36,38 @@ void ReportLoadTimeHistogram(bool success, base::TimeTicks start_time) {
 FeedJournalDatabase::FeedJournalDatabase(
     leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
     const base::FilePath& database_folder)
-    : FeedJournalDatabase(proto_database_provider->GetDB<JournalStorageProto>(
+    : database_status_(InitStatus::kNotInitialized),
+      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+      storage_database_(proto_database_provider->GetDB<JournalStorageProto>(
           leveldb_proto::ProtoDbType::FEED_JOURNAL_DATABASE,
           database_folder.AppendASCII(kJournalDatabaseFolder),
-          base::CreateSequencedTaskRunner(
-              {base::ThreadPool(), base::MayBlock(),
-               base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
+          task_runner_)) {
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&FeedJournalDatabase::InitInternal,
+                                        weak_ptr_factory_.GetWeakPtr()));
+}
 
+// Used for testing.
 FeedJournalDatabase::FeedJournalDatabase(
     std::unique_ptr<leveldb_proto::ProtoDatabase<JournalStorageProto>>
-        storage_database)
+        storage_database,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : database_status_(InitStatus::kNotInitialized),
+      task_runner_(task_runner),
       storage_database_(std::move(storage_database)) {
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&FeedJournalDatabase::InitInternal,
+                                        weak_ptr_factory_.GetWeakPtr()));
+}
+
+FeedJournalDatabase::~FeedJournalDatabase() = default;
+
+bool FeedJournalDatabase::IsInitialized() const {
+  return database_status_ == InitStatus::kOK;
+}
+
+void FeedJournalDatabase::InitInternal() {
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
   options.write_buffer_size = base::SysInfo::IsLowEndDevice()
                                   ? kDatabaseWriteBufferSizeBytesForLowEndDevice
@@ -62,36 +78,33 @@ FeedJournalDatabase::FeedJournalDatabase(
                               weak_ptr_factory_.GetWeakPtr()));
 }
 
-FeedJournalDatabase::~FeedJournalDatabase() = default;
-
-bool FeedJournalDatabase::IsInitialized() const {
-  return database_status_ == InitStatus::kOK;
-}
-
 void FeedJournalDatabase::LoadJournal(const std::string& key,
                                       JournalLoadCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  storage_database_->GetEntry(
-      key, base::BindOnce(&FeedJournalDatabase::OnGetEntryForLoadJournal,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          base::TimeTicks::Now(), std::move(callback)));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &FeedJournalDatabase::GetEntryInternal,
+          weak_ptr_factory_.GetWeakPtr(), std::move(key),
+          base::BindOnce(&FeedJournalDatabase::OnGetEntryForLoadJournal,
+                         weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
+                         std::move(callback))));
 }
 
 void FeedJournalDatabase::DoesJournalExist(const std::string& key,
                                            CheckExistingCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  storage_database_->GetEntry(
-      key, base::BindOnce(&FeedJournalDatabase::OnGetEntryForDoesJournalExist,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          base::TimeTicks::Now(), std::move(callback)));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &FeedJournalDatabase::GetEntryInternal,
+          weak_ptr_factory_.GetWeakPtr(), std::move(key),
+          base::BindOnce(&FeedJournalDatabase::OnGetEntryForDoesJournalExist,
+                         weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
+                         std::move(callback))));
 }
 
 void FeedJournalDatabase::CommitJournalMutation(
     std::unique_ptr<JournalMutation> journal_mutation,
     ConfirmationCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(journal_mutation);
 
   UMA_HISTOGRAM_COUNTS_100(
@@ -99,15 +112,15 @@ void FeedJournalDatabase::CommitJournalMutation(
       journal_mutation->Size());
 
   if (journal_mutation->Empty()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), true));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(callback), true));
     return;
   }
 
   // Skip loading journal if the first operation is JOURNAL_DELETE.
   if (journal_mutation->FirstOperationType() ==
       JournalOperation::JOURNAL_DELETE) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&FeedJournalDatabase::PerformOperations,
                        weak_ptr_factory_.GetWeakPtr(), nullptr,
@@ -116,16 +129,32 @@ void FeedJournalDatabase::CommitJournalMutation(
   }
 
   std::string journal_name = journal_mutation->journal_name();
-  storage_database_->GetEntry(
-      journal_name,
-      base::BindOnce(&FeedJournalDatabase::OnGetEntryForCommitJournalMutation,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(journal_mutation), std::move(callback)));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &FeedJournalDatabase::GetEntryInternal,
+          weak_ptr_factory_.GetWeakPtr(), std::move(journal_name),
+          base::BindOnce(
+              &FeedJournalDatabase::OnGetEntryForCommitJournalMutation,
+              weak_ptr_factory_.GetWeakPtr(), std::move(journal_mutation),
+              std::move(callback))));
+}
+
+void FeedJournalDatabase::GetEntryInternal(
+    const std::string& key,
+    leveldb_proto::Callbacks::Internal<JournalStorageProto>::GetCallback
+        callback) {
+  storage_database_->GetEntry(key, std::move(callback));
 }
 
 void FeedJournalDatabase::LoadAllJournalKeys(JournalLoadCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FeedJournalDatabase::LoadKeysInternal,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
 
+void FeedJournalDatabase::LoadKeysInternal(JournalLoadCallback callback) {
   storage_database_->LoadKeys(
       base::BindOnce(&FeedJournalDatabase::OnLoadKeysForLoadAllJournalKeys,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
@@ -133,8 +162,14 @@ void FeedJournalDatabase::LoadAllJournalKeys(JournalLoadCallback callback) {
 }
 
 void FeedJournalDatabase::DeleteAllJournals(ConfirmationCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FeedJournalDatabase::DeleteAllEntriesInternal,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
 
+void FeedJournalDatabase::DeleteAllEntriesInternal(
+    ConfirmationCallback callback) {
   // For deleting all, filter method always return true.
   storage_database_->UpdateEntriesWithRemoveFilter(
       std::make_unique<StorageEntryVector>(),
@@ -198,8 +233,21 @@ void FeedJournalDatabase::CommitOperations(
     journals_to_save->emplace_back(it->first, std::move(it->second));
   }
 
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FeedJournalDatabase::UpdateEntriesInternal,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(journals_to_save), std::move(journals_to_delete),
+                     std::move(start_time), std::move(callback)));
+}
+
+void FeedJournalDatabase::UpdateEntriesInternal(
+    std::unique_ptr<StorageEntryVector> entries_to_save,
+    std::unique_ptr<std::vector<std::string>> keys_to_remove,
+    base::TimeTicks start_time,
+    ConfirmationCallback callback) {
   storage_database_->UpdateEntries(
-      std::move(journals_to_save), std::move(journals_to_delete),
+      std::move(entries_to_save), std::move(keys_to_remove),
       base::BindOnce(&FeedJournalDatabase::OnOperationCommitted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(start_time),
                      std::move(callback)));

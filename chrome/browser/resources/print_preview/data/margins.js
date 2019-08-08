@@ -2,44 +2,52 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview.ticket_items');
-/**
- * Enumeration of the orientations of margins.
- * @enum {string}
- */
-print_preview.ticket_items.CustomMarginsOrientation = {
-  TOP: 'top',
-  RIGHT: 'right',
-  BOTTOM: 'bottom',
-  LEFT: 'left'
-};
+cr.define('print_preview.ticket_items', function() {
+  'use strict';
 
-/**
- * Must be kept in sync with the C++ MarginType enum in
- * printing/print_job_constants.h.
- * @enum {number}
- */
-print_preview.ticket_items.MarginsTypeValue = {
-  DEFAULT: 0,
-  NO_MARGINS: 1,
-  MINIMUM: 2,
-  CUSTOM: 3
-};
+  /**
+   * Enumeration of the orientations of margins.
+   * @enum {string}
+   */
+  const CustomMarginsOrientation = {
+    TOP: 'top',
+    RIGHT: 'right',
+    BOTTOM: 'bottom',
+    LEFT: 'left',
+  };
 
-/**
- * Keep in sync with the C++ kSettingMargin... values in
- * printing/print_job_constants.h.
- * @typedef {{
- *   marginTop: number,
- *   marginRight: number,
- *   marginBottom: number,
- *   marginLeft: number,
- * }}
- */
-print_preview.MarginsSetting;
+  /**
+   * Must be kept in sync with the C++ MarginType enum in
+   * printing/print_job_constants.h.
+   * @enum {number}
+   */
+  const MarginsTypeValue = {
+    DEFAULT: 0,
+    NO_MARGINS: 1,
+    MINIMUM: 2,
+    CUSTOM: 3,
+  };
+
+  return {
+    CustomMarginsOrientation: CustomMarginsOrientation,
+    MarginsTypeValue: MarginsTypeValue,
+  };
+});
 
 cr.define('print_preview', function() {
   'use strict';
+
+  /**
+   * Keep in sync with the C++ kSettingMargin... values in
+   * printing/print_job_constants.h.
+   * @typedef {{
+   *   marginTop: number,
+   *   marginRight: number,
+   *   marginBottom: number,
+   *   marginLeft: number,
+   * }}
+   */
+  let MarginsSetting;
 
   class Margins {
     /**
@@ -144,5 +152,8 @@ cr.define('print_preview', function() {
   }
 
   // Export
-  return {Margins: Margins};
+  return {
+    Margins: Margins,
+    MarginsSetting: MarginsSetting,
+  };
 });

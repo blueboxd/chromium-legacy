@@ -5,11 +5,16 @@
 #ifndef FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_CDM_SERVICE_H_
 #define FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_CDM_SERVICE_H_
 
-#include "media/fuchsia/cdm/service/fuchsia_cdm_manager.h"
+#include <memory>
+
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 class RenderFrameHost;
+}
+
+namespace media {
+class FuchsiaCdmManager;
 }
 
 class WebEngineCdmService {
@@ -20,7 +25,7 @@ class WebEngineCdmService {
   ~WebEngineCdmService();
 
  private:
-  media::FuchsiaCdmManager cdm_manager_;
+  std::unique_ptr<media::FuchsiaCdmManager> cdm_manager_;
 
   // Not owned pointer. |registry_| must outlive |this|.
   service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>* const

@@ -40,9 +40,8 @@ class PageInfoBubbleViewBase : public views::BubbleDialogDelegateView,
   // Returns the type of the bubble being shown. For testing only.
   static BubbleType GetShownBubbleType();
 
-  // Returns a weak reference to the page info bubble being shown. For testing
-  // only.
-  static views::BubbleDialogDelegateView* GetPageInfoBubble();
+  // Returns the page info bubble being shown.
+  static views::BubbleDialogDelegateView* GetPageInfoBubbleForTesting();
 
  protected:
   PageInfoBubbleViewBase(views::View* anchor_view,

@@ -3382,10 +3382,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_UNDO_BAR_MULTIPLE_DOWNLOADS_DELETE_MESSAGE" desc="Message shown when you can undo deleting several downloads.">
         <ph name="NUMBER_OF_DOWNLOADS">%1$s<ex>3</ex></ph> downloads deleted
       </message>
-      <message name="IDS_UNDO_BAR_GROUP_TABS_MESSAGE" desc="Message shown or announced when a group has been created.">
-        <ph name="TAB_COUNT">%1$s<ex>3</ex></ph> tabs grouped
-      </message>
-
 
       <!-- MultiWindow -->
       <message name="IDS_UNSUPPORTED_NUMBER_OF_WINDOWS" desc="Popup message for when the user has tried to start too many concurrent versions of Chrome.">
@@ -3755,18 +3751,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_IPH_PREVIEWS_OMNIBOX_UI_ACCESSIBILITY_TEXT" desc="The in-product-help text informing the user that the displayed page was modified to make it load faster or use less data. Prompts the user to tap the message and load the original, unaltered, page if they would like. The 'Lite page provided by Google.' sentence should match TC ID 373879247902731825">
         Lite page provided by Google. Tap the load original button to load the original page.
       </message>
-      <message name="IDS_IPH_TAB_GROUPS_QUICKLY_COMPARE_PAGES_TEXT" desc="When Chrome detects that the user is searching or comparing multiple pages (e.g. while comparison shopping), this in-product help text appears at the bottom of the screen. The text informs the user that they can longpress on a link to open it as a new tab within a tab group.">
-        Quickly compare pages by making a group. To start, touch &amp; hold a link.
-      </message>
-      <message name="IDS_IPH_TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_ACCESSIBILITY_TEXT" desc="This in-product help accessibility text points to the strip of favicons at the bottom of the page. The favicons indicate all the open tabs within the tab group. The text informs the user that they can tap on any favicon to switch to that tab.">
-        Switch between tabs in your tab group near bottom of screen
-      </message>
-      <message name="IDS_IPH_TAB_GROUPS_TAP_TO_SEE_ANOTHER_TAB_TEXT" desc="This in-product help text points to the strip of favicons at the bottom of the page. The favicons indicate all the open tabs within the tab group. The text informs the user that they can tap on any favicon to switch to that tab.">
-        Tap to see another tab
-      </message>
-      <message name="IDS_IPH_TAB_GROUPS_YOUR_TABS_TOGETHER_TEXT" desc="This in-product help text points to a group of tabs within the Tab Switcher. The text informs the user that they can find existing tab groups in the Tab Switcher.">
-        Your tabs are grouped together here
-      </message>
       <message name="IDS_IPH_TRANSLATE_MENU_BUTTON_TEXT" desc="The in-product-help message after a successful navigation prompting user to translate current page.">
         Translate this page to any language
       </message>
@@ -3944,80 +3928,10 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_USAGE_STATS_SITE_PAUSED_EXPLANATION" desc="Message when a website is suspended due to exceeding a user-defined limit">
         Your <ph name="FQDN">%1$s<ex>www.amazon.com</ex></ph> timer ran out. It'll start again tomorrow.
       </message>
-      <!-- Bottom Tab Grid strings -->
-      <message name="IDS_BOTTOM_TAB_GRID_DESCRIPTION" desc="The content description of the 'opened tabs' bottom sheet.">
-        Opened tabs
-      </message>
-      <message name="IDS_BOTTOM_TAB_GRID_OPENED_HALF" desc="Accessibility string read when the 'opened tabs' sheet is opened at half height. The sheet will occupy the bottom half the screen. ">
-        Opened tabs at half height
-      </message>
-      <message name="IDS_BOTTOM_TAB_GRID_OPENED_FULL" desc="Accessibility string read when the 'opened tabs' bottom sheet is opened at full height. The sheet will occupy the entire screen.">
-        Opened tabs at full height
-      </message>
-      <message name="IDS_BOTTOM_TAB_GRID_CLOSED" desc="Accessibility string read when the 'opened tabs' bottom sheet is closed.">
-        Opened tabs closed
-      </message>
-      <message name="IDS_BOTTOM_TAB_GRID_TITLE_PLACEHOLDER" desc="Placeholder string for the BottomTabGrid toolbar title.">
-        <!-- <ph name="TABS_COUNT">%1$d<ex>5</ex></ph> tabs -->
-        {TABS_COUNT, plural,
-            =1 {<ph name="TABS_COUNT_ONE">%1$d<ex>1</ex></ph> tab}
-            other {<ph name="TABS_COUNT_MANY">%1$d<ex>8</ex></ph> tabs}
-        }
-      </message>
-      <message name="IDS_BOTTOM_TAB_GRID_NEW_TAB" desc="Accessibility string for BottomTabGridToolbar option 'create new tab in group' indicated visually by the '+' sign.">
-        Add new tab to group
-      </message>
-      <message name="IDS_ACCESSIBILITY_BOTTOM_TAB_GRID_CLOSE_TAB_SHEET" desc="Accessibility string for BottomTabGridToolbar button indicated visually by the 'v' sign.">
-        Hide fullscreen grid
-      </message>
-
-      <!-- Bottom Tab Strip strings -->
-      <message name="IDS_ACCESSIBILITY_BOTTOM_TAB_STRIP_EXPAND_TAB_SHEET" desc="Accessibility string for BottomTabStripToolbar button indicated visually by the '^' sign.">
-        Show group's tabs in fullscreen grid
-      </message>
 
       <!-- Tab Group Tab Switcher strings -->
-      <message name="IDS_TABSWITCHER_CREATE_GROUP" desc="This flat button is shown in the Tab Switcher, under an open tab. When the user taps the button, Chrome creates a new group of tabs that includes the existing tab. It's okay to use any of the following verbs in order to keep the text under 45 characters: Create, Make, Add.">
-        Create group
-      </message>
       <message name="IDS_TAB_MANAGEMENT_MODULE_TITLE" desc="Text shown when the Tab Management module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Tab management for Chrome…').">
         Tab management
-      </message>
-
-      <!-- Tab Selection Editor strings -->
-      <message name="IDS_TAB_SELECTION_EDITOR_GROUP" desc="This text button is shown in the Tab Selection Editor Toolbar. 'Group' is a verb. When the user taps the button, Chrome creates a new group that contains the selected tabs.">
-        Group
-      </message>
-      <message name="IDS_ACCESSIBILITY_GROUP_SELECTED_TABS" desc="Content description for the button to group selected tab.">
-        Group <ph name="NUM_SELECTED">%1$s<ex>3</ex></ph> tabs.
-      </message>
-      <message name="IDS_TAB_SELECTION_EDITOR_TOOLBAR_SELECT_TABS" desc="Label shown on Tab Selection Editor Toolbar asking user to select tabs from the list.">
-        Select tabs
-      </message>
-      <message name="IDS_ACCESSIBILITY_SELECT_TAB" desc="Content description for the button to group selected tab.">
-        Select <ph name="TAB_TITLE">%1$s<ex>Google</ex></ph> tab.
-      </message>
-      <message name="IDS_ACCESSIBILITY_UNSELECT_TAB" desc="Content description for the button to group selected tab.">
-        Un-select <ph name="TAB_TITLE">%1$s<ex>Google</ex></ph> tab.
-      </message>
-
-      <!-- Tab Grid Dialog strings -->
-      <message name="IDS_TAB_GRID_DIALOG_REMOVE_FROM_GROUP" desc="This text shows on the ungroup bar in TabGridDialog. When user drags a tab and drops it on the ungroup bar, this tab will be moved out of the group.">
-        Remove from group
-      </message>
-
-      <!-- Tab Grid Drag-and-drop IPH strings -->
-      <message name="IDS_IPH_DRAG_AND_DROP_INTRODUCTION" desc="This text shows on the entry point for the in-product help for drag-and-drop. It introduces that this IPH is about how to use drag-and-drop.">
-        Drag tabs to group them
-      </message>
-      <message name="IDS_IPH_DRAG_AND_DROP_SHOW_ME" desc="This text button shows on the entry point for the in-product help for drag-and-drop. When user clicks on the text button, the dialog for IPH shows up.">
-        Show me
-      </message>
-      <message name="IDS_IPH_DRAG_AND_DROP_TITLE" desc="This text shows on the in-product help dialog for drag-and-drop. It decribes why drag-and-drop is useful.">
-        Get organized
-      </message>
-      <message name="IDS_IPH_DRAG_AND_DROP_CONTENT" desc="This text shows on the in-product help dialog for drag-and-drop. It gives instructions on how to drag and drop to create a group.">
-        Drag a tab onto another tab to group them
       </message>
 
       <message name="IDS_AUTOFILL_ASSISTANT_MODULE_TITLE"

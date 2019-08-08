@@ -1369,37 +1369,6 @@ TEST_F(ScriptExecutorTest, WaitForNavigationReportsError) {
   EXPECT_EQ(NAVIGATION_ERROR, processed_actions_capture[1].status());
 }
 
-TEST_F(ScriptExecutorTest, InhibitResultReportSuccessfulAction) {
-  ActionsResponseProto actions_response;
-  actions_response.add_actions()->mutable_tell()->set_message("will suceed");
-  actions_response.set_inhibit_result_report(true);
-
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _)).Times(0);
-  EXPECT_CALL(executor_callback_,
-              Run(Field(&ScriptExecutor::Result::success, true)));
-  executor_->Run(executor_callback_.Get());
-}
-
-TEST_F(ScriptExecutorTest, InhibitResultReportFailedAction) {
-  ActionsResponseProto actions_response;
-  actions_response.add_actions()
-      ->mutable_click()
-      ->mutable_element_to_click()
-      ->add_selectors("will fail");
-  actions_response.set_inhibit_result_report(true);
-
-  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
-      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
-
-  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _)).Times(0);
-  EXPECT_CALL(executor_callback_,
-              Run(Field(&ScriptExecutor::Result::success, false)));
-  executor_->Run(executor_callback_.Get());
-}
-
 TEST_F(ScriptExecutorTest, InterceptUserActions) {
   ActionsResponseProto actions_response;
   actions_response.add_actions()

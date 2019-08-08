@@ -312,7 +312,6 @@ core_idl_files =
                     "invisible_dom/activate_invisible_event.idl",
                     "layout/custom/layout_constraints.idl",
                     "layout/custom/layout_fragment.idl",
-                    "layout/custom/layout_fragment_request.idl",
                     "layout/custom/layout_child.idl",
                     "layout/custom/layout_worklet_global_scope.idl",
                     "loader/appcache/application_cache.idl",

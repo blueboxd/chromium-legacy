@@ -92,8 +92,17 @@ void LayoutCustom::StyleDidChange(StyleDifference diff,
 
   LayoutWorklet* worklet = LayoutWorklet::From(*GetDocument().domWindow());
   const AtomicString& name = StyleRef().DisplayLayoutCustomName();
-  state_ =
-      worklet->GetDocumentDefinitionMap()->Contains(name) ? kBlock : kUnloaded;
+  state_ = kUnloaded;
+
+  LayoutWorklet::DocumentDefinitionMap* document_definition_map =
+      worklet->GetDocumentDefinitionMap();
+  if (document_definition_map->Contains(name)) {
+    DocumentLayoutDefinition* existing_document_definition =
+        document_definition_map->at(name);
+    if (existing_document_definition->GetRegisteredDefinitionCount() ==
+        LayoutWorklet::kNumGlobalScopes)
+      state_ = kBlock;
+  }
 
   // Make our children "block-level" before invoking StyleDidChange. As the
   // current multi-col logic may invoke a call to AddChild, failing a DCHECK.
@@ -151,6 +160,7 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
   LayoutUnit previous_height = LogicalHeight();
 
   {
+    CustomLayoutScope custom_layout_scope;
     TextAutosizer::LayoutScope text_autosizer_layout_scope(this, layout_scope);
     LayoutState state(*this);
     ScriptForbiddenScope::AllowUserAgentScript allow_script;
@@ -175,7 +185,7 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
     FragmentResultOptions* fragment_result_options =
         FragmentResultOptions::Create();
     scoped_refptr<SerializedScriptValue> fragment_result_data;
-    if (!instance_->Layout(*this, fragment_result_options,
+    if (!instance_->Layout(*this, &custom_layout_scope, fragment_result_options,
                            &fragment_result_data))
       return false;
 
@@ -205,6 +215,7 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
       }
 
       CustomLayoutFragment* fragment = child_fragments[index++];
+
       if (!fragment->IsValid()) {
         GetDocument().AddConsoleMessage(ConsoleMessage::Create(
             mojom::ConsoleMessageSource::kJavaScript,

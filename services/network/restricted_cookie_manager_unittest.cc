@@ -598,9 +598,9 @@ TEST_P(RestrictedCookieManagerTest, SetCookieFromStringWrongOrigin) {
 TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   {
     // With default settings object, setting a third-party cookie is OK.
-    auto cookie =
-        net::CanonicalCookie::Create(GURL("http://example.com"), "A=B",
-                                     base::Time::Now(), net::CookieOptions());
+    auto cookie = net::CanonicalCookie::Create(GURL("http://example.com"),
+                                               "A=B", base::Time::Now(),
+                                               base::nullopt /* server_time */);
     EXPECT_TRUE(sync_service_->SetCanonicalCookie(
         *cookie, GURL("http://example.com"), GURL("http://notexample.com")));
   }
@@ -624,9 +624,9 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   {
     // Not if third-party cookies are disabled, though.
     cookie_settings_.set_block_third_party_cookies(true);
-    auto cookie =
-        net::CanonicalCookie::Create(GURL("http://example.com"), "A2=B2",
-                                     base::Time::Now(), net::CookieOptions());
+    auto cookie = net::CanonicalCookie::Create(GURL("http://example.com"),
+                                               "A2=B2", base::Time::Now(),
+                                               base::nullopt /* server_time */);
     EXPECT_FALSE(sync_service_->SetCanonicalCookie(
         *cookie, GURL("http://example.com"), GURL("http://otherexample.com")));
   }
@@ -668,12 +668,9 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(net::features::kSameSiteByDefaultCookies);
 
-  // Uses different options between create/set here for failure to be at set.
-  net::CookieOptions create_options;
-  create_options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   auto cookie = net::CanonicalCookie::Create(GURL("http://example.com"), "A=B",
-                                             base::Time::Now(), create_options);
+                                             base::Time::Now(),
+                                             base::nullopt /* server_time */);
   EXPECT_FALSE(sync_service_->SetCanonicalCookie(
       *cookie, GURL("http://example.com"), GURL("http://notexample.com")));
 

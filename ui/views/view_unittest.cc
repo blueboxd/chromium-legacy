@@ -54,6 +54,7 @@
 #include "ui/views/paint_info.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_observer.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -249,7 +250,7 @@ class TestView : public View {
   void OnMouseExited(const ui::MouseEvent& event) override;
 
   void OnPaint(gfx::Canvas* canvas) override;
-  void SchedulePaintInRect(const gfx::Rect& rect) override;
+  void OnDidSchedulePaint(const gfx::Rect& rect) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   void OnThemeChanged() override;
@@ -1305,9 +1306,9 @@ TEST_F(ViewTest, PaintLocalBounds) {
   EXPECT_TRUE(v1->canvas_bounds().Contains(v1->GetVisibleBounds()));
 }
 
-void TestView::SchedulePaintInRect(const gfx::Rect& rect) {
+void TestView::OnDidSchedulePaint(const gfx::Rect& rect) {
   scheduled_paint_rects_.push_back(rect);
-  View::SchedulePaintInRect(rect);
+  View::OnDidSchedulePaint(rect);
 }
 
 namespace {
@@ -2063,6 +2064,72 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   widget->CloseNow();
 }
 
+class ViewPaintOptimizationTest : public ViewsTestBase {
+ public:
+  ViewPaintOptimizationTest() = default;
+
+  ~ViewPaintOptimizationTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        views::features::kEnableViewPaintOptimization);
+    ViewTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewPaintOptimizationTest);
+};
+
+// Tests that only Views where SchedulePaint was invoked get repainted.
+TEST_F(ViewPaintOptimizationTest, PaintDirtyViewsOnly) {
+  ScopedTestPaintWidget widget(CreateParams(Widget::InitParams::TYPE_POPUP));
+  View* root_view = widget->GetRootView();
+
+  TestView* v1 = root_view->AddChildView(std::make_unique<TestView>());
+  v1->SetBounds(10, 11, 12, 13);
+
+  TestView* v2 = root_view->AddChildView(std::make_unique<TestView>());
+  v2->SetBounds(3, 4, 6, 5);
+
+  TestView* v21 = v2->AddChildView(std::make_unique<TestView>());
+  v21->SetBounds(2, 3, 4, 5);
+
+  // Paint everything once, since it has to build its cache. Then we can test
+  // invalidation.
+  gfx::Rect first_paint(1, 1);
+  auto list = base::MakeRefCounted<cc::DisplayItemList>();
+  root_view->Paint(PaintInfo::CreateRootPaintInfo(
+      ui::PaintContext(list.get(), 1.f, first_paint, false),
+      root_view->size()));
+  v1->Reset();
+  v2->Reset();
+  v21->Reset();
+
+  gfx::Rect paint_area(10, 11, 12, 13);
+  list = base::MakeRefCounted<cc::DisplayItemList>();
+
+  // Schedule a paint on v2 which marks it invalidated.
+  v2->SchedulePaint();
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v2->did_paint_);
+  EXPECT_FALSE(v21->did_paint_);
+
+  // Paint with an unknown invalidation. The invalidation is irrelevant since
+  // repainting a view only depends on whether the view had a scheduled paint.
+  gfx::Rect empty_rect;
+  EXPECT_TRUE(empty_rect.IsEmpty());
+
+  root_view->Paint(PaintInfo::CreateRootPaintInfo(
+      ui::PaintContext(list.get(), 1.f, paint_area, false), empty_rect.size()));
+
+  // Only v2 should be repainted.
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_TRUE(v2->did_paint_);
+  EXPECT_FALSE(v21->did_paint_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Accelerators
 ////////////////////////////////////////////////////////////////////////////////
@@ -2481,7 +2548,7 @@ class TransformPaintView : public TestView {
   gfx::Rect scheduled_paint_rect() const { return scheduled_paint_rect_; }
 
   // Overridden from View:
-  void SchedulePaintInRect(const gfx::Rect& rect) override {
+  void OnDidSchedulePaint(const gfx::Rect& rect) override {
     gfx::Rect xrect = ConvertRectToParent(rect);
     scheduled_paint_rect_.Union(xrect);
   }

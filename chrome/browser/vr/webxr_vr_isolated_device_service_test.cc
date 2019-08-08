@@ -4,7 +4,11 @@
 
 #include "chrome/browser/vr/test/webvr_browser_test.h"
 
+#include "base/bind_helpers.h"
+#include "base/optional.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/vr/service/xr_device_service.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
 #include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
@@ -14,6 +18,13 @@ namespace vr {
 
 // Tests that we can recover from a crash/disconnect on the DeviceService
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestDeviceServiceDisconnect) {
+  // Ensure that any time the XR Device Service is started, we have installed
+  // a new local hook before the IsolatedDeviceProvider has a chance to issue
+  // any enumeration requests.
+  base::Optional<MockXRDeviceHookBase> device_hook(base::in_place);
+  vr::SetXRDeviceServiceStartupCallbackForTesting(
+      base::BindLambdaForTesting([&] { device_hook.emplace(); }));
+
   t->LoadUrlAndAwaitInitialization(
       t->GetFileUrlForHtmlTestFile("test_isolated_device_service_disconnect"));
 
@@ -22,19 +33,13 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestDeviceServiceDisconnect) {
                                  WebXrVrBrowserTestBase::kPollTimeoutMedium);
 
   t->EnterSessionWithUserGestureOrFail();
-  MockXRDeviceHookBase device_hook;
-  device_hook.TerminateDeviceServiceProcessForTesting();
+
+  device_hook->TerminateDeviceServiceProcessForTesting();
 
   // Ensure that we've actually exited the session.
   t->PollJavaScriptBooleanOrFail(
       "sessionInfos[sessionTypes.IMMERSIVE].currentSession === null",
       WebXrVrBrowserTestBase::kPollTimeoutLong);
-
-  // We need to create a mock here because otherwise WMR opens the real Mixed
-  // Reality Portal if it's installed. The killing of the process unsets the
-  // hook created by the one above, and the presence of the hook is what WMR
-  // uses to determine whether it should uses the mock or real implementation.
-  MockXRDeviceHookBase another_hook;
 
   // We expect one change indicating the device was disconnected, and then
   // one more indicating that the device was re-connected.
@@ -44,5 +49,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestDeviceServiceDisconnect) {
   // One last check now that we have the device change that we can actually
   // still enter an immersive session.
   t->EnterSessionWithUserGestureOrFail();
+
+  vr::SetXRDeviceServiceStartupCallbackForTesting(base::NullCallback());
 }
 }  // namespace vr

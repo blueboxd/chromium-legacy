@@ -2221,6 +2221,19 @@ EVENT_TYPE(SOCKS5_HANDSHAKE_READ)
 //               contains the error in the form of a GSSAPI Status.>
 //   }
 //
+// ** GSSAPI Context Flags
+//
+// Bitmask indicating properties of the negotiated security context. Values may
+// be only advisory if the "open" flag of the enclosing security context is
+// True. I.e. flags are not final until the security context is closed.
+//
+//   {
+//     "flags"     : <Flags. See RFC 2744 Section 5.19 for meanings. Flag
+//                    bitmasks can be found in RFC 2744 Appendix A.>
+//     "delegated" : <True if credentials were delegated to the target.>
+//     "mutual"    : <True if mutual authentication was successful.>
+//   }
+//
 // ** GSSAPI Context Description
 //
 // A serialization of the GSSAPI context. It takes the following form:

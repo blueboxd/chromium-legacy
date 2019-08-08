@@ -95,6 +95,14 @@ HRESULT ValidateAndUnpackCRX(const base::FilePath& from_crx_path,
   const base::FilePath to_crx_path =
       to_dir.GetPath().Append(from_crx_path.BaseName());
 
+  // We check the input file for CRX and signature validity before copying to
+  // the secure location. This is to prevent us from copying unintended files,
+  // including files that may be private to a particular user or group.
+  if (crx_file::Verify(from_crx_path, crx_format, {crx_hash}, {}, nullptr,
+                       nullptr) != crx_file::VerifierResult::OK_FULL) {
+    return CRYPT_E_NO_MATCH;
+  }
+
   if (!base::CopyFile(from_crx_path, to_crx_path))
     return HRESULTFromLastError();
 

@@ -9,13 +9,16 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/chromeos/login/challenge_response_auth_keys_loader.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
+#include "chromeos/login/auth/challenge_response_key.h"
 
 namespace chromeos {
 
@@ -125,6 +128,14 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
  private:
   void LoadOobeDialog();
 
+  // Callback to be invoked when the |challenge_response_auth_keys_loader_|
+  // completes building the currently available challenge-response keys. Used
+  // only during the challenge-response authentication.
+  void OnChallengeResponseKeysPrepared(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> on_auth_complete_callback,
+      std::vector<ChallengeResponseKey> challenge_response_keys);
+
   // State associated with a pending authentication attempt.
   struct AuthState {
     AuthState(AccountId account_id, base::OnceCallback<void(bool)> callback);
@@ -164,6 +175,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // user cancels the Powerwash dialog in the login screen. Set to true on the
   // first OnStartSigninScreen and remains true afterward.
   bool signin_screen_started_ = false;
+
+  ChallengeResponseAuthKeysLoader challenge_response_auth_keys_loader_;
 
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 

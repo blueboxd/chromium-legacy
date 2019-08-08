@@ -17,8 +17,6 @@
 # ===================================
 # It's expected that not all extensions will be available on all platforms.
 # Having a test listed here is not necessarily a problem.
-[ win ] WebglExtension_EXT_color_buffer_float [ Failure ]
-[ mac ] WebglExtension_EXT_color_buffer_float [ Failure ]
 [ win vulkan passthrough ] WebglExtension_EXT_float_blend [ Failure ]
 crbug.com/angleproject/2672 [ vulkan passthrough ] WebglExtension_WEBGL_multi_draw_instanced [ Failure ]
 

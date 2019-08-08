@@ -15,9 +15,6 @@ _NEGATIVE_FILTER = [
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
 
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2854
-    'ChromeOptionsFunctionalTest.canSetAcceptInsecureCerts',
-
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2858
     'ElementFindingTest.testFindingMultipleElementsByInvalidClassNameShouldThrow',
     'ElementFindingTest.testFindingMultipleElementsByCompoundClassNameShouldThrow',
@@ -34,15 +31,30 @@ _NEGATIVE_FILTER = [
     'CombinedInputActionsTest.testChordControlCutAndPaste',
 
     #https://bugs.chromium.org/p/chromedriver/issues/detail?id=2971
+    'ChromeDevToolsProfilerTest.aSimpleStartStopAndGetProfilerTest',
+    'ChromeDevToolsSecurityTest.loadInsecureWebsite',
     'ChromeDevToolsProfilerTest.sampleProfileEvents',
+    'ChromeDevToolsProfilerTest.sampleSetStartPreciseCoverageTest',
 ]
 
 _READY_TO_RUN_FILTER = [
     # marked as not yet implemented with chrome but already works
-    'ProxySettingTest.canUsePACThatOnlyProxiesCertainHosts',
+    'AlertsTest.testIncludesAlertTextInUnhandledAlertException',
+    'BasicKeyboardInterfaceTest.testSelectionSelectBySymbol',
+    'BasicKeyboardInterfaceTest.testSelectionSelectByWord',
+    'BasicMouseInterfaceTest.testCanMoveOverAndOutOfAnElement',
+    'BasicMouseInterfaceTest.testMoveMouseByOffsetOverAndOutOfAnElement',
+    'BasicMouseInterfaceTest.testMovingMouseToRelativeElementOffset',
+    'BasicMouseInterfaceTest.testMovingMouseToRelativeZeroElementOffset',
+    'CombinedInputActionsTest.testClickAfterMoveToAnElementWithAnOffsetShouldUseLastMousePosition',
+    'ContentEditableTest.appendsTextToEndOfContentEditableWithMultipleTextNodes',
     'ContentEditableTest.testShouldAppendToTinyMCE',
     'ContentEditableTest.testShouldBeAbleToTypeIntoContentEditableElementWithExistingValue',
-    'ContentEditableTest.appendsTextToEndOfContentEditableWithMultipleTextNodes',
+    'CookieImplementationTest.canHandleHttpOnlyCookie',
+    'ExecutingJavascriptTest.testShouldBeAbleToReturnADateObject',
+    'PageLoadingTest.testEagerStrategyShouldNotWaitForResources',
+    'PageLoadingTest.testEagerStrategyShouldNotWaitForResourcesOnRefresh',
+    'PageLoadingTest.testEagerStrategyShouldWaitForDocumentToBeLoaded',
     'WindowSwitchingTest.canOpenANewWindow',
 ]
 

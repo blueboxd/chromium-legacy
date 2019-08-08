@@ -1783,9 +1783,6 @@
   <message name="IDS_NETWORK_TYPE_METERED_WIFI" desc="Label for metered Wi-Fi networks (i.e., Wi-Fi networks which have resticted data usage such as a monthly limit).">
     metered Wi-Fi
   </message>
-  <message name="IDS_NETWORK_TYPE_WIMAX" desc="Label for WiMAX networks.">
-    WiMAX
-  </message>
   <message name="IDS_NETWORK_TYPE_BLUETOOTH" desc="Label for Bluetooth networks.">
     Bluetooth
   </message>
@@ -3330,6 +3327,9 @@
   </message>
   <message name="IDS_ASSISTANT_WAIT_MESSAGE" desc="Wait message for asssitant optin flow.">
     Please wait...
+  </message>
+  <message name="IDS_ASSISTANT_OOBE_POPUP_OVERLAY_LOADING" desc="Loading message shown while the content of popup overlay is being downloaded.">
+    Loading...
   </message>
 
   <!-- Supervision transition OOBE screen. -->

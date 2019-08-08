@@ -261,9 +261,11 @@ base::Value GetDisplayNameValue(GSSAPILibrary* gssapi_lib,
 }
 
 base::Value ContextFlagsToValue(OM_uint32 flags) {
-  // TODO(asanka): This should break down known flags. At least the
-  // GSS_C_DELEG_FLAG.
-  return base::Value(base::StringPrintf("%08x", flags));
+  base::Value rv{base::Value::Type::DICTIONARY};
+  rv.SetStringKey("value", base::StringPrintf("0x%08x", flags));
+  rv.SetBoolKey("delegated", (flags & GSS_C_DELEG_FLAG) == GSS_C_DELEG_FLAG);
+  rv.SetBoolKey("mutual", (flags & GSS_C_MUTUAL_FLAG) == GSS_C_MUTUAL_FLAG);
+  return rv;
 }
 
 base::Value GetContextStateAsValue(GSSAPILibrary* gssapi_lib,

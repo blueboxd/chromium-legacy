@@ -38,7 +38,6 @@
 #include "content/public/common/content_features.h"
 #include "media/base/media_switches.h"
 #include "services/device/public/cpp/device_features.h"
-#include "services/network/public/cpp/features.h"
 #include "ui/base/ui_base_features.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -187,7 +186,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kVideoPersistence,
     &kVrBrowsingFeedback,
     &kOfferWipeDataOnSignout,
-    &network::features::kNetworkService,
     &payments::features::kAlwaysAllowJustInTimePaymentApp,
     &payments::features::kReturnGooglePayInBasicCard,
     &payments::features::kWebPaymentsExperimentalFeatures,

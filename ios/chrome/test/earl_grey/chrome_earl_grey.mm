@@ -66,6 +66,19 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return idiom == UIUserInterfaceIdiomPad;
 }
 
+- (BOOL)isCompactWidth {
+#if defined(CHROME_EARL_GREY_1)
+  UIUserInterfaceSizeClass horizontalSpace =
+      [[[[UIApplication sharedApplication] keyWindow] traitCollection]
+          horizontalSizeClass];
+#elif defined(CHROME_EARL_GREY_2)
+  UIUserInterfaceSizeClass horizontalSpace =
+      [[[[GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication] keyWindow]
+          traitCollection] horizontalSizeClass];
+#endif
+  return horizontalSpace == UIUserInterfaceSizeClassCompact;
+}
+
 #pragma mark - History Utilities (EG2)
 
 - (void)clearBrowsingHistory {

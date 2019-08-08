@@ -43,6 +43,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns YES if running on an iPad.
 - (BOOL)isIPadIdiom;
 
+// Returns YES if the main application window's rootViewController has a compact
+// horizontal size class.
+- (BOOL)isCompactWidth;
+
 #pragma mark - History Utilities (EG2)
 // Clears browsing history. Raises an EarlGrey exception if history is not
 // cleared within a timeout.

@@ -218,7 +218,7 @@ void OvenHandler::RegisterMessages() {
       base::Bind(&OvenHandler::HandleBakeDonuts, base::Unretained(this)));
 }
 
-void OverHandler::HandleBakeDonuts(const base::ListValue* args) {
+void OvenHandler::HandleBakeDonuts(const base::ListValue* args) {
   AllowJavascript();
 
   CHECK_EQ(1u, args->GetSize());

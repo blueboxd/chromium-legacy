@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata_sanitizer.h"
+#include "third_party/blink/renderer/modules/mediasession/media_position_state.h"
 #include "third_party/blink/renderer/modules/mediasession/media_session_action_details.h"
 #include "third_party/blink/renderer/modules/mediasession/media_session_seek_to_action_details.h"
 #include "third_party/blink/renderer/modules/mediasession/type_converters.h"
@@ -203,6 +204,61 @@ void MediaSession::setActionHandler(const String& action,
 
     NotifyActionChange(action, ActionChangeType::kActionDisabled);
   }
+}
+
+void MediaSession::setPositionState(MediaPositionState* position_state,
+                                    ExceptionState& exception_state) {
+  // If the dictionary is empty / null then we should reset the position state.
+  if (!position_state->hasDuration() && !position_state->hasPlaybackRate() &&
+      !position_state->hasPosition()) {
+    if (auto* service = GetService())
+      service->SetPositionState(nullptr);
+    return;
+  }
+
+  // The duration cannot be missing.
+  if (!position_state->hasDuration()) {
+    exception_state.ThrowTypeError("The duration must be provided.");
+    return;
+  }
+
+  // The duration cannot be negative.
+  if (position_state->duration() < 0) {
+    exception_state.ThrowTypeError(
+        "The provided duration cannot be less than zero.");
+    return;
+  }
+
+  // The position cannot be negative.
+  if (position_state->hasPosition() && position_state->position() < 0) {
+    exception_state.ThrowTypeError(
+        "The provided position cannot be less than zero.");
+    return;
+  }
+
+  // The position cannot be greater than the duration.
+  if (position_state->hasPosition() &&
+      position_state->position() > position_state->duration()) {
+    exception_state.ThrowTypeError(
+        "The provided position cannot be greater than the duration.");
+    return;
+  }
+
+  // The playback rate cannot be less than or equal to zero.
+  if (position_state->hasPlaybackRate() &&
+      position_state->playbackRate() <= 0) {
+    exception_state.ThrowTypeError(
+        "The provided playbackRate cannot be less than or equal to zero.");
+    return;
+  }
+
+  auto* service = GetService();
+  if (!service)
+    return;
+
+  service->SetPositionState(
+      mojo::ConvertTo<media_session::mojom::blink::MediaPositionPtr>(
+          position_state));
 }
 
 void MediaSession::NotifyActionChange(const String& action,

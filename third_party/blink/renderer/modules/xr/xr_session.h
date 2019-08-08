@@ -43,6 +43,8 @@ class XRWorldInformation;
 class XRWorldTrackingState;
 class XRWorldTrackingStateInit;
 
+enum class XRSessionFeature;
+
 class XRSession final
     : public EventTargetWithInlineData,
       public device::mojom::blink::XRSessionClient,
@@ -65,7 +67,8 @@ class XRSession final
             SessionMode mode,
             EnvironmentBlendMode environment_blend_mode,
             bool uses_input_eventing,
-            bool sensorless_session);
+            bool sensorless_session,
+            const WTF::HashSet<XRSessionFeature>& enabled_features);
   ~XRSession() override = default;
 
   XR* xr() const { return xr_; }
@@ -234,6 +237,7 @@ class XRSession final
   Member<XRWorldInformation> world_information_;
   HeapVector<Member<XRRenderStateInit>> pending_render_state_;
 
+  WTF::HashSet<XRSessionFeature> enabled_features_;
   WTF::Vector<XRViewData> views_;
 
   Member<XRInputSourceArray> input_sources_;

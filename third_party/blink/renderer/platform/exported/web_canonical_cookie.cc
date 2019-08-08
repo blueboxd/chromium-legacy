@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -102,9 +103,9 @@ base::Optional<WebCanonicalCookie> WebCanonicalCookie::Create(
     const WebURL& url,
     const WebString& cookie_line,
     base::Time creation_time) {
-  net::CookieOptions options;
   std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
-      ToGURL(url), cookie_line.Utf8(), creation_time, options);
+      ToGURL(url), cookie_line.Utf8(), creation_time,
+      base::nullopt /* server_time */);
   if (!cookie)
     return base::nullopt;
   return WebCanonicalCookie(

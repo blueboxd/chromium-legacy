@@ -269,9 +269,9 @@ void IDBCursor::Continue(std::unique_ptr<IDBKey> key,
   const IDBKey* current_primary_key = IdbPrimaryKey();
 
   if (!key)
-    key = IDBKey::CreateNull();
+    key = IDBKey::CreateNone();
 
-  if (key->GetType() != mojom::IDBKeyType::Null) {
+  if (key->GetType() != mojom::IDBKeyType::None) {
     DCHECK(key_);
     if (direction_ == mojom::IDBCursorDirection::Next ||
         direction_ == mojom::IDBCursorDirection::NextNoDuplicate) {
@@ -299,7 +299,7 @@ void IDBCursor::Continue(std::unique_ptr<IDBKey> key,
   }
 
   if (!primary_key)
-    primary_key = IDBKey::CreateNull();
+    primary_key = IDBKey::CreateNone();
 
   // FIXME: We're not using the context from when continue was called, which
   // means the callback will be on the original context openCursor was called

@@ -32,12 +32,12 @@ Polymer({
     },
   },
 
-  /** @private {?settings.PersonalizationBrowserProxy} */
+  /** @private {?settings.WallpaperBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   created: function() {
-    this.browserProxy_ = settings.PersonalizationBrowserProxyImpl.getInstance();
+    this.browserProxy_ = settings.WallpaperBrowserProxyImpl.getInstance();
   },
 
   /** @override */

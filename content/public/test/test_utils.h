@@ -367,9 +367,8 @@ class EffectiveURLContentBrowserClient : public ContentBrowserClient {
  private:
   GURL GetEffectiveURL(BrowserContext* browser_context,
                        const GURL& url) override;
-  bool DoesSiteRequireDedicatedProcess(
-      BrowserOrResourceContext browser_or_resource_context,
-      const GURL& effective_site_url) override;
+  bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
+                                       const GURL& effective_site_url) override;
 
   GURL url_to_modify_;
   GURL url_to_return_;

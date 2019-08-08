@@ -230,14 +230,18 @@ void ToolbarView::Init() {
 
   std::unique_ptr<ExtensionsToolbarContainer> extensions_container;
   std::unique_ptr<BrowserActionsContainer> browser_actions;
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    extensions_container =
-        std::make_unique<ExtensionsToolbarContainer>(browser_);
-  } else {
-    browser_actions =
-        std::make_unique<BrowserActionsContainer>(browser_, nullptr, this);
-  }
 
+  // Do not create the extensions or browser actions container if it is a guest
+  // profile (only regular and incognito profiles host extensions).
+  if (!browser_->profile()->IsGuestSession()) {
+    if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+      extensions_container =
+          std::make_unique<ExtensionsToolbarContainer>(browser_);
+    } else {
+      browser_actions =
+          std::make_unique<BrowserActionsContainer>(browser_, nullptr, this);
+    }
+  }
   std::unique_ptr<media_router::CastToolbarButton> cast;
   if (media_router::MediaRouterEnabled(browser_->profile()))
     cast = media_router::CastToolbarButton::Create(browser_);

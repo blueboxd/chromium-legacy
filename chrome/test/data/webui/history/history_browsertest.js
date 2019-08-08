@@ -188,7 +188,7 @@ HistorySyncedTabsTest.prototype = {
   __proto__: HistoryBrowserTest.prototype,
 
   extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'history_synced_tabs_test.js',
   ]),
 };

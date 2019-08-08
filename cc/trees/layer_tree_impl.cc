@@ -55,6 +55,50 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 namespace cc {
+namespace {
+// Small helper class that saves the current viewport location as the user sees
+// it and resets to the same location.
+class ViewportAnchor {
+ public:
+  ViewportAnchor(ScrollNode* inner_scroll,
+                 LayerImpl* outer_scroll,
+                 LayerTreeImpl* tree_impl)
+      : inner_(inner_scroll), outer_(outer_scroll), tree_impl_(tree_impl) {
+    viewport_in_content_coordinates_ =
+        scroll_tree().current_scroll_offset(inner_->element_id);
+
+    if (outer_)
+      viewport_in_content_coordinates_ += outer_->CurrentScrollOffset();
+  }
+
+  void ResetViewportToAnchoredPosition() {
+    DCHECK(outer_);
+
+    scroll_tree().ClampScrollToMaxScrollOffset(inner_, tree_impl_);
+    outer_->ClampScrollToMaxScrollOffset();
+
+    gfx::ScrollOffset viewport_location =
+        scroll_tree().current_scroll_offset(inner_->element_id) +
+        outer_->CurrentScrollOffset();
+
+    gfx::Vector2dF delta =
+        viewport_in_content_coordinates_.DeltaFrom(viewport_location);
+
+    delta = scroll_tree().ScrollBy(inner_, delta, tree_impl_);
+    outer_->ScrollBy(delta);
+  }
+
+ private:
+  ScrollTree& scroll_tree() {
+    return tree_impl_->property_trees()->scroll_tree;
+  }
+
+  ScrollNode* inner_;
+  LayerImpl* outer_;
+  LayerTreeImpl* tree_impl_;
+  gfx::ScrollOffset viewport_in_content_coordinates_;
+};
+}  // namespace
 
 void LayerTreeLifecycle::AdvanceTo(LifecycleState next_state) {
   switch (next_state) {
@@ -342,6 +386,111 @@ void LayerTreeImpl::InvalidateRegionForImages(
       base::StringPrintf("no_images[%zu] no_invalidaton[%zu] invalidated[%zu]",
                          no_images_count, no_invalidation_count,
                          invalidated_count));
+}
+
+void LayerTreeImpl::UpdateViewportContainerSizes() {
+  if (!InnerViewportScrollNode())
+    return;
+
+  ViewportAnchor anchor(InnerViewportScrollNode(), OuterViewportScrollLayer(),
+                        this);
+
+  // Top/bottom controls always share the same shown ratio.
+  float controls_shown_ratio =
+      top_controls_shown_ratio_->Current(IsActiveTree());
+  float top_controls_layout_height =
+      browser_controls_shrink_blink_size() ? top_controls_height() : 0.f;
+  float top_content_offset = top_controls_height_ > 0
+                                 ? top_controls_height_ * controls_shown_ratio
+                                 : 0.0f;
+  float delta_from_top_controls =
+      top_controls_layout_height - top_content_offset;
+  float bottom_controls_layout_height =
+      browser_controls_shrink_blink_size() ? bottom_controls_height() : 0.f;
+  float bottom_content_offset =
+      bottom_controls_height_ > 0
+          ? bottom_controls_height_ * controls_shown_ratio
+          : 0.0f;
+  delta_from_top_controls +=
+      bottom_controls_layout_height - bottom_content_offset;
+
+  // Adjust the viewport layers by shrinking/expanding the container to account
+  // for changes in the size (e.g. browser controls) since the last resize from
+  // Blink.
+  auto* property_trees = this->property_trees();
+  gfx::Vector2dF bounds_delta(0.f, delta_from_top_controls);
+  if (property_trees->inner_viewport_container_bounds_delta() == bounds_delta)
+    return;
+
+  property_trees->SetInnerViewportContainerBoundsDelta(bounds_delta);
+
+  ClipNode* inner_clip_node = property_trees->clip_tree.Node(
+      InnerViewportScrollLayer()->clip_tree_index());
+  inner_clip_node->clip.set_height(
+      InnerViewportScrollNode()->container_bounds.height() + bounds_delta.y());
+
+  // Adjust the outer viewport container as well, since adjusting only the
+  // inner may cause its bounds to exceed those of the outer, causing scroll
+  // clamping.
+  if (OuterViewportScrollNode()) {
+    gfx::Vector2dF scaled_bounds_delta =
+        gfx::ScaleVector2d(bounds_delta, 1.f / min_page_scale_factor());
+
+    property_trees->SetOuterViewportContainerBoundsDelta(scaled_bounds_delta);
+    property_trees->SetInnerViewportScrollBoundsDelta(scaled_bounds_delta);
+
+    ClipNode* outer_clip_node = property_trees->clip_tree.Node(
+        OuterViewportScrollLayer()->clip_tree_index());
+
+    float adjusted_container_height =
+        OuterViewportScrollNode()->container_bounds.height() +
+        scaled_bounds_delta.y();
+
+    // TODO(bokan): The clip node bounds for the outer viewport are incorrectly
+    // computed pre-Blink-Gen-Property-Trees: they assume the outer viewport is
+    // the same size as the inner viewport. In reality, the outer viewport is
+    // sized such that it equals the inner viewport when at minimum page scale.
+    // This happens on mobile when a page doesn't have a |width=device-width|
+    // viewport meta tag (e.g. legacy desktop page). Thus, we must scale
+    // the container height and its adjustment to match the incorrect space of
+    // the clip node.  https://crbug.com/901083, https://crbug.com/961649.
+    // Note: we don't fix this in the property tree builder since that code
+    // path is going away and it's not clear whether it depends on ClipNode
+    // being in this coordinate space pre-BGPT.
+    if (!settings().use_layer_lists)
+      adjusted_container_height *= min_page_scale_factor();
+
+    outer_clip_node->clip.set_height(adjusted_container_height);
+
+    // Expand all clips between the outer viewport and the inner viewport.
+    auto* outer_ancestor = property_trees->clip_tree.parent(outer_clip_node);
+    while (outer_ancestor && outer_ancestor != inner_clip_node) {
+      outer_ancestor->clip.Union(outer_clip_node->clip);
+      outer_ancestor = property_trees->clip_tree.parent(outer_ancestor);
+    }
+
+    anchor.ResetViewportToAnchoredPosition();
+  }
+
+  property_trees->clip_tree.set_needs_update(true);
+  property_trees->full_tree_damaged = true;
+  set_needs_update_draw_properties();
+
+  // Viewport scrollbar positions are determined using the viewport bounds
+  // delta.
+  SetScrollbarGeometriesNeedUpdate();
+  set_needs_update_draw_properties();
+
+  // For pre-BlinkGenPropertyTrees mode, we need to ensure the layers are
+  // appropriately updated.
+  if (!settings().use_layer_lists) {
+    if (OuterViewportContainerLayer())
+      OuterViewportContainerLayer()->NoteLayerPropertyChanged();
+    if (InnerViewportScrollLayer())
+      InnerViewportScrollLayer()->NoteLayerPropertyChanged();
+    if (OuterViewportScrollLayer())
+      OuterViewportScrollLayer()->NoteLayerPropertyChanged();
+  }
 }
 
 bool LayerTreeImpl::IsRootLayer(const LayerImpl* layer) const {
@@ -971,8 +1120,7 @@ void LayerTreeImpl::set_browser_controls_shrink_blink_size(bool shrink) {
     return;
 
   browser_controls_shrink_blink_size_ = shrink;
-  if (IsActiveTree())
-    host_impl_->UpdateViewportContainerSizes();
+  UpdateViewportContainerSizes();
 }
 
 void LayerTreeImpl::SetTopControlsHeight(float top_controls_height) {
@@ -980,8 +1128,7 @@ void LayerTreeImpl::SetTopControlsHeight(float top_controls_height) {
     return;
 
   top_controls_height_ = top_controls_height;
-  if (IsActiveTree())
-    host_impl_->UpdateViewportContainerSizes();
+  UpdateViewportContainerSizes();
 }
 
 void LayerTreeImpl::SetBottomControlsHeight(float bottom_controls_height) {
@@ -989,8 +1136,7 @@ void LayerTreeImpl::SetBottomControlsHeight(float bottom_controls_height) {
     return;
 
   bottom_controls_height_ = bottom_controls_height;
-  if (IsActiveTree())
-    host_impl_->UpdateViewportContainerSizes();
+  UpdateViewportContainerSizes();
 }
 
 void LayerTreeImpl::set_overscroll_behavior(
@@ -1023,7 +1169,10 @@ void LayerTreeImpl::PushBrowserControls(const float* top_controls_shown_ratio) {
 
   if (top_controls_shown_ratio) {
     DCHECK(!IsActiveTree() || !host_impl_->pending_tree());
-    top_controls_shown_ratio_->PushMainToPending(*top_controls_shown_ratio);
+    bool changed_pending =
+        top_controls_shown_ratio_->PushMainToPending(*top_controls_shown_ratio);
+    if (!IsActiveTree() && changed_pending)
+      UpdateViewportContainerSizes();
   }
   if (IsActiveTree()) {
     bool changed_active = top_controls_shown_ratio_->PushPendingToActive();
@@ -1107,7 +1256,7 @@ void LayerTreeImpl::SetDeviceViewportSize(
   if (!IsActiveTree())
     return;
 
-  host_impl_->UpdateViewportContainerSizes();
+  UpdateViewportContainerSizes();
   host_impl_->OnCanDrawStateChangedForTree();
   host_impl_->SetViewportDamage(GetDeviceViewport());
 }

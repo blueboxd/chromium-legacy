@@ -170,5 +170,5 @@ interface BackgroundFetchRegistrationService {
                 bool match_all) => (array<BackgroundFetchSettledFetch> fetches);
 
   // Registers the |observer| to receive events for the given registration.
-  AddRegistrationObserver(BackgroundFetchRegistrationObserver observer);
+  AddRegistrationObserver(pending_remote<BackgroundFetchRegistrationObserver> observer);
 };

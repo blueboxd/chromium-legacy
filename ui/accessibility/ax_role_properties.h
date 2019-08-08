@@ -43,6 +43,9 @@ AX_EXPORT bool IsHeading(const ax::mojom::Role role);
 // Returns true if the provided role belongs to a heading or a table header.
 AX_EXPORT bool IsHeadingOrTableHeader(const ax::mojom::Role role);
 
+// Returns true if the given AXNodeData has ignored state or ignored role.
+AX_EXPORT bool IsIgnored(const AXNodeData& data);
+
 // Returns true if the provided role belongs to an image, graphic, canvas, etc.
 AX_EXPORT bool IsImage(const ax::mojom::Role role);
 

@@ -25,6 +25,7 @@
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
+#include "url/url_constants.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -406,6 +407,12 @@ const flat_rule::UrlRule* RulesetMatcher::GetRedirectRule(
     *redirect_url = GURL(CreateStringPiece(*metadata->redirect_url()));
   else
     *redirect_url = GetTransformedURL(params, *metadata->transform());
+
+  // Sanity check that we don't redirect to a javascript url. Specifying
+  // redirect to a javascript url and specifying javascript as a transform
+  // scheme is prohibited. In addition extensions can't intercept requests to
+  // javascript urls. Hence we should never end up with a javascript url here.
+  DCHECK(!redirect_url->SchemeIs(url::kJavaScriptScheme));
 
   // Prevent a redirect loop where a URL continuously redirects to itself.
   return (redirect_url->is_valid() && *params.url != *redirect_url) ? rule

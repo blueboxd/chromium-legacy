@@ -256,7 +256,7 @@ bool OffscreenCanvasRenderingContext2D::isContextLost() const {
 }
 
 bool OffscreenCanvasRenderingContext2D::IsPaintable() const {
-  return offscreenCanvasForBinding()->ResourceProvider();
+  return Host()->ResourceProvider();
 }
 
 String OffscreenCanvasRenderingContext2D::ColorSpaceAsString() const {

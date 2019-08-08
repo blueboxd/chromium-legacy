@@ -36,8 +36,7 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
   PhysicalRect paint_rect = layout_html_canvas_.ReplacedContentRect();
   paint_rect.Move(paint_offset);
 
-  HTMLCanvasElement* canvas =
-      ToHTMLCanvasElement(layout_html_canvas_.GetNode());
+  auto* canvas = To<HTMLCanvasElement>(layout_html_canvas_.GetNode());
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (auto* layer = canvas->ContentsCcLayer()) {

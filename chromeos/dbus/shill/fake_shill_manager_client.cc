@@ -102,11 +102,9 @@ int GetTechnologyOrder(const base::Value& dict) {
     return 1;
   if (technology == shill::kTypeWifi)
     return 2;
-  if (technology == shill::kTypeWimax)
-    return 3;
   if (technology == shill::kTypeCellular)
-    return 4;
-  return 5;
+    return 3;
+  return 4;
 }
 
 int GetSecurityOrder(const base::Value& dict) {
@@ -826,24 +824,6 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     }
   }
 
-  // Wimax
-  const std::string kWimaxPath = "/service/wimax1";
-  state = GetInitialStateForType(shill::kTypeWimax, &enabled);
-  if (state != kTechnologyUnavailable) {
-    AddTechnology(shill::kTypeWimax, enabled);
-    devices->AddDevice("/device/wimax1", shill::kTypeWimax,
-                       "stub_wimax_device1");
-
-    services->AddService(kWimaxPath, "wimax1_guid", "wimax1" /* name */,
-                         shill::kTypeWimax, state, add_to_visible);
-    services->SetServiceProperty(kWimaxPath, shill::kConnectableProperty,
-                                 base::Value(true));
-    base::Value strength_value(80);
-    services->SetServiceProperty(kWimaxPath, shill::kSignalStrengthProperty,
-                                 strength_value);
-    profiles->AddService(shared_profile, kWimaxPath);
-  }
-
   // Cellular
   state = GetInitialStateForType(shill::kTypeCellular, &enabled);
   VLOG(1) << "Cellular state: " << state << " Enabled: " << enabled;
@@ -1257,8 +1237,7 @@ bool FakeShillManagerClient::SetInitialNetworkState(
     type_arg = shill::kTypeEthernet;
 
   if (type_arg != shill::kTypeEthernet && type_arg != shill::kTypeWifi &&
-      type_arg != shill::kTypeCellular && type_arg != shill::kTypeWimax &&
-      type_arg != shill::kTypeVPN) {
+      type_arg != shill::kTypeCellular && type_arg != shill::kTypeVPN) {
     LOG(WARNING) << "Unrecognized Shill network type: " << type_arg;
     return false;
   }

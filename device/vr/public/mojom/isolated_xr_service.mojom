@@ -4,11 +4,10 @@
 
 module device.mojom;
 
+import "device/vr/public/mojom/browser_test_interfaces.mojom";
 import "device/vr/public/mojom/vr_service.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-
-const string kVrIsolatedServiceName = "xr_device_service";
 
 // The XRSessionController lives in the xr runtime service, and corresponds to
 // a set of the XRSession bindings.  The client is the browser process, which
@@ -212,4 +211,14 @@ interface IsolatedXRRuntimeProvider {
   // followed by OnDevicesEnumerated.
   // Should only be called once.
   RequestDevices(IsolatedXRRuntimeProviderClient client);
+};
+
+// The main interface for the XR Device Service.
+interface XRDeviceService {
+  // Binds a IsolatedXRRuntimeProvider pipe in the service.
+  BindRuntimeProvider(pending_receiver<IsolatedXRRuntimeProvider> receiver);
+
+  // Binds the main testing interface pipe in the service. Only used by
+  // browser tests.
+  BindTestHook(pending_receiver<device_test.mojom.XRServiceTestHook> receiver);
 };

@@ -37,6 +37,10 @@ class WebAuthnHandler : public DevToolsDomainHandler, public WebAuthn::Backend {
   Response AddCredential(
       const String& authenticator_id,
       std::unique_ptr<protocol::WebAuthn::Credential> credential) override;
+  Response GetCredential(
+      const String& authenticator_id,
+      const Binary& credential_id,
+      std::unique_ptr<WebAuthn::Credential>* out_credential) override;
   Response GetCredentials(
       const String& authenticator_id,
       std::unique_ptr<protocol::Array<protocol::WebAuthn::Credential>>*

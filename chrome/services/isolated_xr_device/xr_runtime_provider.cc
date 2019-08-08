@@ -221,9 +221,7 @@ void IsolatedXRRuntimeProvider::SetOpenXrRuntimeStatus(RuntimeStatus status) {
 }
 #endif  // BUILDFLAG(ENABLE_OPENXR)
 
-IsolatedXRRuntimeProvider::IsolatedXRRuntimeProvider(
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+IsolatedXRRuntimeProvider::IsolatedXRRuntimeProvider() = default;
 
 IsolatedXRRuntimeProvider::~IsolatedXRRuntimeProvider() {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)

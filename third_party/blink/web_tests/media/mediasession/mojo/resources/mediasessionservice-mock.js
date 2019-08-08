@@ -70,6 +70,15 @@ class MediaSessionServiceMock {
     this.setPlaybackStateCallback_ = callback;
   }
 
+  setPositionState(position) {
+    if (!!this.setPositionStateCallback_)
+      this.setPositionStateCallback_(position);
+  }
+
+  setPositionStateCallback(callback) {
+    this.setPositionStateCallback_ = callback;
+  }
+
   enableAction(action) {
     if (!!this.enableDisableActionCallback_)
       this.enableDisableActionCallback_(action, true);

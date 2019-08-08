@@ -39,7 +39,6 @@
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/ui/text_field_styling.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -79,10 +78,9 @@ const CGFloat kEstimatedTableRowHeight = 50;
 const CGFloat kEstimatedTableSectionFooterHeight = 40;
 }  // namespace
 
-@interface BookmarkEditViewController ()<BookmarkFolderViewControllerDelegate,
-                                         BookmarkModelBridgeObserver,
-                                         BookmarkTextFieldItemDelegate,
-                                         TextFieldValidation> {
+@interface BookmarkEditViewController () <BookmarkFolderViewControllerDelegate,
+                                          BookmarkModelBridgeObserver,
+                                          BookmarkTextFieldItemDelegate> {
   // Flag to ignore bookmark model changes notifications.
   BOOL _ignoresBookmarkModelChanges;
 
@@ -497,17 +495,6 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {
   [textField resignFirstResponder];
   return YES;
-}
-
-#pragma mark - TextFieldValidation
-
-- (NSString*)validationErrorForTextField:(id<TextFieldStyling>)field {
-  [self updateSaveButtonState];
-  if ([self inputURLIsValid]) {
-    return nil;
-  } else {
-    return l10n_util::GetNSString(IDS_IOS_BOOKMARK_URL_FIELD_VALIDATION_FAILED);
-  }
 }
 
 #pragma mark - UITableViewDataSource

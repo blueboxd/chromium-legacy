@@ -2158,6 +2158,13 @@ void RenderThreadImpl::OnSystemColorsChanged(
 #endif
 }
 
+void RenderThreadImpl::UpdateSystemColorInfo(
+    mojom::UpdateSystemColorInfoParamsPtr params) {
+  ui::NativeTheme::GetInstanceForWeb()->UpdateSystemColorInfo(
+      params->is_dark_mode, params->is_high_contrast,
+      params->preferred_color_scheme, params->colors);
+}
+
 void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   blink::ResetPluginCache(reload_pages);

@@ -654,8 +654,6 @@ NetworkingPrivateChromeOS::GetEnabledNetworkTypes() {
     network_list->AppendString(::onc::network_type::kEthernet);
   if (state_handler->IsTechnologyEnabled(NetworkTypePattern::WiFi()))
     network_list->AppendString(::onc::network_type::kWiFi);
-  if (state_handler->IsTechnologyEnabled(NetworkTypePattern::Wimax()))
-    network_list->AppendString(::onc::network_type::kWimax);
   if (state_handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()))
     network_list->AppendString(::onc::network_type::kCellular);
 
@@ -678,9 +676,9 @@ NetworkingPrivateChromeOS::GetDeviceStateList() {
 
   // For any technologies that we do not have a DeviceState entry for, append
   // an entry if the technology is available.
-  const char* technology_types[] = {
-      ::onc::network_type::kEthernet, ::onc::network_type::kWiFi,
-      ::onc::network_type::kWimax, ::onc::network_type::kCellular};
+  const char* technology_types[] = {::onc::network_type::kEthernet,
+                                    ::onc::network_type::kWiFi,
+                                    ::onc::network_type::kCellular};
   for (const char* technology : technology_types) {
     if (base::Contains(technologies_found, technology))
       continue;

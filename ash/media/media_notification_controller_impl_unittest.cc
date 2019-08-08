@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/unguessable_token.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -46,7 +47,10 @@ media_session::mojom::AudioFocusRequestStatePtr GetRequestStateWithId(
 
 class MediaNotificationControllerImplTest : public AshTestBase {
  public:
-  MediaNotificationControllerImplTest() = default;
+  MediaNotificationControllerImplTest()
+      : task_runner_(new base::TestMockTimeTaskRunner(
+            base::TestMockTimeTaskRunner::Type::kStandalone)) {}
+
   ~MediaNotificationControllerImplTest() override = default;
 
   // AshTestBase
@@ -55,6 +59,9 @@ class MediaNotificationControllerImplTest : public AshTestBase {
         features::kMediaSessionNotification);
 
     AshTestBase::SetUp();
+
+    Shell::Get()->media_notification_controller()->set_task_runner_for_testing(
+        task_runner_);
   }
 
   void ExpectNotificationCount(unsigned count) {
@@ -94,7 +101,13 @@ class MediaNotificationControllerImplTest : public AshTestBase {
     Shell::Get()->session_controller()->SetSessionInfo(info);
   }
 
+  void SimulateFreezeTimerExpired() {
+    task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(2500));
+  }
+
  private:
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+
   base::test::ScopedFeatureList scoped_feature_list_;
 
   base::HistogramTester histogram_tester_;
@@ -128,6 +141,7 @@ TEST_F(MediaNotificationControllerImplTest, OnFocusGainedLost_SameId) {
 
   Shell::Get()->media_notification_controller()->OnFocusLost(
       GetRequestStateWithId(id));
+  SimulateFreezeTimerExpired();
 
   ExpectNotificationCount(0);
 }
@@ -164,6 +178,7 @@ TEST_F(MediaNotificationControllerImplTest, OnFocusGainedLost_MultipleIds) {
 
   Shell::Get()->media_notification_controller()->OnFocusLost(
       GetRequestStateWithId(id1));
+  SimulateFreezeTimerExpired();
 
   ExpectNotificationCount(1);
   ExpectHistogramCountRecorded(1, 1);
@@ -473,6 +488,257 @@ TEST_F(MediaNotificationControllerImplTest, HideWhenScreenLocked) {
   // Unlock the screen and both notifications should be visible again.
   SimulateSessionLock(false);
   EXPECT_EQ(2u, message_center->GetVisibleNotifications().size());
+}
+
+// Test that when we lose focus we freeze the notification until the timer
+// is fired and then remove it.
+TEST_F(MediaNotificationControllerImplTest, OnFocusLostFreezeUntilTimerFired) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(1);
+  EXPECT_FALSE(Shell::Get()
+                   ->media_notification_controller()
+                   ->GetItem(id.ToString())
+                   ->frozen());
+
+  Shell::Get()->media_notification_controller()->OnFocusLost(
+      GetRequestStateWithId(id));
+
+  ExpectNotificationCount(1);
+  EXPECT_TRUE(Shell::Get()
+                  ->media_notification_controller()
+                  ->GetItem(id.ToString())
+                  ->frozen());
+
+  SimulateFreezeTimerExpired();
+  ExpectNotificationCount(0);
+}
+
+// Test that when we lose focus we freeze the notification and then we see
+// the session resume we keep the notification and unfreeze it.
+TEST_F(MediaNotificationControllerImplTest, OnFocusLostFreezeAndResumeSameId) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(1);
+  EXPECT_FALSE(Shell::Get()
+                   ->media_notification_controller()
+                   ->GetItem(id.ToString())
+                   ->frozen());
+
+  Shell::Get()->media_notification_controller()->OnFocusLost(
+      GetRequestStateWithId(id));
+
+  ExpectNotificationCount(1);
+  EXPECT_TRUE(Shell::Get()
+                  ->media_notification_controller()
+                  ->GetItem(id.ToString())
+                  ->frozen());
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  // The session comes back and is controllable so we should unfreeze the
+  // notification.
+  ExpectNotificationCount(1);
+  EXPECT_FALSE(Shell::Get()
+                   ->media_notification_controller()
+                   ->GetItem(id.ToString())
+                   ->frozen());
+}
+
+// Test that when we lose focus we freeze the notification and then we see
+// the session resume but it is missing metadata we hide the notification.
+TEST_F(MediaNotificationControllerImplTest,
+       OnFocusLostFreezeAndResumeSameId_MissingMetadata) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(1);
+  EXPECT_FALSE(Shell::Get()
+                   ->media_notification_controller()
+                   ->GetItem(id.ToString())
+                   ->frozen());
+
+  Shell::Get()->media_notification_controller()->OnFocusLost(
+      GetRequestStateWithId(id));
+
+  ExpectNotificationCount(1);
+  EXPECT_TRUE(Shell::Get()
+                  ->media_notification_controller()
+                  ->GetItem(id.ToString())
+                  ->frozen());
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(media_session::MediaMetadata());
+
+  // The session has come back but the metadata is missing data so we should
+  // keep the notification frozen.
+  ExpectNotificationCount(1);
+  EXPECT_TRUE(Shell::Get()
+                  ->media_notification_controller()
+                  ->GetItem(id.ToString())
+                  ->frozen());
+
+  // After the timer has been fired we should hide the notification but still
+  // have the controller.
+  SimulateFreezeTimerExpired();
+  ExpectNotificationCount(0);
+  EXPECT_TRUE(Shell::Get()->media_notification_controller()->HasItemForTesting(
+      id.ToString()));
+}
+
+// Test that when we lose focus we freeze the notification and then we see
+// the session resume but it is not controllable we hide the notification.
+TEST_F(MediaNotificationControllerImplTest,
+       OnFocusLostFreezeAndResumeSameId_NotControllable) {
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(1);
+  EXPECT_FALSE(Shell::Get()
+                   ->media_notification_controller()
+                   ->GetItem(id.ToString())
+                   ->frozen());
+
+  Shell::Get()->media_notification_controller()->OnFocusLost(
+      GetRequestStateWithId(id));
+
+  ExpectNotificationCount(1);
+  EXPECT_TRUE(Shell::Get()
+                  ->media_notification_controller()
+                  ->GetItem(id.ToString())
+                  ->frozen());
+
+  media_session::mojom::AudioFocusRequestStatePtr state =
+      GetRequestStateWithId(id);
+  state->session_info->is_controllable = false;
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      std::move(state));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  // The session has come back but the metadata is not controllable so we should
+  // keep the notification frozen.
+  ExpectNotificationCount(1);
+  EXPECT_TRUE(Shell::Get()
+                  ->media_notification_controller()
+                  ->GetItem(id.ToString())
+                  ->frozen());
+
+  // After the timer has been fired we should hide the notification but still
+  // have the controller.
+  SimulateFreezeTimerExpired();
+  ExpectNotificationCount(0);
+  EXPECT_TRUE(Shell::Get()->media_notification_controller()->HasItemForTesting(
+      id.ToString()));
+}
+
+// Test that when we lose focus we freeze the notification and we see a new
+// session then that does not unfreeze the first notification.
+TEST_F(MediaNotificationControllerImplTest,
+       OnFocusLostFreezeAndDoNotResumeNewId) {
+  base::UnguessableToken id1 = base::UnguessableToken::Create();
+  base::UnguessableToken id2 = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id1));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id1.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(1);
+  EXPECT_FALSE(Shell::Get()
+                   ->media_notification_controller()
+                   ->GetItem(id1.ToString())
+                   ->frozen());
+
+  Shell::Get()->media_notification_controller()->OnFocusLost(
+      GetRequestStateWithId(id1));
+
+  ExpectNotificationCount(1);
+  EXPECT_TRUE(Shell::Get()
+                  ->media_notification_controller()
+                  ->GetItem(id1.ToString())
+                  ->frozen());
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id2));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id2.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(2);
+  EXPECT_TRUE(Shell::Get()
+                  ->media_notification_controller()
+                  ->GetItem(id1.ToString())
+                  ->frozen());
+  EXPECT_FALSE(Shell::Get()
+                   ->media_notification_controller()
+                   ->GetItem(id2.ToString())
+                   ->frozen());
+
+  SimulateFreezeTimerExpired();
+  ExpectNotificationCount(1);
+
+  EXPECT_FALSE(Shell::Get()->media_notification_controller()->HasItemForTesting(
+      id1.ToString()));
 }
 
 }  // namespace ash

@@ -285,6 +285,8 @@ static constexpr float kOverflowMenuItemHeight = 0.080f;
 static constexpr float kOverflowMenuItemXPadding = 0.024f;
 static constexpr float kOverflowMenuMaxSpan = 0.384f - kOverflowMenuYPadding;
 
+static constexpr const char* kCrashVrBrowserUrl = "chrome://crash-vr-browser";
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_UI_SCENE_CONSTANTS_H_

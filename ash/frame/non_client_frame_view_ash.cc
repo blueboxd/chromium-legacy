@@ -398,24 +398,15 @@ gfx::Size NonClientFrameViewAsh::GetMaximumSize() const {
   return gfx::Size(width, height);
 }
 
-void NonClientFrameViewAsh::SchedulePaintInRect(const gfx::Rect& r) {
-  // We may end up here before |header_view_| has been added to the Widget.
-  if (header_view_->GetWidget()) {
-    // The HeaderView is not a child of NonClientFrameViewAsh. Redirect the
-    // paint to HeaderView instead.
-    gfx::RectF to_paint(r);
-    views::View::ConvertRectToTarget(this, header_view_, &to_paint);
-    header_view_->SchedulePaintInRect(gfx::ToEnclosingRect(to_paint));
-  } else {
-    views::NonClientFrameView::SchedulePaintInRect(r);
-  }
-}
-
 void NonClientFrameViewAsh::SetVisible(bool visible) {
   overlay_view_->SetVisible(visible);
   views::View::SetVisible(visible);
   // We need to re-layout so that client view will occupy entire window.
   InvalidateLayout();
+}
+
+void NonClientFrameViewAsh::SetShouldPaintHeader(bool paint) {
+  header_view_->SetShouldPaintHeader(paint);
 }
 
 const views::View* NonClientFrameViewAsh::GetAvatarIconViewForTest() const {
@@ -430,8 +421,15 @@ SkColor NonClientFrameViewAsh::GetInactiveFrameColorForTest() const {
   return frame_->GetNativeWindow()->GetProperty(kFrameInactiveColorKey);
 }
 
-void NonClientFrameViewAsh::SetShouldPaintHeader(bool paint) {
-  header_view_->SetShouldPaintHeader(paint);
+void NonClientFrameViewAsh::OnDidSchedulePaint(const gfx::Rect& r) {
+  // We may end up here before |header_view_| has been added to the Widget.
+  if (header_view_->GetWidget()) {
+    // The HeaderView is not a child of NonClientFrameViewAsh. Redirect the
+    // paint to HeaderView instead.
+    gfx::RectF to_paint(r);
+    views::View::ConvertRectToTarget(this, header_view_, &to_paint);
+    header_view_->SchedulePaintInRect(gfx::ToEnclosingRect(to_paint));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

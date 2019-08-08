@@ -55,39 +55,6 @@ PageInsetSizes GetPageInsetsForTwoUpView(
   return two_up_insets;
 }
 
-pp::Rect GetLeftFillRect(const pp::Rect& page_rect,
-                         const PageInsetSizes& inset_sizes,
-                         int bottom_separator) {
-  DCHECK_GE(page_rect.x(), inset_sizes.left);
-
-  return pp::Rect(0, page_rect.y() - inset_sizes.top,
-                  page_rect.x() - inset_sizes.left,
-                  page_rect.height() + inset_sizes.top + inset_sizes.bottom +
-                      bottom_separator);
-}
-
-pp::Rect GetRightFillRect(const pp::Rect& page_rect,
-                          const PageInsetSizes& inset_sizes,
-                          int doc_width,
-                          int bottom_separator) {
-  int right_gap_x = page_rect.right() + inset_sizes.right;
-  DCHECK_GE(doc_width, right_gap_x);
-
-  return pp::Rect(right_gap_x, page_rect.y() - inset_sizes.top,
-                  doc_width - right_gap_x,
-                  page_rect.height() + inset_sizes.top + inset_sizes.bottom +
-                      bottom_separator);
-}
-
-pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
-                           const PageInsetSizes& inset_sizes,
-                           int bottom_separator) {
-  return pp::Rect(page_rect.x() - inset_sizes.left,
-                  page_rect.bottom() + inset_sizes.bottom,
-                  page_rect.width() + inset_sizes.left + inset_sizes.right,
-                  bottom_separator);
-}
-
 pp::Rect GetRectForSingleView(const pp::Size& rect_size,
                               const pp::Size& document_size,
                               const PageInsetSizes& page_insets) {
@@ -119,6 +86,39 @@ pp::Rect GetSurroundingRect(int page_y,
   return pp::Rect(
       0, page_y - inset_sizes.top, doc_width,
       page_height + inset_sizes.top + inset_sizes.bottom + bottom_separator);
+}
+
+pp::Rect GetLeftFillRect(const pp::Rect& page_rect,
+                         const PageInsetSizes& inset_sizes,
+                         int bottom_separator) {
+  DCHECK_GE(page_rect.x(), inset_sizes.left);
+
+  return pp::Rect(0, page_rect.y() - inset_sizes.top,
+                  page_rect.x() - inset_sizes.left,
+                  page_rect.height() + inset_sizes.top + inset_sizes.bottom +
+                      bottom_separator);
+}
+
+pp::Rect GetRightFillRect(const pp::Rect& page_rect,
+                          const PageInsetSizes& inset_sizes,
+                          int doc_width,
+                          int bottom_separator) {
+  int right_gap_x = page_rect.right() + inset_sizes.right;
+  DCHECK_GE(doc_width, right_gap_x);
+
+  return pp::Rect(right_gap_x, page_rect.y() - inset_sizes.top,
+                  doc_width - right_gap_x,
+                  page_rect.height() + inset_sizes.top + inset_sizes.bottom +
+                      bottom_separator);
+}
+
+pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
+                           const PageInsetSizes& inset_sizes,
+                           int bottom_separator) {
+  return pp::Rect(page_rect.x() - inset_sizes.left,
+                  page_rect.bottom() + inset_sizes.bottom,
+                  page_rect.width() + inset_sizes.left + inset_sizes.right,
+                  bottom_separator);
 }
 
 pp::Rect GetLeftRectForTwoUpView(const pp::Size& rect_size,

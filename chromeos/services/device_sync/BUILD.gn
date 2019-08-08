@@ -6,6 +6,8 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("device_sync") {
   sources = [
+    "async_execution_time_metrics_logger.cc",
+    "async_execution_time_metrics_logger.h",
     "cryptauth_api_call_flow.cc",
     "cryptauth_api_call_flow.h",
     "cryptauth_better_together_feature_types.cc",
@@ -83,6 +85,8 @@ static_library("device_sync") {
     "cryptauth_scheduler.h",
     "cryptauth_scheduler_impl.cc",
     "cryptauth_scheduler_impl.h",
+    "cryptauth_task_metrics_logger.cc",
+    "cryptauth_task_metrics_logger.h",
     "cryptauth_v2_device_manager.cc",
     "cryptauth_v2_device_manager.h",
     "cryptauth_v2_device_manager_impl.cc",

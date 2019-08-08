@@ -52,6 +52,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
+#include "content/common/navigation_params_mojom_traits.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -628,7 +629,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           mojom::WasActivatedOption::kUnknown,
           base::UnguessableToken::Create(),  // navigation_token
           std::vector<
-              PrefetchedSignedExchangeInfo>(),  // prefetched_signed_exchanges
+              mojom::
+                  PrefetchedSignedExchangeInfoPtr>(),  // prefetched_signed_exchanges
 #if defined(OS_ANDROID)
           std::string(),  // data_url_as_string
 #endif
@@ -699,7 +701,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           mojom::NavigationTiming::New(), base::nullopt /* appcache_host_id; */,
           mojom::WasActivatedOption::kUnknown,
           base::UnguessableToken::Create() /* navigation_token */,
-          std::vector<PrefetchedSignedExchangeInfo>(),
+          std::vector<mojom::PrefetchedSignedExchangeInfoPtr>(),
 #if defined(OS_ANDROID)
           std::string(), /* data_url_as_string */
 #endif
@@ -2184,17 +2186,19 @@ void NavigationRequest::CommitNavigation() {
         render_frame_host_->GetProcess()->GetID(),
         render_frame_host_->GetRoutingID(), &service_worker_provider_info);
   }
+  auto common_params = common_params_.Clone();
+  auto commit_params = commit_params_.Clone();
   if (subresource_loader_params_ &&
       !subresource_loader_params_->prefetched_signed_exchanges.empty()) {
-    commit_params_->prefetched_signed_exchanges =
+    commit_params->prefetched_signed_exchanges =
         std::move(subresource_loader_params_->prefetched_signed_exchanges);
   }
 
   render_frame_host_->CommitNavigation(
-      this, *common_params_, *commit_params_, response_head_.get(),
-      std::move(response_body_), std::move(url_loader_client_endpoints_),
-      is_view_source_, std::move(subresource_loader_params_),
-      std::move(subresource_overrides_),
+      this, std::move(common_params), std::move(commit_params),
+      response_head_.get(), std::move(response_body_),
+      std::move(url_loader_client_endpoints_), is_view_source_,
+      std::move(subresource_loader_params_), std::move(subresource_overrides_),
       std::move(service_worker_provider_info), devtools_navigation_token_,
       std::move(bundled_exchanges_handle_));
 

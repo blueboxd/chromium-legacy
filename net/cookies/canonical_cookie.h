@@ -87,12 +87,13 @@ class NET_EXPORT CanonicalCookie {
   // |creation_time|.  Canonicalizes inputs.  May return nullptr if
   // an attribute value is invalid.  |url| must be valid.  |creation_time| may
   // not be null. Sets optional |status| to the relevant CookieInclusionStatus
-  // if provided.
+  // if provided.  |server_time| indicates what the server sending us the Cookie
+  // thought the current time was when the cookie was produced.  This is used to
+  // adjust for clock skew between server and host.
   //
-  // SameSite and HttpOnly related parameters in |options| are not checked here,
+  // SameSite and HttpOnly related parameters are not checked here,
   // so creation of CanonicalCookies with e.g. SameSite=Strict from a cross-site
-  // context is allowed. The same |options| should be given when creating and
-  // setting a cookie. Create() also does not check whether |url| has a secure
+  // context is allowed. Create() also does not check whether |url| has a secure
   // scheme if attempting to create a Secure cookie. The Secure, SameSite, and
   // HttpOnly related parameters should be checked when setting the cookie in
   // the CookieStore.
@@ -102,7 +103,7 @@ class NET_EXPORT CanonicalCookie {
       const GURL& url,
       const std::string& cookie_line,
       const base::Time& creation_time,
-      const CookieOptions& options,
+      base::Optional<base::Time> server_time,
       CookieInclusionStatus* status = nullptr);
 
   // Create a canonical cookie based on sanitizing the passed inputs in the

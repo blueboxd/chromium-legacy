@@ -68,9 +68,9 @@ class TestLabel : public Label {
   }
 
   // View:
-  void SchedulePaintInRect(const gfx::Rect& r) override {
+  void OnDidSchedulePaint(const gfx::Rect& r) override {
     ++schedule_paint_count_;
-    Label::SchedulePaintInRect(r);
+    Label::OnDidSchedulePaint(r);
   }
 
  private:

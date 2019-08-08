@@ -17,8 +17,8 @@
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -54,11 +54,12 @@ bool HasValidYUVData(const media::VideoFrame& frame) {
 // Used in test that do blocking reads from a local file.
 class TestMediaDataSource : public chrome::mojom::MediaDataSource {
  public:
-  TestMediaDataSource(chrome::mojom::MediaDataSourcePtr* interface,
-                      const base::FilePath& file_path)
-      : file_path_(file_path), binding_(this, mojo::MakeRequest(interface)) {}
+  TestMediaDataSource(
+      mojo::PendingReceiver<chrome::mojom::MediaDataSource> receiver,
+      const base::FilePath& file_path)
+      : file_path_(file_path), receiver_(this, std::move(receiver)) {}
 
-  ~TestMediaDataSource() override {}
+  ~TestMediaDataSource() override = default;
 
  private:
   // chrome::mojom::MediaDataSource implementation.
@@ -76,18 +77,18 @@ class TestMediaDataSource : public chrome::mojom::MediaDataSource {
   }
 
   base::FilePath file_path_;
-  mojo::Binding<chrome::mojom::MediaDataSource> binding_;
+  mojo::Receiver<chrome::mojom::MediaDataSource> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaDataSource);
 };
 
 class MediaParserAndroidTest : public testing::Test {
  public:
-  MediaParserAndroidTest() : keepalive_(nullptr, base::nullopt) {}
+  MediaParserAndroidTest() = default;
   ~MediaParserAndroidTest() override = default;
 
   void SetUp() override {
-    parser_ = std::make_unique<MediaParserAndroid>(keepalive_.CreateRef());
+    parser_ = std::make_unique<MediaParserAndroid>();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
@@ -103,13 +104,14 @@ class MediaParserAndroidTest : public testing::Test {
     int64_t size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &size));
 
-    chrome::mojom::MediaDataSourcePtr data_source_ptr;
-    TestMediaDataSource test_data_source(&data_source_ptr, file_path);
+    mojo::PendingRemote<chrome::mojom::MediaDataSource> remote_data_source;
+    TestMediaDataSource test_data_source(
+        remote_data_source.InitWithNewPipeAndPassReceiver(), file_path);
 
     ExtractVideoFrameResult result;
     base::RunLoop run_loop;
     parser()->ExtractVideoFrame(
-        mime_type, size, std::move(data_source_ptr),
+        mime_type, size, std::move(remote_data_source),
         base::BindLambdaForTesting(
             [&](bool success, chrome::mojom::VideoFrameDataPtr video_frame_data,
                 const base::Optional<media::VideoDecoderConfig>& config) {
@@ -125,11 +127,9 @@ class MediaParserAndroidTest : public testing::Test {
   }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<MediaParserAndroid> parser_;
   base::ScopedTempDir temp_dir_;
-
-  service_manager::ServiceKeepalive keepalive_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaParserAndroidTest);
 };

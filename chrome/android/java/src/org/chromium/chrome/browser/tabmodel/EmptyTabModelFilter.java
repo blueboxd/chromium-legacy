@@ -31,6 +31,9 @@ public class EmptyTabModelFilter extends TabModelFilter {
     @Override
     protected void resetFilterStateInternal() {}
 
+    @Override
+    protected void removeTab(Tab tab) {}
+
     // TabList implementation.
     @Override
     public boolean isIncognito() {

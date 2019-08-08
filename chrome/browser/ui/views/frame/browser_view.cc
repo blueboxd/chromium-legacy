@@ -1343,6 +1343,9 @@ void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
 
 // TODO(crbug.com/932818): Clean up this two functions and add helper for shared
 // code.
+// TODO(crbug.com/932818): Whether this function returns an owned pointer or not
+// is unclear. Sort that out, and make it return unique_ptr or not as
+// appropriate.
 autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
     content::WebContents* web_contents,
     autofill::SaveCardBubbleController* controller,
@@ -1372,20 +1375,20 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
   switch (bubble_type) {
     case autofill::BubbleType::LOCAL_SAVE:
     case autofill::BubbleType::UPLOAD_SAVE:
-      bubble = new autofill::SaveCardOfferBubbleViews(anchor_view, gfx::Point(),
-                                                      web_contents, controller);
+      bubble = new autofill::SaveCardOfferBubbleViews(anchor_view, web_contents,
+                                                      controller);
       break;
     case autofill::BubbleType::SIGN_IN_PROMO:
       bubble = new autofill::SaveCardSignInPromoBubbleViews(
-          anchor_view, gfx::Point(), web_contents, controller);
+          anchor_view, web_contents, controller);
       break;
     case autofill::BubbleType::MANAGE_CARDS:
       bubble = new autofill::SaveCardManageCardsBubbleViews(
-          anchor_view, gfx::Point(), web_contents, controller);
+          anchor_view, web_contents, controller);
       break;
     case autofill::BubbleType::FAILURE:
       bubble = new autofill::SaveCardFailureBubbleViews(
-          anchor_view, gfx::Point(), web_contents, controller);
+          anchor_view, web_contents, controller);
       break;
     case autofill::BubbleType::INACTIVE:
       break;
@@ -1452,14 +1455,14 @@ autofill::LocalCardMigrationBubble* BrowserView::ShowLocalCardMigrationBubble(
     icon_view = toolbar_page_action_container->GetIconView(
         PageActionIconType::kLocalCardMigration);
     bubble = new autofill::LocalCardMigrationBubbleViews(
-        toolbar_page_action_container, gfx::Point(), web_contents, controller);
+        toolbar_page_action_container, web_contents, controller);
   } else {
     // Otherwise the bubble is anchored to the credit card icon in the location
     // bar. This will be removed when the feature is fully enabled.
     LocationBarView* location_bar = GetLocationBarView();
     icon_view = location_bar->local_card_migration_icon_view();
     bubble = new autofill::LocalCardMigrationBubbleViews(
-        location_bar, gfx::Point(), web_contents, controller);
+        location_bar, web_contents, controller);
   }
   if (icon_view)
     bubble->SetHighlightedButton(icon_view);

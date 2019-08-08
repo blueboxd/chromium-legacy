@@ -191,9 +191,10 @@ class GpuTestExpectationsValidation(unittest.TestCase):
     errors = ''
     for test_case in _FindTestCases():
       if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
-        for i in xrange(1, 2 + (test_case == webgl_conformance_test_class)):
+        for webgl_version in xrange(
+            1, 2 + (test_case == webgl_conformance_test_class)):
           _ = list(test_case.GenerateGpuTests(
-              gpu_helper.GetMockArgs(webgl_version=('%d.0.0' % i))))
+              gpu_helper.GetMockArgs(webgl_version=('%d.0.0' % webgl_version))))
           if test_case.ExpectationsFiles():
             with open(test_case.ExpectationsFiles()[0]) as f:
               errors += CheckTestExpectationPatternsForConflicts(f.read(),
@@ -203,16 +204,39 @@ class GpuTestExpectationsValidation(unittest.TestCase):
   def testWebglTestPathsExist(self):
     webgl_test_class = (
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
-    for test_case in _FindTestCases():
-      if test_case == webgl_test_class:
-        for i in xrange(1, 3):
-          _ = list(test_case.GenerateGpuTests(
-              gpu_helper.GetMockArgs(webgl_version='%d.0.0' % i)))
-          with open(test_case.ExpectationsFiles()[0], 'r') as f:
-            expectations = expectations_parser.TestExpectations()
-            expectations.parse_tagged_list(f.read())
-            for pattern, _ in expectations.individual_exps.items():
-              _CheckWebglConformanceTestPathIsValid(pattern)
+    for webgl_version in xrange(1, 3):
+      _ = list(
+          webgl_test_class.GenerateGpuTests(
+              gpu_helper.GetMockArgs(webgl_version='%d.0.0' % webgl_version)))
+      with open(webgl_test_class.ExpectationsFiles()[0], 'r') as f:
+        expectations = expectations_parser.TestExpectations()
+        expectations.parse_tagged_list(f.read())
+        for pattern, _ in expectations.individual_exps.items():
+          _CheckWebglConformanceTestPathIsValid(pattern)
+
+  def testForBrokenWebglExtensionExpectations(self):
+    webgl_test_class = (
+        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
+    for webgl_version in xrange(1, 3):
+      tests = [
+          test[0] for test in
+          webgl_test_class.GenerateGpuTests(
+              gpu_helper.GetMockArgs(webgl_version='%d.0.0' % webgl_version))]
+      with open(webgl_test_class.ExpectationsFiles()[0], 'r') as f:
+        expectations = expectations_parser.TestExpectations()
+        expectations.parse_tagged_list(f.read())
+        patterns_to_exps = expectations.individual_exps.copy()
+        patterns_to_exps.update(expectations.glob_exps)
+        patterns_to_exps = {k: v for k, v in patterns_to_exps.items()
+                            if k.lower().startswith('webglextension')}
+        broken_expectations = expectations.get_broken_expectations(
+            patterns_to_exps, tests)
+        msg = ''
+        for ununsed_pattern in set([e.test for e in  broken_expectations]):
+          msg += ("Expectations with pattern '{0}' in {1} do not apply to any "
+                  "webgl version {2} extension tests\n".format(
+                      ununsed_pattern, os.path.basename(f.name), webgl_version))
+        assert not msg, msg
 
   def testForBrokenPixelTestExpectations(self):
     pixel_test_names = []
@@ -237,9 +261,9 @@ class GpuTestExpectationsValidation(unittest.TestCase):
     webgl_conformance_test_class = (
         webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
     expectations_driver_tags = set()
-    for i in range(1, 3):
+    for webgl_version in range(1, 3):
       _ = list(webgl_conformance_test_class.GenerateGpuTests(
-          gpu_helper.GetMockArgs(webgl_version=('%d.0.0' % i))))
+          gpu_helper.GetMockArgs(webgl_version=('%d.0.0' % webgl_version))))
       with open(webgl_conformance_test_class.ExpectationsFiles()[0], 'r') as f:
         parser = expectations_parser.TestExpectations()
         parser.parse_tagged_list(f.read(), f.name)

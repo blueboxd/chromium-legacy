@@ -174,14 +174,14 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   // clipboard to contain a bitmap, HTML markup representing the image, a URL to
   // the image, and the image's alt text. Having the types follow this order
   // maximizes the amount of data that can be extracted by various programs.
-  enum ObjectType {
+  enum class ObjectType {
     CBF_SMBITMAP,  // Bitmap from shared memory.
     CBF_HTML,
     CBF_RTF,
     CBF_BOOKMARK,
     CBF_TEXT,
     CBF_WEBKIT,
-    CBF_DATA,      // Arbitrary block of bytes.
+    CBF_DATA,  // Arbitrary block of bytes.
   };
 
   // ObjectMap is a map from ObjectType to associated data.
@@ -205,7 +205,7 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   //               data         byte array
   using ObjectMapParam = std::vector<char>;
   using ObjectMapParams = std::vector<ObjectMapParam>;
-  using ObjectMap = base::flat_map<int /* ObjectType */, ObjectMapParams>;
+  using ObjectMap = base::flat_map<ObjectType, ObjectMapParams>;
 
   // Write a bunch of objects to the system clipboard. Copies are made of the
   // contents of |objects|.

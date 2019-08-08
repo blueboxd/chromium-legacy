@@ -22,6 +22,8 @@ NSString* const kTextPrimaryColor = @"text_primary_color";
 NSString* const kTextSecondaryColor = @"text_secondary_color";
 NSString* const kTextfieldBackgroundColor = @"textfield_background_color";
 NSString* const kTextfieldPlaceholderColor = @"textfield_placeholder_color";
+NSString* const kToolbarButtonColor = @"toolbar_button_color";
+NSString* const kToolbarShadowColor = @"toolbar_shadow_color";
 
 #pragma mark - Standard Colors
 NSString* const kBlueColor = @"blue_color";
@@ -40,6 +42,7 @@ NSString* const kTextfieldBackgroundDarkColor =
     @"textfield_background_dark_color";
 NSString* const kTextfieldPlaceholderDarkColor =
     @"textfield_placeholder_dark_color";
+NSString* const kToolbarButtonDarkColor = @"toolbar_button_dark_color";
 
 NSString* const kBlueDarkColor = @"blue_dark_color";
 NSString* const kGreenDarkColor = @"green_dark_color";

@@ -107,7 +107,14 @@ class CONTENT_EXPORT DelegatedFrameHost
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
       base::Optional<viz::HitTestRegionList> hit_test_region_list);
-  void WasHidden();
+
+  // kOccluded means the native window for the host was
+  // occluded/hidden, kOther is for other causes, e.g., a tab became a
+  // background tab.
+  enum class HiddenCause { kOccluded, kOther };
+
+  void WasHidden(HiddenCause cause);
+
   // TODO(ccameron): Include device scale factor here.
   void WasShown(const viz::LocalSurfaceId& local_surface_id,
                 const gfx::Size& dip_size,

@@ -5,30 +5,72 @@
 #include "services/device/generic_sensor/platform_sensor_reader_winrt.h"
 
 #include "base/win/core_winrt_util.h"
+#include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/mojom/sensor.mojom.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace device {
 
 namespace {
+using ABI::Windows::Devices::Sensors::Accelerometer;
+using ABI::Windows::Devices::Sensors::AccelerometerReadingChangedEventArgs;
+using ABI::Windows::Devices::Sensors::Gyrometer;
+using ABI::Windows::Devices::Sensors::GyrometerReadingChangedEventArgs;
+using ABI::Windows::Devices::Sensors::IAccelerometer;
+using ABI::Windows::Devices::Sensors::IAccelerometerReading;
+using ABI::Windows::Devices::Sensors::IAccelerometerReadingChangedEventArgs;
+using ABI::Windows::Devices::Sensors::IAccelerometerStatics;
+using ABI::Windows::Devices::Sensors::IGyrometer;
+using ABI::Windows::Devices::Sensors::IGyrometerReading;
+using ABI::Windows::Devices::Sensors::IGyrometerReadingChangedEventArgs;
+using ABI::Windows::Devices::Sensors::IGyrometerStatics;
+using ABI::Windows::Devices::Sensors::IInclinometer;
+using ABI::Windows::Devices::Sensors::IInclinometerReading;
+using ABI::Windows::Devices::Sensors::IInclinometerReadingChangedEventArgs;
+using ABI::Windows::Devices::Sensors::IInclinometerStatics;
 using ABI::Windows::Devices::Sensors::ILightSensor;
 using ABI::Windows::Devices::Sensors::ILightSensorReading;
 using ABI::Windows::Devices::Sensors::ILightSensorReadingChangedEventArgs;
 using ABI::Windows::Devices::Sensors::ILightSensorStatics;
+using ABI::Windows::Devices::Sensors::IMagnetometer;
+using ABI::Windows::Devices::Sensors::IMagnetometerReading;
+using ABI::Windows::Devices::Sensors::IMagnetometerReadingChangedEventArgs;
+using ABI::Windows::Devices::Sensors::IMagnetometerStatics;
+using ABI::Windows::Devices::Sensors::Inclinometer;
+using ABI::Windows::Devices::Sensors::InclinometerReadingChangedEventArgs;
+using ABI::Windows::Devices::Sensors::IOrientationSensor;
+using ABI::Windows::Devices::Sensors::IOrientationSensorReading;
+using ABI::Windows::Devices::Sensors::IOrientationSensorReadingChangedEventArgs;
+using ABI::Windows::Devices::Sensors::IOrientationSensorStatics;
+using ABI::Windows::Devices::Sensors::ISensorQuaternion;
 using ABI::Windows::Devices::Sensors::LightSensor;
 using ABI::Windows::Devices::Sensors::LightSensorReadingChangedEventArgs;
+using ABI::Windows::Devices::Sensors::Magnetometer;
+using ABI::Windows::Devices::Sensors::MagnetometerReadingChangedEventArgs;
+using ABI::Windows::Devices::Sensors::OrientationSensor;
+using ABI::Windows::Devices::Sensors::OrientationSensorReadingChangedEventArgs;
 using ABI::Windows::Foundation::DateTime;
 using ABI::Windows::Foundation::ITypedEventHandler;
 using Microsoft::WRL::Callback;
 using Microsoft::WRL::ComPtr;
 }  // namespace
 
-// static
 std::unique_ptr<PlatformSensorReaderWinBase>
 PlatformSensorReaderWinrtFactory::Create(mojom::SensorType type) {
   switch (type) {
     case mojom::SensorType::AMBIENT_LIGHT:
       return PlatformSensorReaderWinrtLightSensor::Create();
+    case mojom::SensorType::ACCELEROMETER:
+      return PlatformSensorReaderWinrtAccelerometer::Create();
+    case mojom::SensorType::GYROSCOPE:
+      return PlatformSensorReaderWinrtGyrometer::Create();
+    case mojom::SensorType::MAGNETOMETER:
+      return PlatformSensorReaderWinrtMagnetometer::Create();
+    case mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES:
+      return PlatformSensorReaderWinrtAbsOrientationEulerAngles::Create();
+    case mojom::SensorType::ABSOLUTE_ORIENTATION_QUATERNION:
+      return PlatformSensorReaderWinrtAbsOrientationQuaternion::Create();
     default:
       NOTIMPLEMENTED();
       return nullptr;
@@ -67,6 +109,35 @@ void PlatformSensorReaderWinrtBase<
     ISensorReadingChangedEventArgs>::SetClient(Client* client) {
   base::AutoLock autolock(lock_);
   client_ = client;
+}
+
+// static
+template <wchar_t const* runtime_class_id,
+          class ISensorWinrtStatics,
+          class ISensorWinrtClass,
+          class ISensorReadingChangedHandler,
+          class ISensorReadingChangedEventArgs>
+bool PlatformSensorReaderWinrtBase<runtime_class_id,
+                                   ISensorWinrtStatics,
+                                   ISensorWinrtClass,
+                                   ISensorReadingChangedHandler,
+                                   ISensorReadingChangedEventArgs>::
+    IsSensorCreateSuccess(SensorWinrtCreateFailure create_return_code) {
+  switch (create_return_code) {
+    case SensorWinrtCreateFailure::kErrorISensorWinrtStaticsActivationFailed:
+      // Failing to query the default report interval is not a fatal error. The
+      // consumer (PlatformSensorWin) should be able to handle this and return a
+      // default report interval instead.
+      FALLTHROUGH;
+    case SensorWinrtCreateFailure::kOk:
+      return true;
+    case SensorWinrtCreateFailure::kErrorGetDefaultSensorFailed:
+      FALLTHROUGH;
+    case SensorWinrtCreateFailure::kErrorDefaultSensorNull:
+      FALLTHROUGH;
+    case SensorWinrtCreateFailure::kErrorGetMinReportIntervalFailed:
+      return false;
+  }
 }
 
 template <wchar_t const* runtime_class_id,
@@ -255,26 +326,16 @@ PlatformSensorReaderWinrtBase<
 std::unique_ptr<PlatformSensorReaderWinBase>
 PlatformSensorReaderWinrtLightSensor::Create() {
   auto light_sensor = std::make_unique<PlatformSensorReaderWinrtLightSensor>();
-
-  auto initialize_return = light_sensor->Initialize();
-
-  // Failing to query the default report interval is not a fatal error. The
-  // consumer (PlatformSensorWin) should be able to handle this and return a
-  // default report interval instead.
-  if ((initialize_return == SensorWinrtCreateFailure::kOk) ||
-      (initialize_return ==
-       SensorWinrtCreateFailure::kErrorGetMinReportIntervalFailed)) {
+  if (IsSensorCreateSuccess(light_sensor->Initialize())) {
     return light_sensor;
-  } else {
-    return nullptr;
   }
+  return nullptr;
 }
 
 HRESULT PlatformSensorReaderWinrtLightSensor::OnReadingChangedCallback(
     ILightSensor* light_sensor,
     ILightSensorReadingChangedEventArgs* reading_changed_args) {
   ComPtr<ILightSensorReading> light_sensor_reading;
-
   HRESULT hr = reading_changed_args->get_Reading(&light_sensor_reading);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to get the sensor reading: "
@@ -300,9 +361,354 @@ HRESULT PlatformSensorReaderWinrtLightSensor::OnReadingChangedCallback(
     return S_OK;
   }
 
-  SensorReading reading{};
+  SensorReading reading;
   reading.als.value = lux;
   reading.als.timestamp = timestamp_delta.InSecondsF();
+  client_->OnReadingUpdated(reading);
+
+  return S_OK;
+}
+
+// static
+std::unique_ptr<PlatformSensorReaderWinBase>
+PlatformSensorReaderWinrtAccelerometer::Create() {
+  auto accelerometer =
+      std::make_unique<PlatformSensorReaderWinrtAccelerometer>();
+  if (IsSensorCreateSuccess(accelerometer->Initialize())) {
+    return accelerometer;
+  }
+  return nullptr;
+}
+
+HRESULT PlatformSensorReaderWinrtAccelerometer::OnReadingChangedCallback(
+    IAccelerometer* accelerometer,
+    IAccelerometerReadingChangedEventArgs* reading_changed_args) {
+  ComPtr<IAccelerometerReading> accelerometer_reading;
+  HRESULT hr = reading_changed_args->get_Reading(&accelerometer_reading);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get acc reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  double x = 0.0;
+  hr = accelerometer_reading->get_AccelerationX(&x);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get x axis from acc reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  double y = 0.0;
+  hr = accelerometer_reading->get_AccelerationY(&y);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get y axis from acc reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  double z = 0.0;
+  hr = accelerometer_reading->get_AccelerationZ(&z);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get z axis from acc reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  base::TimeDelta timestamp_delta;
+  hr = ConvertSensorReadingTimeStamp(accelerometer_reading, &timestamp_delta);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get sensor reading timestamp: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  // Windows.Devices.Sensors.Accelerometer exposes acceleration as
+  // proportional and in the same direction as the force of gravity.
+  // The generic sensor interface exposes acceleration simply as
+  // m/s^2, so the data must be converted.
+  SensorReading reading;
+  reading.accel.x = -x * kMeanGravity;
+  reading.accel.y = -y * kMeanGravity;
+  reading.accel.z = -z * kMeanGravity;
+  reading.accel.timestamp = timestamp_delta.InSecondsF();
+  client_->OnReadingUpdated(reading);
+
+  return S_OK;
+}
+
+// static
+std::unique_ptr<PlatformSensorReaderWinBase>
+PlatformSensorReaderWinrtGyrometer::Create() {
+  auto gyrometer = std::make_unique<PlatformSensorReaderWinrtGyrometer>();
+  if (IsSensorCreateSuccess(gyrometer->Initialize())) {
+    return gyrometer;
+  }
+  return nullptr;
+}
+
+HRESULT PlatformSensorReaderWinrtGyrometer::OnReadingChangedCallback(
+    IGyrometer* gyrometer,
+    IGyrometerReadingChangedEventArgs* reading_changed_args) {
+  ComPtr<IGyrometerReading> gyrometer_reading;
+  HRESULT hr = reading_changed_args->get_Reading(&gyrometer_reading);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to gyro reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  double x = 0.0;
+  hr = gyrometer_reading->get_AngularVelocityX(&x);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get x axis from gyro reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  double y = 0.0;
+  hr = gyrometer_reading->get_AngularVelocityY(&y);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get y axis from gyro reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  double z = 0.0;
+  hr = gyrometer_reading->get_AngularVelocityZ(&z);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get z axis from gyro reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  base::TimeDelta timestamp_delta;
+  hr = ConvertSensorReadingTimeStamp(gyrometer_reading, &timestamp_delta);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get timestamp from gyro reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  // Windows.Devices.Sensors.Gyrometer exposes angular velocity as degrees,
+  // but the generic sensor interface uses radians so the data must be
+  // converted.
+  SensorReading reading;
+  reading.gyro.x = gfx::DegToRad(x);
+  reading.gyro.y = gfx::DegToRad(y);
+  reading.gyro.z = gfx::DegToRad(z);
+  reading.gyro.timestamp = timestamp_delta.InSecondsF();
+  client_->OnReadingUpdated(reading);
+
+  return S_OK;
+}
+
+// static
+std::unique_ptr<PlatformSensorReaderWinBase>
+PlatformSensorReaderWinrtMagnetometer::Create() {
+  auto magnetometer = std::make_unique<PlatformSensorReaderWinrtMagnetometer>();
+  if (IsSensorCreateSuccess(magnetometer->Initialize())) {
+    return magnetometer;
+  }
+  return nullptr;
+}
+
+HRESULT PlatformSensorReaderWinrtMagnetometer::OnReadingChangedCallback(
+    IMagnetometer* magnetometer,
+    IMagnetometerReadingChangedEventArgs* reading_changed_args) {
+  ComPtr<IMagnetometerReading> magnetometer_reading;
+  HRESULT hr = reading_changed_args->get_Reading(&magnetometer_reading);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get mag reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  float x = 0.0;
+  hr = magnetometer_reading->get_MagneticFieldX(&x);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get x axis from mag reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  float y = 0.0;
+  hr = magnetometer_reading->get_MagneticFieldY(&y);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get y axis from mag reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  float z = 0.0;
+  hr = magnetometer_reading->get_MagneticFieldZ(&z);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get z axis from mag reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  base::TimeDelta timestamp_delta;
+  hr = ConvertSensorReadingTimeStamp(magnetometer_reading, &timestamp_delta);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get timestamp from mag reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  SensorReading reading;
+  reading.magn.x = x;
+  reading.magn.y = y;
+  reading.magn.z = z;
+  reading.magn.timestamp = timestamp_delta.InSecondsF();
+  client_->OnReadingUpdated(reading);
+
+  return S_OK;
+}
+
+// static
+std::unique_ptr<PlatformSensorReaderWinBase>
+PlatformSensorReaderWinrtAbsOrientationEulerAngles::Create() {
+  auto inclinometer =
+      std::make_unique<PlatformSensorReaderWinrtAbsOrientationEulerAngles>();
+  if (IsSensorCreateSuccess(inclinometer->Initialize())) {
+    return inclinometer;
+  }
+  return nullptr;
+}
+
+HRESULT
+PlatformSensorReaderWinrtAbsOrientationEulerAngles::OnReadingChangedCallback(
+    IInclinometer* inclinometer,
+    IInclinometerReadingChangedEventArgs* reading_changed_args) {
+  ComPtr<IInclinometerReading> inclinometer_reading;
+  HRESULT hr = reading_changed_args->get_Reading(&inclinometer_reading);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get inclinometer reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  float x = 0.0;
+  hr = inclinometer_reading->get_PitchDegrees(&x);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get pitch from inclinometer reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  float y = 0.0;
+  hr = inclinometer_reading->get_RollDegrees(&y);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get roll from inclinometer reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  float z = 0.0;
+  hr = inclinometer_reading->get_YawDegrees(&z);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get yaw from inclinometer reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  base::TimeDelta timestamp_delta;
+  hr = ConvertSensorReadingTimeStamp(inclinometer_reading, &timestamp_delta);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get timestamp from inclinometer reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  SensorReading reading;
+  reading.orientation_euler.x = x;
+  reading.orientation_euler.y = y;
+  reading.orientation_euler.z = z;
+  reading.orientation_euler.timestamp = timestamp_delta.InSecondsF();
+  client_->OnReadingUpdated(reading);
+
+  return S_OK;
+}
+
+// static
+std::unique_ptr<PlatformSensorReaderWinBase>
+PlatformSensorReaderWinrtAbsOrientationQuaternion::Create() {
+  auto orientation =
+      std::make_unique<PlatformSensorReaderWinrtAbsOrientationQuaternion>();
+  if (IsSensorCreateSuccess(orientation->Initialize())) {
+    return orientation;
+  }
+  return nullptr;
+}
+
+HRESULT
+PlatformSensorReaderWinrtAbsOrientationQuaternion::OnReadingChangedCallback(
+    IOrientationSensor* orientation_sensor,
+    IOrientationSensorReadingChangedEventArgs* reading_changed_args) {
+  ComPtr<IOrientationSensorReading> orientation_sensor_reading;
+  HRESULT hr = reading_changed_args->get_Reading(&orientation_sensor_reading);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get orientation reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  ComPtr<ISensorQuaternion> quaternion;
+  hr = orientation_sensor_reading->get_Quaternion(&quaternion);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get quaternion from orientation reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  float w = 0.0;
+  hr = quaternion->get_W(&w);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get w component of orientation reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  float x = 0.0;
+  hr = quaternion->get_X(&x);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get x component of orientation reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  float y = 0.0;
+  hr = quaternion->get_Y(&y);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get y component of orientation reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  float z = 0.0;
+  hr = quaternion->get_Z(&z);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get the z component of orientation reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  base::TimeDelta timestamp_delta;
+  hr = ConvertSensorReadingTimeStamp(orientation_sensor_reading,
+                                     &timestamp_delta);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get timestamp from orientation reading: "
+                << logging::SystemErrorCodeToString(hr);
+    return S_OK;
+  }
+
+  SensorReading reading;
+  reading.orientation_quat.w = w;
+  reading.orientation_quat.x = x;
+  reading.orientation_quat.y = y;
+  reading.orientation_quat.z = z;
+  reading.orientation_quat.timestamp = timestamp_delta.InSecondsF();
   client_->OnReadingUpdated(reading);
 
   return S_OK;

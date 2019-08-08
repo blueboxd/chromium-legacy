@@ -138,6 +138,7 @@ bool IsControl(const ax::mojom::Role role) {
 
 bool IsDocument(const ax::mojom::Role role) {
   switch (role) {
+    case ax::mojom::Role::kDocument:
     case ax::mojom::Role::kRootWebArea:
     case ax::mojom::Role::kWebArea:
       return true;
@@ -166,6 +167,13 @@ bool IsHeadingOrTableHeader(const ax::mojom::Role role) {
     default:
       return false;
   }
+}
+
+bool IsIgnored(const AXNodeData& data) {
+  if (data.HasState(ax::mojom::State::kIgnored) ||
+      data.role == ax::mojom::Role::kIgnored)
+    return true;
+  return false;
 }
 
 bool IsImage(const ax::mojom::Role role) {

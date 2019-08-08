@@ -26,8 +26,7 @@ FindShortcutBehaviorTest.prototype = {
   extraLibraries: [
     ...PolymerTest.prototype.extraLibraries,
     '//ui/webui/resources/js/util.js',
-    'settings/test_util.js',
-    'settings/test_util.js',
+    'test_util.js',
     'find_shortcut_behavior_test.js',
   ],
 };

@@ -733,7 +733,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           should_clear_history_list(), mojom::NavigationTiming::New(),
           base::nullopt, mojom::WasActivatedOption::kUnknown,
           base::UnguessableToken::Create(),
-          std::vector<PrefetchedSignedExchangeInfo>(),
+          std::vector<mojom::PrefetchedSignedExchangeInfoPtr>(),
 #if defined(OS_ANDROID)
           std::string(),
 #endif

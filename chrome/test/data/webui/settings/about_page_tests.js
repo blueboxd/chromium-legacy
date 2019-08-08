@@ -483,13 +483,6 @@ cr.define('settings_about_page', function() {
           assertTrue(!!page.$.regulatoryInfo.hidden);
           assertTrue(!!page.$.crostiniLicense.hidden);
         });
-
-        test('detailed build info page', () => {
-          page.scroller = page.offsetParent;
-          assertTrue(!!page.$['detailed-build-info-trigger']);
-          page.$['detailed-build-info-trigger'].click();
-          assertTrue(!!page.$$('settings-detailed-build-info'));
-        });
       }
 
       if (!cr.isChromeOS) {

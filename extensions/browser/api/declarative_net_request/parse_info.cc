@@ -150,6 +150,12 @@ std::string ParseInfo::GetErrorDescription() const {
       error = ErrorUtils::FormatErrorMessage(
           kErrorQueryAndTransformBothSpecified, base::NumberToString(*rule_id_),
           kTransformQueryPath, kTransformQueryTransformPath);
+      break;
+    case ParseResult::ERROR_JAVASCRIPT_REDIRECT:
+      error = ErrorUtils::FormatErrorMessage(kErrorJavascriptRedirect,
+                                             base::NumberToString(*rule_id_),
+                                             kRedirectUrlPath);
+      break;
   }
   return error;
 }

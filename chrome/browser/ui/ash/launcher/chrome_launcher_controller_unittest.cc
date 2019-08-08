@@ -420,7 +420,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     manifest_web_app.SetString(extensions::manifest_keys::kDescription,
                                "For testing");
     web_app_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
-                                 manifest_web_app, Extension::NO_FLAGS,
+                                 manifest_web_app, Extension::FROM_BOOKMARK,
                                  kWebAppId, &error);
   }
 

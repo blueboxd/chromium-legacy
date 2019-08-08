@@ -172,11 +172,6 @@
     },
 
     {
-      name: "xssAuditorEnabled",
-      initial: false,
-    },
-
-    {
       name: "preferCompositingToLCDTextEnabled",
       initial: false,
       invalidate: "AcceleratedCompositing",

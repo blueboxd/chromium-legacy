@@ -43,7 +43,14 @@ function getElementLocation(element, center) {
                             inline: "nearest"});
   }
 
-  var rect = element.getClientRects()[0];
+  var clientRects = element.getClientRects();
+  if (clientRects.length === 0) {
+    var e = new Error(element + ' has no size and location');
+    // errorCode 60: ElementNotInteractableException
+    e.code = 60;
+    throw e;
+  }
+  var rect = clientRects[0];
   var elementPoint = getInViewPoint(rect);
   if (center) {
     return {

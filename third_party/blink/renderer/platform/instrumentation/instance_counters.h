@@ -81,7 +81,7 @@ class InstanceCounters {
     // should be avoided for the sake of performance. See crbug.com/641019
     if (type == kNodeCounter) {
       DCHECK(IsMainThread());
-      ++counters_[kNodeCounter];
+      ++node_counter_;
     } else {
       counters_[type].fetch_add(1, std::memory_order_relaxed);
     }
@@ -90,7 +90,7 @@ class InstanceCounters {
   static inline void DecrementCounter(CounterType type) {
     if (type == kNodeCounter) {
       DCHECK(IsMainThread());
-      --counters_[kNodeCounter];
+      --node_counter_;
     } else {
       counters_[type].fetch_sub(1, std::memory_order_relaxed);
     }

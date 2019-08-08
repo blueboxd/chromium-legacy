@@ -54,13 +54,11 @@ class CONTENT_EXPORT MediaSessionController
   void OnSeekBackward(int player_id, base::TimeDelta seek_time) override;
   void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override;
   RenderFrameHost* render_frame_host() const override;
+  base::Optional<media_session::MediaPosition> GetPosition(
+      int player_id) const override;
 
   // Test helpers.
   int get_player_id_for_testing() const { return player_id_; }
-  const base::Optional<media_session::MediaPosition>& get_position_for_testing()
-      const {
-    return position_;
-  }
 
   // Called when the WebContents is either muted or unmuted.
   void WebContentsMutedStateChanged(bool muted);

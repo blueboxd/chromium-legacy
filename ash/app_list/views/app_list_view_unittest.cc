@@ -748,7 +748,7 @@ TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
   // The selected view will always be a result when using
   // |result_selection_controller|
   if (app_list_features::IsSearchBoxSelectionEnabled())
-    forward_view_list.push_back(tile_views[0]);
+    forward_view_list.push_back(nullptr);
   else
     forward_view_list.push_back(search_box_view()->search_box());
 
@@ -757,10 +757,22 @@ TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
 
   if (app_list_features::IsSearchBoxSelectionEnabled()) {
     // Test traversal triggered by tab.
+    EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
     TestSelectionTraversal(forward_view_list, ui::VKEY_TAB, false);
+    EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
+
+    // Focus cycles from the close button to the first result.
+    TestSelectionTraversal({nullptr, forward_view_list[0]}, ui::VKEY_TAB,
+                           false);
+    EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
+
+    // The shift+tab key should move focus back to the close button.
+    TestSelectionTraversal({forward_view_list[0], nullptr}, ui::VKEY_TAB, true);
+    EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
 
     // Test traversal triggered by shift+tab.
     TestSelectionTraversal(backward_view_list, ui::VKEY_TAB, true);
+    EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
   } else {
     // Test traversal triggered by tab.
     TestFocusTraversal(forward_view_list, ui::VKEY_TAB, false);
@@ -768,6 +780,61 @@ TEST_F(AppListViewFocusTest, TabFocusTraversalInHalfState) {
     // Test traversal triggered by shift+tab.
     TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
   }
+}
+
+// Tests return key with search box close button focused (with app list view in
+// half state):
+// *   search box text is cleared
+// *   search box gets focus, but it's not active
+// *   subsequent tab keys move focus to app list folder view.
+TEST_F(AppListViewFocusTest, CloseButtonClearsSearchOnEnter) {
+  Show();
+
+  // Type something in search box to transition to HALF state and populate
+  // fake search results.
+  search_box_view()->search_box()->InsertText(base::ASCIIToUTF16("test"));
+  EXPECT_EQ(app_list_view()->app_list_state(), ash::AppListViewState::kHalf);
+  constexpr int kTileResults = 3;
+  constexpr int kListResults = 2;
+  SetUpSearchResults(kTileResults, kListResults, true);
+
+  const std::vector<SearchResultTileItemView*>& tile_views =
+      contents_view()
+          ->search_result_tile_item_list_view_for_test()
+          ->tile_views_for_test();
+  ASSERT_FALSE(tile_views.empty());
+  views::View* first_result_view = tile_views[0];
+
+  // Shift+Tab to focus close button.
+  if (app_list_features::IsSearchBoxSelectionEnabled()) {
+    TestSelectionTraversal({first_result_view, nullptr}, ui::VKEY_TAB, true);
+    EXPECT_TRUE(search_box_view()->close_button()->HasFocus());
+  } else {
+    TestFocusTraversal(
+        {search_box_view()->search_box(), search_box_view()->close_button()},
+        ui::VKEY_TAB, false);
+  }
+
+  // Enter - it should clear the search box.
+  SimulateKeyPress(ui::VKEY_RETURN, false /*shift_down*/);
+  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
+  EXPECT_EQ(base::string16(), search_box_view()->search_box()->GetText());
+  EXPECT_FALSE(search_box_view()->is_search_box_active());
+  EXPECT_FALSE(contents_view()->search_results_page_view()->GetVisible());
+  ResultSelectionController* selection_controller =
+      contents_view()
+          ->search_results_page_view()
+          ->result_selection_controller();
+  EXPECT_EQ(nullptr, selection_controller->selected_result());
+
+  // Tab traversal continues with app list folder items.
+  std::vector<views::View*> forward_view_list;
+  forward_view_list.push_back(search_box_view()->search_box());
+  const views::ViewModelT<AppListItemView>* view_model =
+      app_list_folder_view()->items_grid_view()->view_model();
+  for (int i = 0; i < view_model->view_size(); ++i)
+    forward_view_list.push_back(view_model->view_at(i));
+  TestFocusTraversal(forward_view_list, ui::VKEY_TAB, false);
 }
 
 // Tests focus traversal in HALF state with opened search box using |VKEY_LEFT|
@@ -988,7 +1055,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
     contents_view()
         ->search_results_page_view()
         ->result_selection_controller()
-        ->ResetSelection();
+        ->ResetSelection(nullptr);
   }
 
   if (app_list_features::IsSearchBoxSelectionEnabled()) {

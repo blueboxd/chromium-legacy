@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 package org.chromium.android_webview.ui.util;
 
+import org.chromium.android_webview.common.crash.CrashInfo;
+import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 
 import java.io.File;

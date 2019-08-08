@@ -102,6 +102,7 @@ buildflag_header("audio_buildflags") {
     "MAXIMUM_OUTPUT_BUFFER_SIZE_IN_FRAMES=$maximum_output_buffer_size_in_frames",
     "DEFAULT_OUTPUT_BUFFER_SIZE_IN_FRAMES=$default_output_buffer_size_in_frames",
     "ENABLE_AUDIO_CAPTURE_SERVICE=$enable_audio_capture_service",
+    "USE_UNIX_SOCKETS=$use_unix_sockets",
   ]
 
   if (use_alsa) {

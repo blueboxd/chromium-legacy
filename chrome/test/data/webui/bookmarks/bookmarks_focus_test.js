@@ -19,7 +19,7 @@ BookmarksFocusTest.prototype = {
   extraLibraries: [
     ...PolymerInteractiveUITest.prototype.extraLibraries,
     '//ui/webui/resources/js/util.js',
-    '../settings/test_util.js',
+    '../test_util.js',
     '../test_store.js',
     'test_command_manager.js',
     'test_store.js',

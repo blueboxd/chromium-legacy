@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -202,8 +203,7 @@ public class TabGridDialogMediator {
         }
         mModel.set(TabGridSheetProperties.HEADER_TITLE,
                 mContext.getResources().getQuantityString(
-                        org.chromium.chrome.R.plurals.bottom_tab_grid_title_placeholder, tabsCount,
-                        tabsCount));
+                        R.plurals.bottom_tab_grid_title_placeholder, tabsCount, tabsCount));
     }
 
     private void setupToolbarClickHandlers() {

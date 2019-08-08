@@ -274,6 +274,9 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   // Safe Browsing status of the website.
   SafeBrowsingStatus safe_browsing_status_;
 
+  // Safety tip status of the website.
+  security_state::SafetyTipStatus safety_tip_status_;
+
   // For secure connection |certificate_| is set to the server certificate.
   scoped_refptr<net::X509Certificate> certificate_;
 

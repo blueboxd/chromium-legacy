@@ -46,5 +46,5 @@ TEST_F(JavaScriptPromptOverlayCoordinatorTest, StartAndStop) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return !prompt.presentingViewController;
   }));
-  EXPECT_TRUE(dismissal_delegate().HasUIBeenDismissed(request));
+  EXPECT_TRUE(delegate().HasUIBeenDismissed(request));
 }

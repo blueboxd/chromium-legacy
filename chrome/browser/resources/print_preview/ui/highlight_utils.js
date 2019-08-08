@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
 
-/**
- * @typedef {{
- *   highlights: !Array<!Node>,
- *   bubbles: !Array<!Node>
- * }}
- */
-print_preview.HighlightResults;
 
 cr.define('print_preview', function() {
   'use strict';
+
+  /**
+   * @typedef {{
+   *   highlights: !Array<!Node>,
+   *   bubbles: !Array<!Node>
+   * }}
+   */
+  let HighlightResults;
 
   /**
    * @param {!HTMLElement} element The element to update. Element should have a
@@ -65,6 +65,7 @@ cr.define('print_preview', function() {
   }
 
   return {
+    HighlightResults: HighlightResults,
     updateHighlights: updateHighlights,
   };
 });

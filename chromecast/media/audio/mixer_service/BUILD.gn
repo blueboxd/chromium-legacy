@@ -13,12 +13,6 @@ proto_library("proto") {
   ]
 }
 
-buildflag_header("buildflags") {
-  header = "mixer_service_buildflags.h"
-
-  flags = [ "USE_UNIX_SOCKETS=$use_unix_sockets" ]
-}
-
 cast_source_set("common") {
   sources = [
     "constants.h",
@@ -27,7 +21,6 @@ cast_source_set("common") {
   ]
 
   deps = [
-    ":buildflags",
     ":proto",
     "//base",
     "//chromecast/net:small_message_socket",
@@ -44,11 +37,11 @@ cast_source_set("connection") {
   ]
 
   deps = [
-    ":buildflags",
     ":common",
     ":proto",
     "//base",
     "//chromecast/base",
+    "//chromecast/media/audio:audio_buildflags",
     "//chromecast/net:small_message_socket",
     "//net",
   ]

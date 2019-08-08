@@ -36,7 +36,7 @@ bool PDFiumPermissions::HasPermission(
   // revision 3+. See table 3.20 in the PDF 1.7 spec.
   if (permission == PDFEngine::PERMISSION_PRINT_HIGH_QUALITY &&
       permissions_handler_revision_ >= 3) {
-    return (permission_bits_ & kPDFPermissionPrintLowQualityMask) != 0 &&
+    return (permission_bits_ & kPDFPermissionPrintMask) != 0 &&
            (permission_bits_ & kPDFPermissionPrintHighQualityMask) != 0;
   }
 
@@ -49,7 +49,7 @@ bool PDFiumPermissions::HasPermission(
     case PDFEngine::PERMISSION_PRINT_HIGH_QUALITY:
       // With security handler revision 2 rules, check the same bit for high
       // and low quality. See table 3.20 in the PDF 1.7 spec.
-      return (permission_bits_ & kPDFPermissionPrintLowQualityMask) != 0;
+      return (permission_bits_ & kPDFPermissionPrintMask) != 0;
     default:
       return true;
   }

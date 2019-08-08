@@ -7,8 +7,8 @@ package org.chromium.android_webview.services;
 import android.content.Context;
 import android.net.ConnectivityManager;
 
-import org.chromium.android_webview.PlatformServiceBridge;
-import org.chromium.android_webview.command_line.CommandLineUtil;
+import org.chromium.android_webview.common.CommandLineUtil;
+import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;

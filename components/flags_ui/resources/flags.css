@@ -229,6 +229,12 @@ button {
   text-transform: uppercase;
 }
 
+.screen-reader-only {
+  display: inline-block;
+  position: fixed;
+  clip: rect(0px,0px,0px,0px);
+}
+
 #promos {
   color: var(--secondary-color);
   font-size: .875rem;

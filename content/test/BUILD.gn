@@ -76,6 +76,14 @@ jumbo_static_library("test_support") {
     "../browser/service_worker/service_worker_test_utils.h",
     "../browser/service_worker/test_service_worker_observer.cc",
     "../browser/service_worker/test_service_worker_observer.h",
+    "../browser/sms/test/mock_sms_dialog.cc",
+    "../browser/sms/test/mock_sms_dialog.h",
+    "../browser/sms/test/mock_sms_provider.cc",
+    "../browser/sms/test/mock_sms_provider.h",
+    "../browser/sms/test/mock_sms_web_contents_delegate.cc",
+    "../browser/sms/test/mock_sms_web_contents_delegate.h",
+    "../browser/web_package/mock_bundled_exchanges_reader_factory.cc",
+    "../browser/web_package/mock_bundled_exchanges_reader_factory.h",
     "../browser/web_package/mock_signed_exchange_handler.cc",
     "../browser/web_package/mock_signed_exchange_handler.h",
     "../browser/web_package/signed_exchange_test_utils.h",
@@ -383,6 +391,7 @@ jumbo_static_library("test_support") {
     "//mojo/core/embedder",
     "//net:test_support",
     "//services/audio/public/mojom",
+    "//services/data_decoder/public/mojom",
     "//services/device/public/mojom",
 
     # TODO(jam): remove this by adding a public header for the NetworkContext
@@ -637,9 +646,6 @@ mojom("web_ui_test_mojo_bindings") {
   sources = [
     "data/web_ui_test_mojo_bindings.mojom",
   ]
-
-  # TODO(https://crbug.com/968369): Change to use new names.
-  use_old_js_lite_bindings_names = true
 }
 
 mojom("mojo_web_test_helper_test") {
@@ -1688,6 +1694,7 @@ test("content_unittests") {
     "../browser/payments/payment_app_content_unittest_base.h",
     "../browser/payments/payment_app_provider_impl_unittest.cc",
     "../browser/payments/payment_manager_unittest.cc",
+    "../browser/permissions/permission_controller_impl_unittest.cc",
     "../browser/picture_in_picture/picture_in_picture_service_impl_unittest.cc",
     "../browser/plugin_list_unittest.cc",
     "../browser/presentation/presentation_service_impl_unittest.cc",
@@ -1817,6 +1824,7 @@ test("content_unittests") {
     "../browser/web_contents/web_drag_dest_mac_unittest.mm",
     "../browser/web_contents/web_drag_source_mac_unittest.mm",
     "../browser/web_package/bundled_exchanges_reader_unittest.cc",
+    "../browser/web_package/bundled_exchanges_url_loader_factory_unittest.cc",
     "../browser/web_package/signed_exchange_cert_fetcher_unittest.cc",
     "../browser/web_package/signed_exchange_certificate_chain_unittest.cc",
     "../browser/web_package/signed_exchange_envelope_unittest.cc",

@@ -1793,6 +1793,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "supportsTextLocation";
     case ax::mojom::BoolAttribute::kIsLineBreakingObject:
       return "isLineBreakingObject";
+    case ax::mojom::BoolAttribute::kIsPageBreakingObject:
+      return "isPageBreakingObject";
   }
 
   return "";
@@ -1831,6 +1833,8 @@ ax::mojom::BoolAttribute ParseBoolAttribute(const char* bool_attribute) {
     return ax::mojom::BoolAttribute::kSupportsTextLocation;
   if (0 == strcmp(bool_attribute, "isLineBreakingObject"))
     return ax::mojom::BoolAttribute::kIsLineBreakingObject;
+  if (0 == strcmp(bool_attribute, "isPageBreakingObject"))
+    return ax::mojom::BoolAttribute::kIsPageBreakingObject;
   return ax::mojom::BoolAttribute::kNone;
 }
 

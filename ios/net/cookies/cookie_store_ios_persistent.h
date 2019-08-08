@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #import "ios/net/cookies/cookie_store_ios.h"
 #include "net/cookies/cookie_monster.h"
@@ -45,6 +46,7 @@ class CookieStoreIOSPersistent : public CookieStoreIOS {
   void SetCookieWithOptionsAsync(const GURL& url,
                                  const std::string& cookie_line,
                                  const net::CookieOptions& options,
+                                 base::Optional<base::Time> server_time,
                                  SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
                                std::string source_scheme,

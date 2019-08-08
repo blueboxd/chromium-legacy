@@ -327,10 +327,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   void SafePoint(BlinkGC::StackState);
 
-  void RecordStackEnd(intptr_t* end_of_stack) { end_of_stack_ = end_of_stack; }
-
-  void PushRegistersAndVisitStack();
-
   // A region of non-weak PersistentNodes allocated on the given thread.
   PersistentRegion* GetPersistentRegion() const {
     return persistent_region_.get();
@@ -341,13 +337,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   PersistentRegion* GetWeakPersistentRegion() const {
     return weak_persistent_region_.get();
   }
-
-  // Visit local thread stack and trace all pointers conservatively.
-  void VisitStack(MarkingVisitor*);
-
-  // Visit the asan fake stack frame corresponding to a slot on the
-  // real machine stack if there is one.
-  void VisitAsanFakeStackForPointer(MarkingVisitor*, Address);
 
   // Visit all non-weak persistents allocated on this thread.
   void VisitPersistents(Visitor*);
@@ -453,6 +442,12 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // construct ThreadState in it using placement new.
   static uint8_t main_thread_state_storage_[];
 
+  // Callback executed directly after pushing all callee-saved registers.
+  // |end_of_stack| denotes the end of the stack that can hold references to
+  // managed objects.
+  static void VisitStackAfterPushingRegisters(ThreadState*,
+                                              intptr_t* end_of_stack);
+
   ThreadState();
   ~ThreadState() override;
 
@@ -509,6 +504,21 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void MarkPhaseVisitNotFullyConstructedObjects();
   bool MarkPhaseAdvanceMarking(base::TimeTicks deadline);
   void VerifyMarking(BlinkGC::MarkingType);
+
+  // Visit the stack after pushing registers onto the stack.
+  void PushRegistersAndVisitStack();
+
+  // Visit local thread stack and trace all pointers conservatively. Never call
+  // directly but always call through |PushRegistersAndVisitStack|.
+  void VisitStack(MarkingVisitor*, Address*);
+
+  // Visit the asan fake stack frame corresponding to a slot on the real machine
+  // stack if there is one. Never call directly but always call through
+  // |PushRegistersAndVisitStack|.
+  void VisitAsanFakeStackForPointer(MarkingVisitor*,
+                                    Address,
+                                    Address*,
+                                    Address*);
 
   // ShouldForceConservativeGC
   // implements the heuristics that are used to determine when to collect
@@ -576,8 +586,10 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   base::PlatformThreadId thread_;
   std::unique_ptr<PersistentRegion> persistent_region_;
   std::unique_ptr<PersistentRegion> weak_persistent_region_;
-  intptr_t* start_of_stack_;
-  intptr_t* end_of_stack_;
+
+  // Start of the stack which is the boundary until conservative stack scanning
+  // needs to search for managed pointers.
+  Address* start_of_stack_;
 
   bool in_atomic_pause_ = false;
   bool sweep_forbidden_ = false;

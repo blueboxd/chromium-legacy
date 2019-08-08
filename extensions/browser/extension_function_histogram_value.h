@@ -1429,6 +1429,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_GETSHELFITEMS = 1366,
   MANAGEMENT_INSTALLREPLACEMENTANDROIDAPP = 1367,
   MANAGEMENT_CANINSTALLREPLACEMENTANDROIDAPP = 1368,
+  AUTOTESTPRIVATE_REGISTERCOMPONENT = 1369,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

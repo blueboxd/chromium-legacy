@@ -126,13 +126,11 @@ void DoOpenNaClExecutableOnThreadPool(
     scoped_refptr<nacl::NaClHostMessageFilter> nacl_host_message_filter,
     const GURL& file_url,
     bool enable_validation_caching,
+    NaClBrowserDelegate::MapUrlToLocalFilePathCallback map_url_callback,
     IPC::Message* reply_msg) {
   base::FilePath file_path;
-  if (!nacl::NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
-          file_url,
-          true /* use_blocking_api */,
-          nacl_host_message_filter->profile_directory(),
-          &file_path)) {
+  if (!map_url_callback.Run(file_url, true /* use_blocking_api */,
+                            &file_path)) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;
   }
@@ -248,13 +246,18 @@ void OpenNaClExecutable(
     return;
   }
 
+  auto map_url_callback =
+      nacl::NaClBrowser::GetDelegate()->GetMapUrlToLocalFilePathCallback(
+          nacl_host_message_filter->profile_directory());
+
   // The URL is part of the current app. Now query the extension system for the
   // file path and convert that to a file descriptor. This should be done on a
   // blocking pool thread.
-  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-                 base::BindOnce(&DoOpenNaClExecutableOnThreadPool,
-                                nacl_host_message_filter, file_url,
-                                enable_validation_caching, reply_msg));
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::BindOnce(&DoOpenNaClExecutableOnThreadPool,
+                     nacl_host_message_filter, file_url,
+                     enable_validation_caching, map_url_callback, reply_msg));
 }
 
 }  // namespace nacl_file_host

@@ -30,6 +30,12 @@ group("android_webview") {
   }
 }
 
+generate_jni("common_jni_headers") {
+  sources = [
+    "java/src/org/chromium/android_webview/common/AwResource.java",
+  ]
+}
+
 generate_jni("native_jni") {
   sources = [
     "apk/java/src/com/android/webview/chromium/WebViewApkApplication.java",
@@ -289,6 +295,8 @@ grit("generate_components_resources") {
 
   # The .grd contains references to generated files.
   source_is_generated = true
+
+  use_brotli = true
 
   # See :generate_webui_resources for an explanation of the whitelist
   _whitelist = "ui/grit_resources_whitelist.txt"
@@ -869,24 +877,25 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
+    "java/src/org/chromium/android_webview/ui/util/CrashInfoLoader.java",
     "java/src/org/chromium/android_webview/ui/util/UnuploadedFilesStateLoader.java",
     "java/src/org/chromium/android_webview/ui/util/UploadedCrashesInfoLoader.java",
     "java/src/org/chromium/android_webview/ui/util/WebViewCrashLogParser.java",
   ]
   deps = [
-    ":android_webview_commandline_java",
-    ":android_webview_crash_info_java",
-    ":android_webview_platform_services_java",
     ":android_webview_services_java",
-    ":android_webview_variations_utils_java",
-    ":resources",
-    ":strings_grd",
-    ":system_webview_manifest",
+    ":common_commandline_java",
+    ":common_crash_info_java",
 
     # This includes AwResource, which may be called via JNI. We're including it
     # here because there's currently no good way to enforce that it gets included
     # when it's depended on via JNI.
-    "//android_webview/common:common_java",
+    ":common_java",
+    ":common_platform_services_java",
+    ":common_variations_utils_java",
+    ":resources",
+    ":strings_grd",
+    ":system_webview_manifest",
     "//base:base_java",
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
@@ -930,8 +939,8 @@ android_library("android_webview_java") {
   min_sdk_version = 21
 }
 
-android_library("android_webview_variations_utils_java") {
-  java_files = [ "java/src/org/chromium/android_webview/VariationsUtils.java" ]
+android_library("common_variations_utils_java") {
+  java_files = [ "java/src/org/chromium/android_webview/common/variations/VariationsUtils.java" ]
   deps = [
     "//android_webview/proto:aw_variations_seed_proto_java",
     "//base:base_java",
@@ -1002,10 +1011,10 @@ java_strings_grd("strings_grd") {
 # Separate target to allow for a dependency on GmsCore without pulling in all of
 # android_webview_java. It compiles the abstract class; implementations are
 # compiled separately.
-android_library("android_webview_platform_services_java") {
+android_library("common_platform_services_java") {
   java_files = [
-    "java/src/org/chromium/android_webview/PlatformServiceBridge.java",
-    "java/src/org/chromium/android_webview/PlatformServiceBridgeImpl.java",
+    "java/src/org/chromium/android_webview/common/PlatformServiceBridge.java",
+    "java/src/org/chromium/android_webview/common/PlatformServiceBridgeImpl.java",
   ]
 
   deps = [
@@ -1021,26 +1030,32 @@ android_library("android_webview_platform_services_java") {
 
 # This target compiles the implementation of PlatformServiceBridge for AOSP targets.
 android_library("platform_service_bridge_upstream_implementation_java") {
-  java_files =
-      [ "java/src/org/chromium/android_webview/PlatformServiceBridgeImpl.java" ]
+  java_files = [ "java/src/org/chromium/android_webview/common/PlatformServiceBridgeImpl.java" ]
   deps = [
-    ":android_webview_platform_services_java",
+    ":common_platform_services_java",
   ]
 }
 
-android_library("android_webview_crash_info_java") {
+android_library("common_crash_info_java") {
   java_files =
-      [ "java/src/org/chromium/android_webview/ui/util/CrashInfoLoader.java" ]
+      [ "java/src/org/chromium/android_webview/common/crash/CrashInfo.java" ]
 
   deps = [
     "//base:base_java",
   ]
 }
 
-android_library("android_webview_commandline_java") {
-  java_files = [
-    "java/src/org/chromium/android_webview/command_line/CommandLineUtil.java",
+android_library("common_java") {
+  java_files =
+      [ "java/src/org/chromium/android_webview/common/AwResource.java" ]
+  deps = [
+    "//base:base_java",
   ]
+}
+
+android_library("common_commandline_java") {
+  java_files =
+      [ "java/src/org/chromium/android_webview/common/CommandLineUtil.java" ]
 
   deps = [
     "//base:base_java",
@@ -1059,10 +1074,10 @@ android_library("android_webview_services_java") {
     "java/src/org/chromium/android_webview/services/VariationsSeedServer.java",
   ]
   deps = [
-    ":android_webview_commandline_java",
-    ":android_webview_crash_info_java",
-    ":android_webview_platform_services_java",
-    ":android_webview_variations_utils_java",
+    ":common_commandline_java",
+    ":common_crash_info_java",
+    ":common_platform_services_java",
+    ":common_variations_utils_java",
     ":system_webview_manifest",
     "//android_webview/apk:apk_java",
     "//base:base_java",

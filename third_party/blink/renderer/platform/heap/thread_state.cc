@@ -129,8 +129,7 @@ ThreadState::ThreadState()
     : thread_(CurrentThread()),
       persistent_region_(std::make_unique<PersistentRegion>()),
       weak_persistent_region_(std::make_unique<PersistentRegion>()),
-      start_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
-      end_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
+      start_of_stack_(reinterpret_cast<Address*>(WTF::GetStackStart())),
       gc_state_(kNoGCScheduled),
       gc_phase_(GCPhase::kNone),
       reason_for_scheduled_gc_(BlinkGC::GCReason::kForcedGCForTesting),
@@ -280,10 +279,10 @@ void ThreadState::RunTerminationGC() {
 
 NO_SANITIZE_ADDRESS
 void ThreadState::VisitAsanFakeStackForPointer(MarkingVisitor* visitor,
-                                               Address ptr) {
+                                               Address ptr,
+                                               Address* start_of_stack,
+                                               Address* end_of_stack) {
 #if defined(ADDRESS_SANITIZER)
-  Address* start = reinterpret_cast<Address*>(start_of_stack_);
-  Address* end = reinterpret_cast<Address*>(end_of_stack_);
   Address* fake_frame_start = nullptr;
   Address* fake_frame_end = nullptr;
   Address* maybe_fake_frame = reinterpret_cast<Address*>(ptr);
@@ -293,7 +292,8 @@ void ThreadState::VisitAsanFakeStackForPointer(MarkingVisitor* visitor,
                                    reinterpret_cast<void**>(&fake_frame_end)));
   if (real_frame_for_fake_frame) {
     // This is a fake frame from the asan fake stack.
-    if (real_frame_for_fake_frame > end && start > real_frame_for_fake_frame) {
+    if (real_frame_for_fake_frame > end_of_stack &&
+        start_of_stack > real_frame_for_fake_frame) {
       // The real stack address for the asan fake frame is
       // within the stack range that we need to scan so we need
       // to visit the values in the fake frame.
@@ -301,7 +301,7 @@ void ThreadState::VisitAsanFakeStackForPointer(MarkingVisitor* visitor,
         heap_->CheckAndMarkPointer(visitor, *p);
     }
   }
-#endif
+#endif  // ADDRESS_SANITIZER
 }
 
 // Stack scanning may overrun the bounds of local objects and/or race with
@@ -309,18 +309,15 @@ void ThreadState::VisitAsanFakeStackForPointer(MarkingVisitor* visitor,
 NO_SANITIZE_ADDRESS
 NO_SANITIZE_HWADDRESS
 NO_SANITIZE_THREAD
-void ThreadState::VisitStack(MarkingVisitor* visitor) {
+void ThreadState::VisitStack(MarkingVisitor* visitor, Address* end_of_stack) {
   DCHECK_EQ(current_gc_data_.stack_state, BlinkGC::kHeapPointersOnStack);
-
-  Address* start = reinterpret_cast<Address*>(start_of_stack_);
-  Address* end = reinterpret_cast<Address*>(end_of_stack_);
 
   // Ensure that current is aligned by address size otherwise the loop below
   // will read past start address.
   Address* current = reinterpret_cast<Address*>(
-      reinterpret_cast<intptr_t>(end) & ~(sizeof(Address) - 1));
+      reinterpret_cast<intptr_t>(end_of_stack) & ~(sizeof(Address) - 1));
 
-  for (; current < start; ++current) {
+  for (; current < start_of_stack_; ++current) {
     Address ptr = *current;
 #if defined(MEMORY_SANITIZER)
     // |ptr| may be uninitialized by design. Mark it as initialized to keep
@@ -331,7 +328,7 @@ void ThreadState::VisitStack(MarkingVisitor* visitor) {
     __msan_unpoison(&ptr, sizeof(ptr));
 #endif
     heap_->CheckAndMarkPointer(visitor, ptr);
-    VisitAsanFakeStackForPointer(visitor, ptr);
+    VisitAsanFakeStackForPointer(visitor, ptr, start_of_stack_, end_of_stack);
   }
 }
 
@@ -1124,16 +1121,18 @@ void ThreadState::SafePoint(BlinkGC::StackState stack_state) {
 using PushAllRegistersCallback = void (*)(ThreadState*, intptr_t*);
 extern "C" void PushAllRegisters(ThreadState*, PushAllRegistersCallback);
 
-static void DidPushRegisters(ThreadState* state, intptr_t* stack_end) {
-  state->RecordStackEnd(stack_end);
+// static
+void ThreadState::VisitStackAfterPushingRegisters(ThreadState* state,
+                                                  intptr_t* end_of_stack) {
+  state->VisitStack(static_cast<MarkingVisitor*>(state->CurrentVisitor()),
+                    reinterpret_cast<Address*>(end_of_stack));
 }
 
 void ThreadState::PushRegistersAndVisitStack() {
   DCHECK(CheckThread());
   DCHECK(IsGCForbidden());
   DCHECK_EQ(current_gc_data_.stack_state, BlinkGC::kHeapPointersOnStack);
-  PushAllRegisters(this, DidPushRegisters);
-  VisitStack(static_cast<MarkingVisitor*>(CurrentVisitor()));
+  PushAllRegisters(this, ThreadState::VisitStackAfterPushingRegisters);
 }
 
 void ThreadState::AddObserver(BlinkGCObserver* observer) {

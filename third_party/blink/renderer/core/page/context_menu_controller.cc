@@ -245,7 +245,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     data.alt_text = html_element->AltText();
   }
 
-  if (IsHTMLCanvasElement(result.InnerNode())) {
+  if (IsA<HTMLCanvasElement>(result.InnerNode())) {
     data.media_type = WebContextMenuData::kMediaTypeCanvas;
     data.has_image_contents = true;
   } else if (!result.AbsoluteImageURL().IsEmpty()) {

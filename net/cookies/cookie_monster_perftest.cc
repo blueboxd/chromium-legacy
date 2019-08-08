@@ -62,7 +62,7 @@ class SetCookieCallback : public CookieTestCallback {
                  const GURL& gurl,
                  const std::string& cookie) {
     cm->SetCookieWithOptionsAsync(
-        gurl, cookie, options_,
+        gurl, cookie, options_, base::nullopt /* server_time */,
         base::BindOnce(&SetCookieCallback::Run, base::Unretained(this)));
     WaitForCallback();
   }

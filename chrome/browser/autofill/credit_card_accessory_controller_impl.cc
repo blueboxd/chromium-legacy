@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
@@ -33,14 +32,13 @@ base::string16 GetTitle(bool has_suggestions) {
                       : IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_EMPTY_MESSAGE);
 }
 
-void AddSimpleField(const base::string16& data,
-                    UserInfo* user_info,
-                    bool enabled) {
+void AddSimpleField(const base::string16& data, UserInfo* user_info) {
   user_info->add_field(UserInfo::Field(data, data,
-                                       /*is_password=*/false, enabled));
+                                       /*is_password=*/false,
+                                       /*selectable=*/true));
 }
 
-UserInfo TranslateCard(const CreditCard* data, bool enabled) {
+UserInfo TranslateCard(const CreditCard* data) {
   DCHECK(data);
 
   UserInfo user_info;
@@ -48,21 +46,21 @@ UserInfo TranslateCard(const CreditCard* data, bool enabled) {
   base::string16 obfuscated_number = data->ObfuscatedLastFourDigits();
   user_info.add_field(UserInfo::Field(obfuscated_number, obfuscated_number,
                                       data->guid(), /*is_password=*/false,
-                                      enabled));
+                                      /*selectable=*/true));
 
   if (data->HasValidExpirationDate()) {
-    AddSimpleField(data->ExpirationMonthAsString(), &user_info, enabled);
-    AddSimpleField(data->Expiration4DigitYearAsString(), &user_info, enabled);
+    AddSimpleField(data->ExpirationMonthAsString(), &user_info);
+    AddSimpleField(data->Expiration4DigitYearAsString(), &user_info);
   } else {
-    AddSimpleField(base::string16(), &user_info, enabled);
-    AddSimpleField(base::string16(), &user_info, enabled);
+    AddSimpleField(base::string16(), &user_info);
+    AddSimpleField(base::string16(), &user_info);
   }
 
   if (data->HasNameOnCard()) {
     AddSimpleField(data->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL),
-                   &user_info, enabled);
+                   &user_info);
   } else {
-    AddSimpleField(base::string16(), &user_info, enabled);
+    AddSimpleField(base::string16(), &user_info);
   }
 
   return user_info;
@@ -149,13 +147,8 @@ CreditCardAccessoryController* CreditCardAccessoryController::GetIfExisting(
 void CreditCardAccessoryControllerImpl::RefreshSuggestions() {
   FetchSuggestionsFromPersonalDataManager();
   std::vector<UserInfo> info_to_add;
-  bool allow_filling = ShouldAllowCreditCardFallbacks(
-      GetManager()->client(), GetManager()->last_query_form());
   std::transform(cards_cache_.begin(), cards_cache_.end(),
-                 std::back_inserter(info_to_add),
-                 [allow_filling](const CreditCard* data) {
-                   return TranslateCard(data, allow_filling);
-                 });
+                 std::back_inserter(info_to_add), &TranslateCard);
 
   const std::vector<FooterCommand> footer_commands = {FooterCommand(
       l10n_util::GetStringUTF16(
@@ -164,14 +157,10 @@ void CreditCardAccessoryControllerImpl::RefreshSuggestions() {
 
   bool has_suggestions = !info_to_add.empty();
 
-  AccessorySheetData data = autofill::CreateAccessorySheetData(
-      AccessoryTabType::CREDIT_CARDS, GetTitle(has_suggestions),
-      std::move(info_to_add), std::move(footer_commands));
-  if (has_suggestions && !allow_filling) {
-    data.set_warning(
-        l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
-  }
-  GetManualFillingController()->RefreshSuggestions(data);
+  GetManualFillingController()->RefreshSuggestions(
+      autofill::CreateAccessorySheetData(
+          AccessoryTabType::CREDIT_CARDS, GetTitle(has_suggestions),
+          std::move(info_to_add), std::move(footer_commands)));
 }
 
 void CreditCardAccessoryControllerImpl::OnPersonalDataChanged() {

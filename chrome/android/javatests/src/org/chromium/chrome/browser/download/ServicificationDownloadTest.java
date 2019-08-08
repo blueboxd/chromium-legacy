@@ -120,7 +120,6 @@ public final class ServicificationDownloadTest {
     @Test
     @LargeTest
     @Feature({"Download"})
-    @CommandLineFlags.Add({"enable-features=NetworkService"})
     public void testResumeInterruptedDownload() {
         if (useDownloadOfflineContentProvider()) return;
         mNativeTestRule.assertOnlyServiceManagerStarted();
@@ -153,7 +152,7 @@ public final class ServicificationDownloadTest {
     @Test
     @LargeTest
     @Feature({"Download"})
-    @CommandLineFlags.Add({"enable-features=NetworkService,UseDownloadOfflineContentProvider"})
+    @CommandLineFlags.Add({"enable-features=UseDownloadOfflineContentProvider"})
     public void testResumeInterruptedDownloadUsingDownloadOfflineContentProvider() {
         if (!useDownloadOfflineContentProvider()) return;
         mNativeTestRule.assertOnlyServiceManagerStarted();

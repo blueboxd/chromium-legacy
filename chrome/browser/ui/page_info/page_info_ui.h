@@ -112,6 +112,8 @@ class PageInfoUI {
     PageInfo::SiteIdentityStatus identity_status;
     // Site's Safe Browsing status.
     PageInfo::SafeBrowsingStatus safe_browsing_status;
+    // Site's safety tip status.
+    security_state::SafetyTipStatus safety_tip_status;
     // Textual description of the site's identity status that is displayed to
     // the user.
     std::string identity_status_description;

@@ -95,10 +95,6 @@ constexpr SkColor kSeparatorColor = SkColorSetARGB(0x32, 0xFF, 0xFF, 0xFF);
 constexpr int kSeparatorSize = 20;
 constexpr int kSeparatorThickness = 1;
 
-// The margin on either side of the group of app icons (including the overflow
-// button).
-constexpr int kAppIconGroupMargin = 16;
-
 // Inset from the bubble bounds to the bounds beyond which dragging triggers
 // scrolling.
 constexpr int kScrollTriggerBoundsInsetDips = 28;

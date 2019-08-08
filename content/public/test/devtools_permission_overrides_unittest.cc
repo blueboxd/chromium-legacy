@@ -25,6 +25,32 @@ TEST(DevToolsPermissionOverridesTest, GetOriginNoOverrides) {
   EXPECT_FALSE(overrides.Get(url, PermissionType::GEOLOCATION).has_value());
 }
 
+TEST(DevToolsPermissionOverridesTests, SetMidi) {
+  DevToolsPermissionOverrides overrides;
+  Origin url = Origin::Create(GURL("https://google.com/"));
+  overrides.Set(url, PermissionType::MIDI_SYSEX, PermissionStatus::GRANTED);
+
+  EXPECT_EQ(*overrides.Get(url, PermissionType::MIDI_SYSEX),
+            PermissionStatus::GRANTED);
+  EXPECT_EQ(*overrides.Get(url, PermissionType::MIDI),
+            PermissionStatus::GRANTED);
+
+  overrides.Set(url, PermissionType::MIDI_SYSEX, PermissionStatus::DENIED);
+  EXPECT_EQ(*overrides.Get(url, PermissionType::MIDI_SYSEX),
+            PermissionStatus::DENIED);
+  EXPECT_EQ(*overrides.Get(url, PermissionType::MIDI),
+            PermissionStatus::GRANTED);
+
+  // Reset to all-granted MIDI.
+  overrides.Set(url, PermissionType::MIDI_SYSEX, PermissionStatus::GRANTED);
+
+  overrides.Set(url, PermissionType::MIDI, PermissionStatus::DENIED);
+  EXPECT_EQ(*overrides.Get(url, PermissionType::MIDI),
+            PermissionStatus::DENIED);
+  EXPECT_EQ(*overrides.Get(url, PermissionType::MIDI_SYSEX),
+            PermissionStatus::DENIED);
+}
+
 TEST(DevToolsPermissionOverridesTest, GetBasic) {
   DevToolsPermissionOverrides overrides;
   Origin url = Origin::Create(GURL("https://google.com/search?q=foo"));

@@ -42,6 +42,12 @@ bool BookmarkAppRegistrar::IsInstalled(const web_app::AppId& app_id) const {
   return GetExtension(app_id) != nullptr;
 }
 
+bool BookmarkAppRegistrar::IsLocallyInstalled(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  return extension && BookmarkAppIsLocallyInstalled(profile(), extension);
+}
+
 bool BookmarkAppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   const ExtensionSet& extensions = registry->enabled_extensions();
@@ -100,8 +106,10 @@ void BookmarkAppRegistrar::OnShutdown(ExtensionRegistry* registry) {
 
 const Extension* BookmarkAppRegistrar::GetExtension(
     const web_app::AppId& app_id) const {
-  return ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
-      app_id);
+  const Extension* extension =
+      ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(app_id);
+  DCHECK(!extension || extension->from_bookmark());
+  return extension;
 }
 
 std::string BookmarkAppRegistrar::GetAppShortName(
@@ -148,6 +156,18 @@ base::Optional<GURL> BookmarkAppRegistrar::GetAppScope(
     return scope_url;
 
   return base::nullopt;
+}
+
+base::flat_set<web_app::AppId> BookmarkAppRegistrar::GetAppIdsForTesting()
+    const {
+  base::flat_set<web_app::AppId> app_ids;
+  for (scoped_refptr<const Extension> app :
+       ExtensionRegistry::Get(profile())->enabled_extensions()) {
+    if (app->from_bookmark()) {
+      app_ids.insert(app->id());
+    }
+  }
+  return app_ids;
 }
 
 }  // namespace extensions

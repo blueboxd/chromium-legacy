@@ -224,7 +224,8 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
                 // We also wait till the splash screen has finished initializing.
                 if (getActivity().getActivityTab() == null) return false;
 
-                View splashScreen = getActivity().getSplashScreenForTests();
+                View splashScreen =
+                        getActivity().getSplashControllerForTests().getSplashScreenForTests();
                 if (splashScreen == null) return false;
 
                 return (!(splashScreen instanceof ViewGroup)
@@ -233,10 +234,9 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        View splashScreen = getActivity().getSplashScreenForTests();
-        if (splashScreen == null) {
-            Assert.fail("No splash screen available.");
-        }
+        View splashScreen = getActivity().getSplashControllerForTests().getSplashScreenForTests();
+        Assert.assertNotNull("No splash screen available.", splashScreen);
+
         // TODO(pkotwicz): Change return type in order to accommodate new-style WebAPKs.
         // (crbug.com/958288)
         return (splashScreen instanceof ViewGroup) ? (ViewGroup) splashScreen : null;
@@ -255,6 +255,6 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
     }
 
     public boolean isSplashScreenVisible() {
-        return getActivity().getSplashScreenForTests() != null;
+        return getActivity().getSplashControllerForTests().getSplashScreenForTests() != null;
     }
 }

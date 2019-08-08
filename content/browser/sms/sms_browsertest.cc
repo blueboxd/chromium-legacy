@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/sms/sms_provider.h"
 #include "content/browser/sms/sms_service.h"
+#include "content/browser/sms/test/mock_sms_dialog.h"
+#include "content/browser/sms/test/mock_sms_provider.h"
+#include "content/browser/sms/test/mock_sms_web_contents_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/sms_dialog.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -28,42 +28,6 @@ using ::testing::StrictMock;
 namespace content {
 
 namespace {
-
-class MockSmsDialog : public SmsDialog {
- public:
-  MockSmsDialog() : SmsDialog() {}
-  ~MockSmsDialog() override = default;
-
-  MOCK_METHOD3(Open,
-               void(RenderFrameHost*, base::OnceClosure, base::OnceClosure));
-  MOCK_METHOD0(Close, void());
-  MOCK_METHOD0(SmsReceived, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSmsDialog);
-};
-
-class MockWebContentsDelegate : public WebContentsDelegate {
- public:
-  MockWebContentsDelegate() = default;
-  ~MockWebContentsDelegate() override = default;
-
-  MOCK_METHOD0(CreateSmsDialog, std::unique_ptr<SmsDialog>());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockWebContentsDelegate);
-};
-
-class MockSmsProvider : public SmsProvider {
- public:
-  MockSmsProvider() = default;
-  ~MockSmsProvider() override = default;
-
-  MOCK_METHOD0(Retrieve, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSmsProvider);
-};
 
 class SmsBrowserTest : public ContentBrowserTest {
  public:
@@ -92,7 +56,7 @@ class SmsBrowserTest : public ContentBrowserTest {
     cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
 
-  NiceMock<MockWebContentsDelegate> delegate_;
+  NiceMock<MockSmsWebContentsDelegate> delegate_;
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
   // used by the NetworkService.
   ContentMockCertVerifier cert_verifier_;
@@ -474,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
       base::WrapUnique(provider));
 
-  StrictMock<MockWebContentsDelegate> delegate;
+  StrictMock<MockSmsWebContentsDelegate> delegate;
   shell()->web_contents()->SetDelegate(&delegate);
 
   auto* dialog = new StrictMock<MockSmsDialog>();

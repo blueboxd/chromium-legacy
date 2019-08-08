@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/bind_test_util.h"
@@ -236,17 +237,14 @@ TEST_F(CookieStoreIOSTest, DeleteCanonicalCookie) {
   ClearCookies();
   SetCookie("abc=def");
 
-  // Match options to what SetCookie uses.
-  CookieOptions options;
-  options.set_include_httponly();
-
   // Time is different, though.
   base::Time not_now = base::Time::Now() - base::TimeDelta::FromDays(30);
 
   // Semantics for CookieMonster::DeleteCanonicalCookieAsync don't match deletes
   // for same key if cookie value changed.  Document CookieStoreIOS compat.
-  std::unique_ptr<CanonicalCookie> non_equiv_cookie = CanonicalCookie::Create(
-      kTestCookieURLFooBar, "abc=wfg", not_now, options);
+  std::unique_ptr<CanonicalCookie> non_equiv_cookie =
+      CanonicalCookie::Create(kTestCookieURLFooBar, "abc=wfg", not_now,
+                              base::nullopt /* server_time */);
   base::RunLoop run_loop;
   store_->DeleteCanonicalCookieAsync(
       *non_equiv_cookie, base::BindLambdaForTesting([&](uint32_t deleted) {
@@ -267,8 +265,9 @@ TEST_F(CookieStoreIOSTest, DeleteCanonicalCookie) {
   run_loop2.Run();
 
   // Now delete equivalent one with non-matching ctime.
-  std::unique_ptr<CanonicalCookie> equiv_cookie = CanonicalCookie::Create(
-      kTestCookieURLFooBar, "abc=def", not_now, options);
+  std::unique_ptr<CanonicalCookie> equiv_cookie =
+      CanonicalCookie::Create(kTestCookieURLFooBar, "abc=def", not_now,
+                              base::nullopt /* server_time */);
 
   base::RunLoop run_loop3;
   store_->DeleteCanonicalCookieAsync(
@@ -334,7 +333,7 @@ TEST_F(CookieStoreIOSTest, GetAllCookiesForURLAsync) {
   net::CookieOptions options;
   options.set_include_httponly();
   cookie_store->SetCookieWithOptionsAsync(
-      kTestCookieURLFooBar, "a=b", options,
+      kTestCookieURLFooBar, "a=b", options, base::nullopt /* server_time */,
       net::CookieStore::SetCookiesCallback());
   // Check we can get the cookie.
   GetAllCookiesCallback callback;

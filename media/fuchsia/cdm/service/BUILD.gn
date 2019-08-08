@@ -10,10 +10,14 @@ source_set("service") {
     "fuchsia_cdm_manager.h",
   ]
 
+  public_deps = [
+    "//third_party/fuchsia-sdk/sdk:media_drm",
+  ]
+
   deps = [
+    "//fuchsia/base",
     "//media",
     "//media/fuchsia/mojom",
-    "//third_party/fuchsia-sdk/sdk:media_drm",
     "//url",
   ]
 }

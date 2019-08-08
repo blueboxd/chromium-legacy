@@ -66,7 +66,7 @@ BookmarksCommandManagerTest.prototype = {
   __proto__: BookmarksBrowserTest.prototype,
 
   extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'command_manager_test.js',
   ]),
 };

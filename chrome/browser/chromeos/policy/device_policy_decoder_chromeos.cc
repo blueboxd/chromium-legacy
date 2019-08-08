@@ -115,15 +115,19 @@ std::unique_ptr<base::Value> DecodeIntegerValue(google::protobuf::int64 value) {
 }
 
 std::unique_ptr<base::Value> DecodeConnectionType(int value) {
-  static const char* const kConnectionTypes[] = {
-      shill::kTypeEthernet,  shill::kTypeWifi,     shill::kTypeWimax,
-      shill::kTypeBluetooth, shill::kTypeCellular,
+  const std::map<int, std::string> kConnectionTypes = {
+      {em::AutoUpdateSettingsProto::CONNECTION_TYPE_ETHERNET,
+       shill::kTypeEthernet},
+      {em::AutoUpdateSettingsProto::CONNECTION_TYPE_WIFI, shill::kTypeWifi},
+      {em::AutoUpdateSettingsProto::CONNECTION_TYPE_BLUETOOTH,
+       shill::kTypeBluetooth},
+      {em::AutoUpdateSettingsProto::CONNECTION_TYPE_CELLULAR,
+       shill::kTypeCellular},
   };
-
-  if (value < 0 || value >= static_cast<int>(base::size(kConnectionTypes)))
+  const auto iter = kConnectionTypes.find(value);
+  if (iter == kConnectionTypes.end())
     return nullptr;
-
-  return std::make_unique<base::Value>(kConnectionTypes[value]);
+  return std::make_unique<base::Value>(iter->second);
 }
 
 void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,

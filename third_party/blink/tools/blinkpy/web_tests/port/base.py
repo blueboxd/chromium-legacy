@@ -134,6 +134,9 @@ class Port(object):
         ('trusty', 'x86_64'),
 
         ('fuchsia', 'x86_64'),
+
+        ('ios12.2', 'x86_64'),
+        ('ios13.0', 'x86_64'),
     )
 
     CONFIGURATION_SPECIFIER_MACROS = {
@@ -141,6 +144,7 @@ class Port(object):
         'win': ['win7', 'win10'],
         'linux': ['trusty'],
         'fuschia': ['fuchsia'],
+        'ios': ['ios12.2', 'ios13.0'],
     }
 
     # List of ports open on the host that the tests will connect to. When tests

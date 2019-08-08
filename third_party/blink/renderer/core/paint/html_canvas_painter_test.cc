@@ -78,8 +78,7 @@ TEST_P(HTMLCanvasPainterTestForCAP, Canvas2DLayerAppearsInLayerTree) {
   // Not using SetBodyInnerHTML() because we need to test before document
   // lifecyle update.
   GetDocument().body()->SetInnerHTMLFromString("<canvas width=300 height=200>");
-  HTMLCanvasElement* element =
-      ToHTMLCanvasElement(GetDocument().body()->firstChild());
+  auto* element = To<HTMLCanvasElement>(GetDocument().body()->firstChild());
   CanvasContextCreationAttributesCore attributes;
   attributes.alpha = true;
   CanvasRenderingContext* context =

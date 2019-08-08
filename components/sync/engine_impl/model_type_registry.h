@@ -94,9 +94,6 @@ class ModelTypeRegistry : public ModelTypeConnector,
   // applied.
   ModelTypeSet GetInitialSyncEndedTypes() const;
 
-  // Returns the set of non-blocking types with initial sync done.
-  ModelTypeSet GetInitialSyncDoneNonBlockingTypes() const;
-
   // Returns the update handler for |type|.
   const UpdateHandler* GetUpdateHandler(ModelType type) const;
 

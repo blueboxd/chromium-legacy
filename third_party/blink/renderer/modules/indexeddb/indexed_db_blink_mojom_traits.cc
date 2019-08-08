@@ -84,8 +84,6 @@ UnionTraits<blink::mojom::IDBKeyDataDataView, std::unique_ptr<blink::IDBKey>>::
     GetTag(const std::unique_ptr<blink::IDBKey>& key) {
   DCHECK(key.get());
   switch (key->GetType()) {
-    case blink::mojom::IDBKeyType::Invalid:
-      return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
     case blink::mojom::IDBKeyType::Array:
       return blink::mojom::IDBKeyDataDataView::Tag::KEY_ARRAY;
     case blink::mojom::IDBKeyType::Binary:
@@ -96,14 +94,15 @@ UnionTraits<blink::mojom::IDBKeyDataDataView, std::unique_ptr<blink::IDBKey>>::
       return blink::mojom::IDBKeyDataDataView::Tag::DATE;
     case blink::mojom::IDBKeyType::Number:
       return blink::mojom::IDBKeyDataDataView::Tag::NUMBER;
-    case blink::mojom::IDBKeyType::Null:
-      return blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL;
+    case blink::mojom::IDBKeyType::None:
+      return blink::mojom::IDBKeyDataDataView::Tag::OTHER_NONE;
 
     // Not used, fall through to NOTREACHED.
-    case blink::mojom::IDBKeyType::Min:;
+    case blink::mojom::IDBKeyType::Invalid:  // Only used in blink.
+    case blink::mojom::IDBKeyType::Min:;     // Only used in the browser.
   }
   NOTREACHED();
-  return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
+  return blink::mojom::IDBKeyDataDataView::Tag::OTHER_NONE;
 }
 
 // static
@@ -139,11 +138,8 @@ bool UnionTraits<
     case blink::mojom::IDBKeyDataDataView::Tag::NUMBER:
       *out = blink::IDBKey::CreateNumber(data.number());
       return true;
-    case blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID:
-      *out = blink::IDBKey::CreateInvalid();
-      return true;
-    case blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL:
-      *out = blink::IDBKey::CreateNull();
+    case blink::mojom::IDBKeyDataDataView::Tag::OTHER_NONE:
+      *out = blink::IDBKey::CreateNone();
       return true;
   }
 
@@ -361,8 +357,8 @@ blink::mojom::blink::IDBKeyRangePtr TypeConverter<
     blink::mojom::blink::IDBKeyRangePtr,
     const blink::IDBKeyRange*>::Convert(const blink::IDBKeyRange* input) {
   if (!input) {
-    std::unique_ptr<blink::IDBKey> lower = blink::IDBKey::CreateNull();
-    std::unique_ptr<blink::IDBKey> upper = blink::IDBKey::CreateNull();
+    std::unique_ptr<blink::IDBKey> lower = blink::IDBKey::CreateNone();
+    std::unique_ptr<blink::IDBKey> upper = blink::IDBKey::CreateNone();
     return blink::mojom::blink::IDBKeyRange::New(
         std::move(lower), std::move(upper), false /* lower_open */,
         false /* upper_open */);
@@ -379,8 +375,8 @@ blink::mojom::blink::IDBKeyRangePtr
 TypeConverter<blink::mojom::blink::IDBKeyRangePtr,
               blink::IDBKeyRange*>::Convert(blink::IDBKeyRange* input) {
   if (!input) {
-    std::unique_ptr<blink::IDBKey> lower = blink::IDBKey::CreateNull();
-    std::unique_ptr<blink::IDBKey> upper = blink::IDBKey::CreateNull();
+    std::unique_ptr<blink::IDBKey> lower = blink::IDBKey::CreateNone();
+    std::unique_ptr<blink::IDBKey> upper = blink::IDBKey::CreateNone();
     return blink::mojom::blink::IDBKeyRange::New(
         std::move(lower), std::move(upper), false /* lower_open */,
         false /* upper_open */);

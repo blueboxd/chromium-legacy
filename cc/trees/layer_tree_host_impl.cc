@@ -175,49 +175,6 @@ viz::ResourceFormat TileRasterBufferFormat(
   return viz::PlatformColor::BestSupportedTextureFormat(caps);
 }
 
-// Small helper class that saves the current viewport location as the user sees
-// it and resets to the same location.
-class ViewportAnchor {
- public:
-  ViewportAnchor(ScrollNode* inner_scroll,
-                 LayerImpl* outer_scroll,
-                 LayerTreeImpl* tree_impl)
-      : inner_(inner_scroll), outer_(outer_scroll), tree_impl_(tree_impl) {
-    viewport_in_content_coordinates_ =
-        scroll_tree().current_scroll_offset(inner_->element_id);
-
-    if (outer_)
-      viewport_in_content_coordinates_ += outer_->CurrentScrollOffset();
-  }
-
-  void ResetViewportToAnchoredPosition() {
-    DCHECK(outer_);
-
-    scroll_tree().ClampScrollToMaxScrollOffset(inner_, tree_impl_);
-    outer_->ClampScrollToMaxScrollOffset();
-
-    gfx::ScrollOffset viewport_location =
-        scroll_tree().current_scroll_offset(inner_->element_id) +
-        outer_->CurrentScrollOffset();
-
-    gfx::Vector2dF delta =
-        viewport_in_content_coordinates_.DeltaFrom(viewport_location);
-
-    delta = scroll_tree().ScrollBy(inner_, delta, tree_impl_);
-    outer_->ScrollBy(delta);
-  }
-
- private:
-  ScrollTree& scroll_tree() {
-    return tree_impl_->property_trees()->scroll_tree;
-  }
-
-  ScrollNode* inner_;
-  LayerImpl* outer_;
-  LayerTreeImpl* tree_impl_;
-  gfx::ScrollOffset viewport_in_content_coordinates_;
-};
-
 void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
   if (visible) {
     TRACE_EVENT_ASYNC_BEGIN1("cc", "LayerTreeHostImpl::SetVisible", id,
@@ -2677,107 +2634,6 @@ void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
     layer_tree_frame_sink_->DidNotProduceFrame(ack);
 }
 
-void LayerTreeHostImpl::UpdateViewportContainerSizes() {
-  if (!InnerViewportScrollNode())
-    return;
-
-  ViewportAnchor anchor(InnerViewportScrollNode(), OuterViewportScrollLayer(),
-                        active_tree_.get());
-
-  float top_controls_layout_height =
-      active_tree_->browser_controls_shrink_blink_size()
-          ? active_tree_->top_controls_height()
-          : 0.f;
-  float delta_from_top_controls =
-      top_controls_layout_height -
-      browser_controls_offset_manager_->ContentTopOffset();
-  float bottom_controls_layout_height =
-      active_tree_->browser_controls_shrink_blink_size()
-          ? active_tree_->bottom_controls_height()
-          : 0.f;
-  delta_from_top_controls +=
-      bottom_controls_layout_height -
-      browser_controls_offset_manager_->ContentBottomOffset();
-
-  // Adjust the viewport layers by shrinking/expanding the container to account
-  // for changes in the size (e.g. browser controls) since the last resize from
-  // Blink.
-  auto* property_trees = active_tree_->property_trees();
-  gfx::Vector2dF bounds_delta(0.f, delta_from_top_controls);
-  if (property_trees->inner_viewport_container_bounds_delta() == bounds_delta)
-    return;
-
-  property_trees->SetInnerViewportContainerBoundsDelta(bounds_delta);
-
-  ClipNode* inner_clip_node = property_trees->clip_tree.Node(
-      InnerViewportScrollLayer()->clip_tree_index());
-  inner_clip_node->clip.set_height(
-      InnerViewportScrollNode()->container_bounds.height() + bounds_delta.y());
-
-  // Adjust the outer viewport container as well, since adjusting only the
-  // inner may cause its bounds to exceed those of the outer, causing scroll
-  // clamping.
-  if (OuterViewportScrollNode()) {
-    gfx::Vector2dF scaled_bounds_delta = gfx::ScaleVector2d(
-        bounds_delta, 1.f / active_tree_->min_page_scale_factor());
-
-    property_trees->SetOuterViewportContainerBoundsDelta(scaled_bounds_delta);
-    property_trees->SetInnerViewportScrollBoundsDelta(scaled_bounds_delta);
-
-    ClipNode* outer_clip_node = property_trees->clip_tree.Node(
-        OuterViewportScrollLayer()->clip_tree_index());
-
-    float adjusted_container_height =
-        OuterViewportScrollNode()->container_bounds.height() +
-        scaled_bounds_delta.y();
-
-    // TODO(bokan): The clip node bounds for the outer viewport are incorrectly
-    // computed pre-Blink-Gen-Property-Trees: they assume the outer viewport is
-    // the same size as the inner viewport. In reality, the outer viewport is
-    // sized such that it equals the inner viewport when at minimum page scale.
-    // This happens on mobile when a page doesn't have a |width=device-width|
-    // viewport meta tag (e.g. legacy desktop page). Thus, we must scale
-    // the container height and its adjustment to match the incorrect space of
-    // the clip node.  https://crbug.com/901083, https://crbug.com/961649.
-    // Note: we don't fix this in the property tree builder since that code
-    // path is going away and it's not clear whether it depends on ClipNode
-    // being in this coordinate space pre-BGPT.
-    if (!settings().use_layer_lists)
-      adjusted_container_height *= active_tree_->min_page_scale_factor();
-
-    outer_clip_node->clip.set_height(adjusted_container_height);
-
-    // Expand all clips between the outer viewport and the inner viewport.
-    auto* outer_ancestor = property_trees->clip_tree.parent(outer_clip_node);
-    while (outer_ancestor && outer_ancestor != inner_clip_node) {
-      outer_ancestor->clip.Union(outer_clip_node->clip);
-      outer_ancestor = property_trees->clip_tree.parent(outer_ancestor);
-    }
-
-    anchor.ResetViewportToAnchoredPosition();
-  }
-
-  property_trees->clip_tree.set_needs_update(true);
-  property_trees->full_tree_damaged = true;
-  active_tree_->set_needs_update_draw_properties();
-
-  // Viewport scrollbar positions are determined using the viewport bounds
-  // delta.
-  active_tree_->SetScrollbarGeometriesNeedUpdate();
-  active_tree_->set_needs_update_draw_properties();
-
-  // For pre-BlinkGenPropertyTrees mode, we need to ensure the layers are
-  // appropriately updated.
-  if (!settings().use_layer_lists) {
-    if (OuterViewportContainerLayer())
-      OuterViewportContainerLayer()->NoteLayerPropertyChanged();
-    if (InnerViewportScrollLayer())
-      InnerViewportScrollLayer()->NoteLayerPropertyChanged();
-    if (OuterViewportScrollLayer())
-      OuterViewportScrollLayer()->NoteLayerPropertyChanged();
-  }
-}
-
 void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
   // Only valid for the single-threaded non-scheduled/synchronous case
   // using the zero copy raster worker pool.
@@ -3113,7 +2969,7 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     active_tree_->ProcessUIResourceRequestQueue();
   }
 
-  UpdateViewportContainerSizes();
+  active_tree_->UpdateViewportContainerSizes();
 
   if (InnerViewportScrollNode()) {
     active_tree_->property_trees()->scroll_tree.ClampScrollToMaxScrollOffset(
@@ -3655,10 +3511,11 @@ const gfx::Transform& LayerTreeHostImpl::DrawTransform() const {
 }
 
 void LayerTreeHostImpl::DidChangeBrowserControlsPosition() {
-  UpdateViewportContainerSizes();
+  active_tree_->UpdateViewportContainerSizes();
+  if (pending_tree_)
+    pending_tree_->UpdateViewportContainerSizes();
   SetNeedsRedraw();
   SetNeedsOneBeginImplFrame();
-  active_tree_->set_needs_update_draw_properties();
   SetFullViewportDamage();
 }
 

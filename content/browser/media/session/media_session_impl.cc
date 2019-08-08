@@ -296,6 +296,7 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
         iter->second = required_audio_focus_type;
 
       UpdateRoutedService();
+      RebuildAndNotifyMediaPositionChanged();
       return true;
     }
   }
@@ -320,6 +321,7 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
   UpdateRoutedService();
   RebuildAndNotifyMediaSessionInfoChanged();
   RebuildAndNotifyActionsChanged();
+  RebuildAndNotifyMediaPositionChanged();
 
   return true;
 }
@@ -345,6 +347,7 @@ void MediaSessionImpl::RemovePlayer(MediaSessionPlayerObserver* observer,
 
   RebuildAndNotifyMediaSessionInfoChanged();
   RebuildAndNotifyActionsChanged();
+  RebuildAndNotifyMediaPositionChanged();
 }
 
 void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
@@ -374,6 +377,7 @@ void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
 
   RebuildAndNotifyMediaSessionInfoChanged();
   RebuildAndNotifyActionsChanged();
+  RebuildAndNotifyMediaPositionChanged();
 }
 
 void MediaSessionImpl::RecordSessionDuck() {
@@ -412,6 +416,29 @@ void MediaSessionImpl::OnPlayerPaused(MediaSessionPlayerObserver* observer,
   // Otherwise, suspend the session.
   DCHECK(IsActive());
   OnSuspendInternal(SuspendType::kContent, State::SUSPENDED);
+}
+
+void MediaSessionImpl::RebuildAndNotifyMediaPositionChanged() {
+  base::Optional<media_session::MediaPosition> position;
+
+  // If there was a position specified from Blink then we should use that.
+  if (routed_service_ && routed_service_->position())
+    position = routed_service_->position();
+
+  // If we only have a single player then we should use the position from that.
+  if (!position && normal_players_.size() == 1 && one_shot_players_.empty() &&
+      pepper_players_.empty()) {
+    auto& first = normal_players_.begin()->first;
+    position = first.observer->GetPosition(first.player_id);
+  }
+
+  if (position == position_)
+    return;
+
+  position_ = position;
+
+  for (auto& observer : observers_)
+    observer->MediaSessionPositionChanged(position_);
 }
 
 void MediaSessionImpl::Resume(SuspendType suspend_type) {
@@ -504,6 +531,7 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
   normal_players_.clear();
 
   AbandonSystemAudioFocusIfNeeded();
+  RebuildAndNotifyMediaPositionChanged();
 }
 
 void MediaSessionImpl::Seek(base::TimeDelta seek_time) {
@@ -850,16 +878,11 @@ void MediaSessionImpl::AddObserver(
   media_session_observer->MediaSessionInfoChanged(GetMediaSessionInfoSync());
   media_session_observer->MediaSessionMetadataChanged(metadata_);
   media_session_observer->MediaSessionImagesChanged(images_);
+  media_session_observer->MediaSessionPositionChanged(position_);
 
   std::vector<media_session::mojom::MediaSessionAction> actions(
       actions_.begin(), actions_.end());
   media_session_observer->MediaSessionActionsChanged(actions);
-
-  // TODO(crbug.com/985394): Use real position data here, this is mock data.
-  media_session::MediaPosition media_position(
-      1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
-      base::TimeDelta::FromSeconds(300) /* position */);
-  media_session_observer->MediaSessionPositionChanged(media_position);
 
   observers_.Add(std::move(media_session_observer));
 }
@@ -1018,6 +1041,7 @@ bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,
 
   UpdateRoutedService();
   RebuildAndNotifyMediaSessionInfoChanged();
+  RebuildAndNotifyMediaPositionChanged();
 
   return result != AudioFocusDelegate::AudioFocusResult::kFailed;
 }
@@ -1034,6 +1058,7 @@ bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
 
   UpdateRoutedService();
   RebuildAndNotifyMediaSessionInfoChanged();
+  RebuildAndNotifyMediaPositionChanged();
 
   return true;
 }
@@ -1145,6 +1170,7 @@ void MediaSessionImpl::UpdateRoutedService() {
   RebuildAndNotifyMetadataChanged();
   RebuildAndNotifyActionsChanged();
   RebuildAndNotifyMediaSessionInfoChanged();
+  RebuildAndNotifyMediaPositionChanged();
 }
 
 MediaSessionServiceImpl* MediaSessionImpl::ComputeServiceForRouting() {

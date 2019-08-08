@@ -1283,7 +1283,7 @@ void OverviewGrid::PrepareScrollLimitMin() {
   }
   // |rightmost_window_right| may have been modified by an earlier scroll.
   // |scroll_offset_| is added to adjust for that.
-  rightmost_window_right += scroll_offset_;
+  rightmost_window_right -= scroll_offset_;
   scroll_offset_min_ = total_bounds.right() - rightmost_window_right;
 }
 
@@ -1450,9 +1450,10 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
       rects.push_back(gfx::RectF());
       continue;
     }
-    const int x =
-        width * (window_position / 2) + total_bounds.x() + scroll_offset_;
-    const int y = height * (window_position % 2) + total_bounds.y();
+    const int x = width * (window_position / kTabletLayoutRow) +
+                  total_bounds.x() + scroll_offset_;
+    const int y =
+        height * (window_position % kTabletLayoutRow) + total_bounds.y();
     const gfx::RectF bounds(x, y, width, height);
     rects.push_back(bounds);
     ++window_position;

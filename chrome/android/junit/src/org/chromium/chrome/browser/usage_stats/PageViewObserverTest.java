@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.content_public.browser.WebContents;
 
 import java.util.Arrays;
 
@@ -72,8 +71,6 @@ public final class PageViewObserverTest {
     @Mock
     private SuspensionTracker mSuspensionTracker;
     @Mock
-    private WebContents mWebContents;
-    @Mock
     private ChromeActivity mChromeActivity;
     @Captor
     private ArgumentCaptor<TabObserver> mTabObserverCaptor;
@@ -94,7 +91,6 @@ public final class PageViewObserverTest {
         doReturn(false).when(mTab).isIncognito();
         doReturn(null).when(mTab).getUrl();
         doReturn(mChromeActivity).when(mTab).getActivity();
-        doReturn(mWebContents).when(mTab).getWebContents();
         doReturn(Arrays.asList(mTabModel)).when(mTabModelSelector).getModels();
         doReturn(mTab).when(mTabModelSelector).getCurrentTab();
         doReturn(mUserDataHost).when(mTab).getUserDataHost();

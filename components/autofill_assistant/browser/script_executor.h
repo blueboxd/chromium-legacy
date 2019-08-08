@@ -93,12 +93,6 @@ class ScriptExecutor : public ActionDelegate,
     friend std::ostream& operator<<(std::ostream& out, const Result& result);
   };
 
-  // Optionally provides the initial set of actions to execute. If unset, the
-  // script executor fetches the actions from the service.
-  void SetActions(std::unique_ptr<ActionsResponseProto> initial_actions) {
-    initial_actions_ = std::move(initial_actions);
-  }
-
   using RunScriptCallback = base::OnceCallback<void(const Result&)>;
   void Run(RunScriptCallback callback);
 
@@ -313,8 +307,7 @@ class ScriptExecutor : public ActionDelegate,
   };
 
   void OnGetActions(bool result, const std::string& response);
-  void OnGetActionsProto(bool result, const ActionsResponseProto& response);
-  void ProcessNextActionResponse(const ActionsResponseProto& response);
+  bool ProcessNextActionResponse(const std::string& response);
   void ReportPayloadsToListener();
   void ReportScriptsUpdateToListener(
       std::vector<std::unique_ptr<Script>> scripts);
@@ -322,7 +315,7 @@ class ScriptExecutor : public ActionDelegate,
   void RunCallbackWithResult(const Result& result);
   void ProcessNextAction();
   void ProcessAction(Action* action);
-  void GetNextActions(bool success);
+  void GetNextActions();
   void OnProcessedAction(base::TimeTicks start_time,
                          std::unique_ptr<ProcessedActionProto> action);
   void CheckElementMatches(const Selector& selector,
@@ -408,13 +401,6 @@ class ScriptExecutor : public ActionDelegate,
     bool direct_action = false;
   };
   CurrentActionData current_action_data_;
-
-  // If set, get the initial set of actions from this proto instead of querying
-  // them from the backend.
-  std::unique_ptr<ActionsResponseProto> initial_actions_;
-
-  // If true, don't report the result to the caller.
-  bool inhibit_result_report_ = false;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);

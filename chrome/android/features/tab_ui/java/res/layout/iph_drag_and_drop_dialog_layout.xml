@@ -8,7 +8,7 @@
     android:layout_height="@dimen/tab_grid_iph_dialog_size"
     android:layout_gravity="center"
     android:orientation="vertical"
-    android:background="@drawable/tab_grid_card_background"
+    android:background="@drawable/popup_bg_tinted"
     android:clickable="true"
     android:focusable="true">
     <ImageView
@@ -25,7 +25,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:text="@string/iph_drag_and_drop_title"
-        android:textAppearance="@style/TextAppearance.BlackTitle1"
+        android:textAppearance="@style/TextAppearance.BlackHeadline"
         android:gravity="center_vertical" />
     <TextView
         android:layout_width="match_parent"

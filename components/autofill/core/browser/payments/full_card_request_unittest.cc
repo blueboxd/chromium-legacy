@@ -102,7 +102,8 @@ class FullCardRequestTest : public testing::Test {
 
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
                        const std::string& real_pan) {
-    request_->OnDidGetRealPan(result, real_pan);
+    payments::PaymentsClient::UnmaskResponseDetails response;
+    request_->OnDidGetRealPan(result, response.with_real_pan(real_pan));
   }
 
  private:

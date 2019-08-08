@@ -35,12 +35,10 @@ const base::flat_map<std::string, SkColor>& GetColorPickerMap() {
        {"Red", gfx::kGoogleRed600},
        {"Yellow", gfx::kGoogleYellow600},
        {"Green", gfx::kGoogleGreen600},
-       // TODO(crbug.com/989174): add these expanded palette colors to
-       // ui/gfx/color_palette.h
-       {"Orange", SkColorSetRGB(0xE8, 0x71, 0x0A)},
-       {"Pink", SkColorSetRGB(0xE5, 0x25, 0x92)},
-       {"Purple", SkColorSetRGB(0x93, 0x34, 0xE6)},
-       {"Cyan", SkColorSetRGB(0x12, 0xB5, 0xCB)}});
+       {"Orange", gfx::kGoogleOrange600},
+       {"Pink", gfx::kGooglePink600},
+       {"Purple", gfx::kGooglePurple600},
+       {"Cyan", gfx::kGoogleCyan600}});
   return *map;
 }
 

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "pdf/draw_utils/coordinates.h"
+#include "pdf/page_orientation.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
 
@@ -32,14 +33,9 @@ class DocumentLayout final {
 
     ~Options();
 
-    // Returns the default page orientation, encoded as an integer from 0 to 3
-    // (inclusive).
-    //
-    // A return value of 0 indicates the original page orientation, with each
-    // increment indicating clockwise rotation by an additional 90 degrees.
-    //
-    // TODO(kmoon): Return an enum (class) instead of an integer.
-    int default_page_orientation() const { return default_page_orientation_; }
+    PageOrientation default_page_orientation() const {
+      return default_page_orientation_;
+    }
 
     // Rotates default page orientation 90 degrees clockwise.
     void RotatePagesClockwise();
@@ -48,8 +44,7 @@ class DocumentLayout final {
     void RotatePagesCounterclockwise();
 
    private:
-    // Orientations are non-negative integers modulo 4.
-    int default_page_orientation_ = 0;
+    PageOrientation default_page_orientation_ = PageOrientation::kOriginal;
   };
 
   static const draw_utils::PageInsetSizes kSingleViewInsets;
@@ -75,17 +70,15 @@ class DocumentLayout final {
   // Sets the layout's total size.
   void set_size(const pp::Size& size) { size_ = size; }
 
-  // Given |page_sizes| and the layout's width set to the max width of the
-  // document's pages, return pp::Rects that represent |page_sizes|
-  // formatted for single view and update the layout's size to the size of the
-  // new single view layout.
+  // Given |page_sizes|, return pp::Rects that represent |page_sizes|
+  // formatted for single view and update the layout's size to the size of
+  // the new single view layout.
   std::vector<pp::Rect> GetSingleViewLayout(
       const std::vector<pp::Size>& page_sizes);
 
-  // Given |page_sizes| and the layout's width is set to the max page width of
-  // the document's pages, return pp::Rects that represent |page_sizes|
-  // formatted for two-up view and update the layout's size to the size of the
-  // new two-up view layout.
+  // Given |page_sizes|, return pp::Rects that represent |page_sizes|
+  // formatted for two-up view and update the layout's size to the size of
+  // the new two-up view layout.
   std::vector<pp::Rect> GetTwoUpViewLayout(
       const std::vector<pp::Size>& page_sizes);
 

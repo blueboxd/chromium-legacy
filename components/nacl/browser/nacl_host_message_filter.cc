@@ -91,6 +91,15 @@ void NaClHostMessageFilter::OnChannelClosing() {
   pnacl::PnaclHost::GetInstance()->RendererClosing(render_process_id_);
 }
 
+void NaClHostMessageFilter::OverrideThreadForMessage(
+    const IPC::Message& message,
+    content::BrowserThread::ID* thread) {
+#if BUILDFLAG(ENABLE_NACL)
+  if (message.type() == NaClHostMsg_LaunchNaCl::ID)
+    *thread = content::BrowserThread::UI;
+#endif
+}
+
 bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NaClHostMessageFilter, message)
@@ -122,26 +131,42 @@ bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void NaClHostMessageFilter::OnLaunchNaCl(
     const nacl::NaClLaunchParams& launch_params,
     IPC::Message* reply_msg) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  bool nonsfi_mode_allowed = false;
+#if defined(OS_CHROMEOS) && \
+    (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
+  nonsfi_mode_allowed = NaClBrowser::GetDelegate()->IsNonSfiModeAllowed(
+      profile_directory_, GURL(launch_params.manifest_url));
+#endif
+
+  auto map_url_callback =
+      nacl::NaClBrowser::GetDelegate()->GetMapUrlToLocalFilePathCallback(
+          profile_directory_);
+
   // If we're running llc or ld for the PNaCl translator, we don't need to look
   // up permissions, and we don't have the right browser state to look up some
   // of the whitelisting parameters anyway.
   if (launch_params.process_type == kPNaClTranslatorProcessType) {
     uint32_t perms = launch_params.permission_bits & ppapi::PERMISSION_DEV;
-    LaunchNaClContinuationOnIOThread(
-        launch_params,
-        reply_msg,
-        std::vector<NaClResourcePrefetchResult>(),
-        ppapi::PpapiPermissions(perms));
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::IO},
+        base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuationOnIOThread,
+                       this, launch_params, reply_msg,
+                       std::vector<NaClResourcePrefetchResult>(),
+                       ppapi::PpapiPermissions(perms), nonsfi_mode_allowed,
+                       map_url_callback));
     return;
   }
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuation,
-                                this, launch_params, reply_msg));
+  LaunchNaClContinuation(launch_params, reply_msg, nonsfi_mode_allowed,
+                         map_url_callback);
 }
 
 void NaClHostMessageFilter::LaunchNaClContinuation(
     const nacl::NaClLaunchParams& launch_params,
-    IPC::Message* reply_msg) {
+    IPC::Message* reply_msg,
+    bool nonsfi_mode_allowed,
+    NaClBrowserDelegate::MapUrlToLocalFilePathCallback map_url_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ppapi::PpapiPermissions permissions =
@@ -185,24 +210,25 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&NaClHostMessageFilter::BatchOpenResourceFiles, this,
-                     safe_launch_params, reply_msg, permissions));
+                     safe_launch_params, reply_msg, permissions,
+                     nonsfi_mode_allowed, map_url_callback));
 }
 
 void NaClHostMessageFilter::BatchOpenResourceFiles(
     const nacl::NaClLaunchParams& launch_params,
     IPC::Message* reply_msg,
-    ppapi::PpapiPermissions permissions) {
+    ppapi::PpapiPermissions permissions,
+    bool nonsfi_mode_allowed,
+    NaClBrowserDelegate::MapUrlToLocalFilePathCallback map_url_callback) {
   std::vector<NaClResourcePrefetchResult> prefetched_resource_files;
   const std::vector<NaClResourcePrefetchRequest>& request_list =
       launch_params.resource_prefetch_request_list;
   for (size_t i = 0; i < request_list.size(); ++i) {
     GURL gurl(request_list[i].resource_url);
     base::FilePath file_path_metadata;
-    if (!nacl::NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
-            gurl,
-            true,  // use_blocking_api
-            profile_directory_,
-            &file_path_metadata)) {
+    if (!map_url_callback.Run(gurl,
+                              true,  // use_blocking_api
+                              &file_path_metadata)) {
       continue;
     }
     base::File file = nacl::OpenNaClReadExecImpl(
@@ -222,14 +248,16 @@ void NaClHostMessageFilter::BatchOpenResourceFiles(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuationOnIOThread,
                      this, launch_params, reply_msg, prefetched_resource_files,
-                     permissions));
+                     permissions, nonsfi_mode_allowed, map_url_callback));
 }
 
 void NaClHostMessageFilter::LaunchNaClContinuationOnIOThread(
     const nacl::NaClLaunchParams& launch_params,
     IPC::Message* reply_msg,
     const std::vector<NaClResourcePrefetchResult>& prefetched_resource_files,
-    ppapi::PpapiPermissions permissions) {
+    ppapi::PpapiPermissions permissions,
+    bool nonsfi_mode_allowed,
+    NaClBrowserDelegate::MapUrlToLocalFilePathCallback map_url_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   NaClFileToken nexe_token = {
@@ -241,27 +269,18 @@ void NaClHostMessageFilter::LaunchNaClContinuationOnIOThread(
       IPC::PlatformFileForTransitToPlatformFile(launch_params.nexe_file);
 
   NaClProcessHost* host = new NaClProcessHost(
-      GURL(launch_params.manifest_url),
-      base::File(nexe_file),
-      nexe_token,
-      prefetched_resource_files,
-      permissions,
-      launch_params.render_view_id,
-      launch_params.permission_bits,
-      launch_params.uses_nonsfi_mode,
-      off_the_record_,
-      launch_params.process_type,
+      GURL(launch_params.manifest_url), base::File(nexe_file), nexe_token,
+      prefetched_resource_files, permissions, launch_params.render_view_id,
+      launch_params.permission_bits, launch_params.uses_nonsfi_mode,
+      nonsfi_mode_allowed, off_the_record_, launch_params.process_type,
       profile_directory_);
   GURL manifest_url(launch_params.manifest_url);
   base::FilePath manifest_path;
   // We're calling MapUrlToLocalFilePath with the non-blocking API
   // because we're running in the I/O thread. Ideally we'd use the other path,
   // which would cover more cases.
-  nacl::NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
-      manifest_url,
-      false /* use_blocking_api */,
-      profile_directory_,
-      &manifest_path);
+  map_url_callback.Run(manifest_url, false /* use_blocking_api */,
+                       &manifest_path);
   host->Launch(this, reply_msg, manifest_path);
 }
 

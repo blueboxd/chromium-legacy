@@ -235,6 +235,7 @@ PageInfoUI::ChosenObjectInfo::~ChosenObjectInfo() {}
 PageInfoUI::IdentityInfo::IdentityInfo()
     : identity_status(PageInfo::SITE_IDENTITY_STATUS_UNKNOWN),
       safe_browsing_status(PageInfo::SAFE_BROWSING_STATUS_NONE),
+      safety_tip_status(security_state::SAFETY_TIP_STATUS_NONE),
       connection_status(PageInfo::SITE_CONNECTION_STATUS_UNKNOWN),
       show_ssl_decision_revoke_button(false),
       show_change_password_buttons(false) {}
@@ -282,6 +283,13 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
       return CreateSecurityDescription(SecuritySummaryColor::RED,
                                        IDS_PAGE_INFO_BILLING_SUMMARY,
                                        IDS_PAGE_INFO_BILLING_DETAILS);
+  }
+
+  if (identity_info.safety_tip_status ==
+      security_state::SAFETY_TIP_STATUS_BAD_REPUTATION) {
+    return CreateSecurityDescription(
+        SecuritySummaryColor::RED, IDS_PAGE_INFO_SAFETY_TIP_SUMMARY,
+        IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
   }
 
   switch (identity_info.identity_status) {

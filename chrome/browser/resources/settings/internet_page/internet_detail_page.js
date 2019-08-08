@@ -798,7 +798,7 @@ Polymer({
         return false;
       }
     }
-    if ((type == CrOnc.Type.WI_FI || type == CrOnc.Type.WI_MAX) &&
+    if (type == CrOnc.Type.WI_FI &&
         CrOnc.isConnectingOrConnected(networkProperties)) {
       return false;
     }
@@ -1392,8 +1392,6 @@ Polymer({
       }
     } else if (type == CrOnc.Type.WI_FI) {
       fields.push('RestrictedConnectivity');
-    } else if (type == CrOnc.Type.WI_MAX) {
-      fields.push('RestrictedConnectivity', 'WiMAX.EAP.Identity');
     }
     return fields;
   },
@@ -1445,8 +1443,6 @@ Polymer({
           'WiFi.SSID', 'WiFi.BSSID', 'WiFi.SignalStrength', 'WiFi.Security',
           'WiFi.EAP.Outer', 'WiFi.EAP.Inner', 'WiFi.EAP.SubjectMatch',
           'WiFi.EAP.Identity', 'WiFi.EAP.AnonymousIdentity', 'WiFi.Frequency');
-    } else if (type == CrOnc.Type.WI_MAX) {
-      fields.push('WiFi.SignalStrength');
     }
     return fields;
   },

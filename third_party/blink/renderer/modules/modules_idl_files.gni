@@ -649,6 +649,7 @@ modules_dictionary_idl_files =
           "mediarecorder/media_recorder_options.idl",
           "mediasession/media_image.idl",
           "mediasession/media_metadata_init.idl",
+          "mediasession/media_position_state.idl",
           "mediasession/media_session_action_details.idl",
           "mediasession/media_session_seek_to_action_details.idl",
           "mediastream/constrain_boolean_parameters.idl",

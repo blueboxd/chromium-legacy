@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
+
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -453,6 +455,46 @@ TEST_F(IntersectionObserverTest, TrackedTargetBookkeeping) {
   observer2->unobserve(target, exception_state);
   ASSERT_FALSE(exception_state.HadException());
   EXPECT_EQ(controller.GetTrackedTargetCountForTesting(), 0u);
+}
+
+TEST_F(IntersectionObserverTest, RootMarginDevicePixelRatio) {
+  WebView().SetZoomFactorForDeviceScaleFactor(3.5f);
+  WebView().MainFrameWidget()->Resize(WebSize(2800, 2100));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+    body {
+      margin: 0;
+    }
+    #target {
+      height: 30px;
+    }
+    </style>
+    <div id='target'>Hello, world!</div>
+  )HTML");
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
+  observer_init->setRootMargin("-31px 0px 0px 0px");
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverDelegate* observer_delegate =
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+  observer->observe(target, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  EXPECT_EQ(observer_delegate->CallCount(), 1);
+  EXPECT_EQ(observer_delegate->EntryCount(), 1);
+  EXPECT_FALSE(observer_delegate->LastEntry()->isIntersecting());
+  EXPECT_EQ(PixelSnappedIntRect(
+                observer_delegate->LastEntry()->GetGeometry().RootRect()),
+            IntRect(0, 31, 800, 600 - 31));
 }
 
 TEST_F(IntersectionObserverV2Test, TrackVisibilityInit) {

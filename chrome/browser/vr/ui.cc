@@ -326,10 +326,12 @@ void Ui::UpdateWebInputIndices(int selection_start,
   content_input_delegate_->OnWebInputIndicesChanged(
       selection_start, selection_end, composition_start, composition_end,
       base::BindOnce(
-          [](TextInputInfo* model, const TextInputInfo& new_state) {
-            *model = new_state;
+          [](Model* model, const TextInputInfo& new_state) {
+            EditedText web_input_text = model->web_input_text_field_info;
+            web_input_text.current = new_state;
+            model->set_web_input_text_field_info(std::move(web_input_text));
           },
-          base::Unretained(&model_->web_input_text_field_info.current)));
+          base::Unretained(model_.get())));
 }
 
 void Ui::SetAlertDialogEnabled(bool enabled,
@@ -711,6 +713,7 @@ gfx::Transform Ui::GetContentWorldSpaceTransform() {
 
 bool Ui::OnBeginFrame(base::TimeTicks current_time,
                       const gfx::Transform& head_pose) {
+  model_->current_time = current_time;
   return scene_->OnBeginFrame(current_time, head_pose);
 }
 

@@ -87,8 +87,17 @@ void MenuClosureAnimationMac::DisableAnimationsForTesting() {
 
 void MenuClosureAnimationMac::AnimationProgressed(
     const gfx::Animation* animation) {
-  NSWindow* window = menu_->GetWidget()->GetNativeWindow().GetNativeNSWindow();
-  [window setAlphaValue:animation->CurrentValueBetween(1.0, 0.0)];
+  // Walk up the menu from |menu_|, fading the NSWindows for all its ancestor
+  // menus in lockstep.
+  SubmenuView* submenu = menu_;
+  while (submenu) {
+    NSWindow* window =
+        submenu->GetWidget()->GetNativeWindow().GetNativeNSWindow();
+    [window setAlphaValue:animation->CurrentValueBetween(1.0, 0.0)];
+
+    MenuItemView* parent = submenu->GetMenuItem()->GetParentMenuItem();
+    submenu = parent ? parent->GetSubmenu() : nullptr;
+  }
 }
 
 void MenuClosureAnimationMac::AnimationEnded(const gfx::Animation* animation) {

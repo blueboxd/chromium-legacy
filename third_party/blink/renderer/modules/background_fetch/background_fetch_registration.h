@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_REGISTRATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_REGISTRATION_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -55,7 +56,8 @@ class BackgroundFetchRegistration final
   // progress events, powering the `progress` JavaScript event.
   void Initialize(
       ServiceWorkerRegistration* registration,
-      mojom::blink::BackgroundFetchRegistrationServicePtr registration_service);
+      mojo::PendingRemote<mojom::blink::BackgroundFetchRegistrationService>
+          registration_service);
 
   // BackgroundFetchRegistrationObserver implementation.
   void OnProgress(uint64_t upload_total,
@@ -108,10 +110,11 @@ class BackgroundFetchRegistration final
   // Keeps the object alive until there are non-zero number of |observers_|.
   bool HasPendingActivity() const final;
 
-  const mojom::blink::BackgroundFetchRegistrationServicePtr&
-  GetRegistrationService() const {
-    return registration_service_;
-  }
+  void UpdateUI(
+      const String& in_title,
+      const SkBitmap& in_icon,
+      mojom::blink::BackgroundFetchRegistrationService::UpdateUICallback
+          callback);
 
  private:
   void DidAbort(ScriptPromiseResolver* resolver,
@@ -149,10 +152,11 @@ class BackgroundFetchRegistration final
   mojom::BackgroundFetchFailureReason failure_reason_;
   HeapVector<Member<BackgroundFetchRecord>> observers_;
 
-  mojom::blink::BackgroundFetchRegistrationServicePtr registration_service_;
+  mojo::Remote<mojom::blink::BackgroundFetchRegistrationService>
+      registration_service_;
 
-  mojo::Binding<blink::mojom::blink::BackgroundFetchRegistrationObserver>
-      observer_binding_;
+  mojo::Receiver<blink::mojom::blink::BackgroundFetchRegistrationObserver>
+      observer_receiver_{this};
 };
 
 }  // namespace blink

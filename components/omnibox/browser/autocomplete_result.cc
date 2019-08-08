@@ -183,7 +183,7 @@ void AutocompleteResult::SortAndCull(
   std::sort(matches_.begin(), matches_.end(), comparing_object);
   // Top match is not allowed to be the default match.  Find the most
   // relevant legal match and shift it to the front.
-  auto it = FindTopMatch(input.current_page_classification(), &matches_);
+  auto it = FindTopMatch(input, &matches_);
   if (it != matches_.end()) {
     const size_t cookie = it->subrelevance;
     auto next = std::next(it);
@@ -374,17 +374,31 @@ bool AutocompleteResult::TopMatchIsStandaloneVerbatimMatch() const {
 
 // static
 ACMatches::const_iterator AutocompleteResult::FindTopMatch(
-    OmniboxEventProto::PageClassification page_classification,
+    const AutocompleteInput& input,
     const ACMatches& matches) {
-  return FindTopMatch(page_classification, const_cast<ACMatches*>(&matches));
+  return FindTopMatch(input, const_cast<ACMatches*>(&matches));
 }
 
 // static
 ACMatches::iterator AutocompleteResult::FindTopMatch(
-    OmniboxEventProto::PageClassification page_classification,
+    const AutocompleteInput& input,
     ACMatches* matches) {
-  if (page_classification !=
-          OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS &&
+  // The matches may be sorted by type-demoted relevance. If we want to choose
+  // the highest-relevance, allowed-to-be-default match while ignoring type
+  // demotion, as we do when IsPreserveDefaultMatchScoreEnabled is true, we need
+  // to explicitly find the highest relevance match rather than just accepting
+  // the first allowed-to-be--default match in the list.
+  // The goal of this behavior is to ensure that in situations where the user
+  // expects to see a commonly visited URL as the default match, the URL is not
+  // supressed by type demotion.
+  // However, even if IsPreserveDefaultMatchScoreEnabled is true, we don't care
+  // about this URL behavior when the user is using the fakebox, which is
+  // intended to work more like a search-only box. Unless the user's input is a
+  // URL in which case we still want to ensure they can get a URL as the default
+  // match.
+  if ((input.current_page_classification() !=
+           OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS ||
+       input.type() == metrics::OmniboxInputType::URL) &&
       OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled()) {
     auto best = matches->end();
     for (auto it = matches->begin(); it != matches->end(); ++it) {
@@ -475,7 +489,7 @@ void AutocompleteResult::SortAndDedupMatches(
     // Find the best match.
     auto best_match = duplicate_matches.begin();
     for (auto i = std::next(best_match); i != duplicate_matches.end(); ++i) {
-      best_match = BetterMatch(i, best_match, page_classification);
+      best_match = BetterDuplicate(i, best_match);
     }
 
     // Rotate the chosen match to be first, if necessary, so we know to keep it.
@@ -537,16 +551,11 @@ size_t AutocompleteResult::EstimateMemoryUsage() const {
 }
 
 // static
-std::list<ACMatches::iterator>::iterator AutocompleteResult::BetterMatch(
+std::list<ACMatches::iterator>::iterator AutocompleteResult::BetterDuplicate(
     std::list<ACMatches::iterator>::iterator first,
-    std::list<ACMatches::iterator>::iterator second,
-    metrics::OmniboxEventProto::PageClassification page_classification) {
+    std::list<ACMatches::iterator>::iterator second) {
   std::list<ACMatches::iterator>::iterator preferred_match;
   std::list<ACMatches::iterator>::iterator non_preferred_match;
-  // This object implements greater than.
-  CompareWithDemoteByType<AutocompleteMatch> compare_demote_by_type(
-      page_classification);
-
   // The following logic enforces constraints we care about regarding the
   // the characteristics of the candidate matches. In order of priority:
   //
@@ -609,13 +618,15 @@ std::list<ACMatches::iterator>::iterator AutocompleteResult::BetterMatch(
     preferred_match = second;
     non_preferred_match = first;
   } else {
-    // By default, simply prefer the match with the higher type-adjusted score.
-    return compare_demote_by_type(**first, **second) ? first : second;
+    // By default, simply prefer the match with the higher relevance. Note that
+    // we do not apply type-based demotion here (CompareWithDemoteByType)
+    // because we only apply demotion when ordering the final set of matches.
+    return (*first)->relevance >= (*second)->relevance ? first : second;
   }
 
   // If a match is preferred despite having a lower score, boost its score
   // to that of the other match.
-  if (compare_demote_by_type(**non_preferred_match, **preferred_match)) {
+  if ((*non_preferred_match)->relevance > (*preferred_match)->relevance) {
     (*preferred_match)
         ->RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom,
                                (*preferred_match)->relevance);

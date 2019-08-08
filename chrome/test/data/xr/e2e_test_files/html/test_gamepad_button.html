@@ -42,7 +42,7 @@ View.
         frameCounter++;
         var gp = navigator.getGamepads()[index];
         // This can happen if the controller has been briefly disconnected.
-        if (gp === null) return;
+        if (gp == null) return;
         if (!canStartTest) {
           if (gp.buttons[0].pressed != lastInputValue) {
             lastInputChangeFrame = frameCounter;

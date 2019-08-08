@@ -622,10 +622,17 @@ bool Validator::ValidateToplevelConfiguration(base::DictionaryValue* result) {
 bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
   using namespace ::onc::network_config;
 
+  const std::string* onc_type = result->FindStringKey(kType);
+  if (onc_type && *onc_type == ::onc::network_type::kWimaxDeprecated) {
+    AddValidationIssue(/*is_error=*/false, "WiMax is deprecated");
+    return true;
+  }
+
   const char* const kValidTypes[] = {
       ::onc::network_type::kEthernet, ::onc::network_type::kVPN,
       ::onc::network_type::kWiFi,     ::onc::network_type::kCellular,
-      ::onc::network_type::kWimax,    ::onc::network_type::kTether};
+      ::onc::network_type::kTether,
+  };
   const std::vector<const char*> valid_types(toVector(kValidTypes));
   const char* const kValidIPConfigTypes[] = {kIPConfigTypeDHCP,
                                              kIPConfigTypeStatic};
@@ -676,9 +683,9 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
     } else if (type == ::onc::network_type::kCellular) {
       all_required_exist &=
           RequireField(*result, ::onc::network_config::kCellular);
-    } else if (type == ::onc::network_type::kWimax) {
+    } else if (type == ::onc::network_type::kWimaxDeprecated) {
       all_required_exist &=
-          RequireField(*result, ::onc::network_config::kWimax);
+          RequireField(*result, ::onc::network_config::kWimaxDeprecated);
     } else if (type == ::onc::network_type::kVPN) {
       all_required_exist &= RequireField(*result, ::onc::network_config::kVPN);
     } else if (type == ::onc::network_type::kTether) {
@@ -1006,7 +1013,7 @@ bool Validator::ValidateGlobalNetworkConfiguration(
 
   // Ensure the list contains only legitimate network type identifiers.
   const char* const kValidNetworkTypeValues[] = {kCellular, kEthernet, kWiFi,
-                                                 kWimax, kTether};
+                                                 kWimaxDeprecated, kTether};
   const std::vector<const char*> valid_network_type_values(
       toVector(kValidNetworkTypeValues));
   if (!ListFieldContainsValidValues(*result, kDisableNetworkTypes,

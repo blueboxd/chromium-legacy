@@ -47,9 +47,12 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
                                      public views::WidgetDelegate {
  public:
   // |handler| must not be nullptr.
+  // |use_dialog_frame| indicates whether to use dialog frame view for non
+  // client frame view.
   WebDialogView(content::BrowserContext* context,
                 ui::WebDialogDelegate* delegate,
-                std::unique_ptr<WebContentsHandler> handler);
+                std::unique_ptr<WebContentsHandler> handler,
+                bool use_dialog_frame = false);
   ~WebDialogView() override;
 
   // For testing.
@@ -73,6 +76,7 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
   void WindowClosing() override;
   views::View* GetContentsView() override;
   ClientView* CreateClientView(views::Widget* widget) override;
+  NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
   views::View* GetInitiallyFocusedView() override;
   bool ShouldShowWindowTitle() const override;
   views::Widget* GetWidget() override;
@@ -166,6 +170,9 @@ class WEBVIEW_EXPORT WebDialogView : public views::ClientView,
 
   // Handler for unhandled key events from renderer.
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
+
+  // Whether to use dialog frame view for non client frame view.
+  bool use_dialog_frame_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogView);
 };

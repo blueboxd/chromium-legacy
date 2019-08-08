@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/signin_client.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -290,6 +291,9 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
 
   // Final call in the Setting accounts in cookie procedure. Public for testing.
   void OnSetAccountsFinished(signin::SetAccountsInCookieResult result);
+
+  // Registers prefs used by this class.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();

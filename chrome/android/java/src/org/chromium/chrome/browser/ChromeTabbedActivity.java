@@ -1054,10 +1054,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     private void setInitialOverviewState() {
         boolean isOverviewVisible = mOverviewModeController.overviewVisible();
 
-        // Experiment: show tab switcher on return after {x} minutes (enable-tab-switcher-on-return}
-        long lastBackgroundedTimeMillis = mInactivityTracker.getLastBackgroundedTimeMs();
-        if (ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis)
-                && isMainIntentFromLauncher(getIntent()) && !isOverviewVisible) {
+        if (shouldShowTabSwitcherOnStart() && !isOverviewVisible) {
             if (getCurrentTabModel() != null) {
                 RecordHistogram.recordCountHistogram(
                         TAB_COUNT_ON_RETURN, getCurrentTabModel().getCount());
@@ -1069,6 +1066,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         if (getActivityTab() == null && !isOverviewVisible) {
             toggleOverview();
         }
+    }
+
+    private boolean shouldShowTabSwitcherOnStart() {
+        long lastBackgroundedTimeMillis = mInactivityTracker.getLastBackgroundedTimeMs();
+        return ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis)
+                && isMainIntentFromLauncher(getIntent());
     }
 
     private boolean isMainIntentFromLauncher(Intent intent) {
@@ -1252,6 +1255,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
      * Create an initial tab for cold start without restored tabs.
      */
     private void createInitialTab() {
+        // If the grid tab switcher is enabled and the tab switcher will be shown on start,
+        //  do not create a new tab. With the grid, creating a new tab is now a one tap action.
+        if (shouldShowTabSwitcherOnStart() && FeatureUtilities.isGridTabSwitcherEnabled()) return;
+
         String url = HomepageManager.getHomepageUri();
         if (TextUtils.isEmpty(url)) {
             url = UrlConstants.NTP_URL;

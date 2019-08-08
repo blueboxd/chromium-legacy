@@ -260,16 +260,6 @@ ModelTypeSet ModelTypeRegistry::GetInitialSyncEndedTypes() const {
   return result;
 }
 
-ModelTypeSet ModelTypeRegistry::GetInitialSyncDoneNonBlockingTypes() const {
-  ModelTypeSet types;
-  for (const auto& worker : model_type_workers_) {
-    if (worker->IsInitialSyncEnded()) {
-      types.Put(worker->GetModelType());
-    }
-  }
-  return types;
-}
-
 const UpdateHandler* ModelTypeRegistry::GetUpdateHandler(ModelType type) const {
   auto it = update_handler_map_.find(type);
   return it == update_handler_map_.end() ? nullptr : it->second;

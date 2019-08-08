@@ -200,11 +200,25 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
   }
 
   // Present the overlay UI via the UI delegate.
+  OverlayPresentationCallback presentation_callback = base::BindOnce(
+      &OverlayPresenterImpl::OverlayWasPresented, weak_factory_.GetWeakPtr(),
+      presentation_context_, request);
   OverlayDismissalCallback dismissal_callback = base::BindOnce(
       &OverlayPresenterImpl::OverlayWasDismissed, weak_factory_.GetWeakPtr(),
       presentation_context_, request, GetActiveQueue()->GetWeakPtr());
   presentation_context_->ShowOverlayUI(this, request,
+                                       std::move(presentation_callback),
                                        std::move(dismissal_callback));
+}
+
+void OverlayPresenterImpl::OverlayWasPresented(
+    OverlayPresentationContext* presentation_context,
+    OverlayRequest* request) {
+  DCHECK_EQ(presentation_context_, presentation_context);
+  DCHECK_EQ(GetActiveRequest(), request);
+  for (auto& observer : observers_) {
+    observer.DidShowOverlay(this, request);
+  }
 }
 
 void OverlayPresenterImpl::OverlayWasDismissed(

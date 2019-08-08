@@ -246,6 +246,8 @@ component("vr_common") {
     "service/interface_set.h",
     "service/vr_service_impl.cc",
     "service/vr_service_impl.h",
+    "service/xr_device_service.cc",
+    "service/xr_device_service.h",
     "service/xr_runtime_manager.cc",
     "service/xr_runtime_manager.h",
     "service/xr_runtime_manager_observer.h",
@@ -274,6 +276,7 @@ component("vr_common") {
 
   public_deps = [
     ":vr_base",
+    "//device/vr/public/mojom",
   ]
 
   deps = [
@@ -769,6 +772,7 @@ if (!is_android) {
       ]
 
       deps += [
+        ":vr_common",
         "//components/content_settings/core/browser",
         "//device/vr:directx_helpers",
         "//third_party/openvr",

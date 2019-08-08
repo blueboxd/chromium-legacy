@@ -150,8 +150,10 @@ public class FeedProcessScopeFactory {
 
         FeedSchedulerBridge schedulerBridge = new FeedSchedulerBridge(profile);
         sFeedScheduler = schedulerBridge;
-        FeedContentStorage contentStorage = new FeedContentStorage(profile);
-        FeedJournalStorage journalStorage = new FeedJournalStorage(profile);
+        ContentStorageDirect contentStorageDirect =
+                new FeedContentStorageDirect(new FeedContentStorage(profile));
+        JournalStorageDirect journalStorageDirect =
+                new FeedJournalStorageDirect(new FeedJournalStorage(profile));
         NetworkClient networkClient = sTestNetworkClient == null ?
             new FeedNetworkBridge(profile) : sTestNetworkClient;
         sFeedLoggingBridge = new FeedLoggingBridge(profile);
@@ -159,8 +161,8 @@ public class FeedProcessScopeFactory {
                 sFeedLoggingBridge, networkClient, schedulerBridge, DebugBehavior.SILENT,
                 ContextUtils.getApplicationContext(), applicationInfo,
                 new BasicTooltipSupportedApi())
-                                .setContentStorage(contentStorage)
-                                .setJournalStorage(journalStorage)
+                                .setContentStorageDirect(contentStorageDirect)
+                                .setJournalStorageDirect(journalStorageDirect)
                                 .build();
         schedulerBridge.initializeFeedDependencies(sProcessScope.getRequestManager());
 

@@ -61,11 +61,13 @@ void CookieStoreIOSPersistent::SetCookieWithOptionsAsync(
     const GURL& url,
     const std::string& cookie_line,
     const net::CookieOptions& options,
+    base::Optional<base::Time> server_time,
     SetCookiesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   cookie_monster()->SetCookieWithOptionsAsync(
-      url, cookie_line, options, WrapSetCallback(std::move(callback)));
+      url, cookie_line, options, server_time,
+      WrapSetCallback(std::move(callback)));
 }
 
 void CookieStoreIOSPersistent::SetCanonicalCookieAsync(

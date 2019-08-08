@@ -1989,15 +1989,6 @@ std::string NetworkStateHandler::GetTechnologyForType(
   if (type.MatchesType(shill::kTypeWifi))
     return shill::kTypeWifi;
 
-  if (type.Equals(NetworkTypePattern::Wimax()))
-    return shill::kTypeWimax;
-
-  // Prefer WiMAX over Cellular only if it's available.
-  if (type.MatchesType(shill::kTypeWimax) &&
-      shill_property_handler_->IsTechnologyAvailable(shill::kTypeWimax)) {
-    return shill::kTypeWimax;
-  }
-
   if (type.MatchesType(shill::kTypeCellular))
     return shill::kTypeCellular;
 
@@ -2015,8 +2006,6 @@ std::vector<std::string> NetworkStateHandler::GetTechnologiesForType(
     technologies.emplace_back(shill::kTypeEthernet);
   if (type.MatchesType(shill::kTypeWifi))
     technologies.emplace_back(shill::kTypeWifi);
-  if (type.MatchesType(shill::kTypeWimax))
-    technologies.emplace_back(shill::kTypeWimax);
   if (type.MatchesType(shill::kTypeCellular))
     technologies.emplace_back(shill::kTypeCellular);
   if (type.MatchesType(shill::kTypeBluetooth))

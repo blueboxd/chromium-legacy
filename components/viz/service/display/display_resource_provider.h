@@ -6,8 +6,11 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_DISPLAY_RESOURCE_PROVIDER_H_
 
 #include <stddef.h>
+
 #include <map>
+#include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -23,7 +26,6 @@
 #include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/resource_fence.h"
-#include "components/viz/service/display/resource_metadata.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -195,6 +197,11 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSkImage);
   };
 
+ private:
+  // Forward declared for LockSetForExternalUse below.
+  struct ChildResource;
+
+ public:
   // Maintains set of resources locked for external use by SkiaRenderer.
   class VIZ_SERVICE_EXPORT LockSetForExternalUse {
    public:
@@ -205,17 +212,20 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
                           ExternalUseClient* client);
     ~LockSetForExternalUse();
 
-    // Lock a resource for external use.
-    ResourceMetadata LockResource(ResourceId resource_id);
+    // Lock a resource for external use. The return value was created by
+    // |client| at some point in the past.
+    ExternalUseClient::ImageContext* LockResource(ResourceId resource_id,
+                                                  bool is_video_plane = false);
 
-    // Unlock all locked resources with a |sync_token|.
-    // See UnlockForExternalUse for the detail. All resources must be unlocked
-    // before destroying this class.
+    // Unlock all locked resources with a |sync_token|.  The |sync_token| should
+    // be waited on before reusing the resource's backing to ensure that any
+    // external use of it is completed. This |sync_token| should have been
+    // verified.  All resources must be unlocked before destroying this class.
     void UnlockResources(const gpu::SyncToken& sync_token);
 
    private:
     DisplayResourceProvider* const resource_provider_;
-    std::vector<ResourceId> resources_;
+    std::vector<std::pair<ResourceId, ChildResource*>> resources_;
 
     DISALLOW_COPY_AND_ASSIGN(LockSetForExternalUse);
   };
@@ -415,6 +425,10 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // texture.
     scoped_refptr<ResourceFence> read_lock_fence;
 
+    // SkiaRenderer specific details about this resource. Added to ChildResource
+    // to avoid map lookups further down the pipeline.
+    std::unique_ptr<ExternalUseClient::ImageContext> image_context;
+
    private:
     // Tracks if a sync token needs to be waited on before using the resource.
     SynchronizationState synchronization_state_;
@@ -448,16 +462,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   const ChildResource* LockForRead(ResourceId id);
   void UnlockForRead(ResourceId id);
 
-  // Lock a resource for external use.
-  ResourceMetadata LockForExternalUse(ResourceId id);
-
-  // Unlock a resource which locked by LockForExternalUse.
-  // The |sync_token| should be waited on before reusing the resouce's backing
-  // to ensure that any external use of it is completed. This |sync_token|
-  // should have been verified.
-  void UnlockForExternalUse(ResourceId id, const gpu::SyncToken& sync_token);
-
-  void TryReleaseResource(ResourceMap::iterator it);
+  void TryReleaseResource(ResourceId id, ChildResource* resource);
   // Binds the given GL resource to a texture target for sampling using the
   // specified filter for both minification and magnification. Returns the
   // texture target used. The resource must be locked for reading.

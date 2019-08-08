@@ -77,7 +77,6 @@ CrOncTest.overrideCrOncStrings = function() {
     'OncWiFi-Security_WPA-PSK': 'OncWiFi-Security_WPA-PSK',
     'OncWiFi-Security_WEP-8021X': 'OncWiFi-Security_WEP-8021X',
     'OncWiFi-SignalStrength': 'OncWiFi-SignalStrength',
-    'OncWiMAX-EAP-Identity': 'OncWiMAX-EAP-Identity',
     'Oncipv4-Gateway': 'Oncipv4-Gateway',
     'Oncipv4-IPAddress': 'Oncipv4-IPAddress',
     'Oncipv4-RoutingPrefix': 'Oncipv4-RoutingPrefix',

@@ -131,6 +131,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/theme_helper.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/child_process.mojom.h"
@@ -4420,6 +4421,9 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       base::FeatureList::IsEnabled(features::kV8LowMemoryModeForSubframes)) {
     GetRendererInterface()->EnableV8LowMemoryMode();
   }
+
+  // Send the initial system color info to the renderer.
+  ThemeHelper::GetInstance()->SendSystemColorInfo(GetRendererInterface());
 
   // NOTE: This needs to be before flushing queued messages, because
   // ExtensionService uses this notification to initialize the renderer process

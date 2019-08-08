@@ -5,18 +5,18 @@
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment_request.h"
 #include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 
 namespace blink {
 
-CustomLayoutFragment::CustomLayoutFragment(
-    CustomLayoutFragmentRequest* fragment_request,
-    const LayoutUnit inline_size,
-    const LayoutUnit block_size,
-    v8::Isolate* isolate)
-    : fragment_request_(fragment_request),
+CustomLayoutFragment::CustomLayoutFragment(CustomLayoutChild* child,
+                                           CustomLayoutToken* token,
+                                           const LayoutUnit inline_size,
+                                           const LayoutUnit block_size,
+                                           v8::Isolate* isolate)
+    : child_(child),
+      token_(token),
       inline_size_(inline_size.ToDouble()),
       block_size_(block_size.ToDouble()) {
   // Immediately store the result data, so that it remains immutable between
@@ -30,11 +30,7 @@ CustomLayoutFragment::CustomLayoutFragment(
 }
 
 LayoutBox* CustomLayoutFragment::GetLayoutBox() const {
-  return fragment_request_->GetLayoutBox();
-}
-
-bool CustomLayoutFragment::IsValid() const {
-  return fragment_request_->IsValid();
+  return child_->GetLayoutBox();
 }
 
 ScriptValue CustomLayoutFragment::data(ScriptState* script_state) const {
@@ -52,7 +48,8 @@ ScriptValue CustomLayoutFragment::data(ScriptState* script_state) const {
 }
 
 void CustomLayoutFragment::Trace(blink::Visitor* visitor) {
-  visitor->Trace(fragment_request_);
+  visitor->Trace(child_);
+  visitor->Trace(token_);
   visitor->Trace(layout_worklet_world_v8_data_);
   ScriptWrappable::Trace(visitor);
 }

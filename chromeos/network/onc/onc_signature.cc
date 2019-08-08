@@ -243,16 +243,6 @@ const OncFieldSignature wifi_with_state_fields[] = {
     {::onc::wifi::kTetheringState, &kStringSignature},
     {NULL}};
 
-const OncFieldSignature wimax_fields[] = {
-    {::onc::kRecommended, &kRecommendedSignature},
-    {::onc::wimax::kAutoConnect, &kBoolSignature},
-    {::onc::wimax::kEAP, &kEAPSignature},
-    {NULL}};
-
-const OncFieldSignature wimax_with_state_fields[] = {
-    {::onc::wimax::kSignalStrength, &kIntegerSignature},
-    {NULL}};
-
 const OncFieldSignature cellular_payment_portal_fields[] = {
     {::onc::cellular_payment_portal::kMethod, &kStringSignature},
     {::onc::cellular_payment_portal::kPostData, &kStringSignature},
@@ -343,7 +333,6 @@ const OncFieldSignature network_configuration_fields[] = {
     {::onc::network_config::kType, &kStringSignature},
     {::onc::network_config::kVPN, &kVPNSignature},
     {::onc::network_config::kWiFi, &kWiFiSignature},
-    {::onc::network_config::kWimax, &kWiMAXSignature},
     {NULL}};
 
 const OncFieldSignature network_with_state_fields[] = {
@@ -358,7 +347,6 @@ const OncFieldSignature network_with_state_fields[] = {
     {::onc::network_config::kSource, &kStringSignature},
     {::onc::network_config::kTether, &kTetherWithStateSignature},
     {::onc::network_config::kWiFi, &kWiFiWithStateSignature},
-    {::onc::network_config::kWimax, &kWiMAXWithStateSignature},
     {NULL}};
 
 const OncFieldSignature global_network_configuration_fields[] = {
@@ -440,8 +428,6 @@ const OncValueSignature kProxySettingsSignature = {
     base::Value::Type::DICTIONARY, proxy_settings_fields, NULL};
 const OncValueSignature kWiFiSignature = {base::Value::Type::DICTIONARY,
                                           wifi_fields, NULL};
-const OncValueSignature kWiMAXSignature = {base::Value::Type::DICTIONARY,
-                                           wimax_fields, NULL};
 const OncValueSignature kCertificateSignature = {base::Value::Type::DICTIONARY,
                                                  certificate_fields, NULL};
 const OncValueSignature kNetworkConfigurationSignature = {
@@ -467,9 +453,6 @@ const OncValueSignature kTetherSignature = {base::Value::Type::DICTIONARY,
 const OncValueSignature kTetherWithStateSignature = {
     base::Value::Type::DICTIONARY, tether_with_state_fields, NULL,
     &kTetherSignature};
-const OncValueSignature kWiMAXWithStateSignature = {
-    base::Value::Type::DICTIONARY, wimax_with_state_fields, NULL,
-    &kWiMAXSignature};
 const OncValueSignature kCellularSignature = {base::Value::Type::DICTIONARY,
                                               cellular_fields, NULL};
 const OncValueSignature kCellularWithStateSignature = {

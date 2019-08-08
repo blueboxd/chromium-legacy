@@ -83,7 +83,9 @@ class CORE_EXPORT IntersectionGeometry {
   PhysicalRect InitializeTargetRect(LayoutObject* target);
   PhysicalRect InitializeRootRect(LayoutObject* root,
                                   const Vector<Length>& margin);
-  void ApplyRootMargin(PhysicalRect& rect, const Vector<Length>& margin);
+  void ApplyRootMargin(PhysicalRect& rect,
+                       const Vector<Length>& margin,
+                       float zoom);
   bool ClipToRoot(LayoutObject* root,
                   LayoutObject* target,
                   const PhysicalRect& root_rect,

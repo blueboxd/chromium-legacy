@@ -52,6 +52,9 @@ interface MediaSessionService {
   // Notifies the browser that the page specified its current playback state.
   SetPlaybackState(MediaSessionPlaybackState state);
 
+  // Notifies the browser that the page specified its current position state.
+  SetPositionState(media_session.mojom.MediaPosition? position);
+
   // Notifies the browser that the metadata is set, |metadata| will be displayed
   // on the UI.
   SetMetadata(SpecMediaMetadata? metadata);

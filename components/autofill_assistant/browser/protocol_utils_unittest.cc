@@ -233,6 +233,15 @@ TEST(ProtocolUtilsTest, SkipAutostartableScriptWithoutName) {
   EXPECT_THAT(scripts, IsEmpty());
 }
 
+TEST(ProtocolUtilsTest, ParseActionsParseError) {
+  bool unused;
+  std::vector<std::unique_ptr<Action>> unused_actions;
+  std::vector<std::unique_ptr<Script>> unused_scripts;
+  EXPECT_FALSE(ProtocolUtils::ParseActions(nullptr, "invalid", nullptr, nullptr,
+                                           &unused_actions, &unused_scripts,
+                                           &unused));
+}
+
 TEST(ProtocolUtilsTest, ParseActionsValid) {
   ActionsResponseProto proto;
   proto.set_global_payload("global_payload");
@@ -240,14 +249,18 @@ TEST(ProtocolUtilsTest, ParseActionsValid) {
   proto.add_actions()->mutable_tell();
   proto.add_actions()->mutable_click();
 
+  std::string proto_str;
+  proto.SerializeToString(&proto_str);
+
   std::string global_payload;
   std::string script_payload;
   bool should_update_scripts = true;
   std::vector<std::unique_ptr<Action>> actions;
   std::vector<std::unique_ptr<Script>> scripts;
 
-  ProtocolUtils::ParseActions(nullptr, proto, &global_payload, &script_payload,
-                              &actions, &scripts, &should_update_scripts);
+  EXPECT_TRUE(ProtocolUtils::ParseActions(nullptr, proto_str, &global_payload,
+                                          &script_payload, &actions, &scripts,
+                                          &should_update_scripts));
   EXPECT_EQ("global_payload", global_payload);
   EXPECT_EQ("script_payload", script_payload);
   EXPECT_THAT(actions, SizeIs(2));
@@ -259,13 +272,17 @@ TEST(ProtocolUtilsTest, ParseActionsEmptyUpdateScriptList) {
   ActionsResponseProto proto;
   proto.mutable_update_script_list();
 
+  std::string proto_str;
+  proto.SerializeToString(&proto_str);
+
   bool should_update_scripts = false;
   std::vector<std::unique_ptr<Script>> scripts;
   std::vector<std::unique_ptr<Action>> unused_actions;
 
-  ProtocolUtils::ParseActions(nullptr, proto, /* global_payload= */ nullptr,
-                              /* script_payload */ nullptr, &unused_actions,
-                              &scripts, &should_update_scripts);
+  EXPECT_TRUE(ProtocolUtils::ParseActions(
+      nullptr, proto_str, /* global_payload= */ nullptr,
+      /* script_payload */ nullptr, &unused_actions, &scripts,
+      &should_update_scripts));
   EXPECT_TRUE(should_update_scripts);
   EXPECT_TRUE(scripts.empty());
 }
@@ -281,13 +298,17 @@ TEST(ProtocolUtilsTest, ParseActionsUpdateScriptListFullFeatured) {
   // One invalid script.
   script_list->add_scripts();
 
+  std::string proto_str;
+  proto.SerializeToString(&proto_str);
+
   bool should_update_scripts = false;
   std::vector<std::unique_ptr<Script>> scripts;
   std::vector<std::unique_ptr<Action>> unused_actions;
 
-  ProtocolUtils::ParseActions(nullptr, proto, /* global_payload= */ nullptr,
-                              /* script_payload= */ nullptr, &unused_actions,
-                              &scripts, &should_update_scripts);
+  EXPECT_TRUE(ProtocolUtils::ParseActions(
+      nullptr, proto_str, /* global_payload= */ nullptr,
+      /* script_payload= */ nullptr, &unused_actions, &scripts,
+      &should_update_scripts));
   EXPECT_TRUE(should_update_scripts);
   EXPECT_THAT(scripts, SizeIs(1));
   EXPECT_THAT("a", Eq(scripts[0]->handle.path));

@@ -7,18 +7,9 @@ import("//chromecast/chromecast.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
-buildflag_header("buildflags") {
-  header = "capture_service_buildflags.h"
-  flags = [ "USE_UNIX_SOCKETS=$use_unix_sockets" ]
-}
-
 cast_source_set("common") {
   sources = [
     "constants.h",
-  ]
-
-  deps = [
-    ":buildflags",
   ]
 }
 
@@ -35,9 +26,9 @@ cast_source_set("receiver") {
   ]
 
   deps = [
-    ":buildflags",
     "//base",
     "//chromecast/base",
+    "//chromecast/media/audio:audio_buildflags",
     "//chromecast/net:small_message_socket",
     "//media",
     "//net",

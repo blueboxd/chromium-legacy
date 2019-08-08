@@ -184,8 +184,7 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS &&
         base::FeatureList::IsEnabled(
             features::kDesktopCaptureTabSharingInfobar)) {
-      notification_ui =
-          std::make_unique<TabSharingUI>(media_id, application_title);
+      notification_ui = TabSharingUI::Create(media_id, application_title);
     } else {
       notification_ui = ScreenCaptureNotificationUI::Create(
           GetStopSharingUIString(application_title, registered_extension_name,

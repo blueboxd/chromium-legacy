@@ -226,6 +226,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverSecureContextTest.testAddVirtualAuthenticator',
         'ChromeDriverSecureContextTest.testRemoveVirtualAuthenticator',
         'ChromeDriverSecureContextTest.testAddCredential',
+        'ChromeDriverSecureContextTest.testGetCredentials',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -2017,6 +2018,11 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
 # Tests that require a secure context.
 class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
+  # The example attestation private key from the U2F spec at
+  # https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#registration-example
+  # PKCS.8 encoded without encryption, as a base64url string.
+  privateKey = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg8_zMDQDYAxlU-Qhk1Dwkf0v18GZca1DMF3SaJ9HPdmShRANCAASNYX5lyVCOZLzFZzrIKmeZ2jwURmgsJYxGP__fWN_S-j5sN4tT15XEpN_7QZnt14YvI6uvAgO0uJEboFaZlOEB"
+
   @staticmethod
   def GlobalSetUp():
     cert_path = os.path.join(chrome_paths.GetTestData(),
@@ -2032,6 +2038,21 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
   def GetHttpsUrlForFile(file_path, host=None):
     return ChromeDriverSecureContextTest._https_server.GetUrl(
         host) + file_path
+
+  # Encodes a string in URL-safe base64 with no padding.
+  @staticmethod
+  def URLSafeBase64Encode(string):
+    encoded = base64.urlsafe_b64encode(string)
+    while encoded[-1] == "=":
+      encoded = encoded[0:-1]
+    return encoded
+
+  # Decodes a base64 string with no padding.
+  @staticmethod
+  def UrlSafeBase64Decode(string):
+    string = string.encode("utf-8")
+    string += "=" * (4 - len(string) % 4)
+    return base64.urlsafe_b64decode(string)
 
   def setUp(self):
     self._driver = self.CreateDriver(
@@ -2080,10 +2101,6 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
         self._driver.RemoveVirtualAuthenticator, response['authenticatorId'])
 
   def testAddCredential(self):
-    # The example attestation private key from the U2F spec at
-    # https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#registration-example
-    # PKCS.8 encoded without encryption.
-    privateKey = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg8/zMDQDYAxlU+Qhk1Dwkf0v18GZca1DMF3SaJ9HPdmShRANCAASNYX5lyVCOZLzFZzrIKmeZ2jwURmgsJYxGP//fWN/S+j5sN4tT15XEpN/7QZnt14YvI6uvAgO0uJEboFaZlOEB"
 
     script = """
       let done = arguments[0];
@@ -2106,15 +2123,77 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
     # Register a credential and try authenticating with it.
     self._driver.AddCredential(
       authenticatorId = authenticatorId,
-      credentialId = base64.b64encode("cred-1"),
+      credentialId = self.URLSafeBase64Encode("cred-1"),
       isResidentCredential=False,
       rpId="chromedriver.test",
-      privateKey=privateKey,
+      privateKey=self.privateKey,
       signCount=1,
     )
 
     result = self._driver.ExecuteAsyncScript(script)
     self.assertEquals('OK', result['status'])
+
+  def testAddCredentialBase64Errors(self):
+    # Test that AddCredential checks UrlBase64 parameteres.
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+
+    authenticatorId = self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = False,
+        hasUserVerification = False,
+    )['authenticatorId']
+
+    # Try adding a credentialId that is encoded in vanilla base64.
+    self.assertRaisesRegexp(
+        chromedriver.InvalidArgument,
+        'credentialId must be a base64url encoded string',
+        self._driver.AddCredential, authenticatorId, '_0n+wWqg=',
+        False, "chromedriver.test", self.privateKey, None, 1,
+    )
+
+    # Try adding a credentialId that is not a string.
+    self.assertRaisesRegexp(
+        chromedriver.InvalidArgument,
+        'credentialId must be a base64url encoded string',
+        self._driver.AddCredential, authenticatorId, 1,
+        False, "chromedriver.test", self.privateKey, None, 1,
+    )
+
+  def testGetCredentials(self):
+    script = """
+      let done = arguments[0];
+      registerCredential({
+        authenticatorSelection: {
+          requireResidentKey: true,
+        },
+      }).then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+    authenticatorId = self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = True,
+        hasUserVerification = True,
+    )['authenticatorId']
+
+    # Register a credential via the webauthn API.
+    result = self._driver.ExecuteAsyncScript(script)
+    self.assertEquals('OK', result['status'])
+    credentialId = result['credential']['id']
+
+    # GetCredentials should return the credential that was just created.
+    credentials = self._driver.GetCredentials(authenticatorId)['credentials']
+    self.assertEquals(1, len(credentials))
+    self.assertEquals(credentialId, credentials[0]['credentialId'])
+    self.assertEquals(True, credentials[0]['isResidentCredential'])
+    self.assertEquals('chromedriver.test', credentials[0]['rpId'])
+    self.assertEquals(chr(1),
+                      self.UrlSafeBase64Decode(credentials[0]['userHandle']))
+    self.assertEquals(1, credentials[0]['signCount'])
+    self.assertTrue(credentials[0]['privateKey'])
 
 # Tests in the following class are expected to be moved to ChromeDriverTest
 # class when we no longer support the legacy mode.

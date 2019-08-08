@@ -45,7 +45,6 @@ bool UserInfo::Field::operator==(const UserInfo::Field& field) const {
          selectable_ == field.selectable_;
 }
 
-#if defined(UNIT_TEST) || !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 std::ostream& operator<<(std::ostream& os, const UserInfo::Field& field) {
   os << "(display text: \"" << field.display_text() << "\", "
      << "a11y_description: \"" << field.a11y_description() << "\", "
@@ -54,7 +53,6 @@ std::ostream& operator<<(std::ostream& os, const UserInfo::Field& field) {
      << "is " << (field.is_obfuscated() ? "" : "not ") << "obfuscated)";
   return os;
 }
-#endif  // defined(UNIT_TEST) || !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 
 UserInfo::UserInfo() = default;
 
@@ -74,7 +72,6 @@ bool UserInfo::operator==(const UserInfo& user_info) const {
   return fields_ == user_info.fields_ && origin_ == user_info.origin_;
 }
 
-#if defined(UNIT_TEST) || !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 std::ostream& operator<<(std::ostream& os, const UserInfo& user_info) {
   os << "origin: \"" << user_info.origin() << "\", \n"
      << "fields: [\n";
@@ -83,7 +80,6 @@ std::ostream& operator<<(std::ostream& os, const UserInfo& user_info) {
   }
   return os << "]";
 }
-#endif  // defined(UNIT_TEST) || !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 
 FooterCommand::FooterCommand(base::string16 display_text,
                              autofill::AccessoryAction action)
@@ -106,14 +102,11 @@ bool FooterCommand::operator==(const FooterCommand& fc) const {
          accessory_action_ == fc.accessory_action_;
 }
 
-#if defined(UNIT_TEST) || !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 std::ostream& operator<<(std::ostream& os, const FooterCommand& fc) {
   return os << "(display text: \"" << fc.display_text() << "\", "
             << "action: " << static_cast<int>(fc.accessory_action()) << ")";
 }
-#endif  // defined(UNIT_TEST) || !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 
-#if defined(UNIT_TEST) || !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 std::ostream& operator<<(std::ostream& os, const AccessoryTabType& type) {
   switch (type) {
     case AccessoryTabType::PASSWORDS:
@@ -131,17 +124,10 @@ std::ostream& operator<<(std::ostream& os, const AccessoryTabType& type) {
   }
   return os;
 }
-#endif  // defined(UNIT_TEST) || !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 
 AccessorySheetData::AccessorySheetData(AccessoryTabType sheet_type,
                                        base::string16 title)
-    : AccessorySheetData(sheet_type, std::move(title), base::string16()) {}
-AccessorySheetData::AccessorySheetData(AccessoryTabType sheet_type,
-                                       base::string16 title,
-                                       base::string16 warning)
-    : sheet_type_(sheet_type),
-      title_(std::move(title)),
-      warning_(std::move(warning)) {}
+    : sheet_type_(sheet_type), title_(std::move(title)) {}
 
 AccessorySheetData::AccessorySheetData(const AccessorySheetData& data) =
     default;
@@ -158,14 +144,13 @@ AccessorySheetData& AccessorySheetData::operator=(AccessorySheetData&& data) =
 
 bool AccessorySheetData::operator==(const AccessorySheetData& data) const {
   return sheet_type_ == data.sheet_type_ && title_ == data.title_ &&
-         warning_ == data.warning_ && user_info_list_ == data.user_info_list_ &&
+         user_info_list_ == data.user_info_list_ &&
          footer_commands_ == data.footer_commands_;
 }
 
-#if defined(UNIT_TEST) || !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 std::ostream& operator<<(std::ostream& os, const AccessorySheetData& data) {
   os << data.get_sheet_type() << " with title: \"" << data.title()
-     << "\", warning: \"" << data.warning() << "\", and user info list: [";
+     << "\", user info list: [";
   for (const UserInfo& user_info : data.user_info_list()) {
     os << user_info << ", ";
   }
@@ -175,25 +160,12 @@ std::ostream& operator<<(std::ostream& os, const AccessorySheetData& data) {
   }
   return os << "]";
 }
-#endif  // defined(UNIT_TEST) || !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 
 AccessorySheetData::Builder::Builder(AccessoryTabType type,
                                      base::string16 title)
     : accessory_sheet_data_(type, std::move(title)) {}
 
 AccessorySheetData::Builder::~Builder() = default;
-
-AccessorySheetData::Builder&& AccessorySheetData::Builder::SetWarning(
-    base::string16 warning) && {
-  // Calls SetWarning(base::string16 warning)()& since |this| is an lvalue.
-  return std::move(SetWarning(std::move(warning)));
-}
-
-AccessorySheetData::Builder& AccessorySheetData::Builder::SetWarning(
-    base::string16 warning) & {
-  accessory_sheet_data_.set_warning(std::move(warning));
-  return *this;
-}
 
 AccessorySheetData::Builder&& AccessorySheetData::Builder::AddUserInfo(
     std::string origin) && {

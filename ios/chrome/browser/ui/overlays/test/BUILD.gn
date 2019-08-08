@@ -7,8 +7,8 @@ source_set("test") {
   sources = [
     "fake_overlay_request_coordinator.h",
     "fake_overlay_request_coordinator.mm",
-    "fake_overlay_ui_dismissal_delegate.cc",
-    "fake_overlay_ui_dismissal_delegate.h",
+    "fake_overlay_request_coordinator_delegate.cc",
+    "fake_overlay_request_coordinator_delegate.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

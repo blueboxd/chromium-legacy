@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
@@ -97,6 +98,7 @@ bool ChromeExtensionMessageFilter::OnMessageReceived(
 void ChromeExtensionMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
+    case ExtensionHostMsg_GetMessageBundle::ID:
     case ExtensionHostMsg_AddAPIActionToActivityLog::ID:
     case ExtensionHostMsg_AddDOMActionToActivityLog::ID:
     case ExtensionHostMsg_AddEventToActivityLog::ID:
@@ -117,10 +119,10 @@ void ChromeExtensionMessageFilter::OnDestruct() const {
 
 void ChromeExtensionMessageFilter::OnGetExtMessageBundle(
     const std::string& extension_id, IPC::Message* reply_msg) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const extensions::ExtensionSet& extension_set =
-      extension_info_map_->extensions();
+      extensions::ExtensionRegistry::Get(profile_)->enabled_extensions();
   const extensions::Extension* extension = extension_set.GetByID(extension_id);
 
   if (!extension) {  // The extension has gone.

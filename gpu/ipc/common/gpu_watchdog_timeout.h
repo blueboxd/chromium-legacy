@@ -30,6 +30,14 @@ constexpr base::TimeDelta kGpuWatchdogTimeout =
 // the foreground. This is the factor the original timeout will be multiplied.
 constexpr int kRestartFactor = 2;
 
+// It takes longer to initialize GPU process in Windows. See
+// https://crbug.com/949839 for details.
+#if defined(OS_WIN)
+constexpr int kInitFactor = kRestartFactor;
+#else
+constexpr int kInitFactor = 1;
+#endif
+
 // Do not change this number. It's for histogram "GPU.GPUChannelHostWaitTime".
 // This is the max wait time when waiting for sync in the GPU channel Host. It
 // needs to be bigger than (kGpuWatchdogTimeout * kRestartFactor) for all

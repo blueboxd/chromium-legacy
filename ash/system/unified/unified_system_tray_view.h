@@ -157,7 +157,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   UnifiedSystemInfoView* const system_info_view_;
   views::View* const system_tray_container_;
   views::View* const detailed_view_container_;
-  UnifiedMessageCenterView* const message_center_view_;
+  UnifiedMessageCenterView* message_center_view_ = nullptr;
 
   // Null if kManagedDeviceUIRedesign is disabled.
   UnifiedManagedDeviceView* managed_device_view_ = nullptr;

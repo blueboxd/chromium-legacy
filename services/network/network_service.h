@@ -122,7 +122,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void StartNetLog(base::File file,
                    net::NetLogCaptureMode capture_mode,
                    base::Value constants) override;
-  void SetSSLKeyLogFile(const base::FilePath& file) override;
+  void SetSSLKeyLogFile(base::File file) override;
   void CreateNetworkContext(mojom::NetworkContextRequest request,
                             mojom::NetworkContextParamsPtr params) override;
   void ConfigureStubHostResolver(

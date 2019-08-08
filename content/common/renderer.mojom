@@ -157,6 +157,14 @@ struct UpdateScrollbarThemeParams {
   bool scroll_view_rubber_banding;
 };
 
+struct UpdateSystemColorInfoParams {
+  bool is_dark_mode;
+  bool is_high_contrast;
+  PreferredColorScheme preferred_color_scheme;
+  // uint32 represents a SkColor in the map.
+  map<SystemThemeColor, uint32> colors;
+};
+
 enum RenderProcessState {
   kVisible,
   // Hidden render processes can still be foregrounded. For example, a hidden
@@ -243,6 +251,9 @@ interface Renderer {
   // Notification that the OS X Aqua color preferences changed.
   OnSystemColorsChanged(int32 aqua_color_variant, string highlight_text_color,
                         string highlight_color);
+
+  // Tells the renderer process the new system color info.
+  UpdateSystemColorInfo(UpdateSystemColorInfoParams params);
 
   // Tells the renderer to empty its plugin list cache, optional reloading
   // pages containing plugins.

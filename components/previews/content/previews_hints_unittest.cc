@@ -20,7 +20,6 @@
 #include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
-#include "components/optimization_guide/host_filter.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
@@ -60,19 +59,6 @@ void AddBlacklistBloomFilterToConfig(
 }
 
 }  // namespace
-
-class TestHostFilter : public optimization_guide::HostFilter {
- public:
-  explicit TestHostFilter(std::string single_host_match)
-      : HostFilter(nullptr), single_host_match_(single_host_match) {}
-
-  bool ContainsHostSuffix(const GURL& url) const override {
-    return single_host_match_ == url.host();
-  }
-
- private:
-  std::string single_host_match_;
-};
 
 class PreviewsHintsTest
     : public optimization_guide::ProtoDatabaseProviderTestBase {

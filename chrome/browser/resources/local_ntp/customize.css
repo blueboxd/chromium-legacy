@@ -296,6 +296,13 @@ html[dir=rtl] .bg-option-img {
   z-index: 10000;
 }
 
+/* Prevent footer from overlapping with header at small window heights. */
+@media only screen and (max-height: 116px) {
+  #bg-sel-menu {
+    max-height: 116px;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   #bg-sel-menu {
     background-color: rgb(var(--dark-mode-dialog-rgb));

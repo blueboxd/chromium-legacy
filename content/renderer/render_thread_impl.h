@@ -534,6 +534,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnSystemColorsChanged(int32_t aqua_color_variant,
                              const std::string& highlight_text_color,
                              const std::string& highlight_color) override;
+  void UpdateSystemColorInfo(
+      mojom::UpdateSystemColorInfoParamsPtr params) override;
   void PurgePluginListCache(bool reload_pages) override;
   void SetProcessState(mojom::RenderProcessState process_state) override;
   void SetSchedulerKeepActive(bool keep_active) override;

@@ -144,7 +144,9 @@ class CreditCardCVCAuthenticatorTest : public testing::Test {
     payments::FullCardRequest* full_card_request =
         cvc_authenticator_->full_card_request_.get();
     DCHECK(full_card_request);
-    full_card_request->OnDidGetRealPan(result, real_pan);
+    payments::PaymentsClient::UnmaskResponseDetails response;
+    full_card_request->OnDidGetRealPan(result,
+                                       response.with_real_pan(real_pan));
   }
 
  protected:

@@ -224,12 +224,10 @@ cr.define('settings', function() {
   }
 
   /**
-   * Computes and return all available routes based on settings.pageVisibility.
-   * @return {!SettingsRoutes}
+   * @return {!SettingsRoutes} Routes that are shared between browser and OS
+   *     settings under the same conditions (e.g. in guest mode).
    */
-  const computeAvailableRoutes = function() {
-    const pageVisibility = settings.pageVisibility || {};
-
+  function computeCommonRoutes() {
     /** @type {!SettingsRoutes} */
     const r = {};
 
@@ -237,27 +235,33 @@ cr.define('settings', function() {
     r.BASIC = new Route('/');
     r.ABOUT = new Route('/help');
 
-    // Navigable dialogs. These are the only non-section children of root
-    // pages. These are disfavored. If we add anymore, we should add explicit
-    // support.
-    r.IMPORT_DATA = r.BASIC.createChild('/importData');
-    r.IMPORT_DATA.isNavigableDialog = true;
     r.SIGN_OUT = r.BASIC.createChild('/signOut');
     r.SIGN_OUT.isNavigableDialog = true;
 
-    // <if expr="chromeos">
-    r.INTERNET = r.BASIC.createSection('/internet', 'internet');
-    r.INTERNET_NETWORKS = r.INTERNET.createChild('/networks');
-    r.NETWORK_DETAIL = r.INTERNET.createChild('/networkDetail');
-    r.KNOWN_NETWORKS = r.INTERNET.createChild('/knownNetworks');
-    r.BLUETOOTH = r.BASIC.createSection('/bluetooth', 'bluetooth');
-    r.BLUETOOTH_DEVICES = r.BLUETOOTH.createChild('/bluetoothDevices');
+    r.SEARCH = r.BASIC.createSection('/search', 'search');
+    if (!loadTimeData.getBoolean('isGuest')) {
+      r.PEOPLE = r.BASIC.createSection('/people', 'people');
+      r.SYNC = r.PEOPLE.createChild('/syncSetup');
+      r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
+    }
 
-    r.MULTIDEVICE = r.BASIC.createSection('/multidevice', 'multidevice');
-    r.MULTIDEVICE_FEATURES = r.MULTIDEVICE.createChild('/multidevice/features');
-    r.SMART_LOCK =
-        r.MULTIDEVICE_FEATURES.createChild('/multidevice/features/smartLock');
+    return r;
+  }
 
+  /**
+   * Adds Route objects for each path corresponding to browser-only content.
+   * @param {!SettingsRoutes} r Routes to include browser-only content.
+   */
+  function addBrowserSettingsRoutes(r) {
+    const pageVisibility = settings.pageVisibility || {};
+
+    // <if expr="not chromeos">
+    r.IMPORT_DATA = r.BASIC.createChild('/importData');
+    r.IMPORT_DATA.isNavigableDialog = true;
+
+    if (pageVisibility.people !== false) {
+      r.MANAGE_PROFILE = r.PEOPLE.createChild('/manageProfile');
+    }
     // </if>
 
     if (pageVisibility.appearance !== false) {
@@ -277,86 +281,12 @@ cr.define('settings', function() {
           r.BASIC.createSection('/defaultBrowser', 'defaultBrowser');
     }
 
-    r.SEARCH = r.BASIC.createSection('/search', 'search');
     r.SEARCH_ENGINES = r.SEARCH.createChild('/searchEngines');
-    // <if expr="chromeos">
-    if (loadTimeData.valueExists('assistantEnabled') &&
-        loadTimeData.getBoolean('assistantEnabled')) {
-      r.GOOGLE_ASSISTANT = r.SEARCH.createChild('/googleAssistant');
-    }
-
-    // TODO(crbug.com/950007): Remove when SplitSettings is the default.
-    if (loadTimeData.getBoolean('isOSSettings') &&
-        loadTimeData.valueExists('showApps') &&
-        loadTimeData.getBoolean('showApps')) {
-      // Currently only used in OS Settings.
-      r.APPS = r.BASIC.createSection('/apps', 'apps');
-    }
-
-    r.ANDROID_APPS = r.BASIC.createSection('/androidApps', 'androidApps');
-    r.ANDROID_APPS_DETAILS = r.ANDROID_APPS.createChild('/androidApps/details');
-
-    if (loadTimeData.valueExists('showCrostini') &&
-        loadTimeData.getBoolean('showCrostini')) {
-      r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
-      r.CROSTINI_DETAILS = r.CROSTINI.createChild('/crostini/details');
-      r.CROSTINI_EXPORT_IMPORT =
-          r.CROSTINI_DETAILS.createChild('/crostini/exportImport');
-      r.CROSTINI_SHARED_PATHS =
-          r.CROSTINI_DETAILS.createChild('/crostini/sharedPaths');
-      r.CROSTINI_SHARED_USB_DEVICES =
-          r.CROSTINI_DETAILS.createChild('/crostini/sharedUsbDevices');
-    }
-
-    if (loadTimeData.valueExists('showPluginVm') &&
-        loadTimeData.getBoolean('showPluginVm')) {
-      r.PLUGIN_VM = r.BASIC.createSection('/pluginVm', 'pluginVm');
-      r.PLUGIN_VM_DETAILS = r.PLUGIN_VM.createChild('/pluginVm/details');
-      r.PLUGIN_VM_SHARED_PATHS =
-          r.PLUGIN_VM.createChild('/pluginVm/sharedPaths');
-    }
-    // </if>
 
     if (pageVisibility.onStartup !== false) {
       r.ON_STARTUP = r.BASIC.createSection('/onStartup', 'onStartup');
       r.STARTUP_PAGES = r.ON_STARTUP.createChild('/startupPages');
     }
-
-    if (pageVisibility.people !== false) {
-      r.PEOPLE = r.BASIC.createSection('/people', 'people');
-      r.SYNC = r.PEOPLE.createChild('/syncSetup');
-      r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
-      // <if expr="not chromeos">
-      r.MANAGE_PROFILE = r.PEOPLE.createChild('/manageProfile');
-      // </if>
-      // <if expr="chromeos">
-      // TODO(crbug.com/950007): Remove when SplitSettings is the default.
-      if (loadTimeData.getBoolean('isOSSettings')) {
-        r.PERSONALIZATION =
-            r.BASIC.createSection('/personalization', 'personalization');
-        r.CHANGE_PICTURE = r.PERSONALIZATION.createChild('/changePicture');
-      } else {
-        r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture');
-      }
-      r.ACCOUNTS = r.PEOPLE.createChild('/accounts');
-      r.ACCOUNT_MANAGER = r.PEOPLE.createChild('/accountManager');
-      r.KERBEROS_ACCOUNTS = r.PEOPLE.createChild('/kerberosAccounts');
-      r.LOCK_SCREEN = r.PEOPLE.createChild('/lockScreen');
-      r.FINGERPRINT = r.LOCK_SCREEN.createChild('/lockScreen/fingerprint');
-      // </if>
-    }
-
-    // <if expr="chromeos">
-    r.DEVICE = r.BASIC.createSection('/device', 'device');
-    r.POINTERS = r.DEVICE.createChild('/pointer-overlay');
-    r.KEYBOARD = r.DEVICE.createChild('/keyboard-overlay');
-    r.STYLUS = r.DEVICE.createChild('/stylus');
-    r.DISPLAY = r.DEVICE.createChild('/display');
-    r.STORAGE = r.DEVICE.createChild('/storage');
-    r.EXTERNAL_STORAGE_PREFERENCES =
-        r.DEVICE.createChild('/storage/externalStoragePreferences');
-    r.POWER = r.DEVICE.createChild('/power');
-    // </if>
 
     // Advanced Routes
     if (pageVisibility.advancedSettings !== false) {
@@ -426,47 +356,17 @@ cr.define('settings', function() {
             r.SITE_SETTINGS.createChild('bluetoothScanning');
       }
 
-      // <if expr="chromeos">
-      if (pageVisibility.dateTime !== false) {
-        r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');
-        r.DATETIME_TIMEZONE_SUBPAGE =
-            r.DATETIME.createChild('/dateTime/timeZone');
-      }
-      // </if>
-
       r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
-      // <if expr="chromeos">
-      if (loadTimeData.getBoolean('isOSSettings')) {
-        r.LANGUAGES_DETAILS = r.LANGUAGES.createChild('/languages/details');
-        r.INPUT_METHODS =
-            r.LANGUAGES_DETAILS.createChild('/languages/inputMethods');
-      } else {
-        r.INPUT_METHODS = r.LANGUAGES.createChild('/inputMethods');
-      }
-      // </if>
       // <if expr="not is_macosx">
       r.EDIT_DICTIONARY = r.LANGUAGES.createChild('/editDictionary');
       // </if>
 
       if (pageVisibility.downloads !== false) {
         r.DOWNLOADS = r.ADVANCED.createSection('/downloads', 'downloads');
-        // <if expr="chromeos">
-        // TODO(crbug.com/950007): Make unconditional and remove 'else' block
-        //     when SplitSettings is the default.
-        if (loadTimeData.getBoolean('isOSSettings')) {
-          r.FILES = r.ADVANCED.createSection('/files', 'files');
-          r.SMB_SHARES = r.FILES.createChild('/smbShares');
-        } else {
-          r.SMB_SHARES = r.DOWNLOADS.createChild('/smbShares');
-        }
-        // </if>
       }
 
       r.PRINTING = r.ADVANCED.createSection('/printing', 'printing');
       r.CLOUD_PRINTERS = r.PRINTING.createChild('/cloudPrinters');
-      // <if expr="chromeos">
-      r.CUPS_PRINTERS = r.PRINTING.createChild('/cupsPrinters');
-      // </if>
 
       r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
 
@@ -483,19 +383,9 @@ cr.define('settings', function() {
       }
       // </if>
 
-      // <if expr="chromeos">
-      r.MANAGE_ACCESSIBILITY =
-          r.ACCESSIBILITY.createChild('/manageAccessibility');
-      if (loadTimeData.getBoolean(
-              'showExperimentalAccessibilitySwitchAccess')) {
-        r.MANAGE_SWITCH_ACCESS_SETTINGS = r.MANAGE_ACCESSIBILITY.createChild(
-            '/manageAccessibility/switchAccess');
-      }
-      r.MANAGE_TTS_SETTINGS =
-          r.MANAGE_ACCESSIBILITY.createChild('/manageAccessibility/tts');
-      // </if>
-
+      // <if expr="not chromeos">
       r.SYSTEM = r.ADVANCED.createSection('/system', 'system');
+      // </if>
 
       if (pageVisibility.reset !== false) {
         r.RESET = r.ADVANCED.createSection('/reset', 'reset');
@@ -513,28 +403,174 @@ cr.define('settings', function() {
         // </if>
       }
     }
+  }
 
-    // <if expr="chromeos">
+  // <if expr="chromeos">
+  /**
+   * Adds Route objects for each path corresponding to CrOS-only content.
+   * @param {!SettingsRoutes} r Routes to include CrOS-only content.
+   */
+  function addOSSettingsRoutes(r) {
+    r.INTERNET = r.BASIC.createSection('/internet', 'internet');
+    r.INTERNET_NETWORKS = r.INTERNET.createChild('/networks');
+    r.NETWORK_DETAIL = r.INTERNET.createChild('/networkDetail');
+    r.KNOWN_NETWORKS = r.INTERNET.createChild('/knownNetworks');
+    r.BLUETOOTH = r.BASIC.createSection('/bluetooth', 'bluetooth');
+    r.BLUETOOTH_DEVICES = r.BLUETOOTH.createChild('/bluetoothDevices');
+
+    r.DEVICE = r.BASIC.createSection('/device', 'device');
+    r.POINTERS = r.DEVICE.createChild('/pointer-overlay');
+    r.KEYBOARD = r.DEVICE.createChild('/keyboard-overlay');
+    r.STYLUS = r.DEVICE.createChild('/stylus');
+    r.DISPLAY = r.DEVICE.createChild('/display');
+    r.STORAGE = r.DEVICE.createChild('/storage');
+    r.EXTERNAL_STORAGE_PREFERENCES =
+        r.DEVICE.createChild('/storage/externalStoragePreferences');
+    r.POWER = r.DEVICE.createChild('/power');
+
     // "About" is the only section in About, but we still need to create the
     // route in order to show the subpage on Chrome OS.
     r.ABOUT_ABOUT = r.ABOUT.createSection('/help/about', 'about');
-    // TODO(aee): Remove once this file is forked.
-    if (loadTimeData.getBoolean('showOSSettings')) {
-      r.DETAILED_BUILD_INFO = r.ABOUT_ABOUT.createChild('/help/details');
-    }
-    // </if>
+    r.DETAILED_BUILD_INFO = r.ABOUT_ABOUT.createChild('/help/details');
 
-    return r;
-  };
+    if (!loadTimeData.getBoolean('isGuest')) {
+      r.MULTIDEVICE = r.BASIC.createSection('/multidevice', 'multidevice');
+      r.MULTIDEVICE_FEATURES =
+          r.MULTIDEVICE.createChild('/multidevice/features');
+      r.SMART_LOCK =
+          r.MULTIDEVICE_FEATURES.createChild('/multidevice/features/smartLock');
+
+      r.ACCOUNTS = r.PEOPLE.createChild('/accounts');
+      r.ACCOUNT_MANAGER = r.PEOPLE.createChild('/accountManager');
+      r.KERBEROS_ACCOUNTS = r.PEOPLE.createChild('/kerberosAccounts');
+      r.LOCK_SCREEN = r.PEOPLE.createChild('/lockScreen');
+      r.FINGERPRINT = r.LOCK_SCREEN.createChild('/lockScreen/fingerprint');
+    }
+
+    if (loadTimeData.valueExists('androidAppsVisible') &&
+        loadTimeData.getBoolean('androidAppsVisible')) {
+      r.ANDROID_APPS = r.BASIC.createSection('/androidApps', 'androidApps');
+      r.ANDROID_APPS_DETAILS =
+          r.ANDROID_APPS.createChild('/androidApps/details');
+    }
+
+    if (loadTimeData.valueExists('showCrostini') &&
+        loadTimeData.getBoolean('showCrostini')) {
+      r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
+      r.CROSTINI_DETAILS = r.CROSTINI.createChild('/crostini/details');
+      r.CROSTINI_EXPORT_IMPORT =
+          r.CROSTINI_DETAILS.createChild('/crostini/exportImport');
+      r.CROSTINI_SHARED_PATHS =
+          r.CROSTINI_DETAILS.createChild('/crostini/sharedPaths');
+      r.CROSTINI_SHARED_USB_DEVICES =
+          r.CROSTINI_DETAILS.createChild('/crostini/sharedUsbDevices');
+    }
+
+    if (loadTimeData.valueExists('showPluginVm') &&
+        loadTimeData.getBoolean('showPluginVm')) {
+      r.PLUGIN_VM = r.BASIC.createSection('/pluginVm', 'pluginVm');
+      r.PLUGIN_VM_DETAILS = r.PLUGIN_VM.createChild('/pluginVm/details');
+      r.PLUGIN_VM_SHARED_PATHS =
+          r.PLUGIN_VM.createChild('/pluginVm/sharedPaths');
+    }
+
+    if (loadTimeData.valueExists('assistantEnabled') &&
+        loadTimeData.getBoolean('assistantEnabled')) {
+      r.GOOGLE_ASSISTANT = r.SEARCH.createChild('/googleAssistant');
+    }
+
+    // This if/else accounts for sections that were added or refactored in
+    // the settings split (crbug.com/950007) and some routes that were created
+    // in browser settings conditioned on the pageVisibility constant, which is
+    // being decoupled from OS Settings in the split. The 'else' block provides
+    // a section-by-section comparison.
+    // TODO (crbug.com/967861): Make 'if' block unconditional. Remove 'else'
+    // block.
+    if (loadTimeData.getBoolean('isOSSettings')) {
+      r.ADVANCED = new Route('/advanced');
+
+      r.PRIVACY = r.ADVANCED.createSection('/privacy', 'privacy');
+
+      // Languages and input
+      r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
+      r.LANGUAGES_DETAILS = r.LANGUAGES.createChild('/languages/details');
+      r.INPUT_METHODS =
+          r.LANGUAGES_DETAILS.createChild('/languages/inputMethods');
+
+      r.PRINTING = r.ADVANCED.createSection('/printing', 'printing');
+
+      r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
+
+      if (!loadTimeData.getBoolean('isGuest')) {
+        // Personalization
+        r.PERSONALIZATION =
+            r.BASIC.createSection('/personalization', 'personalization');
+        r.CHANGE_PICTURE = r.PERSONALIZATION.createChild('/changePicture');
+
+        // Files (analogous to Downloads)
+        r.FILES = r.ADVANCED.createSection('/files', 'files');
+        r.SMB_SHARES = r.FILES.createChild('/smbShares');
+
+        r.RESET = r.ADVANCED.createSection('/reset', 'reset');
+      }
+
+      // Apps
+      if (loadTimeData.valueExists('showApps') &&
+          loadTimeData.getBoolean('showApps')) {
+        r.APPS = r.BASIC.createSection('/apps', 'apps');
+      }
+    } else {
+      assert(r.ADVANCED, 'ADVANCED route should exist');
+
+      assert(r.PRIVACY, 'PRIVACY route should exist');
+
+      // Languages and input
+      assert(r.LANGUAGES, 'LANGUAGES route should exist');
+      r.INPUT_METHODS = r.LANGUAGES.createChild('/inputMethods');
+
+      assert(r.PRINTING, 'PRINTING route should exist');
+
+      assert(r.ACCESSIBILITY, 'ACCESSIBILITY route should exist');
+
+      if (!loadTimeData.getBoolean('isGuest')) {
+        // People
+        r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture');
+
+        // Downloads (analogous to Files)
+        assert(r.DOWNLOADS, 'DOWNLOADS route should exist');
+        r.SMB_SHARES = r.DOWNLOADS.createChild('/smbShares');
+
+        assert(r.RESET, 'RESET route should exist');
+      }
+
+      assert(!r.APPS, 'APPS route should not exist');
+    }
+
+    r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');
+    r.DATETIME_TIMEZONE_SUBPAGE = r.DATETIME.createChild('/dateTime/timeZone');
+
+    r.CUPS_PRINTERS = r.PRINTING.createChild('/cupsPrinters');
+
+    r.MANAGE_ACCESSIBILITY =
+        r.ACCESSIBILITY.createChild('/manageAccessibility');
+    if (loadTimeData.getBoolean('showExperimentalAccessibilitySwitchAccess')) {
+      r.MANAGE_SWITCH_ACCESS_SETTINGS = r.MANAGE_ACCESSIBILITY.createChild(
+          '/manageAccessibility/switchAccess');
+    }
+    r.MANAGE_TTS_SETTINGS =
+        r.MANAGE_ACCESSIBILITY.createChild('/manageAccessibility/tts');
+  }
+  // </if>
 
   class Router {
-    constructor() {
+    /** @param {!SettingsRoutes} availableRoutes */
+    constructor(availableRoutes) {
       /**
        * List of available routes. This is populated taking into account current
        * state (like guest mode).
        * @private {!SettingsRoutes}
        */
-      this.routes_ = computeAvailableRoutes();
+      this.routes_ = availableRoutes;
 
       /**
        * The current active route. This updated is only by settings.navigateTo
@@ -713,7 +749,31 @@ cr.define('settings', function() {
     }
   }
 
-  const routerInstance = new Router();
+  /**
+   * @return {!settings.Router} A router with at least those routes common to OS
+   *     and browser settings. If the window is not in OS settings (based on
+   *     loadTimeData) then browser specific routes are added. If the window is
+   *     OS settings or if Chrome OS is using a consolidated settings page for
+   *     OS and browser settings then OS specific routes are added.
+   */
+  function buildRouter() {
+    const availableRoutes = computeCommonRoutes();
+    const isOSSettings = loadTimeData.valueExists('isOSSettings') &&
+        loadTimeData.getBoolean('isOSSettings');
+    if (!isOSSettings) {
+      addBrowserSettingsRoutes(availableRoutes);
+    }
+
+    // <if expr="chromeos">
+    const showOSSettings = loadTimeData.valueExists('showOSSettings') &&
+        loadTimeData.getBoolean('showOSSettings');
+    if (isOSSettings || showOSSettings) {
+      addOSSettingsRoutes(availableRoutes);
+    }
+    // </if>
+    return new Router(availableRoutes);
+  }
+  const routerInstance = buildRouter();
 
   const routeObservers = new Set();
 
@@ -783,6 +843,7 @@ cr.define('settings', function() {
     Route: Route,            // The Route class definition.
     Router: Router,          // The Router class definition.
     router: routerInstance,  // the singleton.
+    buildRouterForTesting: buildRouter,
     routes: routes,
     RouteObserverBehavior: RouteObserverBehavior,
     getRouteForPath: getRouteForPath,

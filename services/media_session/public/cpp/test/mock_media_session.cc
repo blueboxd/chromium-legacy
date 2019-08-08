@@ -12,6 +12,27 @@
 namespace media_session {
 namespace test {
 
+namespace {
+
+bool IsPositionEqual(const MediaPosition& p1, const MediaPosition& p2) {
+  if (p1.duration() != p2.duration() ||
+      p1.playback_rate() != p2.playback_rate()) {
+    return false;
+  }
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (p1.GetPositionAtTime(now) == p2.GetPositionAtTime(now))
+    return true;
+
+  // To make testing easier we allow position at creation time to be equal
+  // to one another. If we did not do this then the position may advance
+  // if the playback rate is not zero.
+  return p1.GetPositionAtTime(p1.last_updated_time()) ==
+         p2.GetPositionAtTime(p2.last_updated_time());
+}
+
+}  // namespace
+
 MockMediaSessionMojoObserver::MockMediaSessionMojoObserver(
     mojom::MediaSession& media_session) {
   media_session.AddObserver(receiver_.BindNewPipeAndPassRemote());
@@ -79,12 +100,13 @@ void MockMediaSessionMojoObserver::MediaSessionPositionChanged(
     const base::Optional<media_session::MediaPosition>& position) {
   session_position_ = position;
 
-  if (waiting_for_empty_position_ && !position.has_value()) {
+  if (position.has_value() && expected_position_.has_value() &&
+      IsPositionEqual(*position, *expected_position_)) {
+    run_loop_->Quit();
+    expected_position_.reset();
+  } else if (waiting_for_empty_position_ && !position.has_value()) {
     run_loop_->Quit();
     waiting_for_empty_position_ = false;
-  } else if (waiting_for_non_empty_position_ && position.has_value()) {
-    run_loop_->Quit();
-    waiting_for_non_empty_position_ = false;
   }
 }
 
@@ -167,11 +189,14 @@ void MockMediaSessionMojoObserver::WaitForEmptyPosition() {
   StartWaiting();
 }
 
-void MockMediaSessionMojoObserver::WaitForNonEmptyPosition() {
-  if (session_position_.has_value() && session_position_->has_value())
-    return;
+void MockMediaSessionMojoObserver::WaitForExpectedPosition(
+    const MediaPosition& position) {
+  if (session_position_.has_value() && session_position_->has_value()) {
+    if (IsPositionEqual(*session_position_.value(), position))
+      return;
+  }
 
-  waiting_for_non_empty_position_ = true;
+  expected_position_ = position;
   StartWaiting();
 }
 

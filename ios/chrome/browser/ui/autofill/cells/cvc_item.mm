@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/ui/text_field_styling.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -52,7 +51,6 @@ const CGFloat kDateTextFieldWidth = 40;
 @synthesize CVCText = _CVCText;
 @synthesize showDateInput = _showDateInput;
 @synthesize showNewCardButton = _showNewCardButton;
-@synthesize showDateInputError = _showDateInputError;
 @synthesize showCVCInputError = _showCVCInputError;
 @synthesize CVCImageResourceID = _CVCImageResourceID;
 
@@ -79,10 +77,6 @@ const CGFloat kDateTextFieldWidth = 40;
 
   cell.CVCContainerLeadingConstraintWithDate.active = self.showDateInput;
   cell.CVCContainerLeadingConstraintWithoutDate.active = !self.showDateInput;
-
-  [cell.monthInput setUseErrorStyling:self.showDateInputError];
-  [cell.yearInput setUseErrorStyling:self.showDateInputError];
-  [cell.CVCInput setUseErrorStyling:self.showDateInputError];
 
   cell.buttonForNewCard.hidden = !self.showNewCardButton;
 
@@ -134,8 +128,7 @@ const CGFloat kDateTextFieldWidth = 40;
     _dateContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_dateContainerView];
 
-    _monthInput =
-        ios::GetChromeBrowserProvider()->CreateStyledTextField(CGRectZero);
+    _monthInput = ios::GetChromeBrowserProvider()->CreateStyledTextField();
     _monthInput.placeholder = l10n_util::GetNSString(
         IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH);
     _monthInput.accessibilityIdentifier = @"month_textField";
@@ -150,8 +143,7 @@ const CGFloat kDateTextFieldWidth = 40;
     _dateSeparator.translatesAutoresizingMaskIntoConstraints = NO;
     [_dateContainerView addSubview:_dateSeparator];
 
-    _yearInput =
-        ios::GetChromeBrowserProvider()->CreateStyledTextField(CGRectZero);
+    _yearInput = ios::GetChromeBrowserProvider()->CreateStyledTextField();
     _yearInput.placeholder =
         l10n_util::GetNSString(IDS_IOS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR);
     _yearInput.accessibilityIdentifier = @"year_textField";
@@ -164,8 +156,7 @@ const CGFloat kDateTextFieldWidth = 40;
     _CVCContainerView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_CVCContainerView];
 
-    _CVCInput =
-        ios::GetChromeBrowserProvider()->CreateStyledTextField(CGRectZero);
+    _CVCInput = ios::GetChromeBrowserProvider()->CreateStyledTextField();
     _CVCInput.placeholder =
         l10n_util::GetNSString(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC);
     _CVCInput.accessibilityIdentifier = @"CVC_textField";
@@ -316,9 +307,6 @@ const CGFloat kDateTextFieldWidth = 40;
   self.dateContainerView.hidden = YES;
   self.CVCContainerLeadingConstraintWithDate.active = NO;
   self.CVCContainerLeadingConstraintWithoutDate.active = YES;
-  [self.monthInput setUseErrorStyling:NO];
-  [self.yearInput setUseErrorStyling:NO];
-  [self.CVCInput setUseErrorStyling:NO];
   self.buttonForNewCard.hidden = YES;
   self.CVCImageView.image = nil;
 }

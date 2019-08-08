@@ -11,20 +11,15 @@ import android.content.res.Resources;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionIcon;
-import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -85,8 +80,6 @@ public class BasicSuggestionProcessorTest {
     Resources mResources;
     @Mock
     SuggestionHost mSuggestionHost;
-    @Rule
-    public TestRule mFeatureProcessor = new Features.JUnitProcessor();
 
     @Before
     public void setUp() {
@@ -156,39 +149,6 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
-    public void getSuggestionIconTypeForSearch_FavIcons() {
-        mProcessor.onNativeInitialized();
-        int[][] testSuites = {
-                {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.HISTORY_URL, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.HISTORY_TITLE, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.HISTORY_BODY, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.HISTORY_KEYWORD, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.NAVSUGGEST, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_WHAT_YOU_TYPED, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_HISTORY, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_SUGGEST, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_TAIL, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.VOICE},
-                {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.PEDAL, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CLIPBOARD_TEXT, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CLIPBOARD_IMAGE, SuggestionIcon.MAGNIFIER},
-        };
-
-        for (int[] test : testSuites) {
-            assertSuggestionIconTypeIs(createSearchSuggestion(test[0]), test[1]);
-        }
-    }
-
-    @Test
     public void getSuggestionIconTypeForUrl_Default() {
         int[][] testSuites = {
                 {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.GLOBE},
@@ -220,73 +180,7 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
-    public void getSuggestionIconTypeForUrl_FavIcons() {
-        mProcessor.onNativeInitialized();
-        int[][] testSuites = {
-                {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.HISTORY_URL, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.HISTORY_TITLE, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.HISTORY_BODY, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.HISTORY_KEYWORD, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.NAVSUGGEST, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.SEARCH_WHAT_YOU_TYPED, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.SEARCH_HISTORY, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.SEARCH_SUGGEST, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_TAIL, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.PEDAL, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.CLIPBOARD_TEXT, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.CLIPBOARD_IMAGE, SuggestionIcon.GLOBE},
-        };
-
-        for (int[] test : testSuites) {
-            assertSuggestionIconTypeIs(createUrlSuggestion(test[0]), test[1]);
-        }
-    }
-
-    @Test
     public void getSuggestionIconTypeForBookmarks_Default() {
-        int[][] testSuites = {
-                {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.HISTORY_URL, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.HISTORY_TITLE, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.HISTORY_BODY, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.HISTORY_KEYWORD, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.NAVSUGGEST, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.SEARCH_WHAT_YOU_TYPED, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.SEARCH_HISTORY, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.SEARCH_SUGGEST, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_TAIL, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.PEDAL, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.CLIPBOARD_TEXT, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.CLIPBOARD_IMAGE, SuggestionIcon.BOOKMARK},
-        };
-
-        for (int[] test : testSuites) {
-            assertSuggestionIconTypeIs(createBookmarkSuggestion(test[0]), test[1]);
-        }
-    }
-
-    @Test
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
-    public void getSuggestionIconTypeForBookmarks_FavIcons() {
-        mProcessor.onNativeInitialized();
         int[][] testSuites = {
                 {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.HISTORY_URL, SuggestionIcon.BOOKMARK},

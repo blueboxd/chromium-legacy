@@ -49,18 +49,10 @@
 namespace {
 
 // Windows system color IDs cached and updated by the native theme.
-const int kSystemColors[] = {
-  COLOR_3DFACE,
-  COLOR_BTNFACE,
-  COLOR_BTNTEXT,
-  COLOR_GRAYTEXT,
-  COLOR_HIGHLIGHT,
-  COLOR_HIGHLIGHTTEXT,
-  COLOR_HOTLIGHT,
-  COLOR_MENUHIGHLIGHT,
-  COLOR_SCROLLBAR,
-  COLOR_WINDOW,
-  COLOR_WINDOWTEXT,
+const int kSysColors[] = {
+    COLOR_BTNFACE,       COLOR_BTNTEXT,    COLOR_GRAYTEXT,      COLOR_HIGHLIGHT,
+    COLOR_HIGHLIGHTTEXT, COLOR_HOTLIGHT,   COLOR_MENUHIGHLIGHT, COLOR_SCROLLBAR,
+    COLOR_WINDOW,        COLOR_WINDOWTEXT,
 };
 
 void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
@@ -147,6 +139,33 @@ class ScopedCreateDCWithBitmap {
 }  // namespace
 
 namespace ui {
+
+NativeTheme::SystemThemeColor SysColorToSystemThemeColor(int system_color) {
+  switch (system_color) {
+    case COLOR_BTNFACE:
+      return NativeTheme::SystemThemeColor::kButtonFace;
+    case COLOR_BTNTEXT:
+      return NativeTheme::SystemThemeColor::kButtonText;
+    case COLOR_GRAYTEXT:
+      return NativeTheme::SystemThemeColor::kGrayText;
+    case COLOR_HIGHLIGHT:
+      return NativeTheme::SystemThemeColor::kHighlight;
+    case COLOR_HIGHLIGHTTEXT:
+      return NativeTheme::SystemThemeColor::kHighlightText;
+    case COLOR_HOTLIGHT:
+      return NativeTheme::SystemThemeColor::kHotlight;
+    case COLOR_MENUHIGHLIGHT:
+      return NativeTheme::SystemThemeColor::kMenuHighlight;
+    case COLOR_SCROLLBAR:
+      return NativeTheme::SystemThemeColor::kScrollbar;
+    case COLOR_WINDOW:
+      return NativeTheme::SystemThemeColor::kWindow;
+    case COLOR_WINDOWTEXT:
+      return NativeTheme::SystemThemeColor::kWindowText;
+    default:
+      return NativeTheme::SystemThemeColor::kNotSupported;
+  }
+}
 
 NativeTheme* NativeTheme::GetInstanceForNativeUi() {
   return NativeThemeWin::instance();
@@ -268,6 +287,13 @@ NativeThemeWin::NativeThemeWin() : color_change_listener_(this) {
 
   // Initialize the cached system colors.
   UpdateSystemColors();
+
+  // Initialize the native theme web instance with the system color info.
+  NativeTheme* web_instance = NativeTheme::GetInstanceForWeb();
+  web_instance->set_use_dark_colors(ShouldUseDarkColors());
+  web_instance->set_high_contrast(UsesHighContrastColors());
+  web_instance->set_preferred_color_scheme(GetPreferredColorScheme());
+  web_instance->set_system_colors(GetSystemColors());
 }
 
 NativeThemeWin::~NativeThemeWin() {
@@ -301,8 +327,9 @@ void NativeThemeWin::OnSysColorChange() {
 }
 
 void NativeThemeWin::UpdateSystemColors() {
-  for (int kSystemColor : kSystemColors)
-    system_colors_[kSystemColor] = color_utils::GetSysSkColor(kSystemColor);
+  for (int sys_color : kSysColors)
+    system_colors_[SysColorToSystemThemeColor(sys_color)] =
+        color_utils::GetSysSkColor(sys_color);
 }
 
 void NativeThemeWin::PaintMenuSeparator(cc::PaintCanvas* canvas,
@@ -449,7 +476,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id,
   switch (color_id) {
     // Windows
     case kColorId_WindowBackground:
-      return system_colors_[COLOR_WINDOW];
+      return system_colors_[SystemThemeColor::kWindow];
 
     // Dialogs
     case kColorId_DialogBackground:
@@ -463,72 +490,74 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id,
 
     // Button
     case kColorId_ButtonEnabledColor:
-      return system_colors_[COLOR_BTNTEXT];
+      return system_colors_[SystemThemeColor::kButtonText];
     case kColorId_ButtonHoverColor:
       return kButtonHoverColor;
 
     // Label
     case kColorId_LabelEnabledColor:
-      return system_colors_[COLOR_BTNTEXT];
+      return system_colors_[SystemThemeColor::kButtonText];
     case kColorId_LabelDisabledColor:
-      return system_colors_[COLOR_GRAYTEXT];
+      return system_colors_[SystemThemeColor::kGrayText];
     case kColorId_LabelTextSelectionColor:
-      return system_colors_[COLOR_HIGHLIGHTTEXT];
+      return system_colors_[SystemThemeColor::kHighlightText];
     case kColorId_LabelTextSelectionBackgroundFocused:
       return kLabelTextSelectionBackgroundFocusedColor;
 
     // Textfield
     case kColorId_TextfieldDefaultColor:
-      return system_colors_[COLOR_WINDOWTEXT];
+      return system_colors_[SystemThemeColor::kWindowText];
     case kColorId_TextfieldDefaultBackground:
-      return system_colors_[COLOR_WINDOW];
+      return system_colors_[SystemThemeColor::kWindow];
     case kColorId_TextfieldReadOnlyColor:
-      return system_colors_[COLOR_GRAYTEXT];
+      return system_colors_[SystemThemeColor::kGrayText];
     case kColorId_TextfieldReadOnlyBackground:
-      return system_colors_[COLOR_3DFACE];
+      return system_colors_[SystemThemeColor::kButtonFace];
     case kColorId_TextfieldSelectionColor:
-      return system_colors_[COLOR_HIGHLIGHTTEXT];
+      return system_colors_[SystemThemeColor::kHighlightText];
     case kColorId_TextfieldSelectionBackgroundFocused:
-      return system_colors_[COLOR_HIGHLIGHT];
+      return system_colors_[SystemThemeColor::kHighlight];
 
     // Tooltip
     case kColorId_TooltipBackground:
-      return system_colors_[COLOR_WINDOW];
+      return system_colors_[SystemThemeColor::kWindow];
     case kColorId_TooltipText:
-      return system_colors_[COLOR_WINDOWTEXT];
+      return system_colors_[SystemThemeColor::kWindowText];
 
     // Tree
     // NOTE: these aren't right for all themes, but as close as I could get.
     case kColorId_TreeBackground:
-      return system_colors_[COLOR_WINDOW];
+      return system_colors_[SystemThemeColor::kWindow];
     case kColorId_TreeText:
-      return system_colors_[COLOR_WINDOWTEXT];
+      return system_colors_[SystemThemeColor::kWindowText];
     case kColorId_TreeSelectedText:
-      return system_colors_[COLOR_HIGHLIGHTTEXT];
+      return system_colors_[SystemThemeColor::kHighlightText];
     case kColorId_TreeSelectedTextUnfocused:
-      return system_colors_[COLOR_BTNTEXT];
+      return system_colors_[SystemThemeColor::kButtonText];
     case kColorId_TreeSelectionBackgroundFocused:
-      return system_colors_[COLOR_HIGHLIGHT];
+      return system_colors_[SystemThemeColor::kHighlight];
     case kColorId_TreeSelectionBackgroundUnfocused:
-      return system_colors_[UsesHighContrastColors() ? COLOR_MENUHIGHLIGHT
-                                                     : COLOR_BTNFACE];
+      return system_colors_[UsesHighContrastColors()
+                                ? SystemThemeColor::kMenuHighlight
+                                : SystemThemeColor::kButtonFace];
 
     // Table
     case kColorId_TableBackground:
-      return system_colors_[COLOR_WINDOW];
+      return system_colors_[SystemThemeColor::kWindow];
     case kColorId_TableText:
-      return system_colors_[COLOR_WINDOWTEXT];
+      return system_colors_[SystemThemeColor::kWindowText];
     case kColorId_TableSelectedText:
-      return system_colors_[COLOR_HIGHLIGHTTEXT];
+      return system_colors_[SystemThemeColor::kHighlightText];
     case kColorId_TableSelectedTextUnfocused:
-      return system_colors_[COLOR_BTNTEXT];
+      return system_colors_[SystemThemeColor::kButtonText];
     case kColorId_TableSelectionBackgroundFocused:
-      return system_colors_[COLOR_HIGHLIGHT];
+      return system_colors_[SystemThemeColor::kHighlight];
     case kColorId_TableSelectionBackgroundUnfocused:
-      return system_colors_[UsesHighContrastColors() ? COLOR_MENUHIGHLIGHT
-                                                     : COLOR_BTNFACE];
+      return system_colors_[UsesHighContrastColors()
+                                ? SystemThemeColor::kMenuHighlight
+                                : SystemThemeColor::kButtonFace];
     case kColorId_TableGroupingIndicatorColor:
-      return system_colors_[COLOR_GRAYTEXT];
+      return system_colors_[SystemThemeColor::kGrayText];
 
     default:
       break;
@@ -585,8 +614,8 @@ NativeThemeWin::CalculatePreferredColorScheme() const {
     // as a string. However, this string is language dependent. Instead, to
     // account for non-English systems, sniff out the system colors to
     // determine the high contrast color scheme.
-    SkColor fg_color = system_colors_[COLOR_WINDOWTEXT];
-    SkColor bg_color = system_colors_[COLOR_WINDOW];
+    SkColor fg_color = system_colors_[SystemThemeColor::kWindowText];
+    SkColor bg_color = system_colors_[SystemThemeColor::kWindow];
     if (bg_color == SK_ColorWHITE && fg_color == SK_ColorBLACK) {
       return NativeTheme::PreferredColorScheme::kLight;
     }
@@ -1167,8 +1196,10 @@ HRESULT NativeThemeWin::PaintScrollbarTrack(
   }
 
   // Draw it manually.
-  if ((system_colors_[COLOR_SCROLLBAR] != system_colors_[COLOR_3DFACE]) &&
-      (system_colors_[COLOR_SCROLLBAR] != system_colors_[COLOR_WINDOW])) {
+  if ((system_colors_[SystemThemeColor::kScrollbar] !=
+       system_colors_[SystemThemeColor::kButtonFace]) &&
+      (system_colors_[SystemThemeColor::kScrollbar] !=
+       system_colors_[SystemThemeColor::kWindow])) {
     FillRect(hdc, &rect_win, reinterpret_cast<HBRUSH>(COLOR_SCROLLBAR + 1));
   } else {
     SkPaint paint;

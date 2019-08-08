@@ -280,9 +280,17 @@ class ResultSelectionTest : public testing::Test,
 
     // These are divided to give as much detail as possible for a test failure.
     TestSingleAxisForward(forward, locations);
-    TestSingleAxisLoop(forward, locations);
-    TestSingleAxisLoopBack(backward, locations);
+    if (horizontal) {
+      TestSingleAxisLoop(forward, locations);
+      TestSingleAxisLoopBack(backward, locations);
+    } else {
+      TestSingleAxisLoopRejected(forward, locations);
+    }
     TestSingleAxisBackward(backward, locations);
+
+    if (!horizontal) {
+      TestSingleAxisLoopBackRejected(backward, locations);
+    }
   }
 
   void TestSingleAxisForward(
@@ -292,7 +300,8 @@ class ResultSelectionTest : public testing::Test,
     ASSERT_EQ(*result_selection_controller_->selected_location_details(),
               locations[0]);
     for (size_t i = 1; i < locations.size(); i++) {
-      result_selection_controller_->MoveSelection(*forward);
+      ASSERT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+                result_selection_controller_->MoveSelection(*forward));
       ASSERT_EQ(*result_selection_controller_->selected_location_details(),
                 locations[i]);
     }
@@ -306,7 +315,8 @@ class ResultSelectionTest : public testing::Test,
               locations[3]);
 
     // Expect loop back to first result.
-    result_selection_controller_->MoveSelection(*forward);
+    EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+              result_selection_controller_->MoveSelection(*forward));
     ASSERT_EQ(*result_selection_controller_->selected_location_details(),
               locations[0]);
   }
@@ -319,9 +329,38 @@ class ResultSelectionTest : public testing::Test,
               locations[0]);
 
     // Expect loop back to last result.
-    result_selection_controller_->MoveSelection(*backward);
+    EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+              result_selection_controller_->MoveSelection(*backward));
     ASSERT_EQ(*result_selection_controller_->selected_location_details(),
               locations[3]);
+  }
+
+  void TestSingleAxisLoopRejected(
+      ui::KeyEvent* forward,
+      const std::vector<ResultLocationDetails>& locations) {
+    // Starts at the end
+    ASSERT_EQ(*result_selection_controller_->selected_location_details(),
+              locations[3]);
+
+    // Expect no change in location.
+    ASSERT_EQ(ResultSelectionController::MoveResult::kSelectionCycleRejected,
+              result_selection_controller_->MoveSelection(*forward));
+    ASSERT_EQ(*result_selection_controller_->selected_location_details(),
+              locations[3]);
+  }
+
+  void TestSingleAxisLoopBackRejected(
+      ui::KeyEvent* backward,
+      const std::vector<ResultLocationDetails>& locations) {
+    // Starts at the first
+    ASSERT_EQ(*result_selection_controller_->selected_location_details(),
+              locations[0]);
+
+    // Expect no change in location.
+    ASSERT_EQ(ResultSelectionController::MoveResult::kSelectionCycleRejected,
+              result_selection_controller_->MoveSelection(*backward));
+    ASSERT_EQ(*result_selection_controller_->selected_location_details(),
+              locations[0]);
   }
 
   void TestSingleAxisBackward(
@@ -334,7 +373,8 @@ class ResultSelectionTest : public testing::Test,
     ASSERT_EQ(*result_selection_controller_->selected_location_details(),
               locations[last_index]);
     for (size_t i = last_index; i > 0; i--) {
-      result_selection_controller_->MoveSelection(*backward);
+      ASSERT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+                result_selection_controller_->MoveSelection(*backward));
       ASSERT_EQ(*result_selection_controller_->selected_location_details(),
                 locations[i - 1]);
     }
@@ -382,8 +422,12 @@ class ResultSelectionTest : public testing::Test,
         // End on the last result.
       }
 
-      // Change Containers
-      result_selection_controller_->MoveSelection(*vertical_forward);
+      // Change Containers, if not the last container.
+      ASSERT_EQ(
+          i == num_containers - 1
+              ? ResultSelectionController::MoveResult::kSelectionCycleRejected
+              : ResultSelectionController::MoveResult::kResultChanged,
+          result_selection_controller_->MoveSelection(*vertical_forward));
     }
   }
 
@@ -408,28 +452,31 @@ class ResultSelectionTest : public testing::Test,
     };
 
     // Initialize the RSC for test.
-    result_selection_controller_->ResetSelection();
+    result_selection_controller_->ResetSelection(nullptr);
 
     ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionNotSelected());
 
     // TAB - the result should remain the same, but the selected action is
     // expected to change.
-    EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+              result_selection_controller_->MoveSelection(tab_key_));
 
     ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(0));
 
     // TAB - the result should remain the same, but the selected action is
     // expected to change.
-    EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+              result_selection_controller_->MoveSelection(tab_key_));
 
     ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(1));
 
     // TAB - move to the next result.
     TestResultView* previous_result = GetCurrentSelection();
-    EXPECT_TRUE(result_selection_controller_->MoveSelection(tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+              result_selection_controller_->MoveSelection(tab_key_));
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionNotSelected());
@@ -437,46 +484,53 @@ class ResultSelectionTest : public testing::Test,
 
     // Shift-TAB - move back to the previous result, and expect the last action
     // to be selected.
-    EXPECT_TRUE(result_selection_controller_->MoveSelection(shift_tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+              result_selection_controller_->MoveSelection(shift_tab_key_));
 
     ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(1));
 
     // TAB - move back to next result.
     previous_result = GetCurrentSelection();
-    EXPECT_TRUE(result_selection_controller_->MoveSelection(tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+              result_selection_controller_->MoveSelection(tab_key_));
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionNotSelected());
     EXPECT_FALSE(previous_result->selected());
 
     // TAB - stay at the same result, but select next action.
-    EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+              result_selection_controller_->MoveSelection(tab_key_));
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(0));
 
     // Shift-TAB - same result, but deselects actions.
-    EXPECT_FALSE(result_selection_controller_->MoveSelection(shift_tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+              result_selection_controller_->MoveSelection(shift_tab_key_));
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionNotSelected());
 
     // TAB - reselect the first action.
-    EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+              result_selection_controller_->MoveSelection(tab_key_));
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(0));
 
     // TAB - select the next action.
-    EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+              result_selection_controller_->MoveSelection(tab_key_));
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(1));
 
     // TAB - select a result in the next container.
     previous_result = GetCurrentSelection();
-    EXPECT_TRUE(result_selection_controller_->MoveSelection(tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+              result_selection_controller_->MoveSelection(tab_key_));
 
     ASSERT_EQ(create_test_location(1, 0), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionNotSelected());
@@ -484,17 +538,55 @@ class ResultSelectionTest : public testing::Test,
 
     // Shift-TAB - move to previous result/action.
     previous_result = GetCurrentSelection();
-    EXPECT_TRUE(result_selection_controller_->MoveSelection(shift_tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+              result_selection_controller_->MoveSelection(shift_tab_key_));
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(1));
     EXPECT_FALSE(previous_result->selected());
 
     // Shift-TAB - move to previous action.
-    EXPECT_FALSE(result_selection_controller_->MoveSelection(shift_tab_key_));
+    EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+              result_selection_controller_->MoveSelection(shift_tab_key_));
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(0));
+  }
+
+  // Tests calling MoveSelection when none of the results are selected. The
+  // effect should be the same as resetting selection.
+  void TestMoveNullSelection(const ui::KeyEvent& key_event,
+                             bool expect_reverse,
+                             bool expect_action_selected) {
+    const int kContainerCount = 2;
+    const int kResultsPerContainer = 2;
+    const int kActionsPerResult = 1;
+    std::vector<std::unique_ptr<SearchResultContainerView>> containers =
+        CreateContainerVector(kContainerCount,
+                              TestContainerParams(false, kResultsPerContainer,
+                                                  kActionsPerResult));
+    SetContainers(containers);
+
+    auto create_test_location = [](int container_index, int result_index) {
+      return ResultLocationDetails(container_index, kContainerCount,
+                                   result_index, kResultsPerContainer,
+                                   false /*container_is_horizontal*/);
+    };
+
+    EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+              result_selection_controller_->MoveSelection(key_event));
+
+    if (expect_reverse) {
+      ASSERT_EQ(create_test_location(1, 1), GetCurrentLocation());
+    } else {
+      ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+    }
+
+    if (expect_action_selected) {
+      EXPECT_TRUE(CurrentResultActionSelected(0));
+    } else {
+      EXPECT_TRUE(CurrentResultActionNotSelected());
+    }
   }
 
   std::unique_ptr<ResultSelectionController> result_selection_controller_;
@@ -533,7 +625,7 @@ TEST_F(ResultSelectionTest, VerticalTraversalOneContainerArrowKeys) {
   containers_.emplace_back(vertical_container.get());
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestSingleAxisTraversal(&down_arrow_, &up_arrow_);
 }
@@ -549,7 +641,7 @@ TEST_F(ResultSelectionTest, VerticalTraversalOneContainerTabKey) {
   containers_.emplace_back(vertical_container.get());
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestSingleAxisTraversal(&tab_key_, &shift_tab_key_);
 }
@@ -568,7 +660,7 @@ TEST_P(ResultSelectionTest, HorizontalTraversalOneContainerArrowKeys) {
   containers_.emplace_back(horizontal_container.get());
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestSingleAxisTraversal(forward, backward);
 }
@@ -584,7 +676,7 @@ TEST_P(ResultSelectionTest, HorizontalVerticalArrowKeys) {
   containers_.emplace_back(vertical_container.get());
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestMultiAxisTraversal(false);
 }
@@ -600,7 +692,7 @@ TEST_F(ResultSelectionTest, HorizontalVerticalTab) {
   containers_.emplace_back(vertical_container.get());
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestMultiAxisTraversal(true);
 }
@@ -611,7 +703,7 @@ TEST_F(ResultSelectionTest, TestVerticalStackArrows) {
   SetContainers(vertical_containers);
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestMultiAxisTraversal(false);
 }
@@ -622,7 +714,7 @@ TEST_F(ResultSelectionTest, TestVerticalStackTab) {
   SetContainers(vertical_containers);
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestMultiAxisTraversal(true);
 }
@@ -634,7 +726,7 @@ TEST_P(ResultSelectionTest, TestHorizontalStackArrows) {
   SetContainers(horizontal_containers);
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestMultiAxisTraversal(false);
 }
@@ -646,7 +738,7 @@ TEST_F(ResultSelectionTest, TestHorizontalStackTab) {
   SetContainers(horizontal_containers);
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestMultiAxisTraversal(true);
 }
@@ -657,7 +749,7 @@ TEST_P(ResultSelectionTest, TestHorizontalStackWithResultActionsArrows) {
   SetContainers(containers);
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestMultiAxisTraversal(false);
 }
@@ -668,7 +760,7 @@ TEST_F(ResultSelectionTest, TestVerticalStackWithResultActionsArrows) {
   SetContainers(containers);
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestMultiAxisTraversal(false);
 }
@@ -679,7 +771,7 @@ TEST_F(ResultSelectionTest, TestVerticalStackWithEmptyResultActionsTab) {
   SetContainers(containers);
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestMultiAxisTraversal(false);
 }
@@ -690,7 +782,7 @@ TEST_F(ResultSelectionTest, TestHorizontalStackWithEmptyResultActionsTab) {
   SetContainers(containers);
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   TestMultiAxisTraversal(false);
 }
@@ -701,6 +793,176 @@ TEST_F(ResultSelectionTest, TestHorizontalStackWithResultActionsTab) {
 
 TEST_F(ResultSelectionTest, TestVerticalStackWithResultActionsTab) {
   TestTabTraversalWithResultActions(false /*horizontal_container*/);
+}
+
+TEST_F(ResultSelectionTest, TabCycleInContainerWithResultActions) {
+  const int kContainerCount = 2;
+  const int kResultsPerContainer = 1;
+  const int kActionsPerResult = 1;
+  std::vector<std::unique_ptr<SearchResultContainerView>> containers =
+      CreateContainerVector(
+          kContainerCount,
+          TestContainerParams(false, kResultsPerContainer, kActionsPerResult));
+  SetContainers(containers);
+
+  auto create_test_location = [](int container_index, int result_index) {
+    return ResultLocationDetails(container_index, kContainerCount, result_index,
+                                 kResultsPerContainer, false);
+  };
+
+  // Initialize the RSC for test.
+  result_selection_controller_->ResetSelection(nullptr);
+
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionNotSelected());
+
+  // Shift TAB - reject.
+  EXPECT_EQ(ResultSelectionController::MoveResult::kSelectionCycleRejected,
+            result_selection_controller_->MoveSelection(shift_tab_key_));
+
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionNotSelected());
+
+  // TAB - the result should remain the same, but the selected action is
+  // expected to change.
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
+
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionSelected(0));
+
+  // TAB - move to the next result, which is in the next container.
+  TestResultView* previous_result = GetCurrentSelection();
+  EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+            result_selection_controller_->MoveSelection(tab_key_));
+
+  ASSERT_EQ(create_test_location(1, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionNotSelected());
+  EXPECT_FALSE(previous_result->selected());
+
+  // TAB - next action selected.
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
+
+  ASSERT_EQ(create_test_location(1, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionSelected(0));
+
+  // TAB - rejected, as selection would cycle to the beginning.
+  EXPECT_EQ(ResultSelectionController::MoveResult::kSelectionCycleRejected,
+            result_selection_controller_->MoveSelection(tab_key_));
+  ASSERT_EQ(create_test_location(1, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionSelected(0));
+}
+
+TEST_F(ResultSelectionTest, TabCycleInContainerSingleResult) {
+  const int kContainerCount = 1;
+  const int kResultsPerContainer = 1;
+  std::vector<std::unique_ptr<SearchResultContainerView>> containers =
+      CreateContainerVector(kContainerCount,
+                            TestContainerParams(false, kResultsPerContainer));
+  SetContainers(containers);
+
+  auto create_test_location = [](int container_index, int result_index) {
+    return ResultLocationDetails(container_index, kContainerCount, result_index,
+                                 kResultsPerContainer, false);
+  };
+
+  // Initialize the RSC for test.
+  result_selection_controller_->ResetSelection(nullptr);
+
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+
+  // Shift TAB - reject going to the last result (even though it's the same as
+  // the first result).
+  EXPECT_EQ(ResultSelectionController::MoveResult::kSelectionCycleRejected,
+            result_selection_controller_->MoveSelection(shift_tab_key_));
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+
+  // TAB - reject goting to the first result (event though it's the same as the
+  // last result).
+  EXPECT_EQ(ResultSelectionController::MoveResult::kSelectionCycleRejected,
+            result_selection_controller_->MoveSelection(tab_key_));
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+}
+
+TEST_F(ResultSelectionTest, TabCycleInContainerSingleResultWithActionUsingTab) {
+  const int kContainerCount = 1;
+  const int kResultsPerContainer = 1;
+  const int kActionsPerResult = 1;
+  std::vector<std::unique_ptr<SearchResultContainerView>> containers =
+      CreateContainerVector(
+          kContainerCount,
+          TestContainerParams(false, kResultsPerContainer, kActionsPerResult));
+  SetContainers(containers);
+
+  auto create_test_location = [](int container_index, int result_index) {
+    return ResultLocationDetails(container_index, kContainerCount, result_index,
+                                 kResultsPerContainer, false);
+  };
+
+  // Initialize the RSC for test.
+  result_selection_controller_->ResetSelection(nullptr);
+
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionNotSelected());
+
+  // Shift TAB - reject going to the last result.
+  EXPECT_EQ(ResultSelectionController::MoveResult::kSelectionCycleRejected,
+            result_selection_controller_->MoveSelection(shift_tab_key_));
+
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionNotSelected());
+
+  // TAB - the result should remain the same, but the selected action is
+  // expected to change.
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
+
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionSelected(0));
+
+  // TAB - rejected, as selection would cycle to the beginning.
+  EXPECT_EQ(ResultSelectionController::MoveResult::kSelectionCycleRejected,
+            result_selection_controller_->MoveSelection(tab_key_));
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionSelected(0));
+}
+
+TEST_F(ResultSelectionTest,
+       TabCycleInContainerSingleResultWithActionUsingUpDown) {
+  const int kContainerCount = 1;
+  const int kResultsPerContainer = 1;
+  const int kActionsPerResult = 1;
+  std::vector<std::unique_ptr<SearchResultContainerView>> containers =
+      CreateContainerVector(
+          kContainerCount,
+          TestContainerParams(false, kResultsPerContainer, kActionsPerResult));
+  SetContainers(containers);
+
+  auto create_test_location = [](int container_index, int result_index) {
+    return ResultLocationDetails(container_index, kContainerCount, result_index,
+                                 kResultsPerContainer, false);
+  };
+
+  // Initialize the RSC for test.
+  result_selection_controller_->ResetSelection(nullptr);
+
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionNotSelected());
+
+  // UP - reject going to the last result.
+  EXPECT_EQ(ResultSelectionController::MoveResult::kSelectionCycleRejected,
+            result_selection_controller_->MoveSelection(up_arrow_));
+
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionNotSelected());
+
+  // DOWN - rejected, as selection would cycle to the beginning (even though the
+  // first element is the same as the last).
+  EXPECT_EQ(ResultSelectionController::MoveResult::kSelectionCycleRejected,
+            result_selection_controller_->MoveSelection(down_arrow_));
+  ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
+  EXPECT_TRUE(CurrentResultActionNotSelected());
 }
 
 TEST_P(ResultSelectionTest,
@@ -721,7 +983,7 @@ TEST_P(ResultSelectionTest,
   };
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   ui::KeyEvent* forward = is_rtl_ ? &left_arrow_ : &right_arrow_;
   ui::KeyEvent* backward = is_rtl_ ? &right_arrow_ : &left_arrow_;
@@ -730,25 +992,29 @@ TEST_P(ResultSelectionTest,
   EXPECT_TRUE(CurrentResultActionNotSelected());
 
   // TAB to select an action.
-  EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
   // Forward selects the next result.
   TestResultView* previous_result = GetCurrentSelection();
-  EXPECT_TRUE(result_selection_controller_->MoveSelection(*forward));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+            result_selection_controller_->MoveSelection(*forward));
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
   EXPECT_FALSE(previous_result->selected());
 
   // TAB to select an action.
-  EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
   // Backward selects the previous result.
   previous_result = GetCurrentSelection();
-  EXPECT_TRUE(result_selection_controller_->MoveSelection(*backward));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+            result_selection_controller_->MoveSelection(*backward));
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
   EXPECT_FALSE(previous_result->selected());
@@ -772,31 +1038,35 @@ TEST_F(ResultSelectionTest,
   };
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
 
   // TAB to select an action.
-  EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
   // DOWN selects the next result.
   TestResultView* previous_result = GetCurrentSelection();
-  EXPECT_TRUE(result_selection_controller_->MoveSelection(down_arrow_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+            result_selection_controller_->MoveSelection(down_arrow_));
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
   EXPECT_FALSE(previous_result->selected());
 
   // TAB to select an action.
-  EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
   // UP selects the previous result.
   previous_result = GetCurrentSelection();
-  EXPECT_TRUE(result_selection_controller_->MoveSelection(up_arrow_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+            result_selection_controller_->MoveSelection(up_arrow_));
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
   EXPECT_FALSE(previous_result->selected());
@@ -819,20 +1089,21 @@ TEST_F(ResultSelectionTest, ResetWhileFirstResultActionSelected) {
   };
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
 
   // TAB to select an action.
-  EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
   // Reset selection - reset selects the new first result, i.e. the same result
   // as before reset. The selected action should remain the same.
   TestResultView* pre_reset_selection = GetCurrentSelection();
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
   EXPECT_EQ(pre_reset_selection, GetCurrentSelection());
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
@@ -855,24 +1126,26 @@ TEST_F(ResultSelectionTest, ResetWhileResultActionSelected) {
   };
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
 
   // DOWN to select another result.
-  EXPECT_TRUE(result_selection_controller_->MoveSelection(down_arrow_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+            result_selection_controller_->MoveSelection(down_arrow_));
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
 
   // TAB to select an action.
-  EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
   // Reset selection.
   TestResultView* pre_reset_selection = GetCurrentSelection();
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
   EXPECT_FALSE(pre_reset_selection->selected());
@@ -895,20 +1168,24 @@ TEST_F(ResultSelectionTest, ActionRemovedWhileSelected) {
   };
 
   // Initialize the RSC for test.
-  result_selection_controller_->ResetSelection();
+  result_selection_controller_->ResetSelection(nullptr);
 
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
 
   // DOWN to select another result.
-  EXPECT_TRUE(result_selection_controller_->MoveSelection(down_arrow_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+            result_selection_controller_->MoveSelection(down_arrow_));
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionNotSelected());
 
   // TAB to select the last action.
-  EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_FALSE(result_selection_controller_->MoveSelection(tab_key_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
+            result_selection_controller_->MoveSelection(tab_key_));
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(2));
 
@@ -924,9 +1201,40 @@ TEST_F(ResultSelectionTest, ActionRemovedWhileSelected) {
   EXPECT_TRUE(CurrentResultActionNotSelected());
 
   // Shift-TAB move selection to the previous result.
-  EXPECT_TRUE(result_selection_controller_->MoveSelection(shift_tab_key_));
+  EXPECT_EQ(ResultSelectionController::MoveResult::kResultChanged,
+            result_selection_controller_->MoveSelection(shift_tab_key_));
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(2));
+}
+
+TEST_F(ResultSelectionTest, MoveNullSelectionTab) {
+  TestMoveNullSelection(tab_key_, false /*reverse*/,
+                        false /*expect_action_selected*/);
+}
+
+TEST_F(ResultSelectionTest, MoveNullSelectionShiftTab) {
+  TestMoveNullSelection(shift_tab_key_, true /*reverse*/,
+                        true /*expect_action_selected*/);
+}
+
+TEST_F(ResultSelectionTest, MoveNullSelectionDown) {
+  TestMoveNullSelection(down_arrow_, false /*reverse*/,
+                        false /*expect_action_selected*/);
+}
+
+TEST_F(ResultSelectionTest, MoveNullSelectionUp) {
+  TestMoveNullSelection(up_arrow_, true /*reverse*/,
+                        false /*expect_action_selected*/);
+}
+
+TEST_F(ResultSelectionTest, MoveNullSelectionForward) {
+  TestMoveNullSelection(right_arrow_, false /*reverse*/,
+                        false /*expect_action_selected*/);
+}
+
+TEST_F(ResultSelectionTest, MoveNullSelectionBack) {
+  TestMoveNullSelection(left_arrow_, false /*reverse*/,
+                        false /*expect_action_selected*/);
 }
 
 }  // namespace app_list

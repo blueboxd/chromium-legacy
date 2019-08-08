@@ -49,6 +49,68 @@ class AXPositionTest : public testing::Test {
  protected:
   void SetUp() override;
   void TearDown() override;
+  AXTree* CreateMultipageDocument(ui::AXNodeData& root_data,
+                                  ui::AXNodeData& page_1_data,
+                                  ui::AXNodeData& page_1_text_data,
+                                  ui::AXNodeData& page_2_data,
+                                  ui::AXNodeData& page_2_text_data,
+                                  ui::AXNodeData& page_3_data,
+                                  ui::AXNodeData& page_3_text_data) {
+    AXNodePosition::SetTreeForTesting(nullptr);
+
+    root_data.id = 1;
+    root_data.role = ax::mojom::Role::kDocument;
+
+    page_1_data.id = 2;
+    page_1_data.role = ax::mojom::Role::kRegion;
+    page_1_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsPageBreakingObject, true);
+
+    page_1_text_data.id = 3;
+    page_1_text_data.role = ax::mojom::Role::kStaticText;
+    page_1_text_data.SetName("some text on page 1");
+    page_1_text_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
+    page_1_data.child_ids = {3};
+
+    page_2_data.id = 4;
+    page_2_data.role = ax::mojom::Role::kRegion;
+    page_2_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsPageBreakingObject, true);
+
+    page_2_text_data.id = 5;
+    page_2_text_data.role = ax::mojom::Role::kStaticText;
+    page_2_text_data.SetName("some text on page 2");
+    page_2_text_data.AddIntAttribute(
+        ax::mojom::IntAttribute::kTextStyle,
+        static_cast<int32_t>(ax::mojom::TextStyle::kBold));
+    page_2_data.child_ids = {5};
+
+    page_3_data.id = 6;
+    page_3_data.role = ax::mojom::Role::kRegion;
+    page_3_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsPageBreakingObject, true);
+
+    page_3_text_data.id = 7;
+    page_3_text_data.role = ax::mojom::Role::kStaticText;
+    page_3_text_data.SetName("some more text on page 3");
+    page_3_data.child_ids = {7};
+
+    root_data.child_ids = {2, 4, 6};
+
+    ui::AXTreeUpdate update;
+    ui::AXTreeData tree_data;
+    AXTreeID new_id = AXTreeID::CreateNewAXTreeID();
+    tree_data.tree_id = new_id;
+    update.tree_data = tree_data;
+    update.has_tree_data = true;
+    update.root_id = root_data.id;
+    update.nodes = {root_data,       page_1_data,      page_1_text_data,
+                    page_2_data,     page_2_text_data, page_3_data,
+                    page_3_text_data};
+
+    return new AXTree(update);
+  }
 
   void AssertTextLengthEquals(const AXTree* tree,
                               int32_t node_id,
@@ -137,6 +199,18 @@ class AXPositionTestWithParam : public AXPositionTest,
 const char* AXPositionTest::TEXT_VALUE = "Line 1\nLine 2";
 
 void AXPositionTest::SetUp() {
+  // root_
+  //  |
+  //  +------------+-----------+
+  //  |            |           |
+  // button_  check_box_  text_field_
+  //                           |
+  //               +-----------+------------+
+  //               |           |            |
+  //        static_text1_  line_break_   static_text2_
+  //               |                        |
+  //        inline_box1_                 inline_box2_
+
   root_.id = ROOT_ID;
   button_.id = BUTTON_ID;
   check_box_.id = CHECK_BOX_ID;
@@ -1617,11 +1691,355 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
   AXNodePosition::SetTreeForTesting(&tree_);
 }
 
+TEST_F(AXPositionTest, CreatePositionAtPageBoundaryWithTextPosition) {
+  AXNodePosition::SetTreeForTesting(nullptr);
+
+  ui::AXNodeData root_data, page_1_data, page_1_text_data, page_2_data,
+      page_2_text_data, page_3_data, page_3_text_data;
+  std::unique_ptr<ui::AXTree> new_tree(CreateMultipageDocument(
+      root_data, page_1_data, page_1_text_data, page_2_data, page_2_text_data,
+      page_3_data, page_3_text_data));
+  AXNodePosition::SetTreeForTesting(new_tree.get());
+
+  // Test CreateNextPageStartPosition at the start of the document.
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, page_1_text_data.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  TestPositionType test_position = text_position->CreateNextPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_1_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(19, test_position->text_offset());
+
+  // StopIfAlreadyAtBoundary shouldn't move at all since it's at a boundary
+  test_position = text_position->CreateNextPageEndPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_1_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(19, test_position->text_offset());
+
+  // Test CreateNextPageStartPosition until the end of document is reached
+  test_position = text_position->CreateNextPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_2_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+
+  test_position = test_position->CreateNextPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_3_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+
+  test_position = test_position->CreateNextPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_3_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(24, test_position->text_offset());
+
+  test_position = test_position->CreateNextPageEndPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_3_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(24, test_position->text_offset());
+
+  // Moving forward past the end should return a null position
+  TestPositionType null_position = test_position->CreateNextPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, null_position);
+  EXPECT_TRUE(null_position->IsNullPosition());
+
+  null_position = test_position->CreateNextPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, null_position);
+  EXPECT_TRUE(null_position->IsNullPosition());
+
+  // Now move backward through the document
+  test_position = test_position->CreatePreviousPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_2_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(19, test_position->text_offset());
+
+  test_position = test_position->CreatePreviousPageEndPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_2_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(19, test_position->text_offset());
+
+  test_position = test_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_2_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  test_position = test_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_2_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+
+  test_position = test_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_1_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  test_position = test_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(page_1_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+
+  // Moving before the start should return a null position
+  null_position = test_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, null_position);
+  EXPECT_TRUE(null_position->IsNullPosition());
+
+  null_position = test_position->CreatePreviousPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, null_position);
+  EXPECT_TRUE(null_position->IsNullPosition());
+
+  AXNodePosition::SetTreeForTesting(&tree_);
+}
+
+TEST_F(AXPositionTest, CreatePositionAtPageBoundaryWithTreePosition) {
+  AXNodePosition::SetTreeForTesting(nullptr);
+  ui::AXNodeData root_data, page_1_data, page_1_text_data, page_2_data,
+      page_2_text_data, page_3_data, page_3_text_data;
+  std::unique_ptr<ui::AXTree> new_tree(CreateMultipageDocument(
+      root_data, page_1_data, page_1_text_data, page_2_data, page_2_text_data,
+      page_3_data, page_3_text_data));
+  AXNodePosition::SetTreeForTesting(new_tree.get());
+
+  // Test CreateNextPageStartPosition at the start of the document.
+  TestPositionType tree_position = AXNodePosition::CreateTreePosition(
+      new_tree->data().tree_id, page_1_data.id, 0 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  TestPositionType test_position = tree_position->CreateNextPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_2_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  // StopIfAlreadyAtBoundary shouldn't move at all since it's at a boundary
+  test_position = tree_position->CreateNextPageEndPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_1_data.id, test_position->anchor_id());
+  EXPECT_EQ(1, test_position->child_index());
+
+  // Test CreateNextPageStartPosition until the end of document is reached
+  test_position = tree_position->CreateNextPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_2_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(AXNodePosition::BEFORE_TEXT, test_position->child_index());
+
+  test_position = test_position->CreateNextPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_3_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(AXNodePosition::BEFORE_TEXT, test_position->child_index());
+
+  test_position = test_position->CreateNextPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_3_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  test_position = test_position->CreateNextPageEndPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_3_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  // Moving forward past the end should return a null position
+  TestPositionType null_position = test_position->CreateNextPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, null_position);
+  EXPECT_TRUE(null_position->IsNullPosition());
+
+  null_position = test_position->CreateNextPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, null_position);
+  EXPECT_TRUE(null_position->IsNullPosition());
+
+  // Now move backward through the document
+  test_position = test_position->CreatePreviousPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_2_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  test_position = test_position->CreatePreviousPageEndPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_2_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->child_index());
+
+  test_position = test_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_2_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(AXNodePosition::BEFORE_TEXT, test_position->child_index());
+  test_position = test_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_2_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(AXNodePosition::BEFORE_TEXT, test_position->child_index());
+
+  test_position = test_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_1_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  test_position = test_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(page_1_text_data.id, test_position->anchor_id());
+  EXPECT_EQ(AXNodePosition::BEFORE_TEXT, test_position->child_index());
+
+  // Moving before the start should return a null position
+  null_position = test_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, null_position);
+  EXPECT_TRUE(null_position->IsNullPosition());
+
+  null_position = test_position->CreatePreviousPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, null_position);
+  EXPECT_TRUE(null_position->IsNullPosition());
+
+  AXNodePosition::SetTreeForTesting(&tree_);
+}
+
+TEST_F(AXPositionTest, CreatePagePositionWithNullPosition) {
+  TestPositionType null_position = AXNodePosition::CreateNullPosition();
+  ASSERT_NE(nullptr, null_position);
+  TestPositionType test_position =
+      null_position->CreatePreviousPageStartPosition(
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  test_position = null_position->CreateNextPageStartPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  test_position = null_position->CreatePreviousPageEndPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  test_position = null_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+}
+
 TEST_F(AXPositionTest, CreatePositionAtStartOfDocumentWithNullPosition) {
   TestPositionType null_position = AXNodePosition::CreateNullPosition();
   ASSERT_NE(nullptr, null_position);
   TestPositionType test_position =
       null_position->CreatePositionAtStartOfDocument();
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+}
+
+TEST_F(AXPositionTest, CreatePagePositionWithNonPaginatedDocument) {
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, static_text1_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+
+  // Non-paginated documents should move to the start of the document for
+  // CreatePreviousPageStartPosition (treating the entire document as a single
+  // page)
+  TestPositionType test_position =
+      text_position->CreatePreviousPageStartPosition(
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(button_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+
+  // Since there is no next page, CreateNextPageStartPosition should return a
+  // null position
+  test_position = text_position->CreateNextPageStartPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  // Since there is no previous page, CreatePreviousPageEndPosition should
+  // return a null position
+  test_position = text_position->CreatePreviousPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  // Since there are no distinct pages, CreateNextPageEndPosition should move
+  // to the end of the document, as if it's one large page.
+  test_position = text_position->CreateNextPageEndPosition(
+      AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+  EXPECT_EQ(6, test_position->text_offset());
+
+  // CreatePreviousPageStartPosition should move back to the beginning of the
+  // document
+  test_position = test_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(button_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+
+  // Since there's no next page, CreateNextPageStartPosition should return a
+  // null position
+  test_position = test_position->CreateNextPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  // Since there's no previous page, CreatePreviousPageEndPosition should return
+  // a null position
+  test_position = text_position->CreatePreviousPageEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  EXPECT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  // Since there's no previous page, CreatePreviousPageStartPosition should
+  // return a null position
+  test_position = text_position->CreatePreviousPageStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsNullPosition());
 }
@@ -2031,6 +2449,111 @@ TEST_F(AXPositionTest, CreatePreviousTextAnchorPosition) {
   EXPECT_EQ(tree_.data().tree_id, test_position->tree_id());
   EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
   EXPECT_EQ(3, test_position->text_offset());
+}
+
+TEST_F(AXPositionTest, CreateNextTreeAnchorPosition) {
+  TestPositionType root_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, root_.id, 0 /* child_index */);
+  ASSERT_TRUE(root_position->IsTreePosition());
+
+  TestPositionType button_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, button_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType checkbox_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, check_box_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType inline_box1_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box1_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType line_break_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, line_break_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType inline_box2_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box2_.id, AXNodePosition::BEFORE_TEXT);
+
+  TestPositionType test_position =
+      root_position->CreateNextTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *button_position);
+
+  test_position = test_position->CreateNextTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *checkbox_position);
+
+  test_position = test_position->CreateNextTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *inline_box1_position);
+
+  test_position = test_position->CreateNextTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *line_break_position);
+
+  test_position = test_position->CreateNextTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *inline_box2_position);
+
+  test_position = test_position->CreateNextTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  TestPositionType root_text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, root_.id, 2 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_TRUE(root_text_position->IsTextPosition());
+
+  test_position = root_text_position->CreateNextTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *inline_box1_position);
+
+  TestPositionType inline_box1_text_position =
+      AXNodePosition::CreateTextPosition(tree_.data().tree_id, inline_box1_.id,
+                                         2 /* text_offset */,
+                                         ax::mojom::TextAffinity::kDownstream);
+  EXPECT_TRUE(inline_box1_text_position->IsTextPosition());
+
+  test_position = inline_box1_text_position->CreateNextTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *line_break_position);
+}
+
+TEST_F(AXPositionTest, CreatePreviousTreeAnchorPosition) {
+  TestPositionType inline_box2_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box2_.id, AXNodePosition::BEFORE_TEXT);
+  ASSERT_TRUE(inline_box2_position->IsTreePosition());
+
+  TestPositionType line_break_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, line_break_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType inline_box1_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, inline_box1_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType checkbox_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, check_box_.id, AXNodePosition::BEFORE_TEXT);
+  TestPositionType button_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, button_.id, AXNodePosition::BEFORE_TEXT);
+
+  TestPositionType test_position =
+      inline_box2_position->CreatePreviousTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *line_break_position);
+
+  test_position = test_position->CreatePreviousTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *inline_box1_position);
+
+  test_position = test_position->CreatePreviousTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *checkbox_position);
+
+  test_position = test_position->CreatePreviousTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *button_position);
+
+  test_position = test_position->CreatePreviousTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsNullPosition());
+
+  TestPositionType inline_box2_text_position =
+      AXNodePosition::CreateTextPosition(tree_.data().tree_id, inline_box2_.id,
+                                         2 /* text_offset */,
+                                         ax::mojom::TextAffinity::kDownstream);
+  EXPECT_TRUE(inline_box2_text_position->IsTextPosition());
+
+  test_position = inline_box2_text_position->CreatePreviousTreeAnchorPosition();
+  EXPECT_TRUE(test_position->IsTreePosition());
+  EXPECT_EQ(*test_position, *line_break_position);
 }
 
 TEST_F(AXPositionTest, AsPositionBeforeAndAfterCharacterWithNullPosition) {

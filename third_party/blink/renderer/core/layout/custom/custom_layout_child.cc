@@ -6,8 +6,12 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
-#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment_request.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_scope.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_work_task.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 
 namespace blink {
@@ -21,10 +25,20 @@ CustomLayoutChild::CustomLayoutChild(const CSSLayoutDefinition& definition,
           definition.ChildNativeInvalidationProperties(),
           definition.ChildCustomInvalidationProperties())) {}
 
-CustomLayoutFragmentRequest* CustomLayoutChild::layoutNextFragment(
+ScriptPromise CustomLayoutChild::layoutNextFragment(
     ScriptState* script_state,
     const CustomLayoutConstraintsOptions* options,
     ExceptionState& exception_state) {
+  // A layout child may be invalid if it has been removed from the tree (it is
+  // possible for a web developer to hold onto a LayoutChild object after its
+  // underlying LayoutObject has been destroyed).
+  if (!box_ || !token_->IsValid()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,
+                                           "The LayoutChild is not valid."));
+  }
+
   // Serialize the provided data if needed.
   scoped_refptr<SerializedScriptValue> constraint_data;
   if (options->hasData()) {
@@ -37,15 +51,18 @@ CustomLayoutFragmentRequest* CustomLayoutChild::layoutNextFragment(
         exception_state);
 
     if (exception_state.HadException())
-      return nullptr;
+      return ScriptPromise();
   }
 
-  return MakeGarbageCollected<CustomLayoutFragmentRequest>(
-      this, options, std::move(constraint_data));
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  CustomLayoutScope::Current()->Queue()->emplace_back(
+      this, token_, resolver, options, std::move(constraint_data));
+  return resolver->Promise();
 }
 
 void CustomLayoutChild::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_map_);
+  visitor->Trace(token_);
   ScriptWrappable::Trace(visitor);
 }
 

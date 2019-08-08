@@ -378,12 +378,6 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status) {
 
 void ModelTypeWorker::PassiveApplyUpdates(StatusController* status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // This should only be called at the end of the very first download cycle,
-  // except for NIGORI, which can be downloaded in multiple configuration sync
-  // cycles and hence repeatedly ends up in PassiveApplyUpdates().
-  DCHECK(type_ == NIGORI || !model_type_state_.initial_sync_done())
-      << "PassiveApplyUpdates() called after initial sync has been done for "
-      << ModelTypeToString(type_);
   // Indicate to the processor that the initial download is done. The initial
   // sync technically isn't done yet but by the time this value is persisted to
   // disk on the model thread it will be.

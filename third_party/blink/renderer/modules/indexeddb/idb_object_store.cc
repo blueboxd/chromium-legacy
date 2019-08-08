@@ -308,22 +308,25 @@ static Vector<std::unique_ptr<IDBKey>> GenerateIndexKeysForValue(
   if (!index_key)
     return Vector<std::unique_ptr<IDBKey>>();
 
-  if (!index_metadata.multi_entry ||
-      index_key->GetType() != mojom::IDBKeyType::Array) {
-    if (!index_key->IsValid())
-      return Vector<std::unique_ptr<IDBKey>>();
-
-    Vector<std::unique_ptr<IDBKey>> index_keys;
-    index_keys.ReserveInitialCapacity(1);
-    index_keys.emplace_back(std::move(index_key));
-    return index_keys;
-  } else {
-    DCHECK(index_metadata.multi_entry);
-    DCHECK_EQ(index_key->GetType(), mojom::IDBKeyType::Array);
-    Vector<std::unique_ptr<IDBKey>> index_keys =
-        IDBKey::ToMultiEntryArray(std::move(index_key));
-    return index_keys;
+  // Special case for multi-entry indexes, per spec: if an index's multiEntry
+  // flag is true the computed index key is an array, then an index entry is
+  // created for each subkey, with duplicate and invalid subkeys removed.
+  // https://w3c.github.io/IndexedDB/#store-a-record-into-an-object-store
+  // https://w3c.github.io/IndexedDB/#convert-a-value-to-a-multientry-key
+  if (index_metadata.multi_entry &&
+      index_key->GetType() == mojom::IDBKeyType::Array) {
+    return IDBKey::ToMultiEntryArray(std::move(index_key));
   }
+
+  // Otherwise, invalid index keys are simply ignored.
+  if (!index_key->IsValid())
+    return Vector<std::unique_ptr<IDBKey>>();
+
+  // And a single key is added for the record in the index.
+  Vector<std::unique_ptr<IDBKey>> index_keys;
+  index_keys.ReserveInitialCapacity(1);
+  index_keys.emplace_back(std::move(index_key));
+  return index_keys;
 }
 
 IDBRequest* IDBObjectStore::add(ScriptState* script_state,

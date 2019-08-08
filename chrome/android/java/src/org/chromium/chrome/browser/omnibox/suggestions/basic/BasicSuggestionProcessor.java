@@ -131,7 +131,7 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
             if (suggestion.isStarred()) {
                 return SuggestionIcon.BOOKMARK;
             } else if (suggestion.getType() == OmniboxSuggestionType.HISTORY_URL) {
-                return mEnableSuggestionFavicons ? SuggestionIcon.GLOBE : SuggestionIcon.HISTORY;
+                return SuggestionIcon.HISTORY;
             } else {
                 return SuggestionIcon.GLOBE;
             }
@@ -142,8 +142,7 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
 
                 case OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED:
                 case OmniboxSuggestionType.SEARCH_HISTORY:
-                    return mEnableSuggestionFavicons ? SuggestionIcon.MAGNIFIER
-                                                     : SuggestionIcon.HISTORY;
+                    return SuggestionIcon.HISTORY;
 
                 default:
                     return SuggestionIcon.MAGNIFIER;

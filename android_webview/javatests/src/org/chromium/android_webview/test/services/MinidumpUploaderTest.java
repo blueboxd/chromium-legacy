@@ -14,7 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.android_webview.PlatformServiceBridge;
+import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.services.AwMinidumpUploaderDelegate;
 import org.chromium.android_webview.services.CrashReceiverService;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;

@@ -34,11 +34,11 @@ int Compare(const T& a, const T& b) {
 }  // namespace
 
 IndexedDBKey::IndexedDBKey()
-    : type_(mojom::IDBKeyType::Null), size_estimate_(kOverheadSize) {}
+    : type_(mojom::IDBKeyType::None), size_estimate_(kOverheadSize) {}
 
 IndexedDBKey::IndexedDBKey(mojom::IDBKeyType type)
     : type_(type), size_estimate_(kOverheadSize) {
-  DCHECK(type == mojom::IDBKeyType::Null || type == mojom::IDBKeyType::Invalid);
+  DCHECK(type == mojom::IDBKeyType::None || type == mojom::IDBKeyType::Invalid);
 }
 
 IndexedDBKey::IndexedDBKey(double number, mojom::IDBKeyType type)
@@ -71,7 +71,7 @@ IndexedDBKey::~IndexedDBKey() = default;
 IndexedDBKey& IndexedDBKey::operator=(const IndexedDBKey& other) = default;
 
 bool IndexedDBKey::IsValid() const {
-  if (type_ == mojom::IDBKeyType::Invalid || type_ == mojom::IDBKeyType::Null)
+  if (type_ == mojom::IDBKeyType::Invalid || type_ == mojom::IDBKeyType::None)
     return false;
 
   if (type_ == blink::mojom::IDBKeyType::Array) {
@@ -114,7 +114,7 @@ int IndexedDBKey::CompareTo(const IndexedDBKey& other) const {
     case mojom::IDBKeyType::Number:
       return Compare(number_, other.number_);
     case mojom::IDBKeyType::Invalid:
-    case mojom::IDBKeyType::Null:
+    case mojom::IDBKeyType::None:
     case mojom::IDBKeyType::Min:
     default:
       NOTREACHED();

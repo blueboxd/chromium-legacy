@@ -79,6 +79,13 @@ class OverlayPresenterImpl : public BrowserObserver,
   // only be called when |presenting_| is false.
   void PresentOverlayForActiveRequest();
 
+  // Notifies this object that the UI for |request| has finished being
+  // presented in |presentation_context|.  This function is called when the
+  // OverlayPresentationCallback provided to the presentation context is
+  // executed.
+  void OverlayWasPresented(OverlayPresentationContext* presentation_context,
+                           OverlayRequest* request);
+
   // Notifies this object that the UI for |request| has finished being dismissed
   // in |presentation_context| in for |reason|.  |queue| is |request|'s queue.
   // This function is called when the OverlayDismissalCallback provided to

@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/mojo_interface_provider.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
@@ -41,6 +42,11 @@
 
       #addPrinterText {
         flex: 1;
+      }
+
+      #addManualPrinterIcon {
+        --iron-icon-fill-color: rgb(138, 180, 248);
+        --cr-icon-button-margin-end: 0;
       }
 
       #cloudOffIcon {
@@ -130,13 +136,13 @@
         <div id="addPrinterSection">
           <div class="layout horizontal center custom-list-item">
             <div id="addPrinterText">$i18n{addCupsPrinter}</div>
-            <cr-button class="action-button" id="addPrinter"
+            <cr-icon-button class="action-button" id="addManualPrinterIcon"
+                iron-icon="settings20:printer-add"
                 on-click="onAddPrinterTap_"
                 disabled="[[!addPrinterButtonActive_(canAddPrinter_,
                     prefs.native_printing.user_native_printers_allowed.value)]]"
-            >
-              $i18n{addCupsPrinter}
-            </cr-button>
+                title="$i18n{addCupsPrinter}">
+            </cr-icon-button>
           </div>
         </div>
         <settings-cups-nearby-printers search-term="[[searchTerm]]"

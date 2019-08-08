@@ -41,6 +41,7 @@ class AX_EXPORT AXNode final {
     virtual int32_t GetSetSize(const AXNode& node,
                                const AXNode* ordered_set) = 0;
     virtual bool GetTreeUpdateInProgressState() const = 0;
+    virtual bool HasPaginationSupport() const = 0;
   };
 
   template <typename NodeType,
@@ -348,6 +349,9 @@ class AX_EXPORT AXNode final {
   // This should only be called by the LabelLanguageForSubtree and is used as
   // part of the language detection feature.
   void SetLanguageInfo(std::unique_ptr<AXLanguageInfo> lang_info);
+
+  // Returns true if node has ignored state or ignored role.
+  bool IsIgnored() const;
 
  private:
   // Computes the text offset where each line starts by traversing all child

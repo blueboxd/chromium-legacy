@@ -766,37 +766,40 @@ TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
 }
 
 TEST_F(NetworkStateHandlerTest, TechnologyState) {
-  manager_test_->RemoveTechnology(shill::kTypeWimax);
+  manager_test_->RemoveTechnology(shill::kTypeWifi);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
-      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  manager_test_->AddTechnology(shill::kTypeWimax, false);
+  manager_test_->AddTechnology(shill::kTypeWifi, false);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_AVAILABLE,
-      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  manager_test_->SetTechnologyInitializing(shill::kTypeWimax, true);
+  manager_test_->SetTechnologyInitializing(shill::kTypeWifi, true);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_UNINITIALIZED,
-      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  manager_test_->SetTechnologyInitializing(shill::kTypeWimax, false);
+  manager_test_->SetTechnologyInitializing(shill::kTypeWifi, false);
   network_state_handler_->SetTechnologyEnabled(
-      NetworkTypePattern::Wimax(), true, network_handler::ErrorCallback());
+      NetworkTypePattern::WiFi(), true, network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_ENABLED,
-      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  manager_test_->RemoveTechnology(shill::kTypeWimax);
+  manager_test_->RemoveTechnology(shill::kTypeWifi);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
-      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
+
+  // Restore wifi technology
+  manager_test_->AddTechnology(shill::kTypeWifi, true);
 }
 
 TEST_F(NetworkStateHandlerTest, TetherTechnologyState) {

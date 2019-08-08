@@ -68,8 +68,8 @@ TEST_F(LayoutWorkletTest, ParseProperties) {
     registerLayout('foo', class {
       static get inputProperties() { return ['--prop', 'flex-basis', 'thing'] }
       static get childInputProperties() { return ['--child-prop', 'margin-top', 'other-thing'] }
-      *intrinsicSizes() { }
-      *layout() { }
+      async intrinsicSizes() { }
+      async layout() { }
     });
   )JS");
 
@@ -100,8 +100,8 @@ TEST_F(LayoutWorkletTest, ParseProperties) {
 TEST_F(LayoutWorkletTest, RegisterLayout) {
   ScriptValue error = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
-      *intrinsicSizes() { }
-      *layout() { }
+      async intrinsicSizes() { }
+      async layout() { }
     });
   )JS");
 
@@ -111,8 +111,8 @@ TEST_F(LayoutWorkletTest, RegisterLayout) {
     registerLayout('bar', class {
       static get inputProperties() { return ['--prop'] }
       static get childInputProperties() { return ['--child-prop'] }
-      *intrinsicSizes() { }
-      *layout() { }
+      async intrinsicSizes() { }
+      async layout() { }
     });
   )JS");
 
@@ -132,12 +132,12 @@ TEST_F(LayoutWorkletTest, RegisterLayout_EmptyName) {
 TEST_F(LayoutWorkletTest, RegisterLayout_Duplicate) {
   ScriptValue error = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
-      *intrinsicSizes() { }
-      *layout() { }
+      async intrinsicSizes() { }
+      async layout() { }
     });
     registerLayout('foo', class {
-      *intrinsicSizes() { }
-      *layout() { }
+      async intrinsicSizes() { }
+      async layout() { }
     });
   )JS");
 
@@ -202,29 +202,18 @@ TEST_F(LayoutWorkletTest, RegisterLayout_BadPrototype) {
 TEST_F(LayoutWorkletTest, RegisterLayout_BadIntrinsicSizes) {
   ScriptValue error = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
-      intrinsicSizes() { }
-    });
-  )JS");
-
-  // "The 'intrinsicSizes' property on the prototype is not a generator
-  // function."
-  EXPECT_FALSE(error.IsEmpty());
-
-  error = EvaluateScriptModule(R"JS(
-    registerLayout('foo', class {
       get intrinsicSizes() { return 42; }
     });
   )JS");
 
-  // "The 'intrinsicSizes' property on the prototype is not a generator
-  // function."
+  // "The 'intrinsicSizes' property on the prototype is not a function."
   EXPECT_FALSE(error.IsEmpty());
 }
 
 TEST_F(LayoutWorkletTest, RegisterLayout_NoLayout) {
   ScriptValue error = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
-      *intrinsicSizes() { }
+      async intrinsicSizes() { }
     });
   )JS");
 
@@ -235,22 +224,12 @@ TEST_F(LayoutWorkletTest, RegisterLayout_NoLayout) {
 TEST_F(LayoutWorkletTest, RegisterLayout_BadLayout) {
   ScriptValue error = EvaluateScriptModule(R"JS(
     registerLayout('foo', class {
-      *intrinsicSizes() { }
-      layout() { }
-    });
-  )JS");
-
-  // "The 'layout' property on the prototype is not a generator function."
-  EXPECT_FALSE(error.IsEmpty());
-
-  error = EvaluateScriptModule(R"JS(
-    registerLayout('foo', class {
-      *intrinsicSizes() { }
+      async intrinsicSizes() { }
       get layout() { return 42; }
     });
   )JS");
 
-  // "The 'layout' property on the prototype is not a generator function."
+  // "The 'layout' property on the prototype is not a function."
   EXPECT_FALSE(error.IsEmpty());
 }
 

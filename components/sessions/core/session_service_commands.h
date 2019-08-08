@@ -49,6 +49,10 @@ SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowTypeCommand(
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateTabGroupCommand(
     const SessionID& tab_id,
     base::Optional<base::Token> group);
+SESSIONS_EXPORT std::unique_ptr<SessionCommand>
+CreateTabGroupMetadataUpdateCommand(const base::Token& group,
+                                    const base::string16& title,
+                                    SkColor color);
 SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreatePinnedStateCommand(
     const SessionID& tab_id,
     bool is_pinned);

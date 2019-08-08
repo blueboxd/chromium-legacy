@@ -686,7 +686,7 @@ void ClipboardX11::WriteObjects(ClipboardType type, const ObjectMap& objects) {
   x11_details_->TakeOwnershipOfSelection(type);
 
   if (type == ClipboardType::kCopyPaste) {
-    auto text_iter = objects.find(CBF_TEXT);
+    auto text_iter = objects.find(ObjectType::CBF_TEXT);
     if (text_iter != objects.end()) {
       x11_details_->CreateNewClipboardData();
       const ObjectMapParams& params_vector = text_iter->second;

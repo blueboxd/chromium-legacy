@@ -13,11 +13,9 @@ namespace autofill {
 
 SaveCardFailureBubbleViews::SaveCardFailureBubbleViews(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
-    : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
-}
+    : SaveCardBubbleViews(anchor_view, web_contents, controller) {}
 
 int SaveCardFailureBubbleViews::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;

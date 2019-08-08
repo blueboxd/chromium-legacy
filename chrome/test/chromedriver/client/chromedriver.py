@@ -653,3 +653,7 @@ class ChromeDriver(object):
     if signCount is not None:
       options['signCount'] = signCount
     return self.ExecuteCommand(Command.ADD_CREDENTIAL, options)
+
+  def GetCredentials(self, authenticatorId):
+    params = {'authenticatorId': authenticatorId}
+    return self.ExecuteCommand(Command.GET_CREDENTIALS, params)

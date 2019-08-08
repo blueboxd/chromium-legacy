@@ -7,17 +7,12 @@
 
 #include <stdint.h>
 
-#include "chromecast/media/audio/mixer_service/mixer_service_buildflags.h"
-
 namespace chromecast {
 namespace media {
 namespace mixer_service {
 
-#if BUILDFLAG(USE_UNIX_SOCKETS)
 constexpr char kDefaultUnixDomainSocketPath[] = "/tmp/mixer-service";
-#else
 constexpr int kDefaultTcpPort = 12854;
-#endif
 
 enum class MessageType : int16_t {
   kMetadata,

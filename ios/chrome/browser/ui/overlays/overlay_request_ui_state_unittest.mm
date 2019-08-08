@@ -10,7 +10,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
 #import "ios/chrome/browser/ui/overlays/test/fake_overlay_request_coordinator.h"
-#include "ios/chrome/browser/ui/overlays/test/fake_overlay_ui_dismissal_delegate.h"
+#include "ios/chrome/browser/ui/overlays/test/fake_overlay_request_coordinator_delegate.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -38,8 +38,10 @@ class OverlayRequestUIStateTest : public PlatformTest {
 // resets the default dismissal reason to kUserInteraction.
 TEST_F(OverlayRequestUIStateTest, OverlayPresentionRequested) {
   ASSERT_FALSE(state().has_callback());
-  state().OverlayPresentionRequested(base::BindOnce(^(OverlayDismissalReason){
-  }));
+  state().OverlayPresentionRequested(base::BindOnce(^{
+                                     }),
+                                     base::BindOnce(^(OverlayDismissalReason){
+                                     }));
   EXPECT_TRUE(state().has_callback());
   EXPECT_EQ(OverlayDismissalReason::kUserInteraction,
             state().dismissal_reason());
@@ -47,13 +49,13 @@ TEST_F(OverlayRequestUIStateTest, OverlayPresentionRequested) {
 
 // Tests that OverlayUIWillBePresented() stores the coordinator in the state.
 TEST_F(OverlayRequestUIStateTest, OverlayUIWillBePresented) {
-  FakeDismissalDelegate dismissal_delegate;
+  FakeOverlayRequestCoordinatorDelegate delegate;
   FakeOverlayRequestCoordinator* coordinator =
       [[FakeOverlayRequestCoordinator alloc]
           initWithBaseViewController:nil
                              browser:nullptr
                              request:request()
-                   dismissalDelegate:&dismissal_delegate];
+                            delegate:&delegate];
   state().OverlayUIWillBePresented(coordinator);
   EXPECT_EQ(coordinator, state().coordinator());
 }
@@ -61,23 +63,32 @@ TEST_F(OverlayRequestUIStateTest, OverlayUIWillBePresented) {
 // Tests that OverlayUIWasPresented() correctly updates has_ui_been_presented().
 TEST_F(OverlayRequestUIStateTest, OverlayUIWasPresented) {
   ASSERT_FALSE(state().has_ui_been_presented());
+  __block bool presentation_callback_executed = false;
+  state().OverlayPresentionRequested(base::BindOnce(^{
+                                       presentation_callback_executed = true;
+                                     }),
+                                     base::BindOnce(^(OverlayDismissalReason){
+                                     }));
   state().OverlayUIWasPresented();
   EXPECT_TRUE(state().has_ui_been_presented());
+  EXPECT_TRUE(presentation_callback_executed);
 }
 
 // Tests that OverlayUIWasDismissed() executes the dismissal callback.
 TEST_F(OverlayRequestUIStateTest, OverlayUIWasDismissed) {
   __block bool dismissal_callback_executed = false;
-  state().OverlayPresentionRequested(base::BindOnce(^(OverlayDismissalReason) {
-    dismissal_callback_executed = true;
-  }));
-  FakeDismissalDelegate dismissal_delegate;
+  state().OverlayPresentionRequested(base::BindOnce(^{
+                                     }),
+                                     base::BindOnce(^(OverlayDismissalReason) {
+                                       dismissal_callback_executed = true;
+                                     }));
+  FakeOverlayRequestCoordinatorDelegate delegate;
   FakeOverlayRequestCoordinator* coordinator =
       [[FakeOverlayRequestCoordinator alloc]
           initWithBaseViewController:nil
                              browser:nullptr
                              request:request()
-                   dismissalDelegate:&dismissal_delegate];
+                            delegate:&delegate];
   state().OverlayUIWillBePresented(coordinator);
   state().OverlayUIWasPresented();
   state().OverlayUIWasDismissed();

@@ -940,6 +940,10 @@
       status: "stable",
     },
     {
+      name: "MediaSessionPosition",
+      status: "experimental",
+    },
+    {
       name: "MediaSessionSeeking",
       status: "experimental",
     },

@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api_constants.h"
@@ -186,9 +187,9 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
 
 TEST_F(ExtensionCookiesTest, DecodeUTF8WithErrorHandling) {
   std::unique_ptr<net::CanonicalCookie> canonical_cookie(
-      net::CanonicalCookie::Create(GURL("http://test.com"),
-                                   "=011Q255bNX_1!yd\203e+;path=/path\203",
-                                   base::Time::Now(), net::CookieOptions()));
+      net::CanonicalCookie::Create(
+          GURL("http://test.com"), "=011Q255bNX_1!yd\203e+;path=/path\203",
+          base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_NE(nullptr, canonical_cookie.get());
   Cookie cookie =
       cookies_helpers::CreateCookie(*canonical_cookie, "some cookie store");

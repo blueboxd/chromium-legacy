@@ -131,7 +131,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability(image_annotation::mojom::kServiceName,
                            image_annotation::mojom::kAnnotationCapability)
         .RequireCapability("ime", "input_engine")
-        .RequireCapability("media_gallery_util", "parse_media")
         .RequireCapability("mirroring", "mirroring")
         .RequireCapability("nacl_broker", "browser")
         .RequireCapability("nacl_loader", "browser")

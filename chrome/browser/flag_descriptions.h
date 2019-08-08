@@ -1009,6 +1009,12 @@ extern const char kSessionRestorePrioritizesBackgroundUseCasesDescription[];
 extern const char kSettingsWindowName[];
 extern const char kSettingsWindowDescription[];
 
+extern const char kSharedClipboardReceiverName[];
+extern const char kSharedClipboardReceiverDescription[];
+
+extern const char kSharedClipboardUIName[];
+extern const char kSharedClipboardUIDescription[];
+
 extern const char kSharingDeviceRegistrationName[];
 extern const char kSharingDeviceRegistrationDescription[];
 
@@ -2037,6 +2043,9 @@ extern const char kStreamlinedUsbPrinterSetupDescription[];
 
 extern const char kSyncWifiConfigurationsName[];
 extern const char kSyncWifiConfigurationsDescription[];
+
+extern const char kSystemTrayPaginationName[];
+extern const char kSystemTrayPaginationDescription[];
 
 extern const char kTetherName[];
 extern const char kTetherDescription[];

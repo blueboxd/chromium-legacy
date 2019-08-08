@@ -19,8 +19,8 @@
 #include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
-#include "chrome/browser/ui/webui/settings/appearance_handler.h"
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
@@ -69,9 +69,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("showOSSettings", true);
 
   AddSettingsPageUIHandler(
-      std::make_unique<::settings::AppearanceHandler>(web_ui));
-
-  AddSettingsPageUIHandler(
       std::make_unique<::settings::AccessibilityMainHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<::settings::BrowserLifetimeHandler>());
@@ -92,6 +89,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::ProtocolHandlersHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<::settings::SearchEnginesHandler>(profile));
+  AddSettingsPageUIHandler(
+      std::make_unique<chromeos::settings::WallpaperHandler>(web_ui));
 
   html_source->AddBoolean("unifiedConsentEnabled",
                           unified_consent::IsUnifiedConsentFeatureEnabled());

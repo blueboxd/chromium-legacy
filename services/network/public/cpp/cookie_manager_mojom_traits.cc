@@ -270,13 +270,6 @@ bool StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions>::
   else
     cookie_options->set_do_not_update_access_time();
 
-  base::Optional<base::Time> optional_server_time;
-  if (!mojo_options.ReadServerTime(&optional_server_time))
-    return false;
-  if (optional_server_time) {
-    cookie_options->set_server_time(*optional_server_time);
-  }
-
   if (mojo_options.return_excluded_cookies())
     cookie_options->set_return_excluded_cookies();
   else

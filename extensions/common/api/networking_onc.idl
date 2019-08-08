@@ -4,7 +4,7 @@
 
 // <p>
 //   The <code>chrome.networking.onc</code> API is used for configuring
-//   network connections (Cellular, Ethernet, VPN, WiFi or WiMAX).
+//   network connections (Cellular, Ethernet, VPN or WiFi).
 //   This API is available in Chrome OS kiosk sessions.
 // </p>
 // <p>
@@ -52,7 +52,7 @@ namespace networking.onc {
   };
 
   enum NetworkType {
-    All, Cellular, Ethernet, Tether, VPN, Wireless, WiFi, WiMAX
+    All, Cellular, Ethernet, Tether, VPN, Wireless, WiFi
   };
 
   enum ProxySettingsType {
@@ -654,25 +654,12 @@ namespace networking.onc {
     DOMString? TetheringState;
   };
 
+  // Deprecated
   dictionary WiMAXProperties {
     // Whether the network should be connected automatically.
     boolean? AutoConnect;
     // The network EAP properties.
     EAPProperties? EAP;
-    // The network signal strength.
-    long? SignalStrength;
-  };
-
-  dictionary ManagedWiMAXProperties {
-    // See $(ref:WiMAXProperties.AutoConnect).
-    ManagedBoolean? AutoConnect;
-    // See $(ref:WiMAXProperties.SignalStrength).
-    long? SignalStrength;
-  };
-
-  dictionary WiMAXStateProperties {
-    // See $(ref:WiMAXProperties.SignalStrength).
-    long? SignalStrength;
   };
 
   dictionary NetworkConfigProperties {
@@ -696,7 +683,7 @@ namespace networking.onc {
     VPNProperties? VPN;
     // See $(ref:NetworkProperties.WiFi).
     WiFiProperties? WiFi;
-    // See $(ref:NetworkProperties.WiMAX).
+    // Deprecated.
     WiMAXProperties? WiMAX;
   };
 
@@ -754,8 +741,6 @@ namespace networking.onc {
     VPNProperties? VPN;
     // For WiFi networks, the network WiFi properties.
     WiFiProperties? WiFi;
-    // For WiMAX networks, the network WiMAX properties.
-    WiMAXProperties? WiMAX;
   };
 
   [noinline_doc]
@@ -800,8 +785,6 @@ namespace networking.onc {
     ManagedVPNProperties? VPN;
     // See $(ref:NetworkProperties.WiFi).
     ManagedWiFiProperties? WiFi;
-    // See $(ref:NetworkProperties.WiMAX).
-    ManagedWiMAXProperties? WiMAX;
   };
 
   dictionary NetworkStateProperties {
@@ -829,8 +812,6 @@ namespace networking.onc {
     VPNStateProperties? VPN;
     // See $(ref:NetworkProperties.WiFi).
     WiFiStateProperties? WiFi;
-    // See $(ref:NetworkProperties.WiMAX).
-    WiMAXStateProperties? WiMAX;
   };
 
   dictionary DeviceStateProperties {
@@ -846,8 +827,7 @@ namespace networking.onc {
     // The current state of the device.
     DeviceStateType State;
 
-    // The network type associated with the device (Cellular, Ethernet, WiFi, or
-    // WiMAX).
+    // The network type associated with the device (Cellular, Ethernet or WiFi).
     NetworkType Type;
   };
 

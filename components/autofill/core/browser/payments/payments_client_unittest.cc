@@ -90,7 +90,7 @@ class PaymentsClientTest : public testing::Test {
 
     result_ = AutofillClient::NONE;
     server_id_.clear();
-    real_pan_.clear();
+    unmask_response_details_ = nullptr;
     legal_message_.reset();
     has_variations_header_ = false;
 
@@ -145,9 +145,9 @@ class PaymentsClientTest : public testing::Test {
   }
 
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
-                       const std::string& real_pan) {
+                       PaymentsClient::UnmaskResponseDetails& response) {
     result_ = result;
-    real_pan_ = real_pan;
+    unmask_response_details_ = &response;
   }
 
   void OnDidGetOptChangeResult(AutofillClient::PaymentsRpcResult result,
@@ -307,9 +307,9 @@ class PaymentsClientTest : public testing::Test {
   AutofillClient::UnmaskDetails* unmask_details_;
 
   std::string server_id_;
-  std::string real_pan_;
   base::Optional<bool> user_is_opted_in_;
   base::Value fido_creation_options_;
+  PaymentsClient::UnmaskResponseDetails* unmask_response_details_ = nullptr;
   std::unique_ptr<base::Value> legal_message_;
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
   std::vector<MigratableCreditCard> migratable_credit_cards_;
@@ -393,7 +393,7 @@ TEST_F(PaymentsClientTest, OAuthError) {
   identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_TRUE(real_pan_.empty());
+  EXPECT_TRUE(unmask_response_details_->real_pan.empty());
 }
 
 TEST_F(PaymentsClientTest,
@@ -412,7 +412,7 @@ TEST_F(PaymentsClientTest, UnmaskSuccessViaCVC) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_EQ("1234", real_pan_);
+  EXPECT_EQ("1234", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, UnmaskSuccessViaFIDO) {
@@ -420,7 +420,7 @@ TEST_F(PaymentsClientTest, UnmaskSuccessViaFIDO) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_EQ("1234", real_pan_);
+  EXPECT_EQ("1234", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, UnmaskSuccessAccountFromSyncTest) {
@@ -429,7 +429,7 @@ TEST_F(PaymentsClientTest, UnmaskSuccessAccountFromSyncTest) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
-  EXPECT_EQ("1234", real_pan_);
+  EXPECT_EQ("1234", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, UnmaskIncludesChromeUserContext) {
@@ -1169,7 +1169,7 @@ TEST_F(PaymentsClientTest, RetryFailure) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"error\": { \"code\": \"INTERNAL\" } }");
   EXPECT_EQ(AutofillClient::TRY_AGAIN_FAILURE, result_);
-  EXPECT_EQ("", real_pan_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, PermanentFailure) {
@@ -1178,7 +1178,7 @@ TEST_F(PaymentsClientTest, PermanentFailure) {
   ReturnResponse(net::HTTP_OK,
                  "{ \"error\": { \"code\": \"ANYTHING_ELSE\" } }");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ("", real_pan_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, MalformedResponse) {
@@ -1186,7 +1186,7 @@ TEST_F(PaymentsClientTest, MalformedResponse) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{ \"error_code\": \"WRONG_JSON_FORMAT\" }");
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ("", real_pan_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, ReauthNeeded) {
@@ -1196,17 +1196,17 @@ TEST_F(PaymentsClientTest, ReauthNeeded) {
     ReturnResponse(net::HTTP_UNAUTHORIZED, "");
     // No response yet.
     EXPECT_EQ(AutofillClient::NONE, result_);
-    EXPECT_EQ("", real_pan_);
+    EXPECT_EQ(nullptr, unmask_response_details_);
 
     // Second HTTP_UNAUTHORIZED causes permanent failure.
     IssueOAuthToken();
     ReturnResponse(net::HTTP_UNAUTHORIZED, "");
     EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-    EXPECT_EQ("", real_pan_);
+    EXPECT_EQ("", unmask_response_details_->real_pan);
   }
 
   result_ = AutofillClient::NONE;
-  real_pan_.clear();
+  unmask_response_details_ = nullptr;
 
   {
     StartUnmasking(CardUnmaskOptions());
@@ -1217,13 +1217,13 @@ TEST_F(PaymentsClientTest, ReauthNeeded) {
     ReturnResponse(net::HTTP_UNAUTHORIZED, "");
     // No response yet.
     EXPECT_EQ(AutofillClient::NONE, result_);
-    EXPECT_EQ("", real_pan_);
+    EXPECT_EQ(nullptr, unmask_response_details_);
 
     // HTTP_OK after first HTTP_UNAUTHORIZED results in success.
     IssueOAuthToken();
     ReturnResponse(net::HTTP_OK, "{ \"pan\": \"1234\" }");
     EXPECT_EQ(AutofillClient::SUCCESS, result_);
-    EXPECT_EQ("1234", real_pan_);
+    EXPECT_EQ("1234", unmask_response_details_->real_pan);
   }
 }
 
@@ -1232,7 +1232,7 @@ TEST_F(PaymentsClientTest, NetworkError) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_REQUEST_TIMEOUT, std::string());
   EXPECT_EQ(AutofillClient::NETWORK_ERROR, result_);
-  EXPECT_EQ("", real_pan_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
 }
 
 TEST_F(PaymentsClientTest, OtherError) {
@@ -1240,7 +1240,7 @@ TEST_F(PaymentsClientTest, OtherError) {
   IssueOAuthToken();
   ReturnResponse(net::HTTP_FORBIDDEN, std::string());
   EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
-  EXPECT_EQ("", real_pan_);
+  EXPECT_EQ("", unmask_response_details_->real_pan);
 }
 
 }  // namespace payments

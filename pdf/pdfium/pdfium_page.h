@@ -10,6 +10,7 @@
 
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "pdf/page_orientation.h"
 #include "pdf/pdf_engine.h"
 #include "ppapi/cpp/rect.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
@@ -88,7 +89,7 @@ class PDFiumPage {
   // Target is optional. It will be filled in for WEBLINK_AREA or
   // DOCLINK_AREA only.
   Area GetCharIndex(const pp::Point& point,
-                    int rotation,
+                    PageOrientation orientation,
                     int* char_index,
                     int* form_type,
                     LinkTarget* target);
@@ -116,7 +117,7 @@ class PDFiumPage {
                         double top,
                         double right,
                         double bottom,
-                        int rotation) const;
+                        PageOrientation orientation) const;
 
   const PDFEngine::PageFeatures* GetPageFeatures();
 
@@ -180,6 +181,10 @@ class PDFiumPage {
 
   DISALLOW_COPY_AND_ASSIGN(PDFiumPage);
 };
+
+// Converts page orientations to the PDFium equivalents, as defined by
+// FPDF_RenderPage().
+int ToPDFiumRotation(PageOrientation orientation);
 
 }  // namespace chrome_pdf
 

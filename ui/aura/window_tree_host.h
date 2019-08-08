@@ -237,6 +237,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // observers of the change.
   virtual void SetNativeWindowOcclusionState(Window::OcclusionState state);
 
+  Window::OcclusionState GetNativeWindowOcclusionState() {
+    return occlusion_state_;
+  }
+
   bool holding_pointer_moves() const { return holding_pointer_moves_; }
 
  protected:

@@ -431,6 +431,7 @@ component("bluetooth") {
           "chromeos/bluetooth_utils.cc",
           "chromeos/bluetooth_utils.h",
         ]
+        deps += [ "//services/data_decoder/public/mojom" ]
       }
       deps += [ "//dbus" ]
     } else {  # !use_dbus

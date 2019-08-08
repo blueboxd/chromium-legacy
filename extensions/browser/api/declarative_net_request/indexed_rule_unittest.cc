@@ -505,6 +505,11 @@ TEST_F(IndexedRuleTest, RedirectParsing) {
       base::nullopt
     },
     {
+      R"({"url": "javascript:window.alert(\"hello,world\");"})",
+      ParseResult::ERROR_JAVASCRIPT_REDIRECT,
+      base::nullopt
+    },
+    {
       R"({"url": "http://google.com"})",
       ParseResult::SUCCESS,
       std::string("http://google.com")

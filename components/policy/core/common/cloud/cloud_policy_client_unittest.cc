@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -25,7 +26,9 @@
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/cloud/mock_signing_service.h"
+#include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/version_info/version_info.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -464,6 +467,7 @@ class CloudPolicyClientTest : public testing::Test {
     EXPECT_CALL(service_, StartJob(_))
         .WillOnce(DoAll(service_.CaptureJobType(&job_type_),
                         service_.CaptureQueryParams(&query_params_),
+                        service_.CapturePayload(&job_payload_),
                         service_.StartJobAsync(
                             net::OK, DeviceManagementService::kSuccess, "{}")));
   }
@@ -586,6 +590,7 @@ class CloudPolicyClientTest : public testing::Test {
   DeviceManagementService::JobConfiguration::JobType job_type_;
   DeviceManagementService::JobConfiguration::ParameterMap query_params_;
   em::DeviceManagementRequest job_request_;
+  std::string job_payload_;
   std::string client_id_;
   std::string policy_type_;
   MockDeviceManagementService service_;
@@ -1419,6 +1424,8 @@ TEST_F(CloudPolicyClientTest, UploadChromeDesktopReport) {
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    defined(OS_LINUX) && !defined(OS_CHROMEOS)
 TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
   Register();
 
@@ -1427,18 +1434,47 @@ TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
   CloudPolicyClient::StatusCallback callback =
       base::Bind(&MockStatusCallbackObserver::OnCallbackComplete,
                  base::Unretained(&callback_observer_));
-  base::Value event(base::Value::Type::DICTIONARY);
-  event.SetStringKey("eventId", "123");
-  event.SetStringKey("time", "2019-05-22T13:01:45Z");
-  event.SetStringPath("event.foo", "bar");
+  base::Value report(base::Value::Type::DICTIONARY);
+  report.SetStringPath("context.gaiaEmail", "name@gmail.com");
+  report.SetStringPath("context.userAgent", "User-Agent");
+  report.SetStringPath("context.profileName", "Profile 1");
+  report.SetStringPath("context.profilePath", "C:\\User Data\\Profile 1");
+  report.SetStringPath("event.time", "2019-05-22T13:01:45Z");
+  report.SetStringPath("event.foo.prop1", "value1");
+  report.SetStringPath("event.foo.prop2", "value2");
+  report.SetStringPath("event.foo.prop3", "value3");
 
-  client_->UploadRealtimeReport(std::move(event), callback);
+  client_->UploadRealtimeReport(std::move(report), callback);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       DeviceManagementService::JobConfiguration::TYPE_UPLOAD_REAL_TIME_REPORT,
       job_type_);
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+
+  base::Optional<base::Value> payload = base::JSONReader::Read(job_payload_);
+  ASSERT_TRUE(payload);
+
+  EXPECT_EQ(kDMToken, *payload->FindStringPath(
+                          RealtimeReportingJobConfiguration::kDmTokenKey));
+  EXPECT_EQ(client_id_, *payload->FindStringPath(
+                            RealtimeReportingJobConfiguration::kClientIdKey));
+  EXPECT_EQ(policy::GetOSUsername(),
+            *payload->FindStringPath(
+                RealtimeReportingJobConfiguration::kMachineUserKey));
+  EXPECT_EQ(version_info::GetVersionNumber(),
+            *payload->FindStringPath(
+                RealtimeReportingJobConfiguration::kChromeVersionKey));
+  EXPECT_EQ(policy::GetOSVersion(),
+            *payload->FindStringPath(
+                RealtimeReportingJobConfiguration::kOsVersionKey));
+
+  base::Value* events =
+      payload->FindPath(RealtimeReportingJobConfiguration::kEventsKey);
+  EXPECT_EQ(base::Value::Type::LIST, events->type());
+  const base::Value::ListStorage& list = events->GetList();
+  EXPECT_EQ(1u, list.size());
 }
+#endif
 
 TEST_F(CloudPolicyClientTest, MultipleActiveRequests) {
   Register();

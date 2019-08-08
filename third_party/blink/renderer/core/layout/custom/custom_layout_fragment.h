@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_CUSTOM_LAYOUT_FRAGMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_CUSTOM_LAYOUT_FRAGMENT_H_
 
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -12,7 +13,7 @@
 
 namespace blink {
 
-class CustomLayoutFragmentRequest;
+class CustomLayoutChild;
 class LayoutBox;
 class ScriptState;
 class ScriptValue;
@@ -31,7 +32,8 @@ class CustomLayoutFragment : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  CustomLayoutFragment(CustomLayoutFragmentRequest*,
+  CustomLayoutFragment(CustomLayoutChild*,
+                       CustomLayoutToken*,
                        const LayoutUnit inline_size,
                        const LayoutUnit block_size,
                        v8::Isolate*);
@@ -49,11 +51,17 @@ class CustomLayoutFragment : public ScriptWrappable {
   ScriptValue data(ScriptState*) const;
 
   LayoutBox* GetLayoutBox() const;
-  bool IsValid() const;
+
+  bool IsValid() const { return token_->IsValid(); }
 
   void Trace(blink::Visitor*) override;
 
  private:
+  Member<CustomLayoutChild> child_;
+  Member<CustomLayoutToken> token_;
+
+  // TODO(ikilpatrick): Store the constraint space here so that we can relayout.
+  //
   // There is complexity around state in the layout tree, e.g. from the web
   // developers perspective:
   //
@@ -65,7 +73,6 @@ class CustomLayoutFragment : public ScriptWrappable {
   // layout state. As we are processing the returned childFragments we detect
   // that the last layout on the child wasn't with the same inputs, and force a
   // layout again.
-  Member<CustomLayoutFragmentRequest> fragment_request_;
 
   // The inline and block size on this object should never change.
   const double inline_size_;

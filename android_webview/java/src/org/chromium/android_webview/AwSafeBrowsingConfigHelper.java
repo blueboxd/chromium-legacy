@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
+import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;

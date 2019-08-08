@@ -173,6 +173,10 @@
   if ([_appState isInSafeMode])
     return NO;
 
+  // Enusre Chrome is fuilly started up in case it had launched to the
+  // background.
+  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
+
   return
       [UserActivityHandler willContinueUserActivityWithType:userActivityType];
 }
@@ -183,6 +187,10 @@
           (void (^)(NSArray<id<UIUserActivityRestoring>>*))restorationHandler {
   if ([_appState isInSafeMode])
     return NO;
+
+  // Enusre Chrome is fuilly started up in case it had launched to the
+  // background.
+  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
 
   BOOL applicationIsActive =
       [application applicationState] == UIApplicationStateActive;
@@ -198,6 +206,10 @@
                completionHandler:(void (^)(BOOL succeeded))completionHandler {
   if ([_appState isInSafeMode])
     return;
+
+  // Enusre Chrome is fuilly started up in case it had launched to the
+  // background.
+  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
 
   [UserActivityHandler
       performActionForShortcutItem:shortcutItem
@@ -218,6 +230,13 @@
             options:(NSDictionary<NSString*, id>*)options {
   if ([_appState isInSafeMode])
     return NO;
+
+  // The various URL handling mechanisms require that the application has
+  // fully started up; there are some cases (crbug.com/658420) where a
+  // launch via this method crashes because some services (specifically,
+  // CommandLine) aren't initialized yet. So: before anything further is
+  // done, make sure that Chrome is fully started up.
+  [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
 
   if (ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()

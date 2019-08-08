@@ -24,7 +24,8 @@ var OSSettingsUIBrowserTest = class extends PolymerTest {
 
   /** @override */
   get extraLibraries() {
-    return super.extraLibraries.concat(BROWSER_SETTINGS_PATH + 'test_util.js');
+    return super.extraLibraries.concat(
+        BROWSER_SETTINGS_PATH + '../test_util.js');
   }
 };
 

@@ -52,15 +52,6 @@ class NET_EXPORT CookieOptions {
     return same_site_cookie_context_;
   }
 
-  // |server_time| indicates what the server sending us the Cookie thought the
-  // current time was when the cookie was produced.  This is used to adjust for
-  // clock skew between server and host.
-  void set_server_time(const base::Time& server_time) {
-    server_time_ = server_time;
-  }
-  bool has_server_time() const { return !server_time_.is_null(); }
-  base::Time server_time() const { return server_time_; }
-
   void set_update_access_time() { update_access_time_ = true; }
   void set_do_not_update_access_time() { update_access_time_ = false; }
   bool update_access_time() const { return update_access_time_; }
@@ -73,7 +64,6 @@ class NET_EXPORT CookieOptions {
   bool exclude_httponly_;
   SameSiteCookieContext same_site_cookie_context_;
   bool update_access_time_;
-  base::Time server_time_;
   bool return_excluded_cookies_;
 };
 

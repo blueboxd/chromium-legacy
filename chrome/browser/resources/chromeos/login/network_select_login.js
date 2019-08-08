@@ -115,7 +115,6 @@
         OncTypeTether: loadTimeData.getString('OncTypeTether'),
         OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
         OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
-        OncTypeWiMAX: loadTimeData.getString('OncTypeWiMAX'),
         networkListItemConnected:
             loadTimeData.getString('networkListItemConnected'),
         networkListItemConnecting:

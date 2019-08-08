@@ -179,9 +179,11 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_origin_trial_features",
     "//third_party/blink/renderer/core",
     "//third_party/icu",
+    "//third_party/webrtc/api/audio:aec3_config_json",
     "//third_party/webrtc/pc:libjingle_peerconnection",
     "//third_party/webrtc/rtc_base:rtc_base",
     "//third_party/webrtc_overrides:init_webrtc",
+    "//third_party/webrtc_overrides:task_queue_factory",
     "//third_party/zlib",
   ]
 
@@ -338,6 +340,7 @@ jumbo_source_set("unit_tests") {
     "mediarecorder/video_track_recorder_unittest.cc",
     "mediastream/media_constraints_test.cc",
     "mediastream/media_devices_test.cc",
+    "mediastream/media_stream_audio_processor_test.cc",
     "mediastream/media_stream_constraints_util_audio_test.cc",
     "mediastream/media_stream_constraints_util_sets_test.cc",
     "mediastream/media_stream_constraints_util_test.cc",
@@ -467,12 +470,19 @@ jumbo_source_set("unit_tests") {
 
   data_deps = [
     ":accessibility_unittests_data",
+    ":mediastream_unittests_data",
   ]
 }
 
 group("accessibility_unittests_data") {
   data = [
     "accessibility/testing/data/",
+  ]
+}
+
+group("mediastream_unittests_data") {
+  data = [
+    "//media/test/data/",
   ]
 }
 

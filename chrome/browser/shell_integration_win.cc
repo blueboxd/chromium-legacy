@@ -725,8 +725,8 @@ void MigrateTaskbarPins() {
     return;
   }
 
-  base::CreateCOMSTATaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT})
+  base::CreateCOMSTATaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT})
       ->PostTask(FROM_HERE, base::BindOnce(&MigrateTaskbarPinsCallback,
                                            taskbar_path, implicit_apps_path));
 }

@@ -27,8 +27,9 @@ class LoginDisplayMojo : public LoginDisplay,
   explicit LoginDisplayMojo(LoginDisplayHostMojo* host);
   ~LoginDisplayMojo() override;
 
-  // Updates the state of the PIN keyboard.
+  // Updates the state of the authentication methods supported for the user.
   void UpdatePinKeyboardState(const AccountId& account_id);
+  void UpdateChallengeResponseAuthAvailability(const AccountId& account_id);
 
   // LoginDisplay:
   void ClearAndEnablePassword() override;

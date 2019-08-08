@@ -44,4 +44,9 @@ Status ExecuteAddCredential(WebView* web_view,
                             const base::Value& params,
                             std::unique_ptr<base::Value>* value);
 
+// Retrieve all the credentials stored in an authenticator.
+Status ExecuteGetCredentials(WebView* web_view,
+                             const base::Value& params,
+                             std::unique_ptr<base::Value>* value);
+
 #endif  // CHROME_TEST_CHROMEDRIVER_WEBAUTHN_COMMANDS_H_

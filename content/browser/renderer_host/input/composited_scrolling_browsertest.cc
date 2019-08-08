@@ -81,7 +81,7 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
  protected:
   void LoadURL() {
     const GURL data_url(kCompositedScrollingDataURL);
-    NavigateToURL(shell(), data_url);
+    EXPECT_TRUE(NavigateToURL(shell(), data_url));
 
     RenderWidgetHostImpl* host = GetWidgetHost();
     HitTestRegionObserver observer(GetWidgetHost()->GetFrameSinkId());

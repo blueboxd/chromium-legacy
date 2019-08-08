@@ -27,8 +27,8 @@
 namespace {
 
 // Default width/height of the dialog in screen size.
-const int kDefaultHatsDialogWidth = 400;
-const int kDefaultHatsDialogHeight = 420;
+const int kDefaultHatsDialogWidth = 448;
+const int kDefaultHatsDialogHeight = 440;
 
 // Placeholder strings in html file to be replaced when the file is loaded.
 constexpr char kScriptSrcReplacementToken[] = "$SCRIPT_SRC";
@@ -84,15 +84,13 @@ void HatsWebDialog::Show(const Browser* browser, const std::string& site_id) {
   DCHECK(location_bar);
   gfx::Rect bounds(location_bar->bounds());
   views::View::ConvertRectToScreen(browser_view->toolbar(), &bounds);
-  views::Widget::InitParams params;
-  params.bounds = gfx::Rect(
+  bounds = gfx::Rect(
       bounds.x() +
           std::max(0, bounds.width() / 2 - kDefaultHatsDialogWidth / 2),
       bounds.bottom() - views::BubbleBorder::GetBorderAndShadowInsets().top(),
       kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
-  chrome::ShowWebDialogWithParams(
-      browser_view->GetWidget()->GetNativeView(), profile, hats_dialog,
-      base::make_optional<views::Widget::InitParams>(std::move(params)));
+  chrome::ShowWebDialogWithBounds(browser_view->GetWidget()->GetNativeView(),
+                                  profile, hats_dialog, bounds);
 }
 
 HatsWebDialog::HatsWebDialog(const std::string& site_id) : site_id_(site_id) {

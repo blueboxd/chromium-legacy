@@ -59,8 +59,8 @@ class MODULES_EXPORT IDBKey {
     return base::WrapUnique(new IDBKey());
   }
 
-  static std::unique_ptr<IDBKey> CreateNull() {
-    return base::WrapUnique(new IDBKey(mojom::IDBKeyType::Null));
+  static std::unique_ptr<IDBKey> CreateNone() {
+    return base::WrapUnique(new IDBKey(mojom::IDBKeyType::None));
   }
 
   static std::unique_ptr<IDBKey> CreateNumber(double number) {

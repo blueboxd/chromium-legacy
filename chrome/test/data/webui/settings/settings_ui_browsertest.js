@@ -17,7 +17,7 @@ SettingsUIBrowserTest.prototype = {
 
   /** @override */
   extraLibraries: SettingsPageBrowserTest.prototype.extraLibraries.concat([
-    'test_util.js',
+    '../test_util.js',
   ]),
 };
 

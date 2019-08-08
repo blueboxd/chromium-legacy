@@ -372,17 +372,6 @@ var availableTests = [
             TetheringState: "NotDetected"
           }
         }, {
-          Connectable: true,
-          ConnectionState: ConnectionStateType.CONNECTED,
-          GUID: 'stub_wimax_guid',
-          Name: 'wimax',
-          Priority: 0,
-          Source: 'User',
-          Type: NetworkType.WI_MAX,
-          WiMAX: {
-            SignalStrength: 40
-          }
-        }, {
           ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_vpn1_guid',
           Name: 'vpn1',
@@ -500,7 +489,6 @@ var availableTests = [
         {State: 'Uninitialized', SIMPresent: true,
          SIMLockStatus: {LockEnabled: true, LockType: '', RetriesLeft: 3},
          Type: 'Cellular' },
-        {State: 'Disabled', Type: 'WiMAX'},
       ],
                result);
     }));
@@ -509,7 +497,6 @@ var availableTests = [
     // Connected or Connecting networks should be listed first, sorted by type.
     var expected = ['stub_ethernet_guid',
                     'stub_wifi1_guid',
-                    'stub_wimax_guid',
                     'stub_vpn1_guid',
                     'stub_vpn2_guid',
                     'stub_wifi2_guid'];
@@ -848,7 +835,6 @@ var availableTests = [
     // Connecting to wifi2 should set wifi1 to offline. Connected or Connecting
     // networks should be listed first, sorted by type.
     var expected = ['stub_ethernet_guid',
-                    'stub_wimax_guid',
                     'stub_vpn1_guid',
                     'stub_wifi2_guid',
                     'stub_wifi1_guid',

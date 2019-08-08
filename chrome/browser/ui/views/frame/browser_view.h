@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/feature_promos/reopen_tab_promo_controller.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller.h"
@@ -54,7 +55,6 @@
 
 class BookmarkBarView;
 class Browser;
-class BrowserViewLayout;
 class ContentsLayoutManager;
 class DownloadShelfView;
 class ExclusiveAccessBubbleViews;
@@ -175,6 +175,13 @@ class BrowserView : public BrowserWindow,
 
   // Container for the web contents.
   views::View* contents_container() { return contents_container_; }
+
+  void set_contents_border_widget(views::Widget* contents_border_widget) {
+    GetBrowserViewLayout()->set_contents_border_widget(contents_border_widget);
+  }
+  views::Widget* contents_border_widget() {
+    return GetBrowserViewLayout()->contents_border_widget();
+  }
 
   // Accessor for the TabStrip.
   TabStrip* tabstrip() { return tabstrip_; }

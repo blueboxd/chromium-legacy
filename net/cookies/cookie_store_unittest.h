@@ -185,13 +185,15 @@ class CookieStoreTest : public testing::Test {
     return callback.cookies();
   }
 
-  bool SetCookieWithOptions(CookieStore* cs,
-                            const GURL& url,
-                            const std::string& cookie_line,
-                            const CookieOptions& options) {
+  bool SetCookieWithOptions(
+      CookieStore* cs,
+      const GURL& url,
+      const std::string& cookie_line,
+      const CookieOptions& options,
+      base::Optional<base::Time> server_time = base::nullopt) {
     DCHECK(cs);
     ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
-    cs->SetCookieWithOptionsAsync(url, cookie_line, options,
+    cs->SetCookieWithOptionsAsync(url, cookie_line, options, server_time,
                                   callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result() == CanonicalCookie::CookieInclusionStatus::INCLUDE;
@@ -221,8 +223,8 @@ class CookieStoreTest : public testing::Test {
     CookieOptions options;
     if (!CookieStoreTestTraits::supports_http_only)
       options.set_include_httponly();
-    options.set_server_time(server_time);
-    return SetCookieWithOptions(cs, url, cookie_line, options);
+    return SetCookieWithOptions(cs, url, cookie_line, options,
+                                base::make_optional(server_time));
   }
 
   bool SetCookie(CookieStore* cs,
@@ -248,6 +250,7 @@ class CookieStoreTest : public testing::Test {
     DCHECK(cs);
     ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
     cs->SetCookieWithOptionsAsync(url, cookie_line, options,
+                                  base::nullopt /* server_time */,
                                   callback.MakeCallback());
     callback.WaitUntilDone();
     return callback.result();
@@ -559,9 +562,9 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
   // A Secure cookie can be created from an insecure URL, but is rejected upon
   // setting.
   CanonicalCookie::CookieInclusionStatus status;
-  auto cookie =
-      CanonicalCookie::Create(this->http_www_foo_.url(), "foo=1; Secure",
-                              base::Time::Now(), CookieOptions(), &status);
+  auto cookie = CanonicalCookie::Create(
+      this->http_www_foo_.url(), "foo=1; Secure", base::Time::Now(),
+      base::nullopt /* server_time */, &status);
   EXPECT_TRUE(cookie->IsSecure());
   EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
   EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
@@ -600,14 +603,12 @@ TYPED_TEST_P(CookieStoreTest, SetCanonicalCookieTest) {
                 CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT),
             "http", false /* modify_http_only */));
 
-    // A HttpOnly cookie can be created with any CookieOptions, but is rejected
+    // A HttpOnly cookie can be created, but is rejected
     // upon setting if the options do not specify include_httponly.
     CanonicalCookie::CookieInclusionStatus status;
-    CookieOptions options_no_httponly;
-    options_no_httponly.set_exclude_httponly();  // Default, but make explicit.
     auto c = CanonicalCookie::Create(this->http_www_foo_.url(),
                                      "bar=1; HttpOnly", base::Time::Now(),
-                                     options_no_httponly, &status);
+                                     base::nullopt /* server_time */, &status);
     EXPECT_TRUE(c->IsHttpOnly());
     EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
     EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY,
@@ -1188,13 +1189,14 @@ TYPED_TEST_P(CookieStoreTest, EmptyExpires) {
   this->MatchCookieLines(cookie_line,
                          this->GetCookiesWithOptions(cs, url, options));
 
-  options.set_server_time(base::Time::Now() - base::TimeDelta::FromHours(1));
-  this->SetCookieWithOptions(cs, url, set_cookie_line, options);
+  base::Optional<base::Time> server_time =
+      base::make_optional(base::Time::Now() - base::TimeDelta::FromHours(1));
+  this->SetCookieWithOptions(cs, url, set_cookie_line, options, server_time);
   this->MatchCookieLines(cookie_line,
                          this->GetCookiesWithOptions(cs, url, options));
 
-  options.set_server_time(base::Time::Now() + base::TimeDelta::FromHours(1));
-  this->SetCookieWithOptions(cs, url, set_cookie_line, options);
+  server_time = base::Time::Now() + base::TimeDelta::FromHours(1);
+  this->SetCookieWithOptions(cs, url, set_cookie_line, options, server_time);
   this->MatchCookieLines(cookie_line,
                          this->GetCookiesWithOptions(cs, url, options));
 }

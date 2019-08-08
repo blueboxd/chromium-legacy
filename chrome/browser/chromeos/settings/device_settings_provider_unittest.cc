@@ -45,14 +45,6 @@ namespace {
 
 const char kDisabledMessage[] = "This device has been disabled.";
 
-constexpr em::AutoUpdateSettingsProto_ConnectionType kConnectionTypes[] = {
-    em::AutoUpdateSettingsProto::CONNECTION_TYPE_ETHERNET,
-    em::AutoUpdateSettingsProto::CONNECTION_TYPE_WIFI,
-    em::AutoUpdateSettingsProto::CONNECTION_TYPE_WIMAX,
-    em::AutoUpdateSettingsProto::CONNECTION_TYPE_BLUETOOTH,
-    em::AutoUpdateSettingsProto::CONNECTION_TYPE_CELLULAR,
-};
-
 }  // namespace
 
 class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
@@ -217,12 +209,13 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   }
 
   // Helper routine to set AutoUpdates connection types policy.
-  void SetAutoUpdateConnectionTypes(const std::vector<int>& values) {
+  void SetAutoUpdateConnectionTypes(
+      const std::vector<em::AutoUpdateSettingsProto::ConnectionType>& values) {
     em::AutoUpdateSettingsProto* proto =
         device_policy_->payload().mutable_auto_update_settings();
     proto->set_update_disabled(false);
     for (auto const& value : values) {
-      proto->add_allowed_connection_types(kConnectionTypes[value]);
+      proto->add_allowed_connection_types(value);
     }
     BuildAndInstallDevicePolicy();
   }
@@ -631,11 +624,12 @@ TEST_F(DeviceSettingsProviderTest, EmptyAllowedConnectionTypesForUpdate) {
   VerifyPolicyValue(kAllowedConnectionTypesForUpdate, nullptr);
 
   // In case of empty list policy should not be set.
-  const std::vector<int> no_values = {};
+  const std::vector<em::AutoUpdateSettingsProto::ConnectionType> no_values = {};
   SetAutoUpdateConnectionTypes(no_values);
   VerifyPolicyValue(kAllowedConnectionTypesForUpdate, nullptr);
 
-  const std::vector<int> single_value = {0};
+  const std::vector<em::AutoUpdateSettingsProto::ConnectionType> single_value =
+      {em::AutoUpdateSettingsProto::CONNECTION_TYPE_ETHERNET};
   // Check some meaningful value. Policy should be set.
   SetAutoUpdateConnectionTypes(single_value);
   base::ListValue allowed_connections;

@@ -32,9 +32,6 @@ def main():
   parser.add_argument(
       '--native-libraries-list', help='File with list of native libraries.')
   parser.add_argument(
-      '--exclude-native-libraries',
-      help='List of native libraries to exclude from the output.')
-  parser.add_argument(
       '--version-number',
       default='""',
       help='Expected version of main library.')
@@ -57,27 +54,16 @@ def main():
           or not options.load_library_from_apk), (
               'Must set --enable-chromium-linker to load library from APK.')
 
-  lib_paths = []
-  exclude_native_libraries = []
-  if options.exclude_native_libraries:
-    exclude_native_libraries = options.exclude_native_libraries.split(',')
+  native_libraries_list = []
   if options.native_libraries_list:
     with open(options.native_libraries_list) as f:
-      for line in f:
-        line = line.strip()
-        assert line.endswith('.so')
-        if os.path.basename(line) in exclude_native_libraries:
-          continue
-        lib_paths.append(line)
-
-  def LibBasename(path):
-    filename = os.path.split(path)[1]
-    base = os.path.splitext(filename)[0]
-    return base[3:]  # remove lib prefix
-
-  # Convert to "base" library names: e.g. libfoo.so -> foo.
-  native_libraries_list = (
-      '{%s}' % ','.join(['"%s"' % LibBasename(s) for s in lib_paths]))
+      for path in f:
+        path = path.strip()
+        filename = os.path.split(path)[1]
+        assert filename.startswith('lib')
+        assert filename.endswith('.so')
+        # Remove lib prefix and .so suffix.
+        native_libraries_list.append('"%s"' % filename[3:-3])
 
   def bool_str(value):
     if value:
@@ -91,7 +77,7 @@ def main():
       'USE_LINKER': bool_str(options.enable_chromium_linker),
       'USE_LIBRARY_IN_ZIP_FILE': bool_str(options.load_library_from_apk),
       'ENABLE_LINKER_TESTS': bool_str(options.enable_chromium_linker_tests),
-      'LIBRARIES': native_libraries_list,
+      'LIBRARIES': ','.join(native_libraries_list),
       'VERSION_NUMBER': options.version_number,
       'CPU_FAMILY': options.cpu_family,
   }

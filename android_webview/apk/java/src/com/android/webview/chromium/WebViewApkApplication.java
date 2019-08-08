@@ -8,7 +8,7 @@ import android.app.Application;
 import android.content.Context;
 
 import org.chromium.android_webview.AwLocaleConfig;
-import org.chromium.android_webview.command_line.CommandLineUtil;
+import org.chromium.android_webview.common.CommandLineUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;

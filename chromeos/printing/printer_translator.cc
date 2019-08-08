@@ -103,7 +103,7 @@ std::unique_ptr<base::DictionaryValue> CreateEmptyPrinterInfo() {
   printer_info->SetString("ppdManufacturer", "");
   printer_info->SetString("ppdModel", "");
   printer_info->SetString("printerAddress", "");
-  printer_info->SetBoolean("printerAutoconf", false);
+  printer_info->SetBoolean("printerPpdReference.autoconf", false);
   printer_info->SetString("printerDescription", "");
   printer_info->SetString("printerId", "");
   printer_info->SetString("printerManufacturer", "");
@@ -190,7 +190,8 @@ std::unique_ptr<base::DictionaryValue> GetCupsPrinterInfo(
   // NOTE: This assumes the the function IsIppEverywhere() simply returns
   // |printer.ppd_reference_.autoconf|. If the implementation of
   // IsIppEverywhere() changes this will need to be changed as well.
-  printer_info->SetBoolean("printerAutoconf", printer.IsIppEverywhere());
+  printer_info->SetBoolean("printerPpdReference.autoconf",
+                           printer.IsIppEverywhere());
   printer_info->SetString("printerPPDPath",
                           printer.ppd_reference().user_supplied_ppd_url);
 

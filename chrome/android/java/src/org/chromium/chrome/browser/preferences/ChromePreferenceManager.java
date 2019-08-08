@@ -374,11 +374,6 @@ public class ChromePreferenceManager {
     public static final String PRIORITIZE_BOOTSTRAP_TASKS_KEY = "prioritize_bootstrap_tasks";
 
     /**
-     * Whether network service is enabled.
-     */
-    public static final String NETWORK_SERVICE_KEY = "network_service";
-
-    /**
      * Whether warming up network service is enabled.
      * Default value is false.
      */

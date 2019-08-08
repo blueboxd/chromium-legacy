@@ -107,7 +107,6 @@ class VIEWS_EXPORT RootView : public View,
   const Widget* GetWidget() const override;
   Widget* GetWidget() override;
   bool IsDrawn() const override;
-  void SchedulePaintInRect(const gfx::Rect& rect) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -124,6 +123,7 @@ class VIEWS_EXPORT RootView : public View,
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
+  void OnDidSchedulePaint(const gfx::Rect& rect) override;
   void OnPaint(gfx::Canvas* canvas) override;
   View::LayerOffsetData CalculateOffsetToAncestorWithLayer(
       ui::Layer** layer_parent) override;

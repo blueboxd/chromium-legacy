@@ -27,6 +27,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   void Init(base::OnceClosure callback) override;
   BookmarkAppRegistrar* AsBookmarkAppRegistrar() override;
   bool IsInstalled(const web_app::AppId& app_id) const override;
+  bool IsLocallyInstalled(const web_app::AppId& app_id) const override;
   bool IsLocallyInstalled(const GURL& start_url) const override;
   bool WasExternalAppUninstalledByUser(
       const web_app::AppId& app_id) const override;
@@ -39,6 +40,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const web_app::AppId& app_id) const override;
+  base::flat_set<web_app::AppId> GetAppIdsForTesting() const override;
 
   // ExtensionRegistryObserver:
   void OnExtensionUninstalled(content::BrowserContext* browser_context,

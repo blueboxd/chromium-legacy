@@ -197,17 +197,6 @@ void AppListClientImpl::ActivateItem(int profile_id,
   }
 
   requested_model_updater->ActivateChromeItem(id, event_flags);
-
-  // Suspect that |id| may be destructed after calling ActivateChromeItem. Add
-  // the following two lines to help investigate the crash.
-  std::string copy = id;
-  base::debug::Alias(&copy);
-
-  // Suspect that the model updater may change after calling ActivateChromeItem.
-  // Add checks to help invesigate the crash.
-  CHECK(current_model_updater_);
-  CHECK(requested_model_updater);
-  CHECK(current_model_updater_ == requested_model_updater);
 }
 
 void AppListClientImpl::GetContextMenuModel(

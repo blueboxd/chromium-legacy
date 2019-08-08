@@ -41,6 +41,10 @@ class XRStandardGamepadBuilder {
 
   base::Optional<Gamepad> GetGamepad() const;
 
+  bool HasSecondaryButton() const { return !!secondary_button_; }
+  bool HasTouchpad() const { return !!touchpad_data_; }
+  bool HasThumbstick() const { return !!thumbstick_data_; }
+
  private:
   base::Optional<GamepadButton> primary_button_;
   base::Optional<GamepadButton> secondary_button_;

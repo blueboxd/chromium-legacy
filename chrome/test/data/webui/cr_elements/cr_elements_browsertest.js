@@ -150,7 +150,7 @@ CrElementsDrawerTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_drawer_tests.js',
   ]),
 };
@@ -173,7 +173,7 @@ CrElementsScrollableBehaviorTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_scrollable_behavior_tests.js',
   ]),
 };
@@ -393,7 +393,7 @@ CrElementsDialogTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_dialog_test.js',
   ]),
 };
@@ -416,7 +416,7 @@ CrElementsSliderTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_slider_test.js',
   ]),
 };
@@ -463,7 +463,7 @@ CrElementsToastManagerTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_toast_manager_test.js',
   ]),
 };
@@ -487,7 +487,7 @@ CrElementsRadioButtonTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_radio_button_test.js',
   ]),
 };
@@ -511,7 +511,7 @@ CrElementsRadioGroupTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_radio_group_test.js',
   ]),
 };
@@ -534,7 +534,7 @@ CrElementsButtonTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_button_tests.js',
   ]),
 };
@@ -558,7 +558,7 @@ CrElementsIconButtonTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_icon_button_tests.js',
   ]),
 };
@@ -628,7 +628,7 @@ CrElementsSearchableDropDownTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_searchable_drop_down_tests.js',
   ]),
 };

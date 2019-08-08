@@ -12,6 +12,15 @@ namespace safety_tips {
 
 ReputationWebContentsObserver::~ReputationWebContentsObserver() {}
 
+void ReputationWebContentsObserver::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+  last_shown_safety_tip_type_ = SafetyTipType::kNone;
+}
+
 void ReputationWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame()) {
@@ -52,6 +61,7 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
     return;
   }
 
+  last_shown_safety_tip_type_ = type;
   ShowSafetyTipDialog(web_contents(), type, url);
 #endif  // !defined(OS_ANDROID)
 }

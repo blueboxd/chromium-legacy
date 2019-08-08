@@ -196,7 +196,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetWebGLErrorsToConsoleEnabled(bool) override;
   void SetWebSecurityEnabled(bool) override;
   void SetWideViewportQuirkEnabled(bool) override;
-  void SetXSSAuditorEnabled(bool) override;
   void SetMediaControlsEnabled(bool) override;
   void SetDoNotUpdateSelectionOnMutatingSelectionRange(bool) override;
   void SetLowPriorityIframesThreshold(WebEffectiveConnectionType) override;

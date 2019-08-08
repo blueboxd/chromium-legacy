@@ -177,7 +177,7 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
  protected:
   void LoadURL() {
     const GURL data_url(kDataURL);
-    NavigateToURL(shell(), data_url);
+    EXPECT_TRUE(NavigateToURL(shell(), data_url));
 
     RenderWidgetHostImpl* host = GetWidgetHost();
     host->GetView()->SetSize(gfx::Size(400, 400));

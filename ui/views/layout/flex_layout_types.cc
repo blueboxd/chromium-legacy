@@ -63,6 +63,7 @@ int InterpolateSize(MinimumFlexSizeRule minimum_size_rule,
 
 gfx::Size GetPreferredSize(MinimumFlexSizeRule minimum_size_rule,
                            MaximumFlexSizeRule maximum_size_rule,
+                           bool adjust_height_for_width,
                            const views::View* view,
                            const views::SizeBounds& maximum_size) {
   gfx::Size min = view->GetMinimumSize();
@@ -79,20 +80,21 @@ gfx::Size GetPreferredSize(MinimumFlexSizeRule minimum_size_rule,
                             preferred.width(), *maximum_size.width());
   }
 
-  // Allow views that need to grow vertically when they're compressed
-  // horizontally to do so.
-  //
-  // If we just went with GetHeightForWidth() we would have situations where an
-  // empty text control wanted no (or very little) height which could cause a
-  // layout to shrink vertically; we will always try to allocate at least the
-  // view's reported preferred height.
-  //
-  // Note that this is an adjustment made for practical considerations, and may
-  // not be "correct" in some absolute sense. Let's revisit at some point.
-  const int preferred_height =
-      width >= preferred.width()
-          ? preferred.height()
-          : std::max(preferred.height(), view->GetHeightForWidth(width));
+  int preferred_height = preferred.height();
+  if (adjust_height_for_width && width < preferred.width()) {
+    // Allow views that need to grow vertically when they're compressed
+    // horizontally to do so.
+    //
+    // If we just went with GetHeightForWidth() we would have situations where
+    // an empty text control wanted no (or very little) height which could cause
+    // a layout to shrink vertically; we will always try to allocate at least
+    // the view's reported preferred height.
+    //
+    // Note that this is an adjustment made for practical considerations, and
+    // may not be "correct" in some absolute sense. Let's revisit at some point.
+    preferred_height =
+        std::max(preferred_height, view->GetHeightForWidth(width));
+  }
 
   if (!maximum_size.height()) {
     // Not having a maximum size is different from having a large available
@@ -108,9 +110,10 @@ gfx::Size GetPreferredSize(MinimumFlexSizeRule minimum_size_rule,
 
 FlexRule GetDefaultFlexRule(
     MinimumFlexSizeRule minimum_size_rule = MinimumFlexSizeRule::kPreferred,
-    MaximumFlexSizeRule maximum_size_rule = MaximumFlexSizeRule::kPreferred) {
+    MaximumFlexSizeRule maximum_size_rule = MaximumFlexSizeRule::kPreferred,
+    bool adjust_height_for_width = false) {
   return base::BindRepeating(&GetPreferredSize, minimum_size_rule,
-                             maximum_size_rule);
+                             maximum_size_rule, adjust_height_for_width);
 }
 
 }  // namespace
@@ -125,9 +128,12 @@ FlexSpecification FlexSpecification::ForCustomRule(FlexRule rule) {
 
 FlexSpecification FlexSpecification::ForSizeRule(
     MinimumFlexSizeRule minimum_size_rule,
-    MaximumFlexSizeRule maximum_size_rule) {
+    MaximumFlexSizeRule maximum_size_rule,
+    bool adjust_height_for_width) {
   return FlexSpecification(
-      GetDefaultFlexRule(minimum_size_rule, maximum_size_rule), 1, 1);
+      GetDefaultFlexRule(minimum_size_rule, maximum_size_rule,
+                         adjust_height_for_width),
+      1, 1);
 }
 
 FlexSpecification::FlexSpecification(FlexRule rule, int order, int weight)

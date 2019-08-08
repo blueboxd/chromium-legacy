@@ -57,7 +57,7 @@ class TestView : public View {
  public:
   TestView() = default;
 
-  void SchedulePaintInRect(const gfx::Rect& r) override {
+  void OnDidSchedulePaint(const gfx::Rect& r) override {
     if (dirty_rect_.IsEmpty())
       dirty_rect_ = r;
     else

@@ -113,7 +113,7 @@ TEST(ElevatedRecoveryTest, Do_RunCRX_InvalidArgs) {
                 base::FilePath(kManifestJSONFileName), 0, &proc_handle));
 
   // Non-existent CRX file.
-  EXPECT_EQ(HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND),
+  EXPECT_EQ(CRYPT_E_NO_MATCH,
             elevation_service::RunCRX(
                 TestFile("nonexistent.crx3"),
                 base::CommandLine(base::CommandLine::NO_PROGRAM),

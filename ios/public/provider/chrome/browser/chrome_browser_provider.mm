@@ -68,6 +68,10 @@ std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
 }
 
+UITextField* ChromeBrowserProvider::CreateStyledTextField() const {
+  return nil;
+}
+
 UITextField<TextFieldStyling>* ChromeBrowserProvider::CreateStyledTextField(
     CGRect frame) const {
   return nil;

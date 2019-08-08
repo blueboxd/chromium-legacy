@@ -187,6 +187,46 @@ TEST_F('SetTimeDialogBrowserTest', 'All', function() {
             assertGT(timeInSeconds, todaySeconds);
           });
     });
+
+    suite('NullTimezone', () => {
+      suiteSetup(() => {
+        loadTimeData.overrideValues({
+          currentTimezoneId: '',
+          timezoneList: [],
+        });
+      });
+
+      test('SetDateNullTimezone', () => {
+        const dateInput = setTimeElement.$$('#dateInput');
+        assertTrue(!!dateInput);
+
+        assertEquals(null, setTimeElement.$$('#timezoneSelect'));
+
+        // Simulates the user changing the date picker backward by two days. We
+        // are changing the date to make the test simpler. Changing the time
+        // would require timezone manipulation and handling corner cases over
+        // midnight. valuesAsDate return the time in UTC, therefore the amount
+        // of days here must be bigger than one to avoid situations where the
+        // new time and old time are in the same day.
+        const today = dateInput.valueAsDate;
+        const twoDaysAgo = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000);
+        dateInput.focus();
+        dateInput.valueAsDate = twoDaysAgo;
+        setTimeElement.$$('#doneButton').click();
+
+        // Verify the page sends a request to move time backward.
+        return testBrowserProxy.whenCalled('setTimeInSeconds')
+            .then(newTimeSeconds => {
+              const todaySeconds = today.getTime() / 1000;
+              // Check that the current time is bigger than the new time, which
+              // is supposed to be two days ago. The exact value isn't
+              // important, checking it is difficult because it depends on the
+              // current time, which is constantly updated, therefore we only
+              // assert that one is bigger than the other.
+              assertGT(todaySeconds, newTimeSeconds);
+            });
+      });
+    });
   });
 
   mocha.run();

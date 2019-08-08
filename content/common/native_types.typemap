@@ -29,6 +29,7 @@ public_headers = [
   "//ui/events/blink/did_overscroll_params.h",
   "//ui/events/blink/web_input_event_traits.h",
   "//ui/latency/ipc/latency_info_param_traits.h",
+  "//ui/native_theme/native_theme.h",
 ]
 traits_headers = [
   "//content/common/frame_messages.h",
@@ -78,7 +79,9 @@ type_mappings = [
   "content.mojom.NetworkConnectionType=net::NetworkChangeNotifier::ConnectionType",
   "content.mojom.DidOverscrollParams=ui::DidOverscrollParams",
   "content.mojom.PointerType=blink::WebPointerProperties::PointerType",
+  "content.mojom.PreferredColorScheme=ui::NativeTheme::PreferredColorScheme",
   "content.mojom.VisualProperties=content::VisualProperties",
+  "content.mojom.SystemThemeColor=ui::NativeTheme::SystemThemeColor",
   "content.mojom.SyntheticSmoothDrag=content::SyntheticSmoothDragGestureParams",
   "content.mojom.SyntheticSmoothScroll=content::SyntheticSmoothScrollGestureParams",
   "content.mojom.SyntheticPinch=content::SyntheticPinchGestureParams",

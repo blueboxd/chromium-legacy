@@ -154,14 +154,14 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
     font_weight = gfx::Font::Weight::SEMIBOLD;
   }
 
-  // Use a bold style for emphasized text in body contexts, and ignore |style|
-  // otherwise.
+  // Use a semibold style for emphasized text in body contexts, and ignore
+  // |style| otherwise.
   if (style == STYLE_EMPHASIZED || style == STYLE_EMPHASIZED_SECONDARY) {
     switch (context) {
       case CONTEXT_BODY_TEXT_SMALL:
       case CONTEXT_BODY_TEXT_LARGE:
       case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
-        font_weight = gfx::Font::Weight::BOLD;
+        font_weight = gfx::Font::Weight::SEMIBOLD;
         break;
 
       default:

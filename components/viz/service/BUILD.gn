@@ -38,6 +38,7 @@ viz_component("service") {
     "display/draw_polygon.h",
     "display/dynamic_geometry_binding.cc",
     "display/dynamic_geometry_binding.h",
+    "display/external_use_client.cc",
     "display/external_use_client.h",
     "display/frame_rate_decider.cc",
     "display/frame_rate_decider.h",
@@ -75,8 +76,6 @@ viz_component("service") {
     "display/renderer_utils.cc",
     "display/renderer_utils.h",
     "display/resource_fence.h",
-    "display/resource_metadata.cc",
-    "display/resource_metadata.h",
     "display/scoped_gpu_memory_buffer_texture.cc",
     "display/scoped_gpu_memory_buffer_texture.h",
     "display/scoped_render_pass_texture.cc",
@@ -308,8 +307,8 @@ viz_component("service") {
 # then this build target will no longer be needed.
 viz_source_set("gpu_service_dependencies") {
   sources = [
-    "display_embedder/image_context.cc",
-    "display_embedder/image_context.h",
+    "display_embedder/image_context_impl.cc",
+    "display_embedder/image_context_impl.h",
     "display_embedder/skia_output_device.cc",
     "display_embedder/skia_output_device.h",
     "display_embedder/skia_output_device_buffer_queue.cc",

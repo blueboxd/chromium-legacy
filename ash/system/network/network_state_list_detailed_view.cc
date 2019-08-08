@@ -65,7 +65,6 @@ bool NetworkTypeIsConfigurable(NetworkType type) {
   switch (type) {
     case NetworkType::kVPN:
     case NetworkType::kWiFi:
-    case NetworkType::kWiMAX:
       return true;
     case NetworkType::kAll:
     case NetworkType::kCellular:

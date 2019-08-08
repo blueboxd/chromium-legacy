@@ -18,20 +18,27 @@ namespace ash {
 namespace {
 
 WallpaperView* GetWallpaperViewForRoot(const aura::Window* root_window) {
-  return RootWindowController::ForWindow(root_window)
-      ->wallpaper_widget_controller()
-      ->wallpaper_view();
+  auto* wallpaper_widget_controller =
+      RootWindowController::ForWindow(root_window)
+          ->wallpaper_widget_controller();
+  if (!wallpaper_widget_controller)
+    return nullptr;
+  return wallpaper_widget_controller->wallpaper_view();
 }
 
 }  // namespace
 
 OverviewGridPreEventHandler::OverviewGridPreEventHandler(OverviewGrid* grid)
     : grid_(grid) {
-  GetWallpaperViewForRoot(grid_->root_window())->AddPreTargetHandler(this);
+  auto* wallpaper_view = GetWallpaperViewForRoot(grid_->root_window());
+  if (wallpaper_view)
+    wallpaper_view->AddPreTargetHandler(this);
 }
 
 OverviewGridPreEventHandler::~OverviewGridPreEventHandler() {
-  GetWallpaperViewForRoot(grid_->root_window())->RemovePreTargetHandler(this);
+  auto* wallpaper_view = GetWallpaperViewForRoot(grid_->root_window());
+  if (wallpaper_view)
+    wallpaper_view->RemovePreTargetHandler(this);
 }
 
 void OverviewGridPreEventHandler::OnMouseEvent(ui::MouseEvent* event) {

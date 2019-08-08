@@ -151,6 +151,14 @@
                  file="appearance_page/appearance_browser_proxy.js"
                  type="chrome_html"
                  preprocess="true" />
+      <if expr="chromeos">
+        <structure name="IDR_SETTINGS_WALLPAPER_BROWSER_PROXY_HTML"
+                   file="appearance_page/wallpaper_browser_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_WALLPAPER_BROWSER_PROXY_JS"
+                   file="appearance_page/wallpaper_browser_proxy.js"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_SETTINGS_APPEARANCE_FONTS_PAGE_HTML"
                  file="appearance_page/appearance_fonts_page.html"
                  type="chrome_html"

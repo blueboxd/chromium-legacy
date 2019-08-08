@@ -2373,6 +2373,7 @@ enum WebFeature {
   kV8SpeechRecognition_Grammars_AttributeGetter = 2991,
   kV8SpeechRecognition_Grammars_AttributeSetter = 2992,
   kContactsManagerSelect = 2993,
+  kV8MediaSession_SetPositionState_Method = 2994,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

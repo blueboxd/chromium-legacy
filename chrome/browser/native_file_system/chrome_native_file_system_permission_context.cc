@@ -333,11 +333,10 @@ void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
       base::BindOnce(&WritePermissionGrantImpl::OnPermissionRequestComplete,
                      this, std::move(callback)));
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&ShowWritePermissionPromptOnUIThread, process_id, frame_id,
-                     origin_, path(), is_directory_,
-                     std::move(result_callback)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ShowWritePermissionPromptOnUIThread,
+                                process_id, frame_id, origin_, path(),
+                                is_directory_, std::move(result_callback)));
 }
 
 bool ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
@@ -492,7 +491,7 @@ void ChromeNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(
     int frame_id,
     base::OnceCallback<void(PermissionStatus)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &ShowDirectoryAccessConfirmationPromptOnUIThread, process_id,
@@ -526,7 +525,8 @@ void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
   // file selection is only supported if all files are in the same
   // directory.
   base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ShouldBlockAccessToPath, paths[0]),
       base::BindOnce(&ChromeNativeFileSystemPermissionContext::
                          DidConfirmSensitiveDirectoryAccess,
@@ -688,7 +688,7 @@ void ChromeNativeFileSystemPermissionContext::
   auto result_callback =
       BindResultCallbackToCurrentSequence(std::move(callback));
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread,
                      process_id, frame_id, origin, paths[0],

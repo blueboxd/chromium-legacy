@@ -26,22 +26,5 @@ source_set("lib") {
     "//device/vr:vr",
     "//device/vr/public/mojom",
     "//device/vr/public/mojom:test_mojom",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chrome:strings",
-    "//device/vr/public/mojom",
-    "//device/vr/public/mojom:test_mojom",
-    "//services/service_manager/public/cpp",
   ]
 }

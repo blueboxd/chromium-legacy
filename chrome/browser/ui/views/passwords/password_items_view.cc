@@ -233,9 +233,8 @@ void PasswordItemsView::PasswordRow::ButtonPressed(views::Button* sender,
 
 PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
                                      views::View* anchor_view,
-                                     const gfx::Point& anchor_point,
                                      DisplayReason reason)
-    : PasswordBubbleViewBase(web_contents, anchor_view, anchor_point, reason) {
+    : PasswordBubbleViewBase(web_contents, anchor_view, reason) {
   DCHECK_EQ(password_manager::ui::MANAGE_STATE, model()->state());
 
   if (model()->local_credentials().empty()) {

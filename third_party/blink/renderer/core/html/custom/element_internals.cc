@@ -221,7 +221,7 @@ void ElementInternals::DidUpgrade() {
       lists->InvalidateCaches(nullptr);
   }
   for (ContainerNode* node = parent; node; node = node->parentNode()) {
-    if (IsHTMLFieldSetElement(node)) {
+    if (IsA<HTMLFieldSetElement>(node)) {
       // TODO(tkent): Invalidate only HTMLFormControlsCollections.
       if (auto* lists = node->NodeLists())
         lists->InvalidateCaches(nullptr);

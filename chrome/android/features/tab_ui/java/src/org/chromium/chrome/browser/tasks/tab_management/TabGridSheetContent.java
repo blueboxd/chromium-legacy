@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.view.View;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
+import org.chromium.chrome.tab_ui.R;
 
 /** A {@link BottomSheetContent} that displays tab grid. **/
 public class TabGridSheetContent implements BottomSheetContent {

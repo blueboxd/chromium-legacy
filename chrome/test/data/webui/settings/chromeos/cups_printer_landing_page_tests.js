@@ -170,7 +170,6 @@ function createCupsPrinterInfo(printerName, printerAddress, printerId) {
     ppdManufacturer: 'make',
     ppdModel: 'model',
     printerAddress: printerAddress,
-    printerAutoconf: false,
     printerDescription: '',
     printerId: printerId,
     printerManufacturer: 'make',

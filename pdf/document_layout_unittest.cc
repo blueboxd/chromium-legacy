@@ -35,61 +35,66 @@ inline bool PpRectEq(const pp::Rect& lhs, const pp::Rect& rhs) {
 }
 
 TEST_F(DocumentLayoutOptionsTest, DefaultConstructor) {
-  EXPECT_EQ(options_.default_page_orientation(), 0);
+  EXPECT_EQ(options_.default_page_orientation(), PageOrientation::kOriginal);
 }
 
 TEST_F(DocumentLayoutOptionsTest, CopyConstructor) {
   options_.RotatePagesClockwise();
 
   DocumentLayout::Options copy(options_);
-  EXPECT_EQ(copy.default_page_orientation(), 1);
+  EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
 
   options_.RotatePagesClockwise();
-  EXPECT_EQ(copy.default_page_orientation(), 1);
+  EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
 }
 
 TEST_F(DocumentLayoutOptionsTest, CopyAssignment) {
   options_.RotatePagesClockwise();
 
   DocumentLayout::Options copy;
-  EXPECT_EQ(copy.default_page_orientation(), 0);
+  EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kOriginal);
   copy = options_;
-  EXPECT_EQ(copy.default_page_orientation(), 1);
+  EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
 
   options_.RotatePagesClockwise();
-  EXPECT_EQ(copy.default_page_orientation(), 1);
+  EXPECT_EQ(copy.default_page_orientation(), PageOrientation::kClockwise90);
 }
 
 TEST_F(DocumentLayoutOptionsTest, RotatePagesClockwise) {
   options_.RotatePagesClockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 1);
+  EXPECT_EQ(options_.default_page_orientation(), PageOrientation::kClockwise90);
 
   options_.RotatePagesClockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 2);
+  EXPECT_EQ(options_.default_page_orientation(),
+            PageOrientation::kClockwise180);
 
   options_.RotatePagesClockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 3);
+  EXPECT_EQ(options_.default_page_orientation(),
+            PageOrientation::kClockwise270);
 
   options_.RotatePagesClockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 0);
+  EXPECT_EQ(options_.default_page_orientation(), PageOrientation::kOriginal);
 }
 
 TEST_F(DocumentLayoutOptionsTest, RotatePagesCounterclockwise) {
   options_.RotatePagesCounterclockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 3);
+  EXPECT_EQ(options_.default_page_orientation(),
+            PageOrientation::kClockwise270);
 
   options_.RotatePagesCounterclockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 2);
+  EXPECT_EQ(options_.default_page_orientation(),
+            PageOrientation::kClockwise180);
 
   options_.RotatePagesCounterclockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 1);
+  EXPECT_EQ(options_.default_page_orientation(), PageOrientation::kClockwise90);
 
   options_.RotatePagesCounterclockwise();
-  EXPECT_EQ(options_.default_page_orientation(), 0);
+  EXPECT_EQ(options_.default_page_orientation(), PageOrientation::kOriginal);
 }
 
 TEST_F(DocumentLayoutTest, DefaultConstructor) {
-  EXPECT_EQ(layout_.options().default_page_orientation(), 0);
+  EXPECT_EQ(layout_.options().default_page_orientation(),
+            PageOrientation::kOriginal);
   EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(0, 0));
 }
 
@@ -99,7 +104,8 @@ TEST_F(DocumentLayoutTest, SetOptionsDoesNotRecomputeLayout) {
   DocumentLayout::Options options;
   options.RotatePagesClockwise();
   layout_.set_options(options);
-  EXPECT_EQ(layout_.options().default_page_orientation(), 1);
+  EXPECT_EQ(layout_.options().default_page_orientation(),
+            PageOrientation::kClockwise90);
   EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(1, 2));
 }
 
@@ -116,7 +122,6 @@ TEST_F(DocumentLayoutTest, GetSingleViewLayout) {
 
   std::vector<pp::Size> page_sizes{
       {300, 400}, {400, 500}, {300, 400}, {200, 300}};
-  layout_.set_size({400, 0});
   single_view_layout = layout_.GetSingleViewLayout(page_sizes);
   ASSERT_EQ(4u, single_view_layout.size());
   EXPECT_PRED2(PpRectEq, pp::Rect(55, 3, 290, 390), single_view_layout[0]);
@@ -126,7 +131,6 @@ TEST_F(DocumentLayoutTest, GetSingleViewLayout) {
   EXPECT_PRED2(PpSizeEq, pp::Size(400, 1612), layout_.size());
 
   page_sizes = {{240, 300}, {320, 400}, {250, 360}, {300, 600}, {270, 555}};
-  layout_.set_size({320, 0});
   single_view_layout = layout_.GetSingleViewLayout(page_sizes);
   ASSERT_EQ(5u, single_view_layout.size());
   EXPECT_PRED2(PpRectEq, pp::Rect(45, 3, 230, 290), single_view_layout[0]);
@@ -143,18 +147,16 @@ TEST_F(DocumentLayoutTest, GetTwoUpViewLayout) {
   // Test case where the widest page is on the right.
   std::vector<pp::Size> page_sizes{
       {826, 1066}, {1066, 826}, {826, 1066}, {826, 900}};
-  layout_.set_size({1066, 0});
   two_up_view_layout = layout_.GetTwoUpViewLayout(page_sizes);
   ASSERT_EQ(4u, two_up_view_layout.size());
   EXPECT_PRED2(PpRectEq, pp::Rect(245, 3, 820, 1056), two_up_view_layout[0]);
   EXPECT_PRED2(PpRectEq, pp::Rect(1067, 3, 1060, 816), two_up_view_layout[1]);
   EXPECT_PRED2(PpRectEq, pp::Rect(245, 1069, 820, 1056), two_up_view_layout[2]);
   EXPECT_PRED2(PpRectEq, pp::Rect(1067, 1069, 820, 890), two_up_view_layout[3]);
-  EXPECT_PRED2(PpSizeEq, pp::Size(1066, 2132), layout_.size());
+  EXPECT_PRED2(PpSizeEq, pp::Size(2132, 2132), layout_.size());
 
   // Test case where the widest page is on the left.
   page_sizes = {{1066, 826}, {820, 1056}, {820, 890}, {826, 1066}};
-  layout_.set_size({1066, 0});
   two_up_view_layout = layout_.GetTwoUpViewLayout(page_sizes);
   ASSERT_EQ(4u, two_up_view_layout.size());
   EXPECT_PRED2(PpRectEq, pp::Rect(5, 3, 1060, 816), two_up_view_layout[0]);
@@ -162,11 +164,10 @@ TEST_F(DocumentLayoutTest, GetTwoUpViewLayout) {
   EXPECT_PRED2(PpRectEq, pp::Rect(251, 1059, 814, 880), two_up_view_layout[2]);
   EXPECT_PRED2(PpRectEq, pp::Rect(1067, 1059, 820, 1056),
                two_up_view_layout[3]);
-  EXPECT_PRED2(PpSizeEq, pp::Size(1066, 2122), layout_.size());
+  EXPECT_PRED2(PpSizeEq, pp::Size(2132, 2122), layout_.size());
 
   // Test case where there's an odd # of pages.
   page_sizes = {{200, 300}, {400, 200}, {300, 600}, {250, 500}, {300, 400}};
-  layout_.set_size({400, 0});
   two_up_view_layout = layout_.GetTwoUpViewLayout(page_sizes);
   ASSERT_EQ(5u, two_up_view_layout.size());
   EXPECT_PRED2(PpRectEq, pp::Rect(205, 3, 194, 290), two_up_view_layout[0]);
@@ -174,7 +175,7 @@ TEST_F(DocumentLayoutTest, GetTwoUpViewLayout) {
   EXPECT_PRED2(PpRectEq, pp::Rect(105, 303, 294, 590), two_up_view_layout[2]);
   EXPECT_PRED2(PpRectEq, pp::Rect(401, 303, 244, 490), two_up_view_layout[3]);
   EXPECT_PRED2(PpRectEq, pp::Rect(105, 903, 290, 390), two_up_view_layout[4]);
-  EXPECT_PRED2(PpSizeEq, pp::Size(400, 1300), layout_.size());
+  EXPECT_PRED2(PpSizeEq, pp::Size(800, 1300), layout_.size());
 }
 
 TEST_F(DocumentLayoutDeathTest, EnlargeHeightNegativeIncrement) {

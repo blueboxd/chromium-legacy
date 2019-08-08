@@ -194,7 +194,6 @@ warns admins of the implications of mis-using this policy for Chrome OS.
         * Cellular
         * Ethernet
         * WiFi
-        * WiMAX
         * Tether
     * List of strings containing disabled network interfaces.
 
@@ -278,11 +277,6 @@ Field **NetworkConfigurations** is an array of
     * (required if **Type** is *WiFi*, otherwise ignored) - [WiFi](#WiFi-type)
     * WiFi settings.
 
-* **WiMAX**
-    * (required if **Type** is *WiMAX*, otherwise ignored) -
-      [WiMAX](#WiMAX-type)
-    * WiMAX settings.
-
 * **Cellular**
     * (required if **Type** is *Cellular*, otherwise ignored) -
       [Cellular](#Cellular-type)
@@ -299,7 +293,6 @@ Field **NetworkConfigurations** is an array of
         * *Cellular*
         * *Ethernet*
         * *WiFi*
-        * *WiMAX*
         * *VPN*
     * Indicates which kind of connection this is.
 
@@ -1307,33 +1300,6 @@ type exists to configure the authentication.
     can be set.
 ---
 
-## WiMAX Networks
-
-For WiMAX connections, **Type** must be set to
-*WiMAX* and the field **WiMAX** must be set to an object of
-type [WiMAX](#WiMAX-type).
-
-Currently only used for representing an existing configuration;
-ONC configuration of of **WiMAX** networks is not yet fully supported.
-
-### WiMAX type
-
-* **AutoConnect**
-    * (optional, defaults to *false*) - **boolean**
-    * Indicating that the network should be connected to automatically when
-      possible.
-
-* **EAP**
-    * (required) - [EAP](#EAP-type)
-    * EAP settings.
-
-* **SignalStrength**
-    * (optional, read-only) - **integer**
-    * The current signal strength for this network in the range [0, 100],
-      provided by the system. If the network is not in range this field will
-      be set to '0' or not present.
-
-
 ## Cellular Networks
 
 For Cellular connections, **Type** must be set to *Cellular* and the
@@ -1903,8 +1869,7 @@ particular PKCS#11 token, and tying to one OS's connection manager.
 
 In this example, we only allow managed networks to auto connect and
 disallow any other networks if a managed network is available. We also blacklist
-the "Guest" network (hex("Guest")=4775657374) and disable Cellular and WiMAX
-services.
+the "Guest" network (hex("Guest")=4775657374) and disable Cellular services.
 ```
 {
   "Type": "UnencryptedConfiguration",
@@ -1913,7 +1878,7 @@ services.
     “AllowOnlyPolicyNetworksToConnect”: false,
     “AllowOnlyPolicyNetworksToConnectIfAvailable”: true,
     “BlacklistedHexSSIDs”: [“4775657374”],
-    "DisableNetworkTypes": ["Cellular", "WiMAX"]
+    "DisableNetworkTypes": ["Cellular"]
   }
 }
 ```

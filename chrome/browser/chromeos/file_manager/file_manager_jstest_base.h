@@ -9,10 +9,12 @@
 
 #include "base/files/file_path.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 
 class FileManagerJsTestBase : public InProcessBrowserTest {
  protected:
   explicit FileManagerJsTestBase(const base::FilePath& base_path);
+  ~FileManagerJsTestBase() override;
 
   // Runs all test functions in |file|, waiting for them to complete.
   void RunTest(const base::FilePath& file);
@@ -21,9 +23,17 @@ class FileManagerJsTestBase : public InProcessBrowserTest {
   // |file|, relative to DIR_EXE/gen/base_path.
   void RunGeneratedTest(const std::string& file);
 
- private:
+  // Set up & tear down
+  void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
+
+  // chrome://file_manager_test.
+  static const std::string kTestResourceURL;
+
   void RunTestImpl(const GURL& url);
 
+ private:
+  std::unique_ptr<TestChromeWebUIControllerFactory> webui_controller_factory_;
   base::FilePath base_path_;
 };
 

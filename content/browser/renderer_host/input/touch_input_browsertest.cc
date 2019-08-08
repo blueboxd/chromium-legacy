@@ -109,7 +109,7 @@ class TouchInputBrowserTest : public ContentBrowserTest {
   }
   void LoadURL() {
     const GURL data_url(kTouchEventDataURL);
-    NavigateToURL(shell(), data_url);
+    EXPECT_TRUE(NavigateToURL(shell(), data_url));
 
     RenderWidgetHostImpl* host = GetWidgetHost();
     // Wait to confirm a frame was generated from the navigation.

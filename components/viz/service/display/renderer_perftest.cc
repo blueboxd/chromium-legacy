@@ -10,14 +10,17 @@
 // Example usage:
 //
 // $ out/release/viz_perftests --gtest_filter="*RendererPerfTest*" \
-//    --use-gpu-in-tests
+//    --use-gpu-in-tests --test-launcher-timeout=300000 \
+//    --perf-test-time-ms=240000
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/lap_timer.h"
@@ -56,6 +59,21 @@ namespace {
 static constexpr FrameSinkId kArbitraryFrameSinkId(3, 3);
 static constexpr gfx::Size kSurfaceSize(1000, 1000);
 static constexpr gfx::Rect kSurfaceRect(kSurfaceSize);
+
+base::TimeDelta TestTimeLimit() {
+  static const char kPerfTestTimeMillis[] = "perf-test-time-ms";
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kPerfTestTimeMillis)) {
+    const std::string delay_millis_string(
+        command_line->GetSwitchValueASCII(kPerfTestTimeMillis));
+    int delay_millis;
+    if (base::StringToInt(delay_millis_string, &delay_millis) &&
+        delay_millis > 0) {
+      return base::TimeDelta::FromMilliseconds(delay_millis);
+    }
+  }
+  return base::TimeDelta::FromSeconds(3);
+}
 
 class WaitForSwapDisplayClient : public DisplayClient {
  public:
@@ -204,7 +222,10 @@ class RendererPerfTest : public testing::Test {
             &manager_,
             kArbitraryFrameSinkId,
             true /* is_root */,
-            true /* needs_sync_points */)) {}
+            true /* needs_sync_points */)),
+        timer_(/*warmup_laps=*/100,
+               /*time_limit=*/TestTimeLimit(),
+               /*check_interval=*/10) {}
 
   // Overloaded for concrete RendererType below.
   std::unique_ptr<OutputSurface> CreateOutputSurface(

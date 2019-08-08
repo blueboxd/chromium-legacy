@@ -70,8 +70,14 @@ SignaturePair GetAPISignatureFromDictionary(const base::DictionaryValue* dict) {
   const base::ListValue* params = nullptr;
   CHECK(dict->GetList("parameters", &params));
 
+  bool supports_promises = false;
+  dict->GetBoolean("supportsPromises", &supports_promises);
+
   SignaturePair result;
   result.method_signature = std::make_unique<APISignature>(*params);
+  result.method_signature->set_promise_support(
+      supports_promises ? binding::PromiseSupport::kAllowed
+                        : binding::PromiseSupport::kDisallowed);
   // If response validation is enabled, parse the callback signature. Otherwise,
   // there's no reason to, so don't bother.
   if (result.method_signature->has_callback() &&
@@ -686,9 +692,17 @@ void APIBinding::HandleCall(const std::string& name,
     return;
   }
 
-  request_handler_->StartRequest(context, name,
-                                 std::move(parse_result.arguments),
-                                 parse_result.callback, custom_callback);
+  if (parse_result.async_type == binding::AsyncResponseType::kPromise) {
+    int request_id = 0;
+    v8::Local<v8::Promise> promise;
+    std::tie(request_id, promise) = request_handler_->StartPromiseBasedRequest(
+        context, name, std::move(parse_result.arguments));
+    arguments->Return(promise);
+  } else {
+    request_handler_->StartRequest(context, name,
+                                   std::move(parse_result.arguments),
+                                   parse_result.callback, custom_callback);
+  }
 }
 
 }  // namespace extensions

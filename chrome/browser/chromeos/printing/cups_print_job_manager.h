@@ -23,7 +23,7 @@ class CupsPrintJobNotificationManager;
 
 class CupsPrintJobManager : public KeyedService {
  public:
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     virtual void OnPrintJobCreated(base::WeakPtr<CupsPrintJob> job) {}
     virtual void OnPrintJobStarted(base::WeakPtr<CupsPrintJob> job) {}
@@ -44,7 +44,7 @@ class CupsPrintJobManager : public KeyedService {
     virtual void OnPrintJobCancelled(base::WeakPtr<CupsPrintJob> job) {}
 
    protected:
-    virtual ~Observer() {}
+    ~Observer() override {}
   };
 
   static CupsPrintJobManager* CreateInstance(Profile* profile);
@@ -80,7 +80,7 @@ class CupsPrintJobManager : public KeyedService {
   void RecordJobDuration(base::WeakPtr<CupsPrintJob> job);
 
   std::unique_ptr<CupsPrintJobNotificationManager> notification_manager_;
-  base::ObserverList<Observer>::Unchecked observers_;
+  base::ObserverList<Observer> observers_;
 
   // Keyed by CupsPrintJob's unique ID
   std::map<std::string, base::TimeTicks> print_job_start_times_;

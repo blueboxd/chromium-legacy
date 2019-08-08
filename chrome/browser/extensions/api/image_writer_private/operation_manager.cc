@@ -20,12 +20,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -87,10 +85,10 @@ void OperationManager::StartWriteFromUrl(
       ->GetURLLoaderFactoryForBrowserProcess()
       ->Clone(mojo::MakeRequest(&url_loader_factory_info));
 
-  scoped_refptr<Operation> operation(new WriteFromUrlOperation(
-      weak_factory_.GetWeakPtr(), CreateConnector(), extension_id,
-      std::move(url_loader_factory_info), url, hash, device_path,
-      GetAssociatedDownloadFolder()));
+  scoped_refptr<Operation> operation(
+      new WriteFromUrlOperation(weak_factory_.GetWeakPtr(), extension_id,
+                                std::move(url_loader_factory_info), url, hash,
+                                device_path, GetAssociatedDownloadFolder()));
   operations_[extension_id] = operation;
   operation->PostTask(base::BindOnce(&Operation::Start, operation));
 
@@ -114,9 +112,9 @@ void OperationManager::StartWriteFromFile(
     return;
   }
 
-  scoped_refptr<Operation> operation(new WriteFromFileOperation(
-      weak_factory_.GetWeakPtr(), CreateConnector(), extension_id, path,
-      device_path, GetAssociatedDownloadFolder()));
+  scoped_refptr<Operation> operation(
+      new WriteFromFileOperation(weak_factory_.GetWeakPtr(), extension_id, path,
+                                 device_path, GetAssociatedDownloadFolder()));
   operations_[extension_id] = operation;
   operation->PostTask(base::BindOnce(&Operation::Start, operation));
   std::move(callback).Run(true, "");
@@ -148,7 +146,7 @@ void OperationManager::DestroyPartitions(
   }
 
   scoped_refptr<Operation> operation(new DestroyPartitionsOperation(
-      weak_factory_.GetWeakPtr(), CreateConnector(), extension_id, device_path,
+      weak_factory_.GetWeakPtr(), extension_id, device_path,
       GetAssociatedDownloadFolder()));
   operations_[extension_id] = operation;
   operation->PostTask(base::BindOnce(&Operation::Start, operation));
@@ -241,11 +239,6 @@ void OperationManager::OnExtensionUnloaded(
     const Extension* extension,
     UnloadedExtensionReason reason) {
   DeleteOperation(extension->id());
-}
-
-std::unique_ptr<service_manager::Connector>
-OperationManager::CreateConnector() {
-  return content::GetSystemConnector()->Clone();
 }
 
 void OperationManager::Observe(int type,

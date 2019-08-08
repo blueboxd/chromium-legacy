@@ -125,12 +125,6 @@
                  file="settings_page/settings_animated_pages.js"
                  type="chrome_html"
                  preprocess="true" />
-      <structure name="IDR_OS_SETTINGS_PERSONALIZATION_BROWSER_PROXY_HTML"
-                 file="chromeos/personalization_page/personalization_browser_proxy.html"
-                 type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PERSONALIZATION_BROWSER_PROXY_JS"
-                 file="chromeos/personalization_page/personalization_browser_proxy.js"
-                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_PERSONALIZATION_PAGE_HTML"
                  file="chromeos/personalization_page/personalization_page.html"
                  type="chrome_html"
@@ -1351,6 +1345,12 @@
                  type="chrome_html"
                  preprocess="true"
                  allowexternalscript="true" />
+      <structure name="IDR_OS_SETTINGS_WALLPAPER_BROWSER_PROXY_HTML"
+                 file="appearance_page/wallpaper_browser_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_WALLPAPER_BROWSER_PROXY_JS"
+                 file="appearance_page/wallpaper_browser_proxy.js"
+                 type="chrome_html" />
     </structures>
   </release>
 </grit>

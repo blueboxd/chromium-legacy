@@ -33,6 +33,9 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
   void GrantOverridesForDevTools(
       const GURL& origin,
       const std::vector<PermissionType>& permissions);
+  void SetOverrideForDevTools(const GURL& origin,
+                              const PermissionType& permission,
+                              const blink::mojom::PermissionStatus& status);
   void ResetOverridesForDevTools();
 
   // PermissionController implementation.

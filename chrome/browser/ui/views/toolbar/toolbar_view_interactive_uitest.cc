@@ -11,14 +11,20 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/app_menu_button_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -327,4 +333,54 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest, BackButtonUpdate) {
   controller.DeleteNavigationEntries(base::BindRepeating(
       [&](content::NavigationEntry* entry) { return true; }));
   EXPECT_FALSE(toolbar->back_button()->GetEnabled());
+}
+
+class ToolbarViewWithExtensionsToolbarMenuTest : public ToolbarViewTest {
+ public:
+  ToolbarViewWithExtensionsToolbarMenuTest() {}
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
+    ToolbarViewTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToolbarViewWithExtensionsToolbarMenuTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ToolbarViewWithExtensionsToolbarMenuTest,
+                       ToolbarForRegularProfileHasExtensionsToolbarContainer) {
+  // Verify the normal browser has an extensions toolbar container.
+  ExtensionsToolbarContainer* extensions_container =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->toolbar()
+          ->extensions_container();
+  EXPECT_NE(nullptr, extensions_container);
+}
+
+// TODO(crbug.com/991596): Setup test profiles properly for CrOS.
+#if defined(OS_CHROMEOS)
+#define MAYBE_ToolbarForGuestHasNoExtensionsToolbarContainer \
+  DISABLED_ToolbarForGuestHasNoExtensionsToolbarContainer
+#else
+#define MAYBE_ToolbarForGuestHasNoExtensionsToolbarContainer \
+  ToolbarForGuestHasNoExtensionsToolbarContainer
+#endif
+IN_PROC_BROWSER_TEST_F(ToolbarViewWithExtensionsToolbarMenuTest,
+                       MAYBE_ToolbarForGuestHasNoExtensionsToolbarContainer) {
+  // Verify guest browser does not have an extensions toolbar container.
+  profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
+  ui_test_utils::WaitForBrowserToOpen();
+  Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
+      ProfileManager::GetGuestProfilePath());
+  ASSERT_TRUE(guest);
+  Browser* target_browser = chrome::FindAnyBrowser(guest, true);
+  ASSERT_TRUE(target_browser);
+  ExtensionsToolbarContainer* extensions_container =
+      BrowserView::GetBrowserViewForBrowser(target_browser)
+          ->toolbar()
+          ->extensions_container();
+  EXPECT_EQ(nullptr, extensions_container);
 }

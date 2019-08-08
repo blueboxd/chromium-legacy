@@ -25,6 +25,9 @@ namespace {
 // InitChromeLogging() and the beginning of CleanupChromeLogging().
 bool chrome_logging_redirected_ = false;
 
+// This should be set to true for tests that rely on log redirection.
+bool g_force_log_redirection = false;
+
 void SymlinkSetUp(const base::CommandLine& command_line,
                   const base::FilePath& log_path,
                   const base::FilePath& target_path) {
@@ -56,12 +59,16 @@ void SymlinkSetUp(const base::CommandLine& command_line,
 
 }  // namespace
 
+void ForceLogRedirectionForTesting() {
+  g_force_log_redirection = true;
+}
+
 void RedirectChromeLogging(const base::CommandLine& command_line) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Only redirect when on an actual device. To do otherwise conflicts with
   // --vmodule that developers may want to use.
-  if (!base::SysInfo::IsRunningOnChromeOS())
+  if (!base::SysInfo::IsRunningOnChromeOS() && !g_force_log_redirection)
     return;
 
   if (chrome_logging_redirected_) {

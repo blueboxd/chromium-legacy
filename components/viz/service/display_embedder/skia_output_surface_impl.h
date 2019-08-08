@@ -31,9 +31,9 @@ class WaitableEvent;
 
 namespace viz {
 
+class ImageContextImpl;
 class SkiaOutputSurfaceDependency;
 class SkiaOutputSurfaceImplOnGpu;
-struct ImageContext;
 
 // The SkiaOutputSurface implementation. It is the output surface for
 // SkiaRenderer. It lives on the compositor thread, but it will post tasks
@@ -85,7 +85,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
-      const std::vector<ResourceMetadata>& metadatas,
+      const std::vector<ImageContext*>& contexts,
       SkYUVColorSpace yuv_color_space,
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) override;
@@ -98,7 +98,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                                  bool mipmap,
                                  sk_sp<SkColorSpace> color_space) override;
   gpu::SyncToken SubmitPaint(base::OnceClosure on_finished) override;
-  sk_sp<SkImage> MakePromiseSkImage(const ResourceMetadata& metadata) override;
+  void MakePromiseSkImage(ImageContext* image_context) override;
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const RenderPassId& id,
       const gfx::Size& size,
@@ -115,7 +115,13 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void RemoveContextLostObserver(ContextLostObserver* observer) override;
 
   // ExternalUseClient implementation:
-  void ReleaseCachedResources(const std::vector<ResourceId>& ids) override;
+  void ReleaseImageContexts(
+      std::vector<std::unique_ptr<ImageContext>> image_contexts) override;
+  std::unique_ptr<ExternalUseClient::ImageContext> CreateImageContext(
+      const gpu::MailboxHolder& holder,
+      const gfx::Size& size,
+      ResourceFormat format,
+      sk_sp<SkColorSpace> color_space) override;
 
   // Set the fields of |capabilities_| and propagates to |impl_on_gpu_|. Should
   // be called after BindToClient().
@@ -143,7 +149,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       ResourceFormat resource_format,
       uint32_t gl_texture_target,
       base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info = base::nullopt);
-  void PrepareYUVATextureIndices(const std::vector<ResourceMetadata>& metadatas,
+  void PrepareYUVATextureIndices(const std::vector<ImageContext*>& contexts,
                                  bool has_alpha,
                                  SkYUVAIndex indices[4]);
   void ContextLost();
@@ -151,12 +157,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   OutputSurfaceClient* client_ = nullptr;
   bool needs_swap_size_notifications_ = false;
 
-  // Cached promise image.
-  base::flat_map<ResourceId, std::unique_ptr<ImageContext>>
-      promise_image_cache_;
-
   // Images for current frame or render pass.
-  std::vector<ImageContext*> images_in_current_paint_;
+  std::vector<ImageContextImpl*> images_in_current_paint_;
 
   THREAD_CHECKER(thread_checker_);
 
@@ -188,7 +190,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   base::Optional<SkNWayCanvas> nway_canvas_;
 
   // The cache for promise image created from render passes.
-  base::flat_map<RenderPassId, std::unique_ptr<ImageContext>>
+  base::flat_map<RenderPassId, std::unique_ptr<ImageContextImpl>>
       render_pass_image_cache_;
 
   // Sync tokens for resources which are used for the current frame or render

@@ -108,9 +108,9 @@ TEST_F(InputEventPredictionTest, PredictorType) {
 
   ConfigureFieldTrialAndInitialize(
       features::kResamplingInputEvents,
-      ui::input_prediction::kScrollPredictorNameKalmanTimeFiltered);
+      ui::input_prediction::kScrollPredictorNameKalman);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
-            PredictorType::kScrollPredictorTypeKalmanTimeFiltered);
+            PredictorType::kScrollPredictorTypeKalman);
 
   ConfigureFieldTrialAndInitialize(
       features::kResamplingInputEvents,
@@ -407,7 +407,7 @@ TEST_F(InputEventPredictionTest, NoResampleWhenExceedMaxResampleTime) {
 TEST_F(InputEventPredictionTest, PredictedEventsTimeIntervalEqualRealEvents) {
   ConfigureFieldTrialAndInitialize(
       features::kResamplingInputEvents,
-      ui::input_prediction::kScrollPredictorNameKalmanTimeFiltered);
+      ui::input_prediction::kScrollPredictorNameKalman);
 
   base::TimeTicks event_time = ui::EventTimeForNow();
   // Send 3 mouse move each has 6ms interval to get kalman predictor ready.

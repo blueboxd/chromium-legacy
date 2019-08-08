@@ -86,7 +86,7 @@ ONC_EXPORT extern const char kTether[];
 ONC_EXPORT extern const char kType[];
 ONC_EXPORT extern const char kVPN[];
 ONC_EXPORT extern const char kWiFi[];
-ONC_EXPORT extern const char kWimax[];
+ONC_EXPORT extern const char kWimaxDeprecated[];
 
 ONC_EXPORT extern std::string CellularProperty(const std::string& property);
 ONC_EXPORT extern std::string TetherProperty(const std::string& property);
@@ -101,7 +101,7 @@ ONC_EXPORT extern const char kEthernet[];
 ONC_EXPORT extern const char kTether[];
 ONC_EXPORT extern const char kVPN[];
 ONC_EXPORT extern const char kWiFi[];
-ONC_EXPORT extern const char kWimax[];
+ONC_EXPORT extern const char kWimaxDeprecated[];
 // Patterns matching multiple types, not part of the ONC spec.
 ONC_EXPORT extern const char kAllTypes[];
 ONC_EXPORT extern const char kWireless[];
@@ -252,11 +252,10 @@ ONC_EXPORT extern const char kWPA2_PSK[];
 ONC_EXPORT extern const char kWPA_EAP[];
 }  // namespace wifi
 
-namespace wimax {
+namespace wimax_deprecated {
 ONC_EXPORT extern const char kAutoConnect[];
 ONC_EXPORT extern const char kEAP[];
-ONC_EXPORT extern const char kSignalStrength[];
-}  // namespace wimax
+}  // namespace wimax_deprecated
 
 namespace client_cert {
 ONC_EXPORT extern const char kClientCertPattern[];

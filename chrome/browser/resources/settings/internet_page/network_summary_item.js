@@ -211,7 +211,6 @@ Polymer({
       case mojom.NetworkType.kTether:
         return true;
       case mojom.NetworkType.kWiFi:
-      case mojom.NetworkType.kWiMAX:
         return deviceState.deviceState != mojom.DeviceStateType.kUninitialized;
       case mojom.NetworkType.kCellular:
         return deviceState.deviceState !=
@@ -248,8 +247,6 @@ Polymer({
         return this.i18n('internetToggleMobileA11yLabel');
       case mojom.NetworkType.kWiFi:
         return this.i18n('internetToggleWiFiA11yLabel');
-      case mojom.NetworkType.kWiMAX:
-        return this.i18n('internetToggleWiMAXA11yLabel');
     }
     assertNotReached();
     return '';

@@ -26,7 +26,6 @@ class PasswordPendingView : public PasswordBubbleViewBase,
  public:
   PasswordPendingView(content::WebContents* web_contents,
                       views::View* anchor_view,
-                      const gfx::Point& anchor_point,
                       DisplayReason reason);
 
   views::View* GetUsernameTextfieldForTest() const;

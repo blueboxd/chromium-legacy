@@ -13,11 +13,9 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -47,10 +45,6 @@ public class ReducedModeNativeTestRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                Features.getInstance().enable(ChromeFeatureList.NETWORK_SERVICE);
-                // Unfortunately, Features has already formed the command line at this point. This
-                // forces another redo after we added new flags.
-                Features.ensureCommandLineIsUpToDate();
                 if (mAutoLoadNative) {
                     loadNative();
                 }

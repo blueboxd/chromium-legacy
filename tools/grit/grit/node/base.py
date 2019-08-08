@@ -610,7 +610,7 @@ class Node(object):
       The data in gzipped or brotli compressed format. If the format is
       unspecified then this returns the data uncompressed.
     '''
-    if self.attrs.get('compress') == 'gzip':
+    if self.attrs.get('compress') in ('gzip', 'true'):
       # We only use rsyncable compression on Linux.
       # We exclude ChromeOS since ChromeOS bots are Linux based but do not have
       # the --rsyncable option built in for gzip. See crbug.com/617950.
@@ -618,7 +618,7 @@ class Node(object):
         return grit.format.gzip_string.GzipStringRsyncable(data)
       return grit.format.gzip_string.GzipString(data)
 
-    elif self.attrs.get('compress') in ('true', 'brotli'):
+    elif self.attrs.get('compress') == 'brotli':
       # The length of the uncompressed data as 8 bytes little-endian.
       size_bytes = struct.pack("<q", len(data))
       data = brotli_util.BrotliCompress(data)

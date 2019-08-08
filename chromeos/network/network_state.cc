@@ -237,10 +237,8 @@ bool NetworkState::InitialPropertiesReceived(const base::Value& properties) {
     return false;
   }
 
-  // By convention, all visible WiFi and WiMAX networks have a
-  // SignalStrength > 0.
-  if ((type() == shill::kTypeWifi || type() == shill::kTypeWimax) &&
-      visible() && signal_strength_ <= 0) {
+  // By convention, all visible WiFi networks have a SignalStrength > 0.
+  if (type() == shill::kTypeWifi && visible() && signal_strength_ <= 0) {
     signal_strength_ = 1;
   }
 

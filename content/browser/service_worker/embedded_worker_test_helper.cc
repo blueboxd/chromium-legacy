@@ -77,6 +77,10 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
                              const std::string& highlight_color) override {
     NOTREACHED();
   }
+  void UpdateSystemColorInfo(
+      mojom::UpdateSystemColorInfoParamsPtr params) override {
+    NOTREACHED();
+  }
   void PurgePluginListCache(bool reload_pages) override { NOTREACHED(); }
   void SetProcessState(mojom::RenderProcessState process_state) override {
     NOTREACHED();

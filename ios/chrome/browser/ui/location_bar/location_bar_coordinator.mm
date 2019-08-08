@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/badges/badge_mediator.h"
+#import "ios/chrome/browser/ui/badges/badge_view_controller.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
@@ -163,8 +164,13 @@ const int kLocationAuthorizationStatusCount = 5;
 
   // Create BadgeMediator and set the viewController as its consumer.
   if (IsInfobarUIRebootEnabled()) {
+    BadgeViewController* badgeViewController =
+        [[BadgeViewController alloc] init];
+    [self.viewController addChildViewController:badgeViewController];
+    [self.viewController setBadgeView:badgeViewController.view];
+    [badgeViewController didMoveToParentViewController:self.viewController];
     self.badgeMediator =
-        [[BadgeMediator alloc] initWithConsumer:self.viewController
+        [[BadgeMediator alloc] initWithConsumer:badgeViewController
                                    webStateList:self.webStateList];
   }
 
@@ -392,21 +398,6 @@ const int kLocationAuthorizationStatusCount = 5;
 
 - (void)updateSearchByImageSupported:(BOOL)searchByImageSupported {
   self.viewController.searchByImageEnabled = searchByImageSupported;
-}
-
-- (void)displayInfobarBadge:(BOOL)display type:(InfobarType)infobarType {
-  InfobarMetricsRecorder* metricsRecorder;
-  // If the Badge will be displayed create a metrics recorder to log its
-  // interactions, if its hidden metrics recorder should be nil.
-  if (display)
-    metricsRecorder = [[InfobarMetricsRecorder alloc] initWithType:infobarType];
-
-  [self.viewController displayInfobarButton:display
-                            metricsRecorder:metricsRecorder];
-}
-
-- (void)activeInfobarBadge:(BOOL)active {
-  [self.viewController setInfobarButtonStyleActive:active];
 }
 
 #pragma mark - private

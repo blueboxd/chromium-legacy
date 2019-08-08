@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -148,12 +149,10 @@ public class TabGridDialogMediatorUnitTest {
         doReturn(mResources).when(mContext).getResources();
         doReturn(DIALOG_TITLE1)
                 .when(mResources)
-                .getQuantityString(
-                        org.chromium.chrome.R.plurals.bottom_tab_grid_title_placeholder, 1, 1);
+                .getQuantityString(R.plurals.bottom_tab_grid_title_placeholder, 1, 1);
         doReturn(DIALOG_TITLE2)
                 .when(mResources)
-                .getQuantityString(
-                        org.chromium.chrome.R.plurals.bottom_tab_grid_title_placeholder, 2, 2);
+                .getQuantityString(R.plurals.bottom_tab_grid_title_placeholder, 2, 2);
         doReturn(mRect).when(mAnimationOriginProvider).getAnimationOriginRect(anyInt());
         doReturn(mTabCreator).when(mTabCreatorManager).getTabCreator(anyBoolean());
 

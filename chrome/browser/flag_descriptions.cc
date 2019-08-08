@@ -1701,6 +1701,18 @@ const char kSettingsWindowName[] = "Show settings in a window";
 const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser tab.";
 
+const char kSharedClipboardReceiverName[] =
+    "Enable receiver device to handle shared clipboard feature";
+const char kSharedClipboardReceiverDescription[] =
+    "Enables receiver device to handle shared clipboard feature by showing a "
+    "notification to receive the clipboard to share.";
+
+const char kSharedClipboardUIName[] =
+    "Enable shared clipboard feature signals to be handled";
+const char kSharedClipboardUIDescription[] =
+    "Enables shared clipboard feature signals to be handled by showing "
+    "a list of user's available devices to share the clipboard.";
+
 const char kSharingDeviceRegistrationName[] =
     "Enable device registration for Sharing features";
 const char kSharingDeviceRegistrationDescription[] =
@@ -3407,6 +3419,12 @@ const char kStreamlinedUsbPrinterSetupDescription[] =
 const char kSyncWifiConfigurationsName[] = "Sync Wi-Fi network configurations";
 const char kSyncWifiConfigurationsDescription[] =
     "Enables the option to sync Wi-Fi network configurations with Chrome Sync.";
+
+const char kSystemTrayPaginationName[] = "Enable system menu pagination";
+const char kSystemTrayPaginationDescription[] =
+    "If enabled the number of rows of feature pod buttons in the system menu "
+    "is limited between 1-3 based on available screen space. The feature pod "
+    "buttons can be scrolled or swiped between pages.";
 
 const char kTetherName[] = "Instant Tethering";
 const char kTetherDescription[] =

@@ -10,7 +10,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_modality.h"
 
 class Browser;
-class OverlayUIDismissalDelegate;
+class OverlayRequestCoordinatorDelegate;
 @class OverlayRequestCoordinator;
 class OverlayRequest;
 
@@ -29,7 +29,7 @@ class OverlayRequest;
 // Creates a coordinator to show |request|'s overlay UI.
 - (OverlayRequestCoordinator*)
     newCoordinatorForRequest:(OverlayRequest*)request
-           dismissalDelegate:(OverlayUIDismissalDelegate*)dismissalDelegate
+                    delegate:(OverlayRequestCoordinatorDelegate*)delegate
           baseViewController:(UIViewController*)baseViewController;
 
 @end

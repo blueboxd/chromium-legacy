@@ -20,7 +20,19 @@ DevToolsPermissionOverrides& DevToolsPermissionOverrides::operator=(
 void DevToolsPermissionOverrides::Set(const url::Origin& origin,
                                       const PermissionType& permission,
                                       const PermissionStatus status) {
-  overrides_[origin][permission] = status;
+  PermissionOverrides& origin_overrides = overrides_[origin];
+  origin_overrides[permission] = status;
+
+  // Special override status - MIDI_SYSEX is stronger than MIDI, meaning that
+  // granting MIDI_SYSEX implies granting MIDI, while denying MIDI implies
+  // denying MIDI_SYSEX.
+  if (permission == PermissionType::MIDI &&
+      status != PermissionStatus::GRANTED) {
+    origin_overrides[PermissionType::MIDI_SYSEX] = status;
+  } else if (permission == PermissionType::MIDI_SYSEX &&
+             status == PermissionStatus::GRANTED) {
+    origin_overrides[PermissionType::MIDI] = status;
+  }
 }
 
 base::Optional<PermissionStatus> DevToolsPermissionOverrides::Get(

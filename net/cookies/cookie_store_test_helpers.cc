@@ -89,10 +89,11 @@ void DelayedCookieMonster::SetCookieWithOptionsAsync(
     const GURL& url,
     const std::string& cookie_line,
     const CookieOptions& options,
+    base::Optional<base::Time> server_time,
     CookieMonster::SetCookiesCallback callback) {
   did_run_ = false;
   cookie_monster_->SetCookieWithOptionsAsync(
-      url, cookie_line, options,
+      url, cookie_line, options, server_time,
       base::Bind(&DelayedCookieMonster::SetCookiesInternalCallback,
                  base::Unretained(this)));
   DCHECK_EQ(did_run_, true);

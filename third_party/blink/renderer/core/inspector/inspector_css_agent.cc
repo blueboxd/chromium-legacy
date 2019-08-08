@@ -262,7 +262,7 @@ bool GetColorsFromRect(PhysicalRect rect,
     if (!layout_object)
       continue;
 
-    if (IsHTMLCanvasElement(element) || IsHTMLEmbedElement(element) ||
+    if (IsA<HTMLCanvasElement>(element) || IsHTMLEmbedElement(element) ||
         IsHTMLImageElement(element) || IsHTMLObjectElement(element) ||
         IsHTMLPictureElement(element) || element->IsSVGElement() ||
         IsHTMLVideoElement(element)) {

@@ -14,7 +14,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "chromecast/media/audio/capture_service/capture_service_buildflags.h"
+#include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/capture_service/constants.h"
 #include "chromecast/media/audio/capture_service/message_parsing_util.h"
 #include "chromecast/net/small_message_socket.h"

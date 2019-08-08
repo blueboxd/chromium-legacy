@@ -40,11 +40,8 @@ void Clipboard::SetClipboardForCurrentThread(
   base::PlatformThreadId id = Clipboard::GetAndValidateThreadID();
 
   ClipboardMap* clipboard_map = clipboard_map_.Pointer();
-  ClipboardMap::const_iterator it = clipboard_map->find(id);
-  if (it != clipboard_map->end()) {
-    // This shouldn't happen. The clipboard should not already exist.
-    NOTREACHED();
-  }
+  // This shouldn't happen. The clipboard should not already exist.
+  DCHECK(!base::Contains(*clipboard_map, id));
   clipboard_map->insert({id, std::move(platform_clipboard)});
 }
 
@@ -117,11 +114,11 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
   }
 
   switch (type) {
-    case CBF_TEXT:
+    case ObjectType::CBF_TEXT:
       WriteText(&(params[0].front()), params[0].size());
       break;
 
-    case CBF_HTML:
+    case ObjectType::CBF_HTML:
       if (params.size() == 2) {
         if (params[1].empty())
           return;
@@ -132,20 +129,20 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       }
       break;
 
-    case CBF_RTF:
+    case ObjectType::CBF_RTF:
       WriteRTF(&(params[0].front()), params[0].size());
       break;
 
-    case CBF_BOOKMARK:
+    case ObjectType::CBF_BOOKMARK:
       WriteBookmark(&(params[0].front()), params[0].size(),
                     &(params[1].front()), params[1].size());
       break;
 
-    case CBF_WEBKIT:
+    case ObjectType::CBF_WEBKIT:
       WriteWebSmartPaste();
       break;
 
-    case CBF_SMBITMAP: {
+    case ObjectType::CBF_SMBITMAP: {
       // Usually, the params are just UTF-8 strings. However, for images,
       // ScopedClipboardWriter actually sizes the buffer to sizeof(SkBitmap*),
       // aliases the contents of the vector to a SkBitmap**, and writes the
@@ -155,7 +152,7 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       break;
     }
 
-    case CBF_DATA:
+    case ObjectType::CBF_DATA:
       WriteData(ClipboardFormatType::Deserialize(
                     std::string(&(params[0].front()), params[0].size())),
                 &(params[1].front()), params[1].size());

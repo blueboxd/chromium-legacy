@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "ios/chrome/browser/overlays/public/overlay_dismissal_callback.h"
+#include "ios/chrome/browser/overlays/public/overlay_presentation_callback.h"
 
 @class OverlayRequestCoordinator;
 class OverlayRequest;
@@ -21,9 +22,12 @@ class OverlayRequestUIState {
 
   // Called when the OverlayPresenter requests the presentation of |request_|.
   // This may or may not correspond with an OverlayUIWasPresented() if the
-  // hierarchy is not ready for presentation (i.e. overlay presentation for a
-  // Browser whose UI is not currently on-screen).
-  void OverlayPresentionRequested(OverlayDismissalCallback callback);
+  // presentation context is inactive.  |presentation_callback| and
+  // |dismissal_callback| are stored in the state, and will be executed when
+  // OverlayUIWasPresented() and OverlayUIWasDismissed() are called.
+  void OverlayPresentionRequested(
+      OverlayPresentationCallback presentation_callback,
+      OverlayDismissalCallback dismissal_callback);
 
   // Notifies the state that the UI is about to be presented using
   // |coordinator|.
@@ -48,6 +52,7 @@ class OverlayRequestUIState {
   OverlayRequest* request_ = nullptr;
   OverlayRequestCoordinator* coordinator_ = nil;
   bool has_ui_been_presented_ = false;
+  OverlayPresentationCallback presentation_callback_;
   OverlayDismissalReason dismissal_reason_ =
       OverlayDismissalReason::kUserInteraction;
   OverlayDismissalCallback dismissal_callback_;

@@ -111,4 +111,8 @@ const char kTokenServiceExcludeAllSecondaryAccounts[] =
 const char kTokenServiceExcludedSecondaryAccounts[] =
     "token_service.excluded_secondary_accounts";
 
+// Contains last |ListAccounts| data which corresponds to Gaia cookies.
+const char kGaiaCookieLastListAccountsData[] =
+    "gaia_cookie.last_list_accounts_data";
+
 }  // namespace prefs

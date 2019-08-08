@@ -78,7 +78,7 @@ class TouchpadPinchBrowserTest : public ContentBrowserTest,
  protected:
   void LoadURL() {
     const GURL data_url(kTouchpadPinchDataURL);
-    NavigateToURL(shell(), data_url);
+    EXPECT_TRUE(NavigateToURL(shell(), data_url));
     HitTestRegionObserver observer(GetRenderWidgetHost()->GetFrameSinkId());
     observer.WaitForHitTestData();
   }

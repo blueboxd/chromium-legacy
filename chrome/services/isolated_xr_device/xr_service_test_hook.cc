@@ -86,8 +86,6 @@ XRServiceTestHook::~XRServiceTestHook() {
   }
 }
 
-XRServiceTestHook::XRServiceTestHook(
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+XRServiceTestHook::XRServiceTestHook() = default;
 
 }  // namespace device

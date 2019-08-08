@@ -9,7 +9,6 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -98,7 +97,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 - (void)testTrailingButton {
   [self openPage1];
 
-  if (IsCompactWidth()) {
+  if ([ChromeEarlGrey isCompactWidth]) {
     [[EarlGrey selectElementWithMatcher:chrome_test_util::ShareButton()]
         assertWithMatcher:grey_sufficientlyVisible()];
   }

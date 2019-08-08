@@ -1065,8 +1065,6 @@ NetworkTypePattern NetworkTypePatternFromOncType(const std::string& type) {
     return NetworkTypePattern::VPN();
   if (type == ::onc::network_type::kWiFi)
     return NetworkTypePattern::WiFi();
-  if (type == ::onc::network_type::kWimax)
-    return NetworkTypePattern::Wimax();
   if (type == ::onc::network_type::kWireless)
     return NetworkTypePattern::Wireless();
   NOTREACHED() << "Unrecognized ONC type: " << type;

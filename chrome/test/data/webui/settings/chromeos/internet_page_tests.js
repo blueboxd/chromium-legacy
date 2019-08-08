@@ -37,7 +37,6 @@ suite('InternetPage', function() {
       OncTypeTether: 'OncTypeTether',
       OncTypeVPN: 'OncTypeVPN',
       OncTypeWiFi: 'OncTypeWiFi',
-      OncTypeWiMAX: 'OncTypeWiMAX',
       networkListItemConnected: 'networkListItemConnected',
       networkListItemConnecting: 'networkListItemConnecting',
       networkListItemConnectingTo: 'networkListItemConnectingTo',
@@ -109,7 +108,6 @@ suite('InternetPage', function() {
       assertEquals(1, ethernet.networkStateList.length);
       assertEquals(null, networkSummary_.$$('#Cellular'));
       assertEquals(null, networkSummary_.$$('#VPN'));
-      assertEquals(null, networkSummary_.$$('#WiMAX'));
       assertEquals(null, networkSummary_.$$('#WiFi'));
     });
 

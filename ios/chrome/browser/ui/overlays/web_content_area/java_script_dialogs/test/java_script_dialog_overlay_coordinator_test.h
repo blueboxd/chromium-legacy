@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
-#include "ios/chrome/browser/ui/overlays/test/fake_overlay_ui_dismissal_delegate.h"
+#include "ios/chrome/browser/ui/overlays/test/fake_overlay_request_coordinator_delegate.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/test/scoped_key_window.h"
@@ -29,8 +29,8 @@ class JavaScriptDialogOverlayCoordinatorTest : public PlatformTest {
   ~JavaScriptDialogOverlayCoordinatorTest() override;
 
   // Accessors:
-  const FakeDismissalDelegate& dismissal_delegate() const {
-    return dismissal_delegate_;
+  const FakeOverlayRequestCoordinatorDelegate& delegate() const {
+    return delegate_;
   }
 
   // Sets the request for the test.  Setting to a new value will create a
@@ -58,7 +58,7 @@ class JavaScriptDialogOverlayCoordinatorTest : public PlatformTest {
   std::unique_ptr<Browser> browser_;
   UIViewController* base_view_controller;
   std::unique_ptr<OverlayRequest> request_;
-  FakeDismissalDelegate dismissal_delegate_;
+  FakeOverlayRequestCoordinatorDelegate delegate_;
   OverlayRequestCoordinator* coordinator_;
 };
 

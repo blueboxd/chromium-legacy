@@ -141,6 +141,13 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     protected abstract void resetFilterStateInternal();
 
     /**
+     * Concrete class requires to define what's the behavior when {@link TabModel} removed a
+     * {@link Tab}.
+     * @param tab {@link Tab} had removed.
+     */
+    protected abstract void removeTab(Tab tab);
+
+    /**
      * Calls {@code resetFilterStateInternal} method to clean up filter internal data, and resets
      * the internal data based on the current {@link TabModel}.
      */
@@ -249,6 +256,7 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
 
     @Override
     public void tabRemoved(Tab tab) {
+        removeTab(tab);
         for (TabModelObserver observer : mFilteredObservers) {
             observer.tabRemoved(tab);
         }

@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -158,6 +159,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void SetCookieWithOptionsAsync(const GURL& url,
                                  const std::string& cookie_line,
                                  const CookieOptions& options,
+                                 base::Optional<base::Time> server_time,
                                  SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
                                std::string source_scheme,
@@ -370,6 +372,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void SetCookieWithOptions(const GURL& url,
                             const std::string& cookie_line,
                             const CookieOptions& options,
+                            base::Optional<base::Time> server_time,
                             SetCookiesCallback callback);
 
   void DeleteCanonicalCookie(const CanonicalCookie& cookie,

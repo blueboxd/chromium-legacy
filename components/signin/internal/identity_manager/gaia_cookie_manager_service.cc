@@ -22,10 +22,12 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/oauth_multilogin_helper.h"
 #include "components/signin/internal/identity_manager/ubertoken_fetcher_impl.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/set_accounts_in_cookie_result.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -438,11 +440,32 @@ GaiaCookieManagerService::GaiaCookieManagerService(
       fetcher_retries_(0),
       cookie_listener_binding_(this),
       external_cc_result_fetched_(false),
-      list_accounts_stale_(true) {}
+      list_accounts_stale_(true) {
+  std::string gaia_cookie_last_list_accounts_data =
+      signin_client_->GetPrefs()->GetString(
+          prefs::kGaiaCookieLastListAccountsData);
+
+  if (!gaia_cookie_last_list_accounts_data.empty()) {
+    if (!gaia::ParseListAccountsData(gaia_cookie_last_list_accounts_data,
+                                     &listed_accounts_,
+                                     &signed_out_accounts_)) {
+      DLOG(WARNING) << "GaiaCookieManagerService::ListAccounts: Failed to "
+                       "parse list accounts data from pref.";
+      listed_accounts_.clear();
+      signed_out_accounts_.clear();
+    }
+  }
+}
 
 GaiaCookieManagerService::~GaiaCookieManagerService() {
   CancelAll();
   DCHECK(requests_.empty());
+}
+
+// static
+void GaiaCookieManagerService::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kGaiaCookieLastListAccountsData,
+                               std::string());
 }
 
 void GaiaCookieManagerService::InitCookieListener() {
@@ -810,6 +833,8 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
                                    &signed_out_accounts_)) {
     listed_accounts_.clear();
     signed_out_accounts_.clear();
+    signin_client_->GetPrefs()->ClearPref(
+        prefs::kGaiaCookieLastListAccountsData);
     GoogleServiceAuthError error(
         GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE);
     RecordListAccountsFailure(error.state());
@@ -817,6 +842,8 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
     return;
   }
 
+  signin_client_->GetPrefs()->SetString(prefs::kGaiaCookieLastListAccountsData,
+                                        data);
   RecordListAccountsFailure(GoogleServiceAuthError::NONE);
   RecordListAccountsRetryResult(GoogleServiceAuthError::AuthErrorNone(),
                                 fetcher_retries_);

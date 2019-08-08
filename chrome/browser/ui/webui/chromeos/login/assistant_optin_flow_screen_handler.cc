@@ -119,6 +119,8 @@ void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
   builder->Add("assistantReadyButton", IDS_ASSISTANT_DONE_BUTTON);
   builder->Add("back", IDS_EULA_BACK_BUTTON);
   builder->Add("next", IDS_EULA_NEXT_BUTTON);
+  builder->Add("assistantOobePopupOverlayLoading",
+               IDS_ASSISTANT_OOBE_POPUP_OVERLAY_LOADING);
 }
 
 void AssistantOptInFlowScreenHandler::RegisterMessages() {

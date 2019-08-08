@@ -18,15 +18,18 @@ BackgroundFetchRegistrationNotifier::~BackgroundFetchRegistrationNotifier() {}
 
 void BackgroundFetchRegistrationNotifier::AddObserver(
     const std::string& unique_id,
-    blink::mojom::BackgroundFetchRegistrationObserverPtr observer) {
+    mojo::PendingRemote<blink::mojom::BackgroundFetchRegistrationObserver>
+        observer) {
   // Observe connection errors, which occur when the JavaScript object or the
   // renderer hosting them goes away. (For example through navigation.) The
   // observer gets freed together with |this|, thus the Unretained is safe.
-  observer.set_connection_error_handler(
-      base::BindOnce(&BackgroundFetchRegistrationNotifier::OnConnectionError,
-                     base::Unretained(this), unique_id, observer.get()));
+  mojo::Remote<blink::mojom::BackgroundFetchRegistrationObserver>
+      registration_observer(std::move(observer));
+  registration_observer.set_disconnect_handler(base::BindOnce(
+      &BackgroundFetchRegistrationNotifier::OnConnectionError,
+      base::Unretained(this), unique_id, registration_observer.get()));
 
-  observers_.emplace(unique_id, std::move(observer));
+  observers_.emplace(unique_id, std::move(registration_observer));
 }
 
 void BackgroundFetchRegistrationNotifier::Notify(

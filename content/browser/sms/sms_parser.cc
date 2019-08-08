@@ -9,6 +9,7 @@
 #include "content/browser/sms/sms_parser.h"
 
 #include "base/optional.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -28,7 +29,11 @@ base::Optional<url::Origin> SmsParser::Parse(base::StringPiece sms) {
 
   GURL gurl(url);
 
-  if (!gurl.is_valid() || !gurl.SchemeIs(url::kHttpsScheme)) {
+  if (!gurl.is_valid()) {
+    return base::nullopt;
+  }
+
+  if (!(gurl.SchemeIs(url::kHttpsScheme) || net::IsLocalhost(gurl))) {
     return base::nullopt;
   }
 

@@ -150,7 +150,7 @@ TEST_P(WebSocketStreamClientUseCookieTest, ClientUseCookie) {
 
   base::RunLoop run_loop;
   store->SetCookieWithOptionsAsync(
-      cookie_url, cookie_line, CookieOptions(),
+      cookie_url, cookie_line, CookieOptions(), base::nullopt /* server_time */,
       base::Bind(&SetCookieHelperFunction, run_loop.QuitClosure(),
                  weak_is_called.GetWeakPtr(),
                  weak_set_cookie_result.GetWeakPtr()));

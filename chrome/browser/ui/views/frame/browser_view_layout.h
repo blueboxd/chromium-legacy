@@ -28,6 +28,7 @@ class Size;
 namespace views {
 class ClientView;
 class View;
+class Widget;
 }
 
 namespace web_modal {
@@ -60,6 +61,10 @@ class BrowserViewLayout : public views::LayoutManager {
   void set_download_shelf(views::View* download_shelf) {
     download_shelf_ = download_shelf;
   }
+  void set_contents_border_widget(views::Widget* contents_border_widget) {
+    contents_border_widget_ = contents_border_widget;
+  }
+  views::Widget* contents_border_widget() { return contents_border_widget_; }
 
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost();
 
@@ -137,6 +142,10 @@ class BrowserViewLayout : public views::LayoutManager {
   TabStrip* tab_strip_ = nullptr;
   BookmarkBarView* bookmark_bar_ = nullptr;
   views::View* download_shelf_ = nullptr;
+
+  // The widget displaying a border on top of contents container for
+  // highlighting the content. Not created by default.
+  views::Widget* contents_border_widget_ = nullptr;
 
   // The bounds within which the vertically-stacked contents of the BrowserView
   // should be laid out within. This is just the local bounds of the

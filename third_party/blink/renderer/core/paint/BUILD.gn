@@ -183,6 +183,8 @@ blink_core_sources("paint") {
     "paint_timing.h",
     "paint_timing_detector.cc",
     "paint_timing_detector.h",
+    "paint_timing_visualizer.cc",
+    "paint_timing_visualizer.h",
     "pre_paint_tree_walk.cc",
     "pre_paint_tree_walk.h",
     "replaced_painter.cc",

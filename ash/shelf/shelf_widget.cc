@@ -16,6 +16,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/home_button.h"
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
@@ -368,6 +369,7 @@ void ShelfWidget::Shutdown() {
   status_area_widget_.reset();
 
   Shell::Get()->focus_cycler()->RemoveWidget(navigation_widget_.get());
+  Shell::Get()->focus_cycler()->RemoveWidget(hotseat_widget_.get());
 
   // Don't need to update the shelf background during shutdown.
   background_animator_.RemoveObserver(delegate_view_);
@@ -385,6 +387,14 @@ void ShelfWidget::CreateNavigationWidget(aura::Window* container) {
       std::make_unique<ShelfNavigationWidget>(shelf_, shelf_view_);
   navigation_widget_->Initialize(container);
   Shell::Get()->focus_cycler()->AddWidget(navigation_widget_.get());
+}
+
+void ShelfWidget::CreateHotseatWidget(aura::Window* container) {
+  DCHECK(container);
+  DCHECK(!hotseat_widget_);
+  hotseat_widget_ = std::make_unique<HotseatWidget>(shelf_, shelf_view_);
+  hotseat_widget_->Initialize(container);
+  Shell::Get()->focus_cycler()->AddWidget(hotseat_widget_.get());
 }
 
 void ShelfWidget::CreateStatusAreaWidget(aura::Window* status_container) {

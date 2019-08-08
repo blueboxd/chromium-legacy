@@ -46,6 +46,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -261,7 +262,12 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     // intervention). We can get rid of the browser_default eventually, but
     // need to take care that ProfileSyncService doesn't get tripped up between
     // those two cases. Bug 88109.
-    init_params.start_behavior = browser_defaults::kSyncAutoStarts
+    bool is_auto_start = browser_defaults::kSyncAutoStarts;
+#if defined(OS_ANDROID)
+    if (base::FeatureList::IsEnabled(switches::kSyncManualStartAndroid))
+      is_auto_start = false;
+#endif
+    init_params.start_behavior = is_auto_start
                                      ? syncer::ProfileSyncService::AUTO_START
                                      : syncer::ProfileSyncService::MANUAL_START;
   }

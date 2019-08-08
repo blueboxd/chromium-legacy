@@ -1250,6 +1250,9 @@ void TabStrip::GroupVisualsChanged(TabGroupId group) {
   group_headers_[group]->VisualsChanged();
   for (int i : controller_->ListTabsInGroup(group))
     tabs_.view_at(i)->GroupColorChanged();
+  // The group title may have changed size.
+  UpdateIdealBounds();
+  AnimateToIdealBounds();
 }
 
 bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {

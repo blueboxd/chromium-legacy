@@ -12,7 +12,9 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/log/net_log_with_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,6 +57,7 @@ class DelayedCookieMonster : public CookieStore {
       const GURL& url,
       const std::string& cookie_line,
       const CookieOptions& options,
+      base::Optional<base::Time> server_time,
       CookieMonster::SetCookiesCallback callback) override;
 
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,

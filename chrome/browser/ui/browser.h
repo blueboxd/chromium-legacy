@@ -509,6 +509,10 @@ class Browser : public TabStripModelObserver,
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
+  void OnTabGroupVisualDataChanged(
+      TabStripModel* tab_strip_model,
+      TabGroupId group,
+      const TabGroupVisualData* visual_data) override;
   void TabPinnedStateChanged(TabStripModel* tab_strip_model,
                              content::WebContents* contents,
                              int index) override;

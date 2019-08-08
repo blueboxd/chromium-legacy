@@ -1,7 +1,10 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 package org.chromium.android_webview.ui.util;
+
+import org.chromium.android_webview.common.crash.CrashInfo;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,7 +65,7 @@ public class UploadedCrashesInfoLoader extends CrashInfoLoader {
         }
 
         CrashInfo info = new CrashInfo(components[2]);
-        info.uploadState = UploadState.UPLOADED;
+        info.uploadState = CrashInfo.UploadState.UPLOADED;
         try {
             info.uploadTime = Long.parseLong(components[0]);
         } catch (NumberFormatException e) {

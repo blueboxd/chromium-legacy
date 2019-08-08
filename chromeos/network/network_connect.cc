@@ -120,11 +120,6 @@ void NetworkConnectImpl::HandleUnconfiguredNetwork(
     return;
   }
 
-  if (network->type() == shill::kTypeWimax) {
-    delegate_->ShowNetworkConfigure(network_id);
-    return;
-  }
-
   if (network->type() == shill::kTypeVPN) {
     // Third-party VPNs handle configuration UI themselves.
     if (network->GetVpnProviderType() != shill::kProviderThirdPartyVpn)

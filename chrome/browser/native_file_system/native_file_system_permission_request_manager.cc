@@ -74,7 +74,7 @@ void NativeFileSystemPermissionRequestManager::ScheduleShowRequest() {
   if (!CanShowRequest())
     return;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &NativeFileSystemPermissionRequestManager::DequeueAndShowRequest,

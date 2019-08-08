@@ -43,13 +43,15 @@ void MapRectDownToDocument(PhysicalRect& rect, const Document& document) {
       rect, kTraverseDocumentBoundaries);
 }
 
-LayoutUnit ComputeMargin(const Length& length, LayoutUnit reference_length) {
+LayoutUnit ComputeMargin(const Length& length,
+                         LayoutUnit reference_length,
+                         float zoom) {
   if (length.IsPercent()) {
     return LayoutUnit(static_cast<int>(reference_length.ToFloat() *
                                        length.Percent() / 100.0));
   }
   DCHECK(length.IsFixed());
-  return LayoutUnit(length.IntValue());
+  return LayoutUnit(length.Value() * zoom);
 }
 
 LayoutView* LocalRootView(Element& element) {
@@ -235,21 +237,22 @@ PhysicalRect IntersectionGeometry::InitializeRootRect(
   } else {
     result = PhysicalRect(ToLayoutBoxModelObject(root)->BorderBoundingBox());
   }
-  ApplyRootMargin(result, margin);
+  ApplyRootMargin(result, margin, root->StyleRef().EffectiveZoom());
   return result;
 }
 
 void IntersectionGeometry::ApplyRootMargin(PhysicalRect& rect,
-                                           const Vector<Length>& margin) {
+                                           const Vector<Length>& margin,
+                                           float zoom) {
   if (margin.IsEmpty())
     return;
 
   // TODO(szager): Make sure the spec is clear that left/right margins are
   // resolved against width and not height.
-  LayoutRectOutsets outsets(ComputeMargin(margin[0], rect.Height()),
-                            ComputeMargin(margin[1], rect.Width()),
-                            ComputeMargin(margin[2], rect.Height()),
-                            ComputeMargin(margin[3], rect.Width()));
+  LayoutRectOutsets outsets(ComputeMargin(margin[0], rect.Height(), zoom),
+                            ComputeMargin(margin[1], rect.Width(), zoom),
+                            ComputeMargin(margin[2], rect.Height(), zoom),
+                            ComputeMargin(margin[3], rect.Width(), zoom));
   rect.Expand(outsets);
 }
 

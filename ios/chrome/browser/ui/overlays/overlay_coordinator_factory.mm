@@ -40,16 +40,17 @@
 
 - (OverlayRequestCoordinator*)
     newCoordinatorForRequest:(OverlayRequest*)request
-           dismissalDelegate:(OverlayUIDismissalDelegate*)dismissalDelegate
+                    delegate:(OverlayRequestCoordinatorDelegate*)delegate
           baseViewController:(UIViewController*)baseViewController {
-  for (Class coordinatorClass in self
-           .supportedOverlayRequestCoordinatorClasses) {
+  NSArray<Class>* supportedClasses =
+      self.supportedOverlayRequestCoordinatorClasses;
+  for (Class coordinatorClass in supportedClasses) {
     if ([coordinatorClass supportsRequest:request]) {
       return [[coordinatorClass alloc]
           initWithBaseViewController:baseViewController
                              browser:self.browser
                              request:request
-                   dismissalDelegate:dismissalDelegate];
+                            delegate:delegate];
     }
   }
   NOTREACHED() << "Received unsupported request type.";

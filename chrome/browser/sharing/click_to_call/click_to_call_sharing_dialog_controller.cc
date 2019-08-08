@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
 
+#include <utility>
+
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -46,10 +48,8 @@ void ClickToCallSharingDialogController::ShowDialog(
   // Invalidate old dialog results.
   controller->last_dialog_id_++;
   controller->phone_url_ = url;
-  controller->is_loading_ = false;
-  controller->send_failed_ = false;
   controller->hide_default_handler_ = hide_default_handler;
-  controller->ShowNewDialog();
+  controller->InvalidateOldDialog();
 }
 
 // static
@@ -66,7 +66,7 @@ void ClickToCallSharingDialogController::DeviceSelected(
 
 ClickToCallSharingDialogController::ClickToCallSharingDialogController(
     content::WebContents* web_contents)
-    : web_contents_(web_contents),
+    : SharingDialogController(web_contents),
       sharing_service_(SharingServiceFactory::GetForBrowserContext(
           web_contents->GetBrowserContext())) {}
 
@@ -78,42 +78,6 @@ base::string16 ClickToCallSharingDialogController::GetTitle() {
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL);
 }
 
-void ClickToCallSharingDialogController::ShowNewDialog() {
-  if (dialog_)
-    dialog_->Hide();
-
-  // Treat the dialog as closed as the process of closing the native widget
-  // might be async.
-  dialog_ = nullptr;
-
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  auto* window = browser ? browser->window() : nullptr;
-  if (!window)
-    return;
-
-  dialog_ = window->ShowClickToCallDialog(web_contents_, this);
-  UpdateIcon();
-}
-
-void ClickToCallSharingDialogController::ShowErrorDialog() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  if (!browser)
-    return;
-
-  if (web_contents_ == browser->tab_strip_model()->GetActiveWebContents())
-    ShowNewDialog();
-}
-
-void ClickToCallSharingDialogController::UpdateIcon() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
-  auto* window = browser ? browser->window() : nullptr;
-  if (!window)
-    return;
-
-  auto* icon_container = window->GetOmniboxPageActionIconContainer();
-  if (icon_container)
-    icon_container->UpdatePageActionIcon(PageActionIconType::kClickToCall);
-}
 
 std::vector<SharingDeviceInfo>
 ClickToCallSharingDialogController::GetSyncedDevices() {
@@ -138,9 +102,7 @@ std::vector<App> ClickToCallSharingDialogController::GetApps() {
 
 void ClickToCallSharingDialogController::OnDeviceChosen(
     const SharingDeviceInfo& device) {
-  is_loading_ = true;
-  send_failed_ = false;
-  UpdateIcon();
+  StartLoading();
 
   std::string phone_number_string(phone_url_.GetContent());
   url::RawCanonOutputT<base::char16> unescaped_phone_number;
@@ -164,35 +126,26 @@ void ClickToCallSharingDialogController::OnMessageSentToDevice(int dialog_id,
   if (dialog_id != last_dialog_id_)
     return;
 
-  is_loading_ = false;
-  send_failed_ = !success;
-  UpdateIcon();
-
-  if (!success)
-    ShowErrorDialog();
+  StopLoading(!success);
 }
 
 void ClickToCallSharingDialogController::OnAppChosen(const App& app) {
   ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(phone_url_,
-                                                         web_contents_);
-}
-
-void ClickToCallSharingDialogController::OnDialogClosed(SharingDialog* dialog) {
-  // Ignore already replaced dialogs.
-  if (dialog != dialog_)
-    return;
-
-  dialog_ = nullptr;
-  UpdateIcon();
+                                                         web_contents());
 }
 
 void ClickToCallSharingDialogController::OnHelpTextClicked() {
-  ShowSingletonTab(chrome::FindBrowserWithWebContents(web_contents_),
+  ShowSingletonTab(chrome::FindBrowserWithWebContents(web_contents()),
                    GURL(chrome::kSyncLearnMoreURL));
 }
 
-SharingDialog* ClickToCallSharingDialogController::GetDialog() const {
-  return dialog_;
+SharingDialog* ClickToCallSharingDialogController::DoShowDialog(
+    BrowserWindow* window) {
+  return window->ShowClickToCallDialog(web_contents_, this);
+}
+
+PageActionIconType ClickToCallSharingDialogController::GetIconType() {
+  return PageActionIconType::kClickToCall;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClickToCallSharingDialogController)

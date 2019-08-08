@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class CustomLayoutScope;
 class FragmentResultOptions;
 class LayoutCustom;
 class ScriptState;
@@ -51,6 +52,7 @@ class CSSLayoutDefinition final
     // succeeded. It populates the FragmentResultOptions dictionary, and
     // fragment_result_data.
     bool Layout(const LayoutCustom&,
+                CustomLayoutScope*,
                 FragmentResultOptions*,
                 scoped_refptr<SerializedScriptValue>* fragment_result_data);
 

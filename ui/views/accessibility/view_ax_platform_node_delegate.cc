@@ -487,8 +487,7 @@ void ViewAXPlatformNodeDelegate::GetViewsInGroupForSet(
             ViewAXPlatformNodeDelegate* ax_delegate =
                 static_cast<ViewAXPlatformNodeDelegate*>(&view_accessibility);
             if (ax_delegate)
-              is_ignored = is_ignored || (ax_delegate->GetData().role ==
-                                          ax::mojom::Role::kIgnored);
+              is_ignored = is_ignored || ui::IsIgnored(ax_delegate->GetData());
             return is_ignored;
           }),
       views_in_group->end());

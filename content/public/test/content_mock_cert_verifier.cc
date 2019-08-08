@@ -68,7 +68,7 @@ void ContentMockCertVerifier::CertVerifier::AddResultForCertAndHost(
 
 void ContentMockCertVerifier::CertVerifier::
     EnsureNetworkServiceTestInitialized() {
-  if (!network_service_test_) {
+  if (!network_service_test_ || network_service_test_.encountered_error()) {
     GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
                                         &network_service_test_);
   }

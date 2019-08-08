@@ -30,7 +30,7 @@ public class TasksSurfaceCoordinator implements TasksSurface {
 
         if (isTabCarousel) {
             // TODO(crbug.com/982018): Change view according to incognito and dark mode.
-            // TODO(crbug.com/982018): Add the section title.
+            // TODO(crbug.com/982018): Add the tab switcher section title.
             mLayout.setLayoutParams(
                     new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                             LinearLayout.LayoutParams.WRAP_CONTENT));

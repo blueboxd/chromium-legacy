@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ui/global_media_controls/media_dialog_controller_delegate.h"
 #include "components/media_message_center/media_notification_item.h"
@@ -40,11 +41,15 @@ class MockMediaDialogControllerDelegate : public MediaDialogControllerDelegate {
 
 class MediaDialogControllerTest : public testing::Test {
  public:
-  MediaDialogControllerTest() = default;
+  MediaDialogControllerTest()
+      : task_runner_(new base::TestMockTimeTaskRunner(
+            base::TestMockTimeTaskRunner::Type::kStandalone)) {}
+
   ~MediaDialogControllerTest() override = default;
 
   void SetUp() override {
     controller_ = std::make_unique<MediaDialogController>(nullptr, &delegate_);
+    controller_->task_runner_for_testing_ = task_runner_.get();
   }
 
  protected:
@@ -91,9 +96,21 @@ class MediaDialogControllerTest : public testing::Test {
     controller_->OnReceivedAudioFocusRequests(std::move(requests));
   }
 
+  void SimulateFreezeTimerExpired() {
+    task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(2500));
+  }
+
+  bool IsSessionFrozen(const base::UnguessableToken& id) const {
+    auto item_itr = controller_->sessions_.find(id.ToString());
+    EXPECT_NE(controller_->sessions_.end(), item_itr);
+    return item_itr->second.frozen();
+  }
+
   MockMediaDialogControllerDelegate& delegate() { return delegate_; }
 
  private:
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+
   MockMediaDialogControllerDelegate delegate_;
   std::unique_ptr<MediaDialogController> controller_;
 
@@ -107,12 +124,20 @@ TEST_F(MediaDialogControllerTest, ShowControllableOnGainAndHideOnLoss) {
 
   SimulateFocusGained(id, true);
   SimulateNecessaryMetadata(id);
+  EXPECT_FALSE(IsSessionFrozen(id));
 
   // Ensure that the session was shown.
   testing::Mock::VerifyAndClearExpectations(&delegate());
 
-  EXPECT_CALL(delegate(), HideMediaSession(id.ToString()));
+  EXPECT_CALL(delegate(), HideMediaSession(id.ToString())).Times(0);
   SimulateFocusLost(id);
+  EXPECT_TRUE(IsSessionFrozen(id));
+
+  // Ensure that the session was not hidden.
+  testing::Mock::VerifyAndClearExpectations(&delegate());
+
+  EXPECT_CALL(delegate(), HideMediaSession(id.ToString()));
+  SimulateFreezeTimerExpired();
 }
 
 TEST_F(MediaDialogControllerTest, DoesNotShowUncontrollableSession) {

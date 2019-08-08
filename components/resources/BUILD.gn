@@ -28,6 +28,8 @@ grit("components_resources") {
   ]
   output_dir = "$root_gen_dir/components"
 
+  use_brotli = true
+
   grit_flags = [
     "-E",
     "about_credits_file=" + rebase_path(about_credits_file, root_build_dir),

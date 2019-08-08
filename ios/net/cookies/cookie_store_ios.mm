@@ -103,9 +103,10 @@ NotificationTrampoline* NotificationTrampoline::g_notification_trampoline =
 
 // Builds a NSHTTPCookie from a header cookie line ("Set-Cookie: xxx") and a
 // URL.
-NSHTTPCookie* GetNSHTTPCookieFromCookieLine(const std::string& cookie_line,
-                                            const GURL& url,
-                                            base::Time server_time) {
+NSHTTPCookie* GetNSHTTPCookieFromCookieLine(
+    const std::string& cookie_line,
+    const GURL& url,
+    base::Optional<base::Time> server_time) {
   NSURL* nsurl = net::NSURLWithGURL(url);
   NSString* ns_cookie_line = base::SysUTF8ToNSString(cookie_line);
   if (!ns_cookie_line) {
@@ -119,11 +120,13 @@ NSHTTPCookie* GetNSHTTPCookieFromCookieLine(const std::string& cookie_line,
     return nil;
 
   NSHTTPCookie* cookie = [cookies objectAtIndex:0];
-  if (![cookie expiresDate] || server_time.is_null())
+  if (![cookie expiresDate] || !server_time.has_value() ||
+      server_time->is_null()) {
     return cookie;
+  }
 
   // Perform clock skew correction.
-  base::TimeDelta clock_skew = base::Time::Now() - server_time;
+  base::TimeDelta clock_skew = base::Time::Now() - server_time.value();
   NSDate* corrected_expire_date =
       [[cookie expiresDate] dateByAddingTimeInterval:clock_skew.InSecondsF()];
   NSMutableDictionary* properties =
@@ -272,6 +275,7 @@ void CookieStoreIOS::SetCookieWithOptionsAsync(
     const GURL& url,
     const std::string& cookie_line,
     const net::CookieOptions& options,
+    base::Optional<base::Time> server_time,
     SetCookiesCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -283,8 +287,6 @@ void CookieStoreIOS::SetCookieWithOptionsAsync(
   // engine.
   DCHECK(!options.exclude_httponly());
 
-  base::Time server_time =
-      options.has_server_time() ? options.server_time() : base::Time();
   NSHTTPCookie* cookie =
       GetNSHTTPCookieFromCookieLine(cookie_line, url, server_time);
   DLOG_IF(WARNING, !cookie) << "Could not create cookie for line: "

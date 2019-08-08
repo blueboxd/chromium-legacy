@@ -669,6 +669,67 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
 
     return update;
   }
+
+  ui::AXTreeUpdate BuildAXTreeForMoveByPage() {
+    ui::AXNodeData root_data;
+    root_data.id = 1;
+    root_data.role = ax::mojom::Role::kDocument;
+
+    ui::AXNodeData page_1_data;
+    page_1_data.id = 2;
+    page_1_data.role = ax::mojom::Role::kRegion;
+    page_1_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsPageBreakingObject, true);
+
+    ui::AXNodeData page_1_text_data;
+    page_1_text_data.id = 3;
+    page_1_text_data.role = ax::mojom::Role::kStaticText;
+    page_1_text_data.SetName("some text on page 1");
+    page_1_text_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
+    page_1_data.child_ids = {3};
+
+    ui::AXNodeData page_2_data;
+    page_2_data.id = 4;
+    page_2_data.role = ax::mojom::Role::kRegion;
+    page_2_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsPageBreakingObject, true);
+
+    ui::AXNodeData page_2_text_data;
+    page_2_text_data.id = 5;
+    page_2_text_data.role = ax::mojom::Role::kStaticText;
+    page_2_text_data.SetName("some text on page 2");
+    page_2_text_data.AddIntAttribute(
+        ax::mojom::IntAttribute::kTextStyle,
+        static_cast<int32_t>(ax::mojom::TextStyle::kBold));
+    page_2_data.child_ids = {5};
+
+    ui::AXNodeData page_3_data;
+    page_3_data.id = 6;
+    page_3_data.role = ax::mojom::Role::kRegion;
+    page_3_data.AddBoolAttribute(
+        ax::mojom::BoolAttribute::kIsPageBreakingObject, true);
+
+    ui::AXNodeData page_3_text_data;
+    page_3_text_data.id = 7;
+    page_3_text_data.role = ax::mojom::Role::kStaticText;
+    page_3_text_data.SetName("some more text on page 3");
+    page_3_data.child_ids = {7};
+
+    root_data.child_ids = {2, 4, 6};
+
+    ui::AXTreeUpdate update;
+    ui::AXTreeData tree_data;
+    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    update.tree_data = tree_data;
+    update.has_tree_data = true;
+    update.root_id = root_data.id;
+    update.nodes = {root_data,       page_1_data,      page_1_text_data,
+                    page_2_data,     page_2_text_data, page_3_data,
+                    page_3_text_data};
+
+    return update;
+  }
 };
 
 class MockAXPlatformNodeTextRangeProviderWin
@@ -1556,6 +1617,85 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveFormat) {
                   /*count*/ -2,
                   /*expected_text*/ L"",
                   /*expected_count*/ -2);
+
+  AXNodePosition::SetTreeForTesting(nullptr);
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMovePage) {
+  Init(BuildAXTreeForMoveByPage());
+  AXNode* root_node = GetRootNode();
+  AXNodePosition::SetTreeForTesting(tree_.get());
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, root_node);
+
+  // Moving by 0 should have no effect.
+  EXPECT_UIA_MOVE(
+      text_range_provider, TextUnit_Page,
+      /*count*/ 0,
+      /*expected_text*/
+      L"some text on page 1\nsome text on page 2some more text on page 3",
+      /*expected_count*/ 0);
+
+  // Backwards endpoint moves
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Page,
+      /*count*/ -1,
+      /*expected_text*/ L"some text on page 1\nsome text on page 2",
+      /*expected_count*/ -1);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
+                                   TextPatternRangeEndpoint_End, TextUnit_Page,
+                                   /*count*/ -5,
+                                   /*expected_text*/ L"",
+                                   /*expected_count*/ -2);
+
+  // Forwards endpoint move
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Page,
+      /*count*/ 5,
+      /*expected_text*/
+      L"some text on page 1\nsome text on page 2some more text on page 3",
+      /*expected_count*/ 4);
+
+  // Range moves
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page,
+                  /*count*/ 1,
+                  /*expected_text*/ L"some text on page 2",
+                  /*expected_count*/ 1);
+
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page,
+                  /*count*/ 1,
+                  /*expected_text*/ L"some more text on page 3",
+                  /*expected_count*/ 1);
+
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page,
+                  /*count*/ -1,
+                  /*expected_text*/ L"some text on page 2",
+                  /*expected_count*/ -1);
+
+  // ExpandToEnclosingUnit - first move by character so it's not on a
+  // page boundary before calling ExpandToEnclosingUnit
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ -2,
+      /*expected_text*/ L"some text on page",
+      /*expected_count*/ -2);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ 2,
+      /*expected_text*/ L"me text on page",
+      /*expected_count*/ 2);
+
+  ASSERT_HRESULT_SUCCEEDED(
+      text_range_provider->ExpandToEnclosingUnit(TextUnit_Page));
+
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page,
+                  /*count*/ 0,
+                  /*expected_text*/
+                  L"some text on page 2",
+                  /*expected_count*/ 0);
 
   AXNodePosition::SetTreeForTesting(nullptr);
 }

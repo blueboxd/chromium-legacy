@@ -140,7 +140,7 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
   void StartTestWithPage(const std::string& url) {
     ASSERT_TRUE(embedded_test_server()->Start());
     GURL test_url(embedded_test_server()->GetURL(url));
-    NavigateToURL(shell(), test_url);
+    EXPECT_TRUE(NavigateToURL(shell(), test_url));
     aura::Window* content = shell()->web_contents()->GetContentNativeView();
     content->GetHost()->SetBoundsInPixels(gfx::Rect(800, 600));
   }

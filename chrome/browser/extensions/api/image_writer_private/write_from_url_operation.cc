@@ -12,7 +12,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 namespace image_writer {
@@ -21,18 +20,13 @@ using content::BrowserThread;
 
 WriteFromUrlOperation::WriteFromUrlOperation(
     base::WeakPtr<OperationManager> manager,
-    std::unique_ptr<service_manager::Connector> connector,
     const ExtensionId& extension_id,
     network::mojom::URLLoaderFactoryPtrInfo factory_info,
     GURL url,
     const std::string& hash,
     const std::string& device_path,
     const base::FilePath& download_folder)
-    : Operation(manager,
-                std::move(connector),
-                extension_id,
-                device_path,
-                download_folder),
+    : Operation(manager, extension_id, device_path, download_folder),
       url_loader_factory_ptr_info_(std::move(factory_info)),
       url_(url),
       hash_(hash),

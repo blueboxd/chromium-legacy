@@ -548,15 +548,6 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
                                     : GetPasswordAuthEvent();
     RecordEasyUnlockScreenUnlockEvent(event);
 
-    if (will_authenticate_using_easy_unlock() ||
-        event == PASSWORD_ENTRY_PHONE_LOCKED ||
-        event == PASSWORD_ENTRY_PHONE_NOT_LOCKABLE ||
-        event == PASSWORD_ENTRY_RSSI_TOO_LOW ||
-        event == PASSWORD_ENTRY_PHONE_LOCKED_AND_RSSI_TOO_LOW ||
-        event == PASSWORD_ENTRY_WITH_AUTHENTICATED_PHONE) {
-      SmartLockMetricsRecorder::RecordGetRemoteStatusResultUnlockSuccess();
-    }
-
     if (will_authenticate_using_easy_unlock()) {
       SmartLockMetricsRecorder::RecordSmartLockUnlockAuthMethodChoice(
           SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kSmartLock);
@@ -569,18 +560,6 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
       SmartLockMetricsRecorder::RecordSmartLockUnlockAuthMethodChoice(
           SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kOther);
       OnUserEnteredPassword();
-    }
-
-    if (event == PASSWORD_ENTRY_BLUETOOTH_CONNECTING) {
-      SmartLockMetricsRecorder::RecordGetRemoteStatusResultUnlockFailure(
-          SmartLockMetricsRecorder::
-              SmartLockGetRemoteStatusResultFailureReason::
-                  kUserEnteredPasswordWhileConnecting);
-    } else if (event == PASSWORD_ENTRY_NO_BLUETOOTH) {
-      SmartLockMetricsRecorder::RecordGetRemoteStatusResultUnlockFailure(
-          SmartLockMetricsRecorder::
-              SmartLockGetRemoteStatusResultFailureReason::
-                  kUserEnteredPasswordWhileBluetoothDisabled);
     }
   }
 

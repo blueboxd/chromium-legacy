@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.android_webview.VariationsUtils;
+import org.chromium.android_webview.common.variations.VariationsUtils;
 import org.chromium.android_webview.services.VariationsSeedHolder;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
 import org.chromium.base.test.util.CallbackHelper;

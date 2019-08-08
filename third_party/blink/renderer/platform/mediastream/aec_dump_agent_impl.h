@@ -8,13 +8,13 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/mediastream/aec_dump.mojom-blink.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
 // An instance of this class connects to the browser process to register for
 // notifications to start / stop writing to a dump file.
-class AecDumpAgentImpl : public mojom::blink::AecDumpAgent {
+class PLATFORM_EXPORT AecDumpAgentImpl : public mojom::blink::AecDumpAgent {
  public:
   class Delegate {
    public:

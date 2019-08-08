@@ -262,7 +262,7 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
     // Don't transiently hide the DelegatedFrameHost because that can cause the
     // current frame to be inappropriately evicted.
     // https://crbug.com/897156
-    delegated_frame_host_->WasHidden();
+    delegated_frame_host_->WasHidden(DelegatedFrameHost::HiddenCause::kOther);
     return;
   }
 

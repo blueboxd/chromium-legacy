@@ -458,10 +458,10 @@ GURL EffectiveURLContentBrowserClient::GetEffectiveURL(
 }
 
 bool EffectiveURLContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    BrowserOrResourceContext browser_or_resource_context,
+    BrowserContext* browser_context,
     const GURL& effective_site_url) {
-  GURL expected_effective_site_url = SiteInstance::GetSiteForURL(
-      browser_or_resource_context.ToBrowserContext(), url_to_modify_);
+  GURL expected_effective_site_url =
+      SiteInstance::GetSiteForURL(browser_context, url_to_modify_);
 
   return requires_dedicated_process_ &&
          expected_effective_site_url == effective_site_url;

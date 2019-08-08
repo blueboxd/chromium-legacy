@@ -194,6 +194,9 @@ are declared in tools/grit/grit_rule.gni.
       <!-- Media Router specific strings -->
       <part file="media_router_strings.grdp" />
 
+      <!-- Global Media Controls specific strings -->
+      <part file="global_media_controls_strings.grdp" />
+
       <!-- Profiles specific strings -->
       <part file="profiles_strings.grdp" />
 
@@ -4717,6 +4720,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Bad Feature Flags Infobar-->
       <message name="IDS_BAD_FEATURES_WARNING_MESSAGE" desc="Message shown when an unsupported feature flag is used. [Keep it short so it fits in the infobar.]">
         You are using an unsupported feature flag: <ph name="BAD_FLAG">$1<ex>SignedHTTPExchange</ex></ph>. Stability and security will suffer.
+      </message>
+
+      <!-- Bad Environment Variables Infobar-->
+      <message name="IDS_BAD_ENVIRONMENT_VARIABLES_WARNING_MESSAGE" desc="Message shown when an unsupported environment variable is used [Keep it short so it fits in the infobar.]">
+        You are using an unsupported environment variable: <ph name="BAD_VAR">$1<ex>SSLKEYLOGFILE</ex></ph>. Stability and security will suffer.
       </message>
 
       <!-- Pepper Broker Infobar -->

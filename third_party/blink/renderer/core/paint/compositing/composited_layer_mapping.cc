@@ -102,7 +102,7 @@ static PhysicalRect BackgroundRect(const LayoutObject& layout_object) {
 
 static inline bool IsTextureLayerCanvas(const LayoutObject& layout_object) {
   if (layout_object.IsCanvas()) {
-    HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
+    auto* canvas = To<HTMLCanvasElement>(layout_object.GetNode());
     if (canvas->SurfaceLayerBridge())
       return false;
     if (CanvasRenderingContext* context = canvas->RenderingContext())
@@ -113,7 +113,7 @@ static inline bool IsTextureLayerCanvas(const LayoutObject& layout_object) {
 
 static inline bool IsSurfaceLayerCanvas(const LayoutObject& layout_object) {
   if (layout_object.IsCanvas()) {
-    HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
+    auto* canvas = To<HTMLCanvasElement>(layout_object.GetNode());
     return canvas->SurfaceLayerBridge();
   }
   return false;
@@ -121,7 +121,7 @@ static inline bool IsSurfaceLayerCanvas(const LayoutObject& layout_object) {
 
 static inline bool IsCompositedCanvas(const LayoutObject& layout_object) {
   if (layout_object.IsCanvas()) {
-    HTMLCanvasElement* canvas = ToHTMLCanvasElement(layout_object.GetNode());
+    auto* canvas = To<HTMLCanvasElement>(layout_object.GetNode());
     if (canvas->SurfaceLayerBridge())
       return true;
     if (CanvasRenderingContext* context = canvas->RenderingContext())
@@ -448,7 +448,7 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
   bool should_check_children = !foreground_layer_.get();
   if (IsTextureLayerCanvas(GetLayoutObject())) {
     CanvasRenderingContext* context =
-        ToHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
+        To<HTMLCanvasElement>(GetLayoutObject().GetNode())->RenderingContext();
     cc::Layer* layer = context ? context->CcLayer() : nullptr;
     // Determine whether the external texture layer covers the whole graphics
     // layer. This may not be the case if there are box decorations or
@@ -875,7 +875,7 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
           /*prevent_contents_opaque_changes=*/true);
     } else if (layout_object.IsCanvas()) {
       graphics_layer_->SetContentsToCcLayer(
-          ToHTMLCanvasElement(layout_object.GetNode())->ContentsCcLayer(),
+          To<HTMLCanvasElement>(layout_object.GetNode())->ContentsCcLayer(),
           /*prevent_contents_opaque_changes=*/false);
       layer_config_changed = true;
     }
@@ -1954,7 +1954,7 @@ void CompositedLayerMapping::UpdateDrawsContentAndPaintsHitTest() {
 
   if (has_painted_content && IsTextureLayerCanvas(GetLayoutObject())) {
     CanvasRenderingContext* context =
-        ToHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
+        To<HTMLCanvasElement>(GetLayoutObject().GetNode())->RenderingContext();
     // Content layer may be null if context is lost.
     if (cc::Layer* content_layer = context->CcLayer()) {
       Color bg_color(Color::kTransparent);

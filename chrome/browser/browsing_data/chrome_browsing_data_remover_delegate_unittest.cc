@@ -284,11 +284,10 @@ class RemoveCookieTester {
 
   void AddCookie() {
     base::RunLoop run_loop;
-    net::CookieOptions options;
-    auto cookie = net::CanonicalCookie::Create(kOrigin1, "A=1",
-                                               base::Time::Now(), options);
+    auto cookie = net::CanonicalCookie::Create(
+        kOrigin1, "A=1", base::Time::Now(), base::nullopt /* server_time */);
     cookie_manager_->SetCanonicalCookie(
-        *cookie, "http", options,
+        *cookie, "http", net::CookieOptions(),
         base::BindLambdaForTesting(
             [&](net::CanonicalCookie::CookieInclusionStatus result) {
               EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE,

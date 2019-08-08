@@ -18,6 +18,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -104,8 +105,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Spec of the last request URL that reached the server.
 @property(nonatomic, copy, readonly) NSString* lastRequestURLSpec;
 
-// Pauses response server and disables EG synchronization if |paused| is YES.
-// Pending navigation will not complete until server is unpaused.
+// Pauses response server.
 - (void)setServerPaused:(BOOL)paused;
 
 // Waits until |_responseProvider| receives a request with the given |URL|.
@@ -151,15 +151,6 @@ class PausableResponseProvider : public HtmlResponseProvider {
   [ChromeEarlGrey loadURL:_testURL2];
 }
 
-- (void)tearDown {
-  // This test case disables synchronization, so make sure that it is enabled
-  // if that test has failed and did not enable it back.
-  [[GREYConfiguration sharedInstance]
-          setValue:@YES
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  [super tearDown];
-}
-
 #pragma mark -
 #pragma mark Tests
 
@@ -174,19 +165,24 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  [self setServerPaused:YES];
+  {
+    // Pauses response server and disables EG synchronization.
+    // Pending navigation will not complete until server is unpaused.
+    ScopedSynchronizationDisabler disabler;
+    [self setServerPaused:YES];
 
-  // Tap the back button in the toolbar and verify that URL2 (committed URL) is
-  // displayed even though URL1 is a pending URL.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-      performAction:grey_tap()];
-  GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
-             @"Last request URL: %@", self.lastRequestURLSpec);
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-      assertWithMatcher:grey_notNil()];
+    // Tap the back button in the toolbar and verify that URL2 (committed URL)
+    // is displayed even though URL1 is a pending URL.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+        performAction:grey_tap()];
+    GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
+               @"Last request URL: %@", self.lastRequestURLSpec);
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  // Make server respond so URL1 becomes committed.
-  [self setServerPaused:NO];
+    // Make server respond so URL1 becomes committed.
+    [self setServerPaused:NO];
+  }
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -195,19 +191,24 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
-  [self setServerPaused:YES];
+  {
+    // Pauses response server and disables EG synchronization.
+    // Pending navigation will not complete until server is unpaused.
+    ScopedSynchronizationDisabler disabler;
+    [self setServerPaused:YES];
 
-  // Tap the forward button in the toolbar and verify that URL1 (committed URL)
-  // is displayed even though URL2 is a pending URL.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
-      performAction:grey_tap()];
-  GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL2],
-             @"Last request URL: %@", self.lastRequestURLSpec);
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
-      assertWithMatcher:grey_notNil()];
+    // Tap the forward button in the toolbar and verify that URL1 (committed
+    // URL) is displayed even though URL2 is a pending URL.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ForwardButton()]
+        performAction:grey_tap()];
+    GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL2],
+               @"Last request URL: %@", self.lastRequestURLSpec);
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  // Make server respond so URL2 becomes committed.
-  [self setServerPaused:NO];
+    // Make server respond so URL2 becomes committed.
+    [self setServerPaused:NO];
+  }
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -224,13 +225,14 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  [self setServerPaused:YES];
 
-  // Re-enable synchronization here to synchronize EarlGrey LongPress and Tap
-  // actions.
-  [[GREYConfiguration sharedInstance]
-          setValue:@(YES)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  // Pauses response server and disables EG synchronization.
+  // Pending navigation will not complete until server is unpaused.
+  {
+    ScopedSynchronizationDisabler disabler;
+    [self setServerPaused:YES];
+  }
+
   // Go back in history and verify that URL2 (committed URL) is displayed even
   // though URL1 is a pending URL.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
@@ -240,17 +242,18 @@ class PausableResponseProvider : public HtmlResponseProvider {
   [[EarlGrey selectElementWithMatcher:grey_text(URL1Title)]
       performAction:grey_tap()];
 
-  [[GREYConfiguration sharedInstance]
-          setValue:@(NO)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  {
+    // Disables EG synchronization.
+    // Pending navigation will not complete until server is unpaused.
+    ScopedSynchronizationDisabler disabler;
+    GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
+               @"Last request URL: %@", self.lastRequestURLSpec);
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
-             @"Last request URL: %@", self.lastRequestURLSpec);
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  // Make server respond so URL1 becomes committed.
-  [self setServerPaused:NO];
+    // Make server respond so URL1 becomes committed.
+    [self setServerPaused:NO];
+  }
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -267,27 +270,30 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  [self setServerPaused:YES];
+  {
+    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+        std::make_unique<ScopedSynchronizationDisabler>();
+    [self setServerPaused:YES];
 
-  // Tap the back button, stop pending navigation and reload.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-      performAction:grey_tap()];
-  GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
-             @"Last request URL: %@", self.lastRequestURLSpec);
-  // On iPhone Stop/Reload button is a part of tools menu, so open it.
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    // Enable EG synchronization to make test wait for popover animations.
-    [[GREYConfiguration sharedInstance]
-            setValue:@YES
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
-    [ChromeEarlGreyUI openToolsMenu];
+    // Tap the back button, stop pending navigation and reload.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+        performAction:grey_tap()];
+    GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
+               @"Last request URL: %@", self.lastRequestURLSpec);
+    // On iPhone Stop/Reload button is a part of tools menu, so open it.
+    if (![ChromeEarlGrey isIPadIdiom]) {
+      // Enable EG synchronization to make test wait for popover animations.
+      disabler.reset();
+      [ChromeEarlGreyUI openToolsMenu];
+    }
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
+        performAction:grey_tap()];
+    [ChromeEarlGreyUI reload];
+
+    // Makes server respond.
+    [self setServerPaused:NO];
   }
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]
-      performAction:grey_tap()];
-  [ChromeEarlGreyUI reload];
-
-  // Make server respond and verify that page2 was reloaded, not page1.
-  [self setServerPaused:NO];
+  // Verifies that page2 was reloaded, not page1.
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -304,19 +310,24 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  [self setServerPaused:YES];
+  {
+    // Pauses response server and disables EG synchronization.
+    // Pending navigation will not complete until server is unpaused.
+    ScopedSynchronizationDisabler disabler;
+    [self setServerPaused:YES];
 
-  // Tap the back button on the page and verify that URL2 (committed URL) is
-  // displayed even though URL1 is a pending URL.
-  [ChromeEarlGrey
-      tapWebStateElementWithID:base::SysUTF8ToNSString(kGoBackLink)];
-  GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
-             @"Last request URL: %@", self.lastRequestURLSpec);
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-      assertWithMatcher:grey_notNil()];
+    // Tap the back button on the page and verify that URL2 (committed URL) is
+    // displayed even though URL1 is a pending URL.
+    [ChromeEarlGrey
+        tapWebStateElementWithID:base::SysUTF8ToNSString(kGoBackLink)];
+    GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
+               @"Last request URL: %@", self.lastRequestURLSpec);
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  // Make server respond so URL1 becomes committed.
-  [self setServerPaused:NO];
+    // Make server respond so URL1 becomes committed.
+    [self setServerPaused:NO];
+  }
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -325,19 +336,24 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
-  [self setServerPaused:YES];
+  {
+    // Pauses response server and disables EG synchronization.
+    // Pending navigation will not complete until server is unpaused.
+    ScopedSynchronizationDisabler disabler;
+    [self setServerPaused:YES];
 
-  // Tap the forward button on the page and verify that URL1 (committed URL)
-  // is displayed even though URL2 is a pending URL.
-  [ChromeEarlGrey
-      tapWebStateElementWithID:base::SysUTF8ToNSString(kGoForwardLink)];
-  GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL2],
-             @"Last request URL: %@", self.lastRequestURLSpec);
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
-      assertWithMatcher:grey_notNil()];
+    // Tap the forward button on the page and verify that URL1 (committed URL)
+    // is displayed even though URL2 is a pending URL.
+    [ChromeEarlGrey
+        tapWebStateElementWithID:base::SysUTF8ToNSString(kGoForwardLink)];
+    GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL2],
+               @"Last request URL: %@", self.lastRequestURLSpec);
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  // Make server respond so URL2 becomes committed.
-  [self setServerPaused:NO];
+    // Make server respond so URL2 becomes committed.
+    [self setServerPaused:NO];
+  }
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -354,19 +370,24 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  [self setServerPaused:YES];
+  {
+    // Pauses response server and disables EG synchronization.
+    // Pending navigation will not complete until server is unpaused.
+    ScopedSynchronizationDisabler disabler;
+    [self setServerPaused:YES];
 
-  // Tap the go negative delta button on the page and verify that URL2
-  // (committed URL) is displayed even though URL1 is a pending URL.
-  [ChromeEarlGrey
-      tapWebStateElementWithID:base::SysUTF8ToNSString(kGoNegativeDeltaLink)];
-  GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
-             @"Last request URL: %@", self.lastRequestURLSpec);
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-      assertWithMatcher:grey_notNil()];
+    // Tap the go negative delta button on the page and verify that URL2
+    // (committed URL) is displayed even though URL1 is a pending URL.
+    [ChromeEarlGrey
+        tapWebStateElementWithID:base::SysUTF8ToNSString(kGoNegativeDeltaLink)];
+    GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
+               @"Last request URL: %@", self.lastRequestURLSpec);
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  // Make server respond so URL1 becomes committed.
-  [self setServerPaused:NO];
+    // Make server respond so URL1 becomes committed.
+    [self setServerPaused:NO];
+  }
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -375,19 +396,24 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
-  [self setServerPaused:YES];
+  {
+    // Pauses response server and disables EG synchronization.
+    // Pending navigation will not complete until server is unpaused.
+    ScopedSynchronizationDisabler disabler;
+    [self setServerPaused:YES];
 
-  // Tap go positive delta button on the page and verify that URL1 (committed
-  // URL) is displayed even though URL2 is a pending URL.
-  [ChromeEarlGrey
-      tapWebStateElementWithID:base::SysUTF8ToNSString(kGoPositiveDeltaLink)];
-  GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL2],
-             @"Last request URL: %@", self.lastRequestURLSpec);
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
-      assertWithMatcher:grey_notNil()];
+    // Tap go positive delta button on the page and verify that URL1 (committed
+    // URL) is displayed even though URL2 is a pending URL.
+    [ChromeEarlGrey
+        tapWebStateElementWithID:base::SysUTF8ToNSString(kGoPositiveDeltaLink)];
+    GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL2],
+               @"Last request URL: %@", self.lastRequestURLSpec);
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  // Make server respond so URL2 becomes committed.
-  [self setServerPaused:NO];
+    // Make server respond so URL2 becomes committed.
+    [self setServerPaused:NO];
+  }
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -404,31 +430,34 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  [self setServerPaused:YES];
+  {
+    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+        std::make_unique<ScopedSynchronizationDisabler>();
 
-  // Start reloading the page.
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    // Enable EG synchronization to make test wait for popover animations.
-    [[GREYConfiguration sharedInstance]
-            setValue:@YES
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
-    [ChromeEarlGreyUI openToolsMenu];
+    [self setServerPaused:YES];
+
+    // Start reloading the page.
+    if (![ChromeEarlGrey isIPadIdiom]) {
+      // Enable EG synchronization to make test wait for popover animations.
+      disabler.reset();
+      [ChromeEarlGreyUI openToolsMenu];
+    }
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
+        performAction:grey_tap()];
+
+    // Do not wait until reload is finished, tap the back button in the toolbar
+    // and verify that URL2 (committed URL) is displayed even though URL1 is a
+    // pending URL.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+        performAction:grey_tap()];
+    // TODO(crbug.com/724560): Re-evaluate if necessary to check receiving URL1
+    // request here.
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+        assertWithMatcher:grey_notNil()];
+
+    // Make server respond so URL1 becomes committed.
+    [self setServerPaused:NO];
   }
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
-      performAction:grey_tap()];
-
-  // Do not wait until reload is finished, tap the back button in the toolbar
-  // and verify that URL2 (committed URL) is displayed even though URL1 is a
-  // pending URL.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-      performAction:grey_tap()];
-  // TODO(crbug.com/724560): Re-evaluate if necessary to check receiving URL1
-  // request here.
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  // Make server respond so URL1 becomes committed.
-  [self setServerPaused:NO];
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -453,23 +482,29 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  [self setServerPaused:YES];
+  {
+    // Pauses response server and disables EG synchronization.
+    // Pending navigation will not complete until server is unpaused.
+    ScopedSynchronizationDisabler disabler;
+    [self setServerPaused:YES];
 
-  // Start renderer initiated navigation.
-  [ChromeEarlGrey tapWebStateElementWithID:base::SysUTF8ToNSString(kPage3Link)];
+    // Start renderer initiated navigation.
+    [ChromeEarlGrey
+        tapWebStateElementWithID:base::SysUTF8ToNSString(kPage3Link)];
 
-  // Do not wait until renderer-initiated navigation is finished, tap the back
-  // button in the toolbar and verify that URL2 (committed URL) is displayed
-  // even though URL1 is a pending URL.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-      performAction:grey_tap()];
-  // TODO(crbug.com/724560): Re-evaluate if necessary to check receiving URL1
-  // request here.
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-      assertWithMatcher:grey_notNil()];
+    // Do not wait until renderer-initiated navigation is finished, tap the back
+    // button in the toolbar and verify that URL2 (committed URL) is displayed
+    // even though URL1 is a pending URL.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+        performAction:grey_tap()];
+    // TODO(crbug.com/724560): Re-evaluate if necessary to check receiving URL1
+    // request here.
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  // Make server respond so URL1 becomes committed.
-  [self setServerPaused:NO];
+    // Make server respond so URL1 becomes committed.
+    [self setServerPaused:NO];
+  }
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -487,24 +522,30 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage2];
-  [self setServerPaused:YES];
+  {
+    // Pauses response server and disables EG synchronization.
+    // Pending navigation will not complete until server is unpaused.
+    ScopedSynchronizationDisabler disabler;
+    [self setServerPaused:YES];
 
-  // Tap the back button in the toolbar and verify that URL2 (committed URL) is
-  // displayed even though URL1 is a pending URL.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-      performAction:grey_tap()];
-  GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
-             @"Last request URL: %@", self.lastRequestURLSpec);
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-      assertWithMatcher:grey_notNil()];
+    // Tap the back button in the toolbar and verify that URL2 (committed URL)
+    // is displayed even though URL1 is a pending URL.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+        performAction:grey_tap()];
+    GREYAssert([self waitForServerToReceiveRequestWithURL:_testURL1],
+               @"Last request URL: %@", self.lastRequestURLSpec);
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  // Interrupt back navigation with renderer initiated navigation.
-  [ChromeEarlGrey tapWebStateElementWithID:base::SysUTF8ToNSString(kPage3Link)];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
-      assertWithMatcher:grey_notNil()];
+    // Interrupt back navigation with renderer initiated navigation.
+    [ChromeEarlGrey
+        tapWebStateElementWithID:base::SysUTF8ToNSString(kPage3Link)];
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL2.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  // Make server respond so URL1 becomes committed.
-  [self setServerPaused:NO];
+    // Make server respond so URL1 becomes committed.
+    [self setServerPaused:NO];
+  }
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage3];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL3.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -524,22 +565,27 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage3];
-  [self setServerPaused:YES];
+  {
+    // Pauses response server and disables EG synchronization.
+    // Pending navigation will not complete until server is unpaused.
+    ScopedSynchronizationDisabler disabler;
+    [self setServerPaused:YES];
 
-  // Tap the back button twice in the toolbar and verify that URL3 (committed
-  // URL) is displayed even though URL1 is a pending URL.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
-      performAction:grey_tap()];
-  // Server will receive only one request either for |_testURL2| or for
-  // |_testURL1| depending on load timing and then will pause. So there is no
-  // need to wait for particular request.
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL3.GetContent())]
-      assertWithMatcher:grey_notNil()];
+    // Tap the back button twice in the toolbar and verify that URL3 (committed
+    // URL) is displayed even though URL1 is a pending URL.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+        performAction:grey_tap()];
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
+        performAction:grey_tap()];
+    // Server will receive only one request either for |_testURL2| or for
+    // |_testURL1| depending on load timing and then will pause. So there is no
+    // need to wait for particular request.
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL3.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  // Make server respond so URL1 becomes committed.
-  [self setServerPaused:NO];
+    // Make server respond so URL1 becomes committed.
+    [self setServerPaused:NO];
+  }
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -590,22 +636,27 @@ class PausableResponseProvider : public HtmlResponseProvider {
   // verify omnibox state before server starts responding.
   GREYAssert(PurgeCachedWebViewPages(), @"Pages were not purged");
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage3];
-  [self setServerPaused:YES];
+  {
+    // Pauses response server and disables EG synchronization.
+    // Pending navigation will not complete until server is unpaused.
+    ScopedSynchronizationDisabler disabler;
+    [self setServerPaused:YES];
 
-  // Tap the back button twice on the page and verify that URL3 (committed URL)
-  // is displayed even though URL1 is a pending URL.
-  [ChromeEarlGrey
-      tapWebStateElementWithID:base::SysUTF8ToNSString(kGoBackLink)];
-  [ChromeEarlGrey
-      tapWebStateElementWithID:base::SysUTF8ToNSString(kGoBackLink)];
-  // Server will receive only one request either for |_testURL2| or for
-  // |_testURL1| depending on load timing and then will pause. So there is no
-  // need to wait for particular request.
-  [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL3.GetContent())]
-      assertWithMatcher:grey_notNil()];
+    // Tap the back button twice on the page and verify that URL3 (committed
+    // URL) is displayed even though URL1 is a pending URL.
+    [ChromeEarlGrey
+        tapWebStateElementWithID:base::SysUTF8ToNSString(kGoBackLink)];
+    [ChromeEarlGrey
+        tapWebStateElementWithID:base::SysUTF8ToNSString(kGoBackLink)];
+    // Server will receive only one request either for |_testURL2| or for
+    // |_testURL1| depending on load timing and then will pause. So there is no
+    // need to wait for particular request.
+    [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL3.GetContent())]
+        assertWithMatcher:grey_notNil()];
 
-  // Make server respond so URL1 becomes committed.
-  [self setServerPaused:NO];
+    // Make server respond so URL1 becomes committed.
+    [self setServerPaused:NO];
+  }
   // TODO(crbug.com/866406): fix the test to have documented behavior.
   [ChromeEarlGrey waitForWebStateContainingText:kTestPage1];
   [[EarlGrey selectElementWithMatcher:OmniboxText(_testURL1.GetContent())]
@@ -620,14 +671,6 @@ class PausableResponseProvider : public HtmlResponseProvider {
 }
 
 - (void)setServerPaused:(BOOL)paused {
-  // Disable EG synchronization if server is paused so the framework does not
-  // wait until the tab loading spinner or progress bar indicator becomes idle
-  // (which will not happen until server responds and the navigation is
-  // finished).
-  [[GREYConfiguration sharedInstance]
-          setValue:@(!paused)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
-
   _responseProvider->set_paused(paused);
 }
 

@@ -3104,7 +3104,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           base::nullopt /* appcache_host_id */,
           mojom::WasActivatedOption::kUnknown,
           base::UnguessableToken::Create() /* navigation_token */,
-          std::vector<PrefetchedSignedExchangeInfo>(),
+          std::vector<mojom::PrefetchedSignedExchangeInfoPtr>(),
 #if defined(OS_ANDROID)
           std::string(), /* data_url_as_string */
 #endif

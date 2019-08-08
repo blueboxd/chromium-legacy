@@ -149,7 +149,13 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
                               kFullscreenAppListFolders, kMaxFolderOpened);
   } else {
     base::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
-    delegate_->ActivateItem(item->id(), event_flags,
+
+    // Avoid using |item->id()| as the parameter. In some rare situations,
+    // activating the item may destruct it. Using the reference to an object
+    // which may be destroyed during the procedure as the function parameter
+    // may bring the crash like https://crbug.com/990282.
+    const std::string id = item->id();
+    delegate_->ActivateItem(id, event_flags,
                             ash::AppListLaunchedFrom::kLaunchedFromGrid);
   }
 }

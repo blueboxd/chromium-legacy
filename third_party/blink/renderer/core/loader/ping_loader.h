@@ -62,18 +62,12 @@ class CORE_EXPORT PingLoader {
   STATIC_ONLY(PingLoader);
 
  public:
-  enum ViolationReportType {
-    kContentSecurityPolicyViolationReport,
-    kXSSAuditorViolationReport
-  };
-
   static void SendLinkAuditPing(LocalFrame*,
                                 const KURL& ping_url,
                                 const KURL& destination_url);
   static void SendViolationReport(LocalFrame*,
                                   const KURL& report_url,
-                                  scoped_refptr<EncodedFormData> report,
-                                  ViolationReportType);
+                                  scoped_refptr<EncodedFormData> report);
 
   // The last argument is guaranteed to be set to the size of payload if
   // these method return true. If these method returns false, the value

@@ -18,7 +18,7 @@
 
 <dom-module id="network-config">
   <template>
-    <style include="network-shared settings-shared action-link iron-flex">
+    <style include="network-shared action-link iron-flex">
       #spinner-container {
         height: 200px;
       }
@@ -128,7 +128,7 @@
         </network-config-toggle>
       </template>
 
-      <!-- EAP (WiFi, WiMAX, Ethernet) -->
+      <!-- EAP (WiFi, Ethernet) -->
       <template is="dom-if" if="[[showEap_]]" restamp>
         <network-config-select id="outer" label="[[i18n('OncEAP-Outer')]]"
             value="{{eapProperties_.Outer}}" items="[[eapOuterItems_]]"
@@ -177,7 +177,7 @@
         </network-config-toggle>
       </template>
 
-      <!-- Share (WiFi and WiMAX) -->
+      <!-- Share (WiFi) -->
       <template is="dom-if"
           if="[[shareIsVisible_(guid, type, managedProperties)]]" restamp>
         <div class="property-box">

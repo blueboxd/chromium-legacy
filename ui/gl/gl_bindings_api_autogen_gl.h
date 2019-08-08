@@ -130,6 +130,9 @@ void glClearTexSubImageFn(GLuint texture,
 GLenum glClientWaitSyncFn(GLsync sync,
                           GLbitfield flags,
                           GLuint64 timeout) override;
+GLenum glClientWaitSyncAPPLEFn(GLsync sync,
+                               GLbitfield flags,
+                               GLuint64 timeout) override;
 void glColorMaskFn(GLboolean red,
                    GLboolean green,
                    GLboolean blue,
@@ -319,6 +322,7 @@ void glDeleteSamplersFn(GLsizei n, const GLuint* samplers) override;
 void glDeleteSemaphoresEXTFn(GLsizei n, const GLuint* semaphores) override;
 void glDeleteShaderFn(GLuint shader) override;
 void glDeleteSyncFn(GLsync sync) override;
+void glDeleteSyncAPPLEFn(GLsync sync) override;
 void glDeleteTexturesFn(GLsizei n, const GLuint* textures) override;
 void glDeleteTransformFeedbacksFn(GLsizei n, const GLuint* ids) override;
 void glDeleteVertexArraysOESFn(GLsizei n, const GLuint* arrays) override;
@@ -371,6 +375,7 @@ void glEnableVertexAttribArrayFn(GLuint index) override;
 void glEndQueryFn(GLenum target) override;
 void glEndTransformFeedbackFn(void) override;
 GLsync glFenceSyncFn(GLenum condition, GLbitfield flags) override;
+GLsync glFenceSyncAPPLEFn(GLenum condition, GLbitfield flags) override;
 void glFinishFn(void) override;
 void glFinishFenceAPPLEFn(GLuint fence) override;
 void glFinishFenceNVFn(GLuint fence) override;
@@ -888,6 +893,7 @@ GLboolean glIsRenderbufferEXTFn(GLuint renderbuffer) override;
 GLboolean glIsSamplerFn(GLuint sampler) override;
 GLboolean glIsShaderFn(GLuint shader) override;
 GLboolean glIsSyncFn(GLsync sync) override;
+GLboolean glIsSyncAPPLEFn(GLsync sync) override;
 GLboolean glIsTextureFn(GLuint texture) override;
 GLboolean glIsTransformFeedbackFn(GLuint id) override;
 GLboolean glIsVertexArrayOESFn(GLuint array) override;
@@ -1547,4 +1553,7 @@ void glWaitSemaphoreEXTFn(GLuint semaphore,
                           const GLuint* textures,
                           const GLenum* srcLayouts) override;
 void glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) override;
+void glWaitSyncAPPLEFn(GLsync sync,
+                       GLbitfield flags,
+                       GLuint64 timeout) override;
 void glWindowRectanglesEXTFn(GLenum mode, GLsizei n, const GLint* box) override;

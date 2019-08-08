@@ -1,6 +1,6 @@
 embeddedObject
-++group restriction=readOnly
-++++region name='Page 1' restriction=readOnly
+++document restriction=readOnly
+++++region name='Page 1' restriction=readOnly isPageBreakingObject=true
 ++++++heading hierarchicalLevel=2 restriction=readOnly
 ++++++++staticText name='Heading<newline>' restriction=readOnly
 ++++++++++inlineTextBox name='Heading<newline>' restriction=readOnly

@@ -87,10 +87,10 @@
   if (animated) {
     // Prepare for animation.
     [self.locationBarAnimatee offsetEditViewToMatchSteadyView];
-    // Hide leading button before the transform regardless of current displayed
+    // Hide badge view before the transform regardless of current displayed
     // state to prevent it from being visible outside of the location bar as the
     // steadView moves outside to the leading side of the location bar.
-    [self.locationBarAnimatee hideSteadyViewLeadingButton];
+    [self.locationBarAnimatee hideSteadyViewBadgeView];
     // Make edit view transparent, but not hidden.
     [self.locationBarAnimatee setEditViewHidden:NO];
     [self.locationBarAnimatee setEditViewFaded:YES];
@@ -160,8 +160,7 @@
   void (^cleanup)() = ^{
     [self.locationBarAnimatee setEditViewHidden:YES];
     [self.locationBarAnimatee setSteadyViewHidden:NO];
-    // Restore the leading button to the original displayed state.
-    [self.locationBarAnimatee showSteadyViewLeadingButtonIfNeeded];
+    [self.locationBarAnimatee showSteadyViewBadgeView];
     [self.locationBarAnimatee resetTransforms];
     [self.locationBarAnimatee setSteadyViewFaded:NO];
     [self.editViewAnimatee setLeadingIconFaded:NO];

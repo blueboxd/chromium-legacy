@@ -1023,7 +1023,7 @@ bool AXObject::ComputeIsInertOrAriaHidden(
 }
 
 bool AXObject::IsVisible() const {
-  return !IsInertOrAriaHidden();
+  return !IsInertOrAriaHidden() && !IsHiddenForTextAlternativeCalculation();
 }
 
 bool AXObject::IsDescendantOfLeafNode() const {
@@ -1191,11 +1191,11 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   if (IsLineBreakingObject())
     return true;
 
-  // Allow the browser side ax tree to access "visibility: hidden" nodes. This
-  // is useful for APIs that return the node referenced by aria-labeledby and
-  // aria-descibedby
+  // Allow the browser side ax tree to access "visibility: hidden" and
+  // "visibility: collapse" nodes. This is useful for APIs that return the node
+  // referenced by aria-labeledby and aria-describedby
   if (GetLayoutObject() &&
-      GetLayoutObject()->Style()->Visibility() == EVisibility::kHidden) {
+      GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible) {
     return true;
   }
 

@@ -8,7 +8,9 @@
 #include <limits>
 #include <string>
 
+#include "base/feature_list.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/mime_util.h"
@@ -63,7 +65,8 @@ FrameData::FrameData(FrameTreeNodeId frame_tree_node_id)
       user_activation_status_(UserActivationStatus::kNoActivation),
       is_display_none_(false),
       visibility_(FrameVisibility::kVisible),
-      frame_size_(gfx::Size()) {}
+      frame_size_(gfx::Size()),
+      heavy_ad_status_(HeavyAdStatus::kNone) {}
 
 FrameData::~FrameData() = default;
 
@@ -179,6 +182,23 @@ void FrameData::UpdateCpuUsage(base::TimeTicks update_time,
   }
 }
 
+bool FrameData::MaybeTriggerHeavyAdIntervention() {
+  if (user_activation_status_ == UserActivationStatus::kReceivedActivation ||
+      heavy_ad_status_ != HeavyAdStatus::kNone)
+    return false;
+
+  heavy_ad_status_ = ComputeHeavyAdStatus();
+  if (heavy_ad_status_ == HeavyAdStatus::kNone)
+    return false;
+
+  // Only check if the feature is enabled once we have a heavy ad. This is done
+  // to ensure that any experiment for this feature will only be comparing
+  // groups who have seen a heavy ad.
+  if (!base::FeatureList::IsEnabled(features::kHeavyAdIntervention))
+    return false;
+  return true;
+}
+
 base::TimeDelta FrameData::GetInteractiveCpuUsage(
     InteractiveStatus status) const {
   return cpu_by_interactive_period_[static_cast<int>(status)];
@@ -203,15 +223,6 @@ void FrameData::SetReceivedUserActivation(base::TimeDelta foreground_duration) {
 
 size_t FrameData::GetAdNetworkBytesForMime(ResourceMimeType mime_type) const {
   return ad_bytes_by_mime_[static_cast<size_t>(mime_type)];
-}
-
-void FrameData::UpdateFrameVisibility() {
-  visibility_ =
-      !is_display_none_ &&
-              frame_size_.GetCheckedArea().ValueOrDefault(
-                  std::numeric_limits<int>::max()) >= kMinimumVisibleFrameArea
-          ? FrameVisibility::kVisible
-          : FrameVisibility::kNonVisible;
 }
 
 void FrameData::MaybeUpdateFrameDepth(
@@ -279,4 +290,24 @@ void FrameData::RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const {
     }
   }
   builder.Record(ukm_recorder->Get());
+}
+
+void FrameData::UpdateFrameVisibility() {
+  visibility_ =
+      !is_display_none_ &&
+              frame_size_.GetCheckedArea().ValueOrDefault(
+                  std::numeric_limits<int>::max()) >= kMinimumVisibleFrameArea
+          ? FrameVisibility::kVisible
+          : FrameVisibility::kNonVisible;
+}
+
+FrameData::HeavyAdStatus FrameData::ComputeHeavyAdStatus() const {
+  // Check if the frame meets the absolute CPU time threshold.
+  if (GetTotalCpuUsage().InMilliseconds() >= heavy_ad_thresholds::kMaxCpuTime)
+    return HeavyAdStatus::kCpu;
+
+  // Check if the frame meets the network threshold.
+  if (network_bytes_ >= heavy_ad_thresholds::kMaxNetworkBytes)
+    return HeavyAdStatus::kNetwork;
+  return HeavyAdStatus::kNone;
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -81,10 +82,9 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   EXPECT_FALSE(content_setting_image_model->is_visible());
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
-  net::CookieOptions options;
   GURL origin("http://google.com");
-  std::unique_ptr<net::CanonicalCookie> cookie(
-      net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
+  std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+      origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie);
   web_contents()->OnCookieChange(origin, origin, *cookie, false);
   content_setting_image_model->Update(web_contents());

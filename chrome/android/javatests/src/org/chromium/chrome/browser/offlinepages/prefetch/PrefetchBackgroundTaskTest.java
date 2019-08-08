@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 /** Unit tests for {@link PrefetchBackgroundTask}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=OfflinePagesPrefetching,NetworkService,InterestFeedContentSuggestions"})
+        "enable-features=OfflinePagesPrefetching,InterestFeedContentSuggestions"})
 public class PrefetchBackgroundTaskTest {
     @Rule
     public ReducedModeNativeTestRule mNativeTestRule = new ReducedModeNativeTestRule();

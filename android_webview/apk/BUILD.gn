@@ -31,8 +31,8 @@ android_library("apk_java") {
     "java/src/com/android/webview/chromium/WebViewApkApplication.java",
   ]
   deps = [
-    "//android_webview:android_webview_commandline_java",
     "//android_webview:android_webview_locale_config_java",
+    "//android_webview:common_commandline_java",
     "//base:base_java",
     "//components/embedder_support/android:application_java",
     "//ui/android:ui_java",

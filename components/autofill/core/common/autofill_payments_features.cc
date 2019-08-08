@@ -159,8 +159,13 @@ const base::Feature kAutofillUpstreamEditableCardholderName{
 };
 
 const base::Feature kAutofillUpstreamEditableExpirationDate{
-    "AutofillUpstreamEditableExpirationDate",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "AutofillUpstreamEditableExpirationDate",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 bool ShouldShowImprovedUserConsentForCreditCardSave() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || \

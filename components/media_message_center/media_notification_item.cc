@@ -36,6 +36,10 @@ MediaNotificationItem::Source GetSource(const std::string& name) {
   return MediaNotificationItem::Source::kUnknown;
 }
 
+// How long to wait (in milliseconds) for a new media session to begin.
+constexpr base::TimeDelta kFreezeTimerDelay =
+    base::TimeDelta::FromMilliseconds(2500);
+
 }  // namespace
 
 // static
@@ -54,10 +58,153 @@ MediaNotificationItem::MediaNotificationItem(
     media_session::mojom::MediaSessionInfoPtr session_info)
     : controller_(notification_controller),
       request_id_(request_id),
-      source_(GetSource(source_name)),
-      media_controller_ptr_(std::move(controller)),
-      session_info_(std::move(session_info)) {
+      source_(GetSource(source_name)) {
   DCHECK(controller_);
+
+  if (auto task_runner = notification_controller->GetTaskRunner())
+    freeze_timer_.SetTaskRunner(task_runner);
+
+  SetController(std::move(controller), std::move(session_info));
+}
+
+MediaNotificationItem::~MediaNotificationItem() {
+  controller_->HideNotification(request_id_);
+}
+
+void MediaNotificationItem::MediaSessionInfoChanged(
+    media_session::mojom::MediaSessionInfoPtr session_info) {
+  session_info_ = std::move(session_info);
+
+  MaybeUnfreeze();
+  MaybeHideOrShowNotification();
+
+  if (view_ && !frozen_)
+    view_->UpdateWithMediaSessionInfo(session_info_);
+}
+
+void MediaNotificationItem::MediaSessionMetadataChanged(
+    const base::Optional<media_session::MediaMetadata>& metadata) {
+  session_metadata_ = metadata.value_or(media_session::MediaMetadata());
+
+  view_needs_metadata_update_ = true;
+
+  MaybeUnfreeze();
+  MaybeHideOrShowNotification();
+
+  // |MaybeHideOrShowNotification()| can synchronously create a
+  // MediaNotificationView that calls |SetView()|. If that happens, then we
+  // don't want to call |view_->UpdateWithMediaMetadata()| below since |view_|
+  // will have already received the metadata when calling |SetView()|.
+  // |view_needs_metadata_update_| is set to false in |SetView()|.
+  if (view_ && view_needs_metadata_update_ && !frozen_)
+    view_->UpdateWithMediaMetadata(session_metadata_);
+
+  view_needs_metadata_update_ = false;
+}
+
+void MediaNotificationItem::MediaSessionActionsChanged(
+    const std::vector<media_session::mojom::MediaSessionAction>& actions) {
+  session_actions_ = std::set<media_session::mojom::MediaSessionAction>(
+      actions.begin(), actions.end());
+
+  if (view_ && !frozen_) {
+    DCHECK(view_);
+    view_->UpdateWithMediaActions(session_actions_);
+  }
+}
+
+void MediaNotificationItem::MediaControllerImageChanged(
+    media_session::mojom::MediaSessionImageType type,
+    const SkBitmap& bitmap) {
+  DCHECK_EQ(media_session::mojom::MediaSessionImageType::kArtwork, type);
+
+  session_artwork_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+
+  if (view_ && !frozen_)
+    view_->UpdateWithMediaArtwork(*session_artwork_);
+}
+
+void MediaNotificationItem::SetView(MediaNotificationView* view) {
+  DCHECK(view_ || view);
+
+  view_ = view;
+
+  if (view_) {
+    view_needs_metadata_update_ = false;
+    view_->UpdateWithMediaSessionInfo(session_info_);
+    view_->UpdateWithMediaMetadata(session_metadata_);
+    view_->UpdateWithMediaActions(session_actions_);
+
+    if (session_artwork_.has_value())
+      view_->UpdateWithMediaArtwork(*session_artwork_);
+  }
+}
+
+void MediaNotificationItem::FlushForTesting() {
+  media_controller_ptr_.FlushForTesting();
+}
+
+bool MediaNotificationItem::ShouldShowNotification() const {
+  // If the |is_controllable| bit is set in MediaSessionInfo then we should show
+  // a media notification.
+  if (!session_info_ || !session_info_->is_controllable)
+    return false;
+
+  // If we do not have a title and an artist then we should hide the
+  // notification.
+  if (session_metadata_.title.empty() || session_metadata_.artist.empty())
+    return false;
+
+  return true;
+}
+
+void MediaNotificationItem::OnFreezeTimerFired() {
+  DCHECK(frozen_);
+
+  if (is_bound_) {
+    controller_->HideNotification(request_id_);
+  } else {
+    controller_->RemoveItem(request_id_);
+  }
+}
+
+void MediaNotificationItem::MaybeHideOrShowNotification() {
+  if (frozen_)
+    return;
+
+  if (!ShouldShowNotification()) {
+    controller_->HideNotification(request_id_);
+    return;
+  }
+
+  // If we have an existing view, then we don't need to create a new one.
+  if (view_)
+    return;
+
+  controller_->ShowNotification(request_id_);
+
+  UMA_HISTOGRAM_ENUMERATION(kSourceHistogramName, source_);
+}
+
+void MediaNotificationItem::OnMediaSessionActionButtonPressed(
+    MediaSessionAction action) {
+  UMA_HISTOGRAM_ENUMERATION(kUserActionHistogramName, action);
+
+  if (frozen_)
+    return;
+
+  media_session::PerformMediaSessionAction(action, media_controller_ptr_);
+}
+
+void MediaNotificationItem::SetController(
+    media_session::mojom::MediaControllerPtr controller,
+    media_session::mojom::MediaSessionInfoPtr session_info) {
+  observer_receiver_.reset();
+  artwork_observer_receiver_.reset();
+
+  is_bound_ = true;
+  media_controller_ptr_ = std::move(controller);
+  session_info_ = std::move(session_info);
 
   if (media_controller_ptr_.is_bound()) {
     // Bind an observer to the associated media controller.
@@ -76,108 +223,27 @@ MediaNotificationItem::MediaNotificationItem(
   MaybeHideOrShowNotification();
 }
 
-MediaNotificationItem::~MediaNotificationItem() {
-  controller_->HideNotification(request_id_);
-}
-
-void MediaNotificationItem::MediaSessionInfoChanged(
-    media_session::mojom::MediaSessionInfoPtr session_info) {
-  session_info_ = std::move(session_info);
-
-  MaybeHideOrShowNotification();
-
-  if (view_)
-    view_->UpdateWithMediaSessionInfo(session_info_);
-}
-
-void MediaNotificationItem::MediaSessionMetadataChanged(
-    const base::Optional<media_session::MediaMetadata>& metadata) {
-  session_metadata_ = metadata.value_or(media_session::MediaMetadata());
-
-  view_needs_metadata_update_ = true;
-
-  MaybeHideOrShowNotification();
-
-  // |MaybeHideOrShowNotification()| can synchronously create a
-  // MediaNotificationView that calls |SetView()|. If that happens, then we
-  // don't want to call |view_->UpdateWithMediaMetadata()| below since |view_|
-  // will have already received the metadata when calling |SetView()|.
-  // |view_needs_metadata_update_| is set to false in |SetView()|.
-  if (view_ && view_needs_metadata_update_)
-    view_->UpdateWithMediaMetadata(session_metadata_);
-
-  view_needs_metadata_update_ = false;
-}
-
-void MediaNotificationItem::MediaSessionActionsChanged(
-    const std::vector<media_session::mojom::MediaSessionAction>& actions) {
-  session_actions_ = std::set<media_session::mojom::MediaSessionAction>(
-      actions.begin(), actions.end());
-
-  if (view_)
-    view_->UpdateWithMediaActions(session_actions_);
-}
-
-void MediaNotificationItem::MediaControllerImageChanged(
-    media_session::mojom::MediaSessionImageType type,
-    const SkBitmap& bitmap) {
-  DCHECK_EQ(media_session::mojom::MediaSessionImageType::kArtwork, type);
-
-  session_artwork_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-
-  if (view_)
-    view_->UpdateWithMediaArtwork(*session_artwork_);
-}
-
-void MediaNotificationItem::SetView(MediaNotificationView* view) {
-  DCHECK(view_ || view);
-
-  view_ = view;
-
-  if (view) {
-    view_needs_metadata_update_ = false;
-    view_->UpdateWithMediaSessionInfo(session_info_);
-    view_->UpdateWithMediaMetadata(session_metadata_);
-    view_->UpdateWithMediaActions(session_actions_);
-
-    if (session_artwork_.has_value())
-      view_->UpdateWithMediaArtwork(*session_artwork_);
-  }
-}
-
-void MediaNotificationItem::FlushForTesting() {
-  media_controller_ptr_.FlushForTesting();
-}
-
-void MediaNotificationItem::MaybeHideOrShowNotification() {
-  // If the |is_controllable| bit is set in MediaSessionInfo then we should show
-  // a media notification.
-  if (!session_info_ || !session_info_->is_controllable) {
-    controller_->HideNotification(request_id_);
-    return;
-  }
-
-  // If we do not have a title and an artist then we should hide the
-  // notification.
-  if (session_metadata_.title.empty() || session_metadata_.artist.empty()) {
-    controller_->HideNotification(request_id_);
-    return;
-  }
-
-  // If we have an existing view, then we don't need to create a new one.
-  if (view_)
+void MediaNotificationItem::Freeze() {
+  if (frozen_)
     return;
 
-  controller_->ShowNotification(request_id_);
+  frozen_ = true;
+  is_bound_ = false;
 
-  UMA_HISTOGRAM_ENUMERATION(kSourceHistogramName, source_);
+  freeze_timer_.Start(FROM_HERE, kFreezeTimerDelay,
+                      base::BindOnce(&MediaNotificationItem::OnFreezeTimerFired,
+                                     base::Unretained(this)));
 }
 
-void MediaNotificationItem::OnMediaSessionActionButtonPressed(
-    MediaSessionAction action) {
-  UMA_HISTOGRAM_ENUMERATION(kUserActionHistogramName, action);
+void MediaNotificationItem::MaybeUnfreeze() {
+  if (!frozen_)
+    return;
 
-  media_session::PerformMediaSessionAction(action, media_controller_ptr_);
+  if (!ShouldShowNotification() || !is_bound_)
+    return;
+
+  frozen_ = false;
+  freeze_timer_.Stop();
 }
 
 }  // namespace media_message_center

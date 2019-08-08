@@ -45,6 +45,8 @@
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "chrome/browser/chromeos/crostini/crostini_unsupported_action_notifier.h"
+#include "chrome/browser/chromeos/crostini/crosvm_metrics.h"
 #include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
 #include "chrome/browser/chromeos/dbus/cryptohome_key_delegate_service_provider.h"
@@ -1069,6 +1071,9 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
     cros_usb_detector_->ConnectToDeviceManager();
   }
 
+  crostini_unsupported_action_notifier_ =
+      std::make_unique<crostini::CrostiniUnsupportedActionNotifier>();
+
   dark_resume_controller_ = std::make_unique<system::DarkResumeController>(
       content::GetSystemConnector());
 
@@ -1077,6 +1082,8 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 
 // Shut down services before the browser process, etc are destroyed.
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
+  crostini_unsupported_action_notifier_.reset();
+
   ResourceReporter::GetInstance()->StopMonitoring();
 
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);

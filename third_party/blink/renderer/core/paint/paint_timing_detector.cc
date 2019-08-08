@@ -69,11 +69,20 @@ PaintTimingDetector::PaintTimingDetector(LocalFrameView* frame_view)
               nullptr /*set later*/)),
       callback_manager_(
           MakeGarbageCollected<PaintTimingCallbackManagerImpl>(frame_view)) {
+  if (PaintTimingVisualizer::IsTracingEnabled())
+    visualizer_.emplace();
   text_paint_timing_detector_->ResetCallbackManager(callback_manager_.Get());
   image_paint_timing_detector_->ResetCallbackManager(callback_manager_.Get());
 }
 
 void PaintTimingDetector::NotifyPaintFinished() {
+  if (PaintTimingVisualizer::IsTracingEnabled()) {
+    if (!visualizer_)
+      visualizer_.emplace();
+    visualizer_->RecordMainFrameViewport(*frame_view_);
+  } else {
+    visualizer_.reset();
+  }
   if (text_paint_timing_detector_) {
     text_paint_timing_detector_->OnPaintFinished();
     if (text_paint_timing_detector_->FinishedReportingText()) {
@@ -341,6 +350,7 @@ void PaintTimingDetector::Trace(Visitor* visitor) {
   visitor->Trace(frame_view_);
   visitor->Trace(largest_contentful_paint_calculator_);
   visitor->Trace(callback_manager_);
+  visitor->Trace(visualizer_);
 }
 
 void PaintTimingCallbackManagerImpl::

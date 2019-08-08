@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_visualizer.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -168,6 +169,7 @@ class CORE_EXPORT PaintTimingDetector
   uint64_t LargestImagePaintSize() const { return largest_image_paint_size_; }
   base::TimeTicks LargestTextPaint() const { return largest_text_paint_time_; }
   uint64_t LargestTextPaintSize() const { return largest_text_paint_size_; }
+  base::Optional<PaintTimingVisualizer>& Visualizer() { return visualizer_; }
   void Trace(Visitor* visitor);
 
  private:
@@ -185,6 +187,8 @@ class CORE_EXPORT PaintTimingDetector
   Member<LargestContentfulPaintCalculator> largest_contentful_paint_calculator_;
 
   Member<PaintTimingCallbackManagerImpl> callback_manager_;
+
+  base::Optional<PaintTimingVisualizer> visualizer_;
 
   // Largest image information.
   base::TimeTicks largest_image_paint_time_;

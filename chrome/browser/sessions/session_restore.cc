@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -440,6 +441,19 @@ class SessionRestoreImpl : public BrowserListObserver {
 
       RestoreTabsToBrowser(*(*i), browser, initial_tab_count,
                            selected_tab_index, created_contents);
+
+      // Tabs will be grouped appropriately in RestoreTabsToBrowser. Now restore
+      // the groups' visual data.
+      if (base::FeatureList::IsEnabled(features::kTabGroups)) {
+        for (auto& tab_group : (*i)->tab_groups) {
+          TabGroupVisualData restored_data(std::move(tab_group->title),
+                                           tab_group->color);
+          browser->tab_strip_model()->SetVisualDataForGroup(
+              TabGroupId::FromRawToken(tab_group->group_id),
+              std::move(restored_data));
+        }
+      }
+
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
       // This needs to be done after restore because closing the last tab will
       // close the whole window.

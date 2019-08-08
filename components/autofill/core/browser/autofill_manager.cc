@@ -37,7 +37,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
-#include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
@@ -664,7 +663,8 @@ void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
 }
 
 bool AutofillManager::IsFormNonSecure(const FormData& form) const {
-  return IsFormOrClientNonSecure(client_, form);
+  return !client_->IsContextSecure() ||
+         (form.action.is_valid() && form.action.SchemeIs("http"));
 }
 
 void AutofillManager::OnQueryFormFieldAutofillImpl(
@@ -1239,10 +1239,6 @@ bool AutofillManager::IsRichQueryEnabled(version_info::Channel channel) {
   return base::FeatureList::IsEnabled(features::kAutofillRichMetadataQueries) &&
          channel != version_info::Channel::STABLE &&
          channel != version_info::Channel::BETA;
-}
-
-const FormData& AutofillManager::last_query_form() const {
-  return external_delegate_->query_form();
 }
 
 bool AutofillManager::ShouldUploadForm(const FormStructure& form) {

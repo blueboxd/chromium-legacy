@@ -34,9 +34,8 @@ ClickToCallIconView::~ClickToCallIconView() = default;
 
 views::BubbleDialogDelegateView* ClickToCallIconView::GetBubble() const {
   auto* controller = GetControllerFromWebContents(GetWebContents());
-  return controller
-             ? static_cast<ClickToCallDialogView*>(controller->GetDialog())
-             : nullptr;
+  return controller ? static_cast<ClickToCallDialogView*>(controller->dialog())
+                    : nullptr;
 }
 
 bool ClickToCallIconView::Update() {

@@ -44,6 +44,7 @@ enum class ParseResult {
   ERROR_INVALID_TRANSFORM_QUERY,
   ERROR_INVALID_TRANSFORM_FRAGMENT,
   ERROR_QUERY_AND_TRANSFORM_BOTH_SPECIFIED,
+  ERROR_JAVASCRIPT_REDIRECT,
 };
 
 // Describes the ways in which updating dynamic rules can fail.
@@ -107,6 +108,7 @@ extern const char kErrorEmptyRemoveHeadersList[];
 extern const char kErrorInvalidKey[];
 extern const char kErrorInvalidTransformScheme[];
 extern const char kErrorQueryAndTransformBothSpecified[];
+extern const char kErrorJavascriptRedirect[];
 
 extern const char kErrorListNotPassed[];
 

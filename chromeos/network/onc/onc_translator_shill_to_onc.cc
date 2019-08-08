@@ -114,7 +114,6 @@ class ShillToONCTranslator {
   void TranslateThirdPartyVPN();
   void TranslateVPN();
   void TranslateWiFiWithState();
-  void TranslateWiMAXWithState();
   void TranslateCellularWithState();
   void TranslateCellularDevice();
   void TranslateNetworkWithState();
@@ -200,8 +199,6 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
     TranslateThirdPartyVPN();
   } else if (onc_signature_ == &kWiFiWithStateSignature) {
     TranslateWiFiWithState();
-  } else if (onc_signature_ == &kWiMAXWithStateSignature) {
-    TranslateWiMAXWithState();
   } else if (onc_signature_ == &kCellularWithStateSignature) {
     if (field_translation_table_ == kCellularDeviceTable)
       TranslateCellularDevice();
@@ -401,11 +398,6 @@ void ShillToONCTranslator::TranslateWiFiWithState() {
 
   CopyPropertiesAccordingToSignature();
   TranslateAndAddNestedObject(::onc::wifi::kEAP);
-}
-
-void ShillToONCTranslator::TranslateWiMAXWithState() {
-  CopyPropertiesAccordingToSignature();
-  TranslateAndAddNestedObject(::onc::wimax::kEAP);
 }
 
 void ShillToONCTranslator::TranslateCellularWithState() {

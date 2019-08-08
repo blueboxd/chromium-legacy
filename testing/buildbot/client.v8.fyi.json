@@ -1327,7 +1327,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "--num-retries=3"
+          "--num-retries=3",
+          "--debug"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {

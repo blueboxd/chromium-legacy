@@ -71,7 +71,7 @@ void OffscreenCanvasTest::SetUp() {
       WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
   PageTestBase::SetUp();
   SetHtmlInnerHTML("<body><canvas id='c'></canvas></body>");
-  HTMLCanvasElement* canvas_element = ToHTMLCanvasElement(GetElementById("c"));
+  auto* canvas_element = To<HTMLCanvasElement>(GetElementById("c"));
 
   DummyExceptionStateForTesting exception_state;
   offscreen_canvas_ = HTMLCanvasElementModule::transferControlToOffscreen(

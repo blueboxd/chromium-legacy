@@ -4676,6 +4676,7 @@ interface MediaSession
     getter playbackState
     method constructor
     method setActionHandler
+    method setPositionState
     setter metadata
     setter playbackState
 interface MediaSettingsRange

@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -47,6 +48,12 @@ class SSLKeyLoggerImpl::Core
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   }
 
+  void SetFile(base::File file) {
+    file_.reset(base::FileToFILE(std::move(file), "a"));
+    if (!file_)
+      DVLOG(1) << "Could not adopt file";
+  }
+
   void OpenFile(const base::FilePath& path) {
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(&Core::OpenFileImpl, this, path));
@@ -77,7 +84,7 @@ class SSLKeyLoggerImpl::Core
     DCHECK(!file_);
     file_.reset(base::OpenFile(path, "a"));
     if (!file_)
-      LOG(WARNING) << "Could not open " << path.value();
+      DVLOG(1) << "Could not open " << path.value();
   }
 
   void Flush() {
@@ -114,8 +121,13 @@ class SSLKeyLoggerImpl::Core
 };
 
 SSLKeyLoggerImpl::SSLKeyLoggerImpl(const base::FilePath& path)
-    : core_(new Core) {
+    : core_(base::MakeRefCounted<Core>()) {
   core_->OpenFile(path);
+}
+
+SSLKeyLoggerImpl::SSLKeyLoggerImpl(base::File file)
+    : core_(base::MakeRefCounted<Core>()) {
+  core_->SetFile(std::move(file));
 }
 
 SSLKeyLoggerImpl::~SSLKeyLoggerImpl() = default;

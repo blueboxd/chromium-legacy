@@ -108,7 +108,9 @@ class ChromeBrowserProvider {
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
   // Returns risk data used in Wallet requests.
   virtual std::string GetRiskData();
-  // Creates and returns a new styled text field with the given |frame|.
+  // Creates and returns a new styled text field.
+  virtual UITextField* CreateStyledTextField() const NS_RETURNS_RETAINED;
+  // Deprecated.
   virtual UITextField<TextFieldStyling>* CreateStyledTextField(
       CGRect frame) const NS_RETURNS_RETAINED;
 

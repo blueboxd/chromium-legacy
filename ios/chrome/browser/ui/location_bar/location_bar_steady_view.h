@@ -40,9 +40,12 @@
 // Sets the location label's text and styles it as if it were placeholder text.
 - (void)setLocationLabelPlaceholderText:(NSString*)string;
 
-// Displays the location InfobarBadgeButton if |display| is YES, hides it if
+// Displays the location badge view if |display| is YES, hides it if
 // |display| is NO. Will animate change if |animated| is YES.
-- (void)displayBadge:(BOOL)display animated:(BOOL)animated;
+- (void)displayBadgeView:(BOOL)display animated:(BOOL)animated;
+
+// Reorients the badgeView's position depending on FullScreen mode.
+- (void)setFullScreenCollapsedMode:(BOOL)isFullScreenCollapsed;
 
 // Toggles |enabled| state of the trailing button and updates accessibility
 // appropriately.
@@ -52,12 +55,9 @@
 @property(nonatomic, strong) UIButton* locationButton;
 // The label displaying the current location URL.
 @property(nonatomic, strong) UILabel* locationLabel;
-// The InfobarBadgeButton displayed in the leading corner of the view.
-// Call displayBadge:animated: in this class instead of InfobarBadgeButton's
-// directly.
-// TODO(crbug.com/935804): This button is currently only being used in the
-// Infobar redesign.
-@property(nonatomic, strong) InfobarBadgeButton* leadingButton;
+// The view displaying badges in the leading corner of the view.
+// TODO(crbug.com/991241): Pass into init as parameter.
+@property(nonatomic, strong) UIView* badgeView;
 // The button displayed in the trailing corner of the view, i.e. share button.
 @property(nonatomic, strong) UIButton* trailingButton;
 // The string that describes the current security level. Used for a11y.

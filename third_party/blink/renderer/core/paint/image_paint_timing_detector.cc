@@ -228,6 +228,15 @@ void ImagePaintTimingDetector::RecordImage(
       cached_image.IsLoaded()) {
     records_manager_.OnImageLoaded(record_id, frame_index_);
     need_update_timing_at_frame_end_ = true;
+    if (base::Optional<PaintTimingVisualizer>& visualizer =
+            frame_view_->GetPaintTimingDetector().Visualizer()) {
+      FloatRect mapped_visual_rect =
+          frame_view_->GetPaintTimingDetector().CalculateVisualRect(
+              object.FragmentsVisualRectBoundingBox(),
+              current_paint_chunk_properties);
+      visualizer->DumpImageDebuggingRect(object, mapped_visual_rect,
+                                         cached_image);
+    }
     return;
   }
 
@@ -238,11 +247,15 @@ void ImagePaintTimingDetector::RecordImage(
   // until the size is known.
   if (visual_rect.IsEmpty())
     return;
-  uint64_t rect_size =
-      frame_view_->GetPaintTimingDetector()
-          .CalculateVisualRect(visual_rect, current_paint_chunk_properties)
-          .Size()
-          .Area();
+  FloatRect mapped_visual_rect =
+      frame_view_->GetPaintTimingDetector().CalculateVisualRect(
+          visual_rect, current_paint_chunk_properties);
+  if (base::Optional<PaintTimingVisualizer>& visualizer =
+          frame_view_->GetPaintTimingDetector().Visualizer()) {
+    visualizer->DumpImageDebuggingRect(object, mapped_visual_rect,
+                                       cached_image);
+  }
+  uint64_t rect_size = mapped_visual_rect.Size().Area();
   // Transform visual rect to window before calling downscale.
   WebFloatRect float_visual_rect = FloatRect(visual_rect);
   frame_view_->GetPaintTimingDetector().ConvertViewportToWindow(

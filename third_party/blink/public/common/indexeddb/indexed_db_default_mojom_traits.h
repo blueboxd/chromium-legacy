@@ -103,8 +103,8 @@ struct BLINK_COMMON_EXPORT
   static bool other_invalid(const blink::IndexedDBKey& key) {
     return key.type() == blink::mojom::IDBKeyType::Invalid;
   }
-  static bool other_null(const blink::IndexedDBKey& key) {
-    return key.type() == blink::mojom::IDBKeyType::Null;
+  static bool other_none(const blink::IndexedDBKey& key) {
+    return key.type() == blink::mojom::IDBKeyType::None;
   }
 };
 

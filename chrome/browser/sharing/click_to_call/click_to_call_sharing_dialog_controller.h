@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sharing/sharing_dialog_controller.h"
 #include "chrome/browser/sharing/sharing_service.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
@@ -19,7 +20,6 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-class SharingDialog;
 class SharingDeviceInfo;
 
 class ClickToCallSharingDialogController
@@ -43,24 +43,15 @@ class ClickToCallSharingDialogController
   std::vector<App> GetApps() override;
   void OnDeviceChosen(const SharingDeviceInfo& device) override;
   void OnAppChosen(const App& app) override;
-
-  // Called by the ClickToCallDialogView when it is being closed.
-  void OnDialogClosed(SharingDialog* dialog);
+  PageActionIconType GetIconType() override;
 
   // Called by the ClickToCallDialogView when the help text got clicked.
   void OnHelpTextClicked();
 
-  // Returns the currently open ClickToCallDialog or nullptr if there is no
-  // dialog open.
-  SharingDialog* GetDialog() const;
-
-  bool is_loading() const { return is_loading_; }
-
-  bool send_failed() const { return send_failed_; }
-
  protected:
   explicit ClickToCallSharingDialogController(
       content::WebContents* web_contents);
+  SharingDialog* DoShowDialog(BrowserWindow* window) override;
 
  private:
   friend class content::WebContentsUserData<ClickToCallSharingDialogController>;
@@ -69,25 +60,14 @@ class ClickToCallSharingDialogController
   // |success| is false and updates the omnibox icon.
   void OnMessageSentToDevice(int dialog_id, bool success);
 
-  // Shows a new ClickToCallDialogView and closes the old one.
-  void ShowNewDialog();
-
-  // Shows an error dialog if we're still on the same tab.
-  void ShowErrorDialog();
-
-  // Updates the omnibox icon if available.
-  void UpdateIcon();
-
   content::WebContents* web_contents_ = nullptr;
   SharingService* sharing_service_ = nullptr;
 
   GURL phone_url_;
-  SharingDialog* dialog_ = nullptr;
-  bool is_loading_ = false;
-  bool send_failed_ = false;
   bool hide_default_handler_ = false;
 
   // ID of the last shown dialog used to ignore events from old dialogs.
+  // TODO(yasmo): Maybe can be moved to the base class.
   int last_dialog_id_ = 0;
 
   base::WeakPtrFactory<ClickToCallSharingDialogController> weak_ptr_factory_{

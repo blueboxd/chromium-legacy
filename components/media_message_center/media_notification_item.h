@@ -87,12 +87,29 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
     media_controller_ptr_ = std::move(controller);
   }
 
+  void SetController(media_session::mojom::MediaControllerPtr controller,
+                     media_session::mojom::MediaSessionInfoPtr session_info);
+
+  // This will freeze the item and start a timer to destroy the item after
+  // some time has passed.
+  void Freeze();
+
+  bool frozen() const { return frozen_; }
+
  private:
+  bool ShouldShowNotification() const;
+
+  void MaybeUnfreeze();
+
+  void OnFreezeTimerFired();
+
   void MaybeHideOrShowNotification();
 
   void HideNotification();
 
   MediaNotificationController* controller_;
+
+  bool is_bound_ = true;
 
   // Weak reference to the view of the currently shown media notification.
   MediaNotificationView* view_ = nullptr;
@@ -117,6 +134,14 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
   // True if the metadata needs to be updated on |view_|. Used to prevent
   // updating |view_|'s metadata twice on a single change.
   bool view_needs_metadata_update_ = false;
+
+  // When the item is frozen the |view_| will not receive any updates to the
+  // data and no actions will be executed.
+  bool frozen_ = false;
+
+  // The timer that will notify the controller to destroy this item after it
+  // has been frozen for a certain period of time.
+  base::OneShotTimer freeze_timer_;
 
   mojo::Receiver<media_session::mojom::MediaControllerObserver>
       observer_receiver_{this};

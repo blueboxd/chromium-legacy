@@ -51,7 +51,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/file_system/file_system_api.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -679,7 +678,6 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
       std::move(media_data_source_factory));
   SafeMediaMetadataParser* parser_ptr = parser.get();
   parser_ptr->Start(
-      content::GetSystemConnector(),
       base::BindOnce(
           &MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone,
           this, std::move(parser)));

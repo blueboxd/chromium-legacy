@@ -40,6 +40,12 @@ bool WebAppTabHelperBase::HasAssociatedApp() const {
 }
 
 void WebAppTabHelperBase::SetAppId(const AppId& app_id) {
+  DCHECK(app_id.empty() ||
+         web_app::WebAppProviderBase::GetProviderBase(
+             Profile::FromBrowserContext(web_contents()->GetBrowserContext()))
+             ->registrar()
+             .IsInstalled(app_id));
+
   if (app_id_ == app_id)
     return;
 

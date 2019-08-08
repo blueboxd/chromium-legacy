@@ -744,9 +744,10 @@ message ActiveTimePeriod {
 message NetworkInterface {
   // Indicates the type of network device.
   enum NetworkDeviceType {
+    reserved 2;
+
     TYPE_ETHERNET = 0;
     TYPE_WIFI = 1;
-    TYPE_WIMAX = 2;
     TYPE_BLUETOOTH = 3;
     TYPE_CELLULAR = 4;
   }

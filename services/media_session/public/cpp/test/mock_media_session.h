@@ -63,7 +63,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
                                    const std::vector<MediaImage>& images);
 
   void WaitForEmptyPosition();
-  void WaitForNonEmptyPosition();
+  void WaitForExpectedPosition(const MediaPosition& position);
 
   const mojom::MediaSessionInfoPtr& session_info() const {
     return session_info_;
@@ -93,7 +93,6 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
       session_images_;
   base::Optional<base::Optional<MediaPosition>> session_position_;
   bool waiting_for_empty_position_ = false;
-  bool waiting_for_non_empty_position_ = false;
 
   base::Optional<MediaMetadata> expected_metadata_;
   base::Optional<std::set<mojom::MediaSessionAction>> expected_actions_;
@@ -101,6 +100,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   base::Optional<
       std::pair<mojom::MediaSessionImageType, std::vector<MediaImage>>>
       expected_images_of_type_;
+  base::Optional<MediaPosition> expected_position_;
   bool waiting_for_empty_metadata_ = false;
 
   base::Optional<mojom::MediaSessionInfo::SessionState> wanted_state_;

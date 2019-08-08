@@ -11,6 +11,81 @@
 namespace gl {
 namespace init {
 
+// This code emulates GL fences (GL_APPLE_sync or GL_ARB_sync) via
+// EGL_KHR_fence_sync extension. It's used to provide Skia ways of
+// synchronization on platforms that does not have GL fences but support EGL
+namespace {
+struct EGLFenceData {
+  EGLSync sync;
+  EGLDisplay display;
+};
+
+GLsync glFenceSyncEmulateEGL(GLenum condition, GLbitfield flags) {
+  DCHECK(condition == GL_SYNC_GPU_COMMANDS_COMPLETE);
+  DCHECK(flags == 0);
+
+  init::EGLFenceData* data = new EGLFenceData;
+
+  data->display = eglGetCurrentDisplay();
+  data->sync = eglCreateSyncKHR(data->display, EGL_SYNC_FENCE_KHR, nullptr);
+
+  return reinterpret_cast<GLsync>(data);
+}
+
+void glDeleteSyncEmulateEGL(GLsync sync) {
+  EGLFenceData* data = reinterpret_cast<EGLFenceData*>(sync);
+  eglDestroySyncKHR(data->display, data->sync);
+  delete data;
+}
+
+GLenum glClientWaitSyncEmulateEGL(GLsync sync,
+                                  GLbitfield flags,
+                                  GLuint64 timeout) {
+  init::EGLFenceData* data = reinterpret_cast<init::EGLFenceData*>(sync);
+
+  EGLint egl_flags = 0;
+
+  if (flags & GL_SYNC_FLUSH_COMMANDS_BIT) {
+    egl_flags |= EGL_SYNC_FLUSH_COMMANDS_BIT;
+  }
+  EGLint result =
+      eglClientWaitSyncKHR(data->display, data->sync, egl_flags, timeout);
+
+  switch (result) {
+    case EGL_CONDITION_SATISFIED:
+      return GL_CONDITION_SATISFIED;
+    case EGL_TIMEOUT_EXPIRED:
+      return GL_TIMEOUT_EXPIRED;
+    case EGL_FALSE:
+      return GL_WAIT_FAILED;
+  }
+
+  NOTREACHED();
+  return 0;
+}
+
+void glWaitSyncEmulateEGL(GLsync sync, GLbitfield flags, GLuint64 timeout) {
+  init::EGLFenceData* data = reinterpret_cast<init::EGLFenceData*>(sync);
+
+  DCHECK(timeout == GL_TIMEOUT_IGNORED);
+  DCHECK(flags == 0);
+
+  if (!g_driver_egl.ext.b_EGL_KHR_wait_sync) {
+    eglClientWaitSyncKHR(data->display, data->sync, 0, EGL_FOREVER_KHR);
+    return;
+  }
+
+  EGLint result = eglWaitSyncKHR(data->display, data->sync, 0);
+  DCHECK(result);
+}
+
+GLboolean glIsSyncEmulateEGL(GLsync sync) {
+  NOTREACHED();
+  return true;
+}
+
+}  // namespace
+
 namespace {
 
 template <typename R, typename... Args>
@@ -88,7 +163,6 @@ const GLubyte* GetStringHook(const char* gl_version_string,
 
 const char* kBlacklistExtensions[] = {
     "GL_APPLE_framebuffer_multisample",
-    "GL_APPLE_sync",
     "GL_ARB_ES3_1_compatibility",
     "GL_ARB_draw_indirect",
     "GL_ARB_invalidate_subdata",
@@ -586,6 +660,26 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fClientWaitSync = gl->glClientWaitSyncFn;
   functions->fWaitSync = gl->glWaitSyncFn;
   functions->fDeleteSync = gl->glDeleteSyncFn;
+
+  if (!gl->glFenceSyncFn) {
+    // NOTE: Skia uses the same function pointers without APPLE suffix
+    if (extensions.has("GL_APPLE_sync")) {
+      functions->fFenceSync = gl->glFenceSyncAPPLEFn;
+      functions->fIsSync = gl->glIsSyncAPPLEFn;
+      functions->fClientWaitSync = gl->glClientWaitSyncAPPLEFn;
+      functions->fWaitSync = gl->glWaitSyncAPPLEFn;
+      functions->fDeleteSync = gl->glDeleteSyncAPPLEFn;
+    } else if (g_driver_egl.ext.b_EGL_KHR_fence_sync) {
+      // Emulate APPLE_sync via egl
+      extensions.add("GL_APPLE_sync");
+
+      functions->fFenceSync = glFenceSyncEmulateEGL;
+      functions->fIsSync = glIsSyncEmulateEGL;
+      functions->fClientWaitSync = glClientWaitSyncEmulateEGL;
+      functions->fWaitSync = glWaitSyncEmulateEGL;
+      functions->fDeleteSync = glDeleteSyncEmulateEGL;
+    }
+  }
 
   functions->fGetInternalformativ = gl->glGetInternalformativFn;
 

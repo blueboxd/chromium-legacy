@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -102,7 +103,8 @@ TEST_F(CookieUtilTest, CreateCookieStoreInIOS11) {
   std::string cookie_line = base::SysNSStringToUTF8(cookie_name) + "=" +
                             base::SysNSStringToUTF8(cookie_value);
   cookie_store->SetCookieWithOptionsAsync(
-      test_url, cookie_line, options, net::CookieStore::SetCookiesCallback());
+      test_url, cookie_line, options, base::nullopt /* server_time */,
+      net::CookieStore::SetCookiesCallback());
 
   __block NSArray<NSHTTPCookie*>* result_cookies = nil;
   __block bool callback_called = false;

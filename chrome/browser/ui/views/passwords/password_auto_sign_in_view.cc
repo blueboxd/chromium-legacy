@@ -25,9 +25,8 @@ PasswordAutoSignInView::~PasswordAutoSignInView() = default;
 PasswordAutoSignInView::PasswordAutoSignInView(
     content::WebContents* web_contents,
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     DisplayReason reason)
-    : PasswordBubbleViewBase(web_contents, anchor_view, anchor_point, reason) {
+    : PasswordBubbleViewBase(web_contents, anchor_view, reason) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   const autofill::PasswordForm& form = model()->pending_password();
 

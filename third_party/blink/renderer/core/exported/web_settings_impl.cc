@@ -335,10 +335,6 @@ void WebSettingsImpl::SetJavaScriptCanAccessClipboard(bool enabled) {
   settings_->SetJavaScriptCanAccessClipboard(enabled);
 }
 
-void WebSettingsImpl::SetXSSAuditorEnabled(bool enabled) {
-  settings_->SetXSSAuditorEnabled(enabled);
-}
-
 void WebSettingsImpl::SetTextTrackKindUserPreference(
     TextTrackKindUserPreference preference) {
   settings_->SetTextTrackKindUserPreference(

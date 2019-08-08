@@ -117,6 +117,8 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   // DataTypeManager before downloading initial data. Non-blocking types need to
   // pass activation context containing progress marker to sync backend and use
   // |set_downloaded| to inform the manager whether their initial sync is done.
+  // TODO(treib): Make this synchronous and possibly merge with
+  // ActivateManuallyForNigori().
   virtual void RegisterWithBackend(
       base::OnceCallback<void(bool)> set_downloaded,
       ModelTypeConfigurer* configurer) = 0;

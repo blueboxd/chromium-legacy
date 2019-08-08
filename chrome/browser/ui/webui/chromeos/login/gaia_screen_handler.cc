@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -367,15 +368,15 @@ void GaiaScreenHandler::LoadGaiaWithPartition(
 
   std::string gaps_cookie_value(kGAPSCookie);
   gaps_cookie_value += "=" + context.gaps_cookie;
+  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
+      GaiaUrls::GetInstance()->gaia_url(), gaps_cookie_value, base::Time::Now(),
+      base::nullopt /* server_time */));
+
   net::CookieOptions options;
   options.set_include_httponly();
   // Permit it to set a SameSite cookie if it wants to.
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
-  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
-      GaiaUrls::GetInstance()->gaia_url(), gaps_cookie_value, base::Time::Now(),
-      options));
-
   partition->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
       *cc.get(), "https", options, std::move(callback));
 }

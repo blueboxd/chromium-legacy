@@ -204,7 +204,7 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
       EncodeDouble(value.number(), into);
       DCHECK_EQ(9u, static_cast<size_t>(into->size() - previous_size));
       return;
-    case blink::mojom::IDBKeyType::Null:
+    case blink::mojom::IDBKeyType::None:
     case blink::mojom::IDBKeyType::Invalid:
     case blink::mojom::IDBKeyType::Min:
     default:

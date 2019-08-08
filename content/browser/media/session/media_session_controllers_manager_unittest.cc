@@ -96,13 +96,18 @@ class MediaSessionControllersManagerTest
     return &manager_->controllers_map_;
   }
 
-  MediaSessionController* GetController(const MediaPlayerId& id) {
+  base::Optional<media_session::MediaPosition> GetPosition(
+      const MediaPlayerId& id) {
     auto it = manager_->controllers_map_.find(id);
     DCHECK(it != manager_->controllers_map_.end());
-    return it->second.get();
+
+    auto* controller = it->second.get();
+    return controller->GetPosition(controller->get_player_id_for_testing());
   }
 
   void TearDown() override {
+    mock_media_session_controller_.reset();
+    mock_media_session_controller_ptr_ = nullptr;
     manager_.reset();
     service_manager_context_.reset();
     RenderViewHostImplTestHarness::TearDown();
@@ -237,8 +242,7 @@ TEST_P(MediaSessionControllersManagerTest, PositionState) {
 
     // The controller should be created with the last received position for
     // that player.
-    EXPECT_EQ(expected_position,
-              GetController(media_player_id_)->get_position_for_testing());
+    EXPECT_EQ(expected_position, GetPosition(media_player_id_));
   }
 
   {
@@ -248,8 +252,7 @@ TEST_P(MediaSessionControllersManagerTest, PositionState) {
     manager_->OnMediaPositionStateChanged(media_player_id_, expected_position);
 
     // The controller should be updated with the new position.
-    EXPECT_EQ(expected_position,
-              GetController(media_player_id_)->get_position_for_testing());
+    EXPECT_EQ(expected_position, GetPosition(media_player_id_));
 
     // Destroy the current controller.
     manager_->OnEnd(media_player_id_);
@@ -262,8 +265,7 @@ TEST_P(MediaSessionControllersManagerTest, PositionState) {
 
     // The controller should be created with the last received position for
     // that player.
-    EXPECT_EQ(expected_position,
-              GetController(media_player_id_)->get_position_for_testing());
+    EXPECT_EQ(expected_position, GetPosition(media_player_id_));
   }
 }
 
@@ -291,10 +293,8 @@ TEST_P(MediaSessionControllersManagerTest, MultiplePlayersWithPositionState) {
   EXPECT_EQ(2U, GetControllersMap()->size());
 
   // The controllers should have been created with the correct positions.
-  EXPECT_EQ(expected_position1,
-            GetController(media_player_id_)->get_position_for_testing());
-  EXPECT_EQ(expected_position2,
-            GetController(media_player_id_2)->get_position_for_testing());
+  EXPECT_EQ(expected_position1, GetPosition(media_player_id_));
+  EXPECT_EQ(expected_position2, GetPosition(media_player_id_2));
 
   media_session::MediaPosition new_position(
       0.0, base::TimeDelta::FromSeconds(20), base::TimeDelta());
@@ -302,10 +302,8 @@ TEST_P(MediaSessionControllersManagerTest, MultiplePlayersWithPositionState) {
   manager_->OnMediaPositionStateChanged(media_player_id_, new_position);
 
   // The controller should be updated with the new position.
-  EXPECT_EQ(new_position,
-            GetController(media_player_id_)->get_position_for_testing());
-  EXPECT_EQ(expected_position2,
-            GetController(media_player_id_2)->get_position_for_testing());
+  EXPECT_EQ(new_position, GetPosition(media_player_id_));
+  EXPECT_EQ(expected_position2, GetPosition(media_player_id_2));
 }
 
 // First bool is to indicate whether InternalMediaSession is enabled.

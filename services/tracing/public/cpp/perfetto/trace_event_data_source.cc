@@ -539,7 +539,15 @@ ThreadLocalEventSink* TraceEventDataSource::CreateThreadLocalEventSink(
   std::unique_ptr<perfetto::StartupTraceWriter> trace_writer;
   uint32_t session_id = session_id_.load(std::memory_order_relaxed);
   if (startup_writer_registry_) {
-    trace_writer = startup_writer_registry_->CreateUnboundTraceWriter();
+    // Chromium uses BufferExhaustedPolicy::kDrop to avoid stalling trace
+    // writers when the chunks in the SMB are exhausted. Stalling could
+    // otherwise lead to deadlocks in chromium, because a stalled mojo IPC
+    // thread could prevent CommitRequest messages from reaching the perfetto
+    // service.
+    auto smb_exhausted_policy =
+        perfetto::SharedMemoryArbiter::BufferExhaustedPolicy::kDrop;
+    trace_writer = startup_writer_registry_->CreateUnboundTraceWriter(
+        smb_exhausted_policy);
   } else if (producer_) {
     trace_writer = std::make_unique<perfetto::StartupTraceWriter>(
         producer_->CreateTraceWriter(target_buffer_));

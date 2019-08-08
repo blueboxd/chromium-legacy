@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/file_data_source.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "net/base/url_util.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -160,7 +161,7 @@ void BundledExchangesReader::ReadResponse(const GURL& url,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(metadata_ready_);
 
-  auto it = entries_.find(url);
+  auto it = entries_.find(net::SimplifyUrlForRequest(url));
   if (it == entries_.end() || it->second->response_locations.empty()) {
     PostTask(FROM_HERE, base::BindOnce(std::move(callback), nullptr));
     return;
@@ -200,7 +201,7 @@ bool BundledExchangesReader::HasEntry(const GURL& url) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(metadata_ready_);
 
-  return entries_.contains(url);
+  return entries_.contains(net::SimplifyUrlForRequest(url));
 }
 
 const GURL& BundledExchangesReader::GetPrimaryURL() const {

@@ -16,10 +16,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace extensions {
 class ContentVerifier;
 class Extension;
@@ -71,13 +67,6 @@ class InfoMap : public base::RefCountedThreadSafe<
                                   int process_id,
                                   int site_instance_id);
   void UnregisterAllExtensionsInProcess(int process_id);
-
-  // Maps a |file_url| to a |file_path| on the local filesystem, including
-  // resources in extensions. Returns true on success. See NaClBrowserDelegate
-  // for full details.
-  bool MapUrlToLocalFilePath(const GURL& file_url,
-                             bool use_blocking_api,
-                             base::FilePath* file_path);
 
   // Returns the IO thread QuotaService. Creates the instance on first call.
   QuotaService* GetQuotaService();

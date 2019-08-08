@@ -286,7 +286,7 @@ bool RequestFullscreenConditionsMet(Element& pending, Document& document) {
     return false;
 
   // |pending| is not a dialog element.
-  if (IsHTMLDialogElement(pending))
+  if (IsA<HTMLDialogElement>(pending))
     return false;
 
   // The fullscreen element ready check for |pending| returns false.

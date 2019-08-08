@@ -208,7 +208,7 @@ void CanvasRenderingContext2DTest::SetUp() {
 
   SetHtmlInnerHTML(
       "<body><canvas id='c'></canvas><canvas id='d'></canvas></body>");
-  canvas_element_ = ToHTMLCanvasElement(GetElementById("c"));
+  canvas_element_ = To<HTMLCanvasElement>(GetElementById("c"));
 
   full_image_data_ = ImageData::Create(IntSize(10, 10));
   partial_image_data_ = ImageData::Create(IntSize(2, 2));
@@ -548,7 +548,7 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithCompositeOperations) {
 }
 
 TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime) {
-  auto* canvas = ToHTMLCanvasElement(
+  auto* canvas = To<HTMLCanvasElement>(
       GetDocument().CreateRawElement(html_names::kCanvasTag));
   canvas->SetSize(IntSize(40, 40));
   ImageBitmap* image_bitmap_derived = nullptr;
@@ -610,8 +610,8 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
   EXPECT_EQ(1u, GetGlobalAcceleratedContextCount());
 
   // Creating a different accelerated image buffer
-  HTMLCanvasElement* anotherCanvas =
-      ToHTMLCanvasElement(GetDocument().getElementById("d"));
+  auto* anotherCanvas =
+      To<HTMLCanvasElement>(GetDocument().getElementById("d"));
   CanvasContextCreationAttributesCore attributes;
   anotherCanvas->GetCanvasRenderingContext("2d", attributes);
   IntSize size2(10, 5);

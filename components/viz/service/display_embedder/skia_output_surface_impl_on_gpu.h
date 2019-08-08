@@ -16,9 +16,9 @@
 #include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/render_pass.h"
+#include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/resource_metadata.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -56,8 +56,8 @@ class PlatformWindowSurface;
 
 namespace viz {
 
-struct ImageContext;
 class DirectContextProvider;
+class ImageContextImpl;
 class GLRendererCopier;
 class SkiaOutputSurfaceDependency;
 class TextureDeleter;
@@ -117,7 +117,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void FinishPaintCurrentFrame(
       std::unique_ptr<SkDeferredDisplayList> ddl,
       std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
-      std::vector<ImageContext*> image_contexts,
+      std::vector<ImageContextImpl*> image_contexts,
       std::vector<gpu::SyncToken> sync_tokens,
       uint64_t sync_fence_release,
       base::OnceClosure on_finished);
@@ -127,20 +127,20 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
   void FinishPaintRenderPass(RenderPassId id,
                              std::unique_ptr<SkDeferredDisplayList> ddl,
-                             std::vector<ImageContext*> image_contexts,
+                             std::vector<ImageContextImpl*> image_contexts,
                              std::vector<gpu::SyncToken> sync_tokens,
                              uint64_t sync_fence_release);
   void RemoveRenderPassResource(
-      std::vector<std::unique_ptr<ImageContext>> image_contexts);
+      std::vector<std::unique_ptr<ImageContextImpl>> image_contexts);
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,
                   std::unique_ptr<CopyOutputRequest> request);
 
-  void BeginAccessImages(const std::vector<ImageContext*>& image_contexts,
+  void BeginAccessImages(const std::vector<ImageContextImpl*>& image_contexts,
                          std::vector<GrBackendSemaphore>* begin_semaphores,
                          std::vector<GrBackendSemaphore>* end_semaphores);
-  void EndAccessImages(const std::vector<ImageContext*>& image_contexts);
+  void EndAccessImages(const std::vector<ImageContextImpl*>& image_contexts);
 
   void SetDrawRectangle(const gfx::Rect& draw_rectangle);
 
@@ -148,7 +148,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }
   size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
   void ReleaseImageContexts(
-      std::vector<std::unique_ptr<ImageContext>> image_contexts);
+      std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
+          image_contexts);
 
   bool was_context_lost() { return context_state_->context_lost(); }
 
@@ -178,12 +179,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   bool InitializeForGL();
   bool InitializeForVulkan();
 
-  // Returns true if |texture_base| is a gles2::Texture and all necessary
-  // operations completed successfully. In this case, |*size| is the size of
-  // of level 0.
-  bool BindOrCopyTextureIfNecessary(gpu::TextureBase* texture_base,
-                                    gfx::Size* size);
-
   // Make context current for GL, and return false if the context is lost.
   // It will do nothing when Vulkan is used.
   bool MakeCurrent(bool need_fbo0);
@@ -203,8 +198,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   SkSurface* output_sk_surface() const {
     return scoped_output_device_paint_->sk_surface();
   }
-
-  void CreateFallbackImage(ImageContext* context);
 
   SkiaOutputSurfaceDependency* const dependency_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;

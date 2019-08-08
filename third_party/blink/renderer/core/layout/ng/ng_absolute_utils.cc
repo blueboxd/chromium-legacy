@@ -284,13 +284,13 @@ bool AbsoluteNeedsChildBlockSize(const ComputedStyle& style) {
 base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
     const LayoutObject& dialog,
     LayoutUnit height) {
-  if (!IsHTMLDialogElement(dialog.GetNode()))
+  auto* dialog_node = DynamicTo<HTMLDialogElement>(dialog.GetNode());
+  if (!dialog_node)
     return base::nullopt;
 
   // This code implements <dialog> static-position spec.
   //
   // https://html.spec.whatwg.org/C/#the-dialog-element
-  HTMLDialogElement* dialog_node = ToHTMLDialogElement(dialog.GetNode());
   if (dialog_node->GetCenteringMode() == HTMLDialogElement::kNotCentered)
     return base::nullopt;
 

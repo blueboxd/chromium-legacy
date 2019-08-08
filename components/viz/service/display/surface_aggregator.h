@@ -75,45 +75,15 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void SetFrameAnnotator(std::unique_ptr<FrameAnnotator> frame_annotator);
 
  private:
-  struct ClipData {
-    ClipData() : is_clipped(false) {}
-    ClipData(bool is_clipped, const gfx::Rect& rect)
-        : is_clipped(is_clipped), rect(rect) {}
-
-    std::string ToString() const;
-
-    bool is_clipped;
-    gfx::Rect rect;
-  };
-
-  struct PrewalkResult {
-    PrewalkResult();
-    ~PrewalkResult();
-    // This is the set of Surfaces that were referenced by another Surface, but
-    // not included in a SurfaceDrawQuad.
-    base::flat_set<SurfaceId> undrawn_surfaces;
-    bool may_contain_video = false;
-  };
+  struct ClipData;
+  struct PrewalkResult;
+  struct RoundedCornerInfo;
 
   struct RenderPassInfo {
     // This is the id the pass is mapped to.
     int id;
     // This is true if the pass was used in the last aggregated frame.
     bool in_use = true;
-  };
-
-  struct RoundedCornerInfo {
-    RoundedCornerInfo() : is_fast_rounded_corner(false) {}
-    // |target_transform| is the transform that maps |bounds| from its current
-    // space into the desired target space. It must be a scale+translation
-    // matrix.
-    RoundedCornerInfo(const gfx::RRectF& bounds,
-                      bool is_fast_rounded_corner,
-                      const gfx::Transform target_transform);
-
-    bool IsEmpty() const { return bounds.IsEmpty(); }
-    gfx::RRectF bounds;
-    bool is_fast_rounded_corner;
   };
 
   ClipData CalculateClipRect(const ClipData& surface_clip,

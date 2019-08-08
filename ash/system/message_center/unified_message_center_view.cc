@@ -498,13 +498,22 @@ double UnifiedMessageCenterView::GetAnimationValue() const {
 void UnifiedMessageCenterView::UpdateVisibility() {
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
-  SetVisible(
-      available_height_ >= kUnifiedNotificationMinimumHeight &&
-      (animation_state_ == UnifiedMessageCenterAnimationState::COLLAPSE ||
-       message_list_view_->GetPreferredSize().height() > 0) &&
-      session_controller->ShouldShowNotificationTray() &&
-      (!session_controller->IsScreenLocked() ||
-       AshMessageCenterLockScreenController::IsEnabled()));
+
+  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
+    SetVisible(message_list_view_->GetTotalNotificationCount() &&
+               (available_height_ >= kUnifiedNotificationMinimumHeight &&
+                session_controller->ShouldShowNotificationTray() &&
+                (!session_controller->IsScreenLocked() ||
+                 AshMessageCenterLockScreenController::IsEnabled())));
+  } else {
+    SetVisible(
+        available_height_ >= kUnifiedNotificationMinimumHeight &&
+        (animation_state_ == UnifiedMessageCenterAnimationState::COLLAPSE ||
+         message_list_view_->GetPreferredSize().height() > 0) &&
+        session_controller->ShouldShowNotificationTray() &&
+        (!session_controller->IsScreenLocked() ||
+         AshMessageCenterLockScreenController::IsEnabled()));
+  }
 
   // When notification list went invisible, the last notification should be
   // targeted next time.
@@ -585,6 +594,8 @@ int UnifiedMessageCenterView::GetStackedNotificationCount() const {
 }
 
 void UnifiedMessageCenterView::NotifyRectBelowScroll() {
+  if (features::IsUnifiedMessageCenterRefactorEnabled())
+    return;
   // If the message center is hidden, make sure rounded corners are not drawn.
   if (!GetVisible()) {
     SetNotificationRectBelowScroll(gfx::Rect());

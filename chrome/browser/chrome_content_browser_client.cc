@@ -434,7 +434,6 @@
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/chrome_descriptors.h"
-#include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/crash_memory_metrics_collector_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
@@ -534,8 +533,6 @@
 #include "chrome/browser/media/cast_transport_host_filter.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
-#include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
-#include "chrome/services/removable_storage_writer/public/mojom/constants.mojom.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
@@ -576,11 +573,6 @@
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/browser/printing/printing_message_filter.h"
 #include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
-#endif
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
-    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
-#include "chrome/services/printing/public/mojom/constants.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -847,25 +839,6 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
       crash_handler = CreateCrashHandlerHost("extension");
     return crash_handler->GetDeathSignalSocket();
   }
-
-#if defined(OS_CHROMEOS)
-  // Mash services are utility processes, but crashes are reported using the
-  // service name as the process type to make the crash console easier to read.
-  if (command_line.HasSwitch(switches::kMashServiceName)) {
-    static base::NoDestructor<
-        std::map<std::string, breakpad::CrashHandlerHostLinux*>>
-        crash_handlers;
-    std::string service_name =
-        command_line.GetSwitchValueASCII(switches::kMashServiceName);
-    auto it = crash_handlers->find(service_name);
-    if (it == crash_handlers->end()) {
-      auto insert_result = crash_handlers->insert(
-          std::make_pair(service_name, CreateCrashHandlerHost(service_name)));
-      it = insert_result.first;
-    }
-    return it->second->GetDeathSignalSocket();
-  }
-#endif  // defined(OS_CHROMEOS)
 
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
@@ -1581,11 +1554,12 @@ bool ChromeContentBrowserClient::ShouldUseSpareRenderProcessHost(
 }
 
 bool ChromeContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    content::BrowserOrResourceContext browser_or_resource_context,
+    content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (ChromeContentBrowserClientExtensionsPart::DoesSiteRequireDedicatedProcess(
-          browser_or_resource_context, effective_site_url)) {
+          browser_context, effective_site_url)) {
     return true;
   }
 #endif

@@ -6094,9 +6094,9 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
 
 // Ensure setting the browser controls position explicitly using the setters on
 // the TreeImpl correctly affects the browser controls manager and viewport
-// bounds.
+// bounds for the active tree.
 TEST_F(LayerTreeHostImplBrowserControlsTest,
-       PositionBrowserControlsExplicitly) {
+       PositionBrowserControlsToActiveTreeExplicitly) {
   SetupBrowserControlsAndScrollLayerWithVirtualViewport(
       layer_size_, layer_size_, layer_size_);
   DrawFrame();
@@ -6124,6 +6124,51 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
                                   ->parent->test_properties()
                                   ->parent;
   EXPECT_EQ(viewport_size_, inner_clip_ptr->bounds());
+}
+
+// Ensure setting the browser controls position explicitly using the setters on
+// the TreeImpl correctly affects the browser controls manager and viewport
+// bounds for the pending tree.
+TEST_F(LayerTreeHostImplBrowserControlsTest,
+       PositionBrowserControlsToPendingTreeExplicitly) {
+  CreatePendingTree();
+  SetupBrowserControlsAndScrollLayerWithVirtualViewport(
+      host_impl_->pending_tree(), layer_size_, layer_size_, layer_size_);
+
+  // Changing SetCurrentBrowserControlsShownRatio is one way to cause the
+  // pending tree to update it's viewport.
+  host_impl_->SetCurrentBrowserControlsShownRatio(0.f);
+  EXPECT_FLOAT_EQ(top_controls_height_,
+                  host_impl_->pending_tree()
+                      ->property_trees()
+                      ->inner_viewport_container_bounds_delta()
+                      .y());
+  host_impl_->SetCurrentBrowserControlsShownRatio(0.5f);
+  EXPECT_FLOAT_EQ(0.5f * top_controls_height_,
+                  host_impl_->pending_tree()
+                      ->property_trees()
+                      ->inner_viewport_container_bounds_delta()
+                      .y());
+  host_impl_->SetCurrentBrowserControlsShownRatio(1.f);
+  EXPECT_FLOAT_EQ(0.f, host_impl_->pending_tree()
+                           ->property_trees()
+                           ->inner_viewport_container_bounds_delta()
+                           .y());
+
+  // Pushing changes from the main thread is the second way. These values are
+  // added to the 1.f set above.
+  host_impl_->pending_tree()->PushBrowserControlsFromMainThread(-0.5f);
+  EXPECT_FLOAT_EQ(0.5f * top_controls_height_,
+                  host_impl_->pending_tree()
+                      ->property_trees()
+                      ->inner_viewport_container_bounds_delta()
+                      .y());
+  host_impl_->pending_tree()->PushBrowserControlsFromMainThread(-1.f);
+  EXPECT_FLOAT_EQ(top_controls_height_,
+                  host_impl_->pending_tree()
+                      ->property_trees()
+                      ->inner_viewport_container_bounds_delta()
+                      .y());
 }
 
 // Test that the top_controls delta and sent delta are appropriately

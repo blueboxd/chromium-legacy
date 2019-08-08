@@ -25,7 +25,6 @@
  *   OncTypeTether: string,
  *   OncTypeVPN: string,
  *   OncTypeWiFi: string,
- *   OncTypeWiMAX: string,
  *   networkListItemConnected: string,
  *   networkListItemConnecting: string,
  *   networkListItemConnectingTo: string,
@@ -421,9 +420,6 @@ CrOnc.getSignalStrength = function(properties) {
   if (type == CrOnc.Type.WI_FI && properties.WiFi) {
     return properties.WiFi.SignalStrength || 0;
   }
-  if (type == CrOnc.Type.WI_MAX && properties.WiMAX) {
-    return properties.WiMAX.SignalStrength || 0;
-  }
   return 0;
 };
 
@@ -445,9 +441,6 @@ CrOnc.getManagedAutoConnect = function(properties) {
   }
   if (type == CrOnc.Type.WI_FI && properties.WiFi) {
     return properties.WiFi.AutoConnect;
-  }
-  if (type == CrOnc.Type.WI_MAX && properties.WiMAX) {
-    return properties.WiMAX.AutoConnect;
   }
   return undefined;
 };

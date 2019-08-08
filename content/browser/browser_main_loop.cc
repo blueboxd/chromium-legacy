@@ -194,6 +194,8 @@
 #if defined(OS_CHROMEOS)
 #include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #endif
 
 #if defined(USE_GLIB)
@@ -388,6 +390,16 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
   return nullptr;
 #endif
 }
+
+#if defined(OS_CHROMEOS)
+mojo::PendingRemote<data_decoder::mojom::BleScanParser> GetBleScanParser() {
+  mojo::PendingRemote<data_decoder::mojom::BleScanParser> ble_scan_parser;
+  GetSystemConnector()->Connect(
+      data_decoder::mojom::kServiceName,
+      ble_scan_parser.InitWithNewPipeAndPassReceiver());
+  return ble_scan_parser;
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -773,7 +785,10 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
       skia::SkiaMemoryDumpProvider::GetInstance(), "Skia", nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       sql::SqlMemoryDumpProvider::GetInstance(), "Sql", nullptr);
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  device::BluetoothAdapterFactory::SetBleScanParserCallback(
+      base::BindRepeating(&GetBleScanParser));
+#else
   // Chrome Remote Desktop needs TransitionalURLLoaderFactoryOwner on ChromeOS.
   network::TransitionalURLLoaderFactoryOwner::DisallowUsageInProcess();
 #endif

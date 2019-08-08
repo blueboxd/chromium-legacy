@@ -44,7 +44,7 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
   }
 
   PasswordBubbleViewBase* bubble =
-      CreateBubble(web_contents, anchor_view, gfx::Point(), reason);
+      CreateBubble(web_contents, anchor_view, reason);
   DCHECK(bubble);
   DCHECK(bubble == g_manage_passwords_bubble_);
 
@@ -82,25 +82,20 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
 PasswordBubbleViewBase* PasswordBubbleViewBase::CreateBubble(
     content::WebContents* web_contents,
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     DisplayReason reason) {
   PasswordBubbleViewBase* view = nullptr;
   password_manager::ui::State model_state =
       PasswordsModelDelegateFromWebContents(web_contents)->GetState();
   if (model_state == password_manager::ui::MANAGE_STATE) {
-    view =
-        new PasswordItemsView(web_contents, anchor_view, anchor_point, reason);
+    view = new PasswordItemsView(web_contents, anchor_view, reason);
   } else if (model_state == password_manager::ui::AUTO_SIGNIN_STATE) {
-    view = new PasswordAutoSignInView(web_contents, anchor_view, anchor_point,
-                                      reason);
+    view = new PasswordAutoSignInView(web_contents, anchor_view, reason);
   } else if (model_state == password_manager::ui::CONFIRMATION_STATE) {
-    view = new PasswordSaveConfirmationView(web_contents, anchor_view,
-                                            anchor_point, reason);
+    view = new PasswordSaveConfirmationView(web_contents, anchor_view, reason);
   } else if (model_state ==
                  password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
              model_state == password_manager::ui::PENDING_PASSWORD_STATE) {
-    view = new PasswordPendingView(web_contents, anchor_view, anchor_point,
-                                   reason);
+    view = new PasswordPendingView(web_contents, anchor_view, reason);
   } else {
     NOTREACHED();
   }
@@ -137,9 +132,8 @@ bool PasswordBubbleViewBase::ShouldShowWindowTitle() const {
 PasswordBubbleViewBase::PasswordBubbleViewBase(
     content::WebContents* web_contents,
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     DisplayReason reason)
-    : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
       model_(PasswordsModelDelegateFromWebContents(web_contents),
              reason == AUTOMATIC ? ManagePasswordsBubbleModel::AUTOMATIC
                                  : ManagePasswordsBubbleModel::USER_ACTION),

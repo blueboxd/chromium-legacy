@@ -15,7 +15,6 @@ namespace input_prediction {
 
 const char kScrollPredictorNameLsq[] = "lsq";
 const char kScrollPredictorNameKalman[] = "kalman";
-const char kScrollPredictorNameKalmanTimeFiltered[] = "kalman_time_filtered";
 const char kScrollPredictorNameLinearFirst[] = "linear_first";
 const char kScrollPredictorNameLinearSecond[] = "linear_second";
 const char kScrollPredictorNameEmpty[] = "empty";
@@ -32,9 +31,6 @@ PredictorType PredictorFactory::GetPredictorTypeFromName(
     return PredictorType::kScrollPredictorTypeLsq;
   else if (predictor_name == input_prediction::kScrollPredictorNameKalman)
     return PredictorType::kScrollPredictorTypeKalman;
-  else if (predictor_name ==
-           input_prediction::kScrollPredictorNameKalmanTimeFiltered)
-    return PredictorType::kScrollPredictorTypeKalmanTimeFiltered;
   else if (predictor_name == input_prediction::kScrollPredictorNameLinearFirst)
     return PredictorType::kScrollPredictorTypeLinearFirst;
   else if (predictor_name == input_prediction::kScrollPredictorNameLinearSecond)
@@ -48,10 +44,7 @@ std::unique_ptr<InputPredictor> PredictorFactory::GetPredictor(
   if (predictor_type == PredictorType::kScrollPredictorTypeLsq)
     return std::make_unique<LeastSquaresPredictor>();
   else if (predictor_type == PredictorType::kScrollPredictorTypeKalman)
-    return std::make_unique<KalmanPredictor>(false /* enable_time_filtering */);
-  else if (predictor_type ==
-           PredictorType::kScrollPredictorTypeKalmanTimeFiltered)
-    return std::make_unique<KalmanPredictor>(true /* enable_time_filtering */);
+    return std::make_unique<KalmanPredictor>();
   else if (predictor_type == PredictorType::kScrollPredictorTypeLinearFirst)
     return std::make_unique<LinearPredictor>(
         LinearPredictor::EquationOrder::kFirstOrder);

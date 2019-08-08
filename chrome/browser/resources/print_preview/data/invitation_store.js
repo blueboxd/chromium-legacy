@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
-
-/**
- * @enum {number}
- * @private
- */
-print_preview.InvitationStoreLoadStatus = {
-  IN_PROGRESS: 1,
-  DONE: 2,
-  FAILED: 3
-};
-
 cr.define('print_preview', function() {
   'use strict';
+
+  /**
+   * @enum {number}
+   * @private
+   */
+  const InvitationStoreLoadStatus = {
+    IN_PROGRESS: 1,
+    DONE: 2,
+    FAILED: 3,
+  };
 
   class InvitationStore extends cr.EventTarget {
     /** Printer sharing invitations data store. */
@@ -31,7 +29,7 @@ cr.define('print_preview', function() {
       /**
        * Maps user account to the flag whether the invitations for this account
        * were successfully loaded.
-       * @private {!Object<print_preview.InvitationStoreLoadStatus>}
+       * @private {!Object<InvitationStoreLoadStatus>}
        */
       this.loadStatus_ = {};
 
@@ -109,16 +107,14 @@ cr.define('print_preview', function() {
         return;
       }
       if (this.loadStatus_.hasOwnProperty(user)) {
-        if (this.loadStatus_[user] ==
-            print_preview.InvitationStoreLoadStatus.DONE) {
+        if (this.loadStatus_[user] == InvitationStoreLoadStatus.DONE) {
           this.dispatchEvent(new CustomEvent(
               InvitationStore.EventType.INVITATION_SEARCH_DONE));
         }
         return;
       }
 
-      this.loadStatus_[user] =
-          print_preview.InvitationStoreLoadStatus.IN_PROGRESS;
+      this.loadStatus_[user] = InvitationStoreLoadStatus.IN_PROGRESS;
       this.cloudPrintInterface_.invites(user);
     }
 
@@ -159,8 +155,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintInvitesDone_(event) {
-      this.loadStatus_[event.detail.user] =
-          print_preview.InvitationStoreLoadStatus.DONE;
+      this.loadStatus_[event.detail.user] = InvitationStoreLoadStatus.DONE;
       this.invitations_[event.detail.user] = event.detail.invitations;
 
       this.dispatchEvent(
@@ -174,8 +169,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintInvitesFailed_(event) {
-      this.loadStatus_[event.detail] =
-          print_preview.InvitationStoreLoadStatus.FAILED;
+      this.loadStatus_[event.detail] = InvitationStoreLoadStatus.FAILED;
     }
 
     /**

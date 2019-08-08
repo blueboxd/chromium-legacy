@@ -72,7 +72,8 @@ namespace declarativeNetRequest {
 
   // Describes modification to various url components.
   dictionary URLTransform {
-     // The new scheme for the request.
+     // The new scheme for the request. Allowed values are "http", "https",
+     // "ftp" and "chrome-extension".
      DOMString? scheme;
 
      // The new host for the request.
@@ -107,7 +108,7 @@ namespace declarativeNetRequest {
      DOMString? extensionPath;
      // Url transformations to perform.
      URLTransform? transform;
-     // The redirect url.
+     // The redirect url. Redirects to JavaScript urls are not allowed.
      DOMString? url;
   };
 

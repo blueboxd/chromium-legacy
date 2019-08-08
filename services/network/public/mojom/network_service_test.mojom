@@ -95,4 +95,9 @@ interface NetworkServiceTest {
   // process, or an empty string if it's not set.
   [Sync]
   GetEnvironmentVariableValue(string name) => (string value);
+
+  // Logs the given string in the network service. This is used to test log
+  // redirection.
+  [Sync]
+  Log(string message) => ();
 };

@@ -29,7 +29,7 @@ const CrExtensionsBrowserTest = class extends PolymerTest {
       '../../../../../ui/webui/resources/js/promise_resolver.js',
       '../../../../../ui/webui/resources/js/webui_resource_test.js',
       '../fake_chrome_event.js',
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'test_service.js',
     ];
@@ -540,7 +540,7 @@ var CrExtensionsManagerTestWithMultipleExtensionTypesInstalled =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'manager_test.js',
     ]);
   }
@@ -594,7 +594,7 @@ var CrExtensionsManagerTestWithIdQueryParam =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'manager_test.js',
     ]);
   }
@@ -707,7 +707,7 @@ var CrExtensionsPackDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'pack_dialog_test.js',
     ]);
   }
@@ -761,7 +761,7 @@ var CrExtensionsOptionsDialogTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'options_dialog_test.js',
     ]);
   }
@@ -892,7 +892,7 @@ var CrExtensionsErrorConsoleTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'error_console_test.js',
     ]);
   }

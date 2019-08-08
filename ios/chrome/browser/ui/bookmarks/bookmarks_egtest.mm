@@ -31,7 +31,6 @@
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/accessibility_util.h"
@@ -208,7 +207,7 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase assertBookmarksWithTitle:bookmarkTitle expectedCount:1];
 
   // Verify the star is lit.
-  if (!IsCompactWidth()) {
+  if (![ChromeEarlGrey isCompactWidth]) {
     [[EarlGrey
         selectElementWithMatcher:grey_accessibilityLabel(
                                      l10n_util::GetNSString(IDS_TOOLTIP_STAR))]
@@ -216,7 +215,7 @@ id<GREYMatcher> SearchIconButton() {
   }
 
   // Open the BookmarkEditor.
-  if (IsCompactWidth()) {
+  if ([ChromeEarlGrey isCompactWidth]) {
     [ChromeEarlGreyUI openToolsMenu];
     [[[EarlGrey
         selectElementWithMatcher:grey_allOf(grey_accessibilityID(
@@ -242,7 +241,7 @@ id<GREYMatcher> SearchIconButton() {
   [BookmarksTestCase assertBookmarksWithTitle:bookmarkTitle expectedCount:0];
 
   // Verify the the page is no longer bookmarked.
-  if (IsCompactWidth()) {
+  if ([ChromeEarlGrey isCompactWidth]) {
     [ChromeEarlGreyUI openToolsMenu];
     [[[EarlGrey
         selectElementWithMatcher:grey_allOf(grey_accessibilityID(
@@ -350,7 +349,7 @@ id<GREYMatcher> SearchIconButton() {
       performAction:grey_tap()];
 
   // Edit the bookmark.
-  if (!IsCompactWidth()) {
+  if (![ChromeEarlGrey isCompactWidth]) {
     [[EarlGrey selectElementWithMatcher:StarButton()] performAction:grey_tap()];
   } else {
     [ChromeEarlGreyUI openToolsMenu];
@@ -1750,7 +1749,7 @@ id<GREYMatcher> SearchIconButton() {
   // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
   // fail on devices. Disabling this test under these conditions on the
   // meantime.
-  if (!IsCompactWidth()) {
+  if (![ChromeEarlGrey isCompactWidth]) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad.");
   }
 
@@ -1800,7 +1799,7 @@ id<GREYMatcher> SearchIconButton() {
   // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
   // fail on devices. Disabling this test under these conditions on the
   // meantime.
-  if (!IsCompactWidth()) {
+  if (![ChromeEarlGrey isCompactWidth]) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
   }
 
@@ -3425,7 +3424,7 @@ id<GREYMatcher> SearchIconButton() {
 
   // Dismiss the context menu. On non compact width tap the Bookmarks TableView
   // to dismiss, since there might not be a cancel button.
-  if (IsCompactWidth()) {
+  if ([ChromeEarlGrey isCompactWidth]) {
     [[EarlGrey
         selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_CANCEL)]
         performAction:grey_tap()];
@@ -4456,7 +4455,7 @@ id<GREYMatcher> SearchIconButton() {
   // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
   // fail on devices. Disabling this test under these conditions on the
   // meantime.
-  if (!IsCompactWidth()) {
+  if (![ChromeEarlGrey isCompactWidth]) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
   }
 
@@ -4484,7 +4483,7 @@ id<GREYMatcher> SearchIconButton() {
   // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
   // fail on devices. Disabling this test under these conditions on the
   // meantime.
-  if (!IsCompactWidth()) {
+  if (![ChromeEarlGrey isCompactWidth]) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad on iOS11.");
   }
 

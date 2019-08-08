@@ -1280,6 +1280,10 @@ bool AXTree::UpdateNode(const AXNodeData& src,
     node->SetData(src);
   }
 
+  // If we come across a page breaking object, mark the tree as a paginated root
+  if (src.GetBoolAttribute(ax::mojom::BoolAttribute::kIsPageBreakingObject))
+    has_pagination_support_ = true;
+
   update_state->node_data_changed_ids.insert(node->id());
 
   // First, delete nodes that used to be children of this node but aren't
@@ -1724,7 +1728,7 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
                                      std::vector<const AXNode*>& items,
                                      const AXNode& original_node) const {
   // Ignored nodes are not a part of ordered sets.
-  if (original_node.data().HasState(ax::mojom::State::kIgnored))
+  if (original_node.IsIgnored())
     return;
 
   // Stop searching current path if roles of local_parent and ordered set match.
@@ -1803,8 +1807,8 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
       items.push_back(child);
 
     // Recurse if there is a generic container, ignored, or unknown.
-    if (child->data().role == ax::mojom::Role::kGenericContainer ||
-        child->data().role == ax::mojom::Role::kIgnored ||
+    if (child->IsIgnored() ||
+        child->data().role == ax::mojom::Role::kGenericContainer ||
         child->data().role == ax::mojom::Role::kUnknown) {
       PopulateOrderedSetItems(ordered_set, child, items, original_node);
     }
@@ -1958,6 +1962,10 @@ bool AXTree::GetTreeUpdateInProgressState() const {
 
 void AXTree::SetTreeUpdateInProgressState(bool set_tree_update_value) {
   tree_update_in_progress_ = set_tree_update_value;
+}
+
+bool AXTree::HasPaginationSupport() const {
+  return has_pagination_support_;
 }
 
 }  // namespace ui

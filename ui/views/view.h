@@ -842,12 +842,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Mark all or part of the View's bounds as dirty (needing repaint).
   // |r| is in the View's coordinates.
-  // Rectangle |r| should be in the view's coordinate system. The
-  // transformations are applied to it to convert it into the parent coordinate
-  // system before propagating SchedulePaint up the view hierarchy.
   // TODO(beng): Make protected.
   void SchedulePaint();
-  virtual void SchedulePaintInRect(const gfx::Rect& r);
+  void SchedulePaintInRect(const gfx::Rect& r);
 
   // Called by the framework to paint a View. Performs translation and clipping
   // for View coordinates and language direction as required, allows the View
@@ -1460,6 +1457,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Painting ------------------------------------------------------------------
 
+  // Override to control paint redirection or to provide a different Rectangle
+  // |r| to be repainted. This is a function with an empty implementation in
+  // view.cc and is purely intended for subclasses to override.
+  virtual void OnDidSchedulePaint(const gfx::Rect& r);
+
   // Responsible for calling Paint() on child Views. Override to control the
   // order child Views are painted.
   virtual void PaintChildren(const PaintInfo& info);
@@ -1610,6 +1612,16 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
       std::map<PropertyKey, std::unique_ptr<PropertyChangedCallbacks>>;
 
   // Painting  -----------------------------------------------------------------
+
+  // Responsible for propagating SchedulePaint() to the view's layer. If there
+  // is no associated layer, the requested paint rect is propagated up the
+  // view hierarchy by calling this function on the parent view. Rectangle |r|
+  // is in the view's coordinate system. The transformations are applied to it
+  // to convert it into the parent coordinate system before propagating
+  // SchedulePaint() up the view hierarchy. This function should NOT be directly
+  // called. Instead call SchedulePaint() or SchedulePaintInRect(), which will
+  // call into this as necessary.
+  void SchedulePaintInRectImpl(const gfx::Rect& r);
 
   // Invoked before and after the bounds change to schedule painting the old and
   // new bounds.
@@ -1962,6 +1974,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Cached output of painting to be reused in future frames until invalidated.
   ui::PaintCache paint_cache_;
+
+  // Whether SchedulePaintInRect() was invoked on this View.
+  bool needs_paint_ = false;
 
   // Native theme --------------------------------------------------------------
 

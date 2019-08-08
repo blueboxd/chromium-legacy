@@ -54,7 +54,7 @@ var PrintPreviewAppTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'cloud_print_interface_stub.js',
       'native_layer_stub.js',
@@ -88,7 +88,7 @@ var PrintPreviewSidebarTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'cloud_print_interface_stub.js',
       'native_layer_stub.js',
@@ -119,7 +119,7 @@ var PrintPreviewPagesSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'pages_settings_test.js',
     ]);
@@ -157,7 +157,7 @@ var PrintPreviewPolicyTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'native_layer_stub.js',
       'plugin_stub.js',
@@ -198,7 +198,7 @@ var PrintPreviewSettingsSelectTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'settings_select_test.js',
     ]);
@@ -219,7 +219,7 @@ var PrintPreviewSelectBehaviorTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'select_behavior_test.js',
     ]);
   }
@@ -250,7 +250,7 @@ var PrintPreviewNumberSettingsSectionTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'number_settings_section_test.js',
     ]);
   }
@@ -313,7 +313,7 @@ var PrintPreviewModelTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'model_test.js',
     ]);
@@ -355,7 +355,7 @@ var PrintPreviewModelSettingsAvailabilityTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'model_settings_availability_test.js',
     ]);
@@ -377,7 +377,7 @@ var PrintPreviewModelSettingsPolicyTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'model_settings_policy_test.js',
     ]);
@@ -496,7 +496,7 @@ var PrintPreviewLinkContainerTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'link_container_test.js',
     ]);
@@ -538,7 +538,7 @@ var PrintPreviewSystemDialogBrowserTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'native_layer_stub.js',
       'plugin_stub.js',
@@ -579,7 +579,7 @@ var PrintPreviewInvalidSettingsBrowserTest = class extends PrintPreviewTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/cr/event_target.js',
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'cloud_print_interface_stub.js',
       'native_layer_stub.js',
@@ -633,7 +633,7 @@ var PrintPreviewDestinationStoreTest = class extends PrintPreviewTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/web_ui_listener_behavior.js',
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'cloud_print_interface_stub.js',
       'native_layer_stub.js',
@@ -733,7 +733,7 @@ var PrintPreviewDestinationDialogTest = class extends PrintPreviewTest {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/web_ui_listener_behavior.js',
       '//ui/webui/resources/js/cr/event_target.js',
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'cloud_print_interface_stub.js',
       'native_layer_stub.js',
@@ -774,7 +774,7 @@ var PrintPreviewAdvancedDialogTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'advanced_dialog_test.js',
     ]);
@@ -825,7 +825,7 @@ var PrintPreviewPreviewAreaTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'native_layer_stub.js',
       'plugin_stub.js',
@@ -858,7 +858,7 @@ var PrintPreviewCustomMarginsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'custom_margins_test.js',
     ]);
@@ -942,7 +942,7 @@ var PrintPreviewDestinationSearchTest = class extends PrintPreviewTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/web_ui_listener_behavior.js',
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'native_layer_stub.js',
       'print_preview_test_utils.js',
@@ -997,7 +997,7 @@ var PrintPreviewHeaderTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'header_test.js',
     ]);
   }
@@ -1042,7 +1042,7 @@ var PrintPreviewHeaderNewTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'header_new_test.js',
     ]);
   }
@@ -1083,7 +1083,7 @@ var PrintPreviewButtonStripTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'button_strip_test.js',
     ]);
   }
@@ -1157,7 +1157,7 @@ var PrintPreviewAdvancedItemTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'advanced_item_test.js',
     ]);
@@ -1203,7 +1203,7 @@ var PrintPreviewDestinationListTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'destination_list_test.js',
     ]);
   }
@@ -1266,7 +1266,7 @@ var PrintPreviewKeyEventTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'native_layer_stub.js',
       'plugin_stub.js',
@@ -1331,7 +1331,7 @@ var PrintPreviewDestinationSettingsTest = class extends PrintPreviewTest {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/web_ui_listener_behavior.js',
       '../test_browser_proxy.js',
-      '../settings/test_util.js',
+      '../test_util.js',
       'cloud_print_interface_stub.js',
       'print_preview_test_utils.js',
       'native_layer_stub.js',
@@ -1420,7 +1420,7 @@ var PrintPreviewScalingSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'scaling_settings_test.js',
     ]);
@@ -1460,7 +1460,7 @@ var PrintPreviewCopiesSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'copies_settings_test.js',
     ]);
@@ -1481,7 +1481,7 @@ var PrintPreviewMediaSizeSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'media_size_settings_test.js',
     ]);
@@ -1502,7 +1502,7 @@ var PrintPreviewDpiSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'dpi_settings_test.js',
     ]);
@@ -1523,7 +1523,7 @@ var PrintPreviewOtherOptionsSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'other_options_settings_test.js',
     ]);
@@ -1544,7 +1544,7 @@ var PrintPreviewLayoutSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'layout_settings_test.js',
     ]);
@@ -1565,7 +1565,7 @@ var PrintPreviewColorSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'color_settings_test.js',
     ]);
@@ -1586,7 +1586,7 @@ var PrintPreviewMarginsSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'margins_settings_test.js',
     ]);
@@ -1607,7 +1607,7 @@ var PrintPreviewPagesPerSheetSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'pages_per_sheet_settings_test.js',
     ]);
@@ -1628,7 +1628,7 @@ var PrintPreviewDuplexSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'duplex_settings_test.js',
     ]);
@@ -1650,7 +1650,7 @@ var PrintPreviewPinSettingsTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'pin_settings_test.js',
     ]);
@@ -1672,7 +1672,7 @@ var PrintPreviewUserManagerTest = class extends PrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       '../test_browser_proxy.js',
       'cloud_print_interface_stub.js',
       'native_layer_stub.js',

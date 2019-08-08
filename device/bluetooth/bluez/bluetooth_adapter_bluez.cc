@@ -51,6 +51,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/constants/devicetype.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 #endif
 
@@ -104,6 +105,24 @@ UMABluetoothDiscoverySessionOutcome TranslateDiscoveryErrorToUMA(
     return UMABluetoothDiscoverySessionOutcome::UNKNOWN;
   }
 }
+
+#if defined(OS_CHROMEOS)
+device::BluetoothDevice::ServiceDataMap ConvertServiceDataMap(
+    const base::flat_map<std::string, std::vector<uint8_t>>& input) {
+  device::BluetoothDevice::ServiceDataMap output;
+  for (auto& i : input) {
+    output[BluetoothUUID(i.first)] = i.second;
+  }
+
+  return output;
+}
+
+device::BluetoothDevice::ManufacturerDataMap ConvertManufacturerDataMap(
+    const base::flat_map<uint16_t, std::vector<uint8_t>>& input) {
+  return device::BluetoothDevice::ManufacturerDataMap(input.begin(),
+                                                      input.end());
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -1187,7 +1206,36 @@ void BluetoothAdapterBlueZ::NotifyDeviceAdvertisementReceived(
 
   for (auto& observer : observers_)
     observer.DeviceAdvertisementReceived(this, device, rssi, eir);
+
+#if defined(OS_CHROMEOS)
+  if (ble_scan_parser_.is_bound()) {
+    ScanRecordCallback callback =
+        base::BindOnce(&BluetoothAdapterBlueZ::OnAdvertisementReceived,
+                       weak_ptr_factory_.GetWeakPtr(), device->GetAddress(),
+                       device->GetName() ? *(device->GetName()) : std::string(),
+                       rssi, device->GetAppearance());
+    ble_scan_parser_->Parse(eir, std::move(callback));
+  }
+#endif  // defined(OS_CHROMEOS)
 }
+
+#if defined(OS_CHROMEOS)
+void BluetoothAdapterBlueZ::OnAdvertisementReceived(std::string device_address,
+                                                    std::string device_name,
+                                                    uint8_t rssi,
+                                                    uint16_t device_appearance,
+                                                    ScanRecordPtr scan_record) {
+  auto service_data_map = ConvertServiceDataMap(scan_record->service_data_map);
+  auto manufacturer_data_map =
+      ConvertManufacturerDataMap(scan_record->manufacturer_data_map);
+  for (auto& observer : observers_) {
+    observer.DeviceAdvertisementReceived(
+        device_address, device_name, scan_record->advertisement_name, rssi,
+        scan_record->tx_power, device_appearance, scan_record->service_uuids,
+        service_data_map, manufacturer_data_map);
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 void BluetoothAdapterBlueZ::NotifyDeviceConnectedStateChanged(
     BluetoothDeviceBlueZ* device,
@@ -1515,6 +1563,26 @@ void BluetoothAdapterBlueZ::StartScanWithFilter(
     return;
   }
 
+#if defined(OS_CHROMEOS)
+  device::BluetoothAdapterFactory::BleScanParserCallback
+      ble_scan_parser_callback =
+          device::BluetoothAdapterFactory::GetBleScanParserCallback();
+  if (ble_scan_parser_callback) {
+    // To avoid repeatedly restarting a crashed data decoder service,
+    // don't add a connection error handler here. Wait to establish a
+    // new connection after all discovery sessions are stopped.
+    ble_scan_parser_.Bind(ble_scan_parser_callback.Run());
+  } else {
+#if DCHECK_IS_ON()
+    static bool logged_once = false;
+    DLOG_IF(ERROR, !logged_once)
+        << "Attempted to connect to "
+           "unconfigured BluetoothAdapterFactory::GetBleScanParserCallback()";
+    logged_once = true;
+#endif  // DCHECK_IS_ON()
+  }
+#endif  // defined(OS_CHROMEOS)
+
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
 
   if (discovery_filter) {
@@ -1592,6 +1660,10 @@ void BluetoothAdapterBlueZ::RemoveDiscoverySession(
         .Run(UMABluetoothDiscoverySessionOutcome::REMOVE_WITH_PENDING_REQUEST);
     return;
   }
+
+#if defined(OS_CHROMEOS)
+  ble_scan_parser_.reset();
+#endif  // defined(OS_CHROMEOS)
 
   // There is exactly one active discovery session. Request BlueZ to stop
   // discovery.

@@ -209,6 +209,11 @@ void DataTypeManagerImpl::RegisterTypesWithBackend() {
           base::Bind(&DataTypeManagerImpl::SetTypeDownloaded,
                      base::Unretained(this), dtc->type()),
           configurer_);
+      // This assumes SetTypeDownloaded() is called synchronously, which is
+      // the case.
+      if (force_redownload_types_.Has(type)) {
+        downloaded_types_.Remove(type);
+      }
     }
   }
 }
@@ -391,7 +396,15 @@ bool DataTypeManagerImpl::UpdatePreconditionError(ModelType type) {
           data_type_status_table_.ResetDataTypePolicyErrorFor(type);
       const bool unready_status_changed =
           data_type_status_table_.ResetUnreadyErrorFor(type);
-      return data_type_policy_error_changed || unready_status_changed;
+      if (!data_type_policy_error_changed && !unready_status_changed) {
+        // Nothing changed.
+        return false;
+      }
+      // If preconditions are newly met, the datatype should be immediately
+      // redownloaded as part of the datatype configuration (most relevant for
+      // the UNREADY_ERROR case which usually won't clear sync metadata).
+      force_redownload_types_.Put(type);
+      return true;
     }
 
     case DataTypeController::PreconditionState::kMustStopAndClearData: {
@@ -580,6 +593,8 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
   types_to_download.RemoveAll(CommitOnlyTypes());
   if (!types_to_download.Empty())
     types_to_download.Put(NIGORI);
+
+  force_redownload_types_.RemoveAll(types_to_download);
 
   // TODO(sync): crbug.com/137550.
   // It's dangerous to configure types that have progress markers. Types with

@@ -9,9 +9,12 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_impl.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_store.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
 namespace testing {
@@ -48,6 +51,21 @@ class NoopSiteDataStore : public SiteDataStore {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoopSiteDataStore);
+};
+
+class TestWithPerformanceManager : public ::testing::Test {
+ public:
+  TestWithPerformanceManager();
+  ~TestWithPerformanceManager() override;
+
+  void SetUp() override;
+  void TearDown() override;
+
+ private:
+  std::unique_ptr<PerformanceManager> performance_manager_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWithPerformanceManager);
 };
 
 }  // namespace testing

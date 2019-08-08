@@ -21,11 +21,7 @@ HoverButtonController::HoverButtonController(
 HoverButtonController::~HoverButtonController() = default;
 
 bool HoverButtonController::OnKeyPressed(const ui::KeyEvent& event) {
-  // HoverButton should not be activated when the up or down arrow key is
-  // pressed.
-  if (event.key_code() == ui::VKEY_UP || event.key_code() == ui::VKEY_DOWN)
-    return false;
-  if (listener_) {
+  if (event.key_code() == ui::VKEY_RETURN && listener_) {
     listener_->ButtonPressed(button(), event);
     return true;
   }

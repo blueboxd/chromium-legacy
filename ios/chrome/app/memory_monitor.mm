@@ -37,7 +37,7 @@ void UpdateMemoryValues() {
       static_cast<int>(base::SysInfo::AmountOfAvailablePhysicalMemory() / 1024);
   breakpad_helper::SetCurrentFreeMemoryInKB(free_memory);
 
-  NSURL* fileURL = [[NSURL alloc] initFileURLWithPath:@"/"];
+  NSURL* fileURL = [[NSURL alloc] initFileURLWithPath:NSHomeDirectory()];
   NSDictionary* results = [fileURL resourceValuesForKeys:@[
     NSURLVolumeAvailableCapacityForImportantUsageKey
   ]

@@ -12,7 +12,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 
-import org.chromium.android_webview.ui.util.CrashInfoLoader.CrashInfo;
+import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;

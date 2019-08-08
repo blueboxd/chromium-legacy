@@ -113,7 +113,7 @@ static NodeListSearchRoot SearchRootFromCollectionType(
     case kMapAreas:
       return NodeListSearchRoot::kOwnerNode;
     case kFormControls:
-      if (IsHTMLFieldSetElement(owner))
+      if (IsA<HTMLFieldSetElement>(owner))
         return NodeListSearchRoot::kOwnerNode;
       DCHECK(IsHTMLFormElement(owner));
       return NodeListSearchRoot::kTreeScope;
@@ -252,7 +252,7 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
     case kDocAnchors:
       return element.HasTagName(kATag) && element.FastHasAttribute(kNameAttr);
     case kFormControls:
-      DCHECK(IsHTMLFieldSetElement(html_collection.ownerNode()));
+      DCHECK(IsA<HTMLFieldSetElement>(html_collection.ownerNode()));
       return IsHTMLObjectElement(element) ||
              IsHTMLFormControlElement(element) ||
              element.IsFormAssociatedCustomElement();

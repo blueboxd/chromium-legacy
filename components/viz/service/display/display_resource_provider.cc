@@ -4,6 +4,9 @@
 
 #include "components/viz/service/display/display_resource_provider.h"
 
+#include <algorithm>
+#include <string>
+
 #include "base/atomic_sequence_num.h"
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
@@ -535,66 +538,11 @@ void DisplayResourceProvider::UnlockForRead(ResourceId id) {
     gl->EndSharedImageAccessDirectCHROMIUM(resource->gl_id);
   }
   resource->lock_for_read_count--;
-  TryReleaseResource(it);
+  TryReleaseResource(id, resource);
 }
 
-ResourceMetadata DisplayResourceProvider::LockForExternalUse(ResourceId id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto it = resources_.find(id);
-  DCHECK(it != resources_.end());
-
-  ChildResource* resource = &it->second;
-  ResourceMetadata metadata;
-  // Make sure there is no outstanding LockForExternalUse without calling
-  // UnlockForExternalUse.
-  DCHECK(!resource->locked_for_external_use);
-  // TODO(penghuang): support software resource.
-  DCHECK(resource->is_gpu_resource_type());
-
-  metadata.resource_id = id;
-  metadata.mailbox_holder = resource->transferable.mailbox_holder;
-  metadata.size = resource->transferable.size;
-  metadata.resource_format = resource->transferable.format;
-  metadata.mailbox_holder.sync_token = resource->sync_token();
-  metadata.color_space = resource->transferable.color_space;
-  metadata.origin = kTopLeft_GrSurfaceOrigin;
-
-  resource->locked_for_external_use = true;
-
-  if (resource->transferable.read_lock_fences_enabled)
-    resource->read_lock_fence = current_read_lock_fence_;
-
-  return metadata;
-}
-
-void DisplayResourceProvider::UnlockForExternalUse(
-    ResourceId id,
-    const gpu::SyncToken& sync_token) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto it = resources_.find(id);
-  DCHECK(it != resources_.end());
-  DCHECK(sync_token.verified_flush());
-
-  ChildResource* resource = &it->second;
-  DCHECK(resource->locked_for_external_use);
-  // TODO(penghuang): support software resource.
-  DCHECK(resource->is_gpu_resource_type());
-
-  // Update the resource sync token to |sync_token|. When the next frame is
-  // being composited, the DeclareUsedResourcesFromChild() will be called with
-  // resources belong to every child for the next frame. If the resource is not
-  // used by the next frame, the resource will be returned to a child which
-  // owns it with the |sync_token|. The child is responsible for issuing a
-  // WaitSyncToken GL command with the |sync_token| before reusing it.
-  resource->UpdateSyncToken(sync_token);
-  resource->locked_for_external_use = false;
-
-  TryReleaseResource(it);
-}
-
-void DisplayResourceProvider::TryReleaseResource(ResourceMap::iterator it) {
-  ResourceId id = it->first;
-  ChildResource* resource = &it->second;
+void DisplayResourceProvider::TryReleaseResource(ResourceId id,
+                                                 ChildResource* resource) {
   if (resource->marked_for_deletion && !resource->lock_for_read_count &&
       !resource->locked_for_external_use) {
     auto child_it = children_.find(resource->child_id);
@@ -677,6 +625,10 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   std::vector<ReturnedResource*> need_synchronization_resources;
   std::vector<GLbyte*> unverified_sync_tokens;
 
+  std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
+      image_contexts_to_return;
+  image_contexts_to_return.reserve(unused.size());
+
   GLES2Interface* gl = ContextGL();
   for (ResourceId local_id : unused) {
     auto it = resources_.find(local_id);
@@ -711,6 +663,9 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
       // We can't postpone the deletion, so we'll have to lose it.
       is_lost = true;
     }
+
+    if (resource.image_context)
+      image_contexts_to_return.emplace_back(std::move(resource.image_context));
 
     if (resource.is_gpu_resource_type() &&
         resource.filter != resource.transferable.filter) {
@@ -766,8 +721,10 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   for (ReturnedResource* returned : need_synchronization_resources)
     returned->sync_token = new_sync_token;
 
-  if (external_use_client_ && !unused.empty())
-    external_use_client_->ReleaseCachedResources(unused);
+  if (external_use_client_ && !image_contexts_to_return.empty()) {
+    external_use_client_->ReleaseImageContexts(
+        std::move(image_contexts_to_return));
+  }
 
   if (!to_return.empty())
     child_info->return_callback.Run(to_return);
@@ -938,17 +895,63 @@ DisplayResourceProvider::LockSetForExternalUse::~LockSetForExternalUse() {
   DCHECK(resources_.empty());
 }
 
-ResourceMetadata DisplayResourceProvider::LockSetForExternalUse::LockResource(
-    ResourceId id) {
-  DCHECK(!base::Contains(resources_, id));
-  resources_.push_back(id);
-  return resource_provider_->LockForExternalUse(id);
+ExternalUseClient::ImageContext*
+DisplayResourceProvider::LockSetForExternalUse::LockResource(
+    ResourceId id,
+    bool is_video_plane) {
+  auto it = resource_provider_->resources_.find(id);
+  DCHECK(it != resource_provider_->resources_.end());
+
+  ChildResource& resource = it->second;
+  DCHECK(resource.is_gpu_resource_type());
+
+  if (!resource.locked_for_external_use) {
+    DCHECK(!base::Contains(resources_, std::make_pair(id, &resource)));
+    resources_.emplace_back(id, &resource);
+
+    if (!resource.image_context) {
+      resource.image_context =
+          resource_provider_->external_use_client_->CreateImageContext(
+              resource.transferable.mailbox_holder, resource.transferable.size,
+              resource.transferable.format,
+              // The resource |color_space| is ignored by SkiaRenderer for video
+              // planes and usually cannot be converted to SkColorSpace.
+              is_video_plane
+                  ? nullptr
+                  : resource.transferable.color_space.ToSkColorSpace());
+    }
+    resource.locked_for_external_use = true;
+
+    if (resource.transferable.read_lock_fences_enabled)
+      resource.read_lock_fence = resource_provider_->current_read_lock_fence_;
+  }
+
+  DCHECK(base::Contains(resources_, std::make_pair(id, &resource)));
+  return resource.image_context.get();
 }
 
 void DisplayResourceProvider::LockSetForExternalUse::UnlockResources(
     const gpu::SyncToken& sync_token) {
-  for (const auto& id : resources_)
-    resource_provider_->UnlockForExternalUse(id, sync_token);
+  DCHECK(sync_token.verified_flush());
+  for (const auto& pair : resources_) {
+    auto id = pair.first;
+    auto* resource = pair.second;
+    DCHECK(resource->locked_for_external_use);
+
+    // TODO(penghuang): support software resource.
+    DCHECK(resource->is_gpu_resource_type());
+
+    // Update the resource sync token to |sync_token|. When the next frame is
+    // being composited, the DeclareUsedResourcesFromChild() will be called with
+    // resources belong to every child for the next frame. If the resource is
+    // not used by the next frame, the resource will be returned to a child
+    // which owns it with the |sync_token|. The child is responsible for issuing
+    // a WaitSyncToken GL command with the |sync_token| before reusing it.
+    resource->UpdateSyncToken(sync_token);
+    resource->locked_for_external_use = false;
+
+    resource_provider_->TryReleaseResource(id, resource);
+  }
   resources_.clear();
 }
 

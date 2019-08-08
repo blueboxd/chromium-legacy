@@ -6,10 +6,9 @@
 
 #include "base/bind.h"
 #include "chrome/browser/vr/service/vr_ui_host.h"
-#include "content/public/browser/system_connector.h"
+#include "chrome/browser/vr/service/xr_device_service.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/isolated_gamepad_data_fetcher.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 constexpr int kMaxRetries = 3;
@@ -98,10 +97,8 @@ void IsolatedVRDeviceProvider::OnDevicesEnumerated() {
 }
 
 void IsolatedVRDeviceProvider::SetupDeviceProvider() {
-  content::GetSystemConnector()->BindInterface(
-      device::mojom::kVrIsolatedServiceName,
+  GetXRDeviceService()->BindRuntimeProvider(
       mojo::MakeRequest(&device_provider_));
-
   device_provider_.set_connection_error_handler(base::BindOnce(
       &IsolatedVRDeviceProvider::OnServerError, base::Unretained(this)));
 

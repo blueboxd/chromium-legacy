@@ -117,6 +117,11 @@ class UnlockManagerImpl : public UnlockManager,
   // yet be trusted.
   bool IsBluetoothAdapterRecoveringFromSuspend() const;
 
+  // Called once BluetoothAdapter has recovered after resuming from suspend,
+  // meaning its presence and power values can be trusted again. This method
+  // checks if Bluetooth is enabled; if it is not, it cancels the initial scan.
+  void OnBluetoothAdapterPresentAndPoweredChanged();
+
   // If the RemoteDeviceLifeCycle is available, ensure it is started (but only
   // if Bluetooth is available).
   void AttemptToStartRemoteDeviceLifecycle();
@@ -170,9 +175,13 @@ class UnlockManagerImpl : public UnlockManager,
   // yet authenticated.
   Messenger* GetMessenger();
 
-  // Records UMA performance metrics for the unlockable remote status being
-  // received.
-  void RecordUnlockableRemoteStatusReceived();
+  // Records UMA performance metrics for the first remote status (regardless of
+  // whether it's unlockable) being received.
+  void RecordFirstRemoteStatusReceived(bool unlockable);
+
+  // Records UMA performance metrics for the first status shown to the user
+  // (regardless of whether it's unlockable/green).
+  void RecordFirstStatusShownToUser(bool unlockable);
 
   // Clears the timers for beginning a scan and fetching remote status.
   void ResetPerformanceMetricsTimestamps();
@@ -231,13 +240,27 @@ class UnlockManagerImpl : public UnlockManager,
   // is fixed.
   bool was_bluetooth_present_and_powered_before_last_suspend_ = false;
 
+  // True only if the remote device has responded with a remote status, either
+  // "unlockable" or otherwise.
+  bool has_received_first_remote_status_ = false;
+
+  // True only if the user has been shown a Smart Lock status and tooltip,
+  // either "unlockable" (green) or otherwise (yellow).
+  bool has_user_been_shown_first_status_ = false;
+
   // The state of the current screen lock UI.
   ScreenlockState screenlock_state_ = ScreenlockState::INACTIVE;
 
-  // The timestamp of when UnlockManager begins to try to establish a secure
-  // connection to the requested remote device of the provided
-  // RemoteDeviceLifeCycle.
-  base::Time attempt_secure_connection_start_time_;
+  // The timestamp of when the lock or login screen is shown to the user. Begins
+  // when the screen is locked, the system is rebooted, the clamshell lid is
+  // opened, or another user pod is switched to on the login screen.
+  base::Time show_lock_screen_time_;
+
+  // The timestamp of when UnlockManager begins to perform the initial scan for
+  // the requested remote device of the provided RemoteDeviceLifeCycle. Usually
+  // begins right after |show_lock_screen_time_|, unless Bluetooth is disabled.
+  // If Bluetooth is re-enabled, it also begins.
+  base::Time initial_scan_start_time_;
 
   // The timestamp of when UnlockManager successfully establishes a secure
   // connection to the requested remote device of the provided

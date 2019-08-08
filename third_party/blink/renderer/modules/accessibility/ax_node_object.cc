@@ -652,7 +652,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(kAddressTag))
     return ax::mojom::Role::kGenericContainer;
 
-  if (IsHTMLDialogElement(*GetNode()))
+  if (IsA<HTMLDialogElement>(*GetNode()))
     return ax::mojom::Role::kDialog;
 
   // The HTML element should not be exposed as an element. That's what the
@@ -948,7 +948,7 @@ bool AXNodeObject::IsEmbeddedObject() const {
 }
 
 bool AXNodeObject::IsFieldset() const {
-  return IsHTMLFieldSetElement(GetNode());
+  return IsA<HTMLFieldSetElement>(GetNode());
 }
 
 bool AXNodeObject::IsHeading() const {
@@ -1246,7 +1246,7 @@ bool AXNodeObject::IsModal() const {
   if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kModal, modal))
     return modal;
 
-  if (GetNode() && IsHTMLDialogElement(*GetNode()))
+  if (GetNode() && IsA<HTMLDialogElement>(*GetNode()))
     return To<Element>(GetNode())->IsInTopLayer();
 
   return false;
@@ -1267,7 +1267,7 @@ bool AXNodeObject::CanvasHasFallbackContent() const {
   if (IsDetached())
     return false;
   Node* node = this->GetNode();
-  return IsHTMLCanvasElement(node) && node->hasChildren();
+  return IsA<HTMLCanvasElement>(node) && node->hasChildren();
 }
 
 int AXNodeObject::HeadingLevel() const {
@@ -2189,7 +2189,8 @@ String AXNodeObject::TextFromDescendants(AXObjectSet& visited,
     ax::mojom::NameFrom child_name_from = ax::mojom::NameFrom::kUninitialized;
     String result;
     if (!is_continuation && child->IsPresentational()) {
-      result = child->TextFromDescendants(visited, true);
+      if (child->IsVisible())
+        result = child->TextFromDescendants(visited, true);
     } else {
       result =
           RecursiveTextAlternative(*child, false, visited, child_name_from);
@@ -3253,14 +3254,15 @@ String AXNodeObject::NativeTextAlternative(
   }
 
   // Fieldset / legend.
-  if (IsHTMLFieldSetElement(GetNode())) {
+  if (auto* html_field_set_element =
+          DynamicTo<HTMLFieldSetElement>(GetNode())) {
     name_from = ax::mojom::NameFrom::kRelatedElement;
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative));
       name_sources->back().type = name_from;
       name_sources->back().native_source = kAXTextFromNativeHTMLLegend;
     }
-    HTMLElement* legend = ToHTMLFieldSetElement(GetNode())->Legend();
+    HTMLElement* legend = html_field_set_element->Legend();
     if (legend) {
       AXObject* legend_ax_object = AXObjectCache().GetOrCreate(legend);
       // Avoid an infinite loop

@@ -376,24 +376,31 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
                                            aura::Window* lost_focus) {
   if (view_ && is_target_visibility_show_) {
     aura::Window* applist_window = view_->GetWidget()->GetNativeView();
-    const bool applist_gained_focus = applist_window->Contains(gained_focus);
+    aura::Window* applist_container = applist_window->parent();
+    // An AppList dialog window may take focus from the AppList window. Don't
+    // consider this a visibility change.
+    const bool app_list_lost_focus =
+        gained_focus ? !applist_container->Contains(gained_focus)
+                     : (lost_focus && applist_container->Contains(lost_focus));
+
     if (delegate_->IsTabletMode()) {
-      if (applist_window->Contains(lost_focus)) {
-        home_launcher_shown_ = false;
-        HandleCloseOpenSearchBox();
-      } else if (applist_gained_focus) {
-        home_launcher_shown_ = true;
-        view_->OnHomeLauncherGainingFocusWithoutAnimation();
+      const bool is_shown = !app_list_lost_focus;
+      if (is_shown != home_launcher_shown_) {
+        home_launcher_shown_ = is_shown;
+        if (home_launcher_shown_)
+          view_->OnHomeLauncherGainingFocusWithoutAnimation();
+        else
+          HandleCloseOpenSearchBox();
+
+        NotifyVisibilityChanged(home_launcher_shown_, GetDisplayId());
       }
     }
 
-    if (applist_gained_focus)
+    if (applist_window->Contains(gained_focus))
       base::RecordAction(base::UserMetricsAction("AppList_WindowFocused"));
 
-    aura::Window* applist_container = applist_window->parent();
-    if (applist_container->Contains(lost_focus) &&
-        (!gained_focus || !applist_container->Contains(gained_focus)) &&
-        !switches::ShouldNotDismissOnBlur() && !delegate_->IsTabletMode()) {
+    if (app_list_lost_focus && !switches::ShouldNotDismissOnBlur() &&
+        !delegate_->IsTabletMode()) {
       Dismiss(base::TimeTicks());
     }
   }

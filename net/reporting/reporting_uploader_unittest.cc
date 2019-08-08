@@ -444,6 +444,7 @@ TEST_F(ReportingUploaderTest, DontSendCookies) {
       cookie_callback;
   context_.cookie_store()->SetCookieWithOptionsAsync(
       server_.GetURL("/"), "foo=bar", CookieOptions(),
+      base::nullopt /* server_time */,
       base::BindRepeating(&ResultSavingCookieCallback<
                               CanonicalCookie::CookieInclusionStatus>::Run,
                           base::Unretained(&cookie_callback)));

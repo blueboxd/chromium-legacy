@@ -47,7 +47,7 @@ void JavaScriptDialogOverlayCoordinatorTest::SetRequest(
                                     initWithBrowser:browser_.get()
           supportedOverlayRequestCoordinatorClasses:coordinator_classes];
   coordinator_ = [factory newCoordinatorForRequest:request_.get()
-                                 dismissalDelegate:&dismissal_delegate_
+                                          delegate:&delegate_
                                 baseViewController:base_view_controller];
 }
 

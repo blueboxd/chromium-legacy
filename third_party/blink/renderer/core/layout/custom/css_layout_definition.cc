@@ -14,15 +14,16 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_fragment_result_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_layout_callback.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_layout_fragment_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_no_argument_constructor.h"
 #include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_constraints.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_scope.h"
 #include "third_party/blink/renderer/core/layout/custom/fragment_result_options.h"
 #include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
@@ -76,6 +77,7 @@ CSSLayoutDefinition::Instance::Instance(CSSLayoutDefinition* definition,
 
 bool CSSLayoutDefinition::Instance::Layout(
     const LayoutCustom& layout_custom,
+    CustomLayoutScope* custom_layout_scope,
     FragmentResultOptions* fragment_result_options,
     scoped_refptr<SerializedScriptValue>* fragment_result_data) {
   ScriptState* script_state = definition_->GetScriptState();
@@ -95,6 +97,7 @@ bool CSSLayoutDefinition::Instance::Layout(
       continue;
 
     CustomLayoutChild* layout_child = child->GetCustomLayoutChild();
+    layout_child->SetCustomLayoutToken(custom_layout_scope->Token());
     DCHECK(layout_child);
     children.push_back(layout_child);
   }
@@ -128,94 +131,35 @@ bool CSSLayoutDefinition::Instance::Layout(
   if (!definition_->layout_
            ->Invoke(instance_.NewLocal(isolate), children, edges, constraints,
                     style_map)
-           .To(&return_value)) {
+           .To(&return_value))
     return false;
-  }
 
-  DCHECK(return_value.V8Value()->IsGeneratorObject());
-  ScriptIterator iterator(return_value.V8Value().As<v8::Object>(), isolate);
-  v8::Local<v8::Value> next_value;
-
-  // We run the generator until it's exhausted.
-  v8::Local<v8::Context> context = script_state->GetContext();
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  v8::MicrotaskQueue* microtask_queue = ToMicrotaskQueue(execution_context);
+  DCHECK(microtask_queue);
+
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "CSSLayoutAPI", "Layout");
-  while (iterator.Next(execution_context, exception_state, next_value)) {
-    if (exception_state.HadException()) {
-      ReportException(&exception_state);
-      return false;
-    }
 
-    // The value should already be non-empty, if not it should have be caught
-    // by the exception_state.HadException() above.
-    v8::Local<v8::Value> value = iterator.GetValue().ToLocalChecked();
-
-    // Process a single fragment request.
-    if (V8LayoutFragmentRequest::HasInstance(value, isolate)) {
-      CustomLayoutFragmentRequest* fragment_request =
-          V8LayoutFragmentRequest::ToImpl(v8::Local<v8::Object>::Cast(value));
-
-      CustomLayoutFragment* fragment = fragment_request->PerformLayout(isolate);
-      if (!fragment) {
-        execution_context->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kInfo,
-            "Unable to perform layout request due to an invalid child, "
-            "falling back to block layout."));
-        return false;
-      }
-
-      next_value = ToV8(fragment, context->Global(), isolate);
-      continue;
-    }
-
-    // Process multiple fragment requests.
-    if (HasCallableIteratorSymbol(isolate, value, exception_state)) {
-      HeapVector<Member<CustomLayoutFragmentRequest>> requests =
-          NativeValueTraits<IDLSequence<CustomLayoutFragmentRequest>>::
-              NativeValue(isolate, value, exception_state);
-      if (exception_state.HadException()) {
-        ReportException(&exception_state);
-        return false;
-      }
-
-      v8::Local<v8::Array> results = v8::Array::New(isolate, requests.size());
-      uint32_t index = 0;
-      for (const auto& request : requests) {
-        CustomLayoutFragment* fragment = request->PerformLayout(isolate);
-
-        if (!fragment) {
-          execution_context->AddConsoleMessage(ConsoleMessage::Create(
-              mojom::ConsoleMessageSource::kJavaScript,
-              mojom::ConsoleMessageLevel::kInfo,
-              "Unable to perform layout request due to an invalid child, "
-              "falling back to block layout."));
-          return false;
-        }
-
-        bool success;
-        if (!results
-                 ->CreateDataProperty(
-                     context, index++,
-                     ToV8(fragment, context->Global(), isolate))
-                 .To(&success) &&
-            success)
-          return false;
-      }
-
-      next_value = results;
-      continue;
-    }
-
-    // We recieved something that wasn't either a CustomLayoutFragmentRequest,
-    // or a sequence of CustomLayoutFragmentRequests. Fallback to block layout.
+  v8::Local<v8::Value> v8_return_value = return_value.V8Value();
+  if (v8_return_value.IsEmpty() || !v8_return_value->IsPromise()) {
     execution_context->AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
                                mojom::ConsoleMessageLevel::kInfo,
-                               "Unable to parse the layout request, "
-                               "falling back to block layout."));
+                               "The layout function must be async or return a "
+                               "promise, falling back to block layout."));
     return false;
+  }
+
+  // Run the work queue until exhaustion.
+  while (!custom_layout_scope->Queue()->IsEmpty()) {
+    {
+      v8::MicrotasksScope microtasks_scope(isolate, microtask_queue,
+                                           v8::MicrotasksScope::kRunMicrotasks);
+      for (auto& task : *custom_layout_scope->Queue())
+        task.Run();
+      custom_layout_scope->Queue()->clear();
+    }
   }
 
   if (exception_state.HadException()) {
@@ -223,13 +167,22 @@ bool CSSLayoutDefinition::Instance::Layout(
     return false;
   }
 
-  // The value should already be non-empty, if not it should have be caught by
-  // the ReportException() above.
-  v8::Local<v8::Value> result_value = iterator.GetValue().ToLocalChecked();
+  v8::Local<v8::Promise> v8_result_promise =
+      v8::Local<v8::Promise>::Cast(v8_return_value);
+
+  if (v8_result_promise->State() != v8::Promise::kFulfilled) {
+    execution_context->AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
+                               mojom::ConsoleMessageLevel::kInfo,
+                               "The layout function promise must resolve, "
+                               "falling back to block layout."));
+    return false;
+  }
+  v8::Local<v8::Value> inner_value = v8_result_promise->Result();
 
   // Attempt to convert the result.
-  V8FragmentResultOptions::ToImpl(isolate, result_value,
-                                  fragment_result_options, exception_state);
+  V8FragmentResultOptions::ToImpl(isolate, inner_value, fragment_result_options,
+                                  exception_state);
 
   if (exception_state.HadException()) {
     V8ScriptRunner::ReportException(isolate, exception_state.GetException());

@@ -56,7 +56,7 @@ var PrintPreviewPrintHeaderInteractiveTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '//chrome/test/data/webui/settings/test_util.js',
+      '//chrome/test/data/webui/test_util.js',
       'print_header_interactive_test.js',
     ]);
   }
@@ -84,7 +84,7 @@ var PrintPreviewButtonStripInteractiveTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '//chrome/test/data/webui/settings/test_util.js',
+      '//chrome/test/data/webui/test_util.js',
       'button_strip_interactive_test.js',
     ]);
   }
@@ -119,7 +119,7 @@ var PrintPreviewDestinationDialogInteractiveTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '//chrome/test/data/webui/settings/test_util.js',
+      '//chrome/test/data/webui/test_util.js',
       '../test_browser_proxy.js',
       'cloud_print_interface_stub.js',
       'native_layer_stub.js',
@@ -167,7 +167,7 @@ var PrintPreviewPagesSettingsTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'pages_settings_test.js',
     ]);
@@ -207,7 +207,7 @@ var PrintPreviewNumberSettingsSectionInteractiveTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'number_settings_section_interactive_test.js',
     ]);
@@ -238,7 +238,7 @@ var PrintPreviewScalingSettingsInteractiveTest =
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/util.js',
-      '../settings/test_util.js',
+      '../test_util.js',
       'print_preview_test_utils.js',
       'scaling_settings_interactive_test.js',
     ]);

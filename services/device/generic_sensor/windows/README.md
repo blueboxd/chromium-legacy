@@ -9,9 +9,9 @@ Windows has two sets of sensor APIs:
 - [Windows.Devices.Sensors WinRT API](https://docs.microsoft.com/en-us/uwp/api/windows.devices.sensors):
   The WinRT sensor API on Windows.
 
-This document outlines the current ISensor based Chromium sensor backend on
-Windows and the newly proposed Windows.Devices.Sensors based
-implementation. It is laid out as follows:
+This document outlines both the ISensor and Windows.Devices.Sensors
+based implementation of Chromium's
+[W3C sensor interface](https://www.w3.org/TR/generic-sensor/) on Windows:
 
 1. Summary
 2. General Chromium Sensor Backend Model
@@ -105,15 +105,14 @@ reimplemented with Windows.Devices.Sensors:
 
 This allows the other classes, which are agnostic to the underlying API,
 to interchangeability use the ISensor vs. Windows.Devices.Sensors
-implementation. This is advantageous as the two implementations will need
-to live side by side.
+implementation. This is advantageous as the two implementations live side
+by side.
 
 The Windows.Devices.Sensors APIs do not currently support thresholding,
 but is coming in a future release of Windows. This means a (slight)
 performance degredation will occur if the Windows.Devices.Sensors APIs are
-used as is since the ISensor implementation is utilizing thresholding while
-Windows.Devices.Sensors can only support streaming. So the Chromium backend
-will switch to use the ISensor implementation on versions of Windows that
+used since the ISensor implementation does utilize thresholding. The Chromium
+backend will switch to use the ISensor implementation on versions of Windows that
 do not have WinRT thresholding support and will use the Windows.Devices.Sensors
 implementation for those that do.
 
@@ -207,17 +206,7 @@ thresholding.
 The modernization changes will be broken down into several incremental
 changes to keep change lists to a reviewable size:
 
-### Change list 5-6: Implement the rest of the sensors
-
-- Feature Work:
-  - Implement the accelerometer, gyroscope, magnetometer, and absolute
-    orientation classes similar to the light sensor.
-- Testing
-  - Implementing unit tests for the accelerometer, gyroscope,
-    magnetometer, and absolute orientation classes similar to the light
-    sensor.
-
-#### Change list 7: Add metrics
+### Change list 7: Add metrics
 
 - Feature Work:
   - Add metrics as defined in section 6 following these
@@ -227,7 +216,7 @@ changes to keep change lists to a reviewable size:
     as an example.
   - Run histogram tests as defined [here](https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md#Testing).
 
-#### Change list 8: Roll out new Windows.Devices.Sensors implementation to users
+### Change list 8: Roll out new Windows.Devices.Sensors implementation to users
 
 - Feature Work:
   - Use experimentation process to roll out the new implementation
@@ -236,7 +225,7 @@ changes to keep change lists to a reviewable size:
   - Build Chromium and manually verify the reported samples are the
     expected values.
 
-#### Change list 9: Enable Windows.Devices.Sensors implementation by default
+### Change list 9: Enable Windows.Devices.Sensors implementation by default
 
 - Feature Work:
   - Change the feature flag to enabled by default so it is enabled for

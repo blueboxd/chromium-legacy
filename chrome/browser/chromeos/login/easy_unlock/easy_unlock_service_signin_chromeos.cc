@@ -386,30 +386,11 @@ void EasyUnlockServiceSignin::OnScreenDidUnlock(
       SmartLockMetricsRecorder::RecordAuthResultSignInSuccess();
     }
 
-    EasyUnlockAuthEvent event = GetPasswordAuthEvent();
-    if (event == PASSWORD_ENTRY_PHONE_LOCKED ||
-        event == PASSWORD_ENTRY_PHONE_NOT_LOCKABLE ||
-        event == PASSWORD_ENTRY_RSSI_TOO_LOW ||
-        event == PASSWORD_ENTRY_PHONE_LOCKED_AND_RSSI_TOO_LOW ||
-        event == PASSWORD_ENTRY_WITH_AUTHENTICATED_PHONE) {
-      SmartLockMetricsRecorder::RecordGetRemoteStatusResultSignInSuccess();
-    } else if (event == PASSWORD_ENTRY_BLUETOOTH_CONNECTING) {
-      SmartLockMetricsRecorder::RecordGetRemoteStatusResultSignInFailure(
-          SmartLockMetricsRecorder::
-              SmartLockGetRemoteStatusResultFailureReason::
-                  kUserEnteredPasswordWhileConnecting);
-    } else if (event == PASSWORD_ENTRY_NO_BLUETOOTH) {
-      SmartLockMetricsRecorder::RecordGetRemoteStatusResultSignInFailure(
-          SmartLockMetricsRecorder::
-              SmartLockGetRemoteStatusResultFailureReason::
-                  kUserEnteredPasswordWhileBluetoothDisabled);
-    }
+    SmartLockMetricsRecorder::RecordSmartLockSignInAuthMethodChoice(
+        will_authenticate_using_easy_unlock()
+            ? SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kSmartLock
+            : SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kOther);
   }
-
-  SmartLockMetricsRecorder::RecordSmartLockSignInAuthMethodChoice(
-      will_authenticate_using_easy_unlock()
-          ? SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kSmartLock
-          : SmartLockMetricsRecorder::SmartLockAuthMethodChoice::kOther);
 
   // TODO(crbug.com/972156): A KeyedService shutting itself seems dangerous;
   // look into other ways to "reset state" besides this.

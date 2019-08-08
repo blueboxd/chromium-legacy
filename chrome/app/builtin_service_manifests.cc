@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "components/services/quarantine/public/cpp/manifest.h"
-#include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 
@@ -30,24 +29,8 @@
 #include "components/mirroring/service/manifest.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/services/removable_storage_writer/public/cpp/manifest.h"
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-#include "chrome/services/media_gallery_util/public/cpp/manifest.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "components/services/pdf_compositor/public/cpp/manifest.h"  // nogncheck
-#endif
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/services/printing/public/cpp/manifest.h"
-#endif
-
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-#include "chrome/services/isolated_xr_device/manifest.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS) || \
@@ -59,21 +42,8 @@ const std::vector<service_manager::Manifest>&
 GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       quarantine::GetQuarantineManifest(),
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-      GetRemovableStorageWriterManifest(),
-#endif
-#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
-      GetMediaGalleryUtilManifest(),
-#endif
 #if BUILDFLAG(ENABLE_PRINTING)
       printing::GetPdfCompositorManifest(),
-#endif
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
-    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
-      GetChromePrintingManifest(),
-#endif
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-      GetXrDeviceServiceManifest(),
 #endif
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
       simple_browser::GetManifest(),

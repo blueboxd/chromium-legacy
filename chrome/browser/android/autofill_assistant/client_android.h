@@ -66,7 +66,6 @@ class ClientAndroid : public Client,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jexperiment_ids,
-      const base::android::JavaParamRef<jbyteArray>& jscript_bundle,
       const base::android::JavaParamRef<jobjectArray>& jargument_names,
       const base::android::JavaParamRef<jobjectArray>& jargument_values,
       const base::android::JavaParamRef<jobject>& jcallback);

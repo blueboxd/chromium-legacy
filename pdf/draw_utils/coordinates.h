@@ -57,31 +57,6 @@ PageInsetSizes GetPageInsetsForTwoUpView(
     const PageInsetSizes& single_view_insets,
     int horizontal_separator);
 
-// TODO (chinsenj): move Get*FillRect() functions to bottom of coordinates.h.
-// Given |page_rect| in document coordinates, |inset_sizes|, and
-// |bottom_separator|, return a pp::Rect object representing the gap on the
-// left side of the page created by insetting the page. I.e. the difference,
-// on the left side, between the initial |page_rect| and the |page_rect| inset
-// with |inset_sizes| (current value of |page_rect|).
-// The x coordinate of |page_rect| must be greater than or equal to
-// |inset_sizes.left|.
-pp::Rect GetLeftFillRect(const pp::Rect& page_rect,
-                         const PageInsetSizes& inset_sizes,
-                         int bottom_separator);
-
-// Same as GetLeftFillRect(), but for the right side of |page_rect| and also
-// depends on the |doc_width|. Additionally, |doc_width| must be greater than or
-// equal to the sum of |page_rect.right| and |inset_sizes.right|.
-pp::Rect GetRightFillRect(const pp::Rect& page_rect,
-                          const PageInsetSizes& inset_sizes,
-                          int doc_width,
-                          int bottom_separator);
-
-// Same as GetLeftFillRect(), but for the bottom side of |page_rect|.
-pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
-                           const PageInsetSizes& inset_sizes,
-                           int bottom_separator);
-
 // Given |rect_size| and |document_size| create a horizontally centered
 // pp::Rect placed at the bottom of the current document, and then inset it with
 // |page_insets|.
@@ -107,6 +82,30 @@ pp::Rect GetSurroundingRect(int page_y,
                             const PageInsetSizes& inset_sizes,
                             int doc_width,
                             int bottom_separator);
+
+// Given |page_rect| in document coordinates, |inset_sizes|, and
+// |bottom_separator|, return a pp::Rect object representing the gap on the
+// left side of the page created by insetting the page. I.e. the difference,
+// on the left side, between the initial |page_rect| and the |page_rect| inset
+// with |inset_sizes| (current value of |page_rect|).
+// The x coordinate of |page_rect| must be greater than or equal to
+// |inset_sizes.left|.
+pp::Rect GetLeftFillRect(const pp::Rect& page_rect,
+                         const PageInsetSizes& inset_sizes,
+                         int bottom_separator);
+
+// Same as GetLeftFillRect(), but for the right side of |page_rect| and also
+// depends on the |doc_width|. Additionally, |doc_width| must be greater than or
+// equal to the sum of |page_rect.right| and |inset_sizes.right|.
+pp::Rect GetRightFillRect(const pp::Rect& page_rect,
+                          const PageInsetSizes& inset_sizes,
+                          int doc_width,
+                          int bottom_separator);
+
+// Same as GetLeftFillRect(), but for the bottom side of |page_rect|.
+pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
+                           const PageInsetSizes& inset_sizes,
+                           int bottom_separator);
 
 // Given |rect_size|, create a pp::Rect where the top-right corner lies at
 // |position|, and then inset it with the corresponding values of |page_insets|,

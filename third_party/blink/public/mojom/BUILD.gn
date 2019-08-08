@@ -263,6 +263,7 @@ mojom("android_mojo_bindings") {
 mojom("mojom_core") {
   sources = [
     "messaging/cloneable_message.mojom",
+    "messaging/message_port_descriptor.mojom",
     "messaging/transferable_message.mojom",
     "messaging/user_activation_snapshot.mojom",
     "portal/portal.mojom",

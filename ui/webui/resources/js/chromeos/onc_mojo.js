@@ -208,8 +208,6 @@ class OncMojo {
         return 'Wireless';
       case NetworkType.kWiFi:
         return 'WiFi';
-      case NetworkType.kWiMAX:
-        return 'WiMAX';
     }
     assertNotReached('Unexpected enum value: ' + OncMojo.getEnumString(value));
     return '';
@@ -231,7 +229,6 @@ class OncMojo {
       case NetworkType.kVPN:
       case NetworkType.kWireless:
       case NetworkType.kWiFi:
-      case NetworkType.kWiMAX:
         return false;
     }
     assertNotReached('Unexpected enum value: ' + OncMojo.getEnumString(value));
@@ -261,8 +258,6 @@ class OncMojo {
         return NetworkType.kWireless;
       case 'WiFi':
         return NetworkType.kWiFi;
-      case 'WiMAX':
-        return NetworkType.kWiMAX;
     }
     assertNotReached('Unexpected value: ' + value);
     return NetworkType.kAll;
@@ -453,8 +448,6 @@ class OncMojo {
         return network.tether.signalStrength;
       case NetworkType.kWiFi:
         return network.wifi.signalStrength;
-      case NetworkType.kWiMAX:
-        return network.wimax.signalStrength;
     }
     assertNotReached();
     return 0;
@@ -516,11 +509,6 @@ class OncMojo {
           security: mojom.SecurityType.kNone,
           signalStrength: 0,
           ssid: '',
-        };
-        break;
-      case mojom.NetworkType.kWiMAX:
-        result.wimax = {
-          signalStrength: 0,
         };
         break;
     }
@@ -614,12 +602,6 @@ class OncMojo {
               properties.WiFi.SignalStrength || 0;
           networkState.wifi.ssid =
               CrOnc.getStateOrActiveString(properties.WiFi.SSID);
-        }
-        break;
-      case mojom.NetworkType.kWiMAX:
-        if (properties.WiMAX) {
-          networkState.wimax.signalStrength =
-              properties.WiMAX.SignalStrength || 0;
         }
         break;
     }

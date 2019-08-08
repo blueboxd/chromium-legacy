@@ -343,16 +343,13 @@ std::string GetVertexShaderSource(const gl::GLVersionInfo& gl_version_info,
 
   // Main shader source.
   source +=
-      "uniform vec2 u_vertex_dest_mult;\n"
-      "uniform vec2 u_vertex_dest_add;\n"
       "uniform vec2 u_vertex_source_mult;\n"
       "uniform vec2 u_vertex_source_add;\n"
       "ATTRIBUTE vec2 a_position;\n"
       "VARYING TexCoordPrecision vec2 v_uv;\n"
       "void main(void) {\n"
       "  gl_Position = vec4(0, 0, 0, 1);\n"
-      "  gl_Position.xy =\n"
-      "      a_position.xy * u_vertex_dest_mult + u_vertex_dest_add;\n"
+      "  gl_Position.xy = a_position.xy;\n"
       "  v_uv = a_position.xy * u_vertex_source_mult + u_vertex_source_add;\n"
       "}\n";
 
@@ -961,19 +958,12 @@ class CopyTextureResourceManagerImpl
   struct ProgramInfo {
     ProgramInfo()
         : program(0u),
-          vertex_dest_mult_handle(0u),
-          vertex_dest_add_handle(0u),
           vertex_source_mult_handle(0u),
           vertex_source_add_handle(0u),
           tex_coord_transform_handle(0u),
           sampler_handle(0u) {}
 
     GLuint program;
-
-    // Transformations that map from the original quad coordinates [-1, 1] into
-    // the destination texture's quad coordinates.
-    GLuint vertex_dest_mult_handle;
-    GLuint vertex_dest_add_handle;
 
     // Transformations that map from the original quad coordinates [-1, 1] into
     // the source texture's texture coordinates.
@@ -1450,10 +1440,6 @@ void CopyTextureResourceManagerImpl::DoCopyTextureInternal(
       }
     }
 #endif
-    info->vertex_dest_mult_handle =
-        glGetUniformLocation(info->program, "u_vertex_dest_mult");
-    info->vertex_dest_add_handle =
-        glGetUniformLocation(info->program, "u_vertex_dest_add");
     info->vertex_source_mult_handle =
         glGetUniformLocation(info->program, "u_vertex_source_mult");
     info->vertex_source_add_handle =
@@ -1467,31 +1453,6 @@ void CopyTextureResourceManagerImpl::DoCopyTextureInternal(
 
   glUniformMatrix4fv(info->tex_coord_transform_handle, 1, GL_FALSE,
                      transform_matrix);
-
-  // Note: For simplicity, the calculations in this comment block use a single
-  // dimension. All calculations trivially extend to the x-y plane.
-  // The target subrange in the destination texture has coordinates
-  // [xoffset, xoffset + width]. The full destination texture has range
-  // [0, dest_width].
-  //
-  // We want to find A and B such that:
-  //   A * X + B = Y
-  //   C * Y + D = Z
-  //
-  // where X = [-1, 1], Z = [xoffset, xoffset + width]
-  // and C, D satisfy the relationship C * [-1, 1] + D = [0, dest_width].
-  //
-  // Math shows:
-  //  C = D = dest_width / 2
-  //  Y = [(xoffset * 2 / dest_width) - 1,
-  //       (xoffset + width) * 2 / dest_width) - 1]
-  //  A = width / dest_width
-  //  B = (xoffset * 2 + width - dest_width) / dest_width
-  glUniform2f(info->vertex_dest_mult_handle, width * 1.f / dest_width,
-              height * 1.f / dest_height);
-  glUniform2f(info->vertex_dest_add_handle,
-              (xoffset * 2.f + width - dest_width) / dest_width,
-              (yoffset * 2.f + height - dest_height) / dest_height);
 
   // Note: For simplicity, the calculations in this comment block use a single
   // dimension. All calculations trivially extend to the x-y plane.
@@ -1580,7 +1541,7 @@ void CopyTextureResourceManagerImpl::DoCopyTextureInternal(
     if (decoder->GetFeatureInfo()->feature_flags().ext_window_rectangles) {
       glWindowRectanglesEXT(GL_EXCLUSIVE_EXT, 0, nullptr);
     }
-    glViewport(0, 0, dest_width, dest_height);
+    glViewport(xoffset, yoffset, width, height);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   }
 

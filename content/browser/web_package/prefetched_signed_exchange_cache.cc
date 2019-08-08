@@ -378,7 +378,7 @@ class PrefetchedNavigationLoaderInterceptor
  public:
   PrefetchedNavigationLoaderInterceptor(
       std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> exchange,
-      std::vector<PrefetchedSignedExchangeInfo> info_list)
+      std::vector<mojom::PrefetchedSignedExchangeInfoPtr> info_list)
       : exchange_(std::move(exchange)), info_list_(std::move(info_list)) {}
 
   ~PrefetchedNavigationLoaderInterceptor() override {}
@@ -451,7 +451,7 @@ class PrefetchedNavigationLoaderInterceptor
 
   State state_ = State::kInitial;
   std::unique_ptr<const PrefetchedSignedExchangeCache::Entry> exchange_;
-  std::vector<PrefetchedSignedExchangeInfo> info_list_;
+  std::vector<mojom::PrefetchedSignedExchangeInfoPtr> info_list_;
 
   base::WeakPtrFactory<PrefetchedNavigationLoaderInterceptor> weak_factory_{
       this};
@@ -700,7 +700,7 @@ void PrefetchedSignedExchangeCache::RecordHistograms() {
                            headers_size_total);
 }
 
-std::vector<PrefetchedSignedExchangeInfo>
+std::vector<mojom::PrefetchedSignedExchangeInfoPtr>
 PrefetchedSignedExchangeCache::GetInfoListForNavigation(
     const Entry& main_exchange,
     const base::Time& now) {
@@ -712,7 +712,7 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
       url::Origin::Create(main_exchange.inner_url());
   const auto inner_url_header_integrity_map = GetAllowedAltSXG(main_exchange);
 
-  std::vector<PrefetchedSignedExchangeInfo> info_list;
+  std::vector<mojom::PrefetchedSignedExchangeInfoPtr> info_list;
   EntryMap::iterator exchanges_it = exchanges_.begin();
   while (exchanges_it != exchanges_.end()) {
     const std::unique_ptr<const Entry>& exchange = exchanges_it->second;
@@ -735,10 +735,10 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
       new SubresourceSignedExchangeURLLoaderFactory(
           mojo::MakeRequest(&loader_factory_info), exchange->Clone(),
           request_initiator_site_lock);
-      info_list.emplace_back(
+      info_list.emplace_back(mojom::PrefetchedSignedExchangeInfo::New(
           exchange->outer_url(), *exchange->header_integrity(),
           exchange->inner_url(), *exchange->inner_response(),
-          std::move(loader_factory_info).PassHandle().release());
+          std::move(loader_factory_info).PassHandle()));
     }
     ++exchanges_it;
   }

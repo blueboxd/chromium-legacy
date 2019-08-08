@@ -9,9 +9,7 @@
 
 @interface ChromeTableViewStyler : NSObject
 
-// The background color for the table view and its cells. If this is set to an
-// opaque color, cells can choose to make themselves opaque and draw their own
-// background as a performance optimization.
+// The background color for the table view.
 @property(nonatomic, readwrite, strong) UIColor* tableViewBackgroundColor;
 // The background color for the cell. It overrides |tableViewBackgroundColor|
 // for the cell background if it is not nil.

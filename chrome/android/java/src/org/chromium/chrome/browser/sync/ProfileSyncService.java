@@ -12,6 +12,7 @@ import org.json.JSONException;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.Passphrase;
 
@@ -451,8 +452,10 @@ public class ProfileSyncService {
             assert mSetupInProgressCounter > 0;
             if (--mSetupInProgressCounter == 0) {
                 setSetupInProgress(false);
-                // The user has finished setting up sync at least once.
-                setFirstSetupComplete();
+                if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
+                    // The user has finished setting up sync at least once.
+                    setFirstSetupComplete();
+                }
             }
         }
     }

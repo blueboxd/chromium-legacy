@@ -109,7 +109,7 @@ class MockContinueCallbacks : public testing::StrictMock<MockWebIDBCallbacks> {
 
 class WebIDBCursorImplTest : public testing::Test {
  public:
-  WebIDBCursorImplTest() : null_key_(IDBKey::CreateNull()) {
+  WebIDBCursorImplTest() : null_key_(IDBKey::CreateNone()) {
     mojom::blink::IDBCursorAssociatedPtr ptr;
     mock_cursor_ = std::make_unique<MockCursorImpl>(
         mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr));

@@ -383,6 +383,7 @@ size_t SiteInstanceImpl::GetRelatedActiveContentsCount() {
 }
 
 bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If the URL to navigate to can be associated with any site instance,
   // we want to keep it in the same process.
   if (IsRendererDebugURL(url))
@@ -460,6 +461,7 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
 }
 
 bool SiteInstanceImpl::RequiresDedicatedProcess() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!has_site_)
     return false;
 
@@ -809,6 +811,7 @@ bool SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(
     const IsolationContext& isolation_context,
     const GURL& url,
     const GURL& site_url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Exclude "chrome-guest:" URLs from the default SiteInstance to ensure that
   // guest specific process selection, process swapping, and storage partition
   // behavior is preserved.
@@ -872,6 +875,7 @@ bool SiteInstanceImpl::HasEffectiveURL(BrowserContext* browser_context,
 bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
     const IsolationContext& isolation_context,
     const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return SiteIsolationPolicy::UseDedicatedProcessesForAllSites() ||
          DoesSiteURLRequireDedicatedProcess(
              isolation_context,
@@ -882,8 +886,7 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
 bool SiteInstanceImpl::DoesSiteURLRequireDedicatedProcess(
     const IsolationContext& isolation_context,
     const GURL& site_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
-         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(isolation_context.browser_or_resource_context());
 
   // If --site-per-process is enabled, site isolation is enabled everywhere.
@@ -911,7 +914,8 @@ bool SiteInstanceImpl::DoesSiteURLRequireDedicatedProcess(
   // canonical site url for this check, so that schemes with nested origins
   // (blob and filesystem) work properly.
   if (GetContentClient()->browser()->DoesSiteRequireDedicatedProcess(
-          isolation_context.browser_or_resource_context(), site_url)) {
+          isolation_context.browser_or_resource_context().ToBrowserContext(),
+          site_url)) {
     return true;
   }
 

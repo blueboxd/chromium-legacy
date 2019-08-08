@@ -53,11 +53,9 @@ const int kTooltipIconSize = 12;
 
 SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
-    : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
-}
+    : SaveCardBubbleViews(anchor_view, web_contents, controller) {}
 
 std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateExtraView() {
   // Only show the (i) info icon for upload saves using implicit sync.

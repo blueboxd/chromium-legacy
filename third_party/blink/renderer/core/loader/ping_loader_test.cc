@@ -127,8 +127,7 @@ TEST_F(PingLoaderTest, ViolationPriority) {
   url_test_helpers::RegisterMockedURLLoad(
       ping_url, test::CoreTestDataPath("bar.html"), "text/html");
   PingLoader::SendViolationReport(&GetFrame(), ping_url,
-                                  EncodedFormData::Create(),
-                                  PingLoader::kXSSAuditorViolationReport);
+                                  EncodedFormData::Create());
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   const ResourceRequest& request = client_->PingRequest();
   ASSERT_FALSE(request.IsNull());

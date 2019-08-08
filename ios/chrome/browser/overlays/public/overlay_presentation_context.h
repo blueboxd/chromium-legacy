@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_PRESENTATION_CONTEXT_H_
 
 #include "ios/chrome/browser/overlays/public/overlay_dismissal_callback.h"
+#include "ios/chrome/browser/overlays/public/overlay_presentation_callback.h"
 
 class OverlayPresenter;
 class OverlayRequest;
@@ -26,10 +27,12 @@ class OverlayPresentationContext {
   virtual bool IsActive() const = 0;
 
   // Called by |presenter| to show the overlay UI for |request|.
-  // |dismissal_callback| must be stored and called whenever the UI is finished
-  // being dismissed for user interaction, hiding, or cancellation.
+  // |presentation_callback| must be called when the UI is finished being
+  // presented. |dismissal_callback| must be stored and called whenever the UI
+  // is finished being dismissed for user interaction, hiding, or cancellation.
   virtual void ShowOverlayUI(OverlayPresenter* presenter,
                              OverlayRequest* request,
+                             OverlayPresentationCallback presentation_callback,
                              OverlayDismissalCallback dismissal_callback) = 0;
 
   // Called by |presenter| to hide the overlay UI for |request|.  Hidden

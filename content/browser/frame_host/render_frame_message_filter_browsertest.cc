@@ -60,7 +60,7 @@ void SetCookieDirect(WebContentsImpl* tab,
                      const GURL& url,
                      const std::string& cookie_line) {
   auto cookie_obj = net::CanonicalCookie::Create(
-      url, cookie_line, base::Time::Now(), net::CookieOptions());
+      url, cookie_line, base::Time::Now(), base::nullopt /* server_time */);
 
   base::RunLoop run_loop;
   BrowserContext::GetDefaultStoragePartition(tab->GetBrowserContext())

@@ -5,76 +5,24 @@
 #ifndef CHROME_BROWSER_UI_TAB_SHARING_TAB_SHARING_UI_H_
 #define CHROME_BROWSER_UI_TAB_SHARING_TAB_SHARING_UI_H_
 
-#include <map>
-#include <set>
-
-#include "base/callback.h"
-#include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
-#include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "components/infobars/core/infobar_manager.h"
-#include "content/public/browser/desktop_media_id.h"
 
-namespace content {
-class WebContents;
-}
 namespace infobars {
 class InfoBar;
 }
 
-class Profile;
-
-class TabSharingUI : public MediaStreamUI,
-                     public TabStripModelObserver,
-                     public BrowserListObserver {
+class TabSharingUI : public MediaStreamUI {
  public:
-  TabSharingUI(const content::DesktopMediaID& media_id,
-               base::string16 app_name);
-  ~TabSharingUI() override;
+  TabSharingUI() = default;
+  ~TabSharingUI() override = default;
 
-  // MediaStreamUI:
-  // Called when tab sharing has started. Creates infobars on all tabs.
-  gfx::NativeViewId OnStarted(
-      base::OnceClosure stop_callback,
-      content::MediaStreamUI::SourceCallback source_callback) override;
+  static std::unique_ptr<TabSharingUI> Create(
+      const content::DesktopMediaID& media_id,
+      base::string16 app_name);
 
-  // TabStripModelObserver:
-  void OnTabStripModelChanged(
-      TabStripModel* tab_strip_model,
-      const TabStripModelChange& change,
-      const TabStripSelectionChange& selection) override;
-
-  // BrowserListObserver:
-  void OnBrowserAdded(Browser* browser) override;
-  void OnBrowserRemoved(Browser* browser) override;
-
-  // Runs |source_callback_| to start sharing the tab containing |infobar|.
-  // Removes infobars on all tabs; OnStarted() will recreate the infobars with
-  // updated title and buttons.
-  void StartSharing(infobars::InfoBar* infobar);
-
-  // Runs |stop_callback_| to stop sharing |shared_tab_|. Removes infobars on
-  // all tabs.
-  void StopSharing();
-
- private:
-  void CreateInfobarForAllTabs();
-  void RemoveInfobarForAllTabs();
-
-  std::map<content::WebContents*, infobars::InfoBar*> infobars_;
-  ScopedObserver<TabStripModel, TabStripModelObserver>
-      tab_strip_models_observer_{this};
-  const base::string16 app_name_;
-  content::WebContents* shared_tab_;
-  base::string16 shared_tab_name_;
-  Profile* profile_;
-
-  content::MediaStreamUI::SourceCallback source_callback_;
-  base::OnceClosure stop_callback_;
+  virtual void StartSharing(infobars::InfoBar* infobar) = 0;
+  virtual void StopSharing() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TAB_SHARING_TAB_SHARING_UI_H_

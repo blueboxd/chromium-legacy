@@ -182,8 +182,7 @@ class AXRange {
       if (current_start_->GetAnchor() == iterator_end_->GetAnchor()) {
         current_start_ = AXPositionType::CreateNullPosition();
       } else {
-        current_start_ =
-            current_start_->CreateNextAnchorPosition()->AsLeafTextPosition();
+        current_start_ = current_start_->CreateNextTreeAnchorPosition();
         DCHECK_LE(*current_start_, *iterator_end_);
       }
       return *this;
@@ -197,8 +196,8 @@ class AXRange {
               : iterator_end_->Clone();
       DCHECK_LE(*current_end, *iterator_end_);
 
-      AXRange current_leaf_text_range(current_start_->Clone(),
-                                      std::move(current_end));
+      AXRange current_leaf_text_range(current_start_->AsTextPosition(),
+                                      current_end->AsTextPosition());
       DCHECK(current_leaf_text_range.IsLeafTextRange());
       return std::move(current_leaf_text_range);
     }
@@ -221,9 +220,10 @@ class AXRange {
 
   // Returns the concatenation of the accessible names of all text nodes
   // contained between this AXRange's endpoints.
-  base::string16 GetText(
-      AXTextConcatenationBehavior concatenation_behavior =
-          AXTextConcatenationBehavior::kAsTextContent) const {
+  // Pass -1 for max_count to retrieve all text.
+  base::string16 GetText(AXTextConcatenationBehavior concatenation_behavior =
+                             AXTextConcatenationBehavior::kAsTextContent,
+                         int max_count = -1) const {
     base::string16 range_text;
     bool should_append_newline = false;
     for (const AXRange& leaf_text_range : *this) {
@@ -241,10 +241,19 @@ class AXRange {
       int current_leaf_text_length = end->text_offset() - start->text_offset();
 
       if (current_leaf_text_length > 0) {
+        int characters_to_append =
+            (max_count >= 0) ? std::min(max_count - int{range_text.length()},
+                                        current_leaf_text_length)
+                             : current_leaf_text_length;
+
         current_leaf_is_line_break = start->IsInLineBreak();
         range_text += current_anchor_text.substr(start->text_offset(),
-                                                 current_leaf_text_length);
+                                                 characters_to_append);
       }
+
+      DCHECK(max_count < 0 || int{range_text.length()} <= max_count);
+      if (int{range_text.length()} == max_count)
+        break;
 
       // When preserving layout line breaks, don't append a newline next if the
       // current leaf range is a <br> (already ending with a '\n' character) or

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/fuchsia/service_directory_client.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/frame_service_base.h"
 #include "content/public/browser/provision_fetcher_factory.h"
@@ -15,7 +16,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "media/base/provision_fetcher.h"
+#include "media/fuchsia/cdm/service/fuchsia_cdm_manager.h"
 #include "media/fuchsia/mojom/fuchsia_cdm_provider.mojom.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 
 namespace {
 class FuchsiaCdmProviderImpl
@@ -76,15 +79,48 @@ void BindFuchsiaCdmProvider(media::FuchsiaCdmManager* cdm_manager,
                           std::move(loader_factory)),
       frame_host, std::move(request));
 }
+
+class WidevineHandler : public media::FuchsiaCdmManager::KeySystemHandler {
+ public:
+  WidevineHandler() = default;
+  ~WidevineHandler() override = default;
+
+  void CreateCdm(
+      fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
+          request) override {
+    auto widevine = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
+                        ->ConnectToService<fuchsia::media::drm::Widevine>();
+    widevine->CreateContentDecryptionModule(std::move(request));
+  }
+
+  fuchsia::media::drm::ProvisionerPtr CreateProvisioner() override {
+    fuchsia::media::drm::ProvisionerPtr provisioner;
+
+    auto widevine = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
+                        ->ConnectToService<fuchsia::media::drm::Widevine>();
+    widevine->CreateProvisioner(provisioner.NewRequest());
+
+    return provisioner;
+  }
+};
+
+// Supported key systems:
+std::unique_ptr<media::FuchsiaCdmManager> CreateCdmManager() {
+  media::FuchsiaCdmManager::KeySystemHandlerMap handlers;
+  handlers.emplace(kWidevineKeySystem, std::make_unique<WidevineHandler>());
+
+  return std::make_unique<media::FuchsiaCdmManager>(std::move(handlers));
+}
 }  // namespace
 
 WebEngineCdmService::WebEngineCdmService(
     service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
         registry)
-    : registry_(registry) {
+    : cdm_manager_(CreateCdmManager()), registry_(registry) {
+  DCHECK(cdm_manager_);
   DCHECK(registry_);
   registry_->AddInterface(
-      base::BindRepeating(&BindFuchsiaCdmProvider, &cdm_manager_));
+      base::BindRepeating(&BindFuchsiaCdmProvider, cdm_manager_.get()));
 }
 
 WebEngineCdmService::~WebEngineCdmService() {

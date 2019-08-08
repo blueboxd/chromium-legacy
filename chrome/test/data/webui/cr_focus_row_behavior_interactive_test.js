@@ -23,7 +23,7 @@ CrFocusRowBehaviorTest.prototype = {
     ...PolymerTest.prototype.extraLibraries,
     '//ui/webui/resources/js/util.js',
     'cr_focus_row_behavior_test.js',
-    'settings/test_util.js',
+    'test_util.js',
   ],
 
   /** @override */

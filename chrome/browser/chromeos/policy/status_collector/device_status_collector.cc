@@ -1480,10 +1480,6 @@ bool DeviceStatusCollector::GetNetworkInterfaces(
           em::NetworkInterface::TYPE_WIFI,
       },
       {
-          shill::kTypeWimax,
-          em::NetworkInterface::TYPE_WIMAX,
-      },
-      {
           shill::kTypeBluetooth,
           em::NetworkInterface::TYPE_BLUETOOTH,
       },

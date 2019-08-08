@@ -185,7 +185,9 @@ Polymer({
 
   /** @private */
   onAddPrinterDialogClose_: function() {
-    cr.ui.focusWithoutInk(assert(this.$$('#addPrinter')));
+      cr.ui.focusWithoutInk(assert(
+          this.enableUpdatedUi_ ? this.$$('#addManualPrinterIcon')
+                                : this.$$('#addPrinter')));
   },
 
   /** @private */

@@ -461,9 +461,6 @@ SkColor Textfield::GetBackgroundColor() const {
 }
 
 void Textfield::SetBackgroundColor(SkColor color) {
-  if (background_color_ == color)
-    return;
-
   background_color_ = color;
   use_default_background_color_ = false;
   UpdateBackgroundColor();
@@ -482,9 +479,6 @@ SkColor Textfield::GetSelectionTextColor() const {
 }
 
 void Textfield::SetSelectionTextColor(SkColor color) {
-  if (selection_text_color_ == color)
-    return;
-
   selection_text_color_ = color;
   use_default_selection_text_color_ = false;
   UpdateSelectionTextColor();
@@ -507,9 +501,6 @@ SkColor Textfield::GetSelectionBackgroundColor() const {
 }
 
 void Textfield::SetSelectionBackgroundColor(SkColor color) {
-  if (selection_background_color_ == color)
-    return;
-
   selection_background_color_ = color;
   use_default_selection_background_color_ = false;
   UpdateSelectionBackgroundColor();

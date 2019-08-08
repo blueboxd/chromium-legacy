@@ -83,6 +83,11 @@ bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
   return GetAppById(app_id) != nullptr;
 }
 
+bool WebAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool WebAppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
   NOTIMPLEMENTED();
   return false;
@@ -130,6 +135,11 @@ base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
   NOTIMPLEMENTED();
   WebApp* web_app = GetAppById(app_id);
   return web_app ? base::Optional<GURL>(web_app->scope()) : base::nullopt;
+}
+
+base::flat_set<AppId> WebAppRegistrar::GetAppIdsForTesting() const {
+  NOTIMPLEMENTED();
+  return {};
 }
 
 }  // namespace web_app

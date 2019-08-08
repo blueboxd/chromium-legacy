@@ -56,7 +56,7 @@ AXNode* AXNode::GetUnignoredChildAtIndex(size_t index) const {
 AXNode* AXNode::GetUnignoredParent() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   AXNode* result = parent();
-  while (result && result->data().HasState(ax::mojom::State::kIgnored))
+  while (result && result->IsIgnored())
     result = result->parent();
   return result;
 }
@@ -83,7 +83,7 @@ AXNode* AXNode::GetNextUnignoredSibling() const {
   while (parent_node) {
     if (index < parent_node->children().size()) {
       AXNode* child = parent_node->children()[index];
-      if (!child->data().HasState(ax::mojom::State::kIgnored))
+      if (!child->IsIgnored())
         return child;  // valid position (unignored child)
 
       // If the node is ignored, drill down to the ignored node's first child.
@@ -92,7 +92,7 @@ AXNode* AXNode::GetNextUnignoredSibling() const {
     } else {
       // If the parent is not ignored and we are past all of its children, there
       // is no next sibling.
-      if (!parent_node->data().HasState(ax::mojom::State::kIgnored))
+      if (!parent_node->IsIgnored())
         return nullptr;
 
       // If the parent is ignored and we are past all of its children, continue
@@ -112,7 +112,7 @@ AXNode* AXNode::GetPreviousUnignoredSibling() const {
   while (parent_node) {
     if (!before_first_child) {
       AXNode* child = parent_node->children()[index];
-      if (!child->data().HasState(ax::mojom::State::kIgnored))
+      if (!child->IsIgnored())
         return child;  // valid position (unignored child)
 
       // If the node is ignored, drill down to the ignored node's last child.
@@ -122,7 +122,7 @@ AXNode* AXNode::GetPreviousUnignoredSibling() const {
     } else {
       // If the parent is not ignored and we are past all of its children, there
       // is no next sibling.
-      if (!parent_node->data().HasState(ax::mojom::State::kIgnored))
+      if (!parent_node->IsIgnored())
         return nullptr;
 
       // If the parent is ignored and we are past all of its children, continue
@@ -177,7 +177,7 @@ void AXNode::SetIndexInParent(size_t index_in_parent) {
 }
 
 void AXNode::UpdateUnignoredCachedValues() {
-  if (!data().HasState(ax::mojom::State::kIgnored))
+  if (!IsIgnored())
     UpdateUnignoredCachedValuesRecursive(0);
 }
 
@@ -752,7 +752,7 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
 int AXNode::UpdateUnignoredCachedValuesRecursive(int startIndex) {
   int count = 0;
   for (AXNode* child : children_) {
-    if (child->data().HasState(ax::mojom::State::kIgnored)) {
+    if (child->IsIgnored()) {
       child->unignored_index_in_parent_ = 0;
       count += child->UpdateUnignoredCachedValuesRecursive(startIndex + count);
     } else {
@@ -769,9 +769,8 @@ AXNode* AXNode::GetOrderedSet() const {
   AXNode* result = parent();
   // Continue walking up while parent is invalid, ignored, a generic container,
   // or unknown.
-  while (result && (result->data().HasState(ax::mojom::State::kIgnored) ||
+  while (result && (result->IsIgnored() ||
                     result->data().role == ax::mojom::Role::kGenericContainer ||
-                    result->data().role == ax::mojom::Role::kIgnored ||
                     result->data().role == ax::mojom::Role::kUnknown)) {
     result = result->parent();
   }
@@ -785,7 +784,7 @@ AXNode* AXNode::ComputeLastUnignoredChildRecursive() const {
 
   for (int i = static_cast<int>(children().size()) - 1; i >= 0; --i) {
     AXNode* child = children_[i];
-    if (!child->data().HasState(ax::mojom::State::kIgnored))
+    if (!child->IsIgnored())
       return child;
 
     AXNode* descendant = child->ComputeLastUnignoredChildRecursive();
@@ -799,7 +798,7 @@ AXNode* AXNode::ComputeFirstUnignoredChildRecursive() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   for (size_t i = 0; i < children().size(); i++) {
     AXNode* child = children_[i];
-    if (!child->data().HasState(ax::mojom::State::kIgnored))
+    if (!child->IsIgnored())
       return child;
 
     AXNode* descendant = child->ComputeFirstUnignoredChildRecursive();
@@ -807,6 +806,10 @@ AXNode* AXNode::ComputeFirstUnignoredChildRecursive() const {
       return descendant;
   }
   return nullptr;
+}
+
+bool AXNode::IsIgnored() const {
+  return ui::IsIgnored(data());
 }
 
 }  // namespace ui

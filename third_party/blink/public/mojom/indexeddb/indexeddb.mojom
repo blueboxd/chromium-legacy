@@ -47,12 +47,13 @@ enum IDBKeyType {
   Date,
   Number,
 
-  // Null is used to represent the lack of a key, e.g. when a key range
+  // None is used to represent the lack of a key, e.g. when a key range
   // has no upper/lower bound.
-  Null,
+  // TODO(jsbell): Consider using Optional<> instead.
+  None,
 
   // Min is used to encode the lower bound of a construct in leveldb, e.g.
-  // all entries in a store are from [{id, min}, {id+1, min}). It should
+  // all entries in a store are in [{id, min}, {id+1, min}). It should
   // only appear in browser code.
   Min,
 };
@@ -63,10 +64,8 @@ union IDBKeyData {
   mojo_base.mojom.String16 string;
   double date;
   double number;
-  // TODO(jsbell): These types should be cleaned up end-to-end, leaving only the
-  // dataful options above.
-  bool other_invalid;
-  bool other_null;
+  // TODO(jsbell): Consider using Optional<> instead.
+  bool other_none;
 };
 
 // Defined as a structure so that it can by typemapped with StructTraits.

@@ -23,7 +23,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkTypePattern {
   // Matches wireless (WiFi, Cellular, etc.) networks
   static NetworkTypePattern Wireless();
 
-  // Matches Cellular, WiMAX, or Tether networks.
+  // Matches Cellular or Tether networks.
   static NetworkTypePattern Mobile();
 
   // Matches Physical networks (i.e. excludes Tether and VPN).
@@ -41,7 +41,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkTypePattern {
   static NetworkTypePattern WiFi();
   static NetworkTypePattern Cellular();
   static NetworkTypePattern VPN();
-  static NetworkTypePattern Wimax();
 
   static NetworkTypePattern Tether();
 

@@ -23,5 +23,11 @@ const base::Feature kEnableAuraTooltipsOnWindows{
 const base::Feature kEnableMDRoundedCornersOnDialogs{
     "EnableMDRoundedCornersOnDialogs", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Only paint views that are invalidated/dirty (i.e. a paint was directly
+// scheduled on those views) as opposed to painting all views that intersect
+// an invalid rectangle on the layer.
+const base::Feature kEnableViewPaintOptimization{
+    "EnableViewPaintOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace views

@@ -59,11 +59,6 @@ struct StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions> {
   static bool update_access_time(const net::CookieOptions& o) {
     return o.update_access_time();
   }
-  static base::Optional<base::Time> server_time(const net::CookieOptions& o) {
-    if (!o.has_server_time())
-      return base::nullopt;
-    return base::Optional<base::Time>(o.server_time());
-  }
   static bool return_excluded_cookies(const net::CookieOptions& o) {
     return o.return_excluded_cookies();
   }

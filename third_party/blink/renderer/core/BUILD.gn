@@ -1431,6 +1431,7 @@ jumbo_source_set("unit_tests") {
     "loader/threaded_icon_loader_test.cc",
     "loader/web_associated_url_loader_impl_test.cc",
     "messaging/blink_transferable_message_mojom_traits_test.cc",
+    "messaging/message_port_descriptor_mojom_traits_test.cc",
     "origin_trials/origin_trial_context_test.cc",
     "page/autoscroll_controller_test.cc",
     "page/chrome_client_impl_test.cc",

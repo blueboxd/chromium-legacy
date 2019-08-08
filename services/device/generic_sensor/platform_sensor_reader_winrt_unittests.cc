@@ -15,6 +15,7 @@
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace device {
 
@@ -70,6 +71,277 @@ class FakeLightSensorReadingWinrt
  private:
   float lux_;
   HRESULT get_illuminance_in_lux_return_code_ = S_OK;
+};
+
+class FakeAccelerometerReadingWinrt
+    : public FakeSensorReadingWinrt<
+          ABI::Windows::Devices::Sensors::IAccelerometerReading> {
+ public:
+  FakeAccelerometerReadingWinrt(ABI::Windows::Foundation::DateTime time_stamp,
+                                double x,
+                                double y,
+                                double z)
+      : FakeSensorReadingWinrt(time_stamp), x_(x), y_(y), z_(z) {}
+  ~FakeAccelerometerReadingWinrt() override = default;
+
+  IFACEMETHOD(get_AccelerationX)(double* x) override {
+    *x = x_;
+    return get_x_return_code_;
+  }
+
+  IFACEMETHOD(get_AccelerationY)(double* y) override {
+    *y = y_;
+    return get_y_return_code_;
+  }
+
+  IFACEMETHOD(get_AccelerationZ)(double* z) override {
+    *z = z_;
+    return get_z_return_code_;
+  }
+
+  void SetGetXReturnCode(HRESULT return_code) {
+    get_x_return_code_ = return_code;
+  }
+
+  void SetGetYReturnCode(HRESULT return_code) {
+    get_y_return_code_ = return_code;
+  }
+
+  void SetGetZReturnCode(HRESULT return_code) {
+    get_z_return_code_ = return_code;
+  }
+
+ private:
+  double x_;
+  double y_;
+  double z_;
+
+  HRESULT get_x_return_code_ = S_OK;
+  HRESULT get_y_return_code_ = S_OK;
+  HRESULT get_z_return_code_ = S_OK;
+};
+
+class FakeGyrometerReadingWinrt
+    : public FakeSensorReadingWinrt<
+          ABI::Windows::Devices::Sensors::IGyrometerReading> {
+ public:
+  FakeGyrometerReadingWinrt(ABI::Windows::Foundation::DateTime time_stamp,
+                            double x,
+                            double y,
+                            double z)
+      : FakeSensorReadingWinrt(time_stamp), x_(x), y_(y), z_(z) {}
+  ~FakeGyrometerReadingWinrt() override = default;
+
+  IFACEMETHOD(get_AngularVelocityX)(double* x) override {
+    *x = x_;
+    return get_x_return_code_;
+  }
+
+  IFACEMETHOD(get_AngularVelocityY)(double* y) override {
+    *y = y_;
+    return get_y_return_code_;
+  }
+
+  IFACEMETHOD(get_AngularVelocityZ)(double* z) override {
+    *z = z_;
+    return get_z_return_code_;
+  }
+
+  void SetGetXReturnCode(HRESULT return_code) {
+    get_x_return_code_ = return_code;
+  }
+
+  void SetGetYReturnCode(HRESULT return_code) {
+    get_y_return_code_ = return_code;
+  }
+
+  void SetGetZReturnCode(HRESULT return_code) {
+    get_z_return_code_ = return_code;
+  }
+
+ private:
+  double x_;
+  double y_;
+  double z_;
+
+  HRESULT get_x_return_code_ = S_OK;
+  HRESULT get_y_return_code_ = S_OK;
+  HRESULT get_z_return_code_ = S_OK;
+};
+
+class FakeInclinometerReadingWinrt
+    : public FakeSensorReadingWinrt<
+          ABI::Windows::Devices::Sensors::IInclinometerReading> {
+ public:
+  FakeInclinometerReadingWinrt(ABI::Windows::Foundation::DateTime time_stamp,
+                               float x,
+                               float y,
+                               float z)
+      : FakeSensorReadingWinrt(time_stamp), x_(x), y_(y), z_(z) {}
+  ~FakeInclinometerReadingWinrt() override = default;
+
+  IFACEMETHOD(get_PitchDegrees)(float* x) override {
+    *x = x_;
+    return get_x_return_code_;
+  }
+
+  IFACEMETHOD(get_RollDegrees)(float* y) override {
+    *y = y_;
+    return get_y_return_code_;
+  }
+
+  IFACEMETHOD(get_YawDegrees)(float* z) override {
+    *z = z_;
+    return get_z_return_code_;
+  }
+
+  void SetGetXReturnCode(HRESULT return_code) {
+    get_x_return_code_ = return_code;
+  }
+
+  void SetGetYReturnCode(HRESULT return_code) {
+    get_y_return_code_ = return_code;
+  }
+
+  void SetGetZReturnCode(HRESULT return_code) {
+    get_z_return_code_ = return_code;
+  }
+
+ private:
+  float x_;
+  float y_;
+  float z_;
+
+  HRESULT get_x_return_code_ = S_OK;
+  HRESULT get_y_return_code_ = S_OK;
+  HRESULT get_z_return_code_ = S_OK;
+};
+
+class FakeMagnetometerReadingWinrt
+    : public FakeSensorReadingWinrt<
+          ABI::Windows::Devices::Sensors::IMagnetometerReading> {
+ public:
+  FakeMagnetometerReadingWinrt(ABI::Windows::Foundation::DateTime time_stamp,
+                               float x,
+                               float y,
+                               float z)
+      : FakeSensorReadingWinrt(time_stamp), x_(x), y_(y), z_(z) {}
+  ~FakeMagnetometerReadingWinrt() override = default;
+
+  IFACEMETHOD(get_MagneticFieldX)(float* x) override {
+    *x = x_;
+    return get_x_return_code_;
+  }
+
+  IFACEMETHOD(get_MagneticFieldY)(float* y) override {
+    *y = y_;
+    return get_y_return_code_;
+  }
+
+  IFACEMETHOD(get_MagneticFieldZ)(float* z) override {
+    *z = z_;
+    return get_z_return_code_;
+  }
+
+  IFACEMETHOD(get_DirectionalAccuracy)
+  (ABI::Windows::Devices::Sensors::MagnetometerAccuracy*)override {
+    return E_NOTIMPL;
+  }
+
+  void SetGetXReturnCode(HRESULT return_code) {
+    get_x_return_code_ = return_code;
+  }
+
+  void SetGetYReturnCode(HRESULT return_code) {
+    get_y_return_code_ = return_code;
+  }
+
+  void SetGetZReturnCode(HRESULT return_code) {
+    get_z_return_code_ = return_code;
+  }
+
+ private:
+  float x_;
+  float y_;
+  float z_;
+
+  HRESULT get_x_return_code_ = S_OK;
+  HRESULT get_y_return_code_ = S_OK;
+  HRESULT get_z_return_code_ = S_OK;
+};
+
+class FakeSensorQuaternion
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<
+              Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
+          ABI::Windows::Devices::Sensors::ISensorQuaternion> {
+ public:
+  FakeSensorQuaternion(float w, float x, float y, float z)
+      : w_(w), x_(x), y_(y), z_(z) {}
+  ~FakeSensorQuaternion() override = default;
+
+  IFACEMETHOD(get_W)(float* w) override {
+    *w = w_;
+    return S_OK;
+  }
+
+  IFACEMETHOD(get_X)(float* x) override {
+    *x = x_;
+    return S_OK;
+  }
+
+  IFACEMETHOD(get_Y)(float* y) override {
+    *y = y_;
+    return S_OK;
+  }
+
+  IFACEMETHOD(get_Z)(float* z) override {
+    *z = z_;
+    return S_OK;
+  }
+
+ private:
+  float w_;
+  float x_;
+  float y_;
+  float z_;
+};
+
+class FakeOrientationSensorReadingWinrt
+    : public FakeSensorReadingWinrt<
+          ABI::Windows::Devices::Sensors::IOrientationSensorReading> {
+ public:
+  FakeOrientationSensorReadingWinrt(
+      ABI::Windows::Foundation::DateTime time_stamp,
+      float w,
+      float x,
+      float y,
+      float z)
+      : FakeSensorReadingWinrt(time_stamp) {
+    quaternion_ = Microsoft::WRL::Make<FakeSensorQuaternion>(w, x, y, z);
+  }
+  ~FakeOrientationSensorReadingWinrt() override = default;
+
+  IFACEMETHOD(get_Quaternion)
+  (ABI::Windows::Devices::Sensors::ISensorQuaternion** quaternion) override {
+    quaternion_.CopyTo(quaternion);
+    return S_OK;
+  }
+
+  IFACEMETHOD(get_RotationMatrix)
+  (ABI::Windows::Devices::Sensors::ISensorRotationMatrix** ppMatrix) override {
+    return E_NOTIMPL;
+  }
+
+  void SetGetQuaternionReturnCode(HRESULT return_code) {
+    get_quaternion_return_code_ = return_code;
+  }
+
+ private:
+  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Sensors::ISensorQuaternion>
+      quaternion_;
+
+  HRESULT get_quaternion_return_code_ = S_OK;
 };
 
 // Mock class for Windows::Devices::Sensors::ISensorReadingChangedEventArgs,
@@ -192,6 +464,31 @@ class FakeSensorWinrt
   HRESULT remove_reading_changed_return_code_ = S_OK;
 };
 
+class FakeAccelerometerSensorWinrt
+    : public FakeSensorWinrt<
+          ABI::Windows::Devices::Sensors::IAccelerometer,
+          ABI::Windows::Devices::Sensors::Accelerometer,
+          ABI::Windows::Devices::Sensors::IAccelerometerReading,
+          ABI::Windows::Devices::Sensors::IAccelerometerReadingChangedEventArgs,
+          ABI::Windows::Devices::Sensors::
+              AccelerometerReadingChangedEventArgs> {
+ public:
+  FakeAccelerometerSensorWinrt() = default;
+  ~FakeAccelerometerSensorWinrt() override = default;
+
+  IFACEMETHOD(add_Shaken)
+  (ABI::Windows::Foundation::ITypedEventHandler<
+       ABI::Windows::Devices::Sensors::Accelerometer*,
+       ABI::Windows::Devices::Sensors::AccelerometerShakenEventArgs*>*,
+   EventRegistrationToken*)override {
+    return E_NOTIMPL;
+  }
+
+  IFACEMETHOD(remove_Shaken)(EventRegistrationToken) override {
+    return E_NOTIMPL;
+  }
+};
+
 template <class ISensorStatics,
           class ISensor,
           class Sensor,
@@ -205,13 +502,19 @@ class FakeSensorFactoryWinrt
           ISensorStatics> {
  public:
   FakeSensorFactoryWinrt() {
-    fake_sensor_ = Microsoft::WRL::Make<FakeSensorWinrt<
-        ABI::Windows::Devices::Sensors::ILightSensor,
-        ABI::Windows::Devices::Sensors::LightSensor,
-        ABI::Windows::Devices::Sensors::ILightSensorReading,
-        ABI::Windows::Devices::Sensors::ILightSensorReadingChangedEventArgs,
-        ABI::Windows::Devices::Sensors::LightSensorReadingChangedEventArgs>>();
+    fake_sensor_ =
+        Microsoft::WRL::Make<FakeSensorWinrt<ISensor, Sensor, ISensorReading,
+                                             ISensorReadingChangedEventArgs,
+                                             SensorReadingChangedEventArgs>>();
   }
+  FakeSensorFactoryWinrt(
+      Microsoft::WRL::ComPtr<FakeSensorWinrt<ISensor,
+                                             Sensor,
+                                             ISensorReading,
+                                             ISensorReadingChangedEventArgs,
+                                             SensorReadingChangedEventArgs>>
+          fake_sensor)
+      : fake_sensor_(fake_sensor) {}
   ~FakeSensorFactoryWinrt() override = default;
 
   IFACEMETHOD(GetDefault)(ISensor** ppResult) override {
@@ -221,12 +524,11 @@ class FakeSensorFactoryWinrt
     return get_default_return_code_;
   }
 
-  Microsoft::WRL::ComPtr<FakeSensorWinrt<
-      ABI::Windows::Devices::Sensors::ILightSensor,
-      ABI::Windows::Devices::Sensors::LightSensor,
-      ABI::Windows::Devices::Sensors::ILightSensorReading,
-      ABI::Windows::Devices::Sensors::ILightSensorReadingChangedEventArgs,
-      ABI::Windows::Devices::Sensors::LightSensorReadingChangedEventArgs>>
+  Microsoft::WRL::ComPtr<FakeSensorWinrt<ISensor,
+                                         Sensor,
+                                         ISensorReading,
+                                         ISensorReadingChangedEventArgs,
+                                         SensorReadingChangedEventArgs>>
       fake_sensor_;
 
   void SetRemoveReadingChangedReturnCode(HRESULT return_code) {
@@ -489,7 +791,7 @@ TEST_F(PlatformSensorReaderTestWinrt, FailedSensorStop) {
 
 // Tests that PlatformSensorReaderWinrtLightSensor does not notify the
 // client if an error occurs during sensor sample parsing.
-TEST_F(PlatformSensorReaderTestWinrt, FailedSensorSampleParse) {
+TEST_F(PlatformSensorReaderTestWinrt, FailedLightSensorSampleParse) {
   auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
       ABI::Windows::Devices::Sensors::ILightSensorStatics,
       ABI::Windows::Devices::Sensors::ILightSensor,
@@ -563,6 +865,438 @@ TEST_F(PlatformSensorReaderTestWinrt, SensorClientNotification) {
   fake_sensor->TriggerFakeSensorReading(reading);
 
   sensor->StopSensor();
+}
+
+// Tests if PlatformSensorReaderWinrtAccelerometer correctly converts sensor
+// readings from Windows.Devices.Sensors.Accelerometer.
+TEST_F(PlatformSensorReaderTestWinrt, CheckAccelerometerReadingConversion) {
+  constexpr double expected_x = 0.25;
+  constexpr double expected_y = -0.25;
+  constexpr double expected_z = -0.5;
+
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::IAccelerometerStatics,
+      ABI::Windows::Devices::Sensors::IAccelerometer,
+      ABI::Windows::Devices::Sensors::Accelerometer,
+      ABI::Windows::Devices::Sensors::IAccelerometerReading,
+      ABI::Windows::Devices::Sensors::IAccelerometerReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::AccelerometerReadingChangedEventArgs>>(
+      Microsoft::WRL::Make<FakeAccelerometerSensorWinrt>());
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor = std::make_unique<PlatformSensorReaderWinrtAccelerometer>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::IAccelerometerStatics**
+              sensor_factory) -> HRESULT {
+        return fake_sensor_factory.CopyTo(sensor_factory);
+      }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
+  EXPECT_CALL(*mock_client, OnReadingUpdated(::testing::_))
+      .WillOnce(testing::Invoke([&](const SensorReading& reading) {
+        EXPECT_EQ(-expected_x * kMeanGravity, reading.accel.x);
+        EXPECT_EQ(-expected_y * kMeanGravity, reading.accel.y);
+        EXPECT_EQ(-expected_z * kMeanGravity, reading.accel.z);
+      }));
+
+  sensor->SetClient(mock_client.get());
+
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+  auto reading = Microsoft::WRL::Make<FakeAccelerometerReadingWinrt>(
+      ABI::Windows::Foundation::DateTime{}, expected_x, expected_y, expected_z);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  sensor->StopSensor();
+}
+
+// Tests that PlatformSensorReaderWinrtAccelerometer does not notify the
+// client if an error occurs during sensor sample parsing.
+TEST_F(PlatformSensorReaderTestWinrt, FailedAccelerometerSampleParse) {
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::IAccelerometerStatics,
+      ABI::Windows::Devices::Sensors::IAccelerometer,
+      ABI::Windows::Devices::Sensors::Accelerometer,
+      ABI::Windows::Devices::Sensors::IAccelerometerReading,
+      ABI::Windows::Devices::Sensors::IAccelerometerReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::AccelerometerReadingChangedEventArgs>>(
+      Microsoft::WRL::Make<FakeAccelerometerSensorWinrt>());
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor = std::make_unique<PlatformSensorReaderWinrtAccelerometer>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::IAccelerometerStatics**
+              sensor_factory) -> HRESULT {
+        return fake_sensor_factory.CopyTo(sensor_factory);
+      }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
+  sensor->SetClient(mock_client.get());
+
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+
+  auto reading = Microsoft::WRL::Make<FakeAccelerometerReadingWinrt>(
+      ABI::Windows::Foundation::DateTime{}, 0, 0, 0);
+
+  reading->SetGetTimestampReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetTimestampReturnCode(S_OK);
+  reading->SetGetXReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetXReturnCode(S_OK);
+  reading->SetGetYReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetYReturnCode(S_OK);
+  reading->SetGetZReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+}
+
+// Tests if PlatformSensorReaderWinrtGyrometer correctly converts sensor
+// readings from Windows.Devices.Sensors.Gyrometer.
+TEST_F(PlatformSensorReaderTestWinrt, CheckGyrometerReadingConversion) {
+  constexpr double expected_x = 0.0;
+  constexpr double expected_y = -1.8;
+  constexpr double expected_z = -98.7;
+
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::IGyrometerStatics,
+      ABI::Windows::Devices::Sensors::IGyrometer,
+      ABI::Windows::Devices::Sensors::Gyrometer,
+      ABI::Windows::Devices::Sensors::IGyrometerReading,
+      ABI::Windows::Devices::Sensors::IGyrometerReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::GyrometerReadingChangedEventArgs>>();
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor = std::make_unique<PlatformSensorReaderWinrtGyrometer>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::IGyrometerStatics** sensor_factory)
+          -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
+  EXPECT_CALL(*mock_client, OnReadingUpdated(::testing::_))
+      .WillOnce(testing::Invoke([&](const SensorReading& reading) {
+        EXPECT_EQ(gfx::DegToRad(expected_x), reading.gyro.x);
+        EXPECT_EQ(gfx::DegToRad(expected_y), reading.gyro.y);
+        EXPECT_EQ(gfx::DegToRad(expected_z), reading.gyro.z);
+      }));
+
+  sensor->SetClient(mock_client.get());
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+
+  auto reading = Microsoft::WRL::Make<FakeGyrometerReadingWinrt>(
+      ABI::Windows::Foundation::DateTime{}, expected_x, expected_y, expected_z);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  sensor->StopSensor();
+}
+
+// Tests that PlatformSensorReaderWinrtGyrometer does not notify the
+// client if an error occurs during sensor sample parsing.
+TEST_F(PlatformSensorReaderTestWinrt, FailedGyrometerSampleParse) {
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::IGyrometerStatics,
+      ABI::Windows::Devices::Sensors::IGyrometer,
+      ABI::Windows::Devices::Sensors::Gyrometer,
+      ABI::Windows::Devices::Sensors::IGyrometerReading,
+      ABI::Windows::Devices::Sensors::IGyrometerReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::GyrometerReadingChangedEventArgs>>();
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor = std::make_unique<PlatformSensorReaderWinrtGyrometer>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::IGyrometerStatics** sensor_factory)
+          -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
+  sensor->SetClient(mock_client.get());
+
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+
+  auto reading = Microsoft::WRL::Make<FakeGyrometerReadingWinrt>(
+      ABI::Windows::Foundation::DateTime{}, 0, 0, 0);
+
+  reading->SetGetTimestampReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetTimestampReturnCode(S_OK);
+  reading->SetGetXReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetXReturnCode(S_OK);
+  reading->SetGetYReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetYReturnCode(S_OK);
+  reading->SetGetZReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+}
+
+// Tests if PlatformSensorReaderWinrtMagnetometer correctly converts sensor
+// readings from Windows.Sensors.Devices.Magnetometer.
+TEST_F(PlatformSensorReaderTestWinrt, CheckMagnetometerReadingConversion) {
+  constexpr double expected_x = 112.0;
+  constexpr double expected_y = 112.0;
+  constexpr double expected_z = 457.0;
+
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::IMagnetometerStatics,
+      ABI::Windows::Devices::Sensors::IMagnetometer,
+      ABI::Windows::Devices::Sensors::Magnetometer,
+      ABI::Windows::Devices::Sensors::IMagnetometerReading,
+      ABI::Windows::Devices::Sensors::IMagnetometerReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::MagnetometerReadingChangedEventArgs>>();
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor = std::make_unique<PlatformSensorReaderWinrtMagnetometer>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::IMagnetometerStatics** sensor_factory)
+          -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
+  EXPECT_CALL(*mock_client, OnReadingUpdated(::testing::_))
+      .WillOnce(testing::Invoke([&](const SensorReading& reading) {
+        EXPECT_EQ(expected_x, reading.magn.x);
+        EXPECT_EQ(expected_y, reading.magn.y);
+        EXPECT_EQ(expected_z, reading.magn.z);
+      }));
+
+  sensor->SetClient(mock_client.get());
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+
+  auto reading = Microsoft::WRL::Make<FakeMagnetometerReadingWinrt>(
+      ABI::Windows::Foundation::DateTime{}, expected_x, expected_y, expected_z);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  sensor->StopSensor();
+}
+
+// Tests that PlatformSensorReaderWinrtMagnetometer does not notify the
+// client if an error occurs during sensor sample parsing.
+TEST_F(PlatformSensorReaderTestWinrt, FailedMagnetometerSampleParse) {
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::IMagnetometerStatics,
+      ABI::Windows::Devices::Sensors::IMagnetometer,
+      ABI::Windows::Devices::Sensors::Magnetometer,
+      ABI::Windows::Devices::Sensors::IMagnetometerReading,
+      ABI::Windows::Devices::Sensors::IMagnetometerReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::MagnetometerReadingChangedEventArgs>>();
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor = std::make_unique<PlatformSensorReaderWinrtMagnetometer>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::IMagnetometerStatics** sensor_factory)
+          -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
+  sensor->SetClient(mock_client.get());
+
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+
+  auto reading = Microsoft::WRL::Make<FakeMagnetometerReadingWinrt>(
+      ABI::Windows::Foundation::DateTime{}, 0, 0, 0);
+
+  reading->SetGetTimestampReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetTimestampReturnCode(S_OK);
+  reading->SetGetXReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetXReturnCode(S_OK);
+  reading->SetGetYReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetYReturnCode(S_OK);
+  reading->SetGetZReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+}
+
+// Tests if PlatformSensorReaderWinrtAbsOrientationEulerAngles correctly
+// converts sensor readings from Windows.Devices.Sensors.Inclinometer.
+TEST_F(PlatformSensorReaderTestWinrt, CheckInclinometerReadingConversion) {
+  constexpr double expected_x = 10.0;
+  constexpr double expected_y = 20.0;
+  constexpr double expected_z = 30.0;
+
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::IInclinometerStatics,
+      ABI::Windows::Devices::Sensors::IInclinometer,
+      ABI::Windows::Devices::Sensors::Inclinometer,
+      ABI::Windows::Devices::Sensors::IInclinometerReading,
+      ABI::Windows::Devices::Sensors::IInclinometerReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::InclinometerReadingChangedEventArgs>>();
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor =
+      std::make_unique<PlatformSensorReaderWinrtAbsOrientationEulerAngles>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::IInclinometerStatics** sensor_factory)
+          -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
+  EXPECT_CALL(*mock_client, OnReadingUpdated(::testing::_))
+      .WillOnce(testing::Invoke([&](const SensorReading& reading) {
+        EXPECT_EQ(expected_x, reading.orientation_euler.x);
+        EXPECT_EQ(expected_y, reading.orientation_euler.y);
+        EXPECT_EQ(expected_z, reading.orientation_euler.z);
+      }));
+
+  sensor->SetClient(mock_client.get());
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+
+  auto reading = Microsoft::WRL::Make<FakeInclinometerReadingWinrt>(
+      ABI::Windows::Foundation::DateTime{}, expected_x, expected_y, expected_z);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  sensor->StopSensor();
+}
+
+// Tests that PlatformSensorReaderWinrtAbsOrientationEulerAngles does not notify
+// the client if an error occurs during sensor sample parsing.
+TEST_F(PlatformSensorReaderTestWinrt, FailedInclinometerSampleParse) {
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::IInclinometerStatics,
+      ABI::Windows::Devices::Sensors::IInclinometer,
+      ABI::Windows::Devices::Sensors::Inclinometer,
+      ABI::Windows::Devices::Sensors::IInclinometerReading,
+      ABI::Windows::Devices::Sensors::IInclinometerReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::InclinometerReadingChangedEventArgs>>();
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor =
+      std::make_unique<PlatformSensorReaderWinrtAbsOrientationEulerAngles>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::IInclinometerStatics** sensor_factory)
+          -> HRESULT { return fake_sensor_factory.CopyTo(sensor_factory); }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
+  sensor->SetClient(mock_client.get());
+
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+
+  auto reading = Microsoft::WRL::Make<FakeInclinometerReadingWinrt>(
+      ABI::Windows::Foundation::DateTime{}, 0, 0, 0);
+
+  reading->SetGetTimestampReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetTimestampReturnCode(S_OK);
+  reading->SetGetXReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetXReturnCode(S_OK);
+  reading->SetGetYReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetYReturnCode(S_OK);
+  reading->SetGetZReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+}
+
+// Tests if PlatformSensorReaderWinrtAbsOrientationQuaternion correctly
+// converts sensor readings from Windows.Devices.Sensors.OrientationSensor.
+TEST_F(PlatformSensorReaderTestWinrt, CheckOrientationSensorReadingConversion) {
+  constexpr double expected_w = 11.0;
+  constexpr double expected_x = 22.0;
+  constexpr double expected_y = 33.0;
+  constexpr double expected_z = 44.0;
+
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::IOrientationSensorStatics,
+      ABI::Windows::Devices::Sensors::IOrientationSensor,
+      ABI::Windows::Devices::Sensors::OrientationSensor,
+      ABI::Windows::Devices::Sensors::IOrientationSensorReading,
+      ABI::Windows::Devices::Sensors::IOrientationSensorReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::
+          OrientationSensorReadingChangedEventArgs>>();
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor =
+      std::make_unique<PlatformSensorReaderWinrtAbsOrientationQuaternion>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::IOrientationSensorStatics**
+              sensor_factory) -> HRESULT {
+        return fake_sensor_factory.CopyTo(sensor_factory);
+      }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
+  EXPECT_CALL(*mock_client, OnReadingUpdated(::testing::_))
+      .WillOnce(testing::Invoke([&](const SensorReading& reading) {
+        EXPECT_EQ(expected_w, reading.orientation_quat.w);
+        EXPECT_EQ(expected_x, reading.orientation_quat.x);
+        EXPECT_EQ(expected_y, reading.orientation_quat.y);
+        EXPECT_EQ(expected_z, reading.orientation_quat.z);
+      }));
+
+  sensor->SetClient(mock_client.get());
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+
+  auto reading = Microsoft::WRL::Make<FakeOrientationSensorReadingWinrt>(
+      ABI::Windows::Foundation::DateTime{}, expected_w, expected_x, expected_y,
+      expected_z);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  sensor->StopSensor();
+}
+
+// Tests that PlatformSensorReaderWinrtAbsOrientationQuaternion does not notify
+// the client if an error occurs during sensor sample parsing.
+TEST_F(PlatformSensorReaderTestWinrt, FailedOrientationSampleParse) {
+  auto fake_sensor_factory = Microsoft::WRL::Make<FakeSensorFactoryWinrt<
+      ABI::Windows::Devices::Sensors::IOrientationSensorStatics,
+      ABI::Windows::Devices::Sensors::IOrientationSensor,
+      ABI::Windows::Devices::Sensors::OrientationSensor,
+      ABI::Windows::Devices::Sensors::IOrientationSensorReading,
+      ABI::Windows::Devices::Sensors::IOrientationSensorReadingChangedEventArgs,
+      ABI::Windows::Devices::Sensors::
+          OrientationSensorReadingChangedEventArgs>>();
+  auto fake_sensor = fake_sensor_factory->fake_sensor_;
+
+  auto sensor =
+      std::make_unique<PlatformSensorReaderWinrtAbsOrientationQuaternion>();
+  sensor->InitForTests(base::BindLambdaForTesting(
+      [&](ABI::Windows::Devices::Sensors::IOrientationSensorStatics**
+              sensor_factory) -> HRESULT {
+        return fake_sensor_factory.CopyTo(sensor_factory);
+      }));
+  EXPECT_EQ(sensor->Initialize(), SensorWinrtCreateFailure::kOk);
+
+  auto mock_client = std::make_unique<testing::NiceMock<MockClient>>();
+  sensor->SetClient(mock_client.get());
+
+  PlatformSensorConfiguration sensor_config(kExpectedReportFrequencySet);
+  EXPECT_TRUE(sensor->StartSensor(sensor_config));
+
+  auto reading = Microsoft::WRL::Make<FakeOrientationSensorReadingWinrt>(
+      ABI::Windows::Foundation::DateTime{}, 0, 0, 0, 0);
+
+  reading->SetGetTimestampReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
+
+  reading->SetGetTimestampReturnCode(S_OK);
+  reading->SetGetQuaternionReturnCode(E_FAIL);
+  fake_sensor->TriggerFakeSensorReading(reading);
 }
 
 }  // namespace device

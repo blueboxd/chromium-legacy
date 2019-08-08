@@ -457,8 +457,16 @@ void CrostiniPackageService::StartQueuedUninstall(
   auto registration =
       CrostiniRegistryServiceFactory::GetForProfile(profile_)->GetRegistration(
           app_id);
-  DCHECK(registration);
-  UninstallApplication(*registration, app_id);
+
+  // It's possible that some other process has uninstalled this application
+  // already. If this happens, we want to skip the notification directly to the
+  // success state.
+  if (registration) {
+    UninstallApplication(*registration, app_id);
+  } else {
+    UpdatePackageOperationStatus(container_id,
+                                 PackageOperationStatus::SUCCEEDED, 100);
+  }
 
   // Clean up memory.
   if (uninstall_queue.empty()) {

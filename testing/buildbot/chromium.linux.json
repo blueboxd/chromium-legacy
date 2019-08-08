@@ -3903,9 +3903,9 @@
       {
         "args": [
           "--num-retries=3",
+          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=swiftshader",
-          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--fuzzy-diff",
@@ -4023,8 +4023,8 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--use-vulkan=swiftshader",
@@ -7424,9 +7424,9 @@
       {
         "args": [
           "--num-retries=3",
+          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=swiftshader",
-          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--fuzzy-diff",
@@ -7544,8 +7544,8 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--use-vulkan=swiftshader",
@@ -9287,9 +9287,9 @@
       {
         "args": [
           "--num-retries=3",
+          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=swiftshader",
-          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--fuzzy-diff",
@@ -9402,8 +9402,8 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--enable-gpu-rasterization",
+          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--use-vulkan=swiftshader",

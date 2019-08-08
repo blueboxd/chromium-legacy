@@ -93,7 +93,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   const char* GetClassName() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
-  void SchedulePaintInRect(const gfx::Rect& r) override;
   void SetVisible(bool visible) override;
 
   // If |paint| is false, we should not paint the header. Used for overview mode
@@ -107,6 +106,10 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
   SkColor GetInactiveFrameColorForTest() const;
 
   views::Widget* frame() { return frame_; }
+
+ protected:
+  // views::View:
+  void OnDidSchedulePaint(const gfx::Rect& r) override;
 
  private:
   class OverlayView;

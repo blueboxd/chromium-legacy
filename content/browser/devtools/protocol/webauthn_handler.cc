@@ -31,6 +31,8 @@ static constexpr char kCableNotSupportedOnU2f[] =
     "U2F only supports the \"usb\", \"ble\" and \"nfc\" transports";
 static constexpr char kCouldNotCreateCredential[] =
     "An error occurred trying to create the credential";
+static constexpr char kCredentialNotFound[] =
+    "Could not find a credential matching the ID";
 static constexpr char kDevToolsNotAttached[] =
     "The DevTools session is not attached to a frame";
 static constexpr char kErrorCreatingAuthenticator[] =
@@ -59,6 +61,30 @@ device::ProtocolVersion ConvertToProtocolVersion(base::StringPiece protocol) {
 
 std::vector<uint8_t> CopyBinaryToVector(const Binary& binary) {
   return std::vector<uint8_t>(binary.data(), binary.data() + binary.size());
+}
+
+std::unique_ptr<WebAuthn::Credential> BuildCredentialFromRegistration(
+    const std::pair<const std::vector<uint8_t>,
+                    device::VirtualFidoDevice::RegistrationData>&
+        registration) {
+  std::vector<uint8_t> private_key;
+  registration.second.private_key->ExportPrivateKey(&private_key);
+
+  auto credential =
+      WebAuthn::Credential::Create()
+          .SetCredentialId(Binary::fromVector(registration.first))
+          .SetPrivateKey(Binary::fromVector(std::move(private_key)))
+          .SetSignCount(registration.second.counter)
+          .SetIsResidentCredential(registration.second.is_resident)
+          .Build();
+
+  if (registration.second.rp)
+    credential->SetRpId(registration.second.rp->id);
+  if (registration.second.user) {
+    credential->SetUserHandle(Binary::fromVector(registration.second.user->id));
+  }
+
+  return credential;
 }
 
 }  // namespace
@@ -195,6 +221,24 @@ Response WebAuthnHandler::AddCredential(
   return Response::OK();
 }
 
+Response WebAuthnHandler::GetCredential(
+    const String& authenticator_id,
+    const Binary& credential_id,
+    std::unique_ptr<WebAuthn::Credential>* out_credential) {
+  VirtualAuthenticator* authenticator;
+  Response response = FindAuthenticator(authenticator_id, &authenticator);
+  if (!response.isSuccess())
+    return response;
+
+  auto registration =
+      authenticator->registrations().find(CopyBinaryToVector(credential_id));
+  if (registration == authenticator->registrations().end())
+    return Response::InvalidParams(kCredentialNotFound);
+
+  *out_credential = BuildCredentialFromRegistration(*registration);
+  return Response::OK();
+}
+
 Response WebAuthnHandler::GetCredentials(
     const String& authenticator_id,
     std::unique_ptr<Array<WebAuthn::Credential>>* out_credentials) {
@@ -205,24 +249,8 @@ Response WebAuthnHandler::GetCredentials(
 
   *out_credentials = std::make_unique<Array<WebAuthn::Credential>>();
   for (const auto& registration : authenticator->registrations()) {
-    std::vector<uint8_t> private_key;
-    registration.second.private_key->ExportPrivateKey(&private_key);
-
-    auto credential =
-        WebAuthn::Credential::Create()
-            .SetCredentialId(Binary::fromVector(registration.first))
-            .SetPrivateKey(Binary::fromVector(std::move(private_key)))
-            .SetSignCount(registration.second.counter)
-            .SetIsResidentCredential(registration.second.is_resident)
-            .Build();
-
-    if (registration.second.rp)
-      credential->SetRpId(registration.second.rp->id);
-    if (registration.second.user) {
-      credential->SetUserHandle(
-          Binary::fromVector(registration.second.user->id));
-    }
-    (*out_credentials)->emplace_back(std::move(credential));
+    (*out_credentials)
+        ->emplace_back(BuildCredentialFromRegistration(registration));
   }
   return Response::OK();
 }

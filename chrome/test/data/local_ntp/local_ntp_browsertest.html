@@ -217,21 +217,25 @@
         </div>
         <div id="backgrounds-menu" class="menu-panel" tabindex="0"
             role="tabpanel" aria-label="$i18n{backgroundsOption}">
-          <div id="backgrounds-upload" class="bg-sel-tile-bg">
-            <div id="backgrounds-upload-icon" class="bg-sel-tile" tabindex="-1"
+          <div id="backgrounds-upload-wrapper" class="bg-sel-tile-wrapper">
+            <div id="backgrounds-upload" class="bg-sel-tile-bg" tabindex="-1"
                 role="button" aria-label="$i18n{uploadImage}"
                 title="$i18n{uploadImage}">
-              <div id="backgrounds-upload-arrow"></div>
-              <div id="backgrounds-upload-text">$i18n{uploadImage}</div>
+              <div id="backgrounds-upload-icon" class="bg-sel-tile">
+                <div id="backgrounds-upload-arrow"></div>
+                <div id="backgrounds-upload-text">$i18n{uploadImage}</div>
+              </div>
             </div>
           </div>
-          <div id="backgrounds-default" class="bg-sel-tile-bg">
-            <div id="backgrounds-default-icon" class="bg-sel-tile" tabindex="-1"
+          <div id="backgrounds-default-wrapper" class="bg-sel-tile-wrapper">
+            <div id="backgrounds-default" class="bg-sel-tile-bg" tabindex="-1"
                 role="button" aria-label="$i18n{noBackground}"
                 title="$i18n{noBackground}">
-              <div class="mini-page">
-                <div class="mini-header-colorful"></div>
-                <div class="mini-shortcuts"></div>
+              <div id="backgrounds-default-icon" class="bg-sel-tile">
+                <div class="mini-page">
+                  <div class="mini-header-colorful"></div>
+                  <div class="mini-shortcuts"></div>
+                </div>
               </div>
             </div>
             <div class="bg-sel-tile-title">$i18n{noBackground}</div>
@@ -312,20 +316,23 @@
                 $i18n{uninstallButton}
               </button>
           </div>
-          <div id="color-picker-container" class="bg-sel-tile-bg"
-              aria-label="$i18n{colorPickerLabel}"
-              title="$i18n{colorPickerLabel}">
-            <div id="color-picker-tile" class="bg-sel-tile" tabindex="-1">
-              <div id="left-semicircle"></div>
-              <div id="color-picker-icon"></div>
-              <input id="color-picker" type="color" style="display:none">
-              </input>
+          <div id="color-picker-wrapper" class="bg-sel-tile-wrapper">
+            <div id="color-picker-container" class="bg-sel-tile-bg"
+                aria-label="$i18n{colorPickerLabel}"
+                title="$i18n{colorPickerLabel}"  tabindex="-1">
+              <div id="color-picker-tile" class="bg-sel-tile">
+                <div id="left-semicircle"></div>
+                <div id="color-picker-icon"></div>
+                <input id="color-picker" type="color" style="display:none">
+                </input>
+              </div>
             </div>
           </div>
-          <div id="colors-default" class="bg-sel-tile-bg"
-              aria-label="$i18n{defaultThemeLabel}"
-              title="$i18n{defaultThemeLabel}">
-            <div id="colors-default-icon" class="bg-sel-tile" tabindex="-1">
+          <div id="colors-default-wrapper" class="bg-sel-tile-wrapper">
+            <div id="colors-default" class="bg-sel-tile-bg"
+                aria-label="$i18n{defaultThemeLabel}"
+                title="$i18n{defaultThemeLabel}" tabindex="-1">
+              <div id="colors-default-icon" class="bg-sel-tile"></div>
             </div>
           </div>
         </div>

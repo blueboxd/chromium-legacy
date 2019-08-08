@@ -14,18 +14,16 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/services/printing/public/mojom/constants.mojom.h"
+#include "chrome/browser/printing/printing_service.h"
 #include "chrome/services/printing/public/mojom/pdf_to_pwg_raster_converter.mojom.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/pwg_raster_settings.h"
 #include "printing/units.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -80,10 +78,8 @@ void PwgRasterConverterHelper::Convert(
 
   callback_ = std::move(callback);
 
-  content::GetSystemConnector()->BindInterface(
-      printing::mojom::kChromePrintingServiceName,
-      &pdf_to_pwg_raster_converter_ptr_);
-
+  GetPrintingService()->BindPdfToPwgRasterConverter(
+      mojo::MakeRequest(&pdf_to_pwg_raster_converter_ptr_));
   pdf_to_pwg_raster_converter_ptr_.set_connection_error_handler(
       base::BindOnce(&PwgRasterConverterHelper::RunCallback, this,
                      base::ReadOnlySharedMemoryRegion(), /*page_count=*/0));

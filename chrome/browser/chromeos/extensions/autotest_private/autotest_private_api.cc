@@ -35,6 +35,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
@@ -1255,6 +1256,28 @@ void AutotestPrivateImportCrostiniFunction::CrostiniImported(
   } else {
     Respond(Error("Error importing crostini"));
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateRegisterComponentFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateRegisterComponentFunction::
+    ~AutotestPrivateRegisterComponentFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateRegisterComponentFunction::Run() {
+  std::unique_ptr<api::autotest_private::RegisterComponent::Params> params(
+      api::autotest_private::RegisterComponent::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateRegisterComponentFunction " << params->name
+           << ", " << params->path;
+
+  g_browser_process->platform_part()
+      ->cros_component_manager()
+      ->RegisterCompatiblePath(params->name, base::FilePath(params->path));
+
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

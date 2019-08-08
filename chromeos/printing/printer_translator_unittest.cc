@@ -272,7 +272,7 @@ TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinter) {
   // generic printer does not have the URI field set.
   CheckPrinterInfoUri(*printer_info, "ipp", "", "");
 
-  ExpectDictBooleanValue(false, *printer_info, "printerAutoconf");
+  ExpectDictBooleanValue(false, *printer_info, "printerPpdReference.autoconf");
 }
 
 TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinterWithUri) {
@@ -286,7 +286,7 @@ TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinterWithUri) {
   CheckPrinterInfoUri(*printer_info, "ipp", "printy.domain.co:555",
                       "ipp/print");
 
-  ExpectDictBooleanValue(false, *printer_info, "printerAutoconf");
+  ExpectDictBooleanValue(false, *printer_info, "printerPpdReference.autoconf");
 }
 
 TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinterWithUsbUri) {
@@ -299,7 +299,7 @@ TEST(PrinterTranslatorTest, GetCupsPrinterInfoGenericPrinterWithUsbUri) {
 
   CheckPrinterInfoUri(*printer_info, "usb", "1234/af9d?serial=ink1", "");
 
-  ExpectDictBooleanValue(false, *printer_info, "printerAutoconf");
+  ExpectDictBooleanValue(false, *printer_info, "printerPpdReference.autoconf");
 }
 
 TEST(PrinterTranslatorTest, GetCupsPrinterInfoAutoconfPrinter) {
@@ -312,8 +312,9 @@ TEST(PrinterTranslatorTest, GetCupsPrinterInfoAutoconfPrinter) {
   // generic printer does not have the URI field set.
   CheckPrinterInfoUri(*printer_info, "ipp", "", "");
 
-  // Since this is an autoconf printer we expect "printerAutoconf" to be true.
-  ExpectDictBooleanValue(true, *printer_info, "printerAutoconf");
+  // Since this is an autoconf printer we expect "printerPpdReference.autoconf"
+  // to be true.
+  ExpectDictBooleanValue(true, *printer_info, "printerPpdReference.autoconf");
 }
 
 }  // namespace chromeos

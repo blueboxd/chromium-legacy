@@ -188,9 +188,9 @@ WebInputEventResult PointerEventManager::DispatchPointerEvent(
     return WebInputEventResult::kNotHandled;
 
   if (event_type == event_type_names::kPointerdown) {
-    Node* node = target->ToNode();
-    if (node && IsHTMLCanvasElement(*node) &&
-        ToHTMLCanvasElement(*node).NeedsUnbufferedInputEvents()) {
+    auto* html_canvas_element = DynamicTo<HTMLCanvasElement>(target->ToNode());
+    if (html_canvas_element &&
+        html_canvas_element->NeedsUnbufferedInputEvents()) {
       frame_->GetChromeClient().RequestUnbufferedInputEvents(frame_);
     }
   }

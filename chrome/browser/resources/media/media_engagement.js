@@ -13,7 +13,7 @@ function whenPageIsPopulatedForTest() {
 
 (function() {
 
-let uiHandler = null;
+let detailsProvider = null;
 let info = null;
 let engagementTableBody = null;
 let sortReverse = true;
@@ -180,20 +180,20 @@ function renderTable() {
  */
 function updateEngagementTable() {
   // Populate engagement table.
-  uiHandler.getMediaEngagementScoreDetails().then(response => {
+  detailsProvider.getMediaEngagementScoreDetails().then(response => {
     info = response.info;
     renderTable();
     pageIsPopulatedResolver.resolve();
   });
 
   // Populate config settings.
-  uiHandler.getMediaEngagementConfig().then(response => {
+  detailsProvider.getMediaEngagementConfig().then(response => {
     renderConfigTable(response.config);
   });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  uiHandler = media.mojom.MediaEngagementScoreDetailsProvider.getProxy();
+  detailsProvider = media.mojom.MediaEngagementScoreDetailsProvider.getRemote();
   updateEngagementTable();
 
   engagementTableBody = $('engagement-table-body');

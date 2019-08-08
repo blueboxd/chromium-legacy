@@ -131,10 +131,13 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
   shelf_layout_manager_ = shelf_widget_->shelf_layout_manager();
   shelf_layout_manager_->AddObserver(this);
 
+  DCHECK(!shelf_widget_->hotseat_widget());
+  aura::Window* control_container =
+      root->GetChildById(kShellWindowId_ShelfControlContainer);
+  shelf_widget_->CreateHotseatWidget(control_container);
+
   DCHECK(!shelf_widget_->navigation_widget());
-  aura::Window* navigation_container =
-      root->GetChildById(kShellWindowId_ShelfNavigationContainer);
-  shelf_widget_->CreateNavigationWidget(navigation_container);
+  shelf_widget_->CreateNavigationWidget(control_container);
 
   // Must occur after |shelf_widget_| is constructed because the system tray
   // constructors call back into Shelf::shelf_widget().

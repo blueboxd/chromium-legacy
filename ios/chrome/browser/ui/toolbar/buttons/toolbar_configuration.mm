@@ -42,8 +42,8 @@
 
 - (UIColor*)buttonsTintColor {
   return color::IncognitoDynamicColor(
-      self.style == INCOGNITO, [UIColor colorNamed:@"tab_toolbar_button_color"],
-      [UIColor colorNamed:@"tab_toolbar_button_color_incognito"]);
+      self.style == INCOGNITO, [UIColor colorNamed:kToolbarButtonColor],
+      [UIColor colorNamed:kToolbarButtonDarkColor]);
 }
 
 - (UIColor*)buttonsTintColorHighlighted {

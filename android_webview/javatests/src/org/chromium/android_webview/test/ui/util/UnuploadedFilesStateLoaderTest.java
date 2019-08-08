@@ -15,10 +15,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
+import org.chromium.android_webview.common.crash.CrashInfo;
+import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
-import org.chromium.android_webview.ui.util.CrashInfoLoader.CrashInfo;
-import org.chromium.android_webview.ui.util.CrashInfoLoader.UploadState;
 import org.chromium.android_webview.ui.util.UnuploadedFilesStateLoader;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 

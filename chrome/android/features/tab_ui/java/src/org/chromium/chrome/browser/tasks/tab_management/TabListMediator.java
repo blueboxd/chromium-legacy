@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.app.Activity;
 import android.content.ComponentCallbacks;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -17,12 +19,12 @@ import android.util.Pair;
 import android.view.View;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -32,6 +34,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -200,6 +203,7 @@ class TabListMediator {
     private static final String TAG = "TabListMediator";
     private static Map<Integer, Integer> sTabClosedFromMapTabClosedFromMap = new HashMap<>();
 
+    private final Context mContext;
     private final TabListFaviconProvider mTabListFaviconProvider;
     private final TabListModel mModel;
     private final TabModelSelector mTabModelSelector;
@@ -215,6 +219,7 @@ class TabListMediator {
     private ComponentCallbacks mComponentCallbacks;
     private TabGridItemTouchHelperCallback mTabGridItemTouchHelperCallback;
     private int mNextTabId = Tab.INVALID_TAB_ID;
+    private boolean mTabRestoreCompleted;
 
     private final TabActionListener mTabSelectedListener = new TabActionListener() {
         @Override
@@ -327,6 +332,7 @@ class TabListMediator {
     /**
      * Construct the Mediator with the given Models and observing hooks from the given
      * ChromeActivity.
+     * @param context The context used to get some configuration information.
      * @param model The Model to keep state about a list of {@link Tab}s.
      * @param tabModelSelector {@link TabModelSelector} that will provide and receive signals about
      *                                                 the tabs concerned.
@@ -345,7 +351,7 @@ class TabListMediator {
      * @param dialogHandler A handler to handle requests about updating TabGridDialog.
      * @param componentName This is a unique string to identify different components.
      */
-    public TabListMediator(TabListModel model, TabModelSelector tabModelSelector,
+    public TabListMediator(Context context, TabListModel model, TabModelSelector tabModelSelector,
             @Nullable ThumbnailProvider thumbnailProvider, @Nullable TitleProvider titleProvider,
             TabListFaviconProvider tabListFaviconProvider, boolean actionOnRelatedTabs,
             @Nullable CreateGroupButtonProvider createGroupButtonProvider,
@@ -363,6 +369,7 @@ class TabListMediator {
         mGridCardOnClickListenerProvider = gridCardOnClickListenerProvider;
         mTabGridDialogHandler = dialogHandler;
         mActionsOnAllRelatedTabs = actionOnRelatedTabs;
+        mContext = context;
 
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
@@ -408,8 +415,22 @@ class TabListMediator {
 
             @Override
             public void didAddTab(Tab tab, @TabLaunchType int type) {
-                if (type == TabLaunchType.FROM_RESTORE) return;
+                if (!mTabRestoreCompleted) return;
                 onTabAdded(tab, !mActionsOnAllRelatedTabs);
+                if (type == TabLaunchType.FROM_RESTORE && mActionsOnAllRelatedTabs) {
+                    // When tab is restored after restoring stage (e.g. exiting multi-window mode),
+                    // we need to update related property models.
+                    TabModelFilter filter = mTabModelSelector.getTabModelFilterProvider()
+                                                    .getCurrentTabModelFilter();
+                    int index = filter.indexOf(tab);
+                    if (index == TabList.INVALID_TAB_INDEX) return;
+                    Tab currentGroupSelectedTab = filter.getTabAt(index);
+
+                    assert mModel.indexFromId(currentGroupSelectedTab.getId()) == index;
+
+                    updateTab(index, currentGroupSelectedTab,
+                            mModel.get(index).get(TabProperties.IS_SELECTED), false, false);
+                }
             }
 
             @Override
@@ -424,6 +445,17 @@ class TabListMediator {
                                 instanceof TabGroupModelFilter)
                     return;
                 onTabMoved(newIndex, curIndex);
+            }
+
+            @Override
+            public void tabRemoved(Tab tab) {
+                if (mModel.indexFromId(tab.getId()) == TabModel.INVALID_TAB_INDEX) return;
+                mModel.removeAt(mModel.indexFromId(tab.getId()));
+            }
+
+            @Override
+            public void restoreCompleted() {
+                mTabRestoreCompleted = true;
             }
         };
 
@@ -807,15 +839,29 @@ class TabListMediator {
         mComponentCallbacks = new ComponentCallbacks() {
             @Override
             public void onConfigurationChanged(Configuration newConfig) {
-                manager.setSpanCount(newConfig.orientation == Configuration.ORIENTATION_PORTRAIT
-                                ? TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT
-                                : TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_LANDSCAPE);
+                updateSpanCountForOrientation(manager, newConfig.orientation);
             }
 
             @Override
             public void onLowMemory() {}
         };
-        ContextUtils.getApplicationContext().registerComponentCallbacks(mComponentCallbacks);
+        mContext.registerComponentCallbacks(mComponentCallbacks);
+    }
+
+    /**
+     * Update the grid layout span count base on orientation.
+     * @param manager     The {@link GridLayoutManager} used to update the span count.
+     * @param orientation The orientation base on which we update the span count.
+     */
+    void updateSpanCountForOrientation(GridLayoutManager manager, int orientation) {
+        // When in multi-window mode, the span count is fixed to 2 to keep tab card size reasonable.
+        if (MultiWindowUtils.getInstance().isInMultiWindowMode((Activity) mContext)) {
+            manager.setSpanCount(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT);
+            return;
+        }
+        manager.setSpanCount(orientation == Configuration.ORIENTATION_PORTRAIT
+                        ? TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT
+                        : TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_LANDSCAPE);
     }
 
     /**
@@ -841,7 +887,7 @@ class TabListMediator {
                     .removeTabGroupObserver(mTabGroupObserver);
         }
         if (mComponentCallbacks != null) {
-            ContextUtils.getApplicationContext().unregisterComponentCallbacks(mComponentCallbacks);
+            mContext.unregisterComponentCallbacks(mComponentCallbacks);
         }
     }
 
@@ -952,5 +998,10 @@ class TabListMediator {
         };
         mTabListFaviconProvider.getFaviconForUrlAsync(
                 tab.getUrl(), tab.isIncognito(), faviconCallback);
+    }
+
+    @VisibleForTesting
+    void setTabRestoreCompletedForTesting(boolean isRestored) {
+        mTabRestoreCompleted = isRestored;
     }
 }

@@ -184,12 +184,6 @@ NetworkStateTestHelper::CreateStandaloneNetworkProperties(
       network->wifi = std::move(wifi);
       break;
     }
-    case network_config::mojom::NetworkType::kWiMAX: {
-      auto wimax = network_config::mojom::WiMAXStateProperties::New();
-      wimax->signal_strength = signal_strength;
-      network->wimax = std::move(wimax);
-      break;
-    }
   }
   return network;
 }

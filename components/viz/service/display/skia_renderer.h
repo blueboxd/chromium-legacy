@@ -251,14 +251,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   base::Optional<DisplayResourceProvider::LockSetForExternalUse>
       lock_set_for_external_use_;
 
-  // Promise images created from resources used in the current frame. This map
-  // will be cleared when the frame is done and before all resources in
-  // |lock_set_for_external_use_| are unlocked on the compositor thread.
-  // It is only used with DDL.
-  base::flat_map<ResourceId, sk_sp<SkImage>> promise_images_;
-  using YUVIds = std::tuple<ResourceId, ResourceId, ResourceId, ResourceId>;
-  base::flat_map<YUVIds, sk_sp<SkImage>> yuv_promise_images_;
-
   // Specific for SkPRecord.
   std::unique_ptr<SkPictureRecorder> root_recorder_;
   sk_sp<SkPicture> root_picture_;

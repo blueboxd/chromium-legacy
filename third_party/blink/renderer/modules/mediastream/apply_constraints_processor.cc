@@ -4,10 +4,8 @@
 
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_processor.h"
 
-#include <string>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
@@ -19,14 +17,25 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+namespace WTF {
+
+template <>
+struct CrossThreadCopier<blink::WebApplyConstraintsRequest>
+    : public CrossThreadCopierPassThrough<blink::WebApplyConstraintsRequest> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+}  // namespace WTF
 
 namespace blink {
 namespace {
 
 void RequestFailed(blink::WebApplyConstraintsRequest request,
-                   const blink::WebString& constraint,
-                   const blink::WebString& message) {
+                   const String& constraint,
+                   const String& message) {
   request.RequestFailed(constraint, message);
 }
 
@@ -130,8 +139,8 @@ void ApplyConstraintsProcessor::ProcessVideoDeviceRequest() {
   // to know all the formats potentially supported by the source.
   GetMediaDevicesDispatcher()->GetAllVideoInputDeviceFormats(
       String(video_source_->device().id.data()),
-      base::BindOnce(&ApplyConstraintsProcessor::MaybeStopSourceForRestart,
-                     weak_factory_.GetWeakPtr()));
+      WTF::Bind(&ApplyConstraintsProcessor::MaybeStopSourceForRestart,
+                weak_factory_.GetWeakPtr()));
 }
 
 void ApplyConstraintsProcessor::MaybeStopSourceForRestart(
@@ -152,8 +161,8 @@ void ApplyConstraintsProcessor::MaybeStopSourceForRestart(
     ApplyConstraintsSucceeded();
   } else {
     video_source_->StopForRestart(
-        base::BindOnce(&ApplyConstraintsProcessor::MaybeSourceStoppedForRestart,
-                       weak_factory_.GetWeakPtr()));
+        WTF::Bind(&ApplyConstraintsProcessor::MaybeSourceStoppedForRestart,
+                  weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -171,8 +180,8 @@ void ApplyConstraintsProcessor::MaybeSourceStoppedForRestart(
   DCHECK_EQ(result, blink::MediaStreamVideoSource::RestartResult::IS_STOPPED);
   GetMediaDevicesDispatcher()->GetAvailableVideoInputDeviceFormats(
       String(video_source_->device().id.data()),
-      base::BindOnce(&ApplyConstraintsProcessor::FindNewFormatAndRestart,
-                     weak_factory_.GetWeakPtr()));
+      WTF::Bind(&ApplyConstraintsProcessor::FindNewFormatAndRestart,
+                weak_factory_.GetWeakPtr()));
 }
 
 void ApplyConstraintsProcessor::FindNewFormatAndRestart(
@@ -189,8 +198,8 @@ void ApplyConstraintsProcessor::FindNewFormatAndRestart(
   video_source_->Restart(
       settings.HasValue() ? settings.Format()
                           : *video_source_->GetCurrentFormat(),
-      base::BindOnce(&ApplyConstraintsProcessor::MaybeSourceRestarted,
-                     weak_factory_.GetWeakPtr()));
+      WTF::Bind(&ApplyConstraintsProcessor::MaybeSourceRestarted,
+                weak_factory_.GetWeakPtr()));
 }
 
 void ApplyConstraintsProcessor::MaybeSourceRestarted(
@@ -305,39 +314,39 @@ bool ApplyConstraintsProcessor::AbortIfVideoRequestStateInvalid() {
 }
 
 void ApplyConstraintsProcessor::ApplyConstraintsSucceeded() {
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ApplyConstraintsProcessor::CleanupRequest,
-                     weak_factory_.GetWeakPtr(),
-                     base::BindOnce(&RequestSucceeded, current_request_)));
+  PostCrossThreadTask(
+      *task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(
+          &ApplyConstraintsProcessor::CleanupRequest,
+          weak_factory_.GetWeakPtr(),
+          CrossThreadBindOnce(&RequestSucceeded, current_request_)));
 }
 
 void ApplyConstraintsProcessor::ApplyConstraintsFailed(
     const char* failed_constraint_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
+  PostCrossThreadTask(
+      *task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(
           &ApplyConstraintsProcessor::CleanupRequest,
           weak_factory_.GetWeakPtr(),
-          base::BindOnce(
-              &RequestFailed, current_request_,
-              blink::WebString::FromASCII(failed_constraint_name),
-              blink::WebString::FromASCII("Cannot satisfy constraints"))));
+          CrossThreadBindOnce(&RequestFailed, current_request_,
+                              String(failed_constraint_name),
+                              String("Cannot satisfy constraints"))));
 }
 
-void ApplyConstraintsProcessor::CannotApplyConstraints(
-    const blink::WebString& message) {
+void ApplyConstraintsProcessor::CannotApplyConstraints(const String& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ApplyConstraintsProcessor::CleanupRequest,
-                                weak_factory_.GetWeakPtr(),
-                                base::BindOnce(&RequestFailed, current_request_,
-                                               blink::WebString(), message)));
+  PostCrossThreadTask(
+      *task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&ApplyConstraintsProcessor::CleanupRequest,
+                          weak_factory_.GetWeakPtr(),
+                          CrossThreadBindOnce(&RequestFailed, current_request_,
+                                              String(), String(message))));
 }
 
 void ApplyConstraintsProcessor::CleanupRequest(
-    base::OnceClosure web_request_callback) {
+    CrossThreadOnceClosure web_request_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!current_request_.IsNull());
   DCHECK(request_completed_cb_);

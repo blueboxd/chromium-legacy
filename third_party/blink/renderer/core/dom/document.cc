@@ -7217,7 +7217,7 @@ void Document::RemoveFromTopLayer(Element* element) {
 HTMLDialogElement* Document::ActiveModalDialog() const {
   for (auto it = top_layer_elements_.rbegin(); it != top_layer_elements_.rend();
        ++it) {
-    if (auto* dialog = ToHTMLDialogElementOrNull(*it->Get()))
+    if (auto* dialog = DynamicTo<HTMLDialogElement>(*it->Get()))
       return dialog;
   }
 

@@ -43,6 +43,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 using content::NavigationEntry;
 using sessions::SerializedNavigationEntry;
@@ -1173,13 +1174,14 @@ TEST_F(SessionServiceTest, TabGroupDefaultsToNone) {
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(1U, windows[0]->tabs.size());
+  ASSERT_EQ(0U, windows[0]->tab_groups.size());
 
   // Verify that the recorded tab has no group.
   sessions::SessionTab* tab = windows[0]->tabs[0].get();
   EXPECT_EQ(base::nullopt, tab->group);
 }
 
-TEST_F(SessionServiceTest, TabGroupIdsSaved) {
+TEST_F(SessionServiceTest, TabGroupsSaved) {
   const auto group1_token = base::Token::CreateRandom();
   const auto group2_token = base::Token::CreateRandom();
   constexpr int kNumTabs = 5;
@@ -1198,10 +1200,50 @@ TEST_F(SessionServiceTest, TabGroupIdsSaved) {
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(kNumTabs, static_cast<int>(windows[0]->tabs.size()));
+  ASSERT_EQ(2U, windows[0]->tab_groups.size());
 
   for (int tab_ndx = 0; tab_ndx < kNumTabs; ++tab_ndx) {
     sessions::SessionTab* tab = windows[0]->tabs[tab_ndx].get();
     EXPECT_EQ(groups[tab_ndx], tab->group);
+  }
+}
+
+TEST_F(SessionServiceTest, TabGroupMetadataSaved) {
+  constexpr int kNumGroups = 2;
+  const std::array<base::Token, kNumGroups> group_ids = {
+      base::Token::CreateRandom(), base::Token::CreateRandom()};
+  const std::array<base::string16, kNumGroups> titles = {
+      base::ASCIIToUTF16("Foo"), base::ASCIIToUTF16("Bar")};
+  const std::array<SkColor, kNumGroups> colors = {SK_ColorBLUE, SK_ColorGREEN};
+
+  // Create |kNumGroups| tab groups, each with one tab.
+  for (int group_ndx = 0; group_ndx < kNumGroups; ++group_ndx) {
+    const SessionID tab_id =
+        CreateTabWithTestNavigationData(window_id, group_ndx);
+    service()->SetTabGroup(window_id, tab_id, group_ids[group_ndx]);
+    service()->SetTabGroupMetadata(window_id, group_ids[group_ndx],
+                                   titles[group_ndx], colors[group_ndx]);
+  }
+
+  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
+  ReadWindows(&windows, nullptr);
+
+  ASSERT_EQ(1U, windows.size());
+  ASSERT_EQ(2U, windows[0]->tabs.size());
+  ASSERT_EQ(2U, windows[0]->tab_groups.size());
+
+  // There's no guaranteed order in |SessionWindow::tab_groups|, so use a map.
+  base::flat_map<base::Token, sessions::SessionTabGroup*> tab_groups;
+  for (int group_ndx = 0; group_ndx < kNumGroups; ++group_ndx) {
+    tab_groups.emplace(windows[0]->tab_groups[group_ndx]->group_id,
+                       windows[0]->tab_groups[group_ndx].get());
+  }
+
+  for (int group_ndx = 0; group_ndx < kNumGroups; ++group_ndx) {
+    const base::Token group_id = group_ids[group_ndx];
+    ASSERT_TRUE(base::Contains(tab_groups, group_id));
+    EXPECT_EQ(titles[group_ndx], tab_groups[group_id]->title);
+    EXPECT_EQ(colors[group_ndx], tab_groups[group_id]->color);
   }
 }
 

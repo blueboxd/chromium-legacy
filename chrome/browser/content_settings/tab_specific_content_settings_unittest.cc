@@ -5,6 +5,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -49,7 +50,6 @@ class TabSpecificContentSettingsTest : public ChromeRenderViewHostTestHarness {
 TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  net::CookieOptions options;
 
   // Check that after initializing, nothing is blocked.
 #if !defined(OS_ANDROID)
@@ -73,8 +73,8 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   // Set a cookie, block access to images, block mediastream access and block a
   // popup.
   GURL origin("http://google.com");
-  std::unique_ptr<net::CanonicalCookie> cookie1(
-      net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
+  std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
+      origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie1);
   web_contents()->OnCookieChange(origin, origin, *cookie1, false);
 #if !defined(OS_ANDROID)
@@ -113,8 +113,8 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   web_contents()->OnCookieChange(origin, origin, *cookie1, false);
 
   // Block a cookie.
-  std::unique_ptr<net::CanonicalCookie> cookie2(
-      net::CanonicalCookie::Create(origin, "C=D", base::Time::Now(), options));
+  std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
+      origin, "C=D", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie2);
   web_contents()->OnCookieChange(origin, origin, *cookie2, true);
   EXPECT_TRUE(
@@ -183,7 +183,6 @@ TEST_F(TabSpecificContentSettingsTest, BlockedFileSystems) {
 TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  net::CookieOptions options;
 
   // Test default settings.
   ASSERT_FALSE(
@@ -199,8 +198,8 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
 
   // Record a cookie.
   GURL origin("http://google.com");
-  std::unique_ptr<net::CanonicalCookie> cookie1(
-      net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
+  std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
+      origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie1);
   web_contents()->OnCookieChange(origin, origin, *cookie1, false);
   ASSERT_TRUE(
@@ -209,8 +208,8 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
       content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 
   // Record a blocked cookie.
-  std::unique_ptr<net::CanonicalCookie> cookie2(
-      net::CanonicalCookie::Create(origin, "C=D", base::Time::Now(), options));
+  std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
+      origin, "C=D", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie2);
   web_contents()->OnCookieChange(origin, origin, *cookie2, true);
   ASSERT_TRUE(
@@ -243,10 +242,9 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
   EXPECT_CALL(mock_observer, OnSiteDataAccessed()).Times(6);
 
   bool blocked_by_policy = false;
-  net::CookieOptions options;
   GURL origin("http://google.com");
-  std::unique_ptr<net::CanonicalCookie> cookie(
-      net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
+  std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+      origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie);
   web_contents()->OnCookieChange(origin, origin, *cookie, blocked_by_policy);
 
@@ -254,7 +252,7 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
   std::unique_ptr<net::CanonicalCookie> other_cookie(
       net::CanonicalCookie::Create(GURL("http://google.com"),
                                    "CookieName=CookieValue", base::Time::Now(),
-                                   net::CookieOptions()));
+                                   base::nullopt /* server_time */));
   ASSERT_TRUE(other_cookie);
 
   cookie_list.push_back(*other_cookie);
@@ -276,9 +274,9 @@ TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainer) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   bool blocked_by_policy = false;
-  auto cookie =
-      net::CanonicalCookie::Create(GURL("http://google.com"), "k=v",
-                                   base::Time::Now(), net::CookieOptions());
+  auto cookie = net::CanonicalCookie::Create(GURL("http://google.com"), "k=v",
+                                             base::Time::Now(),
+                                             base::nullopt /* server_time */);
   web_contents()->OnCookiesRead(GURL("http://google.com"),
                                 GURL("http://google.com"), {*cookie},
                                 blocked_by_policy);
@@ -309,25 +307,25 @@ TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainerCookie) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   bool blocked_by_policy = false;
-  auto cookie1 =
-      net::CanonicalCookie::Create(GURL("http://google.com"), "k1=v",
-                                   base::Time::Now(), net::CookieOptions());
+  auto cookie1 = net::CanonicalCookie::Create(GURL("http://google.com"), "k1=v",
+                                              base::Time::Now(),
+                                              base::nullopt /* server_time */);
   auto cookie2 = net::CanonicalCookie::Create(
       GURL("http://www.google.com"), "k2=v; Domain=google.com",
-      base::Time::Now(), net::CookieOptions());
+      base::Time::Now(), base::nullopt /* server_time */);
   auto cookie3 = net::CanonicalCookie::Create(
       GURL("http://www.google.com"), "k3=v; Domain=.google.com",
-      base::Time::Now(), net::CookieOptions());
+      base::Time::Now(), base::nullopt /* server_time */);
   auto cookie4 = net::CanonicalCookie::Create(
       GURL("http://www.google.com"), "k4=v; Domain=.www.google.com",
-      base::Time::Now(), net::CookieOptions());
+      base::Time::Now(), base::nullopt /* server_time */);
   web_contents()->OnCookiesRead(
       GURL("http://www.google.com"), GURL("http://www.google.com"),
       {*cookie1, *cookie2, *cookie3, *cookie4}, blocked_by_policy);
 
-  auto cookie5 =
-      net::CanonicalCookie::Create(GURL("https://www.google.com"), "k5=v",
-                                   base::Time::Now(), net::CookieOptions());
+  auto cookie5 = net::CanonicalCookie::Create(GURL("https://www.google.com"),
+                                              "k5=v", base::Time::Now(),
+                                              base::nullopt /* server_time */);
   web_contents()->OnCookiesRead(GURL("https://www.google.com"),
                                 GURL("https://www.google.com"), {*cookie5},
                                 blocked_by_policy);

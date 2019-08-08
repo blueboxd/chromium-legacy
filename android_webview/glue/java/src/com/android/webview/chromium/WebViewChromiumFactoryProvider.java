@@ -37,7 +37,7 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
-import org.chromium.android_webview.command_line.CommandLineUtil;
+import org.chromium.android_webview.common.CommandLineUtil;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.BundleUtils;
 import org.chromium.base.CommandLine;

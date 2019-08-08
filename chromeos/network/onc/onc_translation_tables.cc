@@ -151,13 +151,6 @@ const FieldTranslationEntry wifi_fields[] = {
     {::onc::wifi::kTetheringState, shill::kTetheringProperty},
     {nullptr}};
 
-const FieldTranslationEntry wimax_fields[] = {
-    {::onc::wimax::kAutoConnect, shill::kAutoConnectProperty},
-    // This dictionary is converted during translation, see onc_translator_*.
-    // { ::onc::wimax::kEAP, shill::kEap*},
-    {::onc::wimax::kSignalStrength, shill::kSignalStrengthProperty},
-    {nullptr}};
-
 const FieldTranslationEntry cellular_apn_fields[] = {
     {::onc::cellular_apn::kAccessPointName, shill::kApnProperty},
     {::onc::cellular_apn::kName, shill::kApnNameProperty},
@@ -274,8 +267,6 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
     {&kTetherWithStateSignature, tether_fields},
     {&kWiFiSignature, wifi_fields},
     {&kWiFiWithStateSignature, wifi_fields},
-    {&kWiMAXSignature, wimax_fields},
-    {&kWiMAXWithStateSignature, wimax_fields},
     {&kCellularApnSignature, cellular_apn_fields},
     {&kCellularFoundNetworkSignature, cellular_found_network_fields},
     {&kCellularPaymentPortalSignature, cellular_payment_portal_fields},
@@ -314,7 +305,8 @@ const StringTranslationEntry kNetworkTypeTable[] = {
     // kTypeEthernetEap is set in onc_translator_onc_to_shill.cc.
     //  { ::onc::network_type::kEthernet, shill::kTypeEthernetEap },
     {::onc::network_type::kWiFi, shill::kTypeWifi},
-    {::onc::network_type::kWimax, shill::kTypeWimax},
+    // wimax entries are ignored in onc_translator_onc_to_shill.cc.
+    // {::onc::network_type::kWimax, shill::kTypeWimax},
     {::onc::network_type::kCellular, shill::kTypeCellular},
     {::onc::network_type::kVPN, shill::kTypeVPN},
     {::onc::network_type::kTether, kTypeTether},

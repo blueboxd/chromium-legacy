@@ -276,7 +276,6 @@ Polymer({
         ETHERNET: CrOnc.Type.ETHERNET,
         VPN: CrOnc.Type.VPN,
         WI_FI: CrOnc.Type.WI_FI,
-        WI_MAX: CrOnc.Type.WI_MAX,
       },
       readOnly: true
     },
@@ -773,23 +772,6 @@ Polymer({
             CrOnc.Security.WPA_EAP :
             CrOnc.Security.NONE;
         break;
-      case CrOnc.Type.WI_MAX:
-        if (managedProperties.WiMAX) {
-          configProperties.WiMAX = {
-            AutoConnect:
-                /** @type {boolean|undefined} */ (
-                    CrOnc.getActiveValue(managedProperties.WiMAX.AutoConnect)),
-            EAP: Object.assign(
-                {}, CrOnc.getActiveProperties(managedProperties.WiMAX.EAP)),
-          };
-          // WiMAX has no EAP.Outer property, only Identity and Password.
-        } else {
-          configProperties.WiMAX = {
-            AutoConnect: false,
-          };
-        }
-        this.security_ = CrOnc.Security.WPA_EAP;
-        break;
       case CrOnc.Type.VPN:
         if (managedProperties.VPN) {
           const vpn = {
@@ -903,12 +885,6 @@ Polymer({
     }
     const outer = this.eapProperties_.Outer;
     switch (this.type) {
-      case CrOnc.Type.WI_MAX:
-        this.showEap_ = {
-          Identity: true,
-          Password: true,
-        };
-        break;
       case CrOnc.Type.WI_FI:
       case CrOnc.Type.ETHERNET:
         this.showEap_ = {
@@ -942,9 +918,6 @@ Polymer({
       case CrOnc.Type.ETHERNET:
         eap = properties.Ethernet && properties.Ethernet.EAP;
         break;
-      case CrOnc.Type.WI_MAX:
-        eap = properties.WiMAX && properties.WiMAX.EAP;
-        break;
     }
     if (opt_create) {
       return eap || {};
@@ -967,9 +940,6 @@ Polymer({
       case CrOnc.Type.ETHERNET:
         this.set('Ethernet.EAP', eapProperties, this.configProperties_);
         break;
-      case CrOnc.Type.WI_MAX:
-        this.set('WiMAX.EAP', eapProperties, this.configProperties_);
-        break;
     }
     this.set('eapProperties_', eapProperties);
   },
@@ -988,9 +958,6 @@ Polymer({
       case CrOnc.Type.ETHERNET:
         managedEap =
             managedProperties.Ethernet && managedProperties.Ethernet.EAP;
-        break;
-      case CrOnc.Type.WI_MAX:
-        managedEap = managedProperties.WiMAX && managedProperties.WiMAX.EAP;
         break;
     }
     return managedEap || null;
@@ -1304,7 +1271,7 @@ Polymer({
    */
   shareIsVisible_: function(guid, type, managedProperties) {
     return this.getSource_(guid, managedProperties) == CrOnc.Source.NONE &&
-        (type == CrOnc.Type.WI_FI || type == CrOnc.Type.WI_MAX);
+        type == CrOnc.Type.WI_FI;
   },
 
   /**
@@ -1625,8 +1592,7 @@ Polymer({
    * @private
    */
   configRequiresPassphrase_: function(type, security) {
-    // Note: 'Passphrase' is only used by WiFi; Ethernet and WiMAX use
-    // EAP.Password.
+    // Note: 'Passphrase' is only used by WiFi; Ethernet uses EAP.Password.
     return type == CrOnc.Type.WI_FI &&
         (security == CrOnc.Security.WEP_PSK ||
          security == CrOnc.Security.WPA_PSK);

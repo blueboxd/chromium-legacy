@@ -43,10 +43,9 @@ const int kMigrationBubbleGooglePayLogoHeight = 16;
 
 LocalCardMigrationBubbleViews::LocalCardMigrationBubbleViews(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     LocalCardMigrationBubbleController* controller)
-    : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
       controller_(controller) {
   DCHECK(controller);
 }

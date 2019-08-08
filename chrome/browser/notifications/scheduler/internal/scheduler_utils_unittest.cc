@@ -25,7 +25,7 @@ class SchedulerUtilsTest : public testing::Test {
 
   void SetUp() override { config_.initial_daily_shown_per_type = 100; }
 
-  void InitFakeDay() {
+  void InitFakeClock() {
     clock_.SetNow(kFakeNow);
     ToLocalHour(0, clock_.Now(), 0, &beginning_of_today_);
   }
@@ -87,7 +87,7 @@ TEST_F(SchedulerUtilsTest, ToLocalHour) {
 TEST_F(SchedulerUtilsTest, NotificationsShownToday) {
   // Create fake client.
   auto new_client = CreateNewClientState(SchedulerClientType::kTest1, config());
-  InitFakeDay();
+  InitFakeClock();
   base::Time now = clock()->Now();
   // Test case 1:
   int count = NotificationsShownToday(new_client.get(), clock());
@@ -123,5 +123,6 @@ TEST_F(SchedulerUtilsTest, NotificationsShownToday) {
   count = NotificationsShownToday(new_client.get(), clock());
   EXPECT_EQ(count, 2);
 }
+
 }  // namespace
 }  // namespace notifications

@@ -47,7 +47,7 @@ bool TestClipboard::IsFormatAvailable(const ClipboardFormatType& format,
     return IsFormatAvailable(ClipboardFormatType::GetPlainTextType(), type);
 #endif  // OS_LINUX
   const DataStore& store = GetStore(type);
-  return store.data.find(format) != store.data.end();
+  return base::Contains(store.data, format);
 }
 
 void TestClipboard::Clear(ClipboardType type) {

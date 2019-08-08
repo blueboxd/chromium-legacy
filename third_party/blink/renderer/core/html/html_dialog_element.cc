@@ -50,7 +50,7 @@ static void SetFocusForDialog(HTMLDialogElement* dialog) {
   // currently specified.  This may change at any time.
   // See crbug/383230 and https://github.com/whatwg/html/issues/2393 .
   for (Node* node = FlatTreeTraversal::FirstChild(*dialog); node; node = next) {
-    next = IsHTMLDialogElement(*node)
+    next = IsA<HTMLDialogElement>(*node)
                ? FlatTreeTraversal::NextSkippingChildren(*node, dialog)
                : FlatTreeTraversal::Next(*node, dialog);
 

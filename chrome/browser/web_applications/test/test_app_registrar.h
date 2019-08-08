@@ -40,6 +40,7 @@ class TestAppRegistrar : public AppRegistrar {
   // AppRegistrar
   void Init(base::OnceClosure callback) override;
   bool IsInstalled(const AppId& app_id) const override;
+  bool IsLocallyInstalled(const AppId& app_id) const override;
   bool IsLocallyInstalled(const GURL& start_url) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   std::map<AppId, GURL> GetExternallyInstalledApps(
@@ -56,6 +57,7 @@ class TestAppRegistrar : public AppRegistrar {
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
+  base::flat_set<AppId> GetAppIdsForTesting() const override;
 
  private:
   std::map<AppId, AppInfo> installed_apps_;

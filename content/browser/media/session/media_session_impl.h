@@ -120,6 +120,9 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT void OnPlayerPaused(MediaSessionPlayerObserver* observer,
                                      int player_id);
 
+  // Called when the position state of the session might have changed.
+  CONTENT_EXPORT void RebuildAndNotifyMediaPositionChanged();
+
   // Returns if the session is currently active.
   CONTENT_EXPORT bool IsActive() const;
 
@@ -393,6 +396,9 @@ class MediaSessionImpl : public MediaSession,
 
   // The last updated |MediaSessionInfo| that was sent to |observers_|.
   media_session::mojom::MediaSessionInfoPtr session_info_;
+
+  // The last updated |MediaPosition| that was sent to |observers_|.
+  base::Optional<media_session::MediaPosition> position_;
 
   MediaSessionUmaHelper uma_helper_;
 

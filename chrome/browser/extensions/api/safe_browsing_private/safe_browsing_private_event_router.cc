@@ -8,13 +8,18 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
@@ -56,6 +61,30 @@ SafeBrowsingPrivateEventRouter::SafeBrowsingPrivateEventRouter(
     : context_(context) {
   event_router_ = EventRouter::Get(context_);
   InitRealtimeReportingClient();
+}
+
+// TODO(rogerta): once new event types are implemented, will likely want to
+// move this to a more common place.
+base::Value BuildRealtimeReport(Profile* profile, base::Value event) {
+  base::Value context(base::Value::Type::DICTIONARY);
+
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry = nullptr;
+  if (storage.GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
+    context.SetStringPath("profile.profileName", entry->GetName());
+    context.SetStringPath("profile.gaiaEmail", entry->GetUserName());
+  }
+
+  context.SetStringPath("profile.profilePath", profile->GetPath().value());
+  context.SetStringPath("browser.userAgent", GetUserAgent());
+
+  base::Value report(base::Value::Type::DICTIONARY);
+  report.SetKey(policy::RealtimeReportingJobConfiguration::kContextKey,
+                std::move(context));
+  report.SetKey(policy::RealtimeReportingJobConfiguration::kEventKey,
+                std::move(event));
+  return report;
 }
 
 SafeBrowsingPrivateEventRouter::~SafeBrowsingPrivateEventRouter() {}
@@ -242,7 +271,7 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
   if (!identity_manager_)
     return;
 
-  // |device_management_service| may be null in tests.    If there is no device
+  // |device_management_service| may be null in tests.  If there is no device
   // management service don't enable the real-time reporting API since the
   // router won't be able to create the reporting server client below.
   policy::DeviceManagementService* device_management_service =
@@ -300,7 +329,10 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEvent(const char* name,
   wrapper.SetStringKey("time", now_str);
   wrapper.SetKey(name, std::move(event));
 
-  client_->UploadRealtimeReport(std::move(wrapper), base::DoNothing());
+  client_->UploadRealtimeReport(
+      BuildRealtimeReport(Profile::FromBrowserContext(context_),
+                          std::move(wrapper)),
+      base::DoNothing());
 }
 
 std::string SafeBrowsingPrivateEventRouter::GetProfileUserName() {

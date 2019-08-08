@@ -16,6 +16,7 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -314,8 +315,12 @@ ParseResult ParseRedirect(dnr_api::Redirect redirect,
   DCHECK(indexed_rule);
 
   if (redirect.url) {
-    if (!GURL(*redirect.url).is_valid())
+    GURL redirect_url = GURL(*redirect.url);
+    if (!redirect_url.is_valid())
       return ParseResult::ERROR_INVALID_REDIRECT_URL;
+
+    if (redirect_url.SchemeIs(url::kJavaScriptScheme))
+      return ParseResult::ERROR_JAVASCRIPT_REDIRECT;
 
     indexed_rule->redirect_url = std::move(*redirect.url);
     return ParseResult::SUCCESS;
@@ -326,6 +331,10 @@ ParseResult ParseRedirect(dnr_api::Redirect redirect,
       return ParseResult::ERROR_INVALID_EXTENSION_PATH;
 
     GURL redirect_url = base_url.Resolve(*redirect.extension_path);
+
+    // Sanity check that Resolve works as expected.
+    DCHECK_EQ(base_url.GetOrigin(), redirect_url.GetOrigin());
+
     if (!redirect_url.is_valid())
       return ParseResult::ERROR_INVALID_EXTENSION_PATH;
 
@@ -373,8 +382,6 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   }
 
   if (is_redirect_rule) {
-    // TODO(crbug.com/983685): Prevent extensions from specifying redirects to
-    // Javascript urls.
     if (!parsed_rule.action.redirect)
       return ParseResult::ERROR_INVALID_REDIRECT;
 

@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview Polymer element for displaying information about WiFi,
- * WiMAX, or virtual networks.
+ * Cellular, or virtual networks.
  */
 
 (function() {
@@ -402,8 +402,6 @@ Polymer({
         return this.i18n('internetToggleMobileA11yLabel');
       case mojom.NetworkType.kWiFi:
         return this.i18n('internetToggleWiFiA11yLabel');
-      case mojom.NetworkType.kWiMAX:
-        return this.i18n('internetToggleWiMAXA11yLabel');
     }
     assertNotReached();
     return '';

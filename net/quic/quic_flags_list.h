@@ -375,3 +375,13 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_enable_lifo_write_scheduler,
           false)
+
+// When true, remove obsolete functionality intended to test IETF QUIC recovery.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_sent_packet_manager_cleanup,
+          false)
+
+// If true, QUIC will track max ack height in BandwidthSampler.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_track_ack_height_in_bandwidth_sampler,
+          false)

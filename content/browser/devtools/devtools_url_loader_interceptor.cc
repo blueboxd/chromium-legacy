@@ -1039,9 +1039,23 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
     return;
   }
 
+  std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
+  base::Time response_date;
+  base::Optional<base::Time> server_time = base::nullopt;
+  if (headers.GetDateValue(&response_date))
+    server_time = base::make_optional(response_date);
+  base::Time now = base::Time::Now();
+
   const base::StringPiece name("Set-Cookie");
   std::string cookie_line;
   size_t iter = 0;
+  while (headers.EnumerateHeader(&iter, name, &cookie_line)) {
+    std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
+        create_loader_params_->request.url, cookie_line, now, server_time);
+    if (cookie)
+      cookies.emplace_back(std::move(cookie));
+  }
+
   net::CookieOptions options;
   options.set_include_httponly();
   options.set_same_site_cookie_context(
@@ -1050,17 +1064,7 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
           create_loader_params_->request.site_for_cookies,
           create_loader_params_->request.request_initiator));
 
-  std::vector<std::unique_ptr<net::CanonicalCookie>> cookies;
-  base::Time response_date;
-  if (headers.GetDateValue(&response_date))
-    options.set_server_time(response_date);
-  base::Time now = base::Time::Now();
-  while (headers.EnumerateHeader(&iter, name, &cookie_line)) {
-    std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
-        create_loader_params_->request.url, cookie_line, now, options);
-    if (cookie)
-      cookies.emplace_back(std::move(cookie));
-  }
+  // |this| might be deleted here if |cookies| is empty!
   auto on_cookie_set = base::BindRepeating(
       [](base::RepeatingClosure closure,
          net::CanonicalCookie::CookieInclusionStatus) { closure.Run(); },

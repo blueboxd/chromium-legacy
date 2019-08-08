@@ -88,8 +88,6 @@ base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network) {
   }
   if (chromeos::NetworkTypePattern::Ethernet().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET);
-  if (chromeos::NetworkTypePattern::Wimax().MatchesType(type))
-    return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIMAX);
   if (chromeos::NetworkTypePattern::Mobile().MatchesType(type))
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_MOBILE_DATA);
   if (chromeos::NetworkTypePattern::VPN().MatchesType(type))

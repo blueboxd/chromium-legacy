@@ -116,12 +116,14 @@ XRSession::XRSession(
     XRSession::SessionMode mode,
     EnvironmentBlendMode environment_blend_mode,
     bool uses_input_eventing,
-    bool sensorless_session)
+    bool sensorless_session,
+    const WTF::HashSet<XRSessionFeature>& enabled_features)
     : xr_(xr),
       mode_(mode),
       environment_integration_(mode == kModeImmersiveAR),
       world_tracking_state_(MakeGarbageCollected<XRWorldTrackingState>()),
       world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
+      enabled_features_(enabled_features),
       input_sources_(MakeGarbageCollected<XRInputSourceArray>()),
       client_binding_(this, std::move(client_request)),
       input_binding_(this),

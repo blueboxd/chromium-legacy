@@ -377,7 +377,7 @@ void HTMLFormElement::requestSubmit(HTMLElement* submitter,
 
 void HTMLFormElement::SubmitDialog(FormSubmission* form_submission) {
   for (Node* node = this; node; node = node->ParentOrShadowHostNode()) {
-    if (auto* dialog = ToHTMLDialogElementOrNull(*node)) {
+    if (auto* dialog = DynamicTo<HTMLDialogElement>(*node)) {
       dialog->close(form_submission->Result());
       return;
     }

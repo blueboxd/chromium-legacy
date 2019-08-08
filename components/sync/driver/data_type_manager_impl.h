@@ -206,6 +206,13 @@ class DataTypeManagerImpl : public DataTypeManager,
   // |model_association_manager_| was last attempted.
   ModelTypeSet last_enabled_types_;
 
+  // A set of types that should be redownloaded even if initial sync is
+  // completed for them.
+  // TODO(crbug.com/967677): Once all datatypes are in USS, we should redesign
+  // this class and for example compute |downloaded_types_|'s initial value
+  // only after all datatypes have loaded for the first time.
+  ModelTypeSet force_redownload_types_;
+
   // Whether an attempt to reconfigure was made while we were busy configuring.
   // The |last_requested_types_| will reflect the newest set of requested types.
   bool needs_reconfigure_;

@@ -12,8 +12,8 @@
 #import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
 #import "ios/chrome/browser/overlays/public/overlay_user_data.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_ui_state.h"
-#import "ios/chrome/browser/ui/overlays/overlay_ui_dismissal_delegate.h"
 
 @class OverlayRequestCoordinatorFactory;
 @class OverlayContainerCoordinator;
@@ -62,6 +62,7 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   bool IsActive() const override;
   void ShowOverlayUI(OverlayPresenter* presenter,
                      OverlayRequest* request,
+                     OverlayPresentationCallback presentation_callback,
                      OverlayDismissalCallback dismissal_callback) override;
   void HideOverlayUI(OverlayPresenter* presenter,
                      OverlayRequest* request) override;
@@ -102,13 +103,15 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   };
 
   // Helper object that listens for UI dismissal events.
-  class OverlayDismissalHelper : public OverlayUIDismissalDelegate {
+  class OverlayRequestCoordinatorDelegateImpl
+      : public OverlayRequestCoordinatorDelegate {
    public:
-    OverlayDismissalHelper(
+    OverlayRequestCoordinatorDelegateImpl(
         OverlayPresentationContextImpl* presentation_context);
-    ~OverlayDismissalHelper() override;
+    ~OverlayRequestCoordinatorDelegateImpl() override;
 
     // OverlayUIDismissalDelegate:
+    void OverlayUIDidFinishPresentation(OverlayRequest* request) override;
     void OverlayUIDidFinishDismissal(OverlayRequest* request) override;
 
    private:
@@ -119,8 +122,9 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   OverlayPresenter* presenter_ = nullptr;
   // The cleanup helper.
   BrowserShutdownHelper shutdown_helper_;
-  // The UI dismissal helper.
-  OverlayDismissalHelper ui_dismissal_helper_;
+  // The delegate used to intercept presentation/dismissal events from
+  // OverlayRequestCoordinators.
+  OverlayRequestCoordinatorDelegateImpl coordinator_delegate_;
   // The coordinator factory that provides the UI for the overlays at this
   // modality.
   OverlayRequestCoordinatorFactory* coordinator_factory_ = nil;

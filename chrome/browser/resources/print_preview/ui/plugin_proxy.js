@@ -2,40 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
-/**
- * @typedef {{accessibility: Function,
- *            documentLoadComplete: Function,
- *            getHeight: Function,
- *            getHorizontalScrollbarThickness: Function,
- *            getPageLocationNormalized: Function,
- *            getVerticalScrollbarThickness: Function,
- *            getWidth: Function,
- *            getZoomLevel: Function,
- *            goToPage: Function,
- *            grayscale: Function,
- *            loadPreviewPage: Function,
- *            onload: Function,
- *            onPluginSizeChanged: Function,
- *            onScroll: Function,
- *            pageXOffset: Function,
- *            pageYOffset: Function,
- *            reload: Function,
- *            resetPrintPreviewMode: Function,
- *            sendKeyEvent: Function,
- *            setPageNumbers: Function,
- *            setPageXOffset: Function,
- *            setPageYOffset: Function,
- *            setZoomLevel: Function,
- *            fitToHeight: Function,
- *            fitToWidth: Function,
- *            zoomIn: Function,
- *            zoomOut: Function}}
- */
-print_preview.PDFPlugin;
-
 cr.define('print_preview', function() {
   'use strict';
+
+  /**
+   * @typedef {{accessibility: Function,
+   *            documentLoadComplete: Function,
+   *            getHeight: Function,
+   *            getHorizontalScrollbarThickness: Function,
+   *            getPageLocationNormalized: Function,
+   *            getVerticalScrollbarThickness: Function,
+   *            getWidth: Function,
+   *            getZoomLevel: Function,
+   *            goToPage: Function,
+   *            grayscale: Function,
+   *            loadPreviewPage: Function,
+   *            onload: Function,
+   *            onPluginSizeChanged: Function,
+   *            onScroll: Function,
+   *            pageXOffset: Function,
+   *            pageYOffset: Function,
+   *            reload: Function,
+   *            resetPrintPreviewMode: Function,
+   *            sendKeyEvent: Function,
+   *            setPageNumbers: Function,
+   *            setPageXOffset: Function,
+   *            setPageYOffset: Function,
+   *            setZoomLevel: Function,
+   *            fitToHeight: Function,
+   *            fitToWidth: Function,
+   *            zoomIn: Function,
+   *            zoomOut: Function}}
+   */
+  let PDFPlugin;
 
   /**
    * An interface to the PDF plugin.
@@ -185,5 +184,8 @@ cr.define('print_preview', function() {
   let instance = null;
 
   // Export
-  return {PluginProxy: PluginProxy};
+  return {
+    PDFPlugin: PDFPlugin,
+    PluginProxy: PluginProxy,
+  };
 });

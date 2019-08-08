@@ -418,6 +418,7 @@ void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   PrimaryAccountManager::RegisterProfilePrefs(registry);
   AccountFetcherService::RegisterPrefs(registry);
   AccountTrackerService::RegisterPrefs(registry);
+  GaiaCookieManagerService::RegisterPrefs(registry);
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(registry);
 #endif

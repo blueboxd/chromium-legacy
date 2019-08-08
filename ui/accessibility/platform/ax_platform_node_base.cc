@@ -725,9 +725,7 @@ bool AXPlatformNodeBase::IsChildOfLeaf() const {
 
 bool AXPlatformNodeBase::IsInvisibleOrIgnored() const {
   const AXNodeData& data = GetData();
-  return data.HasState(ax::mojom::State::kInvisible) ||
-         data.HasState(ax::mojom::State::kIgnored) ||
-         data.role == ax::mojom::Role::kIgnored;
+  return data.HasState(ax::mojom::State::kInvisible) || ui::IsIgnored(data);
 }
 
 bool AXPlatformNodeBase::IsScrollable() const {

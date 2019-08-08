@@ -89,8 +89,9 @@ class FullCardRequest final : public CardUnmaskDelegate {
   bool IsGettingFullCard() const;
 
   // Called by the payments client when a card has been unmasked.
-  void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
-                       const std::string& real_pan);
+  void OnDidGetRealPan(
+      AutofillClient::PaymentsRpcResult result,
+      payments::PaymentsClient::UnmaskResponseDetails& response_details);
 
   base::TimeTicks form_parsed_timestamp() const {
     return form_parsed_timestamp_;

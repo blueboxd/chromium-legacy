@@ -464,8 +464,12 @@ struct CreateOrUpdateShortcutsParams {
   CreateOrUpdateShortcutsParams(
       base::FilePath profile_path,
       ProfileShortcutManagerWin::CreateOrUpdateMode create_mode,
-      ProfileShortcutManagerWin::NonProfileShortcutAction action)
-      : create_mode(create_mode), action(action), profile_path(profile_path) {}
+      ProfileShortcutManagerWin::NonProfileShortcutAction action,
+      bool single_profile)
+      : create_mode(create_mode),
+        action(action),
+        profile_path(profile_path),
+        single_profile(single_profile) {}
   ~CreateOrUpdateShortcutsParams() {}
 
   ProfileShortcutManagerWin::CreateOrUpdateMode create_mode;
@@ -477,6 +481,11 @@ struct CreateOrUpdateShortcutsParams {
   base::string16 old_profile_name;
   // The new profile name.
   base::string16 profile_name;
+
+  // If true, this is for a shortcut to a single profile, which won't have a
+  // badged icon or the name of profile in the shortcut name.
+  bool single_profile;
+
   // Avatar images for this profile.
   SkBitmap avatar_image_1x;
   SkBitmap avatar_image_2x;
@@ -521,26 +530,28 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
   std::copy_if(desktop_contents.begin(), desktop_contents.end(),
                std::inserter(shortcuts, shortcuts.begin()), filter);
 
-  if (params.old_profile_name != params.profile_name) {
-    RenameChromeDesktopShortcutForProfile(params.old_profile_name,
-                                          params.profile_name, &shortcuts,
+  if (params.old_profile_name != params.profile_name || params.single_profile) {
+    RenameChromeDesktopShortcutForProfile(
+        params.old_profile_name,
+        params.single_profile ? L"" : params.profile_name, &shortcuts,
+        &desktop_contents);
+  }
+  // Rename default named profile shortcuts as well, e.g., Chrome.lnk, by
+  // passing "" for the old profile name.
+  if (params.action ==
+      ProfileShortcutManagerWin::UPDATE_NON_PROFILE_SHORTCUTS) {
+    RenameChromeDesktopShortcutForProfile(L"", params.profile_name, &shortcuts,
                                           &desktop_contents);
   }
 
   ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
   ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
 
-  // Only set the profile-specific properties when |profile_name| is non empty.
-  // If it is empty, it means the shortcut being created should be a regular,
-  // non-profile Chrome shortcut.
-  if (!params.profile_name.empty()) {
-    properties.set_arguments(command_line);
+  // All shortcuts will point to a profile, but only set the shortcut icon
+  // if we're not generating a shortcut in the single profile case.
+  properties.set_arguments(command_line);
+  if (!params.single_profile)
     properties.set_icon(shortcut_icon, 0);
-  } else {
-    // Set the arguments explicitly to the empty string to ensure that
-    // |ShellUtil::CreateOrUpdateShortcut| updates that part of the shortcut.
-    properties.set_arguments(base::string16());
-  }
 
   properties.set_app_id(shell_integration::win::GetChromiumModelIdForProfile(
       params.profile_path));
@@ -552,7 +563,8 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
       shortcuts.empty()) {
     const base::string16 shortcut_name =
         profiles::internal::GetUniqueShortcutFilenameForProfile(
-            params.profile_name, desktop_contents);
+            params.single_profile ? L"" : params.profile_name,
+            desktop_contents);
     shortcuts.insert(base::FilePath(shortcut_name));
     operation = ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL;
   }
@@ -587,8 +599,13 @@ bool ChromeDesktopShortcutsExist(const base::FilePath& chrome_exe) {
 // |ensure_shortcuts_remain| is true, then a regular non-profile shortcut will
 // be created if this function would otherwise delete the last Chrome desktop
 // shortcut(s). File and COM operations must be allowed on the calling thread.
-void DeleteDesktopShortcuts(const base::FilePath& profile_path,
-                            bool ensure_shortcuts_remain) {
+// |default_profile_path| is used to create the command line for the shortcut
+// created if |ensure_shortcuts_remain| is true and the last desktop shortcut
+// was deleted.
+void DeleteDesktopShortcuts(
+    const base::FilePath& profile_path,
+    const base::Optional<base::FilePath>& default_profile_path,
+    bool ensure_shortcuts_remain) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
@@ -615,12 +632,17 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
   }
 
   // If |ensure_shortcuts_remain| is true and deleting this profile caused the
-  // last shortcuts to be removed, re-create a regular non-profile shortcut.
+  // last shortcuts to be removed, re-create a regular single profile shortcut
+  // pointing at the default profile.
   const bool had_shortcuts = !shortcuts.empty();
   if (ensure_shortcuts_remain && had_shortcuts &&
       !ChromeDesktopShortcutsExist(chrome_exe)) {
     ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
     ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
+    if (default_profile_path.has_value()) {
+      properties.set_arguments(profiles::internal::CreateProfileShortcutFlags(
+          default_profile_path.value()));
+    }
     properties.set_shortcut_name(
         profiles::internal::GetShortcutFilenameForProfile(base::string16()));
     ShellUtil::CreateOrUpdateShortcut(
@@ -830,9 +852,9 @@ void ProfileShortcutManagerWin::CreateProfileShortcut(
 
 void ProfileShortcutManagerWin::RemoveProfileShortcuts(
     const base::FilePath& profile_path) {
-  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&DeleteDesktopShortcuts, profile_path, false));
+  base::CreateCOMSTATaskRunnerWithTraits({base::ThreadPool(), base::MayBlock()})
+      ->PostTask(FROM_HERE, base::BindOnce(&DeleteDesktopShortcuts,
+                                           profile_path, base::nullopt, false));
 }
 
 void ProfileShortcutManagerWin::HasProfileShortcuts(
@@ -861,7 +883,7 @@ void ProfileShortcutManagerWin::GetShortcutProperties(
   bool has_entry = storage.GetProfileAttributesWithPath(profile_path, &entry);
   DCHECK(has_entry);
 
-  // The used profile name should be empty if there is only 1 profile.
+  // The shortcut shouldn't include the profile name if there is only 1 profile.
   base::string16 shortcut_profile_name;
   if (storage.GetNumberOfProfiles() > 1u)
     shortcut_profile_name = entry->GetName();
@@ -883,8 +905,9 @@ void ProfileShortcutManagerWin::OnProfileAdded(
   CreateOrUpdateProfileIcon(profile_path);
   if (profile_manager_->GetProfileAttributesStorage().GetNumberOfProfiles() ==
       2u) {
-    // When the second profile is added, make existing non-profile shortcuts
-    // point to the first profile and be badged/named appropriately.
+    // When the second profile is added, make existing non-profile and
+    // non-badged shortcuts point to the first profile and be badged/named
+    // appropriately.
     CreateOrUpdateShortcutsForProfileAtPath(GetOtherProfilePath(profile_path),
                                             UPDATE_EXISTING_ONLY,
                                             UPDATE_NON_PROFILE_SHORTCUTS);
@@ -907,10 +930,16 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
         UPDATE_EXISTING_ONLY, IGNORE_NON_PROFILE_SHORTCUTS);
   }
 
-  base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&DeleteDesktopShortcuts, profile_path,
-                                deleting_down_to_last_profile));
+  base::FilePath first_profile_path;
+  std::vector<ProfileAttributesEntry*> all_profiles =
+      storage.GetAllProfilesAttributes();
+  if (all_profiles.size() > 0)
+    first_profile_path = all_profiles[0]->GetPath();
+
+  base::CreateCOMSTATaskRunnerWithTraits({base::ThreadPool(), base::MayBlock()})
+      ->PostTask(FROM_HERE, base::BindOnce(&DeleteDesktopShortcuts,
+                                           profile_path, first_profile_path,
+                                           deleting_down_to_last_profile));
 }
 
 void ProfileShortcutManagerWin::OnProfileNameChanged(
@@ -951,8 +980,6 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
     NonProfileShortcutAction action) {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CreateOrUpdateShortcutsParams params(profile_path, create_mode, action);
-
   ProfileAttributesStorage& storage =
       profile_manager_->GetProfileAttributesStorage();
   ProfileAttributesEntry* entry;
@@ -960,7 +987,10 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
 
   if (!has_entry)
     return;
-  bool remove_badging = (storage.GetNumberOfProfiles() == 1u);
+  bool remove_badging = storage.GetNumberOfProfiles() == 1u;
+
+  CreateOrUpdateShortcutsParams params(profile_path, create_mode, action,
+                                       /*single_profile=*/remove_badging);
 
   params.old_profile_name = entry->GetShortcutName();
 
@@ -972,7 +1002,13 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
     return;
   }
 
-  if (!remove_badging) {
+  if (remove_badging) {
+    // Only one profile left, so make the shortcut point at it.
+    std::vector<ProfileAttributesEntry*> all_profiles =
+        storage.GetAllProfilesAttributes();
+    if (all_profiles.size() == 1)
+      params.profile_name = all_profiles[0]->GetName();
+  } else {
     params.profile_name = entry->GetName();
 
     // The profile might be using the Gaia avatar, which is not in the

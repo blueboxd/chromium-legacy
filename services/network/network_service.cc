@@ -395,9 +395,9 @@ void NetworkService::StartNetLog(base::File file,
   file_net_log_observer_->StartObserving(net_log_, capture_mode);
 }
 
-void NetworkService::SetSSLKeyLogFile(const base::FilePath& file) {
+void NetworkService::SetSSLKeyLogFile(base::File file) {
   net::SSLClientSocket::SetSSLKeyLogger(
-      std::make_unique<net::SSLKeyLoggerImpl>(file));
+      std::make_unique<net::SSLKeyLoggerImpl>(std::move(file)));
 }
 
 void NetworkService::CreateNetworkContext(

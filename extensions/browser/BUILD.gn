@@ -619,6 +619,7 @@ source_set("unit_tests") {
     "extension_pref_value_map_unittest.cc",
     "extension_registrar_unittest.cc",
     "extension_registry_unittest.cc",
+    "extension_util_unittest.cc",
     "file_highlighter_unittest.cc",
     "file_reader_unittest.cc",
     "image_loader_unittest.cc",

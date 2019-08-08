@@ -325,10 +325,11 @@ class GetUnmaskDetailsRequest : public PaymentsRequest {
 
 class UnmaskCardRequest : public PaymentsRequest {
  public:
-  UnmaskCardRequest(const PaymentsClient::UnmaskRequestDetails& request_details,
-                    const bool full_sync_enabled,
-                    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                                            const std::string&)> callback)
+  UnmaskCardRequest(
+      const PaymentsClient::UnmaskRequestDetails& request_details,
+      const bool full_sync_enabled,
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                              PaymentsClient::UnmaskResponseDetails&)> callback)
       : request_details_(request_details),
         full_sync_enabled_(full_sync_enabled),
         callback_(std::move(callback)) {
@@ -407,22 +408,24 @@ class UnmaskCardRequest : public PaymentsRequest {
 
   void ParseResponse(const base::Value& response) override {
     const auto* pan = response.FindStringKey("pan");
-    real_pan_ = pan ? *pan : std::string();
+    response_details_.real_pan = pan ? *pan : std::string();
   }
 
-  bool IsResponseComplete() override { return !real_pan_.empty(); }
+  bool IsResponseComplete() override {
+    return !response_details_.real_pan.empty();
+  }
 
   void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
-    std::move(callback_).Run(result, real_pan_);
+    std::move(callback_).Run(result, response_details_);
   }
 
  private:
   PaymentsClient::UnmaskRequestDetails request_details_;
   const bool full_sync_enabled_;
   base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                          const std::string&)>
+                          PaymentsClient::UnmaskResponseDetails&)>
       callback_;
-  std::string real_pan_;
+  PaymentsClient::UnmaskResponseDetails response_details_;
 
   DISALLOW_COPY_AND_ASSIGN(UnmaskCardRequest);
 };
@@ -942,6 +945,11 @@ PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails(
 }
 PaymentsClient::UnmaskRequestDetails::~UnmaskRequestDetails() {}
 
+PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails() {}
+PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails(
+    const UnmaskResponseDetails& other) = default;
+PaymentsClient::UnmaskResponseDetails::~UnmaskResponseDetails() {}
+
 PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails() {}
 PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails(
     const OptChangeRequestDetails& other) {
@@ -990,7 +998,7 @@ void PaymentsClient::GetUnmaskDetails(GetUnmaskDetailsCallback callback,
 void PaymentsClient::UnmaskCard(
     const PaymentsClient::UnmaskRequestDetails& request_details,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                            const std::string&)> callback) {
+                            PaymentsClient::UnmaskResponseDetails&)> callback) {
   IssueRequest(
       std::make_unique<UnmaskCardRequest>(
           request_details, account_info_getter_->IsSyncFeatureEnabled(),

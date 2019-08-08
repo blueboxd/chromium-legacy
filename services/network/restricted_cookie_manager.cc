@@ -410,9 +410,9 @@ void RestrictedCookieManager::SetCookieFromString(
     SetCookieFromStringCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  net::CookieOptions options = MakeOptionsForSet(role_, url, site_for_cookies);
   std::unique_ptr<net::CanonicalCookie> parsed_cookie =
-      net::CanonicalCookie::Create(url, cookie, base::Time::Now(), options);
+      net::CanonicalCookie::Create(url, cookie, base::Time::Now(),
+                                   base::nullopt /* server_time */);
   if (!parsed_cookie) {
     std::move(callback).Run();
     return;

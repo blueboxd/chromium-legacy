@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "net/base/filename_util.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -34,8 +35,10 @@ bool BundledExchangesSource::Match(const GURL& url) const {
   if (!IsValid())
     return false;
 
+  GURL request_url = net::SimplifyUrlForRequest(url);
+
   if (!file_path.empty())
-    return MatchByFilePath(url, file_path);
+    return MatchByFilePath(request_url, file_path);
 
   NOTREACHED();
   return false;

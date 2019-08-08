@@ -9,6 +9,7 @@ include_rules = [
   "+net/log",
   "+net/socket",
   "+net/traffic_annotation",
+  "+services/data_decoder/public/mojom",
   "+ui/base/l10n",
   "+third_party/cros_system_api/dbus",
   "+third_party/re2",

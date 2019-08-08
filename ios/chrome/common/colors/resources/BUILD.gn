@@ -32,6 +32,9 @@ group("resources") {
     ":textfield_background_dark_color",
     ":textfield_placeholder_color",
     ":textfield_placeholder_dark_color",
+    ":toolbar_button_color",
+    ":toolbar_button_dark_color",
+    ":toolbar_shadow_color",
   ]
 }
 
@@ -56,6 +59,18 @@ colorset("blue_color") {
 colorset("blue_dark_color") {
   sources = [
     "blue_dark_color.colorset/Contents.json",
+  ]
+}
+
+colorset("close_button_color") {
+  sources = [
+    "close_button_color.colorset/Contents.json",
+  ]
+}
+
+colorset("close_button_dark_color") {
+  sources = [
+    "close_button_dark_color.colorset/Contents.json",
   ]
 }
 
@@ -178,14 +193,21 @@ colorset("textfield_background_dark_color") {
     "textfield_background_dark_color.colorset/Contents.json",
   ]
 }
-colorset("close_button_color") {
+
+colorset("toolbar_button_color") {
   sources = [
-    "close_button_color.colorset/Contents.json",
+    "toolbar_button_color.colorset/Contents.json",
   ]
 }
 
-colorset("close_button_dark_color") {
+colorset("toolbar_button_dark_color") {
   sources = [
-    "close_button_dark_color.colorset/Contents.json",
+    "toolbar_button_dark_color.colorset/Contents.json",
+  ]
+}
+
+colorset("toolbar_shadow_color") {
+  sources = [
+    "toolbar_shadow_color.colorset/Contents.json",
   ]
 }

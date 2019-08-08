@@ -81,6 +81,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
       int render_view_id,
       uint32_t permission_bits,
       bool uses_nonsfi_mode,
+      bool nonsfi_mode_allowed,
       bool off_the_record,
       NaClAppProcessType process_type,
       const base::FilePath& profile_directory);
@@ -230,6 +231,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   std::unique_ptr<content::BrowserChildProcessHost> process_;
 
   bool uses_nonsfi_mode_;
+  bool nonsfi_mode_allowed_;
 
   bool enable_debug_stub_;
   bool enable_crash_throttling_;

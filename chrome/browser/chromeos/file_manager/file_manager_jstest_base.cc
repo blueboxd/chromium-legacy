@@ -4,17 +4,125 @@
 
 #include "chrome/browser/chromeos/file_manager/file_manager_jstest_base.h"
 
+#include "base/lazy_instance.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_controller.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 
+namespace {
+
+// URLDataSource for the test URL chrome://file_manager_test/. It reads files
+// directly from repository source.
+class TestFilesDataSource : public content::URLDataSource {
+ public:
+  TestFilesDataSource() {}
+  ~TestFilesDataSource() override {}
+
+ private:
+  // This has to match kTestResourceURL
+  std::string GetSource() override { return "file_manager_test"; }
+
+  void StartDataRequest(
+      const std::string& path,
+      const content::WebContents::Getter& wc_getter,
+      const content::URLDataSource::GotDataCallback& callback) override {
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+        base::BindOnce(&TestFilesDataSource::ReadFile, base::Unretained(this),
+                       path, callback));
+  }
+
+  void ReadFile(const std::string& path,
+                const content::URLDataSource::GotDataCallback& callback) {
+    if (source_root_.empty()) {
+      CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_));
+    }
+    base::FilePath root =
+        source_root_.Append(FILE_PATH_LITERAL("ui/file_manager"));
+    std::string content;
+
+    base::FilePath file_path =
+        root.Append(base::FilePath::FromUTF8Unsafe(path));
+
+    // Do some basic validation of the file extension.
+    CHECK(file_path.Extension() == ".html" || file_path.Extension() == ".js" ||
+          file_path.Extension() == ".css")
+        << "chrome://file_manager_test/ only supports .html/.js/.css extension "
+           "files";
+
+    CHECK(base::PathExists(file_path)) << file_path.value();
+    CHECK(base::ReadFileToString(file_path, &content)) << file_path.value();
+
+    scoped_refptr<base::RefCountedString> response =
+        base::RefCountedString::TakeString(&content);
+    callback.Run(response.get());
+  }
+
+  // It currently only serves HTML/JS/CSS.
+  std::string GetMimeType(const std::string& path) override {
+    if (base::EndsWith(path, ".html", base::CompareCase::INSENSITIVE_ASCII)) {
+      return "text/html";
+    }
+
+    if (base::EndsWith(path, ".css", base::CompareCase::INSENSITIVE_ASCII)) {
+      return "text/css";
+    }
+
+    CHECK(base::EndsWith(path, ".js", base::CompareCase::INSENSITIVE_ASCII));
+    return "application/javascript";
+  }
+
+  // Root of repository source, where files are served directly from.
+  base::FilePath source_root_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestFilesDataSource);
+};
+
+// WebUIProvider to attach the URLDataSource for the test URL during tests.
+// Used to start the unittest from a chrome:// URL which allows unittest files
+// (HTML/JS/CSS) to load other resources from WebUI URLs chrome://*.
+class TestWebUIProvider
+    : public TestChromeWebUIControllerFactory::WebUIProvider {
+ public:
+  TestWebUIProvider() = default;
+  ~TestWebUIProvider() override = default;
+
+  std::unique_ptr<content::WebUIController> NewWebUI(content::WebUI* web_ui,
+                                                     const GURL& url) override {
+    content::URLDataSource::Add(Profile::FromWebUI(web_ui),
+                                std::make_unique<TestFilesDataSource>());
+    return std::make_unique<content::WebUIController>(web_ui);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestWebUIProvider);
+};
+
+base::LazyInstance<TestWebUIProvider>::DestructorAtExit test_webui_provider_ =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 FileManagerJsTestBase::FileManagerJsTestBase(const base::FilePath& base_path)
     : base_path_(base_path) {}
+
+FileManagerJsTestBase::~FileManagerJsTestBase() {}
+
+const std::string FileManagerJsTestBase::kTestResourceURL =
+    content::GetWebUIURLString("file_manager_test");
 
 void FileManagerJsTestBase::RunTest(const base::FilePath& file) {
   base::FilePath root_path;
@@ -49,4 +157,34 @@ void FileManagerJsTestBase::RunTestImpl(const GURL& url) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
   EXPECT_TRUE(ExecuteWebUIResourceTest(web_contents, {}));
+}
+
+void FileManagerJsTestBase::SetUpOnMainThread() {
+  InProcessBrowserTest::SetUpOnMainThread();
+
+  content::WebUIControllerFactory::UnregisterFactoryForTesting(
+      ChromeWebUIControllerFactory::GetInstance());
+
+  webui_controller_factory_ =
+      std::make_unique<TestChromeWebUIControllerFactory>();
+  content::WebUIControllerFactory::RegisterFactory(
+      webui_controller_factory_.get());
+  webui_controller_factory_->AddFactoryOverride(GURL(kTestResourceURL).host(),
+                                                test_webui_provider_.Pointer());
+}
+
+void FileManagerJsTestBase::TearDownOnMainThread() {
+  InProcessBrowserTest::TearDownOnMainThread();
+
+  webui_controller_factory_->RemoveFactoryOverride(
+      GURL(kTestResourceURL).host());
+  content::WebUIControllerFactory::UnregisterFactoryForTesting(
+      webui_controller_factory_.get());
+
+  // This is needed to avoid a debug assert after the test completes, see stack
+  // trace in http://crrev.com/179347
+  content::WebUIControllerFactory::RegisterFactory(
+      ChromeWebUIControllerFactory::GetInstance());
+
+  webui_controller_factory_.reset();
 }

@@ -12,6 +12,7 @@ class ServiceFactory;
 // Helpers to run out-of-process services in a dedicated utility process. All
 // out-of-process services will need to have their implementation hooked up in
 // one of these helpers.
+mojo::ServiceFactory* GetElevatedMainThreadServiceFactory();
 mojo::ServiceFactory* GetMainThreadServiceFactory();
 mojo::ServiceFactory* GetIOThreadServiceFactory();
 

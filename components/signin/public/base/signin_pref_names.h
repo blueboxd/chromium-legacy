@@ -30,6 +30,7 @@ extern const char kSigninAllowed[];
 extern const char kTokenServiceDiceCompatible[];
 extern const char kTokenServiceExcludeAllSecondaryAccounts[];
 extern const char kTokenServiceExcludedSecondaryAccounts[];
+extern const char kGaiaCookieLastListAccountsData[];
 
 }  // namespace prefs
 

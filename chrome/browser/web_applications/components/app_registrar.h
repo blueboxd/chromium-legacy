@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 #include "base/observer_list.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -39,6 +40,9 @@ class AppRegistrar {
 
   // Returns true if the app with |app_id| is currently installed.
   virtual bool IsInstalled(const AppId& app_id) const = 0;
+
+  // Returns true if the app with |app_id| is currently fully locally installed.
+  virtual bool IsLocallyInstalled(const AppId& app_id) const = 0;
 
   // Returns true if the app with the specified |start_url| is currently fully
   // locally installed. The provided |start_url| must exactly match the launch
@@ -90,6 +94,8 @@ class AppRegistrar {
   void RemoveObserver(const AppRegistrarObserver* observer);
 
   void NotifyWebAppInstalled(const AppId& app_id);
+
+  virtual base::flat_set<AppId> GetAppIdsForTesting() const = 0;
 
  protected:
   Profile* profile() const { return profile_; }

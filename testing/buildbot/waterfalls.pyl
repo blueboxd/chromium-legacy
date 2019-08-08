@@ -1720,6 +1720,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'bfcache_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'linux-blink-animation-use-time-delta': {
@@ -1809,7 +1810,7 @@
       },
       'linux-chromium-tests-staging-tests': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -3777,7 +3778,7 @@
       },
       'Linux Swarm': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_linux_gtests',

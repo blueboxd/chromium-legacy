@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_impl.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -15,6 +16,8 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace performance_manager {
+
+class GraphImpl;
 
 SiteDataCacheFacade::SiteDataCacheFacade(
     content::BrowserContext* browser_context)
@@ -45,10 +48,11 @@ void SiteDataCacheFacade::IsDataCacheRecordingForTesting(
 void SiteDataCacheFacade::WaitUntilCacheInitializedForTesting() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::RunLoop run_loop;
-  SiteDataCacheFactory::GetInstance()->task_runner_for_testing()->PostTask(
-      FROM_HERE, base::Bind(
+  PerformanceManager::GetInstance()->CallOnGraph(
+      FROM_HERE, base::BindOnce(
                      [](base::OnceClosure quit_closure,
-                        const std::string browser_context_id) {
+                        const std::string& browser_context_id,
+                        GraphImpl* graph_unused) {
                        auto* cache = SiteDataCacheFactory::GetInstance()
                                          ->GetDataCacheForBrowserContext(
                                              browser_context_id);

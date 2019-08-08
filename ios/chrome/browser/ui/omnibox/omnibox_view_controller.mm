@@ -68,12 +68,12 @@ const CGFloat kClearButtonSize = 28.0f;
   UIColor* iconTintColor;
   if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
     iconTintColor = color::IncognitoDynamicColor(
-        self.incognito, [UIColor colorNamed:@"tab_toolbar_button_color"],
-        [UIColor colorNamed:@"tab_toolbar_button_color_incognito"]);
+        self.incognito, [UIColor colorNamed:kToolbarButtonColor],
+        [UIColor colorNamed:kToolbarButtonDarkColor]);
   } else {
     iconTintColor = color::IncognitoDynamicColor(
-        self.incognito, [UIColor colorNamed:@"tab_toolbar_button_color"],
-        [UIColor colorNamed:@"tab_toolbar_button_color_incognito"]);
+        self.incognito, [UIColor colorNamed:kToolbarButtonColor],
+        [UIColor colorNamed:kToolbarButtonDarkColor]);
   }
 
   self.view = [[OmniboxContainerView alloc]

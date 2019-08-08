@@ -10,6 +10,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/web_package/bundled_exchanges_reader.h"
+#include "content/browser/web_package/bundled_exchanges_url_loader_factory.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -18,11 +19,40 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
 
 namespace {
+
+const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("bundled_exchanges_start_url_loader",
+                                        R"(
+  semantics {
+    sender: "BundledExchanges primary_url Loader"
+    description:
+      "Navigation request for the primary_url provided by a BundledExchanges "
+      "that is requested by the user. This does not trigger any network "
+      "transaction directly, but access to an entry in a local file, or in a "
+      "previously fetched resource over network."
+    trigger: "The user navigates to a BundledExchanges."
+    data: "Nothing."
+    destination: LOCAL
+  }
+  policy {
+    cookies_allowed: NO
+    setting: "These requests cannot be disabled in settings."
+    policy_exception_justification:
+      "Not implemented. This request does not make any network transaction."
+  }
+  comments:
+    "Usually the request accesses an entry in a local file that contains "
+    "multiple archived entries. But once the feature is exposed to the public "
+    "web API, the archive file can be streamed over network. In such case, the "
+    "streaming should be provided by another URLLoader request that is issued "
+    "by Blink, but based on a user initiated navigation."
+  )");
 
 // A class to inherit NavigationLoaderInterceptor for the navigation to a
 // BundledExchanges.
@@ -141,16 +171,20 @@ std::unique_ptr<NavigationLoaderInterceptor>
 BundledExchangesHandle::CreateInterceptor() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return std::make_unique<Interceptor>(
-      base::BindRepeating(&BundledExchangesHandle::CreatePrimaryURLLoader,
-                          weak_factory_.GetWeakPtr()));
+      source_.IsValid()
+          ? base::BindRepeating(&BundledExchangesHandle::CreatePrimaryURLLoader,
+                                weak_factory_.GetWeakPtr())
+          : base::NullCallback());
 }
 
 void BundledExchangesHandle::CreateURLLoaderFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(url_loader_factory_);
 
-  NOTIMPLEMENTED();
+  url_loader_factory_->SetFallbackFactory(std::move(fallback_factory));
+  url_loader_factory_->Clone(std::move(receiver));
 }
 
 void BundledExchangesHandle::CreatePrimaryURLLoader(
@@ -160,10 +194,12 @@ void BundledExchangesHandle::CreatePrimaryURLLoader(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Check if this is the initial request to the BundledExchanges itself, or
-  // subsequent requests to the main exchange in the BundledExchanges.
-  if (!is_redirected_ && source_.Match(resource_request.url)) {
-    // This is the initial request to the BundledExchanges.
+  // subsequent requests to the primary exchange in the BundledExchanges.
+  if (!is_redirected_) {
+    DCHECK(source_.Match(resource_request.url));
     DCHECK(!redirect_loader_);
+
+    // This is the initial request to the BundledExchanges.
     is_redirected_ = true;
     auto redirect_loader =
         std::make_unique<BundledExchangesHandle::PrimaryURLRedirectLoader>(
@@ -176,7 +212,12 @@ void BundledExchangesHandle::CreatePrimaryURLLoader(
         mojo::PendingReceiver<network::mojom::URLLoader>(std::move(request)));
     MayRedirectPrimaryURLLoader();
   } else {
-    // TODO(crbug.com/966753): Implement.
+    DCHECK(url_loader_factory_);
+
+    url_loader_factory_->CreateLoaderAndStart(
+        std::move(request), /*routing_id=*/0, /*request_id=*/0, /*options=*/0,
+        resource_request, std::move(client),
+        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
   }
 }
 
@@ -196,9 +237,14 @@ void BundledExchangesHandle::MayRedirectPrimaryURLLoader() {
 void BundledExchangesHandle::OnMetadataReady(
     data_decoder::mojom::BundleMetadataParseErrorPtr error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!url_loader_factory_);
 
   primary_url_ = std::move(reader_->GetPrimaryURL());
   metadata_error_ = std::move(error);
+
+  url_loader_factory_ =
+      std::make_unique<BundledExchangesURLLoaderFactory>(std::move(reader_));
+
   MayRedirectPrimaryURLLoader();
 }
 

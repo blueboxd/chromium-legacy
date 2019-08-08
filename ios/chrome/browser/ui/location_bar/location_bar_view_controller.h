@@ -36,11 +36,15 @@
 // the omnibox textfield is displayed; in the non-editing state, the current
 // location is displayed.
 @interface LocationBarViewController
-    : UIViewController <BadgeConsumer, FullscreenUIElement, LocationBarAnimatee>
+    : UIViewController <FullscreenUIElement, LocationBarAnimatee>
 
 // Sets the edit view to use in the editing state. This must be set before the
 // view of this view controller is initialized. This must only be called once.
 - (void)setEditView:(UIView*)editView;
+
+// Sets the badge view to display badges. This must be set before the
+// view of this view controller is initialized. This must only be called once.
+- (void)setBadgeView:(UIView*)badgeView;
 
 @property(nonatomic, assign) BOOL incognito;
 
@@ -77,16 +81,6 @@
 - (void)updateForNTP:(BOOL)isNTP;
 // Sets |enabled| of the share button.
 - (void)setShareButtonEnabled:(BOOL)enabled;
-// Displays or hides the InfobarButton. |metricsRecorder| can be nil.
-// TODO(crbug.com/935804): This method is currently only being used in the
-// Infobar redesign.
-- (void)displayInfobarButton:(BOOL)display
-             metricsRecorder:(InfobarMetricsRecorder*)metricsRecorder;
-// If |active| is YES applies the active styling to the InfobarButton, if NO it
-// removes it.
-// TODO(crbug.com/935804): This method is currently only being used in the
-// Infobar redesign.
-- (void)setInfobarButtonStyleActive:(BOOL)active;
 
 // Displays the voice search button instead of the share button in steady state,
 // and adds the voice search button to the empty textfield.

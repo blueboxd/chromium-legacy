@@ -19,8 +19,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 namespace image_writer {
@@ -102,16 +100,13 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
   const std::string& error() const { return error_; }
 
  private:
-  void SetUpOnMainThread() override {
-    connector_ = content::GetSystemConnector()->Clone();
-  }
-
   void StartWriteTest() {
     DCHECK(IsRunningInCorrectSequence());
 
-    if (!image_writer_utility_client_)
+    if (!image_writer_utility_client_) {
       image_writer_utility_client_ =
-          new ImageWriterUtilityClient(GetTaskRunner(), std::move(connector_));
+          new ImageWriterUtilityClient(GetTaskRunner());
+    }
     success_ = false;
     progress_ = 0;
 
@@ -156,9 +151,10 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
   void StartVerifyTest() {
     DCHECK(IsRunningInCorrectSequence());
 
-    if (!image_writer_utility_client_)
+    if (!image_writer_utility_client_) {
       image_writer_utility_client_ =
-          new ImageWriterUtilityClient(GetTaskRunner(), std::move(connector_));
+          new ImageWriterUtilityClient(GetTaskRunner());
+    }
     success_ = false;
     progress_ = 0;
 
@@ -255,7 +251,6 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
   bool cancel_ = false;
   std::string error_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  std::unique_ptr<service_manager::Connector> connector_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageWriterUtilityClientTest);
 };

@@ -88,7 +88,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
   friend class AXPlatformNodeTextRangeProviderTest;
   friend class AXPlatformNodeTextProviderTest;
-  base::string16 GetString();
+  base::string16 GetString(int max_count);
   AXPlatformNodeWin* owner() const;
   AXPlatformNodeDelegate* GetDelegate(
       const AXPositionInstanceType* position) const;
@@ -115,6 +115,10 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
                                              const bool is_start_endpoint,
                                              const int count,
                                              int* count_moved);
+  AXPositionInstance MoveEndpointByPage(const AXPositionInstance& endpoint,
+                                        const bool is_start_endpoint,
+                                        const int count,
+                                        int* count_moved);
   AXPositionInstance MoveEndpointByFormat(const AXPositionInstance& endpoint,
                                           const int count,
                                           int* units_moved);

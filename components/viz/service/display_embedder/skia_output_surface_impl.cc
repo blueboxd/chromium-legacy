@@ -20,8 +20,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/resource_metadata.h"
-#include "components/viz/service/display_embedder/image_context.h"
+#include "components/viz/service/display_embedder/image_context_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl_on_gpu.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
@@ -39,8 +38,8 @@ namespace {
 
 sk_sp<SkPromiseImageTexture> Fulfill(void* texture_context) {
   DCHECK(texture_context);
-  auto* image_context = static_cast<ImageContext*>(texture_context);
-  return image_context->promise_image_texture;
+  auto* image_context = static_cast<ImageContextImpl*>(texture_context);
+  return image_context->promise_image_texture();
 }
 
 void DoNothing(void* texture_context) {}
@@ -88,36 +87,25 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   recorder_.reset();
 
-  std::vector<std::unique_ptr<ImageContext>> image_contexts;
-  image_contexts.reserve(promise_image_cache_.size());
-  for (auto& id_and_image_context : promise_image_cache_) {
-    id_and_image_context.second->image = nullptr;
-    image_contexts.push_back(std::move(id_and_image_context.second));
-  }
-
-  std::vector<std::unique_ptr<ImageContext>> render_pass_image_contexts;
+  std::vector<std::unique_ptr<ImageContextImpl>> render_pass_image_contexts;
   render_pass_image_contexts.reserve(render_pass_image_cache_.size());
   for (auto& id_and_image_context : render_pass_image_cache_) {
-    id_and_image_context.second->image = nullptr;
+    id_and_image_context.second->clear_image();
     render_pass_image_contexts.push_back(
         std::move(id_and_image_context.second));
   }
 
   base::WaitableEvent event;
   auto callback = base::BindOnce(
-      [](std::vector<std::unique_ptr<ImageContext>> images,
-         std::vector<std::unique_ptr<ImageContext>> render_passes,
+      [](std::vector<std::unique_ptr<ImageContextImpl>> render_passes,
          std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu,
          base::WaitableEvent* event) {
-        if (!images.empty())
-          impl_on_gpu->ReleaseImageContexts(std::move(images));
         if (!render_passes.empty())
           impl_on_gpu->RemoveRenderPassResource(std::move(render_passes));
         impl_on_gpu = nullptr;
         event->Signal();
       },
-      std::move(image_contexts), std::move(render_pass_image_contexts),
-      std::move(impl_on_gpu_), &event);
+      std::move(render_pass_image_contexts), std::move(impl_on_gpu_), &event);
   ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
   event.Wait();
 
@@ -161,7 +149,8 @@ void SkiaOutputSurfaceImpl::DiscardBackbuffer() {
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::DiscardBackbuffer,
                                  base::Unretained(impl_on_gpu_.get()));
-  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
+  task_sequence_->ScheduleOrRetainTask(std::move(callback),
+                                       std::vector<gpu::SyncToken>());
 }
 
 void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
@@ -243,77 +232,63 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   return &nway_canvas_.value();
 }
 
-sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImage(
-    const ResourceMetadata& metadata) {
+void SkiaOutputSurfaceImpl::MakePromiseSkImage(ImageContext* image_context) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
-  DCHECK(!metadata.mailbox_holder.mailbox.IsZero());
+  DCHECK(!image_context->mailbox_holder().mailbox.IsZero());
+  DCHECK(!image_context->has_image());
 
-  auto& image_context = promise_image_cache_[metadata.resource_id];
-  if (!image_context) {
-    image_context = std::make_unique<ImageContext>(metadata);
-    SkColorType color_type = ResourceFormatToClosestSkColorType(
-        true /* gpu_compositing */, metadata.resource_format);
+  SkColorType color_type = ResourceFormatToClosestSkColorType(
+      true /* gpu_compositing */, image_context->resource_format());
+  GrBackendFormat backend_format = GetGrBackendFormatForTexture(
+      image_context->resource_format(),
+      image_context->mailbox_holder().texture_target,
+      image_context->ycbcr_info());
+  image_context->set_image(recorder_->makePromiseTexture(
+      backend_format, image_context->size().width(),
+      image_context->size().height(), GrMipMapped::kNo, image_context->origin(),
+      color_type, image_context->alpha_type(), image_context->color_space(),
+      Fulfill /* fulfillProc */, DoNothing /* releaseProc */,
+      DoNothing /* doneProc */, image_context /* context */));
 
-    GrBackendFormat backend_format = GetGrBackendFormatForTexture(
-        metadata.resource_format, metadata.mailbox_holder.texture_target,
-        metadata.ycbcr_info);
-    image_context->image = recorder_->makePromiseTexture(
-        backend_format, metadata.size.width(), metadata.size.height(),
-        GrMipMapped::kNo, metadata.origin, color_type, metadata.alpha_type,
-        image_context->color_space, Fulfill, DoNothing, DoNothing,
-        image_context.get());
-    DCHECK(image_context->image);
+  if (image_context->mailbox_holder().sync_token.HasData()) {
+    resource_sync_tokens_.push_back(image_context->mailbox_holder().sync_token);
+    image_context->mutable_mailbox_holder()->sync_token.Clear();
   }
-
-  if (image_context->sync_token.HasData()) {
-    resource_sync_tokens_.push_back(image_context->sync_token);
-    image_context->sync_token.Clear();
-  }
-  images_in_current_paint_.push_back(image_context.get());
-
-  return image_context->image;
+  images_in_current_paint_.push_back(
+      static_cast<ImageContextImpl*>(image_context));
 }
 
 sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
-    const std::vector<ResourceMetadata>& metadatas,
+    const std::vector<ImageContext*>& contexts,
     SkYUVColorSpace yuv_color_space,
     sk_sp<SkColorSpace> dst_color_space,
     bool has_alpha) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);
-  DCHECK((has_alpha && (metadatas.size() == 3 || metadatas.size() == 4)) ||
-         (!has_alpha && (metadatas.size() == 2 || metadatas.size() == 3)));
+  DCHECK((has_alpha && (contexts.size() == 3 || contexts.size() == 4)) ||
+         (!has_alpha && (contexts.size() == 2 || contexts.size() == 3)));
 
   SkYUVAIndex indices[4];
-  PrepareYUVATextureIndices(metadatas, has_alpha, indices);
+  PrepareYUVATextureIndices(contexts, has_alpha, indices);
 
   GrBackendFormat formats[4] = {};
   SkISize yuva_sizes[4] = {};
   SkDeferredDisplayListRecorder::PromiseImageTextureContext
       texture_contexts[4] = {};
-  for (size_t i = 0; i < metadatas.size(); ++i) {
-    const auto& metadata = metadatas[i];
-    DCHECK(metadata.origin == kTopLeft_GrSurfaceOrigin);
+  for (size_t i = 0; i < contexts.size(); ++i) {
+    auto* context = static_cast<ImageContextImpl*>(contexts[i]);
+    DCHECK(context->origin() == kTopLeft_GrSurfaceOrigin);
     formats[i] = GetGrBackendFormatForTexture(
-        metadata.resource_format, metadata.mailbox_holder.texture_target);
-    yuva_sizes[i].set(metadata.size.width(), metadata.size.height());
-    auto& image_context = promise_image_cache_[metadata.resource_id];
-    if (!image_context) {
-      // color_space is ignored by makeYUVAPromiseTexture below. Passing nullptr
-      // removes some LOG spam.
-      image_context = std::make_unique<ImageContext>(
-          metadata.mailbox_holder.mailbox, metadata.size,
-          metadata.resource_format, nullptr /* color_space */,
-          metadata.alpha_type, metadata.origin,
-          metadata.mailbox_holder.sync_token);
+        context->resource_format(), context->mailbox_holder().texture_target);
+    yuva_sizes[i].set(context->size().width(), context->size().height());
+
+    if (context->mailbox_holder().sync_token.HasData()) {
+      resource_sync_tokens_.push_back(context->mailbox_holder().sync_token);
+      context->mutable_mailbox_holder()->sync_token.Clear();
     }
-    if (image_context->sync_token.HasData()) {
-      resource_sync_tokens_.push_back(image_context->sync_token);
-      image_context->sync_token.Clear();
-    }
-    images_in_current_paint_.push_back(image_context.get());
-    texture_contexts[i] = image_context.get();
+    images_in_current_paint_.push_back(context);
+    texture_contexts[i] = context;
   }
 
   auto image = recorder_->makeYUVAPromiseTexture(
@@ -324,22 +299,8 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
   return image;
 }
 
-void SkiaOutputSurfaceImpl::ReleaseCachedResources(
-    const std::vector<ResourceId>& ids) {
-  if (ids.empty())
-    return;
-
-  std::vector<std::unique_ptr<ImageContext>> image_contexts;
-  for (auto id : ids) {
-    auto it = promise_image_cache_.find(id);
-    if (it == promise_image_cache_.end())
-      continue;
-    auto& image_context = it->second;
-    image_context->image = nullptr;
-    image_contexts.push_back(std::move(image_context));
-    promise_image_cache_.erase(it);
-  }
-
+void SkiaOutputSurfaceImpl::ReleaseImageContexts(
+    std::vector<std::unique_ptr<ImageContext>> image_contexts) {
   if (image_contexts.empty())
     return;
 
@@ -350,6 +311,15 @@ void SkiaOutputSurfaceImpl::ReleaseCachedResources(
       base::Unretained(impl_on_gpu_.get()), std::move(image_contexts));
   task_sequence_->ScheduleOrRetainTask(std::move(callback),
                                        std::vector<gpu::SyncToken>());
+}
+
+std::unique_ptr<ExternalUseClient::ImageContext>
+SkiaOutputSurfaceImpl::CreateImageContext(const gpu::MailboxHolder& holder,
+                                          const gfx::Size& size,
+                                          ResourceFormat format,
+                                          sk_sp<SkColorSpace> color_space) {
+  return std::make_unique<ImageContextImpl>(holder, size, format,
+                                            std::move(color_space));
 }
 
 void SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame) {
@@ -428,7 +398,7 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
       // We are going to overwrite the render pass, so we need reset the
       // image_context, so a new promise image will be created when the
       // MakePromiseSkImageFromRenderPass() is called.
-      it->second->image = nullptr;
+      it->second->clear_image();
     }
     DCHECK(!on_finished);
     callback = base::BindOnce(
@@ -460,24 +430,24 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
 
   auto& image_context = render_pass_image_cache_[id];
   if (!image_context) {
-    image_context = std::make_unique<ImageContext>(id, size, format, mipmap,
-                                                   std::move(color_space));
+    image_context = std::make_unique<ImageContextImpl>(id, size, format, mipmap,
+                                                       std::move(color_space));
   }
-  if (!image_context->image) {
+  if (!image_context->has_image()) {
     SkColorType color_type =
         ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
     GrBackendFormat backend_format =
         GetGrBackendFormatForTexture(format, GL_TEXTURE_2D);
-    image_context->image = recorder_->makePromiseTexture(
-        backend_format, image_context->size.width(),
-        image_context->size.height(), image_context->mipmap,
-        image_context->origin, color_type, image_context->alpha_type,
-        image_context->color_space, Fulfill, DoNothing, DoNothing,
-        image_context.get());
-    DCHECK(image_context->image);
+    image_context->set_image(recorder_->makePromiseTexture(
+        backend_format, image_context->size().width(),
+        image_context->size().height(), image_context->mipmap(),
+        image_context->origin(), color_type, image_context->alpha_type(),
+        image_context->color_space(), Fulfill, DoNothing, DoNothing,
+        image_context.get()));
+    DCHECK(image_context->has_image());
   }
   images_in_current_paint_.push_back(image_context.get());
-  return image_context->image;
+  return image_context->image();
 }
 
 void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
@@ -485,14 +455,14 @@ void SkiaOutputSurfaceImpl::RemoveRenderPassResource(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!ids.empty());
 
-  std::vector<std::unique_ptr<ImageContext>> image_contexts;
+  std::vector<std::unique_ptr<ImageContextImpl>> image_contexts;
   image_contexts.reserve(ids.size());
   for (const auto id : ids) {
     auto it = render_pass_image_cache_.find(id);
     // If the render pass was only used for a copy request, there won't be a
     // matching entry in |render_pass_image_cache_|.
     if (it != render_pass_image_cache_.end()) {
-      it->second->image = nullptr;
+      it->second->clear_image();
       image_contexts.push_back(std::move(it->second));
       render_pass_image_cache_.erase(it);
     }
@@ -752,14 +722,13 @@ void SkiaOutputSurfaceImpl::RemoveContextLostObserver(
 }
 
 void SkiaOutputSurfaceImpl::PrepareYUVATextureIndices(
-    const std::vector<ResourceMetadata>& metadatas,
+    const std::vector<ImageContext*>& contexts,
     bool has_alpha,
     SkYUVAIndex indices[4]) {
-  DCHECK((has_alpha && (metadatas.size() == 3 || metadatas.size() == 4)) ||
-         (!has_alpha && (metadatas.size() == 2 || metadatas.size() == 3)));
+  DCHECK((has_alpha && (contexts.size() == 3 || contexts.size() == 4)) ||
+         (!has_alpha && (contexts.size() == 2 || contexts.size() == 3)));
 
-  bool uv_interleaved =
-      has_alpha ? metadatas.size() == 3 : metadatas.size() == 2;
+  bool uv_interleaved = has_alpha ? contexts.size() == 3 : contexts.size() == 2;
 
   indices[SkYUVAIndex::kY_Index].fIndex = 0;
   indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;

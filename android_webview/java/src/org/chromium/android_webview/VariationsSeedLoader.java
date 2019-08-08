@@ -14,6 +14,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.SystemClock;
 
+import org.chromium.android_webview.common.variations.VariationsUtils;
 import org.chromium.android_webview.services.IVariationsSeedServer;
 import org.chromium.android_webview.services.VariationsSeedServer;
 import org.chromium.base.ContextUtils;

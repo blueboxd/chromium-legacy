@@ -94,6 +94,20 @@ class PaymentsClient {
     base::Value fido_assertion_info;
   };
 
+  // Information retrieved from an UnmaskRequest.
+  struct UnmaskResponseDetails {
+    UnmaskResponseDetails();
+    UnmaskResponseDetails(const UnmaskResponseDetails& other);
+    ~UnmaskResponseDetails();
+
+    UnmaskResponseDetails& with_real_pan(std::string r) {
+      real_pan = r;
+      return *this;
+    }
+
+    std::string real_pan;
+  };
+
   // Information required to either opt-in or opt-out a user for FIDO
   // Authentication.
   struct OptChangeRequestDetails {
@@ -186,7 +200,7 @@ class PaymentsClient {
   // The user has attempted to unmask a card with the given cvc.
   void UnmaskCard(const UnmaskRequestDetails& request_details,
                   base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                                          const std::string&)> callback);
+                                          UnmaskResponseDetails&)> callback);
 
   // Opts-in or opts-out the user to use FIDO authentication for card unmasking
   // on this device.

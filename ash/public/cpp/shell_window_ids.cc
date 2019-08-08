@@ -40,7 +40,7 @@ constexpr std::array<int, 6> kPostDesksActivatableContainersIds = {
     // to be focused before these elements.
     kShellWindowId_PipContainer,
     kShellWindowId_ShelfContainer,
-    kShellWindowId_ShelfNavigationContainer,
+    kShellWindowId_ShelfControlContainer,
     kShellWindowId_ShelfBubbleContainer,
     kShellWindowId_StatusContainer,
 };

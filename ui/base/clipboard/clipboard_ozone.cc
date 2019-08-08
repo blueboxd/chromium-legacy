@@ -97,7 +97,7 @@ class ClipboardOzone::AsyncClipboardOzone {
   }
 
   void InsertData(std::vector<uint8_t> data, const std::string& mime_type) {
-    DCHECK(offered_data_.find(mime_type) == offered_data_.end());
+    DCHECK(!base::Contains(offered_data_, mime_type));
     offered_data_[mime_type] = std::move(data);
   }
 

@@ -9,7 +9,7 @@ import android.os.HandlerThread;
 import android.os.ParcelFileDescriptor;
 import android.support.annotation.VisibleForTesting;
 
-import org.chromium.android_webview.VariationsUtils;
+import org.chromium.android_webview.common.variations.VariationsUtils;
 import org.chromium.base.Log;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 

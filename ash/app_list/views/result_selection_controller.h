@@ -26,6 +26,7 @@ using ResultSelectionModel = std::vector<SearchResultContainerView*>;
 // including both inter- and intra-container details, along with the traversal
 // direction for the container.
 struct APP_LIST_EXPORT ResultLocationDetails {
+  ResultLocationDetails();
   ResultLocationDetails(int container_index,
                         int container_count,
                         int result_index,
@@ -60,6 +61,22 @@ struct APP_LIST_EXPORT ResultLocationDetails {
 // A controller class to manage result selection across containers.
 class APP_LIST_EXPORT ResultSelectionController {
  public:
+  enum class MoveResult {
+    // The selection has not changed (excluding the case covered by
+    // kSelectionCycleRejected).
+    kNone,
+
+    // The selection has not changed because the selection would cycle.
+    kSelectionCycleRejected,
+
+    // The currently selected result has changed.
+    //
+    // Note: As long as the selected result remains the same, the result action
+    // changes will be reported as kNone, mainly because the code that uses
+    // MoveSelection() treats them the same.
+    kResultChanged,
+  };
+
   explicit ResultSelectionController(
       const ResultSelectionModel* result_container_views);
   ~ResultSelectionController();
@@ -72,12 +89,13 @@ class APP_LIST_EXPORT ResultSelectionController {
     return selected_location_details_.get();
   }
 
-  // Calls |SetSelection| using the result of |GetNextResultLocation|. Returns
-  // true if selection was changed.
-  bool MoveSelection(const ui::KeyEvent& event);
+  // Calls |SetSelection| using the result of |GetNextResultLocation|.
+  MoveResult MoveSelection(const ui::KeyEvent& event);
 
   // Resets the selection to the first result.
-  void ResetSelection();
+  // |key_event| - The key event that triggered reselect, if any. Used to
+  //     determine whether selection should start at the last element.
+  void ResetSelection(const ui::KeyEvent* key_event);
 
   // Clears the |selected_result_|, |selected_location_details_|.
   void ClearSelection();
@@ -85,13 +103,15 @@ class APP_LIST_EXPORT ResultSelectionController {
  private:
   // Calls |GetNextResultLocationForLocation| using |selected_location_details_|
   // as the location
-  ResultLocationDetails GetNextResultLocation(const ui::KeyEvent& event);
+  MoveResult GetNextResultLocation(const ui::KeyEvent& event,
+                                   ResultLocationDetails* next_location);
 
   // Logic for next is separated for modular use. You can ask for the "next"
   // location to be generated using any starting location/event combination.
-  ResultLocationDetails GetNextResultLocationForLocation(
+  MoveResult GetNextResultLocationForLocation(
       const ui::KeyEvent& event,
-      const ResultLocationDetails& location);
+      const ResultLocationDetails& location,
+      ResultLocationDetails* next_location);
 
   // Sets the current selection to the provided |location|.
   void SetSelection(const ResultLocationDetails& location,

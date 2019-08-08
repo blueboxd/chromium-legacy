@@ -498,7 +498,7 @@ bool LayoutObject::IsRenderedLegendInternal() const {
       parent = parent->Parent();
   }
   const auto* parent_layout_block = DynamicTo<LayoutBlock>(parent);
-  return parent_layout_block && IsHTMLFieldSetElement(parent->GetNode()) &&
+  return parent_layout_block && IsA<HTMLFieldSetElement>(parent->GetNode()) &&
          LayoutFieldset::FindInFlowLegend(*parent_layout_block) == this;
 }
 

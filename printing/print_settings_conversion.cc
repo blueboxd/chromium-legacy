@@ -25,21 +25,19 @@ namespace printing {
 
 namespace {
 
-void GetCustomMarginsFromJobSettings(const base::Value& settings,
-                                     PageMargins* page_size_margins) {
+// Note: If this code crashes, then the caller has passed in invalid |settings|.
+// Fix the caller, instead of trying to avoid the crash here.
+PageMargins GetCustomMarginsFromJobSettings(const base::Value& settings) {
+  PageMargins margins_in_points;
   const base::Value* custom_margins = settings.FindKey(kSettingMarginsCustom);
-  if (!custom_margins) {
-    NOTREACHED();
-    return;
-  }
-  page_size_margins->top =
-      custom_margins->FindIntKey(kSettingMarginTop).value_or(0);
-  page_size_margins->bottom =
-      custom_margins->FindIntKey(kSettingMarginBottom).value_or(0);
-  page_size_margins->left =
-      custom_margins->FindIntKey(kSettingMarginLeft).value_or(0);
-  page_size_margins->right =
-      custom_margins->FindIntKey(kSettingMarginRight).value_or(0);
+  margins_in_points.top = custom_margins->FindIntKey(kSettingMarginTop).value();
+  margins_in_points.bottom =
+      custom_margins->FindIntKey(kSettingMarginBottom).value();
+  margins_in_points.left =
+      custom_margins->FindIntKey(kSettingMarginLeft).value();
+  margins_in_points.right =
+      custom_margins->FindIntKey(kSettingMarginRight).value();
+  return margins_in_points;
 }
 
 void SetMarginsToJobSettings(const std::string& json_path,
@@ -133,12 +131,8 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
   }
   settings->set_margin_type(static_cast<MarginType>(margin_type));
 
-  if (margin_type == CUSTOM_MARGINS) {
-    PageMargins margins_in_points;
-    margins_in_points.Clear();
-    GetCustomMarginsFromJobSettings(job_settings, &margins_in_points);
-    settings->SetCustomMargins(margins_in_points);
-  }
+  if (margin_type == CUSTOM_MARGINS)
+    settings->SetCustomMargins(GetCustomMarginsFromJobSettings(job_settings));
 
   PageRanges new_ranges;
   const base::Value* page_range_array =

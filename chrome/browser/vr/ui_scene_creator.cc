@@ -1103,6 +1103,16 @@ int GetIndicatorsTimeout() {
   return kToastTimeoutSeconds;
 }
 
+NOINLINE void CrashIntentionally() {
+  LOG(ERROR) << "Crashing VR browser";
+
+  static int static_variable_to_make_this_function_unique = 0;
+  base::debug::Alias(&static_variable_to_make_this_function_unique);
+
+  volatile int* zero = nullptr;
+  *zero = 0;
+}
+
 }  // namespace
 
 UiSceneCreator::UiSceneCreator(UiBrowserInterface* browser,
@@ -1391,7 +1401,7 @@ void UiSceneCreator::CreateContentQuad() {
       [](Model* model, ContentElement* e, ContentInputDelegate* delegate,
          bool focused) {
         if (!focused) {
-          model->web_input_text_field_info = EditedText();
+          model->set_web_input_text_field_info(EditedText());
           delegate->ClearTextInputState();
         }
         e->UpdateInput(model->web_input_text_field_info);
@@ -1441,12 +1451,13 @@ void UiSceneCreator::CreateContentQuad() {
   main_content->AddBinding(VR_BIND_FUNC(
       bool, Model, model_, !model->content_overlay_texture_non_empty,
       ContentElement, main_content.get(), SetOverlayTextureEmpty));
-  main_content->AddBinding(std::make_unique<Binding<EditedText>>(
-      VR_BIND_LAMBDA([](EditedText* info) { return *info; },
-                     base::Unretained(&model_->web_input_text_field_info)),
-      VR_BIND_LAMBDA([](ContentElement* e,
-                        const EditedText& value) { e->UpdateInput(value); },
-                     base::Unretained(main_content.get()))));
+  main_content->AddBinding(std::make_unique<Binding<base::TimeTicks>>(
+      VR_BIND_LAMBDA([](Model* m) { return m->web_input_text_field_touched; },
+                     base::Unretained(model_)),
+      VR_BIND_LAMBDA([](ContentElement* e, EditedText const* v,
+                        base::TimeTicks const&) { e->UpdateInput(*v); },
+                     base::Unretained(main_content.get()),
+                     base::Unretained(&model_->web_input_text_field_info))));
 
   auto indicator_bg = Create<Rect>(kLoadingIndicator, kPhaseForeground);
   indicator_bg->set_contributes_to_parent_bounds(false);
@@ -2576,7 +2587,7 @@ void UiSceneCreator::CreateOmnibox() {
       kOmniboxTextField, kPhaseNone, kOmniboxTextHeightDMM,
       base::BindRepeating(
           [](Model* model, const EditedText& text_input_info) {
-            model->omnibox_text_field_info = text_input_info;
+            model->set_omnibox_text_field_info(text_input_info);
           },
           base::Unretained(model_)),
       base::BindRepeating(
@@ -2623,16 +2634,19 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_text_field->AddBinding(VR_BIND_FUNC(
       bool, Model, model_, model->has_mode_in_stack(kModeEditingOmnibox),
       OmniboxTextField, omnibox_text_field.get(), SetEnabled));
-  omnibox_text_field->AddBinding(std::make_unique<Binding<EditedText>>(
+  omnibox_text_field->AddBinding(std::make_unique<Binding<base::TimeTicks>>(
       VR_BIND_LAMBDA(
-          [](Model* model) { return model->omnibox_text_field_info; },
+          [](Model* model) { return model->omnibox_text_field_touched; },
           base::Unretained(model_)),
-      VR_BIND_LAMBDA([](OmniboxTextField* e,
-                        const EditedText& value) { e->UpdateInput(value); },
-                     base::Unretained(omnibox_text_field.get()))));
+      VR_BIND_LAMBDA([](OmniboxTextField* e, const EditedText* value,
+                        base::TimeTicks const&) { e->UpdateInput(*value); },
+                     base::Unretained(omnibox_text_field.get()),
+                     base::Unretained(&model_->omnibox_text_field_info))));
   omnibox_text_field->set_input_committed_callback(base::BindRepeating(
       [](Model* model, UiBrowserInterface* browser, Ui* ui,
          const EditedText& text) {
+        if (text.current.text == base::UTF8ToUTF16(kCrashVrBrowserUrl))
+          CrashIntentionally();
         if (!model->omnibox_suggestions.empty()) {
           browser->Navigate(model->omnibox_suggestions.front().destination,
                             NavigationMethod::kOmniboxUrlEntry);
@@ -2799,10 +2813,12 @@ void UiSceneCreator::CreateOmnibox() {
       VR_BIND_LAMBDA(
           [](Model* m, const std::pair<bool, base::string16>& value) {
             if (value.first /* editing_omnibox */) {
-              m->omnibox_text_field_info.current =
+              EditedText omnibox_text = m->omnibox_text_field_info;
+              omnibox_text.current =
                   TextInputInfo(value.second, 0, value.second.size());
+              m->set_omnibox_text_field_info(std::move(omnibox_text));
             } else {
-              m->omnibox_text_field_info = EditedText();
+              m->set_omnibox_text_field_info(EditedText());
             }
           },
           base::Unretained(model_))));

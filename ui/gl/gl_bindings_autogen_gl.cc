@@ -298,6 +298,7 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   ext.b_GL_ANGLE_translated_shader_source =
       gfx::HasExtension(extensions, "GL_ANGLE_translated_shader_source");
   ext.b_GL_APPLE_fence = gfx::HasExtension(extensions, "GL_APPLE_fence");
+  ext.b_GL_APPLE_sync = gfx::HasExtension(extensions, "GL_APPLE_sync");
   ext.b_GL_APPLE_vertex_array_object =
       gfx::HasExtension(extensions, "GL_APPLE_vertex_array_object");
   ext.b_GL_ARB_ES2_compatibility =
@@ -652,6 +653,11 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glClientWaitSync"));
   }
 
+  if (ext.b_GL_APPLE_sync) {
+    fn.glClientWaitSyncAPPLEFn = reinterpret_cast<glClientWaitSyncAPPLEProc>(
+        GetGLProcAddress("glClientWaitSyncAPPLE"));
+  }
+
   if (ext.b_GL_ANGLE_robust_client_memory) {
     fn.glCompressedTexImage2DRobustANGLEFn =
         reinterpret_cast<glCompressedTexImage2DRobustANGLEProc>(
@@ -860,6 +866,11 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         reinterpret_cast<glDeleteSyncProc>(GetGLProcAddress("glDeleteSync"));
   }
 
+  if (ext.b_GL_APPLE_sync) {
+    fn.glDeleteSyncAPPLEFn = reinterpret_cast<glDeleteSyncAPPLEProc>(
+        GetGLProcAddress("glDeleteSyncAPPLE"));
+  }
+
   if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u) ||
       ext.b_GL_ARB_transform_feedback2) {
     fn.glDeleteTransformFeedbacksFn =
@@ -999,6 +1010,11 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       ext.b_GL_ARB_sync) {
     fn.glFenceSyncFn =
         reinterpret_cast<glFenceSyncProc>(GetGLProcAddress("glFenceSync"));
+  }
+
+  if (ext.b_GL_APPLE_sync) {
+    fn.glFenceSyncAPPLEFn = reinterpret_cast<glFenceSyncAPPLEProc>(
+        GetGLProcAddress("glFenceSyncAPPLE"));
   }
 
   if (ext.b_GL_APPLE_fence) {
@@ -1853,6 +1869,11 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       ext.b_GL_ARB_sync) {
     fn.glIsSyncFn =
         reinterpret_cast<glIsSyncProc>(GetGLProcAddress("glIsSync"));
+  }
+
+  if (ext.b_GL_APPLE_sync) {
+    fn.glIsSyncAPPLEFn =
+        reinterpret_cast<glIsSyncAPPLEProc>(GetGLProcAddress("glIsSyncAPPLE"));
   }
 
   if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u) ||
@@ -2788,6 +2809,11 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         reinterpret_cast<glWaitSyncProc>(GetGLProcAddress("glWaitSync"));
   }
 
+  if (ext.b_GL_APPLE_sync) {
+    fn.glWaitSyncAPPLEFn = reinterpret_cast<glWaitSyncAPPLEProc>(
+        GetGLProcAddress("glWaitSyncAPPLE"));
+  }
+
   if (ext.b_GL_EXT_window_rectangles) {
     fn.glWindowRectanglesEXTFn = reinterpret_cast<glWindowRectanglesEXTProc>(
         GetGLProcAddress("glWindowRectanglesEXT"));
@@ -3053,6 +3079,12 @@ GLenum GLApiBase::glClientWaitSyncFn(GLsync sync,
                                      GLbitfield flags,
                                      GLuint64 timeout) {
   return driver_->fn.glClientWaitSyncFn(sync, flags, timeout);
+}
+
+GLenum GLApiBase::glClientWaitSyncAPPLEFn(GLsync sync,
+                                          GLbitfield flags,
+                                          GLuint64 timeout) {
+  return driver_->fn.glClientWaitSyncAPPLEFn(sync, flags, timeout);
 }
 
 void GLApiBase::glColorMaskFn(GLboolean red,
@@ -3398,6 +3430,10 @@ void GLApiBase::glDeleteSyncFn(GLsync sync) {
   driver_->fn.glDeleteSyncFn(sync);
 }
 
+void GLApiBase::glDeleteSyncAPPLEFn(GLsync sync) {
+  driver_->fn.glDeleteSyncAPPLEFn(sync);
+}
+
 void GLApiBase::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
   driver_->fn.glDeleteTexturesFn(n, textures);
 }
@@ -3536,6 +3572,10 @@ void GLApiBase::glEndTransformFeedbackFn(void) {
 
 GLsync GLApiBase::glFenceSyncFn(GLenum condition, GLbitfield flags) {
   return driver_->fn.glFenceSyncFn(condition, flags);
+}
+
+GLsync GLApiBase::glFenceSyncAPPLEFn(GLenum condition, GLbitfield flags) {
+  return driver_->fn.glFenceSyncAPPLEFn(condition, flags);
 }
 
 void GLApiBase::glFinishFn(void) {
@@ -4620,6 +4660,10 @@ GLboolean GLApiBase::glIsShaderFn(GLuint shader) {
 
 GLboolean GLApiBase::glIsSyncFn(GLsync sync) {
   return driver_->fn.glIsSyncFn(sync);
+}
+
+GLboolean GLApiBase::glIsSyncAPPLEFn(GLsync sync) {
+  return driver_->fn.glIsSyncAPPLEFn(sync);
 }
 
 GLboolean GLApiBase::glIsTextureFn(GLuint texture) {
@@ -5970,6 +6014,12 @@ void GLApiBase::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   driver_->fn.glWaitSyncFn(sync, flags, timeout);
 }
 
+void GLApiBase::glWaitSyncAPPLEFn(GLsync sync,
+                                  GLbitfield flags,
+                                  GLuint64 timeout) {
+  driver_->fn.glWaitSyncAPPLEFn(sync, flags, timeout);
+}
+
 void GLApiBase::glWindowRectanglesEXTFn(GLenum mode,
                                         GLsizei n,
                                         const GLint* box) {
@@ -6282,6 +6332,13 @@ GLenum TraceGLApi::glClientWaitSyncFn(GLsync sync,
                                       GLuint64 timeout) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glClientWaitSync")
   return gl_api_->glClientWaitSyncFn(sync, flags, timeout);
+}
+
+GLenum TraceGLApi::glClientWaitSyncAPPLEFn(GLsync sync,
+                                           GLbitfield flags,
+                                           GLuint64 timeout) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glClientWaitSyncAPPLE")
+  return gl_api_->glClientWaitSyncAPPLEFn(sync, flags, timeout);
 }
 
 void TraceGLApi::glColorMaskFn(GLboolean red,
@@ -6675,6 +6732,11 @@ void TraceGLApi::glDeleteSyncFn(GLsync sync) {
   gl_api_->glDeleteSyncFn(sync);
 }
 
+void TraceGLApi::glDeleteSyncAPPLEFn(GLsync sync) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteSyncAPPLE")
+  gl_api_->glDeleteSyncAPPLEFn(sync);
+}
+
 void TraceGLApi::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteTextures")
   gl_api_->glDeleteTexturesFn(n, textures);
@@ -6845,6 +6907,11 @@ void TraceGLApi::glEndTransformFeedbackFn(void) {
 GLsync TraceGLApi::glFenceSyncFn(GLenum condition, GLbitfield flags) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFenceSync")
   return gl_api_->glFenceSyncFn(condition, flags);
+}
+
+GLsync TraceGLApi::glFenceSyncAPPLEFn(GLenum condition, GLbitfield flags) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glFenceSyncAPPLE")
+  return gl_api_->glFenceSyncAPPLEFn(condition, flags);
 }
 
 void TraceGLApi::glFinishFn(void) {
@@ -8127,6 +8194,11 @@ GLboolean TraceGLApi::glIsShaderFn(GLuint shader) {
 GLboolean TraceGLApi::glIsSyncFn(GLsync sync) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsSync")
   return gl_api_->glIsSyncFn(sync);
+}
+
+GLboolean TraceGLApi::glIsSyncAPPLEFn(GLsync sync) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsSyncAPPLE")
+  return gl_api_->glIsSyncAPPLEFn(sync);
 }
 
 GLboolean TraceGLApi::glIsTextureFn(GLuint texture) {
@@ -9704,6 +9776,13 @@ void TraceGLApi::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   gl_api_->glWaitSyncFn(sync, flags, timeout);
 }
 
+void TraceGLApi::glWaitSyncAPPLEFn(GLsync sync,
+                                   GLbitfield flags,
+                                   GLuint64 timeout) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glWaitSyncAPPLE")
+  gl_api_->glWaitSyncAPPLEFn(sync, flags, timeout);
+}
+
 void TraceGLApi::glWindowRectanglesEXTFn(GLenum mode,
                                          GLsizei n,
                                          const GLint* box) {
@@ -10100,6 +10179,16 @@ GLenum DebugGLApi::glClientWaitSyncFn(GLsync sync,
   GL_SERVICE_LOG("glClientWaitSync"
                  << "(" << sync << ", " << flags << ", " << timeout << ")");
   GLenum result = gl_api_->glClientWaitSyncFn(sync, flags, timeout);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLenum DebugGLApi::glClientWaitSyncAPPLEFn(GLsync sync,
+                                           GLbitfield flags,
+                                           GLuint64 timeout) {
+  GL_SERVICE_LOG("glClientWaitSyncAPPLE"
+                 << "(" << sync << ", " << flags << ", " << timeout << ")");
+  GLenum result = gl_api_->glClientWaitSyncAPPLEFn(sync, flags, timeout);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }
@@ -10624,6 +10713,12 @@ void DebugGLApi::glDeleteSyncFn(GLsync sync) {
   gl_api_->glDeleteSyncFn(sync);
 }
 
+void DebugGLApi::glDeleteSyncAPPLEFn(GLsync sync) {
+  GL_SERVICE_LOG("glDeleteSyncAPPLE"
+                 << "(" << sync << ")");
+  gl_api_->glDeleteSyncAPPLEFn(sync);
+}
+
 void DebugGLApi::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
   GL_SERVICE_LOG("glDeleteTextures"
                  << "(" << n << ", " << static_cast<const void*>(textures)
@@ -10841,6 +10936,15 @@ GLsync DebugGLApi::glFenceSyncFn(GLenum condition, GLbitfield flags) {
                  << "(" << GLEnums::GetStringEnum(condition) << ", " << flags
                  << ")");
   GLsync result = gl_api_->glFenceSyncFn(condition, flags);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLsync DebugGLApi::glFenceSyncAPPLEFn(GLenum condition, GLbitfield flags) {
+  GL_SERVICE_LOG("glFenceSyncAPPLE"
+                 << "(" << GLEnums::GetStringEnum(condition) << ", " << flags
+                 << ")");
+  GLsync result = gl_api_->glFenceSyncAPPLEFn(condition, flags);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }
@@ -12560,6 +12664,14 @@ GLboolean DebugGLApi::glIsSyncFn(GLsync sync) {
   GL_SERVICE_LOG("glIsSync"
                  << "(" << sync << ")");
   GLboolean result = gl_api_->glIsSyncFn(sync);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLboolean DebugGLApi::glIsSyncAPPLEFn(GLsync sync) {
+  GL_SERVICE_LOG("glIsSyncAPPLE"
+                 << "(" << sync << ")");
+  GLboolean result = gl_api_->glIsSyncAPPLEFn(sync);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }
@@ -14628,6 +14740,14 @@ void DebugGLApi::glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) {
   gl_api_->glWaitSyncFn(sync, flags, timeout);
 }
 
+void DebugGLApi::glWaitSyncAPPLEFn(GLsync sync,
+                                   GLbitfield flags,
+                                   GLuint64 timeout) {
+  GL_SERVICE_LOG("glWaitSyncAPPLE"
+                 << "(" << sync << ", " << flags << ", " << timeout << ")");
+  gl_api_->glWaitSyncAPPLEFn(sync, flags, timeout);
+}
+
 void DebugGLApi::glWindowRectanglesEXTFn(GLenum mode,
                                          GLsizei n,
                                          const GLint* box) {
@@ -14902,6 +15022,13 @@ GLenum NoContextGLApi::glClientWaitSyncFn(GLsync sync,
                                           GLbitfield flags,
                                           GLuint64 timeout) {
   NoContextHelper("glClientWaitSync");
+  return static_cast<GLenum>(0);
+}
+
+GLenum NoContextGLApi::glClientWaitSyncAPPLEFn(GLsync sync,
+                                               GLbitfield flags,
+                                               GLuint64 timeout) {
+  NoContextHelper("glClientWaitSyncAPPLE");
   return static_cast<GLenum>(0);
 }
 
@@ -15230,6 +15357,10 @@ void NoContextGLApi::glDeleteSyncFn(GLsync sync) {
   NoContextHelper("glDeleteSync");
 }
 
+void NoContextGLApi::glDeleteSyncAPPLEFn(GLsync sync) {
+  NoContextHelper("glDeleteSyncAPPLE");
+}
+
 void NoContextGLApi::glDeleteTexturesFn(GLsizei n, const GLuint* textures) {
   NoContextHelper("glDeleteTextures");
 }
@@ -15370,7 +15501,12 @@ void NoContextGLApi::glEndTransformFeedbackFn(void) {
 
 GLsync NoContextGLApi::glFenceSyncFn(GLenum condition, GLbitfield flags) {
   NoContextHelper("glFenceSync");
-  return NULL;
+  return nullptr;
+}
+
+GLsync NoContextGLApi::glFenceSyncAPPLEFn(GLenum condition, GLbitfield flags) {
+  NoContextHelper("glFenceSyncAPPLE");
+  return nullptr;
 }
 
 void NoContextGLApi::glFinishFn(void) {
@@ -16435,6 +16571,11 @@ GLboolean NoContextGLApi::glIsShaderFn(GLuint shader) {
 
 GLboolean NoContextGLApi::glIsSyncFn(GLsync sync) {
   NoContextHelper("glIsSync");
+  return GL_FALSE;
+}
+
+GLboolean NoContextGLApi::glIsSyncAPPLEFn(GLsync sync) {
+  NoContextHelper("glIsSyncAPPLE");
   return GL_FALSE;
 }
 
@@ -17777,6 +17918,12 @@ void NoContextGLApi::glWaitSyncFn(GLsync sync,
                                   GLbitfield flags,
                                   GLuint64 timeout) {
   NoContextHelper("glWaitSync");
+}
+
+void NoContextGLApi::glWaitSyncAPPLEFn(GLsync sync,
+                                       GLbitfield flags,
+                                       GLuint64 timeout) {
+  NoContextHelper("glWaitSyncAPPLE");
 }
 
 void NoContextGLApi::glWindowRectanglesEXTFn(GLenum mode,

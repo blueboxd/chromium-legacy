@@ -1726,9 +1726,10 @@ public class Tab {
     }
 
     /**
-     * @return See {@link #mTimestampMillis}.
+     * @return the last time this tab was shown or the time of its initialization if it wasn't yet
+     *         shown.
      */
-    long getTimestampMillis() {
+    public long getTimestampMillis() {
         return mTimestampMillis;
     }
 

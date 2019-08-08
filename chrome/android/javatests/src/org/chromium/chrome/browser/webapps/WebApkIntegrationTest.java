@@ -42,7 +42,6 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.common.ContentSwitches;
-import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.webapk.lib.client.WebApkValidator;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -55,8 +54,6 @@ public class WebApkIntegrationTest {
 
     public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
-    public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
-
     public MockCertVerifierRuleAndroid mCertVerifierRule =
             new MockCertVerifierRuleAndroid(mNativeLibraryTestRule, 0 /* net::OK */);
 
@@ -64,8 +61,7 @@ public class WebApkIntegrationTest {
     public RuleChain mRuleChain = RuleChain.emptyRuleChain()
                                           .around(mActivityTestRule)
                                           .around(mNativeLibraryTestRule)
-                                          .around(mCertVerifierRule)
-                                          .around(mTestServerRule);
+                                          .around(mCertVerifierRule);
 
     private static final long STARTUP_TIMEOUT = ScalableTimeout.scaleTimeout(10000);
 
@@ -100,7 +96,9 @@ public class WebApkIntegrationTest {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getSplashScreenForTests() == null;
+                return mActivityTestRule.getActivity()
+                        .getSplashControllerForTests()
+                        .wasSplashScreenHiddenForTests();
             }
         });
     }
@@ -121,8 +119,9 @@ public class WebApkIntegrationTest {
     @Before
     public void setUp() throws Exception {
         WebApkUpdateManager.setUpdatesEnabledForTesting(false);
-        mTestServerRule.setServerUsesHttps(true);
-        Uri mapToUri = Uri.parse(mTestServerRule.getServer().getURL("/"));
+        mActivityTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
+        Uri mapToUri =
+                Uri.parse(mActivityTestRule.getEmbeddedTestServerRule().getServer().getURL("/"));
         CommandLine.getInstance().appendSwitchWithValue(
                 ContentSwitches.HOST_RESOLVER_RULES, "MAP * " + mapToUri.getAuthority());
         WebApkValidator.disableValidationForTesting();

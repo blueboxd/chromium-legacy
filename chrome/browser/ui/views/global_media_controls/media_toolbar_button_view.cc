@@ -6,7 +6,9 @@
 
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
@@ -20,6 +22,9 @@ MediaToolbarButtonView::MediaToolbarButtonView(
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::NOTIFY_ON_PRESS);
   EnableCanvasFlippingForRTLUI(false);
+  SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_ICON_TOOLTIP_TEXT));
+
   ToolbarButton::Init();
 
   // We start hidden and only show once |controller_| tells us to.

@@ -2303,7 +2303,7 @@ WebFrameWidget* WebLocalFrameImpl::FrameWidget() const {
 
 void WebLocalFrameImpl::CopyImageAt(const WebPoint& pos_in_viewport) {
   HitTestResult result = HitTestResultForVisualViewportPos(pos_in_viewport);
-  if (!IsHTMLCanvasElement(result.InnerNodeOrImageMapImage()) &&
+  if (!IsA<HTMLCanvasElement>(result.InnerNodeOrImageMapImage()) &&
       result.AbsoluteImageURL().IsEmpty()) {
     // There isn't actually an image at these coordinates.  Might be because
     // the window scrolled while the context menu was open or because the page
@@ -2325,7 +2325,7 @@ void WebLocalFrameImpl::CopyImageAt(const WebPoint& pos_in_viewport) {
 void WebLocalFrameImpl::SaveImageAt(const WebPoint& pos_in_viewport) {
   Node* node = HitTestResultForVisualViewportPos(pos_in_viewport)
                    .InnerNodeOrImageMapImage();
-  if (!node || !(IsHTMLCanvasElement(*node) || IsHTMLImageElement(*node)))
+  if (!node || !(IsA<HTMLCanvasElement>(*node) || IsHTMLImageElement(*node)))
     return;
 
   String url = To<Element>(*node).ImageSourceURL();

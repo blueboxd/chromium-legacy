@@ -21,6 +21,7 @@
 namespace content {
 
 class BundledExchangesReader;
+class BundledExchangesURLLoaderFactory;
 class NavigationLoaderInterceptor;
 
 // A class to provide interfaces to communicate with a BundledExchanges for
@@ -55,6 +56,7 @@ class BundledExchangesHandle final {
 
   base::WeakPtr<PrimaryURLRedirectLoader> redirect_loader_;
   std::unique_ptr<BundledExchangesReader> reader_;
+  std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
   GURL primary_url_;
   data_decoder::mojom::BundleMetadataParseErrorPtr metadata_error_;
   bool is_redirected_ = false;

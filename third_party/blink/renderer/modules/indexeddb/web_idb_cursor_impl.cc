@@ -100,8 +100,8 @@ void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
   DCHECK(key && primary_key);
   std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  if (key->GetType() == mojom::IDBKeyType::Null &&
-      primary_key->GetType() == mojom::IDBKeyType::Null) {
+  if (key->GetType() == mojom::IDBKeyType::None &&
+      primary_key->GetType() == mojom::IDBKeyType::None) {
     // No key(s), so this would qualify for a prefetch.
     ++continue_count_;
 

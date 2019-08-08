@@ -25,7 +25,6 @@ class LocalCardMigrationBubbleViews : public LocalCardMigrationBubble,
   // should be only one controller per tab after the initialization. It should
   // live even when bubble is gone.
   LocalCardMigrationBubbleViews(views::View* anchor_view,
-                                const gfx::Point& anchor_point,
                                 content::WebContents* web_contents,
                                 LocalCardMigrationBubbleController* controller);
 

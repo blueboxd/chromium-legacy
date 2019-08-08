@@ -252,7 +252,7 @@ base::Optional<BioEnrollmentResponse> BioEnrollmentResponse::Parse(
     response.template_infos = std::move(template_infos);
   }
 
-  return response;
+  return std::move(response);
 }
 
 BioEnrollmentResponse::BioEnrollmentResponse() = default;

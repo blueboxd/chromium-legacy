@@ -1718,7 +1718,7 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
 
   win_attributes_->value = GetValue();
 
-  win_attributes_->ignored = owner()->HasState(ax::mojom::State::kIgnored);
+  win_attributes_->ignored = owner()->IsIgnored();
 }
 
 void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
@@ -1728,7 +1728,7 @@ void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
 void BrowserAccessibilityComWin::UpdateStep3FireEvents(
     bool is_subtree_creation) {
   int32_t state = MSAAState();
-  const bool ignored = owner()->HasState(ax::mojom::State::kIgnored);
+  const bool ignored = owner()->IsIgnored();
 
   // Suppress all of these events when the node is ignored, or when the ignored
   // state has changed.

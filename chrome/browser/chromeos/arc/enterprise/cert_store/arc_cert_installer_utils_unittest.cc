@@ -150,6 +150,6 @@ INSTANTIATE_TEST_SUITE_P(,
                          ArcCertInstallerUtilsTest,
                          testing::Values("",
                                          "name of the smart card",
-                                         std::string("A", 2048)));
+                                         std::string(2048, 'A')));
 
 }  // namespace arc

@@ -230,7 +230,8 @@ void BackgroundFetchContext::DidCreateRegistration(
 
 void BackgroundFetchContext::AddRegistrationObserver(
     const std::string& unique_id,
-    blink::mojom::BackgroundFetchRegistrationObserverPtr observer) {
+    mojo::PendingRemote<blink::mojom::BackgroundFetchRegistrationObserver>
+        observer) {
   registration_notifier_->AddObserver(unique_id, std::move(observer));
 }
 

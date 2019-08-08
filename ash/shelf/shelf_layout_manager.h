@@ -230,15 +230,14 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
     TargetBounds();
     ~TargetBounds();
 
-    float shelf_opacity;
-    float nav_opacity;
-    float status_opacity;
+    float opacity;
 
-    gfx::Rect shelf_bounds;            // Bounds of the shelf within the screen
-    gfx::Rect shelf_bounds_in_shelf;   // Bounds of the shelf minus status area
-    gfx::Rect nav_bounds_in_shelf;     // Bounds of nav widget within shelf
-    gfx::Rect status_bounds_in_shelf;  // Bounds of status area within shelf
-    gfx::Insets shelf_insets;          // Shelf insets within the screen
+    gfx::Rect shelf_bounds;             // Bounds of the shelf within the screen
+    gfx::Rect shelf_bounds_in_shelf;    // Bounds of the shelf minus status area
+    gfx::Rect nav_bounds_in_shelf;      // Bounds of nav widget within shelf
+    gfx::Rect hotseat_bounds_in_shelf;  // Bounds of the hotseat within shelf
+    gfx::Rect status_bounds_in_shelf;   // Bounds of status area within shelf
+    gfx::Insets shelf_insets;           // Shelf insets within the screen
   };
 
   struct State {

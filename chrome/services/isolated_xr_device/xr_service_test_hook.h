@@ -8,15 +8,13 @@
 #include <memory>
 
 #include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace device {
 class XRTestHookWrapper;
 
 class XRServiceTestHook : public device_test::mojom::XRServiceTestHook {
  public:
-  explicit XRServiceTestHook(
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
+  XRServiceTestHook();
   ~XRServiceTestHook() final;
 
   using DeviceCrashCallback = device_test::mojom::XRServiceTestHook::
@@ -30,7 +28,6 @@ class XRServiceTestHook : public device_test::mojom::XRServiceTestHook {
 
  private:
   std::unique_ptr<XRTestHookWrapper> wrapper_;
-  const std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref_;
 };
 
 }  // namespace device

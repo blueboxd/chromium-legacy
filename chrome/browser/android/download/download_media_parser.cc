@@ -96,20 +96,21 @@ void DownloadMediaParser::OnReadFileSize(int64_t file_size) {
   }
 
   size_ = file_size;
-  RetrieveMediaParser(content::GetSystemConnector());
+  RetrieveMediaParser();
 }
 
 void DownloadMediaParser::OnMediaParserCreated() {
   auto media_source_factory = std::make_unique<LocalMediaDataSourceFactory>(
       file_path_, file_task_runner_);
-  chrome::mojom::MediaDataSourcePtr source_ptr;
+  mojo::PendingRemote<chrome::mojom::MediaDataSource> source;
   media_data_source_ = media_source_factory->CreateMediaDataSource(
-      &source_ptr, base::BindRepeating(&DownloadMediaParser::OnMediaDataReady,
-                                       weak_factory_.GetWeakPtr()));
+      source.InitWithNewPipeAndPassReceiver(),
+      base::BindRepeating(&DownloadMediaParser::OnMediaDataReady,
+                          weak_factory_.GetWeakPtr()));
 
   RecordMediaMetadataEvent(MediaMetadataEvent::kMetadataStart);
   media_parser()->ParseMediaMetadata(
-      mime_type_, size_, false /* get_attached_images */, std::move(source_ptr),
+      mime_type_, size_, false /* get_attached_images */, std::move(source),
       base::BindOnce(&DownloadMediaParser::OnMediaMetadataParsed,
                      weak_factory_.GetWeakPtr()));
 }
@@ -153,13 +154,14 @@ void DownloadMediaParser::RetrieveEncodedVideoFrame() {
 
   auto media_source_factory = std::make_unique<LocalMediaDataSourceFactory>(
       file_path_, file_task_runner_);
-  chrome::mojom::MediaDataSourcePtr source_ptr;
+  mojo::PendingRemote<chrome::mojom::MediaDataSource> source;
   media_data_source_ = media_source_factory->CreateMediaDataSource(
-      &source_ptr, base::BindRepeating(&DownloadMediaParser::OnMediaDataReady,
-                                       weak_factory_.GetWeakPtr()));
+      source.InitWithNewPipeAndPassReceiver(),
+      base::BindRepeating(&DownloadMediaParser::OnMediaDataReady,
+                          weak_factory_.GetWeakPtr()));
 
   media_parser()->ExtractVideoFrame(
-      mime_type_, base::saturated_cast<uint32_t>(size_), std::move(source_ptr),
+      mime_type_, base::saturated_cast<uint32_t>(size_), std::move(source),
       base::BindOnce(&DownloadMediaParser::OnVideoFrameRetrieved,
                      weak_factory_.GetWeakPtr()));
 }

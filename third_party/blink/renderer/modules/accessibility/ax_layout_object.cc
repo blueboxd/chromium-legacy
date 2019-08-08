@@ -207,7 +207,7 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kImage;
   }
 
-  if (IsHTMLCanvasElement(node))
+  if (IsA<HTMLCanvasElement>(node))
     return ax::mojom::Role::kCanvas;
 
   if (css_box && css_box->IsLayoutView())

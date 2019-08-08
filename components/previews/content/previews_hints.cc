@@ -266,7 +266,7 @@ void PreviewsHints::ParseOptimizationFilters(
               bloom_filter_proto.num_hash_functions(),
               bloom_filter_proto.num_bits(), bloom_filter_proto.data());
       lite_page_redirect_blacklist_ =
-          std::make_unique<optimization_guide::HostFilter>(
+          std::make_unique<optimization_guide::OptimizationFilter>(
               std::move(bloom_filter));
       RecordOptimizationFilterStatus(
           blacklist.optimization_type(),

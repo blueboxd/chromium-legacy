@@ -764,6 +764,14 @@ HttpHandler::HttpHandler(
               "AddCredential",
               base::BindRepeating(&ExecuteWebAuthnCommand,
                                   base::BindRepeating(&ExecuteAddCredential)))),
+      CommandMapping(
+          kGet,
+          "session/:sessionId/webauthn/authenticator/:authenticatorId/"
+          "credentials",
+          WrapToCommand("GetCredentials",
+                        base::BindRepeating(
+                            &ExecuteWebAuthnCommand,
+                            base::BindRepeating(&ExecuteGetCredentials)))),
 
       //
       // Non-standard extension commands

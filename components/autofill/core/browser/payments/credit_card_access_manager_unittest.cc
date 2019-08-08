@@ -223,7 +223,9 @@ class CreditCardAccessManagerTest : public testing::Test {
     if (!full_card_request)
       return false;
 
-    full_card_request->OnDidGetRealPan(result, real_pan);
+    payments::PaymentsClient::UnmaskResponseDetails response;
+    full_card_request->OnDidGetRealPan(result,
+                                       response.with_real_pan(real_pan));
     return true;
   }
 
@@ -237,7 +239,9 @@ class CreditCardAccessManagerTest : public testing::Test {
     if (!full_card_request)
       return false;
 
-    full_card_request->OnDidGetRealPan(result, real_pan);
+    payments::PaymentsClient::UnmaskResponseDetails response;
+    full_card_request->OnDidGetRealPan(result,
+                                       response.with_real_pan(real_pan));
     return true;
   }
 

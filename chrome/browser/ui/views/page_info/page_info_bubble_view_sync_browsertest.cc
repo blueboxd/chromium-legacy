@@ -59,7 +59,7 @@ void OpenPageInfoBubble(Browser* browser) {
   ClickEvent event;
   location_icon_view->ShowBubble(event);
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleView::GetPageInfoBubble();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
   EXPECT_NE(nullptr, page_info);
   page_info->set_close_on_deactivate(false);
 }
@@ -68,7 +68,7 @@ void OpenPageInfoBubble(Browser* browser) {
 // |view_id|.
 views::View* GetView(Browser* browser, int view_id) {
   views::Widget* page_info_bubble =
-      PageInfoBubbleView::GetPageInfoBubble()->GetWidget();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetWidget();
   EXPECT_TRUE(page_info_bubble);
 
   views::View* view = page_info_bubble->GetRootView()->GetViewByID(view_id);

@@ -47,8 +47,7 @@ class MockSiteCache : public testing::NoopSiteDataStore {
 class SiteDataCacheImplTest : public ::testing::Test {
  protected:
   SiteDataCacheImplTest()
-      : data_cache_factory_(SiteDataCacheFactory::CreateForTesting(
-            test_browser_thread_bundle_.GetMainThreadTaskRunner())) {
+      : data_cache_factory_(std::make_unique<SiteDataCacheFactory>()) {
     PerformanceManagerClock::SetClockForTesting(&test_clock_);
     data_cache_ = std::make_unique<SiteDataCacheImpl>(profile_.UniqueId(),
                                                       profile_.GetPath());
@@ -128,8 +127,7 @@ class SiteDataCacheImplTest : public ::testing::Test {
 
   // Owned by |data_cache_|.
   ::testing::StrictMock<MockSiteCache>* mock_db_ = nullptr;
-  std::unique_ptr<SiteDataCacheFactory, base::OnTaskRunnerDeleter>
-      data_cache_factory_;
+  std::unique_ptr<SiteDataCacheFactory> data_cache_factory_;
   std::unique_ptr<SiteDataCacheImpl> data_cache_;
 
   std::unique_ptr<SiteDataReader> reader_;

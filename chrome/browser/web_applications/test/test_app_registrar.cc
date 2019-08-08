@@ -42,6 +42,11 @@ bool TestAppRegistrar::IsInstalled(const AppId& app_id) const {
   return base::Contains(installed_apps_, app_id);
 }
 
+bool TestAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool TestAppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
   NOTIMPLEMENTED();
   return false;
@@ -118,6 +123,14 @@ const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId&) const {
 base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {
   NOTIMPLEMENTED();
   return base::nullopt;
+}
+
+base::flat_set<AppId> TestAppRegistrar::GetAppIdsForTesting() const {
+  base::flat_set<AppId> result;
+  for (const std::pair<AppId, AppInfo>& it : installed_apps_) {
+    result.insert(it.first);
+  }
+  return result;
 }
 
 }  // namespace web_app

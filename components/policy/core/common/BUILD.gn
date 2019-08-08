@@ -409,6 +409,7 @@ source_set("unit_tests") {
     "//components/account_id",
     "//components/policy:generated",
     "//components/prefs:test_support",
+    "//components/version_info:version_info",
     "//extensions/buildflags",
     "//google_apis",
     "//net:test_support",

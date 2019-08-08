@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
+#include "chrome/browser/chromeos/login/challenge_response_auth_keys_loader.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/mojo_system_info_dispatcher.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
@@ -35,6 +36,7 @@
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/dbus/media_perception/media_perception.pb.h"
 #include "components/user_manager/known_user.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
@@ -105,14 +107,6 @@ void ViewsScreenLocker::Init() {
   input_method::InputMethodManager::Get()->GetImeKeyboard()->SetCapsLockEnabled(
       false);
 
-  // Enable pin for any users who can use it.
-  if (user_manager::UserManager::IsInitialized()) {
-    for (user_manager::User* user :
-         user_manager::UserManager::Get()->GetLoggedInUsers()) {
-      UpdatePinKeyboardState(user->GetAccountId());
-    }
-  }
-
   system_info_updater_->StartRequest();
 
   ash::LoginScreen::Get()->GetModel()->SetUserList(
@@ -120,15 +114,12 @@ void ViewsScreenLocker::Init() {
   ash::LoginScreen::Get()->SetAllowLoginAsGuest(false /*show_guest*/);
 
   if (user_manager::UserManager::IsInitialized()) {
+    // Enable pin and challenge-response authentication for any users who can
+    // use them.
     for (user_manager::User* user :
          user_manager::UserManager::Get()->GetLoggedInUsers()) {
-      const bool enable_challenge_response =
-          ChallengeResponseAuthKeysLoader::CanAuthenticateUser(
-              user->GetAccountId());
-      ash::LoginScreen::Get()
-          ->GetModel()
-          ->SetChallengeResponseAuthEnabledForUser(user->GetAccountId(),
-                                                   enable_challenge_response);
+      UpdatePinKeyboardState(user->GetAccountId());
+      UpdateChallengeResponseAuthAvailability(user->GetAccountId());
     }
   }
 
@@ -333,6 +324,14 @@ void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {
   quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
       account_id, base::BindOnce(&ViewsScreenLocker::OnPinCanAuthenticate,
                                  weak_factory_.GetWeakPtr(), account_id));
+}
+
+void ViewsScreenLocker::UpdateChallengeResponseAuthAvailability(
+    const AccountId& account_id) {
+  const bool enable_challenge_response =
+      ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id);
+  ash::LoginScreen::Get()->GetModel()->SetChallengeResponseAuthEnabledForUser(
+      account_id, enable_challenge_response);
 }
 
 void ViewsScreenLocker::OnAllowedInputMethodsChanged() {

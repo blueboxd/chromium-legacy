@@ -294,7 +294,8 @@ TEST_F(MediaSessionControllerTest, PositionState) {
     ASSERT_TRUE(controller_->Initialize(
         true, true, media::MediaContentType::Persistent, &expected_position));
 
-    EXPECT_EQ(expected_position, controller_->get_position_for_testing());
+    EXPECT_EQ(expected_position, controller_->GetPosition(
+                                     controller_->get_player_id_for_testing()));
   }
 
   {
@@ -303,7 +304,8 @@ TEST_F(MediaSessionControllerTest, PositionState) {
 
     controller_->OnMediaPositionStateChanged(expected_position);
 
-    EXPECT_EQ(expected_position, controller_->get_position_for_testing());
+    EXPECT_EQ(expected_position, controller_->GetPosition(
+                                     controller_->get_player_id_for_testing()));
   }
 }
 

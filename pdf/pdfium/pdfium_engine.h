@@ -239,13 +239,9 @@ class PDFiumEngine : public PDFEngine,
                              size_t page_index,
                              bool reload);
 
-  // Formats the pages of |page_sizes| for single-view and appends them to
-  // |pages_|.
-  void LoadPagesInSingleView(std::vector<pp::Size> page_sizes, bool reload);
-
-  // Formats the pages of |page_sizes| for two-up view and appends them to
-  // |pages_|.
-  void LoadPagesInTwoUpView(std::vector<pp::Size> page_sizes, bool reload);
+  // Formats the pages of |page_sizes| and appends them to |pages_|. Formats to
+  // two-up view if |two_up_view_| is true, else formats to single-view.
+  void LoadPagesInCurrentLayout(std::vector<pp::Size> page_sizes, bool reload);
 
   // Loads information about the pages in the document and calculate the
   // document size.

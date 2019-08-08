@@ -302,6 +302,11 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
   title_label_->SetMaxLines(kTitleMaxLines);
+  title_label_->SetProperty(views::kFlexBehaviorKey,
+                            views::FlexSpecification::ForSizeRule(
+                                views::MinimumFlexSizeRule::kPreferred,
+                                views::MaximumFlexSizeRule::kPreferred,
+                                /* adjust_height_for_width */ true));
   AddChildView(title_label_);
 
   domain_label_ =

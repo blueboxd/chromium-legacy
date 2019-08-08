@@ -2,32 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
-
-/**
- * Printer search statuses used by the destination store.
- * @enum {string}
- */
-print_preview.DestinationStorePrinterSearchStatus = {
-  START: 'start',
-  SEARCHING: 'searching',
-  DONE: 'done'
-};
-
-/**
- * Enumeration of possible destination errors.
- * @enum {number}
- */
-print_preview.DestinationErrorType = {
-  INVALID: 0,
-  UNSUPPORTED: 1,
-  // <if expr="chromeos">
-  NO_DESTINATIONS: 2,
-  // </if>
-};
-
 cr.define('print_preview', function() {
   'use strict';
+
+  /**
+   * Printer search statuses used by the destination store.
+   * @enum {string}
+   */
+  const DestinationStorePrinterSearchStatus = {
+    START: 'start',
+    SEARCHING: 'searching',
+    DONE: 'done'
+  };
+
+  /**
+   * Enumeration of possible destination errors.
+   * @enum {number}
+   */
+  const DestinationErrorType = {
+    INVALID: 0,
+    UNSUPPORTED: 1,
+    // <if expr="chromeos">
+    NO_DESTINATIONS: 2,
+    // </if>
+  };
+
   /**
    * Localizes printer capabilities.
    * @param {!print_preview.Cdd} capabilities Printer capabilities to
@@ -191,20 +190,20 @@ cr.define('print_preview', function() {
        * Whether a search for destinations is in progress for each type of
        * printer.
        * @private {!Map<!print_preview.PrinterType,
-       *                !print_preview.DestinationStorePrinterSearchStatus>}
+       *                !DestinationStorePrinterSearchStatus>}
        */
       this.destinationSearchStatus_ = new Map([
         [
           print_preview.PrinterType.EXTENSION_PRINTER,
-          print_preview.DestinationStorePrinterSearchStatus.START
+          DestinationStorePrinterSearchStatus.START
         ],
         [
           print_preview.PrinterType.PRIVET_PRINTER,
-          print_preview.DestinationStorePrinterSearchStatus.START
+          DestinationStorePrinterSearchStatus.START
         ],
         [
           print_preview.PrinterType.LOCAL_PRINTER,
-          print_preview.DestinationStorePrinterSearchStatus.START
+          DestinationStorePrinterSearchStatus.START
         ],
       ]);
 
@@ -301,10 +300,7 @@ cr.define('print_preview', function() {
     get isPrintDestinationSearchInProgress() {
       const isLocalDestinationSearchInProgress =
           Array.from(this.destinationSearchStatus_.values())
-              .some(
-                  el => el ===
-                      print_preview.DestinationStorePrinterSearchStatus
-                          .SEARCHING);
+              .some(el => el === DestinationStorePrinterSearchStatus.SEARCHING);
       if (isLocalDestinationSearchInProgress) {
         return true;
       }
@@ -824,18 +820,18 @@ cr.define('print_preview', function() {
      */
     startLoadDestinations_(type) {
       if (this.destinationSearchStatus_.get(type) ===
-          print_preview.DestinationStorePrinterSearchStatus.DONE) {
+          DestinationStorePrinterSearchStatus.DONE) {
         return;
       }
       this.destinationSearchStatus_.set(
-          type, print_preview.DestinationStorePrinterSearchStatus.SEARCHING);
+          type, DestinationStorePrinterSearchStatus.SEARCHING);
       this.nativeLayer_.getPrinters(type).then(
           this.onDestinationSearchDone_.bind(this, type), () => {
             // Will be rejected by C++ for privet printers if privet printing
             // is disabled.
             assert(type === print_preview.PrinterType.PRIVET_PRINTER);
             this.destinationSearchStatus_.set(
-                type, print_preview.DestinationStorePrinterSearchStatus.DONE);
+                type, DestinationStorePrinterSearchStatus.DONE);
           });
     }
 
@@ -870,7 +866,7 @@ cr.define('print_preview', function() {
         // Add cloud printer to the map.
         this.destinationSearchStatus_.set(
             print_preview.PrinterType.CLOUD_PRINTER,
-            print_preview.DestinationStorePrinterSearchStatus.START);
+            DestinationStorePrinterSearchStatus.START);
         types.push(print_preview.PrinterType.CLOUD_PRINTER);
       } else {
         this.startLoadCloudDestinations();
@@ -1144,7 +1140,7 @@ cr.define('print_preview', function() {
      */
     onDestinationSearchDone_(type) {
       this.destinationSearchStatus_.set(
-          type, print_preview.DestinationStorePrinterSearchStatus.DONE);
+          type, DestinationStorePrinterSearchStatus.DONE);
       this.dispatchEvent(
           new CustomEvent(DestinationStore.EventType.DESTINATION_SEARCH_DONE));
       if (type === print_preview.PrinterType.EXTENSION_PRINTER) {
@@ -1258,9 +1254,7 @@ cr.define('print_preview', function() {
     sendNoPrinterEventIfNeeded_() {
       const isLocalDestinationSearchNotStarted =
           Array.from(this.destinationSearchStatus_.values())
-              .some(
-                  el => el ===
-                      print_preview.DestinationStorePrinterSearchStatus.START);
+              .some(el => el === DestinationStorePrinterSearchStatus.START);
       if (isLocalDestinationSearchNotStarted ||
           this.isPrintDestinationSearchInProgress ||
           !this.selectFirstDestination_) {
@@ -1554,5 +1548,8 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {DestinationStore: DestinationStore};
+  return {
+    DestinationErrorType: DestinationErrorType,
+    DestinationStore: DestinationStore,
+  };
 });

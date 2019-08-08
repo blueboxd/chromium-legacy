@@ -16,12 +16,12 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 class MediaStreamAudioSource;
 class MediaStreamVideoTrack;
-class WebString;
 
 // ApplyConstraintsProcessor is responsible for processing applyConstraints()
 // requests. Only one applyConstraints() request can be processed at a time.
@@ -71,8 +71,8 @@ class MODULES_EXPORT ApplyConstraintsProcessor {
   // General helpers
   void ApplyConstraintsSucceeded();
   void ApplyConstraintsFailed(const char* failed_constraint_name);
-  void CannotApplyConstraints(const blink::WebString& message);
-  void CleanupRequest(base::OnceClosure web_request_callback);
+  void CannotApplyConstraints(const String& message);
+  void CleanupRequest(CrossThreadOnceClosure web_request_callback);
   const blink::mojom::blink::MediaDevicesDispatcherHostPtr&
   GetMediaDevicesDispatcher();
 

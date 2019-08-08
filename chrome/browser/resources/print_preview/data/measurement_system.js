@@ -2,27 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
-
-/**
- * Enumeration of measurement unit types.
- * @enum {number}
- */
-print_preview.MeasurementSystemUnitType = {
-  METRIC: 0,   // millimeters
-  IMPERIAL: 1  // inches
-};
-
-/**
- * @typedef {{precision: number,
- *            decimalPlaces: number,
- *            ptsPerUnit: number,
- *            unitSymbol: string}}
- */
-print_preview.MeasurementSystemPrefs;
-
 cr.define('print_preview', function() {
   'use strict';
+
+  /**
+   * Enumeration of measurement unit types.
+   * @enum {number}
+   */
+  const MeasurementSystemUnitType = {
+    METRIC: 0,   // millimeters
+    IMPERIAL: 1  // inches
+  };
+
+  /**
+   * @typedef {{precision: number,
+   *            decimalPlaces: number,
+   *            ptsPerUnit: number,
+   *            unitSymbol: string}}
+   */
+  let MeasurementSystemPrefs;
 
   class MeasurementSystem {
     /**
@@ -50,7 +48,7 @@ cr.define('print_preview', function() {
       assert(measurementSystemPrefs.has(unitType));
       /**
        * The measurement system preferences based on the unit type.
-       * @private {!print_preview.MeasurementSystemPrefs}
+       * @private {!MeasurementSystemPrefs}
        */
       this.measurementSystemPrefs_ = measurementSystemPrefs.get(unitType);
     }
@@ -108,11 +106,11 @@ cr.define('print_preview', function() {
   /**
    * Maximum resolution and number of decimal places for local unit values.
    * @private {!Map<!print_preview.MeasurementSystemUnitType,
-   *                !print_preview.MeasurementSystemPrefs>}
+   *                !MeasurementSystemPrefs>}
    */
   const measurementSystemPrefs = new Map([
     [
-      print_preview.MeasurementSystemUnitType.METRIC, {
+      MeasurementSystemUnitType.METRIC, {
         precision: 0.5,
         decimalPlaces: 1,
         ptsPerUnit: 72.0 / 25.4,
@@ -120,11 +118,14 @@ cr.define('print_preview', function() {
       }
     ],
     [
-      print_preview.MeasurementSystemUnitType.IMPERIAL,
+      MeasurementSystemUnitType.IMPERIAL,
       {precision: 0.01, decimalPlaces: 2, ptsPerUnit: 72.0, unitSymbol: '"'}
     ]
   ]);
 
   // Export
-  return {MeasurementSystem: MeasurementSystem};
+  return {
+    MeasurementSystem: MeasurementSystem,
+    MeasurementSystemUnitType: MeasurementSystemUnitType,
+  };
 });

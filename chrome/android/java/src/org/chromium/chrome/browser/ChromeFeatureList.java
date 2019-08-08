@@ -259,7 +259,6 @@ public abstract class ChromeFeatureList {
     public static final String MODAL_PERMISSION_PROMPTS = "ModalPermissionPrompts";
     public static final String MODAL_PERMISSION_DIALOG_VIEW = "ModalPermissionDialogView";
     public static final String NEW_PHOTO_PICKER = "NewPhotoPicker";
-    public static final String NETWORK_SERVICE = "NetworkService";
     public static final String NOTIFICATION_SUSPENDER = "NotificationSuspender";
     public static final String NO_CREDIT_CARD_ABORT = "NoCreditCardAbort";
     public static final String NTP_ARTICLE_SUGGESTIONS = "NTPArticleSuggestions";

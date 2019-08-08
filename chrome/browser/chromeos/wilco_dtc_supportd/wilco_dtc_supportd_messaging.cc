@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
@@ -36,6 +37,18 @@ class Profile;
 
 namespace chromeos {
 
+// List of extension URLs that will communicate with wilco_dtc
+// through the extensions native messaging system.
+//
+// Note: the list size must be kept in sync with
+// |kWilcoDtcSupportdHostOriginsSize|.
+const char* const kWilcoDtcSupportdHostOrigins[] = {
+    "chrome-extension://echlnkcmdobkdgcjgjbiceoceeoenjkj/"};
+
+// Size of |kWilcoDtcSupportdHostOrigins| array.
+const size_t kWilcoDtcSupportdHostOriginsSize =
+    base::size(kWilcoDtcSupportdHostOrigins);
+
 // Native application name that is used for passing UI messages between the
 // wilco_dtc daemon and extensions.
 const char kWilcoDtcSupportdUiMessageHost[] = "com.google.wilco_dtc";
@@ -51,16 +64,6 @@ const char kWilcoDtcSupportdUiExtraMessagesExtensionsError[] =
 const int kWilcoDtcSupportdUiMessageMaxSize = 1000000;
 
 namespace {
-
-// List of extension IDs that will receive UI messages from the wilco_dtc
-// through the extensions native messaging system.
-//
-// Note: the list must be kept in sync with the allowed origins list in
-// src/chrome/browser/extensions/api/messaging/native_message_host_chromeos.cc.
-//
-// TODO(crbug.com/907932,b/123926112): Populate the list once extension IDs are
-// determined.
-const char* const kAllowedExtensionIds[] = {};
 
 // Extensions native message host implementation that is used when an
 // extension requests a message channel to the wilco_dtc daemon.
@@ -372,10 +375,12 @@ void DeliverWilcoDtcSupportdUiMessageToExtensions(
   std::vector<std::pair<Profile*, std::string>> recipient_extensions;
   for (auto* profile :
        g_browser_process->profile_manager()->GetLoadedProfiles()) {
-    for (const auto* extension_id : kAllowedExtensionIds) {
+    for (const auto* extension_url : kWilcoDtcSupportdHostOrigins) {
+      GURL url = GURL(extension_url);
       if (extensions::ExtensionRegistry::Get(profile)
               ->enabled_extensions()
-              .GetByID(extension_id)) {
+              .GetExtensionOrAppByURL(url)) {
+        std::string extension_id = url.host();
         recipient_extensions.emplace_back(profile, extension_id);
       }
     }

@@ -14,9 +14,10 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
-#include "content/browser/sms/sms_provider.h"
+#include "content/browser/sms/test/mock_sms_dialog.h"
+#include "content/browser/sms/test/mock_sms_provider.h"
+#include "content/browser/sms/test/mock_sms_web_contents_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
@@ -49,50 +50,9 @@ namespace content {
 
 class RenderFrameHost;
 
-using blink::mojom::SmsReceiverPtr;
-using ::testing::_;
-using ::testing::Invoke;
-using ::testing::NiceMock;
-
 namespace {
 
 const char kTestUrl[] = "https://www.google.com";
-
-class MockSmsProvider : public SmsProvider {
- public:
-  MockSmsProvider() = default;
-  ~MockSmsProvider() override = default;
-
-  MOCK_METHOD0(Retrieve, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSmsProvider);
-};
-
-class MockSmsDialog : public SmsDialog {
- public:
-  MockSmsDialog() : SmsDialog() {}
-  ~MockSmsDialog() override = default;
-
-  MOCK_METHOD3(Open,
-               void(RenderFrameHost*, base::OnceClosure, base::OnceClosure));
-  MOCK_METHOD0(Close, void());
-  MOCK_METHOD0(SmsReceived, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSmsDialog);
-};
-
-class MockWebContentsDelegate : public WebContentsDelegate {
- public:
-  MockWebContentsDelegate() = default;
-  ~MockWebContentsDelegate() override = default;
-
-  MOCK_METHOD0(CreateSmsDialog, std::unique_ptr<SmsDialog>());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockWebContentsDelegate);
-};
 
 // Service encapsulates a SmsService endpoint, with all of its dependencies
 // mocked out (and the common plumbing needed to inject them), and a
@@ -115,9 +75,8 @@ class Service {
       : Service(web_contents,
                 web_contents->GetMainFrame()->GetLastCommittedOrigin()) {}
 
-  NiceMock<MockWebContentsDelegate>* delegate() { return &delegate_; }
+  NiceMock<MockSmsWebContentsDelegate>* delegate() { return &delegate_; }
   NiceMock<MockSmsProvider>* provider() { return &provider_; }
-  blink::mojom::SmsReceiverPtr* client() { return &service_ptr_; }
 
   void SetupSmsDialog(content::RenderFrameHost* rfh) {
     auto* dialog = new NiceMock<MockSmsDialog>();
@@ -150,7 +109,7 @@ class Service {
   }
 
  private:
-  NiceMock<MockWebContentsDelegate> delegate_;
+  NiceMock<MockSmsWebContentsDelegate> delegate_;
   NiceMock<MockSmsProvider> provider_;
   blink::mojom::SmsReceiverPtr service_ptr_;
   std::unique_ptr<SmsService> service_;
@@ -397,7 +356,7 @@ TEST_F(SmsServiceTest, Timeout) {
 TEST_F(SmsServiceTest, CleansUp) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  NiceMock<MockWebContentsDelegate> delegate;
+  NiceMock<MockSmsWebContentsDelegate> delegate;
   WebContentsImpl* web_contents_impl =
       reinterpret_cast<WebContentsImpl*>(web_contents());
   web_contents_impl->SetDelegate(&delegate);

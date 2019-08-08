@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_deletion_info.h"
 #include "services/network/cookie_manager.h"
@@ -60,8 +61,9 @@ void RunTestCase(TestCase test_case,
   std::string cookie_line = "A=2";
   GURL test_url(test_case.url);
   EXPECT_TRUE(test_url.is_valid()) << test_case.url;
-  std::unique_ptr<net::CanonicalCookie> cookie = net::CanonicalCookie::Create(
-      test_url, cookie_line, base::Time::Now(), net::CookieOptions());
+  std::unique_ptr<net::CanonicalCookie> cookie =
+      net::CanonicalCookie::Create(test_url, cookie_line, base::Time::Now(),
+                                   base::nullopt /* server_time */);
   EXPECT_TRUE(cookie) << cookie_line << " from " << test_case.url
                       << " is not a valid cookie";
   if (cookie)
@@ -69,22 +71,25 @@ void RunTestCase(TestCase test_case,
         << cookie->DebugString();
 
   cookie_line = std::string("A=2;domain=") + test_url.host();
-  cookie = net::CanonicalCookie::Create(
-      test_url, cookie_line, base::Time::Now(), net::CookieOptions());
+  cookie =
+      net::CanonicalCookie::Create(test_url, cookie_line, base::Time::Now(),
+                                   base::nullopt /* server_time */);
   if (cookie)
     EXPECT_EQ(test_case.should_match, delete_info.Matches(*cookie))
         << cookie->DebugString();
 
   cookie_line = std::string("A=2; HttpOnly;") + test_url.host();
-  cookie = net::CanonicalCookie::Create(
-      test_url, cookie_line, base::Time::Now(), net::CookieOptions());
+  cookie =
+      net::CanonicalCookie::Create(test_url, cookie_line, base::Time::Now(),
+                                   base::nullopt /* server_time */);
   if (cookie)
     EXPECT_EQ(test_case.should_match, delete_info.Matches(*cookie))
         << cookie->DebugString();
 
   cookie_line = std::string("A=2; HttpOnly; Secure;") + test_url.host();
-  cookie = net::CanonicalCookie::Create(
-      test_url, cookie_line, base::Time::Now(), net::CookieOptions());
+  cookie =
+      net::CanonicalCookie::Create(test_url, cookie_line, base::Time::Now(),
+                                   base::nullopt /* server_time */);
   if (cookie)
     EXPECT_EQ(test_case.should_match, delete_info.Matches(*cookie))
         << cookie->DebugString();

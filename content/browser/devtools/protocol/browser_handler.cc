@@ -105,6 +105,80 @@ std::unique_ptr<Browser::Histogram> Convert(base::HistogramBase& in_histogram,
       .Build();
 }
 
+// Parses PermissionDescriptors (|descriptor|) into their appropriate
+// PermissionType |permission_type| by duplicating the logic in the methods
+// //third_party/blink/renderer/modules/permissions:permissions
+// ::ParsePermission and
+// //content/browser/permissions:permission_service_impl
+// ::PermissionDescriptorToPermissionType, producing an error in
+// |error_message| as necessary.
+// TODO(crbug.com/989983): De-duplicate this logic.
+Response PermissionDescriptorToPermissionType(
+    std::unique_ptr<protocol::Browser::PermissionDescriptor> descriptor,
+    PermissionType* permission_type) {
+  const std::string name = descriptor->GetName();
+
+  if (name == "geolocation") {
+    *permission_type = PermissionType::GEOLOCATION;
+  } else if (name == "camera") {
+    *permission_type = PermissionType::VIDEO_CAPTURE;
+  } else if (name == "microphone") {
+    *permission_type = PermissionType::AUDIO_CAPTURE;
+  } else if (name == "notifications") {
+    *permission_type = PermissionType::NOTIFICATIONS;
+  } else if (name == "persistent-storage") {
+    *permission_type = PermissionType::DURABLE_STORAGE;
+  } else if (name == "push") {
+    if (!descriptor->GetUserVisibleOnly(false)) {
+      return Response::InvalidParams(
+          "Push Permission without userVisibleOnly:true isn't supported");
+    }
+    *permission_type = PermissionType::NOTIFICATIONS;
+  } else if (name == "midi") {
+    if (descriptor->GetSysex(false))
+      *permission_type = PermissionType::MIDI_SYSEX;
+    else
+      *permission_type = PermissionType::MIDI;
+  } else if (name == "background-sync") {
+    *permission_type = PermissionType::BACKGROUND_SYNC;
+  } else if (name == "ambient-light-sensor" || name == "accelerometer" ||
+             name == "gyroscope" || name == "magnetometer") {
+    *permission_type = PermissionType::SENSORS;
+  } else if (name == "accessibility-events") {
+    *permission_type = PermissionType::ACCESSIBILITY_EVENTS;
+  } else if (name == "clipboard-read") {
+    *permission_type = PermissionType::CLIPBOARD_READ;
+  } else if (name == "clipboard-write") {
+    *permission_type = PermissionType::CLIPBOARD_WRITE;
+  } else if (name == "payment-handler") {
+    *permission_type = PermissionType::PAYMENT_HANDLER;
+  } else if (name == "background-fetch") {
+    *permission_type = PermissionType::BACKGROUND_FETCH;
+  } else if (name == "idle-detection") {
+    *permission_type = PermissionType::IDLE_DETECTION;
+  } else if (name == "periodic-background-sync") {
+    *permission_type = PermissionType::PERIODIC_BACKGROUND_SYNC;
+  } else if (name == "wake-lock") {
+    if (!descriptor->HasType()) {
+      return Response::InvalidParams(
+          "Could not parse WakeLockPermissionDescriptor with property type");
+    }
+    const std::string type = descriptor->GetType("");
+    if (type == "screen") {
+      *permission_type = PermissionType::WAKE_LOCK_SCREEN;
+    } else if (type == "system") {
+      *permission_type = PermissionType::WAKE_LOCK_SYSTEM;
+    } else {
+      return Response::InvalidParams("Invalid WakeLockType: " + type);
+    }
+  } else {
+    return Response::InvalidParams("Invalid PermissionDescriptor name: " +
+                                   name);
+  }
+
+  return Response::OK();
+}
+
 Response FromProtocolPermissionType(
     const protocol::Browser::PermissionType& type,
     PermissionType* out_type) {
@@ -157,6 +231,21 @@ Response FromProtocolPermissionType(
   return Response::OK();
 }
 
+Response PermissionSettingToPermissionStatus(
+    const protocol::Browser::PermissionSetting& setting,
+    blink::mojom::PermissionStatus* out_status) {
+  if (setting == protocol::Browser::PermissionSettingEnum::Granted) {
+    *out_status = blink::mojom::PermissionStatus::GRANTED;
+  } else if (setting == protocol::Browser::PermissionSettingEnum::Denied) {
+    *out_status = blink::mojom::PermissionStatus::DENIED;
+  } else if (setting == protocol::Browser::PermissionSettingEnum::Prompt) {
+    *out_status = blink::mojom::PermissionStatus::ASK;
+  } else {
+    return Response::InvalidParams("Unknown permission setting: " + setting);
+  }
+  return Response::OK();
+}
+
 }  // namespace
 
 Response BrowserHandler::GetHistograms(
@@ -200,6 +289,37 @@ Response BrowserHandler::FindBrowserContext(
   }
   return Response::InvalidParams("Failed to find browser context for id " +
                                  context_id);
+}
+
+Response BrowserHandler::SetPermission(
+    const std::string& origin,
+    std::unique_ptr<protocol::Browser::PermissionDescriptor> permission,
+    const protocol::Browser::PermissionSetting& setting,
+    Maybe<std::string> browser_context_id) {
+  BrowserContext* browser_context = nullptr;
+  Response response = FindBrowserContext(browser_context_id, &browser_context);
+  if (!response.isSuccess())
+    return response;
+
+  PermissionType type;
+  Response parse_response =
+      PermissionDescriptorToPermissionType(std::move(permission), &type);
+  if (!parse_response.isSuccess())
+    return parse_response;
+
+  blink::mojom::PermissionStatus permission_status;
+  Response setting_response =
+      PermissionSettingToPermissionStatus(setting, &permission_status);
+  if (!setting_response.isSuccess())
+    return setting_response;
+
+  PermissionControllerImpl* permission_controller =
+      PermissionControllerImpl::FromBrowserContext(browser_context);
+  GURL url = GURL(origin).GetOrigin();
+  permission_controller->SetOverrideForDevTools(url, type, permission_status);
+  contexts_with_overridden_permissions_.insert(
+      browser_context_id.fromMaybe(std::string()));
+  return Response::OK();
 }
 
 Response BrowserHandler::GrantPermissions(

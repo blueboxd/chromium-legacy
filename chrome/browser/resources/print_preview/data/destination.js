@@ -2,248 +2,246 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
-
-/**
- * Enumeration of the types of destinations.
- * @enum {string}
- */
-print_preview.DestinationType = {
-  GOOGLE: 'google',
-  GOOGLE_PROMOTED: 'google_promoted',
-  LOCAL: 'local',
-  MOBILE: 'mobile'
-};
-
-/**
- * Enumeration of the origin types for cloud destinations.
- * @enum {string}
- */
-print_preview.DestinationOrigin = {
-  LOCAL: 'local',
-  COOKIES: 'cookies',
-  // <if expr="chromeos">
-  DEVICE: 'device',
-  // </if>
-  PRIVET: 'privet',
-  EXTENSION: 'extension',
-  CROS: 'chrome_os',
-};
-
-/**
- * Cloud Print origins.
- * @const {!Array<!print_preview.DestinationOrigin>}
- */
-print_preview.CloudOrigins = [
-  print_preview.DestinationOrigin.COOKIES,
-  // <if expr="chromeos">
-  print_preview.DestinationOrigin.DEVICE
-  // </if>
-];
-
-/**
- * Enumeration of the connection statuses of printer destinations.
- * @enum {string}
- */
-print_preview.DestinationConnectionStatus = {
-  DORMANT: 'DORMANT',
-  OFFLINE: 'OFFLINE',
-  ONLINE: 'ONLINE',
-  UNKNOWN: 'UNKNOWN',
-  UNREGISTERED: 'UNREGISTERED'
-};
-
-/**
- * Enumeration specifying whether a destination is provisional and the reason
- * the destination is provisional.
- * @enum {string}
- */
-print_preview.DestinationProvisionalType = {
-  // Destination is not provisional.
-  NONE: 'NONE',
-  // User has to grant USB access for the destination to its provider.
-  // Used for destinations with extension origin.
-  NEEDS_USB_PERMISSION: 'NEEDS_USB_PERMISSION'
-};
-
-/**
- * Enumeration specifying the status of a destination's 2018 certificate.
- * Values UNKNOWN and YES are returned directly by the GCP server.
- * @enum {string}
- */
-print_preview.DestinationCertificateStatus = {
-  // Destination is not a cloud printer or no status was retrieved.
-  NONE: 'NONE',
-  // Printer does not have a valid 2018 certificate. Currently unused, to be
-  // sent by GCP server.
-  NO: 'NO',
-  // Printer may or may not have a valid certificate. Sent by GCP server.
-  UNKNOWN: 'UNKNOWN',
-  // Printer has a valid 2018 certificate. Sent by GCP server.
-  YES: 'YES'
-};
-
-/**
- * @typedef {{
- *   display_name: (string),
- *   type: (string | undefined),
- *   value: (number | string | boolean),
- *   is_default: (boolean | undefined),
- * }}
- */
-print_preview.VendorCapabilitySelectOption;
-
-/**
- * Specifies a custom vendor capability.
- * @typedef {{
- *   id: (string),
- *   display_name: (string),
- *   localized_display_name: (string | undefined),
- *   type: (string),
- *   select_cap: ({
- *     option: (Array<!print_preview.VendorCapabilitySelectOption>|undefined),
- *   }|undefined),
- *   typed_value_cap: ({
- *     default: (number | string | boolean | undefined),
- *   }|undefined),
- *   range_cap: ({
- *     default: (number),
- *   }),
- * }}
- */
-print_preview.VendorCapability;
-
-/**
- * Capabilities of a print destination represented in a CDD.
- * Pin capability is not a part of standard CDD description and is defined only
- * on Chrome OS.
- *
- * @typedef {{
- *   vendor_capability: !Array<!print_preview.VendorCapability>,
- *   collate: ({default: (boolean|undefined)}|undefined),
- *   color: ({
- *     option: !Array<{
- *       type: (string|undefined),
- *       vendor_id: (string|undefined),
- *       custom_display_name: (string|undefined),
- *       is_default: (boolean|undefined)
- *     }>
- *   }|undefined),
- *   copies: ({default: (number|undefined),
- *             max: (number|undefined)}|undefined),
- *   duplex: ({option: !Array<{type: (string|undefined),
- *                             is_default: (boolean|undefined)}>}|undefined),
- *   page_orientation: ({
- *     option: !Array<{type: (string|undefined),
- *                      is_default: (boolean|undefined)}>
- *   }|undefined),
- *   media_size: ({
- *     option: !Array<{
- *       type: (string|undefined),
- *       vendor_id: (string|undefined),
- *       custom_display_name: (string|undefined),
- *       is_default: (boolean|undefined)
- *     }>
- *   }|undefined),
- *   dpi: ({
- *     option: !Array<{
- *       vendor_id: (string|undefined),
- *       horizontal_dpi: number,
- *       vertical_dpi: number,
- *       is_default: (boolean|undefined)
- *     }>
- *   }|undefined),
- *   pin: ({supported: (boolean|undefined)}|undefined)
- * }}
- */
-print_preview.CddCapabilities;
-
-/**
- * The CDD (Cloud Device Description) describes the capabilities of a print
- * destination.
- *
- * @typedef {{
- *   version: string,
- *   printer: !print_preview.CddCapabilities,
- * }}
- */
-print_preview.Cdd;
-
-/**
- * Enumeration of color modes used by Chromium.
- * @enum {number}
- */
-print_preview.ColorMode = {
-  GRAY: 1,
-  COLOR: 2
-};
-
-// <if expr="chromeos">
-/**
- * Enumeration of color mode restrictions used by Chromium.
- * This has to coincide with |printing::ColorModeRestriction| as defined in
- * printing/backend/printing_restrictions.h
- * @enum {number}
- */
-print_preview.ColorModeRestriction = {
-  UNSET: 0x0,
-  MONOCHROME: 0x1,
-  COLOR: 0x2,
-};
-
-/**
- * Enumeration of duplex mode restrictions used by Chromium.
- * This has to coincide with |printing::DuplexModeRestriction| as defined in
- * printing/backend/printing_restrictions.h
- * @enum {number}
- */
-print_preview.DuplexModeRestriction = {
-  UNSET: 0x0,
-  SIMPLEX: 0x1,
-  LONG_EDGE: 0x2,
-  SHORT_EDGE: 0x4,
-  DUPLEX: 0x6
-};
-
-/**
- * Enumeration of PIN printing mode restrictions used by Chromium.
- * This has to coincide with |printing::PinModeRestriction| as defined in
- * printing/backend/printing_restrictions.h
- * @enum {number}
- */
-print_preview.PinModeRestriction = {
-  UNSET: 0,
-  PIN: 1,
-  NO_PIN: 2
-};
-
-/**
- * Policies affecting a destination.
- * @typedef {{
- *   allowedColorModes: ?print_preview.ColorModeRestriction,
- *   allowedDuplexModes: ?print_preview.DuplexModeRestriction,
- *   allowedPinMode: ?print_preview.PinModeRestriction,
- *   defaultColorMode: ?print_preview.ColorModeRestriction,
- *   defaultDuplexMode: ?print_preview.DuplexModeRestriction,
- *   defaultPinMode: ?print_preview.PinModeRestriction,
- * }}
- */
-print_preview.Policies;
-// </if>
-
-/**
- * @typedef {{id: string,
- *            origin: print_preview.DestinationOrigin,
- *            account: string,
- *            capabilities: ?print_preview.Cdd,
- *            displayName: string,
- *            extensionId: string,
- *            extensionName: string}}
- */
-print_preview.RecentDestination;
-
 cr.define('print_preview', function() {
   'use strict';
+
+  /**
+   * Enumeration of the types of destinations.
+   * @enum {string}
+   */
+  const DestinationType = {
+    GOOGLE: 'google',
+    GOOGLE_PROMOTED: 'google_promoted',
+    LOCAL: 'local',
+    MOBILE: 'mobile',
+  };
+
+  /**
+   * Enumeration of the origin types for cloud destinations.
+   * @enum {string}
+   */
+  const DestinationOrigin = {
+    LOCAL: 'local',
+    COOKIES: 'cookies',
+    // <if expr="chromeos">
+    DEVICE: 'device',
+    // </if>
+    PRIVET: 'privet',
+    EXTENSION: 'extension',
+    CROS: 'chrome_os',
+  };
+
+  /**
+   * Cloud Print origins.
+   * @const {!Array<!print_preview.DestinationOrigin>}
+   */
+  const CloudOrigins = [
+    DestinationOrigin.COOKIES,
+    // <if expr="chromeos">
+    DestinationOrigin.DEVICE,
+    // </if>
+  ];
+
+  /**
+   * Enumeration of the connection statuses of printer destinations.
+   * @enum {string}
+   */
+  const DestinationConnectionStatus = {
+    DORMANT: 'DORMANT',
+    OFFLINE: 'OFFLINE',
+    ONLINE: 'ONLINE',
+    UNKNOWN: 'UNKNOWN',
+    UNREGISTERED: 'UNREGISTERED',
+  };
+
+  /**
+   * Enumeration specifying whether a destination is provisional and the reason
+   * the destination is provisional.
+   * @enum {string}
+   */
+  const DestinationProvisionalType = {
+    // Destination is not provisional.
+    NONE: 'NONE',
+    // User has to grant USB access for the destination to its provider.
+    // Used for destinations with extension origin.
+    NEEDS_USB_PERMISSION: 'NEEDS_USB_PERMISSION',
+  };
+
+  /**
+   * Enumeration specifying the status of a destination's 2018 certificate.
+   * Values UNKNOWN and YES are returned directly by the GCP server.
+   * @enum {string}
+   */
+  const DestinationCertificateStatus = {
+    // Destination is not a cloud printer or no status was retrieved.
+    NONE: 'NONE',
+    // Printer does not have a valid 2018 certificate. Currently unused, to be
+    // sent by GCP server.
+    NO: 'NO',
+    // Printer may or may not have a valid certificate. Sent by GCP server.
+    UNKNOWN: 'UNKNOWN',
+    // Printer has a valid 2018 certificate. Sent by GCP server.
+    YES: 'YES',
+  };
+
+  /**
+   * @typedef {{
+   *   display_name: (string),
+   *   type: (string | undefined),
+   *   value: (number | string | boolean),
+   *   is_default: (boolean | undefined),
+   * }}
+   */
+  let VendorCapabilitySelectOption;
+
+  /**
+   * Specifies a custom vendor capability.
+   * @typedef {{
+   *   id: (string),
+   *   display_name: (string),
+   *   localized_display_name: (string | undefined),
+   *   type: (string),
+   *   select_cap: ({
+   *     option: (Array<!print_preview.VendorCapabilitySelectOption>|undefined),
+   *   }|undefined),
+   *   typed_value_cap: ({
+   *     default: (number | string | boolean | undefined),
+   *   }|undefined),
+   *   range_cap: ({
+   *     default: (number),
+   *   }),
+   * }}
+   */
+  let VendorCapability;
+
+  /**
+   * Capabilities of a print destination represented in a CDD.
+   * Pin capability is not a part of standard CDD description and is defined
+   * only on Chrome OS.
+   *
+   * @typedef {{
+   *   vendor_capability: !Array<!print_preview.VendorCapability>,
+   *   collate: ({default: (boolean|undefined)}|undefined),
+   *   color: ({
+   *     option: !Array<{
+   *       type: (string|undefined),
+   *       vendor_id: (string|undefined),
+   *       custom_display_name: (string|undefined),
+   *       is_default: (boolean|undefined)
+   *     }>
+   *   }|undefined),
+   *   copies: ({default: (number|undefined),
+   *             max: (number|undefined)}|undefined),
+   *   duplex: ({option: !Array<{type: (string|undefined),
+   *                             is_default: (boolean|undefined)}>}|undefined),
+   *   page_orientation: ({
+   *     option: !Array<{type: (string|undefined),
+   *                      is_default: (boolean|undefined)}>
+   *   }|undefined),
+   *   media_size: ({
+   *     option: !Array<{
+   *       type: (string|undefined),
+   *       vendor_id: (string|undefined),
+   *       custom_display_name: (string|undefined),
+   *       is_default: (boolean|undefined)
+   *     }>
+   *   }|undefined),
+   *   dpi: ({
+   *     option: !Array<{
+   *       vendor_id: (string|undefined),
+   *       horizontal_dpi: number,
+   *       vertical_dpi: number,
+   *       is_default: (boolean|undefined)
+   *     }>
+   *   }|undefined),
+   *   pin: ({supported: (boolean|undefined)}|undefined)
+   * }}
+   */
+  let CddCapabilities;
+
+  /**
+   * The CDD (Cloud Device Description) describes the capabilities of a print
+   * destination.
+   *
+   * @typedef {{
+   *   version: string,
+   *   printer: !print_preview.CddCapabilities,
+   * }}
+   */
+  let Cdd;
+
+  /**
+   * Enumeration of color modes used by Chromium.
+   * @enum {number}
+   */
+  const ColorMode = {
+    GRAY: 1,
+    COLOR: 2,
+  };
+
+  // <if expr="chromeos">
+  /**
+   * Enumeration of color mode restrictions used by Chromium.
+   * This has to coincide with |printing::ColorModeRestriction| as defined in
+   * printing/backend/printing_restrictions.h
+   * @enum {number}
+   */
+  const ColorModeRestriction = {
+    UNSET: 0x0,
+    MONOCHROME: 0x1,
+    COLOR: 0x2,
+  };
+
+  /**
+   * Enumeration of duplex mode restrictions used by Chromium.
+   * This has to coincide with |printing::DuplexModeRestriction| as defined in
+   * printing/backend/printing_restrictions.h
+   * @enum {number}
+   */
+  const DuplexModeRestriction = {
+    UNSET: 0x0,
+    SIMPLEX: 0x1,
+    LONG_EDGE: 0x2,
+    SHORT_EDGE: 0x4,
+    DUPLEX: 0x6,
+  };
+
+  /**
+   * Enumeration of PIN printing mode restrictions used by Chromium.
+   * This has to coincide with |printing::PinModeRestriction| as defined in
+   * printing/backend/printing_restrictions.h
+   * @enum {number}
+   */
+  const PinModeRestriction = {
+    UNSET: 0,
+    PIN: 1,
+    NO_PIN: 2,
+  };
+
+  /**
+   * Policies affecting a destination.
+   * @typedef {{
+   *   allowedColorModes: ?print_preview.ColorModeRestriction,
+   *   allowedDuplexModes: ?print_preview.DuplexModeRestriction,
+   *   allowedPinMode: ?print_preview.PinModeRestriction,
+   *   defaultColorMode: ?print_preview.ColorModeRestriction,
+   *   defaultDuplexMode: ?print_preview.DuplexModeRestriction,
+   *   defaultPinMode: ?print_preview.PinModeRestriction,
+   * }}
+   */
+  let Policies;
+  // </if>
+
+  /**
+   * @typedef {{id: string,
+   *            origin: print_preview.DestinationOrigin,
+   *            account: string,
+   *            capabilities: ?print_preview.Cdd,
+   *            displayName: string,
+   *            extensionId: string,
+   *            extensionName: string}}
+   */
+  let RecentDestination;
 
   /**
    * Creates a |RecentDestination| to represent |destination| in the app
@@ -430,7 +428,7 @@ cr.define('print_preview', function() {
        * @private {print_preview.DestinationProvisionalType}
        */
       this.provisionalType_ = (opt_params && opt_params.provisionalType) ||
-          print_preview.DestinationProvisionalType.NONE;
+          DestinationProvisionalType.NONE;
 
       /**
        * Printer 2018 certificate status
@@ -441,8 +439,7 @@ cr.define('print_preview', function() {
 
       assert(
           this.provisionalType_ !=
-                  print_preview.DestinationProvisionalType
-                      .NEEDS_USB_PERMISSION ||
+                  DestinationProvisionalType.NEEDS_USB_PERMISSION ||
               this.isExtension,
           'Provisional USB destination only supprted with extension origin.');
 
@@ -499,17 +496,16 @@ cr.define('print_preview', function() {
 
     /** @return {boolean} Whether the destination is local or cloud-based. */
     get isLocal() {
-      return this.origin_ == print_preview.DestinationOrigin.LOCAL ||
-          this.origin_ == print_preview.DestinationOrigin.EXTENSION ||
-          this.origin_ == print_preview.DestinationOrigin.CROS ||
-          (this.origin_ == print_preview.DestinationOrigin.PRIVET &&
-           this.connectionStatus_ !=
-               print_preview.DestinationConnectionStatus.UNREGISTERED);
+      return this.origin_ == DestinationOrigin.LOCAL ||
+          this.origin_ == DestinationOrigin.EXTENSION ||
+          this.origin_ == DestinationOrigin.CROS ||
+          (this.origin_ == DestinationOrigin.PRIVET &&
+           this.connectionStatus_ != DestinationConnectionStatus.UNREGISTERED);
     }
 
     /** @return {boolean} Whether the destination is a Privet local printer */
     get isPrivet() {
-      return this.origin_ == print_preview.DestinationOrigin.PRIVET;
+      return this.origin_ == DestinationOrigin.PRIVET;
     }
 
     /**
@@ -517,7 +513,7 @@ cr.define('print_preview', function() {
      *     printer.
      */
     get isExtension() {
-      return this.origin_ == print_preview.DestinationOrigin.EXTENSION;
+      return this.origin_ == DestinationOrigin.EXTENSION;
     }
 
     /**
@@ -671,8 +667,7 @@ cr.define('print_preview', function() {
 
     /** @return {boolean} Whether the destination is ready to be selected. */
     get readyForSelection() {
-      return (!cr.isChromeOS ||
-              this.origin_ != print_preview.DestinationOrigin.CROS ||
+      return (!cr.isChromeOS || this.origin_ != DestinationOrigin.CROS ||
               this.capabilities_ != null) &&
           !this.isProvisional;
     }
@@ -776,8 +771,7 @@ cr.define('print_preview', function() {
      * @return {boolean}
      */
     get isProvisional() {
-      return this.provisionalType_ !=
-          print_preview.DestinationProvisionalType.NONE;
+      return this.provisionalType_ != DestinationProvisionalType.NONE;
     }
 
     /**
@@ -957,9 +951,28 @@ cr.define('print_preview', function() {
 
   // Export
   return {
-    Destination: Destination,
-    makeRecentDestination: makeRecentDestination,
+    CddCapabilities: CddCapabilities,
+    Cdd: Cdd,
+    CloudOrigins: CloudOrigins,
+    ColorMode: ColorMode,
     createDestinationKey: createDestinationKey,
     createRecentDestinationKey: createRecentDestinationKey,
+    DestinationCertificateStatus: DestinationCertificateStatus,
+    DestinationConnectionStatus: DestinationConnectionStatus,
+    Destination: Destination,
+    DestinationOrigin: DestinationOrigin,
+    DestinationProvisionalType: DestinationProvisionalType,
+    DestinationType: DestinationType,
+    makeRecentDestination: makeRecentDestination,
+    RecentDestination: RecentDestination,
+    VendorCapabilitySelectOption: VendorCapabilitySelectOption,
+    VendorCapability: VendorCapability,
+
+    // <if expr="chromeos">
+    ColorModeRestriction: ColorModeRestriction,
+    DuplexModeRestriction: DuplexModeRestriction,
+    PinModeRestriction: PinModeRestriction,
+    Policies: Policies,
+    // </if>
   };
 });

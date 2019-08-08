@@ -57,6 +57,8 @@ class ASH_EXPORT MediaNotificationControllerImpl
   // media_message_center::MediaNotificationController:
   void ShowNotification(const std::string& id) override;
   void HideNotification(const std::string& id) override;
+  void RemoveItem(const std::string& id) override;
+  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override;
 
   std::unique_ptr<MediaNotificationContainerImpl> CreateMediaNotification(
       const message_center::Notification& notification);
@@ -65,6 +67,12 @@ class ASH_EXPORT MediaNotificationControllerImpl
     auto it = notifications_.find(id);
     DCHECK(it != notifications_.end());
     return &it->second;
+  }
+
+  bool HasItemForTesting(const std::string& id) const;
+  void set_task_runner_for_testing(
+      scoped_refptr<base::SequencedTaskRunner> task_runner_for_testing) {
+    task_runner_for_testing_ = task_runner_for_testing;
   }
 
  private:
@@ -81,6 +89,9 @@ class ASH_EXPORT MediaNotificationControllerImpl
   // session keyed by its |request_id| in string format.
   std::map<const std::string, media_message_center::MediaNotificationItem>
       notifications_;
+
+  // Tick clock used for testing.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_for_testing_;
 
   std::unique_ptr<MediaNotificationBlocker> blocker_;
 

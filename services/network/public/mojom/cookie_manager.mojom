@@ -59,9 +59,6 @@ struct CookieOptions {
   bool exclude_httponly = true;
   CookieSameSiteContext same_site_cookie_context = CROSS_SITE;
   bool update_access_time = true;
-  // TODO(rdsmith): Remove this element from the mojo structure?  It's only
-  // used in the underlying net:: structure in CanonicalCookie::Create().
-  mojo_base.mojom.Time? server_time;
   bool return_excluded_cookies = false;
 };
 

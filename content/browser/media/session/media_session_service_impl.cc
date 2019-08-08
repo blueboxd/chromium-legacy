@@ -68,6 +68,14 @@ void MediaSessionServiceImpl::SetPlaybackState(
     session->OnMediaSessionPlaybackStateChanged(this);
 }
 
+void MediaSessionServiceImpl::SetPositionState(
+    const base::Optional<media_session::MediaPosition>& position) {
+  position_ = position;
+  MediaSessionImpl* session = GetMediaSession();
+  if (session)
+    session->RebuildAndNotifyMediaPositionChanged();
+}
+
 void MediaSessionServiceImpl::SetMetadata(
     blink::mojom::SpecMediaMetadataPtr metadata) {
   metadata_.reset();

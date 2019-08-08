@@ -539,7 +539,9 @@ class AutofillManagerTest : public testing::Test {
         autofill_manager_->credit_card_access_manager_->cvc_authenticator_
             ->full_card_request_.get();
     DCHECK(full_card_request);
-    full_card_request->OnDidGetRealPan(result, real_pan);
+    payments::PaymentsClient::UnmaskResponseDetails response;
+    full_card_request->OnDidGetRealPan(result,
+                                       response.with_real_pan(real_pan));
   }
 
   // Convenience method to cast the FullCardRequest into a CardUnmaskDelegate.

@@ -873,6 +873,27 @@ TEST_F(CrostiniPackageServiceTest, SecondUninstallStartsWhenFirstFails) {
                            IsUninstallProgressNotification(0, SECOND_APP)));
 }
 
+TEST_F(CrostiniPackageServiceTest, DuplicateUninstallSucceeds) {
+  service_->QueueUninstallApplication(kDefaultAppId);
+  service_->QueueUninstallApplication(kDefaultAppId);
+
+  UninstallPackageOwningFileRequest request;
+  StartAndSignalUninstall(UninstallPackageProgressSignal::UNINSTALLING,
+                          50 /*progress_percent*/, kDefaultAppFileId, &request);
+
+  crostini_test_helper_->RemoveApp(0);
+
+  UninstallPackageProgressSignal signal_success = MakeUninstallSignal(request);
+  signal_success.set_status(UninstallPackageProgressSignal::SUCCEEDED);
+  fake_cicerone_client_->UninstallPackageProgress(signal_success);
+
+  EXPECT_THAT(
+      Printable(notification_display_service_->GetDisplayedNotificationsForType(
+          NotificationHandler::Type::TRANSIENT)),
+      UnorderedElementsAre(IsUninstallSuccessNotification(DEFAULT_APP),
+                           IsUninstallSuccessNotification(DEFAULT_APP)));
+}
+
 TEST_F(CrostiniPackageServiceTest,
        AfterSecondInstallStartsProgressAppliesToSecond) {
   service_->QueueUninstallApplication(kDefaultAppId);

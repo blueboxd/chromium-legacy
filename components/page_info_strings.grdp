@@ -45,6 +45,9 @@
   <message name="IDS_PAGE_INFO_SAFETY_TIP_LEAVE_BUTTON" desc="Text of button to leave a suspicious page shown on the safety tip page info bubble.">
     Leave this site
   </message>
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_SUMMARY" desc="Message to display in the page info bubble when the page you are on triggered a safety tip.">
+    Suspicious site
+  </message>
 
   <!-- Viewing file strings -->
   <message name="IDS_PAGE_INFO_FILE_PAGE" desc="Message to display in the page info bubble when the page the user has navigated to is a file:// page">

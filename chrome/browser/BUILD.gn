@@ -1554,6 +1554,8 @@ jumbo_split_static_library("browser") {
     "sharing/features.h",
     "sharing/ping_message_handler.cc",
     "sharing/ping_message_handler.h",
+    "sharing/shared_clipboard/feature_flags.cc",
+    "sharing/shared_clipboard/feature_flags.h",
     "sharing/sharing_constants.cc",
     "sharing/sharing_constants.h",
     "sharing/sharing_device_info.cc",
@@ -4212,6 +4214,8 @@ jumbo_split_static_library("browser") {
         "printing/print_preview_message_handler.h",
         "printing/print_view_manager.cc",
         "printing/print_view_manager.h",
+        "printing/printing_service.cc",
+        "printing/printing_service.h",
         "printing/pwg_raster_converter.cc",
         "printing/pwg_raster_converter.h",
       ]

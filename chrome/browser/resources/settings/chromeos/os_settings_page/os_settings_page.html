@@ -151,18 +151,18 @@
             </os-settings-people-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[!isGuestMode_]]">
-          <settings-section page-title="$i18n{personalizationPageTitle}"
-              section="personalization">
-            <settings-personalization-page></settings-personalization-page>
-          </settings-section>
-        </template>
         <settings-section page-title="$i18n{devicePageTitle}"
             section="device">
           <settings-device-page prefs="{{prefs}}"
               show-crostini="[[showCrostini]]">
           </settings-device-page>
         </settings-section>
+        <template is="dom-if" if="[[!isGuestMode_]]">
+          <settings-section page-title="$i18n{personalizationPageTitle}"
+              section="personalization">
+            <settings-personalization-page></settings-personalization-page>
+          </settings-section>
+        </template>
         <settings-section page-title="$i18n{osSearchPageTitle}"
             section="search">
           <os-settings-search-page prefs="{{prefs}}">

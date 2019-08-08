@@ -2,117 +2,127 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
+cr.define('print_preview', function() {
+  /**
+   * |key| is the field in the serialized settings state that corresponds to the
+   * setting, or an empty string if the setting should not be saved in the
+   * serialized state.
+   * @typedef {{
+   *   value: *,
+   *   unavailableValue: *,
+   *   valid: boolean,
+   *   available: boolean,
+   *   setByPolicy: boolean,
+   *   setFromUi: boolean,
+   *   key: string,
+   *   updatesPreview: boolean,
+   * }}
+   */
+  let Setting;
 
-/**
- * |key| is the field in the serialized settings state that corresponds to the
- * setting, or an empty string if the setting should not be saved in the
- * serialized state.
- * @typedef {{
- *   value: *,
- *   unavailableValue: *,
- *   valid: boolean,
- *   available: boolean,
- *   setByPolicy: boolean,
- *   setFromUi: boolean,
- *   key: string,
- *   updatesPreview: boolean,
- * }}
- */
-print_preview.Setting;
+  /**
+   * @typedef {{
+   *   pages: !print_preview.Setting,
+   *   copies: !print_preview.Setting,
+   *   collate: !print_preview.Setting,
+   *   layout: !print_preview.Setting,
+   *   color: !print_preview.Setting,
+   *   mediaSize: !print_preview.Setting,
+   *   margins: !print_preview.Setting,
+   *   dpi: !print_preview.Setting,
+   *   fitToPage: !print_preview.Setting,
+   *   scaling: !print_preview.Setting,
+   *   duplex: !print_preview.Setting,
+   *   duplexShortEdge: !print_preview.Setting,
+   *   cssBackground: !print_preview.Setting,
+   *   selectionOnly: !print_preview.Setting,
+   *   headerFooter: !print_preview.Setting,
+   *   rasterize: !print_preview.Setting,
+   *   vendorItems: !print_preview.Setting,
+   *   otherOptions: !print_preview.Setting,
+   *   ranges: !print_preview.Setting,
+   *   pagesPerSheet: !print_preview.Setting,
+   *   pin: (print_preview.Setting|undefined),
+   *   pinValue: (print_preview.Setting|undefined),
+   * }}
+   */
+  let Settings;
 
-/**
- * @typedef {{
- *   pages: !print_preview.Setting,
- *   copies: !print_preview.Setting,
- *   collate: !print_preview.Setting,
- *   layout: !print_preview.Setting,
- *   color: !print_preview.Setting,
- *   mediaSize: !print_preview.Setting,
- *   margins: !print_preview.Setting,
- *   dpi: !print_preview.Setting,
- *   fitToPage: !print_preview.Setting,
- *   scaling: !print_preview.Setting,
- *   duplex: !print_preview.Setting,
- *   duplexShortEdge: !print_preview.Setting,
- *   cssBackground: !print_preview.Setting,
- *   selectionOnly: !print_preview.Setting,
- *   headerFooter: !print_preview.Setting,
- *   rasterize: !print_preview.Setting,
- *   vendorItems: !print_preview.Setting,
- *   otherOptions: !print_preview.Setting,
- *   ranges: !print_preview.Setting,
- *   pagesPerSheet: !print_preview.Setting,
- *   pin: (print_preview.Setting|undefined),
- *   pinValue: (print_preview.Setting|undefined),
- * }}
- */
-print_preview.Settings;
+  /**
+   * @typedef {{
+   *    version: string,
+   *    recentDestinations: (!Array<!print_preview.RecentDestination> |
+   *                         undefined),
+   *    dpi: ({horizontal_dpi: number,
+   *           vertical_dpi: number,
+   *           is_default: (boolean | undefined)} | undefined),
+   *    mediaSize: ({height_microns: number,
+   *                 width_microns: number,
+   *                 custom_display_name: (string | undefined),
+   *                 is_default: (boolean | undefined)} | undefined),
+   *    marginsType: (print_preview.ticket_items.MarginsTypeValue | undefined),
+   *    customMargins: (print_preview.MarginsSetting | undefined),
+   *    isColorEnabled: (boolean | undefined),
+   *    isDuplexEnabled: (boolean | undefined),
+   *    isHeaderFooterEnabled: (boolean | undefined),
+   *    isLandscapeEnabled: (boolean | undefined),
+   *    isCollateEnabled: (boolean | undefined),
+   *    isFitToPageEnabled: (boolean | undefined),
+   *    isCssBackgroundEnabled: (boolean | undefined),
+   *    scaling: (string | undefined),
+   *    vendor_options: (Object | undefined),
+   *    isPinEnabled: (boolean | undefined),
+   *    pinValue: (string | undefined)
+   * }}
+   */
+  let SerializedSettings;
 
-/**
- * @typedef {{
- *    version: string,
- *    recentDestinations: (!Array<!print_preview.RecentDestination> |
- *                         undefined),
- *    dpi: ({horizontal_dpi: number,
- *           vertical_dpi: number,
- *           is_default: (boolean | undefined)} | undefined),
- *    mediaSize: ({height_microns: number,
- *                 width_microns: number,
- *                 custom_display_name: (string | undefined),
- *                 is_default: (boolean | undefined)} | undefined),
- *    marginsType: (print_preview.ticket_items.MarginsTypeValue | undefined),
- *    customMargins: (print_preview.MarginsSetting | undefined),
- *    isColorEnabled: (boolean | undefined),
- *    isDuplexEnabled: (boolean | undefined),
- *    isHeaderFooterEnabled: (boolean | undefined),
- *    isLandscapeEnabled: (boolean | undefined),
- *    isCollateEnabled: (boolean | undefined),
- *    isFitToPageEnabled: (boolean | undefined),
- *    isCssBackgroundEnabled: (boolean | undefined),
- *    scaling: (string | undefined),
- *    vendor_options: (Object | undefined),
- *    isPinEnabled: (boolean | undefined),
- *    pinValue: (string | undefined)
- * }}
- */
-print_preview.SerializedSettings;
+  /**
+   * @typedef {{
+   *  value: *,
+   *  managed: boolean
+   * }}
+   */
+  let PolicyEntry;
 
-/**
- * @typedef {{
- *  value: *,
- *  managed: boolean
- * }}
- */
-print_preview.PolicyEntry;
+  /**
+   * @typedef {{
+   *   headerFooter: print_preview.PolicyEntry
+   * }}
+   */
+  let PolicySettings;
 
-/**
- * @typedef {{
- *   headerFooter: print_preview.PolicyEntry
- * }}
- */
-print_preview.PolicySettings;
+  /**
+   * Constant values matching printing::DuplexMode enum.
+   * @enum {number}
+   */
+  const DuplexMode = {
+    SIMPLEX: 0,
+    LONG_EDGE: 1,
+    SHORT_EDGE: 2,
+    UNKNOWN_DUPLEX_MODE: -1,
+  };
 
-/**
- * Constant values matching printing::DuplexMode enum.
- * @enum {number}
- */
-print_preview.DuplexMode = {
-  SIMPLEX: 0,
-  LONG_EDGE: 1,
-  SHORT_EDGE: 2,
-  UNKNOWN_DUPLEX_MODE: -1,
-};
+  /**
+   * Values matching the types of duplex in a CDD.
+   * @enum {string}
+   */
+  const DuplexType = {
+    NO_DUPLEX: 'NO_DUPLEX',
+    LONG_EDGE: 'LONG_EDGE',
+    SHORT_EDGE: 'SHORT_EDGE'
+  };
 
-/**
- * Values matching the types of duplex in a CDD.
- * @enum {string}
- */
-print_preview.DuplexType = {
-  NO_DUPLEX: 'NO_DUPLEX',
-  LONG_EDGE: 'LONG_EDGE',
-  SHORT_EDGE: 'SHORT_EDGE'
-};
+  return {
+    DuplexMode: DuplexMode,
+    DuplexType: DuplexType,
+    PolicyEntry: PolicyEntry,
+    PolicySettings: PolicySettings,
+    SerializedSettings: SerializedSettings,
+    Setting: Setting,
+    Settings: Settings,
+  };
+});
 
 cr.define('print_preview.Model', () => {
   return {

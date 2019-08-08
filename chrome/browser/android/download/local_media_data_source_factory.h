@@ -29,7 +29,7 @@ class LocalMediaDataSourceFactory
 
   // SafeMediaMetadataParser::MediaDataSourceFactory implementation.
   std::unique_ptr<chrome::mojom::MediaDataSource> CreateMediaDataSource(
-      chrome::mojom::MediaDataSourcePtr* request,
+      mojo::PendingReceiver<chrome::mojom::MediaDataSource> receiver,
       MediaDataCallback media_data_callback) override;
 
  private:

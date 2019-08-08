@@ -81,10 +81,6 @@ crbug.com/935970 images/image-map-multiple-xhtml.xhtml [ Skip ]
 crbug.com/935970 images/image-map-multiple.html [ Skip ]
 crbug.com/935970 media/audio-delete-while-slider-thumb-clicked.html [ Skip ]
 
-# Filter Rebaseline
-crbug.com/978605 compositing/masks/mask-with-added-filters.html [ Skip ]
-crbug.com/978605 compositing/masks/mask-with-removed-filters.html [ Skip ]
-
 # Tests fail even with a fuzzy pixel diff. They require a re-baseline.
 crbug.com/954328 compositing/fixed-background-after-style-recalc.html [ Failure ]
 crbug.com/954328 compositing/overflow/mask-with-filter.html [ Failure ]

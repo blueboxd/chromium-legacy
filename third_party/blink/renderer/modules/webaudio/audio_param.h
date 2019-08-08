@@ -291,6 +291,7 @@ class AudioParam final : public ScriptWrappable, public InspectorHelperMixin {
   AudioParamHandler::AudioParamType GetParamType() const {
     return Handler().GetParamType();
   }
+  String GetParamName() const { return Handler().GetParamName(); }
   void SetParamType(AudioParamHandler::AudioParamType);
   void SetCustomParamName(const String name);
 

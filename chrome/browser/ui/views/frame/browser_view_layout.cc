@@ -30,6 +30,7 @@
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/views/controls/webview/webview.h"
@@ -337,6 +338,14 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   UpdateTopContainerBounds();
 
   LayoutContentsContainerView(top, LayoutDownloadShelf(browser_view->height()));
+
+  if (contents_border_widget_ && contents_border_widget_->IsVisible()) {
+    gfx::Point contents_top_left;
+    views::View::ConvertPointToScreen(contents_container_, &contents_top_left);
+    contents_border_widget_->SetBounds(
+        gfx::Rect(contents_top_left.x(), contents_top_left.y(),
+                  contents_container_->width(), contents_container_->height()));
+  }
 
   // This must be done _after_ we lay out the WebContents since this
   // code calls back into us to find the bounding box the find bar

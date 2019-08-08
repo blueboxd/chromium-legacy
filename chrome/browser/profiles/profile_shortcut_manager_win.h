@@ -68,7 +68,9 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
     CREATE_WHEN_NONE_FOUND,
     CREATE_OR_UPDATE_ICON_ONLY,
   };
-  // Specifies whether non-profile shortcuts should be updated.
+  // Specifies whether non-profile shortcuts should be updated. This also
+  // includes default profile shortcuts, which point at the default
+  // profile, but don't have a profile name in their filename.
   enum NonProfileShortcutAction {
     IGNORE_NON_PROFILE_SHORTCUTS,
     UPDATE_NON_PROFILE_SHORTCUTS,

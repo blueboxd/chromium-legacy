@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;

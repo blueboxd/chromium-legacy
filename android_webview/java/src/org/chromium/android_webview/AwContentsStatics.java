@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.net.Uri;
 
+import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;

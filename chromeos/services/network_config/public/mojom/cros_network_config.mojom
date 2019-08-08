@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This API is used for configuring network connections (Cellular, Ethernet,
-// VPN, WiFi, WiMAX, or Tether). See the Open Network Configuration
+// VPN, WiFi, or Tether). See the Open Network Configuration
 // (ONC) documentation for detailed descriptions of properties:
 // components/onc/docs/onc_spec.md.
 
@@ -54,14 +54,13 @@ enum NetworkType {
   kAll,
   kCellular,
   kEthernet,
-  // Mobile includes Cellular, Tether, and WiMAX.
+  // Mobile includes Cellular, and Tether.
   kMobile,
   kTether,
   kVPN,
-  // Wireles includes Cellular, Tether, WiFi, and WiMAX.
+  // Wireles includes Cellular, Tether, and WiFi.
   kWireless,
   kWiFi,
-  kWiMAX,
 };
 
 // The ONC source for the network configuration, i.e. whether it is stored in
@@ -203,10 +202,6 @@ struct WiFiStateProperties {
   string ssid;
 };
 
-struct WiMAXStateProperties {
-  int32 signal_strength;
-};
-
 struct NetworkStateProperties {
   CaptivePortalProvider? captive_portal_provider;
   CellularStateProperties? cellular;
@@ -235,7 +230,6 @@ struct NetworkStateProperties {
   NetworkType type;
   VPNStateProperties? vpn;
   WiFiStateProperties? wifi;
-  WiMAXStateProperties? wimax;
 };
 
 struct DeviceStateProperties {

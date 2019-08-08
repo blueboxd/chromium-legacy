@@ -25,8 +25,11 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
+#include "net/base/net_errors.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -145,6 +148,36 @@ void AdsPageLoadMetricsObserver::OnTimingUpdate(
     ancestor_data->set_timing(timing.Clone());
 }
 
+void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
+    content::RenderFrameHost* render_frame_host,
+    FrameData* frame_data) {
+  DCHECK(render_frame_host);
+  if (!frame_data->MaybeTriggerHeavyAdIntervention())
+    return;
+
+  // Find the RenderFrameHost associated with this frame data. It is possible
+  // that this frame no longer exists. We do not care if the frame has
+  // moved to a new process because once the frame has been tagged as an ad, it
+  // is always considered an ad.
+  while (render_frame_host && render_frame_host->GetFrameTreeNodeId() !=
+                                  frame_data->frame_tree_node_id()) {
+    render_frame_host = render_frame_host->GetParent();
+  }
+  if (!render_frame_host)
+    return;
+
+  // Ensure that this RenderFrameHost is a subframe.
+  DCHECK(render_frame_host->GetParent());
+
+  // TODO(959849): Navigate the frame to an error page once error pages can be
+  // loaded from the browser process.
+  ADS_HISTOGRAM("HeavyAds.InterventionType", UMA_HISTOGRAM_ENUMERATION,
+                FrameData::FrameVisibility::kAnyVisibility,
+                frame_data->heavy_ad_status());
+  ADS_HISTOGRAM("HeavyAds.InterventionType", UMA_HISTOGRAM_ENUMERATION,
+                frame_data->visibility(), frame_data->heavy_ad_status());
+}
+
 void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
     content::RenderFrameHost* subframe_rfh,
     const page_load_metrics::mojom::CpuTiming& timing) {
@@ -169,6 +202,7 @@ void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
   if (ancestor_data) {
     ancestor_data->UpdateCpuUsage(current_time, timing.task_time,
                                   interactive_status);
+    MaybeTriggerHeavyAdIntervention(subframe_rfh, ancestor_data);
   }
 }
 
@@ -311,8 +345,7 @@ void AdsPageLoadMetricsObserver::OnResourceDataUseObserved(
         resources) {
   for (auto const& resource : resources) {
     ProcessResourceForPage(rfh->GetProcess()->GetID(), resource);
-    ProcessResourceForFrame(rfh->GetFrameTreeNodeId(),
-                            rfh->GetProcess()->GetID(), resource);
+    ProcessResourceForFrame(rfh, resource);
   }
 }
 
@@ -454,10 +487,10 @@ void AdsPageLoadMetricsObserver::ProcessResourceForPage(
 }
 
 void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
-    FrameTreeNodeId frame_tree_node_id,
-    int process_id,
+    content::RenderFrameHost* render_frame_host,
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
-  const auto& id_and_data = ad_frames_data_.find(frame_tree_node_id);
+  const auto& id_and_data =
+      ad_frames_data_.find(render_frame_host->GetFrameTreeNodeId());
   if (id_and_data == ad_frames_data_.end()) {
     if (resource->is_primary_frame_resource) {
       // Only hold onto primary resources if their load has finished, otherwise
@@ -469,7 +502,8 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
       // hasn't yet finished navigating. Hang onto the request info and replay
       // it once the frame finishes navigating.
       ongoing_navigation_resources_.emplace(
-          std::piecewise_construct, std::forward_as_tuple(frame_tree_node_id),
+          std::piecewise_construct,
+          std::forward_as_tuple(render_frame_host->GetFrameTreeNodeId()),
           std::forward_as_tuple(resource.Clone()));
     } else {
       // This is unexpected, it could be:
@@ -491,11 +525,14 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
     return;
 
   auto mime_type = FrameData::GetResourceMimeType(resource);
-  int unaccounted_ad_bytes = GetUnaccountedAdBytes(process_id, resource);
-  ancestor_data->ProcessResourceLoadInFrame(
-      resource, process_id, GetDelegate()->GetResourceTracker());
+  int unaccounted_ad_bytes =
+      GetUnaccountedAdBytes(render_frame_host->GetProcess()->GetID(), resource);
   if (unaccounted_ad_bytes)
     ancestor_data->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
+  ancestor_data->ProcessResourceLoadInFrame(
+      resource, render_frame_host->GetProcess()->GetID(),
+      GetDelegate()->GetResourceTracker());
+  MaybeTriggerHeavyAdIntervention(render_frame_host, ancestor_data);
 }
 
 void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
@@ -764,6 +801,8 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.UserActivation",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.user_activation_status());
+    ADS_HISTOGRAM("HeavyAds.ComputedType", UMA_HISTOGRAM_ENUMERATION,
+                  visibility, ad_frame_data.heavy_ad_status());
   }
 }
 
@@ -848,8 +887,7 @@ void AdsPageLoadMetricsObserver::ProcessOngoingNavigationResource(
       ongoing_navigation_resources_.find(rfh->GetFrameTreeNodeId());
   if (frame_id_and_request == ongoing_navigation_resources_.end())
     return;
-  ProcessResourceForFrame(rfh->GetFrameTreeNodeId(), rfh->GetProcess()->GetID(),
-                          frame_id_and_request->second);
+  ProcessResourceForFrame(rfh, frame_id_and_request->second);
   ongoing_navigation_resources_.erase(frame_id_and_request);
 }
 

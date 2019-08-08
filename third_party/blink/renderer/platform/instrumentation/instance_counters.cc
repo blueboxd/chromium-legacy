@@ -39,6 +39,10 @@ std::atomic_int InstanceCounters::counters_[kCounterTypeLength];
 int InstanceCounters::node_counter_ = 0;
 
 int InstanceCounters::CounterValue(CounterType type) {
+  if (type == kNodeCounter) {
+    DCHECK(IsMainThread());
+    return node_counter_;
+  }
   return counters_[type].load(std::memory_order_relaxed);
 }
 

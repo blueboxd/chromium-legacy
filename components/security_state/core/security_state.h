@@ -96,6 +96,13 @@ enum MaliciousContentStatus {
   MALICIOUS_CONTENT_STATUS_BILLING,
 };
 
+// Describes whether the page triggers any safety tips or reputation
+// warnings.
+enum SafetyTipStatus {
+  SAFETY_TIP_STATUS_NONE,
+  SAFETY_TIP_STATUS_BAD_REPUTATION,
+};
+
 // Contains the security state relevant to computing the SecurityLevel
 // for a page. This is the input to GetSecurityLevel().
 struct VisibleSecurityState {
@@ -104,6 +111,8 @@ struct VisibleSecurityState {
   GURL url;
 
   MaliciousContentStatus malicious_content_status;
+
+  SafetyTipStatus safety_tip_status;
 
   // CONNECTION SECURITY FIELDS
   // Whether the connection security fields are initialized.

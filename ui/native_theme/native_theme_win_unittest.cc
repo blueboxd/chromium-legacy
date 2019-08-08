@@ -8,6 +8,7 @@
 namespace ui {
 
 using Scheme = ui::NativeTheme::PreferredColorScheme;
+using SystemThemeColor = ui::NativeTheme::SystemThemeColor;
 
 class TestNativeThemeWin : public NativeThemeWin {
  public:
@@ -22,7 +23,7 @@ class TestNativeThemeWin : public NativeThemeWin {
   void SetUsesHighContrastColors(bool high_contrast) {
     high_contrast_ = high_contrast;
   }
-  void SetSystemColor(int system_color, SkColor color) {
+  void SetSystemColor(SystemThemeColor system_color, SkColor color) {
     system_colors_[system_color] = color;
   }
 
@@ -44,15 +45,15 @@ TEST(NativeThemeWinTest, CalculatePreferredColorScheme) {
   ASSERT_EQ(theme.CalculatePreferredColorScheme(), Scheme::kLight);
 
   theme.SetUsesHighContrastColors(true);
-  theme.SetSystemColor(COLOR_WINDOW, SK_ColorBLACK);
-  theme.SetSystemColor(COLOR_WINDOWTEXT, SK_ColorWHITE);
+  theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorBLACK);
+  theme.SetSystemColor(SystemThemeColor::kWindowText, SK_ColorWHITE);
   ASSERT_EQ(theme.CalculatePreferredColorScheme(), Scheme::kDark);
 
-  theme.SetSystemColor(COLOR_WINDOW, SK_ColorWHITE);
-  theme.SetSystemColor(COLOR_WINDOWTEXT, SK_ColorBLACK);
+  theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorWHITE);
+  theme.SetSystemColor(SystemThemeColor::kWindowText, SK_ColorBLACK);
   ASSERT_EQ(theme.CalculatePreferredColorScheme(), Scheme::kLight);
 
-  theme.SetSystemColor(COLOR_WINDOWTEXT, SK_ColorBLUE);
+  theme.SetSystemColor(SystemThemeColor::kWindowText, SK_ColorBLUE);
   ASSERT_EQ(theme.CalculatePreferredColorScheme(), Scheme::kNoPreference);
 
   theme.SetUsesHighContrastColors(false);

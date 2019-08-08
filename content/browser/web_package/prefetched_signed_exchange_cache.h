@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/prefetched_signed_exchange_info.h"
+#include "content/common/prefetched_signed_exchange_info.mojom.h"
 #include "net/base/hash_value.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -122,7 +122,7 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
   // |main_exchange|'s inner response and which outer URL's origin is same as
   // the origin of |main_exchange|'s outer URL. Note that this method erases
   // expired entries in |exchanges_|.
-  std::vector<PrefetchedSignedExchangeInfo> GetInfoListForNavigation(
+  std::vector<mojom::PrefetchedSignedExchangeInfoPtr> GetInfoListForNavigation(
       const Entry& main_exchange,
       const base::Time& now);
 

@@ -211,8 +211,8 @@ IN_PROC_BROWSER_TEST_F(NoCompositingRenderWidgetHostViewBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   // Creates the initial RenderWidgetHostViewBase, and connects to a
   // CompositorFrameSink. This will trigger frame eviction.
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/page_with_animation.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/page_with_animation.html")));
   RenderWidgetHostViewBase* rwhvb = GetRenderWidgetHostView();
   // Eviction normally invalidates the LocalSurfaceId, however if the
   // RenderWidgetHostViewBase is visible, a new id must be allocated. Otherwise
@@ -240,8 +240,8 @@ IN_PROC_BROWSER_TEST_F(NoCompositingRenderWidgetHostViewBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   // Creates the initial RenderWidgetHostViewBase, and connects to a
   // CompositorFrameSink.
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/page_with_animation.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/page_with_animation.html")));
   RenderWidgetHostViewBase* rwhvb = GetRenderWidgetHostView();
   EXPECT_TRUE(rwhvb);
   viz::LocalSurfaceId rwhvb_local_surface_id =
@@ -266,8 +266,8 @@ IN_PROC_BROWSER_TEST_F(NoCompositingRenderWidgetHostViewBrowserTest,
 
   // Perform a navigation to the same content source. This will reuse the
   // existing RenderWidgetHostViewBase.
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/page_with_animation.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/page_with_animation.html")));
   EXPECT_FALSE(rwhvb->GetLocalSurfaceIdAllocation().IsValid());
 
 #if defined(OS_ANDROID)
@@ -300,8 +300,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewBrowserTestBase,
   ASSERT_TRUE(embedded_test_server()->Start());
   auto* web_contents = shell()->web_contents();
   // Load a page that draws new frames infinitely.
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/page_with_animation.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/page_with_animation.html")));
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer(
       std::make_unique<RenderFrameSubmissionObserver>(web_contents));
 
@@ -367,7 +367,7 @@ class CompositingRenderWidgetHostViewBrowserTest
 
   bool SetUpSourceSurface(const char* wait_message) override {
     content::DOMMessageQueue message_queue;
-    NavigateToURL(shell(), TestUrl());
+    EXPECT_TRUE(NavigateToURL(shell(), TestUrl()));
     if (wait_message != nullptr) {
       std::string result(wait_message);
       if (!message_queue.WaitForMessage(&result)) {

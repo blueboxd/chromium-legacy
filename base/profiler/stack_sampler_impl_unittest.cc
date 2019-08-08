@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/profiler/profile_builder.h"
+#include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_sampler_impl.h"
 #include "base/profiler/thread_delegate.h"
 #include "base/profiler/unwinder.h"
@@ -229,8 +230,7 @@ class FakeTestUnwinder : public Unwinder {
 
 static constexpr size_t kTestStackBufferSize = sizeof(uintptr_t) * 4;
 
-union alignas(StackSampler::StackBuffer::kPlatformStackAlignment)
-    TestStackBuffer {
+union alignas(StackBuffer::kPlatformStackAlignment) TestStackBuffer {
   uintptr_t as_uintptr[kTestStackBufferSize / sizeof(uintptr_t)];
   uint16_t as_uint16[kTestStackBufferSize / sizeof(uint16_t)];
   uint8_t as_uint8[kTestStackBufferSize / sizeof(uint8_t)];
@@ -301,7 +301,7 @@ TEST(StackSamplerImplTest, StackCopy_NonAlignedStackPointerCopy) {
 
   // Leave extra space within the stack buffer beyond the end of the stack, but
   // preserve the platform alignment.
-  const size_t extra_space = StackSampler::StackBuffer::kPlatformStackAlignment;
+  const size_t extra_space = StackBuffer::kPlatformStackAlignment;
   uintptr_t* stack_top =
       &stack_buffer.as_uintptr[size(stack_buffer.as_uintptr) -
                                extra_space / sizeof(uintptr_t)];
@@ -439,9 +439,8 @@ TEST(StackSamplerImplTest, CopyStack) {
       std::make_unique<TestThreadDelegate>(stack),
       std::make_unique<TestUnwinder>(stack.size(), &stack_copy), &module_cache);
 
-  std::unique_ptr<StackSampler::StackBuffer> stack_buffer =
-      std::make_unique<StackSampler::StackBuffer>(stack.size() *
-                                                  sizeof(uintptr_t));
+  std::unique_ptr<StackBuffer> stack_buffer =
+      std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
   TestProfileBuilder profile_builder(&module_cache);
   stack_sampler_impl.RecordStackFrames(stack_buffer.get(), &profile_builder);
 
@@ -457,9 +456,8 @@ TEST(StackSamplerImplTest, CopyStackBufferTooSmall) {
       std::make_unique<TestThreadDelegate>(stack),
       std::make_unique<TestUnwinder>(stack.size(), &stack_copy), &module_cache);
 
-  std::unique_ptr<StackSampler::StackBuffer> stack_buffer =
-      std::make_unique<StackSampler::StackBuffer>((stack.size() - 1) *
-                                                  sizeof(uintptr_t));
+  std::unique_ptr<StackBuffer> stack_buffer =
+      std::make_unique<StackBuffer>((stack.size() - 1) * sizeof(uintptr_t));
   // Make the buffer different than the input stack.
   stack_buffer->buffer()[0] = 100;
   TestProfileBuilder profile_builder(&module_cache);
@@ -486,9 +484,8 @@ TEST(StackSamplerImplTest, CopyStackAndRewritePointers) {
                                      &stack_copy_bottom),
       &module_cache);
 
-  std::unique_ptr<StackSampler::StackBuffer> stack_buffer =
-      std::make_unique<StackSampler::StackBuffer>(stack.size() *
-                                                  sizeof(uintptr_t));
+  std::unique_ptr<StackBuffer> stack_buffer =
+      std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
   TestProfileBuilder profile_builder(&module_cache);
 
   stack_sampler_impl.RecordStackFrames(stack_buffer.get(), &profile_builder);
@@ -510,9 +507,8 @@ TEST(StackSamplerImplTest, RewriteRegisters) {
       std::make_unique<TestUnwinder>(stack.size(), nullptr, &stack_copy_bottom),
       &module_cache);
 
-  std::unique_ptr<StackSampler::StackBuffer> stack_buffer =
-      std::make_unique<StackSampler::StackBuffer>(stack.size() *
-                                                  sizeof(uintptr_t));
+  std::unique_ptr<StackBuffer> stack_buffer =
+      std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
   TestProfileBuilder profile_builder(&module_cache);
   stack_sampler_impl.RecordStackFrames(stack_buffer.get(), &profile_builder);
 

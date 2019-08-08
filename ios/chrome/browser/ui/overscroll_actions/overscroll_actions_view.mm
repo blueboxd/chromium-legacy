@@ -270,15 +270,13 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     _addTabActionImageView = [[UIImageView alloc] init];
     _addTabActionImageView.image = [[UIImage imageNamed:kNewTabActionImage]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    _addTabActionImageView.tintColor =
-        [UIColor colorNamed:@"tab_toolbar_button_color"];
+    _addTabActionImageView.tintColor = [UIColor colorNamed:kToolbarButtonColor];
     [_addTabActionImageView sizeToFit];
     [self addSubview:_addTabActionImageView];
     _reloadActionImageView = [[UIImageView alloc] init];
     _reloadActionImageView.image = [[UIImage imageNamed:kReloadActionImage]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    _reloadActionImageView.tintColor =
-        [UIColor colorNamed:@"tab_toolbar_button_color"];
+    _reloadActionImageView.tintColor = [UIColor colorNamed:kToolbarButtonColor];
     [_reloadActionImageView sizeToFit];
     if (UseRTLLayout())
       [_reloadActionImageView setTransform:CGAffineTransformMakeScale(-1, 1)];
@@ -287,7 +285,7 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     _closeTabActionImageView.image = [[UIImage imageNamed:kCloseActionImage]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     _closeTabActionImageView.tintColor =
-        [UIColor colorNamed:@"tab_toolbar_button_color"];
+        [UIColor colorNamed:kToolbarButtonColor];
     [_closeTabActionImageView sizeToFit];
     [self addSubview:_closeTabActionImageView];
 
@@ -320,7 +318,7 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     _addTabLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _addTabLabel.adjustsFontForContentSizeCategory = NO;
-    _addTabLabel.textColor = [UIColor colorNamed:@"tab_toolbar_button_color"];
+    _addTabLabel.textColor = [UIColor colorNamed:kToolbarButtonColor];
     _addTabLabel.text =
         l10n_util::GetNSString(IDS_IOS_OVERSCROLL_NEW_TAB_LABEL);
     [self addSubview:_addTabLabel];
@@ -332,7 +330,7 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     _reloadLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _reloadLabel.adjustsFontForContentSizeCategory = NO;
-    _reloadLabel.textColor = [UIColor colorNamed:@"tab_toolbar_button_color"];
+    _reloadLabel.textColor = [UIColor colorNamed:kToolbarButtonColor];
     _reloadLabel.text = l10n_util::GetNSString(IDS_IOS_OVERSCROLL_RELOAD_LABEL);
     [self addSubview:_reloadLabel];
     _closeTabLabel = [[UILabel alloc] init];
@@ -343,7 +341,7 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     _closeTabLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _closeTabLabel.adjustsFontForContentSizeCategory = NO;
-    _closeTabLabel.textColor = [UIColor colorNamed:@"tab_toolbar_button_color"];
+    _closeTabLabel.textColor = [UIColor colorNamed:kToolbarButtonColor];
     _closeTabLabel.text =
         l10n_util::GetNSString(IDS_IOS_OVERSCROLL_CLOSE_TAB_LABEL);
     [self addSubview:_closeTabLabel];
@@ -977,8 +975,7 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
 
   // Fallback for iOS 12.
   if (self.incognito) {
-    UIColor* buttonColor =
-        [UIColor colorNamed:@"tab_toolbar_button_color_incognito"];
+    UIColor* buttonColor = [UIColor colorNamed:kToolbarButtonDarkColor];
     _addTabActionImageView.tintColor = buttonColor;
     _reloadActionImageView.tintColor = buttonColor;
     _closeTabActionImageView.tintColor = buttonColor;

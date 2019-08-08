@@ -90,17 +90,6 @@ SerializedHandle ResourceMessageParams::TakeHandleOfTypeAtIndex(
   return handle;
 }
 
-bool ResourceMessageParams::TakeSharedMemoryHandleAtIndex(
-    size_t index,
-    base::SharedMemoryHandle* handle) const {
-  SerializedHandle serialized = TakeHandleOfTypeAtIndex(
-      index, SerializedHandle::SHARED_MEMORY);
-  if (!serialized.is_shmem())
-    return false;
-  *handle = serialized.shmem();
-  return true;
-}
-
 bool ResourceMessageParams::TakeReadOnlySharedMemoryRegionAtIndex(
     size_t index,
     base::ReadOnlySharedMemoryRegion* region) const {
@@ -145,15 +134,6 @@ bool ResourceMessageParams::TakeFileHandleAtIndex(
     return false;
   *handle = serialized.descriptor();
   return true;
-}
-
-void ResourceMessageParams::TakeAllSharedMemoryHandles(
-    std::vector<base::SharedMemoryHandle>* handles) const {
-  for (size_t i = 0; i < handles_->data().size(); ++i) {
-    base::SharedMemoryHandle handle;
-    if (TakeSharedMemoryHandleAtIndex(i, &handle))
-      handles->push_back(handle);
-  }
 }
 
 void ResourceMessageParams::TakeAllHandles(

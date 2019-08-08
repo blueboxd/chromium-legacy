@@ -77,7 +77,8 @@ class ExtensionSyncService : public syncer::SyncableService,
   void DeleteThemeDoNotUse(const extensions::Extension& theme);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TwoClientAppsSyncTest, UnexpectedLaunchType);
+  FRIEND_TEST_ALL_PREFIXES(TwoClientExtensionAppsSyncTest,
+                           UnexpectedLaunchType);
   FRIEND_TEST_ALL_PREFIXES(ExtensionDisabledGlobalErrorTest,
                            HigherPermissionsFromSync);
 

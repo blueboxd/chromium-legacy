@@ -6914,7 +6914,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc \"--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "android",
@@ -8071,9 +8071,9 @@
       {
         "args": [
           "--num-retries=3",
+          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
-          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--disable-software-compositing-fallback",
@@ -8140,9 +8140,9 @@
       {
         "args": [
           "--num-retries=3",
+          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
-          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--disable-software-compositing-fallback",
@@ -8186,7 +8186,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc \"--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -10659,9 +10659,9 @@
       {
         "args": [
           "--num-retries=3",
+          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
-          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--disable-software-compositing-fallback",
@@ -10743,9 +10743,9 @@
       {
         "args": [
           "--num-retries=3",
+          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
-          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--disable-software-compositing-fallback",
@@ -10788,7 +10788,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc \"--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -11170,9 +11170,9 @@
       {
         "args": [
           "--num-retries=3",
+          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
-          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--disable-software-compositing-fallback",
@@ -11254,9 +11254,9 @@
       {
         "args": [
           "--num-retries=3",
+          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
-          "--additional-driver-flag=--enable-gpu-rasterization",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--disable-software-compositing-fallback",
@@ -11299,7 +11299,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc \"--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -24567,7 +24567,8 @@
       {
         "args": [
           "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop"
+          "--benchmarks=rendering.desktop",
+          "--browser=release_x64"
         ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
@@ -25572,7 +25573,8 @@
       {
         "args": [
           "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop"
+          "--benchmarks=rendering.desktop",
+          "--browser=release_x64"
         ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
@@ -27474,7 +27476,8 @@
       {
         "args": [
           "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop"
+          "--benchmarks=rendering.desktop",
+          "--browser=release_x64"
         ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
@@ -28444,7 +28447,8 @@
       {
         "args": [
           "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop"
+          "--benchmarks=rendering.desktop",
+          "--browser=release_x64"
         ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
@@ -30682,7 +30686,8 @@
       {
         "args": [
           "../../tools/perf/run_benchmark",
-          "--benchmarks=rendering.desktop"
+          "--benchmarks=rendering.desktop",
+          "--browser=release_x64"
         ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",

@@ -150,6 +150,10 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   bool GetTreeUpdateInProgressState() const override;
   void SetTreeUpdateInProgressState(bool set_tree_update_value);
 
+  // AXNode::OwnerTree override.
+  // Returns true if the tree represents a paginated document
+  bool HasPaginationSupport() const override;
+
   // Language detection manager, entry point to language detection features.
   // TODO(chrishall): Should this be stored by pointer or value?
   //                  When should we initialize this?
@@ -327,6 +331,9 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   // Indicates if the tree is updating.
   bool tree_update_in_progress_ = false;
+
+  // Indicates if the tree represents a paginated document
+  bool has_pagination_support_ = false;
 };
 
 }  // namespace ui

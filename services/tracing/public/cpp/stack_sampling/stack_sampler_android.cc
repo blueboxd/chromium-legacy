@@ -25,7 +25,7 @@ void StackSamplerAndroid::AddAuxUnwinder(
     std::unique_ptr<base::Unwinder> unwinder) {}
 
 void StackSamplerAndroid::RecordStackFrames(
-    StackBuffer* stack_buffer,
+    base::StackBuffer* stack_buffer,
     base::ProfileBuilder* profile_builder) {
   if (!unwinder_.is_initialized()) {
     // May block on disk access. This function is executed on the profiler

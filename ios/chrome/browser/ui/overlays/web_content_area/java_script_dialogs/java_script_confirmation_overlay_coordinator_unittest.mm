@@ -48,5 +48,5 @@ TEST_F(JavaScriptConfirmationOverlayCoordinatorTest, StartAndStop) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return !confirmation.presentingViewController;
   }));
-  EXPECT_TRUE(dismissal_delegate().HasUIBeenDismissed(request));
+  EXPECT_TRUE(delegate().HasUIBeenDismissed(request));
 }

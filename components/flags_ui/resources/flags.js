@@ -143,6 +143,8 @@ function restartBrowser() {
 /** Reset all flags to their default values and refresh the UI. */
 function resetAllFlags() {
   chrome.send('resetAllFlags');
+  // Updating the message in order for it to get announced by screen readers.
+  $('reset-all-success-message').innerHTML += "!";
   showRestartToast(true);
   requestExperimentalFeaturesData();
 }

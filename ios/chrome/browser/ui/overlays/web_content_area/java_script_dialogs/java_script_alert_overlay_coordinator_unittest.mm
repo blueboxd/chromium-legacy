@@ -47,5 +47,5 @@ TEST_F(JavaScriptAlertOverlayCoordinatorTest, StartAndStop) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
     return !alert.presentingViewController;
   }));
-  EXPECT_TRUE(dismissal_delegate().HasUIBeenDismissed(request));
+  EXPECT_TRUE(delegate().HasUIBeenDismissed(request));
 }

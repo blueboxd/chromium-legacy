@@ -1,9 +1,9 @@
 rootWebArea
 ++genericContainer ignored
 ++++genericContainer ignored
-++++++genericContainer ignored name='a1'
-++++++++staticText ignored
-++++++++genericContainer ignored name='a2'
-++++++++staticText ignored
+++++++genericContainer ignored invisible name='a1'
+++++++++staticText ignored invisible
+++++++++genericContainer ignored invisible name='a2'
+++++++++staticText ignored invisible
 ++++++genericContainer name='b'
 ++++++genericContainer name='c'

@@ -25,12 +25,17 @@ include_rules = [
     "+services/viz/public/cpp/gpu/context_provider_command_buffer.h",
     "+skia/ext/platform_canvas.h",
 
+    "+base/atomicops.h",
+    "+base/files/file.h",
+    "+base/metrics/field_trial.h",
+
     "+base/trace_event/trace_event.h",
     "+base/unguessable_token.h",
     "+media/audio",
     "+media/base",
     "+media/capture",
     "+media/mojo/mojom",
+    "+media/webrtc/audio_delay_stats_reporter.h",
     "+media/webrtc/audio_processor_controls.h",
     "+media/webrtc/webrtc_switches.h",
     "+mojo/public/cpp/bindings/binding.h",
@@ -50,5 +55,11 @@ specific_include_rules = {
         "+cc/layers/layer.h",
         "+media/video/mock_gpu_memory_buffer_video_frame_pool.h",
         "+media/video/mock_gpu_video_accelerator_factories.h",
+
+        "+base/files/file_path.h",
+        "+base/files/file_util.h",
+        "+base/files/scoped_temp_dir.h",
+        "+base/memory/aligned_memory.h",
+        "+base/path_service.h",
     ],
 }

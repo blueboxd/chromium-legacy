@@ -60,10 +60,6 @@ crbug.com/972621 media/color-profile-video-poster-image.html [ Skip ]
 crbug.com/972621 transforms/shadows.html [ Skip ]
 crbug.com/972621 transforms/svg-vs-css.xhtml [ Skip ]
 
-# Filter Rebaseline
-crbug.com/978605 compositing/masks/mask-with-added-filters.html [ Skip ]
-crbug.com/978605 compositing/masks/mask-with-removed-filters.html [ Skip ]
-
 # Input timing doesn't match screenshots
 crbug.com/935970 compositing/gestures/gesture-tapHighlight-img-and-text.html [ Skip ]
 crbug.com/935970 compositing/gestures/gesture-tapHighlight-multicol.html [ Skip ]

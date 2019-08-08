@@ -5,6 +5,7 @@ include_rules = [
   "+cc/output",
   "+cc/resources",
   "+cc/scheduler",
+  "+components/viz/service/display/external_use_client.h",
   "+components/viz/service/display/output_surface_client.h",
   "+components/viz/service/display/output_surface_frame.h",
   "+components/viz/service/display/output_surface.h",

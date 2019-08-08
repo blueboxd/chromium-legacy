@@ -201,6 +201,10 @@ void TextPaintTimingDetector::RecordAggregatedText(
         TextElementTiming::ComputeIntersectionRect(
             aggregator, aggregated_visual_rect, property_tree_state,
             frame_view_));
+    if (base::Optional<PaintTimingVisualizer>& visualizer =
+            frame_view_->GetPaintTimingDetector().Visualizer()) {
+      visualizer->DumpTextDebuggingRect(aggregator, mapped_visual_rect);
+    }
   }
 }
 

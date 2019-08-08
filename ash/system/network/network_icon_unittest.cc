@@ -177,12 +177,6 @@ TEST_F(NetworkIconTest, CompareImagesByNetworkType_NotVisible) {
       CreateStandaloneNetworkProperties("cellular", NetworkType::kCellular,
                                         ConnectionStateType::kNotConnected, 50);
 
-  NetworkStatePropertiesPtr wimax_network = CreateStandaloneNetworkProperties(
-      "wimax", NetworkType::kWiMAX, ConnectionStateType::kNotConnected, 50);
-
-  EXPECT_TRUE(gfx::test::AreImagesEqual(ImageForNetwork(wifi_network.get()),
-                                        ImageForNetwork(wimax_network.get())));
-
   NetworkStatePropertiesPtr tether_network = CreateStandaloneNetworkProperties(
       "tether", NetworkType::kTether, ConnectionStateType::kNotConnected, 50);
 

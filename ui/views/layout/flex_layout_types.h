@@ -100,9 +100,12 @@ class VIEWS_EXPORT FlexSpecification {
   static FlexSpecification ForCustomRule(FlexRule rule);
 
   // Creates a flex specification using the specififed minimum size and size
-  // bounds rules.
+  // bounds rules. If |adjust_height_for_width| is specified, extra calculations
+  // will be done to ensure that the view can become taller if it is made
+  // narrower (typically only useful for multiline text controls).
   static FlexSpecification ForSizeRule(MinimumFlexSizeRule minimum_size_rule,
-                                       MaximumFlexSizeRule maximum_size_rule);
+                                       MaximumFlexSizeRule maximum_size_rule,
+                                       bool adjust_height_for_width = false);
 
   // Makes a copy of this specification with a different order.
   FlexSpecification WithOrder(int order) const;

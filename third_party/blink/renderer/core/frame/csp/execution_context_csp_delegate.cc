@@ -200,8 +200,7 @@ void ExecutionContextCSPDelegate::PostViolationReport(
                    // inconsistent.
                    : document->CompleteURLWithOverride(
                          report_endpoint, document->FallbackBaseURL());
-    PingLoader::SendViolationReport(
-        frame, url, report, PingLoader::kContentSecurityPolicyViolationReport);
+    PingLoader::SendViolationReport(frame, url, report);
   }
 }
 

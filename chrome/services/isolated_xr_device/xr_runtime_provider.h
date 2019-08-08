@@ -9,7 +9,6 @@
 
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace device {
 class OculusDevice;
@@ -22,8 +21,7 @@ class OpenXrDevice;
 class IsolatedXRRuntimeProvider
     : public device::mojom::IsolatedXRRuntimeProvider {
  public:
-  IsolatedXRRuntimeProvider(
-      std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref);
+  IsolatedXRRuntimeProvider();
   ~IsolatedXRRuntimeProvider() final;
 
   void RequestDevices(
@@ -32,9 +30,6 @@ class IsolatedXRRuntimeProvider
   enum class RuntimeStatus;
 
  private:
-  const std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref_;
-
-  IsolatedXRRuntimeProvider();
   void PollForDeviceChanges();
   void SetupPollingForDeviceChanges();
 

@@ -333,6 +333,7 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData,
   AudioHandler& Handler() const;
 
   void HandleChannelOptions(const AudioNodeOptions*, ExceptionState&);
+  String GetNodeName() const { return Handler().NodeTypeName(); }
 
   AudioNode* connect(AudioNode*,
                      unsigned output_index,

@@ -119,8 +119,7 @@ class AdsPageLoadMetricsObserver
       int process_id,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
   void ProcessResourceForFrame(
-      FrameTreeNodeId frame_tree_node_id,
-      int process_id,
+      content::RenderFrameHost* render_frame_host,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
   void RecordPageResourceTotalHistograms(ukm::SourceId source_id);
@@ -139,6 +138,16 @@ class AdsPageLoadMetricsObserver
   // Find the FrameData object associated with a given FrameTreeNodeId in
   // |ad_frames_data_storage_|.
   FrameData* FindFrameData(FrameTreeNodeId id);
+
+  // Loads the heavy ad intervention page in the target frame if it is safe to
+  // do so on this origin, and the frame meets the criteria to be considered a
+  // heavy ad.
+  // TODO(johnidel): Ads may only automatically be unloaded 5 times per-origin
+  // per day and to prevent a side channel leak of cross-origin resource size /
+  // CPU usage.
+  void MaybeTriggerHeavyAdIntervention(
+      content::RenderFrameHost* render_frame_host,
+      FrameData* frame_data);
 
   // Stores the size data of each ad frame. Pointed to by ad_frames_ so use a
   // data structure that won't move the data around. This only stores ad frames

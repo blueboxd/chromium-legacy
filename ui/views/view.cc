@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -52,6 +53,7 @@
 #include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/view_tracker.h"
+#include "ui/views/views_features.h"
 #include "ui/views/views_switches.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
@@ -894,16 +896,8 @@ void View::SchedulePaint() {
 }
 
 void View::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (!visible_)
-    return;
-
-  if (layer()) {
-    layer()->SchedulePaint(rect);
-  } else if (parent_) {
-    // Translate the requested paint rect to the parent's coordinate system
-    // then pass this notification up to the parent.
-    parent_->SchedulePaintInRect(ConvertRectToParent(rect));
-  }
+  needs_paint_ = true;
+  SchedulePaintInRectImpl(rect);
 }
 
 void View::Paint(const PaintInfo& parent_paint_info) {
@@ -915,11 +909,17 @@ void View::Paint(const PaintInfo& parent_paint_info) {
 
   PaintInfo paint_info = PaintInfo::CreateChildPaintInfo(
       parent_paint_info, GetMirroredBounds(), parent_bounds.size(),
-      GetPaintScaleType(), !!layer());
+      GetPaintScaleType(), !!layer(), needs_paint_);
+
+  needs_paint_ = false;
 
   const ui::PaintContext& context = paint_info.context();
   bool is_invalidated = true;
-  if (paint_info.context().CanCheckInvalid()) {
+  if (paint_info.context().CanCheckInvalid() ||
+      base::FeatureList::IsEnabled(features::kEnableViewPaintOptimization)) {
+    // For View paint optimization, do not default to repainting every View in
+    // the View hierarchy if the invalidation rect is empty. Repainting does not
+    // depend on the invalidation rect for View paint optimization.
 #if DCHECK_IS_ON()
     if (!context.is_pixel_canvas()) {
       gfx::Vector2d offset;
@@ -943,8 +943,7 @@ void View::Paint(const PaintInfo& parent_paint_info) {
 
     // If the View wasn't invalidated, don't waste time painting it, the output
     // would be culled.
-    is_invalidated =
-        context.IsRectInvalid(gfx::Rect(paint_info.paint_recording_size()));
+    is_invalidated = paint_info.ShouldPaint();
   }
 
   TRACE_EVENT1("views", "View::Paint", "class", GetClassName());
@@ -1651,6 +1650,8 @@ void View::RemovedFromWidget() {}
 
 // Painting --------------------------------------------------------------------
 
+void View::OnDidSchedulePaint(const gfx::Rect& rect) {}
+
 void View::PaintChildren(const PaintInfo& paint_info) {
   TRACE_EVENT1("views", "View::PaintChildren", "class", GetClassName());
   RecursivePaintHelper(&View::Paint, paint_info);
@@ -2030,6 +2031,19 @@ void View::DragInfo::PossibleDrag(const gfx::Point& p) {
 }
 
 // Painting --------------------------------------------------------------------
+
+void View::SchedulePaintInRectImpl(const gfx::Rect& rect) {
+  OnDidSchedulePaint(rect);
+  if (!visible_)
+    return;
+  if (layer()) {
+    layer()->SchedulePaint(rect);
+  } else if (parent_) {
+    // Translate the requested paint rect to the parent's coordinate system
+    // then pass this notification up to the parent.
+    parent_->SchedulePaintInRectImpl(ConvertRectToParent(rect));
+  }
+}
 
 void View::SchedulePaintBoundsChanged(bool size_changed) {
   if (!visible_)

@@ -18,9 +18,9 @@
 - (void)passwordsBadgeButtonTapped:(id)sender {
   BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
   if (badgeButton.badgeType == BadgeType::kBadgeTypePasswordSave) {
-    [self.dispatcher displayModalInfobar];
+    [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypePasswordSave];
   } else if (badgeButton.badgeType == BadgeType::kBadgeTypePasswordUpdate) {
-    [self.dispatcher displayModalInfobar];
+    [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypePasswordSave];
   }
 }
 

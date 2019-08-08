@@ -23,7 +23,7 @@ CrElementsActionMenuTest.prototype = {
       'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html',
 
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_action_menu_test.js',
   ]),
 };
@@ -65,7 +65,7 @@ CrElementsToggleTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_toggle_test.js',
   ]),
 };
@@ -89,7 +89,7 @@ CrElementsCheckboxTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_checkbox_test.js',
   ]),
 };
@@ -112,7 +112,7 @@ CrElementsInputTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_input_test.js',
   ]),
 };
@@ -161,7 +161,7 @@ CrElementsExpandButtonTest.prototype = {
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
     '//ui/webui/resources/js/util.js',
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_expand_button_focus_tests.js',
   ]),
 };
@@ -185,7 +185,7 @@ CrElementsTabsTest.prototype = {
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
     '//ui/webui/resources/js/util.js',
-    '../settings/test_util.js',
+    '../test_util.js',
     'cr_tabs_test.js',
   ]),
 };

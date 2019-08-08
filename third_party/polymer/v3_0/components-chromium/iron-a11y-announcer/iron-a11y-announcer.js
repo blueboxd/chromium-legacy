@@ -46,7 +46,7 @@ Note: announcements are only audible if you have a screen reader enabled.
 @group Iron Elements
 @demo demo/index.html
 */
-export const IronA11yAnnouncer = Polymer({
+export var IronA11yAnnouncer = Polymer({
   _template: html`
     <style>
       :host {

@@ -65,15 +65,6 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
   cell.metadataLabel.text = self.metadata;
   cell.cellUniqueIdentifier = self.uniqueIdentifier;
   cell.accessibilityTraits |= UIAccessibilityTraitButton;
-  // If the background color specified by the styler is opaque, use it as the
-  // subview backround colors as well.
-  UIColor* backgroundColor = styler.tableViewBackgroundColor;
-  if (AreCGFloatsEqual(CGColorGetAlpha(backgroundColor.CGColor), 1.0)) {
-    cell.faviconContainerView.backgroundColor = styler.tableViewBackgroundColor;
-    cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
-    cell.URLLabel.backgroundColor = styler.tableViewBackgroundColor;
-    cell.metadataLabel.backgroundColor = styler.tableViewBackgroundColor;
-  }
 
   if (styler.cellTitleColor)
     cell.titleLabel.textColor = styler.cellTitleColor;

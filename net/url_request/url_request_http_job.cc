@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -709,12 +710,12 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   }
 
   base::Time response_date;
-  if (!GetResponseHeaders()->GetDateValue(&response_date))
-    response_date = base::Time();
+  base::Optional<base::Time> server_time = base::nullopt;
+  if (GetResponseHeaders()->GetDateValue(&response_date))
+    server_time = base::make_optional(response_date);
 
   CookieOptions options;
   options.set_include_httponly();
-  options.set_server_time(response_date);
   options.set_same_site_cookie_context(
       net::cookie_util::ComputeSameSiteContextForResponse(
           request_->url(), request_->site_for_cookies(),
@@ -744,7 +745,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     num_cookie_lines_left_++;
 
     std::unique_ptr<CanonicalCookie> cookie = net::CanonicalCookie::Create(
-        request_->url(), cookie_string, base::Time::Now(), options,
+        request_->url(), cookie_string, base::Time::Now(), server_time,
         &returned_status);
 
     if (returned_status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
@@ -752,6 +753,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
                         returned_status);
       continue;
     }
+    DCHECK(cookie);
 
     if (!CanSetCookie(*cookie, &options)) {
       OnSetCookieResult(
@@ -762,7 +764,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     }
 
     request_->context()->cookie_store()->SetCookieWithOptionsAsync(
-        request_->url(), cookie_string, options,
+        request_->url(), cookie_string, options, server_time,
         base::BindOnce(&URLRequestHttpJob::OnSetCookieResult,
                        weak_factory_.GetWeakPtr(), options,
                        base::make_optional<CanonicalCookie>(*cookie),

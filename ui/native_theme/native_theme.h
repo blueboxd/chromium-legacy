@@ -5,6 +5,8 @@
 #ifndef UI_NATIVE_THEME_NATIVE_THEME_H_
 #define UI_NATIVE_THEME_NATIVE_THEME_H_
 
+#include <map>
+
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -106,6 +108,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kNoPreference,
     kDark,
     kLight,
+    kMaxValue = kLight,
   };
 
   // The color scheme used for painting the native controls.
@@ -399,6 +402,21 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_NumColors,
   };
 
+  enum class SystemThemeColor {
+    kNotSupported,
+    kButtonFace,
+    kButtonText,
+    kGrayText,
+    kHighlight,
+    kHighlightText,
+    kHotlight,
+    kMenuHighlight,
+    kScrollbar,
+    kWindow,
+    kWindowText,
+    kMaxValue = kWindowText,
+  };
+
   // Return a color from the system theme.
   virtual SkColor GetSystemColor(
       ColorId color_id,
@@ -444,6 +462,29 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   ColorScheme GetSystemColorScheme() const;
 
+  virtual const std::map<SystemThemeColor, SkColor>& GetSystemColors() const;
+
+  bool HasDifferentSystemColors(
+      const std::map<SystemThemeColor, SkColor>& colors) const;
+
+  void set_use_dark_colors(bool should_use_dark_colors) {
+    should_use_dark_colors_ = should_use_dark_colors;
+  }
+  void set_high_contrast(bool is_high_contrast) {
+    is_high_contrast_ = is_high_contrast;
+  }
+  void set_preferred_color_scheme(PreferredColorScheme preferred_color_scheme) {
+    preferred_color_scheme_ = preferred_color_scheme;
+  }
+
+  void set_system_colors(const std::map<SystemThemeColor, SkColor>& colors);
+
+  void UpdateSystemColorInfo(
+      bool is_dark_mode,
+      bool is_high_contrast,
+      PreferredColorScheme preferred_color_scheme,
+      const base::flat_map<SystemThemeColor, uint32_t>& colors);
+
  protected:
   NativeTheme();
   virtual ~NativeTheme();
@@ -468,16 +509,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // be set to no-preference.
   virtual PreferredColorScheme CalculatePreferredColorScheme() const;
 
-  void set_use_dark_colors(bool should_use_dark_colors) {
-    should_use_dark_colors_ = should_use_dark_colors;
-  }
-  void set_high_contrast(bool is_high_contrast) {
-    is_high_contrast_ = is_high_contrast;
-  }
-  void set_preferred_color_scheme(PreferredColorScheme preferred_color_scheme) {
-    preferred_color_scheme_ = preferred_color_scheme;
-  }
-
   // Allows one native theme to observe changes in another. For example, the
   // web native theme for Windows observes the corresponding ui native theme in
   // order to receive changes regarding the state of dark mode, high contrast,
@@ -497,6 +528,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
     DISALLOW_COPY_AND_ASSIGN(ColorSchemeNativeThemeObserver);
   };
+
+  mutable std::map<SystemThemeColor, SkColor> system_colors_;
 
  private:
   // Observers to notify when the native theme changes.

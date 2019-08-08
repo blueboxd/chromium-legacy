@@ -24,7 +24,7 @@ const CrExtensionsInteractiveUITest = class extends PolymerInteractiveUITest {
   get extraLibraries() {
     return [
       ...super.extraLibraries,
-      '../settings/test_util.js',
+      '../test_util.js',
     ];
   }
 

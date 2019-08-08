@@ -715,11 +715,6 @@ const char kDisableLoggingRedirect[] = "disable-logging-redirect";
 // installed through policy.
 const char kDisableLoginScreenApps[] = "disable-login-screen-apps";
 
-// Provides the name of the mojo service running in a mash utility process.
-// NOTE: Used by the Chrome OS crash_reporter to identify mash processes. If you
-// change or remove the flag please update platform2/crash_reporter.
-const char kMashServiceName[] = "mash-service-name";
-
 // Use a short (1 second) timeout for merge session loader throttle testing.
 const char kShortMergeSessionTimeoutForTest[] =
     "short-merge-session-timeout-for-test";

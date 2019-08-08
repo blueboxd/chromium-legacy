@@ -101,7 +101,7 @@ static inline bool IsSpanWithoutAttributesOrUnstyledStyleSpan(
 bool IsEmptyFontTag(
     const Element* element,
     ShouldStyleAttributeBeEmpty should_style_attribute_be_empty) {
-  if (auto* font = ToHTMLFontElementOrNull(element)) {
+  if (auto* font = DynamicTo<HTMLFontElement>(element)) {
     return HasNoAttributeOrOnlyStyleAttribute(font,
                                               should_style_attribute_be_empty);
   }
@@ -1905,7 +1905,7 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
   HTMLElement* style_container = nullptr;
   for (Node* container = start_node; container && start_node == end_node;
        container = container->firstChild()) {
-    if (auto* font = ToHTMLFontElementOrNull(container))
+    if (auto* font = DynamicTo<HTMLFontElement>(container))
       font_container = font;
     bool style_container_is_not_span = !IsHTMLSpanElement(style_container);
     auto* container_element = DynamicTo<HTMLElement>(container);

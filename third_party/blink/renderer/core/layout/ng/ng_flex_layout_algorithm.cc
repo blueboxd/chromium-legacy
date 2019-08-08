@@ -32,7 +32,7 @@ NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 }
 
-bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(NGBlockNode child) {
+bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(NGBlockNode child) const {
   return child.Style().IsHorizontalWritingMode() ==
          FlexLayoutAlgorithm::IsHorizontalFlow(Style());
 }
@@ -60,6 +60,81 @@ void NGFlexLayoutAlgorithm::HandleOutOfFlowPositioned(NGBlockNode child) {
               border_scrollbar_padding_.block_start});
 }
 
+bool NGFlexLayoutAlgorithm::IsContainerCrossSizeDefinite() const {
+  // A column flexbox's cross axis is an inline size, so is definite.
+  if (is_column_)
+    return true;
+  // If this flex container is also a flex item, it might have a definite size
+  // imposed on it by its parent flex container.
+  if (ConstraintSpace().IsFixedBlockSize() &&
+      !ConstraintSpace().IsFixedBlockSizeIndefinite())
+    return true;
+
+  Length cross_size = Style().LogicalHeight();
+  if (cross_size.IsAuto())
+    return false;
+  return !BlockLengthUnresolvable(ConstraintSpace(), cross_size,
+                                  LengthResolvePhase::kLayout);
+}
+
+bool NGFlexLayoutAlgorithm::DoesItemStretch(
+    const ComputedStyle& child_style) const {
+  DCHECK(IsItemCrossSizeAuto(child_style));
+  // https://drafts.csswg.org/css-flexbox/#valdef-align-items-stretch
+  // If the cross size property of the flex item computes to auto, and neither
+  // of the cross-axis margins are auto, the flex item is stretched.
+  if (is_horizontal_flow_ &&
+      (child_style.MarginTop().IsAuto() || child_style.MarginBottom().IsAuto()))
+    return false;
+  if (!is_horizontal_flow_ &&
+      (child_style.MarginLeft().IsAuto() || child_style.MarginRight().IsAuto()))
+    return false;
+  return FlexLayoutAlgorithm::AlignmentForChild(Style(), child_style) ==
+         ItemPosition::kStretch;
+}
+
+bool NGFlexLayoutAlgorithm::IsItemCrossSizeAuto(
+    const ComputedStyle& child_style) const {
+  // TODO(dgrogan): Check if the cross size resolves to auto because of
+  // indefinite percent resolution.
+  if (is_horizontal_flow_)
+    return child_style.Height().IsAuto();
+  return child_style.Width().IsAuto();
+}
+
+// This function is used to handle two requirements from the spec.
+// (1) Calculating flex base size; case 3E at
+// https://drafts.csswg.org/css-flexbox/#algo-main-item : If a cross size is
+// needed to determine the main size (e.g. when the flex item’s main size is
+// in its block axis) and the flex item’s cross size is auto and not
+// definite, in this calculation use fit-content as the flex item’s cross size.
+// The flex base size is the item’s resulting main size.
+// (2) Cross size determination after main size has been calculated.
+// https://drafts.csswg.org/css-flexbox/#algo-cross-item : Determine the
+// hypothetical cross size of each item by performing layout with the used main
+// size and the available space, treating auto as fit-content.
+bool NGFlexLayoutAlgorithm::ShouldItemShrinkToFit(NGBlockNode child) const {
+  if (MainAxisIsInlineAxis(child)) {
+    // The cross size isn't needed to determine main size, so don't use
+    // fit-content.
+    return false;
+  }
+  if (!IsItemCrossSizeAuto(child.Style())) {
+    // The cross size is already specified, so don't use fit-content.
+    return false;
+  }
+  // We also don't use fit-content if the item qualifies for the first case in
+  // https://drafts.csswg.org/css-flexbox/#definite-sizes :
+  // 1. If a single-line flex container has a definite cross size, the outer
+  // cross size of any stretched flex items is the flex container’s inner cross
+  // size (clamped to the flex item’s min and max cross size) and is considered
+  // definite.
+  if (!algorithm_->IsMultiline() && IsContainerCrossSizeDefinite() &&
+      DoesItemStretch(child.Style()))
+    return false;
+  return true;
+}
+
 void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
@@ -75,9 +150,11 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
                                            /* is_new_fc */ true);
     SetOrthogonalFallbackInlineSizeIfNeeded(Style(), child, &space_builder);
 
-    // TODO(dgrogan): Set IsShrinkToFit here when cross axis size is auto, at
-    // least for correctness. For perf, don't set it if the item will later be
-    // stretched or we won't hit the cache later.
+    if (ShouldItemShrinkToFit(child))
+      space_builder.SetIsShrinkToFit(true);
+
+    // TODO(dgrogan): Change SetPercentageResolutionSize everywhere in this file
+    // to use CalculateChildPercentageSize.
     NGConstraintSpace child_space =
         space_builder.SetAvailableSize(content_box_size_)
             .SetPercentageResolutionSize(content_box_size_)
@@ -106,6 +183,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     MinMaxSize intrinsic_sizes_border_box = child.ComputeMinMaxSize(
         child_style.GetWritingMode(), input, &child_space);
     // TODO(dgrogan): Don't layout every time, just when you need to.
+    // Use ChildHasIntrinsicMainAxisSize as a guide.
     scoped_refptr<const NGLayoutResult> layout_result =
         child.Layout(child_space, nullptr /*break token*/);
     NGFragment fragment_in_child_writing_mode(
@@ -127,6 +205,8 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         flex_base_border_box = fragment_in_child_writing_mode.BlockSize();
     } else {
       // TODO(dgrogan): Check for definiteness.
+      // This block covers case A in
+      // https://drafts.csswg.org/css-flexbox/#algo-main-item.
       const Length& length_to_resolve =
           flex_basis.IsAuto() ? specified_length_in_main_axis : flex_basis;
       DCHECK(!length_to_resolve.IsAuto());
@@ -300,6 +380,9 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         available_size.block_size = flex_item.flexed_content_size +
                                     flex_item.main_axis_border_and_padding;
         space_builder.SetIsFixedBlockSize(true);
+        // TODO(dgrogan): Set IsFixedBlockSizeIndefinite if neither the item's
+        // nor container's main size is definite. (The latter being exception 2
+        // from https://drafts.csswg.org/css-flexbox/#definite-sizes )
       } else {
         available_size.inline_size = flex_item.flexed_content_size +
                                      flex_item.main_axis_border_and_padding;
@@ -307,6 +390,12 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         space_builder.SetIsFixedInlineSize(true);
       }
       space_builder.SetAvailableSize(available_size);
+      // https://drafts.csswg.org/css-flexbox/#algo-cross-item
+      // Determine the hypothetical cross size of each item by performing layout
+      // with the used main size and the available space, treating auto as
+      // fit-content.
+      if (ShouldItemShrinkToFit(flex_item.ng_input_node))
+        space_builder.SetIsShrinkToFit(true);
       space_builder.SetPercentageResolutionSize(content_box_size_);
       NGConstraintSpace child_space = space_builder.ToConstraintSpace();
       flex_item.layout_result =
@@ -364,6 +453,10 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
     for (wtf_size_t child_number = 0;
          child_number < line_context.line_items.size(); ++child_number) {
       FlexItem& flex_item = line_context.line_items[child_number];
+      // TODO(dgrogan): Make this obey the rule that the item stretches only if
+      // neither of the cross-axis margins are auto from
+      // https://drafts.csswg.org/css-flexbox/#valdef-align-items-stretch
+      // Just use DoesItemStretch here?
       if (flex_item.Alignment() == ItemPosition::kStretch) {
         flex_item.ComputeStretchedSize();
 
@@ -378,8 +471,12 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
         LogicalSize available_size(flex_item.flexed_content_size +
                                        flex_item.main_axis_border_and_padding,
                                    flex_item.cross_axis_size);
-        if (is_column_)
+        if (is_column_) {
           available_size.Transpose();
+          // TODO(dgrogan): Set IsFixedBlockSizeIndefinite if neither the item's
+          // nor container's main size is definite. (The latter being exception
+          // 2 from https://drafts.csswg.org/css-flexbox/#definite-sizes )
+        }
         space_builder.SetAvailableSize(available_size);
         space_builder.SetPercentageResolutionSize(content_box_size_);
         space_builder.SetIsFixedInlineSize(true);

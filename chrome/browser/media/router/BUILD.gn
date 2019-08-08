@@ -158,6 +158,8 @@ static_library("router") {
         "providers/openscreen/platform/task_runner.h",
         "providers/openscreen/platform/time.cc",
         "providers/openscreen/platform/trace_logging_platform.cc",
+        "providers/openscreen/platform/udp_socket.cc",
+        "providers/openscreen/platform/udp_socket.h",
       ]
 
       configs +=

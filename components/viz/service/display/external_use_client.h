@@ -5,20 +5,104 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EXTERNAL_USE_CLIENT_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EXTERNAL_USE_CLIENT_H_
 
+#include <memory>
+#include <utility>
 #include <vector>
 
-#include "components/viz/common/resources/resource_id.h"
+#include "base/optional.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace viz {
 
-// Interface used by DisplayResourceProvider::LockSetForExternalUse to notify
-// the external client about resource removal.
+// DisplayResourceProvider takes ownership
+// of ImageContext from ExternalUseClient when it calls CreateImage.
+// DisplayResourceProvider returns ownership when it calls ReleaseImageContexts.
+// An ExternalUseClient will only ever release an ImageContext that it has
+// created.
 class VIZ_SERVICE_EXPORT ExternalUseClient {
  public:
-  // Release cached data associated with the given |resource_ids|.
-  virtual void ReleaseCachedResources(
-      const std::vector<ResourceId>& resource_ids) = 0;
+  class VIZ_SERVICE_EXPORT ImageContext {
+   public:
+    ImageContext(const gpu::MailboxHolder& mailbox_holder,
+                 const gfx::Size& size,
+                 ResourceFormat resource_format,
+                 sk_sp<SkColorSpace> color_space);
+    virtual ~ImageContext();
+
+    //
+    // Thread safety is guaranteed by these invariants: (a) only the compositor
+    // thread modifies ImageContext, (b) ImageContext is not modified after
+    // |image| is set, and (c) GPU thread only reads ImageContext after |image|
+    // is set.
+    //
+    const gpu::MailboxHolder& mailbox_holder() const { return mailbox_holder_; }
+    gpu::MailboxHolder* mutable_mailbox_holder() { return &mailbox_holder_; }
+    const gfx::Size& size() const { return size_; }
+    ResourceFormat resource_format() const { return resource_format_; }
+    sk_sp<SkColorSpace> color_space() const { return color_space_; }
+
+    SkAlphaType alpha_type() const { return alpha_type_; }
+    void set_alpha_type(SkAlphaType alpha_type) {
+      DCHECK(!image_);
+      alpha_type_ = alpha_type;
+    }
+
+    GrSurfaceOrigin origin() const { return origin_; }
+    void set_origin(GrSurfaceOrigin origin) {
+      DCHECK(!image_);
+      origin_ = origin;
+    }
+
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info() { return ycbcr_info_; }
+    void set_ycbcr_info(const gpu::VulkanYCbCrInfo& ycbcr_info) {
+      DCHECK(!image_);
+      *ycbcr_info_ = ycbcr_info;
+    }
+
+    bool has_image() { return !!image_; }
+    sk_sp<SkImage> image() { return image_; }
+    void set_image(sk_sp<SkImage> image) {
+      DCHECK(!image_);
+      image_ = std::move(image);
+    }
+    void clear_image() { image_.reset(); }
+
+   private:
+    gpu::MailboxHolder mailbox_holder_;
+
+    const gfx::Size size_;
+    const ResourceFormat resource_format_;
+    const sk_sp<SkColorSpace> color_space_;
+
+    SkAlphaType alpha_type_ = kPremul_SkAlphaType;
+    GrSurfaceOrigin origin_ = kTopLeft_GrSurfaceOrigin;
+
+    // Sampler conversion information which is used in vulkan context for
+    // android video.
+    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
+
+    // The promise image which is used on display thread.
+    sk_sp<SkImage> image_;
+
+    DISALLOW_COPY_AND_ASSIGN(ImageContext);
+  };
+
+  virtual std::unique_ptr<ImageContext> CreateImageContext(
+      const gpu::MailboxHolder& holder,
+      const gfx::Size& size,
+      ResourceFormat format,
+      sk_sp<SkColorSpace> color_space) = 0;
+
+  virtual void ReleaseImageContexts(
+      std::vector<std::unique_ptr<ImageContext>> image_contexts) = 0;
 };
 
 }  // namespace viz

@@ -15,6 +15,9 @@ import sys
 
 # Subdirectory to be copied to Google Cloud Storage. Contains a copy of the
 # generated proto under a versioned directory.
+# TODO(meacer): Remove this. Safety tips does not read the proto from a local
+# resource bundle, it only uses the proto passed from component updater. It does
+# not need two copies of the file.
 GS_COPY_DIR = "gs_copy"
 
 # Import the binary proto generator. Walks up to the root of the source tree
@@ -44,6 +47,9 @@ class SafetyTipsProtoGenerator(BinaryProtoGenerator):
     for flagged_page in pb.flagged_page:
       assert flagged_page.url
       assert flagged_page.type != safety_tips_pb2.FlaggedPage.UNKNOWN
+
+    flagged_urls = [flagged_page.url for flagged_page in pb.flagged_page]
+    assert sorted(flagged_urls) == flagged_urls, "Please sort flagged_page entries by URL."
 
   def ProcessPb(self, opts, pb):
     binary_pb_str = pb.SerializeToString()

@@ -46,6 +46,7 @@ class FakeOverlayPresentationContext : public OverlayPresentationContext {
   bool IsActive() const override;
   void ShowOverlayUI(OverlayPresenter* presenter,
                      OverlayRequest* request,
+                     OverlayPresentationCallback presentation_callback,
                      OverlayDismissalCallback dismissal_callback) override;
   void HideOverlayUI(OverlayPresenter* presenter,
                      OverlayRequest* request) override;
@@ -53,10 +54,18 @@ class FakeOverlayPresentationContext : public OverlayPresentationContext {
                        OverlayRequest* request) override;
 
  private:
-  // The presentation states for each OverlayRequest.
-  std::map<OverlayRequest*, PresentationState> presentation_states_;
-  // The callbacks for each OverlayRequest.
-  std::map<OverlayRequest*, OverlayDismissalCallback> overlay_callbacks_;
+  // Struct used to store state for the fake presentation context.
+  struct FakeUIState {
+    FakeUIState();
+    ~FakeUIState();
+
+    PresentationState presentation_state = PresentationState::kNotPresented;
+    OverlayPresentationCallback presentation_callback;
+    OverlayDismissalCallback dismissal_callback;
+  };
+
+  // The UI states for each request.
+  std::map<OverlayRequest*, FakeUIState> states_;
   // Whether the context is active.
   bool active_ = true;
 

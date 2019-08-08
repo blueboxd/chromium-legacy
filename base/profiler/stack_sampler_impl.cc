@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/profiler/profile_builder.h"
 #include "base/profiler/sample_metadata.h"
+#include "base/profiler/stack_buffer.h"
 #include "base/profiler/thread_delegate.h"
 #include "base/profiler/unwinder.h"
 
@@ -237,10 +238,9 @@ const uint8_t* CopyStackContentsAndRewritePointers(
   // alignment between values in the original stack and the copy. This uses the
   // platform stack alignment rather than pointer alignment so that the stack
   // copy is aligned to platform expectations.
-  uint8_t* stack_copy_bottom =
-      reinterpret_cast<uint8_t*>(stack_buffer_bottom) +
-      (reinterpret_cast<uintptr_t>(byte_src) &
-       (StackSampler::StackBuffer::kPlatformStackAlignment - 1));
+  uint8_t* stack_copy_bottom = reinterpret_cast<uint8_t*>(stack_buffer_bottom) +
+                               (reinterpret_cast<uintptr_t>(byte_src) &
+                                (StackBuffer::kPlatformStackAlignment - 1));
   uint8_t* byte_dst = stack_copy_bottom;
 
   // Copy bytes verbatim up to the first aligned address.

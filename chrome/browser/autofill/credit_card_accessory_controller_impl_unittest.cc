@@ -15,7 +15,6 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "components/autofill/core/common/form_data.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,35 +29,6 @@ const base::string16 kFirstTwelveDigits = base::ASCIIToUTF16("411111111111");
 
 namespace autofill {
 namespace {
-
-class TestAutofillManager : public AutofillManager {
- public:
-  TestAutofillManager(
-      AutofillDriver* driver,
-      AutofillClient* client,
-      PersonalDataManager* personal_data,
-      AutocompleteHistoryManager* autocomplete_history_manager,
-      std::unique_ptr<CreditCardAccessManager> cc_access_manager = nullptr)
-      // Force to use the constructor designated for unit test.
-      : AutofillManager(driver,
-                        client,
-                        personal_data,
-                        autocomplete_history_manager,
-                        "en-US",
-                        AutofillHandler::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
-                        std::move(cc_access_manager)) {}
-
-  ~TestAutofillManager() override = default;
-
-  const FormData& last_query_form() const override { return last_form_; }
-
-  void SetLastForm(FormData form) { last_form_ = std::move(form); }
-
- private:
-  FormData last_form_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
-};
 
 AccessorySheetData::Builder CreditCardAccessorySheetDataBuilder() {
   return AccessorySheetData::Builder(
@@ -107,6 +77,8 @@ class CreditCardAccessoryControllerTest
                     &client_,
                     &data_manager_,
                     &history_,
+                    "en-US",
+                    AutofillHandler::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
                     std::make_unique<TestAccessManager>(&mock_af_driver_,
                                                         &client_,
                                                         &data_manager_)) {}
@@ -114,7 +86,6 @@ class CreditCardAccessoryControllerTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     NavigateAndCommit(GURL(kExampleSite));
-    SetFormOrigin(GURL(kExampleSite));
     FocusWebContentsOnMainFrame();
 
     CreditCardAccessoryControllerImpl::CreateForWebContentsForTesting(
@@ -132,22 +103,13 @@ class CreditCardAccessoryControllerTest
     return CreditCardAccessoryControllerImpl::FromWebContents(web_contents());
   }
 
-  void SetFormOrigin(GURL origin) {
-    FormData form;
-    form.unique_renderer_id = 1;
-    form.action = origin;
-    form.main_frame_origin = url::Origin::Create(origin);
-    client_.set_form_origin(origin);
-    af_manager_.SetLastForm(std::move(form));
-  }
-
  protected:
   TestAutofillClient client_;
   testing::NiceMock<MockAutofillDriver> mock_af_driver_;
   autofill::TestPersonalDataManager data_manager_;
   MockAutocompleteHistoryManager history_;
   testing::NiceMock<MockManualFillingController> mock_mf_controller_;
-  TestAutofillManager af_manager_;
+  AutofillManager af_manager_;
   TestingProfile profile_;
 };
 
@@ -176,41 +138,6 @@ TEST_F(CreditCardAccessoryControllerTest, RefreshSuggestions) {
           .AppendSimpleField(card.Expiration4DigitYearAsString())
           .AppendSimpleField(card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL))
           .Build());
-}
-
-TEST_F(CreditCardAccessoryControllerTest, PreventsFillingInsecureContexts) {
-  autofill::CreditCard card = test::GetCreditCard();
-  data_manager_.AddCreditCard(card);
-  autofill::AccessorySheetData result(autofill::AccessoryTabType::CREDIT_CARDS,
-                                      base::string16());
-  SetFormOrigin(GURL("http://insecure.http-site.com"));
-
-  EXPECT_CALL(mock_mf_controller_, RefreshSuggestions(_))
-      .WillOnce(SaveArg<0>(&result));
-  controller()->RefreshSuggestions();
-
-  EXPECT_EQ(result,
-            CreditCardAccessorySheetDataBuilder()
-                .SetWarning(l10n_util::GetStringUTF16(
-                    IDS_AUTOFILL_WARNING_INSECURE_CONNECTION))
-                .AddUserInfo()
-                .AppendField(card.ObfuscatedLastFourDigits(),
-                             card.ObfuscatedLastFourDigits(), card.guid(),
-                             /*is_obfuscated=*/false,
-                             /*selectable=*/false)
-                .AppendField(card.ExpirationMonthAsString(),
-                             card.ExpirationMonthAsString(),
-                             /*is_obfuscated=*/false,
-                             /*selectable=*/false)
-                .AppendField(card.Expiration4DigitYearAsString(),
-                             card.Expiration4DigitYearAsString(),
-                             /*is_obfuscated=*/false,
-                             /*selectable=*/false)
-                .AppendField(card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL),
-                             card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL),
-                             /*is_obfuscated=*/false,
-                             /*selectable=*/false)
-                .Build());
 }
 
 TEST_F(CreditCardAccessoryControllerTest, ServerCardUnmask) {

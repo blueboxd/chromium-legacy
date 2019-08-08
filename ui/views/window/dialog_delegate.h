@@ -42,6 +42,9 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
                                     gfx::NativeWindow context,
                                     gfx::NativeView parent);
 
+  // Whether using custom dialog frame is supported for this dialog.
+  static bool CanSupportCustomFrame(gfx::NativeView parent);
+
   // Returns the dialog widget InitParams for a given |context| or |parent|.
   // If |bounds| is not empty, used to initially place the dialog, otherwise
   // a default location is used.

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "pdf/page_orientation.h"
 #include "pdf/pdfium/pdfium_page.h"
 #include "ppapi/cpp/rect.h"
 
@@ -38,9 +39,10 @@ class PDFiumRange {
   int char_count() const { return char_count_; }
 
   // Gets bounding rectangles of range in screen coordinates.
-  const std::vector<pp::Rect>& GetScreenRects(const pp::Point& offset,
-                                              double zoom,
-                                              int rotation) const;
+  const std::vector<pp::Rect>& GetScreenRects(
+      const pp::Point& offset,
+      double zoom,
+      PageOrientation orientation) const;
 
   // Gets the string of characters in this range.
   base::string16 GetText() const;

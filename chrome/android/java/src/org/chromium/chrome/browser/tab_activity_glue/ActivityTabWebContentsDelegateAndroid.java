@@ -80,7 +80,9 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
     }
 
     private FullscreenManager getFullscreenManager() {
-        return mActivity != null ? mActivity.getFullscreenManager() : null;
+        return mActivity != null && !mActivity.isActivityFinishingOrDestroyed()
+                ? mActivity.getFullscreenManager()
+                : null;
     }
 
     @Override

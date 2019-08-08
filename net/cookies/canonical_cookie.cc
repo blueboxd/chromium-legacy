@@ -191,7 +191,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     const GURL& url,
     const std::string& cookie_line,
     const base::Time& creation_time,
-    const CookieOptions& options,
+    base::Optional<base::Time> server_time,
     CookieInclusionStatus* status) {
   // Put a pointer on the stack so the rest of the function can assign to it if
   // the default nullptr is passed in.
@@ -221,14 +221,13 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   std::string cookie_path = CanonPathWithString(
       url, parsed_cookie.HasPath() ? parsed_cookie.Path() : std::string());
 
-  Time server_time(creation_time);
-  if (options.has_server_time())
-    server_time = options.server_time();
+  Time cookie_server_time(creation_time);
+  if (server_time.has_value() && !server_time->is_null())
+    cookie_server_time = server_time.value();
 
   DCHECK(!creation_time.is_null());
-  Time cookie_expires = CanonicalCookie::CanonExpiration(parsed_cookie,
-                                                         creation_time,
-                                                         server_time);
+  Time cookie_expires = CanonicalCookie::CanonExpiration(
+      parsed_cookie, creation_time, cookie_server_time);
 
   CookiePrefix prefix = GetCookiePrefix(parsed_cookie.Name());
   bool is_cookie_valid = IsCookiePrefixValid(prefix, url, parsed_cookie);

@@ -437,7 +437,7 @@
   },
   "login": {
     "channel": "dev",
-    "extension_types": ["login_screen_extension"],
+    "extension_types": ["login_screen_extension", "extension"],
     "location": "policy",
     "platforms": ["chromeos"],
     "whitelist": [

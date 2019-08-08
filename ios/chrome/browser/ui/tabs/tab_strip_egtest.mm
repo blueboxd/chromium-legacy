@@ -8,7 +8,6 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -36,7 +35,7 @@ id<GREYMatcher> TabTitleMatcher(web::WebState* web_state) {
 // Test switching tabs using the tab strip.
 - (void)testTabStripSwitchTabs {
   // Only iPad has a tab strip.
-  if (IsCompactWidth()) {
+  if ([ChromeEarlGrey isCompactWidth]) {
     return;
   }
 

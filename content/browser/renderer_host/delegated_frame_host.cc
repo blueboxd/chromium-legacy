@@ -113,7 +113,13 @@ bool DelegatedFrameHost::HasSavedFrame() const {
   return frame_evictor_->has_surface();
 }
 
-void DelegatedFrameHost::WasHidden() {
+void DelegatedFrameHost::WasHidden(HiddenCause cause) {
+#if defined(OS_WIN)
+  // Ignore if the native window was occluded.
+  // Windows needs the frame host to display tab previews.
+  if (cause == HiddenCause::kOccluded)
+    return;
+#endif
   frame_evictor_->SetVisible(false);
   tab_switch_time_recorder_.TabWasHidden();
 }

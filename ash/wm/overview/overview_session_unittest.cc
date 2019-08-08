@@ -2812,6 +2812,11 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
     EnterTabletMode();
   }
 
+  void GenerateScrollSequence(const gfx::Point& start, const gfx::Point& end) {
+    GetEventGenerator()->GestureScrollSequence(
+        start, end, base::TimeDelta::FromMilliseconds(10), 10);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -2892,6 +2897,73 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOffscreenWindows) {
   EXPECT_FALSE(screen_bounds.Contains(item7_bounds));
   EXPECT_EQ(item1_bounds.y(), item7_bounds.y());
   EXPECT_LT(item6_bounds.y(), item7_bounds.y());
+}
+
+// Tests to see if windows are not shifted if all already available windows
+// fit on screen.
+TEST_F(OverviewSessionNewLayoutTest, CheckNoOverviewItemShift) {
+  std::vector<std::unique_ptr<aura::Window>> windows(4);
+  for (int i = 3; i >= 0; --i)
+    windows[i] = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+
+  OverviewItem* item0 = GetOverviewItemInGridWithWindow(0, windows[0].get());
+  const gfx::RectF before_shift_bounds = item0->target_bounds();
+
+  GenerateScrollSequence(gfx::Point(100, 50), gfx::Point(0, 50));
+  EXPECT_EQ(before_shift_bounds, item0->target_bounds());
+}
+
+// Tests to see if windows are shifted if at least one window is
+// partially/completely positioned offscreen.
+TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemShift) {
+  std::vector<std::unique_ptr<aura::Window>> windows(7);
+  for (int i = 6; i >= 0; --i)
+    windows[i] = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+
+  OverviewItem* item0 = GetOverviewItemInGridWithWindow(0, windows[0].get());
+  const gfx::RectF before_shift_bounds = item0->target_bounds();
+
+  GenerateScrollSequence(gfx::Point(100, 50), gfx::Point(0, 50));
+  EXPECT_LT(item0->target_bounds(), before_shift_bounds);
+}
+
+// Tests to see if windows remain in bounds after scrolling extremely far.
+TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
+  std::vector<std::unique_ptr<aura::Window>> windows(8);
+  for (int i = 7; i >= 0; --i)
+    windows[i] = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+
+  // Scroll an extreme amount to see if windows on the far left are still in
+  // bounds. First, align the left-most window (|windows|0||) to the left-hand
+  // bound and store the item's location. Then, scroll a far amount and check to
+  // see if the item moved at all.
+  OverviewItem* leftmost_window =
+      GetOverviewItemInGridWithWindow(0, windows[0].get());
+
+  GenerateScrollSequence(gfx::Point(0, 50), gfx::Point(5000, 50));
+  const gfx::RectF left_bounds = leftmost_window->target_bounds();
+  GenerateScrollSequence(gfx::Point(0, 50), gfx::Point(5000, 50));
+  EXPECT_EQ(left_bounds, leftmost_window->target_bounds());
+
+  // Scroll an extreme amount to see if windows on the far right are still in
+  // bounds. First, align the right-most window (|windows|7||) to the right-hand
+  // bound and store the item's location. Then, scroll a far amount and check to
+  // see if the item moved at all.
+  OverviewItem* rightmost_window =
+      GetOverviewItemInGridWithWindow(0, windows[7].get());
+  GenerateScrollSequence(gfx::Point(5000, 50), gfx::Point(0, 50));
+  const gfx::RectF right_bounds = rightmost_window->target_bounds();
+  GenerateScrollSequence(gfx::Point(5000, 50), gfx::Point(0, 50));
+  EXPECT_EQ(right_bounds, rightmost_window->target_bounds());
 }
 
 // Test the split view and overview functionalities in tablet mode.

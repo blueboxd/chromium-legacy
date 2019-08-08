@@ -26,6 +26,8 @@ std::pair<std::string, std::string> SplitHTTP(std::string http_text);
 // Gets a key from a given query request.
 std::string GetKeyFromQueryRequest(const AutofillQueryContents& query_request);
 
+enum class RequestType { kLegacyQueryProtoGET, kLegacyQueryProtoPOST };
+
 // Replayer for Autofill Server cache. Can be used in concurrency.
 class ServerCacheReplayer {
  public:

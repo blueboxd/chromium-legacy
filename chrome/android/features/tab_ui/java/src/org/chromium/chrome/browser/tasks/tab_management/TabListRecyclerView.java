@@ -31,7 +31,6 @@ import android.widget.ImageView;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -351,10 +350,8 @@ class TabListRecyclerView extends RecyclerView {
             if (mRecyclerViewFooter.getVisibility() != VISIBLE) {
                 mRecyclerViewFooter.setVisibility(VISIBLE);
             }
-            final int padding =
-                    (int) getResources().getDimension(R.dimen.tab_grid_iph_card_padding);
             mRecyclerViewFooter.setY(
-                    viewHolder.itemView.getBottom() + mRecyclerViewFooter.getHeight() + padding);
+                    viewHolder.itemView.getBottom() + mRecyclerViewFooter.getHeight());
         }
     }
 
@@ -477,10 +474,7 @@ class TabListRecyclerView extends RecyclerView {
      */
     void setupRecyclerViewFooter(View footer) {
         if (mRecyclerViewFooter != null) return;
-        final int height = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_height);
-        final int padding = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_padding);
         mRecyclerViewFooter = footer;
-        setPadding(0, 0, 0, height + padding);
         setScrollBarStyle(SCROLLBARS_OUTSIDE_OVERLAY);
         mRecyclerViewFooter.setVisibility(INVISIBLE);
     }

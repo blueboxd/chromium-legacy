@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -63,6 +64,19 @@ void RecordSecurityLevel(
   }
 }
 
+security_state::SafetyTipStatus GetSecurityStateSafetyTipType(
+    safety_tips::SafetyTipType type) {
+  switch (type) {
+    case safety_tips::SafetyTipType::kNone:
+      return security_state::SafetyTipStatus::SAFETY_TIP_STATUS_NONE;
+    case safety_tips::SafetyTipType::kBadReputation:
+      return security_state::SafetyTipStatus::SAFETY_TIP_STATUS_BAD_REPUTATION;
+    default:
+      NOTREACHED();
+      return security_state::SafetyTipStatus::SAFETY_TIP_STATUS_NONE;
+  }
+}
+
 }  // namespace
 
 using password_manager::metrics_util::PasswordType;
@@ -88,6 +102,14 @@ SecurityStateTabHelper::GetVisibleSecurityState() const {
   // information is still being initialized, thus no need to check for that.
   state->malicious_content_status = GetMaliciousContentStatus();
 
+  safety_tips::ReputationWebContentsObserver* reputation_web_contents_observer =
+      safety_tips::ReputationWebContentsObserver::FromWebContents(
+          web_contents());
+  state->safety_tip_status =
+      reputation_web_contents_observer
+          ? GetSecurityStateSafetyTipType(
+                reputation_web_contents_observer->last_shown_safety_tip_type())
+          : security_state::SafetyTipStatus::SAFETY_TIP_STATUS_NONE;
   return state;
 }
 

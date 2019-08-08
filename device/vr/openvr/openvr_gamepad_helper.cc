@@ -10,6 +10,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/util/gamepad_builder.h"
@@ -126,6 +128,17 @@ constexpr std::array<vr::EVRButtonId, 5> kWebXRButtonOrder = {
     vr::k_EButton_A,          vr::k_EButton_DPad_Left, vr::k_EButton_DPad_Up,
     vr::k_EButton_DPad_Right, vr::k_EButton_DPad_Down,
 };
+
+// To make sure this string fits the requirements of the WebXR spec, separate
+// words/tokens are separated by "-" instead of whitespace and convert it to
+// lowercase.
+std::string FixupProfileString(const std::string& name) {
+  std::vector<std::string> tokens =
+      base::SplitString(name, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  std::string result = base::JoinString(tokens, "-");
+  return base::ToLowerASCII(result);
+}
 
 // Constants/functions only used by WebVR.
 constexpr std::array<vr::EVRButtonId, 7> kWebVRButtonOrder = {
@@ -313,11 +326,46 @@ class OpenVRGamepadBuilder : public XRStandardGamepadBuilder {
 
     // Finally, add any remaining axis buttons (triggers/josysticks/touchpads)
     AddRemainingTriggersAndAxes();
+
+    // Find out the model and manufacturer names in case the caller wants this
+    // information for the input profiles array.
+    std::string model =
+        GetOpenVRString(vr_system, vr::Prop_ModelNumber_String, controller_id);
+    std::string manufacturer = GetOpenVRString(
+        vr_system, vr::Prop_ManufacturerName_String, controller_id);
+
+    UpdateProfiles(manufacturer, model);
   }
 
   ~OpenVRGamepadBuilder() override = default;
 
+  std::vector<std::string> GetProfiles() const { return profiles_; }
+
  private:
+  void UpdateProfiles(const std::string& manufacturer,
+                      const std::string& model) {
+    // Per the WebXR spec, the first entry in the profiles array should be the
+    // most specific one.
+    std::string name =
+        FixupProfileString(manufacturer) + "-" + FixupProfileString(model);
+    profiles_.push_back(name);
+
+    // Also record information about what this controller actually does in a
+    // more general sense.
+    std::string capabilities = "";
+    if (HasSecondaryButton()) {
+      capabilities += "grip-";
+    }
+    if (HasTouchpad()) {
+      capabilities += "touchpad-";
+    }
+    if (HasThumbstick()) {
+      capabilities += "thumbstick-";
+    }
+    capabilities += "controller";
+    profiles_.push_back(capabilities);
+  }
+
   base::Optional<GamepadBuilder::ButtonData> TryGetAxesOrTriggerButton(
       vr::EVRButtonId button_id,
       AxesRequirement requirement = AxesRequirement::kOptional) {
@@ -370,32 +418,6 @@ class OpenVRGamepadBuilder : public XRStandardGamepadBuilder {
     }
   }
 
-  static bool IsControllerHTCVive(vr::IVRSystem* vr_system,
-                                  uint32_t controller_id) {
-    std::string model =
-        GetOpenVRString(vr_system, vr::Prop_ModelNumber_String, controller_id);
-    std::string manufacturer = GetOpenVRString(
-        vr_system, vr::Prop_ManufacturerName_String, controller_id);
-
-    // OpenVR reports different model strings for developer vs released versions
-    // of Vive controllers. In the future, there could be additional iterations
-    // of the Vive controller that we also want to catch here. That's why we
-    // check if the model string contains "Vive" instead of doing an exact match
-    // against specific string(s).
-    return (manufacturer == "HTC") && (model.find("Vive") != std::string::npos);
-  }
-
-  // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
-  // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
-  static std::string GetGamepadId(vr::IVRSystem* vr_system,
-                                  uint32_t controller_id) {
-    if (IsControllerHTCVive(vr_system, controller_id)) {
-      return "htc-vive";
-    }
-
-    return "openvr";
-  }
-
   bool IsUsed(vr::EVRButtonId button_id) {
     auto it = used_axes_.find(button_id);
     return it != used_axes_.end();
@@ -410,18 +432,28 @@ class OpenVRGamepadBuilder : public XRStandardGamepadBuilder {
   uint64_t supported_buttons_;
   std::map<vr::EVRButtonId, GamepadBuilder::ButtonData> axes_data_;
   std::unordered_set<vr::EVRButtonId> used_axes_;
+  std::vector<std::string> profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenVRGamepadBuilder);
 };
 
-base::Optional<Gamepad> OpenVRGamepadHelper::GetXRGamepad(
+OpenVRInputSourceData::OpenVRInputSourceData() = default;
+OpenVRInputSourceData::~OpenVRInputSourceData() = default;
+OpenVRInputSourceData::OpenVRInputSourceData(
+    const OpenVRInputSourceData& other) = default;
+
+OpenVRInputSourceData OpenVRGamepadHelper::GetXRInputSourceData(
     vr::IVRSystem* vr_system,
     uint32_t controller_id,
     vr::VRControllerState_t controller_state,
     device::mojom::XRHandedness handedness) {
   OpenVRGamepadBuilder builder(vr_system, controller_id, controller_state,
                                handedness);
-  return builder.GetGamepad();
+
+  OpenVRInputSourceData data;
+  data.gamepad = builder.GetGamepad();
+  data.profiles = builder.GetProfiles();
+  return data;
 }
 
 }  // namespace device

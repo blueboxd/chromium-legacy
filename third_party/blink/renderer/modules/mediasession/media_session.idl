@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/mediasession/#enumdef-mediasessionplaybackstate
+// https://w3c.github.io/mediasession/#enumdef-mediasessionplaybackstate
 
 enum MediaSessionPlaybackState {
     "none",
@@ -10,7 +10,7 @@ enum MediaSessionPlaybackState {
     "playing"
 };
 
-// https://wicg.github.io/mediasession/#the-mediasession-interface
+// https://w3c.github.io/mediasession/#the-mediasession-interface
 
 enum MediaSessionAction {
   "play",
@@ -35,4 +35,7 @@ callback MediaSessionActionHandler = void ([RuntimeEnabled=MediaSessionSeeking] 
 
     [Measure, RaisesException] void setActionHandler(MediaSessionAction action,
                                     MediaSessionActionHandler? handler);
+
+    [Measure, RaisesException, RuntimeEnabled=MediaSessionPosition]
+        void setPositionState(MediaPositionState? state);
 };

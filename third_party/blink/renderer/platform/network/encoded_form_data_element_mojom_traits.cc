@@ -139,18 +139,6 @@ bool StructTraits<blink::mojom::FetchAPIDataElementDataView,
           WTF::String(file_path.value().data(), file_path.value().size());
       break;
     }
-    case network::mojom::DataElementType::kBlob: {
-      // Blobs are actually passed around as kDataPipe elements when network
-      // service is enabled, which keeps the blobs alive.
-      DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-      out->type_ = blink::FormDataElement::kEncodedBlob;
-      if (!data.ReadBlobUuid(&out->blob_uuid_)) {
-        return false;
-      }
-      out->optional_blob_data_handle_ = blink::BlobDataHandle::Create(
-          out->blob_uuid_, "" /* type is not necessary */, data.length());
-      break;
-    }
     case network::mojom::DataElementType::kDataPipe: {
       out->type_ = blink::FormDataElement::kDataPipe;
       auto data_pipe_ptr_info = data.TakeDataPipeGetter<
@@ -164,6 +152,7 @@ bool StructTraits<blink::mojom::FetchAPIDataElementDataView,
               std::move(data_pipe_getter));
       break;
     }
+    case network::mojom::DataElementType::kBlob:
     case network::mojom::DataElementType::kUnknown:
     case network::mojom::DataElementType::kChunkedDataPipe:
     case network::mojom::DataElementType::kRawFile:

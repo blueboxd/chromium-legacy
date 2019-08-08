@@ -14,6 +14,7 @@
 #include "base/task_runner_util.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -97,7 +98,47 @@ class ProfileShortcutManagerTest : public testing::Test {
     // by |CreateProfileShortcut()| since there is only one profile.
     profile_shortcut_manager_->CreateProfileShortcut(profile_1_path_);
     thread_bundle_.RunUntilIdle();
-    // Verify that there's now a shortcut with no profile information.
+    // Verify that there's now an unbadged, unmamed shortcut for the single
+    // profile.
+    ValidateSingleProfileShortcut(location, profile_1_path_);
+  }
+
+  void SetupNonProfileShortcut(const base::Location& location) {
+    ASSERT_EQ(0u, profile_attributes_storage_->GetNumberOfProfiles())
+        << location.ToString();
+    ASSERT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_1_name_))
+        << location.ToString();
+    profile_attributes_storage_->AddProfile(profile_1_path_, profile_1_name_,
+                                            std::string(), base::string16(), 0,
+                                            std::string(), EmptyAccountId());
+    // Create a non profile shortcut for Chrome.
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
+
+    base::FilePath chrome_exe;
+    if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
+      NOTREACHED();
+      return;
+    }
+
+    ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
+    ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
+
+    properties.set_app_id(
+        shell_integration::win::GetChromiumModelIdForProfile(profile_1_path_));
+
+    const base::FilePath shortcut_path(
+        profiles::internal::GetShortcutFilenameForProfile(L""));
+
+    const base::FilePath new_shortcut_name =
+        shortcut_path.BaseName().RemoveExtension();
+    properties.set_shortcut_name(new_shortcut_name.value());
+    ShellUtil::CreateOrUpdateShortcut(
+        ShellUtil::SHORTCUT_LOCATION_DESKTOP, properties,
+        ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL);
+    thread_bundle_.RunUntilIdle();
+    // Verify that there's now an unbadged, unmamed shortcut for the single
+    // profile.
     ValidateNonProfileShortcut(location);
   }
 
@@ -105,6 +146,11 @@ class ProfileShortcutManagerTest : public testing::Test {
     SetupDefaultProfileShortcut(location);
     CreateProfileWithShortcut(location, profile_2_name_, profile_2_path_);
     ValidateProfileShortcut(location, profile_1_name_, profile_1_path_);
+  }
+
+  void SetupTwoProfilesAndNonProfileShortcut(const base::Location& location) {
+    SetupNonProfileShortcut(location);
+    CreateProfileWithShortcut(location, profile_2_name_, profile_2_path_);
   }
 
   // Returns the default shortcut path for this profile.
@@ -164,8 +210,32 @@ class ProfileShortcutManagerTest : public testing::Test {
         location, GetDefaultShortcutPathForProfile(profile_name), profile_path);
   }
 
-  void ValidateNonProfileShortcutAtPath(const base::Location& location,
-                                        const base::FilePath& shortcut_path) {
+  void ValidateSingleProfileShortcutAtPath(
+      const base::Location& location,
+      const base::FilePath& profile_path,
+      const base::FilePath& shortcut_path) {
+    EXPECT_TRUE(base::PathExists(shortcut_path)) << location.ToString();
+
+    base::win::ShortcutProperties expected_properties;
+    expected_properties.set_target(GetExePath());
+    expected_properties.set_arguments(
+        profiles::internal::CreateProfileShortcutFlags(profile_path));
+    expected_properties.set_icon(GetExePath(), 0);
+    expected_properties.set_description(InstallUtil::GetAppDescription());
+    expected_properties.set_dual_mode(false);
+    PostValidateShortcut(location, shortcut_path, expected_properties);
+  }
+
+  void ValidateSingleProfileShortcut(const base::Location& location,
+                                     const base::FilePath& profile_path) {
+    const base::FilePath shortcut_path =
+        GetDefaultShortcutPathForProfile(base::string16());
+    ValidateSingleProfileShortcutAtPath(location, profile_path, shortcut_path);
+  }
+
+  void ValidateNonProfileShortcut(const base::Location& location) {
+    const base::FilePath shortcut_path =
+        GetDefaultShortcutPathForProfile(base::string16());
     EXPECT_TRUE(base::PathExists(shortcut_path)) << location.ToString();
 
     base::win::ShortcutProperties expected_properties;
@@ -175,12 +245,6 @@ class ProfileShortcutManagerTest : public testing::Test {
     expected_properties.set_description(InstallUtil::GetAppDescription());
     expected_properties.set_dual_mode(false);
     PostValidateShortcut(location, shortcut_path, expected_properties);
-  }
-
-  void ValidateNonProfileShortcut(const base::Location& location) {
-    const base::FilePath shortcut_path =
-        GetDefaultShortcutPathForProfile(base::string16());
-    ValidateNonProfileShortcutAtPath(location, shortcut_path);
   }
 
   void CreateProfileWithShortcut(const base::Location& location,
@@ -370,6 +434,16 @@ TEST_F(ProfileShortcutManagerTest, CreateSecondProfileBadgesFirstShortcut) {
   ValidateProfileShortcut(FROM_HERE, profile_1_name_, profile_1_path_);
 }
 
+// Test that adding a second profile, when the first profile has a non-profile
+// shortcut, updates the non-profile shortcut to be a badged profile shortcut.
+// This happens if the user has one profile, created with a version of Chrome
+// that creates non-profile shortcuts, upgrades to a newer version of Chrome
+// that creates default profile shortcuts, and adds a second profile.
+TEST_F(ProfileShortcutManagerTest, NonProfileShortcutUpgrade) {
+  SetupTwoProfilesAndNonProfileShortcut(FROM_HERE);
+  ValidateProfileShortcut(FROM_HERE, profile_1_name_, profile_1_path_);
+}
+
 TEST_F(ProfileShortcutManagerTest, DesktopShortcutsDeleteSecondToLast) {
   SetupAndCreateTwoShortcuts(FROM_HERE);
 
@@ -378,11 +452,8 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsDeleteSecondToLast) {
   thread_bundle_.RunUntilIdle();
   EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_2_name_));
 
-  // Verify that the profile name has been removed from the remaining shortcut.
-  ValidateNonProfileShortcut(FROM_HERE);
-  // Verify that an additional shortcut, with the default profile's name does
-  // not exist.
-  EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_1_name_));
+  // Verify that the remaining shortcut points at the remaining profile.
+  ValidateSingleProfileShortcut(FROM_HERE, profile_1_path_);
 }
 
 TEST_F(ProfileShortcutManagerTest, DeleteSecondToLastProfileWithoutShortcut) {
@@ -403,7 +474,7 @@ TEST_F(ProfileShortcutManagerTest, DeleteSecondToLastProfileWithoutShortcut) {
   thread_bundle_.RunUntilIdle();
 
   // Verify that the remaining shortcut does not have a profile name.
-  ValidateNonProfileShortcut(FROM_HERE);
+  ValidateSingleProfileShortcut(FROM_HERE, profile_2_path_);
   // Verify that shortcuts with profile names do not exist.
   EXPECT_FALSE(base::PathExists(profile_1_shortcut_path));
   EXPECT_FALSE(base::PathExists(profile_2_shortcut_path));
@@ -426,8 +497,8 @@ TEST_F(ProfileShortcutManagerTest, DeleteSecondToLastProfileWithShortcut) {
   profile_attributes_storage_->RemoveProfile(profile_2_path_);
   thread_bundle_.RunUntilIdle();
 
-  // Verify that the remaining shortcut does not have a profile name.
-  ValidateNonProfileShortcut(FROM_HERE);
+  // Verify that the remaining shortcut is a single profile shortcut.
+  ValidateSingleProfileShortcut(FROM_HERE, profile_1_path_);
   // Verify that shortcuts with profile names do not exist.
   EXPECT_FALSE(base::PathExists(profile_1_shortcut_path));
   EXPECT_FALSE(base::PathExists(profile_2_shortcut_path));
@@ -473,8 +544,8 @@ TEST_F(ProfileShortcutManagerTest, DesktopShortcutsCreateSecond) {
   profile_attributes_storage_->RemoveProfile(profile_2_path_);
   thread_bundle_.RunUntilIdle();
 
-  // Verify that a default shortcut exists (no profile name/avatar).
-  ValidateNonProfileShortcut(FROM_HERE);
+  // Verify that an unbadged, default named shortcut for profile1 exists.
+  ValidateSingleProfileShortcut(FROM_HERE, profile_1_path_);
   // Verify that an additional shortcut, with the first profile's name does
   // not exist.
   EXPECT_FALSE(ProfileShortcutExistsAtDefaultPath(profile_1_name_));
@@ -541,8 +612,8 @@ TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcutsGetDeleted) {
   thread_bundle_.RunUntilIdle();
   EXPECT_FALSE(base::PathExists(profile_2_shortcut_path_1));
   EXPECT_FALSE(base::PathExists(profile_2_shortcut_path_2));
-  ValidateNonProfileShortcutAtPath(FROM_HERE,
-                                   preserved_profile_1_shortcut_path);
+  ValidateSingleProfileShortcutAtPath(FROM_HERE, profile_1_path_,
+                                      preserved_profile_1_shortcut_path);
 }
 
 TEST_F(ProfileShortcutManagerTest, RenamedDesktopShortcutsAfterProfileRename) {
@@ -1023,7 +1094,7 @@ TEST_F(ProfileShortcutManagerTest, ShortcutsForProfilesWithIdenticalNames) {
   thread_bundle_.RunUntilIdle();
   EXPECT_FALSE(base::PathExists(
       GetDefaultShortcutPathForProfile(profile_2_name_)));
-  // Only profile3 exists. There should be non-profile shortcut only.
+  // Only profile3 exists. There should be a single profile shortcut only.
   EXPECT_FALSE(base::PathExists(profile_3_shortcut_path));
-  ValidateNonProfileShortcut(FROM_HERE);
+  ValidateSingleProfileShortcut(FROM_HERE, profile_3_path_);
 }

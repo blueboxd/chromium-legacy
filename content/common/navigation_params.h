@@ -20,7 +20,7 @@
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/common/navigation_params.mojom-forward.h"
-#include "content/common/prefetched_signed_exchange_info.h"
+#include "content/common/prefetched_signed_exchange_info.mojom.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"

@@ -47,7 +47,10 @@ void MediaDialogController::OnFocusGained(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   const std::string id = session->request_id->ToString();
 
-  if (base::Contains(sessions_, id))
+  // If we have an existing unfrozen item then this is a duplicate call and
+  // we should ignore it.
+  auto it = sessions_.find(id);
+  if (it != sessions_.end() && !it->second.frozen())
     return;
 
   media_session::mojom::MediaControllerPtr controller;
@@ -59,16 +62,27 @@ void MediaDialogController::OnFocusGained(
         mojo::MakeRequest(&controller), *session->request_id);
   }
 
-  sessions_.emplace(
-      std::piecewise_construct, std::forward_as_tuple(id),
-      std::forward_as_tuple(
-          this, id, session->source_name.value_or(std::string()),
-          std::move(controller), std::move(session->session_info)));
+  if (it != sessions_.end()) {
+    // If the notification was previously frozen then we should reset the
+    // controller because the mojo pipe would have been reset.
+    it->second.SetController(std::move(controller),
+                             std::move(session->session_info));
+  } else {
+    sessions_.emplace(
+        std::piecewise_construct, std::forward_as_tuple(id),
+        std::forward_as_tuple(
+            this, id, session->source_name.value_or(std::string()),
+            std::move(controller), std::move(session->session_info)));
+  }
 }
 
 void MediaDialogController::OnFocusLost(
     media_session::mojom::AudioFocusRequestStatePtr session) {
-  sessions_.erase(session->request_id->ToString());
+  auto it = sessions_.find(session->request_id->ToString());
+  if (it == sessions_.end())
+    return;
+
+  it->second.Freeze();
 }
 
 void MediaDialogController::ShowNotification(const std::string& id) {
@@ -83,6 +97,15 @@ void MediaDialogController::ShowNotification(const std::string& id) {
 
 void MediaDialogController::HideNotification(const std::string& id) {
   delegate_->HideMediaSession(id);
+}
+
+void MediaDialogController::RemoveItem(const std::string& id) {
+  sessions_.erase(id);
+}
+
+scoped_refptr<base::SequencedTaskRunner> MediaDialogController::GetTaskRunner()
+    const {
+  return task_runner_for_testing_;
 }
 
 void MediaDialogController::OnReceivedAudioFocusRequests(

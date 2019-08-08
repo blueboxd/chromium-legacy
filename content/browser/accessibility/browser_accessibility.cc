@@ -194,6 +194,10 @@ bool BrowserAccessibility::IsDocument() const {
          GetRole() == ax::mojom::Role::kWebArea;
 }
 
+bool BrowserAccessibility::IsIgnored() const {
+  return node()->IsIgnored();
+}
+
 bool BrowserAccessibility::IsTextOnlyObject() const {
   return node_ && node_->IsText();
 }
@@ -1106,7 +1110,7 @@ std::string BrowserAccessibility::ComputeAccessibleNameFromDescendants() const {
 }
 
 std::string BrowserAccessibility::GetLiveRegionText() const {
-  if (GetRole() == ax::mojom::Role::kIgnored)
+  if (IsIgnored())
     return "";
 
   std::string text = GetStringAttribute(ax::mojom::StringAttribute::kName);
@@ -1373,7 +1377,7 @@ base::Optional<int> BrowserAccessibility::FindTextBoundary(
 const std::vector<gfx::NativeViewAccessible>
 BrowserAccessibility::GetDescendants() const {
   std::vector<gfx::NativeViewAccessible> descendants;
-  if (!HasState(ax::mojom::State::kIgnored) && PlatformChildCount() > 0) {
+  if (!IsIgnored() && PlatformChildCount() > 0) {
     BrowserAccessibility* next_sibling_node = PlatformGetNextSibling();
     BrowserAccessibility* next_descendant_node =
         BrowserAccessibilityManager::NextInTreeOrder(this);

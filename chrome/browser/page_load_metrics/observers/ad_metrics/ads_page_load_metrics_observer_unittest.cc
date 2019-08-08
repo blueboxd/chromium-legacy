@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
@@ -24,17 +25,20 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
@@ -1447,4 +1451,133 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdFrameLoadTiming) {
       ukm::builders::AdFrameLoad::kTiming_FirstContentfulPaintName, 5);
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kTiming_InteractiveName, 20);
+}
+
+// Tests that even when the intervention is not enabled, we still record the
+// computed heavy ad types for ad frames
+TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureOff_UMARecorded) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kHeavyAdIntervention);
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame_none =
+      CreateAndNavigateSubFrame(kAdUrl, main_frame);
+  RenderFrameHost* ad_frame_net = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+  RenderFrameHost* ad_frame_cpu = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Load some bytes in each frame so they are considered ad iframes.
+  ResourceDataUpdate(ad_frame_none, ResourceCached::NOT_CACHED, 1);
+  ResourceDataUpdate(ad_frame_net, ResourceCached::NOT_CACHED, 1);
+  ResourceDataUpdate(ad_frame_cpu, ResourceCached::NOT_CACHED, 1);
+
+  // Make two of the ad frames hit thresholds for heavy ads.
+  ResourceDataUpdate(ad_frame_net, ResourceCached::NOT_CACHED,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024));
+  OnCpuTimingUpdate(ad_frame_cpu, base::TimeDelta::FromMilliseconds(
+                                      heavy_ad_thresholds::kMaxCpuTime));
+
+  // Navigate again to trigger histograms.
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.ComputedType"), 3);
+  histogram_tester().ExpectBucketCount(
+      SuffixedHistogram("HeavyAds.ComputedType"),
+      FrameData::HeavyAdStatus::kNone, 1);
+  histogram_tester().ExpectBucketCount(
+      SuffixedHistogram("HeavyAds.ComputedType"),
+      FrameData::HeavyAdStatus::kNetwork, 1);
+  histogram_tester().ExpectBucketCount(
+      SuffixedHistogram("HeavyAds.ComputedType"),
+      FrameData::HeavyAdStatus::kCpu, 1);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.InterventionType"), 0);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdNetworkUsage_InterventionFired) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
+  OverrideVisibilityTrackerWithMockClock();
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Load just under the threshold amount of bytes.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) - 1);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.InterventionType"), 0);
+
+  // Load enough bytes to trigger the intervention.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 2);
+
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("HeavyAds.InterventionType"),
+      FrameData::HeavyAdStatus::kNetwork, 1);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdCpuUsage_InterventionFired) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
+  OverrideVisibilityTrackerWithMockClock();
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add some data to the ad frame so it get reported.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 1);
+
+  // Use just under the threshold amount of CPU.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(
+                                  heavy_ad_thresholds::kMaxCpuTime - 1));
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.InterventionType"), 0);
+
+  // Use enough CPU to trigger the intervention.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1));
+
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("HeavyAds.InterventionType"),
+      FrameData::HeavyAdStatus::kCpu, 1);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest, HeavyAdFeatureDisabled_NotFired) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kHeavyAdIntervention);
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Add enough data to trigger the intervention.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
+
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.InterventionType"), 0);
+}
+
+TEST_F(AdsPageLoadMetricsObserverTest,
+       HeavyAdWithUserGesture_NotConsideredHeavy) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kHeavyAdIntervention);
+
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+
+  // Give the frame a user activation before the threshold would be hit.
+  TriggerFirstUserActivation(ad_frame);
+
+  // Add enough data to trigger the intervention.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED,
+                     (heavy_ad_thresholds::kMaxNetworkBytes / 1024) + 1);
+
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("HeavyAds.InterventionType"), 0);
+
+  // Navigate again to trigger histograms.
+  NavigateFrame(kNonAdUrl, main_frame);
+
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("HeavyAds.ComputedType"),
+      FrameData::HeavyAdStatus::kNone, 1);
 }

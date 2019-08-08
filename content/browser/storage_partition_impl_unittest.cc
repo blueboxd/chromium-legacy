@@ -153,8 +153,8 @@ class RemoveCookieTester {
   void AddCookie() {
     CanonicalCookie::CookieInclusionStatus status;
     std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
-        kOrigin1.GetURL(), "A=1", base::Time::Now(), net::CookieOptions(),
-        &status));
+        kOrigin1.GetURL(), "A=1", base::Time::Now(),
+        base::nullopt /* server_time */, &status));
     storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
         *cc, kOrigin1.scheme(), net::CookieOptions(),
         base::BindOnce(&RemoveCookieTester::SetCookieCallback,
@@ -1606,22 +1606,26 @@ TEST(StoragePartitionImplStaticTest, CreatePredicateForHostCookies) {
   GURL url2("https://www.example.com/");
   GURL url3("https://www.google.com/");
 
-  net::CookieOptions options;
+  base::Optional<base::Time> server_time = base::nullopt;
   CookieDeletionFilterPtr deletion_filter = CookieDeletionFilter::New();
   deletion_filter->host_name = url.host();
 
   base::Time now = base::Time::Now();
   std::vector<std::unique_ptr<CanonicalCookie>> valid_cookies;
-  valid_cookies.push_back(CanonicalCookie::Create(url, "A=B", now, options));
-  valid_cookies.push_back(CanonicalCookie::Create(url, "C=F", now, options));
+  valid_cookies.push_back(
+      CanonicalCookie::Create(url, "A=B", now, server_time));
+  valid_cookies.push_back(
+      CanonicalCookie::Create(url, "C=F", now, server_time));
   // We should match a different scheme with the same host.
-  valid_cookies.push_back(CanonicalCookie::Create(url2, "A=B", now, options));
+  valid_cookies.push_back(
+      CanonicalCookie::Create(url2, "A=B", now, server_time));
 
   std::vector<std::unique_ptr<CanonicalCookie>> invalid_cookies;
   // We don't match domain cookies.
+  invalid_cookies.push_back(CanonicalCookie::Create(
+      url2, "A=B;domain=.example.com", now, server_time));
   invalid_cookies.push_back(
-      CanonicalCookie::Create(url2, "A=B;domain=.example.com", now, options));
-  invalid_cookies.push_back(CanonicalCookie::Create(url3, "A=B", now, options));
+      CanonicalCookie::Create(url3, "A=B", now, server_time));
 
   for (const auto& cookie : valid_cookies) {
     EXPECT_TRUE(FilterMatchesCookie(deletion_filter, *cookie))

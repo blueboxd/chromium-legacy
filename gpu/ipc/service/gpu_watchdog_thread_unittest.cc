@@ -134,8 +134,8 @@ void GpuWatchdogPowerTest::LongTaskOnResume(
 
 // GPU Hang In Initialization
 TEST_F(GpuWatchdogTest, GpuInitializationHang) {
-  // Gpu init (4000 ms) takes longer than timeout (1000 ms).
-  SimpleTask(kGpuWatchdogTimeoutForTesting +
+  // Gpu init (5000 ms) takes longer than timeout (2000 ms).
+  SimpleTask(kGpuWatchdogTimeoutForTesting * kInitFactor +
              base::TimeDelta::FromMilliseconds(3000));
 
   // Gpu hangs. OnInitComplete() is not called
@@ -199,8 +199,8 @@ TEST_F(GpuWatchdogTest, ChromeInBackground) {
   // Chrome starts in the background.
   watchdog_thread_->OnBackgrounded();
 
-  // Gpu init (2000 ms) takes longer than timeout (1000 ms).
-  SimpleTask(kGpuWatchdogTimeoutForTesting +
+  // Gpu init (3000 ms) takes longer than timeout (2000 ms).
+  SimpleTask(kGpuWatchdogTimeoutForTesting * kInitFactor +
              base::TimeDelta::FromMilliseconds(1000));
 
   // Report GPU init complete.
@@ -250,11 +250,11 @@ TEST_F(GpuWatchdogPowerTest, GpuOnSuspend) {
   // Enter power suspension mode.
   power_monitor_source_->GenerateSuspendEvent();
 
-  // Run a task that takes longer (4000 milliseconds) than timeout.
+  // Run a task that takes longer (5000 milliseconds) than timeout.
   main_loop.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SimpleTask, kGpuWatchdogTimeoutForTesting * 2 +
-                                      base::TimeDelta::FromMilliseconds(2000)));
+                                      base::TimeDelta::FromMilliseconds(3000)));
   main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
 

@@ -137,7 +137,10 @@ void MediaNotificationControllerImpl::OnFocusGained(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   const std::string id = session->request_id->ToString();
 
-  if (base::Contains(notifications_, id))
+  // If we have an existing unfrozen item then this is a duplicate call and
+  // we should ignore it.
+  auto it = notifications_.find(id);
+  if (it != notifications_.end() && !it->second.frozen())
     return;
 
   media_session::mojom::MediaControllerPtr controller;
@@ -149,16 +152,29 @@ void MediaNotificationControllerImpl::OnFocusGained(
         mojo::MakeRequest(&controller), *session->request_id);
   }
 
-  notifications_.emplace(
-      std::piecewise_construct, std::forward_as_tuple(id),
-      std::forward_as_tuple(
-          this, id, session->source_name.value_or(std::string()),
-          std::move(controller), std::move(session->session_info)));
+  if (it != notifications_.end()) {
+    // If the notification was previously frozen then we should reset the
+    // controller because the mojo pipe would have been reset.
+    it->second.SetController(std::move(controller),
+                             std::move(session->session_info));
+  } else {
+    notifications_.emplace(
+        std::piecewise_construct, std::forward_as_tuple(id),
+        std::forward_as_tuple(
+            this, id, session->source_name.value_or(std::string()),
+            std::move(controller), std::move(session->session_info)));
+  }
 }
 
 void MediaNotificationControllerImpl::OnFocusLost(
     media_session::mojom::AudioFocusRequestStatePtr session) {
-  notifications_.erase(session->request_id->ToString());
+  auto it = notifications_.find(session->request_id->ToString());
+  if (it == notifications_.end())
+    return;
+
+  // If we lost focus then we should freeze the notification as it may regain
+  // focus after a second or so.
+  it->second.Freeze();
 }
 
 void MediaNotificationControllerImpl::ShowNotification(const std::string& id) {
@@ -192,6 +208,15 @@ void MediaNotificationControllerImpl::HideNotification(const std::string& id) {
   message_center::MessageCenter::Get()->RemoveNotification(id, false);
 }
 
+void MediaNotificationControllerImpl::RemoveItem(const std::string& id) {
+  notifications_.erase(id);
+}
+
+scoped_refptr<base::SequencedTaskRunner>
+MediaNotificationControllerImpl::GetTaskRunner() const {
+  return task_runner_for_testing_;
+}
+
 std::unique_ptr<MediaNotificationContainerImpl>
 MediaNotificationControllerImpl::CreateMediaNotification(
     const message_center::Notification& notification) {
@@ -203,6 +228,11 @@ MediaNotificationControllerImpl::CreateMediaNotification(
 
   return std::make_unique<MediaNotificationContainerImpl>(notification,
                                                           std::move(item));
+}
+
+bool MediaNotificationControllerImpl::HasItemForTesting(
+    const std::string& id) const {
+  return base::Contains(notifications_, id);
 }
 
 void MediaNotificationControllerImpl::RecordConcurrentNotificationCount() {

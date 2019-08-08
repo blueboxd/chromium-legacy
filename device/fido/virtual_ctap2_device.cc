@@ -864,6 +864,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
 
     registration.is_resident = true;
     registration.user = request.user;
+    registration.rp = request.rp;
   }
 
   if (request.cred_protect) {

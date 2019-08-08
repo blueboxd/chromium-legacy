@@ -1330,6 +1330,35 @@
       },
     },
   },
+  'rendering_representative_perf_tests': {
+    'modifications': {
+      'Win10 FYI x64 Exp Release (Intel HD 630)': {
+        'args': [
+          '--browser=release_x64',
+        ],
+      },
+      'Win10 FYI x64 Exp Release (NVIDIA)': {
+        'args': [
+          '--browser=release_x64',
+        ],
+      },
+      'Win10 FYI x64 Release (Intel HD 630)': {
+        'args': [
+          '--browser=release_x64',
+        ],
+      },
+      'Win10 FYI x64 Release (Intel UHD 630)': {
+        'args': [
+          '--browser=release_x64',
+        ],
+      },
+      'Win10 FYI x64 Release (NVIDIA)': {
+        'args': [
+          '--browser=release_x64',
+        ],
+      },
+    },
+  },
   'sandbox_linux_unittests': {
     'modifications': {
       'Lollipop Phone Tester': {
@@ -1763,6 +1792,11 @@
           'shards': 1,
         },
       },
+      'linux-bfcache-rel': {
+        'args': [
+          '--additional-driver-flag=--enable-features=BackForwardCache',
+        ],
+      },
       'linux-blink-animation-use-time-delta': {
         'args': [
           '--debug',
@@ -2004,6 +2038,12 @@
           # TODO(crbug.com/875172): run on the real GPU since the
           # software fallback, SwiftShader, isn't yet for 32-bit ARM.
           '--additional-driver-flag=--use-gpu-in-tests',
+        ],
+      },
+      # client.v8.fyi
+      'V8 Blink Linux Debug': {
+        'args': [
+          '--debug',
         ],
       },
     },

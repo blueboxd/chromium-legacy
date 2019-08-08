@@ -10,75 +10,73 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/performance_manager/persistence/site_data/unittest_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
 
-class SiteDataCacheFactoryTest : public ::testing::Test {
- protected:
-  SiteDataCacheFactoryTest()
-      : task_runner_(base::CreateSequencedTaskRunner({
-            base::ThreadPool(),
-        })),
-        factory_(SiteDataCacheFactory::CreateForTesting(task_runner_)) {}
-
-  ~SiteDataCacheFactoryTest() override {
-    factory_.reset();
-    test_browser_thread_bundle_.RunUntilIdle();
-  }
-
-  void SetUp() override {
-    EXPECT_EQ(SiteDataCacheFactory::GetInstance(), factory_.get());
-  }
-
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  std::unique_ptr<SiteDataCacheFactory, base::OnTaskRunnerDeleter> factory_;
-  TestingProfile profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(SiteDataCacheFactoryTest);
-};
+using SiteDataCacheFactoryTest = testing::TestWithPerformanceManager;
 
 TEST_F(SiteDataCacheFactoryTest, EndToEnd) {
-  SiteDataCacheFactory::OnBrowserContextCreatedOnUIThread(factory_.get(),
-                                                          &profile_, nullptr);
-
-  base::RunLoop run_loop;
-  task_runner_->PostTask(
+  std::unique_ptr<SiteDataCacheFactory> factory =
+      std::make_unique<SiteDataCacheFactory>();
+  SiteDataCacheFactory* factory_raw = factory.get();
+  PerformanceManager::GetInstance()->CallOnGraph(
       FROM_HERE,
       base::BindOnce(
-          [](SiteDataCacheFactory* factory,
-             const std::string& browser_context_id,
-             base::OnceClosure quit_closure) {
-            DCHECK_NE(nullptr, factory->GetDataCacheForBrowserContext(
-                                   browser_context_id));
-            DCHECK_NE(nullptr, factory->GetInspectorForBrowserContext(
-                                   browser_context_id));
-            std::move(quit_closure).Run();
+          [](std::unique_ptr<SiteDataCacheFactory> site_data_cache_factory,
+             performance_manager::GraphImpl* graph) {
+            graph->PassToGraph(std::move(site_data_cache_factory));
           },
-          factory_.get(), profile_.UniqueId(), run_loop.QuitClosure()));
-  run_loop.Run();
+          std::move(factory)));
 
-  SiteDataCacheFactory::OnBrowserContextDestroyedOnUIThread(factory_.get(),
-                                                            &profile_);
+  TestingProfile profile;
+  SiteDataCacheFactory::OnBrowserContextCreatedOnUIThread(factory_raw, &profile,
+                                                          nullptr);
 
-  base::RunLoop run_loop2;
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](SiteDataCacheFactory* factory,
-             const std::string& browser_context_id,
-             base::OnceClosure quit_closure) {
-            DCHECK_EQ(nullptr, factory->GetDataCacheForBrowserContext(
-                                   browser_context_id));
-            DCHECK_EQ(nullptr, factory->GetInspectorForBrowserContext(
-                                   browser_context_id));
-            std::move(quit_closure).Run();
-          },
-          factory_.get(), profile_.UniqueId(), run_loop.QuitClosure()));
-  test_browser_thread_bundle_.RunUntilIdle();
+  {
+    base::RunLoop run_loop;
+    PerformanceManager::GetInstance()->CallOnGraph(
+        FROM_HERE,
+        base::BindOnce(
+            [](SiteDataCacheFactory* factory,
+               const std::string& browser_context_id,
+               base::OnceClosure quit_closure,
+               performance_manager::GraphImpl* graph_unused) {
+              DCHECK_NE(nullptr, factory->GetDataCacheForBrowserContext(
+                                     browser_context_id));
+              DCHECK_NE(nullptr, factory->GetInspectorForBrowserContext(
+                                     browser_context_id));
+              std::move(quit_closure).Run();
+            },
+            base::Unretained(factory_raw), profile.UniqueId(),
+            run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
+  SiteDataCacheFactory::OnBrowserContextDestroyedOnUIThread(factory_raw,
+                                                            &profile);
+  {
+    base::RunLoop run_loop;
+    PerformanceManager::GetInstance()->CallOnGraph(
+        FROM_HERE,
+        base::BindOnce(
+            [](SiteDataCacheFactory* factory,
+               const std::string& browser_context_id,
+               base::OnceClosure quit_closure,
+               performance_manager::GraphImpl* graph_unused) {
+              DCHECK_EQ(nullptr, factory->GetDataCacheForBrowserContext(
+                                     browser_context_id));
+              DCHECK_EQ(nullptr, factory->GetInspectorForBrowserContext(
+                                     browser_context_id));
+              std::move(quit_closure).Run();
+            },
+            base::Unretained(factory_raw), profile.UniqueId(),
+            run_loop.QuitClosure()));
+    run_loop.Run();
+  }
 }
 
 }  // namespace performance_manager

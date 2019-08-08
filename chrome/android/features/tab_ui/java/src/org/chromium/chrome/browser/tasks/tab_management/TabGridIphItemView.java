@@ -5,8 +5,11 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Animatable;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -48,6 +51,8 @@ public class TabGridIphItemView extends FrameLayout {
                         .inflate(R.layout.iph_drag_and_drop_dialog_layout, backgroundView, false);
         mShowIPHDialogButton = findViewById(R.id.show_me_button);
         mCloseIPHEntranceButton = findViewById(R.id.close_iph_button);
+        Drawable closeButtonDrawable = getScaledCloseImageDrawable();
+        mCloseIPHEntranceButton.setImageDrawable(closeButtonDrawable);
         mCloseIPHDialogButton =
                 mIphDialogView.findViewById(R.id.iph_drag_and_drop_dialog_close_button);
         mIphDrawable =
@@ -111,5 +116,16 @@ public class TabGridIphItemView extends FrameLayout {
         }
         mIphWindow.showAtLocation((View) getParent(), Gravity.CENTER, 0, 0);
         ((Animatable) mIphDrawable).start();
+    }
+
+    private Drawable getScaledCloseImageDrawable() {
+        // Scale down the close button image to 18dp.
+        Context context = getContext();
+        int size = (int) context.getResources().getDimension(
+                R.dimen.tab_grid_iph_card_close_button_size);
+        Drawable closeDrawable = AppCompatResources.getDrawable(getContext(), R.drawable.btn_close);
+        Bitmap closeBitmap = ((BitmapDrawable) closeDrawable).getBitmap();
+        return new BitmapDrawable(
+                getResources(), Bitmap.createScaledBitmap(closeBitmap, size, size, true));
     }
 }

@@ -57,8 +57,7 @@ class WorkerClients;
 //      - (Async script loading on the worker thread)
 //
 //  C) Off-the-main-thread worker script loading w/ PlzDedicatedWorker
-//     (kOffMainThreadDedicatedWorkerScriptFetch + kPlzDedicatedWorker +
-//      kNetworkService)
+//     (kOffMainThreadDedicatedWorkerScriptFetch + kPlzDedicatedWorker)
 //  - DedicatedWorker::Start()
 //    - (Start script loading in the browser)
 //      - DedicatedWorker::OnScriptLoadStarted()

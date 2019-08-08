@@ -71,6 +71,7 @@ class ParseError(Exception):
 _PLATFORM_TOKENS_LIST = [
     'Android',
     'Fuchsia',
+    'IOS', 'IOS12.2', 'IOS13.0',
     'Linux',
     'Mac', 'Mac10.10', 'Mac10.11', 'Retina', 'Mac10.12', 'Mac10.13',
     'Win', 'Win7', 'Win10'

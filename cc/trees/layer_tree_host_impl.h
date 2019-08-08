@@ -327,8 +327,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   base::WeakPtr<LayerTreeHostImpl> AsWeakPtr();
 
-  void UpdateViewportContainerSizes();
-
   void set_resourceless_software_draw_for_testing() {
     resourceless_software_draw_ = true;
   }

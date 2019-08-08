@@ -24,6 +24,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -363,8 +364,9 @@ void CookieManager::SetCookieHelper(const GURL& host,
   const GURL& new_host = MaybeFixUpSchemeForSecureCookie(host, value);
 
   net::CanonicalCookie::CookieInclusionStatus status;
-  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
-      new_host, value, base::Time::Now(), options, &status));
+  std::unique_ptr<net::CanonicalCookie> cc(
+      net::CanonicalCookie::Create(new_host, value, base::Time::Now(),
+                                   base::nullopt /* server_time */, &status));
 
   if (!cc) {
     MaybeRunCookieCallback(std::move(callback), false);

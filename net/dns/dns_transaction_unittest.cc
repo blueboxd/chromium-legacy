@@ -1809,11 +1809,11 @@ TEST_F(DnsTransactionTest, HttpsPostTestNoCookies) {
   callback.WaitUntilDone();
   EXPECT_EQ(0u, callback.cookie_list_size());
   callback.Reset();
-  net::CookieOptions options;
   helper1.request_context()->cookie_store()->SetCookieWithOptionsAsync(
       GURL(GetURLFromTemplateWithoutParameters(
           config_.dns_over_https_servers[0].server_template)),
-      "test-cookie=you-still-fail", options,
+      "test-cookie=you-still-fail", CookieOptions(),
+      base::nullopt /* server_time */,
       base::Bind(&CookieCallback::SetCookieCallback,
                  base::Unretained(&callback)));
   EXPECT_TRUE(helper1.RunUntilDone(transaction_factory_.get()));

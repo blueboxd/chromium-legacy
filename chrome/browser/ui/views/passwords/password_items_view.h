@@ -38,7 +38,6 @@ class PasswordItemsView : public PasswordBubbleViewBase,
  public:
   PasswordItemsView(content::WebContents* web_contents,
                     views::View* anchor_view,
-                    const gfx::Point& anchor_point,
                     DisplayReason reason);
   ~PasswordItemsView() override;
 

@@ -27,6 +27,10 @@ constexpr int kShelfButtonIconSizeDense = 36;
 constexpr int kShelfControlSize = 40;
 constexpr int kShelfControlSizeDense = 36;
 
+// The margin on either side of the group of app icons (including the overflow
+// button).
+constexpr int kAppIconGroupMargin = 16;
+
 ASH_EXPORT constexpr SkColor kShelfControlPermanentHighlightBackground =
     SkColorSetA(SK_ColorWHITE, 26);  // 10%
 

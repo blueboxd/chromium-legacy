@@ -67,6 +67,10 @@ class MockMediaNotificationController : public MediaNotificationController {
   // MediaNotificationController implementation.
   MOCK_METHOD1(ShowNotification, void(const std::string& id));
   MOCK_METHOD1(HideNotification, void(const std::string& id));
+  MOCK_METHOD1(RemoveItem, void(const std::string& id));
+  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() const override {
+    return nullptr;
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaNotificationController);
@@ -868,6 +872,74 @@ TEST_F(MediaNotificationViewTest, AccessibleNodeData) {
   EXPECT_TRUE(
       data.HasStringAttribute(ax::mojom::StringAttribute::kRoleDescription));
   EXPECT_EQ(base::ASCIIToUTF16("title - artist"), accessible_name());
+}
+
+TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdateMetadata) {
+  media_session::MediaMetadata metadata;
+  metadata.title = base::ASCIIToUTF16("title2");
+  metadata.artist = base::ASCIIToUTF16("artist2");
+  metadata.album = base::ASCIIToUTF16("album");
+
+  GetItem()->Freeze();
+  GetItem()->MediaSessionMetadataChanged(metadata);
+
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
+}
+
+TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdateImage) {
+  SkBitmap image;
+  image.allocN32Pixels(10, 10);
+  image.eraseColor(SK_ColorMAGENTA);
+
+  GetItem()->Freeze();
+  GetItem()->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, image);
+
+  EXPECT_TRUE(GetArtworkImage().isNull());
+}
+
+TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdatePlaybackState) {
+  EnableAction(MediaSessionAction::kPlay);
+  EnableAction(MediaSessionAction::kPause);
+
+  GetItem()->Freeze();
+
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPlaying;
+  GetItem()->MediaSessionInfoChanged(session_info.Clone());
+
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+}
+
+TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdateActions) {
+  EXPECT_FALSE(
+      GetButtonForAction(MediaSessionAction::kSeekForward)->GetVisible());
+
+  GetItem()->Freeze();
+  EnableAction(MediaSessionAction::kSeekForward);
+
+  EXPECT_FALSE(
+      GetButtonForAction(MediaSessionAction::kSeekForward)->GetVisible());
+}
+
+TEST_F(MediaNotificationViewTest, Freezing_DisableInteraction) {
+  EnableAllActions();
+
+  EXPECT_EQ(0, media_controller()->next_track_count());
+
+  GetItem()->Freeze();
+
+  SimulateButtonClick(MediaSessionAction::kNextTrack);
+  GetItem()->FlushForTesting();
+
+  EXPECT_EQ(0, media_controller()->next_track_count());
 }
 
 }  // namespace media_message_center

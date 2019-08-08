@@ -207,7 +207,7 @@ class ScreenLocker : public AuthStatusConsumer,
   // lock request is failed.
   void OnStartLockCallback(bool locked);
 
-  // Callback to be invoked when the |cert_provider_based_auth_preparer_|
+  // Callback to be invoked when the |challenge_response_auth_keys_loader_|
   // completes building the currently available challenge-response keys. Used
   // only during the challenge-response unlock.
   void OnChallengeResponseKeysPrepared(

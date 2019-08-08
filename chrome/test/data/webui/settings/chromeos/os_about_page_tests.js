@@ -439,6 +439,13 @@ cr.define('settings_about_page', function() {
         await checkHasEndOfLife(false);
       });
 
+      test('detailed build info page', () => {
+        page.scroller = page.offsetParent;
+        assertTrue(!!page.$['detailed-build-info-trigger']);
+        page.$['detailed-build-info-trigger'].click();
+        assertTrue(!!page.$$('settings-detailed-build-info'));
+      });
+
       test('GetHelp', function() {
         assertTrue(!!page.$.help);
         page.$.help.click();
@@ -464,7 +471,7 @@ cr.define('settings_about_page', function() {
   }
 
   return {
-    // TODO(aee): move the detailed build info and channel switch dialog tests
+    // TODO(crbug.com/950007): Move the channel switch dialog tests to here
     // from the browser about page tests when those CrOS-specific parts are
     // removed from the browser about page.
     registerTests: registerAboutPageTests,

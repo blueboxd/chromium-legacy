@@ -62,7 +62,7 @@ var OnboardingWelcomeWelcomeAppTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'welcome_app_test.js',
       'test_bookmark_proxy.js',
       'test_welcome_browser_proxy.js',
@@ -107,7 +107,7 @@ var OnboardingWelcomeNavigationBehaviorTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'navigation_behavior_test.js',
     ]);
   }
@@ -149,7 +149,7 @@ var OnboardingWelcomeSetAsDefaultTest =
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
+      '../test_util.js',
       'nux_set_as_default_test.js',
       'test_nux_set_as_default_proxy.js',
     ]);

@@ -413,17 +413,19 @@ void CookieMonster::SetCanonicalCookieAsync(
       domain);
 }
 
-void CookieMonster::SetCookieWithOptionsAsync(const GURL& url,
-                                              const std::string& cookie_line,
-                                              const CookieOptions& options,
-                                              SetCookiesCallback callback) {
+void CookieMonster::SetCookieWithOptionsAsync(
+    const GURL& url,
+    const std::string& cookie_line,
+    const CookieOptions& options,
+    base::Optional<base::Time> server_time,
+    SetCookiesCallback callback) {
   DoCookieCallbackForURL(
       base::BindOnce(
           // base::Unretained is safe as DoCookieCallbackForURL stores
           // the callback on |*this|, so the callback will not outlive
           // the object.
           &CookieMonster::SetCookieWithOptions, base::Unretained(this), url,
-          cookie_line, options, std::move(callback)),
+          cookie_line, options, server_time, std::move(callback)),
       url);
 }
 
@@ -674,6 +676,7 @@ void CookieMonster::DeleteAllMatchingInfo(CookieDeletionInfo delete_info,
 void CookieMonster::SetCookieWithOptions(const GURL& url,
                                          const std::string& cookie_line,
                                          const CookieOptions& options,
+                                         base::Optional<base::Time> server_time,
                                          SetCookiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -689,8 +692,8 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
 
   CanonicalCookie::CookieInclusionStatus status;
 
-  std::unique_ptr<CanonicalCookie> cc(
-      CanonicalCookie::Create(url, cookie_line, Time::Now(), options, &status));
+  std::unique_ptr<CanonicalCookie> cc(CanonicalCookie::Create(
+      url, cookie_line, Time::Now(), server_time, &status));
 
   if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
     DCHECK(!cc);

@@ -97,12 +97,10 @@ class AutocompleteResult {
   // Returns the first match in |matches| which might be chosen as default.
   // If |kOmniboxPreserveDefaultMatchScore| is enabled and the page is not
   // the fake box, the scores are not demoted by type.
-  static ACMatches::const_iterator FindTopMatch(
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      const ACMatches& matches);
-  static ACMatches::iterator FindTopMatch(
-      metrics::OmniboxEventProto::PageClassification page_classification,
-      ACMatches* matches);
+  static ACMatches::const_iterator FindTopMatch(const AutocompleteInput& input,
+                                                const ACMatches& matches);
+  static ACMatches::iterator FindTopMatch(const AutocompleteInput& input,
+                                          ACMatches* matches);
 
   const GURL& alternate_nav_url() const { return alternate_nav_url_; }
 
@@ -158,14 +156,13 @@ class AutocompleteResult {
   typedef ACMatches::iterator::difference_type matches_difference_type;
 #endif
 
-  // Examines |first| and |second| and returns the one that is preferred based
-  // on the constraints we want to enforce when deduping. Note that this may
-  // modify the relevance, allowed_to_be_default_match, or inline_autocompletion
-  // values of the returned match.
-  static std::list<ACMatches::iterator>::iterator BetterMatch(
+  // Examines |first| and |second| and returns the match that is preferred when
+  // choosing between candidate duplicates. Note that this may modify the
+  // relevance, allowed_to_be_default_match, or inline_autocompletion values of
+  // the returned match.
+  static std::list<ACMatches::iterator>::iterator BetterDuplicate(
       std::list<ACMatches::iterator>::iterator first,
-      std::list<ACMatches::iterator>::iterator second,
-      metrics::OmniboxEventProto::PageClassification page_classification);
+      std::list<ACMatches::iterator>::iterator second);
 
   // Returns true if |matches| contains a match with the same destination as
   // |match|.

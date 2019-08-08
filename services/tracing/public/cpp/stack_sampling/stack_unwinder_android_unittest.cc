@@ -6,6 +6,7 @@
 
 #include "base/android/jni_generator/jni_generator_helper.h"
 #include "base/bind.h"
+#include "base/profiler/stack_buffer.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"

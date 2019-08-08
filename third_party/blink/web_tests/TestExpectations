@@ -1958,18 +1958,15 @@ crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/multiline.html [ Fa
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/negative-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/nested-stretch.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/order-painting.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/orthogonal-writing-modes-and-intrinsic-sizing.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-auto-resizes-correctly.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/overflow-keep-scrollpos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-height-replaced-element.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/percentage-heights.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/position-absolute-child.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/preferred-widths-orthogonal.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/preferred-widths.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relayout-align-items.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/relpos-with-percentage-top.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/stretch-input-in-column.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/stretched-child-shrink-on-relayout.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/stretching-orthogonal-flows.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/style-change.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/css3/flexbox/true-centering.html [ Failure ]
@@ -1987,7 +1984,6 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ali
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-001.htm [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-003.htm [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-004.htm [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-items-006.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-self-002.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-self-003.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/align-self-008.html [ Failure ]
@@ -2078,6 +2074,8 @@ crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/per
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-heights-quirks-node.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/position-absolute-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/position-absolute-002.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/scrollbars-auto.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/scrollbars.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/table-as-item-auto-min-width.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-direction-column-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ttwf-reftest-flex-direction-column.html [ Failure ]
@@ -3326,6 +3324,11 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-verti
 crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/unsafe-url/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-015.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-break/line-break-anywhere-002.html [ Failure ]
@@ -3356,8 +3359,6 @@ crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-sepa
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-sorted-before-dispatch.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/mediacapture-fromelement/ended.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-pause-on-exit.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
-crbug.com/626703 [ Retina ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/workers/data-url-shared.html [ Crash ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/webaudio/the-audio-api/the-convolvernode-interface/realtime-conv.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-svg-none-test_touch.html [ Timeout ]
@@ -6038,9 +6039,7 @@ crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-rad
 # which is still in flux.
 crbug.com/924670 external/wpt/webxr/webxr-supported-by-feature-policy.html [ Failure ]
 
-# Chrome does not check for unknown required features and doesn't enforce
-# that apps need to ask for non-default reference spaces before using them.
-crbug.com/985095 external/wpt/webxr/xrDevice_requestSession_requiredFeatures_unknown.https.html [ Failure ]
+# Chrome does not enforce that apps need to ask for non-default reference spaces before using them.
 crbug.com/985095 external/wpt/webxr/xrSession_requestReferenceSpace_features.https.html [ Failure ]
 
 crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_callback_calls.https.html [ Timeout ]
@@ -6553,3 +6552,6 @@ crbug.com/988074 [ Linux ] virtual/omt-worker-fetch/http/tests/security/cors-rfc
 
 # Sheriff 2019-08-05
 crbug.com/981522 [ Linux ] external/wpt/svg/animations/correct-events-for-short-animations-with-syncbases.html [ Pass Failure Timeout ]
+crbug.com/991243 [ Linux ] external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
+crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
+crbug.com/991243 [ Linux ] virtual/not-omt-sw-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]

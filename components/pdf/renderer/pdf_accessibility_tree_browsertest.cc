@@ -131,7 +131,7 @@ TEST_F(PdfAccessibilityTreeTest, TestEmptyPDFPage) {
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
                                                   chars_);
 
-  EXPECT_EQ(ax::mojom::Role::kGroup,
+  EXPECT_EQ(ax::mojom::Role::kDocument,
             pdf_accessibility_tree.GetRoot()->data().role);
 }
 

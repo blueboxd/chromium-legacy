@@ -79,38 +79,4 @@ TEST_F(InfoMapTest, Properties) {
   EXPECT_EQ(extension2.get(), info_map->extensions().GetByID(extension2->id()));
 }
 
-// Tests that extension URLs are properly mapped to local file paths.
-TEST_F(InfoMapTest, MapUrlToLocalFilePath) {
-  scoped_refptr<InfoMap> info_map(new InfoMap());
-  scoped_refptr<const Extension> app(CreateExtension("platform_app"));
-  info_map->AddExtension(app.get(), base::Time(), false, false);
-
-  // Non-extension URLs don't map to anything.
-  base::FilePath non_extension_path;
-  GURL non_extension_url("http://not-an-extension.com/");
-  EXPECT_FALSE(info_map->MapUrlToLocalFilePath(
-      non_extension_url, false, &non_extension_path));
-  EXPECT_TRUE(non_extension_path.empty());
-
-  // Valid resources return a valid path.
-  base::FilePath valid_path;
-  GURL valid_url = app->GetResourceURL("manifest.json");
-  EXPECT_TRUE(info_map->MapUrlToLocalFilePath(
-      valid_url, true /* use_blocking_api */, &valid_path));
-  EXPECT_FALSE(valid_path.empty());
-
-  // A file must exist to be mapped to a path using the blocking API.
-  base::FilePath does_not_exist_path;
-  GURL does_not_exist_url = app->GetResourceURL("does-not-exist.html");
-  EXPECT_FALSE(info_map->MapUrlToLocalFilePath(
-      does_not_exist_url, true /* use_blocking_api */, &does_not_exist_path));
-  EXPECT_TRUE(does_not_exist_path.empty());
-
-  // A file does not need to exist to be mapped to a path with the non-blocking
-  // API. This avoids hitting the disk to see if it exists.
-  EXPECT_TRUE(info_map->MapUrlToLocalFilePath(
-      does_not_exist_url, false /* use_blocking_api */, &does_not_exist_path));
-  EXPECT_FALSE(does_not_exist_path.empty());
-}
-
 }  // namespace extensions

@@ -110,8 +110,8 @@ struct MODULES_EXPORT UnionTraits<blink::mojom::IDBKeyDataDataView,
   static bool other_invalid(const std::unique_ptr<blink::IDBKey>& key) {
     return key->GetType() == blink::mojom::IDBKeyType::Invalid;
   }
-  static bool other_null(const std::unique_ptr<blink::IDBKey>& key) {
-    return key->GetType() == blink::mojom::IDBKeyType::Null;
+  static bool other_none(const std::unique_ptr<blink::IDBKey>& key) {
+    return key->GetType() == blink::mojom::IDBKeyType::None;
   }
 };
 

@@ -818,6 +818,26 @@ TEST_F(AutocompleteResultTest, DemoteByTypeButPreserveDefaultMatchScore) {
                 result.match_at(i)->destination_url.spec());
     }
   }
+
+  {
+    // Re-sort with a page classification of fake-box and an input that's a URL,
+    // and make sure history-title is once again the default match.
+    AutocompleteInput input(
+        base::ASCIIToUTF16("www.example.com"),
+        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
+        TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.SortAndCull(input, template_url_service_.get());
+
+    size_t expected_order[] = {1, 0, 2, 3};
+
+    ASSERT_EQ(base::size(expected_order), result.size());
+    for (size_t i = 0; i < base::size(expected_order); ++i) {
+      EXPECT_EQ(data[expected_order[i]].destination_url,
+                result.match_at(i)->destination_url.spec());
+    }
+  }
 }
 
 TEST_F(
@@ -894,111 +914,6 @@ TEST_F(
     for (size_t i = 0; i < base::size(expected_order); ++i) {
       EXPECT_EQ(data[expected_order[i]].destination_url,
                 result.match_at(i)->destination_url.spec());
-    }
-  }
-}
-
-TEST_F(AutocompleteResultTest, SortAndCullWithMatchDupsAndDemotionsByType) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({},
-                                {omnibox::kOmniboxGroupSuggestionsBySearchVsUrl,
-                                 omnibox::kOmniboxPreserveDefaultMatchScore});
-
-  // Add some matches.
-  ACMatches matches;
-  const AutocompleteMatchTestData data[] = {
-      {"http://search-what-you-typed/",
-       AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
-      {"http://dup-url/", AutocompleteMatchType::HISTORY_URL},
-      {"http://dup-url/", AutocompleteMatchType::NAVSUGGEST},
-      {"http://search-url/", AutocompleteMatchType::SEARCH_SUGGEST},
-      {"http://history-url/", AutocompleteMatchType::HISTORY_URL},
-  };
-  PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
-
-  // Add a rule demoting HISTORY_URL.
-  {
-    std::map<std::string, std::string> params;
-    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":8:*"] =
-        "1:50";  // 8 == INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "C", params));
-  }
-  base::FieldTrialList::CreateFieldTrial(
-      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "C");
-
-  {
-    AutocompleteInput input(
-        base::ASCIIToUTF16("a"),
-        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
-        TestSchemeClassifier());
-    AutocompleteResult result;
-    result.AppendMatches(input, matches);
-    result.SortAndCull(input, template_url_service_.get());
-
-    // The NAVSUGGEST dup-url stay above search-url since the navsuggest
-    // variant should not be demoted.
-    size_t expected_order[] = {0, 2, 3, 4};
-
-    ASSERT_EQ(base::size(expected_order), result.size());
-    for (size_t i = 0; i < base::size(expected_order); ++i) {
-      EXPECT_EQ(data[expected_order[i]].destination_url,
-                result.match_at(i)->destination_url.spec());
-      EXPECT_EQ(data[expected_order[i]].type, result.match_at(i)->type);
-    }
-  }
-}
-
-TEST_F(
-    AutocompleteResultTest,
-    MOBILE_DISABLED(
-        SortAndCullWithMatchDupsAndDemotionsByTypeWithPreserveAndGroupingFeatures)) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures({omnibox::kOmniboxGroupSuggestionsBySearchVsUrl,
-                                 omnibox::kOmniboxPreserveDefaultMatchScore},
-                                {});
-
-  // Add some matches.
-  ACMatches matches;
-  const AutocompleteMatchTestData data[] = {
-    { "http://search-what-you-typed/",
-      AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
-    { "http://dup-url/", AutocompleteMatchType::HISTORY_URL },
-    { "http://dup-url/", AutocompleteMatchType::NAVSUGGEST },
-    { "http://search-url/", AutocompleteMatchType::SEARCH_SUGGEST },
-    { "http://history-url/", AutocompleteMatchType::HISTORY_URL },
-  };
-  PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
-
-  // Add a rule demoting HISTORY_URL.
-  {
-    std::map<std::string, std::string> params;
-    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":8:*"] =
-        "1:50";  // 8 == INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "C", params));
-  }
-  base::FieldTrialList::CreateFieldTrial(
-      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "C");
-
-  {
-    AutocompleteInput input(
-        base::ASCIIToUTF16("a"),
-        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
-        TestSchemeClassifier());
-    AutocompleteResult result;
-    result.AppendMatches(input, matches);
-    result.SortAndCull(input, template_url_service_.get());
-
-    // The NAVSUGGEST dup-url moved below search suggestions because
-    // of OmniboxGroupSuggestionsBySearchVsUrl.
-    size_t expected_order[] = {0, 3, 2, 4};
-
-    ASSERT_EQ(base::size(expected_order), result.size());
-    for (size_t i = 0; i < base::size(expected_order); ++i) {
-      EXPECT_EQ(data[expected_order[i]].destination_url,
-                result.match_at(i)->destination_url.spec());
-      EXPECT_EQ(data[expected_order[i]].type, result.match_at(i)->type);
     }
   }
 }

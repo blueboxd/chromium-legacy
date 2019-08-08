@@ -107,6 +107,8 @@ MOCK_METHOD5(ClearTexImage,
 // glClearTexSubImage cannot be mocked because it has 11 args.
 MOCK_METHOD3(ClientWaitSync,
              GLenum(GLsync sync, GLbitfield flags, GLuint64 timeout));
+MOCK_METHOD3(ClientWaitSyncAPPLE,
+             GLenum(GLsync sync, GLbitfield flags, GLuint64 timeout));
 MOCK_METHOD4(
     ColorMask,
     void(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha));
@@ -279,6 +281,7 @@ MOCK_METHOD2(DeleteSamplers, void(GLsizei n, const GLuint* samplers));
 MOCK_METHOD2(DeleteSemaphoresEXT, void(GLsizei n, const GLuint* semaphores));
 MOCK_METHOD1(DeleteShader, void(GLuint shader));
 MOCK_METHOD1(DeleteSync, void(GLsync sync));
+MOCK_METHOD1(DeleteSyncAPPLE, void(GLsync sync));
 MOCK_METHOD2(DeleteTextures, void(GLsizei n, const GLuint* textures));
 MOCK_METHOD2(DeleteTransformFeedbacks, void(GLsizei n, const GLuint* ids));
 MOCK_METHOD2(DeleteVertexArraysOES, void(GLsizei n, const GLuint* arrays));
@@ -329,6 +332,7 @@ MOCK_METHOD1(EnableVertexAttribArray, void(GLuint index));
 MOCK_METHOD1(EndQuery, void(GLenum target));
 MOCK_METHOD0(EndTransformFeedback, void());
 MOCK_METHOD2(FenceSync, GLsync(GLenum condition, GLbitfield flags));
+MOCK_METHOD2(FenceSyncAPPLE, GLsync(GLenum condition, GLbitfield flags));
 MOCK_METHOD0(Finish, void());
 MOCK_METHOD1(FinishFenceAPPLE, void(GLuint fence));
 MOCK_METHOD1(FinishFenceNV, void(GLuint fence));
@@ -880,6 +884,7 @@ MOCK_METHOD1(IsRenderbufferEXT, GLboolean(GLuint renderbuffer));
 MOCK_METHOD1(IsSampler, GLboolean(GLuint sampler));
 MOCK_METHOD1(IsShader, GLboolean(GLuint shader));
 MOCK_METHOD1(IsSync, GLboolean(GLsync sync));
+MOCK_METHOD1(IsSyncAPPLE, GLboolean(GLsync sync));
 MOCK_METHOD1(IsTexture, GLboolean(GLuint texture));
 MOCK_METHOD1(IsTransformFeedback, GLboolean(GLuint id));
 MOCK_METHOD1(IsVertexArrayOES, GLboolean(GLuint array));
@@ -1490,5 +1495,7 @@ MOCK_METHOD6(WaitSemaphoreEXT,
                   const GLuint* textures,
                   const GLenum* srcLayouts));
 MOCK_METHOD3(WaitSync, void(GLsync sync, GLbitfield flags, GLuint64 timeout));
+MOCK_METHOD3(WaitSyncAPPLE,
+             void(GLsync sync, GLbitfield flags, GLuint64 timeout));
 MOCK_METHOD3(WindowRectanglesEXT,
              void(GLenum mode, GLsizei n, const GLint* box));

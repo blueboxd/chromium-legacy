@@ -20253,6 +20253,7 @@ Called by update_net_error_codes.py.-->
   <int value="1366" label="AUTOTESTPRIVATE_GETSHELFITEMS"/>
   <int value="1367" label="MANAGEMENT_INSTALLREPLACEMENTANDROIDAPP"/>
   <int value="1368" label="MANAGEMENT_CANINSTALLREPLACEMENTANDROIDAPP"/>
+  <int value="1369" label="AUTOTESTPRIVATE_REGISTERCOMPONENT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -24263,6 +24264,7 @@ Called by update_net_error_codes.py.-->
   <int value="2991" label="V8SpeechRecognition_Grammars_AttributeGetter"/>
   <int value="2992" label="V8SpeechRecognition_Grammars_AttributeSetter"/>
   <int value="2993" label="ContactsManagerSelect"/>
+  <int value="2994" label="V8MediaSession_SetPositionState_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -29315,6 +29317,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Browser"/>
   <int value="2" label="Renderer"/>
   <int value="3" label="GPU"/>
+</enum>
+
+<enum name="HeavyAdStatus">
+  <int value="0" label="Not heavy"/>
+  <int value="1" label="Network">
+    The ad exceeded the network threshold for the Heavy Ad Intervention.
+  </int>
+  <int value="2" label="CPU">
+    The ad exceeded the CPU threshold for the Heavy Ad Intervention.
+  </int>
 </enum>
 
 <enum name="HeavyPageCappingInfoBarInteraction">
@@ -34600,6 +34612,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1446425986" label="ProtectSyncCredentialOnReauth:disabled"/>
   <int value="-1444051091" label="ash-disable-night-light"/>
   <int value="-1443796945" label="OfflinePagesSharing:disabled"/>
+  <int value="-1442753429" label="SystemTrayFeaturePodsPagination:disabled"/>
   <int value="-1441340278" label="NewTabPageIcons:enabled"/>
   <int value="-1440440375" label="WebVrAutopresent:enabled"/>
   <int value="-1440152291" label="disable-gesture-typing"/>
@@ -35250,6 +35263,7 @@ from previous Chrome versions.
   <int value="-572012175" label="AssistantEnableStereoAudioInput:disabled"/>
   <int value="-571236436" label="AppManagement:disabled"/>
   <int value="-570889908" label="CCTModuleDexLoading:enabled"/>
+  <int value="-568448085" label="SharedClipboardReceiver:disabled"/>
   <int value="-567920515" label="disable-experimental-hotwording"/>
   <int value="-563980787" label="disable-webrtc"/>
   <int value="-562274241" label="enable-extension-action-redesign"/>
@@ -35999,6 +36013,7 @@ from previous Chrome versions.
       label="AutofillEnforceMinRequiredFieldsForQuery:enabled"/>
   <int value="510814146" label="OfflineBookmarks:enabled"/>
   <int value="511179195" label="ShoppingAssist:disabled"/>
+  <int value="511392922" label="SharedClipboardReceiver:enabled"/>
   <int value="513258875" label="WinrtSensorsImplementation:disabled"/>
   <int value="513356954" label="InstantTethering:disabled"/>
   <int value="513372959" label="ViewsProfileChooser:enabled"/>
@@ -36030,6 +36045,7 @@ from previous Chrome versions.
   <int value="564522013" label="Av1Decoder:disabled"/>
   <int value="565406673" label="EnableVirtualKeyboardMdUi:enabled"/>
   <int value="567368307" label="enable-experimental-canvas-features"/>
+  <int value="573385109" label="SharedClipboardUI:enabled"/>
   <int value="575380532" label="ExperimentalAccessibilityLabels:disabled"/>
   <int value="575394365" label="AndroidPaymentApps:disabled"/>
   <int value="575829120" label="shelf-hotseat"/>
@@ -37009,6 +37025,7 @@ from previous Chrome versions.
   <int value="1957472162"
       label="AutofillUpstreamEditableExpirationDate:disabled"/>
   <int value="1958387645" label="ScanCardsInWebPayments:enabled"/>
+  <int value="1959020463" label="SystemTrayFeaturePodsPagination:enabled"/>
   <int value="1959148757" label="OffMainThreadFetch:enabled"/>
   <int value="1960169775" label="NewPhotoPicker:disabled"/>
   <int value="1961425320" label="force-qtkit"/>
@@ -37085,6 +37102,7 @@ from previous Chrome versions.
   <int value="2063091429" label="OfflinePagesSharing:enabled"/>
   <int value="2067634730" label="LsdPermissionPrompt:disabled"/>
   <int value="2067735898" label="WebVrAutopresentFromIntent:enabled"/>
+  <int value="2068193488" label="SharedClipboardUI:disabled"/>
   <int value="2069999572"
       label="AllowSignedHTTPExchangeCertsWithoutExtension:disabled"/>
   <int value="2071229145" label="BloatedRendererDetection:enabled"/>
@@ -59445,7 +59463,7 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Unknown"/>
   <int value="1" label="Ethernet"/>
   <int value="2" label="Wifi"/>
-  <int value="3" label="WiMAX"/>
+  <int value="3" label="WiMAX (Deprecated)"/>
   <int value="4" label="Bluetooth"/>
   <int value="5" label="Cellular"/>
   <int value="6" label="Tethered (Ethernet)"/>

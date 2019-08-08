@@ -106,6 +106,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   bool IsEditField() const;
 
+  bool IsIgnored() const;
+
   // Returns true if this object is used only for representing text.
   bool IsTextOnlyObject() const;
 

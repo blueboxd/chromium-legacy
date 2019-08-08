@@ -59,7 +59,7 @@ CORE_EXPORT bool NeedMinMaxSizeForContentContribution(WritingMode mode,
                                                       const ComputedStyle&);
 
 // Returns if the given |Length| is unresolvable, e.g. the length is %-based
-// during the intrinsic phase.
+// during the intrinsic phase. Considers 'auto' as resolvable.
 CORE_EXPORT bool InlineLengthUnresolvable(const Length&, LengthResolvePhase);
 CORE_EXPORT bool BlockLengthUnresolvable(
     const NGConstraintSpace&,

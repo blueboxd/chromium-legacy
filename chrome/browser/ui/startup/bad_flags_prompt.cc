@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
@@ -141,6 +143,9 @@ static const char* kBadFlags[] = {
     // A flag to support local file based BundledExchanges loading, only for
     // testing purpose.
     switches::kTrustableBundledExchangesFile,
+
+    // This flag causes plaintext of TLS traffic to be logged to a file.
+    network::switches::kSSLKeyLogFile,
 };
 #endif  // OS_ANDROID
 
@@ -174,6 +179,17 @@ void ShowBadFlagsPrompt(content::WebContents* web_contents) {
       ShowBadFlagsInfoBar(web_contents, IDS_BAD_FLAGS_WARNING_MESSAGE, flag);
       return;
     }
+  }
+
+  // Check for the environment variable that triggers the same behavior as the
+  // network::switches::kSSLKeyLogFile flag.
+  const char kSSLKeyLogFileVar[] = "SSLKEYLOGFILE";
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  if (env->HasVar(kSSLKeyLogFileVar)) {
+    ShowBadFlagsInfoBar(web_contents,
+                        IDS_BAD_ENVIRONMENT_VARIABLES_WARNING_MESSAGE,
+                        kSSLKeyLogFileVar);
+    return;
   }
 #endif  // OS_ANDROID
 

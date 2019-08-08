@@ -39,6 +39,7 @@ class WebAppRegistrar : public AppRegistrar {
   void Init(base::OnceClosure callback) override;
   WebAppRegistrar* AsWebAppRegistrar() override;
   bool IsInstalled(const AppId& app_id) const override;
+  bool IsLocallyInstalled(const AppId& app_id) const override;
   bool IsLocallyInstalled(const GURL& start_url) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   base::Optional<AppId> FindAppWithUrlInScope(const GURL& url) const override;
@@ -48,6 +49,7 @@ class WebAppRegistrar : public AppRegistrar {
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
+  base::flat_set<AppId> GetAppIdsForTesting() const override;
 
  private:
   void OnDatabaseOpened(base::OnceClosure callback, Registry registry);

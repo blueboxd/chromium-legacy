@@ -365,6 +365,16 @@ class AutotestPrivateImportCrostiniFunction : public ExtensionFunction {
   void CrostiniImported(crostini::CrostiniResult);
 };
 
+class AutotestPrivateRegisterComponentFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.registerComponent",
+                             AUTOTESTPRIVATE_REGISTERCOMPONENT)
+
+ private:
+  ~AutotestPrivateRegisterComponentFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateTakeScreenshotFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.takeScreenshot",

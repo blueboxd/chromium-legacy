@@ -53,7 +53,7 @@ source_set("coordinators") {
   sources = [
     "overlay_request_coordinator.h",
     "overlay_request_coordinator.mm",
-    "overlay_ui_dismissal_delegate.h",
+    "overlay_request_coordinator_delegate.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

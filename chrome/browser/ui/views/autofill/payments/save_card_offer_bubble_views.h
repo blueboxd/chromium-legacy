@@ -29,7 +29,6 @@ class SaveCardOfferBubbleViews : public SaveCardBubbleViews,
  public:
   // Bubble will be anchored to |anchor_view|.
   SaveCardOfferBubbleViews(views::View* anchor_view,
-                           const gfx::Point& anchor_point,
                            content::WebContents* web_contents,
                            SaveCardBubbleController* controller);
 

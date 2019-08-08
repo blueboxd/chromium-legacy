@@ -362,6 +362,14 @@ device::mojom::XRInputSourceStatePtr OculusRenderLoop::GetTouchData(
   desc->pointer_offset->Translate3d(0, 0, -kGripOffsetZMeters);
   desc->pointer_offset->RotateAboutXAxis(-kGripRotationXDelta);
 
+  // This function is only called when we're working with an Oculus touch.
+  desc->profiles.push_back("oculus-touch");
+
+  // The absence of "touchpad" in this string indicates that the slots in the
+  // button and axes arrays are placeholders required by the xr-standard mapping
+  // but not actually updated with any input.
+  desc->profiles.push_back("grip-thumbstick-controller");
+
   state->description = std::move(desc);
 
   state->gamepad = OculusGamepadHelper::CreateGamepad(session_, hand);

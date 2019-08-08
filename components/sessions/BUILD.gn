@@ -111,6 +111,7 @@ source_set("shared") {
 
   public_deps = [
     "//components/keyed_service/core",
+    "//skia",
   ]
 
   deps = [

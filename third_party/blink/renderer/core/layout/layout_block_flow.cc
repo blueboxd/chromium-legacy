@@ -537,7 +537,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
 
   UpdateAfterLayout();
 
-  if (IsHTMLDialogElement(GetNode()) && IsOutOfFlowPositioned())
+  if (IsA<HTMLDialogElement>(GetNode()) && IsOutOfFlowPositioned())
     PositionDialog();
 
   ClearNeedsLayout();

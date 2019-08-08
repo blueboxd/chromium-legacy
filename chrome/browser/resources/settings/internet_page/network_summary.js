@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview Polymer element for displaying a summary of network states
- * by type: Ethernet, WiFi, Cellular, WiMAX, and VPN.
+ * by type: Ethernet, WiFi, Cellular, and VPN.
  */
 
 (function() {
@@ -177,7 +177,6 @@ Polymer({
       mojom.NetworkType.kWiFi,
       mojom.NetworkType.kCellular,
       mojom.NetworkType.kTether,
-      mojom.NetworkType.kWiMAX,
       mojom.NetworkType.kVPN,
     ];
 

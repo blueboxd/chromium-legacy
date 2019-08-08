@@ -1019,8 +1019,7 @@ TEST_F(EventHandlerLatencyTest, NeedsUnbufferedInput) {
       "<canvas style='width: 100px; height: 100px' id='first' "
       "onpointermove='return;'>");
 
-  HTMLCanvasElement& canvas =
-      ToHTMLCanvasElement(*GetDocument().getElementById("first"));
+  auto& canvas = To<HTMLCanvasElement>(*GetDocument().getElementById("first"));
 
   ASSERT_FALSE(chrome_client_->ReceivedRequestForUnbufferedInput());
 

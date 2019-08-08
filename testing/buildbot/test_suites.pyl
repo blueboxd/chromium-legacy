@@ -3206,9 +3206,9 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
+          '--additional-driver-flag=--enable-gpu-rasterization',
           '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
           '--additional-driver-flag=--use-gl=any',
-          '--additional-driver-flag=--enable-gpu-rasterization',
           '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
           '--additional-driver-flag=--disable-software-compositing-fallback',
@@ -3238,9 +3238,9 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
+          '--additional-driver-flag=--enable-gpu-rasterization',
           '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
           '--additional-driver-flag=--use-gl=any',
-          '--additional-driver-flag=--enable-gpu-rasterization',
           '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
           '--additional-driver-flag=--disable-software-compositing-fallback',
@@ -3689,7 +3689,7 @@
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args="--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback"',
+          '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback',
         ],
         'precommit_args': [
           # Gerrit issue ID
@@ -4518,9 +4518,9 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
+          '--additional-driver-flag=--enable-gpu-rasterization',
           '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
           '--additional-driver-flag=--use-gl=swiftshader',
-          '--additional-driver-flag=--enable-gpu-rasterization',
           '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
           '--fuzzy-diff',
@@ -4545,8 +4545,8 @@
         # retry 3 times, so we explicitly specify it.
         'args': [
           '--num-retries=3',
-          '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
           '--additional-driver-flag=--enable-gpu-rasterization',
+          '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
           '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
           '--additional-driver-flag=--use-vulkan=swiftshader',

@@ -315,17 +315,6 @@ bool RootView::IsDrawn() const {
   return GetVisible();
 }
 
-void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (layer()) {
-    layer()->SchedulePaint(rect);
-  } else {
-    gfx::Rect xrect = ConvertRectToParent(rect);
-    gfx::Rect invalid_rect = gfx::IntersectRects(GetLocalBounds(), xrect);
-    if (!invalid_rect.IsEmpty())
-      widget_->SchedulePaintInRect(invalid_rect);
-  }
-}
-
 bool RootView::OnMousePressed(const ui::MouseEvent& event) {
   UpdateCursor(event);
   SetMouseLocationAndFlags(event);
@@ -638,6 +627,15 @@ void RootView::VisibilityChanged(View* /*starting_from*/, bool is_visible) {
     // handlers are reset, so that after it is reshown, events are not captured
     // by old handlers.
     ResetEventHandlers();
+  }
+}
+
+void RootView::OnDidSchedulePaint(const gfx::Rect& rect) {
+  if (!layer()) {
+    gfx::Rect xrect = ConvertRectToParent(rect);
+    gfx::Rect invalid_rect = gfx::IntersectRects(GetLocalBounds(), xrect);
+    if (!invalid_rect.IsEmpty())
+      widget_->SchedulePaintInRect(invalid_rect);
   }
 }
 

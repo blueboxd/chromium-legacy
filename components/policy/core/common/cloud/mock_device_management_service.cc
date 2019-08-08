@@ -76,6 +76,10 @@ ACTION_P(CreateCaptureRequestAction, request) {
   CHECK(request->ParseFromString(payload));
 }
 
+ACTION_P(CreateCapturePayloadAction, payload) {
+  *payload = arg0->GetConfiguration()->GetPayload();
+}
+
 MockDeviceManagementServiceConfiguration::
     MockDeviceManagementServiceConfiguration()
     : server_url_(kServerUrl) {}
@@ -178,6 +182,11 @@ testing::Action<MockDeviceManagementService::StartJobFunction>
 MockDeviceManagementService::CaptureRequest(
     enterprise_management::DeviceManagementRequest* request) {
   return CreateCaptureRequestAction(request);
+}
+
+testing::Action<MockDeviceManagementService::StartJobFunction>
+MockDeviceManagementService::CapturePayload(std::string* payload) {
+  return CreateCapturePayloadAction(payload);
 }
 
 // Call after using StartJobFullControl() to respond to the network request.

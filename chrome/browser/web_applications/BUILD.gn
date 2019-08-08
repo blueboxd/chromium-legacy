@@ -97,6 +97,8 @@ source_set("web_applications_test_support") {
     "test/test_web_app_url_loader.h",
     "test/web_app_icon_test_utils.cc",
     "test/web_app_icon_test_utils.h",
+    "test/web_app_install_observer.cc",
+    "test/web_app_install_observer.h",
     "test/web_app_test.h",
   ]
 

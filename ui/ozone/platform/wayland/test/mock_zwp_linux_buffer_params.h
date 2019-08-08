@@ -20,6 +20,8 @@ namespace wl {
 extern const struct zwp_linux_buffer_params_v1_interface
     kMockZwpLinuxBufferParamsV1Impl;
 
+class MockZwpLinuxDmabufV1;
+
 // Manage zwp_linux_buffer_params_v1
 class MockZwpLinuxBufferParamsV1 : public ServerObject {
  public:
@@ -52,9 +54,24 @@ class MockZwpLinuxBufferParamsV1 : public ServerObject {
                     uint32_t format,
                     uint32_t flags));
 
+  wl_resource* buffer_resource() const { return buffer_resource_; }
+
+  void SetZwpLinuxDmabuf(MockZwpLinuxDmabufV1* linux_dmabuf);
+
+  void SetBufferResource(wl_resource* resource);
+
   std::vector<base::ScopedFD> fds_;
 
  private:
+  // Non-owned pointer to the linux dmabuf object, which created this params
+  // resource and holds a pointer to it. On destruction, must notify it about
+  // going out of scope.
+  MockZwpLinuxDmabufV1* linux_dmabuf_ = nullptr;
+
+  // A buffer resource, which is created on Create or CreateImmed call. Can be
+  // null if not created/failed to be created.
+  wl_resource* buffer_resource_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(MockZwpLinuxBufferParamsV1);
 };
 

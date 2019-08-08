@@ -69,9 +69,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
     feature_list_.InitAndEnableFeature(
         blink::features::kServiceWorkerImportedScriptUpdateCheck);
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
-    base::RunLoop run_loop;
-    storage()->LazyInitializeForTest(run_loop.QuitClosure());
-    run_loop.Run();
+    storage()->LazyInitializeForTest();
   }
 
   size_t TotalBytes(const std::vector<std::string>& data_chunks) {

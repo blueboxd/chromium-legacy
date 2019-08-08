@@ -145,10 +145,9 @@ void SerialPortManager::PostEvent(const ReceiveParams& params,
                                   std::unique_ptr<extensions::Event> event) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&DispatchEvent, params.browser_context_id,
-                     params.extension_id, std::move(event)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&DispatchEvent, params.browser_context_id,
+                                params.extension_id, std::move(event)));
 }
 
 // static

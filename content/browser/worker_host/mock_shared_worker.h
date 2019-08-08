@@ -45,9 +45,6 @@ class MockSharedWorker : public blink::mojom::SharedWorker {
   void Connect(int connection_request_id,
                mojo::ScopedMessagePipeHandle port) override;
   void Terminate() override;
-  void BindDevToolsAgent(
-      blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info,
-      blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
   mojo::Binding<blink::mojom::SharedWorker> binding_;
   std::queue<std::pair<int, blink::MessagePortChannel>> connect_received_;

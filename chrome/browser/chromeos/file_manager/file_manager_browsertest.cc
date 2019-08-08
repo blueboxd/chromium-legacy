@@ -613,6 +613,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         // Zip tests times out too often on ASAN and DEBUG. crbug.com/936429
         // and crbug.com/944697
         ZipCase("dirContextMenuZip"),
+        ZipCase("dirEjectContextMenuZip"),
 #endif
         TestCase("dirContextMenuRecent"),
         TestCase("dirContextMenuMyFiles").EnableMyFilesVolume(),

@@ -9,6 +9,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -123,6 +125,11 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, UninstallApp) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowAppInfo) {
+  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
+    // When App Management is enabled, App Info opens in the browser.
+    return;
+  }
+
   AppListClientImpl* client = AppListClientImpl::GetInstance();
   const extensions::Extension* app = InstallPlatformApp("minimal");
 

@@ -146,6 +146,9 @@ class WaylandConnection : public PlatformEventSource,
   // Make sure data device is properly initialized
   void EnsureDataDevice();
 
+  bool BeginWatchingFd(base::WatchableIOMessagePumpPosix::Mode mode);
+  void MaybePrepareReadQueue();
+
   // wl_registry_listener
   static void Global(void* data,
                      wl_registry* registry,
@@ -192,6 +195,7 @@ class WaylandConnection : public PlatformEventSource,
 
   bool scheduled_flush_ = false;
   bool watching_ = false;
+  bool prepared_ = false;
   base::MessagePumpLibevent::FdWatchController controller_;
 
   uint32_t serial_ = 0;

@@ -12,8 +12,6 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.support.customtabs.CustomTabsIntent;
-import android.support.customtabs.CustomTabsSessionToken;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +28,9 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.TranslucentCustomTabActivity;
+
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /** Unit tests for {@link SessionDataHolder}. */
 @RunWith(BaseRobolectricTestRunner.class)

@@ -658,6 +658,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // service worker this is a provider for.
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
 
+  // |context_| owns |this| but if the context is destroyed and a new one is
+  // created, the provider host becomes owned by the new context, while this
+  // |context_| is reset to null.
+  // TODO(https://crbug.com/877356): Don't support copying context, so this can
+  // just be a raw ptr that is never null.
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
   // |container_| is the Mojo endpoint to the renderer-side

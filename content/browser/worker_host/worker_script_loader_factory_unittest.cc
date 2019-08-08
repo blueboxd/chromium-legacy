@@ -36,8 +36,7 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
     // Set up the service worker system.
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
     ServiceWorkerContextCore* context = helper_->context();
-    context->storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
+    context->storage()->LazyInitializeForTest();
 
     browser_context_getter_ =
         base::BindRepeating(&ServiceWorkerContextWrapper::browser_context,

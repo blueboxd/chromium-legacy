@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
@@ -16,6 +17,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
+#include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
@@ -198,7 +200,7 @@ void ValidationMessageOverlayDelegate::CreatePage(const FrameOverlay& overlay) {
 void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
   DCHECK(data);
   PagePopupClient::AddString("<!DOCTYPE html><html><head><style>", data);
-  data->Append(Platform::Current()->GetDataResource("validation_bubble.css"));
+  data->Append(UncompressResourceAsBinary(IDR_VALIDATION_BUBBLE_CSS));
   PagePopupClient::AddString("</style></head>", data);
   PagePopupClient::AddString(
       Locale::DefaultLocale().IsRTL() ? "<body dir=rtl>" : "<body dir=ltr>",
@@ -210,7 +212,7 @@ void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
       "<div id=spacer-top></div>"
       "<main id=bubble-body>",
       data);
-  data->Append(Platform::Current()->GetDataResource("input_alert.svg"));
+  data->Append(UncompressResourceAsBinary(IDR_VALIDATION_BUBBLE_ICON));
   PagePopupClient::AddString(message_dir_ == TextDirection::kLtr
                                  ? "<div dir=ltr id=main-message></div>"
                                  : "<div dir=rtl id=main-message></div>",

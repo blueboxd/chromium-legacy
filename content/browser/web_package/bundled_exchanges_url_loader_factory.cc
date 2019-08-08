@@ -92,10 +92,8 @@ class BundledExchangesURLLoaderFactory::EntryLoader final
     // TODO(crbug.com/990733): For the initial implementation, we allow only
     // net::HTTP_OK, but we should clarify acceptable status code in the spec.
     if (!response || response->response_code != net::HTTP_OK) {
-      // TODO(crbug.com/966753): Define and use
-      // net::ERR_INVALID_BUNDLED_EXCHANGES.
-      loader_client_->OnComplete(
-          network::URLLoaderCompletionStatus(net::ERR_FAILED));
+      loader_client_->OnComplete(network::URLLoaderCompletionStatus(
+          net::ERR_INVALID_BUNDLED_EXCHANGES));
       return;
     }
 

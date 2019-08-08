@@ -465,8 +465,8 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager(
     // disabled at run-time, the |third_party_conflicts_manager_| instance must
     // be destroyed. Since prefs can only be read on the UI thread, the
     // registrar is initialized there.
-    auto ui_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::UI});
+    auto ui_task_runner =
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
     pref_change_registrar_ =
         std::unique_ptr<PrefChangeRegistrar, base::OnTaskRunnerDeleter>(
             new PrefChangeRegistrar(),

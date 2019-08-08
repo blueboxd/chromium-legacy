@@ -13,6 +13,7 @@
 /android_build_tools/art/profman
 /android_build_tools/bundletool/*.jar
 /android_ndk/
+/android_sdk/androidx_browser/src
 /android_sdk/public/
 /android_sdk/sources/
 /android_protobuf/src

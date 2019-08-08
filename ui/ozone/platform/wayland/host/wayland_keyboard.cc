@@ -167,7 +167,7 @@ void WaylandKeyboard::FlushInput(base::OnceClosure closure) {
   // get spurious repeats.
   sync_callback_.reset(wl_display_sync(connection_->display()));
   wl_callback_add_listener(sync_callback_.get(), &callback_listener_, this);
-  wl_display_flush(connection_->display());
+  connection_->ScheduleFlush();
 }
 
 void WaylandKeyboard::DispatchKey(uint32_t key,

@@ -77,6 +77,7 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
     {APIPermission::kLockWindowFullscreenPrivate, "lockWindowFullscreenPrivate",
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kLogin, "login"},
+    {APIPermission::kLoginScreenStorage, "loginScreenStorage"},
     {APIPermission::kLoginScreenUi, "loginScreenUi"},
     {APIPermission::kMediaPerceptionPrivate, "mediaPerceptionPrivate"},
     {APIPermission::kMetricsPrivate, "metricsPrivate",

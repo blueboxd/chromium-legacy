@@ -47,9 +47,6 @@ class FakeEmbeddedWorkerInstanceClient
   void ResumeAfterDownload() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override {}
-  void BindDevToolsAgent(
-      blink::mojom::DevToolsAgentHostAssociatedPtrInfo,
-      blink::mojom::DevToolsAgentAssociatedRequest) override {}
 
   virtual void EvaluateScript();
 

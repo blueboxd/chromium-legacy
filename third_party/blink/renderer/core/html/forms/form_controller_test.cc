@@ -51,7 +51,7 @@ TEST(FormControllerTest, FormSignature) {
   Element* form = doc.QuerySelector("form", ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(form);
   EXPECT_EQ(String("http://example.com/ [1cb 3s ]"),
-            FormSignature(*ToHTMLFormElement(form)))
+            FormSignature(*To<HTMLFormElement>(form)))
       << "[] should contain names of the first and the third controls.";
 }
 

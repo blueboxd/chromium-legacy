@@ -57,14 +57,13 @@ class VideoPlayer {
 
   ~VideoPlayer();
 
-  // Create an instance of the video player. The |video|, |frame_renderer| and
+  // Create an instance of the video player. The |frame_renderer| and
   // |frame_processors| will not be owned by the video player. The caller should
   // guarantee they outlive the video player.
   static std::unique_ptr<VideoPlayer> Create(
-      const Video* video,
+      const VideoDecoderClientConfig& config,
       std::unique_ptr<FrameRenderer> frame_renderer,
-      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
-      const VideoDecoderClientConfig& config);
+      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors = {});
 
   // Wait until all frame processors have finished processing. Returns whether
   // processing was successful.
@@ -75,6 +74,11 @@ class VideoPlayer {
   // Set the maximum time we will wait for an event to finish.
   void SetEventWaitTimeout(base::TimeDelta timeout);
 
+  // Initialize the video player for the specified |video|. This function can be
+  // called multiple times and needs to be called before Play(). The |video|
+  // will not be owned by the video player, the caller should guarantee it
+  // outlives the video player.
+  bool Initialize(const Video* video);
   // Play the video asynchronously.
   void Play();
   // Play the video asynchronously. Automatically pause decoding when the
@@ -118,11 +122,10 @@ class VideoPlayer {
  private:
   VideoPlayer();
 
-  void Initialize(
-      const Video* video,
+  bool CreateDecoderClient(
+      const VideoDecoderClientConfig& config,
       std::unique_ptr<FrameRenderer> frame_renderer,
-      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
-      const VideoDecoderClientConfig& config);
+      std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors);
   void Destroy();
 
   // Notify the video player an event has occurred (e.g. frame decoded). Returns

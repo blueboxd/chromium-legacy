@@ -481,6 +481,7 @@ enum DBCookieSameSite {
 };
 
 DBCookieSameSite CookieSameSiteToDBCookieSameSite(CookieSameSite value) {
+  DCHECK(IsValidSameSiteValue(value));
   switch (value) {
     case CookieSameSite::NO_RESTRICTION:
       return kCookieSameSiteNoRestriction;
@@ -492,6 +493,8 @@ DBCookieSameSite CookieSameSiteToDBCookieSameSite(CookieSameSite value) {
       return kCookieSameSiteExtended;
     case CookieSameSite::UNSPECIFIED:
       return kCookieSameSiteUnspecified;
+    default:
+      break;
   }
 
   NOTREACHED();
@@ -499,21 +502,27 @@ DBCookieSameSite CookieSameSiteToDBCookieSameSite(CookieSameSite value) {
 }
 
 CookieSameSite DBCookieSameSiteToCookieSameSite(DBCookieSameSite value) {
+  CookieSameSite samesite = CookieSameSite::UNSPECIFIED;
   switch (value) {
     case kCookieSameSiteNoRestriction:
-      return CookieSameSite::NO_RESTRICTION;
+      samesite = CookieSameSite::NO_RESTRICTION;
+      break;
     case kCookieSameSiteLax:
-      return CookieSameSite::LAX_MODE;
+      samesite = CookieSameSite::LAX_MODE;
+      break;
     case kCookieSameSiteStrict:
-      return CookieSameSite::STRICT_MODE;
+      samesite = CookieSameSite::STRICT_MODE;
+      break;
     case kCookieSameSiteExtended:
-      return CookieSameSite::EXTENDED_MODE;
+      samesite = CookieSameSite::EXTENDED_MODE;
+      break;
     case kCookieSameSiteUnspecified:
-      return CookieSameSite::UNSPECIFIED;
+      samesite = CookieSameSite::UNSPECIFIED;
+      break;
   }
 
-  NOTREACHED();
-  return CookieSameSite::UNSPECIFIED;
+  DCHECK(IsValidSameSiteValue(samesite));
+  return samesite;
 }
 
 // Increments a specified TimeDelta by the duration between this object's

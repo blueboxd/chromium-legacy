@@ -41,8 +41,6 @@ WorkerShadowPage::WorkerShadowPage(
       web_view_, this, nullptr /* interface_registry */,
       CreateStubDocumentInterfaceBrokerHandle(), nullptr /* opener */,
       g_empty_atom, WebSandboxFlags::kNone, FeaturePolicy::FeatureState());
-  main_frame_->SetDevToolsAgentImpl(
-      WebDevToolsAgentImpl::CreateForWorker(main_frame_, client_));
 }
 
 WorkerShadowPage::~WorkerShadowPage() {
@@ -81,13 +79,6 @@ WorkerShadowPage::CreateURLLoaderFactory() {
   return Platform::Current()->CreateDefaultURLLoaderFactory();
 }
 
-base::UnguessableToken WorkerShadowPage::GetDevToolsFrameToken() {
-  // TODO(dgozman): instrumentation token will have to be passed directly to
-  // DevTools once we stop using a frame for workers. Currently, we rely on
-  // the frame's instrumentation token to match the worker.
-  return client_->GetDevToolsWorkerToken();
-}
-
 void WorkerShadowPage::WillSendRequest(WebURLRequest& request) {
   if (preferences_.enable_do_not_track) {
     request.SetHttpHeaderField(WebString::FromUTF8(kDoNotTrackHeader), "1");
@@ -121,10 +112,6 @@ void WorkerShadowPage::AdvanceState(State new_state) {
       state_ = new_state;
       return;
   }
-}
-
-WebDevToolsAgentImpl* WorkerShadowPage::DevToolsAgent() {
-  return main_frame_->DevToolsAgentImpl();
 }
 
 }  // namespace blink

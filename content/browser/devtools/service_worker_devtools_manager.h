@@ -71,8 +71,8 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   void WorkerReadyForInspection(
       int worker_process_id,
       int worker_route_id,
-      blink::mojom::DevToolsAgentHostAssociatedRequest host_request,
-      blink::mojom::DevToolsAgentAssociatedPtrInfo devtools_agent_ptr_info);
+      blink::mojom::DevToolsAgentPtrInfo agent_ptr_info,
+      blink::mojom::DevToolsAgentHostRequest host_request);
   void WorkerVersionInstalled(int worker_process_id, int worker_route_id);
   void WorkerVersionDoomed(int worker_process_id, int worker_route_id);
   void WorkerDestroyed(int worker_process_id, int worker_route_id);

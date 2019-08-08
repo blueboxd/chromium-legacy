@@ -77,9 +77,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   void TerminateWorkerContext() override;
   void ResumeAfterDownload() override;
   void AddMessageToConsole(const WebConsoleMessage&) override;
-  void BindDevToolsAgent(
-      mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
-      mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
 
   // WorkerShadowPage::Client overrides.
   void OnShadowPageInitialized() override;
@@ -94,10 +91,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   void WaitForShutdownForTesting();
 
  private:
-  // WebDevToolsAgentImpl::Client overrides.
-  void ResumeStartup() override;
-  const base::UnguessableToken& GetDevToolsWorkerToken() override;
-
   void OnScriptLoaderFinished();
   void StartWorkerThread();
 
@@ -126,20 +119,17 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
 
   bool asked_to_terminate_ = false;
 
-  enum WaitingForDebuggerState { kWaitingForDebugger, kNotWaitingForDebugger };
-
   enum {
     kDontPauseAfterDownload,
     kDoPauseAfterDownload,
     kIsPausedAfterDownload
   } pause_after_download_state_;
 
-  // Whether to pause the initialization and wait for debugger to attach
-  // before proceeding. This technique allows debugging worker startup.
-  WaitingForDebuggerState waiting_for_debugger_state_;
   // Unique worker token used by DevTools to attribute different instrumentation
   // to the same worker.
   base::UnguessableToken devtools_worker_token_;
+  WebEmbeddedWorkerStartData::WaitForDebuggerMode wait_for_debugger_mode_ =
+      WebEmbeddedWorkerStartData::kDontWaitForDebugger;
 
   mojom::blink::CacheStoragePtrInfo cache_storage_info_;
 

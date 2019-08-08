@@ -137,6 +137,12 @@ base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
   return web_app ? base::Optional<GURL>(web_app->scope()) : base::nullopt;
 }
 
+LaunchContainer WebAppRegistrar::GetAppLaunchContainer(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return LaunchContainer::kTab;
+}
+
 base::flat_set<AppId> WebAppRegistrar::GetAppIdsForTesting() const {
   NOTIMPLEMENTED();
   return {};

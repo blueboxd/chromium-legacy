@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.browserservices;
 
 import android.app.Notification;
-import android.support.customtabs.trusted.TrustedWebActivityService;
+
+import androidx.browser.trusted.TrustedWebActivityService;
 
 /**
  * A TrustedWebActivityService to be used in TrustedWebActivityClientTest.

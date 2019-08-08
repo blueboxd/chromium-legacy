@@ -192,11 +192,11 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
     paint_arguments.push_back(style_value->ToCSSStyleValue());
   }
 
-  // TODO(crbug.com/980594): find a proper way to detect whether zoom_for_dsf is
-  // enabled.
+  device_pixel_ratio_ = input->DeviceScaleFactor() * input->EffectiveZoom();
+
   sk_sp<PaintRecord> result = definition->Paint(
       FloatSize(input->GetSize()), input->EffectiveZoom(), style_map,
-      &paint_arguments, 1.0 /* device_scale_factor */);
+      &paint_arguments, input->DeviceScaleFactor());
 
   // CSSPaintDefinition::Paint returns nullptr if it fails, but for
   // OffThread-PaintWorklet we prefer to insert empty PaintRecords into the

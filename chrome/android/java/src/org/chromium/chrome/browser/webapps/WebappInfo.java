@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
@@ -22,6 +21,8 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.webapk.lib.common.splash.SplashLayout;
+
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * Stores info about a web app.

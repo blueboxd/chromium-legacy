@@ -287,7 +287,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   // the uncommitted resource keys.
   void PurgeResources(const ResourceList& resources);
 
-  void LazyInitializeForTest(base::OnceClosure callback);
+  void LazyInitializeForTest();
 
  private:
   friend class service_worker_storage_unittest::ServiceWorkerStorageTest;

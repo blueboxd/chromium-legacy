@@ -46,40 +46,6 @@ GetCreateNetworkFactoryCallbackForSharedWorker() {
   return *s_callback;
 }
 
-void AllowFileSystemOnIOThreadResponse(base::OnceCallback<void(bool)> callback,
-                                       bool result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
-}
-
-void AllowFileSystemOnIOThread(const GURL& url,
-                               ResourceContext* resource_context,
-                               std::vector<GlobalFrameRoutingId> render_frames,
-                               base::OnceCallback<void(bool)> callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  GetContentClient()->browser()->AllowWorkerFileSystem(
-      url, resource_context, render_frames,
-      base::Bind(&AllowFileSystemOnIOThreadResponse, base::Passed(&callback)));
-}
-
-bool AllowIndexedDBOnIOThread(const GURL& url,
-                              ResourceContext* resource_context,
-                              std::vector<GlobalFrameRoutingId> render_frames) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return GetContentClient()->browser()->AllowWorkerIndexedDB(
-      url, resource_context, render_frames);
-}
-
-bool AllowCacheStorageOnIOThread(
-    const GURL& url,
-    ResourceContext* resource_context,
-    std::vector<GlobalFrameRoutingId> render_frames) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return GetContentClient()->browser()->AllowWorkerCacheStorage(
-      url, resource_context, render_frames);
-}
-
 }  // namespace
 
 // RAII helper class for talking to SharedWorkerDevToolsManager.
@@ -97,9 +63,11 @@ class SharedWorkerHost::ScopedDevToolsHandle {
     SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(owner_);
   }
 
-  void WorkerReadyForInspection() {
+  void WorkerReadyForInspection(
+      blink::mojom::DevToolsAgentPtr agent_ptr,
+      blink::mojom::DevToolsAgentHostRequest agent_host_request) {
     SharedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
-        owner_);
+        owner_, std::move(agent_ptr), std::move(agent_host_request));
   }
 
  private:
@@ -304,38 +272,26 @@ void SharedWorkerHost::CreateNetworkFactory(
 void SharedWorkerHost::AllowFileSystem(
     const GURL& url,
     base::OnceCallback<void(bool)> callback) {
-  base::PostTask(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AllowFileSystemOnIOThread, url,
-                     RenderProcessHost::FromID(worker_process_id_)
-                         ->GetBrowserContext()
-                         ->GetResourceContext(),
-                     GetRenderFrameIDsForWorker(), std::move(callback)));
+  GetContentClient()->browser()->AllowWorkerFileSystem(
+      url, RenderProcessHost::FromID(worker_process_id_)->GetBrowserContext(),
+      GetRenderFrameIDsForWorker(), std::move(callback));
 }
 
 void SharedWorkerHost::AllowIndexedDB(const GURL& url,
                                       base::OnceCallback<void(bool)> callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AllowIndexedDBOnIOThread, url,
-                     RenderProcessHost::FromID(worker_process_id_)
-                         ->GetBrowserContext()
-                         ->GetResourceContext(),
-                     GetRenderFrameIDsForWorker()),
-      std::move(callback));
+  std::move(callback).Run(GetContentClient()->browser()->AllowWorkerIndexedDB(
+      url, RenderProcessHost::FromID(worker_process_id_)->GetBrowserContext(),
+      GetRenderFrameIDsForWorker()));
 }
 
 void SharedWorkerHost::AllowCacheStorage(
     const GURL& url,
     base::OnceCallback<void(bool)> callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AllowCacheStorageOnIOThread, url,
-                     RenderProcessHost::FromID(worker_process_id_)
-                         ->GetBrowserContext()
-                         ->GetResourceContext(),
-                     GetRenderFrameIDsForWorker()),
-      std::move(callback));
+  std::move(callback).Run(
+      GetContentClient()->browser()->AllowWorkerCacheStorage(
+          url,
+          RenderProcessHost::FromID(worker_process_id_)->GetBrowserContext(),
+          GetRenderFrameIDsForWorker()));
 }
 
 void SharedWorkerHost::TerminateWorker() {
@@ -439,9 +395,13 @@ void SharedWorkerHost::OnContextClosed() {
   }
 }
 
-void SharedWorkerHost::OnReadyForInspection() {
-  if (devtools_handle_)
-    devtools_handle_->WorkerReadyForInspection();
+void SharedWorkerHost::OnReadyForInspection(
+    blink::mojom::DevToolsAgentPtr agent_ptr,
+    blink::mojom::DevToolsAgentHostRequest agent_host_request) {
+  if (devtools_handle_) {
+    devtools_handle_->WorkerReadyForInspection(std::move(agent_ptr),
+                                               std::move(agent_host_request));
+  }
 }
 
 void SharedWorkerHost::OnScriptLoadFailed() {
@@ -504,12 +464,6 @@ void SharedWorkerHost::AddClient(blink::mojom::SharedWorkerClientPtr client,
       &SharedWorkerHost::OnClientConnectionLost, weak_factory_.GetWeakPtr()));
 
   worker_->Connect(info.connection_request_id, port.ReleaseHandle());
-}
-
-void SharedWorkerHost::BindDevToolsAgent(
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-    blink::mojom::DevToolsAgentAssociatedRequest request) {
-  worker_->BindDevToolsAgent(std::move(host), std::move(request));
 }
 
 void SharedWorkerHost::SetAppCacheHandle(

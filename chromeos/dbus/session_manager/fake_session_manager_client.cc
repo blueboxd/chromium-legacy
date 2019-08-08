@@ -13,6 +13,7 @@
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -283,6 +284,22 @@ void FakeSessionManagerClient::RestartJob(int socket_fd,
 
 void FakeSessionManagerClient::SaveLoginPassword(const std::string& password) {
   login_password_ = password;
+}
+
+void FakeSessionManagerClient::LoginScreenStorageStore(
+    const std::string& key,
+    const login_manager::LoginScreenStorageMetadata& metadata,
+    const std::string& data,
+    LoginScreenStorageStoreCallback callback) {
+  PostReply(FROM_HERE, std::move(callback), base::nullopt /* error */);
+}
+
+void FakeSessionManagerClient::LoginScreenStorageRetrieve(
+    const std::string& key,
+    LoginScreenStorageRetrieveCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), "Test" /* data */,
+                                base::nullopt /* error */));
 }
 
 void FakeSessionManagerClient::StartSession(

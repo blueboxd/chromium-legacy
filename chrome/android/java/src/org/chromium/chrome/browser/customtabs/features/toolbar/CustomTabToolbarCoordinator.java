@@ -7,16 +7,15 @@ package org.chromium.chrome.browser.customtabs.features.toolbar;
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
 
 import android.content.Context;
-import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomButtonParams;
+import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
@@ -28,7 +27,6 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
-import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
@@ -39,6 +37,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import androidx.browser.customtabs.CustomTabsIntent;
 import dagger.Lazy;
 
 /**
@@ -55,13 +54,12 @@ import dagger.Lazy;
  * 3. Refactor to MVC.
  */
 @ActivityScope
-public class CustomTabToolbarCoordinator implements InflationObserver, NativeInitObserver {
+public class CustomTabToolbarCoordinator implements InflationObserver {
 
     private final Lazy<ToolbarManager> mToolbarManager;
     private final CustomTabIntentDataProvider mIntentDataProvider;
     private final CustomTabActivityTabProvider mTabProvider;
     private final CustomTabsConnection mConnection;
-    private final Lazy<CompositorViewHolder> mCompositorViewHolder;
     private final ChromeActivity mActivity;
     private final Context mAppContext;
     private final CustomTabActivityTabController mTabController;
@@ -80,7 +78,6 @@ public class CustomTabToolbarCoordinator implements InflationObserver, NativeIni
             CustomTabIntentDataProvider intentDataProvider,
             CustomTabActivityTabProvider tabProvider,
             CustomTabsConnection connection,
-            Lazy<CompositorViewHolder> compositorViewHolder,
             ChromeActivity activity,
             @Named(APP_CONTEXT) Context appContext,
             CustomTabActivityTabController tabController,
@@ -88,12 +85,12 @@ public class CustomTabToolbarCoordinator implements InflationObserver, NativeIni
             CustomTabActivityNavigationController navigationController,
             TabObserverRegistrar tabObserverRegistrar,
             CustomTabStatusBarColorProvider statusBarColorProvider,
-            CustomTabBrowserControlsVisibilityDelegate visibilityDelegate) {
+            CustomTabBrowserControlsVisibilityDelegate visibilityDelegate,
+            CustomTabCompositorContentInitializer compositorContentInitializer) {
         mToolbarManager = toolbarManager;
         mIntentDataProvider = intentDataProvider;
         mTabProvider = tabProvider;
         mConnection = connection;
-        mCompositorViewHolder = compositorViewHolder;
         mActivity = activity;
         mAppContext = appContext;
         mTabController = tabController;
@@ -103,6 +100,8 @@ public class CustomTabToolbarCoordinator implements InflationObserver, NativeIni
         mStatusBarColorProvider = statusBarColorProvider;
         mVisibilityDelegate = visibilityDelegate;
         lifecycleDispatcher.register(this);
+
+        compositorContentInitializer.addCallback(this::onCompositorContentInitialized);
     }
 
     @Override
@@ -218,14 +217,7 @@ public class CustomTabToolbarCoordinator implements InflationObserver, NativeIni
         });
     }
 
-    @Override
-    public void onFinishNativeInitialization() {
-        LayoutManager layoutDriver = new LayoutManager(mCompositorViewHolder.get());
-        mActivity.initializeCompositorContent(layoutDriver,
-                mActivity.findViewById(R.id.url_bar),
-                mActivity.findViewById(android.R.id.content),
-                mActivity.findViewById(R.id.control_container));
-
+    private void onCompositorContentInitialized(LayoutManager layoutDriver) {
         mToolbarManager.get().initializeWithNative(mTabController.getTabModelSelector(),
                 mFullscreenManager.get().getBrowserVisibilityDelegate(), null, layoutDriver, null,
                 null, null, v -> onCloseButtonClick());

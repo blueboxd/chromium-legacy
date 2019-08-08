@@ -188,8 +188,19 @@ base::TimeDelta ThreadHeapStatsCollector::Event::atomic_sweep_and_compact_time()
   return scope_data[ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact];
 }
 
-base::TimeDelta ThreadHeapStatsCollector::Event::marking_time() const {
+base::TimeDelta ThreadHeapStatsCollector::Event::foreground_marking_time()
+    const {
   return incremental_marking_time() + atomic_marking_time();
+}
+
+base::TimeDelta ThreadHeapStatsCollector::Event::background_marking_time()
+    const {
+  return base::TimeDelta::FromMicroseconds(
+      concurrent_scope_data[kConcurrentMark]);
+}
+
+base::TimeDelta ThreadHeapStatsCollector::Event::marking_time() const {
+  return foreground_marking_time() + background_marking_time();
 }
 
 double ThreadHeapStatsCollector::Event::marking_time_in_bytes_per_second()

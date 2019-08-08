@@ -356,8 +356,8 @@ AutomationController::AutomationController(std::unique_ptr<Delegate> delegate) {
   ui::win::CreateATLModuleIfNeeded();
 
   // Create the task runner on which the automation client lives.
-  automation_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::USER_VISIBLE,
+  automation_task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   // Initialize the context on the automation task runner.

@@ -1872,7 +1872,7 @@ TEST(AXTreeTest, UnignoredAccessors) {
   //     |      |   |
   //     13(i)  14  15
   //     |      |
-  //     16     17
+  //     16     17(i)
   tree_update.root_id = 1;
   tree_update.nodes.resize(17);
   tree_update.nodes[0].id = 1;

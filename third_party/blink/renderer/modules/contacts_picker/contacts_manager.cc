@@ -84,11 +84,20 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
                                       const Vector<String>& properties,
                                       ContactsSelectOptions* options) {
   Document* document = To<Document>(ExecutionContext::From(script_state));
+
+  if (document->ParentDocument()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kInvalidStateError,
+            "The contacts API can only be used in the top frame"));
+  }
+
   if (!LocalFrame::HasTransientUserActivation(document ? document->GetFrame()
                                                        : nullptr)) {
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kSecurityError,
                           "A user gesture is required to call this method"));
   }
 

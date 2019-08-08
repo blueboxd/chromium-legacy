@@ -286,6 +286,9 @@ class NET_EXPORT CanonicalCookie {
                                   const std::string& domain,
                                   const std::string& path);
 
+  // Returns whether the cookie was created at most |age_threshold| ago.
+  bool IsRecentlyCreated(base::TimeDelta age_threshold) const;
+
   // Returns the cookie's domain, with the leading dot removed, if present.
   std::string DomainWithoutDot() const;
 

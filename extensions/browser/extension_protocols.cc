@@ -535,8 +535,8 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
     scoped_refptr<ContentVerifier> content_verifier =
         extension_info_map_->content_verifier();
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReply(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&ReadResourceFilePathAndLastModifiedTime, resource,
                        directory_path, base::Unretained(read_file_path),
                        base::Unretained(last_modified_time)),
@@ -559,7 +559,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
       bool send_cors_header) {
     request.url = net::FilePathToFileURL(*read_file_path);
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &StartVerifyJob, std::move(request), std::move(loader),

@@ -45,8 +45,6 @@ buildflag_header("buildflags") {
     "ENABLE_NATIVE_NOTIFICATIONS=$enable_native_notifications",
     "ENABLE_SERVICE_DISCOVERY=$enable_service_discovery",
     "ENABLE_SESSION_SERVICE=$enable_session_service",
-    "ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS=$enable_simple_browser_service_in_process",
-    "ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS=$enable_simple_browser_service_out_of_process",
     "ENABLE_SUPERVISED_USERS=$enable_supervised_users",
     "ENABLE_WAYLAND_SERVER=$enable_wayland_server",
     "ENABLE_WEBUI_TAB_STRIP=$enable_webui_tab_strip",

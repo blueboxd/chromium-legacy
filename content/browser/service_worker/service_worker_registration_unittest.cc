@@ -186,9 +186,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
     helper_->context_wrapper()->set_storage_partition(
         storage_partition_impl_.get());
 
-    base::RunLoop loop;
-    context()->storage()->LazyInitializeForTest(loop.QuitClosure());
-    loop.Run();
+    context()->storage()->LazyInitializeForTest();
   }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
@@ -902,8 +900,7 @@ class ServiceWorkerRegistrationObjectHostTest
   }
 
   int64_t SetUpRegistration(const GURL& scope, const GURL& script_url) {
-    storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
+    storage()->LazyInitializeForTest();
 
     // Prepare ServiceWorkerRegistration and ServiceWorkerVersion.
     scoped_refptr<ServiceWorkerRegistration> registration =

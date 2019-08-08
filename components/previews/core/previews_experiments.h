@@ -126,11 +126,6 @@ bool LitePagePreviewsTriggerOnLocalhost();
 // page hints for the host.
 bool LitePagePreviewsOverridePageHints();
 
-// The maximum data byte size for the server-provided blacklist. This is
-// a client-side safety limit for RAM use in case server sends too large of
-// a blacklist.
-int LitePageRedirectPreviewMaxServerBlacklistByteSize();
-
 // The maximum number of times that a Lite Page Redirect preview should restart
 // a navigation.
 size_t LitePageRedirectPreviewMaxNavigationRestarts();

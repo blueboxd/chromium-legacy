@@ -40,6 +40,8 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const web_app::AppId& app_id) const override;
+  web_app::LaunchContainer GetAppLaunchContainer(
+      const web_app::AppId& app_id) const override;
   base::flat_set<web_app::AppId> GetAppIdsForTesting() const override;
 
   // ExtensionRegistryObserver:

@@ -162,6 +162,11 @@ class ChromePasswordManagerClient
   void FrameWasScrolled() override;
   void GenerationElementLostFocus() override;
 
+  // This is called when the onboarding experience was shown successfully,
+  // which means that the user should now be prompted to save their password.
+  void OnOnboardingSuccessful(
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save);
+
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override;

@@ -411,6 +411,21 @@
             ]
         }
     ],
+    "AndroidManualPasswordGeneration": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ManualPasswordGenerationAndroid"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidMediaProcessPriority": [
         {
             "platforms": [

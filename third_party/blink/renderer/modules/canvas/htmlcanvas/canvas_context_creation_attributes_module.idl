@@ -40,7 +40,7 @@ dictionary CanvasContextCreationAttributesModule {
     // the bindings because origin trial bindings don't work in extensions.
     // The trial's runtime flag is instead checked inside
     // HTMLCanvasElement.getContext().
-    boolean desynchronized = false;
+    [RuntimeEnabled=SurfaceEmbeddingFeatures] boolean desynchronized = false;
 
     // Canvas 2D attributes
     boolean alpha = true;  // Also used for WebGL.

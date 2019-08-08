@@ -29,6 +29,9 @@ class MachBootstrapAcceptor {
     // Mach port it provided in |endpoint|.
     virtual void OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
                                    base::ProcessId peer_pid) = 0;
+
+    // Called when there is an error creating the server channel.
+    virtual void OnServerChannelCreateError() = 0;
   };
 
   // Initializes the server by specifying the |name_fragment|, which will be
@@ -47,6 +50,8 @@ class MachBootstrapAcceptor {
   void Stop();
 
  private:
+  friend class MachBootstrapAcceptorTest;
+
   // Called by |dispatch_source_| when a Mach message is ready to be received
   // on |endpoint_|.
   void HandleRequest();

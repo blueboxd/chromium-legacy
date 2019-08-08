@@ -220,9 +220,9 @@ const wchar_t kApprovedShellExtensionRegistryKey[] =
 void EnumerateShellExtensions(
     OnShellExtensionEnumeratedCallback on_shell_extension_enumerated,
     base::OnceClosure on_enumeration_finished) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&EnumerateShellExtensionsOnBlockingSequence,
                      base::SequencedTaskRunnerHandle::Get(),

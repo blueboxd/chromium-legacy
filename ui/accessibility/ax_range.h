@@ -182,7 +182,7 @@ class AXRange {
       if (current_start_->GetAnchor() == iterator_end_->GetAnchor()) {
         current_start_ = AXPositionType::CreateNullPosition();
       } else {
-        current_start_ = current_start_->CreateNextTreeAnchorPosition();
+        current_start_ = current_start_->CreateNextLeafTreePosition();
         DCHECK_LE(*current_start_, *iterator_end_);
       }
       return *this;

@@ -30,6 +30,18 @@ NSString* const kBlueColor = @"blue_color";
 NSString* const kGreenColor = @"green_color";
 NSString* const kRedColor = @"red_color";
 
+#pragma mark - Grey Palette
+NSString* const kGrey50Color = @"grey_50_color";
+NSString* const kGrey100Color = @"grey_100_color";
+NSString* const kGrey200Color = @"grey_200_color";
+NSString* const kGrey300Color = @"grey_300_color";
+NSString* const kGrey400Color = @"grey_400_color";
+NSString* const kGrey500Color = @"grey_500_color";
+NSString* const kGrey600Color = @"grey_600_color";
+NSString* const kGrey700Color = @"grey_700_color";
+NSString* const kGrey800Color = @"grey_800_color";
+NSString* const kGrey900Color = @"grey_900_color";
+
 // Temporary for iOS 12
 
 NSString* const kBackgroundDarkColor = @"background_dark_color";

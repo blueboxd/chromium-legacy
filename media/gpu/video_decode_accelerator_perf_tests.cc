@@ -321,8 +321,10 @@ class VideoDecoderTest : public ::testing::Test {
     if (!g_env->ImportSupported())
       config.allocation_mode = AllocationMode::kAllocate;
 
-    auto video_player = VideoPlayer::Create(
-        video, std::move(frame_renderer), std::move(frame_processors), config);
+    auto video_player = VideoPlayer::Create(config, std::move(frame_renderer),
+                                            std::move(frame_processors));
+    LOG_ASSERT(video_player);
+    LOG_ASSERT(video_player->Initialize(video));
 
     // Make sure the event timeout is at least as long as the video's duration.
     video_player->SetEventWaitTimeout(

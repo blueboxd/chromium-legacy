@@ -20254,6 +20254,10 @@ Called by update_net_error_codes.py.-->
   <int value="1367" label="MANAGEMENT_INSTALLREPLACEMENTANDROIDAPP"/>
   <int value="1368" label="MANAGEMENT_CANINSTALLREPLACEMENTANDROIDAPP"/>
   <int value="1369" label="AUTOTESTPRIVATE_REGISTERCOMPONENT"/>
+  <int value="1370" label="LOGINSCREENSTORAGE_STOREPERSISTENTDATA"/>
+  <int value="1371" label="LOGINSCREENSTORAGE_RETRIEVEPERSISTENTDATA"/>
+  <int value="1372" label="LOGINSCREENSTORAGE_STORECREDENTIALS"/>
+  <int value="1373" label="LOGINSCREENSTORAGE_RETRIEVECREDENTIALS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -20791,6 +20795,7 @@ Called by update_net_error_codes.py.-->
   <int value="218" label="kDeclarativeNetRequestFeedback"/>
   <int value="219" label="kTransientBackground"/>
   <int value="220" label="kLogin"/>
+  <int value="221" label="kLoginScreenStorage"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
@@ -51831,6 +51836,27 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="BLOCKED"/>
   <int value="3" label="ABANDONED"/>
   <int value="4" label="NOT_SUPPORTED"/>
+</enum>
+
+<enum name="SamlInSessionPasswordChangeEvent">
+  <summary>
+    Track how often we try to guide users through the in-session flow to change
+    their SAML password, and how often they complete the flow.
+  </summary>
+  <int value="0" label="In-session PW-change manager enabled and created."/>
+  <int value="1" label="User notified that password will soon expire."/>
+  <int value="2" label="User notified urgently: password will soon expire."/>
+  <int value="3" label="User notified urgently: password already expired."/>
+  <int value="4" label="User acknowledges and begins change password flow."/>
+  <int value="5" label="SAML password is changed during in-session flow."/>
+  <int value="6" label="Password scraping succeeds during in-session change."/>
+  <int value="7" label="Password scraping partial success - 1 password only."/>
+  <int value="8" label="Password scraping fails - no passwords scraped."/>
+  <int value="9" label="Cryptohome password changed using scraped passwords."/>
+  <int value="10" label="Cryptohome password changed using retyped passwords."/>
+  <int value="11" label="Cryptohome change failed: wrong password scraped."/>
+  <int value="12" label="Cryptohome change failed: wrong password retyped."/>
+  <int value="13" label="In-session change password flow complete."/>
 </enum>
 
 <enum name="SamplingProfilerUnwindResult">

@@ -51,9 +51,12 @@ void SharedWorkerDevToolsManager::WorkerCreated(
 }
 
 void SharedWorkerDevToolsManager::WorkerReadyForInspection(
-    SharedWorkerHost* worker_host) {
+    SharedWorkerHost* worker_host,
+    blink::mojom::DevToolsAgentPtr agent_ptr,
+    blink::mojom::DevToolsAgentHostRequest agent_host_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  live_hosts_[worker_host]->WorkerReadyForInspection();
+  live_hosts_[worker_host]->WorkerReadyForInspection(
+      std::move(agent_ptr), std::move(agent_host_request));
 }
 
 void SharedWorkerDevToolsManager::WorkerDestroyed(

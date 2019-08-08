@@ -155,6 +155,8 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
   // server. Not called when the renderer initiates the closing handshake.
   void DidStartClosingHandshake(WebSocketHandle*);
 
+  bool IsHandleAlive() const { return handle_.get(); }
+
   void Trace(blink::Visitor*) override;
 
  private:

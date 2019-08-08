@@ -33,20 +33,12 @@
 #include "components/services/pdf_compositor/public/cpp/manifest.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS) || \
-    BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
-#include "services/content/simple_browser/public/cpp/manifest.h"  // nogncheck
-#endif
-
 const std::vector<service_manager::Manifest>&
 GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_PRINTING)
       printing::GetPdfCompositorManifest(),
-#endif
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
-      simple_browser::GetManifest(),
 #endif
 #if defined(OS_WIN)
       GetWifiUtilWinManifest(),

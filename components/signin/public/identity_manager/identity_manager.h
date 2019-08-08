@@ -33,9 +33,7 @@ class SharedURLLoaderFactory;
 class TestURLLoaderFactory;
 }  // namespace network
 
-// Necessary to declare these classes as friends.
 class PrefRegistrySimple;
-class SigninManagerAndroid;
 
 class AccountFetcherService;
 class AccountTrackerService;
@@ -536,10 +534,6 @@ class IdentityManager : public KeyedService,
       const std::string& given_name,
       const std::string& locale,
       const std::string& picture_url);
-
-  // These friends are temporary during the conversion process.
-  // TODO(https://crbug.com/889902): Delete this when conversion is done.
-  friend SigninManagerAndroid;
 
   // Temporary access to getters (e.g. GetTokenService()).
   // TODO(https://crbug.com/944127): Remove this friendship by

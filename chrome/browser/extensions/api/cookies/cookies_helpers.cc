@@ -81,6 +81,7 @@ Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
   cookie.secure = canonical_cookie.IsSecure();
   cookie.http_only = canonical_cookie.IsHttpOnly();
 
+  DCHECK(net::IsValidSameSiteValue(canonical_cookie.SameSite()));
   switch (canonical_cookie.SameSite()) {
     case net::CookieSameSite::NO_RESTRICTION:
       cookie.same_site = api::cookies::SAME_SITE_STATUS_NO_RESTRICTION;
@@ -95,6 +96,8 @@ Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
     case net::CookieSameSite::UNSPECIFIED:
       cookie.same_site = api::cookies::SAME_SITE_STATUS_UNSPECIFIED;
       break;
+    default:
+      NOTREACHED();
   }
 
   cookie.session = !canonical_cookie.IsPersistent();

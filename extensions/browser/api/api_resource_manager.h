@@ -54,7 +54,7 @@ struct NamedThreadTraits {
   }
 
   static scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
-    return base::CreateSingleThreadTaskRunnerWithTraits({T::kThreadId});
+    return base::CreateSingleThreadTaskRunner({T::kThreadId});
   }
 };
 

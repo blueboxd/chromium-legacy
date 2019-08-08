@@ -11,7 +11,6 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.provider.Browser;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
@@ -40,6 +39,8 @@ import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.List;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Tab Launcher to be used to launch new tabs from background Android Services,

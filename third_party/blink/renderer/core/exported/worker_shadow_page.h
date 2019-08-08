@@ -10,7 +10,6 @@
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_view.h"
-#include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 
 namespace network {
@@ -36,14 +35,12 @@ class WebSettings;
 // TODO(kinuko): Make this go away (https://crbug.com/538751).
 class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
  public:
-  class CORE_EXPORT Client : public WebDevToolsAgentImpl::WorkerClient {
+  class CORE_EXPORT Client {
    public:
-    ~Client() override = default;
+    virtual ~Client() = default;
 
     // Called when Initialize() is completed.
     virtual void OnShadowPageInitialized() = 0;
-
-    virtual const base::UnguessableToken& GetDevToolsWorkerToken() = 0;
 
     virtual WebLocalFrameClient::AppCacheType GetAppCacheType() = 0;
   };
@@ -68,7 +65,6 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   // Close() on the corresponding frame and its widget.
   void DidFinishDocumentLoad() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
-  base::UnguessableToken GetDevToolsFrameToken() override;
   void WillSendRequest(WebURLRequest&) override;
   void BeginNavigation(std::unique_ptr<WebNavigationInfo> info) override;
   WebLocalFrameClient::AppCacheType GetAppCacheType() override {
@@ -80,7 +76,6 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   WebDocumentLoader* DocumentLoader() {
     return main_frame_->GetDocumentLoader();
   }
-  WebDevToolsAgentImpl* DevToolsAgent();
 
   bool WasInitialized() const;
 

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.touchless;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
-import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.IntentHandler;
@@ -19,6 +18,8 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.UrlUtilities;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Asynchronously creates Tabs for navigation originating from {@link NoTouchActivity}.

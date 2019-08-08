@@ -161,7 +161,7 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
-    InitializeStorage();
+    context()->storage()->LazyInitializeForTest();
 
     mock_server_->Set(GURL(kNormalScriptURL),
                       MockHTTPServer::Response(
@@ -180,12 +180,6 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     mock_url_loader_factory_ =
         std::make_unique<MockNetworkURLLoaderFactory>(mock_server_.get());
     helper_->SetNetworkFactory(mock_url_loader_factory_.get());
-  }
-
-  void InitializeStorage() {
-    base::RunLoop run_loop;
-    context()->storage()->LazyInitializeForTest(run_loop.QuitClosure());
-    run_loop.Run();
   }
 
   // Sets up ServiceWorkerRegistration and ServiceWorkerVersion. This should be

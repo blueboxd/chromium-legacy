@@ -160,8 +160,11 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
   DCHECK(provider);
   base::Optional<web_app::AppId> app_id =
       provider->registrar().FindAppWithUrlInScope(validated_url_);
-  if (app_id.has_value() && *app_id == installed_app_id)
+  if (app_id.has_value() && *app_id == installed_app_id &&
+      provider->registrar().GetAppLaunchContainer(*app_id) ==
+          web_app::LaunchContainer::kWindow) {
     OnInstall(blink::kWebDisplayModeStandalone);
+  }
 }
 
 void AppBannerManagerDesktop::OnAppRegistrarDestroyed() {

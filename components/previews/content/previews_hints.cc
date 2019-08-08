@@ -5,6 +5,7 @@
 #include "components/previews/content/previews_hints.h"
 
 #include <unordered_set>
+#include <utility>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -232,46 +233,11 @@ void PreviewsHints::ParseOptimizationFilters(
                 kFailedServerBlacklistDuplicateConfig);
         continue;
       }
-      const auto& bloom_filter_proto = blacklist.bloom_filter();
-      DCHECK_GT(bloom_filter_proto.num_hash_functions(), 0u);
-      DCHECK_GT(bloom_filter_proto.num_bits(), 0u);
-      DCHECK(bloom_filter_proto.has_data());
-      if (!bloom_filter_proto.has_data() ||
-          bloom_filter_proto.num_bits() <= 0 ||
-          bloom_filter_proto.num_bits() >
-              bloom_filter_proto.data().size() * 8) {
-        DLOG(ERROR) << "Bloom filter config issue";
-        RecordOptimizationFilterStatus(
-            blacklist.optimization_type(),
-            optimization_guide::OptimizationFilterStatus::
-                kFailedServerBlacklistBadConfig);
-        continue;
-      }
-      if (static_cast<int>(bloom_filter_proto.num_bits()) >
-          previews::params::
-                  LitePageRedirectPreviewMaxServerBlacklistByteSize() *
-              8) {
-        DLOG(ERROR) << "Bloom filter data exceeds maximum size of "
-                    << previews::params::
-                           LitePageRedirectPreviewMaxServerBlacklistByteSize()
-                    << " bytes";
-        RecordOptimizationFilterStatus(
-            blacklist.optimization_type(),
-            optimization_guide::OptimizationFilterStatus::
-                kFailedServerBlacklistTooBig);
-        continue;
-      }
-      std::unique_ptr<optimization_guide::BloomFilter> bloom_filter =
-          std::make_unique<optimization_guide::BloomFilter>(
-              bloom_filter_proto.num_hash_functions(),
-              bloom_filter_proto.num_bits(), bloom_filter_proto.data());
+
+      optimization_guide::OptimizationFilterStatus status;
       lite_page_redirect_blacklist_ =
-          std::make_unique<optimization_guide::OptimizationFilter>(
-              std::move(bloom_filter));
-      RecordOptimizationFilterStatus(
-          blacklist.optimization_type(),
-          optimization_guide::OptimizationFilterStatus::
-              kCreatedServerBlacklist);
+          optimization_guide::ProcessOptimizationFilter(blacklist, &status);
+      RecordOptimizationFilterStatus(blacklist.optimization_type(), status);
     }
   }
 }

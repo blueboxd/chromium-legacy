@@ -16,17 +16,13 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/blob/blob_url_request_job.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/local_file_util.h"
-#include "storage/browser/test/mock_blob_url_request_context.h"
+#include "storage/browser/test/mock_blob_util.h"
 #include "storage/browser/test/mock_file_change_observer.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/test_file_system_backend.h"
@@ -38,8 +34,7 @@
 using storage::FileSystemOperation;
 using storage::FileSystemOperationRunner;
 using storage::FileSystemURL;
-using content::MockBlobURLRequestContext;
-using content::ScopedTextBlob;
+using storage::ScopedTextBlob;
 
 namespace content {
 
@@ -79,7 +74,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
 
     file_system_context_ = CreateFileSystemContextForTesting(
         quota_manager_->proxy(), dir_.GetPath());
-    url_request_context_.reset(new MockBlobURLRequestContext());
+    blob_storage_context_.reset(new storage::BlobStorageContext);
 
     file_system_context_->operation_runner()->CreateFile(
         URLForPath(virtual_path_), true /* exclusive */,
@@ -148,8 +143,8 @@ class FileSystemOperationImplWriteTest : public testing::Test {
 
   void DidCancel(base::File::Error status) { cancel_status_ = status; }
 
-  const MockBlobURLRequestContext& url_request_context() const {
-    return *url_request_context_;
+  storage::BlobStorageContext* blob_storage_context() const {
+    return blob_storage_context_.get();
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -166,7 +161,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
   int64_t bytes_written_;
   bool complete_;
 
-  std::unique_ptr<MockBlobURLRequestContext> url_request_context_;
+  std::unique_ptr<storage::BlobStorageContext> blob_storage_context_;
 
   storage::MockFileChangeObserver change_observer_;
   storage::ChangeObserverList change_observers_;
@@ -177,7 +172,7 @@ class FileSystemOperationImplWriteTest : public testing::Test {
 };
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteSuccess) {
-  ScopedTextBlob blob(url_request_context(), "blob-id:success",
+  ScopedTextBlob blob(blob_storage_context(), "blob-id:success",
                       "Hello, world!\n");
   file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),
                                                   blob.GetBlobDataHandle(), 0,
@@ -192,7 +187,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteSuccess) {
 }
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteZero) {
-  ScopedTextBlob blob(url_request_context(), "blob_id:zero", "");
+  ScopedTextBlob blob(blob_storage_context(), "blob_id:zero", "");
   file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),
                                                   blob.GetBlobDataHandle(), 0,
                                                   RecordWriteCallback());
@@ -220,7 +215,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidBlob) {
 }
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteInvalidFile) {
-  ScopedTextBlob blob(url_request_context(), "blob_id:writeinvalidfile",
+  ScopedTextBlob blob(blob_storage_context(), "blob_id:writeinvalidfile",
                       "It\'ll not be written.");
   file_system_context_->operation_runner()->Write(
       URLForPath(base::FilePath(FILE_PATH_LITERAL("nonexist"))),
@@ -240,7 +235,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
       URLForPath(virtual_dir_path), true /* exclusive */, false /* recursive */,
       base::BindOnce(&AssertStatusEq, base::File::FILE_OK));
 
-  ScopedTextBlob blob(url_request_context(), "blob:writedir",
+  ScopedTextBlob blob(blob_storage_context(), "blob:writedir",
                       "It\'ll not be written, too.");
   file_system_context_->operation_runner()->Write(URLForPath(virtual_dir_path),
                                                   blob.GetBlobDataHandle(), 0,
@@ -259,7 +254,8 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteDir) {
 }
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
-  ScopedTextBlob blob(url_request_context(), "blob:success", "Hello, world!\n");
+  ScopedTextBlob blob(blob_storage_context(), "blob:success",
+                      "Hello, world!\n");
   quota_manager_->SetQuota(url::Origin::Create(kOrigin),
                            FileSystemTypeToQuotaStorageType(kFileSystemType),
                            10);
@@ -276,7 +272,8 @@ TEST_F(FileSystemOperationImplWriteTest, TestWriteFailureByQuota) {
 }
 
 TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelSuccessfulWrite) {
-  ScopedTextBlob blob(url_request_context(), "blob:success", "Hello, world!\n");
+  ScopedTextBlob blob(blob_storage_context(), "blob:success",
+                      "Hello, world!\n");
   FileSystemOperationRunner::OperationID id =
       file_system_context_->operation_runner()->Write(URLForPath(virtual_path_),
                                                       blob.GetBlobDataHandle(),
@@ -298,7 +295,7 @@ TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelSuccessfulWrite) {
 }
 
 TEST_F(FileSystemOperationImplWriteTest, TestImmediateCancelFailingWrite) {
-  ScopedTextBlob blob(url_request_context(), "blob:writeinvalidfile",
+  ScopedTextBlob blob(blob_storage_context(), "blob:writeinvalidfile",
                       "It\'ll not be written.");
   FileSystemOperationRunner::OperationID id =
       file_system_context_->operation_runner()->Write(

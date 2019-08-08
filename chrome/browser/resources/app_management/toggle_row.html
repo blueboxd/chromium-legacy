@@ -27,27 +27,27 @@
     </style>
 
     <div id="left-content" class="horizontal-align">
-      <template is="dom-if" if="[[icon_]]">
-        <iron-icon id="icon" icon="[[icon_]]"></iron-icon>
+      <template is="dom-if" if="[[icon]]">
+        <iron-icon id="icon" icon="[[icon]]"></iron-icon>
       </template>
-      <div id="label">[[label_]]</div>
+      <div id="label">[[label]]</div>
     </div>
     <div id="right-content" class="horizontal-align">
       <iron-icon id="policy-indicator"
         icon="cr:domain"
         tabindex="0"
         aria-describedby="tooltip"
-        hidden$="[[!managed_]]">
+        hidden$="[[!managed]]">
       </iron-icon>
       <paper-tooltip id="tooltip"
         for="policy-indicator"
         position="top"
         fit-to-visible-bounds>
-        [[policyLabel_]]
+        [[policyLabel]]
       </paper-tooltip>
       <cr-toggle id="toggle"
-        checked="[[value_]]"
-        disabled$="[[managed_]]">
+        checked="[[value]]"
+        disabled$="[[managed]]">
       </cr-toggle>
     </div>
   </template>

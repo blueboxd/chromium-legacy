@@ -970,8 +970,9 @@ void ThemeService::BuildFromExtension(const Extension* extension,
   building_extension_id_ = extension->id();
   scoped_refptr<BrowserThemePack> pack(
       new BrowserThemePack(CustomThemeSupplier::ThemeType::EXTENSION));
-  auto task_runner = base::CreateTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
+  auto task_runner =
+      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                              base::TaskPriority::USER_BLOCKING});
   build_extension_task_tracker_.PostTaskAndReply(
       task_runner.get(), FROM_HERE,
       base::Bind(&BrowserThemePack::BuildFromExtension,

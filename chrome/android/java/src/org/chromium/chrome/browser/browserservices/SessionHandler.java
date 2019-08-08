@@ -10,8 +10,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsSessionToken;
 import android.widget.RemoteViews;
+
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * Interface to handle browser services calls whenever the session id matched.

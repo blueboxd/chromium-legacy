@@ -334,8 +334,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
     // Create an active service worker.
-    storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
+    storage()->LazyInitializeForTest();
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = GURL("https://example.com/");
     registration_ =

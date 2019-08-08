@@ -270,12 +270,13 @@ ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
   return ModuleImportMeta(url_string);
 }
 
-ScriptValue ModulatorImplBase::InstantiateModule(ModuleRecord module_record) {
+ScriptValue ModulatorImplBase::InstantiateModule(ModuleRecord module_record,
+                                                 const KURL& source_url) {
   UseCounter::Count(GetExecutionContext(),
                     WebFeature::kInstantiateModuleScript);
 
   ScriptState::Scope scope(script_state_);
-  return module_record.Instantiate(script_state_);
+  return module_record.Instantiate(script_state_, source_url);
 }
 
 Vector<Modulator::ModuleRequest>

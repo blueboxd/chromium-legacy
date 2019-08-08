@@ -54,6 +54,8 @@ EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite>::ToMojom(
       return network::mojom::CookieSameSite::STRICT_MODE;
     case net::CookieSameSite::EXTENDED_MODE:
       return network::mojom::CookieSameSite::EXTENDED_MODE;
+    default:
+      break;
   }
   NOTREACHED();
   return static_cast<network::mojom::CookieSameSite>(input);
@@ -78,6 +80,8 @@ bool EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite>::FromMojom(
     case network::mojom::CookieSameSite::EXTENDED_MODE:
       *output = net::CookieSameSite::EXTENDED_MODE;
       return true;
+    default:
+      break;
   }
   return false;
 }
@@ -227,6 +231,8 @@ EnumTraits<network::mojom::CookieSameSiteContext,
       return network::mojom::CookieSameSiteContext::SAME_SITE_STRICT;
     case net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX:
       return network::mojom::CookieSameSiteContext::SAME_SITE_LAX;
+    case net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE:
+      return network::mojom::CookieSameSiteContext::SAME_SITE_LAX_METHOD_UNSAFE;
     case net::CookieOptions::SameSiteCookieContext::CROSS_SITE:
       return network::mojom::CookieSameSiteContext::CROSS_SITE;
   }
@@ -244,6 +250,10 @@ bool EnumTraits<network::mojom::CookieSameSiteContext,
       return true;
     case network::mojom::CookieSameSiteContext::SAME_SITE_LAX:
       *output = net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX;
+      return true;
+    case network::mojom::CookieSameSiteContext::SAME_SITE_LAX_METHOD_UNSAFE:
+      *output = net::CookieOptions::SameSiteCookieContext::
+          SAME_SITE_LAX_METHOD_UNSAFE;
       return true;
     case network::mojom::CookieSameSiteContext::CROSS_SITE:
       *output = net::CookieOptions::SameSiteCookieContext::CROSS_SITE;

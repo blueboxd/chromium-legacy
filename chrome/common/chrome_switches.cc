@@ -377,17 +377,6 @@ const char kKioskMode[]                     = "kiosk";
 // Enable automatically pressing the print button in print preview.
 const char kKioskModePrinting[]             = "kiosk-printing";
 
-// Launches an in-process instance of the simple_browser service on startup if
-// this Chrome build supports it. See |enable_simple_browser_service_in_process|
-// in chrome/common/features.gni.
-const char kLaunchInProcessSimpleBrowserSwitch[] =
-    "launch-in-process-simple-browser";
-
-// Launches a sandboxed out-of-process instance of the simple_browser service on
-// startup if this Chrome build supports it. See
-// |enable_simple_browser_service_out_of_process| in chrome/common/features.gni.
-const char kLaunchSimpleBrowserSwitch[] = "launch-simple-browser";
-
 // Loads the Media Router component extension on startup.
 const char kLoadMediaRouterComponentExtension[] =
     "load-media-router-component-extension";

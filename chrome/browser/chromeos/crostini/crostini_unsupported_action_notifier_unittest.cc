@@ -23,10 +23,7 @@ class MockDelegate : public CrostiniUnsupportedActionNotifier::Delegate {
  public:
   MOCK_METHOD(bool, IsInTabletMode, (), (override));
   MOCK_METHOD(bool, IsFocusedWindowCrostini, (), (override));
-  MOCK_METHOD(void,
-              ShowNotification,
-              (message_center::Notification * notification),
-              (override));
+  MOCK_METHOD(void, ShowToast, (const ash::ToastData& toast_data), (override));
   MOCK_METHOD(void,
               AddFocusObserver,
               (aura::client::FocusChangeObserver * observer),
@@ -67,12 +64,12 @@ class CrostiniUnsupportedActionNotifierTest
 };
 
 TEST_P(CrostiniUnsupportedActionNotifierTest,
-       NotificationShownOnceOnlyWhenEnteringTabletModeWhileCrostiniAppFocused) {
+       ToastShownOnceOnlyWhenEnteringTabletModeWhileCrostiniAppFocused) {
   EXPECT_CALL(get_delegate(), IsInTabletMode)
       .WillRepeatedly(Return(is_tablet_mode()));
   EXPECT_CALL(get_delegate(), IsFocusedWindowCrostini)
       .WillRepeatedly(Return(is_crostini_focused()));
-  EXPECT_CALL(get_delegate(), ShowNotification(_))
+  EXPECT_CALL(get_delegate(), ShowToast(_))
       .Times((is_tablet_mode() && is_crostini_focused()) ? 1 : 0);
 
   notifier.OnTabletModeStarted();
@@ -81,12 +78,12 @@ TEST_P(CrostiniUnsupportedActionNotifierTest,
 }
 
 TEST_P(CrostiniUnsupportedActionNotifierTest,
-       NotificationShownOnceOnlyWhenFocusingCrostiniWhileInTabletMode) {
+       ToastShownOnceOnlyWhenFocusingCrostiniWhileInTabletMode) {
   EXPECT_CALL(get_delegate(), IsInTabletMode)
       .WillRepeatedly(Return(is_tablet_mode()));
   EXPECT_CALL(get_delegate(), IsFocusedWindowCrostini)
       .WillRepeatedly(Return(is_crostini_focused()));
-  EXPECT_CALL(get_delegate(), ShowNotification(_))
+  EXPECT_CALL(get_delegate(), ShowToast(_))
       .Times((is_tablet_mode() && is_crostini_focused()) ? 1 : 0);
 
   notifier.OnWindowFocused(nullptr, nullptr);

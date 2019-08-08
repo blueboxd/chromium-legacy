@@ -61,13 +61,16 @@ class WebWorkerFetchContext;
 // starting up, and destroyed when the service worker stops. It is owned by
 // WebEmbeddedWorkerImpl (which is owned by EmbeddedWorkerInstanceClientImpl).
 //
-// This class is created and destroyed on the main thread. Unless otherwise
-// noted (here or in base class documentation), all methods are called on the
-// worker thread.
+// This class is created and destroyed on the "starter" thread. The starter
+// thread is the thread that constructs this class. Currently it's the main
+// thread but could be the IO thread in the future. https://crbug.com/692909
+//
+// Unless otherwise noted (here or in base class documentation), all methods
+// are called on the worker thread.
 class CONTENT_EXPORT ServiceWorkerContextClient
     : public blink::WebServiceWorkerContextClient {
  public:
-  // Called on the main thread.
+  // Called on the starter thread.
   // - |is_starting_installed_worker| is true if the script is already installed
   //   and will be streamed from the browser process.
   // - |owner| must outlive this new instance.
@@ -94,18 +97,22 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
       mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
           subresource_loader_updater,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
-  // Called on the main thread.
+      scoped_refptr<base::SingleThreadTaskRunner> starter_thread_task_runner);
+  // Called on the starter thread.
   ~ServiceWorkerContextClient() override;
 
-  // Called on the main thread.
-  void StartWorkerContext(std::unique_ptr<blink::WebEmbeddedWorker> worker,
-                          const blink::WebEmbeddedWorkerStartData& start_data);
-  // Called on the main thread.
+  // Called on the starter thread.
+  void StartWorkerContextOnStarterThread(
+      std::unique_ptr<blink::WebEmbeddedWorker> worker,
+      const blink::WebEmbeddedWorkerStartData& start_data);
+  // Called on the starter thread.
   blink::WebEmbeddedWorker& worker();
 
   // WebServiceWorkerContextClient overrides.
-  void WorkerReadyForInspectionOnMainThread() override;
+  // TODO(bashi): Rename OnMainThread() methods.
+  void WorkerReadyForInspectionOnMainThread(
+      mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
+      mojo::ScopedMessagePipeHandle devtools_agent_host_request) override;
   void WorkerContextFailedToStartOnMainThread() override;
   void FailedToLoadClassicScript() override;
   void FailedToFetchModuleScript() override;
@@ -186,8 +193,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   void SendWorkerStarted(blink::mojom::ServiceWorkerStartStatus status);
 
-  // Stops the worker context. Called on the main thread.
-  void StopWorkerOnMainThread();
+  // Stops the worker context. Called on the starter thread.
+  void StopWorkerOnStarterThread();
 
   base::WeakPtr<ServiceWorkerContextClient> GetWeakPtr();
 
@@ -202,7 +209,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // Passed on creation of ServiceWorkerFetchContext.
   blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> starter_thread_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
   // Not owned; |this| is destroyed when |proxy_| becomes invalid.
@@ -215,7 +222,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
       pending_subresource_loader_updater_;
 
-  // This is bound on the main thread.
+  // This is bound on the starter thread.
   scoped_refptr<blink::mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr>
       instance_host_;
 
@@ -227,7 +234,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr
       service_worker_provider_info_;
 
-  // Must be accessed on the main thread only.
+  // Must be accessed on the starter thread only.
   EmbeddedWorkerInstanceClientImpl* owner_;
 
   blink::mojom::BlobRegistryPtr blob_registry_;

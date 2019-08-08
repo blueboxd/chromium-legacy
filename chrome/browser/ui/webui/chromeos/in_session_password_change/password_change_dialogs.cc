@@ -7,29 +7,13 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/json/json_writer.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/saml/password_expiry_notification.h"
-#include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/confirm_password_change_handler.h"
-#include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_handler.h"
-#include "chrome/browser/ui/webui/chromeos/in_session_password_change/urgent_password_expiry_notification_handler.h"
-#include "chrome/browser/ui/webui/localized_string.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/login/auth/saml_password_attributes.h"
-#include "chromeos/strings/grit/chromeos_strings.h"
-#include "components/prefs/pref_service.h"
-#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "net/base/url_util.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -44,13 +28,16 @@ ConfirmPasswordChangeDialog* g_confirm_dialog = nullptr;
 
 UrgentPasswordExpiryNotificationDialog* g_notification_dialog = nullptr;
 
-constexpr gfx::Size kPasswordChangeDialogDesiredSize(768, 640);
+constexpr gfx::Size kPasswordChangeSize(768, 640);
 
-// TODO(https://crbug.com/930109): Change these numbers depending on what is
-// shown in the dialog.
-constexpr gfx::Size kConfirmPasswordChangeDialogDesiredSize(520, 380);
+constexpr gfx::Size kUrgentPasswordExpiryNotificationSize = kPasswordChangeSize;
 
-constexpr gfx::Size kNotificationDesiredSize = kPasswordChangeDialogDesiredSize;
+// The size of the confirm password change UI depends on which passwords were
+// scraped and which ones we need to prompt for:
+constexpr int kConfirmPasswordsWidth = 520;
+constexpr int kConfirmOldPasswordHeight = 230;
+constexpr int kConfirmNewPasswordHeight = 310;
+constexpr int kConfirmBothPasswordsHeight = 380;
 
 // Given a desired size, returns the same size if it fits on screen,
 // or the closest possible size that will fit on the screen.
@@ -110,7 +97,7 @@ void PasswordChangeDialog::Dismiss() {
 
 PasswordChangeDialog::PasswordChangeDialog()
     : BasePasswordDialog(GURL(chrome::kChromeUIPasswordChangeUrl),
-                         kPasswordChangeDialogDesiredSize) {}
+                         kPasswordChangeSize) {}
 
 PasswordChangeDialog::~PasswordChangeDialog() {
   DCHECK_EQ(this, g_dialog);
@@ -142,8 +129,9 @@ ConfirmPasswordChangeDialog::ConfirmPasswordChangeDialog(
     const std::string& scraped_old_password,
     const std::string& scraped_new_password,
     bool show_spinner_initially)
-    : BasePasswordDialog(GURL(chrome::kChromeUIConfirmPasswordChangeUrl),
-                         kConfirmPasswordChangeDialogDesiredSize),
+    : BasePasswordDialog(
+          GURL(chrome::kChromeUIConfirmPasswordChangeUrl),
+          GetSize(scraped_old_password.empty(), scraped_new_password.empty())),
       scraped_old_password_(scraped_old_password),
       scraped_new_password_(scraped_new_password),
       show_spinner_initially_(show_spinner_initially) {}
@@ -153,14 +141,32 @@ ConfirmPasswordChangeDialog::~ConfirmPasswordChangeDialog() {
   g_confirm_dialog = nullptr;
 }
 
-std::string ConfirmPasswordChangeDialog::GetDialogArgs() const {
-  // TODO(https://crbug.com/930109): Configure the embedded UI to only display
-  // prompts for the passwords that were not scraped.
-  std::string data;
-  base::Value dialog_args(base::Value::Type::DICTIONARY);
-  dialog_args.SetBoolKey("showSpinnerInitially", show_spinner_initially_);
-  base::JSONWriter::Write(dialog_args, &data);
-  return data;
+// static
+gfx::Size ConfirmPasswordChangeDialog::GetSize(
+    const bool show_old_password_prompt,
+    const bool show_new_password_prompt) {
+  const int desired_width = kConfirmPasswordsWidth;
+  if (show_old_password_prompt && show_new_password_prompt) {
+    return gfx::Size(desired_width, kConfirmBothPasswordsHeight);
+  }
+  if (show_new_password_prompt) {
+    return gfx::Size(desired_width, kConfirmNewPasswordHeight);
+  }
+  // Use the same size for these two cases:
+  // 1) We scraped new password, but not old, so we need to prompt for that.
+  // 2) We scraped both passwords, so we don't need to prompt for anything.
+
+  // In case 2, we need to show a spinner. That spinner could be any size, so
+  // we size it the same as in case 1, because there is a chance that the
+  // scraped password will be wrong and so we will need to show the old password
+  // prompt. So it looks best if the dialog is already the right size.
+  return gfx::Size(desired_width, kConfirmOldPasswordHeight);
+}
+
+void ConfirmPasswordChangeDialog::GetWebUIMessageHandlers(
+    std::vector<content::WebUIMessageHandler*>* handlers) const {
+  handlers->push_back(new ConfirmPasswordChangeHandler(
+      scraped_old_password_, scraped_new_password_, show_spinner_initially_));
 }
 
 // static
@@ -184,7 +190,7 @@ void UrgentPasswordExpiryNotificationDialog::Dismiss() {
 UrgentPasswordExpiryNotificationDialog::UrgentPasswordExpiryNotificationDialog()
     : BasePasswordDialog(
           GURL(chrome::kChromeUIUrgentPasswordExpiryNotificationUrl),
-          kNotificationDesiredSize) {}
+          kUrgentPasswordExpiryNotificationSize) {}
 
 UrgentPasswordExpiryNotificationDialog::
     ~UrgentPasswordExpiryNotificationDialog() {

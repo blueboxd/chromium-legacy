@@ -22,17 +22,18 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/browser/test/mock_blob_url_request_context.h"
+#include "storage/browser/test/mock_blob_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
-using content::MockBlobURLRequestContext;
-using content::ScopedTextBlob;
+using storage::BlobStorageContext;
 using storage::FileSystemContext;
 using storage::FileSystemURL;
 using storage::FileSystemURLSet;
+using storage::ScopedTextBlob;
 
 namespace sync_file_system {
 
@@ -280,8 +281,8 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
   ASSERT_EQ(0U, urls.size());
 
   const std::string kData("Lorem ipsum.");
-  MockBlobURLRequestContext url_request_context;
-  ScopedTextBlob blob(url_request_context, "blob_id:test", kData);
+  BlobStorageContext blob_storage_context;
+  ScopedTextBlob blob(&blob_storage_context, "blob_id:test", kData);
 
   // Create files and nested directories.
   EXPECT_EQ(base::File::FILE_OK,
@@ -430,8 +431,8 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCopyChanges) {
   ASSERT_EQ(0U, urls.size());
 
   const std::string kData("Lorem ipsum.");
-  MockBlobURLRequestContext url_request_context;
-  ScopedTextBlob blob(url_request_context, "blob_id:test", kData);
+  BlobStorageContext blob_storage_context;
+  ScopedTextBlob blob(&blob_storage_context, "blob_id:test", kData);
 
   // Create files and nested directories.
   EXPECT_EQ(base::File::FILE_OK,

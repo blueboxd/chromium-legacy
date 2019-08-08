@@ -78,7 +78,7 @@ class AnimationAndPaintWorkletThreadTest : public PageTestBase {
         js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);
     EXPECT_FALSE(module.IsNull());
-    ScriptValue exception = module.Instantiate(script_state);
+    ScriptValue exception = module.Instantiate(script_state, js_url);
     EXPECT_TRUE(exception.IsEmpty());
     ScriptValue value = module.Evaluate(script_state);
     EXPECT_TRUE(value.IsEmpty());

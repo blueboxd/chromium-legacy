@@ -7,9 +7,14 @@
 
 #include <string>
 
+#include "base/time/time.h"
 #include "net/base/net_export.h"
 
 namespace net {
+
+// The time threshold for considering a cookie "short-lived" for the purposes of
+// allowing unsafe methods for unspecified-SameSite cookies defaulted into Lax.
+NET_EXPORT extern const base::TimeDelta kLaxAllowUnsafeMaxAge;
 
 enum CookiePriority {
   COOKIE_PRIORITY_LOW     = 0,
@@ -21,13 +26,19 @@ enum CookiePriority {
 // See https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
 // and https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis for
 // information about same site cookie restrictions.
+// Note: Some values are allowed for a cookie's SameSite field (what literally
+// came in the Set-Cookie line), and some are allowed for the effective SameSite
+// (the actual rules to be applied when deciding whether the cookie can be
+// accessed). Some are only allowed for one but not the other.
 // Note: Don't renumber, as these values are persisted to a database.
 enum class CookieSameSite {
-  UNSPECIFIED = -1,
-  NO_RESTRICTION = 0,
-  LAX_MODE = 1,
-  STRICT_MODE = 2,
-  EXTENDED_MODE = 3
+  UNSPECIFIED = -1,    // Allowed for SameSite only.
+  NO_RESTRICTION = 0,  // Allowed for SameSite and effective SameSite.
+  LAX_MODE = 1,        // Allowed for SameSite and effective SameSite.
+  STRICT_MODE = 2,     // Allowed for SameSite and effective SameSite.
+  EXTENDED_MODE = 3,   // (Not implemented) Allowed for SameSite only.
+  // Same as LAX_MODE, except cookie is also sent if the HTTP method is unsafe.
+  LAX_MODE_ALLOW_UNSAFE = 4,  // Allowed for effective SameSite only.
 };
 
 // Returns the Set-Cookie header priority token corresponding to |priority|.
@@ -47,6 +58,9 @@ NET_EXPORT std::string CookieSameSiteToString(CookieSameSite same_site);
 // CookieSameSite. Defaults to CookieSameSite::UNSPECIFIED for empty or
 // unrecognized strings.
 NET_EXPORT CookieSameSite StringToCookieSameSite(const std::string& same_site);
+
+NET_EXPORT bool IsValidSameSiteValue(CookieSameSite value);
+NET_EXPORT bool IsValidEffectiveSameSiteValue(CookieSameSite value);
 
 }  // namespace net
 

@@ -43,7 +43,7 @@ class ChromeWebViewPermissionHelperDelegate
   void RequestFileSystemPermission(
       const GURL& url,
       bool allowed_by_default,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   void FileSystemAccessedAsync(int render_process_id,
                                int render_frame_id,
                                int request_id,
@@ -78,10 +78,9 @@ class ChromeWebViewPermissionHelperDelegate
       bool allow,
       const std::string& user_input);
 
-  void OnFileSystemPermissionResponse(
-      const base::Callback<void(bool)>& callback,
-      bool allow,
-      const std::string& user_input);
+  void OnFileSystemPermissionResponse(base::OnceCallback<void(bool)> callback,
+                                      bool allow,
+                                      const std::string& user_input);
 
   void OnDownloadPermissionResponse(base::OnceCallback<void(bool)> callback,
                                     bool allow,

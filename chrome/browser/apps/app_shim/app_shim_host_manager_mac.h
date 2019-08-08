@@ -55,6 +55,7 @@ class AppShimHostManager : public apps::MachBootstrapAcceptor::Delegate,
   // MachBootstrapAcceptor::Delegate:
   void OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
                          base::ProcessId peer_pid) override;
+  void OnServerChannelCreateError() override;
 
   // The |acceptor_| must be created on a thread which allows blocking I/O.
   void InitOnBackgroundThread();

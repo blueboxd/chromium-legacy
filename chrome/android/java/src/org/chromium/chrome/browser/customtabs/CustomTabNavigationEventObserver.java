@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import android.support.customtabs.CustomTabsCallback;
-import android.support.customtabs.CustomTabsSessionToken;
-
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -15,6 +12,9 @@ import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 
 import javax.inject.Inject;
+
+import androidx.browser.customtabs.CustomTabsCallback;
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * An observer for firing navigation events on {@link CustomTabsCallback}.

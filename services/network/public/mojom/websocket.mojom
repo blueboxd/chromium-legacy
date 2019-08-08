@@ -67,11 +67,13 @@ interface WebSocketHandshakeClient {
   // |receive_quota_threshold| is the value that the renderer calls
   // AddReceiveFlowControlQuota() to the browser per receiving this value
   // so that the browser can continue sending remaining data to the renderer.
+  // |readable| is readable datapipe to receive data from browser.
   OnConnectionEstablished(WebSocket socket,
                           pending_receiver<WebSocketClient> client_receiver,
                           string selected_protocol,
                           string extensions,
-                          uint64 receive_quota_threshold);
+                          uint64 receive_quota_threshold,
+                          handle<data_pipe_consumer> readable);
 };
 
 interface WebSocketClient {
@@ -81,12 +83,15 @@ interface WebSocketClient {
   //   must be set to either WebSocketMessageType.TEXT or
   //   WebSocketMessageType.BINARY. On subsequent frames, it must be set to
   //   WebSocketMessageType.CONTINUATION, and the type is the same as that of
-  //   the first message. If |type| is WebSocketMessageType.TEXT, then the
-  //   concatenation of the |data| from every frame in the message must be valid
-  //   UTF-8. If |fin| is not set, |data| must be non-empty.
+  //   the first message.
+  // - |data_length| is the length of data and actual data is read via
+  //   |readable| on WebSocketHandshakeClient.OnConnectionEstablished.
+  //   If |type| is WebSocketMessageType.TEXT, then the concatenation of all
+  //   the frames in the message must be valid UTF-8.
+  //   If |fin| is not set, |data_length| must be non-zero.
   OnDataFrame(bool fin,
               WebSocketMessageType type,
-              mojo_base.mojom.ReadOnlyBuffer data);
+              uint64 data_length);
 
   // Add |quota| bytes of send quota. |quota| must be positive. Initial quota
   // is 0. The renderer will wait for an AddSendFlowControlQuota() message

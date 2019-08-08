@@ -175,7 +175,7 @@ public class KeyboardAccessoryData {
      * (username + password), to be shown on the manual fallback UI.
      */
     public final static class UserInfo {
-        private final String mTitle;
+        private final String mOrigin;
         private final List<UserInfoField> mFields = new ArrayList<>();
         private final @Nullable FaviconProvider mFaviconProvider;
 
@@ -191,8 +191,8 @@ public class KeyboardAccessoryData {
             void fetchFavicon(@Px int desiredSize, Callback<Bitmap> favicon);
         }
 
-        public UserInfo(String title, @Nullable FaviconProvider faviconProvider) {
-            mTitle = title;
+        public UserInfo(String origin, @Nullable FaviconProvider faviconProvider) {
+            mOrigin = origin;
             mFaviconProvider = faviconProvider;
         }
 
@@ -212,10 +212,10 @@ public class KeyboardAccessoryData {
         }
 
         /**
-         * @return A string to be used as title. May be empty but not null.
+         * @return A string indicating the origin. May be empty but not null.
          */
-        public String getTitle() {
-            return mTitle;
+        public String getOrigin() {
+            return mOrigin;
         }
 
         /**

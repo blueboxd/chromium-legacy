@@ -7,22 +7,77 @@
 #include <stddef.h>
 #include <utility>
 #include "base/bind.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/constants.h"
 #include "storage/browser/blob/blob_data_handle.h"
-#include "storage/browser/blob/blob_url_request_job.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
 
 namespace storage {
+
+namespace {
+
+scoped_refptr<net::HttpResponseHeaders> GenerateHeaders(
+    net::HttpStatusCode status_code,
+    BlobDataHandle* blob_handle,
+    net::HttpByteRange* byte_range,
+    uint64_t total_size,
+    uint64_t content_size) {
+  std::string status("HTTP/1.1 ");
+  status.append(base::NumberToString(status_code));
+  status.append(" ");
+  status.append(net::GetHttpReasonPhrase(status_code));
+  status.append("\0\0", 2);
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      new net::HttpResponseHeaders(status);
+
+  if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT) {
+    std::string content_length_header(net::HttpRequestHeaders::kContentLength);
+    content_length_header.append(": ");
+    content_length_header.append(base::NumberToString(content_size));
+    headers->AddHeader(content_length_header);
+    if (status_code == net::HTTP_PARTIAL_CONTENT) {
+      DCHECK(byte_range->IsValid());
+      std::string content_range_header(net::HttpResponseHeaders::kContentRange);
+      content_range_header.append(": bytes ");
+      content_range_header.append(base::StringPrintf(
+          "%" PRId64 "-%" PRId64, byte_range->first_byte_position(),
+          byte_range->last_byte_position()));
+      content_range_header.append("/");
+      content_range_header.append(base::StringPrintf("%" PRId64, total_size));
+      headers->AddHeader(content_range_header);
+    }
+    if (!blob_handle->content_type().empty()) {
+      std::string content_type_header(net::HttpRequestHeaders::kContentType);
+      content_type_header.append(": ");
+      content_type_header.append(blob_handle->content_type());
+      headers->AddHeader(content_type_header);
+    }
+    if (!blob_handle->content_disposition().empty()) {
+      std::string content_disposition_header("Content-Disposition: ");
+      content_disposition_header.append(blob_handle->content_disposition());
+      headers->AddHeader(content_disposition_header);
+    }
+  }
+
+  return headers;
+}
+
+}  // namespace
 
 // static
 void BlobURLLoader::CreateAndStart(
@@ -149,8 +204,8 @@ void BlobURLLoader::HeadersCompleted(net::HttpStatusCode status_code,
   response.content_length = 0;
   if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT)
     response.content_length = content_size;
-  response.headers = storage::BlobURLRequestJob::GenerateHeaders(
-      status_code, blob_handle_.get(), &byte_range_, total_size_, content_size);
+  response.headers = GenerateHeaders(status_code, blob_handle_.get(),
+                                     &byte_range_, total_size_, content_size);
 
   std::string mime_type;
   response.headers->GetMimeType(&mime_type);

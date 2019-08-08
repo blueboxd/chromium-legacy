@@ -39,17 +39,20 @@ enum CookiePriority {
 // See https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
 // and https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis for
 // information about same site cookie restrictions.
+// Keep in sync with net/cookies/cookie_constants.h.
 // Note: Don't renumber, as these values are persisted to a database.
 enum CookieSameSite {
   UNSPECIFIED = -1,
   NO_RESTRICTION = 0,
   LAX_MODE = 1,
   STRICT_MODE = 2,
-  EXTENDED_MODE = 3
+  EXTENDED_MODE = 3,
+  // 4 is reserved: LAX_MODE_ALLOW_UNSAFE is not used here.
 };
 
 enum CookieSameSiteContext {
   CROSS_SITE,
+  SAME_SITE_LAX_METHOD_UNSAFE,
   SAME_SITE_LAX,
   SAME_SITE_STRICT
 };

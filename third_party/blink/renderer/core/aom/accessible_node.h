@@ -363,6 +363,10 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
 
  private:
   static bool IsStringTokenProperty(AOMStringProperty);
+  static const AtomicString& GetElementOrInternalsARIAAttribute(
+      Element& element,
+      const QualifiedName& attribute,
+      bool is_token_attr = false);
   void SetStringProperty(AOMStringProperty, const AtomicString&);
   void SetRelationProperty(AOMRelationProperty, AccessibleNode*);
   void SetRelationListProperty(AOMRelationListProperty, AccessibleNodeList*);

@@ -291,7 +291,6 @@ void WaylandWindow::ApplyPendingBounds() {
 
   SetBoundsDip(pending_bounds_dip_);
   xdg_surface_->SetWindowGeometry(pending_bounds_dip_);
-  xdg_surface_->AckConfigure();
   pending_bounds_dip_ = gfx::Rect();
   connection_->ScheduleFlush();
 
@@ -669,6 +668,8 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
 
     delegate_->OnWindowStateChanged(state_);
   }
+
+  ApplyPendingBounds();
 
   if (did_active_change)
     delegate_->OnActivationChanged(is_active_);

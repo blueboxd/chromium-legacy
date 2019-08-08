@@ -54,6 +54,11 @@ bool IsHintsFetchingEnabled();
 // enabled.
 bool IsOptimizationGuideKeyedServiceEnabled();
 
+// The maximum data byte size for a server-provided bloom filter. This is
+// a client-side safety limit for RAM use in case server sends too large of
+// a bloom filter.
+int MaxServerBloomFilterByteSize();
+
 }  // namespace features
 }  // namespace optimization_guide
 

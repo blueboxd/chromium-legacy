@@ -136,8 +136,16 @@ EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
   // cleanup and notify clients of this worker going away.
 }
 
-void EmbeddedSharedWorkerStub::WorkerReadyForInspection() {
-  host_->OnReadyForInspection();
+void EmbeddedSharedWorkerStub::WorkerReadyForInspection(
+    mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
+    mojo::ScopedMessagePipeHandle devtools_agent_host_request) {
+  blink::mojom::DevToolsAgentPtrInfo ptr_info(
+      std::move(devtools_agent_ptr_info),
+      blink::mojom::DevToolsAgent::Version_);
+  blink::mojom::DevToolsAgentPtr ptr(std::move(ptr_info));
+  blink::mojom::DevToolsAgentHostRequest request(
+      std::move(devtools_agent_host_request));
+  host_->OnReadyForInspection(std::move(ptr), std::move(request));
 }
 
 void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed() {
@@ -220,12 +228,6 @@ void EmbeddedSharedWorkerStub::Terminate() {
   // After this we should ignore any IPC for this stub.
   running_ = false;
   impl_->TerminateWorkerContext();
-}
-
-void EmbeddedSharedWorkerStub::BindDevToolsAgent(
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-    blink::mojom::DevToolsAgentAssociatedRequest request) {
-  impl_->BindDevToolsAgent(host.PassHandle(), request.PassHandle());
 }
 
 }  // namespace content

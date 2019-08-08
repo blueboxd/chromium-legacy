@@ -17,7 +17,7 @@ namespace extensions {
 // AsyncApiFunction
 AsyncApiFunction::AsyncApiFunction()
     : work_task_runner_(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})) {}
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO})) {}
 
 AsyncApiFunction::~AsyncApiFunction() {}
 
@@ -58,7 +58,7 @@ ExtensionFunction::ResponseAction AsyncApiFunction::Run() {
 
 void AsyncApiFunction::AsyncWorkCompleted() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    bool rv = base::PostTaskWithTraits(
+    bool rv = base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&AsyncApiFunction::RespondOnUIThread, this));
     DCHECK(rv);

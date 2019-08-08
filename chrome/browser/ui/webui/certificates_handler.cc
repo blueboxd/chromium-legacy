@@ -445,8 +445,14 @@ void CertificatesHandler::HandleEditCATrust(const base::ListValue* args) {
   if (!cert_info)
     return;
 
-  CHECK(CanEditCertificate(cert_info))
-      << "Editing this certificate is not allowed";
+  if (!CanEditCertificate(cert_info)) {
+    RejectCallbackWithError(
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_SET_TRUST_ERROR_TITLE),
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_ERROR_NOT_ALLOWED));
+    return;
+  }
 
   bool trust_ssl = false;
   bool trust_email = false;
@@ -562,14 +568,18 @@ void CertificatesHandler::ExportPersonalFileWritten(const int* write_errno,
 }
 
 void CertificatesHandler::HandleImportPersonal(const base::ListValue* args) {
+#if defined(OS_CHROMEOS)
+  // When policy changes while user on the certificate manager page, the UI
+  // doesn't update without page refresh and user can still see and use import
+  // button. Because of this 'return' the button will do nothing.
+  if (!IsClientCertificateManagementAllowedPolicy(Slot::kUser)) {
+    return;
+  }
+#endif
+
   CHECK_EQ(2U, args->GetSize());
   AssignWebUICallbackId(args);
   CHECK(args->GetBoolean(1, &use_hardware_backed_));
-
-#if defined(OS_CHROMEOS)
-  CHECK(IsClientCertificateManagementAllowedPolicy(Slot::kUser))
-      << "Importing certificates not allowed by policy";
-#endif
 
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
@@ -731,11 +741,6 @@ void CertificatesHandler::HandleImportServer(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   AssignWebUICallbackId(args);
 
-#if defined(OS_CHROMEOS)
-  CHECK(IsClientCertificateManagementAllowedPolicy(Slot::kUser))
-      << "Importing certificates not allowed by policy";
-#endif
-
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this,
       std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
@@ -800,13 +805,17 @@ void CertificatesHandler::ImportServerFileRead(const int* read_errno,
 }
 
 void CertificatesHandler::HandleImportCA(const base::ListValue* args) {
+#if defined(OS_CHROMEOS)
+  // When policy changes while user on the certificate manager page, the UI
+  // doesn't update without page refresh and user can still see and use import
+  // button. Because of this 'return' the button will do nothing.
+  if (!IsCACertificateManagementAllowedPolicy(CertificateSource::kImported)) {
+    return;
+  }
+#endif  // defined(OS_CHROMEOS)
+
   CHECK_EQ(1U, args->GetSize());
   AssignWebUICallbackId(args);
-
-#if defined(OS_CHROMEOS)
-  CHECK(IsCACertificateManagementAllowedPolicy(CertificateSource::kImported))
-      << "Importing certificates is not allowed by policy";
-#endif  // defined(OS_CHROMEOS)
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this,
@@ -920,8 +929,14 @@ void CertificatesHandler::HandleDeleteCertificate(const base::ListValue* args) {
   if (!cert_info)
     return;
 
-  CHECK(CanDeleteCertificate(cert_info))
-      << "Deleting this certificate is not allowed";
+  if (!CanDeleteCertificate(cert_info)) {
+    RejectCallbackWithError(
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_CERT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(
+            IDS_SETTINGS_CERTIFICATE_MANAGER_ERROR_NOT_ALLOWED));
+    return;
+  }
 
   bool result = certificate_manager_model_->Delete(cert_info->cert());
   if (!result) {

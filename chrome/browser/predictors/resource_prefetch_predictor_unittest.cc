@@ -639,33 +639,40 @@ TEST_F(ResourcePrefetchPredictorTest, DeleteAllUrlsUninitialized) {
   EXPECT_TRUE(mock_tables_->origin_table_.data_.empty());
 }
 
-TEST_F(ResourcePrefetchPredictorTest, GetRedirectEndpoint) {
+TEST_F(ResourcePrefetchPredictorTest, GetRedirectOrigin) {
   auto& redirect_data = *predictor_->host_redirect_data_;
-  std::string redirect_endpoint;
+  url::Origin bbc_origin = url::Origin::Create(GURL("https://bbc.com/"));
+  url::Origin redirect_origin;
   // Returns the initial url if data_map doesn't contain an entry for the url.
-  EXPECT_TRUE(predictor_->GetRedirectEndpoint("bbc.com", redirect_data,
-                                              &redirect_endpoint));
-  EXPECT_EQ(redirect_endpoint, "bbc.com");
+  EXPECT_TRUE(predictor_->GetRedirectOrigin(bbc_origin, redirect_data,
+                                            &redirect_origin));
+  EXPECT_EQ(bbc_origin, redirect_origin);
 
+  url::Origin nyt_origin = url::Origin::Create(GURL("https://nyt.com/"));
   // The data to be requested for the confident endpoint.
-  RedirectData nyt = CreateRedirectData("nyt.com", 1);
-  InitializeRedirectStat(nyt.add_redirect_endpoints(),
-                         GURL("https://mobile.nytimes.com"), 10, 0, 0);
+  RedirectData nyt = CreateRedirectData(nyt_origin.host(), 1);
+  GURL nyt_redirect_url("https://mobile.nytimes.com:8080/");
+  url::Origin nyt_redirect_origin = url::Origin::Create(nyt_redirect_url);
+  InitializeRedirectStat(nyt.add_redirect_endpoints(), nyt_redirect_url, 10, 0,
+                         0);
   redirect_data.UpdateData(nyt.primary_key(), nyt);
-  EXPECT_TRUE(predictor_->GetRedirectEndpoint("nyt.com", redirect_data,
-                                              &redirect_endpoint));
-  EXPECT_EQ(redirect_endpoint, "mobile.nytimes.com");
+  EXPECT_TRUE(predictor_->GetRedirectOrigin(nyt_origin, redirect_data,
+                                            &redirect_origin));
+  EXPECT_EQ(nyt_redirect_origin, redirect_origin);
 
+  url::Origin facebook_origin = url::Origin::Create(GURL("http://fb.com/"));
   // The data to check negative result due not enough confidence.
-  RedirectData facebook = CreateRedirectData("fb.com", 3);
+  RedirectData facebook = CreateRedirectData(facebook_origin.host(), 3);
+  GURL facebook_redirect_url("https://fb.com/");
   InitializeRedirectStat(facebook.add_redirect_endpoints(),
-                         GURL("https://facebook.com"), 5, 5, 0);
+                         facebook_redirect_url, 5, 5, 0);
   redirect_data.UpdateData(facebook.primary_key(), facebook);
-  EXPECT_FALSE(predictor_->GetRedirectEndpoint("fb.com", redirect_data,
-                                               &redirect_endpoint));
+  EXPECT_FALSE(predictor_->GetRedirectOrigin(facebook_origin, redirect_data,
+                                             &redirect_origin));
 
   // The data to check negative result due ambiguity.
-  RedirectData google = CreateRedirectData("google.com", 4);
+  url::Origin google_origin = url::Origin::Create(GURL("https://google.com/"));
+  RedirectData google = CreateRedirectData(google_origin.host(), 4);
   InitializeRedirectStat(google.add_redirect_endpoints(),
                          GURL("https://google.com"), 10, 0, 0);
   InitializeRedirectStat(google.add_redirect_endpoints(),
@@ -673,8 +680,40 @@ TEST_F(ResourcePrefetchPredictorTest, GetRedirectEndpoint) {
   InitializeRedirectStat(google.add_redirect_endpoints(),
                          GURL("https://google.ws"), 20, 20, 0);
   redirect_data.UpdateData(google.primary_key(), google);
-  EXPECT_FALSE(predictor_->GetRedirectEndpoint("google.com", redirect_data,
-                                               &redirect_endpoint));
+  EXPECT_FALSE(predictor_->GetRedirectOrigin(google_origin, redirect_data,
+                                             &redirect_origin));
+
+  // Check the case of a redirect with no port or scheme in the database. The
+  // redirected origin should default to HTTPS on port 443, if either is
+  // missing.
+
+  url::Origin no_port_origin =
+      url::Origin::Create(GURL("https://no-port.test/"));
+  RedirectData no_port = CreateRedirectData(no_port_origin.host(), 1);
+  GURL no_port_redirect_url("http://redirect-destination.no-port.test/");
+  url::Origin no_port_redirect_origin =
+      url::Origin::Create(GURL("https://redirect-destination.no-port.test/"));
+  InitializeRedirectStat(no_port.add_redirect_endpoints(), no_port_redirect_url,
+                         10, 0, 0, true /* include_scheme */,
+                         false /* include_port */);
+  redirect_data.UpdateData(no_port.primary_key(), no_port);
+  EXPECT_TRUE(predictor_->GetRedirectOrigin(no_port_origin, redirect_data,
+                                            &redirect_origin));
+  EXPECT_EQ(no_port_redirect_origin, redirect_origin);
+
+  url::Origin no_scheme_origin =
+      url::Origin::Create(GURL("https://no-scheme.test/"));
+  RedirectData no_scheme = CreateRedirectData(no_scheme_origin.host(), 1);
+  GURL no_scheme_redirect_url("http://redirect-destination.no-scheme.test/");
+  url::Origin no_scheme_redirect_origin =
+      url::Origin::Create(GURL("https://redirect-destination.no-scheme.test/"));
+  InitializeRedirectStat(no_scheme.add_redirect_endpoints(),
+                         no_scheme_redirect_url, 10, 0, 0,
+                         true /* include_scheme */, false /* include_port */);
+  redirect_data.UpdateData(no_scheme.primary_key(), no_scheme);
+  EXPECT_TRUE(predictor_->GetRedirectOrigin(no_scheme_origin, redirect_data,
+                                            &redirect_origin));
+  EXPECT_EQ(no_scheme_redirect_origin, redirect_origin);
 }
 
 TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
@@ -731,13 +770,18 @@ TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
                        true);  // High confidence - preconnect.
   predictor_->origin_data_->UpdateData(www_google.host(), www_google);
 
+  const url::Origin www_google_origin =
+      url::Origin::Create(GURL("https://www.google.com"));
+  const net::NetworkIsolationKey www_google_network_isolation_key(
+      www_google_origin, www_google_origin);
   prediction = std::make_unique<PreconnectPrediction>();
   EXPECT_TRUE(predictor_->IsUrlPreconnectable(main_frame_url));
   EXPECT_TRUE(
       predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
-  EXPECT_EQ(*prediction, CreatePreconnectPrediction("www.google.com", true,
-                                                    {{GURL(gen_origin(4)), 1,
-                                                      network_isolation_key}}));
+  EXPECT_EQ(*prediction,
+            CreatePreconnectPrediction(
+                "www.google.com", true,
+                {{GURL(gen_origin(4)), 1, www_google_network_isolation_key}}));
 }
 
 }  // namespace predictors

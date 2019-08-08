@@ -68,12 +68,16 @@
 }
 
 - (UIColor*)locationBarBackgroundColorWithVisibility:(CGFloat)visibilityFactor {
-  return color::IncognitoDynamicColor(
-      self.style == INCOGNITO,
-      [[UIColor colorNamed:kTextfieldBackgroundColor]
-          colorWithAlphaComponent:visibilityFactor],
-      [[UIColor colorNamed:kTextfieldBackgroundDarkColor]
-          colorWithAlphaComponent:visibilityFactor]);
+  // For the omnibox specifically, the background should be different in
+  // incognito compared to dark mode.
+  switch (self.style) {
+    case NORMAL:
+      return [[UIColor colorNamed:kTextfieldBackgroundColor]
+          colorWithAlphaComponent:visibilityFactor];
+    case INCOGNITO:
+      return [[UIColor colorNamed:@"omnibox_incognito_background_color"]
+          colorWithAlphaComponent:visibilityFactor];
+  }
 }
 
 @end

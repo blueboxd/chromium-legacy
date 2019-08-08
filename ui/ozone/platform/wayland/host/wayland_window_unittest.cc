@@ -675,19 +675,26 @@ TEST_P(WaylandWindowTest, HasCaptureUpdatedOnPointerEvents) {
 
 TEST_P(WaylandWindowTest, ConfigureEvent) {
   ScopedWlArray states;
-  SendConfigureEvent(1000, 1000, 12, states.get());
-  SendConfigureEvent(1500, 1000, 13, states.get());
 
-  // Make sure that the implementation does not call OnBoundsChanged for each
-  // configure event if it receives multiple in a row.
-  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(gfx::Rect(0, 0, 1500, 1000))));
+  // The surface must react on each configure event and send bounds to its
+  // delegate.
+
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(gfx::Rect(0, 0, 1000, 1000))));
   // Responding to a configure event, the window geometry in here must respect
   // the sizing negotiations specified by the configure event.
   // |xdg_surface_| must receive the following calls in both xdg_shell_v5 and
   // xdg_shell_v6. Other calls like SetTitle or SetMaximized are recieved by
   // xdg_toplevel in xdg_shell_v6 and by xdg_surface_ in xdg_shell_v5.
+  EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, 1000, 1000)).Times(1);
+  EXPECT_CALL(*xdg_surface_, AckConfigure(12));
+  SendConfigureEvent(1000, 1000, 12, states.get());
+
+  Sync();
+
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(gfx::Rect(0, 0, 1500, 1000))));
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, 1500, 1000)).Times(1);
   EXPECT_CALL(*xdg_surface_, AckConfigure(13));
+  SendConfigureEvent(1500, 1000, 13, states.get());
 }
 
 TEST_P(WaylandWindowTest, ConfigureEventWithNulledSize) {

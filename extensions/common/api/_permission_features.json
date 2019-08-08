@@ -569,6 +569,7 @@
       "min_manifest_version": 2,
       "whitelist": [
         "E219EE36A3B40612FD2A8CD6937B03EF0C97D3FE", // Imprivata (login screen)
+        "4DBFC1C52D6660DD90791976DF7FEF7B3D360509", // Imprivata (login screen) DEV
         "7FE4A999359A456C4B0FB7B7AD85CEA29CA50519"  // Login screen APIs test extension
       ]
     }

@@ -355,7 +355,7 @@ void WaylandDataDevice::RegisterDeferredReadCallback() {
   deferred_read_callback_.reset(wl_display_sync(connection_->display()));
   wl_callback_add_listener(deferred_read_callback_.get(),
                            &kDeferredReadListener, this);
-  wl_display_flush(connection_->display());
+  connection_->ScheduleFlush();
 }
 
 void WaylandDataDevice::DeferredReadCallback(void* data,

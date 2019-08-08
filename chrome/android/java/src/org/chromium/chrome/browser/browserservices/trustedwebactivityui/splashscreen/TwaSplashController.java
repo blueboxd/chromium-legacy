@@ -13,8 +13,6 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.customtabs.TrustedWebUtils;
-import android.support.customtabs.TrustedWebUtils.SplashScreenParamKey;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -33,6 +31,9 @@ import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
 import javax.inject.Inject;
+
+import androidx.browser.customtabs.TrustedWebUtils;
+import androidx.browser.customtabs.TrustedWebUtils.SplashScreenParamKey;
 
 /**
  * Orchestrates the flow of showing and removing splash screens for apps based on Trusted Web

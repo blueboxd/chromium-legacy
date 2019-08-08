@@ -98,3 +98,11 @@ void AppShimHostManager::OnClientConnected(
           base::BindOnce(&AppShimHostBootstrap::CreateForChannelAndPeerID,
                          std::move(endpoint), peer_pid));
 }
+
+void AppShimHostManager::OnServerChannelCreateError() {
+  // TODO(https://crbug.com/272577): Set a timeout and attempt to reconstruct
+  // the channel. Until cases where the error could occur are better known,
+  // just reset the acceptor to allow failure to be communicated via the test
+  // API.
+  mach_acceptor_.reset();
+}

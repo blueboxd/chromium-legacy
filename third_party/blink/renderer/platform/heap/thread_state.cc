@@ -1004,6 +1004,10 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForGCCycle", event.gc_cycle_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForIncrementalMarking",
                       event.incremental_marking_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking.Foreground",
+                      event.foreground_marking_time());
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking.Background",
+                      event.background_marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking", event.marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8);
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingForeground",

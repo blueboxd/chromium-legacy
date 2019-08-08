@@ -575,27 +575,24 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allow the embedder to control if access to file system by a shared worker
   // is allowed.
-  // This is called on the IO thread.
   virtual void AllowWorkerFileSystem(
       const GURL& url,
-      ResourceContext* context,
+      BrowserContext* browser_context,
       const std::vector<GlobalFrameRoutingId>& render_frames,
-      base::Callback<void(bool)> callback);
+      base::OnceCallback<void(bool)> callback);
 
   // Allow the embedder to control if access to IndexedDB by a shared worker
   // is allowed.
-  // This is called on the IO thread.
   virtual bool AllowWorkerIndexedDB(
       const GURL& url,
-      ResourceContext* context,
+      BrowserContext* browser_context,
       const std::vector<GlobalFrameRoutingId>& render_frames);
 
   // Allow the embedder to control if access to CacheStorage by a shared worker
   // is allowed.
-  // This is called on the IO thread.
   virtual bool AllowWorkerCacheStorage(
       const GURL& url,
-      ResourceContext* context,
+      BrowserContext* browser_context,
       const std::vector<GlobalFrameRoutingId>& render_frames);
 
   // Allow the embedder to control whether we can use Web Bluetooth.

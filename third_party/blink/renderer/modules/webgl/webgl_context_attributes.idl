@@ -42,5 +42,5 @@ dictionary WebGLContextAttributes {
     WebGLPowerPreference powerPreference = "default";
     boolean failIfMajorPerformanceCaveat = false;
     [RuntimeEnabled=WebXR] boolean xrCompatible = false;
-    boolean desynchronized = false;
+    [RuntimeEnabled=SurfaceEmbeddingFeatures] boolean desynchronized = false;
 };

@@ -32,7 +32,9 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   bool Close() override;
 
   bool Matches(SharedWorkerHost* worker_host);
-  void WorkerReadyForInspection();
+  void WorkerReadyForInspection(
+      blink::mojom::DevToolsAgentPtr agent_ptr,
+      blink::mojom::DevToolsAgentHostRequest agent_host_request);
   void WorkerRestarted(SharedWorkerHost* worker_host);
   void WorkerDestroyed();
 
@@ -46,7 +48,6 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   // DevToolsAgentHostImpl overrides.
   bool AttachSession(DevToolsSession* session) override;
   void DetachSession(DevToolsSession* session) override;
-  void UpdateRendererChannel(bool force) override;
 
   enum WorkerState {
     WORKER_NOT_READY,

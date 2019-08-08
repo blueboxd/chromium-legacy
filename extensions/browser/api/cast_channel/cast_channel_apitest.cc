@@ -204,11 +204,10 @@ class CastChannelAPITest : public extensions::ExtensionApiTest {
 
  protected:
   void CallOnMessage(const std::string& message) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&CastChannelAPITest::DoCallOnMessage,
-                       base::Unretained(this), GetApi(), mock_cast_socket_,
-                       message));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&CastChannelAPITest::DoCallOnMessage,
+                                  base::Unretained(this), GetApi(),
+                                  mock_cast_socket_, message));
   }
 
   void DoCallOnMessage(extensions::CastChannelAPI* api,
@@ -221,10 +220,9 @@ class CastChannelAPITest : public extensions::ExtensionApiTest {
 
   // Fires a timer on the IO thread.
   void FireTimeout() {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&CastChannelAPITest::DoFireTimeout,
-                       base::Unretained(this), mock_cast_socket_));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&CastChannelAPITest::DoFireTimeout,
+                                  base::Unretained(this), mock_cast_socket_));
   }
 
   void DoFireTimeout(MockCastSocket* cast_socket) {
@@ -257,11 +255,10 @@ class CastChannelAPITest : public extensions::ExtensionApiTest {
 };
 
 ACTION_P2(InvokeObserverOnError, api_test, cast_socket_service) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&CastChannelAPITest::DoCallOnError,
-                     base::Unretained(api_test),
-                     base::Unretained(cast_socket_service)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&CastChannelAPITest::DoCallOnError,
+                                base::Unretained(api_test),
+                                base::Unretained(cast_socket_service)));
 }
 
 // TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest

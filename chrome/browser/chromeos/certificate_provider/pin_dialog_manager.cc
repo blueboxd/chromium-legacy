@@ -120,19 +120,14 @@ bool PinDialogManager::CloseDialog(const std::string& extension_id) {
     return false;
   }
 
-  active_dialog_state_->host->CloseSecurityTokenPinDialog();
-
-  // The active dialog state should have been cleared by OnPinDialogClosed().
-  DCHECK(!active_dialog_state_);
-
-  last_response_closed_[extension_id] = true;
+  CloseActiveDialog();
   return true;
 }
 
 void PinDialogManager::ExtensionUnloaded(const std::string& extension_id) {
   if (active_dialog_state_ &&
       active_dialog_state_->extension_id == extension_id) {
-    CloseDialog(extension_id);
+    CloseActiveDialog();
   }
 
   last_response_closed_[extension_id] = false;
@@ -154,10 +149,8 @@ void PinDialogManager::AddPinDialogHost(
 
 void PinDialogManager::RemovePinDialogHost(
     SecurityTokenPinDialogHost* pin_dialog_host) {
-  if (active_dialog_state_ && active_dialog_state_->host == pin_dialog_host) {
-    pin_dialog_host->CloseSecurityTokenPinDialog();
-    DCHECK(!active_dialog_state_);
-  }
+  if (active_dialog_state_ && active_dialog_state_->host == pin_dialog_host)
+    CloseActiveDialog();
   DCHECK(base::Contains(added_dialog_hosts_, pin_dialog_host));
   base::Erase(added_dialog_hosts_, pin_dialog_host);
 }
@@ -199,6 +192,19 @@ SecurityTokenPinDialogHost* PinDialogManager::GetHostForNewDialog() {
   if (added_dialog_hosts_.empty())
     return &default_dialog_host_;
   return added_dialog_hosts_.back();
+}
+
+void PinDialogManager::CloseActiveDialog() {
+  if (!active_dialog_state_)
+    return;
+
+  // Ignore any further callbacks from the host. Instead of relying on the host
+  // to call the closing callback, run OnPinDialogClosed() below explicitly.
+  weak_factory_.InvalidateWeakPtrs();
+
+  active_dialog_state_->host->CloseSecurityTokenPinDialog();
+  OnPinDialogClosed();
+  DCHECK(!active_dialog_state_);
 }
 
 }  // namespace chromeos

@@ -9,6 +9,8 @@
 
 namespace net {
 
+const base::TimeDelta kLaxAllowUnsafeMaxAge = base::TimeDelta::FromMinutes(2);
+
 namespace {
 
 const char kPriorityLow[] = "low";
@@ -51,6 +53,7 @@ CookiePriority StringToCookiePriority(const std::string& priority) {
 }
 
 std::string CookieSameSiteToString(CookieSameSite same_site) {
+  DCHECK(IsValidSameSiteValue(same_site));
   switch (same_site) {
     case CookieSameSite::LAX_MODE:
       return kSameSiteLax;
@@ -62,20 +65,54 @@ std::string CookieSameSiteToString(CookieSameSite same_site) {
       return kSameSiteExtended;
     case CookieSameSite::UNSPECIFIED:
       return kSameSiteUnspecified;
+    default:
+      NOTREACHED();
+      return "INVALID";
   }
-  return "INVALID";
 }
 
 CookieSameSite StringToCookieSameSite(const std::string& same_site) {
+  CookieSameSite samesite = CookieSameSite::UNSPECIFIED;
   if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteNone))
-    return CookieSameSite::NO_RESTRICTION;
+    samesite = CookieSameSite::NO_RESTRICTION;
   if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteLax))
-    return CookieSameSite::LAX_MODE;
+    samesite = CookieSameSite::LAX_MODE;
   if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteStrict))
-    return CookieSameSite::STRICT_MODE;
+    samesite = CookieSameSite::STRICT_MODE;
   if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteExtended))
-    return CookieSameSite::EXTENDED_MODE;
-  return CookieSameSite::UNSPECIFIED;
+    samesite = CookieSameSite::EXTENDED_MODE;
+  DCHECK(IsValidSameSiteValue(samesite));
+  return samesite;
+}
+
+bool IsValidSameSiteValue(CookieSameSite value) {
+  switch (value) {
+    case CookieSameSite::UNSPECIFIED:
+    case CookieSameSite::NO_RESTRICTION:
+    case CookieSameSite::LAX_MODE:
+    case CookieSameSite::STRICT_MODE:
+    case CookieSameSite::EXTENDED_MODE:
+      return true;
+    case CookieSameSite::LAX_MODE_ALLOW_UNSAFE:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool IsValidEffectiveSameSiteValue(CookieSameSite value) {
+  switch (value) {
+    case CookieSameSite::NO_RESTRICTION:
+    case CookieSameSite::LAX_MODE:
+    case CookieSameSite::LAX_MODE_ALLOW_UNSAFE:
+    case CookieSameSite::STRICT_MODE:
+      return true;
+    case CookieSameSite::UNSPECIFIED:
+    case CookieSameSite::EXTENDED_MODE:
+      return false;
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace net

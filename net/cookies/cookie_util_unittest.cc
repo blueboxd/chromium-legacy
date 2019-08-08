@@ -351,7 +351,7 @@ TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
                 url::Origin::Create(GURL("http://from-elsewhere.com")),
                 false /*attach_same_site_cookies*/));
 
-  EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
             cookie_util::ComputeSameSiteContextForRequest(
                 "POST", GURL("http://example.com"), GURL("http://example.com"),
                 url::Origin::Create(GURL("http://from-elsewhere.com")),

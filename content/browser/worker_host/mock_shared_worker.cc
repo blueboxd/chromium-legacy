@@ -61,12 +61,6 @@ void MockSharedWorker::Terminate() {
   terminate_received_ = true;
 }
 
-void MockSharedWorker::BindDevToolsAgent(
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info,
-    blink::mojom::DevToolsAgentAssociatedRequest request) {
-  NOTREACHED();
-}
-
 MockSharedWorkerFactory::MockSharedWorkerFactory(
     blink::mojom::SharedWorkerFactoryRequest request)
     : binding_(this, std::move(request)) {}

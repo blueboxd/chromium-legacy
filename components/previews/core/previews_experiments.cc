@@ -160,12 +160,6 @@ base::TimeDelta LitePagePreviewsNavigationTimeoutDuration() {
                                              30 * 1000));
 }
 
-int LitePageRedirectPreviewMaxServerBlacklistByteSize() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      features::kLitePageServerPreviews, "max_blacklist_byte_size",
-      250 * 1024 /* 250KB */);
-}
-
 size_t LitePageRedirectPreviewMaxNavigationRestarts() {
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kLitePageServerPreviews, "max_navigation_restart", 5);

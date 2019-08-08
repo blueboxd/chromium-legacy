@@ -115,7 +115,7 @@ static NodeListSearchRoot SearchRootFromCollectionType(
     case kFormControls:
       if (IsA<HTMLFieldSetElement>(owner))
         return NodeListSearchRoot::kOwnerNode;
-      DCHECK(IsHTMLFormElement(owner));
+      DCHECK(IsA<HTMLFormElement>(owner));
       return NodeListSearchRoot::kTreeScope;
     case kNameNodeListType:
     case kRadioNodeListType:

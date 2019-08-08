@@ -12,8 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.customtabs.CustomTabsService;
-import android.support.customtabs.PostMessageBackend;
 import android.support.test.filters.SmallTest;
 
 import org.junit.After;
@@ -40,6 +38,9 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.net.test.util.TestWebServer;
+
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.PostMessageBackend;
 
 /**
  * Instrumentation tests for the CCT Dynamic Module post message API.

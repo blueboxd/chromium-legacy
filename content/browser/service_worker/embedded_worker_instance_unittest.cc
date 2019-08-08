@@ -113,9 +113,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   RegistrationAndVersionPair PrepareRegistrationAndVersion(
       const GURL& scope,
       const GURL& script_url) {
-    base::RunLoop loop;
-    context()->storage()->LazyInitializeForTest(loop.QuitClosure());
-    loop.Run();
+    context()->storage()->LazyInitializeForTest();
 
     RegistrationAndVersionPair pair;
     blink::mojom::ServiceWorkerRegistrationOptions options;

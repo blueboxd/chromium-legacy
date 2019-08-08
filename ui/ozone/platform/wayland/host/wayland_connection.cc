@@ -100,20 +100,29 @@ bool WaylandConnection::StartProcessingEvents() {
     return true;
 
   DCHECK(display_);
+
+  MaybePrepareReadQueue();
+
+  // Displatch event from display to server.
   wl_display_flush(display_.get());
 
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
-  if (!base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
-          wl_display_get_fd(display_.get()), true,
-          base::MessagePumpLibevent::WATCH_READ, &controller_, this))
-    return false;
+  return BeginWatchingFd(base::MessagePumpLibevent::WATCH_READ);
+}
 
-  watching_ = true;
-  return true;
+void WaylandConnection::MaybePrepareReadQueue() {
+  if (prepared_)
+    return;
+
+  if (wl_display_prepare_read(display()) != -1) {
+    prepared_ = true;
+    return;
+  }
+  // Nothing to read, send events to the queue.
+  wl_display_dispatch_pending(display());
 }
 
 void WaylandConnection::ScheduleFlush() {
-  if (scheduled_flush_ || !watching_)
+  if (scheduled_flush_)
     return;
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -193,13 +202,38 @@ void WaylandConnection::DispatchUiEvent(Event* event) {
 }
 
 void WaylandConnection::OnFileCanReadWithoutBlocking(int fd) {
-  wl_display_dispatch(display_.get());
-  std::vector<WaylandWindow*> windows = wayland_window_manager_.GetAllWindows();
-  for (auto* window : windows)
-    window->ApplyPendingBounds();
+  if (prepared_) {
+    prepared_ = false;
+    if (wl_display_read_events(display()) == -1)
+      return;
+    wl_display_dispatch_pending(display());
+  }
+
+  MaybePrepareReadQueue();
+
+  if (!prepared_)
+    return;
+
+  // Automatic Flush.
+  int ret = wl_display_flush(display_.get());
+  if (ret != -1 || errno != EAGAIN)
+    return;
+
+  // if all data could not be written, errno will be set to EAGAIN and -1
+  // returned. In that case, use poll on the display file descriptor to wait for
+  // it to become writable again.
+  BeginWatchingFd(base::MessagePumpLibevent::WATCH_WRITE);
 }
 
-void WaylandConnection::OnFileCanWriteWithoutBlocking(int fd) {}
+void WaylandConnection::OnFileCanWriteWithoutBlocking(int fd) {
+  int ret = wl_display_flush(display_.get());
+  if (ret != -1 || errno != EAGAIN)
+    BeginWatchingFd(base::MessagePumpLibevent::WATCH_READ);
+  else if (ret < 0 && errno != EPIPE && prepared_)
+    wl_display_cancel_read(display());
+
+  // Otherwise just continue watching in the same mode.
+}
 
 void WaylandConnection::EnsureDataDevice() {
   if (!data_device_manager_ || !seat_)
@@ -209,6 +243,20 @@ void WaylandConnection::EnsureDataDevice() {
   data_device_ = std::make_unique<WaylandDataDevice>(this, data_device);
   clipboard_ = std::make_unique<WaylandClipboard>(data_device_manager_.get(),
                                                   data_device_.get());
+}
+
+bool WaylandConnection::BeginWatchingFd(
+    base::WatchableIOMessagePumpPosix::Mode mode) {
+  if (watching_) {
+    // Stop watching first.
+    watching_ = !controller_.StopWatchingFileDescriptor();
+    DCHECK(!watching_);
+  }
+
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  watching_ = base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
+      wl_display_get_fd(display_.get()), true, mode, &controller_, this);
+  return watching_;
 }
 
 // static

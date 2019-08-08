@@ -35,4 +35,13 @@ String UncompressResourceAsString(int resource_id) {
   return String::FromUTF8(uncompressed.data());
 }
 
+Vector<char> UncompressResourceAsBinary(int resource_id) {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  std::string uncompressed = bundle.DecompressDataResourceScaled(
+      resource_id, bundle.GetMaxScaleFactor());
+  Vector<char> result;
+  result.Append(uncompressed.data(), uncompressed.size());
+  return result;
+}
+
 }  // namespace blink

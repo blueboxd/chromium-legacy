@@ -85,9 +85,13 @@ def main():
               'w') as f:
       json.dump(invalid_profiles, f)
 
-    mark_invalid_shards(
-        coverage_merger.get_shards_to_retry(invalid_profiles),
-        params.jsons_to_merge)
+    # We don't want to invalidate shards in a CQ build, which we determine by
+    # the existence of the 'patch_storage' property.
+    build_properties = json.loads(params.build_properties)
+    if not build_properties.get('patch_storage'):
+      mark_invalid_shards(
+          coverage_merger.get_shards_to_retry(invalid_profiles),
+          params.jsons_to_merge)
   logging.info('Merging %d test results', len(params.jsons_to_merge))
   failed = False
 

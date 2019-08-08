@@ -9718,33 +9718,6 @@
         },
         "test": "wtf_unittests"
       }
-    ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "--num-retries=3",
-          "--release",
-          "--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking"
-        ],
-        "isolate_name": "blink_web_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "shards": 12
-        }
-      }
     ]
   },
   "linux-blink-heap-unified-gc": {

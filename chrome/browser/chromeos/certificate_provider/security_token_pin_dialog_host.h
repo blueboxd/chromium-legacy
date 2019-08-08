@@ -57,9 +57,10 @@ class SecurityTokenPinDialogHost {
   //     (note that a non-empty error does NOT disable the user input per se).
   // |attempts_left| - when non-negative, the UI should indicate this number to
   //     the user; otherwise must be equal to -1.
-  // |pin_entered_callback| - will be called when the user submits the input.
-  // |pin_dialog_closed_callback| - will be called when the dialog is closed
-  //     (either by the user or programmatically).
+  // |pin_entered_callback| - called when the user submits the input.
+  // |pin_dialog_closed_callback| - called when the dialog is closed (either by
+  //     the user or programmatically; it's optional whether to call it after
+  //     CloseSecurityTokenPinDialog()).
   virtual void ShowSecurityTokenPinDialog(
       const std::string& caller_extension_name,
       SecurityTokenPinCodeType code_type,
@@ -69,8 +70,8 @@ class SecurityTokenPinDialogHost {
       SecurityTokenPinEnteredCallback pin_entered_callback,
       SecurityTokenPinDialogClosedCallback pin_dialog_closed_callback) = 0;
 
-  // Closes the currently shown PIN dialog, if there's any. This will
-  // immediately trigger |pin_dialog_closed_callback|.
+  // Closes the currently shown PIN dialog, if there's any. The implementation
+  // is NOT required to run |pin_dialog_closed_callback| after the closing.
   virtual void CloseSecurityTokenPinDialog() = 0;
 };
 

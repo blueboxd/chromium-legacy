@@ -12,6 +12,7 @@
 namespace optimization_guide {
 
 struct HintsComponentInfo;
+class OptimizationFilter;
 
 // The local histogram used to record that the component hints are stored in
 // the cache and are ready for use.
@@ -38,6 +39,17 @@ enum class ProcessHintsComponentResult {
 // Records the ProcessHintsComponentResult to UMA.
 void RecordProcessHintsComponentResult(ProcessHintsComponentResult result);
 
+// Processes the specified hints component.
+//
+// If successful, returns the component's Configuration protobuf. Otherwise,
+// returns a nullptr.
+//
+// If |out_result| provided, it will be populated with the result up to that
+// point.
+std::unique_ptr<proto::Configuration> ProcessHintsComponent(
+    const HintsComponentInfo& info,
+    ProcessHintsComponentResult* out_result);
+
 // Enumerates status event of processing optimization filters (such as the
 // lite page redirect blacklist). Used in UMA histograms, so the order of
 // enumerators should not be changed.
@@ -59,16 +71,12 @@ enum class OptimizationFilterStatus {
 void RecordOptimizationFilterStatus(proto::OptimizationType optimization_type,
                                     OptimizationFilterStatus status);
 
-// Processes the specified hints component.
-//
-// If successful, returns the component's Configuration protobuf. Otherwise,
-// returns a nullptr.
-//
-// If |out_result| provided, it will be populated with the result up to that
-// point.
-std::unique_ptr<proto::Configuration> ProcessHintsComponent(
-    const HintsComponentInfo& info,
-    ProcessHintsComponentResult* out_result);
+// Validates and parses |optimization_filter_proto| and creates one that is
+// intended to be queried to make decisions for whether an optimization type
+// should be applied on a navigation.
+std::unique_ptr<OptimizationFilter> ProcessOptimizationFilter(
+    const proto::OptimizationFilter& optimization_filter_proto,
+    OptimizationFilterStatus* out_status);
 
 }  // namespace optimization_guide
 

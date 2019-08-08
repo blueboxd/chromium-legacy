@@ -25,6 +25,7 @@ source_set("buttons") {
     "toolbar_type.h",
   ]
   deps = [
+    "resources:omnibox_incognito_background_color",
     "resources:tab_toolbar_button_color_highlighted",
     "resources:tab_toolbar_button_color_highlighted_incognito",
     "resources:tab_toolbar_button_halo_color",

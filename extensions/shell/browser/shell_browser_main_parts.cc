@@ -235,8 +235,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Track the task so it can be canceled if app_shell shuts down very quickly,
   // such as in browser tests.
   task_tracker_.PostTask(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}).get(),
-      FROM_HERE, base::Bind(nacl::NaClProcessHost::EarlyStartup));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(), FROM_HERE,
+      base::Bind(nacl::NaClProcessHost::EarlyStartup));
 #endif
 
   content::ShellDevToolsManagerDelegate::StartHttpHandler(

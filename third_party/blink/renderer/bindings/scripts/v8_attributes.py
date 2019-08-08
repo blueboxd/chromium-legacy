@@ -468,6 +468,20 @@ def setter_context(interface, attribute, interfaces, context):
 
     has_type_checking_interface = idl_type.is_wrapper_type
 
+    use_common_reflection_setter = False
+    # Enable use_common_reflection_setter if
+    #  * extended_attributes is [CEReactions, Reflect] or
+    #    [CEReactions, Reflect, RuntimeEnabled],
+    #  * the type is boolean, DOMString, or DOMString?, and
+    #  * the interface inherits from 'Element'.
+    if ('Reflect' in extended_attributes and
+            'CEReactions' in extended_attributes and
+            str(idl_type) in ('boolean', 'DOMString', 'DOMString?') and
+            inherits_interface(interface.name, 'Element')):
+        if (len(extended_attributes) == 2 or
+                (len(extended_attributes) == 3 and 'RuntimeEnabled' in extended_attributes)):
+            use_common_reflection_setter = True
+
     context.update({
         'has_setter_exception_state':
             is_setter_raises_exception or has_type_checking_interface or
@@ -478,6 +492,7 @@ def setter_context(interface, attribute, interfaces, context):
         'is_setter_call_with_script_state': has_extended_attribute_value(
             attribute, 'SetterCallWith', 'ScriptState'),
         'is_setter_raises_exception': is_setter_raises_exception,
+        'use_common_reflection_setter': use_common_reflection_setter,
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, 'v8_value', 'cpp_value'),
     })
@@ -521,6 +536,18 @@ def setter_expression(interface, attribute, context):
         arguments.append('is_null')
     if context['is_setter_raises_exception']:
         arguments.append('exception_state')
+    if context['use_common_reflection_setter']:
+        attr_name = scoped_content_attribute_name(interface, attribute)
+        if idl_type.base_type == 'boolean':
+            setter_name = 'V8SetReflectedBooleanAttribute'
+            arguments = ['info', '"%s"' % interface.name,
+                         '"%s"' % attribute.name, attr_name]
+        elif idl_type.base_type == 'DOMString':
+            if idl_type.is_nullable:
+                setter_name = 'V8SetReflectedNullableDOMStringAttribute'
+            else:
+                setter_name = 'V8SetReflectedDOMStringAttribute'
+            arguments = ['info', attr_name]
 
     return '%s(%s)' % (setter_name, ', '.join(arguments))
 

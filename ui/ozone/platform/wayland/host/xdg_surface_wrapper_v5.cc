@@ -99,6 +99,7 @@ void XDGSurfaceWrapperV5::Configure(void* data,
   surface->pending_configure_serial_ = serial;
   surface->wayland_window_->HandleSurfaceConfigure(width, height, is_maximized,
                                                    is_fullscreen, is_activated);
+  surface->AckConfigure();
 }
 
 // static

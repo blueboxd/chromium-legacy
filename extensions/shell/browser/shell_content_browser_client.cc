@@ -177,7 +177,7 @@ void ShellContentBrowserClient::SiteInstanceGotProcess(
                site_instance->GetProcess()->GetID(),
                site_instance->GetId());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&InfoMap::RegisterExtensionProcess,
                      browser_main_parts_->extension_system()->info_map(),
@@ -201,7 +201,7 @@ void ShellContentBrowserClient::SiteInstanceDeleting(
                site_instance->GetProcess()->GetID(),
                site_instance->GetId());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&InfoMap::UnregisterExtensionProcess,
                      browser_main_parts_->extension_system()->info_map(),

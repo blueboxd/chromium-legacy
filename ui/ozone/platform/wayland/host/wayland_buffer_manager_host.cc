@@ -63,8 +63,20 @@ class WaylandBufferManagerHost::Surface {
   ~Surface() = default;
 
   bool CommitBuffer(uint32_t buffer_id, const gfx::Rect& damage_region) {
+    DCHECK(!pending_buffer_);
+
     WaylandBuffer* buffer = GetBuffer(buffer_id);
     if (!buffer)
+      return false;
+
+    buffer->damage_region = damage_region;
+
+    // If the wl_buffer has been attached, but the wl_buffer still is null, it
+    // means the Wayland server failed to create the buffer and we have to fail
+    // here.
+    //
+    // TODO(msisov): should we ask to recreate buffers instead of failing?
+    if (buffer->attached && !buffer->wl_buffer)
       return false;
 
     // This request may come earlier than the Wayland compositor has imported a
@@ -78,46 +90,12 @@ class WaylandBufferManagerHost::Surface {
     // Another case, which always happen is waiting until the frame callback is
     // completed. Thus, wait here when the Wayland compositor fires the frame
     // callback.
-    while (!buffer->wl_buffer || !!wl_frame_callback_) {
-      // If the wl_buffer has been attached, but the wl_buffer still has been
-      // null, it means the Wayland server failed to create the buffer and we
-      // have to fail here.
-      if ((buffer->attached && !buffer->wl_buffer) ||
-          wl_display_roundtrip(connection_->display()) == -1)
-        return false;
+    if (!buffer->wl_buffer || wl_frame_callback_) {
+      pending_buffer_ = buffer;
+      return true;
     }
 
-    // Once the BufferRelease is called, the buffer will be released.
-    DCHECK(buffer->released);
-    buffer->released = false;
-
-    DCHECK(!submitted_buffer_);
-    submitted_buffer_ = buffer;
-
-    AttachAndDamageBuffer(buffer, damage_region);
-
-    SetupFrameCallback();
-    SetupPresentationFeedback(buffer_id);
-
-    CommitSurface();
-
-    connection_->ScheduleFlush();
-
-    // If the contents were reset, there is no buffer attached. It means we have
-    // to behave the same way as if it was the very first frame. Check the
-    // comment below where the |contents_reset_| is declared.
-    if (contents_reset_) {
-      prev_submitted_buffer_ = nullptr;
-      contents_reset_ = false;
-    }
-
-    // If it was the very first frame, the surface has not had a back buffer
-    // before, and Wayland won't release the front buffer until next buffer is
-    // attached. Thus, notify about successful submission immediately.
-    if (!prev_submitted_buffer_)
-      CompleteSubmission();
-
-    return true;
+    return CommitBufferInternal(buffer);
   }
 
   bool CreateBuffer(const gfx::Size& size, uint32_t buffer_id) {
@@ -150,6 +128,9 @@ class WaylandBufferManagerHost::Surface {
     if (prev_submitted_buffer_ == buffer)
       prev_submitted_buffer_ = nullptr;
 
+    if (pending_buffer_ == buffer)
+      pending_buffer_ = nullptr;
+
     auto result = buffers_.erase(buffer_id);
     return result;
   }
@@ -167,6 +148,9 @@ class WaylandBufferManagerHost::Surface {
 
     if (buffer->wl_buffer)
       SetupBufferReleaseListener(buffer);
+
+    if (pending_buffer_ == buffer)
+      ProcessPendingBuffer();
   }
 
   void ClearState() {
@@ -213,6 +197,10 @@ class WaylandBufferManagerHost::Surface {
     // Actual buffer size.
     const gfx::Size size;
 
+    // Damage region this buffer describes. Must be emptied once buffer is
+    // submitted.
+    gfx::Rect damage_region;
+
     // The id of this buffer.
     const uint32_t buffer_id;
 
@@ -239,9 +227,45 @@ class WaylandBufferManagerHost::Surface {
     DISALLOW_COPY_AND_ASSIGN(WaylandBuffer);
   };
 
-  void AttachAndDamageBuffer(WaylandBuffer* buffer,
-                             const gfx::Rect& damage_region) {
-    gfx::Rect pending_damage_region = damage_region;
+  bool CommitBufferInternal(WaylandBuffer* buffer) {
+    DCHECK(buffer);
+    DCHECK(!pending_buffer_);
+
+    // Once the BufferRelease is called, the buffer will be released.
+    DCHECK(buffer->released);
+    buffer->released = false;
+
+    DCHECK(!submitted_buffer_);
+    submitted_buffer_ = buffer;
+
+    AttachAndDamageBuffer(buffer);
+
+    SetupFrameCallback();
+    SetupPresentationFeedback(buffer->buffer_id);
+
+    CommitSurface();
+
+    connection_->ScheduleFlush();
+
+    // If the contents were reset, there is no buffer attached. It means we have
+    // to behave the same way as if it was the very first frame. Check the
+    // comment below where the |contents_reset_| is declared.
+    if (contents_reset_) {
+      prev_submitted_buffer_ = nullptr;
+      contents_reset_ = false;
+    }
+
+    // If it was the very first frame, the surface has not had a back buffer
+    // before, and Wayland won't release the front buffer until next buffer is
+    // attached. Thus, notify about successful submission immediately.
+    if (!prev_submitted_buffer_)
+      CompleteSubmission();
+
+    return true;
+  }
+
+  void AttachAndDamageBuffer(WaylandBuffer* buffer) {
+    gfx::Rect pending_damage_region = std::move(buffer->damage_region);
     // If the size of the damage region is empty, wl_surface_damage must be
     // supplied with the actual size of the buffer, which is going to be
     // committed.
@@ -299,6 +323,8 @@ class WaylandBufferManagerHost::Surface {
   void OnFrameCallback(struct wl_callback* callback) {
     DCHECK(wl_frame_callback_.get() == callback);
     wl_frame_callback_.reset();
+
+    ProcessPendingBuffer();
   }
 
   // wl_callback_listener
@@ -390,7 +416,8 @@ class WaylandBufferManagerHost::Surface {
                       const gfx::PresentationFeedback& feedback) {
     // The order of submission and presentation callbacks cannot be controlled.
     // Some Wayland compositors may fire presentation callbacks earlier than we
-    // are able to send submission callbacks and this is bad. Thus, handle it here.
+    // are able to send submission callbacks and this is bad. Thus, handle it
+    // here.
     if (submitted_buffer_ && submitted_buffer_->buffer_id == buffer_id) {
       submitted_buffer_->needs_send_feedback = true;
       submitted_buffer_->feedback = feedback;
@@ -441,6 +468,15 @@ class WaylandBufferManagerHost::Surface {
                          gfx::PresentationFeedback::Failure());
   }
 
+  void ProcessPendingBuffer() {
+    if (!pending_buffer_)
+      return;
+
+    auto* buffer = pending_buffer_;
+    pending_buffer_ = nullptr;
+    CommitBufferInternal(buffer);
+  }
+
   // Widget this helper surface backs and has 1:1 relationship with the
   // WaylandWindow.
 
@@ -465,6 +501,9 @@ class WaylandBufferManagerHost::Surface {
   // shown.
   PresentationFeedbackQueue presentation_feedbacks_;
 
+  // A buffer, which is pending to be submitted (look the comment in the
+  // CommitBuffer method).
+  WaylandBuffer* pending_buffer_ = nullptr;
   // Current submitted buffer.
   WaylandBuffer* submitted_buffer_ = nullptr;
   // Previous submitted buffer.

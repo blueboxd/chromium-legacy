@@ -15,9 +15,11 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -25,6 +27,7 @@
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
+#include "chromeos/dbus/login_manager/login_screen_storage.pb.h"
 #include "chromeos/dbus/login_manager/policy_descriptor.pb.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -47,6 +50,11 @@ using RetrievePolicyResponseType =
 constexpr char kEmptyAccountId[] = "";
 // The timeout used when starting the android container is 90 seconds
 constexpr int kStartArcTimeout = 90 * 1000;
+
+// 64k of data, minus 64 bits for a preceding size. This number was chosen to
+// fit all the data in a single pipe buffer and avoid blocking on write.
+// (http://man7.org/linux/man-pages/man7/pipe.7.html)
+const size_t kLoginScreenStorageDataSizeLimit = 1024 * 64 - sizeof(size_t);
 
 // Helper to get the enum type of RetrievePolicyResponseType based on error
 // name.
@@ -103,10 +111,14 @@ login_manager::PolicyDescriptor MakeChromePolicyDescriptor(
 }
 
 // Creates a pipe that contains the given data. The data will be prefixed by a
-// size_t sized variable containing the size of the data to read.
+// size_t sized variable containing the size of the data to read. Since we don't
+// pass this pipe's read end anywhere, we can be sure that the only FD that can
+// read from that pipe will be closed on browser's exit, therefore the password
+// won't be leaked if the browser crashes.
 base::ScopedFD CreatePasswordPipe(const std::string& data) {
   int pipe_fds[2];
-  if (!base::CreateLocalNonBlockingPipe(pipe_fds)) {
+  if (data.size() > kLoginScreenStorageDataSizeLimit ||
+      !base::CreateLocalNonBlockingPipe(pipe_fds)) {
     DLOG(ERROR) << "Failed to create pipe";
     return base::ScopedFD();
   }
@@ -121,6 +133,21 @@ base::ScopedFD CreatePasswordPipe(const std::string& data) {
   base::WriteFileDescriptor(pipe_write_end.get(), data.c_str(), data.size());
 
   return pipe_read_end;
+}
+
+// Reads a secret from the given pipe. Secret is preceded by a 'size_t' value
+// representing its size.
+bool ReadSecretFromPipe(base::ScopedFD fd, std::vector<uint8_t>* secret) {
+  size_t secret_size = 0;
+  if (!base::ReadFromFD(fd.get(), reinterpret_cast<char*>(&secret_size),
+                        sizeof(size_t)) ||
+      secret_size > kLoginScreenStorageDataSizeLimit) {
+    return false;
+  }
+
+  secret->resize(secret_size);
+  return base::ReadFromFD(fd.get(), reinterpret_cast<char*>(secret->data()),
+                          secret_size);
 }
 
 }  // namespace
@@ -198,6 +225,51 @@ class SessionManagerClientImpl : public SessionManagerClient {
     session_manager_proxy_->CallMethod(&method_call,
                                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                        base::DoNothing());
+  }
+
+  void LoginScreenStorageStore(
+      const std::string& key,
+      const login_manager::LoginScreenStorageMetadata& metadata,
+      const std::string& data,
+      LoginScreenStorageStoreCallback callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerLoginScreenStorageStore);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(key);
+
+    const std::string metadata_blob = metadata.SerializeAsString();
+    writer.AppendArrayOfBytes(
+        reinterpret_cast<const uint8_t*>(metadata_blob.data()),
+        metadata_blob.size());
+
+    base::ScopedFD fd = CreatePasswordPipe(data);
+    if (fd.get() == -1) {
+      std::string error = "Could not create password pipe.";
+      LOG(ERROR) << error;
+      std::move(callback).Run(std::move(error));
+      return;
+    }
+    writer.AppendFileDescriptor(fd.get());
+
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnLoginScreenStorageStore,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void LoginScreenStorageRetrieve(
+      const std::string& key,
+      LoginScreenStorageRetrieveCallback callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerLoginScreenStorageRetrieve);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(key);
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnLoginScreenStorageRetrieve,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void StartSession(
@@ -644,6 +716,37 @@ class SessionManagerClientImpl : public SessionManagerClient {
       }
     }
     std::move(callback).Run(std::move(sessions));
+  }
+
+  void OnLoginScreenStorageStore(LoginScreenStorageStoreCallback callback,
+                                 dbus::Response* response) {
+    std::move(callback).Run(base::nullopt);
+  }
+
+  void OnLoginScreenStorageRetrieve(LoginScreenStorageRetrieveCallback callback,
+                                    dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(base::nullopt /* data */,
+                              "LoginScreenStorageRetrieve() D-Bus method "
+                              "returned an empty response");
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    base::ScopedFD result_fd;
+    if (!reader.PopFileDescriptor(&result_fd)) {
+      std::string error = "Invalid response: " + response->ToString();
+      std::move(callback).Run(base::nullopt /* data */, error);
+      return;
+    }
+    std::vector<uint8_t> result_data;
+    if (!ReadSecretFromPipe(std::move(result_fd), &result_data)) {
+      std::string error = "Couldn't read retrieved data from pipe.";
+      std::move(callback).Run(base::nullopt /* data */, error);
+      return;
+    }
+    std::move(callback).Run(std::string(result_data.begin(), result_data.end()),
+                            base::nullopt /* error */);
   }
 
   // Reads an array of policy data bytes data as std::string.

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.MainThread;
@@ -178,8 +177,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         }
     }
 
-    @SuppressLint("StaticFieldLeak")
-    private static SigninManager sTestingSigninManager;
     private static int sSignInAccessPoint = SigninAccessPoint.UNKNOWN;
 
     /**
@@ -467,7 +464,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         // This method should be called at most once per sign-in flow.
         assert mSignInState != null;
 
-        SigninManagerJni.get().onSignInCompleted(
+        SigninManagerJni.get().setPrimaryAccount(
                 mNativeSigninManagerAndroid, mSignInState.mAccount.name);
 
         // Cache the signed-in account name. This must be done after the native call, otherwise
@@ -747,7 +744,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
         boolean isForceSigninEnabled(long nativeSigninManagerAndroid);
 
-        void onSignInCompleted(long nativeSigninManagerAndroid, String username);
+        void setPrimaryAccount(long nativeSigninManagerAndroid, String username);
 
         void signOut(long nativeSigninManagerAndroid, @SignoutReason int reason);
 

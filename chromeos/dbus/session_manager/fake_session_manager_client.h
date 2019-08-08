@@ -59,6 +59,17 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
                   const std::vector<std::string>& argv,
                   VoidDBusMethodCallback callback) override;
   void SaveLoginPassword(const std::string& password) override;
+
+  void LoginScreenStorageStore(
+      const std::string& key,
+      const login_manager::LoginScreenStorageMetadata& metadata,
+      const std::string& data,
+      LoginScreenStorageStoreCallback callback) override;
+
+  void LoginScreenStorageRetrieve(
+      const std::string& key,
+      LoginScreenStorageRetrieveCallback callback) override;
+
   void StartSession(
       const cryptohome::AccountIdentifier& cryptohome_id) override;
   void StopSession() override;

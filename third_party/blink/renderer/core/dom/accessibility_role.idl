@@ -11,3 +11,4 @@
 };
 
 Element includes AccessibilityRole;
+ElementInternals includes AccessibilityRole;

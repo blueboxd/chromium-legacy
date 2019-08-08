@@ -104,13 +104,13 @@ class _IRBuilder(object):
             return self._build_callback_interface(node)
 
         child_nodes = list(node.GetChildren())
-        extended_attributes = self._take_extended_attributes(child_nodes)
         inherited = self._take_inheritance(child_nodes)
         iterable = self._take_iterable(child_nodes)
         maplike = self._take_maplike(child_nodes)
         setlike = self._take_setlike(child_nodes)
         # TODO(peria): Implement stringifier.
         _ = self._take_stringifier(child_nodes)
+        extended_attributes = self._take_extended_attributes(child_nodes)
 
         members = map(self._build_interface_or_namespace_member, child_nodes)
         attributes = []
@@ -145,13 +145,12 @@ class _IRBuilder(object):
             debug_info=self._build_debug_info(node))
 
     def _build_namespace(self, node):
-        namespace = Namespace.IR(
+        # TODO(peria): Build members and register them in |namespace|
+        return Namespace.IR(
             identifier=Identifier(node.GetName()),
             is_partial=bool(node.GetProperty('PARTIAL')),
             component=self._component,
             debug_info=self._build_debug_info(node))
-        # TODO(peria): Build members and register them in |namespace|
-        return namespace
 
     def _build_interface_or_namespace_member(self, node):
         def build_attribute(node):
@@ -209,8 +208,8 @@ class _IRBuilder(object):
 
     def _build_dictionary(self, node):
         child_nodes = list(node.GetChildren())
-        extended_attributes = self._take_extended_attributes(child_nodes)
         inherited = self._take_inheritance(child_nodes)
+        extended_attributes = self._take_extended_attributes(child_nodes)
         own_members = map(self._build_dictionary_member, child_nodes)
 
         return Dictionary.IR(
@@ -241,48 +240,51 @@ class _IRBuilder(object):
             debug_info=self._build_debug_info(node))
 
     def _build_callback_interface(self, node):
-        callback_interface = CallbackInterface.IR(
+        assert node.GetProperty('CALLBACK')
+        # TODO(peria): Build members and register them in |callback_interface|
+        return CallbackInterface.IR(
             identifier=Identifier(node.GetName()),
             component=self._component,
             debug_info=self._build_debug_info(node))
-        # TODO(peria): Build members and register them in |callback_interface|
-        return callback_interface
 
     def _build_callback_function(self, node):
-        callback_function = CallbackFunction.IR(
+        child_nodes = list(node.GetChildren())
+        arguments = self._take_arguments(child_nodes)
+        return_type = self._take_type(child_nodes)
+        extended_attributes = self._take_extended_attributes(child_nodes)
+        assert len(child_nodes) == 0
+        return CallbackFunction.IR(
             identifier=Identifier(node.GetName()),
+            arguments=arguments,
+            return_type=return_type,
+            extended_attributes=extended_attributes,
             component=self._component,
             debug_info=self._build_debug_info(node))
-        # TODO(peria): Build members and register them in |callback_function|
-        return callback_function
 
     def _build_enumeration(self, node):
-        enumeration = Enumeration.IR(
+        return Enumeration.IR(
             identifier=Identifier(node.GetName()),
             values=[child.GetName() for child in node.GetChildren()],
             component=self._component,
             debug_info=self._build_debug_info(node))
-        return enumeration
 
     def _build_typedef(self, node):
         child_nodes = list(node.GetChildren())
         idl_type = self._take_type(child_nodes)
         assert len(child_nodes) == 0
 
-        typedef = Typedef.IR(
+        return Typedef.IR(
             identifier=Identifier(node.GetName()),
             idl_type=idl_type,
             component=self._component,
             debug_info=self._build_debug_info(node))
-        return typedef
 
     def _build_includes(self, node):
-        includes = Includes.IR(
+        return Includes.IR(
             interface_identifier=Identifier(node.GetName()),
             mixin_identifier=Identifier(node.GetProperty('REFERENCE')),
             component=self._component,
             debug_info=self._build_debug_info(node))
-        return includes
 
     # Helper functions sorted alphabetically
 
@@ -295,14 +297,17 @@ class _IRBuilder(object):
             idl_type = self._take_type(
                 child_nodes, is_optional=is_optional, is_variadic=is_variadic)
             default_value = self._take_default_value(child_nodes)
-            extended_attributes = self._take_extended_attributes(child_nodes)
+            # The parser may place extended attributes on arguments, but they
+            # should be applied to types.
+            # TODO(yukishiino): Move the extended attributes on this argument
+            # into |idl_type|.
+            _ = self._take_extended_attributes(child_nodes)
             assert len(child_nodes) == 0
             return Argument.IR(
                 identifier=Identifier(node.GetName()),
                 index=index,
                 idl_type=idl_type,
-                default_value=default_value,
-                extended_attributes=extended_attributes)
+                default_value=default_value)
 
         assert node.GetClass() == 'Arguments'
         return [

@@ -186,8 +186,8 @@ void WebDocument::Forms(WebVector<WebFormElement>& results) const {
   for (size_t i = 0; i < source_length; ++i) {
     Element* element = forms->item(i);
     // Strange but true, sometimes node can be 0.
-    if (element && element->IsHTMLElement())
-      temp.push_back(WebFormElement(ToHTMLFormElement(element)));
+    if (auto* html_form_element = DynamicTo<HTMLFormElement>(element))
+      temp.push_back(WebFormElement(html_form_element));
   }
   results.Assign(temp);
 }

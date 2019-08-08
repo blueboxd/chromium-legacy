@@ -104,9 +104,6 @@ class CONTENT_EXPORT SharedWorkerHost
                  int frame_id,
                  const blink::MessagePortChannel& port);
 
-  void BindDevToolsAgent(blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-                         blink::mojom::DevToolsAgentAssociatedRequest request);
-
   void SetAppCacheHandle(
       std::unique_ptr<AppCacheNavigationHandle> appcache_handle);
   void SetServiceWorkerHandle(
@@ -149,7 +146,8 @@ class CONTENT_EXPORT SharedWorkerHost
   // blink::mojom::SharedWorkerHost methods:
   void OnConnected(int connection_request_id) override;
   void OnContextClosed() override;
-  void OnReadyForInspection() override;
+  void OnReadyForInspection(blink::mojom::DevToolsAgentPtr,
+                            blink::mojom::DevToolsAgentHostRequest) override;
   void OnScriptLoadFailed() override;
   void OnFeatureUsed(blink::mojom::WebFeature feature) override;
 

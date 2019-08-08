@@ -3316,139 +3316,132 @@ TEST_F(CookieMonsterTest, RejectCreatedHttpOnlyCookieOnSet) {
 // Test the CookiesWithoutSameSiteMustBeSecure experimental option (in
 // conjunction with SameSiteByDefaultCookies, which it depends upon).
 TEST_F(CookieMonsterTest, CookiesWithoutSameSiteMustBeSecure) {
+  const base::TimeDelta kLongAge = kLaxAllowUnsafeMaxAge * 4;
+  const base::TimeDelta kShortAge = kLaxAllowUnsafeMaxAge / 4;
+
+  struct TestCase {
+    bool is_cookies_without_samesite_must_be_secure_enabled;
+    bool is_url_secure;
+    std::string cookie_line;
+    CanonicalCookie::CookieInclusionStatus expected_set_cookie_result;
+    // Only makes sense to check if result is INCLUDE:
+    CookieSameSite expected_effective_samesite = CookieSameSite::UNSPECIFIED;
+    base::TimeDelta creation_time_delta = base::TimeDelta();
+  } test_cases[] = {
+      // Feature enabled:
+      // Cookie set from a secure URL with SameSite enabled is not rejected.
+      {true, true, "A=B; SameSite=Lax",
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE},
+      // Cookie set from a secure URL which is defaulted into Lax is not
+      // rejected.
+      {true, true, "A=B",  // recently-set session cookie.
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE_ALLOW_UNSAFE, kShortAge},
+      {true, true, "A=B",  // not-recently-set session cookie.
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE, kLongAge},
+      // Cookie set from a secure URL with SameSite=None and Secure is set.
+      {true, true, "A=B; SameSite=None; Secure",
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::NO_RESTRICTION},
+      // Cookie set from a secure URL with SameSite=None but not specifying
+      // Secure is rejected.
+      {true, true, "A=B; SameSite=None",
+       CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE},
+      // Cookie set from an insecure URL which defaults into LAX_MODE is not
+      // rejected.
+      {true, false, "A=B",  // recently-set session cookie.
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE_ALLOW_UNSAFE, kShortAge},
+      {true, false, "A=B",  // not-recently-set session cookie.
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE, kLongAge},
+      {true, false, "A=B; Max-Age=1000000",  // recently-set persistent cookie.
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE_ALLOW_UNSAFE, kShortAge},
+      {true, false,
+       "A=B; Max-Age=1000000",  // not-recently-set persistent cookie.
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE, kLongAge},
+
+      // Feature not enabled (but SameSiteByDefaultCookies is still enabled):
+      // Cookie set from a secure URL with SameSite enabled is not rejected.
+      {false, true, "A=B; SameSite=Lax",
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE},
+      // Cookie set from a secure URL which is defaulted into Lax is not
+      // rejected.
+      {false, true, "A=B",  // recently-set session cookie.
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE_ALLOW_UNSAFE, kShortAge},
+      {false, true, "A=B",  // not-recently-set session cookie.
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE, kLongAge},
+      // Cookie set from a secure URL with SameSite=None and Secure is set.
+      {false, true, "A=B; SameSite=None; Secure",
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::NO_RESTRICTION},
+      // Cookie set from an insecure URL with SameSite=None (which can't ever be
+      // secure because it's an insecure URL) is NOT rejected, because
+      // CookiesWithoutSameSiteMustBeSecure is not enabled.
+      {false, false, "A=B; SameSite=None",
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::NO_RESTRICTION},
+      // Cookie set from an insecure URL which is defaulted into Lax is not
+      // rejected.
+      {false, false, "A=B",  // recently-set session cookie.
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE_ALLOW_UNSAFE, kShortAge},
+      {false, false, "A=B",  // not-recently-set session cookie.
+       CanonicalCookie::CookieInclusionStatus::INCLUDE,
+       CookieSameSite::LAX_MODE, kLongAge},
+  };
+
   auto cm = std::make_unique<CookieMonster>(nullptr, nullptr);
-  CookieOptions options;
-  options.set_same_site_cookie_context(
-      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   GURL secure_url("https://www.example1.test");
   GURL insecure_url("http://www.example2.test");
-  CanonicalCookie::CookieInclusionStatus result;
 
-  // Enable both features.
-  {
+  int length = sizeof(test_cases) / sizeof(test_cases[0]);
+  for (int i = 0; i < length; ++i) {
+    TestCase test = test_cases[i];
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {features::kSameSiteByDefaultCookies,
-         features::kCookiesWithoutSameSiteMustBeSecure} /* enabled_features */,
-        {} /* disabled_features */);
+    if (test.is_cookies_without_samesite_must_be_secure_enabled) {
+      feature_list.InitWithFeatures(
+          {features::kSameSiteByDefaultCookies,
+           features::
+               kCookiesWithoutSameSiteMustBeSecure} /* enabled_features */,
+          {} /* disabled_features */);
+    } else {
+      feature_list.InitWithFeatures(
+          {features::kSameSiteByDefaultCookies} /* enabled_features */,
+          {features::
+               kCookiesWithoutSameSiteMustBeSecure} /* disabled_features */);
+    }
+    ASSERT_TRUE(cookie_util::IsSameSiteByDefaultCookiesEnabled());
+    ASSERT_EQ(test.is_cookies_without_samesite_must_be_secure_enabled,
+              cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled());
 
-    // Cookie set from a secure URL with SameSite enabled is not rejected.
-    result = SetCookieReturnStatus(cm.get(), secure_url, "A=B; SameSite=Lax");
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
-    CookieList cookies = GetAllCookiesForURL(cm.get(), secure_url);
-    ASSERT_EQ(1u, cookies.size());
-    EXPECT_EQ(CookieSameSite::LAX_MODE, cookies[0].SameSite());
-    EXPECT_FALSE(cookies[0].IsSecure());
-
-    // Cookie set from a secure URL which defaults into LAX_MODE is not
-    // rejected.
-    result = SetCookieReturnStatus(cm.get(), secure_url, "A=B");
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
-    cookies = GetAllCookiesForURL(cm.get(), secure_url);
-    ASSERT_EQ(1u, cookies.size());  // We overwrote the previous cookie.
-    EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookies[0].SameSite());
-    EXPECT_EQ(CookieSameSite::LAX_MODE, cookies[0].GetEffectiveSameSite());
-    EXPECT_FALSE(cookies[0].IsSecure());
-
-    // Cookie set from a secure URL with SameSite=None and Secure is set.
-    result = SetCookieReturnStatus(cm.get(), secure_url,
-                                   "A=B; SameSite=None; Secure");
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
-    cookies = GetAllCookiesForURL(cm.get(), secure_url);
-    ASSERT_EQ(1u, cookies.size());
-    EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookies[0].SameSite());
-    EXPECT_TRUE(cookies[0].IsSecure());
-
-    // Cookie set from a secure URL with SameSite=None but not specifying Secure
-    // is rejected.
-    result = SetCookieReturnStatus(cm.get(), secure_url, "A=B; SameSite=None");
-    EXPECT_EQ(
-        CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE,
-        result);
-
-    // Cookie set from an insecure URL with SameSite=None (which can't ever be
-    // secure because it's an insecure URL) is rejected.
-    result =
-        SetCookieReturnStatus(cm.get(), insecure_url, "A=B; SameSite=None");
-    EXPECT_EQ(
-        CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE,
-        result);
-
-    // Cookie set from an insecure URL which defaults into LAX_MODE is not
-    // rejected.
-    result = SetCookieReturnStatus(cm.get(), insecure_url, "A=B");
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
-    cookies = GetAllCookiesForURL(cm.get(), insecure_url);
-    ASSERT_EQ(1u, cookies.size());  // We overwrote the previous cookie.
-    EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookies[0].SameSite());
-    EXPECT_EQ(CookieSameSite::LAX_MODE, cookies[0].GetEffectiveSameSite());
-    EXPECT_FALSE(cookies[0].IsSecure());
-  }
-
-  // Only enable SameSiteByDefaultCookies, and not
-  // CookiesWithoutSameSiteMustBeSecure.
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures(
-        {features::kSameSiteByDefaultCookies} /* enabled_features */,
-        {features::
-             kCookiesWithoutSameSiteMustBeSecure} /* disabled_features */);
-
-    // Cookie set from a secure URL with SameSite enabled is not rejected.
-    result = SetCookieReturnStatus(cm.get(), secure_url, "A=B; SameSite=Lax");
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
-    CookieList cookies = GetAllCookiesForURL(cm.get(), secure_url);
-    ASSERT_EQ(1u, cookies.size());
-    EXPECT_EQ(CookieSameSite::LAX_MODE, cookies[0].SameSite());
-    EXPECT_FALSE(cookies[0].IsSecure());
-
-    // Cookie set from a secure URL which defaults into LAX_MODE is not
-    // rejected.
-    result = SetCookieReturnStatus(cm.get(), secure_url, "A=B");
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
-    cookies = GetAllCookiesForURL(cm.get(), secure_url);
-    ASSERT_EQ(1u, cookies.size());  // We overwrote the previous cookie.
-    EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookies[0].SameSite());
-    EXPECT_EQ(CookieSameSite::LAX_MODE, cookies[0].GetEffectiveSameSite());
-    EXPECT_FALSE(cookies[0].IsSecure());
-
-    // Cookie set from a secure URL with SameSite=None and Secure is set.
-    result = SetCookieReturnStatus(cm.get(), secure_url,
-                                   "A=B; SameSite=None; Secure");
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
-    cookies = GetAllCookiesForURL(cm.get(), secure_url);
-    ASSERT_EQ(1u, cookies.size());
-    EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookies[0].SameSite());
-    EXPECT_TRUE(cookies[0].IsSecure());
-
-    // Cookie set from a secure URL with SameSite=None but not specifying Secure
-    // is NOT rejected.
-    result = SetCookieReturnStatus(cm.get(), secure_url, "A=B; SameSite=None");
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
-    cookies = GetAllCookiesForURL(cm.get(), secure_url);
-    ASSERT_EQ(1u, cookies.size());  // We overwrote the previous cookie.
-    EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookies[0].SameSite());
-    EXPECT_FALSE(cookies[0].IsSecure());
-
-    // Cookie set from an insecure URL with SameSite=None (which can't ever be
-    // secure because it's an insecure URL) is NOT rejected.
-    result =
-        SetCookieReturnStatus(cm.get(), insecure_url, "A=B; SameSite=None");
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
-    cookies = GetAllCookiesForURL(cm.get(), insecure_url);
-    ASSERT_EQ(1u, cookies.size());
-    EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookies[0].SameSite());
-    EXPECT_FALSE(cookies[0].IsSecure());
-
-    // Cookie set from an insecure URL which defaults into LAX_MODE is not
-    // rejected.
-    result = SetCookieReturnStatus(cm.get(), insecure_url, "A=B");
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, result);
-    cookies = GetAllCookiesForURL(cm.get(), insecure_url);
-    ASSERT_EQ(1u, cookies.size());  // We overwrote the previous cookie.
-    EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookies[0].SameSite());
-    EXPECT_EQ(CookieSameSite::LAX_MODE, cookies[0].GetEffectiveSameSite());
-    EXPECT_FALSE(cookies[0].IsSecure());
+    GURL url = test.is_url_secure ? secure_url : insecure_url;
+    base::Time creation_time = base::Time::Now() - test.creation_time_delta;
+    auto cookie = CanonicalCookie::Create(url, test.cookie_line, creation_time,
+                                          base::nullopt /* server_time */);
+    // Make a copy so we can delete it after the test.
+    CanonicalCookie cookie_copy = *cookie;
+    CanonicalCookie::CookieInclusionStatus result =
+        SetCanonicalCookieReturnStatus(
+            cm.get(), std::move(cookie), url.scheme(),
+            true /* can_modify_httponly (irrelevant) */);
+    EXPECT_EQ(test.expected_set_cookie_result, result)
+        << "Test case " << i << " failed.";
+    if (result == CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+      auto cookies = GetAllCookiesForURL(cm.get(), url);
+      ASSERT_EQ(1u, cookies.size());
+      EXPECT_EQ(test.expected_effective_samesite,
+                cookies[0].GetEffectiveSameSite())
+          << "Test case " << i << " failed.";
+      DeleteCanonicalCookie(cm.get(), cookie_copy);
+    }
   }
 }
 

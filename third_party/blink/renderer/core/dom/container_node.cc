@@ -1553,7 +1553,7 @@ ClassCollection* ContainerNode::getElementsByClassName(
 
 RadioNodeList* ContainerNode::GetRadioNodeList(const AtomicString& name,
                                                bool only_match_img_elements) {
-  DCHECK(IsHTMLFormElement(this) || IsA<HTMLFieldSetElement>(this));
+  DCHECK(IsA<HTMLFormElement>(this) || IsA<HTMLFieldSetElement>(this));
   CollectionType type =
       only_match_img_elements ? kRadioImgNodeListType : kRadioNodeListType;
   return EnsureCachedCollection<RadioNodeList>(type, name);

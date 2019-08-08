@@ -41,7 +41,7 @@ void AddSimpleField(const base::string16& data, UserInfo* user_info) {
 UserInfo TranslateCard(const CreditCard* data) {
   DCHECK(data);
 
-  UserInfo user_info;
+  UserInfo user_info(data->network());
 
   base::string16 obfuscated_number = data->ObfuscatedLastFourDigits();
   user_info.add_field(UserInfo::Field(obfuscated_number, obfuscated_number,

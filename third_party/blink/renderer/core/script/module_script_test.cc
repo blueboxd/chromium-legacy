@@ -142,7 +142,9 @@ TEST_F(ModuleScriptTest, V8CodeCache) {
 
     // Check that the module script is instantiated/evaluated correctly.
     ASSERT_TRUE(
-        module_script->Record().Instantiate(scope.GetScriptState()).IsEmpty());
+        module_script->Record()
+            .Instantiate(scope.GetScriptState(), module_script->SourceURL())
+            .IsEmpty());
     ASSERT_TRUE(
         module_script->Record().Evaluate(scope.GetScriptState()).IsEmpty());
     TestFoo(scope);

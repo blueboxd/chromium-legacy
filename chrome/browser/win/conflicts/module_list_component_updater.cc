@@ -21,12 +21,11 @@ ModuleListComponentUpdater::UniquePtr ModuleListComponentUpdater::Create(
     const std::string& module_list_component_id,
     const base::RepeatingClosure&
         on_module_list_component_not_updated_callback) {
-  return UniquePtr(
-      new ModuleListComponentUpdater(
-          module_list_component_id,
-          on_module_list_component_not_updated_callback),
-      base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunnerWithTraits(
-          {content::BrowserThread::UI})));
+  return UniquePtr(new ModuleListComponentUpdater(
+                       module_list_component_id,
+                       on_module_list_component_not_updated_callback),
+                   base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
+                       {content::BrowserThread::UI})));
 }
 
 ModuleListComponentUpdater::ModuleListComponentUpdater(
@@ -36,7 +35,7 @@ ModuleListComponentUpdater::ModuleListComponentUpdater(
       on_module_list_component_not_updated_callback_(
           on_module_list_component_not_updated_callback),
       observer_(this) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&ModuleListComponentUpdater::InitializeOnUIThread,
                      base::Unretained(this)));

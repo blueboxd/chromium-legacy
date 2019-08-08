@@ -117,20 +117,19 @@ void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuest(
     int32_t element_instance_id,
     const gfx::Size& element_size,
     mime_handler::BeforeUnloadControlPtr before_unload_control) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&ExtensionsGuestViewMessageFilter::
-                         CreateMimeHandlerViewGuestOnUIThread,
-                     this, render_frame_id, view_id, element_instance_id,
-                     element_size, before_unload_control.PassInterface(),
-                     false));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ExtensionsGuestViewMessageFilter::
+                                    CreateMimeHandlerViewGuestOnUIThread,
+                                this, render_frame_id, view_id,
+                                element_instance_id, element_size,
+                                before_unload_control.PassInterface(), false));
 }
 
 void ExtensionsGuestViewMessageFilter::ReadyToCreateMimeHandlerView(
     int32_t render_frame_id,
     bool success) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &ExtensionsGuestViewMessageFilter::ReadyToCreateMimeHandlerView,
@@ -203,13 +202,12 @@ void ExtensionsGuestViewMessageFilter::CreateEmbeddedMimeHandlerViewGuest(
     const gfx::Size& element_size,
     content::mojom::TransferrableURLLoaderPtr transferrable_url_loader) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&ExtensionsGuestViewMessageFilter::
-                           CreateEmbeddedMimeHandlerViewGuest,
-                       this, render_frame_id, tab_id, original_url,
-                       element_instance_id, element_size,
-                       base::Passed(&transferrable_url_loader)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&ExtensionsGuestViewMessageFilter::
+                                      CreateEmbeddedMimeHandlerViewGuest,
+                                  this, render_frame_id, tab_id, original_url,
+                                  element_instance_id, element_size,
+                                  base::Passed(&transferrable_url_loader)));
     return;
   }
 

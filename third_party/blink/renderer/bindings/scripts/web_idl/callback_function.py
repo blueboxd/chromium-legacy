@@ -4,6 +4,7 @@
 
 import exceptions
 
+from .function_like import FunctionLike
 from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
@@ -12,14 +13,16 @@ from .identifier_ir_map import IdentifierIRMap
 from .user_defined_type import UserDefinedType
 
 
-class CallbackFunction(UserDefinedType, WithExtendedAttributes,
+class CallbackFunction(UserDefinedType, FunctionLike, WithExtendedAttributes,
                        WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-callback-functions"""
 
-    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
-             WithComponent, WithDebugInfo):
+    class IR(IdentifierIRMap.IR, FunctionLike.IR, WithExtendedAttributes,
+             WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
+                     arguments,
+                     return_type,
                      extended_attributes=None,
                      code_generator_info=None,
                      component=None,
@@ -28,26 +31,24 @@ class CallbackFunction(UserDefinedType, WithExtendedAttributes,
                 self,
                 identifier=identifier,
                 kind=IdentifierIRMap.IR.Kind.CALLBACK_FUNCTION)
+            FunctionLike.IR.__init__(
+                self, arguments=arguments, return_type=return_type)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
             WithComponent.__init__(self, component)
             WithDebugInfo.__init__(self, debug_info)
 
-    @property
-    def return_type(self):
-        """
-        Returns the type of return value.
-        @return IdlType
-        """
-        raise exceptions.NotImplementedError()
+    def __init__(self, ir):
+        assert isinstance(ir, CallbackFunction.IR)
 
-    @property
-    def arguments(self):
-        """
-        Returns a list of arguments.
-        @return Argument
-        """
-        raise exceptions.NotImplementedError()
+        UserDefinedType.__init__(self, ir.identifier)
+        FunctionLike.__init__(self, ir)
+        WithExtendedAttributes.__init__(self,
+                                        ir.extended_attributes.make_copy())
+        WithCodeGeneratorInfo.__init__(self,
+                                       ir.code_generator_info.make_copy())
+        WithComponent.__init__(self, components=ir.components)
+        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
 
     # UserDefinedType overrides
     @property

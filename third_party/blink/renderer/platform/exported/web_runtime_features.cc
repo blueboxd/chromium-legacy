@@ -695,4 +695,8 @@ void WebRuntimeFeatures::EnableBackForwardCache(bool enable) {
   RuntimeEnabledFeatures::SetBackForwardCacheEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableSurfaceEmbeddingFeatures(bool enable) {
+  RuntimeEnabledFeatures::SetSurfaceEmbeddingFeaturesEnabled(enable);
+}
+
 }  // namespace blink

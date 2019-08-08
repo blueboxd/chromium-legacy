@@ -32,25 +32,25 @@ cca.mojo.MojoInterface = class {
   /** @public */
   constructor() {
     /**
-     * @type {cros.mojom.CrosImageCaptureProxy} A interface proxy that used to
+     * @type {cros.mojom.CrosImageCaptureRemote} A interface remote that used to
      *     construct the mojo interface.
      */
-    this.proxy = cros.mojom.CrosImageCapture.getProxy();
+    this.remote = cros.mojom.CrosImageCapture.getRemote();
   }
 
   /**
-   * Gets the mojo interface proxy which could be used to communicate with
+   * Gets the mojo interface remote which could be used to communicate with
    * Chrome.
-   * @return {cros.mojom.CrosImageCaptureProxy} The mojo interface proxy.
+   * @return {cros.mojom.CrosImageCaptureRemote} The mojo interface remote.
    */
-  static getProxy() {
+  static getRemote() {
     if (!cca.mojo.MojoInterface.instance_) {
       /**
        * @type {cca.mojo.MojoInterface} The singleton instance of this object.
        */
       cca.mojo.MojoInterface.instance_ = new cca.mojo.MojoInterface();
     }
-    return cca.mojo.MojoInterface.instance_.proxy;
+    return cca.mojo.MojoInterface.instance_.remote;
   }
 };
 
@@ -143,7 +143,7 @@ cca.mojo.ImageCapture.prototype.getPhotoCapabilities = async function() {
        {/** @type {cros.mojom.CameraInfo} */cameraInfo},
   ] = await Promise.all([
     this.capture_.getPhotoCapabilities(),
-    cca.mojo.MojoInterface.getProxy().getCameraInfo(this.deviceId_),
+    cca.mojo.MojoInterface.getRemote().getCameraInfo(this.deviceId_),
   ]);
 
   if (cameraInfo === null) {
@@ -173,7 +173,7 @@ cca.mojo.ImageCapture.prototype.takePhoto = function(
   const takes = [];
   if (photoEffects) {
     photoEffects.forEach((effect) => {
-      takes.push((cca.mojo.MojoInterface.getProxy().setReprocessOption(
+      takes.push((cca.mojo.MojoInterface.getRemote().setReprocessOption(
                       this.deviceId_, effect))
                      .then(({status, blob}) => {
                        if (status != 0) {
@@ -202,7 +202,7 @@ cca.mojo.getPhotoResolutions = async function(deviceId) {
   const numElementPerEntry = 4;
 
   let {cameraInfo} =
-      await cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId);
+      await cca.mojo.MojoInterface.getRemote().getCameraInfo(deviceId);
   if (cameraInfo === null) {
     throw new Error('No photo resolutions is found for given device id.');
   }
@@ -244,7 +244,7 @@ cca.mojo.getVideoConfigs = async function(deviceId) {
   const numElementPerEntry = 4;
 
   let {cameraInfo} =
-      await cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId);
+      await cca.mojo.MojoInterface.getRemote().getCameraInfo(deviceId);
   if (cameraInfo === null) {
     throw new Error('No video configs is found for given device id.');
   }
@@ -281,7 +281,7 @@ cca.mojo.getVideoConfigs = async function(deviceId) {
  */
 cca.mojo.getCameraFacing = async function(deviceId) {
   let {cameraInfo} =
-      await cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId);
+      await cca.mojo.MojoInterface.getRemote().getCameraInfo(deviceId);
   if (cameraInfo === null) {
     throw new Error('No camera facing is found for given device id.');
   }
@@ -299,7 +299,7 @@ cca.mojo.getSupportedFpsRanges = async function(deviceId) {
   const numElementPerEntry = 2;
 
   let {cameraInfo} =
-      await cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId);
+      await cca.mojo.MojoInterface.getRemote().getCameraInfo(deviceId);
   if (cameraInfo === null) {
     throw new Error('No supported Fps Ranges is found for given device id.');
   }
@@ -373,7 +373,7 @@ cca.mojo.getUserMedia = async function(deviceId, constraints) {
     // |constraints| , we assume the app wants to use default frame rate range.
     // We set the frame rate range to an invalid range (e.g. 0 fps) so that it
     // will fallback to use the default one.
-    const {isSuccess} = await cca.mojo.MojoInterface.getProxy().setFpsRange(
+    const {isSuccess} = await cca.mojo.MojoInterface.getRemote().setFpsRange(
         deviceId, streamWidth, streamHeight, minFrameRate, maxFrameRate);
 
     if (!isSuccess && hasSpecifiedFrameRateRange) {

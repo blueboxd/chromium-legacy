@@ -11,8 +11,6 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsService;
-import android.support.customtabs.CustomTabsService.Relation;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
@@ -48,6 +46,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.CustomTabsService.Relation;
 import dagger.Reusable;
 
 /**

@@ -18,6 +18,7 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -104,9 +105,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     version_ = new ServiceWorkerVersion(registration_.get(), script_url_,
                                         blink::mojom::ScriptType::kClassic, 1L,
                                         context()->AsWeakPtr());
-
-    context()->storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
+    context()->storage()->LazyInitializeForTest();
 
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
@@ -400,6 +399,50 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, SkipServiceWorker) {
           /*skip_service_worker=*/true));
 
   // Conduct a main resource load.
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify we did not use the worker.
+  EXPECT_FALSE(test_resources.loader());
+  EXPECT_FALSE(version_->HasControllee());
+
+  // The host should still have the correct URL.
+  EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->url());
+}
+
+// Tests interception after the context core has been destroyed and the provider
+// host is transferred to a new context.
+// TODO(crbug.com/877356): Remove this test when transferring contexts is
+// removed.
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, NullContext) {
+  // Store an activated worker.
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  base::RunLoop loop;
+  context()->storage()->StoreRegistration(
+      registration_.get(), version_.get(),
+      base::BindLambdaForTesting(
+          [&loop](blink::ServiceWorkerStatusCode status) { loop.Quit(); }));
+  loop.Run();
+
+  // Create an interceptor.
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+  test_resources.SetHandler(
+      std::make_unique<ServiceWorkerControlleeRequestHandler>(
+          context()->AsWeakPtr(), provider_host_, ResourceType::kMainFrame,
+          /*skip_service_worker=*/false));
+
+  // Destroy the context and make a new one.
+  helper_->context_wrapper()->DeleteAndStartOver();
+  base::RunLoop().RunUntilIdle();
+
+  // Conduct a main resource load. The loader won't be created because the
+  // interceptor's context is now null.
   test_resources.MaybeCreateLoader();
   EXPECT_FALSE(test_resources.loader());
 

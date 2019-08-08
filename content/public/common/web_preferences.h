@@ -280,6 +280,10 @@ struct CONTENT_EXPORT WebPreferences {
   // WebView sets this to false to retain old documentElement behaviour
   // (http://crbug.com/761016).
   bool scroll_top_left_interop_enabled;
+  // Disable features such as offscreen canvas that depend on the viz
+  // architecture of surface embedding. Android WebView does not support this
+  // architecture yet.
+  bool disable_features_depending_on_viz;
 #endif  // defined(OS_ANDROID)
 
   // Enable forcibly modifying content rendering to result in a light on dark

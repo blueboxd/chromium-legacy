@@ -606,15 +606,6 @@
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
-#include "services/content/simple_browser/public/mojom/constants.mojom.h"
-#include "services/content/simple_browser/simple_browser_service.h"
-#endif
-
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
-#include "services/content/simple_browser/public/mojom/constants.mojom.h"
-#endif
-
 #if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #endif
@@ -969,12 +960,6 @@ bool URLHasExtensionBackgroundPermission(
          process_map->Contains(extension->id(), opener_render_process_id);
 }
 
-void InvokeCallbackOnThread(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::Callback<void(bool)> callback,
-    bool result) {
-  task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), result));
-}
 #endif
 
 chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(
@@ -2420,19 +2405,17 @@ bool ChromeContentBrowserClient::AllowSignedExchange(
 
 void ChromeContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
-    content::ResourceContext* context,
+    content::BrowserContext* browser_context,
     const std::vector<content::GlobalFrameRoutingId>& render_frames,
-    base::Callback<void(bool)> callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  content_settings::CookieSettings* cookie_settings =
-      io_data->GetCookieSettings();
+    base::OnceCallback<void(bool)> callback) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
   bool allow = cookie_settings->IsCookieAccessAllowed(url, url);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  GuestPermissionRequestHelper(url, render_frames, callback, allow);
+  GuestPermissionRequestHelper(url, render_frames, std::move(callback), allow);
 #else
-  FileSystemAccessed(url, render_frames, callback, allow);
+  FileSystemAccessed(url, render_frames, std::move(callback), allow);
 #endif
 }
 
@@ -2440,9 +2423,9 @@ void ChromeContentBrowserClient::AllowWorkerFileSystem(
 void ChromeContentBrowserClient::GuestPermissionRequestHelper(
     const GURL& url,
     const std::vector<content::GlobalFrameRoutingId>& render_frames,
-    base::Callback<void(bool)> callback,
+    base::OnceCallback<void(bool)> callback,
     bool allow) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::map<int, int> process_map;
   std::map<int, int>::const_iterator it;
   bool has_web_view_guest = false;
@@ -2457,70 +2440,48 @@ void ChromeContentBrowserClient::GuestPermissionRequestHelper(
       has_web_view_guest = true;
   }
   if (!has_web_view_guest) {
-    FileSystemAccessed(url, render_frames, callback, allow);
+    FileSystemAccessed(url, render_frames, std::move(callback), allow);
     return;
   }
   DCHECK_EQ(1U, process_map.size());
   it = process_map.begin();
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &ChromeContentBrowserClient::RequestFileSystemPermissionOnUIThread,
-          it->first, it->second, url, allow,
-          base::Bind(
-              &ChromeContentBrowserClient::FileSystemAccessed,
-              weak_factory_.GetWeakPtr(), url, render_frames,
-              base::Bind(&InvokeCallbackOnThread,
-                         base::SequencedTaskRunnerHandle::Get(), callback))));
-}
 
-void ChromeContentBrowserClient::RequestFileSystemPermissionOnUIThread(
-    int render_process_id,
-    int render_frame_id,
-    const GURL& url,
-    bool allowed_by_default,
-    const base::Callback<void(bool)>& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   extensions::WebViewPermissionHelper* web_view_permission_helper =
-      extensions::WebViewPermissionHelper::FromFrameID(
-          render_process_id, render_frame_id);
-  web_view_permission_helper->RequestFileSystemPermission(url,
-                                                          allowed_by_default,
-                                                          callback);
+      extensions::WebViewPermissionHelper::FromFrameID(it->first, it->second);
+  web_view_permission_helper->RequestFileSystemPermission(
+      url, allow,
+      base::BindOnce(&ChromeContentBrowserClient::FileSystemAccessed,
+                     weak_factory_.GetWeakPtr(), url, render_frames,
+                     std::move(callback)));
 }
 #endif
 
 void ChromeContentBrowserClient::FileSystemAccessed(
     const GURL& url,
     const std::vector<content::GlobalFrameRoutingId>& render_frames,
-    base::Callback<void(bool)> callback,
+    base::OnceCallback<void(bool)> callback,
     bool allow) {
   // Record access to file system for potential display in UI.
   for (const auto& it : render_frames) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&TabSpecificContentSettings::FileSystemAccessed,
-                       it.child_id, it.frame_routing_id, url, !allow));
+    TabSpecificContentSettings::FileSystemAccessed(
+        it.child_id, it.frame_routing_id, url, !allow);
   }
-  callback.Run(allow);
+  std::move(callback).Run(allow);
 }
 
 bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
-    content::ResourceContext* context,
+    content::BrowserContext* browser_context,
     const std::vector<content::GlobalFrameRoutingId>& render_frames) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  content_settings::CookieSettings* cookie_settings =
-      io_data->GetCookieSettings();
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
+
   bool allow = cookie_settings->IsCookieAccessAllowed(url, url);
 
   // Record access to IndexedDB for potential display in UI.
   for (const auto& it : render_frames) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&TabSpecificContentSettings::IndexedDBAccessed,
-                       it.child_id, it.frame_routing_id, url, !allow));
+    TabSpecificContentSettings::IndexedDBAccessed(
+        it.child_id, it.frame_routing_id, url, !allow);
   }
 
   return allow;
@@ -2528,20 +2489,16 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
 
 bool ChromeContentBrowserClient::AllowWorkerCacheStorage(
     const GURL& url,
-    content::ResourceContext* context,
+    content::BrowserContext* browser_context,
     const std::vector<content::GlobalFrameRoutingId>& render_frames) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  content_settings::CookieSettings* cookie_settings =
-      io_data->GetCookieSettings();
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
   bool allow = cookie_settings->IsCookieAccessAllowed(url, url);
 
   // Record access to CacheStorage for potential display in UI.
   for (const auto& it : render_frames) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&TabSpecificContentSettings::CacheStorageAccessed,
-                       it.child_id, it.frame_routing_id, url, !allow));
+    TabSpecificContentSettings::CacheStorageAccessed(
+        it.child_id, it.frame_routing_id, url, !allow);
   }
 
   return allow;
@@ -3956,18 +3913,6 @@ void ChromeContentBrowserClient::RunServiceInstance(
   if (service_name == media::mojom::kMediaServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         media::CreateMediaService(std::move(*receiver)));
-    return;
-  }
-#endif
-
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kLaunchInProcessSimpleBrowserSwitch) &&
-      service_name == simple_browser::mojom::kServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<simple_browser::SimpleBrowserService>(
-            std::move(*receiver), simple_browser::SimpleBrowserService::
-                                      UIInitializationMode::kUseEnvironmentUI));
     return;
   }
 #endif

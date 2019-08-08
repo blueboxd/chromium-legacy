@@ -8,7 +8,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.support.customtabs.TrustedWebUtils;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +27,8 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+
+import androidx.browser.customtabs.TrustedWebUtils;
 
 /**
  * Custom {@link ChromeActivityTestRule} for tests using {@link WebappActivity}.

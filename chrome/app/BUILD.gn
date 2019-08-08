@@ -567,11 +567,6 @@ source_set("builtin_service_manifests") {
     deps += [ "//components/services/pdf_compositor/public/cpp:manifest" ]
   }
 
-  if (enable_simple_browser_service_in_process ||
-      enable_simple_browser_service_out_of_process) {
-    deps += [ "//services/content/simple_browser/public/cpp:manifest" ]
-  }
-
   if (is_win) {
     deps += [ "//chrome/services/wifi_util_win/public/cpp:manifest" ]
   }

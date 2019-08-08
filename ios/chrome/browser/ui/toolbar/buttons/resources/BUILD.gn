@@ -4,6 +4,12 @@
 
 import("//build/config/ios/asset_catalog.gni")
 
+colorset("omnibox_incognito_background_color") {
+  sources = [
+    "omnibox_incognito_background_color.colorset/Contents.json",
+  ]
+}
+
 colorset("tab_toolbar_button_color_highlighted") {
   sources = [
     "tab_toolbar_button_color_highlighted.colorset/Contents.json",

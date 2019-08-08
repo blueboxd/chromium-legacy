@@ -5,17 +5,11 @@
   const FetchHelper = await testRunner.loadScript('resources/fetch-test.js');
 
   let serviceWorkerSession;
-  let dedicatedWorkerSession;
   await dp.Target.setAutoAttach(
       {autoAttach: true, waitForDebuggerOnStart: false, flatten: true});
   dp.Target.onAttachedToTarget(async event => {
     serviceWorkerSession = session.createChild(event.params.sessionId);
-    const target = serviceWorkerSession.protocol.Target;
-    target.setAutoAttach(
-        {autoAttach: true, waitForDebuggerOnStart: false, flatten: true});
-    target.onAttachedToTarget(e => {
-       dedicatedWorkerSession = serviceWorkerSession.createChild(e.params.sessionId);
-     });
+
   });
 
   await dp.ServiceWorker.enable();
@@ -53,13 +47,13 @@
     body: btoa(`self.imported_token = "overriden imported script!"`)
   });
 
-  content = await dedicatedWorkerSession.evaluate(`
+  content = await serviceWorkerSession.evaluate(`
       importScripts("service-worker-import.js");
       self.imported_token
   `);
   testRunner.log(`Imported script after interception enabled: ${content}`);
 
-  dedicatedWorkerSession.evaluate(`self.installCallback()`);
+  serviceWorkerSession.evaluate(`self.installCallback()`);
   await waitForServiceWorkerPhase("activated");
   await swFetcher.enable();
 

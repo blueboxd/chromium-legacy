@@ -169,8 +169,10 @@ void WritableFileChecker::Check() {
       continue;
     }
 #endif
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
+         base::MayBlock()},
         base::Bind(&PrepareNativeLocalFileForWritableApp, path, is_directory),
         base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
   }

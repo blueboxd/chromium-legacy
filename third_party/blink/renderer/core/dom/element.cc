@@ -1918,22 +1918,8 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
 
   if (isConnected()) {
     if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
-      if (params.old_value != params.new_value) {
-        auto* page = GetDocument().GetPage();
-        auto* view = GetDocument().View();
-        // If this attribute is interesting for accessibility (e.g. `role` or
-        // `alt`), but doesn't trigger a lifecycle update on its own
-        // (e.g. because it doesn't make layout dirty), make sure we run
-        // lifecycle phases to update the computed accessibility tree.
-        if (cache->HandleAttributeChanged(name, this) && page && view) {
-          if (!view->CanThrottleRendering())
-            page->Animator().ScheduleVisualUpdate(GetDocument().GetFrame());
-
-          // TODO(aboxhall): add a lifecycle phase for accessibility updates.
-          GetDocument().Lifecycle().EnsureStateAtMost(
-              DocumentLifecycle::kVisualUpdatePending);
-        }
-      }
+      if (params.old_value != params.new_value)
+        cache->HandleAttributeChanged(name, this);
     }
   }
 

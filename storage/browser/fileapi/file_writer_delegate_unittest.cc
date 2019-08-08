@@ -89,8 +89,6 @@ class Result {
   FileWriterDelegate::WriteProgressStatus write_status_;
 };
 
-class BlobURLRequestJobFactory;
-
 }  // namespace (anonymous)
 
 class FileWriterDelegateTest : public PlatformTest {

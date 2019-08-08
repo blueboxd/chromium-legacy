@@ -83,10 +83,10 @@
 
         </LinearLayout>
 
-        <!-- TODO(crbug.com/969708): Replace placeholder dimensions once icon is replaced -->
         <ImageView
             android:id="@+id/icon"
-            android:layout_width="@dimen/keyboard_accessory_suggestion_icon_size"
+            android:layout_marginTop="@dimen/keyboard_accessory_image_top_padding"
+            android:layout_width="@dimen/keyboard_accessory_bar_item_cc_icon_width"
             android:layout_height="@dimen/keyboard_accessory_suggestion_icon_size"
             android:layout_weight="0"
             android:importantForAccessibility="no"

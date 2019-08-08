@@ -53,23 +53,6 @@
 
 namespace content {
 
-namespace {
-
-// Runs |task| on the thread specified by |thread_id| if already on that thread,
-// otherwise posts a task to that thread.
-void RunOrPostTask(const base::Location& from_here,
-                   BrowserThread::ID thread_id,
-                   base::OnceClosure task) {
-  if (BrowserThread::CurrentlyOn(thread_id)) {
-    std::move(task).Run();
-    return;
-  }
-
-  base::PostTask(from_here, {thread_id}, std::move(task));
-}
-
-}  // namespace
-
 // static
 void WorkerScriptFetchInitiator::Start(
     int worker_process_id,
@@ -175,13 +158,13 @@ void WorkerScriptFetchInitiator::Start(
 
   AddAdditionalRequestHeaders(resource_request.get(), browser_context);
 
-  CreateScriptLoaderOnUI(
-      worker_process_id, std::move(resource_request), storage_partition,
-      std::move(factory_bundle_for_browser),
-      std::move(subresource_loader_factories),
-      std::move(service_worker_context), service_worker_handle,
-      appcache_handle_core, std::move(blob_url_loader_factory),
-      std::move(url_loader_factory_override), std::move(callback));
+  CreateScriptLoader(worker_process_id, std::move(resource_request),
+                     storage_partition, std::move(factory_bundle_for_browser),
+                     std::move(subresource_loader_factories),
+                     std::move(service_worker_context), service_worker_handle,
+                     appcache_handle_core, std::move(blob_url_loader_factory),
+                     std::move(url_loader_factory_override),
+                     std::move(callback));
 }
 
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
@@ -265,7 +248,7 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
   SetFetchMetadataHeadersForBrowserInitiatedRequest(resource_request);
 }
 
-void WorkerScriptFetchInitiator::CreateScriptLoaderOnUI(
+void WorkerScriptFetchInitiator::CreateScriptLoader(
     int worker_process_id,
     std::unique_ptr<network::ResourceRequest> resource_request,
     StoragePartitionImpl* storage_partition,
@@ -372,12 +355,10 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoader(
         subresource_loader_params->controller_service_worker_object_host;
   }
 
-  RunOrPostTask(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(
-          std::move(callback), std::move(subresource_loader_factories),
-          std::move(main_script_load_params), std::move(controller),
-          std::move(controller_service_worker_object_host), success));
+  std::move(callback).Run(
+      std::move(subresource_loader_factories),
+      std::move(main_script_load_params), std::move(controller),
+      std::move(controller_service_worker_object_host), success);
 }
 
 }  // namespace content

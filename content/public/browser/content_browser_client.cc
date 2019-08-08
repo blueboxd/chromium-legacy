@@ -325,22 +325,22 @@ void ContentBrowserClient::UpdateRendererPreferencesForWorker(
 
 void ContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
-    ResourceContext* context,
+    BrowserContext* browser_context,
     const std::vector<GlobalFrameRoutingId>& render_frames,
-    base::Callback<void(bool)> callback) {
+    base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(true);
 }
 
 bool ContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
-    ResourceContext* context,
+    BrowserContext* browser_context,
     const std::vector<GlobalFrameRoutingId>& render_frames) {
   return true;
 }
 
 bool ContentBrowserClient::AllowWorkerCacheStorage(
     const GURL& url,
-    ResourceContext* context,
+    BrowserContext* browser_context,
     const std::vector<GlobalFrameRoutingId>& render_frames) {
   return true;
 }

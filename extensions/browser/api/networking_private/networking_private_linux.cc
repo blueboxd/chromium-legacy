@@ -1222,7 +1222,7 @@ void NetworkingPrivateLinux::PostOnNetworksChangedToUIThread(
     std::unique_ptr<GuidList> guid_list) {
   AssertOnDBusThread();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&NetworkingPrivateLinux::OnNetworksChangedEventTask,
                      base::Unretained(this), std::move(guid_list)));

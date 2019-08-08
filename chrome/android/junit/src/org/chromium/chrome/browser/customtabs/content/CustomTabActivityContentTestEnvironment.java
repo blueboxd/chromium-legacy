@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.customtabs.CustomTabsSessionToken;
 import android.view.View;
 
 import org.junit.rules.TestWatcher;
@@ -54,6 +53,8 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
+
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * A TestRule that sets up the mocks and contains helper methods for JUnit/Robolectric tests scoped

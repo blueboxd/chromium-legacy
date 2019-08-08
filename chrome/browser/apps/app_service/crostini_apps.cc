@@ -256,12 +256,16 @@ apps::mojom::AppPtr CrostiniApps::Convert(
 
   auto show = !registration.NoDisplay() ? apps::mojom::OptionalBool::kTrue
                                         : apps::mojom::OptionalBool::kFalse;
+  auto show_in_search = show;
   if (registration.is_terminal_app()) {
     show = crostini_enabled_ ? apps::mojom::OptionalBool::kTrue
                              : apps::mojom::OptionalBool::kFalse;
+    // The Crostini Terminal should appear in the app search, even when
+    // Crostini is not installed.
+    show_in_search = apps::mojom::OptionalBool::kTrue;
   }
   app->show_in_launcher = show;
-  app->show_in_search = show;
+  app->show_in_search = show_in_search;
   // TODO(crbug.com/955937): Enable once Crostini apps are managed inside App
   // Management.
   app->show_in_management = apps::mojom::OptionalBool::kFalse;

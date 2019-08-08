@@ -1169,7 +1169,7 @@ by a child template that "extends" this file.
               <category android:name="androidx.browser.customtabs.category.ColorSchemeCustomization"/>
             </intent-filter>
         </service>
-        <service android:name="android.support.customtabs.PostMessageService" />
+        <service android:name="androidx.browser.customtabs.PostMessageService" />
 
         <!-- Crash reporting services. -->
         <service android:name="org.chromium.chrome.browser.crash.ChromeMinidumpUploadJobService"

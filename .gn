@@ -386,7 +386,6 @@ check_targets = [
   # "//third_party/crashpad/*", 20ish errors
   "//third_party/crc32c/*",
   "//third_party/cros_system_api/*",
-  "//third_party/custom_tabs_client/*",
   "//third_party/cython/*",
   "//third_party/d3/*",
   "//third_party/dawn/*",

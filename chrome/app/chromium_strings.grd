@@ -316,6 +316,10 @@ Chromium is unable to recover your settings.
       <message name="IDS_PASSWORD_GENERATION_PROMPT" desc="Autofill dropdown text describing password generation.">
         Chromium will save this password in your Google Account. You won’t have to remember it.
       </message>
+      <!-- Password manager onboarding strings -->
+      <message name="IDS_PASSWORD_MANAGER_ONBOARDING_DETAILS" desc="The explanation text that is shown below the title in the password manager onboarding dialog.">
+        Chromium can help you remember your passwords so you don't have to.
+      </message>
       <message name="IDS_PASSWORD_MANAGER_TITLE_BRAND" desc="The product name used in the title of the password bubble.">
         Chromium
       </message>

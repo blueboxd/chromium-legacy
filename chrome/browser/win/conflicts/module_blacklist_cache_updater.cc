@@ -192,8 +192,9 @@ ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
       module_list_filter_(std::move(module_list_filter)),
       initial_blacklisted_modules_(initial_blacklisted_modules),
       on_cache_updated_callback_(std::move(on_cache_updated_callback)),
-      background_sequence_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      background_sequence_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       module_analysis_disabled_(module_analysis_disabled),
       weak_ptr_factory_(this) {

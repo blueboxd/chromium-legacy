@@ -34,6 +34,12 @@
 #import "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
+// Make sure symbols for GTMTimeUtils are decorated as C otherwise the linker
+// looks for CPP decorated symbols and fails.
+extern "C" {
+#include "third_party/google_toolbox_for_mac/src/Foundation/GTMTimeUtils.h"
+}
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -100,6 +106,14 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
   base::TimeDelta startDuration =
       base::TimeTicks::Now() - [startupInformation appLaunchTime];
+
+  NSDate* startup = GTMAppLaunchDate();
+  base::TimeDelta startDurationFromprocess =
+      base::TimeDelta::FromSecondsD(-startup.timeIntervalSinceNow);
+
+  UMA_HISTOGRAM_TIMES("Startup.ColdStartFromProcessCreationTime",
+                      startDurationFromprocess);
+
   if ([startupInformation startupParameters]) {
     UMA_HISTOGRAM_TIMES("Startup.ColdStartWithExternalURLTime", startDuration);
   } else {

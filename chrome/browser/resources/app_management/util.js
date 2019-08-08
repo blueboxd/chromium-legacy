@@ -242,9 +242,25 @@ cr.define('app_management.util', function() {
     }
   }
 
+  /**
+   * @param {OptionalBool} optionalBool
+   * @returns {boolean}
+   */
+  function convertOptionalBoolToBool(optionalBool) {
+    switch (optionalBool) {
+      case OptionalBool.kTrue:
+        return true;
+      case OptionalBool.kFalse:
+        return false;
+      default:
+        assertNotReached();
+    }
+  }
+
   return {
     addIfNeeded: addIfNeeded,
     alphabeticalSort: alphabeticalSort,
+    convertOptionalBoolToBool: convertOptionalBoolToBool,
     createEmptyState: createEmptyState,
     createInitialState: createInitialState,
     createPermission: createPermission,

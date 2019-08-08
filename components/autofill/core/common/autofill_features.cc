@@ -138,11 +138,6 @@ const base::Feature kAutofillSaveOnProbablySubmitted{
 const base::Feature kAutofillServerCommunication{
     "AutofillServerCommunication", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether the payments settings page should list the credit cards
-// split by type: Local of from Account.
-const base::Feature kAutofillSettingsCardTypeSplit{
-    "AutofillSettingsCardTypeSplit", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether autofill suggestions are filtered by field values previously
 // filled by website.
 const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms{

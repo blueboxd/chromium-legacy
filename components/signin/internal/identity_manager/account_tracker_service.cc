@@ -656,15 +656,10 @@ AccountTrackerService::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(java_ref_);
 }
 
-void JNI_AccountTrackerService_SeedAccountsInfo(
+void AccountTrackerService::SeedAccountsInfo(
     JNIEnv* env,
-    jlong nativeAccountTrackerService,
     const base::android::JavaParamRef<jobjectArray>& gaiaIds,
     const base::android::JavaParamRef<jobjectArray>& accountNames) {
-  AccountTrackerService* service =
-      reinterpret_cast<AccountTrackerService*>(nativeAccountTrackerService);
-  DCHECK(service);
-
   std::vector<std::string> gaia_ids;
   std::vector<std::string> account_names;
   base::android::AppendJavaStringArrayToStringVector(env, gaiaIds, &gaia_ids);
@@ -675,28 +670,22 @@ void JNI_AccountTrackerService_SeedAccountsInfo(
   DVLOG(1) << "AccountTrackerService.SeedAccountsInfo: "
            << " number of accounts " << gaia_ids.size();
   for (size_t i = 0; i < gaia_ids.size(); ++i) {
-    service->SeedAccountInfo(gaia_ids[i], account_names[i]);
+    SeedAccountInfo(gaia_ids[i], account_names[i]);
   }
 }
 
-jboolean JNI_AccountTrackerService_AreAccountsSeeded(
+jboolean AccountTrackerService::AreAccountsSeeded(
     JNIEnv* env,
-    jlong nativeAccountTrackerService,
-    const base::android::JavaParamRef<jobjectArray>& accountNames) {
-  AccountTrackerService* service =
-      reinterpret_cast<AccountTrackerService*>(nativeAccountTrackerService);
-  DCHECK(service);
-
+    const base::android::JavaParamRef<jobjectArray>& accountNames) const {
   std::vector<std::string> account_names;
   base::android::AppendJavaStringArrayToStringVector(env, accountNames,
                                                      &account_names);
 
-  bool migrated =
-      service->GetMigrationState() ==
-      AccountTrackerService::AccountIdMigrationState::MIGRATION_DONE;
+  const bool migrated =
+      GetMigrationState() == AccountIdMigrationState::MIGRATION_DONE;
 
   for (const auto& account_name : account_names) {
-    AccountInfo info = service->FindAccountInfoByEmail(account_name);
+    AccountInfo info = FindAccountInfoByEmail(account_name);
     if (info.account_id.empty()) {
       return false;
     }

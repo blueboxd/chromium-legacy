@@ -67,6 +67,12 @@
   },
   {
     "prefix": "threaded",
+    "base": "http/tests/csspaint",
+    "args": ["--enable-threaded-compositing",
+             "--enable-blink-features=OffMainThreadCSSPaint"]
+  },
+  {
+    "prefix": "threaded",
     "base": "external/wpt/requestidlecallback",
     "args": ["--enable-threaded-compositing"]
   },
@@ -321,6 +327,12 @@
     "prefix": "paint-non-fast-scrollable-regions",
     "base": "scrollingcoordinator",
     "args": ["--enable-blink-features=PaintNonFastScrollableRegions"]
+  },
+  {
+    "prefix": "highdpi-threaded",
+    "base": "external/wpt/css/css-paint-api/hidpi",
+    "args": ["--force-device-scale-factor=2","--enable-use-zoom-for-dsf=false",
+             "--enable-threaded-compositing", "--enable-blink-features=OffMainThreadCSSPaint"]
   },
   {
     "prefix": "scalefactor200",

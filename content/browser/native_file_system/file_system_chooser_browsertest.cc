@@ -110,10 +110,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenFile) {
       file_contents,
       EvalJs(shell(),
              "(async () => { const file = await self.selected_entry.getFile(); "
-             "return await new Response(file).text(); })()"));
+             "return await file.text(); })()"));
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile) {
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile_NonExistingFile) {
   const std::string file_contents = "file contents to write";
   const base::FilePath test_file = CreateTestFile("");
   {
@@ -149,6 +149,29 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile) {
     EXPECT_TRUE(base::ReadFileToString(test_file, &read_contents));
     EXPECT_EQ(file_contents, read_contents);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       SaveFile_TruncatesExistingFile) {
+  const base::FilePath test_file = CreateTestFile("Hello World");
+
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
+            EvalJs(shell(),
+                   "(async () => {"
+                   "  let e = await self.chooseFileSystemEntries("
+                   "      {type: 'saveFile'});"
+                   "  self.entry = e;"
+                   "  return e.name; })()"));
+  EXPECT_EQ(ui::SelectFileDialog::SELECT_SAVEAS_FILE, dialog_params.type);
+  EXPECT_EQ("",
+            EvalJs(shell(),
+                   "(async () => { const file = await self.entry.getFile(); "
+                   "return await file.text(); })()"));
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenMultipleFiles) {

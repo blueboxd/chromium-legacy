@@ -2155,6 +2155,8 @@ source_set("chromeos") {
     "extensions/input_method_api.h",
     "extensions/login_screen/login/login_api.cc",
     "extensions/login_screen/login/login_api.h",
+    "extensions/login_screen/login_screen_storage/login_screen_storage_api.cc",
+    "extensions/login_screen/login_screen_storage/login_screen_storage_api.h",
     "extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.cc",
     "extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.h",
     "extensions/login_screen/login_screen_ui/login_screen_ui_api.cc",

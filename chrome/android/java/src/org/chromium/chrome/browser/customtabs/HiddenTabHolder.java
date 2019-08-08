@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
@@ -27,6 +26,8 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.WindowAndroid;
+
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * Holds a hidden tab which may be used to preload pages before a CustomTabActivity is launched.

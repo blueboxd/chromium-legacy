@@ -144,7 +144,7 @@ Ways to turn on night mode on **custom tab**:
 * Turn on power save mode (aka **battery saver**) on Android P+
 * Go to **Android Settings -> Developer options -> Night mode** on Android P
 * Go to **Android Settings -> Display -> Theme** on Android Q
-* [Set color scheme](https://cs.chromium.org/chromium/src/third_party/custom_tabs_client/src/customtabs/src/android/support/customtabs/CustomTabsIntent.java?) to `COLOR_SCHEME_DARK` on creating a `CustomTabsIntent.Builder`
+* [Set color scheme](https://cs.chromium.org/chromium/src/third_party/android_sdk/androidx_browser/browser/src/main/java/androidx/browser/customtabs/CustomTabsIntent.java?) to `COLOR_SCHEME_DARK` on creating a `CustomTabsIntent.Builder`
 
 Some tips:
 

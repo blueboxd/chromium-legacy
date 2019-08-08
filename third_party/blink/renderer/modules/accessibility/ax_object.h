@@ -1138,6 +1138,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   ax::mojom::Role RemapAriaRoleDueToParent(ax::mojom::Role) const;
   unsigned ComputeAriaColumnIndex() const;
   unsigned ComputeAriaRowIndex() const;
+  bool HasInternalsAttribute(Element&, const QualifiedName&) const;
+  const AtomicString& GetInternalsAttribute(Element&,
+                                            const QualifiedName&) const;
 
   static unsigned number_of_live_ax_objects_;
 

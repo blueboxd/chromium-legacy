@@ -54,3 +54,4 @@
 };
 
 Element includes AriaAttributes;
+ElementInternals includes AriaAttributes;

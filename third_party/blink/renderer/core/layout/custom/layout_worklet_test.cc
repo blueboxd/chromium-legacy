@@ -53,7 +53,7 @@ class LayoutWorkletTest : public PageTestBase {
         ASSERT_NO_EXCEPTION);
     EXPECT_FALSE(module.IsNull());
 
-    ScriptValue exception = module.Instantiate(script_state);
+    ScriptValue exception = module.Instantiate(script_state, js_url);
     EXPECT_TRUE(exception.IsEmpty());
     return module.Evaluate(script_state);
   }

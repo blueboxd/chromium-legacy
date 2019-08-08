@@ -361,20 +361,24 @@ bool CanonicalCookie::IsDomainMatch(const std::string& host) const {
 }
 
 CookieSameSite CanonicalCookie::GetEffectiveSameSite() const {
+  CookieSameSite effective_same_site = SameSite();
   // If a cookie does not have a SameSite attribute, the effective SameSite
-  // mode depends on the SameSiteByDefaultCookies setting.
+  // mode depends on the SameSiteByDefaultCookies setting and whether the cookie
+  // is short-lived.
   if (SameSite() == CookieSameSite::UNSPECIFIED) {
-    if (cookie_util::IsSameSiteByDefaultCookiesEnabled())
-      return CookieSameSite::LAX_MODE;
-    return CookieSameSite::NO_RESTRICTION;
+    effective_same_site = cookie_util::IsSameSiteByDefaultCookiesEnabled()
+                              ? (IsRecentlyCreated(kLaxAllowUnsafeMaxAge)
+                                     ? CookieSameSite::LAX_MODE_ALLOW_UNSAFE
+                                     : CookieSameSite::LAX_MODE)
+                              : CookieSameSite::NO_RESTRICTION;
   }
 
-  // TODO(crbug.com/953995): Implement extended mode once first-party sets are
-  // available.
+  // TODO(crbug.com/989171): Replace this with FirstParty{Lax,Strict}.
   if (SameSite() == CookieSameSite::EXTENDED_MODE)
-    return CookieSameSite::LAX_MODE;
+    effective_same_site = CookieSameSite::LAX_MODE;
 
-  return SameSite();
+  DCHECK(IsValidEffectiveSameSiteValue(effective_same_site));
+  return effective_same_site;
 }
 
 CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
@@ -410,6 +414,16 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
                          EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX
                    : CanonicalCookie::CookieInclusionStatus::
                          EXCLUDE_SAMESITE_LAX;
+      }
+      break;
+    // TODO(crbug.com/990439): Add a browsertest for this behavior.
+    case CookieSameSite::LAX_MODE_ALLOW_UNSAFE:
+      if (options.same_site_cookie_context() <
+          CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE) {
+        DCHECK(SameSite() == CookieSameSite::UNSPECIFIED);
+        // TODO(chlily): Do we need a separate CookieInclusionStatus for this?
+        return CanonicalCookie::CookieInclusionStatus::
+            EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX;
       }
       break;
     default:
@@ -452,6 +466,7 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IsSetPermittedInContext(
       }
       break;
     case CookieSameSite::LAX_MODE:
+    case CookieSameSite::LAX_MODE_ALLOW_UNSAFE:
       if (options.same_site_cookie_context() <
           CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
         if (SameSite() == CookieSameSite::UNSPECIFIED) {
@@ -524,6 +539,9 @@ bool CanonicalCookie::IsCanonical() const {
     default:
       break;
   }
+
+  if (!IsValidSameSiteValue(same_site_))
+    return false;
 
   return true;
 }
@@ -598,6 +616,10 @@ bool CanonicalCookie::IsCookiePrefixValid(CanonicalCookie::CookiePrefix prefix,
     return secure && url.SchemeIsCryptographic() && domain_valid && path == "/";
   }
   return true;
+}
+
+bool CanonicalCookie::IsRecentlyCreated(base::TimeDelta age_threshold) const {
+  return (base::Time::Now() - creation_date_) <= age_threshold;
 }
 
 std::string CanonicalCookie::DomainWithoutDot() const {

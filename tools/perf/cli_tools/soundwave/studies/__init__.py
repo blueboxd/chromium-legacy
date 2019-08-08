@@ -24,7 +24,7 @@ def PostProcess(df):
   # We use all runs on the latest day for each quarter as reference.
   df['quarter'] = df['timestamp'].dt.to_period('Q')
   df['reference'] = df['timestamp'].dt.date == df.groupby(
-      'quarter')['timestamp'].transform('max').dt.date
+      ['quarter', 'test_suite', 'bot'])['timestamp'].transform('max').dt.date
 
   # Change units for values in ms to seconds, and percent values.
   df['units'] = df['units'].fillna('')
@@ -33,5 +33,9 @@ def PostProcess(df):
 
   is_percentage = df['units'].str.startswith('n%_')
   df.loc[is_percentage, 'value'] = df['value'] * 100
+
+  # Remove unused columns to save space in the output csv.
+  for col in ('point_id', 'chromium_rev', 'clank_rev', 'trace_url'):
+    del df[col]
 
   return df

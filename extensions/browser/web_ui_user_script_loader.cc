@@ -154,9 +154,9 @@ void WebUIUserScriptLoader::OnSingleWebUIURLFetchComplete(
 }
 
 void WebUIUserScriptLoader::OnWebUIURLFetchComplete() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(
-          &SerializeOnBlockingTask, base::SequencedTaskRunnerHandle::Get(),
-          std::move(user_scripts_cache_), std::move(scripts_loaded_callback_)));
+  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                 base::BindOnce(&SerializeOnBlockingTask,
+                                base::SequencedTaskRunnerHandle::Get(),
+                                std::move(user_scripts_cache_),
+                                std::move(scripts_loaded_callback_)));
 }

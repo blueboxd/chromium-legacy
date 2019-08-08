@@ -263,8 +263,9 @@ void ImageLoader::LoadImagesAsync(
     const std::vector<ImageRepresentation>& info_list,
     ImageLoaderImageCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(LoadImagesBlocking, info_list,
                      LoadResourceBitmaps(extension, info_list)),
       base::BindOnce(&ImageLoader::ReplyBack, weak_ptr_factory_.GetWeakPtr(),
@@ -276,8 +277,9 @@ void ImageLoader::LoadImageFamilyAsync(
     const std::vector<ImageRepresentation>& info_list,
     ImageLoaderImageFamilyCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(LoadImagesBlocking, info_list,
                      LoadResourceBitmaps(extension, info_list)),
       base::BindOnce(&ImageLoader::ReplyBackWithImageFamily,

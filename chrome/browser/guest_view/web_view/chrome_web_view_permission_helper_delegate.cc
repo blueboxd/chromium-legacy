@@ -222,24 +222,22 @@ int ChromeWebViewPermissionHelperDelegate::RemoveBridgeID(int bridge_id) {
 void ChromeWebViewPermissionHelperDelegate::RequestFileSystemPermission(
     const GURL& url,
     bool allowed_by_default,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   base::DictionaryValue request_info;
   request_info.SetString(guest_view::kUrl, url.spec());
   web_view_permission_helper()->RequestPermission(
-      WEB_VIEW_PERMISSION_TYPE_FILESYSTEM,
-      request_info,
-      base::Bind(&ChromeWebViewPermissionHelperDelegate::
-                     OnFileSystemPermissionResponse,
-                 weak_factory_.GetWeakPtr(),
-                 callback),
+      WEB_VIEW_PERMISSION_TYPE_FILESYSTEM, request_info,
+      base::BindOnce(&ChromeWebViewPermissionHelperDelegate::
+                         OnFileSystemPermissionResponse,
+                     weak_factory_.GetWeakPtr(), std::move(callback)),
       allowed_by_default);
 }
 
 void ChromeWebViewPermissionHelperDelegate::OnFileSystemPermissionResponse(
-    const base::Callback<void(bool)>& callback,
+    base::OnceCallback<void(bool)> callback,
     bool allow,
     const std::string& user_input) {
-  callback.Run(allow && web_view_guest()->attached());
+  std::move(callback).Run(allow && web_view_guest()->attached());
 }
 
 void ChromeWebViewPermissionHelperDelegate::FileSystemAccessedAsync(
@@ -249,15 +247,11 @@ void ChromeWebViewPermissionHelperDelegate::FileSystemAccessedAsync(
     const GURL& url,
     bool blocked_by_policy) {
   RequestFileSystemPermission(
-      url,
-      !blocked_by_policy,
-      base::Bind(&ChromeWebViewPermissionHelperDelegate::
-                     FileSystemAccessedAsyncResponse,
-                 weak_factory_.GetWeakPtr(),
-                 render_process_id,
-                 render_frame_id,
-                 request_id,
-                 url));
+      url, !blocked_by_policy,
+      base::BindOnce(&ChromeWebViewPermissionHelperDelegate::
+                         FileSystemAccessedAsyncResponse,
+                     weak_factory_.GetWeakPtr(), render_process_id,
+                     render_frame_id, request_id, url));
 }
 
 void ChromeWebViewPermissionHelperDelegate::FileSystemAccessedAsyncResponse(

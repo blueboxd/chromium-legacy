@@ -27,6 +27,8 @@ jumbo_source_set("leak_detection") {
   sources = [
     "authenticated_leak_check.cc",
     "authenticated_leak_check.h",
+    "encryption_utils.cc",
+    "encryption_utils.h",
     "leak_detection_check.h",
     "leak_detection_request_factory.h",
     "leak_detection_request_factory_impl.cc",
@@ -65,6 +67,7 @@ jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
     "authenticated_leak_check_unittest.cc",
+    "encryption_utils_unittest.cc",
     "leak_detection_request_factory_impl_unittest.cc",
   ]
 

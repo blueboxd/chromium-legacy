@@ -162,16 +162,19 @@ void SigninManagerAndroid::Shutdown() {
                              java_signin_manager_);
 }
 
-void SigninManagerAndroid::OnSignInCompleted(
+void SigninManagerAndroid::SetPrimaryAccount(
     JNIEnv* env,
     const JavaParamRef<jstring>& username) {
-  DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted";
+  DVLOG(1) << "SigninManagerAndroid::SetPrimaryAccount";
 
-  // TODO(crbug.com/987965): Migrate away from this direct usage of
-  // PrimaryAccountManager and eliminate this class needing to know about
-  // PrimaryAccountManager.
-  identity_manager_->GetPrimaryAccountManager()->SignIn(
-      base::android::ConvertJavaStringToUTF8(env, username));
+  auto account =
+      identity_manager_
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              base::android::ConvertJavaStringToUTF8(env, username));
+  DCHECK(account.has_value());
+  auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
+  bool result = account_mutator->SetPrimaryAccount(account->account_id);
+  CHECK(result);
 }
 
 void SigninManagerAndroid::SignOut(JNIEnv* env,

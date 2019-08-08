@@ -32,9 +32,9 @@ Polymer({
     },
   },
 
-  ready: function() {
-    // capture the onClick event before it reaches the toggle.
-    this.addEventListener('click', this.onClick_, true);
+  listeners: {
+    click: 'onClick_',
+    change: 'toggleSetting_',
   },
 
   /**
@@ -75,21 +75,22 @@ Polymer({
     return app.isPolicyPinned === OptionalBool.kTrue;
   },
 
-  /**
-   * @param {Event} event
-   * @private
-   */
-  onClick_: function(event) {
-    event.stopPropagation();
-
-    // Disabled
-    if (this.isManaged_(this.app_)) {
-      return;
-    }
-
+  toggleSetting_: function() {
+    const newState =
+        assert(app_management.util.toggleOptionalBool(this.app_.isPinned));
+    assert(
+        app_management.util.convertOptionalBoolToBool(newState) ===
+        this.$['toggle-row'].isChecked());
     app_management.BrowserProxy.getInstance().handler.setPinned(
         this.app_.id,
-        assert(app_management.util.toggleOptionalBool(this.app_.isPinned)),
+        newState,
     );
+  },
+
+  /**
+   * @private
+   */
+  onClick_: function() {
+    this.$['toggle-row'].click();
   },
 });

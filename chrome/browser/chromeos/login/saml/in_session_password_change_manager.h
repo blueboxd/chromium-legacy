@@ -62,7 +62,7 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer,
                                        public ash::SessionActivationObserver {
  public:
   // Events in the in-session SAML password change flow.
-  enum Event {
+  enum class Event {
     // Dialog is open showing third-party IdP SAML password change page:
     START_SAML_IDP_PASSWORD_CHANGE,
     // Third party IdP SAML password is changed (but not cryptohome yet):
@@ -73,6 +73,12 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer,
     CRYPTOHOME_PASSWORD_CHANGE_FAILURE,
     // Change of cryptohome password complete. In session PW change complete.
     CRYPTOHOME_PASSWORD_CHANGED,
+  };
+
+  // How the passwords were able to be obtained.
+  enum class PasswordSource {
+    PASSWORDS_SCRAPED,  // Passwords were scraped during SAML password change.
+    PASSWORDS_RETYPED,  // Passwords had to be manually confirmed by user.
   };
 
   // Observers of InSessionPasswordChangeManager are notified of certain events.
@@ -134,7 +140,8 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer,
 
   // Change cryptohome password for primary user.
   void ChangePassword(const std::string& old_password,
-                      const std::string& new_password);
+                      const std::string& new_password,
+                      PasswordSource password_source);
 
   // Handle a failure to scrape the passwords during in-session password change,
   // by showing a dialog for the user to confirm their old + new password.
@@ -168,6 +175,7 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer,
   scoped_refptr<CryptohomeAuthenticator> authenticator_;
   int urgent_warning_days_;
   bool renotify_on_unlock_ = false;
+  PasswordSource password_source_ = PasswordSource::PASSWORDS_SCRAPED;
 
   friend class InSessionPasswordChangeManagerTest;
 

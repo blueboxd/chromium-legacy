@@ -129,7 +129,7 @@ TEST_F(CreditCardAccessoryControllerTest, RefreshSuggestions) {
   ASSERT_EQ(
       result,
       CreditCardAccessorySheetDataBuilder()
-          .AddUserInfo()
+          .AddUserInfo(kVisaCard)
           .AppendField(card.ObfuscatedLastFourDigits(),
                        card.ObfuscatedLastFourDigits(), card.guid(),
                        /*is_obfuscated=*/false,

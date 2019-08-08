@@ -43,8 +43,8 @@ void EntryIsDirectory(content::BrowserContext* context,
   }
 #endif
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::Bind(&GetIsDirectoryFromFileInfo, path), callback);
 }
 

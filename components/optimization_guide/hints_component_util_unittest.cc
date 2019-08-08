@@ -12,9 +12,12 @@
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/version.h"
+#include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hints_component_info.h"
-#include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/optimization_filter.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace optimization_guide {
 
@@ -50,16 +53,6 @@ TEST_F(HintsComponentUtilTest, RecordProcessHintsComponentResult) {
   RecordProcessHintsComponentResult(ProcessHintsComponentResult::kSuccess);
   histogram_tester.ExpectUniqueSample("OptimizationGuide.ProcessHintsResult",
                                       ProcessHintsComponentResult::kSuccess, 1);
-}
-
-TEST_F(HintsComponentUtilTest, RecordOptimizationFilterStatus) {
-  base::HistogramTester histogram_tester;
-  RecordOptimizationFilterStatus(
-      proto::OptimizationType::NOSCRIPT,
-      OptimizationFilterStatus::kFoundServerBlacklistConfig);
-  histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.OptimizationFilterStatus.NoScript",
-      OptimizationFilterStatus::kFoundServerBlacklistConfig, 1);
 }
 
 TEST_F(HintsComponentUtilTest, ProcessHintsComponentInvalidVersion) {
@@ -136,6 +129,112 @@ TEST_F(HintsComponentUtilTest,
   ASSERT_TRUE(processed_config);
   EXPECT_EQ(1, processed_config->hints_size());
   EXPECT_EQ("google.com", processed_config->hints()[0].key());
+}
+
+TEST_F(HintsComponentUtilTest, RecordOptimizationFilterStatus) {
+  base::HistogramTester histogram_tester;
+  RecordOptimizationFilterStatus(
+      proto::OptimizationType::NOSCRIPT,
+      OptimizationFilterStatus::kFoundServerBlacklistConfig);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.OptimizationFilterStatus.NoScript",
+      OptimizationFilterStatus::kFoundServerBlacklistConfig, 1);
+}
+
+TEST_F(HintsComponentUtilTest, ProcessOptimizationFilter) {
+  int num_hash_functions = 7;
+  int num_bits = 1234;
+
+  proto::OptimizationFilter optimization_filter_proto;
+  BloomFilter bloom_filter(num_hash_functions, num_bits);
+  bloom_filter.Add("black.com");
+  proto::BloomFilter* bloom_filter_proto =
+      optimization_filter_proto.mutable_bloom_filter();
+  bloom_filter_proto->set_num_hash_functions(num_hash_functions);
+  bloom_filter_proto->set_num_bits(num_bits);
+  std::string blacklist_data(
+      reinterpret_cast<const char*>(&bloom_filter.bytes()[0]),
+      bloom_filter.bytes().size());
+  bloom_filter_proto->set_data(blacklist_data);
+
+  OptimizationFilterStatus status;
+  std::unique_ptr<OptimizationFilter> optimization_filter =
+      ProcessOptimizationFilter(optimization_filter_proto, &status);
+
+  EXPECT_EQ(status, OptimizationFilterStatus::kCreatedServerBlacklist);
+  ASSERT_TRUE(optimization_filter);
+  EXPECT_TRUE(
+      optimization_filter->ContainsHostSuffix(GURL("https://m.black.com")));
+}
+
+TEST_F(HintsComponentUtilTest, ProcessOptimizationFilterWithBadNumBits) {
+  proto::OptimizationFilter optimization_filter_proto;
+  BloomFilter bloom_filter(7, 1234);
+  bloom_filter.Add("black.com");
+  proto::BloomFilter* bloom_filter_proto =
+      optimization_filter_proto.mutable_bloom_filter();
+  bloom_filter_proto->set_num_hash_functions(7);
+  bloom_filter_proto->set_num_bits(bloom_filter.bytes().size() * 8 + 1);
+  std::string blacklist_data(
+      reinterpret_cast<const char*>(&bloom_filter.bytes()[0]),
+      bloom_filter.bytes().size());
+  bloom_filter_proto->set_data(blacklist_data);
+
+  OptimizationFilterStatus status;
+  std::unique_ptr<OptimizationFilter> optimization_filter =
+      ProcessOptimizationFilter(optimization_filter_proto, &status);
+
+  EXPECT_EQ(status, OptimizationFilterStatus::kFailedServerBlacklistBadConfig);
+  EXPECT_EQ(nullptr, optimization_filter);
+}
+
+TEST_F(HintsComponentUtilTest, ProcessOptimizationFilterWithTooLargeBlacklist) {
+  int too_many_bits = features::MaxServerBloomFilterByteSize() * 8 + 1;
+
+  proto::OptimizationFilter optimization_filter_proto;
+  BloomFilter bloom_filter(7, too_many_bits);
+  bloom_filter.Add("black.com");
+  proto::BloomFilter* bloom_filter_proto =
+      optimization_filter_proto.mutable_bloom_filter();
+  bloom_filter_proto->set_num_hash_functions(7);
+  bloom_filter_proto->set_num_bits(too_many_bits);
+  std::string blacklist_data(
+      reinterpret_cast<const char*>(&bloom_filter.bytes()[0]),
+      bloom_filter.bytes().size());
+  bloom_filter_proto->set_data(blacklist_data);
+
+  OptimizationFilterStatus status;
+  std::unique_ptr<OptimizationFilter> optimization_filter =
+      ProcessOptimizationFilter(optimization_filter_proto, &status);
+
+  EXPECT_EQ(status, OptimizationFilterStatus::kFailedServerBlacklistTooBig);
+  EXPECT_EQ(nullptr, optimization_filter);
+}
+
+TEST_F(HintsComponentUtilTest,
+       ProcessOptimizationFilterNoResultProvidedDoesntCrash) {
+  int num_hash_functions = 7;
+  int num_bits = 1234;
+
+  proto::OptimizationFilter optimization_filter_proto;
+  BloomFilter bloom_filter(num_hash_functions, num_bits);
+  bloom_filter.Add("black.com");
+  proto::BloomFilter* bloom_filter_proto =
+      optimization_filter_proto.mutable_bloom_filter();
+  bloom_filter_proto->set_num_hash_functions(num_hash_functions);
+  bloom_filter_proto->set_num_bits(num_bits);
+  std::string blacklist_data(
+      reinterpret_cast<const char*>(&bloom_filter.bytes()[0]),
+      bloom_filter.bytes().size());
+  bloom_filter_proto->set_data(blacklist_data);
+
+  std::unique_ptr<OptimizationFilter> optimization_filter =
+      ProcessOptimizationFilter(optimization_filter_proto,
+                                /*out_status=*/nullptr);
+
+  ASSERT_TRUE(optimization_filter);
+  EXPECT_TRUE(
+      optimization_filter->ContainsHostSuffix(GURL("https://m.black.com")));
 }
 
 }  // namespace optimization_guide

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
 
 #include <utility>
 
@@ -113,8 +113,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
         std::move(delegate));
     mojom::blink::MediaStreamDispatcherHostPtr dispatcher_host =
         mock_dispatcher_host_.CreateInterfacePtrAndBind();
-    // source_->impl_->dispatcher_host_ = std::move(dispatcher_host);
-    source_->SetMediaStreamDispatcherHostForTesting(&dispatcher_host);
+    source_->SetMediaStreamDispatcherHostForTesting(std::move(dispatcher_host));
     webkit_source_.Initialize(WebString::FromASCII("dummy_source_id"),
                               WebMediaStreamSource::kTypeVideo,
                               WebString::FromASCII("dummy_source_name"),

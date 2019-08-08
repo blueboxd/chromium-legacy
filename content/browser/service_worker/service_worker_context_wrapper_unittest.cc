@@ -55,9 +55,7 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
     // Init() posts a couple tasks to the IO thread. Let them finish.
     base::RunLoop().RunUntilIdle();
 
-    base::RunLoop loop;
-    storage()->LazyInitializeForTest(loop.QuitClosure());
-    loop.Run();
+    storage()->LazyInitializeForTest();
   }
 
   ServiceWorkerContextCore* context() { return wrapper_->context(); }

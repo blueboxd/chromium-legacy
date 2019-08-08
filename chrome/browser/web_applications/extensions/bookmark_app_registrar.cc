@@ -9,6 +9,7 @@
 #include "base/one_shot_event.h"
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
@@ -156,6 +157,25 @@ base::Optional<GURL> BookmarkAppRegistrar::GetAppScope(
     return scope_url;
 
   return base::nullopt;
+}
+
+web_app::LaunchContainer BookmarkAppRegistrar::GetAppLaunchContainer(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  if (!extension)
+    return web_app::LaunchContainer::kWindow;
+
+  switch (extensions::GetLaunchContainer(
+      extensions::ExtensionPrefs::Get(profile()), extension)) {
+    case LaunchContainer::kLaunchContainerWindow:
+    case LaunchContainer::kLaunchContainerPanelDeprecated:
+      return web_app::LaunchContainer::kWindow;
+    case LaunchContainer::kLaunchContainerTab:
+      return web_app::LaunchContainer::kTab;
+    case LaunchContainer::kLaunchContainerNone:
+      NOTREACHED();
+      return web_app::LaunchContainer::kDefault;
+  }
 }
 
 base::flat_set<web_app::AppId> BookmarkAppRegistrar::GetAppIdsForTesting()

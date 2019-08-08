@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "base/unguessable_token.h"
-#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
@@ -85,9 +84,6 @@ class BLINK_EXPORT WebSharedWorker {
   virtual void TerminateWorkerContext() = 0;
 
   virtual void PauseWorkerContextOnStart() = 0;
-  virtual void BindDevToolsAgent(
-      mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
-      mojo::ScopedInterfaceEndpointHandle devtools_agent_request) = 0;
 };
 
 }  // namespace blink

@@ -79,7 +79,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandle {
 
   bool has_provider_info() const { return !!provider_info_; }
 
-  ServiceWorkerNavigationHandleCore* core() const { return core_; }
+  ServiceWorkerNavigationHandleCore* core() { return core_; }
 
   const ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();

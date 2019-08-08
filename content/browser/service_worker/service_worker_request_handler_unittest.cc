@@ -14,7 +14,7 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/navigation_params.mojom.h"
@@ -52,32 +52,10 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   }
 
  protected:
-  static std::unique_ptr<ServiceWorkerNavigationHandleCore>
-  CreateNavigationHandleCore(ServiceWorkerContextWrapper* context_wrapper) {
-    std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core;
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            [](ServiceWorkerContextWrapper* wrapper) {
-              return std::make_unique<ServiceWorkerNavigationHandleCore>(
-                  nullptr, wrapper);
-            },
-            base::RetainedRef(context_wrapper)),
-        base::BindOnce(
-            [](std::unique_ptr<ServiceWorkerNavigationHandleCore>* dest,
-               std::unique_ptr<ServiceWorkerNavigationHandleCore> src) {
-              *dest = std::move(src);
-            },
-            &navigation_handle_core));
-    base::RunLoop().RunUntilIdle();
-    return navigation_handle_core;
-  }
-
   void InitializeHandlerForNavigationSimpleTest(const std::string& url,
                                                 bool expected_handler_created) {
-    std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core =
-        CreateNavigationHandleCore(helper_->context_wrapper());
-    base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host;
+    auto navigation_handle =
+        std::make_unique<ServiceWorkerNavigationHandle>(context_wrapper());
     GURL gurl(url);
     auto begin_params = mojom::BeginNavigationParams::New();
     begin_params->request_context_type =
@@ -93,9 +71,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         base::UnguessableToken::Create() /* devtools_navigation_token */,
         base::UnguessableToken::Create() /* devtools_frame_token */);
     std::unique_ptr<NavigationLoaderInterceptor> interceptor =
-        ServiceWorkerRequestHandler::CreateForNavigationIO(
-            GURL(url), navigation_handle_core.get(), request_info,
-            &service_worker_provider_host);
+        ServiceWorkerRequestHandler::CreateForNavigation(
+            gurl, navigation_handle->AsWeakPtr(), request_info);
     EXPECT_EQ(expected_handler_created, !!interceptor.get());
   }
 

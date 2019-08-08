@@ -42,8 +42,7 @@ class ServiceWorkerNavigationHandle;
 // client. On redirects, it starts over with the new request URL, possibly
 // starting a new loader and becoming the client of that.
 //
-// Lives on the UI thread when NavigationLoaderOnUI is enabled, and the IO
-// thread otherwise.
+// Lives on the UI thread.
 class WorkerScriptLoader : public network::mojom::URLLoader,
                            public network::mojom::URLLoaderClient {
  public:

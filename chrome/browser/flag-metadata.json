@@ -319,11 +319,6 @@
   "expiry_milestone": 80
   },
   {
-    "name": "autofill-settings-split-by-card-type",
-    "owners": [ "sebsg" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "autofill-use-improved-label-disambiguation",
     "owners": [ "ftirelo", "tmartino" ],
     "expiry_milestone": 77

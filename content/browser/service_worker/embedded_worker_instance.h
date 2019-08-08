@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -276,7 +277,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // These functions all run on the IO thread.
   void RequestTermination(RequestTerminationCallback callback) override;
   void CountFeature(blink::mojom::WebFeature feature) override;
-  void OnReadyForInspection() override;
+  void OnReadyForInspection(blink::mojom::DevToolsAgentPtr,
+                            blink::mojom::DevToolsAgentHostRequest) override;
   void OnScriptLoaded() override;
   void OnScriptEvaluationStart() override;
   // Changes the internal worker status from STARTING to RUNNING.
@@ -357,7 +359,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   ServiceWorkerMetrics::StartSituation start_situation_ =
       ServiceWorkerMetrics::StartSituation::UNKNOWN;
 
-  std::unique_ptr<ServiceWorkerContentSettingsProxyImpl> content_settings_;
+  base::SequenceBound<ServiceWorkerContentSettingsProxyImpl> content_settings_;
 
   mojo::StrongBindingPtr<network::mojom::URLLoaderFactory>
       script_loader_factory_;

@@ -65,7 +65,9 @@ class PLATFORM_EXPORT ThreadHeapStatsObserver {
   V(VisitPersistents)                 \
   V(VisitStackRoots)
 
-#define FOR_ALL_CONCURRENT_SCOPES(V) V(ConcurrentSweep)
+#define FOR_ALL_CONCURRENT_SCOPES(V) \
+  V(ConcurrentMark)                  \
+  V(ConcurrentSweep)
 
 // Manages counters and statistics across garbage collection cycles.
 //
@@ -250,6 +252,12 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
     // Time spent incrementally marking the heap.
     base::TimeDelta incremental_marking_time() const;
+
+    // Time spent in foreground tasks marking the heap.
+    base::TimeDelta foreground_marking_time() const;
+
+    // Time spent in background tasks marking the heap.
+    base::TimeDelta background_marking_time() const;
 
     // Overall time spent marking the heap.
     base::TimeDelta marking_time() const;

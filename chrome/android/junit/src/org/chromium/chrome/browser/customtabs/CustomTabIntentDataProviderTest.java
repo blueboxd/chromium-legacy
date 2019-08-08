@@ -4,14 +4,12 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static android.support.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
-import static android.support.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
-
 import static org.junit.Assert.assertEquals;
 
+import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
+import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
+
 import android.content.Intent;
-import android.support.customtabs.CustomTabColorSchemeParams;
-import android.support.customtabs.CustomTabsIntent;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +17,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
+import androidx.browser.customtabs.CustomTabsIntent;
 
 /** Tests for {@link CustomTabIntentDataProvider}. */
 @RunWith(BaseRobolectricTestRunner.class)

@@ -412,10 +412,13 @@ void ServiceWorkerProviderHost::UpdateUrls(const GURL& url,
     // updating UUID since ServiceWorkerVersion has a map from uuid to provider
     // hosts.
     SetControllerRegistration(nullptr, false /* notify_controllerchange */);
+
     // Set UUID to the new one.
-    context_->UnregisterProviderHostByClientID(client_uuid_);
+    if (context_)
+      context_->UnregisterProviderHostByClientID(client_uuid_);
     client_uuid_ = base::GenerateGUID();
-    context_->RegisterProviderHostByClientID(client_uuid_, this);
+    if (context_)
+      context_->RegisterProviderHostByClientID(client_uuid_, this);
   }
 
   SyncMatchingRegistrations();
@@ -684,10 +687,11 @@ void ServiceWorkerProviderHost::CompleteWebWorkerPreparation() {
 }
 
 void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
-  DCHECK(context_);
   DCHECK(!controller_registration());
 
   RemoveAllMatchingRegistrations();
+  if (!context_)
+    return;
   const auto& registrations = context_->GetLiveRegistrations();
   for (const auto& key_registration : registrations) {
     ServiceWorkerRegistration* registration = key_registration.second;

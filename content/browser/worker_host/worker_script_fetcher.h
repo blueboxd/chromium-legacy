@@ -35,7 +35,7 @@ class WorkerScriptLoaderFactory;
 // resource loader in the renderer process will take them over.
 //
 // WorkerScriptFetcher deletes itself when the ownership of the loader and
-// client is passed to the renderer, or on failure. It lives on the IO or UI
+// client is passed to the renderer, or on failure. It lives on the UI
 // thread.
 class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
  public:

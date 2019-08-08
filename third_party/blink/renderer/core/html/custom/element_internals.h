@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_ELEMENT_INTERNALS_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/file_or_usv_string_or_form_data.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -16,7 +17,8 @@ class HTMLElement;
 class LabelsNodeList;
 class ValidityStateFlags;
 
-class ElementInternals : public ScriptWrappable, public ListedElement {
+class CORE_EXPORT ElementInternals : public ScriptWrappable,
+                                     public ListedElement {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ElementInternals);
 
@@ -48,6 +50,14 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   bool checkValidity(ExceptionState& exception_state);
   bool reportValidity(ExceptionState& exception_state);
   LabelsNodeList* labels(ExceptionState& exception_state);
+
+  // We need these functions because we are reflecting ARIA attributes.
+  // See dom/aria_attributes.idl.
+  const AtomicString& FastGetAttribute(const QualifiedName&) const;
+  void setAttribute(const QualifiedName& attribute, const AtomicString& value);
+
+  bool HasAttribute(const QualifiedName& attribute) const;
+  const HashMap<QualifiedName, AtomicString>& GetAttributes() const;
 
  private:
   bool IsTargetFormAssociated() const;
@@ -84,6 +94,7 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   bool is_disabled_ = false;
   Member<ValidityStateFlags> validity_flags_;
   Member<Element> validation_anchor_;
+  HashMap<QualifiedName, AtomicString> accessibility_semantics_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ElementInternals);
 };

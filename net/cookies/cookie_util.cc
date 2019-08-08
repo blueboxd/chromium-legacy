@@ -434,7 +434,8 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
       same_site_context =
           CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
     } else if (!net::HttpUtil::IsMethodSafe(http_method)) {
-      same_site_context = CookieOptions::SameSiteCookieContext::CROSS_SITE;
+      same_site_context =
+          CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE;
     }
   }
   return same_site_context;

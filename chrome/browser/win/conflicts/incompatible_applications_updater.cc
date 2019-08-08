@@ -459,7 +459,7 @@ void IncompatibleApplicationsUpdater::OnModuleDatabaseIdle() {
   // Update the list of incompatible applications on the UI thread. On the first
   // call to UpdateIncompatibleApplications(), the previous value must always be
   // overwritten.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&UpdateIncompatibleApplications, before_first_idle_,
                      std::move(incompatible_applications_)));

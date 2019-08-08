@@ -43,7 +43,7 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(
     : HTMLCollection(owner_node, kFormControls, kOverridesItemAfter),
       cached_element_(nullptr),
       cached_element_offset_in_array_(0) {
-  DCHECK(IsHTMLFormElement(owner_node));
+  DCHECK(IsA<HTMLFormElement>(owner_node));
 }
 
 HTMLFormControlsCollection::HTMLFormControlsCollection(
@@ -56,12 +56,12 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(
 HTMLFormControlsCollection::~HTMLFormControlsCollection() = default;
 
 const ListedElement::List& HTMLFormControlsCollection::ListedElements() const {
-  return ToHTMLFormElement(ownerNode()).ListedElements();
+  return To<HTMLFormElement>(ownerNode()).ListedElements();
 }
 
 const HeapVector<Member<HTMLImageElement>>&
 HTMLFormControlsCollection::FormImageElements() const {
-  return ToHTMLFormElement(ownerNode()).ImageElements();
+  return To<HTMLFormElement>(ownerNode()).ImageElements();
 }
 
 static unsigned FindListedElement(const ListedElement::List& listed_elements,

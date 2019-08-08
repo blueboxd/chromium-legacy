@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/public/cpp/toast_data.h"
 #include "ui/aura/client/focus_change_observer.h"
-#include "ui/message_center/public/cpp/notification.h"
 
 namespace crostini {
 
@@ -34,9 +34,8 @@ class CrostiniUnsupportedActionNotifier
     // doesn't count the terminal.
     virtual bool IsFocusedWindowCrostini();
 
-    // Shows a notification to the user, caller manages the lifecycle of the
-    // notification.
-    virtual void ShowNotification(message_center::Notification* notification);
+    // Shows a toast to the user
+    virtual void ShowToast(const ash::ToastData& toast_data);
 
     virtual void AddFocusObserver(aura::client::FocusChangeObserver* observer);
     virtual void RemoveFocusObserver(
@@ -50,11 +49,6 @@ class CrostiniUnsupportedActionNotifier
       std::unique_ptr<Delegate> delegate);
   ~CrostiniUnsupportedActionNotifier() override;
 
-  // Checks if the user is trying to use a virtual keyboard with a crostini
-  // app and, if so and if they haven't already been notified that it's not
-  // supported, notify them.
-  void ShowVirtualKeyboardUnsupportedNotifictionIfNeeded();
-
   // ash::TabletModeObserver
   void OnTabletModeStarted() override;
 
@@ -65,6 +59,11 @@ class CrostiniUnsupportedActionNotifier
   Delegate* get_delegate_for_testing() { return delegate_.get(); }
 
  private:
+  // Checks if the user is trying to use a virtual keyboard with a crostini
+  // app and, if so and if they haven't already been notified that it's not
+  // supported, notify them.
+  void ShowVirtualKeyboardUnsupportedNotifictionIfNeeded();
+
   std::unique_ptr<Delegate> delegate_;
   bool virtual_keyboard_unsupported_message_shown_ = false;
 

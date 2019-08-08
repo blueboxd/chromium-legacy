@@ -184,7 +184,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual bool HasValidContext() = 0;
 
-  virtual ScriptValue InstantiateModule(ModuleRecord) = 0;
+  virtual ScriptValue InstantiateModule(ModuleRecord, const KURL&) = 0;
 
   struct ModuleRequest {
     String specifier;

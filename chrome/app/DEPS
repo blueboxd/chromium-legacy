@@ -95,7 +95,6 @@ specific_include_rules = {
     "+components/startup_metric_utils/common",
     "+extensions/buildflags",
     "+mash/public",
-    "+services/content/simple_browser",
     "+services/proxy_resolver",
   ],
 }

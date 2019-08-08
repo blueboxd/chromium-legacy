@@ -147,6 +147,9 @@ class PinDialogManager final {
   // no host has been added).
   SecurityTokenPinDialogHost* GetHostForNewDialog();
 
+  // Closes the active dialog, if there's any, and runs the necessary callbacks.
+  void CloseActiveDialog();
+
   // Tells whether user closed the last request PIN dialog issued by an
   // extension. The extension_id is the key and value is true if user closed the
   // dialog. Used to determine if the limit of dialogs rejected by the user has

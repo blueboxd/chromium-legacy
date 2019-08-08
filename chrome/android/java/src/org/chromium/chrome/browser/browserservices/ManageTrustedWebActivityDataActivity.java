@@ -5,9 +5,6 @@
 package org.chromium.chrome.browser.browserservices;
 
 import android.os.Bundle;
-import android.support.customtabs.CustomTabsService;
-import android.support.customtabs.CustomTabsSessionToken;
-import android.support.customtabs.TrustedWebUtils;
 import android.support.v7.app.AppCompatActivity;
 
 import org.chromium.base.Log;
@@ -17,6 +14,10 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SettingsNavigationSource;
+
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.CustomTabsSessionToken;
+import androidx.browser.customtabs.TrustedWebUtils;
 
 /**
  * Launched by {@link android.support.customtabs.TrustedWebUtils#launchBrowserSiteSettings}.

@@ -478,21 +478,6 @@ bool AwContentBrowserClient::AllowAppCache(const GURL& manifest_url,
   return true;
 }
 
-void AwContentBrowserClient::AllowWorkerFileSystem(
-    const GURL& url,
-    content::ResourceContext* context,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames,
-    base::Callback<void(bool)> callback) {
-  callback.Run(true);
-}
-
-bool AwContentBrowserClient::AllowWorkerIndexedDB(
-    const GURL& url,
-    content::ResourceContext* context,
-    const std::vector<content::GlobalFrameRoutingId>& render_frames) {
-  return true;
-}
-
 scoped_refptr<content::QuotaPermissionContext>
 AwContentBrowserClient::CreateQuotaPermissionContext() {
   return new AwQuotaPermissionContext;

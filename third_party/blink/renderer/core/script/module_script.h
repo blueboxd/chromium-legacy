@@ -51,6 +51,7 @@ class CORE_EXPORT ModuleScript : public Script {
   void Trace(Visitor*) override;
 
   virtual void ProduceCache() {}
+  const KURL& SourceURL() const { return source_url_; }
 
  protected:
   ModuleScript(Modulator*,
@@ -59,7 +60,6 @@ class CORE_EXPORT ModuleScript : public Script {
                const KURL& base_url,
                const ScriptFetchOptions&);
 
-  const KURL& SourceURL() const { return source_url_; }
   Modulator* SettingsObject() const { return settings_object_; }
 
  private:

@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
-import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
@@ -40,6 +39,8 @@ import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.widget.Toast;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Serves as an interface between Download Home UI and offline page related items that are to be

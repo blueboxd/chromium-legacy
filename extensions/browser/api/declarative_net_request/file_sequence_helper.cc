@@ -369,7 +369,7 @@ void FileSequenceHelper::LoadRulesets(
   }
 
   if (success) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(std::move(ui_callback), std::move(load_data)));
     return;
@@ -402,10 +402,9 @@ void FileSequenceHelper::UpdateDynamicRules(
                                               UpdateDynamicRulesStatus status) {
     base::UmaHistogramEnumeration(kUpdateDynamicRulesStatusHistogram, status);
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(std::move(ui_callback), std::move(load_data),
-                       std::move(error)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(std::move(ui_callback), std::move(load_data),
+                                  std::move(error)));
   };
 
   int new_ruleset_checksum = -1;
@@ -450,9 +449,8 @@ void FileSequenceHelper::OnRulesetsReindexed(LoadRulesetsUICallback ui_callback,
   }
 
   // The UI thread will handle success or failure.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(ui_callback), std::move(load_data)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(ui_callback), std::move(load_data)));
 }
 
 }  // namespace declarative_net_request

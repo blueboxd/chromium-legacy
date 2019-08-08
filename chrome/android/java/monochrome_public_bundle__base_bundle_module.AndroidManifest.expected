@@ -1578,7 +1578,7 @@
         <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY"/>
       </intent-filter>
     </service>
-    <service android:name="android.support.customtabs.PostMessageService"/>
+    <service android:name="androidx.browser.customtabs.PostMessageService"/>
     <service
         android:exported="true"
         android:externalService="true"

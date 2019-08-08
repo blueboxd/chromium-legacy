@@ -49,6 +49,7 @@ class WebAppRegistrar : public AppRegistrar {
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
   base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
+  LaunchContainer GetAppLaunchContainer(const AppId& app_id) const override;
   base::flat_set<AppId> GetAppIdsForTesting() const override;
 
  private:

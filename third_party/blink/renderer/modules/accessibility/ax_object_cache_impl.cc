@@ -1245,15 +1245,33 @@ bool AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
   DeferTreeUpdate(&AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout,
                   attr_name, element);
 
-  if (attr_name == kRoleAttr || attr_name == kTypeAttr ||
-      attr_name == kSizeAttr || attr_name == kAltAttr ||
-      attr_name == kTitleAttr ||
-      (attr_name == kForAttr && IsHTMLLabelElement(*element)) ||
-      attr_name == kIdAttr || attr_name == kTabindexAttr ||
-      attr_name == kDisabledAttr) {
-    return true;
+  if (attr_name != kRoleAttr && attr_name != kTypeAttr &&
+      attr_name != kSizeAttr && attr_name != kAltAttr &&
+      attr_name != kTitleAttr &&
+      (attr_name != kForAttr && !IsHTMLLabelElement(*element)) &&
+      attr_name != kIdAttr && attr_name != kTabindexAttr &&
+      attr_name != kDisabledAttr &&
+      !attr_name.LocalName().StartsWith("aria-")) {
+    return false;
   }
-  return attr_name.LocalName().StartsWith("aria-");
+
+  // If this attribute is interesting for accessibility (e.g. `role` or
+  // `alt`), but doesn't trigger a lifecycle update on its own
+  // (e.g. because it doesn't make layout dirty), make sure we run
+  // lifecycle phases to update the computed accessibility tree.
+  auto* view = element->GetDocument().View();
+  auto* page = element->GetDocument().GetPage();
+  if (!view || !page)
+    return true;
+  if (!view->CanThrottleRendering()) {
+    page->Animator().ScheduleVisualUpdate(GetDocument().GetFrame());
+  }
+
+  // TODO(aboxhall): add a lifecycle phase for accessibility updates.
+  GetDocument().Lifecycle().EnsureStateAtMost(
+      DocumentLifecycle::kVisualUpdatePending);
+
+  return true;
 }
 
 void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(

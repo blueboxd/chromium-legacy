@@ -800,13 +800,76 @@
         !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
         'fakeKeyDown failed');
 
+    // Check the context menu for a folder inside the zip.
+    await checkContextMenu(
+        appId, '/archive.zip/folder', folderMenus, false /* rootMenu */);
+
     // Check the context menu is on desired state.
     await checkContextMenu(
         appId, '/archive.zip', zipMenus, true /* rootMenu */);
 
-    // Check the context menu for a folder inside the zip.
-    await checkContextMenu(
-        appId, '/archive.zip/folder', folderMenus, false /* rootMenu */);
+    // checkContextMenu leaves the context menu open, so just click on the eject
+    // menu item.
+    await remoteCall.waitAndClickElement(
+        appId, '#roots-context-menu [command="#unmount"]:not([disabled])');
+
+    // Ensure the archive has been removed.
+    await remoteCall.waitForElementLost(
+        appId, '#directory-tree [entry-label="archive.zip"]');
+  };
+
+  /**
+   * Tests context menu on the eject button of a zip root.
+   * crbug.com/991002
+   */
+  testcase.dirEjectContextMenuZip = async () => {
+    await sendTestMessage({
+      name: 'expectFileTask',
+      fileNames: [ENTRIES.zipArchive.targetPath],
+      openType: 'launch'
+    });
+
+    // Open Files app on Downloads containing a zip file.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.zipArchive], []);
+
+    // Select the zip file.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'selectFile', appId, ['archive.zip']),
+        'selectFile failed');
+
+    // Press the Enter key to mount the zip file.
+    const key = ['#file-list', 'Enter', false, false, false];
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key),
+        'fakeKeyDown failed');
+
+    // Wait for the eject button to appear.
+    const ejectButtonQuery =
+        ['#directory-tree [entry-label="archive.zip"] button.root-eject'];
+    await remoteCall.waitForElement(appId, ejectButtonQuery);
+
+    // Focus on the eject button.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('focus', appId, ejectButtonQuery),
+        'focus failed: eject button');
+
+    // Right click the eject button.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'fakeMouseRightClick', appId, ejectButtonQuery),
+        'fakeMouseRightClick failed');
+
+    // Wait for, and click the eject menu item.
+    await remoteCall.waitAndClickElement(
+        appId,
+        '#roots-context-menu:not([hidden]) ' +
+            '[command="#unmount"]:not([disabled])');
+
+    // Ensure the archive has been removed.
+    await remoteCall.waitForElementLost(
+        appId, '#directory-tree [entry-label="archive.zip"]');
   };
 
   /**

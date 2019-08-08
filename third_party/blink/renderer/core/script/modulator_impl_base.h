@@ -81,7 +81,7 @@ class ModulatorImplBase : public Modulator {
   bool IsAcquiringImportMaps() const final { return acquiring_import_maps_; }
   void ClearIsAcquiringImportMaps() final { acquiring_import_maps_ = false; }
   ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const override;
-  ScriptValue InstantiateModule(ModuleRecord) override;
+  ScriptValue InstantiateModule(ModuleRecord, const KURL&) override;
   Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override;
   ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) override;
 

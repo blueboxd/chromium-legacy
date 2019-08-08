@@ -47,9 +47,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
     return context_wrapper_.get();
   }
 
-  /////////////////////////////////////////////////////////////////////////////
-  // NavigationLoaderOnUI:
-
   void set_provider_host(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host) {
     provider_host_ = std::move(provider_host);
@@ -72,16 +69,11 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
     return weak_factory_.GetWeakPtr();
   }
 
-  /////////////////////////////////////////////////////////////////////////////
-
  private:
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   base::WeakPtr<ServiceWorkerNavigationHandle> ui_handle_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-
-  // NavigationLoaderOnUI:
   std::unique_ptr<ServiceWorkerControlleeRequestHandler> interceptor_;
-
   base::WeakPtrFactory<ServiceWorkerNavigationHandleCore> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationHandleCore);

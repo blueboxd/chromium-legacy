@@ -16,6 +16,16 @@ group("resources") {
     ":favicon_background_color",
     ":green_color",
     ":green_dark_color",
+    ":grey_100_color",
+    ":grey_200_color",
+    ":grey_300_color",
+    ":grey_400_color",
+    ":grey_500_color",
+    ":grey_50_color",
+    ":grey_600_color",
+    ":grey_700_color",
+    ":grey_800_color",
+    ":grey_900_color",
     ":mdc_ink_color",
     ":placeholder_image_tint_color",
     ":red_color",
@@ -95,6 +105,66 @@ colorset("green_color") {
 colorset("green_dark_color") {
   sources = [
     "green_dark_color.colorset/Contents.json",
+  ]
+}
+
+colorset("grey_50_color") {
+  sources = [
+    "grey_50_color.colorset/Contents.json",
+  ]
+}
+
+colorset("grey_100_color") {
+  sources = [
+    "grey_100_color.colorset/Contents.json",
+  ]
+}
+
+colorset("grey_200_color") {
+  sources = [
+    "grey_200_color.colorset/Contents.json",
+  ]
+}
+
+colorset("grey_300_color") {
+  sources = [
+    "grey_300_color.colorset/Contents.json",
+  ]
+}
+
+colorset("grey_400_color") {
+  sources = [
+    "grey_400_color.colorset/Contents.json",
+  ]
+}
+
+colorset("grey_500_color") {
+  sources = [
+    "grey_500_color.colorset/Contents.json",
+  ]
+}
+
+colorset("grey_600_color") {
+  sources = [
+    "grey_600_color.colorset/Contents.json",
+  ]
+}
+
+colorset("grey_700_color") {
+  sources = [
+    "grey_700_color.colorset/Contents.json",
+  ]
+}
+
+colorset("grey_800_color") {
+  sources = [
+    "grey_800_color.colorset/Contents.json",
+  ]
+}
+
+colorset("grey_900_color") {
+  sources = [
+    "grey_900_color.colorset/Contents.json",
   ]
 }
 

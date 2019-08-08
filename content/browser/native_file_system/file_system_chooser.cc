@@ -156,10 +156,8 @@ void FileSystemChooser::MultiFilesSelected(
   DCHECK(isolated_context);
 
   if (type_ == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
-    // Create files if they don't yet exist.
-    // TODO(mek): If we change FileSystemFileHandle to be able to represent a
-    // file that doesn't exist on disk, we should be able to get rid of this
-    // step and make the whole API slightly more robust.
+    // Create files if they don't yet exist, and truncate files if they do
+    // exist.
     base::PostTask(
         FROM_HERE,
         {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
@@ -169,16 +167,8 @@ void FileSystemChooser::MultiFilesSelected(
                scoped_refptr<base::TaskRunner> callback_runner,
                ResultCallback callback) {
               for (const auto& path : files) {
-                // Checking if a path exists, and then creating it if it doesn't
-                // is of course racy, but external applications could just as
-                // well be deleting the entire directory, or similar problematic
-                // cases, so no matter what we do there are always going to be
-                // race conditions and websites will just have to deal with any
-                // method being able to fail in unexpected ways.
-                if (base::PathExists(path))
-                  continue;
                 int creation_flags =
-                    base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ;
+                    base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
                 base::File file(path, creation_flags);
 
                 if (!file.IsValid()) {

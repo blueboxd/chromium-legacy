@@ -15,9 +15,6 @@ import android.content.ComponentName;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.RemoteException;
-import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionManager;
-import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionManager.ExecutionCallback;
-import android.support.customtabs.trusted.TrustedWebActivityServiceWrapper;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +28,10 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+
+import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
+import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager.ExecutionCallback;
+import androidx.browser.trusted.TrustedWebActivityServiceWrapper;
 
 /**
  * Unit tests for {@link TrustedWebActivityClient}.

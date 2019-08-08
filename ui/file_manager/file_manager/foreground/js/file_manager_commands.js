@@ -61,6 +61,15 @@ CommandUtil.getCommandEntries = (fileManager, element) => {
     return [element.selectedItem.entry];
   }
 
+  // The event target could still be a descendant of a DirectoryItem element
+  // (e.g. the eject button).
+  if (fileManager.ui.directoryTree.contains(/** @type {Node} */ (element))) {
+    const treeItem = element.closest('.tree-item');
+    if (treeItem && treeItem.entry) {
+      return [treeItem.entry];
+    }
+  }
+
   // File list (cr.ui.List).
   if (element.selectedItems && element.selectedItems.length) {
     const entries = element.selectedItems;

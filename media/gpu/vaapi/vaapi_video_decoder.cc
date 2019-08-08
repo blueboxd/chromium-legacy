@@ -243,9 +243,11 @@ void VaapiVideoDecoder::Destroy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   VLOGF(2);
 
-  decoder_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VaapiVideoDecoder::DestroyTask, weak_this_));
-  decoder_thread_.Stop();
+  if (decoder_thread_task_runner_) {
+    decoder_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&VaapiVideoDecoder::DestroyTask, weak_this_));
+    decoder_thread_.Stop();
+  }
 
   delete this;
   VLOGF(2) << "Destroying VAAPI VD done";

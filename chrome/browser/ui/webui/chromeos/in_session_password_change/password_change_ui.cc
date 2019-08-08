@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/login/saml/password_expiry_notification.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/in_session_password_change/confirm_password_change_handler.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_dialogs.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_handler.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/urgent_password_expiry_notification_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
@@ -67,6 +67,13 @@ base::string16 GetHostedHeaderText(const std::string& password_change_url) {
                                     host);
 }
 
+void AddSize(content::WebUIDataSource* source,
+             const std::string& suffix,
+             const gfx::Size& size) {
+  source->AddInteger("width" + suffix, size.width());
+  source->AddInteger("height" + suffix, size.height());
+}
+
 }  // namespace
 
 PasswordChangeUI::PasswordChangeUI(content::WebUI* web_ui)
@@ -115,18 +122,25 @@ ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
       {"oldPassword", IDS_PASSWORD_CHANGE_OLD_PASSWORD_LABEL},
       {"newPassword", IDS_PASSWORD_CHANGE_NEW_PASSWORD_LABEL},
       {"confirmNewPassword", IDS_PASSWORD_CHANGE_CONFIRM_NEW_PASSWORD_LABEL},
+      {"incorrectPassword", IDS_LOGIN_CONFIRM_PASSWORD_INCORRECT_PASSWORD},
       {"matchError", IDS_PASSWORD_CHANGE_PASSWORDS_DONT_MATCH},
       {"save", IDS_PASSWORD_CHANGE_CONFIRM_SAVE_BUTTON}};
 
   AddLocalizedStringsBulk(source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 
+  AddSize(source, "", ConfirmPasswordChangeDialog::GetSize(false, false));
+  AddSize(source, "Old", ConfirmPasswordChangeDialog::GetSize(true, false));
+  AddSize(source, "New", ConfirmPasswordChangeDialog::GetSize(false, true));
+  AddSize(source, "OldNew", ConfirmPasswordChangeDialog::GetSize(true, true));
+
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_CONFIRM_PASSWORD_CHANGE_HTML);
   source->AddResourcePath("confirm_password_change.js",
                           IDR_CONFIRM_PASSWORD_CHANGE_JS);
 
-  web_ui->AddMessageHandler(std::make_unique<ConfirmPasswordChangeHandler>());
+  // The ConfirmPasswordChangeHandler is added by the dialog, so no need to add
+  // it here.
 
   content::WebUIDataSource::Add(profile, source);
 }

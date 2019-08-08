@@ -144,7 +144,7 @@ ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
   return ModuleImportMeta(String());
 }
 
-ScriptValue DummyModulator::InstantiateModule(ModuleRecord) {
+ScriptValue DummyModulator::InstantiateModule(ModuleRecord, const KURL&) {
   NOTREACHED();
   return ScriptValue();
 }

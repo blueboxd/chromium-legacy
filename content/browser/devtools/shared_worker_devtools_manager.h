@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/unguessable_token.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 namespace content {
 
@@ -33,7 +34,10 @@ class CONTENT_EXPORT SharedWorkerDevToolsManager {
   void WorkerCreated(SharedWorkerHost* worker_host,
                      bool* pause_on_start,
                      base::UnguessableToken* devtools_worker_token);
-  void WorkerReadyForInspection(SharedWorkerHost* worker_host);
+  void WorkerReadyForInspection(
+      SharedWorkerHost* worker_host,
+      blink::mojom::DevToolsAgentPtr agent_ptr,
+      blink::mojom::DevToolsAgentHostRequest agent_host_request);
   void WorkerDestroyed(SharedWorkerHost* worker_host);
 
  private:

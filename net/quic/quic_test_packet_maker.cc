@@ -131,8 +131,7 @@ QuicTestPacketMaker::QuicTestPacketMaker(
       spdy_response_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
       coalesce_http_frames_(false),
       save_packet_frames_(false),
-      qpack_encoder_(&decoder_stream_error_delegate_,
-                     &encoder_stream_sender_delegate_),
+      qpack_encoder_(&decoder_stream_error_delegate_),
       perspective_(perspective),
       encryption_level_(quic::ENCRYPTION_FORWARD_SECURE),
       long_header_type_(quic::INVALID_PACKET_TYPE),
@@ -141,6 +140,9 @@ QuicTestPacketMaker::QuicTestPacketMaker(
           version.transport_version >= quic::QUIC_VERSION_43) {
   DCHECK(!(perspective_ == quic::Perspective::IS_SERVER &&
            client_headers_include_h2_stream_dependency_));
+
+  qpack_encoder_.set_qpack_stream_sender_delegate(
+      &encoder_stream_sender_delegate_);
 }
 
 QuicTestPacketMaker::~QuicTestPacketMaker() {

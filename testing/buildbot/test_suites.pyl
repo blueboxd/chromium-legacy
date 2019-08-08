@@ -5212,16 +5212,6 @@
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    'gpu_fyi_linux_intel_release_experimental_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_skia_renderer_vulkan_telemetry_tests',
-      'gpu_telemetry_tests',
-      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_telemetry_tests',
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
-    ],
-
     'gpu_fyi_linux_optional_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_white_box_gtests',

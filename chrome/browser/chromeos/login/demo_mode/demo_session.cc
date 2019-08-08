@@ -394,7 +394,8 @@ bool DemoSession::ShouldIgnorePinPolicy(const std::string& app_id_or_package) {
 void DemoSession::SetExtensionsExternalLoader(
     scoped_refptr<DemoExtensionsExternalLoader> extensions_external_loader) {
   extensions_external_loader_ = extensions_external_loader;
-  InstallAppFromUpdateUrl(GetScreensaverAppId());
+  if (!offline_enrolled_)
+    InstallAppFromUpdateUrl(GetScreensaverAppId());
 }
 
 void DemoSession::OverrideIgnorePinPolicyAppsForTesting(

@@ -1,10 +1,10 @@
 Tests framework event listeners output in Sources panel when service worker is present.
 
 Selecting service worker thread
-Context is dedicated worker: true
+Context is service worker: true
 Dumping listeners
 Selecting main thread
-Context is dedicated worker: false
+Context is service worker: false
 Dumping listeners
 
 ======== load ========

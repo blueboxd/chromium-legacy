@@ -7,6 +7,7 @@
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
@@ -27,6 +28,75 @@
 namespace chromeos {
 
 namespace {
+
+using PasswordSource = InSessionPasswordChangeManager::PasswordSource;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. This must be kept in sync with
+// SamlInSessionPasswordChangeEvent in tools/metrics/histogram/enums.xml
+enum class InSessionPasswordChangeEvent {
+  kManagerCreated = 0,
+  kNotified = 1,
+  kUrgentNotified = 2,
+  kNotifiedAlreadyExpired = 3,
+  kStartPasswordChange = 4,
+  kSamlPasswordChanged = 5,
+  kPasswordScrapeSuccess = 6,
+  kPasswordScrapePartial = 7,
+  kPasswordScrapeFailure = 8,
+  kCryptohomePasswordChangeSuccessScraped = 9,
+  kCryptohomePasswordChangeSuccessRetyped = 10,
+  kCryptohomePasswordChangeFailureScraped = 11,
+  kCryptohomePasswordChangeFailureRetyped = 12,
+  kFinishPasswordChange = 13,
+  kMaxValue = kFinishPasswordChange,
+};
+
+void RecordEvent(InSessionPasswordChangeEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("ChromeOS.SAML.InSessionPasswordChangeEvent",
+                            event);
+}
+
+void RecordNotificationShown(bool is_expired, bool show_as_urgent) {
+  if (is_expired) {
+    RecordEvent(InSessionPasswordChangeEvent::kNotifiedAlreadyExpired);
+  } else if (show_as_urgent) {
+    RecordEvent(InSessionPasswordChangeEvent::kUrgentNotified);
+  } else {
+    RecordEvent(InSessionPasswordChangeEvent::kNotified);
+  }
+}
+
+void RecordScrapingResult(bool old_password_scraped,
+                          bool new_password_scraped) {
+  if (old_password_scraped && new_password_scraped) {
+    RecordEvent(InSessionPasswordChangeEvent::kPasswordScrapeSuccess);
+  } else if (old_password_scraped || new_password_scraped) {
+    RecordEvent(InSessionPasswordChangeEvent::kPasswordScrapePartial);
+  } else {
+    RecordEvent(InSessionPasswordChangeEvent::kPasswordScrapeFailure);
+  }
+}
+
+void RecordCryptohomePasswordChangeSuccess(PasswordSource password_source) {
+  if (password_source == PasswordSource::PASSWORDS_SCRAPED) {
+    RecordEvent(
+        InSessionPasswordChangeEvent::kCryptohomePasswordChangeSuccessScraped);
+  } else {
+    RecordEvent(
+        InSessionPasswordChangeEvent::kCryptohomePasswordChangeSuccessRetyped);
+  }
+}
+
+void RecordCryptohomePasswordChangeFailure(PasswordSource password_source) {
+  if (password_source == PasswordSource::PASSWORDS_SCRAPED) {
+    RecordEvent(
+        InSessionPasswordChangeEvent::kCryptohomePasswordChangeFailureScraped);
+  } else {
+    RecordEvent(
+        InSessionPasswordChangeEvent::kCryptohomePasswordChangeFailureRetyped);
+  }
+}
 
 InSessionPasswordChangeManager* g_test_instance = nullptr;
 
@@ -94,6 +164,7 @@ InSessionPasswordChangeManager::CreateIfEnabled(Profile* primary_profile) {
     std::unique_ptr<InSessionPasswordChangeManager> manager =
         std::make_unique<InSessionPasswordChangeManager>(primary_profile);
     manager->MaybeShowExpiryNotification();
+    RecordEvent(InSessionPasswordChangeEvent::kManagerCreated);
     return manager;
   } else {
     // If the policy is disabled, clear the SAML password attributes.
@@ -181,6 +252,7 @@ void InSessionPasswordChangeManager::MaybeShowExpiryNotification() {
     } else {
       ShowStandardExpiryNotification(time_until_expiry);
     }
+    RecordNotificationShown(is_expired, show_as_urgent);
 
     // We check again whether to reshow / update the notification after one day:
     recheck_task_.RecheckAfter(kOneDay);
@@ -230,7 +302,8 @@ void InSessionPasswordChangeManager::OnScreenUnlocked() {
 }
 
 void InSessionPasswordChangeManager::StartInSessionPasswordChange() {
-  NotifyObservers(START_SAML_IDP_PASSWORD_CHANGE);
+  RecordEvent(InSessionPasswordChangeEvent::kStartPasswordChange);
+  NotifyObservers(Event::START_SAML_IDP_PASSWORD_CHANGE);
   DismissExpiryNotification();
   PasswordChangeDialog::Show();
   ConfirmPasswordChangeDialog::Dismiss();
@@ -239,12 +312,16 @@ void InSessionPasswordChangeManager::StartInSessionPasswordChange() {
 void InSessionPasswordChangeManager::OnSamlPasswordChanged(
     const std::string& scraped_old_password,
     const std::string& scraped_new_password) {
-  NotifyObservers(START_SAML_IDP_PASSWORD_CHANGE);
+  RecordEvent(InSessionPasswordChangeEvent::kSamlPasswordChanged);
+  NotifyObservers(Event::SAML_IDP_PASSWORD_CHANGED);
 
   user_manager::UserManager::Get()->SaveForceOnlineSignin(
       primary_user_->GetAccountId(), true);
   DismissExpiryNotification();
   PasswordChangeDialog::Dismiss();
+
+  RecordScrapingResult(!scraped_old_password.empty(),
+                       !scraped_new_password.empty());
 
   const bool both_passwords_scraped =
       !scraped_old_password.empty() && !scraped_new_password.empty();
@@ -256,7 +333,8 @@ void InSessionPasswordChangeManager::OnSamlPasswordChanged(
     ConfirmPasswordChangeDialog::Show(scraped_old_password,
                                       scraped_new_password,
                                       /*show_spinner_initially=*/true);
-    ChangePassword(scraped_old_password, scraped_new_password);
+    ChangePassword(scraped_old_password, scraped_new_password,
+                   PasswordSource::PASSWORDS_SCRAPED);
   } else {
     // Failed to scrape passwords - prompt for passwords immediately.
     ConfirmPasswordChangeDialog::Show(scraped_old_password,
@@ -267,8 +345,12 @@ void InSessionPasswordChangeManager::OnSamlPasswordChanged(
 
 void InSessionPasswordChangeManager::ChangePassword(
     const std::string& old_password,
-    const std::string& new_password) {
-  NotifyObservers(START_CRYPTOHOME_PASSWORD_CHANGE);
+    const std::string& new_password,
+    PasswordSource password_source) {
+  CHECK(!old_password.empty() && !new_password.empty());
+
+  password_source_ = password_source;
+  NotifyObservers(Event::START_CRYPTOHOME_PASSWORD_CHANGE);
   UserContext user_context(*primary_user_);
   user_context.SetKey(Key(new_password));
   authenticator_->MigrateKey(user_context, old_password);
@@ -284,18 +366,21 @@ void InSessionPasswordChangeManager::RemoveObserver(Observer* observer) {
 
 void InSessionPasswordChangeManager::OnAuthFailure(const AuthFailure& error) {
   VLOG(1) << "Failed to change cryptohome password: " << error.GetErrorString();
-  NotifyObservers(CRYPTOHOME_PASSWORD_CHANGE_FAILURE);
+  RecordCryptohomePasswordChangeFailure(password_source_);
+  NotifyObservers(Event::CRYPTOHOME_PASSWORD_CHANGE_FAILURE);
 }
 
 void InSessionPasswordChangeManager::OnPasswordChangeDetected() {
   VLOG(1) << "Failed to change cryptohome password: PasswordChangeDetected";
-  NotifyObservers(CRYPTOHOME_PASSWORD_CHANGE_FAILURE);
+  RecordCryptohomePasswordChangeFailure(password_source_);
+  NotifyObservers(Event::CRYPTOHOME_PASSWORD_CHANGE_FAILURE);
 }
 
 void InSessionPasswordChangeManager::OnAuthSuccess(
     const UserContext& user_context) {
   VLOG(3) << "Cryptohome password is changed.";
-  NotifyObservers(CRYPTOHOME_PASSWORD_CHANGED);
+  RecordCryptohomePasswordChangeSuccess(password_source_);
+  NotifyObservers(Event::CRYPTOHOME_PASSWORD_CHANGED);
 
   user_manager::UserManager::Get()->SaveForceOnlineSignin(
       user_context.GetAccountId(), false);
@@ -312,6 +397,7 @@ void InSessionPasswordChangeManager::OnAuthSuccess(
   DismissExpiryNotification();
   PasswordChangeDialog::Dismiss();
   ConfirmPasswordChangeDialog::Dismiss();
+  RecordEvent(InSessionPasswordChangeEvent::kFinishPasswordChange);
 }
 
 void InSessionPasswordChangeManager::OnSessionActivated(bool activated) {

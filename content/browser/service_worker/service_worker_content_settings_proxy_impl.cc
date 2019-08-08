@@ -18,20 +18,22 @@ namespace content {
 
 ServiceWorkerContentSettingsProxyImpl::ServiceWorkerContentSettingsProxyImpl(
     const GURL& script_url,
-    base::WeakPtr<ServiceWorkerContextCore> context,
+    scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
     blink::mojom::WorkerContentSettingsProxyRequest request)
     : origin_(url::Origin::Create(script_url)),
-      context_(context),
-      binding_(this, std::move(request)) {}
+      context_wrapper_(context_wrapper),
+      binding_(this, std::move(request)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
 ServiceWorkerContentSettingsProxyImpl::
     ~ServiceWorkerContentSettingsProxyImpl() = default;
 
 void ServiceWorkerContentSettingsProxyImpl::AllowIndexedDB(
     AllowIndexedDBCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // May be shutting down.
-  if (!context_ || !context_->wrapper()->resource_context()) {
+  if (!context_wrapper_->browser_context()) {
     std::move(callback).Run(false);
     return;
   }
@@ -45,15 +47,14 @@ void ServiceWorkerContentSettingsProxyImpl::AllowIndexedDB(
   // so just pass an empty |render_frames|.
   std::vector<GlobalFrameRoutingId> render_frames;
   std::move(callback).Run(GetContentClient()->browser()->AllowWorkerIndexedDB(
-      origin_.GetURL(), context_->wrapper()->resource_context(),
-      render_frames));
+      origin_.GetURL(), context_wrapper_->browser_context(), render_frames));
 }
 
 void ServiceWorkerContentSettingsProxyImpl::AllowCacheStorage(
     AllowCacheStorageCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // May be shutting down.
-  if (!context_ || !context_->wrapper()->resource_context()) {
+  if (!context_wrapper_->browser_context()) {
     std::move(callback).Run(false);
     return;
   }
@@ -68,7 +69,7 @@ void ServiceWorkerContentSettingsProxyImpl::AllowCacheStorage(
   std::vector<GlobalFrameRoutingId> render_frames;
   std::move(callback).Run(
       GetContentClient()->browser()->AllowWorkerCacheStorage(
-          origin_.GetURL(), context_->wrapper()->resource_context(),
+          origin_.GetURL(), context_wrapper_->browser_context(),
           render_frames));
 }
 

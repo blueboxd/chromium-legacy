@@ -101,11 +101,10 @@ void TestContentVerifyJobObserver::JobFinished(
     const base::FilePath& relative_path,
     ContentVerifyJob::FailureReason failure_reason) {
   if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {creation_thread_},
-        base::BindOnce(&TestContentVerifyJobObserver::JobFinished,
-                       base::Unretained(this), extension_id, relative_path,
-                       failure_reason));
+    base::PostTask(FROM_HERE, {creation_thread_},
+                   base::BindOnce(&TestContentVerifyJobObserver::JobFinished,
+                                  base::Unretained(this), extension_id,
+                                  relative_path, failure_reason));
     return;
   }
   Result result = failure_reason == ContentVerifyJob::NONE ? Result::SUCCESS
@@ -194,7 +193,7 @@ void VerifierObserver::WaitForFetchComplete(const ExtensionId& extension_id) {
 void VerifierObserver::OnFetchComplete(const ExtensionId& extension_id,
                                        bool success) {
   if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {creation_thread_},
         base::BindOnce(&VerifierObserver::OnFetchComplete,
                        base::Unretained(this), extension_id, success));

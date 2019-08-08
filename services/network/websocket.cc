@@ -166,15 +166,43 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
       receive_quota_threshold = net::WebSocketChannel::kReceiveQuotaThreshold;
   }
   DVLOG(3) << "receive_quota_threshold is " << receive_quota_threshold;
+
+  const MojoCreateDataPipeOptions data_pipe_options{
+      sizeof(MojoCreateDataPipeOptions), MOJO_CREATE_DATA_PIPE_FLAG_NONE, 1,
+      receive_quota_threshold * 2};
+  mojo::ScopedDataPipeConsumerHandle readable;
+  const MojoResult result =
+      mojo::CreateDataPipe(&data_pipe_options, &impl_->writable_, &readable);
+  if (result != MOJO_RESULT_OK) {
+    DVLOG(1) << "mojo::CreateDataPipe error:" << result;
+    impl_->Reset();
+    return;
+  }
+  const MojoResult mojo_result = impl_->writable_watcher_.Watch(
+      impl_->writable_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+      MOJO_WATCH_CONDITION_SATISFIED,
+      base::BindRepeating(&WebSocket::OnWritable, base::Unretained(impl_)));
+  DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
+
   impl_->handshake_client_->OnConnectionEstablished(
       std::move(websocket_to_pass), mojo::MakeRequest(&impl_->client_),
-      selected_protocol, extensions, receive_quota_threshold);
+      selected_protocol, extensions, receive_quota_threshold,
+      std::move(readable));
   impl_->handshake_client_ = nullptr;
   impl_->auth_handler_ = nullptr;
   impl_->header_client_ = nullptr;
   impl_->client_.set_connection_error_handler(
       base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(impl_)));
 }
+
+struct WebSocket::DataFrame {
+  DataFrame(scoped_refptr<net::IOBuffer> buffer, size_t size)
+      : buffer(std::move(buffer)), size(size) {}
+
+  scoped_refptr<net::IOBuffer> buffer;
+  size_t offset = 0;
+  size_t size;
+};
 
 void WebSocket::WebSocketEventHandler::OnDataFrame(
     bool fin,
@@ -184,12 +212,12 @@ void WebSocket::WebSocketEventHandler::OnDataFrame(
   DVLOG(3) << "WebSocketEventHandler::OnDataFrame @"
            << reinterpret_cast<void*>(this) << " fin=" << fin
            << " type=" << type << " data is " << buffer_size << " bytes";
-
-  base::span<char> char_span =
-      buffer_size ? base::make_span(buffer->data(), buffer_size)
-                  : base::span<char>();
-  impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type),
-                              base::as_bytes(char_span));
+  // TODO(yoichio): Merge OnDataFrame mojo channel into data pipe.
+  impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type), buffer_size);
+  if (buffer_size > 0) {
+    impl_->pending_data_frames_.push(DataFrame(std::move(buffer), buffer_size));
+  }
+  impl_->SendPendingDataFrames();
 }
 
 void WebSocket::WebSocketEventHandler::OnClosingHandshake() {
@@ -358,7 +386,10 @@ WebSocket::WebSocket(
       options_(options),
       child_id_(child_id),
       frame_id_(frame_id),
-      origin_(std::move(origin)) {
+      origin_(std::move(origin)),
+      writable_watcher_(FROM_HERE,
+                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                        base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(handshake_client_);
   if (auth_handler_) {
     // Make sure the request dies if |auth_handler_| has an error, otherwise
@@ -535,6 +566,64 @@ void WebSocket::AddChannel(
   }
   channel_->SendAddChannelRequest(socket_url, requested_protocols, origin_,
                                   site_for_cookies, headers_to_pass);
+}
+
+void WebSocket::OnWritable(MojoResult result,
+                           const mojo::HandleSignalsState& state) {
+  if (result != MOJO_RESULT_OK) {
+    DVLOG(1) << "WebSocket::OnWritable mojo error=" << result;
+    Reset();
+    return;
+  }
+  SendPendingDataFrames();
+}
+
+void WebSocket::SendPendingDataFrames() {
+  DVLOG(3) << "WebSocket::SendPendingDataFrames @"
+           << reinterpret_cast<void*>(this)
+           << ", pending_data_frames_.size=" << pending_data_frames_.size();
+  while (!pending_data_frames_.empty()) {
+    WebSocket::DataFrame& data_frame = pending_data_frames_.front();
+    if (!SendDataFrame(&data_frame)) {
+      Reset();
+      return;
+    }
+    if (data_frame.size > 0) {
+      // Mojo doesn't have any write buffer so far.
+      writable_watcher_.ArmOrNotify();
+      return;
+    }
+    pending_data_frames_.pop();
+  }
+}
+
+bool WebSocket::SendDataFrame(DataFrame* data_frame) {
+  DCHECK_GT(data_frame->size, 0u);
+  MojoResult begin_result;
+  void* buffer;
+  uint32_t writable_size = 0;
+  while (data_frame->size > 0 &&
+         (begin_result = writable_->BeginWriteData(
+              &buffer, &writable_size, MOJO_WRITE_DATA_FLAG_NONE)) ==
+             MOJO_RESULT_OK) {
+    const uint32_t size_to_write =
+        std::min(writable_size, static_cast<uint32_t>(data_frame->size));
+    DCHECK_GT(size_to_write, 0u);
+
+    memcpy(buffer, data_frame->buffer->data() + data_frame->offset,
+           size_to_write);
+    data_frame->offset += size_to_write;
+    data_frame->size -= size_to_write;
+
+    const MojoResult end_result = writable_->EndWriteData(size_to_write);
+    DCHECK_EQ(end_result, MOJO_RESULT_OK);
+  }
+  if (begin_result != MOJO_RESULT_OK &&
+      begin_result != MOJO_RESULT_SHOULD_WAIT) {
+    DVLOG(1) << "WebSocket::OnWritable mojo error=" << begin_result;
+    return false;
+  }
+  return true;
 }
 
 void WebSocket::OnAuthRequiredComplete(

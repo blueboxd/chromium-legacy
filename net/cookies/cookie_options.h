@@ -20,6 +20,8 @@ class NET_EXPORT CookieOptions {
   // Ordered from least to most trusted environment.
   enum class SameSiteCookieContext {
     CROSS_SITE,
+    // Same rules as lax but the http method is unsafe.
+    SAME_SITE_LAX_METHOD_UNSAFE,
     SAME_SITE_LAX,
     SAME_SITE_STRICT
   };

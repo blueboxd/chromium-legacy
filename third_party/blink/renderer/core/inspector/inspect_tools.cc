@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_pointer_event.h"
+#include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
@@ -343,8 +344,8 @@ void NodeHighlightTool::Trace(blink::Visitor* visitor) {
 
 // NearbyDistanceTool ----------------------------------------------------------
 
-String NearbyDistanceTool::GetDataResourceName() {
-  return String("inspect_tool_distances.html");
+int NearbyDistanceTool::GetDataResourceId() {
+  return IDR_INSPECT_TOOL_DISTANCES_HTML;
 }
 
 bool NearbyDistanceTool::HandleMouseDown(const WebMouseEvent& event,
@@ -413,8 +414,8 @@ void ShowViewSizeTool::Draw(float scale) {
   overlay_->EvaluateInOverlay("drawViewSize", "");
 }
 
-String ShowViewSizeTool::GetDataResourceName() {
-  return String("inspect_tool_viewport_size.html");
+int ShowViewSizeTool::GetDataResourceId() {
+  return IDR_INSPECT_TOOL_VIEWPORT_SIZE_HTML;
 }
 
 bool ShowViewSizeTool::ForwardEventsToOverlay() {
@@ -430,8 +431,8 @@ void ScreenshotTool::DoInit() {
   client.SetCursorOverridden(true);
 }
 
-String ScreenshotTool::GetDataResourceName() {
-  return String("inspect_tool_screenshot.html");
+int ScreenshotTool::GetDataResourceId() {
+  return IDR_INSPECT_TOOL_SCREENSHOT_HTML;
 }
 
 void ScreenshotTool::Dispatch(const String& message) {
@@ -500,8 +501,8 @@ void ScreenshotTool::Dispatch(const String& message) {
 
 // PausedInDebuggerTool --------------------------------------------------------
 
-String PausedInDebuggerTool::GetDataResourceName() {
-  return String("inspect_tool_paused.html");
+int PausedInDebuggerTool::GetDataResourceId() {
+  return IDR_INSPECT_TOOL_PAUSED_HTML;
 }
 
 void PausedInDebuggerTool::Draw(float scale) {

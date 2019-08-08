@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
@@ -661,7 +662,9 @@ void AXObject::GetSparseAXAttributes(
   AXSparseAttributeSetterMap& ax_sparse_attribute_setter_map =
       GetSparseAttributeSetterMap();
   AttributeCollection attributes = element->AttributesWithoutUpdate();
+  HashSet<QualifiedName> set_attributes;
   for (const Attribute& attr : attributes) {
+    set_attributes.insert(attr.GetName());
     if (shadowed_aria_attributes.Contains(attr.GetName()))
       continue;
 
@@ -669,6 +672,19 @@ void AXObject::GetSparseAXAttributes(
         ax_sparse_attribute_setter_map.at(attr.GetName());
     if (setter)
       setter->Run(*this, sparse_attribute_client, attr.Value());
+  }
+  if (!element->DidAttachInternals())
+    return;
+  const auto& internals_attributes =
+      element->EnsureElementInternals().GetAttributes();
+  for (const QualifiedName& attr : internals_attributes.Keys()) {
+    if (set_attributes.Contains(attr))
+      continue;
+    AXSparseAttributeSetter* setter = ax_sparse_attribute_setter_map.at(attr);
+    if (setter) {
+      setter->Run(*this, sparse_attribute_client,
+                  internals_attributes.at(attr));
+    }
   }
 }
 
@@ -1873,59 +1889,74 @@ bool AXObject::SupportsARIAExpanded() const {
   }
 }
 
+bool IsGlobalARIAAttribute(const AtomicString& name) {
+  if (!name.StartsWith("ARIA"))
+    return false;
+  if (name.StartsWith("ARIA-ATOMIC"))
+    return true;
+  if (name.StartsWith("ARIA-BUSY"))
+    return true;
+  if (name.StartsWith("ARIA-CONTROLS"))
+    return true;
+  if (name.StartsWith("ARIA-CURRENT"))
+    return true;
+  if (name.StartsWith("ARIA-DESCRIBEDBY"))
+    return true;
+  if (name.StartsWith("ARIA-DETAILS"))
+    return true;
+  if (name.StartsWith("ARIA-DISABLED"))
+    return true;
+  if (name.StartsWith("ARIA-DROPEFFECT"))
+    return true;
+  if (name.StartsWith("ARIA-ERRORMESSAGE"))
+    return true;
+  if (name.StartsWith("ARIA-FLOWTO"))
+    return true;
+  if (name.StartsWith("ARIA-GRABBED"))
+    return true;
+  if (name.StartsWith("ARIA-HASPOPUP"))
+    return true;
+  if (name.StartsWith("ARIA-HIDDEN"))
+    return true;
+  if (name.StartsWith("ARIA-INVALID"))
+    return true;
+  if (name.StartsWith("ARIA-KEYSHORTCUTS"))
+    return true;
+  if (name.StartsWith("ARIA-LABEL"))
+    return true;
+  if (name.StartsWith("ARIA-LABELEDBY"))
+    return true;
+  if (name.StartsWith("ARIA-LABELLEDBY"))
+    return true;
+  if (name.StartsWith("ARIA-LIVE"))
+    return true;
+  if (name.StartsWith("ARIA-OWNS"))
+    return true;
+  if (name.StartsWith("ARIA-RELEVANT"))
+    return true;
+  if (name.StartsWith("ARIA-ROLEDESCRIPTION"))
+    return true;
+  return false;
+}
+
 bool AXObject::HasGlobalARIAAttribute() const {
-  if (!GetElement())
+  auto* element = GetElement();
+  if (!element)
     return false;
 
-  AttributeCollection attributes = GetElement()->AttributesWithoutUpdate();
+  AttributeCollection attributes = element->AttributesWithoutUpdate();
   for (const Attribute& attr : attributes) {
     // Attributes cache their uppercase names.
     auto name = attr.GetName().LocalNameUpper();
-    if (!name.StartsWith("ARIA"))
-      continue;
-    if (name.StartsWith("ARIA-ATOMIC"))
+    if (IsGlobalARIAAttribute(name))
       return true;
-    if (name.StartsWith("ARIA-BUSY"))
-      return true;
-    if (name.StartsWith("ARIA-CONTROLS"))
-      return true;
-    if (name.StartsWith("ARIA-CURRENT"))
-      return true;
-    if (name.StartsWith("ARIA-DESCRIBEDBY"))
-      return true;
-    if (name.StartsWith("ARIA-DETAILS"))
-      return true;
-    if (name.StartsWith("ARIA-DISABLED"))
-      return true;
-    if (name.StartsWith("ARIA-DROPEFFECT"))
-      return true;
-    if (name.StartsWith("ARIA-ERRORMESSAGE"))
-      return true;
-    if (name.StartsWith("ARIA-FLOWTO"))
-      return true;
-    if (name.StartsWith("ARIA-GRABBED"))
-      return true;
-    if (name.StartsWith("ARIA-HASPOPUP"))
-      return true;
-    if (name.StartsWith("ARIA-HIDDEN"))
-      return true;
-    if (name.StartsWith("ARIA-INVALID"))
-      return true;
-    if (name.StartsWith("ARIA-KEYSHORTCUTS"))
-      return true;
-    if (name.StartsWith("ARIA-LABEL"))
-      return true;
-    if (name.StartsWith("ARIA-LABELEDBY"))
-      return true;
-    if (name.StartsWith("ARIA-LABELLEDBY"))
-      return true;
-    if (name.StartsWith("ARIA-LIVE"))
-      return true;
-    if (name.StartsWith("ARIA-OWNS"))
-      return true;
-    if (name.StartsWith("ARIA-RELEVANT"))
-      return true;
-    if (name.StartsWith("ARIA-ROLEDESCRIPTION"))
+  }
+  if (!element->DidAttachInternals())
+    return false;
+  const auto& internals_attributes =
+      element->EnsureElementInternals().GetAttributes();
+  for (const QualifiedName& attr : internals_attributes.Keys()) {
+    if (IsGlobalARIAAttribute(attr.LocalNameUpper()))
       return true;
   }
   return false;
@@ -2566,16 +2597,38 @@ AtomicString AXObject::Language() const {
 }
 
 bool AXObject::HasAttribute(const QualifiedName& attribute) const {
-  if (Element* element = GetElement())
-    return element->FastHasAttribute(attribute);
-  return false;
+  Element* element = GetElement();
+  if (!element)
+    return false;
+  if (element->FastHasAttribute(attribute))
+    return true;
+  return HasInternalsAttribute(*element, attribute);
 }
 
 const AtomicString& AXObject::GetAttribute(
     const QualifiedName& attribute) const {
-  if (Element* element = GetElement())
-    return element->FastGetAttribute(attribute);
-  return g_null_atom;
+  Element* element = GetElement();
+  if (!element)
+    return g_null_atom;
+  const AtomicString& value = element->FastGetAttribute(attribute);
+  if (!value.IsNull())
+    return value;
+  return GetInternalsAttribute(*element, attribute);
+}
+
+bool AXObject::HasInternalsAttribute(Element& element,
+                                     const QualifiedName& attribute) const {
+  if (!element.DidAttachInternals())
+    return false;
+  return element.EnsureElementInternals().HasAttribute(attribute);
+}
+
+const AtomicString& AXObject::GetInternalsAttribute(
+    Element& element,
+    const QualifiedName& attribute) const {
+  if (!element.DidAttachInternals())
+    return g_null_atom;
+  return element.EnsureElementInternals().FastGetAttribute(attribute);
 }
 
 //

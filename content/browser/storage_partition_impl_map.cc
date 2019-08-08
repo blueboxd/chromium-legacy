@@ -46,41 +46,10 @@
 #include "crypto/sha2.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/blob/blob_url_request_job_factory.h"
-
-using storage::FileSystemContext;
-using storage::BlobStorageContext;
 
 namespace content {
 
 namespace {
-
-// Wrapper to call ChromeBlobStorageContext::context() on the IO thread.
-class BlobProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  explicit BlobProtocolHandler(ChromeBlobStorageContext* blob_storage_context)
-      : blob_storage_context_(blob_storage_context) {}
-
-  ~BlobProtocolHandler() override {}
-
-  net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    if (!blob_protocol_handler_) {
-      // Construction is deferred because 'this' is constructed on
-      // the main thread but we want blob_protocol_handler_ constructed
-      // on the IO thread.
-      blob_protocol_handler_.reset(
-          new storage::BlobProtocolHandler(blob_storage_context_->context()));
-    }
-    return blob_protocol_handler_->MaybeCreateJob(request, network_delegate);
-  }
-
- private:
-  const scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  mutable std::unique_ptr<storage::BlobProtocolHandler> blob_protocol_handler_;
-  DISALLOW_COPY_AND_ASSIGN(BlobProtocolHandler);
-};
 
 // These constants are used to create the directory structure under the profile
 // where renderers with a non-default storage partition keep their persistent

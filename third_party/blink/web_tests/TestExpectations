@@ -2517,6 +2517,25 @@ crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-tdd-000.
 crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-001.html [ Failure ]
 crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-003.html [ Failure ]
 
+# Handling of trailing other spaces is not implemented yet.
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-001.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-002.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-003.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-004.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-001.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-002.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-003.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-004.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-005.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-006.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-007.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-008.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-010.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-011.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-012.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-014.html [ Skip ]
+crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-015.html [ Skip ]
+
 # The 'overflow-wrap: anywhere' feature is not implemented yet
 crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-001.html [ Skip ]
 crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-002.html [ Skip ]
@@ -2534,7 +2553,7 @@ crbug.com/905315 external/wpt/css/css-text/word-break/word-break-break-word-over
 crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-003.html [ Skip ]
 crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-006.html [ Skip ]
 crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-013.html [ Skip ]
-crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-tab-004.html [ Failure ]
+crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-tab-004.html [ Skip ]
 
 crbug.com/6122 external/wpt/css/css-text/shaping/shaping-024.html [ Failure ]
 crbug.com/6122 external/wpt/css/css-text/shaping/shaping-025.html [ Failure ]
@@ -3324,38 +3343,27 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-verti
 crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-shorthands-002.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-shorthands-002.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-shorthands-002.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-shorthands-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-shorthands-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-shorthands-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/unsafe-url/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-015.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/line-break/line-break-anywhere-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-002.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/IndexedDB/structured-clone.any.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-004.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-011.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-007.html [ Failure ]
 crbug.com/626703 [ Win7 ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/unsafe-url/attr-referrer/same-origin/http-http/img-tag/no-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/unset-referrer-policy/attr-referrer/cross-origin/http-http/img-tag/no-redirect/insecure-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/unsafe-url/http-rp/same-origin/http-http/img-tag/swap-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/unset-referrer-policy/attr-referrer/cross-origin/http-http/img-tag/keep-origin-redirect/insecure-protocol.http.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-012.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-010.html [ Failure ]
 crbug.com/626703 [ Win7 ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-http/img-tag/no-redirect/same-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/unsafe-url/meta-referrer/same-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-006.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-014.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-004.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-005.html [ Failure ]
 crbug.com/626703 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/unsafe-url/attr-referrer/same-origin/http-http/img-tag/swap-origin-redirect/generic.http.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-text/white-space/trailing-other-space-separators-003.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-sorted-before-dispatch.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/mediacapture-fromelement/ended.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-pause-on-exit.html [ Timeout ]
@@ -4686,6 +4694,10 @@ crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-
 # Failure due to on-going off-thread paint worklet project.
 crbug.com/957457 virtual/threaded/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
 
+crbug.com/990382 virtual/threaded/http/tests/csspaint/invalidation-content-image.html [ Crash ]
+crbug.com/990382 virtual/threaded/http/tests/csspaint/invalidation-background-image.html [ Crash ]
+crbug.com/990382 virtual/threaded/http/tests/csspaint/invalidation-border-image.html [ Crash ]
+
 crbug.com/982116 http/tests/devtools/elements/styles-4/styles-new-API.js [ Pass Timeout ]
 
 # Shared memory growth temporarily disabled.
@@ -5379,6 +5391,9 @@ crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesi
 crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/setcookie-navigation.html [ Skip ]
 crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/window-open-reload.html [ Skip ]
 crbug.com/961439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/window-open.html [ Skip ]
+
+# When SameSiteByDefaultCookies is enabled, the Lax-allow-unsafe intervention causes POST tests to fail.
+crbug.com/990439 virtual/samesite-by-default-cookies/external/wpt/cookies/samesite/form-post-blank.html?samesite-by-default-cookies.tentative [ Failure ]
 
 # CookiesWithoutSameSiteMustBeSecure tests do not pass when that feature is not enabled.
 crbug.com/961439 external/wpt/cookies/samesite-none-secure/ [ Failure ]

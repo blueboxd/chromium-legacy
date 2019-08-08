@@ -42,7 +42,7 @@ class WebViewPermissionHelperDelegate : public content::WebContentsObserver {
   virtual void RequestFileSystemPermission(
       const GURL& url,
       bool allowed_by_default,
-      const base::Callback<void(bool)>& callback) {}
+      base::OnceCallback<void(bool)> callback) {}
 
   // Called when file system access is requested by the guest content using the
   // asynchronous HTML5 file system API. The request is plumbed through the

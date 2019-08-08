@@ -28,8 +28,7 @@ class WorkerScriptLoader;
 // It's an error to call CreateLoaderAndStart() more than a total of one time
 // across this object or any of its clones.
 //
-// This is created per one web worker. It lives on the UI thread when
-// NavigationLoaderOnUI is enabled, and the IO thread otherwise.
+// This is created per one web worker. It lives on the UI thread.
 class CONTENT_EXPORT WorkerScriptLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:

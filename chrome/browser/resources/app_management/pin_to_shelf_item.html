@@ -9,10 +9,11 @@
       }
     </style>
     <app-management-toggle-row
-      label_="$i18n{pinToShelf}"
-      managed_$="[[isManaged_(app_)]]"
-      policy-label_="$i18n{pinControlledByPolicy}"
-      value_$="[[getValue_(app_)]]">
+      id="toggle-row"
+      label="$i18n{pinToShelf}"
+      managed$="[[isManaged_(app_)]]"
+      policy-label="$i18n{pinControlledByPolicy}"
+      value$="[[getValue_(app_)]]">
     </app-management-toggle-row>
   </template>
   <script src="pin_to_shelf_item.js"></script>

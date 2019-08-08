@@ -30,7 +30,6 @@
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_audio.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_content.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client_impl.h"
 #include "third_party/blink/renderer/platform/video_capture/local_video_capturer_source.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
@@ -1173,17 +1173,12 @@ UserMediaProcessor::CreateVideoSource(
   DCHECK(current_request_info_);
   DCHECK(current_request_info_->video_capture_settings().HasValue());
 
-  // TODO(crbug.com/c/704136): Convert MediaStreamVideoCapturerSource ctor
-  // to operate over LocalFrame instead of WebLocalFrame.
-  WebLocalFrame* web_frame =
-      frame_ ? static_cast<WebLocalFrame*>(WebFrame::FromFrame(frame_))
-             : nullptr;
   return std::make_unique<blink::MediaStreamVideoCapturerSource>(
-      web_frame, stop_callback, device,
+      frame_, stop_callback, device,
       current_request_info_->video_capture_settings().capture_params(),
       base::BindRepeating(
           &blink::LocalVideoCapturerSource::Create,
-          web_frame->GetTaskRunner(blink::TaskType::kInternalMedia)));
+          frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 }
 
 void UserMediaProcessor::StartTracks(const String& label) {

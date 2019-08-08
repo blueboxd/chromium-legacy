@@ -547,6 +547,10 @@
     "dependencies": ["permission:login"],
     "contexts": ["blessed_extension"]
   },
+  "loginScreenStorage": {
+    "dependencies": ["permission:loginScreenStorage"],
+    "contexts": ["blessed_extension"]
+  },
   "loginScreenUi": {
     "dependencies": ["permission:loginScreenUi"],
     "contexts": ["blessed_extension"]

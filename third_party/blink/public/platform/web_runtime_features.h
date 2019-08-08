@@ -245,6 +245,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableMouseSubframeNoImplicitCapture(bool);
   BLINK_PLATFORM_EXPORT static void EnableBackForwardCache(bool);
 
+  BLINK_PLATFORM_EXPORT static void EnableSurfaceEmbeddingFeatures(bool);
+
  private:
   WebRuntimeFeatures();
 };

@@ -689,7 +689,7 @@ void HTMLConstructionSite::InsertHTMLBodyElement(AtomicHTMLToken* token) {
 void HTMLConstructionSite::InsertHTMLFormElement(AtomicHTMLToken* token,
                                                  bool is_demoted) {
   auto* form_element =
-      ToHTMLFormElement(CreateElement(token, xhtmlNamespaceURI));
+      To<HTMLFormElement>(CreateElement(token, xhtmlNamespaceURI));
   if (!OpenElements()->HasTemplateInHTMLScope())
     form_ = form_element;
   if (is_demoted) {

@@ -2780,6 +2780,7 @@ test("unit_tests") {
     "../browser/android/webapk/webapk_web_manifest_checker_unittest.cc",
     "../browser/android/webapps/add_to_homescreen_data_fetcher_unittest.cc",
     "../browser/app_controller_mac_unittest.mm",
+    "../browser/apps/app_shim/mach_bootstrap_acceptor_unittest.mm",
     "../browser/apps/user_type_filter_unittest.cc",
     "../browser/autocomplete/chrome_autocomplete_provider_client_unittest.cc",
     "../browser/autocomplete/chrome_autocomplete_scheme_classifier_unittest.cc",

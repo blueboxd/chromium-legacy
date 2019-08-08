@@ -678,7 +678,7 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
     if ([[web_controller_ nativeContentHolder].nativeController
             respondsToSelector:@selector(virtualURL)] ||
         item->error_retry_state_machine().state() ==
-            ErrorRetryState::kReadyToDisplayErrorForFailedNavigation) {
+            ErrorRetryState::kReadyToDisplayError) {
       // For native content, or when webView.URL is a placeholder URL,
       // |currentURLWithTrustLevel:| returns virtual URL if one is available.
       lastCommittedURL = item->GetVirtualURL();

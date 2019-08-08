@@ -78,7 +78,9 @@ class WebServiceWorkerContextClient {
 
   // ServiceWorker has prepared everything for script loading and is now ready
   // for DevTools inspection. Called on the main thread.
-  virtual void WorkerReadyForInspectionOnMainThread() {}
+  virtual void WorkerReadyForInspectionOnMainThread(
+      mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
+      mojo::ScopedMessagePipeHandle devtools_agent_host_request) {}
 
   // Starting the worker failed. This could happen when loading the worker
   // script failed, or the worker was asked to terminate before startup

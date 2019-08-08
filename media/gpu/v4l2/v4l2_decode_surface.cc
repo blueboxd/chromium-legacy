@@ -62,6 +62,11 @@ void V4L2DecodeSurface::SetReferenceSurfaces(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(reference_surfaces_.empty());
+#if DCHECK_IS_ON()
+  for (const auto& ref : reference_surfaces_)
+    DCHECK_NE(ref->output_record(), output_record_);
+#endif
+
   reference_surfaces_ = std::move(ref_surfaces);
 }
 

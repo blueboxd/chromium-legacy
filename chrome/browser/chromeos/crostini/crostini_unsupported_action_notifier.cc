@@ -8,9 +8,13 @@
 
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/toast_manager.h"
 #include "base/logging.h"
+#include "base/optional.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace crostini {
 
@@ -33,8 +37,13 @@ void CrostiniUnsupportedActionNotifier::
     ShowVirtualKeyboardUnsupportedNotifictionIfNeeded() {
   if (!virtual_keyboard_unsupported_message_shown_ &&
       delegate_->IsInTabletMode() && delegate_->IsFocusedWindowCrostini()) {
-    delegate_->ShowNotification(
-        nullptr);  // TODO(crbug/962848): actually show the notification
+    ash::ToastData data = {
+        /*id=*/"VKUnsupportedInCrostini",
+        /*text=*/
+        l10n_util::GetStringUTF16(IDS_CROSTINI_UNSUPPORTED_VIRTUAL_KEYBOARD),
+        /*timeout_ms=*/5000,
+        /*dismiss_text=*/base::Optional<base::string16>()};
+    delegate_->ShowToast(data);
     virtual_keyboard_unsupported_message_shown_ = true;
   }
 }
@@ -66,10 +75,9 @@ bool CrostiniUnsupportedActionNotifier::Delegate::IsFocusedWindowCrostini() {
          static_cast<int>(ash::AppType::CROSTINI_APP);
 }
 
-void CrostiniUnsupportedActionNotifier::Delegate::ShowNotification(
-    message_center::Notification* notification) {
-  // TODO(crbug/962848): actually show the notification
-  LOG(WARNING) << "User tried to use tablet mode with a Crostini app";
+void CrostiniUnsupportedActionNotifier::Delegate::ShowToast(
+    const ash::ToastData& toast_data) {
+  ash::ToastManager::Get()->Show(toast_data);
 }
 
 void CrostiniUnsupportedActionNotifier::Delegate::AddFocusObserver(

@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsSessionToken;
 import android.util.SparseArray;
 
 import org.chromium.base.Callback;
@@ -18,6 +17,8 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import dagger.Lazy;
 

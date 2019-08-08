@@ -3,31 +3,20 @@
 # found in the LICENSE file.
 
 from .composition_parts import WithIdentifier
-from .composition_parts import WithExtendedAttributes
-from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithOwner
 from .idl_type import IdlType
 from .values import DefaultValue
 
 
-class Argument(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
-               WithOwner):
-    class IR(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo):
-        def __init__(self,
-                     identifier,
-                     index,
-                     idl_type,
-                     default_value=None,
-                     extended_attributes=None,
-                     code_generator_info=None):
+class Argument(WithIdentifier, WithOwner):
+    class IR(WithIdentifier):
+        def __init__(self, identifier, index, idl_type, default_value=None):
             assert isinstance(index, int)
             assert isinstance(idl_type, IdlType)
             assert (default_value is None
                     or isinstance(default_value, DefaultValue))
 
             WithIdentifier.__init__(self, identifier)
-            WithExtendedAttributes.__init__(self, extended_attributes)
-            WithCodeGeneratorInfo.__init__(self, code_generator_info)
 
             self.index = index
             self.idl_type = idl_type
@@ -38,46 +27,39 @@ class Argument(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
                 identifier=self.identifier,
                 index=self.index,
                 idl_type=self.idl_type,
-                default_value=self.default_value,
-                extended_attributes=self.extended_attributes.make_copy(),
-                code_generator_info=self.code_generator_info.make_copy())
+                default_value=self.default_value)
 
-    @property
-    def idl_type(self):
-        """
-        Returns type of this argument.
-        @return IdlType
-        """
-        assert False, 'To be implemented'
+    def __init__(self, ir, owner):
+        assert isinstance(ir, Argument.IR)
 
-    @property
-    def is_optional(self):
-        """
-        Returns True if this argument is optional.
-        @return bool
-        """
-        assert False, 'To be implemented'
+        WithIdentifier.__init__(self, ir.identifier)
+        WithOwner.__init__(self, owner)
 
-    @property
-    def is_variadic(self):
-        """
-        Returns True if this argument is variadic.
-        @return bool
-        """
-        assert False, 'To be implemented'
-
-    @property
-    def default_value(self):
-        """
-        Returns the default value if it is specified. Otherwise, None
-        @return DefaultValue
-        """
-        assert False, 'To be implemented'
+        self._index = ir.index
+        self._idl_type = ir.idl_type
+        self._default_value = ir.default_value
 
     @property
     def index(self):
-        """
-        Returns its index in an operation's arguments
-        @return int
-        """
-        assert False, 'To be implemented'
+        """Returns the argument index."""
+        return self._index
+
+    @property
+    def idl_type(self):
+        """Returns the type of the argument."""
+        return self._idl_type
+
+    @property
+    def is_optional(self):
+        """Returns True if this is an optional argument."""
+        return self.idl_type.is_optional
+
+    @property
+    def is_variadic(self):
+        """Returns True if this is a variadic argument."""
+        return self.idl_type.is_variadic
+
+    @property
+    def default_value(self):
+        """Returns the default value or None."""
+        return self._default_value

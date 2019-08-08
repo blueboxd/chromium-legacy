@@ -15,6 +15,10 @@
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
+namespace apps {
+class MachBootstrapAcceptorTest;
+}
+
 @class AppShimDelegate;
 
 // The AppShimController is responsible for launching and maintaining the
@@ -47,6 +51,7 @@ class AppShimController : public chrome::mojom::AppShim {
 
  private:
   friend class TestShimClient;
+  friend class apps::MachBootstrapAcceptorTest;
 
   // Create a channel from the Mojo |endpoint| and send a LaunchApp message.
   void CreateChannelAndSendLaunchApp(mojo::PlatformChannelEndpoint endpoint);

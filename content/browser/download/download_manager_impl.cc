@@ -76,8 +76,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "storage/browser/blob/blob_url_loader_factory.h"
-#include "storage/browser/blob/blob_url_request_job_factory.h"
 
 #if defined(USE_X11)
 #include "base/nix/xdg_util.h"

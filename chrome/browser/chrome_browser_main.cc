@@ -328,11 +328,6 @@
 #include "ui/aura/env.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS) || \
-    BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
-#include "services/content/simple_browser/public/mojom/constants.mojom.h"
-#endif
-
 #if !defined(OS_ANDROID)
 #include "chrome/browser/component_updater/intervention_policy_database_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
@@ -1824,19 +1819,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     RecordBrowserStartupTime();
   }
 #endif  // defined(OS_ANDROID)
-
-
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS) || \
-    BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
-  if (parsed_command_line().HasSwitch(switches::kLaunchSimpleBrowserSwitch) ||
-      parsed_command_line().HasSwitch(
-          switches::kLaunchInProcessSimpleBrowserSwitch)) {
-    // TODO(https://crbug.com/904148): This should not use |WarmService()|.
-    content::BrowserContext::GetConnectorFor(profile_)->WarmService(
-        service_manager::ServiceFilter::ByName(
-            simple_browser::mojom::kServiceName));
-  }
-#endif
 
   return result_code_;
 }

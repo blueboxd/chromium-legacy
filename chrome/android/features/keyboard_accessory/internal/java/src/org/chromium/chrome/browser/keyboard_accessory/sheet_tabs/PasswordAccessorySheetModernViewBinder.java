@@ -50,8 +50,8 @@ class PasswordAccessorySheetModernViewBinder {
             bindChipView(view.getUsername(), info.getFields().get(0));
             bindChipView(view.getPassword(), info.getFields().get(1));
 
-            view.getTitle().setVisibility(info.getTitle().isEmpty() ? View.GONE : View.VISIBLE);
-            view.getTitle().setText(info.getTitle());
+            view.getTitle().setVisibility(info.getOrigin().isEmpty() ? View.GONE : View.VISIBLE);
+            view.getTitle().setText(info.getOrigin());
 
             view.setIconForBitmap(null); // Set the default icon, then try to get a better one.
             if (info.getFaviconProvider() != null) {

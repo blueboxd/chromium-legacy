@@ -89,11 +89,17 @@ bool SharedWorkerDevToolsAgentHost::Matches(SharedWorkerHost* worker_host) {
   return instance_->Matches(*worker_host->instance());
 }
 
-void SharedWorkerDevToolsAgentHost::WorkerReadyForInspection() {
+void SharedWorkerDevToolsAgentHost::WorkerReadyForInspection(
+    blink::mojom::DevToolsAgentPtr agent_ptr,
+    blink::mojom::DevToolsAgentHostRequest agent_host_request) {
   DCHECK_EQ(WORKER_NOT_READY, state_);
   DCHECK(worker_host_);
   state_ = WORKER_READY;
-  UpdateRendererChannel(IsAttached());
+  GetRendererChannel()->SetRenderer(std::move(agent_ptr),
+                                    std::move(agent_host_request),
+                                    worker_host_->worker_process_id(), nullptr);
+  for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
+    inspector->TargetReloadedAfterCrash();
 }
 
 void SharedWorkerDevToolsAgentHost::WorkerRestarted(
@@ -102,9 +108,6 @@ void SharedWorkerDevToolsAgentHost::WorkerRestarted(
   DCHECK(!worker_host_);
   state_ = WORKER_NOT_READY;
   worker_host_ = worker_host;
-  for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
-    inspector->TargetReloadedAfterCrash();
-  UpdateRendererChannel(IsAttached());
 }
 
 void SharedWorkerDevToolsAgentHost::WorkerDestroyed() {
@@ -114,24 +117,8 @@ void SharedWorkerDevToolsAgentHost::WorkerDestroyed() {
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
     inspector->TargetCrashed();
   worker_host_ = nullptr;
-  UpdateRendererChannel(IsAttached());
-}
-
-void SharedWorkerDevToolsAgentHost::UpdateRendererChannel(bool force) {
-  if (state_ == WORKER_READY && force) {
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info;
-    blink::mojom::DevToolsAgentHostAssociatedRequest host_request =
-        mojo::MakeRequest(&host_ptr_info);
-    blink::mojom::DevToolsAgentAssociatedPtr agent_ptr;
-    worker_host_->BindDevToolsAgent(std::move(host_ptr_info),
-                                    mojo::MakeRequest(&agent_ptr));
-    GetRendererChannel()->SetRendererAssociated(
-        std::move(agent_ptr), std::move(host_request),
-        worker_host_->worker_process_id(), nullptr);
-  } else {
-    GetRendererChannel()->SetRendererAssociated(
-        nullptr, nullptr, ChildProcessHost::kInvalidUniqueID, nullptr);
-  }
+  GetRendererChannel()->SetRenderer(
+      nullptr, nullptr, ChildProcessHost::kInvalidUniqueID, nullptr);
 }
 
 }  // namespace content

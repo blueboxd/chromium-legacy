@@ -44,7 +44,7 @@ class SigninManagerAndroid : public KeyedService,
 
   // Indicates that the user has made the choice to sign-in. |username|
   // contains the email address of the account to use as primary.
-  void OnSignInCompleted(JNIEnv* env,
+  void SetPrimaryAccount(JNIEnv* env,
                          const base::android::JavaParamRef<jstring>& username);
 
   void SignOut(JNIEnv* env,

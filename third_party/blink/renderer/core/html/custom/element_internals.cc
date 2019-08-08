@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
@@ -209,6 +210,27 @@ LabelsNodeList* ElementInternals::labels(ExceptionState& exception_state) {
     return nullptr;
   }
   return Target().labels();
+}
+
+const AtomicString& ElementInternals::FastGetAttribute(
+    const QualifiedName& attribute) const {
+  return accessibility_semantics_map_.at(attribute);
+}
+
+const HashMap<QualifiedName, AtomicString>& ElementInternals::GetAttributes()
+    const {
+  return accessibility_semantics_map_;
+}
+
+void ElementInternals::setAttribute(const QualifiedName& attribute,
+                                    const AtomicString& value) {
+  accessibility_semantics_map_.Set(attribute, value);
+  if (AXObjectCache* cache = Target().GetDocument().ExistingAXObjectCache())
+    cache->HandleAttributeChanged(attribute, &Target());
+}
+
+bool ElementInternals::HasAttribute(const QualifiedName& attribute) const {
+  return accessibility_semantics_map_.Contains(attribute);
 }
 
 void ElementInternals::DidUpgrade() {

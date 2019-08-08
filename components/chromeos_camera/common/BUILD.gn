@@ -15,7 +15,4 @@ mojom("common") {
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojom",
   ]
-
-  # TODO(https://crbug.com/968369): Change to use new names.
-  use_old_js_lite_bindings_names = true
 }

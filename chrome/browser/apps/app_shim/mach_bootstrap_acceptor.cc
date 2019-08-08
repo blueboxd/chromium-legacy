@@ -37,6 +37,11 @@ void MachBootstrapAcceptor::Start() {
   options.server_name = server_name_;
   mojo::NamedPlatformChannel channel(options);
   endpoint_ = channel.TakeServerEndpoint();
+  if (!endpoint_.is_valid()) {
+    delegate_->OnServerChannelCreateError();
+    return;
+  }
+
   dispatch_source_ = std::make_unique<base::DispatchSourceMach>(
       server_name_.c_str(), port(), ^{
         HandleRequest();

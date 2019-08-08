@@ -2082,7 +2082,9 @@ void RenderThreadImpl::SetUpEmbeddedWorkerChannelForServiceWorker(
     init_end_ = base::TimeTicks();
   }
 
-  EmbeddedWorkerInstanceClientImpl::Create(std::move(client_request));
+  EmbeddedWorkerInstanceClientImpl::Create(
+      std::move(client_request),
+      GetWebMainThreadScheduler()->DefaultTaskRunner());
 }
 
 void RenderThreadImpl::OnNetworkConnectionChanged(

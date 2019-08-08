@@ -233,9 +233,9 @@ CSSPaintDefinition* PaintWorkletGlobalScope::FindDefinition(
 }
 
 double PaintWorkletGlobalScope::devicePixelRatio() const {
-  // TODO(smcgruer): Implement |devicePixelRatio| for worklet-thread bound
-  // PaintWorkletGlobalScope.
-  return WTF::IsMainThread() ? GetFrame()->DevicePixelRatio() : 1.0;
+  return WTF::IsMainThread()
+             ? GetFrame()->DevicePixelRatio()
+             : PaintWorkletProxyClient::From(Clients())->DevicePixelRatio();
 }
 
 void PaintWorkletGlobalScope::Trace(blink::Visitor* visitor) {

@@ -25,93 +25,121 @@ const ValidationErrorType = {
   INCORRECT_OLD_PASSWORD: 5,
 };
 
-/** Default arguments that are used when not embedded in a dialog. */
-const DefaultArgs = {
-  showSpinnerInitially: false,
-};
-
 Polymer({
   is: 'confirm-password-change',
 
   behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
-    /** @private {string} */
-    old_password_: {
-      type: String,
-      value: '',
-    },
+    /** @private {boolean} */
+    showSpinner_:
+        {type: Boolean, value: true, observer: 'onShowSpinnerChanged_'},
+
+    /** @private {boolean} */
+    showOldPasswordPrompt_: {type: Boolean, value: true},
 
     /** @private {string} */
-    new_password_: {
-      type: String,
-      value: '',
-    },
+    oldPassword_: {type: String, value: ''},
+
+    /** @private {boolean} */
+    showNewPasswordPrompt_: {type: Boolean, value: true},
 
     /** @private {string} */
-    confirm_new_password_: {
-      type: String,
-      value: '',
-    },
+    newPassword_: {type: String, value: ''},
+
+    /** @private {string} */
+    confirmNewPassword_: {type: String, value: ''},
 
     /** @private {!ValidationErrorType} */
     currentValidationError_: {
       type: Number,
       value: ValidationErrorType.NO_ERROR,
+      observer: 'onErrorChanged_',
     },
 
+    /** @private {string} */
+    promptString_: {
+      type: String,
+      computed:
+          'getPromptString_(showOldPasswordPrompt_, showNewPasswordPrompt_)',
+    },
+
+    /** @private {string} */
     errorString_:
-        {type: String, computed: 'getErrorString_(currentValidationError_)'}
+        {type: String, computed: 'getErrorString_(currentValidationError_)'},
   },
+
+  observers: [
+    'onShowPromptChanged_(showOldPasswordPrompt_, showNewPasswordPrompt_)',
+  ],
 
   /** @override */
   attached: function() {
-    // WebDialogUI class stores extra parameters in JSON in 'dialogArguments'
-    // variable, if this webui is being rendered in a dialog.
-    const argsJson = chrome.getVariableValue('dialogArguments');
-    const args = argsJson ? JSON.parse(argsJson) : DefaultArgs;
-
-    this.showSpinner_(args.showSpinnerInitially);
-
     this.addWebUIListener('incorrect-old-password', () => {
       this.onIncorrectOldPassword_();
     });
+
+    this.getInitialState_();
   },
 
-  /**
-   * @private
-   */
-  showSpinner_: function(showSpinner) {
+  /** @private */
+  getInitialState_() {
+    cr.sendWithPromise('getInitialState').then((result) => {
+      this.showOldPasswordPrompt_ = result.showOldPasswordPrompt;
+      this.showNewPasswordPrompt_ = result.showNewPasswordPrompt;
+      this.showSpinner_ = result.showSpinner;
+    });
+  },
+
+
+  /** @private */
+  onShowSpinnerChanged_: function() {
     // Dialog is on top, spinner is underneath, so showing dialog hides spinner.
-    if (showSpinner)
+    if (this.showSpinner_)
       this.$.dialog.close();
     else
       this.$.dialog.showModal();
   },
 
-  /**
-   * @private
-   */
-  onSaveTap_: function() {
-    this.currentValidationError_ = this.findFirstError_();
-    if (this.currentValidationError_ == ValidationErrorType.NO_ERROR) {
-      chrome.send('changePassword', [this.old_password_, this.new_password_]);
-      this.showSpinner_(true);
+  /** @private */
+  onShowPromptChanged_: function() {
+    const suffix = (this.showOldPasswordPrompt_ ? 'Old' : '') +
+        (this.showNewPasswordPrompt_ ? 'New' : '');
+    const width = loadTimeData.getInteger('width' + suffix);
+    const height = loadTimeData.getInteger('height' + suffix);
+
+    window.resizeTo(width, height);
+  },
+
+  /** @private */
+  onErrorChanged_: function() {
+    if (this.currentValidationError_ != ValidationErrorType.NO_ERROR) {
+      this.showSpinner_ = false;
     }
   },
 
-  /**
-   * @private
-   */
-  onIncorrectOldPassword_: function() {
-    // Only show the error if the user had previously typed an old password.
-    // This is also called when an incorrect password was scraped. In that case
-    // we hide the spinner and show the dialog so they can confirm.
-    if (this.old_password_) {
-      this.currentValidationError_ = ValidationErrorType.INCORRECT_OLD_PASSWORD;
-      this.old_password_ = '';
+  /** @private */
+  onSaveTap_: function() {
+    this.currentValidationError_ = this.findFirstError_();
+    if (this.currentValidationError_ == ValidationErrorType.NO_ERROR) {
+      chrome.send('changePassword', [this.oldPassword_, this.newPassword_]);
+      this.showSpinner_ = true;
     }
-    this.showSpinner_(false);
+  },
+
+  /** @private */
+  onIncorrectOldPassword_: function() {
+    if (this.showOldPasswordPrompt_) {
+      // User manually typed in the incorrect old password. Show the user an
+      // incorrect password error and hide the spinner so they can try again.
+      this.currentValidationError_ = ValidationErrorType.INCORRECT_OLD_PASSWORD;
+    } else {
+      // Until now we weren't showing the old password prompt, since we had
+      // scraped the old password. But the password we scraped seems to be the
+      // wrong one. So, start again, but this time ask for the old password too.
+      this.showOldPasswordPrompt_ = true;
+      this.currentValidationError_ = ValidationErrorType.MISSING_OLD_PASSWORD;
+    }
   },
 
   /**
@@ -119,17 +147,21 @@ Polymer({
    * @private
    */
   findFirstError_: function() {
-    if (!this.old_password_) {
-      return ValidationErrorType.MISSING_OLD_PASSWORD;
+    if (this.showOldPasswordPrompt_) {
+      if (!this.oldPassword_) {
+        return ValidationErrorType.MISSING_OLD_PASSWORD;
+      }
     }
-    if (!this.new_password_) {
-      return ValidationErrorType.MISSING_NEW_PASSWORD;
-    }
-    if (!this.confirm_new_password_) {
-      return ValidationErrorType.MISSING_CONFIRM_NEW_PASSWORD;
-    }
-    if (this.new_password_ != this.confirm_new_password_) {
-      return ValidationErrorType.PASSWORDS_DO_NOT_MATCH;
+    if (this.showNewPasswordPrompt_) {
+      if (!this.newPassword_) {
+        return ValidationErrorType.MISSING_NEW_PASSWORD;
+      }
+      if (!this.confirmNewPassword_) {
+        return ValidationErrorType.MISSING_CONFIRM_NEW_PASSWORD;
+      }
+      if (this.newPassword_ != this.confirmNewPassword_) {
+        return ValidationErrorType.PASSWORDS_DO_NOT_MATCH;
+      }
     }
     return ValidationErrorType.NO_ERROR;
   },
@@ -161,6 +193,23 @@ Polymer({
     const err = this.currentValidationError_;
     return err == ValidationErrorType.MISSING_CONFIRM_NEW_PASSWORD ||
         err == ValidationErrorType.PASSWORDS_DO_NOT_MATCH;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getPromptString_: function() {
+    if (this.showOldPasswordPrompt_ && this.showNewPasswordPrompt_) {
+      return this.i18n('bothPasswordsPrompt');
+    }
+    if (this.showOldPasswordPrompt_) {
+      return this.i18n('oldPasswordPrompt');
+    }
+    if (this.showNewPasswordPrompt_) {
+      return this.i18n('newPasswordPrompt');
+    }
+    return '';
   },
 
   /**

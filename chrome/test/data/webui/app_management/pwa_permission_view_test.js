@@ -25,6 +25,12 @@ suite('<app-management-pwa-permission-view>', function() {
     await fakeHandler.flushPipesForTesting();
   }
 
+  function getSelectedAppFromStore() {
+    const storeData = app_management.Store.getInstance().data;
+    const selectedAppId = storeData.currentPage.selectedAppId;
+    return storeData.apps[selectedAppId];
+  }
+
   setup(async function() {
     fakeHandler = setupFakeHandler();
     replaceStore();
@@ -65,5 +71,30 @@ suite('<app-management-pwa-permission-view>', function() {
     await checkToggle('CONTENT_SETTINGS_TYPE_GEOLOCATION');
     await checkToggle('CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA');
     await checkToggle('CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC');
+  });
+
+  test('Pin to shelf toggle', async function() {
+    const pinToShelfItem = pwaPermissionView.$['pin-to-shelf-setting'];
+    const toggle = pinToShelfItem.$['toggle-row'].$.toggle;
+
+    assertFalse(toggle.checked);
+    assertEquals(
+        toggle.checked,
+        app_management.util.convertOptionalBoolToBool(
+            getSelectedAppFromStore().isPinned));
+    pinToShelfItem.click();
+    await fakeHandler.flushPipesForTesting();
+    assertTrue(toggle.checked);
+    assertEquals(
+        toggle.checked,
+        app_management.util.convertOptionalBoolToBool(
+            getSelectedAppFromStore().isPinned));
+    pinToShelfItem.click();
+    await fakeHandler.flushPipesForTesting();
+    assertFalse(toggle.checked);
+    assertEquals(
+        toggle.checked,
+        app_management.util.convertOptionalBoolToBool(
+            getSelectedAppFromStore().isPinned));
   });
 });

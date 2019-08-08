@@ -137,12 +137,11 @@ void TCPSocket::Connect(const net::AddressList& address,
           base::BindOnce(&TCPSocket::OnConnectCompleteOnUIThread, task_runner_,
                          std::move(completion_callback));
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&TCPSocket::ConnectOnUIThread, storage_partition_,
-                     browser_context_, address,
-                     mojo::MakeRequest(&client_socket_),
-                     std::move(completion_callback_ui)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&TCPSocket::ConnectOnUIThread,
+                                storage_partition_, browser_context_, address,
+                                mojo::MakeRequest(&client_socket_),
+                                std::move(completion_callback_ui)));
 }
 
 void TCPSocket::Disconnect(bool socket_destroying) {
@@ -262,7 +261,7 @@ void TCPSocket::Listen(const std::string& address,
           base::BindOnce(&TCPSocket::OnListenCompleteOnUIThread, task_runner_,
                          std::move(completion_callback));
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&TCPSocket::ListenOnUIThread, storage_partition_,
                      browser_context_, ip_end_point, backlog,

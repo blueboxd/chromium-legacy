@@ -255,8 +255,8 @@ ProcessManager::ProcessManager(BrowserContext* context,
     : extension_registry_(extension_registry),
       site_instance_(content::SiteInstance::Create(context)),
       browser_context_(context),
-      worker_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO})),
+      worker_task_runner_(
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})),
       startup_background_hosts_created_(false),
       last_background_close_sequence_id_(0),
       process_observer_(this) {

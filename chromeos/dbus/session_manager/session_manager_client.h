@@ -26,6 +26,7 @@ class Bus;
 }
 
 namespace login_manager {
+class LoginScreenStorageMetadata;
 class PolicyDescriptor;
 class StartArcMiniContainerRequest;
 class UpgradeArcContainerRequest;
@@ -140,6 +141,33 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
 
   // Sends the user's password to the session manager.
   virtual void SaveLoginPassword(const std::string& password) = 0;
+
+  // Used to report errors from |LoginScreenStorageStore()|. |error| should
+  // contain an error message if an error occurred.
+  using LoginScreenStorageStoreCallback =
+      DBusMethodCallback<std::string /* error */>;
+
+  // Stores data to the login screen storage. login screen storage is a D-Bus
+  // API that is used by the custom login screen implementations to inject
+  // credentials into the session and store persistent data across the login
+  // screen restarts.
+  virtual void LoginScreenStorageStore(
+      const std::string& key,
+      const login_manager::LoginScreenStorageMetadata& metadata,
+      const std::string& data,
+      LoginScreenStorageStoreCallback callback) = 0;
+
+  // Used for |LoginScreenStorageRetrieve()| method. |data| argument is the data
+  // returned by the session manager. |error| contains an error message if an
+  // error occurred, otherwise empty.
+  using LoginScreenStorageRetrieveCallback =
+      base::OnceCallback<void(base::Optional<std::string> /* data */,
+                              base::Optional<std::string> /* error */)>;
+
+  // Retrieve data stored earlier with the |LoginScreenStorageStore()| method.
+  virtual void LoginScreenStorageRetrieve(
+      const std::string& key,
+      LoginScreenStorageRetrieveCallback callback) = 0;
 
   // Starts the session for the user.
   virtual void StartSession(

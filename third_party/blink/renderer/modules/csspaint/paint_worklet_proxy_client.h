@@ -90,11 +90,16 @@ class MODULES_EXPORT PaintWorkletProxyClient
     main_thread_runner_ = runner;
   }
 
+  double DevicePixelRatio() const { return device_pixel_ratio_; }
+
  private:
   friend class PaintWorkletGlobalScopeTest;
   friend class PaintWorkletProxyClientTest;
   FRIEND_TEST_ALL_PREFIXES(PaintWorkletProxyClientTest,
                            PaintWorkletProxyClientConstruction);
+
+  // Store the device pixel ratio here so it can be used off main thread
+  double device_pixel_ratio_;
 
   // The |paint_dispatcher_| is shared between all PaintWorklets on the same
   // Renderer process, and is responsible for dispatching paint calls from the

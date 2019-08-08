@@ -294,13 +294,9 @@ void ChromeRenderMessageFilter::FileSystemAccessedOnUIThread(
   if (!web_view_permission_helper)
     return;
   web_view_permission_helper->RequestFileSystemPermission(
-      url,
-      allowed,
-      base::Bind(&ChromeRenderMessageFilter::FileSystemAccessedResponse,
-                 render_process_id,
-                 render_frame_id,
-                 url,
-                 callback));
+      url, allowed,
+      base::BindOnce(&ChromeRenderMessageFilter::FileSystemAccessedResponse,
+                     render_process_id, render_frame_id, url, callback));
 }
 
 void ChromeRenderMessageFilter::FileSystemAccessedResponse(

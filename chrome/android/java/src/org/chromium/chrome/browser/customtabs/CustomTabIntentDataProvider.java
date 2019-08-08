@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static android.support.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
-import static android.support.customtabs.CustomTabsIntent.COLOR_SCHEME_SYSTEM;
+import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
+import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_SYSTEM;
 
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -21,10 +21,6 @@ import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabColorSchemeParams;
-import android.support.customtabs.CustomTabsIntent;
-import android.support.customtabs.CustomTabsSessionToken;
-import android.support.customtabs.TrustedWebUtils;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.View;
@@ -55,6 +51,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import androidx.browser.customtabs.CustomTabColorSchemeParams;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsSessionToken;
+import androidx.browser.customtabs.TrustedWebUtils;
 
 /**
  * A model class that parses the incoming intent for Custom Tabs specific customization data.

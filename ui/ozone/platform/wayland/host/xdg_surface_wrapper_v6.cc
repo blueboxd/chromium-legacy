@@ -124,8 +124,7 @@ void XDGSurfaceWrapperV6::Configure(void* data,
   DCHECK(surface);  
   surface->pending_configure_serial_ = serial;
 
-  if (surface->surface_for_popup_)
-    surface->AckConfigure();
+  surface->AckConfigure();
 }
 
 // static

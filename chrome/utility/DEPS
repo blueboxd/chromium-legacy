@@ -40,7 +40,6 @@ include_rules = [
   "+extensions/common",
   "+extensions/buildflags",
   "+media",
-  "+services/content/simple_browser",
   "+services/network/public",
   "+services/network/url_request_context_builder_mojo.h",
   "+services/proxy_resolver",

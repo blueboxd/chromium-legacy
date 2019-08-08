@@ -62,8 +62,15 @@
         ],
         'mixins': [
           'chrome-swarming-pool',
-          'linux-trusty',
+          'linux-xenial',
         ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'ssd': '0',
+            },
+          ],
+        },
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
         },
@@ -1741,7 +1748,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
         'gtest_args': [
           '--enable-features=BlinkHeapConcurrentMarking',
@@ -2568,8 +2574,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'isolated_scripts': 'gpu_blink_web_tests',
-          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_release_experimental_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         }
       },
       'Linux FYI Experimental Release (NVIDIA)': {
@@ -4166,6 +4171,15 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'V8 Blink Linux Future': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'layout_ng_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'V8 Blink Linux Layout NG': {
         'swarming': {
           'dimension_sets': [
@@ -4195,10 +4209,9 @@
       },
       'V8 Blink Win': {
         'mixins': [
-          'win7',
+          'win10',
         ],
         'test_suites': {
-          'gtest_tests': 'layout_ng_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },

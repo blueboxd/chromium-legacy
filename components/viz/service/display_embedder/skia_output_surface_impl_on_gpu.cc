@@ -652,7 +652,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::vector<ImageContextImpl*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
     uint64_t sync_fence_release,
-    base::OnceClosure on_finished) {
+    base::OnceClosure on_finished,
+    base::Optional<gfx::Rect> draw_rectangle) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
@@ -660,6 +661,9 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 
   if (!MakeCurrent(true /* need_fbo0 */))
     return;
+
+  if (draw_rectangle)
+    output_device_->SetDrawRectangle(*draw_rectangle);
 
   // We do not reset scoped_output_device_paint_ after drawing the ddl until
   // SwapBuffers() is called, because we may need access to output_sk_surface()
@@ -1116,11 +1120,6 @@ void SkiaOutputSurfaceImplOnGpu::EndAccessImages(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto* context : image_contexts)
     context->EndAccess();
-}
-
-void SkiaOutputSurfaceImplOnGpu::SetDrawRectangle(
-    const gfx::Rect& draw_rectangle) {
-  output_device_->SetDrawRectangle(draw_rectangle);
 }
 
 sk_sp<GrContextThreadSafeProxy>

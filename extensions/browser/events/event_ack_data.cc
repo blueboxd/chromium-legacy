@@ -101,8 +101,7 @@ void EventAckData::IncrementInflightEvent(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::ServiceWorkerContext::RunTask(
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
       FROM_HERE, context,
       base::BindOnce(&EventAckData::StartExternalRequestOnIO, context,
                      render_process_id, version_id, event_id, unacked_events_));
@@ -117,8 +116,7 @@ void EventAckData::DecrementInflightEvent(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::ServiceWorkerContext::RunTask(
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
       FROM_HERE, context,
       base::BindOnce(&EventAckData::FinishExternalRequestOnIO, context,
                      render_process_id, version_id, event_id, unacked_events_,

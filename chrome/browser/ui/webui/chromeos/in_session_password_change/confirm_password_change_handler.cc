@@ -19,7 +19,29 @@
 
 namespace chromeos {
 
-ConfirmPasswordChangeHandler::ConfirmPasswordChangeHandler() {
+namespace {
+
+const InSessionPasswordChangeManager::Event kIncorrectPasswordEvent =
+    InSessionPasswordChangeManager::Event::CRYPTOHOME_PASSWORD_CHANGE_FAILURE;
+
+const InSessionPasswordChangeManager::PasswordSource kPasswordSource =
+    InSessionPasswordChangeManager::PasswordSource::PASSWORDS_RETYPED;
+
+// Returns one if it is non-empty, otherwise returns two.
+const std::string& FirstNonEmpty(const std::string& one,
+                                 const std::string& two) {
+  return !one.empty() ? one : two;
+}
+
+}  // namespace
+
+ConfirmPasswordChangeHandler::ConfirmPasswordChangeHandler(
+    const std::string& scraped_old_password,
+    const std::string& scraped_new_password,
+    const bool show_spinner_initially)
+    : scraped_old_password_(scraped_old_password),
+      scraped_new_password_(scraped_new_password),
+      show_spinner_initially_(show_spinner_initially) {
   if (InSessionPasswordChangeManager::IsInitialized()) {
     InSessionPasswordChangeManager::Get()->AddObserver(this);
   }
@@ -31,24 +53,51 @@ ConfirmPasswordChangeHandler::~ConfirmPasswordChangeHandler() {
   }
 }
 
-void ConfirmPasswordChangeHandler::OnEvent(
-    InSessionPasswordChangeManager::Event event) {
-  if (event ==
-      InSessionPasswordChangeManager::CRYPTOHOME_PASSWORD_CHANGE_FAILURE) {
-    AllowJavascript();
-    FireWebUIListener("incorrect-old-password");
-  }
+void ConfirmPasswordChangeHandler::HandleGetInitialState(
+    const base::ListValue* params) {
+  const std::string callback_id = params->GetList()[0].GetString();
+
+  base::Value state(base::Value::Type::DICTIONARY);
+  state.SetBoolKey("showOldPasswordPrompt", scraped_old_password_.empty());
+  state.SetBoolKey("showNewPasswordPrompt", scraped_new_password_.empty());
+  state.SetBoolKey("showSpinner", show_spinner_initially_);
+
+  AllowJavascript();
+  ResolveJavascriptCallback(base::Value(callback_id), state);
 }
 
 void ConfirmPasswordChangeHandler::HandleChangePassword(
     const base::ListValue* params) {
-  const std::string old_password = params->GetList()[0].GetString();
-  const std::string new_password = params->GetList()[1].GetString();
-  InSessionPasswordChangeManager::Get()->ChangePassword(old_password,
-                                                        new_password);
+  const std::string old_password =
+      FirstNonEmpty(params->GetList()[0].GetString(), scraped_old_password_);
+  const std::string new_password =
+      FirstNonEmpty(params->GetList()[1].GetString(), scraped_new_password_);
+  DCHECK(!old_password.empty() && !new_password.empty());
+
+  InSessionPasswordChangeManager::Get()->ChangePassword(
+      old_password, new_password, kPasswordSource);
+}
+
+void ConfirmPasswordChangeHandler::OnEvent(
+    InSessionPasswordChangeManager::Event event) {
+  if (event == kIncorrectPasswordEvent) {
+    // If this event comes before getInitialState, then don't show the spinner
+    // initially after all - the initial password change attempt using scraped
+    // passwords already failed before the dialog finished loading.
+    show_spinner_initially_ = false;
+    // Discard the scraped old password and ask the user what it really is.
+    scraped_old_password_.clear();
+    if (IsJavascriptAllowed()) {
+      FireWebUIListener("incorrect-old-password");
+    }
+  }
 }
 
 void ConfirmPasswordChangeHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "getInitialState",
+      base::BindRepeating(&ConfirmPasswordChangeHandler::HandleGetInitialState,
+                          weak_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "changePassword",
       base::BindRepeating(&ConfirmPasswordChangeHandler::HandleChangePassword,

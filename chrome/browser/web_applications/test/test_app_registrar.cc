@@ -125,6 +125,12 @@ base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {
   return base::nullopt;
 }
 
+LaunchContainer TestAppRegistrar::GetAppLaunchContainer(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return LaunchContainer::kTab;
+}
+
 base::flat_set<AppId> TestAppRegistrar::GetAppIdsForTesting() const {
   base::flat_set<AppId> result;
   for (const std::pair<AppId, AppInfo>& it : installed_apps_) {

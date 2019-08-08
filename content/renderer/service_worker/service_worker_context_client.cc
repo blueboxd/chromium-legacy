@@ -109,14 +109,14 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
     mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
         subresource_loader_updater,
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> starter_thread_task_runner)
     : service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
       is_starting_installed_worker_(is_starting_installed_worker),
       renderer_preferences_(std::move(renderer_preferences)),
       preference_watcher_request_(std::move(preference_watcher_request)),
-      main_thread_task_runner_(std::move(main_thread_task_runner)),
+      starter_thread_task_runner_(std::move(starter_thread_task_runner)),
       proxy_(nullptr),
       pending_service_worker_request_(std::move(service_worker_request)),
       controller_receiver_(std::move(controller_receiver)),
@@ -124,12 +124,12 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
           std::move(subresource_loader_updater)),
       owner_(owner),
       start_timing_(std::move(start_timing)) {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(owner_);
   DCHECK(subresource_loaders);
   instance_host_ =
       blink::mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr::Create(
-          std::move(instance_host), main_thread_task_runner_);
+          std::move(instance_host), starter_thread_task_runner_);
 
   if (IsOutOfProcessNetworkService()) {
     // If the network service crashes, this worker self-terminates, so it can
@@ -143,9 +143,9 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
         subresource_loaders->pending_default_factory()
             .InitWithNewPipeAndPassReceiver());
     network_service_connection_error_handler_holder_
-        .set_connection_error_handler(
-            base::BindOnce(&ServiceWorkerContextClient::StopWorkerOnMainThread,
-                           base::Unretained(this)));
+        .set_connection_error_handler(base::BindOnce(
+            &ServiceWorkerContextClient::StopWorkerOnStarterThread,
+            base::Unretained(this)));
   }
 
   loader_factories_ = base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
@@ -164,29 +164,37 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
 }
 
 ServiceWorkerContextClient::~ServiceWorkerContextClient() {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
 }
 
-void ServiceWorkerContextClient::StartWorkerContext(
+void ServiceWorkerContextClient::StartWorkerContextOnStarterThread(
     std::unique_ptr<blink::WebEmbeddedWorker> worker,
     const blink::WebEmbeddedWorkerStartData& start_data) {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
   worker_ = std::move(worker);
   worker_->StartWorkerContext(start_data);
 }
 
 blink::WebEmbeddedWorker& ServiceWorkerContextClient::worker() {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
   return *worker_;
 }
 
-void ServiceWorkerContextClient::WorkerReadyForInspectionOnMainThread() {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  (*instance_host_)->OnReadyForInspection();
+void ServiceWorkerContextClient::WorkerReadyForInspectionOnMainThread(
+    mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
+    mojo::ScopedMessagePipeHandle devtools_agent_host_request) {
+  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
+  blink::mojom::DevToolsAgentPtrInfo ptr_info(
+      std::move(devtools_agent_ptr_info),
+      blink::mojom::DevToolsAgent::Version_);
+  blink::mojom::DevToolsAgentPtr ptr(std::move(ptr_info));
+  blink::mojom::DevToolsAgentHostRequest request(
+      std::move(devtools_agent_host_request));
+  (*instance_host_)->OnReadyForInspection(std::move(ptr), std::move(request));
 }
 
 void ServiceWorkerContextClient::WorkerContextFailedToStartOnMainThread() {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!proxy_);
 
   (*instance_host_)->OnStopped();
@@ -225,7 +233,7 @@ void ServiceWorkerContextClient::FailedToFetchModuleScript() {
 }
 
 void ServiceWorkerContextClient::WorkerScriptLoadedOnMainThread() {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!is_starting_installed_worker_);
   (*instance_host_)->OnScriptLoaded();
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LOAD_SCRIPT", this);
@@ -240,8 +248,9 @@ void ServiceWorkerContextClient::WorkerScriptLoadedOnWorkerThread() {
 void ServiceWorkerContextClient::WorkerContextStarted(
     blink::WebServiceWorkerContextProxy* proxy,
     scoped_refptr<base::SequencedTaskRunner> worker_task_runner) {
-  DCHECK_NE(0, WorkerThread::GetCurrentId())
-      << "service worker started on the main thread instead of a worker thread";
+  DCHECK(!starter_thread_task_runner_->RunsTasksInCurrentSequence())
+      << "service worker started on the starter thread instead of a worker "
+         "thread";
   DCHECK(worker_task_runner->RunsTasksInCurrentSequence());
   DCHECK(!worker_task_runner_);
   worker_task_runner_ = std::move(worker_task_runner);
@@ -344,7 +353,7 @@ void ServiceWorkerContextClient::WorkerContextDestroyed() {
 
   // base::Unretained is safe because |owner_| does not destroy itself until
   // WorkerContextDestroyed is called.
-  main_thread_task_runner_->PostTask(
+  starter_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed,
                      base::Unretained(owner_)));
@@ -378,7 +387,7 @@ void ServiceWorkerContextClient::ReportConsoleMessage(
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 ServiceWorkerContextClient::CreateServiceWorkerNetworkProviderOnMainThread() {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
   return std::make_unique<ServiceWorkerNetworkProviderForServiceWorker>(
       std::move(service_worker_provider_info_->script_loader_factory_ptr_info));
 }
@@ -386,7 +395,7 @@ ServiceWorkerContextClient::CreateServiceWorkerNetworkProviderOnMainThread() {
 scoped_refptr<blink::WebWorkerFetchContext>
 ServiceWorkerContextClient::CreateWorkerFetchContextOnMainThreadLegacy(
     blink::WebServiceWorkerNetworkProvider* provider) {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(preference_watcher_request_.is_pending());
 
   // TODO(crbug.com/796425): Temporarily wrap the raw
@@ -413,7 +422,7 @@ ServiceWorkerContextClient::CreateWorkerFetchContextOnMainThreadLegacy(
 
 scoped_refptr<blink::WebWorkerFetchContext>
 ServiceWorkerContextClient::CreateWorkerFetchContextOnMainThread() {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(preference_watcher_request_.is_pending());
 
   // TODO(bashi): Consider changing ServiceWorkerFetchContextImpl to take
@@ -543,8 +552,8 @@ void ServiceWorkerContextClient::RequestTermination(
   (*instance_host_)->RequestTermination(std::move(callback));
 }
 
-void ServiceWorkerContextClient::StopWorkerOnMainThread() {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+void ServiceWorkerContextClient::StopWorkerOnStarterThread() {
+  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
   owner_->StopWorker();
 }
 

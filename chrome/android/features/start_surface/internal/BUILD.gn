@@ -108,7 +108,7 @@ android_library("java") {
     deps += [
       "//chrome/android/public/profiles:java",
       "//content/public/android:content_java",
-      "//third_party/custom_tabs_client:custom_tabs_support_java",
+      "//third_party/android_sdk/androidx_browser:androidx_browser_java",
       "//third_party/feed:feed_lib_java",
       "//ui/android:ui_utils_java",
       "//ui/base/mojom:mojom_java",

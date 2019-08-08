@@ -13,7 +13,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -42,6 +41,8 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.sync.Passphrase;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Dialog to ask to user to enter their sync passphrase.

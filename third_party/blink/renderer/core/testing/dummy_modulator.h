@@ -65,7 +65,7 @@ class DummyModulator : public Modulator {
   bool IsAcquiringImportMaps() const override;
   void ClearIsAcquiringImportMaps() override;
   ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const override;
-  ScriptValue InstantiateModule(ModuleRecord) override;
+  ScriptValue InstantiateModule(ModuleRecord, const KURL&) override;
   Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override;
   ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) override;
   ModuleScriptFetcher* CreateModuleScriptFetcher(

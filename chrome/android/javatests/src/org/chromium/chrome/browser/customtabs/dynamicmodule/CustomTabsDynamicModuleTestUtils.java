@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsCallback;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.Assert;
@@ -35,6 +34,8 @@ import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.concurrent.TimeoutException;
+
+import androidx.browser.customtabs.CustomTabsCallback;
 
 /**
  * Utility class that contains fake CCT dynamic module classes and convenience calls

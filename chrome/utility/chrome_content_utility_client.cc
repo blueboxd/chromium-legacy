@@ -73,11 +73,6 @@
 #include "chrome/utility/printing_handler.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
-#include "services/content/simple_browser/public/mojom/constants.mojom.h"  // nogncheck
-#include "services/content/simple_browser/simple_browser_service.h"  // nogncheck
-#endif
-
 namespace {
 
 base::LazyInstance<ChromeContentUtilityClient::NetworkBinderCreationCallback>::
@@ -194,14 +189,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
       service_name == mirroring::mojom::kServiceName) {
     return std::make_unique<mirroring::MirroringService>(
         std::move(request), content::ChildThread::Get()->GetIOTaskRunner());
-  }
-#endif
-
-#if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)
-  if (service_name == simple_browser::mojom::kServiceName) {
-    return std::make_unique<simple_browser::SimpleBrowserService>(
-        std::move(request), simple_browser::SimpleBrowserService::
-                                UIInitializationMode::kInitializeUI);
   }
 #endif
 

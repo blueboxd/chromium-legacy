@@ -180,7 +180,7 @@ TEST(ModuleRecordTest, instantiateNoDeps) {
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
-  ScriptValue exception = module.Instantiate(scope.GetScriptState());
+  ScriptValue exception = module.Instantiate(scope.GetScriptState(), js_url);
   ASSERT_TRUE(exception.IsEmpty());
 
   EXPECT_EQ(0u, resolver->ResolveCount());
@@ -216,7 +216,7 @@ TEST(ModuleRecordTest, instantiateWithDeps) {
       js_url_c, js_url_c, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
-  ScriptValue exception = module.Instantiate(scope.GetScriptState());
+  ScriptValue exception = module.Instantiate(scope.GetScriptState(), js_url_c);
   ASSERT_TRUE(exception.IsEmpty());
 
   ASSERT_EQ(2u, resolver->ResolveCount());
@@ -238,7 +238,8 @@ TEST(ModuleRecordTest, EvaluationErrrorIsRemembered) {
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module_failure.IsNull());
-  ASSERT_TRUE(module_failure.Instantiate(scope.GetScriptState()).IsEmpty());
+  ASSERT_TRUE(
+      module_failure.Instantiate(scope.GetScriptState(), js_url_f).IsEmpty());
   ScriptValue evaluation_error =
       module_failure.Evaluate(scope.GetScriptState());
   EXPECT_FALSE(evaluation_error.IsEmpty());
@@ -251,7 +252,7 @@ TEST(ModuleRecordTest, EvaluationErrrorIsRemembered) {
       js_url_c, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       scope.GetExceptionState());
   ASSERT_FALSE(module.IsNull());
-  ASSERT_TRUE(module.Instantiate(scope.GetScriptState()).IsEmpty());
+  ASSERT_TRUE(module.Instantiate(scope.GetScriptState(), js_url_c).IsEmpty());
   ScriptValue evaluation_error2 = module.Evaluate(scope.GetScriptState());
   EXPECT_FALSE(evaluation_error2.IsEmpty());
 
@@ -273,7 +274,7 @@ TEST(ModuleRecordTest, Evaluate) {
       js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
-  ScriptValue exception = module.Instantiate(scope.GetScriptState());
+  ScriptValue exception = module.Instantiate(scope.GetScriptState(), js_url);
   ASSERT_TRUE(exception.IsEmpty());
 
   EXPECT_TRUE(module.Evaluate(scope.GetScriptState()).IsEmpty());
@@ -306,7 +307,7 @@ TEST(ModuleRecordTest, EvaluateCaptureError) {
       scope.GetIsolate(), "throw 'bar';", js_url, js_url, ScriptFetchOptions(),
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
-  ScriptValue exception = module.Instantiate(scope.GetScriptState());
+  ScriptValue exception = module.Instantiate(scope.GetScriptState(), js_url);
   ASSERT_TRUE(exception.IsEmpty());
 
   ScriptValue error = module.Evaluate(scope.GetScriptState());

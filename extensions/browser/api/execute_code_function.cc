@@ -245,9 +245,10 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file,
     std::unique_ptr<std::string> data(
         new std::string(resource.data(), resource.size()));
 
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&ExecuteCodeFunction::
                            GetFileURLAndLocalizeComponentResourceInBackground,
                        this, std::move(data), extension_id, extension_path,

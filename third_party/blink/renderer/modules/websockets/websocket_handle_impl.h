@@ -36,6 +36,7 @@
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace base {
@@ -63,6 +64,17 @@ class WebSocketHandleImpl
   void Close(uint16_t code, const String& reason) override;
 
  private:
+  struct DataFrame final {
+    DataFrame(bool fin,
+              network::mojom::blink::WebSocketMessageType type,
+              uint32_t data_length)
+        : fin(fin), type(type), data_length(data_length) {}
+
+    bool fin;
+    network::mojom::blink::WebSocketMessageType type;
+    uint32_t data_length;
+  };
+
   void Disconnect();
   void OnConnectionError(uint32_t custom_reason,
                          const std::string& description);
@@ -78,16 +90,27 @@ class WebSocketHandleImpl
           client_receiver,
       const String& selected_protocol,
       const String& extensions,
-      uint64_t receive_quota_threshold) override;
+      uint64_t receive_quota_threshold,
+      mojo::ScopedDataPipeConsumerHandle readable) override;
+
   // network::mojom::blink::WebSocketClient methods:
   void OnDataFrame(bool fin,
                    network::mojom::blink::WebSocketMessageType,
-                   base::span<const uint8_t> data) override;
+                   uint64_t data_length) override;
   void AddSendFlowControlQuota(int64_t quota) override;
   void OnDropChannel(bool was_clean,
                      uint16_t code,
                      const String& reason) override;
   void OnClosingHandshake() override;
+
+  // Datapipe functions to receive.
+  void OnReadable(MojoResult result, const mojo::HandleSignalsState& state);
+  void ConsumePendingDataFrames();
+  // Returns false if |this| is deleted.
+  bool ConsumeDataFrame(bool fin,
+                        network::mojom::blink::WebSocketMessageType type,
+                        const void* data,
+                        size_t data_size);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   WeakPersistent<WebSocketChannelImpl> channel_;
@@ -96,6 +119,11 @@ class WebSocketHandleImpl
   mojo::Binding<network::mojom::blink::WebSocketHandshakeClient>
       handshake_client_binding_;
   mojo::Binding<network::mojom::blink::WebSocketClient> client_binding_;
+
+  // Datapipe fields to receive.
+  mojo::ScopedDataPipeConsumerHandle readable_;
+  mojo::SimpleWatcher readable_watcher_;
+  WTF::Deque<DataFrame> pending_data_frames_;
 };
 
 }  // namespace blink

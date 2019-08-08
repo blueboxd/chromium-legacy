@@ -29,7 +29,7 @@ class PasswordCredentialTest : public PageTestBase {
     b.Append(html);
     b.Append("</form></body></html>");
     SetHtmlInnerHTML(b.ToString().Utf8());
-    HTMLFormElement* form = ToHTMLFormElement(GetElementById("theForm"));
+    auto* form = To<HTMLFormElement>(GetElementById("theForm"));
     EXPECT_NE(nullptr, form);
     return form;
   }

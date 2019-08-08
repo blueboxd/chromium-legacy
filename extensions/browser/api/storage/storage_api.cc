@@ -77,7 +77,7 @@ ExtensionFunction::ResponseAction SettingsFunction::Run() {
 
 void SettingsFunction::AsyncRunWithStorage(ValueStore* storage) {
   ResponseValue response = RunWithStorage(storage);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&SettingsFunction::Respond, this, std::move(response)));
 }

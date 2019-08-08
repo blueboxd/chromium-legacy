@@ -153,7 +153,7 @@ TEST_F(PaintWorkletStylePropertyMapTest, CreateSupportedCrossThreadData) {
   EXPECT_TRUE(data.has_value());
   scoped_refptr<PaintWorkletInput> input =
       base::MakeRefCounted<PaintWorkletInput>("test", FloatSize(100, 100), 1.0f,
-                                              1, std::move(data.value()),
+                                              1.0f, 1, std::move(data.value()),
                                               std::move(input_arguments));
   DCHECK(input);
 

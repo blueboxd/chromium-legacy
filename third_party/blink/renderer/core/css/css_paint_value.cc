@@ -106,8 +106,8 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
         BuildInputArgumentValues(cross_thread_input_arguments);
         scoped_refptr<PaintWorkletInput> input =
             base::MakeRefCounted<PaintWorkletInput>(
-                GetName(), target_size, zoom, generator_->WorkletId(),
-                std::move(style_data.value()),
+                GetName(), target_size, zoom, device_scale_factor,
+                generator_->WorkletId(), std::move(style_data.value()),
                 std::move(cross_thread_input_arguments));
         return PaintWorkletDeferredImage::Create(std::move(input), target_size);
       }

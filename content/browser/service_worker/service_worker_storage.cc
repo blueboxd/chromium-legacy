@@ -5,12 +5,14 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 
 #include <stddef.h>
+
 #include <memory>
 #include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -1176,13 +1178,14 @@ base::FilePath ServiceWorkerStorage::GetDiskCachePath() {
       .Append(kDiskCacheName);
 }
 
-void ServiceWorkerStorage::LazyInitializeForTest(base::OnceClosure callback) {
-  if (state_ == STORAGE_STATE_UNINITIALIZED ||
-      state_ == STORAGE_STATE_INITIALIZING) {
-    LazyInitialize(std::move(callback));
+void ServiceWorkerStorage::LazyInitializeForTest() {
+  DCHECK_NE(state_, STORAGE_STATE_DISABLED);
+
+  if (state_ == STORAGE_STATE_INITIALIZED)
     return;
-  }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
+  base::RunLoop loop;
+  LazyInitialize(loop.QuitClosure());
+  loop.Run();
 }
 
 void ServiceWorkerStorage::LazyInitialize(base::OnceClosure callback) {

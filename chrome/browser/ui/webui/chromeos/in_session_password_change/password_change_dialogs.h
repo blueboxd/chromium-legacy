@@ -51,6 +51,10 @@ class ConfirmPasswordChangeDialog : public BasePasswordDialog {
                    bool show_spinner_initially);
   static void Dismiss();
 
+  // How big does this dialog need to be to show these prompts:
+  static gfx::Size GetSize(bool show_old_password_prompt,
+                           bool show_new_password_prompt);
+
  protected:
   ConfirmPasswordChangeDialog(const std::string& scraped_old_password,
                               const std::string& scraped_new_password,
@@ -58,7 +62,8 @@ class ConfirmPasswordChangeDialog : public BasePasswordDialog {
   ~ConfirmPasswordChangeDialog() override;
 
   // ui::WebDialogDelegate:
-  std::string GetDialogArgs() const override;
+  void GetWebUIMessageHandlers(
+      std::vector<content::WebUIMessageHandler*>* handlers) const override;
 
  private:
   std::string scraped_old_password_;

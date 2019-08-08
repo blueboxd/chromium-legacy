@@ -11,7 +11,6 @@ import android.net.MailTo;
 import android.net.Uri;
 import android.provider.Browser;
 import android.provider.ContactsContract;
-import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
@@ -36,6 +35,8 @@ import org.chromium.ui.base.PageTransition;
 
 import java.net.URI;
 import java.util.Locale;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * A default {@link ContextMenuItemDelegate} that supports the context menu functionality in Tab.

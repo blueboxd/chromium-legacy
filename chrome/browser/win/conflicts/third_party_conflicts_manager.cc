@@ -156,8 +156,8 @@ void ClearModuleBlacklistCacheMD5Digest() {
 ThirdPartyConflictsManager::ThirdPartyConflictsManager(
     ModuleDatabaseEventSource* module_database_event_source)
     : module_database_event_source_(module_database_event_source),
-      background_sequence_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BEST_EFFORT,
+      background_sequence_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
            base::MayBlock()})),
       module_list_received_(false),
@@ -209,8 +209,8 @@ void ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
 
   // Also clear the MD5 digest since there will no longer be a current module
   // blacklist cache.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&ClearModuleBlacklistCacheMD5Digest));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ClearModuleBlacklistCacheMD5Digest));
 }
 
 // static
@@ -451,9 +451,8 @@ void ThirdPartyConflictsManager::OnModuleBlacklistCacheUpdated(
     const ModuleBlacklistCacheUpdater::CacheUpdateResult& result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&UpdateModuleBlacklistCacheMD5Digest, result));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&UpdateModuleBlacklistCacheMD5Digest, result));
 }
 
 void ThirdPartyConflictsManager::ForceModuleListComponentUpdate() {

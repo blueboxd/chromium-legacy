@@ -8,7 +8,8 @@
     Constructor([EnforceRange] unsigned long width, [EnforceRange] unsigned long height),
     Exposed=(Window,Worker),
     Transferable,
-    MeasureAs=OffscreenCanvas
+    MeasureAs=OffscreenCanvas,
+    RuntimeEnabled=SurfaceEmbeddingFeatures
 ] interface OffscreenCanvas : EventTarget {
     attribute [EnforceRange] unsigned long width;
     attribute [EnforceRange] unsigned long height;

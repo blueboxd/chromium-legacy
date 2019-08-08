@@ -360,10 +360,7 @@ class ServiceWorkerStorageTest : public testing::Test {
     return storage()->registered_origins_;
   }
 
-  void LazyInitialize() {
-    storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
-  }
+  void LazyInitialize() { storage()->LazyInitializeForTest(); }
 
   blink::ServiceWorkerStatusCode StoreRegistration(
       scoped_refptr<ServiceWorkerRegistration> registration,

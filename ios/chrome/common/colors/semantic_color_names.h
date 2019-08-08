@@ -40,6 +40,18 @@ extern NSString* const kGreenColor;
 // destructive controls.
 extern NSString* const kRedColor;
 
+// Grey Color Palette.
+extern NSString* const kGrey50Color;
+extern NSString* const kGrey100Color;
+extern NSString* const kGrey200Color;
+extern NSString* const kGrey300Color;
+extern NSString* const kGrey400Color;
+extern NSString* const kGrey500Color;
+extern NSString* const kGrey600Color;
+extern NSString* const kGrey700Color;
+extern NSString* const kGrey800Color;
+extern NSString* const kGrey900Color;
+
 // Temporary colors for iOS 12. Because overridePreferredInterfaceStyle isn't
 // available in iOS 12, any views that should always be dark (e.g. incognito)
 // need to use colorsets that always use the dark variant.

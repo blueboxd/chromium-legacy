@@ -232,16 +232,16 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool AllowSignedExchange(content::BrowserContext* browser_context) override;
   void AllowWorkerFileSystem(
       const GURL& url,
-      content::ResourceContext* context,
+      content::BrowserContext* browser_context,
       const std::vector<content::GlobalFrameRoutingId>& render_frames,
-      base::Callback<void(bool)> callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   bool AllowWorkerIndexedDB(
       const GURL& url,
-      content::ResourceContext* context,
+      content::BrowserContext* browser_context,
       const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
   bool AllowWorkerCacheStorage(
       const GURL& url,
-      content::ResourceContext* context,
+      content::BrowserContext* browser_context,
       const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
   AllowWebBluetoothResult AllowWebBluetooth(
       content::BrowserContext* browser_context,
@@ -633,22 +633,15 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void FileSystemAccessed(
       const GURL& url,
       const std::vector<content::GlobalFrameRoutingId>& render_frames,
-      base::Callback<void(bool)> callback,
+      base::OnceCallback<void(bool)> callback,
       bool allow);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void GuestPermissionRequestHelper(
       const GURL& url,
       const std::vector<content::GlobalFrameRoutingId>& render_frames,
-      base::Callback<void(bool)> callback,
+      base::OnceCallback<void(bool)> callback,
       bool allow);
-
-  static void RequestFileSystemPermissionOnUIThread(
-      int render_process_id,
-      int render_frame_id,
-      const GURL& url,
-      bool allowed_by_default,
-      const base::Callback<void(bool)>& callback);
 #endif
 
   // The value pointed to by |settings| should remain valid until the

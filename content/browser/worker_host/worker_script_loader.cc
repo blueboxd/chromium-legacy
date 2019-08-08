@@ -49,7 +49,7 @@ WorkerScriptLoader::WorkerScriptLoader(
     Abort();
     return;
   }
-  service_worker_interceptor = ServiceWorkerRequestHandler::CreateForWorkerUI(
+  service_worker_interceptor = ServiceWorkerRequestHandler::CreateForWorker(
       resource_request_, process_id, service_worker_handle_);
 
   if (service_worker_interceptor)

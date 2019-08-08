@@ -11,8 +11,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsService;
-import android.support.customtabs.PostMessageBackend;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,6 +53,8 @@ import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.PostMessageBackend;
 import dagger.Lazy;
 
 /**

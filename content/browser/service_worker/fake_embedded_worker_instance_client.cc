@@ -56,7 +56,21 @@ void FakeEmbeddedWorkerInstanceClient::StartWorker(
   helper_->OnServiceWorkerRequest(
       std::move(start_params_->service_worker_request));
 
-  host_->OnReadyForInspection();
+  // Create message pipes. We may need to keep |devtools_agent_request| and
+  // |devtools_agent_host_ptr_info| if we want not to invoke
+  // connection error handlers.
+
+  blink::mojom::DevToolsAgentPtr devtools_agent_ptr;
+  blink::mojom::DevToolsAgentRequest devtools_agent_request =
+      mojo::MakeRequest(&devtools_agent_ptr);
+
+  blink::mojom::DevToolsAgentHostPtrInfo devtools_agent_host_ptr_info;
+  blink::mojom::DevToolsAgentHostRequest devtools_agent_host_request =
+      mojo::MakeRequest(&devtools_agent_host_ptr_info);
+
+  host_->OnReadyForInspection(std::move(devtools_agent_ptr),
+                              std::move(devtools_agent_host_request));
+
   if (start_params_->is_installed) {
     EvaluateScript();
     return;

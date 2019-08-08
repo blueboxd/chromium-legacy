@@ -89,7 +89,7 @@ class WorkerScriptFetchInitiator {
       network::ResourceRequest* resource_request,
       BrowserContext* browser_context);
 
-  static void CreateScriptLoaderOnUI(
+  static void CreateScriptLoader(
       int worker_process_id,
       std::unique_ptr<network::ResourceRequest> resource_request,
       StoragePartitionImpl* storage_partition,

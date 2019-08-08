@@ -70,11 +70,10 @@ void ServiceWorkerTaskQueue::DidStartWorkerForScopeOnIO(
     int process_id,
     int thread_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForScope,
-                     task_queue, context_id, version_id, process_id,
-                     thread_id));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForScope,
+                                task_queue, context_id, version_id, process_id,
+                                thread_id));
 }
 
 // static
@@ -241,8 +240,7 @@ void ServiceWorkerTaskQueue::RunTasksAfterStartWorker(
       partition->GetServiceWorkerContext();
 
   content::ServiceWorkerContext::RunTask(
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
       FROM_HERE, service_worker_context,
       base::BindOnce(&ServiceWorkerTaskQueue::StartServiceWorkerOnIOToRunTasks,
                      weak_factory_.GetWeakPtr(), context_id,

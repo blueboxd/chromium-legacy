@@ -134,10 +134,10 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
     EXPECT_EQ(net::OK, test_client_.completion_status().error_code);
   }
 
-  void RunAndCheckFailure() {
+  void RunAndCheckFailure(int net_error) {
     test_client_.RunUntilComplete();
     ASSERT_TRUE(test_client_.has_received_completion());
-    EXPECT_EQ(net::ERR_FAILED, test_client_.completion_status().error_code);
+    EXPECT_EQ(net_error, test_client_.completion_status().error_code);
   }
 
   void SetFallbackFactory(
@@ -207,7 +207,7 @@ TEST_F(BundledExchangesURLLoaderFactoryTest,
       CreateLoaderAndStart(GetPrimaryURL(), net::HttpRequestHeaders::kGetMethod,
                            /*response=*/nullptr);
 
-  RunAndCheckFailure();
+  RunAndCheckFailure(net::ERR_INVALID_BUNDLED_EXCHANGES);
 }
 
 TEST_F(BundledExchangesURLLoaderFactoryTest, CreateLoaderForPost) {
@@ -215,7 +215,7 @@ TEST_F(BundledExchangesURLLoaderFactoryTest, CreateLoaderForPost) {
   auto loader =
       CreateLoaderAndStart(GetPrimaryURL(), "POST", /*response=*/base::nullopt);
 
-  RunAndCheckFailure();
+  RunAndCheckFailure(net::ERR_FAILED);
 }
 
 TEST_F(BundledExchangesURLLoaderFactoryTest, CreateLoaderForNotSupportedURL) {
@@ -225,7 +225,7 @@ TEST_F(BundledExchangesURLLoaderFactoryTest, CreateLoaderForNotSupportedURL) {
                                      net::HttpRequestHeaders::kGetMethod,
                                      /*response=*/base::nullopt);
 
-  RunAndCheckFailure();
+  RunAndCheckFailure(net::ERR_FAILED);
 }
 
 TEST_F(BundledExchangesURLLoaderFactoryTest, CreateFallbackLoader) {

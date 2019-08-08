@@ -118,6 +118,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>*
           observer_list,
       ServiceWorkerContextWrapper* wrapper);
+  // TODO(https://crbug.com/877356): Remove this copy mechanism.
   ServiceWorkerContextCore(
       ServiceWorkerContextCore* old_context,
       ServiceWorkerContextWrapper* wrapper);

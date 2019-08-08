@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -113,6 +114,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   static const void* const kUserDataKey;
 
  private:
+  struct DataFrame;
   class WebSocketEventHandler;
 
   // This class is used to set the WebSocket as user data on a URLRequest. This
@@ -154,6 +156,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
 
   void Reset();
 
+  // Datapipe functions to receive.
+  void OnWritable(MojoResult result, const mojo::HandleSignalsState& state);
+  void SendPendingDataFrames();
+  // Returns false if mojo error occurs.
+  bool SendDataFrame(DataFrame*);
+
   std::unique_ptr<Delegate> delegate_;
   mojo::Binding<mojom::WebSocket> binding_;
 
@@ -181,6 +189,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // handshake_succeeded_ is used by WebSocketManager to manage counters for
   // per-renderer WebSocket throttling.
   bool handshake_succeeded_ = false;
+
+  // Datapipe fields to receive.
+  mojo::ScopedDataPipeProducerHandle writable_;
+  mojo::SimpleWatcher writable_watcher_;
+  base::queue<DataFrame> pending_data_frames_;
 
   base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};
 

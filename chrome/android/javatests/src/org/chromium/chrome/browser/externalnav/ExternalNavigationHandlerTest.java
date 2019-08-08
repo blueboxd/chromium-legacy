@@ -16,7 +16,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
-import android.support.customtabs.CustomTabsIntent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.test.mock.MockPackageManager;
@@ -51,6 +50,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Instrumentation tests for {@link ExternalNavigationHandler}.

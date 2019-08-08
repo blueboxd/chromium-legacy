@@ -87,7 +87,7 @@ class CORE_EXPORT ModuleRecord final {
   ModuleRecord(v8::Isolate*, v8::Local<v8::Module>, const KURL&);
 
   // Returns exception, if any.
-  ScriptValue Instantiate(ScriptState*);
+  ScriptValue Instantiate(ScriptState*, const KURL& source_url);
 
   // Returns exception, if any.
   ScriptValue Evaluate(ScriptState*) const;

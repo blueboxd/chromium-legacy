@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/url_request/url_request_context.h"
-#include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_stream_writer.h"

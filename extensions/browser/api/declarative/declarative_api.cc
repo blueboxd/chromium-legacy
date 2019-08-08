@@ -188,8 +188,7 @@ ExtensionFunction::ResponseAction RulesFunction::Run() {
     return RespondNow(RunAsyncOnCorrectThread());
 
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {rules_registry_->owner_thread()});
+      base::CreateSingleThreadTaskRunner({rules_registry_->owner_thread()});
   base::PostTaskAndReplyWithResult(
       thread_task_runner.get(), FROM_HERE,
       base::BindOnce(&RulesFunction::RunAsyncOnCorrectThread, this),

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTENT_SETTINGS_PROXY_IMPL_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTENT_SETTINGS_PROXY_IMPL_H_
 
+#include "base/memory/ref_counted.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
@@ -14,20 +15,20 @@
 
 namespace content {
 
-class ServiceWorkerContextCore;
+class ServiceWorkerContextWrapper;
 
 // ServiceWorkerContentSettingsProxyImpl passes content settings to its renderer
 // counterpart blink::ServiceWorkerContentSettingsProxy
 // Created on EmbeddedWorkerInstance::SendStartWorker() and connects to the
 // counterpart at the moment.
 // EmbeddedWorkerInstance owns this class, so the lifetime of this class is
-// strongly associated to it.
+// strongly associated to it. This class lives on the UI thread.
 class ServiceWorkerContentSettingsProxyImpl final
     : public blink::mojom::WorkerContentSettingsProxy {
  public:
   ServiceWorkerContentSettingsProxyImpl(
       const GURL& script_url,
-      base::WeakPtr<ServiceWorkerContextCore> context,
+      scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
       blink::mojom::WorkerContentSettingsProxyRequest request);
 
   ~ServiceWorkerContentSettingsProxyImpl() override;
@@ -41,7 +42,7 @@ class ServiceWorkerContentSettingsProxyImpl final
  private:
 
   const url::Origin origin_;
-  base::WeakPtr<ServiceWorkerContextCore> context_;
+  scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   mojo::Binding<blink::mojom::WorkerContentSettingsProxy> binding_;
 };
 

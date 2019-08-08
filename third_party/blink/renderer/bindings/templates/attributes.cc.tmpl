@@ -310,6 +310,7 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}ConstructorGetterCall
 
 {##############################################################################}
 {% macro attribute_setter(attribute, world_suffix) %}
+{% if not attribute.use_common_reflection_setter %}
 static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
     {% if attribute.has_cross_origin_setter %}
     v8::Local<v8::Value> v8_value, const V8CrossOriginSetterInfo& info
@@ -471,6 +472,7 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   {% endif %}{# attribute.is_put_forwards #}
   {% endfilter %}{# format_remove_duplicates #}
 }
+{% endif %}
 {% endmacro %}
 
 
@@ -491,7 +493,7 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallba
   {{ runtime_timer_scope_disabled_by_default(attribute.runtime_call_stats.setter_counter) }}
   {% endif %}
 
-  {% if not attribute.is_data_type_property %}
+  {% if not attribute.is_data_type_property and not attribute.use_common_reflection_setter %}
   v8::Local<v8::Value> v8_value = info[0];
   {% endif %}
 
@@ -524,6 +526,8 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallba
   {% elif attribute.has_cross_origin_setter %}
   {{internal_namespace}}::{{attribute.camel_case_name}}AttributeSetter(
       v8_value, V8CrossOriginSetterInfo(info.GetIsolate(), info.Holder()));
+  {% elif attribute.use_common_reflection_setter %}
+  {{attribute.cpp_setter}};
   {% else %}
   {{internal_namespace}}::{{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(v8_value, info);
   {% endif %}

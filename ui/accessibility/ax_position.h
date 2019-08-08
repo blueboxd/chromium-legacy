@@ -360,7 +360,7 @@ class AXPosition {
 
         // The current anchor might be followed by a soft line break.
         if (text_position->AtEndOfAnchor())
-          return text_position->CreateNextTextAnchorPosition()->AtEndOfLine();
+          return text_position->CreateNextLeafTextPosition()->AtEndOfLine();
     }
     return false;
   }
@@ -695,8 +695,8 @@ class AXPosition {
     bool was_tree_position = IsTreePosition();
     AXPositionInstance initial_endpoint = AsLeafTextPosition();
     AXPositionInstance current_endpoint =
-        forwards ? initial_endpoint->CreateNextTextAnchorPosition()
-                 : initial_endpoint->CreatePreviousTextAnchorPosition();
+        forwards ? initial_endpoint->CreateNextLeafTextPosition()
+                 : initial_endpoint->CreatePreviousLeafTextPosition();
 
     // Start or end of document
     if (current_endpoint->IsNullPosition()) {
@@ -741,9 +741,9 @@ class AXPosition {
     auto next_endpoint = current_endpoint->Clone();
     do {
       if (forwards)
-        next_endpoint = next_endpoint->CreateNextTextAnchorPosition();
+        next_endpoint = next_endpoint->CreateNextLeafTextPosition();
       else
-        next_endpoint = next_endpoint->CreatePreviousTextAnchorPosition();
+        next_endpoint = next_endpoint->CreatePreviousLeafTextPosition();
 
       if (next_endpoint->IsNullPosition() ||
           next_endpoint->GetTextStyles() != initial_styles)
@@ -754,7 +754,7 @@ class AXPosition {
 
     // Moving forwards should leave the position at the end of an anchor.
     // Backwards moves are already at the start of the anchor from
-    // CreatePreviousTextAnchorPosition, so there's no need to move again.
+    // CreatePreviousLeafTextPosition, so there's no need to move again.
     if (forwards)
       current_endpoint = current_endpoint->CreatePositionAtEndOfAnchor();
     else
@@ -904,7 +904,7 @@ class AXPosition {
 
   // Creates a tree position using the next text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
-  AXPositionInstance CreateNextTreeAnchorPosition() const {
+  AXPositionInstance CreateNextLeafTreePosition() const {
     AXPositionInstance next_leaf = AsTreePosition()->CreateNextAnchorPosition();
     while (!next_leaf->IsNullPosition() && next_leaf->AnchorChildCount()) {
       next_leaf = next_leaf->CreateNextAnchorPosition();
@@ -916,7 +916,7 @@ class AXPosition {
 
   // Creates a tree position using the previous text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
-  AXPositionInstance CreatePreviousTreeAnchorPosition() const {
+  AXPositionInstance CreatePreviousLeafTreePosition() const {
     AXPositionInstance previous_leaf =
         AsTreePosition()->CreatePreviousAnchorPosition();
     while (!previous_leaf->IsNullPosition() &&
@@ -930,14 +930,14 @@ class AXPosition {
 
   // Creates a text position using the next text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
-  AXPositionInstance CreateNextTextAnchorPosition() const {
+  AXPositionInstance CreateNextLeafTextPosition() const {
     return CreateNextTextAnchorPosition(
         base::BindRepeating(&DefaultAbortMovePredicate));
   }
 
   // Creates a text position using the previous text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
-  AXPositionInstance CreatePreviousTextAnchorPosition() const {
+  AXPositionInstance CreatePreviousLeafTextPosition() const {
     return CreatePreviousTextAnchorPosition(
         base::BindRepeating(&DefaultAbortMovePredicate));
   }
@@ -963,7 +963,7 @@ class AXPosition {
   AXPositionInstance AsPositionBeforeCharacter() const {
     AXPositionInstance text_position = AsTextPosition();
     while (text_position->AtEndOfAnchor())
-      text_position = text_position->CreateNextTextAnchorPosition();
+      text_position = text_position->CreateNextLeafTextPosition();
     return text_position;
   }
 
@@ -973,7 +973,7 @@ class AXPosition {
   AXPositionInstance AsPositionAfterCharacter() const {
     AXPositionInstance text_position = AsTextPosition();
     while (text_position->AtStartOfAnchor()) {
-      text_position = text_position->CreatePreviousTextAnchorPosition();
+      text_position = text_position->CreatePreviousLeafTextPosition();
       text_position = text_position->CreatePositionAtEndOfAnchor();
     }
     return text_position;
@@ -1050,7 +1050,7 @@ class AXPosition {
       if (iterator == word_starts.end()) {
         // Ignore any nodes with no text or no word boundaries.
         do {
-          text_position = text_position->CreateNextTextAnchorPosition();
+          text_position = text_position->CreateNextLeafTextPosition();
           if (text_position->IsNullPosition()) {
             if (AtEndOfAnchor() &&
                 boundary_behavior == AXBoundaryBehavior::CrossBoundary)
@@ -1112,7 +1112,7 @@ class AXPosition {
       if (word_starts.empty() || iterator == word_starts.begin()) {
         // Ignore any nodes with no text or no word boundaries.
         do {
-          text_position = text_position->CreatePreviousTextAnchorPosition()
+          text_position = text_position->CreatePreviousLeafTextPosition()
                               ->CreatePositionAtEndOfAnchor();
           if (text_position->IsNullPosition()) {
             if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
@@ -1182,7 +1182,7 @@ class AXPosition {
       if (iterator == word_ends.end()) {
         // Ignore any nodes with no text or no word boundaries.
         do {
-          text_position = text_position->CreateNextTextAnchorPosition();
+          text_position = text_position->CreateNextLeafTextPosition();
           if (text_position->IsNullPosition()) {
             if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
               return CreatePositionAtEndOfAnchor();
@@ -1250,7 +1250,7 @@ class AXPosition {
       if (word_ends.empty() || iterator == word_ends.begin()) {
         // Ignore any nodes with no text or no word boundaries.
         do {
-          text_position = text_position->CreatePreviousTextAnchorPosition()
+          text_position = text_position->CreatePreviousLeafTextPosition()
                               ->CreatePositionAtEndOfAnchor();
           if (text_position->IsNullPosition()) {
             if (AtStartOfAnchor() &&
@@ -1308,7 +1308,7 @@ class AXPosition {
     }
 
     do {
-      text_position = text_position->CreateNextTextAnchorPosition();
+      text_position = text_position->CreateNextLeafTextPosition();
       if (text_position->IsNullPosition()) {
         if (AtEndOfAnchor() &&
             boundary_behavior == AXBoundaryBehavior::CrossBoundary)
@@ -1353,7 +1353,7 @@ class AXPosition {
 
     do {
       if (text_position->AtStartOfAnchor()) {
-        text_position = text_position->CreatePreviousTextAnchorPosition();
+        text_position = text_position->CreatePreviousLeafTextPosition();
       } else {
         text_position = text_position->CreatePositionAtStartOfAnchor();
       }
@@ -1409,7 +1409,7 @@ class AXPosition {
 
     do {
       if (text_position->AtEndOfAnchor()) {
-        text_position = text_position->CreateNextTextAnchorPosition()
+        text_position = text_position->CreateNextLeafTextPosition()
                             ->CreatePositionAtEndOfAnchor();
       } else {
         text_position = text_position->CreatePositionAtEndOfAnchor();
@@ -1467,7 +1467,7 @@ class AXPosition {
     }
 
     do {
-      text_position = text_position->CreatePreviousTextAnchorPosition()
+      text_position = text_position->CreatePreviousLeafTextPosition()
                           ->CreatePositionAtEndOfAnchor();
       if (text_position->IsNullPosition()) {
         if (AtStartOfAnchor() &&
@@ -1572,7 +1572,7 @@ class AXPosition {
     }
 
     do {
-      text_position = text_position->CreateNextTextAnchorPosition();
+      text_position = text_position->CreateNextLeafTextPosition();
       if (text_position->IsNullPosition()) {
         if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
           return CreatePositionAtEndOfAnchor();
@@ -1618,7 +1618,7 @@ class AXPosition {
 
     do {
       if (text_position->AtStartOfAnchor()) {
-        text_position = text_position->CreatePreviousTextAnchorPosition();
+        text_position = text_position->CreatePreviousLeafTextPosition();
       } else {
         text_position = text_position->CreatePositionAtStartOfAnchor();
       }
@@ -1674,7 +1674,7 @@ class AXPosition {
 
     do {
       if (text_position->AtEndOfAnchor()) {
-        text_position = text_position->CreateNextTextAnchorPosition()
+        text_position = text_position->CreateNextLeafTextPosition()
                             ->CreatePositionAtEndOfAnchor();
       } else {
         text_position = text_position->CreatePositionAtEndOfAnchor();
@@ -1732,7 +1732,7 @@ class AXPosition {
     }
 
     do {
-      text_position = text_position->CreatePreviousTextAnchorPosition()
+      text_position = text_position->CreatePreviousLeafTextPosition()
                           ->CreatePositionAtEndOfAnchor();
       if (text_position->IsNullPosition()) {
         if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)

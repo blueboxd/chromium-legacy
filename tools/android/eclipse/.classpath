@@ -114,10 +114,8 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="third_party/android_data_chart/java/src"/>
     <classpathentry kind="src" path="third_party/android_protobuf/src/java/src/main/java" including="com/google/protobuf/nano/*"/>
     <classpathentry kind="src" path="third_party/android_swipe_refresh/java/src"/>
+    <classpathentry kind="src" path="third_party/androidx_browser/src/browser/src"/>
     <classpathentry kind="src" path="third_party/cacheinvalidation/src/java"/>
-    <classpathentry kind="src" path="third_party/custom_tabs_client/src/customtabs/src"/>
-    <classpathentry kind="src" path="third_party/custom_tabs_client/src/Application/src/main/java"/>
-    <classpathentry kind="src" path="third_party/custom_tabs_client/src/shared/src/main/java"/>
     <classpathentry kind="src" path="third_party/gif_player/src"/>
     <classpathentry kind="src" path="third_party/junit/src/src/main/java"/>
     <classpathentry kind="src" path="third_party/mockito/src/src/main/java"/>

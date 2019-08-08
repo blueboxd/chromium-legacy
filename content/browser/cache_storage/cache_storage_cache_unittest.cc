@@ -49,7 +49,6 @@
 #include "storage/browser/blob/blob_data_snapshot.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/fake_blob.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
@@ -75,14 +74,6 @@ const GURL kBodyUrl("http://example.com/body.html");
 const GURL kBodyUrlWithQuery("http://example.com/body.html?query=test");
 const GURL kNoBodyUrl("http://example.com/no_body.html");
 const FetchAPIRequestHeadersMap kHeaders({{"a", "a"}, {"b", "b"}});
-
-// Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
-// the memory.
-std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
-    storage::BlobStorageContext* blob_storage_context) {
-  return base::WrapUnique(
-      new storage::BlobProtocolHandler(blob_storage_context));
-}
 
 void SizeCallback(base::RunLoop* run_loop,
                   bool* callback_called,

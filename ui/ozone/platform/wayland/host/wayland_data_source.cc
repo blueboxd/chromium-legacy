@@ -36,7 +36,7 @@ void WaylandDataSource::WriteToClipboard(
   wl_data_device_set_selection(connection_->data_device(), data_source_.get(),
                                connection_->serial());
 
-  wl_display_flush(connection_->display());
+  connection_->ScheduleFlush();
 }
 
 void WaylandDataSource::UpdateDataMap(

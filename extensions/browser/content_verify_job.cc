@@ -90,8 +90,9 @@ void ContentVerifyJob::DidGetContentHashOnIO(
     g_content_verify_job_test_observer->JobStarted(extension_id_,
                                                    relative_path_);
   // Build |hash_reader_|.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ContentHashReader::Create, relative_path_, content_hash),
       base::BindOnce(&ContentVerifyJob::OnHashesReady, this));
 }

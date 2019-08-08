@@ -2046,6 +2046,11 @@
           '--debug',
         ],
       },
+      'V8 Blink Linux Future': {
+        'args': [
+          '--additional-driver-flag=--js-flags=--future',
+        ],
+      },
     },
   },
   'webkit_unit_tests': {

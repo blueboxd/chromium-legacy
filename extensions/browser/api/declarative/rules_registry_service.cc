@@ -231,10 +231,10 @@ void RulesRegistryService::NotifyRegistriesHelper(
     if (content::BrowserThread::CurrentlyOn(registry->owner_thread())) {
       (registry.get()->*notification_callback)(extension);
     } else {
-      base::PostTaskWithTraits(FROM_HERE, {registry->owner_thread()},
-                               base::BindOnce(&NotifyWithExtensionSafe,
-                                              base::WrapRefCounted(extension),
-                                              notification_callback, registry));
+      base::PostTask(FROM_HERE, {registry->owner_thread()},
+                     base::BindOnce(&NotifyWithExtensionSafe,
+                                    base::WrapRefCounted(extension),
+                                    notification_callback, registry));
     }
   }
 }

@@ -86,8 +86,10 @@ class VideoDecoderTest : public ::testing::Test {
     // Use the new VD-based video decoders if requested.
     config.use_vd = g_env->UseVD();
 
-    auto video_player = VideoPlayer::Create(
-        video, std::move(frame_renderer), std::move(frame_processors), config);
+    auto video_player = VideoPlayer::Create(config, std::move(frame_renderer),
+                                            std::move(frame_processors));
+    LOG_ASSERT(video_player);
+    LOG_ASSERT(video_player->Initialize(video));
 
     // Increase event timeout when outputting video frames.
     if (g_env->IsFramesOutputEnabled()) {
@@ -315,6 +317,44 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_Allocate) {
   EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
   EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
+}
+
+// Test video decoder re-initialization. Re-initialization is only supported by
+// the media::VideoDecoder interface, so the test will be skipped if --use_vd
+// is not specified.
+TEST_F(VideoDecoderTest, Reinitialize) {
+  if (!g_env->UseVD())
+    GTEST_SKIP();
+
+  // Create and initialize the video decoder.
+  auto tvp = CreateVideoPlayer(g_env->Video());
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kInitialized), 1u);
+
+  // Re-initialize the video decoder, without having played the video.
+  EXPECT_TRUE(tvp->Initialize(g_env->Video()));
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kInitialized), 2u);
+
+  // Play the video from start to end.
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
+  EXPECT_TRUE(tvp->WaitForFrameProcessors());
+
+  // Try re-initializing the video decoder again.
+  EXPECT_TRUE(tvp->Initialize(g_env->Video()));
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kInitialized), 3u);
+}
+
+// Create a video decoder and immediately destroy it without initializing. The
+// video decoder will be automatically destroyed when the video player goes out
+// of scope at the end of the test. The test will pass if no asserts or crashes
+// are triggered upon destroying.
+TEST_F(VideoDecoderTest, DestroyBeforeInitialize) {
+  VideoDecoderClientConfig config = VideoDecoderClientConfig();
+  config.use_vd = g_env->UseVD();
+  auto tvp = VideoPlayer::Create(config, FrameRendererDummy::Create());
+  EXPECT_NE(tvp, nullptr);
 }
 
 }  // namespace test

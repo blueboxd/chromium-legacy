@@ -103,14 +103,17 @@ ModuleRecord ModuleRecord::Compile(
   return ModuleRecord(isolate, module, source_url);
 }
 
-ScriptValue ModuleRecord::Instantiate(ScriptState* script_state) {
+ScriptValue ModuleRecord::Instantiate(ScriptState* script_state,
+                                      const KURL& source_url) {
+  // TODO(rikaf): Remove source_url_
+  DCHECK_EQ(source_url, source_url_);
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
 
   DCHECK(!IsNull());
   v8::Local<v8::Context> context = script_state->GetContext();
-  probe::ExecuteScript probe(ExecutionContext::From(script_state), source_url_);
+  probe::ExecuteScript probe(ExecutionContext::From(script_state), source_url);
   bool success;
   if (!NewLocal(script_state->GetIsolate())
            ->InstantiateModule(context, &ResolveModuleCallback)

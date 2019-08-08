@@ -128,6 +128,7 @@ std::unique_ptr<Network::Cookie> BuildCookie(
           .SetSession(!cookie.IsPersistent())
           .Build();
 
+  DCHECK(net::IsValidSameSiteValue(cookie.SameSite()));
   switch (cookie.SameSite()) {
     case net::CookieSameSite::STRICT_MODE:
       devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::Strict);
@@ -141,7 +142,7 @@ std::unique_ptr<Network::Cookie> BuildCookie(
     case net::CookieSameSite::NO_RESTRICTION:
       devtools_cookie->SetSameSite(Network::CookieSameSiteEnum::None);
       break;
-    case net::CookieSameSite::UNSPECIFIED:
+    default:
       break;
   }
   return devtools_cookie;

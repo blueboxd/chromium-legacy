@@ -7,23 +7,23 @@
  * a continuous or discrete range of numbers.
  */
 
-cr.exportPath('cr_slider');
 
-/**
- * The |value| is the corresponding value that the current slider tick is
- * associated with. The string |label| is shown in the UI as the label for the
- * current slider value. The |ariaValue| number is used for aria-valuemin,
- * aria-valuemax, and aria-valuenow, and is optional. If missing, |value| will
- * be used instead.
- * @typedef {{
- *   value: number,
- *   label: string,
- *   ariaValue: (number|undefined),
- * }}
- */
-cr_slider.SliderTick;
 
-(() => {
+cr.define('cr_slider', function() {
+  /**
+   * The |value| is the corresponding value that the current slider tick is
+   * associated with. The string |label| is shown in the UI as the label for the
+   * current slider value. The |ariaValue| number is used for aria-valuemin,
+   * aria-valuemax, and aria-valuenow, and is optional. If missing, |value| will
+   * be used instead.
+   * @typedef {{
+   *   value: number,
+   *   label: string,
+   *   ariaValue: (number|undefined),
+   * }}
+   */
+  let SliderTick;
+
   /**
    * @param {number} min
    * @param {number} max
@@ -472,4 +472,8 @@ cr_slider.SliderTick;
       return ripple;
     },
   });
-})();
+
+  return {
+    SliderTick: SliderTick,
+  };
+});

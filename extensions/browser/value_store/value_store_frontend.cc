@@ -45,10 +45,9 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
                    << " failed: " << result.status().message;
     }
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&ValueStoreFrontend::Backend::RunCallback, this,
-                       callback, std::move(value)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&ValueStoreFrontend::Backend::RunCallback,
+                                  this, callback, std::move(value)));
   }
 
   void Set(const std::string& key, std::unique_ptr<base::Value> value) {

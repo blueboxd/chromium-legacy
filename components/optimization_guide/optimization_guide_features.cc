@@ -119,5 +119,11 @@ bool IsOptimizationGuideKeyedServiceEnabled() {
   return base::FeatureList::IsEnabled(features::kOptimizationGuideKeyedService);
 }
 
+int MaxServerBloomFilterByteSize() {
+  return base::GetFieldTrialParamByFeatureAsInt(features::kOptimizationHints,
+                                                "max_bloom_filter_byte_size",
+                                                250 * 1024 /* 250KB */);
+}
+
 }  // namespace features
 }  // namespace optimization_guide

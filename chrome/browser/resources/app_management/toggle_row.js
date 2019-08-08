@@ -7,28 +7,43 @@ Polymer({
   properties: {
     /**
      * @type {string}
-     * @private
      */
-    icon_: String,
+    icon: String,
     /**
      * @type {string}
-     * @private
      */
-    label_: String,
+    label: String,
     /**
      * @type {boolean}
-     * @private
      */
-    managed_: {type: Boolean, value: false, reflectToAttribute: true},
+    managed: {type: Boolean, value: false, reflectToAttribute: true},
     /**
      * @type {string}
-     * @private
      */
-    policyLabel_: String,
+    policyLabel: String,
     /**
      * @type {boolean}
-     * @private
      */
-    value_: {type: Boolean, value: false, reflectToAttribute: true},
+    value: {type: Boolean, value: false, reflectToAttribute: true},
+  },
+
+  listeners: {
+    click: 'onClick_',
+  },
+
+  /**
+   * @returns {boolean} true if the toggle is checked.
+   */
+  isChecked: function() {
+    return this.$.toggle.checked;
+  },
+
+  /**
+   * @param {MouseEvent} event
+   * @private
+   */
+  onClick_: function(event) {
+    event.stopPropagation();
+    this.$['toggle'].click();
   },
 });

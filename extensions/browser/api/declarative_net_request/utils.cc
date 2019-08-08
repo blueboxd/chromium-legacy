@@ -150,8 +150,8 @@ void ClearRendererCacheOnNavigation() {
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     ClearRendererCacheOnUI();
   } else {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(&ClearRendererCacheOnUI));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&ClearRendererCacheOnUI));
   }
 }
 

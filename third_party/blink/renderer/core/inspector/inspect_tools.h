@@ -96,7 +96,7 @@ class NearbyDistanceTool : public InspectTool {
   NearbyDistanceTool() = default;
 
  private:
-  String GetDataResourceName() override;
+  int GetDataResourceId() override;
   bool HandleMouseDown(const WebMouseEvent& event,
                        bool* swallow_next_mouse_up) override;
   bool HandleMouseMove(const WebMouseEvent& event) override;
@@ -116,7 +116,7 @@ class ShowViewSizeTool : public InspectTool {
 
  private:
   bool ForwardEventsToOverlay() override;
-  String GetDataResourceName() override;
+  int GetDataResourceId() override;
   void Draw(float scale) override;
   DISALLOW_COPY_AND_ASSIGN(ShowViewSizeTool);
 };
@@ -128,7 +128,7 @@ class ScreenshotTool : public InspectTool {
   ScreenshotTool() = default;
 
  private:
-  String GetDataResourceName() override;
+  int GetDataResourceId() override;
   void DoInit() override;
   void Dispatch(const String& message) override;
 
@@ -144,7 +144,7 @@ class PausedInDebuggerTool : public InspectTool {
       : v8_session_(v8_session), message_(message) {}
 
  private:
-  String GetDataResourceName() override;
+  int GetDataResourceId() override;
   void Draw(float scale) override;
   void Dispatch(const String& message) override;
   v8_inspector::V8InspectorSession* v8_session_;

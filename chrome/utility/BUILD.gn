@@ -219,13 +219,6 @@ static_library("utility") {
       "//device/vr/public/mojom",
     ]
   }
-
-  if (enable_simple_browser_service_out_of_process) {
-    deps += [
-      "//services/content/simple_browser",
-      "//services/content/simple_browser/public/mojom",
-    ]
-  }
 }
 
 if (!is_android) {

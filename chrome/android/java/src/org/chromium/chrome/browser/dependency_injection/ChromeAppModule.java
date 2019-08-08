@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQuali
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.LAST_USED_PROFILE;
 
 import android.content.Context;
-import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionManager;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.WarmupManager;
@@ -23,6 +22,7 @@ import org.chromium.chrome.browser.webapps.WebappRegistry;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
 import dagger.Module;
 import dagger.Provides;
 

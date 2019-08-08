@@ -196,7 +196,8 @@ void WebRequestProxyingWebSocket::OnConnectionEstablished(
     mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
     const std::string& selected_protocol,
     const std::string& extensions,
-    uint64_t receive_quota_threshold) {
+    uint64_t receive_quota_threshold,
+    mojo::ScopedDataPipeConsumerHandle readable) {
   DCHECK(forwarding_handshake_client_);
   DCHECK(!is_done_);
   is_done_ = true;
@@ -205,7 +206,7 @@ void WebRequestProxyingWebSocket::OnConnectionEstablished(
 
   forwarding_handshake_client_->OnConnectionEstablished(
       std::move(websocket), std::move(client_receiver), selected_protocol,
-      extensions, receive_quota_threshold);
+      extensions, receive_quota_threshold, std::move(readable));
 
   // Deletes |this|.
   proxies_->RemoveProxy(this);

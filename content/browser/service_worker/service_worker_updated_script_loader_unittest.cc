@@ -83,18 +83,12 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
 
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
-    InitializeStorage();
+    context()->storage()->LazyInitializeForTest();
     SetUpRegistration(kScriptURL);
 
     // Create the old script resource in storage.
     WriteToDiskCacheSync(context()->storage(), kScriptURL, kOldResourceId,
                          kOldHeaders, kOldData, std::string());
-  }
-
-  void InitializeStorage() {
-    base::RunLoop run_loop;
-    context()->storage()->LazyInitializeForTest(run_loop.QuitClosure());
-    run_loop.Run();
   }
 
   // Sets up ServiceWorkerRegistration and ServiceWorkerVersion. This should be

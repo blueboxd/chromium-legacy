@@ -26,7 +26,10 @@ WebSocketHandleImpl::WebSocketHandleImpl(
     : task_runner_(std::move(task_runner)),
       channel_(nullptr),
       handshake_client_binding_(this),
-      client_binding_(this) {
+      client_binding_(this),
+      readable_watcher_(FROM_HERE,
+                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+                        task_runner_) {
   NETWORK_DVLOG(1) << this << " created";
 }
 
@@ -152,7 +155,8 @@ void WebSocketHandleImpl::OnConnectionEstablished(
         client_receiver,
     const String& protocol,
     const String& extensions,
-    uint64_t receive_quota_threshold) {
+    uint64_t receive_quota_threshold,
+    mojo::ScopedDataPipeConsumerHandle readable) {
   NETWORK_DVLOG(1) << this << " OnConnectionEstablished(" << protocol << ", "
                    << extensions << ", " << receive_quota_threshold << ")";
 
@@ -167,19 +171,102 @@ void WebSocketHandleImpl::OnConnectionEstablished(
 
   DCHECK(!websocket_);
   websocket_ = std::move(websocket);
+  readable_ = std::move(readable);
+  const MojoResult mojo_result = readable_watcher_.Watch(
+      readable_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+      MOJO_WATCH_CONDITION_SATISFIED,
+      WTF::BindRepeating(&WebSocketHandleImpl::OnReadable,
+                         WTF::Unretained(this)));
+  DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
   channel_->DidConnect(this, protocol, extensions, receive_quota_threshold);
   // |this| can be deleted here.
+}
+
+void WebSocketHandleImpl::OnReadable(MojoResult result,
+                                     const mojo::HandleSignalsState& state) {
+  NETWORK_DVLOG(2) << this << " OnReadble mojo_result=" << result;
+  if (result != MOJO_RESULT_OK) {
+    if (channel_) {
+      channel_->DidFail(this, "Unknown reason");
+    } else {
+      Disconnect();
+    }
+    return;
+  }
+  ConsumePendingDataFrames();
 }
 
 void WebSocketHandleImpl::OnDataFrame(
     bool fin,
     network::mojom::blink::WebSocketMessageType type,
-    base::span<const uint8_t> data) {
+    uint64_t data_length) {
   NETWORK_DVLOG(1) << this << " OnDataFrame(" << fin << ", " << type << ", "
-                   << "(data size = " << data.size() << "))";
-  if (!channel_)
-    return;
+                   << "(data_length = " << data_length << "))";
+  pending_data_frames_.push_back(
+      DataFrame(fin, type, static_cast<uint32_t>(data_length)));
+  ConsumePendingDataFrames();
+}
 
+void WebSocketHandleImpl::ConsumePendingDataFrames() {
+  DCHECK(channel_);
+  while (!pending_data_frames_.empty()) {
+    DataFrame& data_frame = pending_data_frames_.front();
+    NETWORK_DVLOG(2) << " ConsumePendingDataFrame frame=(" << data_frame.fin
+                     << ", " << data_frame.type
+                     << ", (data_length = " << data_frame.data_length << "))";
+    if (data_frame.data_length == 0) {
+      if (!ConsumeDataFrame(data_frame.fin, data_frame.type, nullptr, 0)) {
+        // |this| is deleted.
+        return;
+      }
+      pending_data_frames_.pop_front();
+      continue;
+    }
+
+    const void* buffer;
+    uint32_t readable_size;
+    const MojoResult begin_result = readable_->BeginReadData(
+        &buffer, &readable_size, MOJO_READ_DATA_FLAG_NONE);
+    if (begin_result == MOJO_RESULT_SHOULD_WAIT) {
+      readable_watcher_.ArmOrNotify();
+      return;
+    }
+    if (begin_result == MOJO_RESULT_FAILED_PRECONDITION) {
+      // |client_binding_| will catch the connection error.
+      return;
+    }
+    DCHECK_EQ(begin_result, MOJO_RESULT_OK);
+
+    if (readable_size >= data_frame.data_length) {
+      if (!ConsumeDataFrame(data_frame.fin, data_frame.type, buffer,
+                            data_frame.data_length)) {
+        // |this| is deleted.
+        return;
+      }
+      const MojoResult end_result =
+          readable_->EndReadData(data_frame.data_length);
+      DCHECK_EQ(end_result, MOJO_RESULT_OK);
+      pending_data_frames_.pop_front();
+      continue;
+    }
+
+    DCHECK_LT(readable_size, data_frame.data_length);
+    if (!ConsumeDataFrame(false, data_frame.type, buffer, readable_size)) {
+      // |this| is deleted.
+      return;
+    }
+    const MojoResult end_result = readable_->EndReadData(readable_size);
+    DCHECK_EQ(end_result, MOJO_RESULT_OK);
+    data_frame.type = network::mojom::blink::WebSocketMessageType::CONTINUATION;
+    data_frame.data_length -= readable_size;
+  }
+}
+
+bool WebSocketHandleImpl::ConsumeDataFrame(
+    bool fin,
+    network::mojom::blink::WebSocketMessageType type,
+    const void* data,
+    size_t data_size) {
   WebSocketHandle::MessageType type_to_pass =
       WebSocketHandle::kMessageTypeContinuation;
   switch (type) {
@@ -193,10 +280,11 @@ void WebSocketHandleImpl::OnDataFrame(
       type_to_pass = WebSocketHandle::kMessageTypeBinary;
       break;
   }
-  const char* data_to_pass =
-      reinterpret_cast<const char*>(data.empty() ? nullptr : data.data());
-  channel_->DidReceiveData(this, fin, type_to_pass, data_to_pass, data.size());
-  // |this| can be deleted here.
+  const char* data_to_pass = reinterpret_cast<const char*>(data);
+  WebSocketChannelImpl* channel = channel_.Get();
+  channel_->DidReceiveData(this, fin, type_to_pass, data_to_pass, data_size);
+  // DidReceiveData can delete |this|.
+  return channel->IsHandleAlive();
 }
 
 void WebSocketHandleImpl::AddSendFlowControlQuota(int64_t quota) {

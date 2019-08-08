@@ -83,10 +83,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
     return WebLocalFrameClient::AppCacheType::kAppCacheForSharedWorker;
   }
 
-  // WebDevToolsAgentImpl::Client overrides.
-  void ResumeStartup() override;
-  const base::UnguessableToken& GetDevToolsWorkerToken() override;
-
   // WebSharedWorker methods:
   void StartWorkerContext(
       const WebURL&,
@@ -103,9 +99,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void Connect(MessagePortChannel) override;
   void TerminateWorkerContext() override;
   void PauseWorkerContextOnStart() override;
-  void BindDevToolsAgent(
-      mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
-      mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
 
   // Callback methods for SharedWorkerReportingProxy.
   void CountFeature(WebFeature);
@@ -147,7 +140,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
 
   bool asked_to_terminate_ = false;
   bool pause_worker_context_on_start_ = false;
-  bool is_paused_on_start_ = false;
 
   WebURL script_request_url_;
   WebString name_;

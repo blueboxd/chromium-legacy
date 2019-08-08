@@ -879,6 +879,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::EnableCSSHexAlphaColor(prefs.css_hex_alpha_color_enabled);
   WebRuntimeFeatures::EnableScrollTopLeftInterop(
       prefs.scroll_top_left_interop_enabled);
+  WebRuntimeFeatures::EnableSurfaceEmbeddingFeatures(
+      !prefs.disable_features_depending_on_viz);
 #endif  // defined(OS_ANDROID)
 
   settings->SetForceDarkModeEnabled(prefs.force_dark_mode_enabled);

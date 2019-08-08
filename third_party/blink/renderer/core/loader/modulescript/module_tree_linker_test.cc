@@ -148,7 +148,8 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
     return it->value;
   }
 
-  ScriptValue InstantiateModule(ModuleRecord record) override {
+  ScriptValue InstantiateModule(ModuleRecord record,
+                                const KURL& source_url) override {
     if (instantiate_should_fail_) {
       ScriptState::Scope scope(script_state_);
       v8::Local<v8::Value> error = V8ThrowException::CreateError(

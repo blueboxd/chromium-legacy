@@ -76,15 +76,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
                      content::BrowserContext* context) override;
-  void AllowWorkerFileSystem(
-      const GURL& url,
-      content::ResourceContext* context,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames,
-      base::Callback<void(bool)> callback) override;
-  bool AllowWorkerIndexedDB(
-      const GURL& url,
-      content::ResourceContext* context,
-      const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
   scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
       override;
   void GetQuotaSettings(

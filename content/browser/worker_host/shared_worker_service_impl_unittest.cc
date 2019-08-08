@@ -231,7 +231,19 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
   EXPECT_TRUE(client.CheckReceivedOnCreated());
 
   // Simulate events the shared worker would send.
-  worker_host->OnReadyForInspection();
+
+  // Create message pipes. We may need to keep |devtools_agent_request| and
+  // |devtools_agent_host_ptr_info| if we want not to invoke
+  // connection error handlers.
+  blink::mojom::DevToolsAgentPtr devtools_agent_ptr;
+  blink::mojom::DevToolsAgentRequest devtools_agent_request =
+      mojo::MakeRequest(&devtools_agent_ptr);
+  blink::mojom::DevToolsAgentHostPtrInfo devtools_agent_host_ptr_info;
+  blink::mojom::DevToolsAgentHostRequest devtools_agent_host_request =
+      mojo::MakeRequest(&devtools_agent_host_ptr_info);
+  worker_host->OnReadyForInspection(std::move(devtools_agent_ptr),
+                                    std::move(devtools_agent_host_request));
+
   worker_host->OnConnected(connection_request_id);
 
   base::RunLoop().RunUntilIdle();
@@ -307,7 +319,18 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   EXPECT_TRUE(client0.CheckReceivedOnCreated());
 
   // Simulate events the shared worker would send.
-  worker_host->OnReadyForInspection();
+
+  // Create message pipes. We may need to keep |devtools_agent_request| and
+  // |devtools_agent_host_ptr_info| if we want not to invoke
+  // connection error handlers.
+  blink::mojom::DevToolsAgentPtr devtools_agent_ptr;
+  blink::mojom::DevToolsAgentRequest devtools_agent_request =
+      mojo::MakeRequest(&devtools_agent_ptr);
+  blink::mojom::DevToolsAgentHostPtrInfo devtools_agent_host_ptr_info;
+  blink::mojom::DevToolsAgentHostRequest devtools_agent_host_request =
+      mojo::MakeRequest(&devtools_agent_host_ptr_info);
+  worker_host->OnReadyForInspection(std::move(devtools_agent_ptr),
+                                    std::move(devtools_agent_host_request));
   worker_host->OnConnected(connection_request_id0);
 
   base::RunLoop().RunUntilIdle();

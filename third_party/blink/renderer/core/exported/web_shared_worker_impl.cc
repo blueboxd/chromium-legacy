@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/exported/web_shared_worker_impl.h"
 
 #include <memory>
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
@@ -104,28 +105,12 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
     return;
   }
   worker_thread_->Terminate();
-  DevToolsAgent::WorkerThreadTerminated(shadow_page_->GetDocument(),
-                                        worker_thread_.get());
   // DidTerminateWorkerThread() will be called asynchronously.
 }
 
 void WebSharedWorkerImpl::OnShadowPageInitialized() {
   DCHECK(IsMainThread());
   ContinueStartWorkerContext();
-}
-
-void WebSharedWorkerImpl::ResumeStartup() {
-  DCHECK(IsMainThread());
-  bool is_paused_on_start = is_paused_on_start_;
-  is_paused_on_start_ = false;
-  if (is_paused_on_start) {
-    // We'll continue in OnShadowPageInitialized().
-    shadow_page_->Initialize(script_request_url_);
-  }
-}
-
-const base::UnguessableToken& WebSharedWorkerImpl::GetDevToolsWorkerToken() {
-  return devtools_worker_token_;
 }
 
 void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
@@ -218,14 +203,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
   shadow_page_ = std::make_unique<WorkerShadowPage>(
       this, std::move(loader_factory), std::move(privacy_preferences));
 
-  // If we were asked to pause worker context on start and wait for debugger
-  // then now is a good time to do that.
-  client_->WorkerReadyForInspection();
-  if (pause_worker_context_on_start_) {
-    is_paused_on_start_ = true;
-    return;
-  }
-
   // We'll continue in OnShadowPageInitialized().
   shadow_page_->Initialize(script_request_url_);
 }
@@ -317,17 +294,26 @@ void WebSharedWorkerImpl::StartWorkerThread(
   auto thread_startup_data = WorkerBackingThreadStartupData::CreateDefault();
   thread_startup_data.atomics_wait_mode =
       WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow;
-  auto devtools_params = DevToolsAgent::WorkerThreadCreated(
-      shadow_page_->GetDocument(), GetWorkerThread(), script_response_url,
-      name_);
+
+  auto devtools_params = std::make_unique<WorkerDevToolsParams>();
+  devtools_params->devtools_worker_token = devtools_worker_token_;
+  devtools_params->wait_for_debugger = pause_worker_context_on_start_;
+  mojom::blink::DevToolsAgentPtrInfo devtools_agent_ptr_info;
+  devtools_params->agent_request = mojo::MakeRequest(&devtools_agent_ptr_info);
+  mojom::blink::DevToolsAgentHostRequest devtools_agent_host_request =
+      mojo::MakeRequest(&devtools_params->agent_host_ptr_info);
 
   GetWorkerThread()->Start(std::move(global_scope_creation_params),
                            thread_startup_data, std::move(devtools_params));
-
   GetWorkerThread()->FetchAndRunClassicScript(
       script_request_url_, outside_settings_object.CopyData(),
       nullptr /* outside_resource_timing_notifier */,
       v8_inspector::V8StackTraceId());
+
+  // We are now ready to inspect worker thread.
+  client_->WorkerReadyForInspection(
+      devtools_agent_ptr_info.PassHandle(),
+      devtools_agent_host_request.PassMessagePipe());
 }
 
 WorkerClients* WebSharedWorkerImpl::CreateWorkerClients() {
@@ -344,17 +330,6 @@ void WebSharedWorkerImpl::TerminateWorkerContext() {
 
 void WebSharedWorkerImpl::PauseWorkerContextOnStart() {
   pause_worker_context_on_start_ = true;
-}
-
-void WebSharedWorkerImpl::BindDevToolsAgent(
-    mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
-    mojo::ScopedInterfaceEndpointHandle devtools_agent_request) {
-  shadow_page_->DevToolsAgent()->BindRequest(
-      mojom::blink::DevToolsAgentHostAssociatedPtrInfo(
-          std::move(devtools_agent_host_ptr_info),
-          mojom::blink::DevToolsAgentHost::Version_),
-      mojom::blink::DevToolsAgentAssociatedRequest(
-          std::move(devtools_agent_request)));
 }
 
 std::unique_ptr<WebSharedWorker> WebSharedWorker::Create(

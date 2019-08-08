@@ -344,9 +344,7 @@ TEST_F(PreviewsHintsTest, ParseConfigWithTooLargeBlacklist) {
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
 
   int too_many_bits =
-      previews::params::LitePageRedirectPreviewMaxServerBlacklistByteSize() *
-          8 +
-      1;
+      optimization_guide::features::MaxServerBloomFilterByteSize() * 8 + 1;
 
   optimization_guide::BloomFilter blacklist_bloom_filter(
       kBlackBlacklistBloomFilterNumHashFunctions, too_many_bits);

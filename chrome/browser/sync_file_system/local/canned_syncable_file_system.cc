@@ -24,6 +24,7 @@
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_backend.h"
@@ -31,7 +32,7 @@
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/browser/test/mock_blob_url_request_context.h"
+#include "storage/browser/test/mock_blob_util.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,8 +44,7 @@ using storage::FileSystemOperationRunner;
 using storage::FileSystemURL;
 using storage::FileSystemURLSet;
 using storage::QuotaManager;
-using content::MockBlobURLRequestContext;
-using content::ScopedTextBlob;
+using storage::ScopedTextBlob;
 
 namespace sync_file_system {
 
@@ -153,21 +153,15 @@ void OnReadDirectory(CannedSyncableFileSystem::FileEntryList* entries_out,
 class WriteHelper {
  public:
   WriteHelper() : bytes_written_(0) {}
-  WriteHelper(MockBlobURLRequestContext* request_context,
+  WriteHelper(std::unique_ptr<storage::BlobStorageContext> blob_storage_context,
               const std::string& blob_data)
       : bytes_written_(0),
-        request_context_(request_context),
-        blob_data_(new ScopedTextBlob(*request_context,
+        blob_storage_context_(std::move(blob_storage_context)),
+        blob_data_(new ScopedTextBlob(blob_storage_context_.get(),
                                       base::GenerateGUID(),
-                                      blob_data)) {
-  }
+                                      blob_data)) {}
 
-  ~WriteHelper() {
-    if (request_context_) {
-      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
-          FROM_HERE, request_context_.release());
-    }
-  }
+  ~WriteHelper() {}
 
   ScopedTextBlob* scoped_text_blob() const { return blob_data_.get(); }
 
@@ -187,7 +181,7 @@ class WriteHelper {
 
  private:
   int64_t bytes_written_;
-  std::unique_ptr<MockBlobURLRequestContext> request_context_;
+  std::unique_ptr<storage::BlobStorageContext> blob_storage_context_;
   std::unique_ptr<ScopedTextBlob> blob_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WriteHelper);
@@ -652,9 +646,8 @@ void CannedSyncableFileSystem::DoWriteString(
     const WriteCallback& callback) {
   EXPECT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
   EXPECT_TRUE(is_filesystem_opened_);
-  MockBlobURLRequestContext* url_request_context(
-      new MockBlobURLRequestContext());
-  WriteHelper* helper = new WriteHelper(url_request_context, data);
+  auto blob_storage_context = std::make_unique<storage::BlobStorageContext>();
+  WriteHelper* helper = new WriteHelper(std::move(blob_storage_context), data);
   operation_runner()->Write(url,
                             helper->scoped_text_blob()->GetBlobDataHandle(), 0,
                             base::BindRepeating(&WriteHelper::DidWrite,

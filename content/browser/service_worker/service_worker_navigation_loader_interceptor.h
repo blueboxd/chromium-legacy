@@ -36,9 +36,6 @@ struct ServiceWorkerNavigationLoaderInterceptorParams {
   int process_id = ChildProcessHost::kInvalidUniqueID;
 };
 
-// This class is a work in progress for https://crbug.com/824858. It is used
-// only when NavigationLoaderOnUI is enabled.
-//
 // Handles navigations for service worker clients (windows and web workers).
 // Lives on the UI thread.
 //

@@ -102,7 +102,7 @@ bool MimeHandlerViewAttachHelper::OverrideBodyForInterceptedResponse(
       SkColorGetB(color), mime_type.c_str(), token.c_str());
   payload->assign(html_str);
   *data_pipe_size = kFullPageMimeHandlerViewDataPipeSize;
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(CreateFullPageMimeHandlerView,
                      navigating_frame_tree_node_id, resource_url, mime_type,

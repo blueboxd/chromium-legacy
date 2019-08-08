@@ -46,7 +46,6 @@ extern const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout;
 extern const base::Feature kAutofillRichMetadataQueries;
 extern const base::Feature kAutofillSaveOnProbablySubmitted;
 extern const base::Feature kAutofillServerCommunication;
-extern const base::Feature kAutofillSettingsCardTypeSplit;
 extern const base::Feature kAutofillShowAllSuggestionsOnPrefilledForms;
 extern const base::Feature kAutofillShowAutocompleteConsoleWarnings;
 extern const base::Feature kAutofillShowTypePredictions;

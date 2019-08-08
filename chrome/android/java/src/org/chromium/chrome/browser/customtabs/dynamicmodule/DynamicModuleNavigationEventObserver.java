@@ -4,17 +4,16 @@
 
 package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
-import static android.support.customtabs.CustomTabsCallback.NAVIGATION_FAILED;
-import static android.support.customtabs.CustomTabsCallback.NAVIGATION_FINISHED;
-import static android.support.customtabs.CustomTabsCallback.NAVIGATION_STARTED;
-import static android.support.customtabs.CustomTabsCallback.TAB_HIDDEN;
-import static android.support.customtabs.CustomTabsCallback.TAB_SHOWN;
+import static androidx.browser.customtabs.CustomTabsCallback.NAVIGATION_FAILED;
+import static androidx.browser.customtabs.CustomTabsCallback.NAVIGATION_FINISHED;
+import static androidx.browser.customtabs.CustomTabsCallback.NAVIGATION_STARTED;
+import static androidx.browser.customtabs.CustomTabsCallback.TAB_HIDDEN;
+import static androidx.browser.customtabs.CustomTabsCallback.TAB_SHOWN;
 
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsCallback;
 import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
@@ -27,6 +26,8 @@ import org.chromium.net.NetError;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.browser.customtabs.CustomTabsCallback;
 
 /**
  * An observer for firing navigation events to the CCT dynamic module.

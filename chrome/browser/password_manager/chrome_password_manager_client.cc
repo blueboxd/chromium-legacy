@@ -111,6 +111,7 @@
 #include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
 #include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
+#include "chrome/browser/ui/android/passwords/onboarding_dialog_view.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "ui/base/ui_base_features.h"
@@ -334,8 +335,9 @@ bool ChromePasswordManagerClient::ShowOnboarding(
   if (form_to_save->IsBlacklisted()) {
     return false;
   }
-  // TODO(crbug.com/983445): Wire onboarding UI
-  return PromptUserToSaveOrUpdatePassword(std::move(form_to_save), false);
+  // This class will delete itself after the dialog is dismissed.
+  (new OnboardingDialogView(this, std::move(form_to_save)))->Show();
+  return true;
 #else
   return false;
 #endif  // defined(OS_ANDROID)
@@ -867,6 +869,12 @@ void ChromePasswordManagerClient::GenerationElementLostFocus() {
   // seems to be a good replacement.
   if (popup_controller_)
     popup_controller_->GenerationElementLostFocus();
+}
+
+void ChromePasswordManagerClient::OnOnboardingSuccessful(
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
+  PromptUserToSaveOrUpdatePassword(std::move(form_to_save),
+                                   /* is_password_update */ false);
 }
 
 const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {

@@ -42,7 +42,7 @@ RadioNodeList::RadioNodeList(ContainerNode& owner_node,
     : LiveNodeList(owner_node,
                    type,
                    kInvalidateForFormControls,
-                   IsHTMLFormElement(owner_node)
+                   IsA<HTMLFormElement>(owner_node)
                        ? NodeListSearchRoot::kTreeScope
                        : NodeListSearchRoot::kOwnerNode),
       name_(name) {
@@ -97,7 +97,7 @@ bool RadioNodeList::CheckElementMatchesRadioNodeListFilter(
   DCHECK(!ShouldOnlyMatchImgElements());
   DCHECK(IsHTMLObjectElement(test_element) ||
          test_element.IsFormControlElement());
-  if (IsHTMLFormElement(ownerNode())) {
+  if (IsA<HTMLFormElement>(ownerNode())) {
     auto* form_element = To<HTMLElement>(test_element).formOwner();
     if (!form_element || form_element != ownerNode())
       return false;

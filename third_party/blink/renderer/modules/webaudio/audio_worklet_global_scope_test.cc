@@ -140,7 +140,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
         ScriptFetchOptions(), TextPosition::MinimumPosition(),
         ASSERT_NO_EXCEPTION);
     EXPECT_FALSE(module.IsNull());
-    ScriptValue exception = module.Instantiate(script_state);
+    ScriptValue exception = module.Instantiate(script_state, js_url);
     EXPECT_TRUE(exception.IsEmpty());
     ScriptValue value = module.Evaluate(script_state);
     return value.IsEmpty();

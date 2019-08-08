@@ -172,9 +172,9 @@ void ModuleEventSinkImpl::OnModuleEvents(
 
   for (uint64_t load_address : module_load_addresses) {
     // Handle the event on a background sequence.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
-        {base::TaskPriority::BEST_EFFORT,
+        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
         base::BindOnce(&HandleModuleEvent, process_.Duplicate(), process_type_,
                        load_address, base::SequencedTaskRunnerHandle::Get(),

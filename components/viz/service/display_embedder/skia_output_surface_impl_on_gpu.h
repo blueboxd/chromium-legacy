@@ -120,7 +120,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       std::vector<ImageContextImpl*> image_contexts,
       std::vector<gpu::SyncToken> sync_tokens,
       uint64_t sync_fence_release,
-      base::OnceClosure on_finished);
+      base::OnceClosure on_finished,
+      base::Optional<gfx::Rect> draw_rectangle);
   void ScheduleOverlays(const OverlayCandidateList& overlays);
   void SwapBuffers(OutputSurfaceFrame frame);
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
@@ -141,8 +142,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
                          std::vector<GrBackendSemaphore>* begin_semaphores,
                          std::vector<GrBackendSemaphore>* end_semaphores);
   void EndAccessImages(const std::vector<ImageContextImpl*>& image_contexts);
-
-  void SetDrawRectangle(const gfx::Rect& draw_rectangle);
 
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   const gl::GLVersionInfo* gl_version_info() const { return gl_version_info_; }

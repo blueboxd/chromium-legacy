@@ -148,10 +148,9 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
 
  private:
   void StartJob(scoped_refptr<ContentVerifyJob> job) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&ContentVerifyJob::Start, job,
-                       base::Unretained(content_verifier_.get())));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&ContentVerifyJob::Start, job,
+                                  base::Unretained(content_verifier_.get())));
   }
 
   scoped_refptr<InfoMap> extension_info_map_;

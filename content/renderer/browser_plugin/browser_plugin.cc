@@ -587,11 +587,6 @@ blink::WebInputEventResult BrowserPlugin::HandleInputEvent(
 
   if (blink::WebInputEvent::IsGestureEventType(event.GetType())) {
     auto gesture_event = static_cast<const blink::WebGestureEvent&>(event);
-    DCHECK(blink::WebInputEvent::kGestureTapDown == event.GetType() ||
-           blink::WebInputEvent::kGestureScrollBegin == event.GetType() ||
-           blink::WebInputEvent::kGestureScrollEnd == event.GetType() ||
-           gesture_event.resending_plugin_id == browser_plugin_instance_id_)
-        << "Unexpected event seen: " << event.GetName(event.GetType());
 
     // We shouldn't be forwarding GestureEvents to the Guest anymore. Indicate
     // we handled this only if it's a non-resent event.

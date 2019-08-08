@@ -1361,6 +1361,9 @@
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_SET_TRUST_ERROR_TITLE" desc="The title in the error dialog for certificate trust editing errors.">
       Error Setting Certificate Trust
     </message>
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_ERROR_NOT_ALLOWED" desc="The text in the error dialog for policy restriction errors.">
+      Action is disabled by your administrator
+    </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR" desc="The text in the error dialog when an unknown error occurs during an operation on the certificate database.">
       Unknown error
     </message>

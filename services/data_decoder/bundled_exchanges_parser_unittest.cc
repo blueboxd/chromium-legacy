@@ -19,6 +19,7 @@ namespace data_decoder {
 namespace {
 
 constexpr char kFallbackUrl[] = "https://test.example.com/";
+constexpr char kManifestUrl[] = "https://test.example.com/manifest";
 
 std::string GetTestFileContents(const base::FilePath& path) {
   base::FilePath test_data_dir;
@@ -147,9 +148,14 @@ class BundleBuilder {
     int64_t length;
   };
 
-  explicit BundleBuilder(const std::string& fallback_url)
+  BundleBuilder(const std::string& fallback_url,
+                const std::string& manifest_url)
       : fallback_url_(fallback_url) {
     writer_config_.allow_invalid_utf8_for_testing = true;
+    if (!manifest_url.empty()) {
+      AddSection("manifest",
+                 cbor::Value::InvalidUTF8StringValueForTesting(manifest_url));
+    }
   }
 
   void AddExchange(base::StringPiece url,
@@ -253,17 +259,8 @@ class BundledExchangeParserTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
 };
 
-TEST_F(BundledExchangeParserTest, EmptyBundle) {
-  BundleBuilder builder(kFallbackUrl);
-  TestDataSource data_source(builder.CreateBundle());
-
-  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
-  ASSERT_TRUE(metadata);
-  ASSERT_EQ(metadata->requests.size(), 0u);
-}
-
 TEST_F(BundledExchangeParserTest, WrongMagic) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   std::vector<uint8_t> bundle = builder.CreateBundle();
   bundle[3] ^= 1;
   TestDataSource data_source(bundle);
@@ -275,7 +272,7 @@ TEST_F(BundledExchangeParserTest, WrongMagic) {
 }
 
 TEST_F(BundledExchangeParserTest, UnknownVersion) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   std::vector<uint8_t> bundle = builder.CreateBundle();
   // Modify the version string from "b1\0\0" to "q1\0\0".
   ASSERT_EQ(bundle[11], 'b');
@@ -289,7 +286,7 @@ TEST_F(BundledExchangeParserTest, UnknownVersion) {
 }
 
 TEST_F(BundledExchangeParserTest, FallbackURLIsNotUTF8) {
-  BundleBuilder builder("https://test.example.com/\xcc");
+  BundleBuilder builder("https://test.example.com/\xcc", kManifestUrl);
   std::vector<uint8_t> bundle = builder.CreateBundle();
   TestDataSource data_source(bundle);
 
@@ -300,7 +297,7 @@ TEST_F(BundledExchangeParserTest, FallbackURLIsNotUTF8) {
 }
 
 TEST_F(BundledExchangeParserTest, SectionLengthsTooLarge) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   std::string too_long_section_name(8192, 'x');
   builder.AddSection(too_long_section_name, cbor::Value(0));
   TestDataSource data_source(builder.CreateBundle());
@@ -309,7 +306,7 @@ TEST_F(BundledExchangeParserTest, SectionLengthsTooLarge) {
 }
 
 TEST_F(BundledExchangeParserTest, DuplicateSectionName) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddSection("foo", cbor::Value(0));
   builder.AddSection("foo", cbor::Value(0));
   TestDataSource data_source(builder.CreateBundle());
@@ -318,7 +315,7 @@ TEST_F(BundledExchangeParserTest, DuplicateSectionName) {
 }
 
 TEST_F(BundledExchangeParserTest, SingleEntry) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -338,7 +335,7 @@ TEST_F(BundledExchangeParserTest, SingleEntry) {
 }
 
 TEST_F(BundledExchangeParserTest, InvalidRequestURL) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("", {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
   TestDataSource data_source(builder.CreateBundle());
@@ -347,7 +344,7 @@ TEST_F(BundledExchangeParserTest, InvalidRequestURL) {
 }
 
 TEST_F(BundledExchangeParserTest, RequestURLIsNotUTF8) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/\xcc",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -357,7 +354,7 @@ TEST_F(BundledExchangeParserTest, RequestURLIsNotUTF8) {
 }
 
 TEST_F(BundledExchangeParserTest, RequestURLHasCredentials) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://user:passwd@test.example.com/",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -367,7 +364,7 @@ TEST_F(BundledExchangeParserTest, RequestURLHasCredentials) {
 }
 
 TEST_F(BundledExchangeParserTest, RequestURLHasFragment) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/#fragment",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -377,7 +374,7 @@ TEST_F(BundledExchangeParserTest, RequestURLHasFragment) {
 }
 
 TEST_F(BundledExchangeParserTest, NoStatusInResponseHeaders) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{"content-type", "text/plain"}},
                       "payload");  // ":status" is missing.
@@ -391,7 +388,7 @@ TEST_F(BundledExchangeParserTest, NoStatusInResponseHeaders) {
 }
 
 TEST_F(BundledExchangeParserTest, InvalidResponseStatus) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "0200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -405,7 +402,7 @@ TEST_F(BundledExchangeParserTest, InvalidResponseStatus) {
 }
 
 TEST_F(BundledExchangeParserTest, ExtraPseudoInResponseHeaders) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange(
       "https://test.example.com/",
       {{":status", "200"}, {":foo", ""}, {"content-type", "text/plain"}},
@@ -420,7 +417,7 @@ TEST_F(BundledExchangeParserTest, ExtraPseudoInResponseHeaders) {
 }
 
 TEST_F(BundledExchangeParserTest, UpperCaseCharacterInHeaderName) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"Content-Type", "text/plain"}},
                       "payload");
@@ -434,7 +431,7 @@ TEST_F(BundledExchangeParserTest, UpperCaseCharacterInHeaderName) {
 }
 
 TEST_F(BundledExchangeParserTest, InvalidHeaderValue) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"content-type", "\n"}}, "payload");
   TestDataSource data_source(builder.CreateBundle());
@@ -447,7 +444,7 @@ TEST_F(BundledExchangeParserTest, InvalidHeaderValue) {
 }
 
 TEST_F(BundledExchangeParserTest, Variants) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   auto location1 = builder.AddResponse(
       {{":status", "200"}, {"content-type", "text/html"}}, "payload1");
   auto location2 = builder.AddResponse(
@@ -476,7 +473,7 @@ TEST_F(BundledExchangeParserTest, Variants) {
 }
 
 TEST_F(BundledExchangeParserTest, EmptyIndexEntry) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddIndexEntry("https://test.example.com/", "", {});
   TestDataSource data_source(builder.CreateBundle());
 
@@ -484,7 +481,7 @@ TEST_F(BundledExchangeParserTest, EmptyIndexEntry) {
 }
 
 TEST_F(BundledExchangeParserTest, EmptyIndexEntryWithVariants) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddIndexEntry("https://test.example.com/",
                         "Accept;text/html;text/plain", {});
   TestDataSource data_source(builder.CreateBundle());
@@ -493,7 +490,7 @@ TEST_F(BundledExchangeParserTest, EmptyIndexEntryWithVariants) {
 }
 
 TEST_F(BundledExchangeParserTest, MultipleResponsesWithoutVariantsValue) {
-  BundleBuilder builder(kFallbackUrl);
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
   auto location1 = builder.AddResponse(
       {{":status", "200"}, {"content-type", "text/html"}}, "payload1");
   auto location2 = builder.AddResponse(
@@ -505,12 +502,64 @@ TEST_F(BundledExchangeParserTest, MultipleResponsesWithoutVariantsValue) {
   ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
 }
 
+TEST_F(BundledExchangeParserTest, AllKnownSectionInCritical) {
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  builder.AddExchange("https://test.example.com/",
+                      {{":status", "200"}, {"content-type", "text/plain"}},
+                      "payload");
+  cbor::Value::ArrayValue critical_section;
+  critical_section.emplace_back("manifest");
+  critical_section.emplace_back("index");
+  critical_section.emplace_back("critical");
+  critical_section.emplace_back("responses");
+  builder.AddSection("critical", cbor::Value(critical_section));
+  TestDataSource data_source(builder.CreateBundle());
+
+  mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
+  ASSERT_TRUE(metadata);
+}
+
+TEST_F(BundledExchangeParserTest, UnknownSectionInCritical) {
+  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  builder.AddExchange("https://test.example.com/",
+                      {{":status", "200"}, {"content-type", "text/plain"}},
+                      "payload");
+  cbor::Value::ArrayValue critical_section;
+  critical_section.emplace_back("unknown_section_name");
+  builder.AddSection("critical", cbor::Value(critical_section));
+  TestDataSource data_source(builder.CreateBundle());
+
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
+}
+
+TEST_F(BundledExchangeParserTest, NoManifest) {
+  BundleBuilder builder(kFallbackUrl, std::string());
+  builder.AddExchange("https://test.example.com/",
+                      {{":status", "200"}, {"content-type", "text/plain"}},
+                      "payload");
+  TestDataSource data_source(builder.CreateBundle());
+
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
+}
+
+TEST_F(BundledExchangeParserTest, InvalidManifestURL) {
+  BundleBuilder builder(kFallbackUrl, "not-an-absolute-url");
+  builder.AddExchange("https://test.example.com/",
+                      {{":status", "200"}, {"content-type", "text/plain"}},
+                      "payload");
+  TestDataSource data_source(builder.CreateBundle());
+
+  ExpectFormatErrorWithFallbackURL(ParseBundle(&data_source));
+}
+
 TEST_F(BundledExchangeParserTest, ParseGoldenFile) {
   TestDataSource data_source(base::FilePath(FILE_PATH_LITERAL("hello.wbn")));
 
   mojom::BundleMetadataPtr metadata = ParseBundle(&data_source).first;
   ASSERT_TRUE(metadata);
   ASSERT_EQ(metadata->requests.size(), 4u);
+  EXPECT_EQ(metadata->manifest_url,
+            "https://test.example.org/manifest.webmanifest");
 
   std::map<std::string, mojom::BundleResponsePtr> responses;
   for (const auto& item : metadata->requests) {

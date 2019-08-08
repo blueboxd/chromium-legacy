@@ -8,7 +8,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.provider.Browser;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
@@ -16,6 +15,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.mojom.WindowOpenDisposition;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 /** Implementation of the {@link NativePageNavigationDelegate} for the explore surface. */
 class ExploreSurfaceNavigationDelegate implements NativePageNavigationDelegate {

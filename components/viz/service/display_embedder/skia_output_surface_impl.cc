@@ -126,11 +126,8 @@ void SkiaOutputSurfaceImpl::BindFramebuffer() {
 
 void SkiaOutputSurfaceImpl::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  auto callback =
-      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SetDrawRectangle,
-                     base::Unretained(impl_on_gpu_.get()), draw_rectangle);
-  ScheduleGpuTask(std::move(callback), {});
+  DCHECK(!draw_rectangle_);
+  draw_rectangle_.emplace(draw_rectangle);
 }
 
 void SkiaOutputSurfaceImpl::EnsureBackbuffer() {
@@ -411,7 +408,9 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
         &SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
         base::Unretained(impl_on_gpu_.get()), std::move(ddl),
         std::move(overdraw_ddl), std::move(images_in_current_paint_),
-        resource_sync_tokens_, sync_fence_release_, std::move(on_finished));
+        resource_sync_tokens_, sync_fence_release_, std::move(on_finished),
+        draw_rectangle_);
+    draw_rectangle_.reset();
   }
   images_in_current_paint_.clear();
   ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));

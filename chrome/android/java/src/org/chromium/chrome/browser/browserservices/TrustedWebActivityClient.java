@@ -17,9 +17,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
-import android.support.customtabs.trusted.TrustedWebActivityService;
-import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionManager;
-import android.support.customtabs.trusted.TrustedWebActivityServiceWrapper;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
@@ -36,6 +33,10 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import androidx.browser.trusted.TrustedWebActivityService;
+import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
+import androidx.browser.trusted.TrustedWebActivityServiceWrapper;
 
 /**
  * Uses a Trusted Web Activity client to display notifications.

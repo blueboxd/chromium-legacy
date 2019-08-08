@@ -13,7 +13,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.ServiceTestRule;
@@ -37,6 +36,8 @@ import org.chromium.chrome.browser.notifications.StandardNotificationBuilder;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.TimeoutException;
+
+import androidx.browser.trusted.TrustedWebActivityServiceConnectionManager;
 
 /**
  * Tests the TrustedWebActivityClient.

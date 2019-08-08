@@ -135,10 +135,6 @@ interface EmbeddedWorkerInstanceClient {
   StopWorker();
   ResumeAfterDownload();
   AddMessageToConsole(ConsoleMessageLevel level, string message);
-  // Returns a DevToolsAgent interface for this embedded worker, used for
-  // remote debugging. See DevToolsAgent for details.
-  BindDevToolsAgent(associated DevToolsAgentHost agent_host,
-                    associated DevToolsAgent& agent);
 };
 
 // EmbeddedWorkerInstanceHost is the browser-side ("Host") of
@@ -172,10 +168,11 @@ interface EmbeddedWorkerInstanceHost {
 
   // The following are called during startup:
   //
-  // Indicates that the worker is ready for inspection. This message is needed
-  // because DevTools requires the shadow page to have been created before
-  // inspecting the worker.
-  OnReadyForInspection();
+  // Indicates that the worker is ready for inspection, passes a DevToolsAgent
+  // interface for this embedded worker and requests a corresponding host.
+  // See DevToolsAgent for details.
+  OnReadyForInspection(blink.mojom.DevToolsAgent agent,
+                       blink.mojom.DevToolsAgentHost& agent_host);
   // Indicates that the worker has finished loading the main script.
   //
   // This is only called for new (non-installed) workers. It's used so the

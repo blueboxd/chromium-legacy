@@ -516,7 +516,8 @@ void ModuleTreeLinker::Instantiate() {
 
     // <spec step="5.2">Perform record.Instantiate(). ...</spec>
     AdvanceState(State::kInstantiating);
-    ScriptValue instantiation_error = modulator_->InstantiateModule(record);
+    ScriptValue instantiation_error =
+        modulator_->InstantiateModule(record, result_->SourceURL());
 
     // <spec step="5.2">... If this throws an exception, set result's error to
     // rethrow to that exception.</spec>

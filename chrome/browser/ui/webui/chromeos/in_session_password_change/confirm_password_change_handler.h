@@ -16,8 +16,13 @@ class ConfirmPasswordChangeHandler
     : public content::WebUIMessageHandler,
       public InSessionPasswordChangeManager::Observer {
  public:
-  ConfirmPasswordChangeHandler();
+  ConfirmPasswordChangeHandler(const std::string& scraped_old_password,
+                               const std::string& scraped_new_password,
+                               const bool show_spinner_initially);
   ~ConfirmPasswordChangeHandler() override;
+
+  // Called by the JS UI to find out what to show and what size to be.
+  void HandleGetInitialState(const base::ListValue* params);
 
   // Tries to change the cryptohome password once the confirm-password-change
   // dialog is filled in and the password change is confirmed.
@@ -30,6 +35,10 @@ class ConfirmPasswordChangeHandler
   void RegisterMessages() override;
 
  private:
+  std::string scraped_old_password_;
+  std::string scraped_new_password_;
+  bool show_spinner_initially_ = false;
+
   base::WeakPtrFactory<ConfirmPasswordChangeHandler> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ConfirmPasswordChangeHandler);
 };

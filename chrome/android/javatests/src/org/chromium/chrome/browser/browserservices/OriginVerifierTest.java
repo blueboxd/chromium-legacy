@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.browserservices;
 
 import android.net.Uri;
-import android.support.customtabs.CustomTabsService;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -36,6 +35,8 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import androidx.browser.customtabs.CustomTabsService;
 
 /** Tests for OriginVerifier. */
 @RunWith(ChromeJUnit4ClassRunner.class)

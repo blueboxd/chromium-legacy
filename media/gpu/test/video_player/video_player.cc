@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/test/video_player/video.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
 
@@ -30,39 +31,37 @@ VideoPlayer::~VideoPlayer() {
 
 // static
 std::unique_ptr<VideoPlayer> VideoPlayer::Create(
-    const Video* video,
+    const VideoDecoderClientConfig& config,
     std::unique_ptr<FrameRenderer> frame_renderer,
-    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
-    const VideoDecoderClientConfig& config) {
+    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   auto video_player = base::WrapUnique(new VideoPlayer());
-  video_player->Initialize(video, std::move(frame_renderer),
-                           std::move(frame_processors), config);
+  if (!video_player->CreateDecoderClient(config, std::move(frame_renderer),
+                                         std::move(frame_processors))) {
+    return nullptr;
+  }
   return video_player;
 }
 
-void VideoPlayer::Initialize(
-    const Video* video,
+bool VideoPlayer::CreateDecoderClient(
+    const VideoDecoderClientConfig& config,
     std::unique_ptr<FrameRenderer> frame_renderer,
-    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors,
-    const VideoDecoderClientConfig& config) {
+    std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(video_player_state_, VideoPlayerState::kUninitialized);
-  DCHECK(frame_renderer && video);
+  DCHECK(frame_renderer);
   DVLOGF(4);
 
   EventCallback event_cb =
       base::BindRepeating(&VideoPlayer::NotifyEvent, base::Unretained(this));
 
-  decoder_client_ =
-      VideoDecoderClient::Create(video, event_cb, std::move(frame_renderer),
-                                 std::move(frame_processors), config);
-  CHECK(decoder_client_) << "Failed to create decoder client";
+  decoder_client_ = VideoDecoderClient::Create(
+      event_cb, std::move(frame_renderer), std::move(frame_processors), config);
+  if (!decoder_client_) {
+    VLOGF(1) << "Failed to create video decoder client";
+    return false;
+  }
 
-  // Wait until initialization is done.
-  WaitForEvent(VideoPlayerEvent::kInitialized);
-
-  video_ = video;
-  video_player_state_ = VideoPlayerState::kIdle;
+  return true;
 }
 
 void VideoPlayer::Destroy() {
@@ -81,8 +80,27 @@ void VideoPlayer::SetEventWaitTimeout(base::TimeDelta timeout) {
   event_timeout_ = timeout;
 }
 
+bool VideoPlayer::Initialize(const Video* video) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(video_player_state_ == VideoPlayerState::kUninitialized ||
+         video_player_state_ == VideoPlayerState::kIdle);
+  DCHECK(video);
+  DVLOGF(4);
+
+  decoder_client_->Initialize(video);
+
+  // Wait until the video decoder is initialized.
+  if (!WaitForEvent(VideoPlayerEvent::kInitialized))
+    return false;
+
+  video_ = video;
+  video_player_state_ = VideoPlayerState::kIdle;
+  return true;
+}
+
 void VideoPlayer::Play() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(video_player_state_, VideoPlayerState::kIdle);
   DVLOGF(4);
 
   // Play until the end of the video.

@@ -1804,7 +1804,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                                 forContext:std::move(originalContext)];
     } break;
 
-    case web::ErrorRetryCommand::kLoadErrorView:
+    case web::ErrorRetryCommand::kLoadError:
       [self loadErrorPageForNavigationItem:item
                          navigationContext:context
                                    webView:webView];

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
+import android.support.annotation.DrawableRes;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -49,12 +50,11 @@ class CreditCardAccessorySheetViewBinder {
             bindChipView(view.getExpYear(), info.getFields().get(2));
             bindChipView(view.getCardholder(), info.getFields().get(3));
 
-            // TODO(crbug.com/969708): Replace placeholder icon with data-specific icon.
             view.setIcon(AppCompatResources.getDrawable(
-                    view.getContext(), R.drawable.infobar_autofill_cc));
+                    view.getContext(), getDrawableForOrigin(info.getOrigin())));
         }
 
-        void bindChipView(ChipView chip, UserInfoField field) {
+        private static void bindChipView(ChipView chip, UserInfoField field) {
             chip.getPrimaryTextView().setText(field.getDisplayText());
             chip.getPrimaryTextView().setContentDescription(field.getA11yDescription());
             if (!field.isSelectable() || field.getDisplayText().isEmpty()) {
@@ -65,6 +65,30 @@ class CreditCardAccessorySheetViewBinder {
             chip.setOnClickListener(src -> field.triggerSelection());
             chip.setClickable(true);
             chip.setEnabled(true);
+        }
+
+        private static @DrawableRes int getDrawableForOrigin(String origin) {
+            switch (origin) {
+                case "americanExpressCC":
+                    return R.drawable.amex_card;
+                case "dinersCC":
+                    return R.drawable.diners_card;
+                case "discoverCC":
+                    return R.drawable.discover_card;
+                case "eloCC":
+                    return R.drawable.elo_card;
+                case "jcbCC":
+                    return R.drawable.jcb_card;
+                case "masterCardCC":
+                    return R.drawable.mc_card;
+                case "mirCC":
+                    return R.drawable.mir_card;
+                case "unionPayCC":
+                    return R.drawable.unionpay_card;
+                case "visaCC":
+                    return R.drawable.visa_card;
+            }
+            return R.drawable.infobar_autofill_cc;
         }
     }
 

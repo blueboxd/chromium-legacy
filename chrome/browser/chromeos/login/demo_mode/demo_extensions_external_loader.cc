@@ -97,6 +97,11 @@ void DemoExtensionsExternalLoader::LoadApp(const std::string& app_id) {
         true /* always_check_updates */,
         false /* wait_for_cache_initialization */);
   }
+
+  // TODO(crbug.com/991453): In offline Demo Mode, this would overwrite the
+  // prefs from the Offline Demo Resources, so we don't call LoadApp() if the
+  // enrollment is offline. Instead, we should merge these prefs or treat the
+  // cache as a separate provider.
   external_cache_->UpdateExtensionsList(base::DictionaryValue::From(
       base::Value::ToUniquePtrValue(std::move(prefs))));
 }

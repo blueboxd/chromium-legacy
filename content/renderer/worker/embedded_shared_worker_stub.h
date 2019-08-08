@@ -78,7 +78,9 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void CountFeature(blink::mojom::WebFeature feature) override;
   void WorkerContextClosed() override;
   void WorkerContextDestroyed() override;
-  void WorkerReadyForInspection() override;
+  void WorkerReadyForInspection(
+      mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
+      mojo::ScopedMessagePipeHandle devtools_agent_host_request) override;
   void WorkerScriptLoadFailed() override;
   void WorkerScriptEvaluated(bool success) override;
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
@@ -93,9 +95,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void Connect(int connection_request_id,
                mojo::ScopedMessagePipeHandle port) override;
   void Terminate() override;
-  void BindDevToolsAgent(
-      blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-      blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
   mojo::Binding<blink::mojom::SharedWorker> binding_;
   blink::mojom::SharedWorkerHostPtr host_;

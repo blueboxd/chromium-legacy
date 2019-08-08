@@ -143,12 +143,6 @@ Polymer({
     e.stopPropagation();
     e.preventDefault();
 
-    // Ignore case where 'click' handler is triggered while disabled. Can happen
-    // via calling the click() method.
-    if (this.disabled) {
-      return;
-    }
-
     // User gesture has already been taken care of inside |pointermove|
     // handlers, Do nothing here.
     if (this.handledInPointerMove_) {
@@ -165,12 +159,17 @@ Polymer({
    * @private
    */
   toggleState_: function(fromKeyboard) {
-    this.checked = !this.checked;
+    // Ignore cases where the 'click' or 'keypress' handlers are triggered while
+    // disabled.
+    if (this.disabled) {
+      return;
+    }
 
     if (!fromKeyboard) {
       this.hideRipple_();
     }
 
+    this.checked = !this.checked;
     this.fire('change', this.checked);
   },
 

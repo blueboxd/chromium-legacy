@@ -29,8 +29,8 @@ constexpr uint64_t kMaxCBORItemHeaderSize = 9;
 // The maximum size of the section-lengths CBOR item.
 constexpr uint64_t kMaxSectionLengthsCBORSize = 8192;
 
-// The maximum size of the index section allowed in this implementation.
-constexpr uint64_t kMaxIndexSectionSize = 1 * 1024 * 1024;
+// The maximum size of a metadata section allowed in this implementation.
+constexpr uint64_t kMaxMetadataSectionSize = 1 * 1024 * 1024;
 
 // The maximum size of the response header CBOR.
 constexpr uint64_t kMaxResponseHeaderLength = 512 * 1024;
@@ -52,7 +52,9 @@ const uint8_t kVersionB1MagicBytes[] = {
 };
 
 // Section names.
+constexpr char kCriticalSection[] = "critical";
 constexpr char kIndexSection[] = "index";
+constexpr char kManifestSection[] = "manifest";
 constexpr char kResponsesSection[] = "responses";
 
 // https://tools.ietf.org/html/draft-ietf-cbor-7049bis-05#section-3.1
@@ -64,6 +66,14 @@ enum class CBORType {
 
 // A list of (section-name, length) pairs.
 using SectionLengths = std::vector<std::pair<std::string, uint64_t>>;
+
+// A map from section name to (offset, length) pair.
+using SectionOffsets = std::map<std::string, std::pair<uint64_t, uint64_t>>;
+
+bool IsMetadataSection(const std::string& name) {
+  return (name == kIndexSection || name == kCriticalSection ||
+          name == kManifestSection);
+}
 
 // Parses a `section-lengths` CBOR item.
 // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
@@ -266,11 +276,8 @@ class BundledExchangesParser::SharedBundleDataSource::Observer {
   DISALLOW_COPY_AND_ASSIGN(Observer);
 };
 
-// A parser for bundle's metadata. This currently looks only at the "index"
-// section. This class owns itself and will self destruct after calling the
-// ParseMetadataCallback.
-// TODO(crbug.com/966753): Add support for the "manifest" section and "critical"
-// section.
+// A parser for bundle's metadata. This class owns itself and will self destruct
+// after calling the ParseMetadataCallback.
 class BundledExchangesParser::MetadataParser
     : BundledExchangesParser::SharedBundleDataSource::Observer {
  public:
@@ -361,7 +368,7 @@ class BundledExchangesParser::MetadataParser
                                       *url_length, input.CurrentOffset()));
   }
 
-  // Step 5-20 of
+  // Step 5-21 of
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
   void ParseBundleHeader(uint64_t expected_data_length,
                          uint64_t url_length,
@@ -521,49 +528,115 @@ class BundledExchangesParser::MetadataParser
       return;
     }
 
-    // Read the index section.
-    auto index_section = section_offsets_.find(kIndexSection);
-    if (index_section == section_offsets_.end()) {
-      RunErrorCallbackAndDestroy("No index section.");
+    // Step 21. "Let metadata be a map ([INFRA]) initially containing the single
+    // key/value pair "primaryUrl"/fallbackUrl."
+    metadata_ = mojom::BundleMetadata::New();
+    metadata_->primary_url = fallback_url_;
+
+    ReadMetadataSections(section_offsets_.begin());
+  }
+
+  // Step 22-25 of
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
+  void ReadMetadataSections(SectionOffsets::const_iterator section_iter) {
+    // Step 22. "For each "name" -> (offset, length) triple in sectionOffsets:"
+    for (; section_iter != section_offsets_.end(); ++section_iter) {
+      const auto& name = section_iter->first;
+      // Step 22.1. "If "name" isn't in knownSections, continue to the next
+      // triple."
+      // Step 22.2. "If "name"'s Metadata field (Section 6.2) is "No", continue
+      // to the next triple."
+      if (!IsMetadataSection(name))
+        continue;
+
+      // Step 22.3. "If "name" is in ignoredSections, continue to the next
+      // triple."
+      // In the current spec, ignoredSections is always empty.
+
+      const uint64_t section_offset = section_iter->second.first;
+      const uint64_t section_length = section_iter->second.second;
+      if (section_length > kMaxMetadataSectionSize) {
+        RunErrorCallbackAndDestroy(
+            "Metadata sections larger than 1MB are not supported.");
+        return;
+      }
+
+      data_source_->Read(section_offset, section_length,
+                         base::BindOnce(&MetadataParser::ParseMetadataSection,
+                                        weak_factory_.GetWeakPtr(),
+                                        section_iter, section_length));
+      // This loop will be resumed by ParseMetadataSection().
       return;
     }
-    const uint64_t index_section_offset = index_section->second.first;
-    const uint64_t index_section_length = index_section->second.second;
 
-    if (index_section_length > kMaxIndexSectionSize) {
+    // Step 23. "Assert: metadata has an entry with the key "primaryUrl"."
+    DCHECK(!metadata_->primary_url.is_empty());
+
+    // Step 24. "If metadata doesn't have entries with keys "requests" and
+    // "manifest", return a "format error" with fallbackUrl."
+    if (metadata_->requests.empty()) {
+      RunErrorCallbackAndDestroy("Bundle must have an index section.");
+      return;
+    }
+    if (metadata_->manifest_url.is_empty()) {
+      RunErrorCallbackAndDestroy("Bundle must have a manifest URL.");
+      return;
+    }
+
+    // Step 25. "Return metadata."
+    RunSuccessCallbackAndDestroy();
+  }
+
+  void ParseMetadataSection(SectionOffsets::const_iterator section_iter,
+                            uint64_t expected_data_length,
+                            const base::Optional<std::vector<uint8_t>>& data) {
+    if (!data || data->size() != expected_data_length) {
+      RunErrorCallbackAndDestroy("Error reading section content.");
+      return;
+    }
+
+    // Parse the section contents as a CBOR item.
+    cbor::Reader::DecoderError error;
+    base::Optional<cbor::Value> section_value =
+        cbor::Reader::Read(*data, &error);
+    if (!section_value) {
       RunErrorCallbackAndDestroy(
-          "Index section larger than 1MB is not supported.");
+          std::string("Error parsing section contents as CBOR: ") +
+          cbor::Reader::ErrorCodeToString(error));
       return;
     }
 
-    data_source_->Read(
-        index_section_offset, index_section_length,
-        base::BindOnce(&MetadataParser::ParseIndexSection,
-                       weak_factory_.GetWeakPtr(), index_section_length));
+    // Step 22.6. "Follow "name"'s specification from knownSections to process
+    // the section, passing sectionContents, stream, sectionOffsets, and
+    // metadata. If this returns an error, return a "format error" with
+    // fallbackUrl."
+    const auto& name = section_iter->first;
+    // Note: Parse*Section() delete |this| on failure.
+    if (name == kIndexSection) {
+      if (!ParseIndexSection(*section_value))
+        return;
+    } else if (name == kManifestSection) {
+      if (!ParseManifestSection(*section_value))
+        return;
+    } else if (name == kCriticalSection) {
+      if (!ParseCriticalSection(*section_value))
+        return;
+    } else {
+      // TODO(crbug.com/969596): Support the "signatures" section.
+      NOTIMPLEMENTED();
+    }
+    // Resume the loop of Step 22.
+    ReadMetadataSections(++section_iter);
   }
 
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#index-section
-  void ParseIndexSection(uint64_t expected_data_length,
-                         const base::Optional<std::vector<uint8_t>>& data) {
-    if (!data || data->size() != expected_data_length) {
-      RunErrorCallbackAndDestroy("Error reading index section.");
-      return;
-    }
-
+  bool ParseIndexSection(const cbor::Value& section_value) {
     // Step 1. "Let index be the result of parsing sectionContents as a CBOR
     // item matching the index rule in the above CDDL (Section 3.5). If index is
     // an error, return an error."
-    cbor::Reader::DecoderError error;
-    base::Optional<cbor::Value> index_section_value =
-        cbor::Reader::Read(*data, &error);
-    if (!index_section_value) {
-      VLOG(1) << cbor::Reader::ErrorCodeToString(error);
-      RunErrorCallbackAndDestroy("Error parsing index section.");
-      return;
-    }
-    if (!index_section_value->is_map()) {
+    if (!section_value.is_map()) {
       RunErrorCallbackAndDestroy("Index section must be a map.");
-      return;
+      return false;
     }
 
     // Step 2. "Let requests be an initially-empty map ([INFRA]) from URLs to
@@ -584,14 +657,14 @@ class BundledExchangesParser::MetadataParser
     const uint64_t responses_section_length = responses_section->second.second;
 
     // Step 4. "For each (url, responses) entry in the index map:"
-    for (const auto& item : index_section_value->GetMap()) {
+    for (const auto& item : section_value.GetMap()) {
       if (!item.first.is_string()) {
         RunErrorCallbackAndDestroy("Index section: key must be a string.");
-        return;
+        return false;
       }
       if (!item.second.is_array()) {
         RunErrorCallbackAndDestroy("Index section: value must be an array.");
-        return;
+        return false;
       }
       const std::string& url = item.first.GetString();
       const cbor::Value::ArrayValue& responses_array = item.second.GetArray();
@@ -601,7 +674,7 @@ class BundledExchangesParser::MetadataParser
       if (!base::IsStringUTF8(url)) {
         RunErrorCallbackAndDestroy(
             "Index section: URL must be a valid UTF-8 string.");
-        return;
+        return false;
       }
       GURL parsed_url(url);
 
@@ -612,7 +685,7 @@ class BundledExchangesParser::MetadataParser
         RunErrorCallbackAndDestroy(
             "Index section: exchange URL must be a valid URL without fragment "
             "or credentials.");
-        return;
+        return false;
       }
 
       // Step 4.3. "If the first element of responses is the empty string:"
@@ -620,7 +693,7 @@ class BundledExchangesParser::MetadataParser
         RunErrorCallbackAndDestroy(
             "Index section: the first element of responses array must be a "
             "bytestring.");
-        return;
+        return false;
       }
       base::StringPiece variants_value =
           responses_array[0].GetBytestringAsString();
@@ -630,7 +703,7 @@ class BundledExchangesParser::MetadataParser
         if (responses_array.size() != 3) {
           RunErrorCallbackAndDestroy(
               "Index section: unexpected size of responses array.");
-          return;
+          return false;
         }
       } else {
         // Step 4.4. "Otherwise:"
@@ -640,7 +713,7 @@ class BundledExchangesParser::MetadataParser
         if (responses_array.size() < 3 || responses_array.size() % 2 != 1) {
           RunErrorCallbackAndDestroy(
               "Index section: unexpected size of responses array.");
-          return;
+          return false;
         }
       }
       // Instead of constructing a map from Variant-Keys to location-in-stream,
@@ -652,7 +725,7 @@ class BundledExchangesParser::MetadataParser
             !responses_array[i + 1].is_unsigned()) {
           RunErrorCallbackAndDestroy(
               "Index section: offset and length values must be unsigned.");
-          return;
+          return false;
         }
         uint64_t offset = responses_array[i].GetUnsigned();
         uint64_t length = responses_array[i + 1].GetUnsigned();
@@ -664,7 +737,7 @@ class BundledExchangesParser::MetadataParser
         if (!base::CheckAdd(offset, length).AssignIfValid(&response_end) ||
             response_end > responses_section_length) {
           RunErrorCallbackAndDestroy("Index section: response out of range.");
-          return;
+          return false;
         }
         // Step 3.2. "Otherwise, return a ResponseMetadata struct whose offset
         // is sectionOffsets["responses"].offset + offset and whose length is
@@ -683,23 +756,76 @@ class BundledExchangesParser::MetadataParser
                                        std::move(response_locations))));
     }
 
-    // We're done.
-    RunSuccessCallbackAndDestroy(mojom::BundleMetadata::New(
-        fallback_url_, std::move(requests), manifest_url_));
+    // Step 5. "Set metadata["requests"] to requests."
+    metadata_->requests = std::move(requests);
+    return true;
   }
 
-  void RunSuccessCallbackAndDestroy(mojom::BundleMetadataPtr metadata) {
-    std::move(callback_).Run(std::move(metadata), nullptr);
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#manifest-section
+  bool ParseManifestSection(const cbor::Value& section_value) {
+    // Step 1. "Let urlString be the result of parsing sectionContents as a CBOR
+    // item matching the above manifest rule (Section 3.5). If urlString is an
+    // error, return that error."
+    if (!section_value.is_string() ||
+        !base::IsStringUTF8(section_value.GetString())) {
+      RunErrorCallbackAndDestroy("Manifest section must be a UTF-8 string.");
+      return false;
+    }
+    // Step 2. "Let url be the result of parsing ([URL]) urlString with no base
+    // URL."
+    GURL parsed_url(section_value.GetString());
+    // Step 3. "If url is a failure, its fragment is not null, or it includes
+    // credentials, return an error."
+    if (!parsed_url.is_valid() || parsed_url.has_ref() ||
+        parsed_url.has_username() || parsed_url.has_password()) {
+      RunErrorCallbackAndDestroy(
+          "Manifest URL must be a valid URL without fragment or credentials.");
+      return false;
+    }
+    // Step 4. "Set metadata["manifest"] to url."
+    metadata_->manifest_url = std::move(parsed_url);
+    return true;
+  }
+
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#critical-section
+  bool ParseCriticalSection(const cbor::Value& section_value) {
+    // Step 1. "Let critical be the result of parsing sectionContents as a CBOR
+    // item matching the above critical rule (Section 3.5). If critical is an
+    // error, return that error."
+    if (!section_value.is_array()) {
+      RunErrorCallbackAndDestroy("Critical section must be an array.");
+      return false;
+    }
+    // Step 2. "For each value sectionName in the critical list, if the client
+    // has not implemented sections named sectionName, return an error."
+    for (const cbor::Value& elem : section_value.GetArray()) {
+      if (!elem.is_string()) {
+        RunErrorCallbackAndDestroy(
+            "Non-string element in the critical section.");
+        return false;
+      }
+      const auto& section_name = elem.GetString();
+      if (!IsMetadataSection(section_name) &&
+          section_name != kResponsesSection) {
+        RunErrorCallbackAndDestroy("Unknown critical section.");
+        return false;
+      }
+    }
+    return true;
+  }
+
+  void RunSuccessCallbackAndDestroy() {
+    std::move(callback_).Run(std::move(metadata_), nullptr);
     delete this;
   }
 
   void RunErrorCallbackAndDestroy(
-      const base::Optional<std::string>& error_message,
+      const std::string& message,
       mojom::BundleParseErrorType error_type =
           mojom::BundleParseErrorType::kFormatError) {
     mojom::BundleMetadataParseErrorPtr err =
         mojom::BundleMetadataParseError::New(error_type, fallback_url_,
-                                             *error_message);
+                                             message);
     std::move(callback_).Run(nullptr, std::move(err));
     delete this;
   }
@@ -714,9 +840,8 @@ class BundledExchangesParser::MetadataParser
   uint64_t size_;
   bool version_mismatch_ = false;
   GURL fallback_url_;
-  // name -> (offset, length)
-  std::map<std::string, std::pair<uint64_t, uint64_t>> section_offsets_;
-  GURL manifest_url_;
+  SectionOffsets section_offsets_;
+  mojom::BundleMetadataPtr metadata_;
 
   base::WeakPtrFactory<MetadataParser> weak_factory_{this};
 

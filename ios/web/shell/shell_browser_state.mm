@@ -23,8 +23,7 @@ ShellBrowserState::ShellBrowserState() : BrowserState() {
   CHECK(base::PathService::Get(base::DIR_APP_DATA, &path_));
 
   request_context_getter_ = new ShellURLRequestContextGetter(
-      GetStatePath(),
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
+      GetStatePath(), base::CreateSingleThreadTaskRunner({web::WebThread::IO}));
 }
 
 ShellBrowserState::~ShellBrowserState() {

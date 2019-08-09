@@ -16,8 +16,10 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "components/account_id/account_id.h"
 #include "dbus/message.h"
 #include "net/base/net_errors.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
@@ -104,6 +106,7 @@ void CompleteSignatureKeyChallenge(
 void HandleSignatureKeyChallenge(
     dbus::MethodCall* method_call,
     const cryptohome::SignatureKeyChallengeRequestData& challenge_request_data,
+    const AccountId& account_id,
     dbus::ExportedObject::ResponseSender response_sender) {
   if (challenge_request_data.data_to_sign().empty()) {
     response_sender.Run(dbus::ErrorResponse::FromMethodCall(
@@ -168,6 +171,7 @@ void HandleSignatureKeyChallenge(
 
   certificate_provider_service->RequestSignatureBySpki(
       challenge_request_data.public_key_spki_der(), ssl_algorithm, digest,
+      account_id,
       base::BindOnce(&CompleteSignatureKeyChallenge,
                      base::Unretained(method_call), response_sender));
 }
@@ -207,7 +211,14 @@ void CryptohomeKeyDelegateServiceProvider::HandleChallengeKey(
         "Unable to parse AccountIdentifier from request"));
     return;
   }
-  // For now |account_identifier| is not used.
+  const AccountId account_id =
+      cryptohome::GetAccountIdFromAccountIdentifier(account_identifier);
+  if (!account_id.is_valid() ||
+      account_id.GetAccountType() == AccountType::UNKNOWN) {
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_FAILED, "Unknown account"));
+    return;
+  }
 
   cryptohome::KeyChallengeRequest request;
   if (!reader.PopArrayOfBytesAsProto(&request)) {
@@ -232,7 +243,7 @@ void CryptohomeKeyDelegateServiceProvider::HandleChallengeKey(
       return;
     }
     HandleSignatureKeyChallenge(method_call, request.signature_request_data(),
-                                response_sender);
+                                account_id, response_sender);
     return;
   }
 

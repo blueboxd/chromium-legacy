@@ -165,8 +165,9 @@ GuestOsSharePath* GuestOsSharePath::GetForProfile(Profile* profile) {
 
 GuestOsSharePath::GuestOsSharePath(Profile* profile)
     : profile_(profile),
-      sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+      sequenced_task_runner_(
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::USER_VISIBLE})),
       seneschal_callback_(base::BindRepeating(LogErrorResult)) {
   if (auto* vmgr = file_manager::VolumeManager::Get(profile_)) {
     vmgr->AddObserver(this);
@@ -620,7 +621,7 @@ void GuestOsSharePath::OnFileChanged(const base::FilePath& path, bool error) {
   if (error || shared_paths_.count(path) == 0 || base::PathExists(path)) {
     return;
   }
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&GuestOsSharePath::GetVolumeMountOnUIThread,
                      base::Unretained(this), path),
@@ -652,7 +653,7 @@ void GuestOsSharePath::CheckIfVolumeMountRemoved(
   // for our tests, but otherwise do nothing and assume an UnmountEvent is
   // coming.
   if (mount_path.empty() || !base::PathExists(mount_path)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(seneschal_callback_, "ignore-delete-before-unmount",
                        path, path, true, ""));

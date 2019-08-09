@@ -18,7 +18,7 @@ import java.util.Locale;
  *  A mime type filter that supports filtering both mime types and file extensions.
  *  Note that this class is used specifically to implement
  *  the mime type filtering for web share target spec:
- *  https://pr-preview.s3.amazonaws.com/ewilligers/web-share-target/pull/53.html#determining-if-a-file-is-accepted.
+ *  https://wicg.github.io/web-share-target/level-2/#determining-if-a-file-is-accepted
  *  It is also used inside chrome/android/java/src/org/chromium/chrome/browser/photo_picker.
  */
 public class MimeTypeFilter implements FileFilter {

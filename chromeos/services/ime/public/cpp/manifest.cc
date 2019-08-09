@@ -5,6 +5,8 @@
 #include "chromeos/services/ime/public/cpp/manifest.h"
 
 #include "base/no_destructor.h"
+#include "build/buildflag.h"
+#include "chromeos/services/ime/public/cpp/buildflags.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -12,6 +14,16 @@
 
 namespace chromeos {
 namespace ime {
+
+namespace {
+
+#if BUILDFLAG(ENABLE_CROS_IME_DECODER)
+const char kImeServiceSandboxType[] = "ime";
+#else
+const char kImeServiceSandboxType[] = "utility";
+#endif
+
+}  // namespace
 
 const service_manager::Manifest& GetManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
@@ -22,7 +34,7 @@ const service_manager::Manifest& GetManifest() {
               service_manager::ManifestOptionsBuilder()
                   .WithExecutionMode(service_manager::Manifest::ExecutionMode::
                                          kOutOfProcessBuiltin)
-                  .WithSandboxType("utility")
+                  .WithSandboxType(kImeServiceSandboxType)
                   .WithInstanceSharingPolicy(
                       service_manager::Manifest::InstanceSharingPolicy::
                           kSharedAcrossGroups)

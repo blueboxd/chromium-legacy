@@ -116,6 +116,7 @@ source_set("manifest") {
 
   deps = [
     "//base",
+    "//chromeos/services/ime/public/cpp:buildflags",
     "//chromeos/services/ime/public/mojom",
     "//chromeos/strings",
     "//services/service_manager/public/cpp",

@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/gfx/image/image_skia.h"
@@ -45,11 +45,12 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
     kMaxValue = kArc,
   };
 
-  MediaNotificationItem(MediaNotificationController* notification_controller,
-                        const std::string& request_id,
-                        const std::string& source_name,
-                        media_session::mojom::MediaControllerPtr controller,
-                        media_session::mojom::MediaSessionInfoPtr session_info);
+  MediaNotificationItem(
+      MediaNotificationController* notification_controller,
+      const std::string& request_id,
+      const std::string& source_name,
+      mojo::Remote<media_session::mojom::MediaController> controller,
+      media_session::mojom::MediaSessionInfoPtr session_info);
   ~MediaNotificationItem() override;
 
   // media_session::mojom::MediaControllerObserver:
@@ -83,12 +84,13 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
   void FlushForTesting();
 
   void SetMediaControllerForTesting(
-      media_session::mojom::MediaControllerPtr controller) {
-    media_controller_ptr_ = std::move(controller);
+      mojo::Remote<media_session::mojom::MediaController> controller) {
+    media_controller_remote_ = std::move(controller);
   }
 
-  void SetController(media_session::mojom::MediaControllerPtr controller,
-                     media_session::mojom::MediaSessionInfoPtr session_info);
+  void SetController(
+      mojo::Remote<media_session::mojom::MediaController> controller,
+      media_session::mojom::MediaSessionInfoPtr session_info);
 
   // This will freeze the item and start a timer to destroy the item after
   // some time has passed.
@@ -121,7 +123,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
   // The source of the media session (e.g. arc, web).
   const Source source_;
 
-  media_session::mojom::MediaControllerPtr media_controller_ptr_;
+  mojo::Remote<media_session::mojom::MediaController> media_controller_remote_;
 
   media_session::mojom::MediaSessionInfoPtr session_info_;
 

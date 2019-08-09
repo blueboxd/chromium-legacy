@@ -95,7 +95,7 @@ bool InvokeGoogleUpdateForRename() {
 
 namespace upgrade_util {
 
-bool RelaunchChromeBrowser(const base::CommandLine& command_line) {
+bool RelaunchChromeBrowserImpl(const base::CommandLine& command_line) {
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();

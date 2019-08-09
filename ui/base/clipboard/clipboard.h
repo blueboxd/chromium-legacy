@@ -165,7 +165,7 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   // designation is shared across all OSes. The system-specific designation
   // is defined by ClipboardFormatType. A single ObjectType might be represented
   // by several system-specific ClipboardFormatTypes. For example, on Linux the
-  // CBF_TEXT ObjectType maps to "text/plain", "STRING", and several other
+  // kText ObjectType maps to "text/plain", "STRING", and several other
   // formats. On windows it maps to CF_UNICODETEXT.
   //
   // The order below is the order in which data will be written to the
@@ -175,13 +175,13 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   // the image, and the image's alt text. Having the types follow this order
   // maximizes the amount of data that can be extracted by various programs.
   enum class ObjectType {
-    CBF_SMBITMAP,  // Bitmap from shared memory.
-    CBF_HTML,
-    CBF_RTF,
-    CBF_BOOKMARK,
-    CBF_TEXT,
-    CBF_WEBKIT,
-    CBF_DATA,  // Arbitrary block of bytes.
+    kBitmap,  // Bitmap from shared memory.
+    kHtml,
+    kRtf,
+    kBookmark,
+    kText,
+    kWebkit,
+    kData,  // Arbitrary block of bytes.
   };
 
   // ObjectMap is a map from ObjectType to associated data.
@@ -189,20 +189,20 @@ class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
   // table summarizes what kind of data is stored for each key.
   // * indicates an optional argument.
   //
-  // Key           Arguments    Type
+  // Key        Arguments    Type
   // -------------------------------------
-  // CBF_SMBITMAP  bitmap       A pointer to a SkBitmap. The caller must ensure
-  //                            the SkBitmap remains live for the duration of
-  //                            the WriteObjects call.
-  // CBF_HTML      html         char array
-  //               url*         char array
-  // CBF_RTF       data         byte array
-  // CBF_BOOKMARK  html         char array
-  //               url          char array
-  // CBF_TEXT      text         char array
-  // CBF_WEBKIT    none         empty vector
-  // CBF_DATA      format       char array
-  //               data         byte array
+  // kBitmap    bitmap       A pointer to a SkBitmap. The caller must ensure
+  //                         the SkBitmap remains live for the duration of
+  //                         the WriteObjects call.
+  // kHtml      html         char array
+  //            url*         char array
+  // kRtf       data         byte array
+  // kBookmark  html         char array
+  //            url          char array
+  // kText      text         char array
+  // kWebkit    none         empty vector
+  // kData      format       char array
+  //            data         byte array
   using ObjectMapParam = std::vector<char>;
   using ObjectMapParams = std::vector<ObjectMapParam>;
   using ObjectMap = base::flat_map<ObjectType, ObjectMapParams>;

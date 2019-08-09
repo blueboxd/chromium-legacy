@@ -27,8 +27,8 @@ bool ArrayPiece::IsNull() const {
   return is_null_;
 }
 
-bool ArrayPiece::IsNeutered() const {
-  return is_neutered_;
+bool ArrayPiece::IsDetached() const {
+  return is_detached_;
 }
 
 void* ArrayPiece::Data() const {
@@ -48,7 +48,7 @@ unsigned ArrayPiece::ByteLength() const {
 void ArrayPiece::InitWithArrayBuffer(ArrayBuffer* buffer) {
   if (buffer) {
     InitWithData(buffer->Data(), SafeCast<unsigned>(buffer->ByteLength()));
-    is_neutered_ = buffer->IsNeutered();
+    is_detached_ = buffer->IsDetached();
   } else {
     InitNull();
   }
@@ -57,7 +57,7 @@ void ArrayPiece::InitWithArrayBuffer(ArrayBuffer* buffer) {
 void ArrayPiece::InitWithArrayBufferView(ArrayBufferView* buffer) {
   if (buffer) {
     InitWithData(buffer->BaseAddress(), buffer->ByteLength());
-    is_neutered_ = buffer->Buffer() ? buffer->Buffer()->IsNeutered() : true;
+    is_detached_ = buffer->Buffer() ? buffer->Buffer()->IsDetached() : true;
   } else {
     InitNull();
   }
@@ -67,14 +67,14 @@ void ArrayPiece::InitWithData(void* data, unsigned byte_length) {
   byte_length_ = byte_length;
   data_ = data;
   is_null_ = false;
-  is_neutered_ = false;
+  is_detached_ = false;
 }
 
 void ArrayPiece::InitNull() {
   byte_length_ = 0;
   data_ = nullptr;
   is_null_ = true;
-  is_neutered_ = false;
+  is_detached_ = false;
 }
 
 }  // namespace WTF

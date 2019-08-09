@@ -35,6 +35,13 @@ String UncompressResourceAsString(int resource_id) {
   return String::FromUTF8(uncompressed);
 }
 
+String UncompressResourceAsASCIIString(int resource_id) {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  std::string uncompressed = bundle.DecompressDataResourceScaled(
+      resource_id, bundle.GetMaxScaleFactor());
+  return String(uncompressed.c_str(), uncompressed.size());
+}
+
 Vector<char> UncompressResourceAsBinary(int resource_id) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   std::string uncompressed = bundle.DecompressDataResourceScaled(

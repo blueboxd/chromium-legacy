@@ -32,7 +32,7 @@ namespace WTF {
 ArrayBufferView::ArrayBufferView(scoped_refptr<ArrayBuffer> buffer,
                                  unsigned byte_offset)
     : byte_offset_(byte_offset),
-      is_neuterable_(true),
+      is_detachable_(true),
       buffer_(std::move(buffer)),
       prev_view_(nullptr),
       next_view_(nullptr) {
@@ -48,7 +48,7 @@ ArrayBufferView::~ArrayBufferView() {
     buffer_->RemoveView(this);
 }
 
-void ArrayBufferView::Neuter() {
+void ArrayBufferView::Detach() {
   buffer_ = nullptr;
   base_address_ = nullptr;
   byte_offset_ = 0;

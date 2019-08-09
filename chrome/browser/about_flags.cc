@@ -1512,7 +1512,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          chromeos::features::kBluetoothAggressiveAppearanceFilter)},
     {"cryptauth-v2-enrollment", flag_descriptions::kCryptAuthV2EnrollmentName,
-     flag_descriptions::kCryptAuthV2EnrollmentDescription, kOsCrOS | kExpireM77,
+     flag_descriptions::kCryptAuthV2EnrollmentDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCryptAuthV2Enrollment)},
     {"updated_cellular_activation_ui",
      flag_descriptions::kUpdatedCellularActivationUiName,

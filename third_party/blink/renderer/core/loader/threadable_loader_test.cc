@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_load_timing.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -30,7 +31,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/loader/testing/web_url_loader_factory_with_mock.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -89,6 +89,16 @@ KURL RedirectURL() {
 }
 KURL RedirectLoopURL() {
   return KURL("http://example.com/loop").Copy();
+}
+
+void ServeAsynchronousRequests() {
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+}
+
+void UnregisterAllURLsAndClearMemoryCache() {
+  Platform::Current()
+      ->GetURLLoaderMockFactory()
+      ->UnregisterAllURLsAndClearMemoryCache();
 }
 
 void SetUpSuccessURL() {
@@ -176,17 +186,14 @@ class ThreadableLoaderTestHelper final {
 
   void OnSetUp() { SetUpMockURLs(); }
 
-  void OnServeRequests() {
-    platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-  }
+  void OnServeRequests() { ServeAsynchronousRequests(); }
 
   void OnTearDown() {
     if (loader_) {
       loader_->Cancel();
       loader_ = nullptr;
     }
-    platform_->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    UnregisterAllURLsAndClearMemoryCache();
   }
 
  private:
@@ -195,7 +202,6 @@ class ThreadableLoaderTestHelper final {
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   Checkpoint checkpoint_;
   Persistent<ThreadableLoader> loader_;
-  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 
 class ThreadableLoaderTest : public testing::Test {

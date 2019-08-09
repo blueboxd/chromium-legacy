@@ -152,7 +152,8 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
   ScopedJavaLocalRef<jobject> j_tab_data =
       Java_ManualFillingComponentBridge_createAccessorySheetData(
           env, static_cast<int>(tab_data.get_sheet_type()),
-          ConvertUTF16ToJavaString(env, tab_data.title()));
+          ConvertUTF16ToJavaString(env, tab_data.title()),
+          ConvertUTF16ToJavaString(env, tab_data.warning()));
 
   for (const UserInfo& user_info : tab_data.user_info_list()) {
     ScopedJavaLocalRef<jobject> j_user_info =

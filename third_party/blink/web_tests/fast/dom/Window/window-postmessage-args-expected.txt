@@ -19,10 +19,10 @@ PASS Posting message ('[object MessagePort],[object MessagePort]', [object Messa
 PASS Posting message ('data', [object MessagePort],[object MessagePort]): threw exception DataCloneError: Failed to execute 'postMessage' on 'Window': Port at index 0 is already neutered.
 PASS Posting message ('[object MessagePort],[object MessagePort]', ): threw exception DataCloneError: Failed to execute 'postMessage' on 'Window': A MessagePort could not be cloned because it was not transferred.
 PASS Posting message ('[object ArrayBuffer]', [object ArrayBuffer]) did not throw an exception
-PASS arrayBuffer neutered
-PASS view neutered
+PASS arrayBuffer detached
+PASS view detached
 PASS Posting message ('[object ArrayBuffer]', ): threw exception DataCloneError: Failed to execute 'postMessage' on 'Window': An ArrayBuffer is neutered and could not be cloned.
-PASS Posting message ('data', [object ArrayBuffer]): threw exception DataCloneError: Failed to execute 'postMessage' on 'Window': ArrayBuffer at index 0 is already neutered.
+PASS Posting message ('data', [object ArrayBuffer]): threw exception DataCloneError: Failed to execute 'postMessage' on 'Window': ArrayBuffer at index 0 is already detached.
 PASS Posting message ('[detached TypedArray]', ): threw exception DataCloneError: Failed to execute 'postMessage' on 'Window': An ArrayBuffer is neutered and could not be cloned.
 PASS Posting message ('data', [detached TypedArray]): threw exception TypeError: Failed to execute 'postMessage' on 'Window': Value at index 0 does not have a transferable type.
 PASS Posting message ('data', [object Object]): threw exception TypeError: Failed to execute 'postMessage' on 'Window': Iterator getter is not callable.

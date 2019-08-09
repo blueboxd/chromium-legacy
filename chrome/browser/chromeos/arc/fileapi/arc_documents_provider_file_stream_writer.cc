@@ -28,8 +28,8 @@ void OnResolveToContentUrlOnUIThread(
     ArcDocumentsProviderRoot::ResolveToContentUrlCallback callback,
     const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(std::move(callback), url));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(std::move(callback), url));
 }
 
 void ResolveToContentUrlOnUIThread(
@@ -86,7 +86,7 @@ int ArcDocumentsProviderFileStreamWriter::Write(
 
     // Resolve the |arc_url_| to a Content URL to instantiate the underlying
     // writer.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &ResolveToContentUrlOnUIThread, arc_url_,

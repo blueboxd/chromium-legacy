@@ -446,14 +446,14 @@ AbortCallback SmbFileSystem::WriteFile(
 void SmbFileSystem::CreateTempFileManagerAndExecuteTask(SmbTask task) {
   // CreateTempFileManager() has to be called on a separate thread since it
   // contains a call that requires a blockable thread.
-  base::TaskTraits task_traits = {base::MayBlock(),
+  base::TaskTraits task_traits = {base::ThreadPool(), base::MayBlock(),
                                   base::TaskPriority::USER_BLOCKING,
                                   base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
   auto init_task = base::BindOnce(&CreateTempFileManager);
   auto reply = base::BindOnce(&SmbFileSystem::InitTempFileManagerAndExecuteTask,
                               AsWeakPtr(), std::move(task));
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, task_traits, std::move(init_task), std::move(reply));
+  base::PostTaskAndReplyWithResult(FROM_HERE, task_traits, std::move(init_task),
+                                   std::move(reply));
 }
 
 void SmbFileSystem::InitTempFileManagerAndExecuteTask(

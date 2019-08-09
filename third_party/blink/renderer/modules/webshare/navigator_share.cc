@@ -55,7 +55,7 @@ bool HasFiles(const ShareData& share_data) {
 }
 
 // Returns a message for a TypeError if share(share_data) would reject with
-// TypeError. https://wicg.github.io/web-share/level-2/#canshare-method
+// TypeError. https://w3c.github.io/web-share/level-2/#canshare-method
 // Otherwise returns an empty string.
 // Populates full_url with the result of running the URL parser on
 // share_data.url

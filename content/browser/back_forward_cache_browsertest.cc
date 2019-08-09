@@ -75,6 +75,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const url::Origin origin_a = url::Origin::Create(url_a);
+  const url::Origin origin_b = url::Origin::Create(url_b);
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -88,6 +90,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
   EXPECT_FALSE(delete_rfh_a.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
   EXPECT_EQ(rfh_a->GetVisibilityState(), PageVisibilityState::kHidden);
+  EXPECT_EQ(origin_a, rfh_a->GetLastCommittedOrigin());
+  EXPECT_EQ(origin_b, rfh_b->GetLastCommittedOrigin());
   EXPECT_FALSE(rfh_b->is_in_back_forward_cache());
   EXPECT_EQ(rfh_b->GetVisibilityState(), PageVisibilityState::kVisible);
 
@@ -96,6 +100,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_FALSE(delete_rfh_a.deleted());
   EXPECT_FALSE(delete_rfh_b.deleted());
+  EXPECT_EQ(origin_a, rfh_a->GetLastCommittedOrigin());
+  EXPECT_EQ(origin_b, rfh_b->GetLastCommittedOrigin());
   EXPECT_EQ(rfh_a, current_frame_host());
   EXPECT_FALSE(rfh_a->is_in_back_forward_cache());
   EXPECT_EQ(rfh_a->GetVisibilityState(), PageVisibilityState::kVisible);

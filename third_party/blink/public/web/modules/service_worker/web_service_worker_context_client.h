@@ -50,7 +50,6 @@ class SequencedTaskRunner;
 namespace blink {
 
 class WebServiceWorkerContextProxy;
-class WebServiceWorkerNetworkProvider;
 class WebString;
 
 // Used to pass the mojom struct blink.mojom.FetchEventPreloadHandle across the
@@ -197,20 +196,6 @@ class WebServiceWorkerContextClient {
   // Called when we need to request to terminate this worker due to idle
   // timeout.
   virtual void RequestTermination(RequestTerminationCallback) {}
-
-  // On-main-thread start up:
-  // Creates a network provider for the main script fetch.
-  // This is called on the main thread.
-  virtual std::unique_ptr<WebServiceWorkerNetworkProvider>
-  CreateServiceWorkerNetworkProviderOnMainThread() = 0;
-
-  // On-main-thread start up:
-  // Creates a WebWorkerFetchContext for subresource fetches on a service
-  // worker. This is called on the main thread.
-  virtual scoped_refptr<blink::WebWorkerFetchContext>
-  CreateWorkerFetchContextOnMainThreadLegacy(WebServiceWorkerNetworkProvider*) {
-    return nullptr;
-  }
 
   // Off-main-thread start up:
   // Creates a WebWorkerFetchContext for subresource fetches on a service

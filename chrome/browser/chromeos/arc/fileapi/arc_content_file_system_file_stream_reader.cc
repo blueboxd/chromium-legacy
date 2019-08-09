@@ -46,8 +46,9 @@ ArcContentFileSystemFileStreamReader::ArcContentFileSystemFileStreamReader(
     const GURL& arc_url,
     int64_t offset)
     : arc_url_(arc_url), offset_(offset), weak_ptr_factory_(this) {
-  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 ArcContentFileSystemFileStreamReader::~ArcContentFileSystemFileStreamReader() {

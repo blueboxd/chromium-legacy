@@ -130,7 +130,7 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
   void CreateViewFromMediaSessionInfo(
       media_session::mojom::MediaSessionInfoPtr session_info) {
     session_info->is_controllable = true;
-    media_session::mojom::MediaControllerPtr controller;
+    mojo::Remote<media_session::mojom::MediaController> controller;
     item_ = std::make_unique<MediaNotificationItem>(
         &controller_, request_id_.ToString(), std::string(),
         std::move(controller), std::move(session_info));
@@ -144,7 +144,7 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
     // Inject the test media controller into the item.
     media_controller_ = std::make_unique<TestMediaController>();
     item_->SetMediaControllerForTesting(
-        media_controller_->CreateMediaControllerPtr());
+        media_controller_->CreateMediaControllerRemote());
   }
 
   void TearDown() override {

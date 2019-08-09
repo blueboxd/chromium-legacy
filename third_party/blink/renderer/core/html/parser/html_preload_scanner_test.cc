@@ -7,6 +7,7 @@
 #include <memory>
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -21,7 +22,6 @@
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -217,8 +217,6 @@ class HTMLPreloadScannerTest : public PageTestBase {
     kPreloadEnabled,
     kPreloadDisabled,
   };
-
-  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 
   MediaValuesCached::MediaValuesCachedData CreateMediaValuesData() {
     MediaValuesCached::MediaValuesCachedData data;
@@ -1154,7 +1152,7 @@ TEST_F(HTMLPreloadScannerTest, ReferrerHeader) {
            network::mojom::ReferrerPolicy::kAlways);
 
   KURL preload_url("http://example.test/sheet.css");
-  platform_->GetURLLoaderMockFactory()->RegisterURL(
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       preload_url, WrappedResourceResponse(ResourceResponse()), "");
 
   ReferrerPolicyTestCase test_case = {

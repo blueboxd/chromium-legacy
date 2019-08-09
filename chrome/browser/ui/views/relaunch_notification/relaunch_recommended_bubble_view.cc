@@ -51,7 +51,7 @@ views::Widget* RelaunchRecommendedBubbleView::ShowBubble(
                             ->toolbar_button_provider()
                             ->GetAppMenuButton();
   auto* bubble_view = new RelaunchRecommendedBubbleView(
-      anchor_button, gfx::Point(), detection_time, std::move(on_accept));
+      anchor_button, detection_time, std::move(on_accept));
   bubble_view->SetArrow(views::BubbleBorder::TOP_RIGHT);
 
 #if defined(OS_MACOSX)
@@ -169,10 +169,9 @@ void RelaunchRecommendedBubbleView::VisibilityChanged(
 // title needs to be updated (e.g., from "2 days" to "3 days").
 RelaunchRecommendedBubbleView::RelaunchRecommendedBubbleView(
     views::Button* anchor_button,
-    const gfx::Point& anchor_point,
     base::Time detection_time,
     base::RepeatingClosure on_accept)
-    : LocationBarBubbleDelegateView(anchor_button, anchor_point, nullptr),
+    : LocationBarBubbleDelegateView(anchor_button, gfx::Point(), nullptr),
       on_accept_(std::move(on_accept)),
       body_label_(nullptr),
       relaunch_recommended_timer_(

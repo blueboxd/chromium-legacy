@@ -560,6 +560,21 @@ void BackgroundSyncManager::EmulateDispatchSyncEvent(
                     std::move(callback));
 }
 
+void BackgroundSyncManager::EmulateDispatchPeriodicSyncEvent(
+    const std::string& tag,
+    scoped_refptr<ServiceWorkerVersion> active_version,
+    ServiceWorkerVersion::StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  blink::ServiceWorkerStatusCode code = CanEmulateSyncEvent(active_version);
+  if (code != blink::ServiceWorkerStatusCode::kOk) {
+    std::move(callback).Run(code);
+    return;
+  }
+
+  DispatchPeriodicSyncEvent(tag, std::move(active_version),
+                            std::move(callback));
+}
+
 void BackgroundSyncManager::EmulateServiceWorkerOffline(
     int64_t service_worker_id,
     bool is_offline) {

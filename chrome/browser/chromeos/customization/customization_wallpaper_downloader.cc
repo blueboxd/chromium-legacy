@@ -136,8 +136,9 @@ void CustomizationWallpaperDownloader::Start() {
   base::OnceClosure on_created_closure = base::BindOnce(
       &CustomizationWallpaperDownloader::OnWallpaperDirectoryCreated,
       weak_factory_.GetWeakPtr(), std::move(success));
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       std::move(mkdir_closure), std::move(on_created_closure));
 }
 
@@ -172,8 +173,9 @@ void CustomizationWallpaperDownloader::OnSimpleLoaderComplete(
   base::OnceClosure on_rename_closure =
       base::BindOnce(&CustomizationWallpaperDownloader::OnTemporaryFileRenamed,
                      weak_factory_.GetWeakPtr(), std::move(success));
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       std::move(rename_closure), std::move(on_rename_closure));
 }
 

@@ -149,10 +149,9 @@ void GetCertDatabase(const std::string& token_id,
                      const GetCertDBCallback& callback,
                      BrowserContext* browser_context,
                      NSSOperationState* state) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&GetCertDatabaseOnIOThread, token_id, callback,
-                     browser_context->GetResourceContext(), state));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&GetCertDatabaseOnIOThread, token_id, callback,
+                                browser_context->GetResourceContext(), state));
 }
 
 class GenerateRSAKeyState : public NSSOperationState {
@@ -472,9 +471,9 @@ void GenerateRSAKeyWithDB(std::unique_ptr<GenerateRSAKeyState> state,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
   // This task interacts with the TPM, hence MayBlock().
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&GenerateRSAKeyOnWorkerThread, std::move(state)));
 }
@@ -566,9 +565,9 @@ void SignRSAWithDB(std::unique_ptr<SignRSAState> state,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
   // This task interacts with the TPM, hence MayBlock().
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SignRSAOnWorkerThread, std::move(state)));
 }
@@ -650,9 +649,9 @@ void DidGetCertificates(std::unique_ptr<GetCertificatesState> state,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->certs_ = std::move(all_certs);
   // This task interacts with the TPM, hence MayBlock().
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FilterCertificatesOnWorkerThread, std::move(state)));
 }
@@ -892,7 +891,7 @@ void SelectClientCertificates(
   std::unique_ptr<SelectCertificatesState> state(new SelectCertificatesState(
       user->username_hash(), use_system_key_slot, cert_request_info, callback));
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&SelectCertificatesOnIOThread, std::move(state)));
 }

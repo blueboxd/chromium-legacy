@@ -33,7 +33,7 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
 
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override {
-    return base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO});
+    return base::CreateSingleThreadTaskRunner({web::WebThread::IO});
   }
 
  private:

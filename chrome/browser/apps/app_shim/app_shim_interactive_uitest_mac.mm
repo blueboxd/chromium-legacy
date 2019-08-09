@@ -447,8 +447,8 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
     // final request to close the window is posted to this thread's queue.
     GetFirstAppWindow()->GetBaseWindow()->Close();
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReply(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(
             [](base::Process* shim_process) {
               base::ScopedAllowBaseSyncPrimitivesForTesting

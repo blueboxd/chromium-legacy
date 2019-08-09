@@ -2031,7 +2031,7 @@ class MediaSessionAcceleratorTest
     MediaControllerImpl* media_controller = Shell::Get()->media_controller();
     media_controller->SetClient(client_.get());
     media_controller->SetMediaSessionControllerForTest(
-        controller_->CreateMediaControllerPtr());
+        controller_->CreateMediaControllerRemote());
     media_controller->SetForceMediaClientKeyHandling(
         GetParam().force_key_handling);
     media_controller->FlushForTesting();

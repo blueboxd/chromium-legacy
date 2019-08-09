@@ -13,6 +13,8 @@
 
 class SkData;
 class SkROBuffer;
+template <typename T>
+class sk_sp;
 
 namespace blink {
 

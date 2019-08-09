@@ -40,9 +40,8 @@ void SymlinkSetUp(const base::CommandLine& command_line,
   settings.log_file = log_path.value().c_str();
   if (!logging::InitLogging(settings)) {
     DLOG(ERROR) << "Unable to initialize logging to " << log_path.value();
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&RemoveSymlinkAndLog, log_path, target_path));
+    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                   base::BindOnce(&RemoveSymlinkAndLog, log_path, target_path));
     return;
   }
   chrome_logging_redirected_ = true;
@@ -88,8 +87,8 @@ void RedirectChromeLogging(const base::CommandLine& command_line) {
   const base::FilePath log_path = GetSessionLogFile(command_line);
 
   // Always force a new symlink when redirecting.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&SetUpSymlinkIfNeeded, log_path, true),
       base::BindOnce(&SymlinkSetUp, command_line, log_path));
 }

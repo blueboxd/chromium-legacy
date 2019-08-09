@@ -1015,6 +1015,10 @@ VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
     // we map V4L2_PIX_FMT_MT21C to PIXEL_FORMAT_NV12 as their layout are the
     // same.
     case V4L2_PIX_FMT_MT21C:
+    // V4L2_PIX_FMT_MM21 is used for MT8183 hardware video decoder. It is
+    // similar to V4L2_PIX_FMT_MT21C but is not compressed ; thus it can also
+    // be mapped to PIXEL_FORMAT_NV12.
+    case V4L2_PIX_FMT_MM21:
       return PIXEL_FORMAT_NV12;
 
     case V4L2_PIX_FMT_YUV420:
@@ -1519,8 +1523,8 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
 // static
 bool V4L2Device::IsMultiPlanarV4L2PixFmt(uint32_t pix_fmt) {
   constexpr uint32_t kMultiV4L2PixFmts[] = {
-      V4L2_PIX_FMT_NV12M,   V4L2_PIX_FMT_MT21C,   V4L2_PIX_FMT_YUV420M,
-      V4L2_PIX_FMT_YVU420M, V4L2_PIX_FMT_YUV422M,
+      V4L2_PIX_FMT_NV12M,   V4L2_PIX_FMT_MT21C,   V4L2_PIX_FMT_MM21,
+      V4L2_PIX_FMT_YUV420M, V4L2_PIX_FMT_YVU420M, V4L2_PIX_FMT_YUV422M,
   };
   return std::find(std::cbegin(kMultiV4L2PixFmts), std::cend(kMultiV4L2PixFmts),
                    pix_fmt) != std::cend(kMultiV4L2PixFmts);

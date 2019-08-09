@@ -346,7 +346,7 @@ void MachineCertificateUploaderImpl::HandleGetCertificateFailure(
 
 void MachineCertificateUploaderImpl::Reschedule() {
   if (++num_retries_ < retry_limit_) {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindRepeating(&MachineCertificateUploaderImpl::Start,
                             weak_factory_.GetWeakPtr()),

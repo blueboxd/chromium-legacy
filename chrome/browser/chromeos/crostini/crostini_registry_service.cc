@@ -847,8 +847,9 @@ void CrostiniRegistryService::RemoveAppData(const std::string& app_id) {
   retry_icon_requests_.erase(app_id);
 
   // Remove local data on filesystem for the icons.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&DeleteIconFolderFromFileThread, GetAppPath(app_id)));
 }
 
@@ -957,8 +958,9 @@ void CrostiniRegistryService::OnContainerAppIcon(
     return;
   // Now install the icon that we received.
   const base::FilePath icon_path = GetIconPath(app_id, scale_factor);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&InstallIconFromFileThread, icon_path, icons[0].content),
       base::BindOnce(&CrostiniRegistryService::OnIconInstalled,
                      weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));

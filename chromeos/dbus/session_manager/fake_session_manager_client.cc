@@ -426,9 +426,10 @@ void FakeSessionManagerClient::RetrievePolicy(
         GetStubPolicyFilePath(descriptor, nullptr /* key_path */);
     DCHECK(!policy_path.empty());
 
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&GetFileContent, policy_path),
         base::BindOnce(std::move(callback),
                        RetrievePolicyResponseType::SUCCESS));
@@ -510,9 +511,10 @@ void FakeSessionManagerClient::StorePolicy(
     if (response.has_new_public_key())
       files_to_store[key_path] = response.new_public_key();
 
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(StoreFiles, std::move(files_to_store)),
         base::BindOnce(std::move(callback), true /* success */));
   } else {
@@ -526,9 +528,9 @@ void FakeSessionManagerClient::StorePolicy(
         GetStubPolicyFilePath(descriptor, &key_path);
         DCHECK(!key_path.empty());
 
-        base::PostTaskWithTraitsAndReply(
+        base::PostTaskAndReply(
             FROM_HERE,
-            {base::MayBlock(),
+            {base::ThreadPool(), base::MayBlock(),
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::BindOnce(StoreFiles,
                            std::map<base::FilePath, std::string>{
@@ -543,7 +545,7 @@ void FakeSessionManagerClient::StorePolicy(
     }
 
     // Run the callback if it hasn't been passed to
-    // PostTaskWithTraitsAndReply(), in which case it will be run after the
+    // PostTaskAndReply(), in which case it will be run after the
     // owner key file was stored to disk.
     if (callback) {
       PostReply(FROM_HERE, std::move(callback), true /* success */);
@@ -573,9 +575,10 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
     CHECK(base::PathService::Get(dbus_paths::FILE_OWNER_KEY, &owner_key_path));
     const base::FilePath state_keys_path =
         owner_key_path.DirName().AppendASCII(kStubStateKeysFileName);
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&ReadCreateStateKeysStub, state_keys_path),
         std::move(callback));
   } else {

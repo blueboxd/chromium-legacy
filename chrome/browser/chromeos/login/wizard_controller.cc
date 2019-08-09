@@ -1121,9 +1121,8 @@ void WizardController::OnChangedMetricsReportingState(bool enabled) {
   if (!enabled)
     return;
 #if defined(GOOGLE_CHROME_BUILD)
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&breakpad::InitCrashReporter, std::string()));
+  base::PostTask(FROM_HERE, {base::MayBlock()},
+                 base::BindOnce(&breakpad::InitCrashReporter, std::string()));
 #endif
 }
 
@@ -1161,7 +1160,7 @@ void WizardController::OnOobeFlowFinished() {
   }
 
   // Launch browser and delete login host controller.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&UserSessionManager::DoBrowserLaunch,
                      base::Unretained(UserSessionManager::GetInstance()),

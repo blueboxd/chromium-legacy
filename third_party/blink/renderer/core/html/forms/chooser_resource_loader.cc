@@ -10,138 +10,138 @@
 
 namespace blink {
 
-String ChooserResourceLoader::GetSuggestionPickerStyleSheet() {
+Vector<char> ChooserResourceLoader::GetSuggestionPickerStyleSheet() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_SUGGESTION_PICKER_CSS);
+  return UncompressResourceAsBinary(IDR_SUGGESTION_PICKER_CSS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetSuggestionPickerJS() {
+Vector<char> ChooserResourceLoader::GetSuggestionPickerJS() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_SUGGESTION_PICKER_JS);
+  return UncompressResourceAsBinary(IDR_SUGGESTION_PICKER_JS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetPickerButtonStyleSheet() {
+Vector<char> ChooserResourceLoader::GetPickerButtonStyleSheet() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_PICKER_BUTTON_CSS);
+  return UncompressResourceAsBinary(IDR_PICKER_BUTTON_CSS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetPickerCommonStyleSheet() {
+Vector<char> ChooserResourceLoader::GetPickerCommonStyleSheet() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_PICKER_COMMON_CSS);
+  return UncompressResourceAsBinary(IDR_PICKER_COMMON_CSS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetPickerCommonJS() {
+Vector<char> ChooserResourceLoader::GetPickerCommonJS() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_PICKER_COMMON_JS);
+  return UncompressResourceAsBinary(IDR_PICKER_COMMON_JS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetCalendarPickerStyleSheet() {
+Vector<char> ChooserResourceLoader::GetCalendarPickerStyleSheet() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_CALENDAR_PICKER_CSS);
+  return UncompressResourceAsBinary(IDR_CALENDAR_PICKER_CSS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetCalendarPickerJS() {
+Vector<char> ChooserResourceLoader::GetCalendarPickerJS() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_CALENDAR_PICKER_JS);
+  return UncompressResourceAsBinary(IDR_CALENDAR_PICKER_JS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetColorSuggestionPickerStyleSheet() {
+Vector<char> ChooserResourceLoader::GetColorSuggestionPickerStyleSheet() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_COLOR_SUGGESTION_PICKER_CSS);
+  return UncompressResourceAsBinary(IDR_COLOR_SUGGESTION_PICKER_CSS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetColorSuggestionPickerJS() {
+Vector<char> ChooserResourceLoader::GetColorSuggestionPickerJS() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_COLOR_SUGGESTION_PICKER_JS);
+  return UncompressResourceAsBinary(IDR_COLOR_SUGGESTION_PICKER_JS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetColorPickerStyleSheet() {
+Vector<char> ChooserResourceLoader::GetColorPickerStyleSheet() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_COLOR_PICKER_CSS);
+  return UncompressResourceAsBinary(IDR_COLOR_PICKER_CSS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetCalendarPickerRefreshStyleSheet() {
+Vector<char> ChooserResourceLoader::GetCalendarPickerRefreshStyleSheet() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_CALENDAR_PICKER_REFRESH_CSS);
+  return UncompressResourceAsBinary(IDR_CALENDAR_PICKER_REFRESH_CSS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetColorPickerJS() {
+Vector<char> ChooserResourceLoader::GetColorPickerJS() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_COLOR_PICKER_JS);
+  return UncompressResourceAsBinary(IDR_COLOR_PICKER_JS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetColorPickerCommonJS() {
+Vector<char> ChooserResourceLoader::GetColorPickerCommonJS() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_COLOR_PICKER_COMMON_JS);
+  return UncompressResourceAsBinary(IDR_COLOR_PICKER_COMMON_JS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetListPickerStyleSheet() {
+Vector<char> ChooserResourceLoader::GetListPickerStyleSheet() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_LIST_PICKER_CSS);
+  return UncompressResourceAsBinary(IDR_LIST_PICKER_CSS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 
-String ChooserResourceLoader::GetListPickerJS() {
+Vector<char> ChooserResourceLoader::GetListPickerJS() {
 #if !defined(OS_ANDROID)
-  return UncompressResourceAsString(IDR_LIST_PICKER_JS);
+  return UncompressResourceAsBinary(IDR_LIST_PICKER_JS);
 #else
   NOTREACHED();
-  return String();
+  return Vector<char>();
 #endif
 }
 

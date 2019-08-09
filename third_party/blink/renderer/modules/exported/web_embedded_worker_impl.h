@@ -111,6 +111,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client_;
 
   // Kept around only while main script loading is ongoing.
+  // TODO(bashi): Remove. This is no longer used.
   Persistent<WorkerClassicScriptLoader> main_script_loader_;
 
   std::unique_ptr<ServiceWorkerThread> worker_thread_;
@@ -119,6 +120,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
 
   bool asked_to_terminate_ = false;
 
+  // TODO(bashi): Remove. This is no longer used.
   enum {
     kDontPauseAfterDownload,
     kDoPauseAfterDownload,

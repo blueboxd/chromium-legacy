@@ -24,6 +24,8 @@
 namespace gpu {
 namespace webgpu {
 
+class DawnClientMemoryTransferService;
+
 class WEBGPU_EXPORT WebGPUImplementation final
     : public dawn_wire::CommandSerializer,
       public WebGPUInterface,
@@ -122,6 +124,7 @@ class WEBGPU_EXPORT WebGPUImplementation final
 
   WebGPUCmdHelper* helper_;
 #if BUILDFLAG(USE_DAWN)
+  std::unique_ptr<DawnClientMemoryTransferService> memory_transfer_service_;
   std::unique_ptr<dawn_wire::WireClient> wire_client_;
 #endif
   DawnProcTable procs_ = {};

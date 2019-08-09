@@ -36,7 +36,7 @@ void EnsureDirExists(
     LOG(ERROR) << "Failed to create PluginVm shared dir " << dir.value() << ": "
                << base::File::ErrorToString(error);
   }
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&DirExistsResult, dir, result, std::move(callback)));
 }
@@ -51,9 +51,8 @@ void EnsureDefaultSharedDirExists(
   base::FilePath dir =
       file_manager::util::GetMyFilesFolderForProfile(profile).Append(
           kPluginVmName);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&EnsureDirExists, dir, std::move(callback)));
+  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                 base::BindOnce(&EnsureDirExists, dir, std::move(callback)));
 }
 
 }  // namespace plugin_vm

@@ -249,7 +249,7 @@ class UserMediaProcessor::RequestInfo
   using ResourcesReady =
       base::OnceCallback<void(RequestInfo* request_info,
                               MediaStreamRequestResult result,
-                              const blink::WebString& result_name)>;
+                              const String& result_name)>;
   enum class State {
     NOT_SENT_FOR_GENERATION,
     SENT_FOR_GENERATION,
@@ -270,7 +270,7 @@ class UserMediaProcessor::RequestInfo
   // Called when a local audio source has finished (or failed) initializing.
   void OnAudioSourceStarted(blink::WebPlatformMediaStreamSource* source,
                             MediaStreamRequestResult result,
-                            const blink::WebString& result_name);
+                            const String& result_name);
 
   UserMediaRequestInfo* request() { return request_.get(); }
   int request_id() const { return request_->request_id; }
@@ -365,7 +365,7 @@ class UserMediaProcessor::RequestInfo
   StreamControls stream_controls_;
   ResourcesReady ready_callback_;
   MediaStreamRequestResult request_result_ = MediaStreamRequestResult::OK;
-  blink::WebString request_result_name_;
+  String request_result_name_;
   // Sources used in this request.
   Vector<blink::WebMediaStreamSource> sources_;
   Vector<blink::WebPlatformMediaStreamSource*> sources_waiting_for_callback_;
@@ -459,7 +459,7 @@ void UserMediaProcessor::RequestInfo::CheckAllTracksStarted() {
 void UserMediaProcessor::RequestInfo::OnAudioSourceStarted(
     blink::WebPlatformMediaStreamSource* source,
     MediaStreamRequestResult result,
-    const blink::WebString& result_name) {
+    const String& result_name) {
   // Check if we're waiting to be notified of this source.  If not, then we'll
   // ignore the notification.
   if (base::Contains(sources_waiting_for_callback_, source))
@@ -934,7 +934,7 @@ void UserMediaProcessor::OnAudioSourceStarted(
 void UserMediaProcessor::NotifyCurrentRequestInfoOfAudioSourceStarted(
     blink::WebPlatformMediaStreamSource* source,
     MediaStreamRequestResult result,
-    const blink::WebString& result_name) {
+    const String& result_name) {
   // The only request possibly being processed is |current_request_info_|.
   if (current_request_info_)
     current_request_info_->OnAudioSourceStarted(source, result, result_name);
@@ -1259,7 +1259,7 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
     const String& label,
     RequestInfo* request_info,
     MediaStreamRequestResult result,
-    const blink::WebString& constraint_name) {
+    const String& constraint_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result == MediaStreamRequestResult::OK) {
     GetUserMediaRequestSucceeded(*request_info->web_stream(),
@@ -1315,7 +1315,7 @@ void UserMediaProcessor::DelayedGetUserMediaRequestSucceeded(
 
 void UserMediaProcessor::GetUserMediaRequestFailed(
     MediaStreamRequestResult result,
-    const blink::WebString& constraint_name) {
+    const String& constraint_name) {
   DCHECK(current_request_info_);
   blink::WebRtcLogMessage(
       base::StringPrintf("UMCI::GetUserMediaRequestFailed. request_id=%d",
@@ -1480,9 +1480,9 @@ bool UserMediaProcessor::RemoveLocalSource(
           source_extra_data,
           is_audio_source ? MediaStreamRequestResult::TRACK_START_FAILURE_AUDIO
                           : MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO,
-          blink::WebString::FromUTF8(
-              is_audio_source ? "Failed to access audio capture device"
-                              : "Failed to access video capture device"));
+          String::FromUTF8(is_audio_source
+                               ? "Failed to access audio capture device"
+                               : "Failed to access video capture device"));
       pending_local_sources_.erase(device_it);
       return true;
     }

@@ -151,6 +151,12 @@ void JourneyLoggerAndroid::RecordTransactionAmount(
       ConvertJavaStringToUTF8(env, jvalue), jcompleted);
 }
 
+void JourneyLoggerAndroid::SetTriggerTime(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  journey_logger_.SetTriggerTime();
+}
+
 static jlong JNI_JourneyLogger_InitJourneyLoggerAndroid(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,

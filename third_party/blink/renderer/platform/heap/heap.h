@@ -182,11 +182,6 @@ class PLATFORM_EXPORT ThreadHeap {
   explicit ThreadHeap(ThreadState*);
   ~ThreadHeap();
 
-  // Returns true for main thread's heap.
-  // TODO(keishi): Per-thread-heap will return false.
-  bool IsMainThreadHeap() { return this == ThreadHeap::MainThreadHeap(); }
-  static ThreadHeap* MainThreadHeap() { return main_thread_heap_; }
-
   template <typename T>
   static inline bool IsHeapObjectAlive(const T* object) {
     static_assert(sizeof(T), "T must be fully defined");

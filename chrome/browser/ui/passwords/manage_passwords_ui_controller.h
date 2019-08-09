@@ -37,8 +37,8 @@ class AccountChooserPrompt;
 struct AccountInfo;
 class AutoSigninFirstRunPrompt;
 class ManagePasswordsIconView;
-class PasswordDialogController;
-class PasswordDialogControllerImpl;
+class CredentialManagerDialogController;
+class PasswordBaseDialogController;
 
 // Per-tab class to control the Omnibox password icon and bubble.
 class ManagePasswordsUIController
@@ -159,11 +159,11 @@ class ManagePasswordsUIController
 
   // Called to create the account chooser dialog. Mocked in tests.
   virtual AccountChooserPrompt* CreateAccountChooser(
-      PasswordDialogController* controller);
+      CredentialManagerDialogController* controller);
 
   // Called to create the account chooser dialog. Mocked in tests.
   virtual AutoSigninFirstRunPrompt* CreateAutoSigninPrompt(
-      PasswordDialogController* controller);
+      CredentialManagerDialogController* controller);
 
   // Check if |web_contents()| is attached to some Browser. Mocked in tests.
   virtual bool HasBrowserWindow() const;
@@ -234,7 +234,7 @@ class ManagePasswordsUIController
   ManagePasswordsState passwords_data_;
 
   // The controller for the blocking dialogs.
-  std::unique_ptr<PasswordDialogControllerImpl> dialog_controller_;
+  std::unique_ptr<PasswordBaseDialogController> dialog_controller_;
 
   BubbleStatus bubble_status_;
 

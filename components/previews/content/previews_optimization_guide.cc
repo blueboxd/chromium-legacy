@@ -343,9 +343,6 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
   // If the client is eligible to fetch hints, currently controlled by a feature
   // flag |kOptimizationHintsFetching|, fetch hints from the remote Optimization
   // Guide Service.
-  //
-  // TODO(mcrouse): Add a check if Infobar notification needs to be shown to the
-  // user.
   if (!data_reduction_proxy::DataReductionProxySettings::
           IsDataSaverEnabledByUser(pref_service_)) {
     return;

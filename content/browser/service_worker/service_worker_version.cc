@@ -806,8 +806,6 @@ void ServiceWorkerVersion::Doom() {
     // TODO(bashi): Remove this workaround when byte-for-byte update check is
     // shipped.
     bool stop_immediately =
-        base::FeatureList::IsEnabled(
-            blink::features::kOffMainThreadServiceWorkerScriptFetch) &&
         start_worker_status_ == blink::ServiceWorkerStatusCode::kErrorExists;
     if (stop_immediately || !embedded_worker()->devtools_attached()) {
       embedded_worker_->Stop();

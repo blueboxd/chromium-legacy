@@ -233,8 +233,8 @@ void InternalPopupMenu::WriteDocument(SharedBuffer* data) {
   float scale_factor = chrome_client_->WindowToViewportScalar(1.f);
   PagePopupClient::AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  AddString(ChooserResourceLoader::GetPickerCommonStyleSheet(), data);
-  AddString(ChooserResourceLoader::GetListPickerStyleSheet(), data);
+  data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
+  data->Append(ChooserResourceLoader::GetListPickerStyleSheet());
   if (!RuntimeEnabledFeatures::ForceTallerSelectPopupEnabled())
     PagePopupClient::AddString("@media (any-pointer:coarse) {", data);
   int padding = static_cast<int>(roundf(4 * scale_factor));
@@ -289,8 +289,8 @@ void InternalPopupMenu::WriteDocument(SharedBuffer* data) {
                      : owner_element.ClientPaddingLeft().ToDouble(),
               data);
   PagePopupClient::AddString("};\n", data);
-  AddString(ChooserResourceLoader::GetPickerCommonJS(), data);
-  AddString(ChooserResourceLoader::GetListPickerJS(), data);
+  data->Append(ChooserResourceLoader::GetPickerCommonJS());
+  data->Append(ChooserResourceLoader::GetListPickerJS());
 
   PagePopupClient::AddString("</script></body>\n", data);
 }

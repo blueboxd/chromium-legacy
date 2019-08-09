@@ -33,7 +33,7 @@ class WTF_EXPORT ArrayPiece {
   ArrayPiece(ArrayBufferView*);
 
   bool IsNull() const;
-  bool IsNeutered() const;
+  bool IsDetached() const;
   void* Data() const;
   unsigned char* Bytes() const;
   unsigned ByteLength() const;
@@ -49,7 +49,7 @@ class WTF_EXPORT ArrayPiece {
   void* data_;
   unsigned byte_length_;
   bool is_null_;
-  bool is_neutered_;
+  bool is_detached_;
 };
 
 }  // namespace WTF

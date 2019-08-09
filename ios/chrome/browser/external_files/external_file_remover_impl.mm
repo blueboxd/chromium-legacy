@@ -220,8 +220,9 @@ void ExternalFileRemoverImpl::RemoveFiles(
   const NSInteger kMinimumAgeInDays = 30;
   NSInteger age_in_days = all_files ? 0 : kMinimumAgeInDays;
 
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&RemoveFilesWithOptions, referenced_files, age_in_days),
       base::Bind(&RunCallback, base::Passed(&closure_runner)));
 }

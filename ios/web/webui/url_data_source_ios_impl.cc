@@ -42,10 +42,9 @@ void URLDataSourceIOSImpl::SendResponse(
     // when the object is deleted.
     return;
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO},
-      base::BindOnce(&URLDataSourceIOSImpl::SendResponseOnIOThread, this,
-                     request_id, std::move(bytes)));
+  base::PostTask(FROM_HERE, {web::WebThread::IO},
+                 base::BindOnce(&URLDataSourceIOSImpl::SendResponseOnIOThread,
+                                this, request_id, std::move(bytes)));
 }
 
 void URLDataSourceIOSImpl::SendResponseOnIOThread(

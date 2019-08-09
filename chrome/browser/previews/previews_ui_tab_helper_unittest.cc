@@ -33,7 +33,6 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
-#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_features.h"
@@ -376,11 +375,7 @@ TEST_F(PreviewsUITabHelperUnitTest, TestReloadWithoutPreviewsDeferAllScript) {
   EXPECT_TRUE(transition_type & ui::PAGE_TRANSITION_RELOAD);
 }
 
-TEST_F(PreviewsUITabHelperUnitTest, TestInfoBarShownOnHintsFetcherEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {optimization_guide::features::kOptimizationHintsFetching}, {});
-
+TEST_F(PreviewsUITabHelperUnitTest, TestInfoBarShownOnlyWhenNotSeen) {
   data_reduction_proxy::DataReductionProxySettings::
       SetDataSaverEnabledForTesting(drp_test_context_->pref_service(), true);
 
@@ -395,21 +390,4 @@ TEST_F(PreviewsUITabHelperUnitTest, TestInfoBarShownOnHintsFetcherEnabled) {
   GURL test_url("https://tribbles.com");
   content::WebContentsTester::For(web_contents())->NavigateAndCommit(test_url);
   EXPECT_FALSE(decider->NeedsToNotifyUser());
-}
-
-TEST_F(PreviewsUITabHelperUnitTest, TestInfoBarNotShownOnHintsFetcherDisabled) {
-  data_reduction_proxy::DataReductionProxySettings::
-      SetDataSaverEnabledForTesting(drp_test_context_->pref_service(), true);
-
-  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-
-  PreviewsHTTPSNotificationInfoBarDecider* decider =
-      previews_service->previews_https_notification_infobar_decider();
-
-  EXPECT_TRUE(decider->NeedsToNotifyUser());
-
-  GURL test_url("https://tribbles.com");
-  content::WebContentsTester::For(web_contents())->NavigateAndCommit(test_url);
-  EXPECT_TRUE(decider->NeedsToNotifyUser());
 }

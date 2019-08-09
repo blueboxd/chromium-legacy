@@ -100,8 +100,9 @@ void IOSChromeMainParts::PreCreateThreads() {
   // remaining BACKGROUND+BLOCK_SHUTDOWN tasks is bumped by the ThreadPool on
   // shutdown.
   scoped_refptr<base::SequencedTaskRunner> local_state_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
   base::FilePath local_state_path;
@@ -212,7 +213,7 @@ void IOSChromeMainParts::PostDestroyThreads() {
 // This will be called after the command-line has been mutated by about:flags
 void IOSChromeMainParts::SetupFieldTrials() {
   base::SetRecordActionTaskRunner(
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
+      base::CreateSingleThreadTaskRunner({web::WebThread::UI}));
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.

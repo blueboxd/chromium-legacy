@@ -108,7 +108,7 @@ bool IsSystemSlotAvailable(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::RunLoop run_loop;
   bool system_slot_available = false;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(CheckIsSystemSlotAvailableOnIOThread,
                      profile->GetResourceContext(), &system_slot_available,
@@ -224,7 +224,7 @@ class UserAffiliationBrowserTest
   void SetUpTestSystemSlot() {
     bool system_slot_constructed_successfully = false;
     base::RunLoop loop;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&UserAffiliationBrowserTest::SetUpTestSystemSlotOnIO,
                        base::Unretained(this),
@@ -261,7 +261,7 @@ class UserAffiliationBrowserTest
       return;
 
     base::RunLoop loop;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&UserAffiliationBrowserTest::TearDownTestSystemSlotOnIO,
                        base::Unretained(this)),

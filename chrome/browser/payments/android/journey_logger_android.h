@@ -78,6 +78,8 @@ class JourneyLoggerAndroid {
       const base::android::JavaParamRef<jstring>& jcurrency,
       const base::android::JavaParamRef<jstring>& jvalue,
       jboolean jcompleted);
+  void SetTriggerTime(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& jcaller);
 
  private:
   JourneyLogger journey_logger_;

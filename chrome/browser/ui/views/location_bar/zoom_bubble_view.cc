@@ -186,7 +186,6 @@ ZoomBubbleView* ZoomBubbleView::zoom_bubble_ = nullptr;
 
 // static
 void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
-                                const gfx::Point& anchor_point,
                                 DisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   // |web_contents| could have been unloaded if a tab gets closed and a mouse
@@ -206,8 +205,8 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   ImmersiveModeController* immersive_mode_controller =
       GetImmersiveModeControllerForBrowser(browser);
 
-  zoom_bubble_ = new ZoomBubbleView(anchor_view, anchor_point, web_contents,
-                                    reason, immersive_mode_controller);
+  zoom_bubble_ = new ZoomBubbleView(anchor_view, web_contents, reason,
+                                    immersive_mode_controller);
 
   const extensions::ExtensionZoomRequestClient* client =
       GetExtensionZoomRequestClient(web_contents);
@@ -286,11 +285,10 @@ void ZoomBubbleView::Refresh() {
 
 ZoomBubbleView::ZoomBubbleView(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     DisplayReason reason,
     ImmersiveModeController* immersive_mode_controller)
-    : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
       auto_close_duration_(kBubbleCloseDelayDefault),
       auto_close_(reason == AUTOMATIC),
       immersive_mode_controller_(immersive_mode_controller),

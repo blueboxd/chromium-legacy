@@ -56,6 +56,7 @@ test("services_unittests") {
 
   if (is_android) {
     deps += [
+      "//components/signin/public/identity_manager/android:java",
       "//services/data_decoder/public/cpp/android:safe_json_java",
       "//services/device:java",
       "//services/identity:java",

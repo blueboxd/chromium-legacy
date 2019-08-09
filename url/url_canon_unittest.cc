@@ -7,6 +7,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
@@ -123,26 +124,15 @@ TEST(URLCanonTest, DoAppendUTF8) {
   }
 }
 
-#if defined(GTEST_HAS_DEATH_TEST)
-// TODO(mattm): Can't run this in debug mode for now, since the DCHECK will
-// cause the Chromium stack trace dialog to appear and hang the test.
-// See http://crbug.com/49580.
-#if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-#define MAYBE_DoAppendUTF8Invalid DoAppendUTF8Invalid
-#else
-#define MAYBE_DoAppendUTF8Invalid DISABLED_DoAppendUTF8Invalid
-#endif
-TEST(URLCanonTest, MAYBE_DoAppendUTF8Invalid) {
+TEST(URLCanonTest, DoAppendUTF8Invalid) {
   std::string out_str;
   StdStringCanonOutput output(&out_str);
   // Invalid code point (too large).
-  ASSERT_DEBUG_DEATH({
+  EXPECT_DCHECK_DEATH({
     AppendUTF8Value(0x110000, &output);
     output.Complete();
-    EXPECT_EQ("", out_str);
-  }, "");
+  });
 }
-#endif  // defined(GTEST_HAS_DEATH_TEST)
 
 TEST(URLCanonTest, UTF) {
   // Low-level test that we handle reading, canonicalization, and writing

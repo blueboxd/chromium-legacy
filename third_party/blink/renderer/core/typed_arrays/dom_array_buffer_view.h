@@ -64,7 +64,7 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
   unsigned byteOffset() const { return View()->ByteOffset(); }
   unsigned byteLength() const { return View()->ByteLength(); }
   unsigned TypeSize() const { return View()->TypeSize(); }
-  void SetNeuterable(bool flag) { return View()->SetNeuterable(flag); }
+  void SetDetachable(bool flag) { return View()->SetDetachable(flag); }
   bool IsShared() const { return View()->IsShared(); }
 
   void* BaseAddressMaybeShared() const {

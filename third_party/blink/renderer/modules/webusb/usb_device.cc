@@ -100,7 +100,7 @@ bool ConvertBufferSource(const ArrayBufferOrArrayBufferView& buffer_source,
   DCHECK(!buffer_source.IsNull());
   if (buffer_source.IsArrayBuffer()) {
     ArrayBuffer* array_buffer = buffer_source.GetAsArrayBuffer()->Buffer();
-    if (array_buffer->IsNeutered()) {
+    if (array_buffer->IsDetached()) {
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError, kDetachedBuffer));
       return false;
@@ -110,7 +110,7 @@ bool ConvertBufferSource(const ArrayBufferOrArrayBufferView& buffer_source,
                    array_buffer->ByteLength());
   } else {
     ArrayBufferView* view = buffer_source.GetAsArrayBufferView().View()->View();
-    if (!view->Buffer() || view->Buffer()->IsNeutered()) {
+    if (!view->Buffer() || view->Buffer()->IsDetached()) {
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError, kDetachedBuffer));
       return false;

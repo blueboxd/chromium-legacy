@@ -24,7 +24,7 @@ NetworkContextOwner::NetworkContextOwner(
     network::mojom::NetworkContextPtr* network_context_client)
     : request_context_(request_context) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {web::WebThread::IO},
       base::BindOnce(&NetworkContextOwner::InitializeOnIOThread,
                      // This is safe, since |this| will be deleted on the IO

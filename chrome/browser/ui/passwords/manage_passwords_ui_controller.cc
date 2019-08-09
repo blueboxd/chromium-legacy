@@ -25,9 +25,9 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
+#include "chrome/browser/ui/passwords/credential_manager_dialog_controller_impl.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
-#include "chrome/browser/ui/passwords/password_dialog_controller_impl.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
@@ -179,17 +179,16 @@ bool ManagePasswordsUIController::OnChooseCredentials(
   // the state because PSL matches aren't saved for current page. This logic is
   // implemented here because Android uses ManagePasswordsState as a data source
   // for account chooser.
-  PasswordDialogController::FormsVector locals;
+  CredentialManagerDialogController::FormsVector locals;
   if (!local_credentials[0]->is_public_suffix_match)
     locals = CopyFormVector(local_credentials);
   passwords_data_.OnRequestCredentials(std::move(locals), origin);
   passwords_data_.set_credentials_callback(callback);
-  dialog_controller_.reset(new PasswordDialogControllerImpl(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-      this));
-  dialog_controller_->ShowAccountChooser(
-      CreateAccountChooser(dialog_controller_.get()),
-      std::move(local_credentials));
+  auto* raw_controller = new CredentialManagerDialogControllerImpl(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()), this);
+  dialog_controller_.reset(raw_controller);
+  raw_controller->ShowAccountChooser(CreateAccountChooser(raw_controller),
+                                     std::move(local_credentials));
   UpdateBubbleAndIconVisibility();
   return true;
 }
@@ -208,11 +207,10 @@ void ManagePasswordsUIController::OnPromptEnableAutoSignin() {
   // Both the account chooser and the previous prompt shouldn't be closed.
   if (dialog_controller_)
     return;
-  dialog_controller_.reset(new PasswordDialogControllerImpl(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-      this));
-  dialog_controller_->ShowAutosigninPrompt(
-      CreateAutoSigninPrompt(dialog_controller_.get()));
+  auto* raw_controller = new CredentialManagerDialogControllerImpl(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()), this);
+  dialog_controller_.reset(raw_controller);
+  raw_controller->ShowAutosigninPrompt(CreateAutoSigninPrompt(raw_controller));
 }
 
 void ManagePasswordsUIController::OnAutomaticPasswordSave(
@@ -514,12 +512,12 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
 }
 
 AccountChooserPrompt* ManagePasswordsUIController::CreateAccountChooser(
-    PasswordDialogController* controller) {
+    CredentialManagerDialogController* controller) {
   return CreateAccountChooserPromptView(controller, web_contents());
 }
 
 AutoSigninFirstRunPrompt* ManagePasswordsUIController::CreateAutoSigninPrompt(
-    PasswordDialogController* controller) {
+    CredentialManagerDialogController* controller) {
   return CreateAutoSigninPromptView(controller, web_contents());
 }
 

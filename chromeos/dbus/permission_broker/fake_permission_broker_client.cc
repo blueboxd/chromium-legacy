@@ -75,12 +75,12 @@ void FakePermissionBrokerClient::CheckPathAccess(const std::string& path,
 void FakePermissionBrokerClient::OpenPath(const std::string& path,
                                           OpenPathCallback callback,
                                           ErrorCallback error_callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&chromeos::OpenPath, path, std::move(callback),
-                     std::move(error_callback),
-                     base::ThreadTaskRunnerHandle::Get()));
+  base::PostTask(FROM_HERE,
+                 {base::ThreadPool(), base::MayBlock(),
+                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                 base::BindOnce(&chromeos::OpenPath, path, std::move(callback),
+                                std::move(error_callback),
+                                base::ThreadTaskRunnerHandle::Get()));
 }
 
 void FakePermissionBrokerClient::RequestTcpPortAccess(

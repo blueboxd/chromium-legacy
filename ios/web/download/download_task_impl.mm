@@ -115,12 +115,12 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
                     task:(NSURLSessionTask*)task
     didCompleteWithError:(nullable NSError*)error {
   __weak CRWURLSessionDelegate* weakSelf = self;
-  base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
-                             CRWURLSessionDelegate* strongSelf = weakSelf;
-                             if (strongSelf.propertiesBlock)
-                               strongSelf.propertiesBlock(
-                                   task, error, /*terminal_callback=*/true);
-                           }));
+  base::PostTask(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
+                   CRWURLSessionDelegate* strongSelf = weakSelf;
+                   if (strongSelf.propertiesBlock)
+                     strongSelf.propertiesBlock(task, error,
+                                                /*terminal_callback=*/true);
+                 }));
 }
 
 - (void)URLSession:(NSURLSession*)session
@@ -132,26 +132,26 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
   using Bytes = const void* _Nonnull;
   [data enumerateByteRangesUsingBlock:^(Bytes bytes, NSRange range, BOOL*) {
     auto buffer = GetBuffer(bytes, range.length);
-    base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
-                               CRWURLSessionDelegate* strongSelf = weakSelf;
-                               if (!strongSelf.dataBlock) {
-                                 dispatch_semaphore_signal(semaphore);
-                                 return;
-                               }
-                               strongSelf.dataBlock(std::move(buffer), ^{
-                                 // Data was written to disk, unblock queue to
-                                 // read the next chunk of downloaded data.
-                                 dispatch_semaphore_signal(semaphore);
-                               });
-                             }));
+    base::PostTask(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
+                     CRWURLSessionDelegate* strongSelf = weakSelf;
+                     if (!strongSelf.dataBlock) {
+                       dispatch_semaphore_signal(semaphore);
+                       return;
+                     }
+                     strongSelf.dataBlock(std::move(buffer), ^{
+                       // Data was written to disk, unblock queue to
+                       // read the next chunk of downloaded data.
+                       dispatch_semaphore_signal(semaphore);
+                     });
+                   }));
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
   }];
-  base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
-                             CRWURLSessionDelegate* strongSelf = weakSelf;
-                             if (strongSelf.propertiesBlock)
-                               weakSelf.propertiesBlock(
-                                   task, nil, /*terminal_callback=*/false);
-                           }));
+  base::PostTask(FROM_HERE, {WebThread::UI}, base::BindOnce(^{
+                   CRWURLSessionDelegate* strongSelf = weakSelf;
+                   if (strongSelf.propertiesBlock)
+                     weakSelf.propertiesBlock(task, nil,
+                                              /*terminal_callback=*/false);
+                 }));
 }
 
 - (void)URLSession:(NSURLSession*)session

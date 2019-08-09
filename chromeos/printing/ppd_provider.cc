@@ -414,9 +414,9 @@ class PpdProviderImpl : public PpdProvider {
       : browser_locale_(browser_locale),
         loader_factory_(loader_factory),
         ppd_cache_(ppd_cache),
-        disk_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+        disk_task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         version_(current_version),
         options_(options),
         weak_factory_(this) {}

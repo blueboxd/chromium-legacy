@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -19,6 +20,9 @@ import org.chromium.chrome.R;
  * Password entry editor that allows editing passwords stored in Chrome.
  */
 public class PasswordEntryEditor extends Fragment {
+    // ID of this name/password or exception.
+    private int mID;
+
     private EditText mSiteText;
     private EditText mUsernameText;
     private EditText mPasswordText;
@@ -36,10 +40,10 @@ public class PasswordEntryEditor extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         // Editing action in PasswordEntryViewer sets extras and launches PasswordEntryEditor.
+        mID = getArguments().getInt(SavePasswordsPreferences.PASSWORD_LIST_ID);
         mSavedPasswordEntry = PasswordManagerHandlerProvider.getInstance()
                                       .getPasswordManagerHandler()
-                                      .getSavedPasswordEntry(getArguments().getInt(
-                                              SavePasswordsPreferences.PASSWORD_LIST_ID));
+                                      .getSavedPasswordEntry(mID);
         mSiteText = (EditText) view.findViewById(R.id.site_edit);
         mUsernameText = (EditText) view.findViewById(R.id.username_edit);
         mPasswordText = (EditText) view.findViewById(R.id.password_edit);
@@ -51,5 +55,19 @@ public class PasswordEntryEditor extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.password_entry_editor_action_bar_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_save_edited_password) {
+            PasswordManagerHandlerProvider.getInstance()
+                    .getPasswordManagerHandler()
+                    .changeSavedPasswordEntry(mID, mUsernameText.getText().toString(),
+                            mPasswordText.getText().toString());
+            getActivity().finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

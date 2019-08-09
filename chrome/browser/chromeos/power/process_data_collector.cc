@@ -346,8 +346,8 @@ ProcessDataCollector::ProcessDataCollector(const Config& config)
 ProcessDataCollector::~ProcessDataCollector() = default;
 
 void ProcessDataCollector::StartSamplingCpuUsage() {
-  cpu_data_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  cpu_data_task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   cpu_data_timer_.Start(FROM_HERE, config_.sample_delay, this,
                         &ProcessDataCollector::SampleCpuUsage);
 }

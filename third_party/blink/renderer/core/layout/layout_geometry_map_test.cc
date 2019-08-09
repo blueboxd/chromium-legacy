@@ -32,6 +32,7 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -42,7 +43,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
@@ -53,7 +53,8 @@ class LayoutGeometryMapTest : public testing::Test {
   LayoutGeometryMapTest() : base_url_("http://www.test.com/") {}
 
   void TearDown() override {
-    platform_->GetURLLoaderMockFactory()
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
@@ -148,7 +149,6 @@ class LayoutGeometryMapTest : public testing::Test {
   }
 
   const std::string base_url_;
-  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 
 TEST_F(LayoutGeometryMapTest, SimpleGeometryMapTest) {

@@ -66,6 +66,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest, Completed) {
 
   // Complete the Payment Request.
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
+  histogram_tester.ExpectTotalCount("PaymentRequest.TimeToCheckout.Completed",
+                                    1);
+  histogram_tester.ExpectTotalCount(
+      "PaymentRequest.TimeToCheckout.Completed.Shown", 1);
+  histogram_tester.ExpectTotalCount(
+      "PaymentRequest.TimeToCheckout.Completed.Shown.BasicCard", 1);
 
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.TransactionAmount.Completed", kRegularTransaction, 1);
@@ -121,6 +127,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.CheckoutFunnel.Aborted",
       JourneyLogger::ABORT_REASON_MERCHANT_NAVIGATION, 1);
+  histogram_tester.ExpectTotalCount(
+      "PaymentRequest.TimeToCheckout.OtherAborted", 1);
 
   // Make sure PaymentRequest.TransactionAmount.Completed is not logged
   // since the request got aborted.
@@ -294,6 +302,11 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.CheckoutFunnel.Aborted",
       JourneyLogger::ABORT_REASON_USER_NAVIGATION, 1);
+
+  histogram_tester.ExpectTotalCount("PaymentRequest.TimeToCheckout.UserAborted",
+                                    1);
+  histogram_tester.ExpectTotalCount(
+      "PaymentRequest.TimeToCheckout.UserAborted.Shown", 1);
 
   // Make sure PaymentRequest.TransactionAmount.Completed is not logged
   // since the request got aborted.

@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/common/webgpu_cmd_ids.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/dawn_service_memory_transfer_service.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
@@ -335,6 +336,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       associated_shared_image_map_;
 
   std::unique_ptr<WireServerCommandSerializer> wire_serializer_;
+  std::unique_ptr<DawnServiceMemoryTransferService> memory_transfer_service_;
   std::unique_ptr<dawn_native::Instance> dawn_instance_;
   DawnProcTable dawn_procs_;
   DawnDevice dawn_device_ = nullptr;
@@ -377,6 +379,7 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
               shared_image_manager,
               memory_tracker)),
       wire_serializer_(new WireServerCommandSerializer(client)),
+      memory_transfer_service_(new DawnServiceMemoryTransferService(this)),
       dawn_instance_(new dawn_native::Instance()),
       dawn_procs_(dawn_native::GetProcs()) {}
 
@@ -401,6 +404,7 @@ ContextResult WebGPUDecoderImpl::Initialize() {
   descriptor.device = dawn_device_;
   descriptor.procs = &dawn_procs_;
   descriptor.serializer = wire_serializer_.get();
+  descriptor.memoryTransferService = memory_transfer_service_.get();
 
   wire_server_ = std::make_unique<dawn_wire::WireServer>(descriptor);
 

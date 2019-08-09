@@ -121,13 +121,13 @@ MediaNotificationControllerImpl::MediaNotificationControllerImpl(
   if (!connector)
     return;
 
-  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr;
-  connector->BindInterface(media_session::mojom::kServiceName,
-                           mojo::MakeRequest(&audio_focus_ptr));
-  connector->BindInterface(media_session::mojom::kServiceName,
-                           mojo::MakeRequest(&controller_manager_ptr_));
+  mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_remote;
+  connector->Connect(media_session::mojom::kServiceName,
+                     audio_focus_remote.BindNewPipeAndPassReceiver());
+  connector->Connect(media_session::mojom::kServiceName,
+                     controller_manager_remote.BindNewPipeAndPassReceiver());
 
-  audio_focus_ptr->AddObserver(
+  audio_focus_remote->AddObserver(
       audio_focus_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
@@ -143,13 +143,13 @@ void MediaNotificationControllerImpl::OnFocusGained(
   if (it != notifications_.end() && !it->second.frozen())
     return;
 
-  media_session::mojom::MediaControllerPtr controller;
+  mojo::Remote<media_session::mojom::MediaController> controller;
 
-  // |controller_manager_ptr_| may be null in tests where connector is
+  // |controller_manager_remote| may be null in tests where connector is
   // unavailable.
-  if (controller_manager_ptr_) {
-    controller_manager_ptr_->CreateMediaControllerForSession(
-        mojo::MakeRequest(&controller), *session->request_id);
+  if (controller_manager_remote) {
+    controller_manager_remote->CreateMediaControllerForSession(
+        controller.BindNewPipeAndPassReceiver(), *session->request_id);
   }
 
   if (it != notifications_.end()) {

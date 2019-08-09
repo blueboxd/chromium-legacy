@@ -176,7 +176,7 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
         script_state, CreateInvalidCharacteristicError());
   }
 
-  if (value.IsNeutered()) {
+  if (value.IsDetached()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,

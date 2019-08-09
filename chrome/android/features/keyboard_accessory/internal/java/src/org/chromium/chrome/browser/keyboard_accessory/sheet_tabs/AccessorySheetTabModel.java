@@ -25,7 +25,7 @@ class AccessorySheetTabModel extends ListModel<AccessorySheetTabModel.AccessoryS
      */
     static class AccessorySheetDataPiece {
         @IntDef({Type.TITLE, Type.PASSWORD_INFO, Type.ADDRESS_INFO, Type.CREDIT_CARD_INFO,
-                Type.TOUCH_TO_FILL_INFO, Type.FOOTER_COMMAND})
+                Type.TOUCH_TO_FILL_INFO, Type.FOOTER_COMMAND, Type.WARNING})
         @Retention(RetentionPolicy.SOURCE)
         @interface Type {
             /**
@@ -52,6 +52,10 @@ class AccessorySheetTabModel extends ListModel<AccessorySheetTabModel.AccessoryS
              * A command at the end of the accessory sheet tab.
              */
             int FOOTER_COMMAND = 6;
+            /**
+             * An optional warning to be displayed at the beginning of a sheet.
+             */
+            int WARNING = 7;
         }
 
         private Object mDataPiece;

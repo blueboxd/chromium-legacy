@@ -261,8 +261,8 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
   }
   usage.readable_directories = readable_directories;
 
-  bubble_ = new NativeFileSystemUsageBubbleView(
-      anchor_view, gfx::Point(), web_contents, origin, std::move(usage));
+  bubble_ = new NativeFileSystemUsageBubbleView(anchor_view, web_contents,
+                                                origin, std::move(usage));
 
   bubble_->SetHighlightedButton(anchor_view->GetPageActionIconView(
       PageActionIconType::kNativeFileSystemAccess));
@@ -285,11 +285,10 @@ NativeFileSystemUsageBubbleView* NativeFileSystemUsageBubbleView::GetBubble() {
 
 NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     const url::Origin& origin,
     Usage usage)
-    : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
       origin_(origin),
       usage_(std::move(usage)),
       writable_paths_model_(usage_.writable_files, usage_.writable_directories),

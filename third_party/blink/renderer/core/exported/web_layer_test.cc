@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
 
@@ -33,7 +32,8 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
   }
 
   ~WebLayerListTest() override {
-    platform_->GetURLLoaderMockFactory()
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
@@ -112,7 +112,6 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
 
   frame_test_helpers::TestWebWidgetClient web_widget_client_;
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
-  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 
 INSTANTIATE_LAYER_LIST_TEST_SUITE_P(WebLayerListTest);

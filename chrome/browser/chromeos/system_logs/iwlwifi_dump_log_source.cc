@@ -46,9 +46,10 @@ void IwlwifiDumpChecker::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::TaskTraits(base::MayBlock(), base::TaskPriority::BEST_EFFORT),
+      base::TaskTraits({base::ThreadPool(), base::MayBlock(),
+                        base::TaskPriority::BEST_EFFORT}),
       base::BindOnce(&CheckExistenceOnBlockingTaskRunner),
       base::BindOnce(std::move(callback)));
 }
@@ -62,9 +63,10 @@ void IwlwifiDumpLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::TaskTraits(base::MayBlock(), base::TaskPriority::BEST_EFFORT),
+      base::TaskTraits({base::ThreadPool(), base::MayBlock(),
+                        base::TaskPriority::BEST_EFFORT}),
       base::BindOnce(&ReadDumpOnBlockingTaskRunner),
       base::BindOnce(std::move(callback)));
 }

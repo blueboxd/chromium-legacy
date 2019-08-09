@@ -127,11 +127,26 @@ void DidFindRegistrationForDispatchSyncEventOnIO(
       registration->active_version());
   // Keep the registration while dispatching the sync event.
   background_sync_manager->EmulateDispatchSyncEvent(
-      tag, std::move(version), last_chance,
-      base::BindOnce(base::DoNothing::Once<
-                         scoped_refptr<content::ServiceWorkerRegistration>,
-                         blink::ServiceWorkerStatusCode>(),
-                     std::move(registration)));
+      tag, std::move(version), last_chance, base::DoNothing());
+}
+
+void DidFindRegistrationForDispatchPeriodicSyncEventOnIO(
+    scoped_refptr<BackgroundSyncContextImpl> sync_context,
+    const std::string& tag,
+    blink::ServiceWorkerStatusCode status,
+    scoped_refptr<content::ServiceWorkerRegistration> registration) {
+  if (status != blink::ServiceWorkerStatusCode::kOk ||
+      !registration->active_version()) {
+    return;
+  }
+
+  BackgroundSyncManager* background_sync_manager =
+      sync_context->background_sync_manager();
+  scoped_refptr<content::ServiceWorkerVersion> version(
+      registration->active_version());
+  // Keep the registration while dispatching the sync event.
+  background_sync_manager->EmulateDispatchPeriodicSyncEvent(
+      tag, std::move(version), base::DoNothing());
 }
 
 void DispatchSyncEventOnIO(
@@ -145,6 +160,18 @@ void DispatchSyncEventOnIO(
       registration_id, origin,
       base::BindOnce(&DidFindRegistrationForDispatchSyncEventOnIO, sync_context,
                      tag, last_chance));
+}
+
+void DispatchPeriodicSyncEventOnIO(
+    scoped_refptr<ServiceWorkerContextWrapper> context,
+    scoped_refptr<BackgroundSyncContextImpl> sync_context,
+    const GURL& origin,
+    int64_t registration_id,
+    const std::string& tag) {
+  context->FindReadyRegistrationForId(
+      registration_id, origin,
+      base::BindOnce(&DidFindRegistrationForDispatchPeriodicSyncEventOnIO,
+                     sync_context, tag));
 }
 
 }  // namespace
@@ -343,6 +370,29 @@ Response ServiceWorkerHandler::DispatchSyncEvent(
                  base::BindOnce(&DispatchSyncEventOnIO, context_,
                                 base::WrapRefCounted(sync_context),
                                 GURL(origin), id, tag, last_chance));
+  return Response::OK();
+}
+
+Response ServiceWorkerHandler::DispatchPeriodicSyncEvent(
+    const std::string& origin,
+    const std::string& registration_id,
+    const std::string& tag) {
+  if (!enabled_)
+    return CreateDomainNotEnabledErrorResponse();
+  if (!storage_partition_)
+    return CreateContextErrorResponse();
+  int64_t id = 0;
+  if (!base::StringToInt64(registration_id, &id))
+    return CreateInvalidVersionIdErrorResponse();
+
+  BackgroundSyncContextImpl* sync_context =
+      storage_partition_->GetBackgroundSyncContext();
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&DispatchPeriodicSyncEventOnIO, context_,
+                     base::WrapRefCounted(sync_context), GURL(origin), id,
+                     tag));
   return Response::OK();
 }
 

@@ -147,8 +147,9 @@ void AuthPolicyHelper::Restart() {
 void AuthPolicyHelper::DecryptConfiguration(const std::string& blob,
                                             const std::string& password,
                                             OnDecryptedCallback callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&DoDecrypt, blob, password), std::move(callback));
 }
 

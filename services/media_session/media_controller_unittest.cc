@@ -31,18 +31,19 @@ class MediaControllerTest : public testing::Test {
     // Create an instance of the MediaSessionService and bind some interfaces.
     service_ = std::make_unique<MediaSessionService>(
         connector_factory_.RegisterInstance(mojom::kServiceName));
-    connector_factory_.GetDefaultConnector()->BindInterface(mojom::kServiceName,
-                                                            &audio_focus_ptr_);
-    connector_factory_.GetDefaultConnector()->BindInterface(
-        mojom::kServiceName, &controller_manager_ptr_);
+    connector_factory_.GetDefaultConnector()->Connect(
+        mojom::kServiceName, audio_focus_remote_.BindNewPipeAndPassReceiver());
+    connector_factory_.GetDefaultConnector()->Connect(
+        mojom::kServiceName,
+        controller_manager_remote_.BindNewPipeAndPassReceiver());
 
-    controller_manager_ptr_->CreateActiveMediaController(
-        mojo::MakeRequest(&media_controller_ptr_));
-    controller_manager_ptr_.FlushForTesting();
+    controller_manager_remote_->CreateActiveMediaController(
+        media_controller_remote_.BindNewPipeAndPassReceiver());
+    controller_manager_remote_.FlushForTesting();
 
-    audio_focus_ptr_->SetEnforcementMode(
+    audio_focus_remote_->SetEnforcementMode(
         mojom::EnforcementMode::kSingleSession);
-    audio_focus_ptr_.FlushForTesting();
+    audio_focus_remote_.FlushForTesting();
   }
 
   void TearDown() override {
@@ -52,13 +53,15 @@ class MediaControllerTest : public testing::Test {
 
   void RequestAudioFocus(test::MockMediaSession& session,
                          mojom::AudioFocusType type) {
-    session.RequestAudioFocusFromService(audio_focus_ptr_, type);
+    session.RequestAudioFocusFromService(audio_focus_remote_, type);
   }
 
-  mojom::MediaControllerPtr& controller() { return media_controller_ptr_; }
+  mojo::Remote<mojom::MediaController>& controller() {
+    return media_controller_remote_;
+  }
 
-  mojom::MediaControllerManagerPtr& manager() {
-    return controller_manager_ptr_;
+  mojo::Remote<mojom::MediaControllerManager>& manager() {
+    return controller_manager_remote_;
   }
 
   static size_t GetImageObserverCount(const MediaController& controller) {
@@ -69,9 +72,9 @@ class MediaControllerTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<MediaSessionService> service_;
-  mojom::AudioFocusManagerPtr audio_focus_ptr_;
-  mojom::MediaControllerPtr media_controller_ptr_;
-  mojom::MediaControllerManagerPtr controller_manager_ptr_;
+  mojo::Remote<mojom::AudioFocusManager> audio_focus_remote_;
+  mojo::Remote<mojom::MediaController> media_controller_remote_;
+  mojo::Remote<mojom::MediaControllerManager> controller_manager_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaControllerTest);
 };
@@ -715,9 +718,9 @@ TEST_F(MediaControllerTest, BoundController_Routing) {
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
-  mojom::MediaControllerPtr controller;
-  manager()->CreateMediaControllerForSession(mojo::MakeRequest(&controller),
-                                             media_session_1.request_id());
+  mojo::Remote<mojom::MediaController> controller;
+  manager()->CreateMediaControllerForSession(
+      controller.BindNewPipeAndPassReceiver(), media_session_1.request_id());
   manager().FlushForTesting();
 
   EXPECT_EQ(0, media_session_1.next_track_count());
@@ -753,9 +756,10 @@ TEST_F(MediaControllerTest, BoundController_BadRequestId) {
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
-  mojom::MediaControllerPtr controller;
-  manager()->CreateMediaControllerForSession(mojo::MakeRequest(&controller),
-                                             base::UnguessableToken::Create());
+  mojo::Remote<mojom::MediaController> controller;
+  manager()->CreateMediaControllerForSession(
+      controller.BindNewPipeAndPassReceiver(),
+      base::UnguessableToken::Create());
   manager().FlushForTesting();
 
   EXPECT_EQ(0, media_session.next_track_count());
@@ -776,9 +780,9 @@ TEST_F(MediaControllerTest, BoundController_DropOnAbandon) {
     observer.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);
   }
 
-  mojom::MediaControllerPtr controller;
-  manager()->CreateMediaControllerForSession(mojo::MakeRequest(&controller),
-                                             media_session.request_id());
+  mojo::Remote<mojom::MediaController> controller;
+  manager()->CreateMediaControllerForSession(
+      controller.BindNewPipeAndPassReceiver(), media_session.request_id());
   manager().FlushForTesting();
 
   EXPECT_EQ(0, media_session.next_track_count());
@@ -1053,12 +1057,12 @@ TEST_F(MediaControllerTest, ActiveController_AddObserver_Abandoned) {
 TEST_F(MediaControllerTest, ClearImageObserverOnError) {
   MediaController controller;
 
-  mojom::MediaControllerPtr controller_ptr;
-  controller.BindToInterface(mojo::MakeRequest(&controller_ptr));
+  mojo::Remote<mojom::MediaController> controller_remote;
+  controller.BindToInterface(controller_remote.BindNewPipeAndPassReceiver());
   EXPECT_EQ(0u, GetImageObserverCount(controller));
 
   {
-    test::TestMediaControllerImageObserver observer(controller_ptr, 0, 0);
+    test::TestMediaControllerImageObserver observer(controller_remote, 0, 0);
     EXPECT_EQ(1u, GetImageObserverCount(controller));
   }
 
@@ -1319,9 +1323,9 @@ TEST_F(MediaControllerTest, BoundController_Observer_SessionChanged) {
     observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
   }
 
-  mojom::MediaControllerPtr controller;
-  manager()->CreateMediaControllerForSession(mojo::MakeRequest(&controller),
-                                             media_session.request_id());
+  mojo::Remote<mojom::MediaController> controller;
+  manager()->CreateMediaControllerForSession(
+      controller.BindNewPipeAndPassReceiver(), media_session.request_id());
   manager().FlushForTesting();
 
   {

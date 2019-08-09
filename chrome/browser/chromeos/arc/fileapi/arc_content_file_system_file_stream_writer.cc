@@ -54,8 +54,9 @@ ArcContentFileSystemFileStreamWriter::ArcContentFileSystemFileStreamWriter(
     int64_t offset)
     : arc_url_(arc_url),
       offset_(offset),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+      task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       has_pending_operation_(false),
       weak_ptr_factory_(this) {}
 

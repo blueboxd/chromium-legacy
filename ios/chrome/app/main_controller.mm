@@ -1944,10 +1944,10 @@ enum class EnterTabSwitcherSnapshotResult {
 
   // OffTheRecordProfileIOData cannot be deleted before all the requests are
   // deleted. Queue browser state recreation on IO thread.
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {web::WebThread::IO}, base::DoNothing(), base::BindRepeating(^{
-        [self destroyAndRebuildIncognitoBrowserState];
-      }));
+  base::PostTaskAndReply(FROM_HERE, {web::WebThread::IO}, base::DoNothing(),
+                         base::BindRepeating(^{
+                           [self destroyAndRebuildIncognitoBrowserState];
+                         }));
 
   // a) The first condition can happen when the last incognito tab is closed
   // from the tab switcher.

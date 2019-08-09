@@ -116,7 +116,7 @@ class MediaKeysListenerManagerImplTest : public ContentBrowserTest {
     media_controller_ = std::make_unique<TestMediaController>();
     media_keys_listener_manager_->hardware_key_media_controller_for_testing()
         ->SetMediaControllerForTesting(
-            media_controller_->CreateMediaControllerPtr());
+            media_controller_->CreateMediaControllerRemote());
 
     ContentBrowserTest::SetUpOnMainThread();
   }

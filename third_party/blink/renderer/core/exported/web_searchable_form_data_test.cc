@@ -34,6 +34,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -59,7 +60,9 @@ class WebSearchableFormDataTest : public testing::Test {
   WebSearchableFormDataTest() = default;
 
   ~WebSearchableFormDataTest() override {
-    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
+        ->UnregisterAllURLsAndClearMemoryCache();
   }
 
   frame_test_helpers::WebViewHelper web_view_helper_;

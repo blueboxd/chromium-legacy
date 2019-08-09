@@ -79,9 +79,8 @@ WebViewSyncClient::WebViewSyncClient(WebViewBrowserState* browser_state)
 
   component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
       this, version_info::Channel::STABLE, prefs::kSavingBrowserHistoryDisabled,
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
-      db_thread_, profile_web_data_service_, account_web_data_service_,
-      password_store_,
+      base::CreateSingleThreadTaskRunner({web::WebThread::UI}), db_thread_,
+      profile_web_data_service_, account_web_data_service_, password_store_,
       /*bookmark_sync_service=*/nullptr));
 }
 
@@ -212,7 +211,7 @@ WebViewSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
       return new syncer::SequencedModelWorker(db_thread_, syncer::GROUP_DB);
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
-          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
+          base::CreateSingleThreadTaskRunner({web::WebThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
     case syncer::GROUP_PASSWORD:

@@ -83,7 +83,7 @@ void ComponentUpdaterServiceProvider::Start(
 
 void ComponentUpdaterServiceProvider::EmitInstalledSignal(
     const std::string& component) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &ComponentUpdaterServiceProvider::EmitInstalledSignalInternal,

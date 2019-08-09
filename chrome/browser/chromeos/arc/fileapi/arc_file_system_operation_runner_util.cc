@@ -32,9 +32,8 @@ ArcFileSystemOperationRunner* GetArcFileSystemOperationRunner() {
 template <typename T>
 void PostToIOThread(base::OnceCallback<void(T)> callback, T result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(std::move(callback), std::move(result)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(std::move(callback), std::move(result)));
 }
 
 void GetFileSizeOnUIThread(const GURL& url, GetFileSizeCallback callback) {
@@ -79,17 +78,16 @@ void OpenFileToWriteOnUIThread(const GURL& url,
 
 void GetFileSizeOnIOThread(const GURL& url, GetFileSizeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &GetFileSizeOnUIThread, url,
-          base::BindOnce(&PostToIOThread<int64_t>, std::move(callback))));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&GetFileSizeOnUIThread, url,
+                                base::BindOnce(&PostToIOThread<int64_t>,
+                                               std::move(callback))));
 }
 
 void OpenFileToReadOnIOThread(const GURL& url,
                               OpenFileToReadCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OpenFileToReadOnUIThread, url,
                      base::BindOnce(&PostToIOThread<mojo::ScopedHandle>,
@@ -99,7 +97,7 @@ void OpenFileToReadOnIOThread(const GURL& url,
 void OpenFileToWriteOnIOThread(const GURL& url,
                                OpenFileToReadCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OpenFileToWriteOnUIThread, url,
                      base::BindOnce(&PostToIOThread<mojo::ScopedHandle>,

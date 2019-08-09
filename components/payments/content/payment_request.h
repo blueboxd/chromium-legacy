@@ -15,6 +15,7 @@
 #include "components/payments/content/payment_request_display_manager.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/content/service_worker_payment_instrument.h"
 #include "components/payments/core/journey_logger.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -40,7 +41,8 @@ class PaymentRequestWebContentsManager;
 class PaymentRequest : public mojom::PaymentRequest,
                        public PaymentHandlerHost::Delegate,
                        public PaymentRequestSpec::Observer,
-                       public PaymentRequestState::Delegate {
+                       public PaymentRequestState::Delegate,
+                       public ServiceWorkerPaymentInstrument::IdentityObserver {
  public:
   class ObserverForTest {
    public:
@@ -92,6 +94,10 @@ class PaymentRequest : public mojom::PaymentRequest,
   void OnShippingOptionIdSelected(std::string shipping_option_id) override;
   void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override;
   void OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) override;
+
+  // ServiceWorkerPaymentInstrument::IdentityObserver:
+  void SetInvokedServiceWorkerIdentity(const url::Origin& origin,
+                                       int64_t registration_id) override;
 
   // Called when the user explicitly cancelled the flow. Will send a message
   // to the renderer which will indirectly destroy this object (through

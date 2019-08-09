@@ -87,7 +87,7 @@ PaymentRequest::PaymentRequest(
       display_manager_(display_manager),
       display_handle_(nullptr),
       binding_(this, std::move(request)),
-      payment_handler_host_(this),
+      payment_handler_host_(web_contents_, this),
       top_level_origin_(url_formatter::FormatUrlForSecurityDisplay(
           web_contents_->GetLastCommittedURL())),
       frame_origin_(url_formatter::FormatUrlForSecurityDisplay(
@@ -165,12 +165,13 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
   }
 
   spec_ = std::make_unique<PaymentRequestSpec>(
-      std::move(options), std::move(details), std::move(method_data), this,
-      delegate_->GetApplicationLocale());
+      std::move(options), std::move(details), std::move(method_data),
+      /*observer=*/this, delegate_->GetApplicationLocale());
   state_ = std::make_unique<PaymentRequestState>(
-      web_contents_, top_level_origin_, frame_origin_, spec_.get(), this,
-      delegate_->GetApplicationLocale(), delegate_->GetPersonalDataManager(),
-      delegate_.get(), &journey_logger_);
+      web_contents_, top_level_origin_, frame_origin_, spec_.get(),
+      /*delegate=*/this, delegate_->GetApplicationLocale(),
+      delegate_->GetPersonalDataManager(), delegate_.get(),
+      /*sw_identity_observer=*/this, &journey_logger_);
 
   journey_logger_.SetRequestedInformation(
       spec_->request_shipping(), spec_->request_payer_email(),
@@ -194,6 +195,8 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
                          android_pay_url),
       /*requested_method_other=*/non_google_it !=
           spec_->url_payment_method_identifiers().end());
+
+  payment_handler_host_.set_payment_request_id_for_logs(*spec_->details().id);
 }
 
 void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
@@ -210,6 +213,7 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
   }
 
   is_show_called_ = true;
+  journey_logger_.SetTriggerTime();
 
   // A tab can display only one PaymentRequest UI at a time.
   display_handle_ = display_manager_->TryShow(delegate_.get());
@@ -614,6 +618,12 @@ void PaymentRequest::OnShippingAddressSelected(
 
 void PaymentRequest::OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) {
   client_->OnPayerDetailChange(std::move(payer_info));
+}
+
+void PaymentRequest::SetInvokedServiceWorkerIdentity(const url::Origin& origin,
+                                                     int64_t registration_id) {
+  payment_handler_host_.set_sw_origin_for_logs(origin);
+  payment_handler_host_.set_registration_id_for_logs(registration_id);
 }
 
 void PaymentRequest::UserCancelled() {

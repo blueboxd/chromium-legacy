@@ -148,8 +148,9 @@ void SwitchLanguage(const std::string& locale,
       locale, enable_locale_keyboard_layouts, login_layouts_only, callback,
       profile);
   // USER_BLOCKING because it blocks startup on ChromeOS. crbug.com/968554
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&SwitchLanguageDoReloadLocale, std::move(data)),
       base::BindOnce(&FinishSwitchLanguage));
 }

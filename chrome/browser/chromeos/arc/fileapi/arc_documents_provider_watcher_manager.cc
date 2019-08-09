@@ -25,24 +25,24 @@ void OnAddWatcherOnUIThread(
     const storage::WatcherManager::StatusCallback& callback,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(callback, result));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(callback, result));
 }
 
 void OnRemoveWatcherOnUIThread(
     const storage::WatcherManager::StatusCallback& callback,
     base::File::Error result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(callback, result));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(callback, result));
 }
 
 void OnNotificationOnUIThread(
     const storage::WatcherManager::NotificationCallback& notification_callback,
     ArcDocumentsProviderRoot::ChangeType change_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(notification_callback, change_type));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(notification_callback, change_type));
 }
 
 void AddWatcherOnUIThread(
@@ -115,7 +115,7 @@ void ArcDocumentsProviderWatcherManager::AddWatcher(
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &AddWatcherOnUIThread, url,
@@ -137,7 +137,7 @@ void ArcDocumentsProviderWatcherManager::RemoveWatcher(
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &RemoveWatcherOnUIThread, url,

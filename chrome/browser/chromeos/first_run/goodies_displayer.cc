@@ -84,8 +84,9 @@ bool GoodiesDisplayer::Init() {
   const bool can_show = g_browser_process->local_state()->GetBoolean(
       prefs::kCanShowOobeGoodiesPage);
   if (can_show) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::Bind(&CheckGoodiesPrefAgainstOobeTimestamp),
         base::Bind(&UpdateGoodiesPrefCantShow));
   }

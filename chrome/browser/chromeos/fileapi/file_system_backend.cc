@@ -348,8 +348,9 @@ storage::FileSystemOperation* FileSystemBackend::CreateFileSystemOperation(
     return storage::FileSystemOperation::Create(
         url, context,
         std::make_unique<storage::FileSystemOperationContext>(
-            context, base::CreateSequencedTaskRunnerWithTraits(
-                         {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+            context, base::CreateSequencedTaskRunner(
+                         {base::ThreadPool(), base::MayBlock(),
+                          base::TaskPriority::USER_VISIBLE})
                          .get()));
   }
 
@@ -416,8 +417,8 @@ FileSystemBackend::CreateFileStreamReader(
     case storage::kFileSystemTypeDriveFs:
       return std::unique_ptr<storage::FileStreamReader>(
           storage::FileStreamReader::CreateForLocalFile(
-              base::CreateTaskRunnerWithTraits(
-                  {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+              base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                      base::TaskPriority::USER_VISIBLE})
                   .get(),
               url.path(), offset, expected_modification_time));
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
@@ -454,8 +455,8 @@ FileSystemBackend::CreateFileStreamWriter(
     case storage::kFileSystemTypeNativeLocal:
     case storage::kFileSystemTypeDriveFs:
       return storage::FileStreamWriter::CreateForLocalFile(
-          base::CreateTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                  base::TaskPriority::USER_VISIBLE})
               .get(),
           url.path(), offset, storage::FileStreamWriter::OPEN_EXISTING_FILE);
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:

@@ -6,7 +6,19 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   java_files = [
+    "java/src/org/chromium/chrome//browser/ui/widget/CompositeTouchDelegate.java",
     "java/src/org/chromium/chrome//browser/ui/widget/FadingShadow.java",
     "java/src/org/chromium/chrome//browser/ui/widget/FadingShadowView.java",
+  ]
+}
+
+junit_binary("ui_widget_junit_tests") {
+  java_files = [ "junit/src/org/chromium/chrome//browser/ui/widget/CompositeTouchDelegateTest.java" ]
+  deps = [
+    ":java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//base:base_junit_test_support",
+    "//base/test:test_support_java",
   ]
 }

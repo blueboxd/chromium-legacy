@@ -1369,6 +1369,47 @@
             ]
         }
     ],
+    "CacheStorageParallelOps": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled16_v1",
+                    "params": {
+                        "max_shares_ops": "16"
+                    },
+                    "enable_features": [
+                        "CacheStorageParallelOps"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CacheStorageSequence": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled1",
+                    "enable_features": [
+                        "CacheStorageSequence"
+                    ]
+                }
+            ]
+        }
+    ],
     "CertDualVerificationTrial": [
         {
             "platforms": [
@@ -1432,6 +1473,23 @@
             "experiments": [
                 {
                     "name": "Disabled"
+                }
+            ]
+        }
+    ],
+    "ClickToCall": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ClickToCallUI"
+                    ]
                 }
             ]
         }
@@ -2432,7 +2490,7 @@
                         "MaxAllocations": "70",
                         "MaxMetadata": "255",
                         "ProcessSamplingBoost2": "10",
-                        "ProcessSamplingProbability": "0.1"
+                        "ProcessSamplingProbability": "0.05"
                     },
                     "enable_features": [
                         "GwpAsanMalloc",

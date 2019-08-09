@@ -286,7 +286,7 @@ bool ShouldContinueToRelaunchForUpgrade() {
   return !other_instances_exist;
 }
 
-bool RelaunchChromeBrowser(const base::CommandLine& command_line) {
+bool RelaunchChromeBrowserImpl(const base::CommandLine& command_line) {
   upgrade_util::ThisAndOtherUserCounts counts =
       upgrade_util::GetCountOfOtherInstancesOfThisBinary();
   const int other_instances = counts.this_user_count + counts.other_user_count;

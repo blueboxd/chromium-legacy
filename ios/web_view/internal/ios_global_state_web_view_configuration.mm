@@ -22,7 +22,7 @@ GetSharedNetworkIOThreadTaskRunner() {
   dispatch_once(&once_token, ^{
     ios_web_view::InitializeGlobalState();
   });
-  return base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO});
+  return base::CreateSingleThreadTaskRunner({web::WebThread::IO});
 }
 
 }  // namespace ios_global_state

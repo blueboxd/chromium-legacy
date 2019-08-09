@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_PAYMENTS_PAYMENT_APP_INSTALLER_H_
 #define CONTENT_BROWSER_PAYMENTS_PAYMENT_APP_INSTALLER_H_
 
+#include <stdint.h>
 #include <vector>
 
 #include "base/callback.h"
@@ -23,7 +24,7 @@ class PaymentAppInstaller {
  public:
   using InstallPaymentAppCallback =
       base::OnceCallback<void(BrowserContext* browser_context,
-                              long registration_id)>;
+                              int64_t registration_id)>;
 
   // Installs the payment app.
   // |app_name| is the name of the payment app.
@@ -32,7 +33,7 @@ class PaymentAppInstaller {
   // |scope| is the registration scope.
   // |use_cache| indicates whether to use cache.
   // |enabled_methods| are the enabled methods of the app.
-  // |callback| to send back registeration result.
+  // |callback| to send back registration result.
   static void Install(WebContents* web_contents,
                       const std::string& app_name,
                       const std::string& app_icon,

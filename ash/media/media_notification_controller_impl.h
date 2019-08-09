@@ -80,7 +80,8 @@ class ASH_EXPORT MediaNotificationControllerImpl
   // concurrent number of media notifications displayed.
   void RecordConcurrentNotificationCount();
 
-  media_session::mojom::MediaControllerManagerPtr controller_manager_ptr_;
+  mojo::Remote<media_session::mojom::MediaControllerManager>
+      controller_manager_remote;
 
   mojo::Receiver<media_session::mojom::AudioFocusObserver>
       audio_focus_observer_receiver_{this};

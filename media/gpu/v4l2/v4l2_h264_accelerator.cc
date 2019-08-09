@@ -4,6 +4,12 @@
 
 #include "media/gpu/v4l2/v4l2_h264_accelerator.h"
 
+// TODO(987856): prevent legacy headers being included from videodev2.h until
+// v4.14
+//  support is deprecated.
+#define _H264_CTRLS_LEGACY_H_
+
+#include <linux/media/h264-ctrls.h>
 #include <linux/videodev2.h>
 #include <type_traits>
 
@@ -23,8 +29,8 @@ struct V4L2H264AcceleratorPrivate {
   // TODO(posciak): This should be queried from hardware once supported.
   static constexpr size_t kMaxSlices = 16;
 
-  struct v4l2_ctrl_h264_slice_param v4l2_slice_params[kMaxSlices];
-  struct v4l2_ctrl_h264_decode_param v4l2_decode_param;
+  struct v4l2_ctrl_h264_slice_params v4l2_slice_params[kMaxSlices];
+  struct v4l2_ctrl_h264_decode_params v4l2_decode_param;
 };
 
 class V4L2H264Picture : public H264Picture {
@@ -97,7 +103,7 @@ void V4L2H264Accelerator::H264DPBToV4L2DPB(
     }
 
     struct v4l2_h264_dpb_entry& entry = priv_->v4l2_decode_param.dpb[i++];
-    entry.buf_index = index;
+    entry.reference_ts = index;
     entry.frame_num = pic->frame_num;
     entry.pic_num = pic->pic_num;
     entry.top_field_order_cnt = pic->top_field_order_cnt;
@@ -306,7 +312,7 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitSlice(
     return Status::kFail;
   }
 
-  struct v4l2_ctrl_h264_slice_param& v4l2_slice_param =
+  struct v4l2_ctrl_h264_slice_params& v4l2_slice_param =
       priv_->v4l2_slice_params[num_slices_++];
   memset(&v4l2_slice_param, 0, sizeof(v4l2_slice_param));
 
@@ -338,11 +344,12 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitSlice(
 
 #define SET_V4L2_SPARM_FLAG_IF(cond, flag) \
   v4l2_slice_param.flags |= ((slice_hdr->cond) ? (flag) : 0)
-  SET_V4L2_SPARM_FLAG_IF(field_pic_flag, V4L2_SLICE_FLAG_FIELD_PIC);
-  SET_V4L2_SPARM_FLAG_IF(bottom_field_flag, V4L2_SLICE_FLAG_BOTTOM_FIELD);
+  SET_V4L2_SPARM_FLAG_IF(field_pic_flag, V4L2_H264_SLICE_FLAG_FIELD_PIC);
+  SET_V4L2_SPARM_FLAG_IF(bottom_field_flag, V4L2_H264_SLICE_FLAG_BOTTOM_FIELD);
   SET_V4L2_SPARM_FLAG_IF(direct_spatial_mv_pred_flag,
-                         V4L2_SLICE_FLAG_DIRECT_SPATIAL_MV_PRED);
-  SET_V4L2_SPARM_FLAG_IF(sp_for_switch_flag, V4L2_SLICE_FLAG_SP_FOR_SWITCH);
+                         V4L2_H264_SLICE_FLAG_DIRECT_SPATIAL_MV_PRED);
+  SET_V4L2_SPARM_FLAG_IF(sp_for_switch_flag,
+                         V4L2_H264_SLICE_FLAG_SP_FOR_SWITCH);
 #undef SET_V4L2_SPARM_FLAG_IF
 
   struct v4l2_h264_pred_weight_table* pred_weight_table =
@@ -422,7 +429,9 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitDecode(
       H264PictureToV4L2DecodeSurface(pic.get());
 
   priv_->v4l2_decode_param.num_slices = num_slices_;
-  priv_->v4l2_decode_param.idr_pic_flag = pic->idr;
+  if (pic->idr) {
+    priv_->v4l2_decode_param.flags |= 1;
+  }
   priv_->v4l2_decode_param.top_field_order_cnt = pic->top_field_order_cnt;
   priv_->v4l2_decode_param.bottom_field_order_cnt = pic->bottom_field_order_cnt;
 
@@ -430,13 +439,13 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitDecode(
   std::vector<struct v4l2_ext_control> ctrls;
 
   memset(&ctrl, 0, sizeof(ctrl));
-  ctrl.id = V4L2_CID_MPEG_VIDEO_H264_SLICE_PARAM;
+  ctrl.id = V4L2_CID_MPEG_VIDEO_H264_SLICE_PARAMS;
   ctrl.size = sizeof(priv_->v4l2_slice_params);
   ctrl.ptr = priv_->v4l2_slice_params;
   ctrls.push_back(ctrl);
 
   memset(&ctrl, 0, sizeof(ctrl));
-  ctrl.id = V4L2_CID_MPEG_VIDEO_H264_DECODE_PARAM;
+  ctrl.id = V4L2_CID_MPEG_VIDEO_H264_DECODE_PARAMS;
   ctrl.size = sizeof(priv_->v4l2_decode_param);
   ctrl.ptr = &priv_->v4l2_decode_param;
   ctrls.push_back(ctrl);

@@ -40,12 +40,6 @@ struct P2PQuicTransportConfig;
 namespace WTF {
 
 template <>
-struct CrossThreadCopier<std::string>
-    : public CrossThreadCopierPassThrough<std::string> {
-  STATIC_ONLY(CrossThreadCopier);
-};
-
-template <>
 struct CrossThreadCopier<cricket::IceParameters>
     : public CrossThreadCopierPassThrough<cricket::IceParameters> {
   STATIC_ONLY(CrossThreadCopier);

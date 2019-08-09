@@ -99,6 +99,8 @@ if (use_system_harfbuzz) {
       "src/src/hb-font.cc",
       "src/src/hb-font.hh",
       "src/src/hb-ft.cc",
+      "src/src/hb-gdi.cc",
+      "src/src/hb-gdi.h",
       "src/src/hb-icu.cc",
       "src/src/hb-map.cc",
       "src/src/hb-map.hh",
@@ -138,6 +140,12 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-math-table.hh",
       "src/src/hb-ot-math.cc",
       "src/src/hb-ot-maxp-table.hh",
+      "src/src/hb-ot-meta-table.hh",
+      "src/src/hb-ot-meta.cc",
+      "src/src/hb-ot-meta.h",
+      "src/src/hb-ot-metrics.cc",
+      "src/src/hb-ot-metrics.h",
+      "src/src/hb-ot-metrics.hh",
       "src/src/hb-ot-name-language-static.hh",
       "src/src/hb-ot-name-language.hh",
       "src/src/hb-ot-name-table.hh",
@@ -236,6 +244,11 @@ if (use_system_harfbuzz) {
       # Tells HarfBuzz to use ICU instead of the own mini UCDN implementation
       # that is part of HarfBuzz.
       "HB_NO_UCD",
+
+      # TODO(https://crbug.com/992390): Don't use the HarfBuzz metrics
+      # implementation, as we're retrieving metrics from Skia. Consider using this
+      # implementation at least for vertical metrics.
+      "HB_NO_METRICS",
 
       # TODO(https://crbug.com/949962): Remove once this is fixed upstream.
       "U_DISABLE_VERSION_SUFFIX=0",

@@ -100,6 +100,8 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // who has a controller relation to the current autofill popup.
   int32_t GetWebContentsPopupControllerAxId() const;
 
+  const FormData& query_form() const { return query_form_; }
+
  protected:
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr();
 

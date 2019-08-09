@@ -584,14 +584,14 @@ void SmbService::StartSetup() {
 void SmbService::SetupTempFileManagerAndCompleteSetup() {
   // CreateTempFileManager() has to be called on a separate thread since it
   // contains a call that requires a blockable thread.
-  base::TaskTraits task_traits = {base::MayBlock(),
+  base::TaskTraits task_traits = {base::ThreadPool(), base::MayBlock(),
                                   base::TaskPriority::USER_BLOCKING,
                                   base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
   auto task = base::BindOnce(&CreateTempFileManager);
   auto reply = base::BindOnce(&SmbService::CompleteSetup, AsWeakPtr());
 
-  base::PostTaskWithTraitsAndReplyWithResult(FROM_HERE, task_traits,
-                                             std::move(task), std::move(reply));
+  base::PostTaskAndReplyWithResult(FROM_HERE, task_traits, std::move(task),
+                                   std::move(reply));
 }
 
 void SmbService::OnSetupKerberosResponse(bool success) {

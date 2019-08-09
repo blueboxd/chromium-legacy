@@ -38,7 +38,7 @@ void PostFileSystemCallback(
     const base::Closure& on_error_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&fileapi_internal::RunFileSystemCallback,
                      file_system_getter, function,
@@ -60,10 +60,10 @@ void RunCreateOrOpenFileCallback(
   // It will be provided as a FileSystem::OpenFileCallback's argument later.
   // (crbug.com/259184).
   std::move(callback).Run(
-      std::move(file), base::Bind(&google_apis::RunTaskWithTaskRunner,
-                                  base::CreateSingleThreadTaskRunnerWithTraits(
-                                      {BrowserThread::UI}),
-                                  close_callback_on_ui_thread));
+      std::move(file),
+      base::Bind(&google_apis::RunTaskWithTaskRunner,
+                 base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
+                 close_callback_on_ui_thread));
 }
 
 // Runs CreateOrOpenFile when the error happens.
@@ -102,10 +102,11 @@ void RunCreateSnapshotFileCallback(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   scoped_refptr<storage::ShareableFileReference> file_reference =
-      storage::ShareableFileReference::GetOrCreate(storage::ScopedFile(
-          local_path, scope_out_policy,
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::USER_BLOCKING})));
+      storage::ShareableFileReference::GetOrCreate(
+          storage::ScopedFile(local_path, scope_out_policy,
+                              base::CreateSequencedTaskRunner(
+                                  {base::ThreadPool(), base::MayBlock(),
+                                   base::TaskPriority::USER_BLOCKING})));
   std::move(callback).Run(error, file_info, local_path,
                           std::move(file_reference));
 }

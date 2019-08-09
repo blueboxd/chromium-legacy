@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
@@ -64,8 +65,9 @@ class MediaDialogController
   std::map<const std::string, media_message_center::MediaNotificationItem>
       sessions_;
 
-  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
-  media_session::mojom::MediaControllerManagerPtr controller_manager_ptr_;
+  mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_remote_;
+  mojo::Remote<media_session::mojom::MediaControllerManager>
+      controller_manager_remote_;
 
   // Used to receive updates to the active media controller.
   mojo::Receiver<media_session::mojom::AudioFocusObserver>

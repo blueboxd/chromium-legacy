@@ -66,8 +66,9 @@ AppInstallEventLogManager::LogTaskRunnerWrapper::~LogTaskRunnerWrapper() =
 scoped_refptr<base::SequencedTaskRunner>
 AppInstallEventLogManager::LogTaskRunnerWrapper::GetTaskRunner() {
   if (!task_runner_) {
-    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()});
+    task_runner_ = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
+         base::MayBlock()});
   }
 
   return task_runner_;

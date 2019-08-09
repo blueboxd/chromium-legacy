@@ -55,13 +55,10 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
 
   enum ItemType { kText, kGeneratedText, kLine, kBox };
 
-  NGFragmentItem(const LayoutObject& layout_object,
-                 NGStyleVariant style_variant,
-                 Text&& text)
-      : layout_object_(&layout_object),
-        text_(text),
-        type_(kText),
-        style_variant_(static_cast<unsigned>(style_variant)) {}
+  // TODO(kojii): Should be able to create without once creating fragments.
+  NGFragmentItem(const NGPhysicalTextFragment& text);
+  NGFragmentItem(const NGPhysicalBoxFragment& box, wtf_size_t item_count);
+  NGFragmentItem(const NGPhysicalLineBoxFragment& line, wtf_size_t item_count);
 
   ~NGFragmentItem() final;
 
@@ -109,10 +106,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
     Box box_;
   };
 
-  union {
-    PhysicalOffset offset_;
-    LogicalOffset logical_offset_;
-  };
+  PhysicalOffset offset_;
   PhysicalSize size_;
 
   struct NGInkOverflowModel {

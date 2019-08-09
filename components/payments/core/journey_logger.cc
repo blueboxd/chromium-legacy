@@ -73,6 +73,15 @@ bool ValidateExclusiveBitVector(const std::vector<bool>& bit_vector) {
   return seen_true_bit;
 }
 
+// Records time to checkout for payment requests. The 5-minute max is chosen
+// since the payment handler window times out after 5 minutes.
+void RecordTimeToCheckoutUmaHistograms(const std::string name,
+                                       const base::TimeDelta time_to_checkout) {
+  UmaHistogramCustomTimes(
+      name, time_to_checkout, base::TimeDelta::FromMilliseconds(1) /* min */,
+      base::TimeDelta::FromMinutes(5) /* max */, 100 /*bucket count*/);
+}
+
 enum class TransactionSize {
   kZeroTransaction = 0,
   kMicroTransaction = 1,
@@ -269,6 +278,7 @@ void JourneyLogger::RecordJourneyStatsHistograms(
   has_recorded_ = true;
 
   RecordEventsMetric(completion_status);
+  RecordTimeToCheckout(completion_status);
 
   // These following metrics only make sense if the Payment Request was
   // triggered.
@@ -359,6 +369,72 @@ void JourneyLogger::RecordEventsMetric(CompletionStatus completion_status) {
       .Record(ukm::UkmRecorder::Get());
 }
 
+void JourneyLogger::RecordTimeToCheckout(
+    CompletionStatus completion_status) const {
+  const base::TimeDelta time_to_checkout =
+      base::TimeTicks::Now() - trigger_time_;
+  const std::string histogram_name = "PaymentRequest.TimeToCheckout";
+
+  // Whether or not the payment sheet was shown shown.
+  std::string ui_show_suffix;
+  if (events_ & EVENT_SHOWN)
+    ui_show_suffix = ".Shown";
+  else if (events_ & EVENT_SKIPPED_SHOW)
+    ui_show_suffix = ".SkippedShow";
+  else  // User aborted before request.show()
+    ui_show_suffix = ".BeforeShow";
+
+  std::string completion_suffix;
+  switch (completion_status) {
+    case COMPLETION_STATUS_COMPLETED: {
+      completion_suffix = ".Completed";
+      // Record time to checkout for completed requests separated by payment
+      // sheet shown status. Requests can complete only after request.show()
+      // call.
+      DCHECK_NE(".BeforeShow", ui_show_suffix);
+      RecordTimeToCheckoutUmaHistograms(
+          histogram_name + ".Completed" + ui_show_suffix, time_to_checkout);
+
+      // Record time to checkout for completed requests separated by payment
+      // sheet shown status and selected method.
+      std::string selected_method_suffix;
+      if (events_ & EVENT_SELECTED_CREDIT_CARD) {
+        selected_method_suffix = ".BasicCard";
+      } else if (events_ & EVENT_SELECTED_GOOGLE) {
+        selected_method_suffix = ".Google";
+      } else {
+        DCHECK(events_ & EVENT_SELECTED_OTHER);
+        selected_method_suffix = ".Other";
+      }
+      RecordTimeToCheckoutUmaHistograms(histogram_name + ".Completed" +
+                                            ui_show_suffix +
+                                            selected_method_suffix,
+                                        time_to_checkout);
+      break;
+    }
+    case COMPLETION_STATUS_USER_ABORTED: {
+      completion_suffix = ".UserAborted";
+      // Record time to checkout for requests aborted by user separated by
+      // payment sheet shown status.
+      RecordTimeToCheckoutUmaHistograms(
+          histogram_name + ".UserAborted" + ui_show_suffix, time_to_checkout);
+      break;
+    }
+    case COMPLETION_STATUS_OTHER_ABORTED:
+      completion_suffix = ".OtherAborted";
+      break;
+    case COMPLETION_STATUS_COULD_NOT_SHOW:
+      // Do not record checkout duration when payment sheet could not shown.
+      return;
+    default:
+      NOTREACHED();
+  }
+  // Record time to checkout for payment reuqests separated by completion
+  // status.
+  RecordTimeToCheckoutUmaHistograms(histogram_name + completion_suffix,
+                                    time_to_checkout);
+}
+
 void JourneyLogger::ValidateEventBits() const {
   std::vector<bool> bit_vector;
 
@@ -420,6 +496,10 @@ void JourneyLogger::ValidateEventBits() const {
 
 bool JourneyLogger::WasPaymentRequestTriggered() {
   return (events_ & EVENT_SHOWN) > 0 || (events_ & EVENT_SKIPPED_SHOW) > 0;
+}
+
+void JourneyLogger::SetTriggerTime() {
+  trigger_time_ = base::TimeTicks::Now();
 }
 
 }  // namespace payments

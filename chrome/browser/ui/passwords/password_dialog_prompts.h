@@ -11,7 +11,7 @@ namespace content {
 class WebContents;
 }
 
-class PasswordDialogController;
+class CredentialManagerDialogController;
 
 // The default inset from BubbleFrameView.
 const int kTitleTopInset = 12;
@@ -50,10 +50,12 @@ class AutoSigninFirstRunPrompt {
 
 // Factory function for AccountChooserPrompt on desktop platforms.
 AccountChooserPrompt* CreateAccountChooserPromptView(
-    PasswordDialogController* controller, content::WebContents* web_contents);
+    CredentialManagerDialogController* controller,
+    content::WebContents* web_contents);
 
 // Factory function for AutoSigninFirstRunPrompt on desktop platforms.
 AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(
-    PasswordDialogController* controller, content::WebContents* web_contents);
+    CredentialManagerDialogController* controller,
+    content::WebContents* web_contents);
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORD_DIALOG_PROMPTS_H_

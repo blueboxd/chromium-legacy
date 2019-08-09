@@ -34,12 +34,11 @@ void StreamingConnectionEstablisher::EstablishConnection(
     const GURL& url,
     ConnectionMode connection_mode,
     content::ServiceWorkerContext* service_worker_context) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&StreamingConnectionEstablisher::
-                         SendStartStreamingMessageIfNotConnected,
-                     weak_ptr_factory_.GetWeakPtr(), url, connection_mode,
-                     service_worker_context));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&StreamingConnectionEstablisher::
+                                    SendStartStreamingMessageIfNotConnected,
+                                weak_ptr_factory_.GetWeakPtr(), url,
+                                connection_mode, service_worker_context));
 }
 
 void StreamingConnectionEstablisher::TearDownConnection(

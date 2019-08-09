@@ -41,8 +41,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &image_));
 
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReply(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&ImageWriterUtilityClientTest::FillFile, image_,
                        pattern),
         run_loop.QuitClosure());
@@ -54,8 +54,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     device_ = image_.ReplaceExtension(FILE_PATH_LITERAL("out"));
 
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReply(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&ImageWriterUtilityClientTest::FillFile, device_,
                        pattern),
         run_loop.QuitClosure());
@@ -199,8 +199,7 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     success_ = cancel_;
 
     quit_called_ = true;
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             quit_closure_);
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, quit_closure_);
   }
 
   void Shutdown() {
@@ -209,8 +208,7 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
     image_writer_utility_client_->Shutdown();
 
     quit_called_ = true;
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             quit_closure_);
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, quit_closure_);
   }
 
   static void FillFile(const base::FilePath& path, char pattern) {
@@ -220,8 +218,8 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
 
   base::SequencedTaskRunner* CreateTaskRunner() {
     DCHECK(!task_runner_.get());
-    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        Operation::blocking_task_traits());
+    task_runner_ =
+        base::CreateSequencedTaskRunner(Operation::blocking_task_traits());
     return task_runner_.get();
   }
 

@@ -36,7 +36,6 @@
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/navigation_preload_request.h"
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
-#include "content/renderer/service_worker/service_worker_network_provider_for_service_worker.h"
 #include "content/renderer/service_worker/service_worker_type_converters.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
@@ -383,41 +382,6 @@ void ServiceWorkerContextClient::ReportConsoleMessage(
   (*instance_host_)
       ->OnReportConsoleMessage(source, level, message.Utf16(), line_number,
                                blink::WebStringToGURL(source_url));
-}
-
-std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
-ServiceWorkerContextClient::CreateServiceWorkerNetworkProviderOnMainThread() {
-  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
-  return std::make_unique<ServiceWorkerNetworkProviderForServiceWorker>(
-      std::move(service_worker_provider_info_->script_loader_factory_ptr_info));
-}
-
-scoped_refptr<blink::WebWorkerFetchContext>
-ServiceWorkerContextClient::CreateWorkerFetchContextOnMainThreadLegacy(
-    blink::WebServiceWorkerNetworkProvider* provider) {
-  DCHECK(starter_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(preference_watcher_request_.is_pending());
-
-  // TODO(crbug.com/796425): Temporarily wrap the raw
-  // mojom::URLLoaderFactory pointer into SharedURLLoaderFactory.
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-      script_loader_factory_info =
-          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-              static_cast<ServiceWorkerNetworkProviderForServiceWorker*>(
-                  provider)
-                  ->script_loader_factory())
-              ->Clone();
-
-  return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
-      *renderer_preferences_, script_url_, loader_factories_->PassInterface(),
-      std::move(script_loader_factory_info),
-      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
-          URLLoaderThrottleProviderType::kWorker),
-      GetContentClient()
-          ->renderer()
-          ->CreateWebSocketHandshakeThrottleProvider(),
-      std::move(preference_watcher_request_),
-      std::move(pending_subresource_loader_updater_));
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>

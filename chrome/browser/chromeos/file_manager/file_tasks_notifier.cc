@@ -171,8 +171,8 @@ void FileTasksNotifier::NotifyObservers(
 void FileTasksNotifier::GetFileAvailability(PendingFileAvailabilityTask task) {
   if (task.url.type() != storage::kFileSystemTypeDriveFs) {
     base::FilePath path = std::move(task.url.path());
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&base::PathExists, std::move(path)),
         base::BindOnce(&FileTasksNotifier::ForwardQueryResult,
                        std::move(task)));

@@ -40,7 +40,9 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 PasswordUIViewAndroid::PasswordUIViewAndroid(JNIEnv* env, jobject obj)
-    : password_manager_presenter_(this), weak_java_ui_controller_(env, obj) {}
+    : password_manager_presenter_(this), weak_java_ui_controller_(env, obj) {
+  password_manager_presenter_.Initialize();
+}
 
 PasswordUIViewAndroid::~PasswordUIViewAndroid() {}
 

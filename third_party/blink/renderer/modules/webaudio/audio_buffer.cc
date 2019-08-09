@@ -180,7 +180,7 @@ AudioBuffer::AudioBuffer(unsigned number_of_channels,
     if (!channel_data_array)
       return;
 
-    channel_data_array->SetNeuterable(false);
+    channel_data_array->SetDetachable(false);
     channels_.push_back(channel_data_array);
   }
 }
@@ -198,7 +198,7 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
     if (!channel_data_array)
       return;
 
-    channel_data_array->SetNeuterable(false);
+    channel_data_array->SetDetachable(false);
     const float* src = bus->Channel(i)->Data();
     float* dst = channel_data_array->Data();
     memmove(dst, src, length_ * sizeof(*dst));

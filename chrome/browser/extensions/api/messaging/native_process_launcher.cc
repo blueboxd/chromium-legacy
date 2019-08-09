@@ -132,10 +132,11 @@ void NativeProcessLauncherImpl::Core::Launch(
     const GURL& origin,
     const std::string& native_host_name,
     const LaunchedCallback& callback) {
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-                           base::BindOnce(&Core::DoLaunchOnThreadPool, this,
-                                          origin, native_host_name, callback));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&Core::DoLaunchOnThreadPool, this, origin,
+                     native_host_name, callback));
 }
 
 void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
@@ -290,7 +291,7 @@ void NativeProcessLauncherImpl::Core::CallCallbackOnIOThread(
 void NativeProcessLauncherImpl::Core::PostErrorResult(
     const LaunchedCallback& callback,
     LaunchResult error) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
                      this, callback, error, base::Process(), base::File(),
@@ -302,7 +303,7 @@ void NativeProcessLauncherImpl::Core::PostResult(
     base::Process process,
     base::File read_file,
     base::File write_file) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
                      this, callback, RESULT_SUCCESS, std::move(process),

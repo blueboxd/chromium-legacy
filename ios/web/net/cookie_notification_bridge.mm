@@ -38,7 +38,7 @@ void CookieNotificationBridge::OnNotificationReceived(
     NSNotification* notification) {
   DCHECK([[notification name]
       isEqualToString:NSHTTPCookieManagerCookiesChangedNotification]);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {web::WebThread::IO},
       base::BindOnce(&net::CookieStoreIOS::NotifySystemCookiesChanged));
 }

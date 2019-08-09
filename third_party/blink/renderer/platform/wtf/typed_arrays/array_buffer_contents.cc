@@ -83,7 +83,7 @@ ArrayBufferContents::ArrayBufferContents(DataHandle data,
 
 ArrayBufferContents::~ArrayBufferContents() = default;
 
-void ArrayBufferContents::Neuter() {
+void ArrayBufferContents::Detach() {
   holder_ = nullptr;
 }
 
@@ -91,7 +91,7 @@ void ArrayBufferContents::Transfer(ArrayBufferContents& other) {
   DCHECK(!IsShared());
   DCHECK(!other.holder_->Data());
   other.holder_ = holder_;
-  Neuter();
+  Detach();
 }
 
 void ArrayBufferContents::ShareWith(ArrayBufferContents& other) {

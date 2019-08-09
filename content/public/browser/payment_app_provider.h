@@ -41,6 +41,8 @@ class CONTENT_EXPORT PaymentAppProvider {
 
   using PaymentApps = std::map<int64_t, std::unique_ptr<StoredPaymentApp>>;
   using GetAllPaymentAppsCallback = base::OnceCallback<void(PaymentApps)>;
+  using RegistrationIdCallback =
+      base::OnceCallback<void(int64_t registration_id)>;
   using InvokePaymentAppCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerResponsePtr)>;
   using PaymentEventResultCallback = base::OnceCallback<void(bool)>;
@@ -63,6 +65,7 @@ class CONTENT_EXPORT PaymentAppProvider {
       const std::string& sw_scope,
       bool sw_use_cache,
       const std::string& method,
+      RegistrationIdCallback registration_id_callback,
       InvokePaymentAppCallback callback) = 0;
   virtual void CanMakePayment(
       BrowserContext* browser_context,

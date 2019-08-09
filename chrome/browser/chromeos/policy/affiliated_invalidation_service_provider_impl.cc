@@ -78,10 +78,9 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
 void RequestProxyResolvingSocketFactory(
     base::WeakPtr<invalidation::TiclInvalidationService> owner,
     network::mojom::ProxyResolvingSocketFactoryRequest request) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, owner,
-                     std::move(request)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
+                                owner, std::move(request)));
 }
 
 }  // namespace
@@ -422,8 +421,7 @@ AffiliatedInvalidationServiceProviderImpl::
           GetUserAgent(), device_identity_provider_.get(),
           g_browser_process->gcm_driver(),
           base::BindRepeating(&RequestProxyResolvingSocketFactory),
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {content::BrowserThread::IO}),
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
           std::move(url_loader_factory),
           content::GetNetworkConnectionTracker());
 

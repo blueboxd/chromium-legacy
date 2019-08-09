@@ -99,9 +99,10 @@ void SingleLogFileLogSource::Fetch(SysLogsSourceCallback callback) {
 
   auto response = std::make_unique<SystemLogsResponse>();
   auto* response_ptr = response.get();
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE,
-      base::TaskTraits(base::MayBlock(), base::TaskPriority::BEST_EFFORT),
+      base::TaskTraits({base::ThreadPool(), base::MayBlock(),
+                        base::TaskPriority::BEST_EFFORT}),
       base::BindOnce(&SingleLogFileLogSource::ReadFile,
                      weak_ptr_factory_.GetWeakPtr(),
                      kMaxNumAllowedLogRotationsDuringFileRead, response_ptr),

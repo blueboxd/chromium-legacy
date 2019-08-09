@@ -45,6 +45,7 @@ jumbo_source_set("leak_detection") {
     "//base",
     "//components/password_manager/core/common",
     "//components/signin/public/identity_manager",
+    "//third_party/private-join-and-compute/src:ec_commutative_cipher",
     "//url",
   ]
 }

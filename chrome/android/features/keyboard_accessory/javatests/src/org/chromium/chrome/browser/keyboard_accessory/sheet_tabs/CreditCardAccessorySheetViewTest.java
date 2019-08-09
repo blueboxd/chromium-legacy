@@ -139,7 +139,33 @@ public class CreditCardAccessorySheetViewTest {
 
     @Test
     @MediumTest
-    public void testEmptyChipsAreNotVisible() throws ExecutionException {
+    public void testAddingUnselectableFieldsRendersUnclickabeChips() throws ExecutionException {
+        assertThat(mView.get().getChildCount(), is(0));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            UserInfo infoWithUnclickableField = new UserInfo("", null);
+            infoWithUnclickableField.addField(
+                    new UserInfoField("4111111111111111", "4111111111111111", "", false, null));
+            infoWithUnclickableField.addField(new UserInfoField("", "", "month", false, null));
+            infoWithUnclickableField.addField(new UserInfoField("", "", "year", false, null));
+            infoWithUnclickableField.addField(new UserInfoField("", "", "name", false, null));
+            mModel.add(new AccessorySheetDataPiece(
+                    infoWithUnclickableField, AccessorySheetDataPiece.Type.CREDIT_CARD_INFO));
+            mModel.add(new AccessorySheetDataPiece(
+                    new KeyboardAccessoryData.FooterCommand("Manage credit cards", null),
+                    AccessorySheetDataPiece.Type.FOOTER_COMMAND));
+        });
+
+        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> mView.get().getChildCount()));
+
+        assertThat(getChipText(R.id.cc_number), is("4111111111111111"));
+        assertThat(findChipView(R.id.cc_number).isShown(), is(true));
+        assertThat(findChipView(R.id.cc_number).isEnabled(), is(false));
+    }
+
+    @Test
+    @MediumTest
+    public void testEmptyChipsAreNotVisible() {
         final AtomicBoolean clicked = new AtomicBoolean();
         assertThat(mView.get().getChildCount(), is(0));
 
@@ -156,6 +182,29 @@ public class CreditCardAccessorySheetViewTest {
         CriteriaHelper.pollUiThread(Criteria.equals(2, () -> mView.get().getChildCount()));
 
         assertThat(findChipView(R.id.cardholder).isShown(), is(false));
+    }
+
+    @Test
+    @MediumTest
+    public void testRendersWarning() {
+        final String kWarning = "Insecure, so filling is no.";
+        assertThat(mView.get().getChildCount(), is(0));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.add(new AccessorySheetDataPiece(kWarning, AccessorySheetDataPiece.Type.WARNING));
+            mModel.add(new AccessorySheetDataPiece(
+                    new KeyboardAccessoryData.FooterCommand("Manage credit cards", null),
+                    AccessorySheetDataPiece.Type.FOOTER_COMMAND));
+        });
+
+        CriteriaHelper.pollUiThread(Criteria.equals(2, () -> mView.get().getChildCount()));
+
+        assertThat(mView.get().getChildAt(0), instanceOf(LinearLayout.class));
+        LinearLayout warning = (LinearLayout) mView.get().getChildAt(0);
+        assertThat(warning.findViewById(R.id.tab_title), instanceOf(TextView.class));
+        TextView warningText = warning.findViewById(R.id.tab_title);
+        assertThat(warningText.isShown(), is(true));
+        assertThat(warningText.getText(), is(kWarning));
     }
 
     private UserInfo createInfo(

@@ -120,7 +120,7 @@ public final class SigninTestUtil {
             AccountIdProvider.setInstanceForTest(new AccountIdProvider() {
                 @Override
                 public String getAccountId(String accountName) {
-                    return "gaia-id-" + accountName;
+                    return "gaia-id-" + accountName.replace("@", "_at_");
                 }
 
                 @Override

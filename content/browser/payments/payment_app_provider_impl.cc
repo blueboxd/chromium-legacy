@@ -404,14 +404,17 @@ void StartServiceWorkerForDispatch(BrowserContext* browser_context,
                      registration_id, std::move(callback)));
 }
 
-void OnInstallPaymentApp(const url::Origin& sw_origin,
-                         payments::mojom::PaymentRequestEventDataPtr event_data,
-                         PaymentAppProvider::InvokePaymentAppCallback callback,
-                         BrowserContext* browser_context,
-                         long registration_id) {
+void OnInstallPaymentApp(
+    const url::Origin& sw_origin,
+    payments::mojom::PaymentRequestEventDataPtr event_data,
+    PaymentAppProvider::RegistrationIdCallback registration_id_callback,
+    PaymentAppProvider::InvokePaymentAppCallback callback,
+    BrowserContext* browser_context,
+    int64_t registration_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (registration_id >= 0 && browser_context != nullptr) {
+    std::move(registration_id_callback).Run(registration_id);
     PaymentAppProvider::GetInstance()->InvokePaymentApp(
         browser_context, registration_id, sw_origin, std::move(event_data),
         std::move(callback));
@@ -635,6 +638,7 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
     const std::string& sw_scope,
     bool sw_use_cache,
     const std::string& method,
+    RegistrationIdCallback registration_id_callback,
     InvokePaymentAppCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -667,7 +671,8 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
       web_contents, app_name, string_encoded_icon, url, scope, sw_use_cache,
       method,
       base::BindOnce(&OnInstallPaymentApp, url::Origin::Create(scope),
-                     std::move(event_data), std::move(callback)));
+                     std::move(event_data), std::move(registration_id_callback),
+                     std::move(callback)));
 }
 
 void PaymentAppProviderImpl::CanMakePayment(

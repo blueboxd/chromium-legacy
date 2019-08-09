@@ -8,7 +8,9 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 #include "chromeos/constants/security_token_pin_types.h"
+#include "components/account_id/account_id.h"
 
 namespace chromeos {
 
@@ -43,6 +45,8 @@ class SecurityTokenPinDialogHost {
   //     (note that a non-empty error does NOT disable the user input per se).
   // |attempts_left| - when non-negative, the UI should indicate this number to
   //     the user; otherwise must be equal to -1.
+  // |authenticating_user_account_id| - when set, is the ID of the user whose
+  //     authentication triggered this PIN request.
   // |pin_entered_callback| - called when the user submits the input.
   // |pin_dialog_closed_callback| - called when the dialog is closed (either by
   //     the user or programmatically; it's optional whether to call it after
@@ -53,6 +57,7 @@ class SecurityTokenPinDialogHost {
       bool enable_user_input,
       SecurityTokenPinErrorLabel error_label,
       int attempts_left,
+      const base::Optional<AccountId>& authenticating_user_account_id,
       SecurityTokenPinEnteredCallback pin_entered_callback,
       SecurityTokenPinDialogClosedCallback pin_dialog_closed_callback) = 0;
 

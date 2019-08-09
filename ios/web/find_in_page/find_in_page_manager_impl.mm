@@ -112,7 +112,7 @@ void FindInPageManagerImpl::StartSearch(NSString* query) {
   if (all_frames.size() == 0) {
     // No frames to search in.
     // Call asyncronously to match behavior if find was successful in frames.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {WebThread::UI},
         base::BindOnce(&FindInPageManagerImpl::LastFindRequestCompleted,
                        weak_factory_.GetWeakPtr()));
@@ -135,7 +135,7 @@ void FindInPageManagerImpl::StartSearch(NSString* query) {
       last_find_request_.DidReceiveFindResponseFromOneFrame();
       if (last_find_request_.AreAllFindResponsesReturned()) {
         // Call asyncronously to match behavior if find was done in frames.
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {WebThread::UI},
             base::BindOnce(&FindInPageManagerImpl::LastFindRequestCompleted,
                            weak_factory_.GetWeakPtr()));

@@ -24,18 +24,18 @@ class WebThreadTest : public PlatformTest {
   web::TestWebThreadBundle web_thread_bundle_;
 };
 
-TEST_F(WebThreadTest, PostTaskWithTraits) {
+TEST_F(WebThreadTest, PostTask) {
   base::RunLoop run_loop;
-  EXPECT_TRUE(base::PostTaskWithTraits(
+  EXPECT_TRUE(base::PostTask(
       FROM_HERE, {WebThread::IO},
       base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
                      WebThread::IO)));
   run_loop.Run();
 }
 
-TEST_F(WebThreadTest, PostTaskViaTaskRunnerWithTraits) {
+TEST_F(WebThreadTest, PostTaskViaTaskRunner) {
   scoped_refptr<base::TaskRunner> task_runner =
-      base::CreateTaskRunnerWithTraits({WebThread::IO});
+      base::CreateTaskRunner({WebThread::IO});
   base::RunLoop run_loop;
   EXPECT_TRUE(task_runner->PostTask(
       FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
@@ -43,9 +43,9 @@ TEST_F(WebThreadTest, PostTaskViaTaskRunnerWithTraits) {
   run_loop.Run();
 }
 
-TEST_F(WebThreadTest, PostTaskViaSequencedTaskRunnerWithTraits) {
+TEST_F(WebThreadTest, PostTaskViaSequencedTaskRunner) {
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits({WebThread::IO});
+      base::CreateSequencedTaskRunner({WebThread::IO});
   base::RunLoop run_loop;
   EXPECT_TRUE(task_runner->PostTask(
       FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),
@@ -53,9 +53,9 @@ TEST_F(WebThreadTest, PostTaskViaSequencedTaskRunnerWithTraits) {
   run_loop.Run();
 }
 
-TEST_F(WebThreadTest, PostTaskViaSingleThreadTaskRunnerWithTraits) {
+TEST_F(WebThreadTest, PostTaskViaSingleThreadTaskRunner) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO});
+      base::CreateSingleThreadTaskRunner({WebThread::IO});
   base::RunLoop run_loop;
   EXPECT_TRUE(task_runner->PostTask(
       FROM_HERE, base::BindOnce(&BasicFunction, run_loop.QuitWhenIdleClosure(),

@@ -120,7 +120,7 @@ ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
         script_state, CreateInvalidDescriptorError());
   }
 
-  if (value.IsNeutered()) {
+  if (value.IsDetached()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kInvalidStateError,

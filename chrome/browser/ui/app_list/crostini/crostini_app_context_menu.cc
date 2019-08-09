@@ -10,9 +10,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/base/ui_base_features.h"
 
 CrostiniAppContextMenu::CrostiniAppContextMenu(
     Profile* profile,
@@ -31,10 +29,6 @@ bool CrostiniAppContextMenu::IsUninstallable() const {
            ->GetInstallerViewStatus()) {
     // Crostini should not be uninstalled if the installer is still running.
     return true;
-  }
-
-  if (!base::FeatureList::IsEnabled(features::kCrostiniAppUninstallGui)) {
-    return false;
   }
 
   crostini::CrostiniRegistryService* registry_service =

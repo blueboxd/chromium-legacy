@@ -125,6 +125,8 @@ class KeyboardAccessoryMediator
      */
     private boolean shouldShowSuggestion(AutofillSuggestion suggestion) {
         switch (suggestion.getSuggestionId()) {
+            case PopupItemId.ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
+                // The insecure context warning has a replacement in the fallback sheet.
             case PopupItemId.ITEM_ID_SEPARATOR:
             case PopupItemId.ITEM_ID_CLEAR_FORM:
             case PopupItemId.ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
@@ -134,9 +136,6 @@ class KeyboardAccessoryMediator
             case PopupItemId.ITEM_ID_SHOW_ACCOUNT_CARDS:
             case PopupItemId.ITEM_ID_AUTOFILL_OPTIONS:
                 return false;
-            case PopupItemId.ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
-                return ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID);
             case PopupItemId.ITEM_ID_AUTOCOMPLETE_ENTRY:
             case PopupItemId.ITEM_ID_PASSWORD_ENTRY:
             case PopupItemId.ITEM_ID_DATALIST_ENTRY:

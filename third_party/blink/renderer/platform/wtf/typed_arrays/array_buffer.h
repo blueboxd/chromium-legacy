@@ -86,7 +86,7 @@ class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   bool ShareContentsWith(ArrayBufferContents&);
   // Documentation see DOMArrayBuffer.
   bool ShareNonSharedForInternalUse(ArrayBufferContents&);
-  bool IsNeutered() const { return is_neutered_; }
+  bool IsDetached() const { return is_detached_; }
   bool IsShared() const { return contents_.IsShared(); }
 
   ~ArrayBuffer() = default;
@@ -115,7 +115,7 @@ class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
 
   ArrayBufferContents contents_;
   ArrayBufferView* first_view_;
-  bool is_neutered_;
+  bool is_detached_;
 };
 
 unsigned ArrayBuffer::ClampValue(int x, unsigned left, unsigned right) {
@@ -226,7 +226,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(
 }
 
 ArrayBuffer::ArrayBuffer(ArrayBufferContents& contents)
-    : first_view_(nullptr), is_neutered_(false) {
+    : first_view_(nullptr), is_detached_(false) {
   if (contents.IsShared())
     contents.ShareWith(contents_);
   else

@@ -137,9 +137,9 @@ void KerberosFilesHandler::SetFiles(base::Optional<std::string> krb5cc,
                                     base::Optional<std::string> krb5conf) {
   krb5conf =
       MaybeAdjustConfig(krb5conf, !negotiate_disable_cname_lookup_.GetValue());
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&WriteFiles, std::move(krb5cc), std::move(krb5conf)),
       base::BindOnce(&KerberosFilesHandler::OnFilesChanged,
@@ -149,9 +149,9 @@ void KerberosFilesHandler::SetFiles(base::Optional<std::string> krb5cc,
 void KerberosFilesHandler::DeleteFiles() {
   // These files contain user credentials, so use BLOCK_SHUTDOWN here to make
   // sure they do get deleted.
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(&RemoveFiles),
       base::BindOnce(&KerberosFilesHandler::OnFilesChanged,

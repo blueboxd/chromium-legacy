@@ -33,11 +33,9 @@ class SendTabToSelfBubbleControllerMock : public SendTabToSelfBubbleController {
 class SendTabToSelfBubbleViewImplMock : public SendTabToSelfBubbleViewImpl {
  public:
   SendTabToSelfBubbleViewImplMock(views::View* anchor_view,
-                                  const gfx::Point& anchor_point,
                                   content::WebContents* web_contents,
                                   SendTabToSelfBubbleController* controller)
       : SendTabToSelfBubbleViewImpl(anchor_view,
-                                    anchor_point,
                                     web_contents,
                                     controller) {}
   ~SendTabToSelfBubbleViewImplMock() override = default;
@@ -65,8 +63,7 @@ class SendTabToSelfBubbleViewImplTest : public ChromeViewsTestBase {
     profile_.reset(new TestingProfile);
     controller_ = std::make_unique<SendTabToSelfBubbleControllerMock>();
     bubble_ = std::make_unique<SendTabToSelfBubbleViewImplMock>(
-        anchor_widget_->GetContentsView(), gfx::Point(), nullptr,
-        controller_.get());
+        anchor_widget_->GetContentsView(), nullptr, controller_.get());
   }
 
   void TearDown() override {

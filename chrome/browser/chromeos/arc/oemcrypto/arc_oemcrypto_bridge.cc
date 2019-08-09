@@ -148,8 +148,7 @@ void ArcOemCryptoBridge::ConnectToDaemon(
   // We need to get the GPU interface on the IO thread, then after that is
   // done it will run the Mojo call on our thread.
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
-          .get(),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}).get(),
       FROM_HERE, base::BindOnce(&GetGpuBufferManagerOnIOThread),
       base::BindOnce(&ArcOemCryptoBridge::FinishConnectingToDaemon,
                      weak_factory_.GetWeakPtr(), std::move(request)));

@@ -7,6 +7,7 @@ package org.chromium.components.payments;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodChangeResponse;
 
 import java.nio.ByteBuffer;
@@ -39,10 +40,12 @@ public class PaymentHandlerHost {
     /**
      * Instantiates the native bridge to the payment handler host. This Java object owns the native
      * bridge. The caller must call destroy() when finished using this Java object.
-     * @param delegate The object that can communicate to the merchant renderer process.
+     * @param webContents The web contents in the same browser context as the payment handler. Used
+     *                    for logging in developer tools.
+     * @param delegate    The object that can communicate to the merchant renderer process.
      */
-    public PaymentHandlerHost(PaymentHandlerHostDelegate delegate) {
-        mNativePointer = PaymentHandlerHostJni.get().init(delegate);
+    public PaymentHandlerHost(WebContents webContents, PaymentHandlerHostDelegate delegate) {
+        mNativePointer = PaymentHandlerHostJni.get().init(webContents, delegate);
     }
 
     /**
@@ -96,10 +99,12 @@ public class PaymentHandlerHost {
         /**
          * Initializes the native object. The Java caller owns the returned native object and must
          * call destroy(nativePaymentHandlerHost) when done.
-         * @param delegate The object that can communicate to the merchant renderer process.
+         * @param webContents The web contents in the same browser context as the payment handler.
+         *                    Used for logging in developer tools.
+         * @param delegate    The object that can communicate to the merchant renderer process.
          * @return The pointer to the native payment handler host bridge.
          */
-        long init(PaymentHandlerHostDelegate delegate);
+        long init(WebContents webContents, PaymentHandlerHostDelegate delegate);
 
         /**
          * Checks whether the payment method change is currently in progress.

@@ -49,10 +49,9 @@ class SettableFutureImplTest : public testing::Test {
 
   base::UnguessableToken PostGetAsyncResult() {
     base::UnguessableToken id = base::UnguessableToken::Create();
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&SettableFutureImplTest::GetAsyncResult,
-                       base::Unretained(this), id));
+    base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                   base::BindOnce(&SettableFutureImplTest::GetAsyncResult,
+                                  base::Unretained(this), id));
     return id;
   }
 

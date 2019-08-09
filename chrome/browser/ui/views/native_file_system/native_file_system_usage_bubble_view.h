@@ -56,7 +56,6 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView,
   };
 
   NativeFileSystemUsageBubbleView(views::View* anchor_view,
-                                  const gfx::Point& anchor_point,
                                   content::WebContents* web_contents,
                                   const url::Origin& origin,
                                   Usage usage);

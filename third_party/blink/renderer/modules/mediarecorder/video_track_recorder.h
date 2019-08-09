@@ -59,13 +59,6 @@ struct CrossThreadCopier<media::WebmMuxer::VideoParameters> {
   static Type Copy(Type pointer) { return pointer; }
 };
 
-template <>
-struct CrossThreadCopier<std::string> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = std::string;
-  static Type Copy(Type&& value) { return std::move(value); }
-};
-
 }  // namespace WTF
 
 namespace blink {

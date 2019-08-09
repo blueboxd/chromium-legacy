@@ -15,6 +15,7 @@
 namespace blink {
 
 class ConsoleLogger;
+class JSONObject;
 class Modulator;
 class ParsedSpecifier;
 
@@ -30,23 +31,43 @@ class ImportMap final : public GarbageCollectedFinalized<ImportMap> {
 
   ImportMap(const Modulator&, const HashMap<String, Vector<KURL>>& imports);
 
+  // https://wicg.github.io/import-maps/#resolve-an-imports-match
   // Returns nullopt when not mapped by |this| import map (i.e. the import map
   // doesn't have corresponding keys).
   // Returns a null URL when resolution fails.
-  base::Optional<KURL> Resolve(const ParsedSpecifier&,
-                               String* debug_message) const;
+  base::Optional<KURL> ResolveImportsMatch(const ParsedSpecifier&,
+                                           String* debug_message) const;
 
   String ToString() const;
 
   void Trace(Visitor*);
 
  private:
-  using MatchResult = HashMap<String, Vector<KURL>>::const_iterator;
-  base::Optional<MatchResult> Match(const ParsedSpecifier&) const;
-  base::Optional<MatchResult> MatchExact(const ParsedSpecifier&) const;
-  base::Optional<MatchResult> MatchPrefix(const ParsedSpecifier&) const;
+  // <spec href="https://wicg.github.io/import-maps/#specifier-map">A specifier
+  // map is an ordered map from strings to lists of URLs.</spec>
+  //
+  // In Blink, we actually use an unordered map here, and related algorithms
+  // are implemented differently from the spec.
+  using SpecifierMap = HashMap<String, Vector<KURL>>;
 
-  HashMap<String, Vector<KURL>> imports_;
+  using MatchResult = SpecifierMap::const_iterator;
+
+  base::Optional<MatchResult> MatchPrefix(const ParsedSpecifier&) const;
+  static SpecifierMap SortAndNormalizeSpecifierMap(const JSONObject* imports,
+                                                   const KURL& base_url,
+                                                   ConsoleLogger&);
+
+  base::Optional<KURL> ResolveImportsMatchInternal(
+      const String& normalizedSpecifier,
+      const MatchResult&,
+      String* debug_message) const;
+
+  // https://wicg.github.io/import-maps/#import-map-imports
+  SpecifierMap imports_;
+
+  // TODO(crbug.com/927181): Implement
+  // https://wicg.github.io/import-maps/#import-map-scopes.
+
   Member<const Modulator> modulator_for_built_in_modules_;
 };
 

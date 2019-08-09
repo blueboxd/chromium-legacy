@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/payments/content/mock_identity_observer.h"
 #include "components/payments/core/mock_payment_request_delegate.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/common/content_features.h"
@@ -120,7 +121,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     instrument_ = std::make_unique<ServiceWorkerPaymentInstrument>(
         &browser_context_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
-        std::move(stored_app), &delegate_);
+        std::move(stored_app), &delegate_, &identity_observer_);
   }
 
   ServiceWorkerPaymentInstrument* GetInstrument() { return instrument_.get(); }
@@ -135,6 +136,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
 
  private:
   MockPaymentRequestDelegate delegate_;
+  MockIdentityObserver identity_observer_;
   content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context_;
 

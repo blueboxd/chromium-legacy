@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace payments {
@@ -189,11 +190,14 @@ class JourneyLogger {
   // reason.
   void SetNotShown(NotShownReason reason);
 
-  // Records the transcation amount separated by currency and completion status
-  // (complete vs triggered).
+  // Records the transcation amount after converting to USD separated by
+  // completion status (complete vs triggered).
   void RecordTransactionAmount(std::string currency,
                                const std::string& value,
                                bool completed);
+
+  // Records when Payment Request .show is called.
+  void SetTriggerTime();
 
  private:
   static const int NUMBER_OF_SECTIONS = 3;
@@ -238,6 +242,9 @@ class JourneyLogger {
   // Payment Request.
   void RecordEventsMetric(CompletionStatus completion_status);
 
+  // Records the time between request.show() and request completion/abort.
+  void RecordTimeToCheckout(CompletionStatus completion_status) const;
+
   // Validates the recorded event sequence during the Payment Request.
   void ValidateEventBits() const;
 
@@ -257,6 +264,10 @@ class JourneyLogger {
   // Keeps track of whether transaction amounts are recorded or not to catch
   // multiple recording. Triggered is the first index and Completed the second.
   bool has_recorded_transaction_amount_[2] = {false};
+
+  // Stores the time that request.show() is called. This is used to record
+  // checkout duration.
+  base::TimeTicks trigger_time_;
 
   ukm::SourceId source_id_;
 

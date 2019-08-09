@@ -87,7 +87,7 @@ WebViewBrowserState::WebViewBrowserState(
 
   request_context_getter_ = new WebViewURLRequestContextGetter(
       GetStatePath(), ApplicationContext::GetInstance()->GetNetLog(),
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
+      base::CreateSingleThreadTaskRunner({web::WebThread::IO}));
 
   // Initialize prefs.
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry =
@@ -123,10 +123,9 @@ WebViewBrowserState::~WebViewBrowserState() {
   ActiveStateManager::FromBrowserState(this)->SetActive(false);
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO},
-      base::BindOnce(&WebViewURLRequestContextGetter::ShutDown,
-                     request_context_getter_));
+  base::PostTask(FROM_HERE, {web::WebThread::IO},
+                 base::BindOnce(&WebViewURLRequestContextGetter::ShutDown,
+                                request_context_getter_));
 }
 
 PrefService* WebViewBrowserState::GetPrefs() {

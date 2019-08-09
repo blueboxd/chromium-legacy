@@ -17,28 +17,28 @@ namespace media_session {
 
 void PerformMediaSessionAction(
     mojom::MediaSessionAction action,
-    const mojom::MediaControllerPtr& media_controller_ptr) {
+    const mojo::Remote<mojom::MediaController>& media_controller_remote) {
   switch (action) {
     case mojom::MediaSessionAction::kPreviousTrack:
-      media_controller_ptr->PreviousTrack();
+      media_controller_remote->PreviousTrack();
       break;
     case mojom::MediaSessionAction::kSeekBackward:
-      media_controller_ptr->Seek(kDefaultSeekTime * -1);
+      media_controller_remote->Seek(kDefaultSeekTime * -1);
       break;
     case mojom::MediaSessionAction::kPlay:
-      media_controller_ptr->Resume();
+      media_controller_remote->Resume();
       break;
     case mojom::MediaSessionAction::kPause:
-      media_controller_ptr->Suspend();
+      media_controller_remote->Suspend();
       break;
     case mojom::MediaSessionAction::kSeekForward:
-      media_controller_ptr->Seek(kDefaultSeekTime);
+      media_controller_remote->Seek(kDefaultSeekTime);
       break;
     case mojom::MediaSessionAction::kNextTrack:
-      media_controller_ptr->NextTrack();
+      media_controller_remote->NextTrack();
       break;
     case mojom::MediaSessionAction::kStop:
-      media_controller_ptr->Stop();
+      media_controller_remote->Stop();
       break;
     case mojom::MediaSessionAction::kSkipAd:
     case mojom::MediaSessionAction::kSeekTo:

@@ -151,6 +151,10 @@ void FileManagerJsTestBase::RunGeneratedTest(const std::string& file) {
   RunTestImpl(embedded_test_server()->GetURL(file));
 }
 
+void FileManagerJsTestBase::RunTestURL(const std::string& file) {
+  RunTestImpl(GURL("chrome://file_manager_test" + file));
+}
+
 void FileManagerJsTestBase::RunTestImpl(const GURL& url) {
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* const web_contents =

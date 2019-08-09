@@ -550,8 +550,8 @@
   },
   {
     "name": "cryptauth-v2-enrollment",
-    "owners": [ "jlklein", "khorimoto", "nohle" ],
-    "expiry_milestone": 76
+    "owners": [ "khorimoto", "nohle" ],
+    "expiry_milestone": 82
   },
   {
     "name": "d3d11-video-decoder",
@@ -880,8 +880,8 @@
   },
   {
     "name": "enable-autofill-account-wallet-storage",
-    "owners": [ "feuunk", "butter-team@google.com" ],
-    "expiry_milestone": 76
+    "owners": [ "treib", "jsaul@google.com", "butter-team@google.com" ],
+    "expiry_milestone": 81
   },
   {
     "name": "enable-autofill-credit-card-ablation-experiment",

@@ -35,8 +35,8 @@ void OnGetMetadataOnIOThread(
     const base::File::Info& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), result, info));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), result, info));
 }
 
 void GetMetadataOnIOThread(
@@ -136,7 +136,7 @@ void RecentDriveSource::OnSearchMetadata(
             params_.value().origin(), storage::kFileSystemTypeExternal,
             virtual_path);
     ++num_inflight_stats_;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &GetMetadataOnIOThread,

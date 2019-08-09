@@ -37,11 +37,10 @@ web::CertPolicy::Judgment GetJudgmenet(
   __block web::CertPolicy::Judgment judgement =
       web::CertPolicy::Judgment::UNKNOWN;
   __block bool completed = false;
-  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
-                             completed = true;
-                             judgement =
-                                 cache->QueryPolicy(cert.get(), host, status);
-                           }));
+  base::PostTask(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
+                   completed = true;
+                   judgement = cache->QueryPolicy(cert.get(), host, status);
+                 }));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(1.0, ^{
     return completed;
   }));

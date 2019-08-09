@@ -238,7 +238,6 @@ jumbo_component("wtf") {
 
   public_deps = [
     "//base",
-    "//skia",
     "//third_party/icu",
   ]
 

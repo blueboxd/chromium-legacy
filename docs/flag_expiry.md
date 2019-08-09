@@ -82,7 +82,6 @@ authoritative source of the expiry set for a given milestone.
 * cct-module-post-message
 * cct-module-use-intent-extras
 * crostini-usb-support
-* cryptauth-v2-enrollment
 * document-passive-wheel-event-listeners
 * enable-app-list-search-autocomplete
 * enable-arc-cups-api

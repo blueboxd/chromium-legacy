@@ -14,6 +14,7 @@ namespace blink {
 class NGBoxFragmentBuilder;
 class NGFragmentItem;
 class NGFragmentItems;
+class NGInlineNode;
 
 // This class builds |NGFragmentItems|.
 //
@@ -24,21 +25,40 @@ class CORE_EXPORT NGFragmentItemsBuilder {
  public:
   NGFragmentItemsBuilder(NGBoxFragmentBuilder* box_builder) {}
 
+  const String& TextContent(bool first_line) const {
+    return UNLIKELY(first_line && first_line_text_content_)
+               ? first_line_text_content_
+               : text_content_;
+  }
+  void SetTextContent(const NGInlineNode& node);
+
+  // Add a line at once.
   using Child = NGLineBoxFragmentBuilder::Child;
   using ChildList = NGLineBoxFragmentBuilder::ChildList;
-  void AddChildren(const ChildList& children);
+  void AddLine(const NGPhysicalLineBoxFragment& line, ChildList& children);
+
+  // Build a |NGFragmentItems|. The builder cannot build twice because data set
+  // to this builder may be cleared.
+  void ToFragmentItems(WritingMode writing_mode,
+                       TextDirection direction,
+                       const PhysicalSize& outer_size,
+                       void* data);
+
+ private:
+  void AddItems(base::span<Child> children);
 
   void ConvertToPhysical(WritingMode writing_mode,
                          TextDirection direction,
-                         PhysicalSize outer_size);
+                         const PhysicalSize& outer_size);
 
-  void ToFragmentItems(void* data);
-
- private:
   Vector<std::unique_ptr<NGFragmentItem>> items_;
   Vector<LogicalOffset> offsets_;
   String text_content_;
   String first_line_text_content_;
+
+#if DCHECK_IS_ON()
+  bool is_converted_to_physical_ = false;
+#endif
 
   friend class NGFragmentItems;
 };

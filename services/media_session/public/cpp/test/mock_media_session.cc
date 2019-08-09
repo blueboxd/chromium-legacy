@@ -317,7 +317,7 @@ void MockMediaSession::AbandonAudioFocusFromClient() {
 }
 
 base::UnguessableToken MockMediaSession::RequestAudioFocusFromService(
-    mojom::AudioFocusManagerPtr& service,
+    mojo::Remote<mojom::AudioFocusManager>& service,
     mojom::AudioFocusType audio_focus_type) {
   if (afr_client_.is_bound()) {
     RequestAudioFocusFromClient(audio_focus_type);
@@ -350,7 +350,7 @@ base::UnguessableToken MockMediaSession::RequestAudioFocusFromService(
 
 bool MockMediaSession::RequestGroupedAudioFocusFromService(
     const base::UnguessableToken& request_id,
-    mojom::AudioFocusManagerPtr& service,
+    mojo::Remote<mojom::AudioFocusManager>& service,
     mojom::AudioFocusType audio_focus_type,
     const base::UnguessableToken& group_id) {
   if (afr_client_.is_bound()) {

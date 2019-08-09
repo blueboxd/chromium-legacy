@@ -4,6 +4,8 @@
 
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
 
+#include <algorithm>
+
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/strcat.h"
@@ -580,7 +582,8 @@ void TrackEventThreadLocalEventSink::UpdateDuration(
     DCHECK(handle.event_index > 0 &&
            handle.event_index < current_stack_depth_ &&
            !base::trace_event::TraceLog::GetInstance()->IsEnabled());
-    current_stack_depth_ = handle.event_index - 1;
+    current_stack_depth_ = std::min(
+        current_stack_depth_, static_cast<uint32_t>(handle.event_index - 1));
     return;
   }
 

@@ -42,7 +42,7 @@ TEST(SerializedScriptValueThreadedTest,
           ToV8(array_buffer, scope.GetContext()->Global(), scope.GetIsolate()),
           options, ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(serialized);
-  EXPECT_TRUE(array_buffer->IsNeutered());
+  EXPECT_TRUE(array_buffer->IsDetached());
 
   // Deserialize the serialized value on the worker.
   // Intentionally keep a reference on this thread while this occurs.

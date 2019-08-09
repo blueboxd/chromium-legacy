@@ -69,8 +69,8 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   virtual unsigned ByteLength() const = 0;
   virtual unsigned TypeSize() const = 0;
 
-  void SetNeuterable(bool flag) { is_neuterable_ = flag; }
-  bool IsNeuterable() const { return is_neuterable_; }
+  void SetDetachable(bool flag) { is_detachable_ = flag; }
+  bool IsDetachable() const { return is_detachable_; }
   bool IsShared() const { return buffer_ ? buffer_->IsShared() : false; }
 
   virtual ~ArrayBufferView();
@@ -99,13 +99,13 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
     return true;
   }
 
-  virtual void Neuter();
+  virtual void Detach();
 
   // This is the address of the ArrayBuffer's storage, plus the byte offset.
   void* base_address_;
 
   unsigned byte_offset_ : 31;
-  unsigned is_neuterable_ : 1;
+  unsigned is_detachable_ : 1;
 
  private:
   friend class ArrayBuffer;

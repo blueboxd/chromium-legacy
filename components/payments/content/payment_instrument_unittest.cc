@@ -10,6 +10,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/payments/content/mock_identity_observer.h"
 #include "components/payments/content/service_worker_payment_instrument.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/mock_payment_request_delegate.h"
@@ -49,7 +50,7 @@ class PaymentInstrumentTest : public testing::Test,
     return std::make_unique<ServiceWorkerPaymentInstrument>(
         &browser_context_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
-        std::move(stored_app), &delegate_);
+        std::move(stored_app), &delegate_, &identity_observer_);
   }
 
   autofill::CreditCard& local_credit_card() { return local_card_; }
@@ -74,6 +75,7 @@ class PaymentInstrumentTest : public testing::Test,
   autofill::CreditCard local_card_;
   std::vector<autofill::AutofillProfile*> billing_profiles_;
   MockPaymentRequestDelegate delegate_;
+  MockIdentityObserver identity_observer_;
   std::unique_ptr<PaymentRequestSpec> spec_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentInstrumentTest);

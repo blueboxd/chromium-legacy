@@ -29,24 +29,20 @@ class PrefRegistrySyncable;
 namespace web_app {
 
 // Forward declarations of generalized interfaces.
-class AppRegistrar;
 class ExternalWebAppManager;
 class InstallFinalizer;
-class PendingAppManager;
 class SystemWebAppManager;
 class WebAppAudioFocusIdMap;
 class WebAppInstallManager;
+class WebAppPolicyManager;
 class WebAppTabHelperBase;
 class WebAppUiManager;
 
 // Forward declarations for new extension-independent subsystems.
-class WebAppDatabase;
 class WebAppDatabaseFactory;
+class WebAppDatabase;
 class WebAppIconManager;
 class WebAppSyncManager;
-
-// Forward declarations for legacy extension-based subsystems.
-class WebAppPolicyManager;
 
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
@@ -73,7 +69,7 @@ class WebAppProvider : public WebAppProviderBase {
   AppRegistrar& registrar() override;
   InstallManager& install_manager() override;
   PendingAppManager& pending_app_manager() override;
-  WebAppPolicyManager* policy_manager() override;
+  WebAppPolicyManager& policy_manager() override;
   WebAppUiManager& ui_manager() override;
 
   WebAppDatabaseFactory& database_factory() { return *database_factory_; }
@@ -112,23 +108,21 @@ class WebAppProvider : public WebAppProviderBase {
   void CheckIsConnected() const;
 
   // New extension-independent subsystems:
-  std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppSyncManager> sync_manager_;
-  std::unique_ptr<WebAppUiManager> ui_manager_;
 
-  // New generalized subsystems:
+  // Generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;
-  std::unique_ptr<InstallFinalizer> install_finalizer_;
-  std::unique_ptr<WebAppInstallManager> install_manager_;
-  std::unique_ptr<PendingAppManager> pending_app_manager_;
   std::unique_ptr<ExternalWebAppManager> external_web_app_manager_;
+  std::unique_ptr<InstallFinalizer> install_finalizer_;
+  std::unique_ptr<PendingAppManager> pending_app_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
-
-  // Legacy extension-based subsystems:
+  std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;
+  std::unique_ptr<WebAppInstallManager> install_manager_;
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
+  std::unique_ptr<WebAppUiManager> ui_manager_;
 
   base::OneShotEvent on_registry_ready_;
 

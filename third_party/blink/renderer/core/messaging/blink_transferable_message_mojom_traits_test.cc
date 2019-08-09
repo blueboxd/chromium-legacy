@@ -111,9 +111,9 @@ TEST(BlinkTransferableMessageStructTraitsTest,
       out.message->GetArrayBufferContentsArray()[0];
   ASSERT_EQ(originalContentsData, deserialized_contents.Data());
 
-  // The original ArrayBufferContents should be neutered.
+  // The original ArrayBufferContents should be detached.
   ASSERT_EQ(nullptr, v8_buffer->GetContents().Data());
-  ASSERT_TRUE(original_array_buffer->IsNeutered());
+  ASSERT_TRUE(original_array_buffer->IsDetached());
 }
 
 ImageBitmap* CreateBitmap() {

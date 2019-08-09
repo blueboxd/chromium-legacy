@@ -32,10 +32,9 @@ class IOThreadCacheCounter {
         backend_(nullptr) {}
 
   void Count() {
-    base::PostTaskWithTraits(
-        FROM_HERE, {web::WebThread::IO},
-        base::BindRepeating(&IOThreadCacheCounter::CountInternal,
-                            base::Unretained(this), net::OK));
+    base::PostTask(FROM_HERE, {web::WebThread::IO},
+                   base::BindRepeating(&IOThreadCacheCounter::CountInternal,
+                                       base::Unretained(this), net::OK));
   }
 
  private:
@@ -84,7 +83,7 @@ class IOThreadCacheCounter {
         case STEP_CALLBACK: {
           result_ = rv;
 
-          base::PostTaskWithTraits(
+          base::PostTask(
               FROM_HERE, {web::WebThread::UI},
               base::BindOnce(&IOThreadCacheCounter::OnCountingFinished,
                              base::Unretained(this)));

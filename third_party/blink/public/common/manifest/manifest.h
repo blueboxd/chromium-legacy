@@ -162,10 +162,6 @@ struct BLINK_COMMON_EXPORT Manifest {
   std::vector<ImageResource> icons;
 
   // Null if parsing failed or the field was not present.
-  // TODO(constantina): This field is non-standard and part of a Chrome
-  // experiment. See:
-  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
-  // As such, this field should not be exposed to web contents.
   base::Optional<ShareTarget> share_target;
 
   // Null if parsing failed or the field was not present.

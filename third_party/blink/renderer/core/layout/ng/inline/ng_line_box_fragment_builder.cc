@@ -108,6 +108,20 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
   }
 }
 
+void NGLineBoxFragmentBuilder::AddOutOfFlowChildren(ChildList& children) {
+  for (auto& child : children) {
+    if (child.out_of_flow_positioned_box) {
+      AddOutOfFlowChildCandidate(
+          NGBlockNode(ToLayoutBox(child.out_of_flow_positioned_box)),
+          child.offset, child.container_direction);
+      child.out_of_flow_positioned_box = nullptr;
+    }
+  }
+
+  DCHECK(oof_positioned_descendants_.IsEmpty());
+  MoveOutOfFlowDescendantCandidatesToDescendants();
+}
+
 scoped_refptr<const NGLayoutResult>
 NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   writing_mode_ = ToLineWritingMode(writing_mode_);

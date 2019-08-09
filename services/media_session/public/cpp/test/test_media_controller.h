@@ -25,9 +25,10 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
     TestMediaControllerImageObserver
     : public mojom::MediaControllerImageObserver {
  public:
-  TestMediaControllerImageObserver(mojom::MediaControllerPtr& controller,
-                                   int minimum_size_px,
-                                   int desired_size_px);
+  TestMediaControllerImageObserver(
+      mojo::Remote<mojom::MediaController>& controller,
+      int minimum_size_px,
+      int desired_size_px);
   ~TestMediaControllerImageObserver() override;
 
   // mojom::MediaControllerImageObserver overrides.
@@ -54,7 +55,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
     TestMediaControllerObserver : public mojom::MediaControllerObserver {
  public:
   explicit TestMediaControllerObserver(
-      mojom::MediaControllerPtr& media_controller);
+      mojo::Remote<mojom::MediaController>& media_controller);
 
   ~TestMediaControllerObserver() override;
 
@@ -135,7 +136,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   TestMediaController();
   ~TestMediaController() override;
 
-  mojom::MediaControllerPtr CreateMediaControllerPtr();
+  mojo::Remote<mojom::MediaController> CreateMediaControllerRemote();
 
   // mojom::MediaController:
   void Suspend() override;

@@ -70,8 +70,8 @@ bool FakeWebFrame::CallJavaScriptFunction(
     return false;
   }
   const base::Value* js_result = result_map_[name].get();
-  base::PostTaskWithTraits(FROM_HERE, {WebThread::UI},
-                           base::BindOnce(std::move(callback), js_result));
+  base::PostTask(FROM_HERE, {WebThread::UI},
+                 base::BindOnce(std::move(callback), js_result));
   return true;
 }
 

@@ -155,7 +155,7 @@ bool WebFrameImpl::CallJavaScriptFunction(
       std::move(callback), std::move(timeout_callback));
   pending_requests_[message_id] = std::move(callbacks);
 
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {web::WebThread::UI},
       pending_requests_[message_id]->timeout_callback->callback(), timeout);
   bool called =

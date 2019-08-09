@@ -91,8 +91,9 @@ SimulateProgressInfo::SimulateProgressInfo(const SimulateProgressInfo&) =
     default;
 
 FakeImageWriterClient::FakeImageWriterClient()
-    : ImageWriterUtilityClient(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    : ImageWriterUtilityClient(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 FakeImageWriterClient::~FakeImageWriterClient() {}
 

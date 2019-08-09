@@ -572,6 +572,7 @@ TEST_F(CertificateProviderServiceTest, SignUsingSpkiAsIdentification) {
   std::vector<uint8_t> received_signature;
   service_->RequestSignatureBySpki(
       client1_spki, SSL_SIGN_RSA_PKCS1_SHA256, input,
+      /*authenticating_user_account_id=*/{},
       base::BindOnce(&ExpectOKAndStoreSignature, &received_signature));
 
   task_runner_->RunUntilIdle();

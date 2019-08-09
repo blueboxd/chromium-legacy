@@ -265,22 +265,23 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
 
   // Connect to the MediaControllerManager and create a MediaController that
   // controls the active session so we can observe it.
-  media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
-  connector_->BindInterface(media_session::mojom::kServiceName,
-                            mojo::MakeRequest(&controller_manager_ptr));
-  controller_manager_ptr->CreateActiveMediaController(
-      mojo::MakeRequest(&media_controller_ptr_));
+  mojo::Remote<media_session::mojom::MediaControllerManager>
+      controller_manager_remote;
+  connector_->Connect(media_session::mojom::kServiceName,
+                      controller_manager_remote.BindNewPipeAndPassReceiver());
+  controller_manager_remote->CreateActiveMediaController(
+      media_controller_remote_.BindNewPipeAndPassReceiver());
 
   // Observe the active media controller for changes.
-  media_controller_ptr_->AddObserver(
+  media_controller_remote_->AddObserver(
       observer_receiver_.BindNewPipeAndPassRemote());
 
-  media_controller_ptr_->ObserveImages(
+  media_controller_remote_->ObserveImages(
       media_session::mojom::MediaSessionImageType::kArtwork,
       kMinimumArtworkSize, kDesiredArtworkSize,
       artwork_observer_receiver_.BindNewPipeAndPassRemote());
 
-  media_controller_ptr_->ObserveImages(
+  media_controller_remote_->ObserveImages(
       media_session::mojom::MediaSessionImageType::kSourceIcon,
       kMinimumIconSize, kDesiredIconSize,
       icon_observer_receiver_.BindNewPipeAndPassRemote());
@@ -474,7 +475,7 @@ void LockScreenMediaControlsView::ButtonPressed(views::Button* sender,
 
   media_session::PerformMediaSessionAction(
       media_message_center::GetActionFromButtonTag(*sender),
-      media_controller_ptr_);
+      media_controller_remote_);
 }
 
 void LockScreenMediaControlsView::OnGestureEvent(ui::GestureEvent* event) {
@@ -512,7 +513,7 @@ void LockScreenMediaControlsView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void LockScreenMediaControlsView::FlushForTesting() {
-  media_controller_ptr_.FlushForTesting();
+  media_controller_remote_.FlushForTesting();
 }
 
 void LockScreenMediaControlsView::CreateMediaButton(
@@ -564,7 +565,7 @@ void LockScreenMediaControlsView::SetIsPlaying(bool playing) {
 }
 
 void LockScreenMediaControlsView::Dismiss() {
-  media_controller_ptr_->Stop();
+  media_controller_remote_->Stop();
   hide_media_controls_.Run();
 }
 

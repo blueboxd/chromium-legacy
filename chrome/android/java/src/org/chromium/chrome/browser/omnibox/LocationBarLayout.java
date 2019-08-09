@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
+import org.chromium.chrome.browser.omnibox.status.StatusView;
 import org.chromium.chrome.browser.omnibox.status.StatusViewCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
@@ -56,6 +57,7 @@ import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
+import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -111,6 +113,8 @@ public class LocationBarLayout extends FrameLayout
 
     protected LocationBarVoiceRecognitionHandler mVoiceRecognitionHandler;
 
+    protected CompositeTouchDelegate mCompositeTouchDelegate;
+
     /**
      * Class to handle input from a hardware keyboard when the focus is on the URL bar. In
      * particular, handle navigating the suggestions list from the keyboard.
@@ -144,6 +148,9 @@ public class LocationBarLayout extends FrameLayout
 
     public LocationBarLayout(Context context, AttributeSet attrs) {
         this(context, attrs, R.layout.location_bar);
+
+        mCompositeTouchDelegate = new CompositeTouchDelegate(this);
+        setTouchDelegate(mCompositeTouchDelegate);
     }
 
     public LocationBarLayout(Context context, AttributeSet attrs, int layoutId) {
@@ -207,8 +214,9 @@ public class LocationBarLayout extends FrameLayout
 
         setLayoutTransition(null);
 
-        mStatusViewCoordinator =
-                new StatusViewCoordinator(mIsTablet, findViewById(R.id.location_bar_status));
+        StatusView statusView = findViewById(R.id.location_bar_status);
+        statusView.setCompositeTouchDelegate(mCompositeTouchDelegate);
+        mStatusViewCoordinator = new StatusViewCoordinator(mIsTablet, statusView);
 
         updateShouldAnimateIconChanges();
         mUrlBar.setOnKeyListener(new UrlBarKeyListener());

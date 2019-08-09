@@ -51,15 +51,17 @@ class AudioFocusManagerTest
     // Create an instance of the MediaSessionService.
     service_ = std::make_unique<MediaSessionService>(
         connector_factory_.RegisterInstance(mojom::kServiceName));
-    connector_factory_.GetDefaultConnector()->BindInterface(mojom::kServiceName,
-                                                            &audio_focus_ptr_);
-    connector_factory_.GetDefaultConnector()->BindInterface(
-        mojom::kServiceName, &audio_focus_debug_ptr_);
-    connector_factory_.GetDefaultConnector()->BindInterface(
-        mojom::kServiceName, &controller_manager_ptr_);
+    connector_factory_.GetDefaultConnector()->Connect(
+        mojom::kServiceName, audio_focus_remote_.BindNewPipeAndPassReceiver());
+    connector_factory_.GetDefaultConnector()->Connect(
+        mojom::kServiceName,
+        audio_focus_debug_remote_.BindNewPipeAndPassReceiver());
+    connector_factory_.GetDefaultConnector()->Connect(
+        mojom::kServiceName,
+        controller_manager_remote_.BindNewPipeAndPassReceiver());
 
-    audio_focus_ptr_->SetEnforcementMode(GetParam());
-    audio_focus_ptr_.FlushForTesting();
+    audio_focus_remote_->SetEnforcementMode(GetParam());
+    audio_focus_remote_.FlushForTesting();
   }
 
   void TearDown() override {
@@ -95,13 +97,13 @@ class AudioFocusManagerTest
   void AbandonAudioFocusNoReset(test::MockMediaSession* session) {
     session->audio_focus_request()->AbandonAudioFocus();
     session->FlushForTesting();
-    audio_focus_ptr_.FlushForTesting();
+    audio_focus_remote_.FlushForTesting();
   }
 
   AudioFocusManager::RequestId RequestAudioFocus(
       test::MockMediaSession* session,
       mojom::AudioFocusType audio_focus_type) {
-    return session->RequestAudioFocusFromService(audio_focus_ptr_,
+    return session->RequestAudioFocusFromService(audio_focus_remote_,
                                                  audio_focus_type);
   }
 
@@ -110,7 +112,7 @@ class AudioFocusManagerTest
                                 mojom::AudioFocusType audio_focus_type,
                                 const base::UnguessableToken& group_id) {
     return session->RequestGroupedAudioFocusFromService(
-        request_id, audio_focus_ptr_, audio_focus_type, group_id);
+        request_id, audio_focus_remote_, audio_focus_type, group_id);
   }
 
   mojom::MediaSessionDebugInfoPtr GetDebugInfo(
@@ -126,8 +128,8 @@ class AudioFocusManagerTest
 
     GetDebugService()->GetDebugInfoForRequest(request_id, std::move(callback));
 
-    audio_focus_ptr_.FlushForTesting();
-    audio_focus_debug_ptr_.FlushForTesting();
+    audio_focus_remote_.FlushForTesting();
+    audio_focus_debug_remote_.FlushForTesting();
 
     return result;
   }
@@ -151,7 +153,7 @@ class AudioFocusManagerTest
 
     GetService()->AddObserver(observer->BindNewPipeAndPassRemote());
 
-    audio_focus_ptr_.FlushForTesting();
+    audio_focus_remote_.FlushForTesting();
     return observer;
   }
 
@@ -166,14 +168,14 @@ class AudioFocusManagerTest
 
   void SetSourceName(const std::string& name) {
     GetService()->SetSourceName(name);
-    audio_focus_ptr_.FlushForTesting();
+    audio_focus_remote_.FlushForTesting();
   }
 
-  mojom::AudioFocusManagerPtr CreateAudioFocusManagerPtr() {
-    mojom::AudioFocusManagerPtr ptr;
-    connector_factory_.GetDefaultConnector()->BindInterface(
-        mojom::kServiceName, mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::Remote<mojom::AudioFocusManager> CreateAudioFocusManagerRemote() {
+    mojo::Remote<mojom::AudioFocusManager> remote;
+    connector_factory_.GetDefaultConnector()->Connect(
+        mojom::kServiceName, remote.BindNewPipeAndPassReceiver());
+    return remote;
   }
 
   const std::string GetSourceNameForLastRequest() {
@@ -210,8 +212,8 @@ class AudioFocusManagerTest
 
   base::PowerMonitorTestSource& GetTestPowerSource() { return *power_source_; }
 
-  mojom::MediaControllerManagerPtr& controller_manager() {
-    return controller_manager_ptr_;
+  mojo::Remote<mojom::MediaControllerManager>& controller_manager() {
+    return controller_manager_remote_;
   }
 
  private:
@@ -235,23 +237,23 @@ class AudioFocusManagerTest
         },
         &result));
 
-    audio_focus_ptr_.FlushForTesting();
+    audio_focus_remote_.FlushForTesting();
     return result;
   }
 
   mojom::AudioFocusManager* GetService() const {
-    return audio_focus_ptr_.get();
+    return audio_focus_remote_.get();
   }
 
   mojom::AudioFocusManagerDebug* GetDebugService() const {
-    return audio_focus_debug_ptr_.get();
+    return audio_focus_debug_remote_.get();
   }
 
   void FlushForTestingIfEnabled() {
     if (!IsEnforcementEnabled())
       return;
 
-    audio_focus_ptr_.FlushForTesting();
+    audio_focus_remote_.FlushForTesting();
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -260,9 +262,9 @@ class AudioFocusManagerTest
   service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<MediaSessionService> service_;
 
-  mojom::AudioFocusManagerPtr audio_focus_ptr_;
-  mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
-  mojom::MediaControllerManagerPtr controller_manager_ptr_;
+  mojo::Remote<mojom::AudioFocusManager> audio_focus_remote_;
+  mojo::Remote<mojom::AudioFocusManagerDebug> audio_focus_debug_remote_;
+  mojo::Remote<mojom::MediaControllerManager> controller_manager_remote_;
 
   base::PowerMonitorTestSource* power_source_;
 
@@ -862,7 +864,8 @@ TEST_P(AudioFocusManagerTest,
 TEST_P(AudioFocusManagerTest, SourceName_AssociatedWithBinding) {
   SetSourceName(kExampleSourceName);
 
-  mojom::AudioFocusManagerPtr new_ptr = CreateAudioFocusManagerPtr();
+  mojo::Remote<mojom::AudioFocusManager> new_ptr =
+      CreateAudioFocusManagerRemote();
   new_ptr->SetSourceName(kExampleSourceName2);
   new_ptr.FlushForTesting();
 
@@ -1548,9 +1551,9 @@ TEST_P(AudioFocusManagerTest, TransientPauseShouldDelayControllerPause) {
       GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
       GetState(&media_session_1));
 
-  mojom::MediaControllerPtr controller;
+  mojo::Remote<mojom::MediaController> controller;
   controller_manager()->CreateMediaControllerForSession(
-      mojo::MakeRequest(&controller), media_session_1.request_id());
+      controller.BindNewPipeAndPassReceiver(), media_session_1.request_id());
   controller_manager().FlushForTesting();
 
   controller->Suspend();
@@ -1578,9 +1581,9 @@ TEST_P(AudioFocusManagerTest, TransientPauseShouldDelayControllerStop) {
       GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
       GetState(&media_session_1));
 
-  mojom::MediaControllerPtr controller;
+  mojo::Remote<mojom::MediaController> controller;
   controller_manager()->CreateMediaControllerForSession(
-      mojo::MakeRequest(&controller), media_session_1.request_id());
+      controller.BindNewPipeAndPassReceiver(), media_session_1.request_id());
   controller_manager().FlushForTesting();
 
   controller->Stop();
@@ -1611,9 +1614,9 @@ TEST_P(AudioFocusManagerTest, TransientPauseShouldDelayControllerResume) {
   EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
             GetState(&media_session_1));
 
-  mojom::MediaControllerPtr controller;
+  mojo::Remote<mojom::MediaController> controller;
   controller_manager()->CreateMediaControllerForSession(
-      mojo::MakeRequest(&controller), media_session_1.request_id());
+      controller.BindNewPipeAndPassReceiver(), media_session_1.request_id());
   controller_manager().FlushForTesting();
 
   controller->Suspend();
@@ -1657,9 +1660,9 @@ TEST_P(AudioFocusManagerTest, TransientPauseShouldDelayLastActionOnly) {
       GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
       GetState(&media_session_1));
 
-  mojom::MediaControllerPtr controller;
+  mojo::Remote<mojom::MediaController> controller;
   controller_manager()->CreateMediaControllerForSession(
-      mojo::MakeRequest(&controller), media_session_1.request_id());
+      controller.BindNewPipeAndPassReceiver(), media_session_1.request_id());
   controller_manager().FlushForTesting();
 
   controller->Resume();

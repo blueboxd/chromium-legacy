@@ -61,7 +61,7 @@ class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
 
   void CreateDecodeAccelerator(
       mojom::VideoDecodeAcceleratorRequest request) override {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &content::BindInterfaceInGpuProcess<mojom::VideoDecodeAccelerator>,
@@ -70,7 +70,7 @@ class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
 
   void CreateEncodeAccelerator(
       mojom::VideoEncodeAcceleratorRequest request) override {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &content::BindInterfaceInGpuProcess<mojom::VideoEncodeAccelerator>,
@@ -79,11 +79,10 @@ class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
 
   void CreateProtectedBufferAllocator(
       mojom::VideoProtectedBufferAllocatorRequest request) override {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&content::BindInterfaceInGpuProcess<
-                           mojom::VideoProtectedBufferAllocator>,
-                       std::move(request)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&content::BindInterfaceInGpuProcess<
+                                      mojom::VideoProtectedBufferAllocator>,
+                                  std::move(request)));
   }
 
  private:

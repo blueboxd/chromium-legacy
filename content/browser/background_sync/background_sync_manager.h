@@ -133,6 +133,10 @@ class CONTENT_EXPORT BackgroundSyncManager
       scoped_refptr<ServiceWorkerVersion> active_version,
       bool last_chance,
       ServiceWorkerVersion::StatusCallback callback);
+  void EmulateDispatchPeriodicSyncEvent(
+      const std::string& tag,
+      scoped_refptr<ServiceWorkerVersion> active_version,
+      ServiceWorkerVersion::StatusCallback callback);
 
   // Called from DevTools to toggle service worker "offline" status
   void EmulateServiceWorkerOffline(int64_t service_worker_id, bool is_offline);

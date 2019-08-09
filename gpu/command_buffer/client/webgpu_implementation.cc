@@ -9,6 +9,7 @@
 
 #include "base/numerics/checked_math.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/command_buffer/client/dawn_client_memory_transfer_service.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 
@@ -28,19 +29,15 @@ WebGPUImplementation::WebGPUImplementation(
     GpuControl* gpu_control)
     : ImplementationBase(helper, transfer_buffer, gpu_control),
       helper_(helper),
-#if BUILDFLAG(USE_DAWN)
-      wire_client_([this]() {
-        dawn_wire::WireClientDescriptor descriptor = {};
-        descriptor.serializer = this;
-
-        return new dawn_wire::WireClient(descriptor);
-      }()),
-      procs_(wire_client_->GetProcs()),
-#endif
       c2s_buffer_(helper, transfer_buffer) {
 }
 
-WebGPUImplementation::~WebGPUImplementation() {}
+WebGPUImplementation::~WebGPUImplementation() {
+  // Wait for all commands to finish or we may free shared memory while
+  // commands are still in flight.
+  Flush();
+  helper_->Finish();
+}
 
 gpu::ContextResult WebGPUImplementation::Initialize(
     const SharedMemoryLimits& limits) {
@@ -52,6 +49,19 @@ gpu::ContextResult WebGPUImplementation::Initialize(
 
   c2s_buffer_default_size_ = limits.start_transfer_buffer_size;
   DCHECK_GT(c2s_buffer_default_size_, 0u);
+
+#if BUILDFLAG(USE_DAWN)
+  memory_transfer_service_.reset(
+      new DawnClientMemoryTransferService(mapped_memory_.get()));
+
+  dawn_wire::WireClientDescriptor descriptor = {};
+  descriptor.serializer = this;
+  descriptor.memoryTransferService = memory_transfer_service_.get();
+
+  wire_client_.reset(new dawn_wire::WireClient(descriptor));
+
+  procs_ = wire_client_->GetProcs();
+#endif
 
   return gpu::ContextResult::kSuccess;
 }
@@ -278,6 +288,9 @@ bool WebGPUImplementation::Flush() {
     c2s_put_offset_ = 0;
     c2s_buffer_.Release();
   }
+#if BUILDFLAG(USE_DAWN)
+  memory_transfer_service_->FreeHandlesPendingToken(helper_->InsertToken());
+#endif
   return true;
 }
 

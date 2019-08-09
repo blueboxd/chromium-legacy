@@ -78,10 +78,9 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
 void RequestProxyResolvingSocketFactory(
     ApplicationContextImpl* app_context,
     network::mojom::ProxyResolvingSocketFactoryRequest request) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::UI},
-      base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, app_context,
-                     std::move(request)));
+  base::PostTask(FROM_HERE, {web::WebThread::UI},
+                 base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
+                                app_context, std::move(request)));
 }
 
 // Passed to NetworkConnectionTracker to bind a NetworkChangeManagerRequest.
@@ -405,8 +404,9 @@ void ApplicationContextImpl::CreateGCMDriver() {
   CHECK(base::PathService::Get(ios::DIR_GLOBAL_GCM_STORE, &store_path));
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
@@ -418,7 +418,7 @@ void ApplicationContextImpl::CreateGCMDriver() {
       GetSharedURLLoaderFactory(),
       GetApplicationContext()->GetNetworkConnectionTracker(), ::GetChannel(),
       IOSChromeGCMProfileServiceFactory::GetProductCategoryForSubtypes(),
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}),
+      base::CreateSingleThreadTaskRunner({web::WebThread::UI}),
+      base::CreateSingleThreadTaskRunner({web::WebThread::IO}),
       blocking_task_runner);
 }

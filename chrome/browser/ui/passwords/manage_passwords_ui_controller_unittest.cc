@@ -15,10 +15,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/passwords/credential_manager_dialog_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
-#include "chrome/browser/ui/passwords/password_dialog_controller.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -102,9 +102,9 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
   }
 
   MOCK_METHOD1(CreateAccountChooser,
-               AccountChooserPrompt*(PasswordDialogController*));
+               AccountChooserPrompt*(CredentialManagerDialogController*));
   MOCK_METHOD1(CreateAutoSigninPrompt,
-               AutoSigninFirstRunPrompt*(PasswordDialogController*));
+               AutoSigninFirstRunPrompt*(CredentialManagerDialogController*));
   MOCK_CONST_METHOD0(HasBrowserWindow, bool());
   MOCK_METHOD0(OnUpdateBubbleAndIconVisibility, void());
   using ManagePasswordsUIController::DidFinishNavigation;
@@ -669,7 +669,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocal) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
   GURL origin("http://example.com");
-  PasswordDialogController* dialog_controller = nullptr;
+  CredentialManagerDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_))
       .WillOnce(
           DoAll(SaveArg<0>(&dialog_controller), Return(&dialog_prompt())));
@@ -703,7 +703,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialLocalButFederated) {
   local_credentials.emplace_back(
       new autofill::PasswordForm(test_federated_form()));
   GURL origin("http://example.com");
-  PasswordDialogController* dialog_controller = nullptr;
+  CredentialManagerDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_))
       .WillOnce(
           DoAll(SaveArg<0>(&dialog_controller), Return(&dialog_prompt())));
@@ -736,7 +736,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
   GURL origin("http://example.com");
-  PasswordDialogController* dialog_controller = nullptr;
+  CredentialManagerDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_))
       .WillOnce(
           DoAll(SaveArg<0>(&dialog_controller), Return(&dialog_prompt())));
@@ -778,7 +778,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialPSL) {
   std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials;
   local_credentials.emplace_back(new autofill::PasswordForm(test_local_form()));
   GURL origin("http://example.com");
-  PasswordDialogController* dialog_controller = nullptr;
+  CredentialManagerDialogController* dialog_controller = nullptr;
   EXPECT_CALL(*controller(), CreateAccountChooser(_))
       .WillOnce(
           DoAll(SaveArg<0>(&dialog_controller), Return(&dialog_prompt())));

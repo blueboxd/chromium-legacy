@@ -36,14 +36,9 @@
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
-#include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_common.h"
-
-namespace network {
-class SharedURLLoaderFactory;
-}
 
 namespace blink {
 
@@ -71,11 +66,10 @@ class BLINK_EXPORT WebSharedWorker {
       mojom::ContentSecurityPolicyType,
       network::mojom::IPAddressSpace,
       const base::UnguessableToken& devtools_worker_token,
-      PrivacyPreferences privacy_preferences,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle interface_provider,
-      mojo::ScopedMessagePipeHandle browser_interface_broker) = 0;
+      mojo::ScopedMessagePipeHandle browser_interface_broker,
+      bool pause_worker_context_on_start) = 0;
 
   // Sends a connect event to the SharedWorker context.
   virtual void Connect(MessagePortChannel) = 0;
@@ -83,8 +77,6 @@ class BLINK_EXPORT WebSharedWorker {
   // Invoked to shutdown the worker when there are no more associated documents.
   // This eventually deletes this instance.
   virtual void TerminateWorkerContext() = 0;
-
-  virtual void PauseWorkerContextOnStart() = 0;
 };
 
 }  // namespace blink

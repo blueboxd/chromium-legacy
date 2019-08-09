@@ -245,16 +245,6 @@ def MaybeDownloadHostGcc(args):
   args.gcc_toolchain = gcc_dir
 
 
-def SetMacXcodePath():
-  """Set DEVELOPER_DIR to the path to hermetic Xcode.app on Mac OS X."""
-  if sys.platform != 'darwin':
-    return
-
-  xcode_path = os.path.join(CHROMIUM_DIR, 'build', 'mac_files', 'Xcode.app')
-  if os.path.exists(xcode_path):
-    os.environ['DEVELOPER_DIR'] = xcode_path
-
-
 def VerifyVersionOfBuiltClangMatchesVERSION():
   """Checks that `clang --version` outputs RELEASE_VERSION. If this
   fails, update.RELEASE_VERSION is out-of-date and needs to be updated (possibly
@@ -412,10 +402,6 @@ def main():
   print('Locally building clang %s...' % PACKAGE_VERSION)
   WriteStampFile('', STAMP_FILE)
   WriteStampFile('', FORCE_HEAD_REVISION_FILE)
-
-  # DEVELOPER_DIR needs to be set when Xcode isn't in a standard location
-  # and xcode-select wasn't run.
-  SetMacXcodePath()
 
   AddCMakeToPath(args)
   DeleteChromeToolsShim()

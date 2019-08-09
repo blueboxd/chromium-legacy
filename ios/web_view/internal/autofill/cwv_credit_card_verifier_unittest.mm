@@ -59,7 +59,7 @@ class FakeCardUnmaskDelegate : public autofill::CardUnmaskDelegate {
       const UserProvidedUnmaskDetails& unmask_details) override {
     unmask_details_ = unmask_details;
     // Fake the actual verification and just respond with success.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
           autofill::AutofillClient::PaymentsRpcResult result =
               autofill::AutofillClient::SUCCESS;

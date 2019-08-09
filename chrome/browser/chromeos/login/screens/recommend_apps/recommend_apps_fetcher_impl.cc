@@ -336,8 +336,9 @@ void RecommendAppsFetcherImpl::MaybeStartCompressAndEncodeProtoMessage() {
   if (!ash_ready_ || !arc_features_ready_ || has_started_proto_processing_)
     return;
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CompressAndEncodeProtoMessageOnBlockingThread,
                      std::move(device_config_)),
       base::BindOnce(

@@ -486,9 +486,9 @@ void StatisticsProviderImpl::StartLoadingMachineStatistics(
 
   // TaskPriority::USER_BLOCKING because this is on the critical path of
   // rendering the NTP on startup. https://crbug.com/831835
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&StatisticsProviderImpl::LoadMachineStatistics,
                      base::Unretained(this), load_oem_manifest));

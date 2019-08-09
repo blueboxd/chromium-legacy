@@ -38,8 +38,9 @@ void WriteOnCacheFileAfterOpenFile(
     const base::Closure& close_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(file_io_task_callback, error, local_cache_path),
       base::BindOnce(&RunCloseCallbackAndReplyTask, close_callback, reply,
                      error));

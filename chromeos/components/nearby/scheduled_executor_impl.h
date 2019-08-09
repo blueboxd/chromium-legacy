@@ -30,7 +30,8 @@ class ScheduledExecutorImpl : public location::nearby::ScheduledExecutor {
  public:
   ScheduledExecutorImpl(
       scoped_refptr<base::SequencedTaskRunner> timer_task_runner =
-          base::CreateSequencedTaskRunnerWithTraits(base::MayBlock()));
+          base::CreateSequencedTaskRunner({base::ThreadPool(),
+                                           base::MayBlock()}));
   ~ScheduledExecutorImpl() override;
 
  private:

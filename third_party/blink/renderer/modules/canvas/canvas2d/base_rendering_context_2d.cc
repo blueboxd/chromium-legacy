@@ -1711,9 +1711,9 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   usage_counters_.num_put_image_data_calls++;
   usage_counters_.area_put_image_data_calls += dirty_width * dirty_height;
 
-  if (data->BufferBase()->IsNeutered()) {
+  if (data->BufferBase()->IsDetached()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The source data has been neutered.");
+                                      "The source data has been detached.");
     return;
   }
 

@@ -48,8 +48,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.intent.Intents;
@@ -187,7 +189,10 @@ public class SavePasswordsPreferencesTest {
 
         @Override
         public void changeSavedPasswordEntry(int index, String newUsername, String newPassword) {
-            assert false : "Define this method before starting to use it in tests.";
+            mSavedPasswords.set(index,
+                    new SavedPasswordEntry(
+                            mSavedPasswords.get(index).getUrl(), newUsername, newPassword));
+            updatePasswordLists();
         }
 
         @Override
@@ -301,38 +306,45 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
-     * Looks for the search icon by id. If it cannot be found, it's probably hidden in the overflow
+     * Looks for the icon by id. If it cannot be found, it's probably hidden in the overflow
      * menu. In that case, open the menu and search for its title.
-     * @return Returns either the search icon button or the search menu option.
+     * @return Returns either the icon button or the menu option.
      */
-    public static Matcher<View> withSearchMenuIdOrText() {
-        Matcher<View> matcher = withId(R.id.menu_id_search);
+    public static Matcher<View> withMenuIdOrText(@IdRes int actionId, @StringRes int actionLabel) {
+        Matcher<View> matcher = withId(actionId);
         try {
             Espresso.onView(matcher).check(matches(isDisplayed()));
             return matcher;
         } catch (Exception NoMatchingViewException) {
             openActionBarOverflowOrOptionsMenu(
                     InstrumentationRegistry.getInstrumentation().getTargetContext());
-            return withText(R.string.search);
+            return withText(actionLabel);
         }
     }
 
     /**
-     * Looks for the edit saved password icon by id. If it cannot be found, it's probably hidden in
-     * the overflow menu. In that case, open the menu and search for its title.
-     * @return Returns either the edit saved password icon button or the edit saved password menu
-     *         option.
+     * Looks for the search icon by id or by its title.
+     * @return Returns either the icon button or the menu option.
+     */
+    public static Matcher<View> withSearchMenuIdOrText() {
+        return withMenuIdOrText(R.id.menu_id_search, R.string.search);
+    }
+
+    /**
+     * Looks for the edit saved password icon by id or by its title.
+     * @return Returns either the icon button or the menu option.
      */
     public static Matcher<View> withEditMenuIdOrText() {
-        Matcher<View> matcher = withId(R.id.action_edit_saved_password);
-        try {
-            Espresso.onView(matcher).check(matches(isDisplayed()));
-            return matcher;
-        } catch (Exception NoMatchingViewException) {
-            openActionBarOverflowOrOptionsMenu(
-                    InstrumentationRegistry.getInstrumentation().getTargetContext());
-            return withText(R.string.password_entry_viewer_edit_stored_password_action_title);
-        }
+        return withMenuIdOrText(R.id.action_edit_saved_password,
+                R.string.password_entry_viewer_edit_stored_password_action_title);
+    }
+
+    /**
+     * Looks for the save edited password icon by id or by its title.
+     * @return Returns either the icon button or the menu option.
+     */
+    public static Matcher<View> withSaveMenuIdOrText() {
+        return withMenuIdOrText(R.id.action_save_edited_password, R.string.save);
     }
 
     /**
@@ -680,6 +692,37 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withEditMenuIdOrText()).perform(click());
 
         Espresso.onView(withId(R.id.site_edit)).check(matches(withText("https://test.com")));
+    }
+
+    /**
+     * Check that the changes of password data in the password editing activity are preserved and
+     * shown in the password viewing activity and in the list of passwords after the save button
+     * was clicked.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+    public void testChangeOfStoredPasswordDataIsPreserved() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
+
+        Espresso.onView(withText(containsString("test user"))).perform(click());
+
+        Espresso.onView(withEditMenuIdOrText()).perform(click());
+
+        Espresso.onView(withId(R.id.username_edit)).perform(typeText(" new"));
+
+        Espresso.onView(withSaveMenuIdOrText()).perform(click());
+
+        // Check if the password viewing activity has the updated data.
+        Espresso.onView(withText("test user new")).check(matches(isDisplayed()));
+
+        Espresso.pressBack();
+        // Check if the password preferences activity has the updated data in the list of passwords.
+        Espresso.onView(withText("test user new")).check(matches(isDisplayed()));
     }
 
     /**

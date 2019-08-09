@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/css/css_font_face_src_value.h"
 #include "third_party/blink/renderer/core/loader/resource/mock_font_resource_client.h"
@@ -25,7 +26,6 @@
 #include "third_party/blink/renderer/platform/loader/testing/test_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/testing/test_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -33,11 +33,10 @@ namespace blink {
 class FontResourceTest : public testing::Test {
  public:
   void TearDown() override {
-    platform_->GetURLLoaderMockFactory()
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
-
-  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 
 class CacheAwareFontResourceTest : public FontResourceTest {
@@ -60,7 +59,7 @@ TEST_F(FontResourceTest,
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
   response.SetHttpHeaderField(http_names::kETag, "1234567890");
-  platform_->GetURLLoaderMockFactory()->RegisterURL(
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response), "");
 
   MockFetchContext* context = MakeGarbageCollected<MockFetchContext>();
@@ -76,7 +75,7 @@ TEST_F(FontResourceTest,
   Resource* resource1 = FontResource::Fetch(fetch_params1, fetcher, nullptr);
   ASSERT_FALSE(resource1->ErrorOccurred());
   fetcher->StartLoad(resource1);
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_TRUE(resource1->IsLoaded());
   EXPECT_FALSE(resource1->ErrorOccurred());
 
@@ -106,7 +105,7 @@ TEST_F(FontResourceTest,
   // StartLoad() can be called from any initiator. Here, call it from the
   // latter.
   fetcher->StartLoad(resource3);
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_TRUE(resource3->IsLoaded());
   EXPECT_FALSE(resource3->ErrorOccurred());
   EXPECT_TRUE(resource2->IsLoaded());
@@ -120,7 +119,7 @@ TEST_F(CacheAwareFontResourceTest, CacheAwareFontLoading) {
   KURL url("http://127.0.0.1:8000/font.woff");
   ResourceResponse response(url);
   response.SetHttpStatusCode(200);
-  platform_->GetURLLoaderMockFactory()->RegisterURL(
+  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       url, WrappedResourceResponse(response), "");
 
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
@@ -178,7 +177,7 @@ TEST_F(CacheAwareFontResourceTest, CacheAwareFontLoading) {
   EXPECT_TRUE(client3->FontLoadShortLimitExceededCalled());
   EXPECT_TRUE(client3->FontLoadLongLimitExceededCalled());
 
-  platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   GetMemoryCache()->Remove(&resource);
 }
 

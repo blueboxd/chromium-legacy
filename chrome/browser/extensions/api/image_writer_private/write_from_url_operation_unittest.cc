@@ -241,7 +241,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
     // soon.
     operation->VerifyDownload(base::Bind(
         [](base::OnceClosure quit_closure) {
-          base::PostTaskWithTraits(
+          base::PostTask(
               FROM_HERE,
               {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
               std::move(quit_closure));

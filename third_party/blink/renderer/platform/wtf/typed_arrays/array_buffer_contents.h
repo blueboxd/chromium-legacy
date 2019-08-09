@@ -115,7 +115,7 @@ class WTF_EXPORT ArrayBufferContents {
 
   ArrayBufferContents& operator=(ArrayBufferContents&&) = default;
 
-  void Neuter();
+  void Detach();
 
   void* Data() const {
     DCHECK(!IsShared());

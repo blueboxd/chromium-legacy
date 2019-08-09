@@ -31,7 +31,8 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
     const GURL& frame_origin,
     const PaymentRequestSpec* spec,
     std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
-    PaymentRequestDelegate* payment_request_delegate)
+    PaymentRequestDelegate* payment_request_delegate,
+    IdentityObserver* identity_observer)
     : PaymentInstrument(0, PaymentInstrument::Type::SERVICE_WORKER_APP),
       browser_context_(browser_context),
       top_origin_(top_origin),
@@ -40,6 +41,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
       stored_payment_app_info_(std::move(stored_payment_app_info)),
       delegate_(nullptr),
       payment_request_delegate_(payment_request_delegate),
+      identity_observer_(identity_observer),
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
       needs_installation_(false) {
@@ -47,6 +49,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
   DCHECK(top_origin_.is_valid());
   DCHECK(frame_origin_.is_valid());
   DCHECK(spec_);
+  DCHECK(identity_observer_);
 
   if (stored_payment_app_info_->icon) {
     icon_image_ =
@@ -67,13 +70,15 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
     const PaymentRequestSpec* spec,
     std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
     const std::string& enabled_method,
-    PaymentRequestDelegate* payment_request_delegate)
+    PaymentRequestDelegate* payment_request_delegate,
+    IdentityObserver* identity_observer)
     : PaymentInstrument(0, PaymentInstrument::Type::SERVICE_WORKER_APP),
       top_origin_(top_origin),
       frame_origin_(frame_origin),
       spec_(spec),
       delegate_(nullptr),
       payment_request_delegate_(payment_request_delegate),
+      identity_observer_(identity_observer),
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
       needs_installation_(true),
@@ -84,6 +89,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
   DCHECK(top_origin_.is_valid());
   DCHECK(frame_origin_.is_valid());
   DCHECK(spec_);
+  DCHECK(identity_observer_);
 
   if (installable_web_app_info_->icon) {
     icon_image_ =
@@ -231,12 +237,19 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
         installable_web_app_info_->sw_js_url,
         installable_web_app_info_->sw_scope,
         installable_web_app_info_->sw_use_cache, installable_enabled_method_,
+        base::BindOnce(
+            &IdentityObserver::SetInvokedServiceWorkerIdentity,
+            base::Unretained(identity_observer_),
+            url::Origin::Create(GURL(installable_web_app_info_->sw_scope))),
         base::BindOnce(&ServiceWorkerPaymentInstrument::OnPaymentAppInvoked,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
+    url::Origin sw_origin =
+        url::Origin::Create(stored_payment_app_info_->scope);
+    identity_observer_->SetInvokedServiceWorkerIdentity(
+        sw_origin, stored_payment_app_info_->registration_id);
     content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
-        browser_context_, stored_payment_app_info_->registration_id,
-        url::Origin::Create(stored_payment_app_info_->scope),
+        browser_context_, stored_payment_app_info_->registration_id, sw_origin,
         CreatePaymentRequestEventData(),
         base::BindOnce(&ServiceWorkerPaymentInstrument::OnPaymentAppInvoked,
                        weak_ptr_factory_.GetWeakPtr()));

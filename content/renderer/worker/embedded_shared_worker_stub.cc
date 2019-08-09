@@ -24,7 +24,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
-#include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
@@ -79,13 +78,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       main_script_load_params->redirect_response_heads;
   response_override_->redirect_infos = main_script_load_params->redirect_infos;
 
-  impl_ = blink::WebSharedWorker::Create(this, appcache_host_id);
-  if (pause_on_start) {
-    // Pause worker context when it starts and wait until either DevTools client
-    // is attached or explicit resume notification is received.
-    impl_->PauseWorkerContextOnStart();
-  }
-
   // If the network service crashes, then self-destruct so clients don't get
   // stuck with a worker with a broken loader. Self-destruction is effectively
   // the same as the worker's process crashing.
@@ -116,18 +108,15 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
             std::move(controller_info), subresource_loader_factory_bundle_);
   }
 
+  impl_ = blink::WebSharedWorker::Create(this, appcache_host_id);
   impl_->StartWorkerContext(
       url_, blink::WebString::FromUTF8(info->name),
       blink::WebString::FromUTF8(user_agent),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
-      devtools_worker_token,
-      blink::PrivacyPreferences(renderer_preferences_.enable_do_not_track,
-                                renderer_preferences_.enable_referrers),
-      subresource_loader_factory_bundle_,
-      content_settings.PassInterface().PassHandle(),
+      devtools_worker_token, content_settings.PassInterface().PassHandle(),
       interface_provider.PassInterface().PassHandle(),
-      browser_interface_broker.PassPipe());
+      browser_interface_broker.PassPipe(), pause_on_start);
 
   // If the host drops its connection, then self-destruct.
   binding_.set_connection_error_handler(base::BindOnce(

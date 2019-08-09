@@ -222,9 +222,9 @@ class BulkPrintersCalculatorImpl : public BulkPrintersCalculator {
  public:
   BulkPrintersCalculatorImpl()
       : restrictions_(base::MakeRefCounted<Restrictions>()),
-        restrictions_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+        restrictions_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         weak_ptr_factory_(this) {}
 
   void AddObserver(Observer* observer) override {

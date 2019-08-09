@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_SERVICE_WORKER_PAYMENT_INSTRUMENT_H_
 #define COMPONENTS_PAYMENTS_CONTENT_SERVICE_WORKER_PAYMENT_INSTRUMENT_H_
 
+#include <stdint.h>
+
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/web_app_manifest.h"
 #include "components/payments/core/payment_instrument.h"
@@ -18,6 +20,10 @@ class BrowserContext;
 class WebContents;
 }  // namespace content
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace payments {
 
 class PaymentRequestDelegate;
@@ -25,6 +31,21 @@ class PaymentRequestDelegate;
 // Represents a service worker based payment app.
 class ServiceWorkerPaymentInstrument : public PaymentInstrument {
  public:
+  // Observer for identity of the service worker, which is known ahead of time
+  // when already installed, but may be unknown at first when using just-in-time
+  // installation.
+  class IdentityObserver {
+   public:
+    virtual ~IdentityObserver() {}
+
+    // Notifies the observer that the service worker registration has the
+    // |registration_id| and its scope has |origin|. Called exactly once after
+    // InvokePaymentApp(). Called before the service worker actually receives
+    // the 'paymentrequest' event.
+    virtual void SetInvokedServiceWorkerIdentity(const url::Origin& origin,
+                                                 int64_t registration_id) = 0;
+  };
+
   // This constructor is used for a payment app that has been installed in
   // Chrome.
   ServiceWorkerPaymentInstrument(
@@ -33,9 +54,10 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
       const GURL& frame_origin,
       const PaymentRequestSpec* spec,
       std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
-      PaymentRequestDelegate* payment_request_delegate);
+      PaymentRequestDelegate* payment_request_delegate,
+      IdentityObserver* identity_observer);
 
-  // This contructor is used for a payment app that has not been installed in
+  // This constructor is used for a payment app that has not been installed in
   // Chrome but can be installed when paying with it.
   ServiceWorkerPaymentInstrument(
       content::WebContents* web_contents,
@@ -44,7 +66,8 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
       const PaymentRequestSpec* spec,
       std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
       const std::string& enabled_methods,
-      PaymentRequestDelegate* payment_request_delegate);
+      PaymentRequestDelegate* payment_request_delegate,
+      IdentityObserver* identity_observer);
   ~ServiceWorkerPaymentInstrument() override;
 
   // The callback for ValidateCanMakePayment.
@@ -112,6 +135,9 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
 
   // Weak pointer that must outlive this object.
   PaymentRequestDelegate* payment_request_delegate_;
+
+  // Weak pointer that must outlive this object.
+  IdentityObserver* identity_observer_;
 
   mojom::PaymentHandlerHostPtrInfo payment_handler_host_;
 

@@ -28,10 +28,6 @@ struct Manifest {
 
   array<ManifestImageResource> icons;
 
-  // TODO(constantina): This field is non-standard and part of a Chrome
-  // experiment. See:
-  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
-  // As such, this field should not be exposed to the drive-by web.
   ManifestShareTarget? share_target;
 
   // TODO(harrisjay): This field is non-standard and part of a Chrome

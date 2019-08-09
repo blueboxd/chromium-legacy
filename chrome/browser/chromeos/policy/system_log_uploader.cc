@@ -184,8 +184,9 @@ std::string SystemLogDelegate::GetPolicyAsJSON() {
 void SystemLogDelegate::LoadSystemLogs(LogUploadCallback upload_callback) {
   // Run ReadFiles() in the thread that interacts with the file system and
   // return system logs to |upload_callback| on the current thread.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ReadFiles), std::move(upload_callback));
 }
 
@@ -231,8 +232,9 @@ std::unique_ptr<UploadJob> SystemLogDelegate::CreateUploadJob(
 void SystemLogDelegate::ZipSystemLogs(
     std::unique_ptr<SystemLogUploader::SystemLogs> system_logs,
     ZippedLogUploadCallback upload_callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ZipFiles, std::move(system_logs)),
       std::move(upload_callback));
 }

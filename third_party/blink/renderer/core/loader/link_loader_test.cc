@@ -10,6 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -125,7 +126,8 @@ class LinkLoaderPreloadTestBase : public testing::Test {
   }
 
   ~LinkLoaderPreloadTestBase() override {
-    platform_->GetURLLoaderMockFactory()
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
@@ -161,7 +163,6 @@ class LinkLoaderPreloadTestBase : public testing::Test {
     }
   }
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 
 struct PreloadTestParams {
@@ -669,7 +670,8 @@ TEST_F(LinkLoaderTest, Prefetch) {
                   resource->GetResourceRequest().GetReferrerPolicy());
       }
     }
-    platform_->GetURLLoaderMockFactory()
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 }

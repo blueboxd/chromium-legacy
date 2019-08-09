@@ -154,8 +154,9 @@ void DebugDaemonLogSource::GetLoggedInUsersLogFiles() {
 
   auto response = std::make_unique<SystemLogsResponse>();
   SystemLogsResponse* response_ptr = response.get();
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ReadUserLogFiles, profile_dirs, response_ptr),
       base::BindOnce(&DebugDaemonLogSource::MergeUserLogFilesResponse,
                      weak_ptr_factory_.GetWeakPtr(), std::move(response)));

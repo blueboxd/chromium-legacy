@@ -89,7 +89,7 @@ WebViewWebDataServiceWrapperFactory::BuildServiceInstanceFor(
   return std::make_unique<WebDataServiceWrapper>(
       browser_state_path,
       ApplicationContext::GetInstance()->GetApplicationLocale(),
-      base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}),
+      base::CreateSingleThreadTaskRunner({web::WebThread::UI}),
       base::DoNothing());
 }
 

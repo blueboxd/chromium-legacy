@@ -48,9 +48,9 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
     return Create(Buffer()->Slice(begin));
   }
 
-  bool IsNeuterable(v8::Isolate*);
+  bool IsDetachable(v8::Isolate*);
 
-  // Transfer the ArrayBuffer if it is neuterable, otherwise make a copy and
+  // Transfer the ArrayBuffer if it is detachable, otherwise make a copy and
   // transfer that.
   bool Transfer(v8::Isolate*, WTF::ArrayBufferContents& result);
 

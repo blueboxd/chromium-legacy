@@ -114,9 +114,9 @@ class WebViewPersonalDataManagerObserverBridge
   // |personalDataDidChange| to be invoked.
   if (_personalDataManager->IsDataLoaded()) {
     NSArray<CWVAutofillProfile*>* profiles = [self profiles];
-    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
-                               completionHandler(profiles);
-                             }));
+    base::PostTask(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
+                     completionHandler(profiles);
+                   }));
   } else {
     [_fetchProfilesCompletionHandlers addObject:completionHandler];
   }
@@ -137,9 +137,9 @@ class WebViewPersonalDataManagerObserverBridge
   // |personalDataDidChange| to be invoked.
   if (_personalDataManager->IsDataLoaded()) {
     NSArray<CWVCreditCard*>* creditCards = [self creditCards];
-    base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
-                               completionHandler(creditCards);
-                             }));
+    base::PostTask(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
+                     completionHandler(creditCards);
+                   }));
   } else {
     [_fetchCreditCardsCompletionHandlers addObject:completionHandler];
   }

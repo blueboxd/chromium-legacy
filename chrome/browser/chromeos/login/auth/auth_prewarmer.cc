@@ -71,8 +71,8 @@ void AuthPrewarmer::DoPrewarm() {
                                        net::NetworkIsolationKey());
   }
   if (!completion_callback_.is_null()) {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             std::move(completion_callback_));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   std::move(completion_callback_));
   }
 }
 

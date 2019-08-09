@@ -165,7 +165,7 @@ void EnrollmentCertificateUploaderImpl::HandleGetCertificateFailure(
 
 void EnrollmentCertificateUploaderImpl::Reschedule() {
   if (++num_retries_ < retry_limit_) {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&EnrollmentCertificateUploaderImpl::GetCertificate,
                        weak_factory_.GetWeakPtr()),

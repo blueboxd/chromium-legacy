@@ -117,8 +117,9 @@ class AvailabilityChecker {
   // Don't call this directly, but use Start().
   explicit AvailabilityChecker(ResponseCallback callback)
       : callback_(std::move(callback)),
-        background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+        background_task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::USER_VISIBLE})),
         watcher_(new base::FilePathWatcher()),
         weak_ptr_factory_(this) {
     auto watch_callback = base::BindRepeating(

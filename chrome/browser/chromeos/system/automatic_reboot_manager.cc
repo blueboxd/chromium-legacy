@@ -170,9 +170,10 @@ AutomaticRebootManager::AutomaticRebootManager(const base::TickClock* clock)
     OnUserActivity(nullptr);
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()},
+      {base::ThreadPool(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+       base::MayBlock()},
       base::BindOnce(&internal::GetSystemEventTimes),
       base::BindOnce(&AutomaticRebootManager::Init,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -218,10 +219,11 @@ void AutomaticRebootManager::UpdateStatusChanged(
     return;
   }
 
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                           base::BindOnce(&SaveUpdateRebootNeededUptime));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(&SaveUpdateRebootNeededUptime));
 
   update_reboot_needed_time_ = clock_->NowTicks();
 

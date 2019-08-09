@@ -303,6 +303,10 @@ void PeopleHandler::RegisterMessages() {
       "SyncSetupGetSyncStatus",
       base::BindRepeating(&PeopleHandler::HandleGetSyncStatus,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "SyncPrefsDispatch",
+      base::BindRepeating(&PeopleHandler::HandleSyncPrefsDispatch,
+                          base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "AttemptUserExit",
@@ -848,6 +852,11 @@ void PeopleHandler::HandleGetSyncStatus(const base::ListValue* args) {
   CHECK(args->Get(0, &callback_id));
 
   ResolveJavascriptCallback(*callback_id, *GetSyncStatusDictionary());
+}
+
+void PeopleHandler::HandleSyncPrefsDispatch(const base::ListValue* args) {
+  AllowJavascript();
+  PushSyncPrefs();
 }
 
 void PeopleHandler::CloseSyncSetup() {

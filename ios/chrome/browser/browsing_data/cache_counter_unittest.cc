@@ -61,10 +61,9 @@ class CacheCounterTest : public PlatformTest {
     current_operation_ = OPERATION_ADD_ENTRY;
     next_step_ = STEP_GET_BACKEND;
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {web::WebThread::IO},
-        base::BindOnce(&CacheCounterTest::CacheOperationStep,
-                       base::Unretained(this), net::OK));
+    base::PostTask(FROM_HERE, {web::WebThread::IO},
+                   base::BindOnce(&CacheCounterTest::CacheOperationStep,
+                                  base::Unretained(this), net::OK));
     WaitForIOThread();
   }
 
@@ -73,10 +72,9 @@ class CacheCounterTest : public PlatformTest {
     current_operation_ = OPERATION_CLEAR_CACHE;
     next_step_ = STEP_GET_BACKEND;
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {web::WebThread::IO},
-        base::BindOnce(&CacheCounterTest::CacheOperationStep,
-                       base::Unretained(this), net::OK));
+    base::PostTask(FROM_HERE, {web::WebThread::IO},
+                   base::BindOnce(&CacheCounterTest::CacheOperationStep,
+                                  base::Unretained(this), net::OK));
     WaitForIOThread();
   }
 
@@ -196,9 +194,9 @@ class CacheCounterTest : public PlatformTest {
           if (current_operation_ == OPERATION_ADD_ENTRY)
             entry_->Close();
 
-          base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI},
-                                   base::BindOnce(&CacheCounterTest::Callback,
-                                                  base::Unretained(this)));
+          base::PostTask(FROM_HERE, {web::WebThread::UI},
+                         base::BindOnce(&CacheCounterTest::Callback,
+                                        base::Unretained(this)));
 
           break;
         }

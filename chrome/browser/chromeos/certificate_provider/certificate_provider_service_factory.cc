@@ -112,7 +112,6 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
     return false;
 
   api_cp::SignRequest request;
-  service_->pin_dialog_manager()->AddSignRequestId(extension_id, request_id);
   request.sign_request_id = request_id;
   switch (algorithm) {
     case SSL_SIGN_RSA_PKCS1_MD5_SHA1:

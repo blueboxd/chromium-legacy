@@ -62,7 +62,7 @@ void FcmConnectionEstablisher::EstablishConnection(
     const GURL& url,
     ConnectionMode connection_mode,
     content::ServiceWorkerContext* service_worker_context) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &FcmConnectionEstablisher::SendMessageToServiceWorkerWithRetries,
@@ -74,7 +74,7 @@ void FcmConnectionEstablisher::EstablishConnection(
 void FcmConnectionEstablisher::TearDownConnection(
     const GURL& url,
     content::ServiceWorkerContext* service_worker_context) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &FcmConnectionEstablisher::SendMessageToServiceWorkerWithRetries,

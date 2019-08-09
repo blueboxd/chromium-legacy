@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "base/timer/timer.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
@@ -104,8 +104,8 @@ class ASH_EXPORT LockScreenMediaControlsView
   void FlushForTesting();
 
   void set_media_controller_for_testing(
-      media_session::mojom::MediaControllerPtr controller) {
-    media_controller_ptr_ = std::move(controller);
+      mojo::Remote<media_session::mojom::MediaController> controller) {
+    media_controller_remote_ = std::move(controller);
   }
 
   void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> test_timer) {
@@ -157,7 +157,7 @@ class ASH_EXPORT LockScreenMediaControlsView
   service_manager::Connector* const connector_;
 
   // Used to control the active session.
-  media_session::mojom::MediaControllerPtr media_controller_ptr_;
+  mojo::Remote<media_session::mojom::MediaController> media_controller_remote_;
 
   // Used to receive updates to the active media controller.
   mojo::Receiver<media_session::mojom::MediaControllerObserver>

@@ -276,7 +276,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
   void SetUpProxyConfigService(PrefService* profile_prefs) {
     config_service_impl_.reset(new ProxyConfigServiceImpl(
         profile_prefs, &pref_service_,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO})));
     proxy_config_service_ =
         config_service_impl_->CreateTrackingProxyConfigService(
             std::unique_ptr<net::ProxyConfigService>());

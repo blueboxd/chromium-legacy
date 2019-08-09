@@ -40,8 +40,7 @@ void GetRedirectURLForContentsOnUIThreadWithResourceEntry(
       entry->file_specific_info().is_hosted_document()) {
     url = GURL(entry->alternate_url());
   }
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(callback, url));
+  base::PostTask(FROM_HERE, {BrowserThread::IO}, base::BindOnce(callback, url));
 }
 
 // Called on the UI thread after
@@ -54,14 +53,14 @@ void GetRedirectURLForContentsOnUIThread(
   FileSystemInterface* const file_system =
       fileapi_internal::GetFileSystemFromUrl(url);
   if (!file_system) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(callback, GURL()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(callback, GURL()));
     return;
   }
   const base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(callback, GURL()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(callback, GURL()));
     return;
   }
 
@@ -136,7 +135,7 @@ void FileSystemBackendDelegate::GetRedirectURLForContents(
     const storage::FileSystemURL& url,
     const storage::URLCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&GetRedirectURLForContentsOnUIThread, url, callback));
 }

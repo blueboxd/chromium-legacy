@@ -53,7 +53,7 @@ class PlatformKeysTest : public PlatformKeysTestBase {
       // |PlatformKeysTestBase::SetUpOnMainThread| triggers the user sign-in.
       ASSERT_TRUE(user_private_slot_db_.is_open());
       base::RunLoop loop;
-      base::PostTaskWithTraitsAndReply(
+      base::PostTaskAndReply(
           FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(&PlatformKeysTest::SetPrivateSoftwareSlotOnIO,
                          base::Unretained(this),

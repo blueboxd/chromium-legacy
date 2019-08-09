@@ -365,6 +365,7 @@ CrSettingsPasswordsSectionTest.prototype = {
     '../test_browser_proxy.js',
     'passwords_and_autofill_fake_data.js',
     'passwords_section_test.js',
+    'sync_test_util.js',
     'test_password_manager_proxy.js',
     '../test_util.js',
   ]),
@@ -745,6 +746,7 @@ CrSettingsPeoplePageSyncControlsTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'sync_test_util.js',
     'test_sync_browser_proxy.js',
     'test_util.js',
     'people_page_sync_controls_test.js',

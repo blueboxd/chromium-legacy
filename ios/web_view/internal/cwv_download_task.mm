@@ -101,8 +101,8 @@ class DownloadTaskObserverBridge : public web::DownloadTaskObserver {
 
 - (void)startDownloadToLocalFileAtPath:(NSString*)path {
   scoped_refptr<base::SequencedTaskRunner> taskRunner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT});
   __block auto writer = std::make_unique<net::URLFetcherFileWriter>(
       taskRunner, base::FilePath(base::SysNSStringToUTF8(path)));
 

@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "components/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 class PrefRegistrySimple;
@@ -104,7 +105,7 @@ class ASH_EXPORT MediaControllerImpl
                            MediaGlobalAccelerators_UpdateForceKeyHandling);
 
   void SetMediaSessionControllerForTest(
-      media_session::mojom::MediaControllerPtr controller);
+      mojo::Remote<media_session::mojom::MediaController> controller);
 
   void FlushForTesting();
 
@@ -136,7 +137,8 @@ class ASH_EXPORT MediaControllerImpl
   bool media_controls_dismissed_ = false;
 
   // Mojo pointer to the active media session controller.
-  media_session::mojom::MediaControllerPtr media_session_controller_ptr_;
+  mojo::Remote<media_session::mojom::MediaController>
+      media_session_controller_remote_;
 
   service_manager::Connector* const connector_;
 

@@ -28,6 +28,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   scoped_refptr<const NGLayoutResult> CloneAsHiddenForPaint() const;
 
   ~NGPhysicalBoxFragment() {
+    if (has_fragment_items_)
+      ComputeItemsAddress()->~NGFragmentItems();
     for (const NGLink& child : Children())
       child.fragment->Release();
   }

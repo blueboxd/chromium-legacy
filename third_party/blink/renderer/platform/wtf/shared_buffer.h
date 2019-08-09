@@ -39,10 +39,6 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
-class SkData;
-template <typename T>
-class sk_sp;
-
 namespace WTF {
 
 class WTF_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
@@ -175,10 +171,6 @@ class WTF_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
     ALLOW_NUMERIC_ARG_TYPES_PROMOTABLE_TO(size_t);
     return GetBytesInternal(dest, byte_length);
   }
-
-  // Creates an SkData and copies this SharedBuffer's contents to that
-  // SkData without merging segmented buffers into a flat buffer.
-  sk_sp<SkData> GetAsSkData() const;
 
   void GetMemoryDumpNameAndSize(String& dump_name, size_t& dump_size) const;
 

@@ -25,7 +25,7 @@ class NetworkContextOwnerTest : public PlatformTest {
   NetworkContextOwnerTest()
       : saw_connection_error_(false),
         context_getter_(base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO}))) {}
+            base::CreateSingleThreadTaskRunner({WebThread::IO}))) {}
 
   ~NetworkContextOwnerTest() override {
     // Tests should cleanup after themselves.
@@ -79,7 +79,7 @@ TEST_F(NetworkContextOwnerTest, ShutdownHandling) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(saw_connection_error_);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {web::WebThread::IO},
       base::BindOnce(
           &net::TestURLRequestContextGetter::NotifyContextShuttingDown,

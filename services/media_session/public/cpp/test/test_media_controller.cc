@@ -8,7 +8,7 @@ namespace media_session {
 namespace test {
 
 TestMediaControllerImageObserver::TestMediaControllerImageObserver(
-    mojom::MediaControllerPtr& controller,
+    mojo::Remote<mojom::MediaController>& controller,
     int minimum_size_px,
     int desired_size_px) {
   controller->ObserveImages(mojom::MediaSessionImageType::kArtwork,
@@ -49,7 +49,7 @@ void TestMediaControllerImageObserver::WaitForExpectedImageOfType(
 }
 
 TestMediaControllerObserver::TestMediaControllerObserver(
-    mojom::MediaControllerPtr& media_controller) {
+    mojo::Remote<mojom::MediaController>& media_controller) {
   media_controller->AddObserver(receiver_.BindNewPipeAndPassRemote());
 }
 
@@ -214,10 +214,11 @@ TestMediaController::TestMediaController() = default;
 
 TestMediaController::~TestMediaController() = default;
 
-mojom::MediaControllerPtr TestMediaController::CreateMediaControllerPtr() {
-  mojom::MediaControllerPtr ptr;
-  binding_.Bind(mojo::MakeRequest(&ptr));
-  return ptr;
+mojo::Remote<mojom::MediaController>
+TestMediaController::CreateMediaControllerRemote() {
+  mojo::Remote<mojom::MediaController> remote;
+  binding_.Bind(remote.BindNewPipeAndPassReceiver());
+  return remote;
 }
 
 void TestMediaController::Suspend() {

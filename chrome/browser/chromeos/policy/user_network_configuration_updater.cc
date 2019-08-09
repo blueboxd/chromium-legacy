@@ -146,8 +146,7 @@ void UserNetworkConfigurationUpdater::CreateAndSetClientCertificateImporter(
   DCHECK(database);
   SetClientCertificateImporter(
       std::make_unique<chromeos::onc::CertificateImporterImpl>(
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {content::BrowserThread::IO}),
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
           database));
 }
 

@@ -202,10 +202,9 @@ void ChromeOsAppsNavigationThrottle::CancelNavigation() {
   content::WebContents* web_contents = navigation_handle()->GetWebContents();
   if (web_contents && web_contents->GetController().IsInitialNavigation()) {
     // Workaround for b/79167225, closing |web_contents| here may be dangerous.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&ChromeOsAppsNavigationThrottle::CloseTab,
-                       weak_factory_.GetWeakPtr()));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&ChromeOsAppsNavigationThrottle::CloseTab,
+                                  weak_factory_.GetWeakPtr()));
   } else {
     CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
   }

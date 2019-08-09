@@ -637,9 +637,10 @@ void DemoSetupController::OnDeviceEnrolled() {
         preinstalled_demo_resources_->GetAbsolutePath(
             base::FilePath(kOfflinePolicyDirectoryName)
                 .AppendASCII(kOfflineDeviceLocalAccountPolicyFileName));
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&ReadFileToOptionalString, file_path),
         base::BindOnce(&DemoSetupController::OnDeviceLocalAccountPolicyLoaded,
                        weak_ptr_factory_.GetWeakPtr()));

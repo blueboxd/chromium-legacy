@@ -108,13 +108,13 @@ public class CreditCardAccessorySheetControllerTest {
 
         // If the coordinator receives a set of initial items, the model should report an insertion.
         testProvider.notifyObservers(
-                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments"));
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments", ""));
         verify(mMockItemListObserver).onItemRangeInserted(mSheetDataPieces, 0, 1);
         assertThat(mSheetDataPieces.size(), is(1));
 
         // If the coordinator receives a new set of items, the model should report a change.
         testProvider.notifyObservers(
-                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Other Payments"));
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Other Payments", ""));
         verify(mMockItemListObserver).onItemRangeChanged(mSheetDataPieces, 0, 1, null);
         assertThat(mSheetDataPieces.size(), is(1));
 
@@ -132,7 +132,7 @@ public class CreditCardAccessorySheetControllerTest {
     public void testSplitsTabDataToList() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments");
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments", "");
         testData.getUserInfoList().add(new UserInfo("", null));
         testData.getUserInfoList().get(0).addField(
                 new UserInfoField("Todd", "Todd", "", false, field -> {}));
@@ -151,7 +151,7 @@ public class CreditCardAccessorySheetControllerTest {
     public void testUsesTitleElementForEmptyState() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments");
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments", "");
         mCoordinator.registerDataProvider(testProvider);
 
         testProvider.notifyObservers(testData);
@@ -184,7 +184,7 @@ public class CreditCardAccessorySheetControllerTest {
 
         // If the tab is shown without interactive item, log "0" samples.
         AccessorySheetData accessorySheetData =
-                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments");
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments", "");
         testProvider.notifyObservers(accessorySheetData);
         mCoordinator.onTabShown();
 
@@ -204,7 +204,7 @@ public class CreditCardAccessorySheetControllerTest {
 
         // Add only two interactive items - the third one should not be recorded.
         AccessorySheetData accessorySheetData =
-                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments");
+                new AccessorySheetData(AccessoryTabType.CREDIT_CARDS, "Payments", "");
         accessorySheetData.getUserInfoList().add(new UserInfo("", null));
         accessorySheetData.getUserInfoList().get(0).addField(
                 new UserInfoField("Todd Tester", "Todd Tester", "0", false, result -> {}));

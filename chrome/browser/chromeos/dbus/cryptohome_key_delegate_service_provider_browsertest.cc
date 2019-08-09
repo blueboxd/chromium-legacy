@@ -26,6 +26,7 @@
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/services/service_provider_test_helper.h"
 #include "components/account_id/account_id.h"
+#include "components/user_manager/user_names.h"
 #include "components/version_info/channel.h"
 #include "content/public/browser/browser_context.h"
 #include "dbus/message.h"
@@ -183,7 +184,8 @@ class CryptohomeKeyDelegateServiceProviderTest
       cryptohome::ChallengeSignatureAlgorithm signature_algorithm,
       std::vector<uint8_t>* signature) {
     const cryptohome::AccountIdentifier account_identifier =
-        cryptohome::CreateAccountIdentifierFromAccountId(EmptyAccountId());
+        cryptohome::CreateAccountIdentifierFromAccountId(
+            user_manager::StubAccountId());
     cryptohome::KeyChallengeRequest request;
     request.set_challenge_type(
         cryptohome::KeyChallengeRequest::CHALLENGE_TYPE_SIGNATURE);

@@ -36,9 +36,10 @@ namespace android {
 class PaymentHandlerHost : public payments::PaymentHandlerHost::Delegate {
  public:
   // The |delegate| must implement PaymentHandlerHostDelegate from
-  // PaymentHandlerHost.java.
-  explicit PaymentHandlerHost(
-      const base::android::JavaParamRef<jobject>& delegate);
+  // PaymentHandlerHost.java. The |web_contents| should be from the same browser
+  // context as the payment handler and are used for logging in developr tools.
+  PaymentHandlerHost(const base::android::JavaParamRef<jobject>& web_contents,
+                     const base::android::JavaParamRef<jobject>& delegate);
   ~PaymentHandlerHost() override;
 
   // Checks whether the payment method change is currently in progress.

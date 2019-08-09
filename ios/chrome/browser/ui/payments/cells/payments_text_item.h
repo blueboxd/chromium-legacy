@@ -28,12 +28,10 @@ typedef NS_ENUM(NSUInteger, PaymentsTextCellType) {
 // The secondary text to display.
 @property(nonatomic, nullable, copy) NSString* detailText;
 
-// The color of the main text. Default is the 900 tint color of the grey
-// palette.
+// The color of the main text.
 @property(nonatomic, null_resettable, copy) UIColor* textColor;
 
-// The color of the secondary text. Default is the 900 tint color of the grey
-// palette.
+// The color of the secondary text.
 @property(nonatomic, null_resettable, copy) UIColor* detailTextColor;
 
 // The leading image to display.

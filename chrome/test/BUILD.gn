@@ -3731,8 +3731,8 @@ test("unit_tests") {
       "../browser/ui/omnibox/chrome_omnibox_navigation_observer_unittest.cc",
       "../browser/ui/omnibox/clipboard_utils_unittest.cc",
       "../browser/ui/page_info/permission_menu_model_unittest.cc",
+      "../browser/ui/passwords/credential_manager_dialog_controller_impl_unittest.cc",
       "../browser/ui/passwords/manage_passwords_bubble_model_unittest.cc",
-      "../browser/ui/passwords/password_dialog_controller_impl_unittest.cc",
       "../browser/ui/recently_audible_helper_unittest.cc",
       "../browser/ui/search/ntp_user_data_logger_unittest.cc",
       "../browser/ui/search/search_ipc_router_policy_unittest.cc",
@@ -5157,6 +5157,11 @@ if (!is_android) {
         "//ash/public/cpp",
         "//chromeos/services/device_sync",
         "//chromeos/services/device_sync:test_support",
+      ]
+    } else {
+      sources += [
+        "../browser/first_run/scoped_relaunch_chrome_browser_override.cc",
+        "../browser/first_run/scoped_relaunch_chrome_browser_override.h",
       ]
     }
   }

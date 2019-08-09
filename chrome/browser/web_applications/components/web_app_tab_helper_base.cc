@@ -131,11 +131,7 @@ void WebAppTabHelperBase::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   DCHECK(provider);
 
-  // WebAppPolicyManager might be nullptr in the non-extensions implementation.
-  if (!provider->policy_manager())
-    return;
-
-  provider->policy_manager()->ReinstallPlaceholderAppIfNecessary(url);
+  provider->policy_manager().ReinstallPlaceholderAppIfNecessary(url);
 }
 
 AppId WebAppTabHelperBase::FindAppIdWithUrlInScope(const GURL& url) const {

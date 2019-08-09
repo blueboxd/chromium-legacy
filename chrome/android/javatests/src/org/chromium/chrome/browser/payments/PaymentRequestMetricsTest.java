@@ -485,6 +485,15 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "PaymentRequest.TimeToCheckout.Completed"));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "PaymentRequest.TimeToCheckout.Completed.SkippedShow"));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "PaymentRequest.TimeToCheckout.Completed.SkippedShow.Google"));
     }
 
     /**

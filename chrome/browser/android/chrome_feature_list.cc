@@ -33,7 +33,6 @@
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/translate/core/browser/translate_prefs.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/common/content_features.h"
 #include "media/base/media_switches.h"
@@ -215,7 +214,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &signin::kMiceFeature,
     &switches::kSyncManualStartAndroid,
     &switches::kSyncSendTabToSelf,
-    &translate::kTranslateMobileManualTrigger,
     &unified_consent::kUnifiedConsent,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
 };

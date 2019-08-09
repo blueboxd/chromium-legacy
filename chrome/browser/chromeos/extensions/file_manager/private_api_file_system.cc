@@ -161,10 +161,9 @@ void OnCopyProgress(
     int64_t size) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&NotifyCopyProgress, profile_id, *operation_id, type,
-                     source_url, destination_url, size));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&NotifyCopyProgress, profile_id, *operation_id,
+                                type, source_url, destination_url, size));
 }
 
 // Notifies the copy completion to extensions via event router.
@@ -194,7 +193,7 @@ void OnCopyCompleted(
     base::File::Error error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&NotifyCopyCompletion, profile_id, *operation_id,
                      source_url, destination_url, error));
@@ -260,9 +259,8 @@ void ComputeChecksumRespondOnUIThread(
     base::OnceCallback<void(std::string)> callback,
     std::string hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(std::move(callback), std::move(hash)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), std::move(hash)));
 }
 
 // Calls a response callback on the UI thread.
@@ -271,9 +269,8 @@ void GetFileMetadataRespondOnUIThread(
     base::File::Error result,
     const base::File::Info& file_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(std::move(callback), result, file_info));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), result, file_info));
 }
 
 // Construct a case-insensitive fnmatch query from |query|. E.g.  for abc123,
@@ -415,16 +412,16 @@ void PostResponseCallbackTaskToUIThread(
     const FileWatchFunctionBase::ResponseCallback& callback,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, success));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(callback, success));
 }
 
 void PostNotificationCallbackTaskToUIThread(
     const storage::WatcherManager::NotificationCallback& callback,
     storage::WatcherManager::ChangeType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, type));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(callback, type));
 }
 
 }  // namespace
@@ -467,11 +464,10 @@ ExtensionFunction::ResponseAction FileWatchFunctionBase::Run() {
       file_manager::EventRouterFactory::GetForProfile(
           chrome_details.GetProfile());
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&FileWatchFunctionBase::RunAsyncOnIOThread, this,
-                     file_system_context, file_system_url,
-                     event_router->GetWeakPtr()));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&FileWatchFunctionBase::RunAsyncOnIOThread,
+                                this, file_system_context, file_system_url,
+                                event_router->GetWeakPtr()));
   return RespondLater();
 }
 
@@ -485,7 +481,7 @@ void FileWatchFunctionBase::RunAsyncOnIOThread(
       file_system_context->GetWatcherManager(file_system_url.type());
 
   if (!watcher_manager) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &FileWatchFunctionBase::PerformFallbackFileWatchOperationOnUIThread,
@@ -611,8 +607,10 @@ FileManagerPrivateGetSizeStatsFunction::Run() {
   } else {
     uint64_t* total_size = new uint64_t(0);
     uint64_t* remaining_size = new uint64_t(0);
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+    base::PostTaskAndReply(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
         base::BindOnce(&GetSizeStatsAsync, volume->mount_path(), total_size,
                        remaining_size),
         base::BindOnce(&FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats,
@@ -686,8 +684,9 @@ FileManagerPrivateInternalValidatePathNameLengthFunction::Run() {
     return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&GetFileNameMaxLengthAsync,
                      file_system_url.path().AsUTF8Unsafe()),
       base::BindOnce(&FileManagerPrivateInternalValidatePathNameLengthFunction::
@@ -820,7 +819,7 @@ FileManagerPrivateInternalStartCopyFunction::Run() {
   }
 
   // Check how much space we need for the copy operation.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &GetFileMetadataOnIOThread, file_system_context, source_url_,
@@ -855,8 +854,8 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterGetFileMetadata(
   }
   destination_dirs.push_back(destination_url_.path().DirName());
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&GetLocalDiskSpaces, std::move(destination_dirs)),
       base::BindOnce(
           &FileManagerPrivateInternalStartCopyFunction::RunAfterCheckDiskSpace,
@@ -924,7 +923,7 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace(
   scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           chrome_details_.GetProfile(), render_frame_host());
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&StartCopyOnIOThread, chrome_details_.GetProfile(),
                      file_system_context, source_url_, destination_url_),
@@ -953,10 +952,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateCancelCopyFunction::Run() {
           chrome_details.GetProfile(), render_frame_host());
 
   // We don't much take care about the result of cancellation.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&CancelCopyOnIOThread, file_system_context,
-                     params->copy_id));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&CancelCopyOnIOThread, file_system_context,
+                                params->copy_id));
   return RespondNow(NoArguments());
 }
 
@@ -1068,11 +1066,10 @@ FileManagerPrivateInternalComputeChecksumFunction::Run() {
       base::BindOnce(
           &FileManagerPrivateInternalComputeChecksumFunction::RespondWith,
           this));
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&FileStreamMd5Digester::GetMd5Digest,
-                     base::Unretained(digester_.get()), std::move(reader),
-                     std::move(result_callback)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&FileStreamMd5Digester::GetMd5Digest,
+                                base::Unretained(digester_.get()),
+                                std::move(reader), std::move(result_callback)));
 
   return RespondLater();
 }
@@ -1128,8 +1125,9 @@ FileManagerPrivateSearchFilesByHashesFunction::Run() {
     // |file_system| is NULL if the backend is DriveFs. It doesn't provide
     // dedicated backup solution yet, so for now just walk the files and check
     // MD5 extended attribute.
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(
             &FileManagerPrivateSearchFilesByHashesFunction::SearchByAttribute,
             this, hashes,
@@ -1223,8 +1221,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateSearchFilesFunction::Run() {
   base::FilePath root = file_manager::util::GetMyFilesFolderForProfile(
       chrome_details_.GetProfile());
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&SearchByPattern, root, params->search_params.query,
                      base::internal::checked_cast<size_t>(
                          params->search_params.max_results)),
@@ -1362,8 +1361,9 @@ FileManagerPrivateInternalGetDirectorySizeFunction::Run() {
         Error("Failed to get a local path from the entry's url."));
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&base::ComputeDirectorySize, root_path),
       base::BindOnce(&FileManagerPrivateInternalGetDirectorySizeFunction::
                          OnDirectorySizeRetrieved,

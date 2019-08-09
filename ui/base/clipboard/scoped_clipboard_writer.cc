@@ -28,7 +28,7 @@ void ScopedClipboardWriter::WriteText(const base::string16& text) {
   Clipboard::ObjectMapParams parameters;
   parameters.push_back(
       Clipboard::ObjectMapParam(utf8_text.begin(), utf8_text.end()));
-  objects_[Clipboard::ObjectType::CBF_TEXT] = parameters;
+  objects_[Clipboard::ObjectType::kText] = parameters;
 }
 
 void ScopedClipboardWriter::WriteHTML(const base::string16& markup,
@@ -44,14 +44,14 @@ void ScopedClipboardWriter::WriteHTML(const base::string16& markup,
                                                    source_url.end()));
   }
 
-  objects_[Clipboard::ObjectType::CBF_HTML] = parameters;
+  objects_[Clipboard::ObjectType::kHtml] = parameters;
 }
 
 void ScopedClipboardWriter::WriteRTF(const std::string& rtf_data) {
   Clipboard::ObjectMapParams parameters;
   parameters.push_back(Clipboard::ObjectMapParam(rtf_data.begin(),
                                                  rtf_data.end()));
-  objects_[Clipboard::ObjectType::CBF_RTF] = parameters;
+  objects_[Clipboard::ObjectType::kRtf] = parameters;
 }
 
 void ScopedClipboardWriter::WriteBookmark(const base::string16& bookmark_title,
@@ -65,7 +65,7 @@ void ScopedClipboardWriter::WriteBookmark(const base::string16& bookmark_title,
   parameters.push_back(Clipboard::ObjectMapParam(utf8_markup.begin(),
                                                  utf8_markup.end()));
   parameters.push_back(Clipboard::ObjectMapParam(url.begin(), url.end()));
-  objects_[Clipboard::ObjectType::CBF_BOOKMARK] = parameters;
+  objects_[Clipboard::ObjectType::kBookmark] = parameters;
 }
 
 void ScopedClipboardWriter::WriteHyperlink(const base::string16& anchor_text,
@@ -83,7 +83,7 @@ void ScopedClipboardWriter::WriteHyperlink(const base::string16& anchor_text,
 }
 
 void ScopedClipboardWriter::WriteWebSmartPaste() {
-  objects_[Clipboard::ObjectType::CBF_WEBKIT] = Clipboard::ObjectMapParams();
+  objects_[Clipboard::ObjectType::kWebkit] = Clipboard::ObjectMapParams();
 }
 
 void ScopedClipboardWriter::WriteImage(const SkBitmap& bitmap) {
@@ -100,7 +100,7 @@ void ScopedClipboardWriter::WriteImage(const SkBitmap& bitmap) {
   *reinterpret_cast<SkBitmap**>(&*packed_pointer.begin()) = bitmap_pointer;
   Clipboard::ObjectMapParams parameters;
   parameters.push_back(packed_pointer);
-  objects_[Clipboard::ObjectType::CBF_SMBITMAP] = parameters;
+  objects_[Clipboard::ObjectType::kBitmap] = parameters;
 }
 
 void ScopedClipboardWriter::WritePickledData(
@@ -118,7 +118,7 @@ void ScopedClipboardWriter::WritePickledData(
   Clipboard::ObjectMapParams parameters;
   parameters.push_back(format_parameter);
   parameters.push_back(data_parameter);
-  objects_[Clipboard::ObjectType::CBF_DATA] = parameters;
+  objects_[Clipboard::ObjectType::kData] = parameters;
 }
 
 void ScopedClipboardWriter::WriteData(const std::string& type,
@@ -128,7 +128,7 @@ void ScopedClipboardWriter::WriteData(const std::string& type,
   Clipboard::ObjectMapParams parameters;
   parameters.push_back(type_parameter);
   parameters.push_back(data_parameter);
-  objects_[Clipboard::ObjectType::CBF_DATA] = parameters;
+  objects_[Clipboard::ObjectType::kData] = parameters;
 }
 
 void ScopedClipboardWriter::Reset() {

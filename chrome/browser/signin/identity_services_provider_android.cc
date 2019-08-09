@@ -13,6 +13,14 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 static ScopedJavaLocalRef<jobject>
+JNI_IdentityServicesProvider_GetIdentityManager(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& j_profile_android) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
+  return IdentityManagerFactory::GetForProfile(profile)->GetJavaObject();
+}
+
+static ScopedJavaLocalRef<jobject>
 JNI_IdentityServicesProvider_GetAccountTrackerService(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile_android) {

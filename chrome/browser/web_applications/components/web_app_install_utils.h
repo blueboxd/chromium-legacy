@@ -28,7 +28,6 @@ namespace web_app {
 
 enum class ExternalInstallSource;
 enum class InstallResultCode;
-struct BitmapAndSource;
 
 enum class ForInstallableSite {
   kYes,
@@ -36,16 +35,10 @@ enum class ForInstallableSite {
   kUnknown,
 };
 
-// A map of icon urls to the bitmaps provided by that url.
-using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
-
 // Update the given WebApplicationInfo with information from the manifest.
 void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
                                   WebApplicationInfo* web_app_info,
                                   ForInstallableSite installable_site);
-
-// Returns icon sizes to be generated from downloaded icons.
-std::set<int> SizesToGenerate();
 
 // Form a list of icons to download: Remove icons with invalid urls. If |data|
 // is specified and contains a valid primary icon, we skip downloading any
@@ -54,31 +47,21 @@ std::vector<GURL> GetValidIconUrlsToDownload(
     const WebApplicationInfo& web_app_info,
     const InstallableData* data);
 
-// Get a list of non-empty square icons from |web_app_info|.
-void FilterSquareIconsFromInfo(const WebApplicationInfo& web_app_info,
-                               std::vector<BitmapAndSource>* square_icons);
+// A map of icon urls to the bitmaps provided by that url.
+using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
 
-// Get a list of non-empty square icons from |icons_map|.
-void FilterSquareIconsFromMap(const IconsMap& icons_map,
-                              std::vector<BitmapAndSource>* square_icons);
-
-// Ensure that the necessary-sized icons are available by resizing larger
-// icons down to smaller sizes, and generating icons for sizes where resizing
-// is not possible.
-void ResizeDownloadedIconsGenerateMissing(
-    std::vector<BitmapAndSource> downloaded_icons,
-    WebApplicationInfo* web_app_info);
-
-// It is important that the linked app information in any web app that
+// Filter out square icons, ensure that the necessary-sized icons are available
+// by resizing larger icons down to smaller sizes, and generating icons for
+// sizes where resizing is not possible. |icons_map| is optional.
+//
+// Sync: It is important that the linked app information in any web app that
 // gets created from sync matches the linked app information that came from
 // sync. If there are any changes, they will be synced back to other devices
-// and could potentially create a never ending sync cycle.
-// This function updates |web_app_info| with the image data of any icon from
-// |size_map| that has a URL and size matching that in |web_app_info|, as
-// well as adding any new images from |size_map| that have no URL.
-void UpdateWebAppIconsWithoutChangingLinks(
-    const std::map<int, BitmapAndSource>& size_map,
-    WebApplicationInfo* web_app_info);
+// and could potentially create a never ending sync cycle. If |is_for_sync| is
+// true then icon links won't be changed.
+void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
+                                         const IconsMap* icons_map,
+                                         bool is_for_sync);
 
 // Record an app banner added to homescreen event to ensure banners are not
 // shown for this app.

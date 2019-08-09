@@ -354,7 +354,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   blink::mojom::blink::MediaStreamRequestResult error_reason() const {
     return result_;
   }
-  blink::WebString constraint_name() const { return constraint_name_; }
+  String constraint_name() const { return constraint_name_; }
 
   // UserMediaProcessor overrides.
   std::unique_ptr<blink::MediaStreamVideoSource> CreateVideoSource(
@@ -414,7 +414,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
 
   void GetUserMediaRequestFailed(
       blink::mojom::blink::MediaStreamRequestResult result,
-      const blink::WebString& constraint_name) override {
+      const String& constraint_name) override {
     last_generated_stream_.Reset();
     *state_ = REQUEST_FAILED;
     result_ = result;
@@ -436,7 +436,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   blink::WebMediaStream last_generated_stream_;
   blink::mojom::blink::MediaStreamRequestResult result_ =
       blink::mojom::blink::MediaStreamRequestResult::NUM_MEDIA_REQUEST_RESULTS;
-  blink::WebString constraint_name_;
+  String constraint_name_;
   RequestState* state_;
 };
 

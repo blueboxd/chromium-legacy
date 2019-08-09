@@ -43,7 +43,7 @@ class FileStreamWriter::OperationRunner
 
     util::FileSystemURLParser parser(url);
     if (!parser.Parse()) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(std::move(callback), base::File::FILE_ERROR_SECURITY));
       return;
@@ -67,7 +67,7 @@ class FileStreamWriter::OperationRunner
 
     // If the file system got unmounted, then abort the writing operation.
     if (!file_system_.get()) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(std::move(callback), base::File::FILE_ERROR_ABORT));
       return;
@@ -113,8 +113,8 @@ class FileStreamWriter::OperationRunner
     if (result == base::File::FILE_OK)
       file_handle_ = file_handle;
 
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(std::move(callback), result));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(std::move(callback), result));
   }
 
   // Forwards a response of writing to a file to the IO thread.
@@ -124,8 +124,8 @@ class FileStreamWriter::OperationRunner
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     abort_callback_ = AbortCallback();
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(std::move(callback), result));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(std::move(callback), result));
   }
 
   AbortCallback abort_callback_;
@@ -147,7 +147,7 @@ FileStreamWriter::FileStreamWriter(const storage::FileSystemURL& url,
 FileStreamWriter::~FileStreamWriter() {
   // Close the runner explicitly if the file streamer is
   if (state_ != CANCELLING) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&OperationRunner::CloseRunnerOnUIThread, runner_));
   }
@@ -163,7 +163,7 @@ void FileStreamWriter::Initialize(base::OnceClosure pending_closure,
   DCHECK_EQ(NOT_INITIALIZED, state_);
   state_ = INITIALIZING;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OperationRunner::OpenFileOnUIThread, runner_, url_,
                      base::BindOnce(&FileStreamWriter::OnOpenFileCompleted,
@@ -251,7 +251,7 @@ int FileStreamWriter::Cancel(net::CompletionOnceCallback callback) {
   // Abort and optimistically return an OK result code, as the aborting
   // operation is always forced and can't be cancelled. Similarly, for closing
   // files.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OperationRunner::CloseRunnerOnUIThread, runner_));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -317,7 +317,7 @@ void FileStreamWriter::WriteAfterInitialized(
 
   state_ = EXECUTING;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OperationRunner::WriteFileOnUIThread, runner_, buffer,
                      current_offset_, buffer_length,

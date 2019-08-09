@@ -249,10 +249,9 @@ void GotSystemSlotOnUIThread(
 void GotSystemSlotOnIOThread(
     base::Callback<void(crypto::ScopedPK11Slot)> callback_ui_thread,
     crypto::ScopedPK11Slot system_slot) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&GotSystemSlotOnUIThread, callback_ui_thread,
-                     std::move(system_slot)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&GotSystemSlotOnUIThread, callback_ui_thread,
+                                std::move(system_slot)));
 }
 
 // Called on IO Thread, initiates retrieval of system slot. |callback_ui_thread|
@@ -516,9 +515,8 @@ class SystemTokenCertDBInitializer {
     base::Callback<void(crypto::ScopedPK11Slot)> callback =
         base::BindRepeating(&SystemTokenCertDBInitializer::InitializeDatabase,
                             weak_ptr_factory_.GetWeakPtr());
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&GetSystemSlotOnIOThread, callback));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&GetSystemSlotOnIOThread, callback));
   }
 
   // Initializes the global system token NSSCertDatabase with |system_slot|.
@@ -649,8 +647,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   // Set the crypto thread after the IO thread has been created/started.
   TPMTokenLoader::Get()->SetCryptoTaskRunner(
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}));
 
   // Initialize NSS database for system token.
   system_token_certdb_initializer_ =
@@ -783,8 +780,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // must be placed after UserManager::SessionStarted();
   MagnificationManager::Initialize();
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&version_loader::GetVersion, version_loader::VERSION_FULL),
       base::Bind(&ChromeOSVersionCallback));
 

@@ -298,6 +298,7 @@ test("components_unittests") {
       "//components/policy/android:policy_java",
       "//components/signin/core/browser",
       "//components/signin/core/browser/android:java",
+      "//components/signin/public/identity_manager/android:java",
       "//components/spellcheck/browser/android:java",
       "//components/variations/android:variations_java",
       "//content/public/android:content_java",

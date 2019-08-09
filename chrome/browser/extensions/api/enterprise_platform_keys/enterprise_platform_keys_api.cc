@@ -286,7 +286,7 @@ EnterprisePlatformKeysChallengeMachineKeyFunction::Run() {
                  scoped_refptr<ExtensionFunction>(this), callback,
                  StringFromVector(params->challenge),
                  params->register_key ? *params->register_key : false);
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, task);
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, task);
   return RespondLater();
 }
 
@@ -326,7 +326,7 @@ EnterprisePlatformKeysChallengeUserKeyFunction::Run() {
       base::Bind(&EPKPChallengeUserKey::Run, base::Unretained(impl_),
                  scoped_refptr<ExtensionFunction>(this), callback,
                  StringFromVector(params->challenge), params->register_key);
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, task);
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, task);
   return RespondLater();
 }
 

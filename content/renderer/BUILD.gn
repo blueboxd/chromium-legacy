@@ -347,8 +347,6 @@ target(link_target_type, "renderer") {
     "service_worker/service_worker_fetch_context_impl.h",
     "service_worker/service_worker_network_provider_for_frame.cc",
     "service_worker/service_worker_network_provider_for_frame.h",
-    "service_worker/service_worker_network_provider_for_service_worker.cc",
-    "service_worker/service_worker_network_provider_for_service_worker.h",
     "service_worker/service_worker_provider_context.cc",
     "service_worker/service_worker_provider_context.h",
     "service_worker/service_worker_subresource_loader.cc",

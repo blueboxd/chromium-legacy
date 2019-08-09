@@ -18,12 +18,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_requests.h"
 #include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/chromeos/certificate_provider/sign_requests.h"
 #include "chrome/browser/chromeos/certificate_provider/thread_safe_certificate_map.h"
+#include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_identity.h"
@@ -170,10 +172,12 @@ class CertificateProviderService : public KeyedService {
   // key. |algorithm| is a TLS 1.3 SignatureScheme value. See net::SSLPrivateKey
   // for details. |callback| will be run with the reply of the extension or an
   // error.
-  void RequestSignatureBySpki(const std::string& subject_public_key_info,
-                              uint16_t algorithm,
-                              base::span<const uint8_t> digest,
-                              net::SSLPrivateKey::SignCallback callback);
+  void RequestSignatureBySpki(
+      const std::string& subject_public_key_info,
+      uint16_t algorithm,
+      base::span<const uint8_t> digest,
+      const base::Optional<AccountId>& authenticating_user_account_id,
+      net::SSLPrivateKey::SignCallback callback);
 
   // Looks up the certificate identified by |subject_public_key_info|. If any
   // extension is currently providing such a certificate, fills
@@ -222,6 +226,7 @@ class CertificateProviderService : public KeyedService {
       const scoped_refptr<net::X509Certificate>& certificate,
       uint16_t algorithm,
       base::span<const uint8_t> digest,
+      const base::Optional<AccountId>& authenticating_user_account_id,
       net::SSLPrivateKey::SignCallback callback);
 
   std::unique_ptr<Delegate> delegate_;

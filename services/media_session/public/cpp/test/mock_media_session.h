@@ -147,12 +147,12 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void AbandonAudioFocusFromClient();
 
   base::UnguessableToken RequestAudioFocusFromService(
-      mojom::AudioFocusManagerPtr& service,
+      mojo::Remote<mojom::AudioFocusManager>& service,
       mojom::AudioFocusType audio_foucs_type);
 
   bool RequestGroupedAudioFocusFromService(
       const base::UnguessableToken& request_id,
-      mojom::AudioFocusManagerPtr& service,
+      mojo::Remote<mojom::AudioFocusManager>& service,
       mojom::AudioFocusType audio_focus_type,
       const base::UnguessableToken& group_id);
 

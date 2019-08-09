@@ -16,7 +16,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
-// https://pr-preview.s3.amazonaws.com/ewilligers/web-share-target/pull/53.html#sharetargetfiles-and-its-members
+// https://wicg.github.io/web-share-target/level-2/#sharetargetfiles-and-its-members
 struct ShareTargetParamsFile {
   base::string16 name;
   std::vector<base::string16> accept;

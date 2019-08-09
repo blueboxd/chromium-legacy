@@ -48,11 +48,8 @@ class WebURLRequest;
 //
 // It is owned by DocumentLoader and only used on the main thread.
 //
-// Currently the Blink embedder has implementations for service worker clients
-// (frames and shared workers), and service workers themselves. Note that for
-// workers, the interface is only used for requests from the shadow page
-// (WorkerShadowPage). For hooking into off-the-main-thread loading from
-// workers, the embedder can implement WebWorkerFetchContext.
+// Currently the Blink embedder has implementations for frames. For hooking
+// into loading from workers, the embedder can implement WebWorkerFetchContext.
 class WebServiceWorkerNetworkProvider {
  public:
   virtual ~WebServiceWorkerNetworkProvider() = default;

@@ -182,8 +182,10 @@ void PrepareWritableFileAndRun(Profile* profile,
 
   FileSystemInterface* file_system = GetFileSystemByProfile(profile);
   if (!file_system || !IsUnderDriveMountPoint(path)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_BLOCKING},
         base::BindOnce(callback, FILE_ERROR_FAILED, base::FilePath()));
     return;
   }

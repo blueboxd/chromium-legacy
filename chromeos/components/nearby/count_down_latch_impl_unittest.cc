@@ -39,8 +39,8 @@ class CountDownLatchImplTest : public testing::Test {
   base::UnguessableToken PostAwaitTask(
       const base::Optional<base::TimeDelta>& timeout_millis) {
     base::UnguessableToken unique_task_id = base::UnguessableToken::Create();
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTask(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&CountDownLatchImplTest::AwaitTask,
                        base::Unretained(this), timeout_millis, unique_task_id));
     return unique_task_id;

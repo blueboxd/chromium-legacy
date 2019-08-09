@@ -172,9 +172,8 @@ void CreateQueryOnIOThread(std::unique_ptr<printing::PrintSettings> settings,
 // Send initialized PrinterQuery to UI thread.
 void OnSetSettingsDoneOnIOThread(std::unique_ptr<printing::PrinterQuery> query,
                                  PrinterQueryCallback callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(callback), std::move(query)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(callback), std::move(query)));
 }
 
 std::unique_ptr<printing::PrinterSemanticCapsAndDefaults>
@@ -306,8 +305,8 @@ class PrinterDiscoverySessionHostImpl
   }
 
   void FetchCapabilities(const chromeos::Printer& printer) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&FetchCapabilitiesOnBlockingTaskRunner, printer.id()),
         base::BindOnce(&PrinterDiscoverySessionHostImpl::CapabilitiesReceived,
                        weak_ptr_factory_.GetWeakPtr(), printer));
@@ -389,13 +388,13 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
     // We read printing data from pipe on working thread in parallel with
     // initializing PrinterQuery on IO thread. When both tasks are complete we
     // start printing.
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&ReadFileOnBlockingTaskRunner, std::move(file),
                        data_size),
         base::BindOnce(&PrintJobHostImpl::OnFileRead,
                        weak_ptr_factory_.GetWeakPtr()));
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&CreateQueryOnIOThread, std::move(settings),
                        base::BindOnce(&PrintJobHostImpl::OnSetSettingsDone,

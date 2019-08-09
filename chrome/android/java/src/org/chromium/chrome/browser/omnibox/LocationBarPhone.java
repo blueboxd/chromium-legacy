@@ -49,7 +49,7 @@ public class LocationBarPhone extends LocationBarLayout {
         delegateArea.left -= ACTION_BUTTON_TOUCH_OVERFLOW_LEFT;
         TouchDelegate touchDelegate = new TouchDelegate(delegateArea, mUrlActionContainer);
         assert mUrlActionContainer.getParent() == this;
-        setTouchDelegate(touchDelegate);
+        mCompositeTouchDelegate.addDelegateForDescendantView(touchDelegate);
     }
 
     /**

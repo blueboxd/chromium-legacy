@@ -119,6 +119,9 @@ class AccessorySheetData {
   class Builder;
 
   AccessorySheetData(AccessoryTabType sheet_type, base::string16 title);
+  AccessorySheetData(AccessoryTabType sheet_type,
+                     base::string16 title,
+                     base::string16 warning);
   AccessorySheetData(const AccessorySheetData& data);
   AccessorySheetData(AccessorySheetData&& data);
 
@@ -129,6 +132,9 @@ class AccessorySheetData {
 
   const base::string16& title() const { return title_; }
   AccessoryTabType get_sheet_type() const { return sheet_type_; }
+
+  const base::string16& warning() const { return warning_; }
+  void set_warning(base::string16 warning) { warning_ = std::move(warning); }
 
   void add_user_info(UserInfo user_info) {
     user_info_list_.emplace_back(std::move(user_info));
@@ -153,6 +159,7 @@ class AccessorySheetData {
  private:
   AccessoryTabType sheet_type_;
   base::string16 title_;
+  base::string16 warning_;
   std::vector<UserInfo> user_info_list_;
   std::vector<FooterCommand> footer_commands_;
 };
@@ -176,6 +183,10 @@ class AccessorySheetData::Builder {
  public:
   Builder(AccessoryTabType type, base::string16 title);
   ~Builder();
+
+  // Adds a warning string to the accessory sheet.
+  Builder&& SetWarning(base::string16 warning) &&;
+  Builder& SetWarning(base::string16 warning) &;
 
   // Adds a new UserInfo object to |accessory_sheet_data_|.
   Builder&& AddUserInfo(std::string origin = std::string()) &&;

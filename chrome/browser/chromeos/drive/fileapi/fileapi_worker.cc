@@ -185,8 +185,8 @@ void OpenFileAfterFileSystemOpenFile(int file_flags,
   }
 
   // Cache file prepared for modification is available. Open it locally.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::Bind(&OpenFile, local_path, file_flags),
       base::Bind(&RunOpenFileCallback, callback, close_callback));
 }

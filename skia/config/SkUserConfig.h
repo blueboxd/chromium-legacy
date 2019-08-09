@@ -139,6 +139,12 @@
 // converted to type3 when producing PDFs, and reduces build size.
 #define SK_PDF_DO_NOT_SUPPORT_TYPE_1_FONTS
 
+// Please see: b/138674523. Turning on explicit resource allocation prevented
+// reusing textures in some cases (esp. blur image filters using
+// SkImage::makeWithFilter). Temporarily keep this bug (via this define) because
+// the fix needs to be turned on atomically with some cc unit test rebaselines.
+#define SK_CRIPPLE_TEXTURE_REUSE
+
 #ifdef SK_DEBUG
 #define SK_REF_CNT_MIXIN_INCLUDE "skia/config/sk_ref_cnt_ext_debug.h"
 #else

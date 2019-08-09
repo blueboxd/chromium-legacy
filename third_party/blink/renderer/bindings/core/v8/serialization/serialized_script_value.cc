@@ -692,13 +692,13 @@ SerializedScriptValue::TransferArrayBufferContents(
 
   for (auto* it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMArrayBufferBase* array_buffer = *it;
-    if (array_buffer->IsNeutered()) {
+    if (array_buffer->IsDetached()) {
       wtf_size_t index =
           static_cast<wtf_size_t>(std::distance(array_buffers.begin(), it));
       exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
                                         "ArrayBuffer at index " +
                                             String::Number(index) +
-                                            " is already neutered.");
+                                            " is already detached.");
       return ArrayBufferContentsArray();
     }
   }

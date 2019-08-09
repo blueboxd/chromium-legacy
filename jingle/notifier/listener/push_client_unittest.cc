@@ -10,8 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "jingle/glue/network_service_config_test_util.h"
 #include "jingle/notifier/base/notifier_options.h"
@@ -27,14 +27,15 @@ class PushClientTest : public testing::Test {
   PushClientTest()
       : net_config_helper_(
             base::MakeRefCounted<net::TestURLRequestContextGetter>(
-                message_loop_.task_runner())) {
+                scoped_task_environment_.GetMainThreadTaskRunner())) {
     net_config_helper_.FillInNetworkConfig(&notifier_options_.network_config);
   }
 
   ~PushClientTest() override {}
 
   // The sockets created by the XMPP code expect an IO loop.
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::IO};
   jingle_glue::NetworkServiceConfigTestUtil net_config_helper_;
   NotifierOptions notifier_options_;
 };

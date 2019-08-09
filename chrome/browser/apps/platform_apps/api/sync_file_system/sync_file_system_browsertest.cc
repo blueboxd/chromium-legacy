@@ -63,8 +63,9 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   SyncFileSystemTest() : remote_service_(nullptr) {}
 
   scoped_refptr<base::SequencedTaskRunner> MakeSequencedTaskRunner() {
-    return base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    return base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
 
   void SetUpOnMainThread() override {

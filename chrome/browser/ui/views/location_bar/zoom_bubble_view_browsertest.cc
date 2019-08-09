@@ -35,8 +35,7 @@ namespace {
 void ShowInActiveTab(Browser* browser) {
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
-                             ZoomBubbleView::USER_GESTURE);
+  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::USER_GESTURE);
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
 }
 
@@ -53,8 +52,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, NonImmersiveFullscreen) {
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
 
   // The zoom bubble should be anchored when not in fullscreen.
-  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
-                             ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
   ASSERT_TRUE(ZoomBubbleView::GetZoomBubble());
   const ZoomBubbleView* zoom_bubble = ZoomBubbleView::GetZoomBubble();
   EXPECT_TRUE(zoom_bubble->GetAnchorView());
@@ -76,8 +74,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, NonImmersiveFullscreen) {
 
   // The bubble should not be anchored when it is shown in non-immersive
   // fullscreen.
-  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
-                             ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
   ASSERT_TRUE(ZoomBubbleView::GetZoomBubble());
   zoom_bubble = ZoomBubbleView::GetZoomBubble();
   EXPECT_FALSE(zoom_bubble->GetAnchorView());
@@ -115,8 +112,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   // The zoom bubble should not be anchored when it is shown in immersive
   // fullscreen and the top-of-window views are not revealed.
-  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
-                             ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
   ASSERT_TRUE(ZoomBubbleView::GetZoomBubble());
   const ZoomBubbleView* zoom_bubble = ZoomBubbleView::GetZoomBubble();
   EXPECT_FALSE(zoom_bubble->GetAnchorView());
@@ -130,8 +126,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 
   // The zoom bubble should be anchored when it is shown in immersive fullscreen
   // and the top-of-window views are revealed.
-  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
-                             ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
   zoom_bubble = ZoomBubbleView::GetZoomBubble();
   ASSERT_TRUE(zoom_bubble);
   EXPECT_TRUE(zoom_bubble->GetAnchorView());
@@ -160,13 +155,11 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, NoWebContentsIsSafe) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
-                             ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
   // Close the current tab and try opening the zoom bubble with stale
   // |web_contents|.
   chrome::CloseTab(browser());
-  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
-                             ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
 }
 
 // Ensure a tab switch closes the bubble.
@@ -342,8 +335,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleDialogTest, InvokeUi_default) {
 IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, FocusPreventsClose) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
-                             ZoomBubbleView::AUTOMATIC);
+  ZoomBubbleView::ShowBubble(web_contents, ZoomBubbleView::AUTOMATIC);
   ZoomBubbleView* bubble = ZoomBubbleView::GetZoomBubble();
   ASSERT_TRUE(bubble);
   // |auto_close_timer_| is running so that the bubble is closed at the end.

@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host.h"
 #include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host_popup_impl.h"
 #include "chromeos/constants/security_token_pin_types.h"
+#include "components/account_id/account_id.h"
 
 namespace chromeos {
 
@@ -49,7 +50,10 @@ class PinDialogManager final {
   ~PinDialogManager();
 
   // Stores internally the |signRequestId| along with current timestamp.
-  void AddSignRequestId(const std::string& extension_id, int sign_request_id);
+  void AddSignRequestId(
+      const std::string& extension_id,
+      int sign_request_id,
+      const base::Optional<AccountId>& authenticating_user_account_id);
 
   // Creates and displays a new PIN dialog, or reuses the old dialog with just
   // updating the parameters if active one exists.
@@ -113,11 +117,24 @@ class PinDialogManager final {
   }
 
  private:
+  struct SignRequestState {
+    SignRequestState(
+        base::Time begin_time,
+        const base::Optional<AccountId>& authenticating_user_account_id);
+    SignRequestState(const SignRequestState&);
+    SignRequestState& operator=(const SignRequestState&);
+    ~SignRequestState();
+
+    base::Time begin_time;
+    base::Optional<AccountId> authenticating_user_account_id;
+  };
+
   // Holds information related to the currently opened PIN dialog.
   struct ActiveDialogState {
     ActiveDialogState(SecurityTokenPinDialogHost* host,
                       const std::string& extension_id,
                       const std::string& extension_name,
+                      int sign_request_id,
                       SecurityTokenPinCodeType code_type);
     ~ActiveDialogState();
 
@@ -128,12 +145,17 @@ class PinDialogManager final {
 
     const std::string extension_id;
     const std::string extension_name;
+    const int sign_request_id;
     const SecurityTokenPinCodeType code_type;
     RequestPinCallback request_pin_callback;
     StopPinRequestCallback stop_pin_request_callback;
   };
 
   using ExtensionNameRequestIdPair = std::pair<std::string, int>;
+
+  // Returns the sign request state for the given key, or null if not found.
+  SignRequestState* FindSignRequestState(const std::string& extension_id,
+                                         int sign_request_id);
 
   // The callback that gets invoked once the user sends some input into the PIN
   // dialog.
@@ -155,9 +177,9 @@ class PinDialogManager final {
   // been exceeded.
   std::unordered_map<std::string, bool> last_response_closed_;
 
-  // The map with extension_id and sign request id issued by Chrome as key while
-  // the time when the id was generated is the value.
-  std::map<ExtensionNameRequestIdPair, base::Time> sign_request_times_;
+  // The map from extension_id and an active sign request id to the state of the
+  // request.
+  std::map<ExtensionNameRequestIdPair, SignRequestState> sign_requests_;
 
   SecurityTokenPinDialogHostPopupImpl default_dialog_host_;
   // The list of dynamically added dialog hosts, in the same order as they were

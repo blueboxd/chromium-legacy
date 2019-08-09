@@ -92,7 +92,7 @@ void DumpPluginProcessOnIOThread(const std::set<int>& child_ids) {
 
   // Wait a bit to let dump finish (if requested) before rebooting the device.
   const int kDumpWaitSeconds = 10;
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI}, base::BindOnce(&RebootDevice),
       base::TimeDelta::FromSeconds(dump_requested ? kDumpWaitSeconds : 0));
 }
@@ -269,9 +269,8 @@ void AppSession::OnPluginHung(const std::set<int>& hung_plugins) {
   is_shutting_down_ = true;
 
   LOG(ERROR) << "Plugin hung detected. Dump and reboot.";
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&DumpPluginProcessOnIOThread, hung_plugins));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&DumpPluginProcessOnIOThread, hung_plugins));
 }
 
 }  // namespace chromeos

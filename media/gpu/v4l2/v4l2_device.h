@@ -41,6 +41,12 @@
 #define V4L2_CID_JPEG_CHROMA_QUANTIZATION (V4L2_CID_JPEG_CLASS_BASE + 6)
 #endif
 
+// TODO(b/132589320): remove this once V4L2 header is updated.
+#ifndef V4L2_PIX_FMT_MM21
+// MTK 8-bit block mode, two non-contiguous planes.
+#define V4L2_PIX_FMT_MM21 v4l2_fourcc('M', 'M', '2', '1')
+#endif
+
 namespace media {
 
 class V4L2Queue;

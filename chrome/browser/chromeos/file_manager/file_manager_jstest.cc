@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ProvidersModel) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesMessage) {
-  RunGeneratedTest("/foreground/elements/files_message_unittest.html");
+  RunTestURL("/file_manager/foreground/elements/files_message_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesToast) {
@@ -213,4 +213,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTableList) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTransferController) {
   RunGeneratedTest("/foreground/js/file_transfer_controller_unittest.html");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesToolTip) {
+  RunTestURL("/file_manager/foreground/elements/files_tooltip_unittest.html");
 }

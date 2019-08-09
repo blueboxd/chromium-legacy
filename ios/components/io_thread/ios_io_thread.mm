@@ -131,7 +131,7 @@ SystemURLRequestContextGetter::SystemURLRequestContextGetter(
     IOSIOThread* io_thread)
     : io_thread_(io_thread),
       network_task_runner_(
-          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO})) {}
+          base::CreateSingleThreadTaskRunner({web::WebThread::IO})) {}
 
 SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
 
@@ -210,10 +210,9 @@ net::NetLog* IOSIOThread::net_log() {
 
 void IOSIOThread::ChangedToOnTheRecord() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO},
-      base::BindOnce(&IOSIOThread::ChangedToOnTheRecordOnIOThread,
-                     base::Unretained(this)));
+  base::PostTask(FROM_HERE, {web::WebThread::IO},
+                 base::BindOnce(&IOSIOThread::ChangedToOnTheRecordOnIOThread,
+                                base::Unretained(this)));
 }
 
 net::URLRequestContextGetter* IOSIOThread::system_url_request_context_getter() {

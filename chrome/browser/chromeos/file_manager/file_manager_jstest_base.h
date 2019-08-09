@@ -23,6 +23,10 @@ class FileManagerJsTestBase : public InProcessBrowserTest {
   // |file|, relative to DIR_EXE/gen/base_path.
   void RunGeneratedTest(const std::string& file);
 
+  // Run the test from chrome://file_manager_test/.
+  // |file| is relative path to //ui/file_manager/ .
+  void RunTestURL(const std::string& file);
+
   // Set up & tear down
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
@@ -30,9 +34,9 @@ class FileManagerJsTestBase : public InProcessBrowserTest {
   // chrome://file_manager_test.
   static const std::string kTestResourceURL;
 
+ private:
   void RunTestImpl(const GURL& url);
 
- private:
   std::unique_ptr<TestChromeWebUIControllerFactory> webui_controller_factory_;
   base::FilePath base_path_;
 };

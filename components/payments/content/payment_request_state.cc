@@ -41,6 +41,7 @@ PaymentRequestState::PaymentRequestState(
     const std::string& app_locale,
     autofill::PersonalDataManager* personal_data_manager,
     ContentPaymentRequestDelegate* payment_request_delegate,
+    ServiceWorkerPaymentInstrument::IdentityObserver* sw_identity_observer,
     JourneyLogger* journey_logger)
     : is_ready_to_pay_(false),
       get_all_instruments_finished_(true),
@@ -60,7 +61,9 @@ PaymentRequestState::PaymentRequestState(
       selected_instrument_(nullptr),
       number_of_pending_sw_payment_instruments_(0),
       payment_request_delegate_(payment_request_delegate),
+      sw_identity_observer_(sw_identity_observer),
       profile_comparator_(app_locale, *spec) {
+  DCHECK(sw_identity_observer_);
   if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps)) {
     DCHECK(web_contents);
     get_all_instruments_finished_ = false;
@@ -108,7 +111,8 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
     std::unique_ptr<ServiceWorkerPaymentInstrument> instrument =
         std::make_unique<ServiceWorkerPaymentInstrument>(
             web_contents->GetBrowserContext(), top_level_origin, frame_origin,
-            spec_, std::move(app.second), payment_request_delegate_);
+            spec_, std::move(app.second), payment_request_delegate_,
+            sw_identity_observer_);
     instrument->ValidateCanMakePayment(
         base::BindOnce(&PaymentRequestState::OnSWPaymentInstrumentValidated,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -120,7 +124,7 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
         std::make_unique<ServiceWorkerPaymentInstrument>(
             web_contents, top_level_origin, frame_origin, spec_,
             std::move(installable_app.second), installable_app.first.spec(),
-            payment_request_delegate_);
+            payment_request_delegate_, sw_identity_observer_);
     instrument->ValidateCanMakePayment(
         base::BindOnce(&PaymentRequestState::OnSWPaymentInstrumentValidated,
                        weak_ptr_factory_.GetWeakPtr()));

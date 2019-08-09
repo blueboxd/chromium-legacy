@@ -185,12 +185,6 @@ const base::Feature kCrostiniAdditionalEnterpriseReporting{
 const base::Feature kCrostiniAdvancedAccessControls{
     "CrostiniAdvancedAccessControls", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables an uninstall option in the right-click menu of Crostini (Linux)
-// applications.
-// TODO(crbug.com/955797): Remove this flag entirely.
-const base::Feature kCrostiniAppUninstallGui{"CrostiniAppUninstallGui",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables infrastructure for applying Ansible playbook to default Crostini
 // container.
 const base::Feature kCrostiniAnsibleInfrastructure{

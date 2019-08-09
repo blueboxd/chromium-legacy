@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
 #include "third_party/blink/renderer/platform/wtf/construct_traits.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 
@@ -694,7 +695,15 @@ template <typename Key,
           typename Traits,
           typename KeyTraits,
           typename Allocator>
-class HashTable final {
+class HashTable final
+    : public ConditionalDestructor<HashTable<Key,
+                                             Value,
+                                             Extractor,
+                                             HashFunctions,
+                                             Traits,
+                                             KeyTraits,
+                                             Allocator>,
+                                   Allocator::kIsGarbageCollected> {
   DISALLOW_NEW();
 
  public:
@@ -726,14 +735,10 @@ class HashTable final {
 
   HashTable();
 
-  // For design of the destructor, please refer to
-  // [here](https://docs.google.com/document/d/1AoGTvb3tNLx2tD1hNqAfLRLmyM59GM0O-7rCHTT_7_U/)
-  ~HashTable() {
+  void Finalize() {
+    static_assert(!Allocator::kIsGarbageCollected,
+                  "GCed collections can't be finalized.");
     if (LIKELY(!table_))
-      return;
-    // If this is called during sweeping, it must not touch other heap objects
-    // such as the backing.
-    if (Allocator::IsSweepForbidden())
       return;
     EnterAccessForbiddenScope();
     DeleteAllBucketsAndDeallocate(table_, table_size_);

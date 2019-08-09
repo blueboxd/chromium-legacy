@@ -5,6 +5,11 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/jni_string.h"
+#include "components/signin/internal/identity_manager/android/jni_headers/CoreAccountInfo_jni.h"
+#endif
+
 namespace {
 
 // Updates |field| with |new_value| if non-empty and different; if |new_value|
@@ -119,3 +124,16 @@ std::ostream& operator<<(std::ostream& os, const CoreAccountInfo& account) {
      << account.is_under_advanced_protection;
   return os;
 }
+
+#if defined(OS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject> ConvertToJavaCoreAccountInfo(
+    const CoreAccountInfo& account_info) {
+  if (account_info.IsEmpty())
+    return base::android::ScopedJavaLocalRef<jobject>();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return signin::Java_CoreAccountInfo_Constructor(
+      env,
+      base::android::ConvertUTF8ToJavaString(env, account_info.account_id.id),
+      base::android::ConvertUTF8ToJavaString(env, account_info.email));
+}
+#endif

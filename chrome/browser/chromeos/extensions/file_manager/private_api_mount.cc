@@ -106,8 +106,10 @@ ExtensionFunction::ResponseAction FileManagerPrivateAddMountFunction::Run() {
     if (is_under_downloads) {
       // For files under downloads, change the file permission and make it
       // readable from avfs/fuse if needed.
-      base::PostTaskWithTraits(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::PostTask(
+          FROM_HERE,
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_BLOCKING},
           base::BindOnce(&EnsureReadableFilePermissionAsync, path,
                          google_apis::CreateRelayCallback(base::BindOnce(
                              &FileManagerPrivateAddMountFunction::

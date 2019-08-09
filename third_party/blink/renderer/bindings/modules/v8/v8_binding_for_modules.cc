@@ -191,8 +191,8 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
   // https://w3c.github.io/IndexedDB/#convert-a-key-to-a-value
   if (value->IsArrayBuffer()) {
     DOMArrayBuffer* buffer = V8ArrayBuffer::ToImpl(value.As<v8::Object>());
-    if (buffer->IsNeutered()) {
-      exception_state.ThrowTypeError("The ArrayBuffer is neutered.");
+    if (buffer->IsDetached()) {
+      exception_state.ThrowTypeError("The ArrayBuffer is detached.");
       return nullptr;
     }
     const char* start = static_cast<const char*>(buffer->Data());
@@ -202,8 +202,8 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
   if (value->IsArrayBufferView()) {
     DOMArrayBufferView* view =
         V8ArrayBufferView::ToImpl(value.As<v8::Object>());
-    if (view->buffer()->IsNeutered()) {
-      exception_state.ThrowTypeError("The viewed ArrayBuffer is neutered.");
+    if (view->buffer()->IsDetached()) {
+      exception_state.ThrowTypeError("The viewed ArrayBuffer is detached.");
       return nullptr;
     }
     const char* start = static_cast<const char*>(view->BaseAddress());

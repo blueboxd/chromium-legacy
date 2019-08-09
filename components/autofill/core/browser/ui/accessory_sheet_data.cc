@@ -127,7 +127,13 @@ std::ostream& operator<<(std::ostream& os, const AccessoryTabType& type) {
 
 AccessorySheetData::AccessorySheetData(AccessoryTabType sheet_type,
                                        base::string16 title)
-    : sheet_type_(sheet_type), title_(std::move(title)) {}
+    : AccessorySheetData(sheet_type, std::move(title), base::string16()) {}
+AccessorySheetData::AccessorySheetData(AccessoryTabType sheet_type,
+                                       base::string16 title,
+                                       base::string16 warning)
+    : sheet_type_(sheet_type),
+      title_(std::move(title)),
+      warning_(std::move(warning)) {}
 
 AccessorySheetData::AccessorySheetData(const AccessorySheetData& data) =
     default;
@@ -144,13 +150,13 @@ AccessorySheetData& AccessorySheetData::operator=(AccessorySheetData&& data) =
 
 bool AccessorySheetData::operator==(const AccessorySheetData& data) const {
   return sheet_type_ == data.sheet_type_ && title_ == data.title_ &&
-         user_info_list_ == data.user_info_list_ &&
+         warning_ == data.warning_ && user_info_list_ == data.user_info_list_ &&
          footer_commands_ == data.footer_commands_;
 }
 
 std::ostream& operator<<(std::ostream& os, const AccessorySheetData& data) {
   os << data.get_sheet_type() << " with title: \"" << data.title()
-     << "\", user info list: [";
+     << "\", warning: \"" << data.warning() << "\", and user info list: [";
   for (const UserInfo& user_info : data.user_info_list()) {
     os << user_info << ", ";
   }
@@ -166,6 +172,18 @@ AccessorySheetData::Builder::Builder(AccessoryTabType type,
     : accessory_sheet_data_(type, std::move(title)) {}
 
 AccessorySheetData::Builder::~Builder() = default;
+
+AccessorySheetData::Builder&& AccessorySheetData::Builder::SetWarning(
+    base::string16 warning) && {
+  // Calls SetWarning(base::string16 warning)()& since |this| is an lvalue.
+  return std::move(SetWarning(std::move(warning)));
+}
+
+AccessorySheetData::Builder& AccessorySheetData::Builder::SetWarning(
+    base::string16 warning) & {
+  accessory_sheet_data_.set_warning(std::move(warning));
+  return *this;
+}
 
 AccessorySheetData::Builder&& AccessorySheetData::Builder::AddUserInfo(
     std::string origin) && {

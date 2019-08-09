@@ -31,7 +31,7 @@ class MediaControllerTest : public AshTestBase {
 
     MediaControllerImpl* media_controller = Shell::Get()->media_controller();
     media_controller->SetMediaSessionControllerForTest(
-        controller_->CreateMediaControllerPtr());
+        controller_->CreateMediaControllerRemote());
     media_controller->FlushForTesting();
 
     {

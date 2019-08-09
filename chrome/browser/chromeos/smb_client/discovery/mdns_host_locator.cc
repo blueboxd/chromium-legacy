@@ -123,8 +123,8 @@ class MDnsHostLocator::Impl {
 };
 
 MDnsHostLocator::MDnsHostLocator()
-    : io_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO})),
+    : io_task_runner_(
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})),
       impl_(nullptr, base::OnTaskRunnerDeleter(io_task_runner_)),
       weak_factory_(this) {}
 

@@ -8,6 +8,7 @@
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/mojom/rrect_f.mojom-shared.h"
 #include "ui/gfx/rrect_f.h"
+#include "ui/gfx/rrect_f_builder.h"
 
 namespace mojo {
 
@@ -83,14 +84,17 @@ struct StructTraits<gfx::mojom::RRectFDataView, gfx::RRectF> {
     if (!data.ReadRect(&rect))
       return false;
     if (type <= gfx::RRectF::Type::kRect) {
-      *out = gfx::RRectF(rect);
+      *out = gfx::RRectFBuilder().set_rect(rect).Build();
       return true;
     }
     gfx::Vector2dF upper_left;
     if (!data.ReadUpperLeft(&upper_left))
       return false;
     if (type <= gfx::RRectF::Type::kSimple) {
-      *out = gfx::RRectF(rect, upper_left.x(), upper_left.y());
+      *out = gfx::RRectFBuilder()
+                 .set_rect(rect)
+                 .set_radius(upper_left.x(), upper_left.y())
+                 .Build();
       return true;
     }
     gfx::Vector2dF upper_right;
@@ -101,9 +105,13 @@ struct StructTraits<gfx::mojom::RRectFDataView, gfx::RRectF> {
         !data.ReadLowerLeft(&lower_left)) {
       return false;
     }
-    *out = gfx::RRectF(rect, upper_left.x(), upper_left.y(), upper_right.x(),
-                       upper_right.y(), lower_right.x(), lower_right.y(),
-                       lower_left.x(), lower_left.y());
+    *out = gfx::RRectFBuilder()
+               .set_rect(rect)
+               .set_upper_left(upper_left.x(), upper_left.y())
+               .set_upper_right(upper_right.x(), upper_right.y())
+               .set_lower_right(lower_right.x(), lower_right.y())
+               .set_lower_left(lower_left.x(), lower_left.y())
+               .Build();
     return true;
   }
 };

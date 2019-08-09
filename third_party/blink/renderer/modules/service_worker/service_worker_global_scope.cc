@@ -256,8 +256,6 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kOffMainThreadServiceWorkerScriptFetch));
   DCHECK(!IsContextPaused());
 
   // Step 9. "Switching on job's worker type, run these substeps with the
@@ -450,8 +448,6 @@ void ServiceWorkerGlobalScope::DidEvaluateScript() {
 void ServiceWorkerGlobalScope::DidReceiveResponseForClassicScript(
     WorkerClassicScriptLoader* classic_script_loader) {
   DCHECK(IsContextThread());
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kOffMainThreadServiceWorkerScriptFetch));
   probe::DidReceiveScriptResponse(this, classic_script_loader->Identifier());
 }
 
@@ -460,8 +456,6 @@ void ServiceWorkerGlobalScope::DidFetchClassicScript(
     WorkerClassicScriptLoader* classic_script_loader,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsContextThread());
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kOffMainThreadServiceWorkerScriptFetch));
 
   // Step 9. "If the algorithm asynchronously completes with null, then:"
   if (classic_script_loader->Failed()) {

@@ -109,8 +109,8 @@ class TypedArrayBase : public ArrayBufferView {
     return Create<Subclass>(std::move(buffer), 0, length);
   }
 
-  void Neuter() final {
-    ArrayBufferView::Neuter();
+  void Detach() final {
+    ArrayBufferView::Detach();
     length_ = 0;
   }
 

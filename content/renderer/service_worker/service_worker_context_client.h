@@ -144,11 +144,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
                               std::unique_ptr<blink::WebFetchEventPreloadHandle>
                                   preload_handle) override;
   void RequestTermination(RequestTerminationCallback callback) override;
-  std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
-  CreateServiceWorkerNetworkProviderOnMainThread() override;
-  scoped_refptr<blink::WebWorkerFetchContext>
-  CreateWorkerFetchContextOnMainThreadLegacy(
-      blink::WebServiceWorkerNetworkProvider*) override;
   scoped_refptr<blink::WebWorkerFetchContext>
   CreateWorkerFetchContextOnMainThread() override;
 

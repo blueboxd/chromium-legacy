@@ -26,8 +26,8 @@ class LockImplTest : public testing::Test {
  protected:
   LockImplTest()
       : lock_(std::make_unique<LockImpl>()),
-        different_thread_task_runner_(
-            base::CreateSingleThreadTaskRunnerWithTraits(base::MayBlock())) {}
+        different_thread_task_runner_(base::CreateSingleThreadTaskRunner(
+            {base::ThreadPool(), base::MayBlock()})) {}
 
   // testing::Test
   void SetUp() override {

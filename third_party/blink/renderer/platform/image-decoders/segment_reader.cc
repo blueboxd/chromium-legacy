@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -49,7 +50,15 @@ size_t SharedBufferSegmentReader::GetSomeData(const char*& data,
 }
 
 sk_sp<SkData> SharedBufferSegmentReader::GetAsSkData() const {
-  return shared_buffer_->GetAsSkData();
+  sk_sp<SkData> data = SkData::MakeUninitialized(shared_buffer_->size());
+  char* buffer = static_cast<char*>(data->writable_data());
+  size_t offset = 0;
+  for (const auto& span : *shared_buffer_) {
+    memcpy(buffer + offset, span.data(), span.size());
+    offset += span.size();
+  }
+
+  return data;
 }
 
 // DataSegmentReader -----------------------------------------------------------

@@ -34,13 +34,14 @@ void AppShimHostManager::Init() {
   // If running the shim triggers Chrome startup, the user must wait for the
   // socket to be set up before the shim will be usable. This also requires
   // IO, so use MayBlock() with USER_VISIBLE.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&AppShimHostManager::InitOnBackgroundThread, this));
 }
 
 AppShimHostManager::~AppShimHostManager() {
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
       ->DeleteSoon(FROM_HERE, std::move(mach_acceptor_));
 
   // The AppShimHostManager is only initialized if the Chrome process
@@ -56,9 +57,9 @@ AppShimHostManager::~AppShimHostManager() {
     base::FilePath version_path =
         user_data_dir.Append(app_mode::kRunningChromeVersionSymlinkName);
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), version_path,
                        false));
@@ -92,7 +93,7 @@ void AppShimHostManager::InitOnBackgroundThread() {
 void AppShimHostManager::OnClientConnected(
     mojo::PlatformChannelEndpoint endpoint,
     base::ProcessId peer_pid) {
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&AppShimHostBootstrap::CreateForChannelAndPeerID,

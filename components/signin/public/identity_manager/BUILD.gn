@@ -59,6 +59,11 @@ source_set("identity_manager") {
     deps += [ "ios" ]
   }
 
+  if (is_android) {
+    deps +=
+        [ "//components/signin/internal/identity_manager/android:jni_headers" ]
+  }
+
   allow_circular_includes_from = [
     # This target is a pair with internal/identity_manager. They always go
     # together and include headers from each other.

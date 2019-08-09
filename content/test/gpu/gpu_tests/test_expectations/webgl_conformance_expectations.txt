@@ -1,7 +1,7 @@
 # tags: [ android chromeos linux mac win win10 win7 ]
 # tags: [ android-chromium android-webview-instrumentation ]
 # tags: [ debug release ]
-# tags: [ amd amd-0x6613 amd-0x699f intel intel-0xa011 intel-0xa2e nvidia
+# tags: [ amd amd-0x6613 amd-0x699f amd-0x679e intel intel-0xa011 intel-0xa2e nvidia
 #         nvidia-0x1cb3 nvidia-0x2184 nvidia-0xfe9 qualcomm
 #         qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
 #         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430 ]
@@ -190,6 +190,7 @@ crbug.com/617148 [ win d3d9 ] conformance/glsl/matrices/glsl-mat4-to-mat3.html [
 crbug.com/617148 [ win d3d9 ] conformance/glsl/matrices/glsl-mat3-construction.html [ RetryOnFailure ]
 crbug.com/674572 [ win d3d9 ] conformance/glsl/misc/large-loop-compile.html [ Skip ]
 crbug.com/956134 [ win d3d9 ] conformance/extensions/webgl-depth-texture.html [ Skip ]
+crbug.com/992224 [ win d3d9 ] conformance/glsl/samplers/glsl-function-texture2dproj.html [ RetryOnFailure ]
 
 # WIN / OpenGL / NVIDIA failures
 crbug.com/715001 [ win nvidia opengl passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
@@ -384,6 +385,9 @@ crbug.com/989194 [ mac passthrough ] conformance/textures/misc/texture-video-tra
 
 # Mac / Passthrough command decoder / AMD
 crbug.com/angleproject/3767 [ mac passthrough amd ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
+
+# Mac Pro (AMD) / Passthrough command decoder
+crbug.com/992231 [ mac passthrough amd-0x679e ] conformance/context/context-size-change.html [ Failure ]
 
 ####################
 # Linux failures   #

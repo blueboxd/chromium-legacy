@@ -108,7 +108,7 @@ scoped_refptr<SerializedScriptValue> V8ScriptValueSerializer::Serialize(
   }
   DCHECK(wrote_value);
 
-  // Finalize the transfer (e.g. neutering array buffers).
+  // Finalize the transfer (e.g. detaching array buffers).
   FinalizeTransfer(exception_state);
   if (exception_state.HadException())
     return nullptr;

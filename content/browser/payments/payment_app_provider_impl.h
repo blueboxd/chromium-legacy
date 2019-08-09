@@ -35,6 +35,7 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
       const std::string& sw_scope,
       bool sw_use_cache,
       const std::string& method,
+      RegistrationIdCallback registration_id_callback,
       InvokePaymentAppCallback callback) override;
   void CanMakePayment(BrowserContext* browser_context,
                       int64_t registration_id,

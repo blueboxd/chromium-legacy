@@ -133,11 +133,10 @@ using web::WebThread;
     DCHECK(cert);
   }
   DCHECK(cert->intermediate_buffers().empty());
-  base::PostTaskWithTraits(FROM_HERE, {WebThread::IO}, base::BindOnce(^{
-                             _certPolicyCache->AllowCertForHost(
-                                 cert.get(), base::SysNSStringToUTF8(host),
-                                 status);
-                           }));
+  base::PostTask(FROM_HERE, {WebThread::IO}, base::BindOnce(^{
+                   _certPolicyCache->AllowCertForHost(
+                       cert.get(), base::SysNSStringToUTF8(host), status);
+                 }));
 }
 
 #pragma mark - Private
@@ -172,29 +171,29 @@ using web::WebThread;
   DCHECK_CURRENTLY_ON(WebThread::UI);
   DCHECK(handler);
   TaskTraits traits{WebThread::IO, TaskShutdownBehavior::BLOCK_SHUTDOWN};
-  base::PostTaskWithTraits(FROM_HERE, traits, base::BindOnce(^{
-                             // |loadPolicyForRejectedTrustResult:certStatus:serverTrust:host:|
-                             // can only be called on IO thread.
-                             net::CertStatus certStatus =
-                                 [self certStatusFromTrustResult:trustResult
-                                                     serverTrust:trust];
+  base::PostTask(FROM_HERE, traits, base::BindOnce(^{
+                   // |loadPolicyForRejectedTrustResult:certStatus:serverTrust
+                   // :host:| can only be called on IO thread.
+                   net::CertStatus certStatus =
+                       [self certStatusFromTrustResult:trustResult
+                                           serverTrust:trust];
 
-                             web::CertAcceptPolicy policy = [self
-                                 loadPolicyForRejectedTrustResult:trustResult
-                                                       certStatus:certStatus
-                                                      serverTrust:trust.get()
-                                                             host:host];
+                   web::CertAcceptPolicy policy =
+                       [self loadPolicyForRejectedTrustResult:trustResult
+                                                   certStatus:certStatus
+                                                  serverTrust:trust.get()
+                                                         host:host];
 
-                             // TODO(crbug.com/872372): This should use
-                             // PostTaskWithTraits to post to WebThread::UI with
-                             // BLOCK_SHUTDOWN once shutdown behaviors are
-                             // supported on the UI thread. BLOCK_SHUTDOWN is
-                             // necessary because WKWebView throws an exception
-                             // if the completion handler doesn't run.
-                             dispatch_async(dispatch_get_main_queue(), ^{
-                               handler(policy, certStatus);
-                             });
-                           }));
+                   // TODO(crbug.com/872372): This should use
+                   // PostTask to post to WebThread::UI with
+                   // BLOCK_SHUTDOWN once shutdown behaviors are
+                   // supported on the UI thread. BLOCK_SHUTDOWN is
+                   // necessary because WKWebView throws an exception
+                   // if the completion handler doesn't run.
+                   dispatch_async(dispatch_get_main_queue(), ^{
+                     handler(policy, certStatus);
+                   });
+                 }));
 }
 
 - (void)verifyTrust:(base::ScopedCFTypeRef<SecTrustRef>)trust
@@ -203,13 +202,14 @@ using web::WebThread;
   DCHECK(completionHandler);
   // SecTrustEvaluate performs trust evaluation synchronously, possibly making
   // network requests. The UI thread should not be blocked by that operation.
-  base::PostTaskWithTraits(
-      FROM_HERE, {TaskShutdownBehavior::BLOCK_SHUTDOWN}, base::BindOnce(^{
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(^{
         SecTrustResultType trustResult = kSecTrustResultInvalid;
         if (SecTrustEvaluate(trust.get(), &trustResult) != errSecSuccess) {
           trustResult = kSecTrustResultInvalid;
         }
-        // TODO(crbug.com/872372): This should use PostTaskWithTraits to post to
+        // TODO(crbug.com/872372): This should use PostTask to post to
         // WebThread::UI with BLOCK_SHUTDOWN once shutdown behaviors are
         // supported on the UI thread. BLOCK_SHUTDOWN is necessary because
         // WKWebView throws an exception if the completion handler doesn't run.

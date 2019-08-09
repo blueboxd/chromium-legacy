@@ -202,17 +202,6 @@ class MockServiceWorkerContextClient final
     script_evaluated_event_.Signal();
   }
 
-  std::unique_ptr<WebServiceWorkerNetworkProvider>
-  CreateServiceWorkerNetworkProviderOnMainThread() override {
-    return std::make_unique<FakeServiceWorkerNetworkProvider>();
-  }
-
-  scoped_refptr<WebWorkerFetchContext>
-  CreateWorkerFetchContextOnMainThreadLegacy(
-      WebServiceWorkerNetworkProvider* network_provider) override {
-    return base::MakeRefCounted<FakeWebWorkerFetchContext>();
-  }
-
   scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContextOnMainThread()
       override {
     return base::MakeRefCounted<FakeWebWorkerFetchContext>();

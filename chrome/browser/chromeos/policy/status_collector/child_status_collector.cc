@@ -178,8 +178,9 @@ ChildStatusCollector::ChildStatusCollector(
   UpdateReportingSettings();
 
   // Get the OS version.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindRepeating(&chromeos::version_loader::GetVersion,
                           chromeos::version_loader::VERSION_FULL),
       base::BindRepeating(&ChildStatusCollector::OnOSVersion,

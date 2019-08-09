@@ -91,9 +91,9 @@ PendingAppManager& WebAppProvider::pending_app_manager() {
   return *pending_app_manager_;
 }
 
-WebAppPolicyManager* WebAppProvider::policy_manager() {
+WebAppPolicyManager& WebAppProvider::policy_manager() {
   CheckIsConnected();
-  return web_app_policy_manager_.get();
+  return *web_app_policy_manager_;
 }
 
 WebAppUiManager& WebAppProvider::ui_manager() {
@@ -117,45 +117,42 @@ void WebAppProvider::StartImpl() {
 
 void WebAppProvider::CreateCommonSubsystems(Profile* profile) {
   audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
+  ui_manager_ = WebAppUiManager::Create(profile);
   install_manager_ = std::make_unique<WebAppInstallManager>(profile);
   pending_app_manager_ = std::make_unique<PendingAppManagerImpl>(profile);
+  external_web_app_manager_ = std::make_unique<ExternalWebAppManager>(profile);
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
-  ui_manager_ = WebAppUiManager::Create(profile);
+  web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(profile);
 }
 
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
   registrar_ = std::make_unique<WebAppRegistrar>(profile, database_.get());
+  sync_manager_ = std::make_unique<WebAppSyncManager>();
   icon_manager_ = std::make_unique<WebAppIconManager>(
       profile, std::make_unique<FileUtilsWrapper>());
   install_finalizer_ =
       std::make_unique<WebAppInstallFinalizer>(icon_manager_.get());
-  sync_manager_ = std::make_unique<WebAppSyncManager>();
 }
 
 void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   registrar_ = std::make_unique<extensions::BookmarkAppRegistrar>(profile);
   install_finalizer_ =
       std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile);
-  external_web_app_manager_ = std::make_unique<ExternalWebAppManager>(profile);
-  web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(profile);
 }
 
 void WebAppProvider::ConnectSubsystems() {
   DCHECK(!started_);
 
-  install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
   install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get());
+  install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
   pending_app_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
                                       install_finalizer_.get());
+  external_web_app_manager_->SetSubsystems(pending_app_manager_.get());
   system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
                                          registrar_.get(), ui_manager_.get());
-
-  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-    external_web_app_manager_->SetSubsystems(pending_app_manager_.get());
-    web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
-  }
+  web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
 
   connected_ = true;
 }

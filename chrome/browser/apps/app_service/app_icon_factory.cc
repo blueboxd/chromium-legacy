@@ -264,7 +264,6 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
                            IconEffects icon_effects,
                            apps::mojom::Publisher::LoadIconCallback callback) {
   constexpr bool is_placeholder_icon = false;
-  int size_hint_in_px = apps_util::ConvertDipToPx(size_hint_in_dip);
 
   // This is the default icon for AppType::kExtension. Other app types might
   // use a different default icon, such as IDR_LOGO_CROSTINI_DEFAULT_192.
@@ -276,7 +275,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
           ->GetInstalledExtension(extension_id);
   if (extension) {
     extensions::ExtensionResource ext_resource =
-        extensions::IconsInfo::GetIconResource(extension, size_hint_in_px,
+        extensions::IconsInfo::GetIconResource(extension, size_hint_in_dip,
                                                ExtensionIconSet::MATCH_BIGGER);
 
     switch (icon_compression) {
@@ -286,7 +285,7 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
       case apps::mojom::IconCompression::kUncompressed: {
         extensions::ImageLoader::Get(context)->LoadImageAsync(
             extension, std::move(ext_resource),
-            gfx::Size(size_hint_in_px, size_hint_in_px),
+            gfx::Size(size_hint_in_dip, size_hint_in_dip),
             base::BindOnce(&RunCallbackWithUncompressedImage, size_hint_in_dip,
                            default_icon_resource, is_placeholder_icon,
                            icon_effects, std::move(callback)));
@@ -324,8 +323,10 @@ void LoadIconFromFileWithFallback(
 
     case apps::mojom::IconCompression::kUncompressed:
     case apps::mojom::IconCompression::kCompressed: {
-      base::PostTaskWithTraitsAndReplyWithResult(
-          FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::PostTaskAndReplyWithResult(
+          FROM_HERE,
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE},
           base::BindOnce(&ReadFileAsCompressedData, path),
           base::BindOnce(&RunCallbackWithFallback, size_hint_in_dip,
                          is_placeholder_icon, icon_effects, icon_compression,

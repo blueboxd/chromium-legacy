@@ -33,6 +33,8 @@ jumbo_static_library("browser") {
     "autofill-inl.h",
     "autofill_address_util.cc",
     "autofill_address_util.h",
+    "autofill_browser_util.cc",
+    "autofill_browser_util.h",
     "autofill_client.cc",
     "autofill_client.h",
     "autofill_data_util.cc",

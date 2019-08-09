@@ -763,6 +763,7 @@ public class PaymentRequestImpl
         }
 
         mIsCurrentPaymentRequestShowing = true;
+        mJourneyLogger.setTriggerTime();
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
@@ -1683,7 +1684,7 @@ public class PaymentRequestImpl
 
         if (mInvokedPaymentInstrument instanceof ServiceWorkerPaymentApp) {
             if (mPaymentHandlerHost == null) {
-                mPaymentHandlerHost = new PaymentHandlerHost(this /* delegate */);
+                mPaymentHandlerHost = new PaymentHandlerHost(mWebContents, this /* delegate */);
             }
 
             ((ServiceWorkerPaymentApp) mInvokedPaymentInstrument)

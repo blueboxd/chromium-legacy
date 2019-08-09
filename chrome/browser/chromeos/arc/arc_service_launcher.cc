@@ -107,8 +107,8 @@ ArcServiceLauncher::ArcServiceLauncher()
   g_arc_service_launcher = this;
 
   // Write kIsArcVm file to be 1 or 0.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce([](const base::FilePath& filename, const char* data,
                         int size) { base::WriteFile(filename, data, size); },
                      base::FilePath(kIsArcVm),

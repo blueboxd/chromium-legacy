@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
-#include "third_party/skia/include/core/SkData.h"
 
 namespace WTF {
 
@@ -207,19 +206,6 @@ bool SharedBuffer::GetBytesInternal(void* dest, size_t dest_size) const {
     offset += to_be_written;
   }
   return offset == dest_size;
-}
-
-sk_sp<SkData> SharedBuffer::GetAsSkData() const {
-  sk_sp<SkData> data = SkData::MakeUninitialized(size());
-  char* buffer = static_cast<char*>(data->writable_data());
-  size_t offset = 0;
-  for (const auto& span : *this) {
-    memcpy(buffer + offset, span.data(), span.size());
-    offset += span.size();
-  }
-
-  DCHECK_EQ(offset, size());
-  return data;
 }
 
 void SharedBuffer::GetMemoryDumpNameAndSize(String& dump_name,

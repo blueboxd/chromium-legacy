@@ -148,7 +148,7 @@ class MODULES_EXPORT ManifestParser {
       const JSONObject* object);
 
   // Parses the name field of a share target file, as defined in:
-  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
+  // https://wicg.github.io/web-share-target/level-2/#sharetargetfiles-and-its-members
   // Returns the parsed string if any, an empty string if the parsing failed.
   String ParseFileFilterName(const JSONObject* file);
 
@@ -171,26 +171,26 @@ class MODULES_EXPORT ManifestParser {
                        Vector<mojom::blink::ManifestFileFilterPtr>* files);
 
   // Parses the method field of a Share Target, as defined in:
-  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
+  // https://wicg.github.io/web-share-target/#sharetarget-and-its-members
   // Returns an optional share target method enum object.
   base::Optional<mojom::blink::ManifestShareTarget::Method>
   ParseShareTargetMethod(const JSONObject* share_target_dict);
 
   // Parses the enctype field of a Share Target, as defined in:
-  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
+  // https://wicg.github.io/web-share-target/#sharetarget-and-its-members
   // Returns an optional share target enctype enum object.
   base::Optional<mojom::blink::ManifestShareTarget::Enctype>
   ParseShareTargetEnctype(const JSONObject* share_target_dict);
 
   // Parses the 'params' field of a Share Target, as defined in:
-  // https://wicg.github.io/web-share-target/level-2/#sharetargetparams-and-its-members
+  // https://wicg.github.io/web-share-target/#sharetarget-and-its-members
   // Returns a parsed mojom::blink:ManifestShareTargetParamsPtr, not all fields
   // need to be populated.
   mojom::blink::ManifestShareTargetParamsPtr ParseShareTargetParams(
       const JSONObject* share_target_params);
 
   // Parses the 'share_target' field of a Manifest, as defined in:
-  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
+  // https://wicg.github.io/web-share-target/#share_target-member
   // Returns the parsed Web Share target. The returned Share Target is null if
   // the field didn't exist, parsing failed, or it was empty.
   base::Optional<mojom::blink::ManifestShareTargetPtr> ParseShareTarget(

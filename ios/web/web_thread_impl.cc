@@ -36,15 +36,14 @@ class WebThreadTaskRunner : public base::SingleThreadTaskRunner {
   bool PostDelayedTask(const base::Location& from_here,
                        base::OnceClosure task,
                        base::TimeDelta delay) override {
-    return base::PostDelayedTaskWithTraits(from_here, {id_}, std::move(task),
-                                           delay);
+    return base::PostDelayedTask(from_here, {id_}, std::move(task), delay);
   }
 
   bool PostNonNestableDelayedTask(const base::Location& from_here,
                                   base::OnceClosure task,
                                   base::TimeDelta delay) override {
-    return base::PostDelayedTaskWithTraits(from_here, {id_, NonNestable()},
-                                           std::move(task), delay);
+    return base::PostDelayedTask(from_here, {id_, NonNestable()},
+                                 std::move(task), delay);
   }
 
   bool RunsTasksInCurrentSequence() const override {

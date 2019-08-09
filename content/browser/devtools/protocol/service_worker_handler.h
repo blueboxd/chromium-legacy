@@ -56,7 +56,9 @@ class ServiceWorkerHandler : public DevToolsDomainHandler,
                              const std::string& registration_id,
                              const std::string& tag,
                              bool last_chance) override;
-  // TODO(crbug.com/961238): Add DispatchPeriodicSyncEvent().
+  Response DispatchPeriodicSyncEvent(const std::string& origin,
+                                     const std::string& registration_id,
+                                     const std::string& tag) override;
 
  private:
   void OnWorkerRegistrationUpdated(

@@ -1,0 +1,7 @@
+# These tests currently fail when run with --enable-features=BackForwardCache
+
+# Document are deleted, because they execute javascript in a frozen document.
+# This shouldn't happen if the page didn't enter the BackForwardCache.
+crbug.com/991194 external/wpt/lifecycle/child-display-none.tentative.html [ Timeout ]
+crbug.com/991194 external/wpt/lifecycle/child-out-of-viewport.tentative.html [ Timeout ]
+crbug.com/991194 external/wpt/lifecycle/worker-dispay-none.tentative.html [ Failure ]

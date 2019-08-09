@@ -457,8 +457,9 @@ void CpuDataCollector::PostSampleCpuState() {
   std::vector<StateOccupancySample>* freq_samples =
       new std::vector<StateOccupancySample>;
 
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&SampleCpuStateAsync, base::Unretained(cpu_count),
                  base::Unretained(cpu_idle_state_names),
                  base::Unretained(idle_samples),

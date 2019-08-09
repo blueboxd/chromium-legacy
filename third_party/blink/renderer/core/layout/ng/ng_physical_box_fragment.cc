@@ -83,11 +83,14 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
           builder->BoxType()),
       baselines_(builder->baselines_) {
   DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
-  has_fragment_items_ = !!builder->ItemsBuilder();
-  if (has_fragment_items_) {
+  if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
+    has_fragment_items_ = true;
     NGFragmentItems* items =
         const_cast<NGFragmentItems*>(ComputeItemsAddress());
-    builder->ItemsBuilder()->ToFragmentItems(items);
+    items_builder->ToFragmentItems(block_or_line_writing_mode,
+                                   builder->Direction(), Size(), items);
+  } else {
+    has_fragment_items_ = false;
   }
   has_borders_ = !borders.IsZero();
   if (has_borders_)

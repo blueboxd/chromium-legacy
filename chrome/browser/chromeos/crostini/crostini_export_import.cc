@@ -182,8 +182,8 @@ void CrostiniExportImport::Start(
 
   switch (type) {
     case ExportImportType::EXPORT:
-      base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {base::MayBlock()},
+      base::PostTaskAndReply(
+          FROM_HERE, {base::ThreadPool(), base::MayBlock()},
           // Ensure file exists so that it can be shared.
           base::BindOnce(
               [](const base::FilePath& path) {
@@ -251,10 +251,11 @@ void CrostiniExportImport::OnExportComplete(
         // If a user requests to cancel, but the export completes before the
         // cancel can happen (|result| == SUCCESS), then removing the exported
         // file is functionally the same as a successful cancel.
-        base::PostTaskWithTraits(
-            FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-            base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                           it->second->path(), false));
+        base::PostTask(FROM_HERE,
+                       {base::ThreadPool(), base::MayBlock(),
+                        base::TaskPriority::BEST_EFFORT},
+                       base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                      it->second->path(), false));
         RemoveNotification(it).SetStatusCancelled();
         break;
       }
@@ -272,10 +273,11 @@ void CrostiniExportImport::OnExportComplete(
         // If a user requests to cancel, and the export is cancelled (|result|
         // == CONTAINER_EXPORT_IMPORT_CANCELLED), then the partially exported
         // file needs to be cleaned up.
-        base::PostTaskWithTraits(
-            FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-            base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                           it->second->path(), false));
+        base::PostTask(FROM_HERE,
+                       {base::ThreadPool(), base::MayBlock(),
+                        base::TaskPriority::BEST_EFFORT},
+                       base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                      it->second->path(), false));
         RemoveNotification(it).SetStatusCancelled();
         break;
       }
@@ -284,8 +286,9 @@ void CrostiniExportImport::OnExportComplete(
     }
   } else {
     LOG(ERROR) << "Error exporting " << int(result);
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile),
                        it->second->path(), false));
     switch (result) {

@@ -347,7 +347,7 @@ void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
     list->Append(std::move(dict));
   }
   SetResult(std::move(list));
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ContentSettingsContentSettingGetResourceIdentifiersFunction::

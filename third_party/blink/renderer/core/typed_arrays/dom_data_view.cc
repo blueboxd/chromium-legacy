@@ -29,8 +29,8 @@ class DataView final : public ArrayBufferView {
   unsigned TypeSize() const override { return 1; }
 
  protected:
-  void Neuter() override {
-    ArrayBufferView::Neuter();
+  void Detach() override {
+    ArrayBufferView::Detach();
     byte_length_ = 0;
   }
 

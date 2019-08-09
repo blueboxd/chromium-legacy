@@ -25,22 +25,22 @@ static void AccumulateArrayBuffersForAllWorlds(
   }
 }
 
-bool DOMArrayBuffer::IsNeuterable(v8::Isolate* isolate) {
+bool DOMArrayBuffer::IsDetachable(v8::Isolate* isolate) {
   Vector<v8::Local<v8::ArrayBuffer>, 4> buffer_handles;
   v8::HandleScope handle_scope(isolate);
   AccumulateArrayBuffersForAllWorlds(isolate, this, buffer_handles);
 
-  bool is_neuterable = true;
+  bool is_detachable = true;
   for (const auto& buffer_handle : buffer_handles)
-    is_neuterable &= buffer_handle->IsDetachable();
+    is_detachable &= buffer_handle->IsDetachable();
 
-  return is_neuterable;
+  return is_detachable;
 }
 
 bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
                               WTF::ArrayBufferContents& result) {
   DOMArrayBuffer* to_transfer = this;
-  if (!IsNeuterable(isolate)) {
+  if (!IsDetachable(isolate)) {
     to_transfer =
         DOMArrayBuffer::Create(Buffer()->Data(), Buffer()->ByteLength());
   }

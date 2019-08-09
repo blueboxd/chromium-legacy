@@ -57,7 +57,7 @@ void CupsProxyServiceDelegateImpl::SetupPrinter(
 
   // Grab current runner to post |cb| to.
   auto cb_runner = base::SequencedTaskRunnerHandle::Get();
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&CupsProxyServiceDelegateImpl::SetupPrinterOnThread,
                      weak_factory_.GetWeakPtr(), printer,

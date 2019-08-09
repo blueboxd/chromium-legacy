@@ -123,7 +123,7 @@ message Image {
 }
 
 // A proto representing a ShareTargetParamsFile
-// https://pr-preview.s3.amazonaws.com/ewilligers/web-share-target/pull/53.html#sharetargetfiles-and-its-members
+// https://wicg.github.io/web-share-target/level-2/#sharetargetfiles-and-its-members
 message ShareTargetParamsFile {
   optional string name = 1;
   repeated string accept = 2;
@@ -133,7 +133,7 @@ message ShareTargetParamsFile {
 // https://wicg.github.io/web-share-target/#dom-sharetargetparams
 // Each field corresponds to key in ShareData. These are the query parameter
 // keys to be used for the data supplied in a ShareData instance.
-// ShareData: https://wicg.github.io/web-share#dom-sharedata
+// ShareData: https://w3c.github.io/web-share#dom-sharedata
 message ShareTargetParams {
   optional string title = 1;
   optional string text = 2;

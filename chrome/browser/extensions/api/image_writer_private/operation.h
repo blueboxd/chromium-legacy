@@ -229,6 +229,7 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
 
   static constexpr base::TaskTraits blocking_task_traits() {
     return {
+        base::ThreadPool(),
         // Requires I/O.
         base::MayBlock(),
         // Apps (e.g. Chromebook Recovery Utility) present UI feedback based on

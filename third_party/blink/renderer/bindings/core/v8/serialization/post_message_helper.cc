@@ -71,7 +71,7 @@ scoped_refptr<SerializedScriptValue> PostMessageHelper::SerializeMessageByCopy(
   if (exception_state.HadException())
     return nullptr;
 
-  // Neuter the original array buffers on the sender context.
+  // Detach the original array buffers on the sender context.
   SerializedScriptValue::TransferArrayBufferContents(
       isolate, transferable_array_buffers, exception_state);
   if (exception_state.HadException())

@@ -65,7 +65,7 @@
 namespace {
 // Helper method to post |closure| on the UI thread.
 void PostTaskOnUIThread(base::OnceClosure closure) {
-  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, std::move(closure));
+  base::PostTask(FROM_HERE, {web::WebThread::UI}, std::move(closure));
 }
 NSString* const kStartupAttemptReset = @"StartupAttempReset";
 }  // namespace
@@ -242,7 +242,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
           DCHECK_CURRENTLY_ON(web::WebThread::UI);
           _savingCookies = NO;
         }));
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
           net::CookieStoreIOS* store = static_cast<net::CookieStoreIOS*>(
               getter->GetURLRequestContext()->cookie_store());

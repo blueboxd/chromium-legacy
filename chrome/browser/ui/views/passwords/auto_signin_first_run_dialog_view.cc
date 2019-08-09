@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/passwords/password_dialog_controller.h"
+#include "chrome/browser/ui/passwords/credential_manager_dialog_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
@@ -19,7 +19,7 @@
 #include "ui/views/widget/widget.h"
 
 AutoSigninFirstRunDialogView::AutoSigninFirstRunDialogView(
-    PasswordDialogController* controller,
+    CredentialManagerDialogController* controller,
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::AUTO_SIGNIN_FIRST_RUN);
@@ -106,6 +106,7 @@ void AutoSigninFirstRunDialogView::InitWindow() {
 }
 
 AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(
-    PasswordDialogController* controller, content::WebContents* web_contents) {
+    CredentialManagerDialogController* controller,
+    content::WebContents* web_contents) {
   return new AutoSigninFirstRunDialogView(controller, web_contents);
 }

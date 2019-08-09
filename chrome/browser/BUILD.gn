@@ -3023,11 +3023,6 @@ jumbo_split_static_library("browser") {
       "first_run/first_run_internal_linux.cc",
       "first_run/first_run_internal_mac.mm",
       "first_run/first_run_internal_win.cc",
-      "first_run/upgrade_util.h",
-      "first_run/upgrade_util_mac.h",
-      "first_run/upgrade_util_mac.mm",
-      "first_run/upgrade_util_win.cc",
-      "first_run/upgrade_util_win.h",
       "font_family_cache.cc",
       "font_family_cache.h",
       "hid/chrome_hid_delegate.cc",
@@ -3701,7 +3696,6 @@ jumbo_split_static_library("browser") {
       "browser_switcher/browser_switcher_service_win.h",
       "downgrade/user_data_downgrade.cc",
       "downgrade/user_data_downgrade.h",
-      "first_run/upgrade_util.cc",
       "notifications/win/notification_image_retainer.cc",
       "notifications/win/notification_image_retainer.h",
       "notifications/win/notification_template_builder.cc",
@@ -3867,7 +3861,6 @@ jumbo_split_static_library("browser") {
   if (is_desktop_linux) {
     # Desktop linux, doesn't count ChromeOS.
     sources += [
-      "first_run/upgrade_util.cc",
       "first_run/upgrade_util_linux.cc",
       "first_run/upgrade_util_linux.h",
       "icon_loader_auralinux.cc",
@@ -3983,6 +3976,12 @@ jumbo_split_static_library("browser") {
 
   if (!is_android && !is_chromeos) {
     sources += [
+      "first_run/upgrade_util.cc",
+      "first_run/upgrade_util.h",
+      "first_run/upgrade_util_mac.h",
+      "first_run/upgrade_util_mac.mm",
+      "first_run/upgrade_util_win.cc",
+      "first_run/upgrade_util_win.h",
       "lifetime/switch_utils.cc",
       "lifetime/switch_utils.h",
       "metrics/upgrade_metrics_provider.cc",

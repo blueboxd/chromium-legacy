@@ -44,6 +44,8 @@ jumbo_component("geometry_skia") {
     "geometry_skia_export.h",
     "rrect_f.cc",
     "rrect_f.h",
+    "rrect_f_builder.cc",
+    "rrect_f_builder.h",
     "skia_util.cc",
     "skia_util.h",
     "transform.cc",

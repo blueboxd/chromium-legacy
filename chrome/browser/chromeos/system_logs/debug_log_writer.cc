@@ -116,7 +116,7 @@ void OnCompressArchiveCompleted(const base::FilePath& tar_file_path,
                                 bool compression_command_success) {
   if (!compression_command_success) {
     LOG(ERROR) << "Failed compressing " << compressed_output_path.value();
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(std::move(callback), base::FilePath(), false));
     base::DeleteFile(tar_file_path, false);
@@ -124,7 +124,7 @@ void OnCompressArchiveCompleted(const base::FilePath& tar_file_path,
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(std::move(callback), compressed_output_path, true));
 }
@@ -136,7 +136,7 @@ void CompressArchive(const base::FilePath& tar_file_path,
                      bool add_user_logs_command_success) {
   if (!add_user_logs_command_success) {
     LOG(ERROR) << "Failed adding user logs to " << tar_file_path.value();
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(std::move(callback), base::FilePath(), false));
     base::DeleteFile(tar_file_path, false);
@@ -182,8 +182,9 @@ void OnSystemLogsAdded(DebugLogWriter::StoreLogsCallback callback,
   base::FilePath user_log_dir =
       logging::GetSessionLogDir(*base::CommandLine::ForCurrentProcess());
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&AddUserLogsToArchive, user_log_dir, tar_file_path,
                      compressed_output_path, std::move(callback)));
 }

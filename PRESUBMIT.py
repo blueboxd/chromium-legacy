@@ -498,7 +498,7 @@ _BANNED_CPP_FUNCTIONS = (
       (
        'New code should not use NULL. Use nullptr instead.',
       ),
-      True,
+      False,
       (),
     ),
     # Make sure that gtest's FRIEND_TEST() macro is not used; the

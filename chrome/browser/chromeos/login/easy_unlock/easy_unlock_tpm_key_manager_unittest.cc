@@ -235,7 +235,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
     bool success = false;
     base::RunLoop run_loop;
     // Has to be done on IO thread due to thread assertions in nss code.
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&EasyUnlockTpmKeyManagerTest::InitTestNssUserOnIOThread,
                        base::Unretained(this), base::Unretained(&success)),
@@ -259,7 +259,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
 
     base::RunLoop run_loop;
     // Has to be done on IO thread due to thread assertions in nss code.
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &EasyUnlockTpmKeyManagerTest::FinalizeTestNssUserOnIOThread,
@@ -273,7 +273,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   void ResetTestNssUser() {
     base::RunLoop run_loop;
     // Has to be done on IO thread due to thread assertions in nss code.
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&EasyUnlockTpmKeyManagerTest::ResetTestNssUserOnIOThread,
                        base::Unretained(this)),

@@ -142,11 +142,10 @@ void RecheckPasswordExpiryTask::Recheck() {
 
 void RecheckPasswordExpiryTask::RecheckAfter(base::TimeDelta delay) {
   CancelPendingRecheck();
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, kRecheckTaskTraits,
-      base::BindOnce(&RecheckPasswordExpiryTask::Recheck,
-                     weak_ptr_factory_.GetWeakPtr()),
-      std::max(delay, kOneHour));
+  base::PostDelayedTask(FROM_HERE, kRecheckTaskTraits,
+                        base::BindOnce(&RecheckPasswordExpiryTask::Recheck,
+                                       weak_ptr_factory_.GetWeakPtr()),
+                        std::max(delay, kOneHour));
   // This always waits at least one hour before calling Recheck again - we don't
   // want some bug to cause this code to run every millisecond.
 }

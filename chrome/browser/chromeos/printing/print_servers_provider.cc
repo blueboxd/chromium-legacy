@@ -135,9 +135,9 @@ TaskResults ParseData(int task_id, std::unique_ptr<std::string> data) {
 class PrintServersProviderImpl : public PrintServersProvider {
  public:
   PrintServersProviderImpl()
-      : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+      : task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         weak_ptr_factory_(this) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   }

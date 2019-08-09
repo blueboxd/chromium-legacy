@@ -259,15 +259,14 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
  public:
   explicit CupsPrintJobManagerImpl(Profile* profile)
       : CupsPrintJobManager(profile),
-        query_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            base::TaskTraits(base::TaskPriority::BEST_EFFORT,
-                             base::MayBlock(),
-                             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN))),
+        query_runner_(base::CreateSequencedTaskRunner(base::TaskTraits{
+            base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+            base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         cups_wrapper_(new CupsWrapper(),
                       base::OnTaskRunnerDeleter(query_runner_)),
         weak_ptr_factory_(this) {
-    timer_.SetTaskRunner(base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::UI}));
+    timer_.SetTaskRunner(
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
     registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                    content::NotificationService::AllSources());
   }
@@ -352,7 +351,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     NotifyJobUpdated(job->GetWeakPtr());
 
     // Run a query now.
-    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
         ->PostTask(FROM_HERE,
                    base::BindOnce(&CupsPrintJobManagerImpl::PostQuery,
                                   weak_ptr_factory_.GetWeakPtr()));

@@ -13,13 +13,13 @@
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
-#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_selector_edit_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller_actions.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -198,7 +198,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
                target:self
                action:@selector(didCancel)];
     [cancelButton setTitleTextAttributes:@{
-      NSForegroundColorAttributeName : [UIColor lightGrayColor]
+      NSForegroundColorAttributeName : [UIColor colorNamed:kDisabledTintColor]
     }
                                 forState:UIControlStateDisabled];
     [cancelButton
@@ -212,7 +212,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
                                         target:nil
                                         action:@selector(didSave)];
     [saveButton setTitleTextAttributes:@{
-      NSForegroundColorAttributeName : [UIColor lightGrayColor]
+      NSForegroundColorAttributeName : [UIColor colorNamed:kDisabledTintColor]
     }
                               forState:UIControlStateDisabled];
     [saveButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_SAVE)];
@@ -609,11 +609,11 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
       autofillEditCell.textField.clearButtonMode = UITextFieldViewModeNever;
       SetUILabelScaledFont(autofillEditCell.textLabel,
                            [MDCTypography body2Font]);
-      autofillEditCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+      autofillEditCell.textLabel.textColor =
+          [UIColor colorNamed:kTextPrimaryColor];
       SetUITextFieldScaledFont(autofillEditCell.textField,
                                [MDCTypography body1Font]);
-      autofillEditCell.textField.textColor =
-          [[MDCPalette cr_bluePalette] tint500];
+      autofillEditCell.textField.textColor = [UIColor colorNamed:kBlueColor];
       break;
     }
     case ItemTypeSwitchField: {
@@ -629,15 +629,14 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
           base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
       SetUILabelScaledFont(errorMessageCell.textLabel,
                            [MDCTypography body1Font]);
-      errorMessageCell.textLabel.textColor =
-          [[MDCPalette cr_redPalette] tint600];
+      errorMessageCell.textLabel.textColor = [UIColor colorNamed:kRedColor];
       break;
     }
     case ItemTypeFooter: {
       CollectionViewFooterCell* footerCell =
           base::mac::ObjCCastStrict<CollectionViewFooterCell>(cell);
       SetUILabelScaledFont(footerCell.textLabel, [MDCTypography body2Font]);
-      footerCell.textLabel.textColor = [[MDCPalette greyPalette] tint600];
+      footerCell.textLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
       footerCell.textLabel.shadowColor = nil;  // No shadow.
       footerCell.horizontalPadding = kFooterCellHorizontalPadding;
       break;

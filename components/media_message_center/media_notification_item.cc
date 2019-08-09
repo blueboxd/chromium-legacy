@@ -54,7 +54,7 @@ MediaNotificationItem::MediaNotificationItem(
     MediaNotificationController* notification_controller,
     const std::string& request_id,
     const std::string& source_name,
-    media_session::mojom::MediaControllerPtr controller,
+    mojo::Remote<media_session::mojom::MediaController> controller,
     media_session::mojom::MediaSessionInfoPtr session_info)
     : controller_(notification_controller),
       request_id_(request_id),
@@ -141,7 +141,7 @@ void MediaNotificationItem::SetView(MediaNotificationView* view) {
 }
 
 void MediaNotificationItem::FlushForTesting() {
-  media_controller_ptr_.FlushForTesting();
+  media_controller_remote_.FlushForTesting();
 }
 
 bool MediaNotificationItem::ShouldShowNotification() const {
@@ -193,27 +193,27 @@ void MediaNotificationItem::OnMediaSessionActionButtonPressed(
   if (frozen_)
     return;
 
-  media_session::PerformMediaSessionAction(action, media_controller_ptr_);
+  media_session::PerformMediaSessionAction(action, media_controller_remote_);
 }
 
 void MediaNotificationItem::SetController(
-    media_session::mojom::MediaControllerPtr controller,
+    mojo::Remote<media_session::mojom::MediaController> controller,
     media_session::mojom::MediaSessionInfoPtr session_info) {
   observer_receiver_.reset();
   artwork_observer_receiver_.reset();
 
   is_bound_ = true;
-  media_controller_ptr_ = std::move(controller);
+  media_controller_remote_ = std::move(controller);
   session_info_ = std::move(session_info);
 
-  if (media_controller_ptr_.is_bound()) {
+  if (media_controller_remote_.is_bound()) {
     // Bind an observer to the associated media controller.
-    media_controller_ptr_->AddObserver(
+    media_controller_remote_->AddObserver(
         observer_receiver_.BindNewPipeAndPassRemote());
 
     // TODO(https://crbug.com/931397): Use dip to calculate the size.
     // Bind an observer to be notified when the artwork changes.
-    media_controller_ptr_->ObserveImages(
+    media_controller_remote_->ObserveImages(
         media_session::mojom::MediaSessionImageType::kArtwork,
         kMediaSessionNotificationArtworkMinSize,
         kMediaSessionNotificationArtworkDesiredSize,

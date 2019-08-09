@@ -369,8 +369,12 @@ void DevToolsDataSource::StartFileRequestForDebugDevtools(
     const std::string& path,
     const GotDataCallback& callback) {
   base::FilePath inspector_debug_dir;
-  if (!base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG,
-                              &inspector_debug_dir)) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kCustomDevtoolsFrontend)) {
+    inspector_debug_dir =
+        command_line->GetSwitchValuePath(switches::kCustomDevtoolsFrontend);
+  } else if (!base::PathService::Get(chrome::DIR_INSPECTOR_DEBUG,
+                                     &inspector_debug_dir)) {
     callback.Run(CreateNotFoundResponse());
     return;
   }

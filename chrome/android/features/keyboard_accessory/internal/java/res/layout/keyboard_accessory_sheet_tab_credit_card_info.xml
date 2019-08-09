@@ -40,6 +40,7 @@
                 style="@style/InputChip" />
 
             <LinearLayout
+                android:id="@+id/exp_group"
                 android:gravity="center_vertical|start"
                 android:fillViewport="true"
                 android:layout_height="@dimen/keyboard_accessory_suggestion_height"

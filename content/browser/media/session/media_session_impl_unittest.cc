@@ -96,10 +96,12 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
     mock_media_session_service_.reset(
         new testing::NiceMock<MockMediaSessionServiceImpl>(main_rfh()));
 
-    // Connect to the Media Session service and bind |audio_focus_ptr_| to it.
+    // Connect to the Media Session service and bind |audio_focus_remote_| to
+    // it.
     service_manager_context_ = std::make_unique<TestServiceManagerContext>();
-    GetSystemConnector()->BindInterface(media_session::mojom::kServiceName,
-                                        mojo::MakeRequest(&audio_focus_ptr_));
+    GetSystemConnector()->Connect(
+        media_session::mojom::kServiceName,
+        audio_focus_remote_.BindNewPipeAndPassReceiver());
   }
 
   void TearDown() override {
@@ -142,8 +144,8 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
     std::unique_ptr<TestAudioFocusObserver> observer =
         std::make_unique<TestAudioFocusObserver>();
 
-    audio_focus_ptr_->AddObserver(observer->BindNewPipeAndPassRemote());
-    audio_focus_ptr_.FlushForTesting();
+    audio_focus_remote_->AddObserver(observer->BindNewPipeAndPassRemote());
+    audio_focus_remote_.FlushForTesting();
 
     return observer;
   }
@@ -181,7 +183,7 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
 
   std::unique_ptr<MockMediaSessionServiceImpl> mock_media_session_service_;
 
-  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
+  mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_remote_;
 
   std::unique_ptr<TestServiceManagerContext> service_manager_context_;
 

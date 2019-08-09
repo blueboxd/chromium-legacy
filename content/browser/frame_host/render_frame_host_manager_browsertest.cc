@@ -193,6 +193,13 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
+  void DisableBackForwardCache() const {
+    return static_cast<WebContentsImpl*>(shell()->web_contents())
+        ->GetController()
+        .back_forward_cache()
+        .DisableForTesting();
+  }
+
   void StartServer() {
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -3755,6 +3762,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // See https://crbug.com/590035.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, LastCommittedOrigin) {
   StartEmbeddedServer();
+
+  // Disable the back-forward cache so that documents are always deleted when
+  // navigating.
+  DisableBackForwardCache();
+
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
 
@@ -6453,14 +6465,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Only B4 is deleted. B2 and B3 are still there in a "crashed" state.
   delete_b4.WaitUntilDeleted();
 
-  // A1 and C5 RenderFrameImpl are gone.
+  // B2, B3, B4 RenderFrame are gone.
   EXPECT_FALSE(delete_a1.deleted());
   EXPECT_TRUE(delete_b2.deleted());
   EXPECT_TRUE(delete_b3.deleted());
   EXPECT_TRUE(delete_b4.deleted());
   EXPECT_FALSE(delete_c5.deleted());
 
-  // B2 and B3 are still there, but not B4.
+  // B2 and B3 RenderFrameHost are still there, but B4 is definitely gone.
   ASSERT_EQ(3u, a1->child_count());
   EXPECT_EQ(b2, a1->child_at(0)->current_frame_host());
   EXPECT_EQ(b3, a1->child_at(1)->current_frame_host());

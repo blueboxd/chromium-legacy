@@ -237,7 +237,7 @@ TEST_F(SigninPartitionManagerTest, TestSubsequentAttempts) {
 
 TEST_F(SigninPartitionManagerTest, HttpAuthCacheTransferred) {
   base::RunLoop loop_prepare;
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(AddEntryToHttpAuthCache,
                      base::Unretained(GetSystemNetworkContextImpl())),
@@ -248,7 +248,7 @@ TEST_F(SigninPartitionManagerTest, HttpAuthCacheTransferred) {
 
   bool entry_found = false;
   base::RunLoop loop_check;
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(IsEntryInHttpAuthCache,
                      base::Unretained(GetSigninNetworkContextImpl()),

@@ -117,10 +117,9 @@ void WebAppInstallTask::InstallWebAppFromInfo(
   DCHECK(AreWebAppsUserInstallable(profile_));
   CheckInstallPreconditions();
 
-  std::vector<BitmapAndSource> square_icons;
-  FilterSquareIconsFromInfo(*web_application_info, &square_icons);
-  ResizeDownloadedIconsGenerateMissing(std::move(square_icons),
-                                       web_application_info.get());
+  FilterAndResizeIconsGenerateMissing(web_application_info.get(),
+                                      /*icons_map*/ nullptr,
+                                      /*is_for_sync*/ false);
 
   install_source_ = install_source;
   background_installation_ = true;
@@ -395,28 +394,10 @@ void WebAppInstallTask::OnIconsRetrieved(
 
   DCHECK(web_app_info);
 
-  std::vector<BitmapAndSource> downloaded_icons;
-  FilterSquareIconsFromMap(icons_map, &downloaded_icons);
-
-  // Ensure that all icons that are in web_app_info are present, by generating
-  // icons for any sizes which have failed to download. This ensures that the
-  // created manifest for the web app does not contain links to icons
-  // which are not actually created and linked on disk.
-
-  // Ensure that all icon widths in the web app info icon array are present in
-  // the sizes to generate set. This ensures that we will have all of the
-  // icon sizes from when the app was originally added, even if icon URLs are
-  // no longer accessible.
-  std::set<int> sizes_to_generate = SizesToGenerate();
-  for (const auto& icon : web_app_info->icons)
-    sizes_to_generate.insert(icon.width);
-
-  web_app_info->generated_icon_color = SK_ColorTRANSPARENT;
-  std::map<int, BitmapAndSource> size_map = ResizeIconsAndGenerateMissing(
-      downloaded_icons, sizes_to_generate, web_app_info->app_url,
-      &web_app_info->generated_icon_color);
-
-  UpdateWebAppIconsWithoutChangingLinks(size_map, web_app_info.get());
+  // Installing from sync should not change icon links.
+  // TODO(loyso): Limit this only to WebappInstallSource::SYNC.
+  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map,
+                                      /*is_for_sync*/ true);
 
   InstallFinalizer::FinalizeOptions options;
   options.install_source = install_source_;
@@ -437,12 +418,8 @@ void WebAppInstallTask::OnIconsRetrievedShowDialog(
 
   DCHECK(web_app_info);
 
-  std::vector<BitmapAndSource> downloaded_icons;
-  FilterSquareIconsFromMap(icons_map, &downloaded_icons);
-  FilterSquareIconsFromInfo(*web_app_info, &downloaded_icons);
-
-  ResizeDownloadedIconsGenerateMissing(std::move(downloaded_icons),
-                                       web_app_info.get());
+  FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map,
+                                      /*is_for_sync*/ false);
 
   if (background_installation_) {
     DCHECK(!dialog_callback_);

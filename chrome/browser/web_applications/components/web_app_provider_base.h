@@ -35,9 +35,7 @@ class WebAppProviderBase : public KeyedService {
   virtual PendingAppManager& pending_app_manager() = 0;
   // Clients can use WebAppPolicyManager to request updates of policy installed
   // Web Apps.
-  // TODO(crbug.com/916381): Make a reference once WebAppPolicyManager is always
-  // present. It's currently only present for Bookmark Apps.
-  virtual WebAppPolicyManager* policy_manager() = 0;
+  virtual WebAppPolicyManager& policy_manager() = 0;
 
   virtual WebAppUiManager& ui_manager() = 0;
 

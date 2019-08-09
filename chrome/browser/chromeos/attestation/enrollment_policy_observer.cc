@@ -161,7 +161,7 @@ void EnrollmentPolicyObserver::HandleEnrollmentId(
 
 void EnrollmentPolicyObserver::RescheduleGetEnrollmentId() {
   if (++num_retries_ < retry_limit_) {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&EnrollmentPolicyObserver::GetEnrollmentId,
                        weak_factory_.GetWeakPtr()),

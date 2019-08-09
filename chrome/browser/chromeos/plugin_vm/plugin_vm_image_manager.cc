@@ -178,8 +178,9 @@ void PluginVmImageManager::OnConciergeAvailable(bool success) {
              "signals are connected";
   GetConciergeClient()->AddDiskImageObserver(this);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&PluginVmImageManager::PrepareFD, base::Unretained(this)),
       base::BindOnce(&PluginVmImageManager::OnFDPrepared,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -528,8 +529,10 @@ bool PluginVmImageManager::VerifyDownload(
 
 void PluginVmImageManager::RemoveTemporaryPluginVmImageArchiveIfExists() {
   if (!downloaded_plugin_vm_image_archive_.empty()) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+         base::MayBlock()},
         base::BindOnce(&base::DeleteFile, downloaded_plugin_vm_image_archive_,
                        false /* recursive */),
         base::BindOnce(

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.content.res.AppCompatResources;
@@ -44,7 +45,8 @@ import org.chromium.ui.widget.Toast;
 /**
  * Password entry viewer that allows to view and delete passwords stored in Chrome.
  */
-public class PasswordEntryViewer extends Fragment {
+public class PasswordEntryViewer
+        extends Fragment implements PasswordManagerHandler.PasswordListObserver {
     // Constants used to log UMA enum histogram, must stay in sync with
     // PasswordManagerAndroidPasswordEntryActions. Further actions can only be appended, existing
     // entries must not be overwritten.
@@ -123,20 +125,15 @@ public class PasswordEntryViewer extends Fragment {
         getActivity().setTitle(R.string.password_entry_viewer_title);
         mClipboard = (ClipboardManager) getActivity().getApplicationContext().getSystemService(
                 Context.CLIPBOARD_SERVICE);
-        View urlRowsView = mView.findViewById(R.id.url_row);
-        TextView dataView = urlRowsView.findViewById(R.id.password_entry_viewer_row_data);
-        dataView.setText(url);
+        setRowText(R.id.url_row, url);
         mView.getViewTreeObserver().addOnScrollChangedListener(
                 PreferenceUtils.getShowShadowOnScrollListener(
                         mView, inflatedView.findViewById(R.id.shadow)));
 
-        hookupCopySiteButton(urlRowsView);
+        hookupCopySiteButton(mView.findViewById(R.id.url_row));
         if (!mException) {
-            View usernameView = mView.findViewById(R.id.username_row);
-            TextView usernameDataView =
-                    usernameView.findViewById(R.id.password_entry_viewer_row_data);
-            usernameDataView.setText(name);
-            hookupCopyUsernameButton(usernameView);
+            setRowText(R.id.username_row, name);
+            hookupCopyUsernameButton(mView.findViewById(R.id.username_row));
             if (ReauthenticationManager.isReauthenticationApiAvailable()) {
                 hidePassword();
                 hookupPasswordButtons();
@@ -186,6 +183,7 @@ public class PasswordEntryViewer extends Fragment {
                     "PasswordManager.Android.PasswordExceptionEntry", PASSWORD_ENTRY_ACTION_VIEWED,
                     PASSWORD_ENTRY_ACTION_BOUNDARY);
         }
+        PasswordManagerHandlerProvider.getInstance().addObserver(this);
         return inflatedView;
     }
 
@@ -198,6 +196,12 @@ public class PasswordEntryViewer extends Fragment {
 
             if (mCopyButtonPressed) copyPassword();
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        PasswordManagerHandlerProvider.getInstance().removeObserver(this);
     }
 
     private boolean isPasswordSyncingUser() {
@@ -416,4 +420,24 @@ public class PasswordEntryViewer extends Fragment {
             }
         });
     }
+
+    private void setRowText(@IdRes int rowId, String text) {
+        View rowView = mView.findViewById(rowId);
+        TextView dataView = rowView.findViewById(R.id.password_entry_viewer_row_data);
+        dataView.setText(text);
+    }
+
+    @Override
+    public void passwordListAvailable(int count) {
+        TextView passwordsLinkTextView = mView.findViewById(R.id.passwords_link);
+        SavedPasswordEntry SavedPasswordEntry = PasswordManagerHandlerProvider.getInstance()
+                                                        .getPasswordManagerHandler()
+                                                        .getSavedPasswordEntry(mID);
+        setRowText(R.id.url_row, SavedPasswordEntry.getUrl());
+        setRowText(R.id.username_row, SavedPasswordEntry.getUserName());
+        passwordsLinkTextView.setText(SavedPasswordEntry.getPassword());
+    }
+
+    @Override
+    public void passwordExceptionListAvailable(int count) {}
 }

@@ -342,7 +342,7 @@ bool IsCertInNSSDatabase(Profile* profile,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::RunLoop run_loop;
   bool cert_found = false;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(IsCertInNSSDatabaseOnIOThread,
                      profile->GetResourceContext(), subject_common_name,

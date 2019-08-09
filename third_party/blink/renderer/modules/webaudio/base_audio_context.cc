@@ -323,7 +323,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
   WTF::ArrayBufferContents buffer_contents;
   // Detach the audio array buffer from the main thread and start
   // async decoding of the data.
-  if (audio_data->IsNeuterable(isolate) &&
+  if (audio_data->IsDetachable(isolate) &&
       audio_data->Transfer(isolate, buffer_contents)) {
     DOMArrayBuffer* audio = DOMArrayBuffer::Create(buffer_contents);
 

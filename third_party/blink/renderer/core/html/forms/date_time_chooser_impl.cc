@@ -122,14 +122,13 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
 
   AddString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
 
-  AddString(ChooserResourceLoader::GetPickerCommonStyleSheet(), data);
+  data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
   if (!RuntimeEnabledFeatures::FormControlsRefreshEnabled())
-    AddString(ChooserResourceLoader::GetPickerButtonStyleSheet(), data);
-  AddString(ChooserResourceLoader::GetSuggestionPickerStyleSheet(), data);
-  AddString(ChooserResourceLoader::GetCalendarPickerStyleSheet(), data);
+    data->Append(ChooserResourceLoader::GetPickerButtonStyleSheet());
+  data->Append(ChooserResourceLoader::GetSuggestionPickerStyleSheet());
+  data->Append(ChooserResourceLoader::GetCalendarPickerStyleSheet());
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
-    AddString(ChooserResourceLoader::GetCalendarPickerRefreshStyleSheet(),
-              data);
+    data->Append(ChooserResourceLoader::GetCalendarPickerRefreshStyleSheet());
   }
   AddString(
       "</style></head><body><div id=main>Loading...</div><script>\n"
@@ -215,9 +214,9 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   }
   AddString("}\n", data);
 
-  AddString(ChooserResourceLoader::GetPickerCommonJS(), data);
-  AddString(ChooserResourceLoader::GetSuggestionPickerJS(), data);
-  AddString(ChooserResourceLoader::GetCalendarPickerJS(), data);
+  data->Append(ChooserResourceLoader::GetPickerCommonJS());
+  data->Append(ChooserResourceLoader::GetSuggestionPickerJS());
+  data->Append(ChooserResourceLoader::GetCalendarPickerJS());
   AddString("</script></body>\n", data);
 }
 

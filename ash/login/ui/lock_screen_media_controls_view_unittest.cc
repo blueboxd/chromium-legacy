@@ -106,7 +106,7 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     // Inject the test media controller into the media controls view.
     media_controller_ = std::make_unique<TestMediaController>();
     media_controls_view_->set_media_controller_for_testing(
-        media_controller_->CreateMediaControllerPtr());
+        media_controller_->CreateMediaControllerRemote());
 
     SimulateMediaSessionChanged(
         media_session::mojom::MediaPlaybackState::kPlaying);

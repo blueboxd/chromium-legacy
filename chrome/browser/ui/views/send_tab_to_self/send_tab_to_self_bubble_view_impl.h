@@ -39,7 +39,6 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
  public:
   // Bubble will be anchored to |anchor_view|.
   SendTabToSelfBubbleViewImpl(views::View* anchor_view,
-                              const gfx::Point& anchor_point,
                               content::WebContents* web_contents,
                               SendTabToSelfBubbleController* controller);
 

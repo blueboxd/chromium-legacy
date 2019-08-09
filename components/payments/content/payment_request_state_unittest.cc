@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/payments/content/mock_identity_observer.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/test_content_payment_request_delegate.h"
 #include "components/payments/core/journey_logger.h"
@@ -79,7 +80,7 @@ class PaymentRequestStateTest : public testing::Test,
         nullptr /* context */, GURL("https://example.com"),
         GURL("https://example.com/pay"), spec_.get(), this, "en-US",
         &test_personal_data_manager_, &test_payment_request_delegate_,
-        &journey_logger_);
+        &identity_observer_, &journey_logger_);
     state_->AddObserver(this);
   }
 
@@ -137,6 +138,7 @@ class PaymentRequestStateTest : public testing::Test,
   mojom::PaymentAddressPtr selected_shipping_address_;
   autofill::TestPersonalDataManager test_personal_data_manager_;
   TestContentPaymentRequestDelegate test_payment_request_delegate_;
+  MockIdentityObserver identity_observer_;
   JourneyLogger journey_logger_;
 
   // Test data.

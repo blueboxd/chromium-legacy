@@ -35,26 +35,26 @@ bool ArrayBuffer::Transfer(ArrayBufferContents& result) {
   scoped_refptr<ArrayBuffer> keep_alive(this);
 
   if (!contents_.Data()) {
-    result.Neuter();
+    result.Detach();
     return false;
   }
 
-  bool all_views_are_neuterable = true;
+  bool all_views_are_detachable = true;
   for (ArrayBufferView* i = first_view_; i; i = i->next_view_) {
-    if (!i->IsNeuterable())
-      all_views_are_neuterable = false;
+    if (!i->IsDetachable())
+      all_views_are_detachable = false;
   }
 
-  if (all_views_are_neuterable) {
+  if (all_views_are_detachable) {
     contents_.Transfer(result);
 
     while (first_view_) {
       ArrayBufferView* current = first_view_;
       RemoveView(current);
-      current->Neuter();
+      current->Detach();
     }
 
-    is_neutered_ = true;
+    is_detached_ = true;
   } else {
     // TODO(https://crbug.com/763038): See original bug at
     // https://crbug.com/254728. Copying the buffer instead of transferring is
@@ -74,7 +74,7 @@ bool ArrayBuffer::ShareContentsWith(ArrayBufferContents& result) {
   scoped_refptr<ArrayBuffer> keep_alive(this);
 
   if (!contents_.DataShared()) {
-    result.Neuter();
+    result.Detach();
     return false;
   }
 
@@ -87,7 +87,7 @@ bool ArrayBuffer::ShareNonSharedForInternalUse(ArrayBufferContents& result) {
   scoped_refptr<ArrayBuffer> keep_alive(this);
 
   if (!contents_.Data()) {
-    result.Neuter();
+    result.Detach();
     return false;
   }
 

@@ -256,7 +256,7 @@ void GPUBuffer::DetachArrayBufferForCurrentMapping(ScriptState* script_state) {
   }
   v8::Isolate* isolate = script_state->GetIsolate();
   DOMArrayBuffer* mapped_buffer = mapped_buffer_.Release();
-  DCHECK(mapped_buffer->IsNeuterable(isolate));
+  DCHECK(mapped_buffer->IsDetachable(isolate));
 
   // Detach the array buffer by transferring the contents out and dropping them.
   WTF::ArrayBufferContents contents;

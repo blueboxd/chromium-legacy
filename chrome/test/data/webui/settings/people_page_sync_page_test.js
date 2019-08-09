@@ -9,51 +9,6 @@ cr.define('settings_people_page_sync_page', function() {
     let encryptWithGoogle = null;
     let encryptWithPassphrase = null;
 
-    /**
-     * Returns sync prefs with everything synced and no passphrase required.
-     * @return {!settings.SyncPrefs}
-     */
-    function getSyncAllPrefs() {
-      return {
-        appsEnforced: false,
-        appsRegistered: true,
-        appsSynced: true,
-        autofillEnforced: false,
-        autofillRegistered: true,
-        autofillSynced: true,
-        bookmarksEnforced: false,
-        bookmarksRegistered: true,
-        bookmarksSynced: true,
-        encryptAllData: false,
-        encryptAllDataAllowed: true,
-        enterPassphraseBody: 'Enter custom passphrase.',
-        extensionsEnforced: false,
-        extensionsRegistered: true,
-        extensionsSynced: true,
-        fullEncryptionBody: '',
-        passphrase: '',
-        passphraseRequired: false,
-        passwordsEnforced: false,
-        passwordsRegistered: true,
-        passwordsSynced: true,
-        paymentsIntegrationEnabled: true,
-        preferencesEnforced: false,
-        preferencesRegistered: true,
-        preferencesSynced: true,
-        setNewPassphrase: false,
-        syncAllDataTypes: true,
-        tabsEnforced: false,
-        tabsRegistered: true,
-        tabsSynced: true,
-        themesEnforced: false,
-        themesRegistered: true,
-        themesSynced: true,
-        typedUrlsEnforced: false,
-        typedUrlsRegistered: true,
-        typedUrlsSynced: true,
-      };
-    }
-
     setup(function() {
       browserProxy = new TestSyncBrowserProxy();
       settings.SyncBrowserProxyImpl.instance_ = browserProxy;
@@ -72,7 +27,8 @@ cr.define('settings_people_page_sync_page', function() {
 
       // Start with Sync All with no encryption selected. Also, ensure that
       // this is not a supervised user, so that Sync Passphrase is enabled.
-      cr.webUIListenerCallback('sync-prefs-changed', getSyncAllPrefs());
+      cr.webUIListenerCallback(
+          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
       syncPage.set('syncStatus', {supervisedUser: false});
       Polymer.dom.flush();
 
@@ -258,7 +214,8 @@ cr.define('settings_people_page_sync_page', function() {
       assertTrue(!!saveNewPassphrase);
 
       // Test that a sync prefs update does not reset the selection.
-      cr.webUIListenerCallback('sync-prefs-changed', getSyncAllPrefs());
+      cr.webUIListenerCallback(
+          'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
       Polymer.dom.flush();
       assertTrue(encryptWithPassphrase.checked);
     });
@@ -347,7 +304,7 @@ cr.define('settings_people_page_sync_page', function() {
       saveNewPassphrase.click();
 
       function verifyPrefs(prefs) {
-        const expected = getSyncAllPrefs();
+        const expected = sync_test_util.getSyncAllPrefs();
         expected.setNewPassphrase = true;
         expected.passphrase = 'foo';
         expected.encryptAllData = true;
@@ -374,7 +331,7 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     test('RadioBoxesHiddenWhenEncrypted', function() {
-      const prefs = getSyncAllPrefs();
+      const prefs = sync_test_util.getSyncAllPrefs();
       prefs.encryptAllData = true;
       prefs.passphraseRequired = true;
       prefs.fullEncryptionBody = 'Sync already encrypted.';
@@ -389,7 +346,7 @@ cr.define('settings_people_page_sync_page', function() {
     test(
         'ExistingPassphraseSubmitButtonDisabledWhenExistingPassphraseEmpty',
         function() {
-          const prefs = getSyncAllPrefs();
+          const prefs = sync_test_util.getSyncAllPrefs();
           prefs.encryptAllData = true;
           prefs.passphraseRequired = true;
           cr.webUIListenerCallback('sync-prefs-changed', prefs);
@@ -410,7 +367,7 @@ cr.define('settings_people_page_sync_page', function() {
         });
 
     test('EnterExistingWrongPassphrase', function() {
-      const prefs = getSyncAllPrefs();
+      const prefs = sync_test_util.getSyncAllPrefs();
       prefs.encryptAllData = true;
       prefs.passphraseRequired = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
@@ -428,7 +385,7 @@ cr.define('settings_people_page_sync_page', function() {
       submitExistingPassphrase.click();
 
       return browserProxy.whenCalled('setSyncEncryption').then(function(prefs) {
-        const expected = getSyncAllPrefs();
+        const expected = sync_test_util.getSyncAllPrefs();
         expected.setNewPassphrase = false;
         expected.passphrase = 'wrong';
         expected.encryptAllData = true;
@@ -442,7 +399,7 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     test('EnterExistingCorrectPassphrase', function() {
-      const prefs = getSyncAllPrefs();
+      const prefs = sync_test_util.getSyncAllPrefs();
       prefs.encryptAllData = true;
       prefs.passphraseRequired = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
@@ -460,14 +417,14 @@ cr.define('settings_people_page_sync_page', function() {
       submitExistingPassphrase.click();
 
       return browserProxy.whenCalled('setSyncEncryption').then(function(prefs) {
-        const expected = getSyncAllPrefs();
+        const expected = sync_test_util.getSyncAllPrefs();
         expected.setNewPassphrase = false;
         expected.passphrase = 'right';
         expected.encryptAllData = true;
         expected.passphraseRequired = true;
         assertEquals(JSON.stringify(expected), JSON.stringify(prefs));
 
-        const newPrefs = getSyncAllPrefs();
+        const newPrefs = sync_test_util.getSyncAllPrefs();
         newPrefs.encryptAllData = true;
         cr.webUIListenerCallback('sync-prefs-changed', newPrefs);
 
@@ -502,7 +459,7 @@ cr.define('settings_people_page_sync_page', function() {
 
       // 1) Normal user (full data encryption allowed)
       // EXPECTED: encryptionOptions enabled
-      const prefs1 = getSyncAllPrefs();
+      const prefs1 = sync_test_util.getSyncAllPrefs();
       prefs1.encryptAllDataAllowed = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs1);
       syncPage.syncStatus = {supervisedUser: false};
@@ -514,7 +471,7 @@ cr.define('settings_people_page_sync_page', function() {
       // encryptAllDataAllowed is usually false only for supervised
       // users, but it's better to be check this case.
       // EXPECTED: encryptionOptions disabled
-      const prefs2 = getSyncAllPrefs();
+      const prefs2 = sync_test_util.getSyncAllPrefs();
       prefs2.encryptAllDataAllowed = false;
       cr.webUIListenerCallback('sync-prefs-changed', prefs2);
       syncPage.syncStatus = {supervisedUser: false};
@@ -524,7 +481,7 @@ cr.define('settings_people_page_sync_page', function() {
 
       // 3) Supervised user (full data encryption not allowed)
       // EXPECTED: encryptionOptions disabled
-      const prefs3 = getSyncAllPrefs();
+      const prefs3 = sync_test_util.getSyncAllPrefs();
       prefs3.encryptAllDataAllowed = false;
       cr.webUIListenerCallback('sync-prefs-changed', prefs3);
       syncPage.syncStatus = {supervisedUser: true};
@@ -535,7 +492,7 @@ cr.define('settings_people_page_sync_page', function() {
       // 4) Supervised user (full data encryption allowed)
       // This never happens in practice, but just to be safe.
       // EXPECTED: encryptionOptions disabled
-      const prefs4 = getSyncAllPrefs();
+      const prefs4 = sync_test_util.getSyncAllPrefs();
       prefs4.encryptAllDataAllowed = true;
       cr.webUIListenerCallback('sync-prefs-changed', prefs4);
       syncPage.syncStatus = {supervisedUser: true};
@@ -549,7 +506,7 @@ cr.define('settings_people_page_sync_page', function() {
     test('SyncDashboardHiddenFromSupervisedUsers', function() {
       const dashboardLink = syncPage.$$('#syncDashboardLink');
 
-      const prefs = getSyncAllPrefs();
+      const prefs = sync_test_util.getSyncAllPrefs();
       cr.webUIListenerCallback('sync-prefs-changed', prefs);
 
       // Normal user

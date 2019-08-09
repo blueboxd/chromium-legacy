@@ -22,7 +22,7 @@ class CORE_EXPORT DOMArrayBufferBase : public ScriptWrappable {
   const void* Data() const { return Buffer()->Data(); }
   void* Data() { return Buffer()->Data(); }
   unsigned ByteLength() const { return Buffer()->ByteLength(); }
-  bool IsNeutered() const { return Buffer()->IsNeutered(); }
+  bool IsDetached() const { return Buffer()->IsDetached(); }
   bool IsShared() const { return Buffer()->IsShared(); }
 
   v8::Local<v8::Object> Wrap(v8::Isolate*,

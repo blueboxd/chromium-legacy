@@ -46,9 +46,9 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
 
   void OnDialogHidden() override;
   AccountChooserPrompt* CreateAccountChooser(
-      PasswordDialogController* controller) override;
+      CredentialManagerDialogController* controller) override;
   AutoSigninFirstRunPrompt* CreateAutoSigninPrompt(
-      PasswordDialogController* controller) override;
+      CredentialManagerDialogController* controller) override;
 
   AccountChooserDialogView* current_account_chooser() const {
     return static_cast<AccountChooserDialogView*>(current_account_chooser_);
@@ -87,7 +87,7 @@ void TestManagePasswordsUIController::OnDialogHidden() {
 }
 
 AccountChooserPrompt* TestManagePasswordsUIController::CreateAccountChooser(
-    PasswordDialogController* controller) {
+    CredentialManagerDialogController* controller) {
   current_account_chooser_ =
       ManagePasswordsUIController::CreateAccountChooser(controller);
   return current_account_chooser_;
@@ -95,7 +95,7 @@ AccountChooserPrompt* TestManagePasswordsUIController::CreateAccountChooser(
 
 AutoSigninFirstRunPrompt*
 TestManagePasswordsUIController::CreateAutoSigninPrompt(
-    PasswordDialogController* controller) {
+    CredentialManagerDialogController* controller) {
   current_autosignin_prompt_ =
       ManagePasswordsUIController::CreateAutoSigninPrompt(controller);
   return current_autosignin_prompt_;

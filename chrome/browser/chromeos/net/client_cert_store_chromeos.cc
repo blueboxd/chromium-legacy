@@ -67,9 +67,10 @@ void ClientCertStoreChromeOS::GotAdditionalCerts(
   scoped_refptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate;
   if (!password_delegate_factory_.is_null())
     password_delegate = password_delegate_factory_.Run(request->host_and_port);
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread,
                      base::Unretained(this), password_delegate,
                      base::Unretained(request), std::move(additional_certs)),

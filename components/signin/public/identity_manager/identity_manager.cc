@@ -23,6 +23,8 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/jni_string.h"
+#include "components/signin/internal/identity_manager/android/jni_headers/IdentityManager_jni.h"
 #include "components/signin/internal/identity_manager/oauth2_token_service_delegate_android.h"
 #elif !defined(OS_IOS)
 #include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
@@ -121,6 +123,11 @@ IdentityManager::IdentityManager(
     DCHECK(!account.account_id.empty());
     SetPrimaryAccountInternal(std::move(account));
   }
+
+#if defined(OS_ANDROID)
+  java_identity_manager_ = Java_IdentityManager_create(
+      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
+#endif
 }
 
 IdentityManager::~IdentityManager() {
@@ -131,6 +138,12 @@ IdentityManager::~IdentityManager() {
 
   token_service_->RemoveObserver(this);
   token_service_->RemoveAccessTokenDiagnosticsObserver(this);
+
+#if defined(OS_ANDROID)
+  if (java_identity_manager_)
+    Java_IdentityManager_destroy(base::android::AttachCurrentThread(),
+                                 java_identity_manager_);
+#endif
 }
 
 void IdentityManager::AddObserver(Observer* observer) {
@@ -460,10 +473,19 @@ IdentityManager::LegacyGetOAuth2TokenServiceJavaObject() {
   return delegate->GetJavaObject();
 }
 
+base::android::ScopedJavaLocalRef<jobject> IdentityManager::GetJavaObject() {
+  DCHECK(java_identity_manager_);
+  return base::android::ScopedJavaLocalRef<jobject>(java_identity_manager_);
+}
+
 void IdentityManager::ForceRefreshOfExtendedAccountInfo(
     const CoreAccountId& account_id) {
   DCHECK(HasAccountWithRefreshToken(account_id));
   account_fetcher_service_->ForceRefreshOfAccountInfo(account_id);
+}
+
+bool IdentityManager::HasPrimaryAccount(JNIEnv* env) const {
+  return HasPrimaryAccount();
 }
 #endif
 
@@ -566,6 +588,12 @@ void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountSet(account_info);
   }
+#if defined(OS_ANDROID)
+  if (java_identity_manager_)
+    Java_IdentityManager_onPrimaryAccountSet(
+        base::android::AttachCurrentThread(), java_identity_manager_,
+        ConvertToJavaCoreAccountInfo(account_info));
+#endif
 }
 
 void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
@@ -573,6 +601,12 @@ void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountCleared(account_info);
   }
+#if defined(OS_ANDROID)
+  if (java_identity_manager_)
+    Java_IdentityManager_onPrimaryAccountCleared(
+        base::android::AttachCurrentThread(), java_identity_manager_,
+        ConvertToJavaCoreAccountInfo(account_info));
+#endif
 }
 void IdentityManager::AuthenticatedAccountSet(const AccountInfo& account_info) {
   DCHECK(primary_account_manager_->IsAuthenticated());

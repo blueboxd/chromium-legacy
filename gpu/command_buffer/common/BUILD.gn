@@ -177,6 +177,7 @@ source_set("webgpu_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [
+    "dawn_memory_transfer_handle.h",
     "webgpu_cmd_format.cc",
     "webgpu_cmd_format.h",
     "webgpu_cmd_format_autogen.h",

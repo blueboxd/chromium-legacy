@@ -155,7 +155,7 @@ void PlatformKeysTestBase::SetUpOnMainThread() {
 
   if (system_token_status() == SystemTokenStatus::EXISTS) {
     base::RunLoop loop;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&PlatformKeysTestBase::SetUpTestSystemSlotOnIO,
                        base::Unretained(this), loop.QuitClosure()));
@@ -170,7 +170,7 @@ void PlatformKeysTestBase::TearDownOnMainThread() {
 
   if (system_token_status() == SystemTokenStatus::EXISTS) {
     base::RunLoop loop;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&PlatformKeysTestBase::TearDownTestSystemSlotOnIO,
                        base::Unretained(this), loop.QuitClosure()));
@@ -211,14 +211,14 @@ void PlatformKeysTestBase::SetUpTestSystemSlotOnIO(
 
   PrepareTestSystemSlotOnIO(test_system_slot_.get());
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           std::move(done_callback));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 std::move(done_callback));
 }
 
 void PlatformKeysTestBase::TearDownTestSystemSlotOnIO(
     base::OnceClosure done_callback) {
   test_system_slot_.reset();
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           std::move(done_callback));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 std::move(done_callback));
 }

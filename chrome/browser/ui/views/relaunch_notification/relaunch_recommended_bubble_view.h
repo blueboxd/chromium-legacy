@@ -52,7 +52,6 @@ class RelaunchRecommendedBubbleView : public LocationBarBubbleDelegateView {
 
  private:
   RelaunchRecommendedBubbleView(views::Button* anchor_button,
-                                const gfx::Point& anchor_point,
                                 base::Time detection_time,
                                 base::RepeatingClosure on_accept);
 

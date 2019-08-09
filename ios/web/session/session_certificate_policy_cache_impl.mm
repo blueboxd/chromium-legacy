@@ -57,13 +57,12 @@ void SessionCertificatePolicyCacheImpl::UpdateCertificatePolicyCache(
   DCHECK(cache.get());
   NSSet* allowed_certs = [NSSet setWithSet:allowed_certs_];
   const scoped_refptr<web::CertificatePolicyCache> cache_copy = cache;
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
-        for (CRWSessionCertificateStorage* cert in allowed_certs) {
-          cache_copy->AllowCertForHost(cert.certificate, cert.host,
-                                       cert.status);
-        }
-      }));
+  base::PostTask(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{
+                   for (CRWSessionCertificateStorage* cert in allowed_certs) {
+                     cache_copy->AllowCertForHost(cert.certificate, cert.host,
+                                                  cert.status);
+                   }
+                 }));
 }
 
 void SessionCertificatePolicyCacheImpl::RegisterAllowedCertificate(

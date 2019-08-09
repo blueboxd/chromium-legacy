@@ -124,7 +124,7 @@ class MODULES_EXPORT UserMediaProcessor
       blink::WebUserMediaRequest web_request);
   virtual void GetUserMediaRequestFailed(
       blink::mojom::blink::MediaStreamRequestResult result,
-      const blink::WebString& constraint_name = blink::WebString());
+      const String& constraint_name = String());
 
   // Creates a MediaStreamAudioSource/MediaStreamVideoSource objects.
   // These are virtual for test purposes.
@@ -202,7 +202,7 @@ class MODULES_EXPORT UserMediaProcessor
       const String& label,
       RequestInfo* request,
       blink::mojom::blink::MediaStreamRequestResult result,
-      const blink::WebString& result_name);
+      const String& result_name);
 
   void OnStreamGeneratedForCancelledRequest(
       const Vector<blink::MediaStreamDevice>& audio_devices,
@@ -223,7 +223,7 @@ class MODULES_EXPORT UserMediaProcessor
   void NotifyCurrentRequestInfoOfAudioSourceStarted(
       blink::WebPlatformMediaStreamSource* source,
       blink::mojom::blink::MediaStreamRequestResult result,
-      const blink::WebString& result_name);
+      const String& result_name);
 
   void DeleteAllUserMediaRequests();
 

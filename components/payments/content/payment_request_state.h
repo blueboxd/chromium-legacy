@@ -16,6 +16,7 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_app_factory.h"
+#include "components/payments/content/service_worker_payment_instrument.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "content/public/browser/payment_app_provider.h"
@@ -33,7 +34,6 @@ namespace payments {
 
 class ContentPaymentRequestDelegate;
 class PaymentInstrument;
-class ServiceWorkerPaymentInstrument;
 
 // Keeps track of the information currently selected by the user and whether the
 // user is ready to pay. Uses information from the PaymentRequestSpec, which is
@@ -106,15 +106,17 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
       base::OnceCallback<void(bool methods_supported,
                               const std::string& error_message)>;
 
-  PaymentRequestState(content::WebContents* web_contents,
-                      const GURL& top_level_origin,
-                      const GURL& frame_origin,
-                      PaymentRequestSpec* spec,
-                      Delegate* delegate,
-                      const std::string& app_locale,
-                      autofill::PersonalDataManager* personal_data_manager,
-                      ContentPaymentRequestDelegate* payment_request_delegate,
-                      JourneyLogger* journey_logger);
+  PaymentRequestState(
+      content::WebContents* web_contents,
+      const GURL& top_level_origin,
+      const GURL& frame_origin,
+      PaymentRequestSpec* spec,
+      Delegate* delegate,
+      const std::string& app_locale,
+      autofill::PersonalDataManager* personal_data_manager,
+      ContentPaymentRequestDelegate* payment_request_delegate,
+      ServiceWorkerPaymentInstrument::IdentityObserver* sw_identity_observer,
+      JourneyLogger* journey_logger);
   ~PaymentRequestState() override;
 
   // PaymentResponseHelper::Delegate
@@ -371,6 +373,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   std::vector<std::unique_ptr<PaymentInstrument>> available_instruments_;
 
   ContentPaymentRequestDelegate* payment_request_delegate_;
+  ServiceWorkerPaymentInstrument::IdentityObserver* sw_identity_observer_;
 
   std::unique_ptr<PaymentResponseHelper> response_helper_;
 

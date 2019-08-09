@@ -1458,7 +1458,7 @@ void BrowserProcessImpl::RestartBackgroundInstance() {
   DLOG(WARNING) << "Shutting down current instance of the browser.";
   chrome::AttemptExit();
 
-  upgrade_util::SetNewCommandLine(new_cl.release());
+  upgrade_util::SetNewCommandLine(std::move(new_cl));
 }
 
 void BrowserProcessImpl::OnAutoupdateTimer() {

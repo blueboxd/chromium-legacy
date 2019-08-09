@@ -36,6 +36,7 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
+    WebUIListenerBehavior,
     ListPropertyUpdateBehavior,
     Polymer.IronA11yKeysBehavior,
     settings.GlobalScrollTargetBehavior,
@@ -94,6 +95,12 @@ Polymer({
     },
 
     /** @private */
+    hidePasswordsLink_: {
+      type: Boolean,
+      computed: 'computeHidePasswordsLink_(syncPrefs_, syncStatus_)',
+    },
+
+    /** @private */
     showExportPasswords_: {
       type: Boolean,
       computed: 'hasPasswords_(savedPasswords.splices)',
@@ -110,6 +117,12 @@ Polymer({
 
     /** @private */
     showPasswordEditDialog_: Boolean,
+
+    /** @private {settings.SyncPrefs} */
+    syncPrefs_: Object,
+
+    /** @private {settings.SyncStatus} */
+    syncStatus_: Object,
 
     /** Filter on the saved passwords and exceptions. */
     filter: {
@@ -229,6 +242,16 @@ Polymer({
 
     this.notifySplices('savedPasswords', []);
 
+    const syncBrowserProxy = settings.SyncBrowserProxyImpl.getInstance();
+
+    const syncStatusChanged = syncStatus => this.syncStatus_ = syncStatus;
+    syncBrowserProxy.getSyncStatus().then(syncStatusChanged);
+    this.addWebUIListener('sync-status-changed', syncStatusChanged);
+
+    const syncPrefsChanged = syncPrefs => this.syncPrefs_ = syncPrefs;
+    this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
+    syncBrowserProxy.sendSyncPrefsChanged();
+
     Polymer.RenderStatus.afterNextRender(this, function() {
       Polymer.IronA11yAnnouncer.requestAvailability();
     });
@@ -303,6 +326,15 @@ Polymer({
     // Trigger a re-evaluation of the activePassword as the visibility state of
     // the password might have changed.
     this.activePassword.notifyPath('item.password');
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeHidePasswordsLink_: function() {
+    return !!this.syncStatus_ && !!this.syncStatus_.signedIn &&
+        !!this.syncPrefs_ && !!this.syncPrefs_.encryptAllData;
   },
 
   /**

@@ -173,7 +173,7 @@ class CertificateProviderRequestPinTest : public CertificateProviderApiTest {
 
   void AddFakeSignRequest() {
     cert_provider_service_->pin_dialog_manager()->AddSignRequestId(
-        extension_->id(), kFakeSignRequestId);
+        extension_->id(), kFakeSignRequestId, {});
   }
 
   void NavigateTo(const std::string& test_page_file_name) {

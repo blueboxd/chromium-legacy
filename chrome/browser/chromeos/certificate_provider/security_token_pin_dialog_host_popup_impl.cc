@@ -50,6 +50,7 @@ void SecurityTokenPinDialogHostPopupImpl::ShowSecurityTokenPinDialog(
     bool enable_user_input,
     SecurityTokenPinErrorLabel error_label,
     int attempts_left,
+    const base::Optional<AccountId>& /*authenticating_user_account_id*/,
     SecurityTokenPinEnteredCallback pin_entered_callback,
     SecurityTokenPinDialogClosedCallback pin_dialog_closed_callback) {
   DCHECK(!caller_extension_name.empty());

@@ -38,10 +38,9 @@ constexpr int kMaximumButtons = 5;
 
 SendTabToSelfBubbleViewImpl::SendTabToSelfBubbleViewImpl(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     SendTabToSelfBubbleController* controller)
-    : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
       web_contents_(web_contents),
       controller_(controller) {
   DCHECK(controller);

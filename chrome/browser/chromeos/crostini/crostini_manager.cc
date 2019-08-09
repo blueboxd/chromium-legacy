@@ -132,7 +132,7 @@ class CrostiniManager::CrostiniRestarter
     is_running_ = true;
     // Skip to the end immediately if testing.
     if (crostini_manager_->skip_restart_for_testing()) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished,
                          base::WrapRefCounted(this), CrostiniResult::SUCCESS));
@@ -603,8 +603,8 @@ void CrostiniManager::MaybeUpgradeCrostini() {
     // |component_manager| may be nullptr in unit tests.
     return;
   }
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReply(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(CrostiniManager::CheckPathsAndComponents),
       base::BindOnce(&CrostiniManager::MaybeUpgradeCrostiniAfterChecks,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -646,7 +646,7 @@ void CrostiniManager::InstallTerminaComponent(CrostiniResultCallback callback) {
       g_browser_process->platform_part()->cros_component_manager();
   if (!cros_component_manager) {
     // Running in a unit test. We still PostTask to prevent races.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&CrostiniManager::OnInstallTerminaComponent,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),

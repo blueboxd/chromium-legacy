@@ -144,9 +144,10 @@ void QueryIppPrinter(const std::string& host,
   // QueryPrinterImpl could block on a network call for a noticable amount of
   // time (100s of ms). Also the user is waiting on this result.  Thus, run at
   // USER_VISIBLE with MayBlock.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::TaskTraits(base::TaskPriority::USER_VISIBLE, base::MayBlock()),
+      base::TaskTraits{base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+                       base::MayBlock()},
       base::BindOnce(&QueryPrinterImpl, host, port, path, encrypted),
       base::BindOnce(&OnPrinterQueried, std::move(callback)));
 }

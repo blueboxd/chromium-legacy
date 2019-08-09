@@ -449,7 +449,8 @@ class IdentityManager : public KeyedService,
   // API calls ProfileOAuth2TokenServiceDelegate::ReloadAccountsFromSystem and
   // it triggers platform specific implementation for Android. NOTE: In normal
   // usage, this method SHOULD NOT be called.
-  // TODO(https://crbug.com/930094): Eliminate the need to expose this.
+  // TODO(https://crbug.com/930094): Expose this through
+  // DeviceAccountsSynchronizer
   void LegacyReloadAccountsFromSystem();
 
   // Returns a pointer to the AccountTrackerService Java instance associated
@@ -466,11 +467,18 @@ class IdentityManager : public KeyedService,
   base::android::ScopedJavaLocalRef<jobject>
   LegacyGetOAuth2TokenServiceJavaObject();
 
+  // Get the reference on the java IdentityManager, InitializeJavaObject must
+  // be called before hand.
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
+
   // This method has the contractual assumption that the account is a known
   // account and has as its semantics that it fetches the account info for the
   // account, triggering an OnExtendedAccountInfoUpdated() callback if the info
   // was successfully fetched.
   void ForceRefreshOfExtendedAccountInfo(const CoreAccountId& account_id);
+
+  // Overloads for calls from java:
+  bool HasPrimaryAccount(JNIEnv* env) const;
 #endif
 
  private:
@@ -689,6 +697,11 @@ class IdentityManager : public KeyedService,
   // If |primary_account_| is set, it must equal |unconsented_primary_account_|.
   base::Optional<CoreAccountInfo> primary_account_;
   base::Optional<CoreAccountInfo> unconsented_primary_account_;
+
+#if defined(OS_ANDROID)
+  // Java-side IdentityManager object.
+  base::android::ScopedJavaGlobalRef<jobject> java_identity_manager_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManager);
 };

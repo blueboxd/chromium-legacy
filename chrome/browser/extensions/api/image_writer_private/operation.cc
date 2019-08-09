@@ -42,8 +42,7 @@ Operation::Operation(base::WeakPtr<OperationManager> manager,
       stage_(image_writer_api::STAGE_UNKNOWN),
       progress_(0),
       download_folder_(download_folder),
-      task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits(blocking_task_traits())) {
+      task_runner_(base::CreateSequencedTaskRunner(blocking_task_traits())) {
 }
 
 Operation::~Operation() {
@@ -128,7 +127,7 @@ void Operation::Finish() {
 
   CleanUp();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OperationManager::OnComplete, manager_, extension_id_));
 }
@@ -136,7 +135,7 @@ void Operation::Finish() {
 void Operation::Error(const std::string& error_message) {
   DCHECK(IsRunningInCorrectSequence());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&OperationManager::OnError, manager_, extension_id_,
                      stage_, progress_, error_message));
@@ -157,10 +156,9 @@ void Operation::SetProgress(int progress) {
 
   progress_ = progress;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&OperationManager::OnProgress, manager_, extension_id_,
-                     stage_, progress_));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&OperationManager::OnProgress, manager_,
+                                extension_id_, stage_, progress_));
 }
 
 void Operation::SetStage(image_writer_api::Stage stage) {
@@ -172,10 +170,9 @@ void Operation::SetStage(image_writer_api::Stage stage) {
   stage_ = stage;
   progress_ = 0;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&OperationManager::OnProgress, manager_, extension_id_,
-                     stage_, progress_));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&OperationManager::OnProgress, manager_,
+                                extension_id_, stage_, progress_));
 }
 
 bool Operation::IsCancelled() {

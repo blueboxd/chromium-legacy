@@ -90,8 +90,8 @@ WebViewPasswordStoreFactory::BuildServiceInstanceFor(
   // the passwords obtained through tasks on the background runner influence
   // what the user sees.
   scoped_refptr<base::SequencedTaskRunner> db_task_runner(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::USER_VISIBLE}));
 
   scoped_refptr<password_manager::PasswordStore> store =
       new password_manager::PasswordStoreDefault(std::move(login_db));

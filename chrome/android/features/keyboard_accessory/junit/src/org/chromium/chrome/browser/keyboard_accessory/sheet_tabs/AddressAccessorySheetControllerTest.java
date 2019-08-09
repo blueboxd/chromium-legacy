@@ -107,13 +107,13 @@ public class AddressAccessorySheetControllerTest {
 
         // If the coordinator receives a set of initial items, the model should report an insertion.
         testProvider.notifyObservers(
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses"));
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses", ""));
         verify(mMockItemListObserver).onItemRangeInserted(mSheetDataPieces, 0, 1);
         assertThat(mSheetDataPieces.size(), is(1));
 
         // If the coordinator receives a new set of items, the model should report a change.
         testProvider.notifyObservers(
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Other Addresses"));
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Other Addresses", ""));
         verify(mMockItemListObserver).onItemRangeChanged(mSheetDataPieces, 0, 1, null);
         assertThat(mSheetDataPieces.size(), is(1));
 
@@ -131,7 +131,7 @@ public class AddressAccessorySheetControllerTest {
     public void testSplitsTabDataToList() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses for this site");
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses for this site", "");
         testData.getUserInfoList().add(new UserInfo("", null));
         testData.getUserInfoList().get(0).addField(
                 new UserInfoField("Name", "Name", "", false, null));
@@ -150,7 +150,7 @@ public class AddressAccessorySheetControllerTest {
     public void testUsesTitleElementForEmptyState() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses");
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses", "");
         mCoordinator.registerDataProvider(testProvider);
 
         testProvider.notifyObservers(testData);
@@ -183,7 +183,7 @@ public class AddressAccessorySheetControllerTest {
 
         // If the tab is shown without interactive item, log "0" samples.
         AccessorySheetData accessorySheetData =
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses!");
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses!", "");
         testProvider.notifyObservers(accessorySheetData);
         mCoordinator.onTabShown();
 
@@ -203,7 +203,7 @@ public class AddressAccessorySheetControllerTest {
 
         // Add only two interactive items - the third one should not be recorded.
         AccessorySheetData accessorySheetData =
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses");
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses", "");
         accessorySheetData.getUserInfoList().add(new UserInfo("", null));
         accessorySheetData.getUserInfoList().get(0).addField(
                 new UserInfoField("Todd Tester", "Todd Tester", "0", false, result -> {}));

@@ -25,7 +25,6 @@ import org.chromium.base.ObservableSupplier;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.banners.AppBannerManager;
@@ -343,12 +342,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      */
     protected void prepareTranslateMenuItem(Menu menu, Tab currentTab) {
         boolean isTranslateVisible = isTranslateMenuItemVisible(currentTab);
-        if (ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER)) {
-            RecordHistogram.recordBooleanHistogram(
-                    "Translate.MobileMenuTranslate.Shown", isTranslateVisible);
-        }
+        RecordHistogram.recordBooleanHistogram(
+                "Translate.MobileMenuTranslate.Shown", isTranslateVisible);
         menu.findItem(R.id.translate_id).setVisible(isTranslateVisible);
     }
 
@@ -481,8 +476,6 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         boolean isFileScheme = url.startsWith(UrlConstants.FILE_URL_PREFIX);
         boolean isContentScheme = url.startsWith(UrlConstants.CONTENT_URL_PREFIX);
         return !isChromeScheme && !isFileScheme && !isContentScheme && !TextUtils.isEmpty(url)
-                && tab.getWebContents() != null && ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.TRANSLATE_ANDROID_MANUAL_TRIGGER)
-                && TranslateBridge.canManuallyTranslate(tab);
+                && tab.getWebContents() != null && TranslateBridge.canManuallyTranslate(tab);
     }
 }

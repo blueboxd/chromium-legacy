@@ -22,6 +22,7 @@ import org.chromium.ui.widget.ChipView;
 class CreditCardAccessorySheetViewBinder {
     static ElementViewHolder create(ViewGroup parent, @AccessorySheetDataPiece.Type int viewType) {
         switch (viewType) {
+            case AccessorySheetDataPiece.Type.WARNING: // Fallthrough to reuse title container.
             case AccessorySheetDataPiece.Type.TITLE:
                 return new AccessorySheetTabViewBinder.TitleViewHolder(
                         parent, R.layout.keyboard_accessory_sheet_tab_title);
@@ -50,6 +51,11 @@ class CreditCardAccessorySheetViewBinder {
             bindChipView(view.getExpYear(), info.getFields().get(2));
             bindChipView(view.getCardholder(), info.getFields().get(3));
 
+            view.getExpiryGroup().setVisibility(view.getExpYear().getVisibility() == View.VISIBLE
+                                    || view.getExpMonth().getVisibility() == View.VISIBLE
+                            ? View.VISIBLE
+                            : View.GONE);
+
             view.setIcon(AppCompatResources.getDrawable(
                     view.getContext(), getDrawableForOrigin(info.getOrigin())));
         }
@@ -57,11 +63,11 @@ class CreditCardAccessorySheetViewBinder {
         private static void bindChipView(ChipView chip, UserInfoField field) {
             chip.getPrimaryTextView().setText(field.getDisplayText());
             chip.getPrimaryTextView().setContentDescription(field.getA11yDescription());
-            if (!field.isSelectable() || field.getDisplayText().isEmpty()) {
-                chip.setVisibility(View.GONE);
+            chip.setVisibility(field.getDisplayText().isEmpty() ? View.GONE : View.VISIBLE);
+            if (!field.isSelectable()) {
+                chip.setEnabled(false);
                 return;
             }
-            chip.setVisibility(View.VISIBLE);
             chip.setOnClickListener(src -> field.triggerSelection());
             chip.setClickable(true);
             chip.setEnabled(true);

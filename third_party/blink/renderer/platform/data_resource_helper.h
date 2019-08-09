@@ -21,6 +21,10 @@ PLATFORM_EXPORT String GetDataResourceAsASCIIString(const char* resource);
 // is specified by the resource id from Grit.
 PLATFORM_EXPORT String UncompressResourceAsString(int resource_id);
 
+// Uncompresses a gzipped resource and returns it as an ascii string. The
+// resource is specified by the resource id from Grit.
+PLATFORM_EXPORT String UncompressResourceAsASCIIString(int resource_id);
+
 // Uncompresses a gzipped resource and returns it as a vector of characters.
 // The resource is specified by the resource id from Grit.
 PLATFORM_EXPORT Vector<char> UncompressResourceAsBinary(int resource_id);

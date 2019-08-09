@@ -114,11 +114,11 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
   }
 
   switch (type) {
-    case ObjectType::CBF_TEXT:
+    case ObjectType::kText:
       WriteText(&(params[0].front()), params[0].size());
       break;
 
-    case ObjectType::CBF_HTML:
+    case ObjectType::kHtml:
       if (params.size() == 2) {
         if (params[1].empty())
           return;
@@ -129,20 +129,20 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       }
       break;
 
-    case ObjectType::CBF_RTF:
+    case ObjectType::kRtf:
       WriteRTF(&(params[0].front()), params[0].size());
       break;
 
-    case ObjectType::CBF_BOOKMARK:
+    case ObjectType::kBookmark:
       WriteBookmark(&(params[0].front()), params[0].size(),
                     &(params[1].front()), params[1].size());
       break;
 
-    case ObjectType::CBF_WEBKIT:
+    case ObjectType::kWebkit:
       WriteWebSmartPaste();
       break;
 
-    case ObjectType::CBF_SMBITMAP: {
+    case ObjectType::kBitmap: {
       // Usually, the params are just UTF-8 strings. However, for images,
       // ScopedClipboardWriter actually sizes the buffer to sizeof(SkBitmap*),
       // aliases the contents of the vector to a SkBitmap**, and writes the
@@ -152,7 +152,7 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       break;
     }
 
-    case ObjectType::CBF_DATA:
+    case ObjectType::kData:
       WriteData(ClipboardFormatType::Deserialize(
                     std::string(&(params[0].front()), params[0].size())),
                 &(params[1].front()), params[1].size());

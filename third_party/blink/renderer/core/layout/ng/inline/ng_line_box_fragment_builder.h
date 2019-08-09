@@ -235,6 +235,11 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   // Add all items in ChildList. Skips null Child if any.
   void AddChildren(ChildList&);
 
+  // Add only out-of-flow items in ChildList. TODO(kojii): When |NGFragmentItem|
+  // is on, all objects should go to |NGFragmentItems| but OOF still uses
+  // fragments to propagate while in transition.
+  void AddOutOfFlowChildren(ChildList&);
+
   // Creates the fragment. Can only be called once.
   scoped_refptr<const NGLayoutResult> ToLineBoxFragment();
 

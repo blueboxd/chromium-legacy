@@ -202,8 +202,9 @@ ModellerImpl::ModellerImpl(const Profile* profile,
                    model_config_loader,
                    user_activity_detector,
                    std::move(trainer),
-                   base::CreateSequencedTaskRunnerWithTraits(
-                       {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+                   base::CreateSequencedTaskRunner(
+                       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+                        base::MayBlock(),
                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
                    base::DefaultTickClock::GetInstance()) {}
 

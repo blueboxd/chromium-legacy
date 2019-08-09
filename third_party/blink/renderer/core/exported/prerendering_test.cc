@@ -35,6 +35,7 @@
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/prerender/prerender_rel_type.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_prerender.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
@@ -162,7 +163,9 @@ class TestPrerenderingSupport : public WebPrerenderingSupport {
 class PrerenderingTest : public testing::Test {
  public:
   ~PrerenderingTest() override {
-    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
+    Platform::Current()
+        ->GetURLLoaderMockFactory()
+        ->UnregisterAllURLsAndClearMemoryCache();
   }
 
   void Initialize(const char* base_url, const char* file_name) {

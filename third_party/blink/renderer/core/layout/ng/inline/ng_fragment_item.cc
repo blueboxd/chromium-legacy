@@ -9,6 +9,30 @@
 
 namespace blink {
 
+NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
+    : layout_object_(text.GetLayoutObject()),
+      text_({text.TextShapeResult()}),
+      size_(text.Size()),
+      type_(kText),
+      style_variant_(static_cast<unsigned>(text.StyleVariant())) {}
+
+NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
+                               wtf_size_t item_count)
+    : layout_object_(nullptr),
+      line_({line.Metrics(), To<NGInlineBreakToken>(line.BreakToken()),
+             item_count}),
+      size_(line.Size()),
+      type_(kLine),
+      style_variant_(static_cast<unsigned>(line.StyleVariant())) {}
+
+NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
+                               wtf_size_t item_count)
+    : layout_object_(box.GetLayoutObject()),
+      box_({&box, item_count}),
+      size_(box.Size()),
+      type_(kBox),
+      style_variant_(static_cast<unsigned>(box.StyleVariant())) {}
+
 NGFragmentItem::~NGFragmentItem() {
   switch (Type()) {
     case kText:

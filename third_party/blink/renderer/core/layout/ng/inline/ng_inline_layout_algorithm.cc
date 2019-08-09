@@ -365,7 +365,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
     container_builder_.SetIsSelfCollapsing();
     container_builder_.SetIsEmptyLineBox();
     container_builder_.SetBaseDirection(line_info->BaseDirection());
-    container_builder_.AddChildren(line_box_);
     return;
   }
 
@@ -379,7 +378,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
   if (line_info->UseFirstLineStyle())
     container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
   container_builder_.SetBaseDirection(line_info->BaseDirection());
-  container_builder_.AddChildren(line_box_);
   container_builder_.SetInlineSize(inline_size);
   container_builder_.SetMetrics(line_box_metrics);
   container_builder_.SetBfcBlockOffset(line_info->BfcOffset().block_offset);
@@ -957,6 +955,22 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
   CHECK(is_line_created);
   container_builder_.SetExclusionSpace(std::move(exclusion_space));
+
+  if (NGFragmentItemsBuilder* items_builder = context_->ItemsBuilder()) {
+    DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+    container_builder_.AddOutOfFlowChildren(line_box_);
+    scoped_refptr<const NGLayoutResult> layout_result =
+        container_builder_.ToLineBoxFragment();
+    if (items_builder->TextContent(false).IsNull())
+      items_builder->SetTextContent(Node());
+    items_builder->AddLine(
+        To<NGPhysicalLineBoxFragment>(layout_result->PhysicalFragment()),
+        line_box_);
+    return layout_result;
+  }
+
+  DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+  container_builder_.AddChildren(line_box_);
   container_builder_.MoveOutOfFlowDescendantCandidatesToDescendants();
   return container_builder_.ToLineBoxFragment();
 }

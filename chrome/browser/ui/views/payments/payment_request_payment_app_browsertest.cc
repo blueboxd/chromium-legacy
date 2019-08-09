@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -469,6 +470,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, PayWithBasicCard) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, SkipUIEnabledWithBobPay) {
+  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList features;
   features.InitWithFeatures(
       {
@@ -496,6 +498,13 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, SkipUIEnabledWithBobPay) {
     WaitForObservedEvent();
 
     ExpectBodyContains({"bobpay.com"});
+
+    histogram_tester.ExpectTotalCount("PaymentRequest.TimeToCheckout.Completed",
+                                      1);
+    histogram_tester.ExpectTotalCount(
+        "PaymentRequest.TimeToCheckout.Completed.SkippedShow", 1);
+    histogram_tester.ExpectTotalCount(
+        "PaymentRequest.TimeToCheckout.Completed.SkippedShow.Other", 1);
   }
 }
 

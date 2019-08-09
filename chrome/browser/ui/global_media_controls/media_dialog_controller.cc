@@ -29,16 +29,16 @@ void MediaDialogController::Initialize() {
 
   // Connect to the controller manager so we can create media controllers for
   // media sessions.
-  connector_->BindInterface(media_session::mojom::kServiceName,
-                            mojo::MakeRequest(&controller_manager_ptr_));
+  connector_->Connect(media_session::mojom::kServiceName,
+                      controller_manager_remote_.BindNewPipeAndPassReceiver());
 
   // Connect to receive audio focus events.
-  connector_->BindInterface(media_session::mojom::kServiceName,
-                            mojo::MakeRequest(&audio_focus_ptr_));
-  audio_focus_ptr_->AddObserver(
+  connector_->Connect(media_session::mojom::kServiceName,
+                      audio_focus_remote_.BindNewPipeAndPassReceiver());
+  audio_focus_remote_->AddObserver(
       audio_focus_observer_receiver_.BindNewPipeAndPassRemote());
 
-  audio_focus_ptr_->GetFocusRequests(
+  audio_focus_remote_->GetFocusRequests(
       base::BindOnce(&MediaDialogController::OnReceivedAudioFocusRequests,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -53,13 +53,13 @@ void MediaDialogController::OnFocusGained(
   if (it != sessions_.end() && !it->second.frozen())
     return;
 
-  media_session::mojom::MediaControllerPtr controller;
+  mojo::Remote<media_session::mojom::MediaController> controller;
 
-  // |controller_manager_ptr_| may be null in tests where connector is
+  // |controller_manager_remote_| may be null in tests where connector is
   // unavailable.
-  if (controller_manager_ptr_) {
-    controller_manager_ptr_->CreateMediaControllerForSession(
-        mojo::MakeRequest(&controller), *session->request_id);
+  if (controller_manager_remote_) {
+    controller_manager_remote_->CreateMediaControllerForSession(
+        controller.BindNewPipeAndPassReceiver(), *session->request_id);
   }
 
   if (it != sessions_.end()) {

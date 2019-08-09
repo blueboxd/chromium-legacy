@@ -168,6 +168,7 @@ source_set("payments_ui") {
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/payments/cells",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/third_party/material_components_ios",
     "//third_party/libaddressinput:strings_grit",
     "//ui/base",

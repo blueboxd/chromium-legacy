@@ -1,3 +1,5 @@
 noparent = True
 
-include_rules = [ ]
+include_rules = [
+  "+base",
+]

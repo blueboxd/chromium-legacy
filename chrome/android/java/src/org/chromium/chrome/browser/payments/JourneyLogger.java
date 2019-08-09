@@ -195,6 +195,13 @@ public class JourneyLogger {
         nativeRecordTransactionAmount(mJourneyLoggerAndroid, currency, value, completed);
     }
 
+    /**
+     * Records the time when request.show() is called.
+     */
+    public void setTriggerTime() {
+        nativeSetTriggerTime(mJourneyLoggerAndroid);
+    }
+
     private native long nativeInitJourneyLoggerAndroid(
             boolean isIncognito, WebContents webContents);
     private native void nativeDestroy(long nativeJourneyLoggerAndroid);
@@ -220,4 +227,5 @@ public class JourneyLogger {
     private native void nativeSetNotShown(long nativeJourneyLoggerAndroid, int reason);
     private native void nativeRecordTransactionAmount(
             long nativeJourneyLoggerAndroid, String currency, String value, boolean completed);
+    private native void nativeSetTriggerTime(long nativeJourneyLoggerAndroid);
 }

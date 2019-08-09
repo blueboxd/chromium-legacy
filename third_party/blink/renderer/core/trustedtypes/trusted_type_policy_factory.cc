@@ -25,9 +25,15 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
     const TrustedTypePolicyOptions* policy_options,
     bool exposed,
     ExceptionState& exception_state) {
+  if (!GetExecutionContext()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The document is detached.");
+    return nullptr;
+  }
   UseCounter::Count(GetExecutionContext(),
                     WebFeature::kTrustedTypesCreatePolicy);
   if (RuntimeEnabledFeatures::TrustedDOMTypesEnabled(GetExecutionContext()) &&
+      GetExecutionContext()->GetContentSecurityPolicy() &&
       !GetExecutionContext()
            ->GetContentSecurityPolicy()
            ->AllowTrustedTypePolicy(policy_name)) {

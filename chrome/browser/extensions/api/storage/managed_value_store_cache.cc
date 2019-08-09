@@ -205,9 +205,9 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemasOnFileTaskRunner(
     (*components)[(*it)->id()] = schema;
   }
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&ExtensionTracker::Register, self,
-                                          base::Owned(components.release())));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&ExtensionTracker::Register, self,
+                                base::Owned(components.release())));
 }
 
 void ManagedValueStoreCache::ExtensionTracker::Register(

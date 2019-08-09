@@ -65,6 +65,12 @@
 #include "chrome/installer/util/firewall_manager_win.h"
 #endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/first_run/scoped_relaunch_chrome_browser_override.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#endif
+
 ChromeTestSuiteRunner::ChromeTestSuiteRunner() {}
 ChromeTestSuiteRunner::~ChromeTestSuiteRunner() {}
 
@@ -240,6 +246,20 @@ int LaunchChromeTests(size_t parallel_jobs,
   ash::AmendManifestForTesting(ash::GetManifestOverlayForTesting());
   ash::mojo_interface_factory::SetRegisterInterfacesCallback(
       base::Bind(&ash::mojo_test_interface_factory::RegisterInterfaces));
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  // Cause a test failure for any test that triggers an unexpected relaunch.
+  // Tests that fail here should likely be restructured to put the "before
+  // relaunch" code into a PRE_ test with its own
+  // ScopedRelaunchChromeBrowserOverride and the "after relaunch" code into the
+  // normal non-PRE_ test.
+  upgrade_util::ScopedRelaunchChromeBrowserOverride fail_on_relaunch(
+      base::BindRepeating([](const base::CommandLine&) {
+        ADD_FAILURE() << "Unexpected call to RelaunchChromeBrowser";
+        return false;
+      }));
 #endif
 
   return content::LaunchTests(delegate, parallel_jobs, argc, argv);

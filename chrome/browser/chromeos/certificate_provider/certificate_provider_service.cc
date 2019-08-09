@@ -258,8 +258,9 @@ void CertificateProviderService::SSLPrivateKey::SignDigestOnServiceTaskRunner(
     std::move(callback).Run(net::ERR_FAILED, no_signature);
     return;
   }
-  service->RequestSignatureFromExtension(extension_id, certificate, algorithm,
-                                         input, std::move(callback));
+  service->RequestSignatureFromExtension(
+      extension_id, certificate, algorithm, input,
+      /*authenticating_user_account_id=*/{}, std::move(callback));
 }
 
 void CertificateProviderService::SSLPrivateKey::Sign(
@@ -428,6 +429,7 @@ void CertificateProviderService::RequestSignatureBySpki(
     const std::string& subject_public_key_info,
     uint16_t algorithm,
     base::span<const uint8_t> digest,
+    const base::Optional<AccountId>& authenticating_user_account_id,
     net::SSLPrivateKey::SignCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool is_currently_provided = false;
@@ -442,7 +444,8 @@ void CertificateProviderService::RequestSignatureBySpki(
   }
 
   RequestSignatureFromExtension(extension_id, info.certificate, algorithm,
-                                digest, std::move(callback));
+                                digest, authenticating_user_account_id,
+                                std::move(callback));
 }
 
 bool CertificateProviderService::GetSupportedAlgorithmsBySpki(
@@ -526,11 +529,14 @@ void CertificateProviderService::RequestSignatureFromExtension(
     const scoped_refptr<net::X509Certificate>& certificate,
     uint16_t algorithm,
     base::span<const uint8_t> digest,
+    const base::Optional<AccountId>& authenticating_user_account_id,
     net::SSLPrivateKey::SignCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const int sign_request_id =
       sign_requests_.AddRequest(extension_id, certificate, std::move(callback));
+  pin_dialog_manager_.AddSignRequestId(extension_id, sign_request_id,
+                                       authenticating_user_account_id);
   if (!delegate_->DispatchSignRequestToExtension(
           extension_id, sign_request_id, algorithm, certificate, digest)) {
     scoped_refptr<net::X509Certificate> local_certificate;

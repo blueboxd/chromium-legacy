@@ -52,8 +52,8 @@ const int kBigLogsDBusTimeoutMS = 120 * 1000;
 class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
  public:
   explicit PipeReaderWrapper(DebugDaemonClient::GetLogsCallback callback)
-      : pipe_reader_(base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(),
+      : pipe_reader_(base::CreateTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
         callback_(std::move(callback)) {}
 

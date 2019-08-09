@@ -55,7 +55,7 @@ ChromiumHttpConnection::ChromiumHttpConnection(
     std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info,
     Delegate* delegate)
     : delegate_(delegate),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits({})),
+      task_runner_(base::CreateSequencedTaskRunner({})),
       url_loader_factory_info_(std::move(url_loader_factory_info)) {
   DCHECK(delegate_);
   DCHECK(url_loader_factory_info_);

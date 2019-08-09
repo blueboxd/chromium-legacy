@@ -293,7 +293,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
 
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
     base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cookies"));
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, task_traits,
         base::BindOnce(
             &ClearCookies, context_getter_,
@@ -336,7 +336,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
     IOSChromeIOThread* ios_chrome_io_thread =
         GetApplicationContext()->GetIOSChromeIOThread();
     if (ios_chrome_io_thread) {
-      base::PostTaskWithTraitsAndReply(
+      base::PostTaskAndReply(
           FROM_HERE, task_traits,
           base::BindOnce(&IOSChromeIOThread::ClearHostCache,
                          base::Unretained(ios_chrome_io_thread)),
@@ -451,7 +451,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE)) {
     base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cache"));
     ClearHttpCache(context_getter_,
-                   base::CreateSingleThreadTaskRunnerWithTraits(task_traits),
+                   base::CreateSingleThreadTaskRunner(task_traits),
                    delete_begin, delete_end,
                    base::BindOnce(&NetCompletionCallbackAdapter,
                                   CreatePendingTaskCompletionClosure()));

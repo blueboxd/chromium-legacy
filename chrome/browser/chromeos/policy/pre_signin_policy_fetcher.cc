@@ -37,7 +37,7 @@ const int kPolicyFetchTimeoutSecs = 10;
 
 // Traits for the tasks posted in pre-signin policy fetch. As this blocks
 // signin, the tasks have user-visible priority.
-constexpr base::TaskTraits kTaskTraits = {base::MayBlock(),
+constexpr base::TaskTraits kTaskTraits = {base::ThreadPool(), base::MayBlock(),
                                           base::TaskPriority::USER_VISIBLE};
 }  // namespace
 
@@ -54,7 +54,7 @@ PreSigninPolicyFetcher::PreSigninPolicyFetcher(
       is_active_directory_managed_(is_active_directory_managed),
       account_id_(account_id),
       auth_key_(auth_key),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(kTaskTraits)),
+      task_runner_(base::CreateSequencedTaskRunner(kTaskTraits)),
       weak_ptr_factory_(this) {
   DCHECK(account_id_.GetAccountType() != AccountType::ACTIVE_DIRECTORY ||
          is_active_directory_managed_);

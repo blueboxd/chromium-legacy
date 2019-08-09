@@ -99,8 +99,8 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
 
   PagePopupClient::AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  AddString(ChooserResourceLoader::GetPickerCommonStyleSheet(), data);
-  AddString(ChooserResourceLoader::GetColorPickerStyleSheet(), data);
+  data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
+  data->Append(ChooserResourceLoader::GetColorPickerStyleSheet());
 
   PagePopupClient::AddString(
       "</style></head><body>\n"
@@ -113,9 +113,9 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
   AddProperty("zoomFactor", ZoomFactor(), data);
   AddProperty("shouldShowColorSuggestionPicker", false, data);
   PagePopupClient::AddString("};\n", data);
-  AddString(ChooserResourceLoader::GetPickerCommonJS(), data);
-  AddString(ChooserResourceLoader::GetColorPickerJS(), data);
-  AddString(ChooserResourceLoader::GetColorPickerCommonJS(), data);
+  data->Append(ChooserResourceLoader::GetPickerCommonJS());
+  data->Append(ChooserResourceLoader::GetColorPickerJS());
+  data->Append(ChooserResourceLoader::GetColorPickerCommonJS());
   PagePopupClient::AddString("</script></body>\n", data);
 }
 
@@ -131,10 +131,10 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
 
   PagePopupClient::AddString(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
-  AddString(ChooserResourceLoader::GetPickerCommonStyleSheet(), data);
-  AddString(ChooserResourceLoader::GetColorSuggestionPickerStyleSheet(), data);
+  data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
+  data->Append(ChooserResourceLoader::GetColorSuggestionPickerStyleSheet());
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
-    AddString(ChooserResourceLoader::GetColorPickerStyleSheet(), data);
+    data->Append(ChooserResourceLoader::GetColorPickerStyleSheet());
 
   PagePopupClient::AddString(
       "</style></head><body>\n"
@@ -155,11 +155,11 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
   AddProperty("isFormControlsRefreshEnabled",
               RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);
   PagePopupClient::AddString("};\n", data);
-  AddString(ChooserResourceLoader::GetPickerCommonJS(), data);
-  AddString(ChooserResourceLoader::GetColorSuggestionPickerJS(), data);
+  data->Append(ChooserResourceLoader::GetPickerCommonJS());
+  data->Append(ChooserResourceLoader::GetColorSuggestionPickerJS());
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
-    AddString(ChooserResourceLoader::GetColorPickerJS(), data);
-  AddString(ChooserResourceLoader::GetColorPickerCommonJS(), data);
+    data->Append(ChooserResourceLoader::GetColorPickerJS());
+  data->Append(ChooserResourceLoader::GetColorPickerCommonJS());
   PagePopupClient::AddString("</script></body>\n", data);
 }
 

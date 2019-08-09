@@ -119,8 +119,9 @@ class ManualFillingComponentBridge {
     }
 
     @CalledByNative
-    private static Object createAccessorySheetData(@AccessoryTabType int type, String title) {
-        return new AccessorySheetData(type, title);
+    private static Object createAccessorySheetData(
+            @AccessoryTabType int type, String title, String warning) {
+        return new AccessorySheetData(type, title, warning);
     }
 
     @CalledByNative

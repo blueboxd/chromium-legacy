@@ -260,7 +260,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
     callback = ^(NSData* log_content) {
       std::string log(static_cast<const char*>([log_content bytes]),
                       static_cast<size_t>([log_content length]));
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
             GetApplicationContext()->GetMetricsService()->PushExternalLog(log);
           }));
@@ -270,8 +270,9 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   }
 
   app_group::main_app::RecordWidgetUsage();
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&app_group::main_app::ProcessPendingLogs, callback));
 }
 

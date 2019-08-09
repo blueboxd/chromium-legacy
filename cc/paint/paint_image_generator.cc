@@ -33,4 +33,8 @@ SkISize PaintImageGenerator::GetSupportedDecodeSize(
   return info_.dimensions();
 }
 
+PaintImage::ImageType PaintImageGenerator::GetImageType() const {
+  return PaintImage::ImageType::kInvalid;
+}
+
 }  // namespace cc

@@ -279,6 +279,12 @@ SkColorType PaintImage::GetColorType() const {
   return kUnknown_SkColorType;
 }
 
+PaintImage::ImageType PaintImage::GetImageType() const {
+  if (paint_image_generator_)
+    return paint_image_generator_->GetImageType();
+  return PaintImage::ImageType::kInvalid;
+}
+
 bool PaintImage::IsYuv(SkYUVASizeInfo* yuva_size_info,
                        SkYUVAIndex* plane_indices) const {
   SkYUVASizeInfo temp_yuva_size_info;

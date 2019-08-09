@@ -71,7 +71,7 @@ cr.define('onboarding_welcome_app_test', function() {
     test('new user route (can set default)', function() {
       simulateCanSetDefault();
       welcome.navigateTo(welcome.Routes.NEW_USER, 1);
-      return test_util.waitForRender(testElement).then(() => {
+      return test_util.waitBeforeNextRender(testElement).then(() => {
         const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
         assertEquals(views.length, 5);
         ['LANDING-VIEW',
@@ -88,7 +88,7 @@ cr.define('onboarding_welcome_app_test', function() {
     test('new user route (cannot set default)', function() {
       simulateCannotSetDefault();
       welcome.navigateTo(welcome.Routes.NEW_USER, 1);
-      return test_util.waitForRender(testElement).then(() => {
+      return test_util.waitBeforeNextRender(testElement).then(() => {
         const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
         assertEquals(views.length, 4);
         ['LANDING-VIEW',
@@ -104,7 +104,7 @@ cr.define('onboarding_welcome_app_test', function() {
     test('returning user route (can set default)', function() {
       simulateCanSetDefault();
       welcome.navigateTo(welcome.Routes.RETURNING_USER, 1);
-      return test_util.waitForRender(testElement).then(() => {
+      return test_util.waitBeforeNextRender(testElement).then(() => {
         const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
         assertEquals(views.length, 2);
         assertEquals(views[0].tagName, 'LANDING-VIEW');
@@ -134,7 +134,7 @@ cr.define('onboarding_welcome_app_test', function() {
         // Use the new-user route to test if nux-set-as-default module gets
         // initialized.
         welcome.navigateTo(welcome.Routes.NEW_USER, 1);
-        return test_util.waitForRender(testElement).then(() => {
+        return test_util.waitBeforeNextRender(testElement).then(() => {
           // Use the existence of the nux-set-as-default as indication of
           // whether or not the promise is resolved with the expected result.
           assertEquals(

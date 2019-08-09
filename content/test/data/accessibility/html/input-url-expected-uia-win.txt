@@ -1,3 +1,3 @@
-document
-++group
-++++textbox Value.Value='example.com'
+document LocalizedControlType='document'
+++group LocalizedControlType='group'
+++++textbox LocalizedControlType='url' Value.Value='example.com'

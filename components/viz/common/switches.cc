@@ -43,6 +43,10 @@ const char kRunAllCompositorStagesBeforeDraw[] =
 // real damage rect, which could hide damage rect problems.
 const char kShowAggregatedDamage[] = "show-aggregated-damage";
 
+// Show debug borders for DC layers - red for overlays and blue for underlays.
+// The debug borders are offset from the layer rect by a few pixels for clarity.
+const char kShowDCLayerDebugBorders[] = "show-dc-layer-debug-borders";
+
 // Enables the viz hit-test logic (HitTestAggregator and HitTestQuery), with
 // hit-test data coming from surface layer.
 const char kUseVizHitTestSurfaceLayer[] = "use-viz-hit-test-surface-layer";

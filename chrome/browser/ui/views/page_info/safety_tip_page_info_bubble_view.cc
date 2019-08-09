@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/page_info/safety_tip_page_info_bubble_view.h"
 
 #include "chrome/browser/lookalikes/safety_tips/reputation_service.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -25,50 +26,6 @@
 #include "url/gurl.h"
 
 using safety_tips::SafetyTipType;
-
-namespace {
-
-// URL that the "leave site" button aborts to.
-const char kSafeUrl[] = "chrome://newtab";
-
-// Navigate to a safe URL, replacing the current page in the process.
-void LeaveSite(content::WebContents* web_contents) {
-  content::OpenURLParams params(
-      GURL(kSafeUrl), content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
-      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false /* is_renderer_initiated */);
-  params.should_replace_current_entry = true;
-  web_contents->OpenURL(params);
-}
-
-int GetSafetyTipTitleId(SafetyTipType warning_type) {
-  switch (warning_type) {
-    case SafetyTipType::kBadReputation:
-      return IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE;
-    // These don't have strings yet, so they're just an error:
-    case SafetyTipType::kUncommonDomain:
-    case SafetyTipType::kLookalikeUrl:
-    case SafetyTipType::kNone:
-      NOTREACHED();
-  }
-  NOTREACHED();
-  return 0;
-}
-
-int GetSafetyTipDescriptionId(SafetyTipType warning_type) {
-  switch (warning_type) {
-    case SafetyTipType::kBadReputation:
-      return IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION;
-    // These don't have strings yet, so they're just an error:
-    case SafetyTipType::kUncommonDomain:
-    case SafetyTipType::kLookalikeUrl:
-    case SafetyTipType::kNone:
-      NOTREACHED();
-  }
-  NOTREACHED();
-  return 0;
-}
-
-}  // namespace
 
 SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
     views::View* anchor_view,
@@ -185,7 +142,7 @@ void SafetyTipPageInfoBubbleView::ButtonPressed(views::Button* button,
                                                 const ui::Event& event) {
   switch (button->GetID()) {
     case PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE:
-      LeaveSite(web_contents());
+      safety_tips::LeaveSite(web_contents());
       return;
   }
   NOTREACHED();

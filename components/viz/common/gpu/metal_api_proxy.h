@@ -14,16 +14,14 @@ namespace gl {
 class ProgressReporter;
 }  // namespace gl
 
+class API_AVAILABLE(macos(10.11)) MTLLibraryCache;
+
 // The MTLDeviceProxy wraps all calls to an MTLDevice. It reports progress
 // to the GPU watchdog to prevent the watchdog from killing the GPU process
 // when progress is being made.
 API_AVAILABLE(macos(10.11))
 @interface MTLDeviceProxy : NSObject <MTLDevice> {
   base::scoped_nsprotocol<id<MTLDevice>> device_;
-
-  // The number of shaders created so far. Used to see if creation of an
-  // excessive number of shaders could be causing hangs.
-  uint64_t newLibraryCount_;
 
   // Weak pointer to the most vertexMain and fragmentMain MTLFunctions most
   // recently present in the result from a -newLibraryWithSource. Used for
@@ -40,6 +38,8 @@ API_AVAILABLE(macos(10.11))
   // Weak pointer to the progress reporter used to avoid watchdog timeouts.
   // This must be re-set to nullptr when it is no longer known to be valid.
   gl::ProgressReporter* progressReporter_;
+
+  std::unique_ptr<MTLLibraryCache> libraryCache_;
 }
 
 - (id)initWithDevice:(id<MTLDevice>)device;

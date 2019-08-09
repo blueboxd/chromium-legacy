@@ -35,12 +35,9 @@ enum class SafetyTipType {
 // Shows Safety Tip UI using the specified information. |virtual_url| is the
 // virtual url of the page/frame the info applies to. |safe_url| is the URL
 // that the "Leave" action redirects to. Implemented in platform-specific files.
-#if !defined(OS_ANDROID)
-// TODO(crbug/982930): Once we have an Android infobar, change include guards.
 void ShowSafetyTipDialog(content::WebContents* web_contents,
                          SafetyTipType type,
                          const GURL& virtual_url);
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace safety_tips
 

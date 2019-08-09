@@ -63,7 +63,6 @@ source_set("autofill") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/history",
-    "//ios/chrome/browser/leveldb_proto:factory",
     "//ios/chrome/browser/passwords:passwords_generation_utils",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",

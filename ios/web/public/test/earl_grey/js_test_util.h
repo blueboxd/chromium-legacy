@@ -7,9 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/web/public/web_state/web_state.h"
+#include "base/compiler_specific.h"
 
 namespace web {
+
+class WebState;
 
 // Waits until the Window ID has been injected and the page is thus ready to
 // respond to JavaScript injection. Returns false on timeout or if an

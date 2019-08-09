@@ -32,6 +32,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   enum CategoryPreset {
     CATEGORY_PRESET_UNSET,
     CUSTOM_CATEGORY_PRESET,
+    CUSTOM_TRACE_CONFIG,
     BENCHMARK,
     BENCHMARK_DEEP,
     BENCHMARK_GPU,
@@ -110,6 +111,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   void SetBufferSizeLimits(const base::DictionaryValue* dict);
   int GetMaximumTraceBufferSizeKb() const;
 
+  base::trace_event::TraceConfig trace_config_;
   CategoryPreset category_preset_;
   std::vector<std::unique_ptr<BackgroundTracingRule>> rules_;
   std::string scenario_name_;

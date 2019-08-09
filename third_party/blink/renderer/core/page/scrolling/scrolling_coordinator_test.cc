@@ -28,7 +28,6 @@
 #include "cc/layers/layer_sticky_position_constraint.h"
 #include "cc/layers/picture_layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -110,9 +109,7 @@ class ScrollingCoordinatorTest
   }
 
   ~ScrollingCoordinatorTest() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
   void NavigateTo(const std::string& url) {
@@ -1907,11 +1904,6 @@ TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
 
 TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
        NonCompositedResizerNonFastScrollableRegion) {
-  // TODO(pdr): Paint non-fast scrollable regions for resizers
-  // (crbug.com/864567).
-  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
-    return;
-
   GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
       false);
   LoadHTML(R"HTML(
@@ -1925,6 +1917,7 @@ TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
       }
     </style>
     <div id="container">
+      <div id="offset" style="height: 35px;"></div>
       <div id="scroller"></div>
     </div>
   )HTML");
@@ -1940,15 +1933,11 @@ TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
   // when the container moves and not when the viewport scrolls.
   auto region =
       container_graphics_layer->CcLayer()->non_fast_scrollable_region();
-  EXPECT_EQ(region.bounds(), gfx::Rect(66, 66, 14, 14));
+  EXPECT_EQ(region.bounds(), gfx::Rect(66, 101, 14, 14));
 }
 
 TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
        CompositedResizerNonFastScrollableRegion) {
-  // TODO(pdr): Paint non-fast scrollable regions for resizers
-  // (crbug.com/864567).
-  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
-    return;
   LoadHTML(R"HTML(
     <style>
       #container { will-change: transform; }
@@ -1961,6 +1950,7 @@ TEST_P(PaintNonFastScrollableRegionsScrollingCoordinatorTest,
       }
     </style>
     <div id="container">
+      <div id="offset" style="height: 35px;"></div>
       <div id="scroller"></div>
     </div>
   )HTML");

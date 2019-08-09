@@ -11,10 +11,12 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/containers/checked_iterators.h"
 #include "base/containers/util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/checked_math.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace internal {
@@ -40,6 +42,8 @@ template <typename T>
 class VectorBuffer {
  public:
   constexpr VectorBuffer() = default;
+  using iterator = CheckedRandomAccessIterator<T>;
+  using const_iterator = CheckedRandomAccessConstIterator<T>;
 
 #if defined(__clang__) && !defined(__native_client__)
   // This constructor converts an uninitialized void* to a T* which triggers
@@ -86,8 +90,12 @@ class VectorBuffer {
     return buffer_[i];
   }
 
-  T* begin() { return buffer_; }
-  T* end() { return &buffer_[capacity_]; }
+  iterator begin() const noexcept {
+    return iterator(buffer_, buffer_ + capacity_);
+  }
+  iterator end() const noexcept {
+    return iterator(buffer_, buffer_ + capacity_, buffer_ + capacity_);
+  }
 
   // DestructRange ------------------------------------------------------------
 
@@ -95,15 +103,15 @@ class VectorBuffer {
   template <typename T2 = T,
             typename std::enable_if<std::is_trivially_destructible<T2>::value,
                                     int>::type = 0>
-  void DestructRange(T* begin, T* end) {}
+  void DestructRange(iterator begin, iterator end) {}
 
   // Non-trivially destructible objects must have their destructors called
   // individually.
   template <typename T2 = T,
             typename std::enable_if<!std::is_trivially_destructible<T2>::value,
                                     int>::type = 0>
-  void DestructRange(T* begin, T* end) {
-    CHECK_LE(begin, end);
+  void DestructRange(iterator begin, iterator end) {
+    CHECK(begin <= end);
     while (begin != end) {
       begin->~T();
       begin++;
@@ -119,16 +127,15 @@ class VectorBuffer {
   // and the address of the first element to copy to. There must be sufficient
   // room in the destination for all items in the range [begin, end).
 
-  // Trivially copyable types can use memcpy. trivially copyable implies
-  // that there is a trivial destructor as we don't have to call it.
+  // Trivially copyable types can use memcpy. Trivially copyable implies that
+  // there is a trivial destructor as we don't have to call it.
   template <typename T2 = T,
             typename std::enable_if<base::is_trivially_copyable<T2>::value,
                                     int>::type = 0>
-  static void MoveRange(T* from_begin, T* from_end, T* to) {
-    CHECK(!RangesOverlap(from_begin, from_end, to));
-    memcpy(
-        to, from_begin,
-        CheckSub(get_uintptr(from_end), get_uintptr(from_begin)).ValueOrDie());
+  static void MoveRange(iterator from_begin, iterator from_end, iterator to) {
+    CHECK(iterator::IsRangeMoveSafe(from_begin, from_end, to));
+    memcpy(&(*to), &(*from_begin),
+           std::distance(from_begin, from_end) * sizeof(T));
   }
 
   // Not trivially copyable, but movable: call the move constructor and
@@ -137,10 +144,10 @@ class VectorBuffer {
             typename std::enable_if<std::is_move_constructible<T2>::value &&
                                         !base::is_trivially_copyable<T2>::value,
                                     int>::type = 0>
-  static void MoveRange(T* from_begin, T* from_end, T* to) {
-    CHECK(!RangesOverlap(from_begin, from_end, to));
+  static void MoveRange(iterator from_begin, iterator from_end, iterator to) {
+    CHECK(iterator::IsRangeMoveSafe(from_begin, from_end, to));
     while (from_begin != from_end) {
-      new (to) T(std::move(*from_begin));
+      new (&(*to)) T(std::move(*from_begin));
       from_begin->~T();
       from_begin++;
       to++;
@@ -153,10 +160,10 @@ class VectorBuffer {
             typename std::enable_if<!std::is_move_constructible<T2>::value &&
                                         !base::is_trivially_copyable<T2>::value,
                                     int>::type = 0>
-  static void MoveRange(T* from_begin, T* from_end, T* to) {
-    CHECK(!RangesOverlap(from_begin, from_end, to));
+  static void MoveRange(iterator from_begin, iterator from_end, iterator to) {
+    CHECK(iterator::IsRangeMoveSafe(from_begin, from_end, to));
     while (from_begin != from_end) {
-      new (to) T(*from_begin);
+      new (&(*to)) T(*from_begin);
       from_begin->~T();
       from_begin++;
       to++;
@@ -164,18 +171,6 @@ class VectorBuffer {
   }
 
  private:
-  static bool RangesOverlap(const T* from_begin,
-                            const T* from_end,
-                            const T* to) {
-    const auto from_begin_uintptr = get_uintptr(from_begin);
-    const auto from_end_uintptr = get_uintptr(from_end);
-    const auto to_uintptr = get_uintptr(to);
-    return !(
-        to >= from_end ||
-        CheckAdd(to_uintptr, CheckSub(from_end_uintptr, from_begin_uintptr))
-                .ValueOrDie() <= from_begin_uintptr);
-  }
-
   T* buffer_ = nullptr;
   size_t capacity_ = 0;
 

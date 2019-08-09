@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -93,20 +94,21 @@ FileSystemDispatcher& FileSystemDispatcher::From(ExecutionContext* context) {
 FileSystemDispatcher::~FileSystemDispatcher() = default;
 
 mojom::blink::FileSystemManager& FileSystemDispatcher::GetFileSystemManager() {
-  if (!file_system_manager_ptr_) {
+  if (!file_system_manager_) {
     // See https://bit.ly/2S0zRAS for task types
-    mojom::blink::FileSystemManagerRequest request = mojo::MakeRequest(
-        &file_system_manager_ptr_,
-        GetSupplementable()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI));
-    // Document::GetInterfaceProvider() can return null if the frame is
-    // detached.
-    if (GetSupplementable()->GetInterfaceProvider()) {
-      GetSupplementable()->GetInterfaceProvider()->GetInterface(
-          std::move(request));
+    mojo::PendingReceiver<mojom::blink::FileSystemManager> receiver =
+        file_system_manager_.BindNewPipeAndPassReceiver(
+            GetSupplementable()->GetTaskRunner(
+                blink::TaskType::kMiscPlatformAPI));
+    // Document::GetBrowserInterfaceBrokerProxy() can return null if the frame
+    // is detached.
+    if (GetSupplementable()->GetBrowserInterfaceBrokerProxy()) {
+      GetSupplementable()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+          std::move(receiver));
     }
   }
-  DCHECK(file_system_manager_ptr_);
-  return *file_system_manager_ptr_;
+  DCHECK(file_system_manager_);
+  return *file_system_manager_.get();
 }
 
 void FileSystemDispatcher::OpenFileSystem(

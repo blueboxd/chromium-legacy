@@ -1246,5 +1246,10 @@
     "prefix": "audio-service",
     "base": "external/wpt/mediacapture-streams",
     "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox"]
+  },
+  {
+    "prefix": "scheduler",
+    "base": "wpt_internal/scheduler",
+    "args": ["--enable-features=BlinkSchedulerDisableAntiStarvationForPriorities"]
   }
 ]

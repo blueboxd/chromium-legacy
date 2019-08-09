@@ -8,13 +8,13 @@
 #include <map>
 #include <memory>
 
-#include "ui/views/view.h"
+#include "ui/views/controls/scroll_view.h"
 
 class MediaNotificationContainerImpl;
 
 // MediaNotificationListView is a container that holds a list of active media
 // sessions.
-class MediaNotificationListView : public views::View {
+class MediaNotificationListView : public views::ScrollView {
  public:
   MediaNotificationListView();
   ~MediaNotificationListView() override;

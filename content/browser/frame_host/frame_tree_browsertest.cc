@@ -124,10 +124,10 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
 
   // Ensure the view and frame are live.
   RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
-  RenderFrameHostImpl* rfh =
+  RenderFrameHostImpl* rfh1 =
       static_cast<RenderFrameHostImpl*>(rvh->GetMainFrame());
   EXPECT_TRUE(rvh->IsRenderViewLive());
-  EXPECT_TRUE(rfh->IsRenderFrameLive());
+  EXPECT_TRUE(rfh1->IsRenderFrameLive());
 
   // Crash the renderer so that it doesn't send any FrameDetached messages.
   RenderProcessHostWatcher crash_observer(
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
 
   // Ensure the view and frame aren't live anymore.
   EXPECT_FALSE(rvh->IsRenderViewLive());
-  EXPECT_FALSE(rfh->IsRenderFrameLive());
+  EXPECT_FALSE(rfh1->IsRenderFrameLive());
 
   // Navigate to a new URL.
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -152,9 +152,10 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
   EXPECT_EQ(0UL, root->child_count());
   EXPECT_EQ(url, root->current_url());
 
+  RenderFrameHostImpl* rfh2 = root->current_frame_host();
   // Ensure the view and frame are live again.
   EXPECT_TRUE(rvh->IsRenderViewLive());
-  EXPECT_TRUE(rfh->IsRenderFrameLive());
+  EXPECT_TRUE(rfh2->IsRenderFrameLive());
 }
 
 // Test that we can navigate away if the previous renderer doesn't clean up its

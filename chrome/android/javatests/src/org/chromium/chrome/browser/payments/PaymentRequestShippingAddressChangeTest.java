@@ -12,10 +12,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
@@ -54,39 +52,12 @@ public class PaymentRequestShippingAddressChangeTest implements MainActivityStar
     }
 
     /**
-     * Tests the format of the shipping address that is sent to the merchant when the user changes
-     * the shipping address selection.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Payments"})
-    @DisabledTest(message = "https://crbug.com/894011")
-    @CommandLineFlags.
-    Add({"disable-features=" + ChromeFeatureList.WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS})
-    public void testShippingAddressChangeFormat() throws InterruptedException, TimeoutException {
-        // Select a shipping address and cancel out.
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickInShippingAddressAndWait(
-                R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickOnShippingAddressSuggestionOptionAndWait(
-                0, mPaymentRequestTestRule.getReadyForInput());
-        mPaymentRequestTestRule.clickAndWait(
-                R.id.close_button, mPaymentRequestTestRule.getDismissed());
-
-        // The phone number should be formatted to the internation format.
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Jon Doe", "Google",
-                "340 Main St", "CA", "Los Angeles", "90291", "+16502530000", "US"});
-    }
-
-    /**
      * Tests that only redacted shipping address is sent to the merchant when the user changes the
      * shipping address selection.
      */
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @CommandLineFlags.
-    Add({"enable-features=" + ChromeFeatureList.WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS})
     public void testAddressRedactionInShippingAddressChange()
             throws InterruptedException, TimeoutException {
         // Select a shipping address and cancel out.

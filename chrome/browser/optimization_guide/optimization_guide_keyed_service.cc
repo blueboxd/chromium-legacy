@@ -41,17 +41,15 @@ void OptimizationGuideKeyedService::Initialize(
 void OptimizationGuideKeyedService::RegisterOptimizationTypes(
     std::vector<optimization_guide::proto::OptimizationType>
         optimization_types) {
-  for (const auto optimization_type : optimization_types) {
-    registered_optimization_types_.insert(optimization_type);
-  }
+  DCHECK(hints_manager_);
+
+  hints_manager_->RegisterOptimizationTypes(optimization_types);
 }
 
 void OptimizationGuideKeyedService::MaybeLoadHintForNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!hints_manager_ || registered_optimization_types_.empty())
-    return;
-
-  hints_manager_->LoadHintForNavigation(navigation_handle, base::DoNothing());
+  if (hints_manager_ && hints_manager_->HasRegisteredOptimizationTypes())
+    hints_manager_->LoadHintForNavigation(navigation_handle, base::DoNothing());
 }
 
 void OptimizationGuideKeyedService::Shutdown() {

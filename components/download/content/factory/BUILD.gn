@@ -22,7 +22,6 @@ source_set("factory") {
     "//components/download/network",
     "//components/keyed_service/content",
     "//components/leveldb_proto",
-    "//components/leveldb_proto/content:factory",
     "//content/public/browser",
     "//net",
     "//url",

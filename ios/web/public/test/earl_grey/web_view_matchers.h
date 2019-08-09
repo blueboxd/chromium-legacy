@@ -9,11 +9,11 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/web/public/web_state/web_state.h"
-
 @protocol GREYMatcher;
 
 namespace web {
+
+class WebState;
 
 // Matcher for WKWebView which belogs to the given |webState|.
 id<GREYMatcher> WebViewInWebState(WebState* web_state);

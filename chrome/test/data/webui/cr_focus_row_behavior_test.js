@@ -59,10 +59,10 @@ suite('cr-focus-row-behavior-test', function() {
     document.body.appendChild(testElement);
 
     // Block so that FocusRowBehavior.attached can run.
-    await PolymerTest.afterNextRender(testElement);
+    await PolymerTest.waitAfterNextRender(testElement);
     // Wait one more time to ensure that async setup in FocusRowBehavior has
     // executed.
-    await PolymerTest.afterNextRender(testElement);
+    await PolymerTest.waitAfterNextRender(testElement);
   });
 
   test('item passes focus to first focusable child', function() {

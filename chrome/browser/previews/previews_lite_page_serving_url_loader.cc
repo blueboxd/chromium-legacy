@@ -60,10 +60,10 @@ void BlacklistBypassedHostOnUIThread(const std::string& host,
 void BlacklistBypassedHost(const std::string& host,
                            base::TimeDelta duration,
                            int frame_tree_node_id) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&BlacklistBypassedHostOnUIThread, host, duration,
-                     frame_tree_node_id));
+  base::PostTask(FROM_HERE,
+                 {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+                 base::BindOnce(&BlacklistBypassedHostOnUIThread, host,
+                                duration, frame_tree_node_id));
 }
 
 void SetServerUnavailableForOnUIThread(base::TimeDelta duration,
@@ -81,10 +81,10 @@ void SetServerUnavailableForOnUIThread(base::TimeDelta duration,
 }
 
 void SetServerUnavailableFor(base::TimeDelta duration, int frame_tree_node_id) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&SetServerUnavailableForOnUIThread, duration,
-                     frame_tree_node_id));
+  base::PostTask(FROM_HERE,
+                 {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+                 base::BindOnce(&SetServerUnavailableForOnUIThread, duration,
+                                frame_tree_node_id));
 }
 
 void ReportDataSavingsOnUIThread(int64_t network_bytes,
@@ -107,7 +107,7 @@ void ReportDataSavings(int64_t network_bytes,
                        int64_t original_bytes,
                        std::string host,
                        int frame_tree_node_id) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ReportDataSavingsOnUIThread, network_bytes,
                      original_bytes, std::move(host), frame_tree_node_id));

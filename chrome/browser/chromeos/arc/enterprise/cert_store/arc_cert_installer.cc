@@ -117,7 +117,7 @@ void ArcCertInstaller::InstallArcCert(
       "\\\"alias\\\":\\\"%s\\\","
       "\\\"certs\\\":[\\\"%s\\\"]}\"}",
       CreatePkcs12FromBlob(name).c_str(), name.c_str(), der_cert64.c_str()));
-  if (!job || !job->Init(queue_->GetNowTicks(), command_proto)) {
+  if (!job || !job->Init(queue_->GetNowTicks(), command_proto, nullptr /* signed_command */)) {
     LOG(ERROR) << "Initialization of remote command failed";
     known_cert_names_.erase(name);
   } else {

@@ -14,24 +14,9 @@ import org.chromium.base.annotations.JNINamespace;
 /**
  * Bridge between android.webview.WebStorage and native QuotaManager. This object is owned by Java
  * AwBrowserContext and the native side is owned by the native AwBrowserContext.
- *
- * TODO(boliu): Actually make this true after Java AwBrowserContext is added.
  */
 @JNINamespace("android_webview")
 public class AwQuotaManagerBridge {
-    // TODO(boliu): This should be obtained from Java AwBrowserContext that owns this.
-    private static native long nativeGetDefaultNativeAwQuotaManagerBridge();
-
-    // TODO(boliu): This should be owned by Java AwBrowserContext, not a singleton.
-    private static AwQuotaManagerBridge sInstance;
-    public static AwQuotaManagerBridge getInstance() {
-        ThreadUtils.assertOnUiThread();
-        if (sInstance == null) {
-            sInstance = new AwQuotaManagerBridge(nativeGetDefaultNativeAwQuotaManagerBridge());
-        }
-        return sInstance;
-    }
-
     /**
      * This class represent the callback value of android.webview.WebStorage.getOrigins. The values
      * are optimized for JNI convenience and need to be converted.
@@ -59,7 +44,7 @@ public class AwQuotaManagerBridge {
     private SparseArray<Callback<Long>> mPendingGetQuotaForOriginCallbacks;
     private SparseArray<Callback<Long>> mPendingGetUsageForOriginCallbacks;
 
-    private AwQuotaManagerBridge(long nativeAwQuotaManagerBridge) {
+    public AwQuotaManagerBridge(long nativeAwQuotaManagerBridge) {
         mNativeAwQuotaManagerBridge = nativeAwQuotaManagerBridge;
         mPendingGetOriginCallbacks = new SparseArray<Callback<Origins>>();
         mPendingGetQuotaForOriginCallbacks = new SparseArray<Callback<Long>>();

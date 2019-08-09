@@ -1374,7 +1374,13 @@ if (is_win) {
     }
   }
 
-  if (enable_dsyms) {
+  if (enable_dsyms && !is_component_build) {
+    # It is possible to run dump_syms on unstripped products without dSYMs, but
+    # doing so isn't logical and won't happen in practice. It's also pointless
+    # to run dump_syms or archive dSYMs in a component build, where all of the
+    # interesting symbols and debug info are tucked away in other libraries
+    # beyond the set explicitly listed here.
+
     # This list must be updated with the two targets' deps list below, and
     # the list of _dsyms in :chrome_dsym_archive.
     _chrome_symbols_sources = [
@@ -1390,8 +1396,6 @@ if (is_win) {
       _chrome_symbols_sources += [ "$root_out_dir/${chrome_helper_name}${helper_params[2]}.app/Contents/MacOS/${chrome_helper_name}${helper_params[2]}" ]
     }
 
-    # It is possible to run dump_syms on unstripped products without dSYMs,
-    # but doing so isn't logical and won't happen in practice.
     action_foreach("chrome_dump_syms") {
       script = "//build/redirect_stdout.py"
 
@@ -1939,11 +1943,11 @@ if (is_linux) {
   if (is_official_build) {
     group("linux_symbols") {
       deps = [
+        ":angle_egl_symbols",
+        ":angle_gles_symbols",
         ":chrome_symbols",
         ":swiftshader_egl_symbols",
         ":swiftshader_gles_symbols",
-        ":angle_egl_symbols",
-        ":angle_gles_symbols",
       ]
     }
     extract_symbols("chrome_symbols") {

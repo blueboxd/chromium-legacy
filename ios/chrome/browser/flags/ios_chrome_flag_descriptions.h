@@ -137,11 +137,6 @@ extern const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[];
 extern const char
     kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[];
 
-// Title and description for the flag to control if cards from unsupported
-// networks should be prevented form being uploaded.
-extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[];
-extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[];
-
 // Title and description for the flag to control if no thanks button should be
 // shown when saving a card.
 extern const char kEnableAutofillSaveCardShowNoThanksName[];

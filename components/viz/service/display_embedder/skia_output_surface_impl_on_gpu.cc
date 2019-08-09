@@ -1144,7 +1144,7 @@ void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
   // Check that we're using an offscreen surface.
   DCHECK(dependency_->IsOffscreen());
   output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-      gr_context(), capabilities.flipped_output_surface,
+      context_state_, capabilities.flipped_output_surface,
       renderer_settings_.requires_alpha_channel,
       did_swap_buffer_complete_callback_);
 }
@@ -1185,7 +1185,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
       return false;
 
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-        gr_context(), true /* flipped */,
+        context_state_, true /* flipped */,
         renderer_settings_.requires_alpha_channel,
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
@@ -1229,7 +1229,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 #if BUILDFLAG(ENABLE_VULKAN)
   if (dependency_->IsOffscreen()) {
     output_device_ = std::make_unique<SkiaOutputDeviceOffscreen>(
-        gr_context(), false /* flipped */,
+        context_state_, false /* flipped */,
         renderer_settings_.requires_alpha_channel,
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
@@ -1238,7 +1238,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
     supports_alpha_ = true;
     if (gpu_preferences_.disable_vulkan_surface) {
       output_device_ = std::make_unique<SkiaOutputDeviceX11>(
-          gr_context(), dependency_->GetSurfaceHandle(),
+          context_state_, dependency_->GetSurfaceHandle(),
           did_swap_buffer_complete_callback_);
     } else {
       output_device_ = std::make_unique<SkiaOutputDeviceVulkan>(

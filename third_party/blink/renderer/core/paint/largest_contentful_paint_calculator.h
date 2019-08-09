@@ -19,9 +19,9 @@ class CORE_EXPORT LargestContentfulPaintCalculator final
  public:
   explicit LargestContentfulPaintCalculator(WindowPerformance*);
 
-  void OnLargestImageUpdated(const ImageRecord* largest_image);
-
-  void OnLargestTextUpdated(base::WeakPtr<TextRecord> largest_text);
+  void UpdateLargestContentPaintIfNeeded(
+      base::Optional<base::WeakPtr<TextRecord>> largest_text,
+      base::Optional<const ImageRecord*> largest_image);
 
   void Trace(blink::Visitor* visitor);
 
@@ -33,7 +33,9 @@ class CORE_EXPORT LargestContentfulPaintCalculator final
     kImage,
     kText,
   };
-  void OnLargestContentfulPaintUpdated(LargestContentType type);
+  void OnLargestImageUpdated(const ImageRecord* largest_image);
+  void OnLargestTextUpdated(base::WeakPtr<TextRecord> largest_text);
+  void UpdateLargestContentfulPaint(LargestContentType type);
 
   uint64_t LargestTextSize() {
     return largest_text_ ? largest_text_->first_size : 0u;

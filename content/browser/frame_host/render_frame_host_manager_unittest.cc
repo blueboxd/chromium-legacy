@@ -65,6 +65,10 @@
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "ui/base/page_transition_types.h"
 
+#if defined(OS_ANDROID)
+#include "content/public/browser/android/compositor.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -346,6 +350,10 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
       // all BrowsingInstances used in the test.
       SetContents(CreateTestWebContents());
     }
+
+#if defined(OS_ANDROID)
+    Compositor::Initialize();
+#endif
   }
 
   void TearDown() override {
@@ -441,8 +449,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
         NavigationRequest::CreateBrowserInitiated(
             frame_tree_node, std::move(common_params), std::move(commit_params),
             !entry->is_renderer_initiated(), entry->extra_headers(),
-            *frame_entry, entry, request_body,
-            nullptr /* navigation_ui_data */);
+            frame_entry, entry, request_body, nullptr /* navigation_ui_data */);
 
     // Simulates request creation that triggers the 1st internal call to
     // GetFrameHostForNavigation.
@@ -1433,12 +1440,13 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   // in the original SiteInstance.
   contents()->GetController().Reload(ReloadType::NORMAL, true);
   contents()->GetMainFrame()->PrepareForCommit();
+  TestRenderFrameHost* rfh2 = contents()->GetMainFrame();
   EXPECT_TRUE(
-      opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance())
+      opener1_manager->GetSwappedOutRenderViewHost(rfh2->GetSiteInstance())
           ->IsRenderViewLive());
   EXPECT_EQ(
-      opener1_manager->GetRoutingIdForSiteInstance(rfh1->GetSiteInstance()),
-      contents()->GetMainFrame()->GetRenderViewHost()->opener_frame_route_id());
+      opener1_manager->GetRoutingIdForSiteInstance(rfh2->GetSiteInstance()),
+      rfh2->GetRenderViewHost()->opener_frame_route_id());
 }
 
 // Test that RenderViewHosts created for WebUI navigations are properly
@@ -1995,16 +2003,23 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   contents2->NavigateAndCommit(kUrl1);
   MockRenderProcessHost* rph = contents1->GetMainFrame()->GetProcess();
   EXPECT_EQ(rph, contents2->GetMainFrame()->GetProcess());
+  EXPECT_TRUE(contents1->GetMainFrame()->GetView());
+  EXPECT_TRUE(contents2->GetMainFrame()->GetView());
+
   rph->SimulateCrash();
   EXPECT_FALSE(contents1->GetMainFrame()->IsRenderFrameLive());
   EXPECT_FALSE(contents2->GetMainFrame()->IsRenderFrameLive());
   EXPECT_EQ(contents1->GetSiteInstance(), contents2->GetSiteInstance());
+  EXPECT_FALSE(contents1->GetMainFrame()->GetView());
+  EXPECT_FALSE(contents2->GetMainFrame()->GetView());
 
   // Reload |contents1|.
   contents1->NavigateAndCommit(kUrl1);
   EXPECT_TRUE(contents1->GetMainFrame()->IsRenderFrameLive());
   EXPECT_FALSE(contents2->GetMainFrame()->IsRenderFrameLive());
   EXPECT_EQ(contents1->GetSiteInstance(), contents2->GetSiteInstance());
+  EXPECT_TRUE(contents1->GetMainFrame()->GetView());
+  EXPECT_FALSE(contents2->GetMainFrame()->GetView());
 
   // |contents1| creates an out of process iframe.
   contents1->GetMainFrame()->OnCreateChildFrame(
@@ -2905,7 +2920,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
           frame_tree_node, std::move(common_params), std::move(commit_params),
-          !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
+          !entry.is_renderer_initiated(), entry.extra_headers(), frame_entry,
           &entry, nullptr /* request_body */, nullptr /* navigation_ui_data */);
   manager->DidCreateNavigationRequest(navigation_request.get());
 

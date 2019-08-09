@@ -46,7 +46,7 @@ cr.define('system_dialog_browsertest', function() {
       sidebar = page.$$('print-preview-sidebar');
       return Promise
           .all([
-            test_util.waitForRender(page),
+            test_util.waitBeforeNextRender(page),
             print_preview.Model.whenReady(),
             nativeLayer.whenCalled('getInitialSettings'),
             nativeLayer.whenCalled('getPrinterCapabilities'),

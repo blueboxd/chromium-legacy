@@ -22,11 +22,9 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
  public:
   // Returns a pointer to the Hats Bubble being shown. For testing only.
   static views::BubbleDialogDelegateView* GetHatsBubble();
-  // Creates and shows the bubble anchored to the |anchor_button| and leads to
-  // a survey identified by |site_id|.
-  static void Show(Browser* browser,
-                   AppMenuButton* anchor_button,
-                   const std::string& site_id);
+  // Creates and shows the bubble that leads to a survey identified by
+  // |site_id|.
+  static void Show(Browser* browser, const std::string& site_id);
 
  protected:
   // views::WidgetDelegate:

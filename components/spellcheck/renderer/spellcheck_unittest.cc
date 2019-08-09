@@ -70,9 +70,12 @@ class SpellCheckTest : public testing::Test {
   void InitializeSpellCheck(const std::string& language) {
     base::FilePath hunspell_directory = GetHunspellDirectory();
     EXPECT_FALSE(hunspell_directory.empty());
-    base::File file(
-        spellcheck::GetVersionedFileName(language, hunspell_directory),
-        base::File::FLAG_OPEN | base::File::FLAG_READ);
+    base::FilePath hunspell_file_path =
+        spellcheck::GetVersionedFileName(language, hunspell_directory);
+    base::File file(hunspell_file_path,
+                    base::File::FLAG_OPEN | base::File::FLAG_READ);
+    EXPECT_TRUE(file.IsValid()) << hunspell_file_path << " is not valid"
+                                << file.ErrorToString(file.GetLastFileError());
 #if defined(OS_MACOSX)
     // TODO(groby): Forcing spellcheck to use hunspell, even on OSX.
     // Instead, tests should exercise individual spelling engines.
@@ -1338,29 +1341,16 @@ TEST_F(SpellCheckTest, EnglishWords) {
 
 // Checks that NOSUGGEST works in English dictionaries.
 TEST_F(SpellCheckTest, NoSuggest) {
+  ReinitializeSpellCheck("xx-XX");
+
   static const struct {
     const char* input;
     const char* suggestion;
-    const char* locale;
     bool should_pass;
-  } kTestCases[] = {
-    {"suckerbert", "cocksucker",  "en-GB", true},
-    {"suckerbert", "cocksucker",  "en-US", true},
-    {"suckerbert", "cocksucker",  "en-CA", true},
-    {"suckerbert", "cocksucker",  "en-AU", true},
-    {"suckerbert", "cocksuckers", "en-GB", true},
-    {"suckerbert", "cocksuckers", "en-US", true},
-    {"suckerbert", "cocksuckers", "en-CA", true},
-    {"suckerbert", "cocksuckers", "en-AU", true},
-    {"Batasunaa",  "Batasuna",    "ca-ES", true},
-    {"pornoo",     "porno",       "it-IT", true},
-    {"catass",     "catas",       "lt-LT", true},
-    {"kuracc",     "kurac",       "sl-SI", true},
-    {"pittt",      "pitt",        "sv-SE", true},
-  };
+  } kTestCases[] = {{"typograpy", "typographit", true},
+                    {"typograpy", "typographits", true}};
 
   for (const auto& test_case : kTestCases) {
-    ReinitializeSpellCheck(test_case.locale);
     size_t suggestion_length = 0;
     if (test_case.suggestion)
       suggestion_length = strlen(test_case.suggestion);
@@ -1374,10 +1364,8 @@ TEST_F(SpellCheckTest, NoSuggest) {
         suggestion_length, kNoTag, &misspelling_start, &misspelling_length,
         nullptr);
 
-    EXPECT_EQ(test_case.should_pass, result)
-        << test_case.suggestion << " in " << test_case.locale;
-    // TODO(cb/673424): Bring this back when suggestions are sped up.
-#if 0
+    EXPECT_EQ(test_case.should_pass, result) << test_case.suggestion;
+
     // Now verify that this test case does not show up as a suggestion.
     std::vector<base::string16> suggestions;
     size_t input_length = 0;
@@ -1387,19 +1375,18 @@ TEST_F(SpellCheckTest, NoSuggest) {
         base::ASCIIToUTF16(test_case.input).c_str(), kNoOffset,
         input_length, kNoTag, &misspelling_start,
         &misspelling_length, &suggestions);
+
     // Input word should be a misspelling.
-    EXPECT_FALSE(result) << test_case.input << " is not a misspelling in "
-                         << test_case.locale;
+    EXPECT_FALSE(result) << test_case.input << " is not a misspelling";
+
     // Check if the suggested words occur.
     for (const base::string16& suggestion : suggestions) {
       for (const auto& test_case_to_check : kTestCases) {
         int compare_result = suggestion.compare(
             base::ASCIIToUTF16(test_case_to_check.suggestion));
-        EXPECT_FALSE(compare_result == 0)
-            << test_case_to_check.suggestion << " in " << test_case.locale;
+        EXPECT_FALSE(compare_result == 0) << test_case_to_check.suggestion;
       }
     }
-#endif
   }
 }
 

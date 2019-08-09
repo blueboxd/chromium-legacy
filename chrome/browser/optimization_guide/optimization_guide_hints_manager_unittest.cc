@@ -10,15 +10,48 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hints_component_util.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
-#include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+
+namespace {
+
+const int kBlackBlacklistBloomFilterNumHashFunctions = 7;
+const int kBlackBlacklistBloomFilterNumBits = 511;
+
+void PopulateBlackBlacklistBloomFilter(
+    optimization_guide::BloomFilter* bloom_filter) {
+  bloom_filter->Add("black.com");
+}
+
+void AddBlacklistBloomFilterToConfig(
+    optimization_guide::proto::OptimizationType optimization_type,
+    const optimization_guide::BloomFilter& blacklist_bloom_filter,
+    int num_hash_functions,
+    int num_bits,
+    optimization_guide::proto::Configuration* config) {
+  std::string blacklist_data(
+      reinterpret_cast<const char*>(&blacklist_bloom_filter.bytes()[0]),
+      blacklist_bloom_filter.bytes().size());
+  optimization_guide::proto::OptimizationFilter* blacklist_proto =
+      config->add_optimization_blacklists();
+  blacklist_proto->set_optimization_type(optimization_type);
+  std::unique_ptr<optimization_guide::proto::BloomFilter> bloom_filter_proto =
+      std::make_unique<optimization_guide::proto::BloomFilter>();
+  bloom_filter_proto->set_num_hash_functions(num_hash_functions);
+  bloom_filter_proto->set_num_bits(num_bits);
+  bloom_filter_proto->set_data(blacklist_data);
+  blacklist_proto->set_allocated_bloom_filter(bloom_filter_proto.release());
+}
+
+}  // namespace
 
 class TestOptimizationGuideService
     : public optimization_guide::OptimizationGuideService {
@@ -476,4 +509,195 @@ TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationNoHost) {
   run_loop.Run();
 
   histogram_tester.ExpectTotalCount("OptimizationGuide.LoadedHint.Result", 0);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       OptimizationFiltersAreOnlyLoadedIfTypeIsRegistered) {
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::NOSCRIPT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+
+  {
+    base::HistogramTester histogram_tester;
+
+    ProcessHints(config, "1.0.0.0");
+
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.OptimizationFilterStatus.NoScript", 0);
+  }
+
+  // Now register the optimization type and see that it is loaded.
+  {
+    base::HistogramTester histogram_tester;
+
+    base::RunLoop run_loop;
+    hints_manager()->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    hints_manager()->RegisterOptimizationTypes(
+        {optimization_guide::proto::LITE_PAGE_REDIRECT});
+    run_loop.Run();
+
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+        optimization_guide::OptimizationFilterStatus::
+            kFoundServerBlacklistConfig,
+        1);
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+        optimization_guide::OptimizationFilterStatus::kCreatedServerBlacklist,
+        1);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.OptimizationFilterStatus.NoScript", 0);
+    EXPECT_TRUE(hints_manager()->HasLoadedOptimizationFilter(
+        optimization_guide::proto::LITE_PAGE_REDIRECT));
+    EXPECT_FALSE(hints_manager()->HasLoadedOptimizationFilter(
+        optimization_guide::proto::NOSCRIPT));
+  }
+
+  // Re-registering the same optimization type does not re-load the filter.
+  {
+    base::HistogramTester histogram_tester;
+
+    base::RunLoop run_loop;
+    hints_manager()->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    hints_manager()->RegisterOptimizationTypes(
+        {optimization_guide::proto::LITE_PAGE_REDIRECT});
+    run_loop.Run();
+
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.OptimizationFilterStatus.NoScript", 0);
+  }
+
+  // Registering a new optimization type without a filter does not trigger a
+  // reload of the filter.
+  {
+    base::HistogramTester histogram_tester;
+
+    base::RunLoop run_loop;
+    hints_manager()->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    hints_manager()->RegisterOptimizationTypes(
+        {optimization_guide::proto::DEFER_ALL_SCRIPT});
+    run_loop.Run();
+
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.OptimizationFilterStatus.NoScript", 0);
+  }
+
+  // Registering a new optimization type with a filter does trigger a
+  // reload of the filters.
+  {
+    base::HistogramTester histogram_tester;
+
+    base::RunLoop run_loop;
+    hints_manager()->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    hints_manager()->RegisterOptimizationTypes(
+        {optimization_guide::proto::NOSCRIPT});
+    run_loop.Run();
+
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+        optimization_guide::OptimizationFilterStatus::
+            kFoundServerBlacklistConfig,
+        1);
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+        optimization_guide::OptimizationFilterStatus::kCreatedServerBlacklist,
+        1);
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.OptimizationFilterStatus.NoScript",
+        optimization_guide::OptimizationFilterStatus::
+            kFoundServerBlacklistConfig,
+        1);
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.OptimizationFilterStatus.NoScript",
+        optimization_guide::OptimizationFilterStatus::kCreatedServerBlacklist,
+        1);
+    EXPECT_TRUE(hints_manager()->HasLoadedOptimizationFilter(
+        optimization_guide::proto::LITE_PAGE_REDIRECT));
+    EXPECT_TRUE(hints_manager()->HasLoadedOptimizationFilter(
+        optimization_guide::proto::NOSCRIPT));
+  }
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       OptimizationFiltersOnlyLoadOncePerType) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  base::HistogramTester histogram_tester;
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                                  blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  // We found 2 LPR blacklists: parsed one and duped the other.
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::kFoundServerBlacklistConfig,
+      2);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::kCreatedServerBlacklist, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::
+          kFailedServerBlacklistDuplicateConfig,
+      1);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, InvalidOptimizationFilterNotLoaded) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  base::HistogramTester histogram_tester;
+
+  int too_many_bits =
+      optimization_guide::features::MaxServerBloomFilterByteSize() * 8 + 1;
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions, too_many_bits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+  AddBlacklistBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blacklist_bloom_filter,
+      kBlackBlacklistBloomFilterNumHashFunctions, too_many_bits, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::kFoundServerBlacklistConfig,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::
+          kFailedServerBlacklistTooBig,
+      1);
+  EXPECT_FALSE(hints_manager()->HasLoadedOptimizationFilter(
+      optimization_guide::proto::LITE_PAGE_REDIRECT));
 }

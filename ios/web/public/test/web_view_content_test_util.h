@@ -7,9 +7,10 @@
 
 #import "base/test/ios/wait_util.h"
 #include "ios/web/public/test/element_selector.h"
-#import "ios/web/public/web_state/web_state.h"
 
 namespace web {
+class WebState;
+
 namespace test {
 
 // Enum describing loaded/blocked state of an image html element.

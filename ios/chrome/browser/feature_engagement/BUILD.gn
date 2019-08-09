@@ -22,7 +22,6 @@ source_set("feature_engagement") {
     "//components/leveldb_proto",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/leveldb_proto:factory",
     "//ios/chrome/browser/ui/commands",
     "//ios/web/public",
   ]

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -72,6 +73,10 @@ class StartupData {
   // Passes ownership of the |prefs_| to the caller.
   std::unique_ptr<sync_preferences::PrefServiceSyncable>
   TakeProfilePrefService();
+
+  // Passes ownership of the |proto_db_provider_| to the caller.
+  std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
+  TakeProtoDatabaseProvider();
 #endif
 
   ChromeFeatureListCreator* chrome_feature_list_creator() {
@@ -81,7 +86,7 @@ class StartupData {
  private:
 #if defined(OS_ANDROID)
   void PreProfilePrefServiceInit();
-  void CreateProfilePrefServiceInternal();
+  void CreateServicesInternal();
 
   std::unique_ptr<ProfileKey> key_;
 
@@ -92,6 +97,8 @@ class StartupData {
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry_;
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
+
+  std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> proto_db_provider_;
 #endif
 
   std::unique_ptr<ChromeFeatureListCreator> chrome_feature_list_creator_;

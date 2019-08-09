@@ -5,8 +5,6 @@
 #ifndef IOS_WEB_VIEW_INTERNAL_PASSWORDS_CWV_PASSWORD_CONTROLLER_H_
 #define IOS_WEB_VIEW_INTERNAL_PASSWORDS_CWV_PASSWORD_CONTROLLER_H_
 
-#import "ios/web/public/web_state/web_state.h"
-
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -14,6 +12,10 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSInteger, CWVPasswordUserDecision);
 @class CWVAutofillSuggestion;
 @class CWVPasswordController;
+
+namespace web {
+class WebState;
+}
 
 // Internal protocol to receive callbacks related to password autofilling.
 @protocol CWVPasswordControllerDelegate

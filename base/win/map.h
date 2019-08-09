@@ -274,9 +274,11 @@ class Map
     }
 
     // ABI::Windows::Foundation::Collections::IIterable:
-    IFACEMETHODIMP First(ABI::Windows::Foundation::Collections::IIterator<
-                         ABI::Windows::Foundation::Collections::
-                             IKeyValuePair<LogicalK, LogicalV>*>** first) {
+    IFACEMETHODIMP First(
+        ABI::Windows::Foundation::Collections::IIterator<
+            ABI::Windows::Foundation::Collections::IKeyValuePair<LogicalK,
+                                                                 LogicalV>*>**
+            first) override {
       return map_ ? map_->First(first) : E_CHANGED_STATE;
     }
 
@@ -285,7 +287,7 @@ class Map
         ABI::Windows::Foundation::Collections::IObservableMap<LogicalK,
                                                               LogicalV>* sender,
         ABI::Windows::Foundation::Collections::IMapChangedEventArgs<LogicalK>*
-            e) {
+            e) override {
       DCHECK_EQ(map_.Get(), sender);
       map_.Reset();
       sender->remove_MapChanged(map_changed_token_);
@@ -381,9 +383,11 @@ class Map
   }
 
   // ABI::Windows::Foundation::Collections::IIterable:
-  IFACEMETHODIMP First(ABI::Windows::Foundation::Collections::IIterator<
-                       ABI::Windows::Foundation::Collections::
-                           IKeyValuePair<LogicalK, LogicalV>*>** first) {
+  IFACEMETHODIMP First(
+      ABI::Windows::Foundation::Collections::IIterator<
+          ABI::Windows::Foundation::Collections::IKeyValuePair<LogicalK,
+                                                               LogicalV>*>**
+          first) override {
     return Microsoft::WRL::Make<MapIterator>(
                Microsoft::WRL::Make<MapView>(this))
         .CopyTo(first);

@@ -13,23 +13,20 @@
 #include "ui/base/test/ui_controls.h"
 
 namespace ui_test_utils {
-namespace {
-
-// The frame duration for 60fps.
-constexpr base::TimeDelta kFrameDuration =
-    base::TimeDelta::FromMicroseconds(16666);
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // DragEventGenerator
 
 DragEventGenerator::DragEventGenerator(std::unique_ptr<PointProducer> producer,
-                                       bool touch)
+                                       bool touch,
+                                       bool hover,
+                                       bool use_120fps)
     : producer_(std::move(producer)),
+      use_120fps_(use_120fps),
       start_(base::TimeTicks::Now()),
-      expected_next_time_(start_ + kFrameDuration),
-      touch_(touch) {
+      expected_next_time_(start_ + GetNextFrameDuration()),
+      touch_(touch),
+      hover_(hover) {
   gfx::Point initial_position = producer_->GetPosition(0.f);
   if (touch_) {
     ui_controls::SendTouchEvents(ui_controls::PRESS, 0, initial_position.x(),
@@ -39,12 +36,13 @@ DragEventGenerator::DragEventGenerator(std::unique_ptr<PointProducer> producer,
     ui_controls::SendMouseMoveNotifyWhenDone(
         initial_position.x(), initial_position.y(), run_loop.QuitClosure());
     run_loop.Run();
-    ui_controls::SendMouseEvents(ui_controls::LEFT, ui_controls::DOWN);
+    if (!hover_)
+      ui_controls::SendMouseEvents(ui_controls::LEFT, ui_controls::DOWN);
   }
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&DragEventGenerator::GenerateNext, base::Unretained(this)),
-      kFrameDuration);
+      GetNextFrameDuration());
 }
 
 DragEventGenerator::~DragEventGenerator() {
@@ -60,7 +58,7 @@ void DragEventGenerator::GenerateNext() {
   auto now = base::TimeTicks::Now();
   auto elapsed = now - start_;
 
-  expected_next_time_ += kFrameDuration;
+  expected_next_time_ += GetNextFrameDuration();
   count_++;
   const base::TimeDelta duration = producer_->GetDuration();
   if (elapsed >= duration) {
@@ -112,6 +110,10 @@ void DragEventGenerator::Done(const gfx::Point position) {
     ui_controls::SendMouseEventsNotifyWhenDone(
         ui_controls::LEFT, ui_controls::UP, run_loop_.QuitClosure());
   }
+}
+
+base::TimeDelta DragEventGenerator::GetNextFrameDuration() const {
+  return base::TimeDelta::FromMicroseconds(use_120fps_ ? 8333 : 16666);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

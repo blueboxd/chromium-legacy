@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache_adapter.h"
 #include "content/browser/web_package/signed_exchange_prefetch_handler.h"
@@ -15,6 +16,7 @@
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -53,6 +55,7 @@ PrefetchURLLoader::PrefetchURLLoader(
           std::move(signed_exchange_prefetch_metric_recorder)),
       accept_langs_(accept_langs) {
   DCHECK(network_loader_factory_);
+  RecordPrefetchRedirectHistogram(PrefetchRedirect::kPrefetchMade);
 
   if (IsSignedExchangeHandlingEnabled()) {
     // Set the SignedExchange accept header.
@@ -80,6 +83,16 @@ PrefetchURLLoader::PrefetchURLLoader(
 
 PrefetchURLLoader::~PrefetchURLLoader() = default;
 
+void PrefetchURLLoader::RecordPrefetchRedirectHistogram(
+    PrefetchRedirect event) {
+  // We only want to record prefetch vs prefetch redirects when we're not
+  // experimenting with a request's redirect mode.
+  if (base::FeatureList::IsEnabled(blink::features::kPrefetchRedirectError))
+    return;
+
+  base::UmaHistogramEnumeration("Prefetch.Redirect", event);
+}
+
 void PrefetchURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
@@ -90,11 +103,16 @@ void PrefetchURLLoader::FollowRedirect(
   DCHECK(!new_url) << "Redirect with modified URL was not "
                       "supported yet. crbug.com/845683";
   if (signed_exchange_prefetch_handler_) {
+    RecordPrefetchRedirectHistogram(
+        PrefetchRedirect::kPrefetchRedirectedSXGHandler);
+
     // Rebind |client_binding_| and |loader_|.
     client_binding_.Bind(signed_exchange_prefetch_handler_->FollowRedirect(
         mojo::MakeRequest(&loader_)));
     return;
   }
+
+  RecordPrefetchRedirectHistogram(PrefetchRedirect::kPrefetchRedirected);
 
   DCHECK(loader_);
   loader_->FollowRedirect(removed_headers,

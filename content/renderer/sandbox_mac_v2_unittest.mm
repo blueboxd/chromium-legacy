@@ -78,6 +78,8 @@ void SetParametersForTest(sandbox::SandboxCompiler* compiler,
   CHECK(compiler->InsertStringParam("CURRENT_PID", std::to_string(getpid())));
   CHECK(
       compiler->InsertStringParam("EXECUTABLE_PATH", executable_path.value()));
+
+  CHECK(compiler->InsertBooleanParam("FILTER_SYSCALLS", true));
 }
 
 }  // namespace

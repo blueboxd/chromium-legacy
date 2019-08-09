@@ -34,7 +34,7 @@
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/download/public/task/task_scheduler.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -114,7 +114,6 @@ DownloadServiceFactory::DownloadServiceFactory()
                                 SimpleDependencyManager::GetInstance()) {
   DependsOn(SimpleDownloadManagerCoordinatorFactory::GetInstance());
   DependsOn(download::NavigationMonitorFactory::GetInstance());
-  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
 }
 
 DownloadServiceFactory::~DownloadServiceFactory() = default;
@@ -122,6 +121,7 @@ DownloadServiceFactory::~DownloadServiceFactory() = default;
 std::unique_ptr<KeyedService> DownloadServiceFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
   auto clients = std::make_unique<download::DownloadClientMap>();
+  ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // Offline prefetch doesn't support incognito.
@@ -186,10 +186,12 @@ std::unique_ptr<KeyedService> DownloadServiceFactory::BuildServiceInstanceFor(
     // InitializeSimpleDownloadManager() to initialize the DownloadManager
     // whenever profile becomes available.
     DownloadManagerUtils::InitializeSimpleDownloadManager(key);
+    leveldb_proto::ProtoDatabaseProvider* proto_db_provider =
+        profile_key->GetProtoDatabaseProvider();
     return download::BuildDownloadService(
         key, std::move(clients), content::GetNetworkConnectionTracker(),
         storage_dir, SimpleDownloadManagerCoordinatorFactory::GetForKey(key),
-        background_task_runner, std::move(task_scheduler));
+        proto_db_provider, background_task_runner, std::move(task_scheduler));
   }
 }
 

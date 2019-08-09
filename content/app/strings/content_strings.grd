@@ -470,6 +470,10 @@ below:
       <message name="IDS_AX_ROLE_TELEPHONE" desc="Accessibility role description for telephone number input">
         telephone
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-input-url -->
+      <message name="IDS_AX_ROLE_URL" desc="Accessibility role description for URL input">
+        url
+      </message>
       <message name="IDS_AX_ROLE_WEB_AREA" desc="Accessibility role description for web area">
         HTML content
       </message>

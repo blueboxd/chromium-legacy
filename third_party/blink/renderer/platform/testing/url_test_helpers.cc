@@ -102,5 +102,19 @@ void RegisterMockedURLUnregister(const WebURL& url) {
   Platform::Current()->GetURLLoaderMockFactory()->UnregisterURL(url);
 }
 
+void UnregisterAllURLsAndClearMemoryCache() {
+  Platform::Current()
+      ->GetURLLoaderMockFactory()
+      ->UnregisterAllURLsAndClearMemoryCache();
+}
+
+void SetLoaderDelegate(WebURLLoaderTestDelegate* delegate) {
+  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(delegate);
+}
+
+void ServeAsynchronousRequests() {
+  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+}
+
 }  // namespace url_test_helpers
 }  // namespace blink

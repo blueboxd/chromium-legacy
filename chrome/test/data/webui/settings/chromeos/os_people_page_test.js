@@ -116,13 +116,19 @@ cr.define('settings_people_page', function() {
       assertEquals(
           browserProxy.fakeProfileInfo.name,
           peoplePage.$$('#profile-name').textContent.trim());
+      const bg = peoplePage.$$('#profile-icon').style.backgroundImage;
+      assertTrue(bg.includes(browserProxy.fakeProfileInfo.iconUrl));
 
+      const iconDataUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEA' +
+          'LAAAAAABAAEAAAICTAEAOw==';
       cr.webUIListenerCallback(
-          'profile-info-changed', {name: 'pushedName', iconUrl: ''});
+          'profile-info-changed', {name: 'pushedName', iconUrl: iconDataUrl});
 
       Polymer.dom.flush();
       assertEquals(
           'pushedName', peoplePage.$$('#profile-name').textContent.trim());
+      const newBg = peoplePage.$$('#profile-icon').style.backgroundImage;
+      assertTrue(newBg.includes(iconDataUrl));
 
       // Rather than trying to mock cr.sendWithPromise('getPluralString', ...)
       // just force an update.

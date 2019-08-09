@@ -101,6 +101,7 @@
  *   SITE_SETTINGS_LOCATION: (undefined|!settings.Route),
  *   SITE_SETTINGS_MICROPHONE: (undefined|!settings.Route),
  *   SITE_SETTINGS_MIDI_DEVICES: (undefined|!settings.Route),
+ *   SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE: (undefined|!settings.Route),
  *   SITE_SETTINGS_NOTIFICATIONS: (undefined|!settings.Route),
  *   SITE_SETTINGS_PAYMENT_HANDLER: (undefined|!settings.Route),
  *   SITE_SETTINGS_PDF_DOCUMENTS: (undefined|!settings.Route),
@@ -354,6 +355,11 @@ cr.define('settings', function() {
       if (loadTimeData.getBoolean('enableBluetoothScanningContentSetting')) {
         r.SITE_SETTINGS_BLUETOOTH_SCANNING =
             r.SITE_SETTINGS.createChild('bluetoothScanning');
+      }
+      if (loadTimeData.getBoolean(
+              'enableNativeFileSystemWriteContentSetting')) {
+        r.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE =
+            r.SITE_SETTINGS.createChild('filesystem');
       }
 
       r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');

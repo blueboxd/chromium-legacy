@@ -1234,9 +1234,11 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   EXPECT_TRUE(cookie_scheme_callback1.result());
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
-  cookie_monster->SetCookieWithOptionsAsync(
+  auto cookie = CanonicalCookie::Create(
       GURL("gopher://subdomain.gopheriffic.com/page"), "A=B; max-age=3600",
-      CookieOptions(), base::nullopt /* server_time */,
+      base::Time::Now(), base::nullopt /* server_time */);
+  cookie_monster->SetCanonicalCookieAsync(
+      std::move(cookie), "gopher", CookieOptions(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));
@@ -1249,9 +1251,12 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   for (int i = 0; i < 50; ++i) {
     ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
         set_cookie_callback2;
-    cookie_monster->SetCookieWithOptionsAsync(
+    auto canonical_cookie = CanonicalCookie::Create(
         GURL(base::StringPrintf("http://example%d.com/", i)),
-        "A=B; max-age=3600", CookieOptions(), base::nullopt /* server_time */,
+        "A=B; max-age=3600", base::Time::Now(),
+        base::nullopt /* server_time */);
+    cookie_monster->SetCanonicalCookieAsync(
+        std::move(canonical_cookie), "http", CookieOptions(),
         base::BindOnce(&ResultSavingCookieCallback<
                            CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&set_cookie_callback2)));
@@ -1303,9 +1308,11 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
 
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       set_cookie_callback;
-  cookie_monster->SetCookieWithOptionsAsync(
-      GURL("http://www.example.com/"), "A=B; max-age=3600", CookieOptions(),
-      base::nullopt /* server_time */,
+  auto cookie = CanonicalCookie::Create(GURL("http://www.example.com/"),
+                                        "A=B; max-age=3600", base::Time::Now(),
+                                        base::nullopt /* server_time */);
+  cookie_monster->SetCanonicalCookieAsync(
+      std::move(cookie), "http", CookieOptions(),
       base::BindOnce(&ResultSavingCookieCallback<
                          CanonicalCookie::CookieInclusionStatus>::Run,
                      base::Unretained(&set_cookie_callback)));

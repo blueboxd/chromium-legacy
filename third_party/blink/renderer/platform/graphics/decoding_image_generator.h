@@ -64,7 +64,8 @@ class PLATFORM_EXPORT DecodingImageGenerator final
       PaintImage::ContentId,
       bool all_data_received,
       bool is_eligible_for_accelerated_decoding,
-      bool can_yuv_decode);
+      bool can_yuv_decode,
+      String image_type);
 
   ~DecodingImageGenerator() override;
 
@@ -87,6 +88,7 @@ class PLATFORM_EXPORT DecodingImageGenerator final
                       uint32_t lazy_pixel_ref) override;
   SkISize GetSupportedDecodeSize(const SkISize& requested_size) const override;
   PaintImage::ContentId GetContentIdForFrame(size_t frame_index) const override;
+  PaintImage::ImageType GetImageType() const override { return image_type_; }
 
  private:
   DecodingImageGenerator(scoped_refptr<ImageFrameGenerator>,
@@ -96,7 +98,8 @@ class PLATFORM_EXPORT DecodingImageGenerator final
                          PaintImage::ContentId,
                          bool all_data_received,
                          bool is_eligible_for_accelerated_decoding,
-                         bool can_yuv_decode);
+                         bool can_yuv_decode,
+                         PaintImage::ImageType image_type);
 
   scoped_refptr<ImageFrameGenerator> frame_generator_;
   const scoped_refptr<SegmentReader> data_;  // Data source.
@@ -104,6 +107,9 @@ class PLATFORM_EXPORT DecodingImageGenerator final
   const bool is_eligible_for_accelerated_decoding_;
   const bool can_yuv_decode_;
   const PaintImage::ContentId complete_frame_content_id_;
+  // The image file kind as returned by the underlying decoder and
+  // translated into PaintImage::ImageType.
+  const PaintImage::ImageType image_type_;
 
   DISALLOW_COPY_AND_ASSIGN(DecodingImageGenerator);
 };

@@ -49,8 +49,17 @@ void U2fRegisterOperation::Cancel() {
 }
 
 void U2fRegisterOperation::TrySign() {
+  base::Optional<std::vector<uint8_t>> sign_command;
+  if (probing_alternative_rp_id_) {
+    CtapMakeCredentialRequest sign_request(request());
+    sign_request.rp.id = *request().app_id;
+    sign_command = ConvertToU2fSignCommand(sign_request, excluded_key_handle());
+  } else {
+    sign_command = ConvertToU2fSignCommand(request(), excluded_key_handle());
+  }
+
   DispatchDeviceRequest(
-      ConvertToU2fSignCommand(request(), excluded_key_handle()),
+      std::move(sign_command),
       base::BindOnce(&U2fRegisterOperation::OnCheckForExcludedKeyHandle,
                      weak_factory_.GetWeakPtr()));
 }
@@ -99,7 +108,15 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
     case apdu::ApduResponse::Status::SW_WRONG_LENGTH:
       // Continue to iterate through the provided key handles in the exclude
       // list to check for already registered keys.
-      if (++current_key_handle_index_ < request().exclude_list->size()) {
+      current_key_handle_index_++;
+      if (current_key_handle_index_ == request().exclude_list->size() &&
+          !probing_alternative_rp_id_ && request().app_id) {
+        // All elements of |request().exclude_list| have been tested, but
+        // there's a second AppID so they need to be tested again.
+        probing_alternative_rp_id_ = true;
+        current_key_handle_index_ = 0;
+      }
+      if (current_key_handle_index_ < request().exclude_list->size()) {
         TrySign();
       } else {
         // Reached the end of exclude list with no duplicate credential.

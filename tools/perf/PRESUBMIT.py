@@ -40,6 +40,8 @@ def _GetPathsToPrepend(input_api):
   chromium_src_dir = input_api.os_path.join(perf_dir, '..', '..')
   telemetry_dir = input_api.os_path.join(
       chromium_src_dir, 'third_party', 'catapult', 'telemetry')
+  typ_dir = input_api.os_path.join(
+       chromium_src_dir, 'third_party', 'catapult', 'third_party', 'typ')
   experimental_dir = input_api.os_path.join(
       chromium_src_dir, 'third_party', 'catapult', 'experimental')
   tracing_dir = input_api.os_path.join(
@@ -50,6 +52,7 @@ def _GetPathsToPrepend(input_api):
       chromium_src_dir, 'build', 'android')
   return [
       telemetry_dir,
+      typ_dir,
       input_api.os_path.join(telemetry_dir, 'third_party', 'mock'),
       experimental_dir,
       tracing_dir,

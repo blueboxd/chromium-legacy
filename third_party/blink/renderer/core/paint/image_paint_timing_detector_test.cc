@@ -140,9 +140,7 @@ class ImagePaintTimingDetectorTest
   }
 
   void UpdateCandidate() {
-    return GetPaintTimingDetector()
-        .GetImagePaintTimingDetector()
-        ->UpdateCandidate();
+    GetPaintTimingDetector().GetImagePaintTimingDetector()->UpdateCandidate();
   }
 
   base::TimeTicks LargestPaintStoredResult() {
@@ -206,6 +204,7 @@ class ImagePaintTimingDetectorTest
       MockPaintTimingCallbackManager* image_callback_manager) {
     image_callback_manager->InvokeSwapTimeCallback(
         test_task_runner_->NowTicks());
+    UpdateCandidate();
   }
 
   void SetImageAndPaint(AtomicString id, int width, int height) {

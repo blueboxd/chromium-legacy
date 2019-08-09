@@ -14019,6 +14019,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="NTPRicherPicker.Backgrounds.DailyRefreshEnabled">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    Daily refresh was enabled by clicking 'Done' in the richer picker
+  </description>
+</action>
+
 <action name="NTPRicherPicker.Backgrounds.DefaultDeselected">
   <owner>yyushkina@chromium.org</owner>
   <owner>dbeam@chromium.org</owner>
@@ -14031,6 +14039,14 @@ should be able to be added at any place in this file.
   <owner>yyushkina@chromium.org</owner>
   <owner>dbeam@chromium.org</owner>
   <description>'No background' was selected in the richer picker.</description>
+</action>
+
+<action name="NTPRicherPicker.Backgrounds.RefreshToggleClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    'Refresh daily' toggle was clicked in the richer picker.
+  </description>
 </action>
 
 <action name="NTPRicherPicker.Backgrounds.UploadCanceled">

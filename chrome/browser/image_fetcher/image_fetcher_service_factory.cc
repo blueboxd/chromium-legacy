@@ -23,7 +23,6 @@
 #include "components/image_fetcher/core/image_fetcher_service.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/keyed_service/core/simple_factory_key.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -58,7 +57,6 @@ ImageFetcherServiceFactory* ImageFetcherServiceFactory::GetInstance() {
 ImageFetcherServiceFactory::ImageFetcherServiceFactory()
     : SimpleKeyedServiceFactory("ImageFetcherService",
                                 SimpleDependencyManager::GetInstance()) {
-  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
 }
 
 ImageFetcherServiceFactory::~ImageFetcherServiceFactory() = default;
@@ -67,6 +65,7 @@ std::unique_ptr<KeyedService>
 ImageFetcherServiceFactory::BuildServiceInstanceFor(
     SimpleFactoryKey* key) const {
   base::FilePath cache_path = GetCachePath(key);
+  ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
@@ -75,12 +74,11 @@ ImageFetcherServiceFactory::BuildServiceInstanceFor(
 
   auto metadata_store =
       std::make_unique<image_fetcher::ImageMetadataStoreLevelDB>(
-          leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(key),
-          cache_path, task_runner, clock);
+          profile_key->GetProtoDatabaseProvider(), cache_path, task_runner,
+          clock);
   auto data_store = std::make_unique<image_fetcher::ImageDataStoreDisk>(
       cache_path, task_runner);
 
-  ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
   scoped_refptr<image_fetcher::ImageCache> image_cache =
       base::MakeRefCounted<image_fetcher::ImageCache>(
           std::move(data_store), std::move(metadata_store),

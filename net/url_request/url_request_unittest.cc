@@ -2684,17 +2684,22 @@ TEST_F(URLRequestTest, DelayedCookieCallbackAsync) {
   TestDelegate sync_delegate;
 
   // Add a secure cookie so we can try to set an insecure cookie and have
-  // SetCanonicalCookie (and therefore SetCookieWithOptions) fail.
+  // SetCanonicalCookie fail.
   GURL::Replacements replace_scheme;
   replace_scheme.SetSchemeStr("https");
   GURL url = test_server.base_url().ReplaceComponents(replace_scheme);
 
-  delayed_cm->SetCookieWithOptionsAsync(
-      url, "AlreadySetCookie=1;Secure", CookieOptions(),
-      base::nullopt /* server_time */, CookieStore::SetCookiesCallback());
-  cm->SetCookieWithOptionsAsync(
-      url, "AlreadySetCookie=1;Secure", CookieOptions(),
-      base::nullopt /* server_time */, CookieStore::SetCookiesCallback());
+  auto cookie1 = CanonicalCookie::Create(url, "AlreadySetCookie=1;Secure",
+                                         base::Time::Now(),
+                                         base::nullopt /* server_time */);
+  delayed_cm->SetCanonicalCookieAsync(std::move(cookie1), url.scheme(),
+                                      CookieOptions(),
+                                      CookieStore::SetCookiesCallback());
+  auto cookie2 = CanonicalCookie::Create(url, "AlreadySetCookie=1;Secure",
+                                         base::Time::Now(),
+                                         base::nullopt /* server_time */);
+  cm->SetCanonicalCookieAsync(std::move(cookie2), url.scheme(), CookieOptions(),
+                              CookieStore::SetCookiesCallback());
 
   std::vector<std::string> cookie_lines(
       {// Fails in SetCanonicalCookie for trying to set a secure cookie
@@ -8747,9 +8752,12 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
 
     std::unique_ptr<CookieMonster> cm =
         std::make_unique<CookieMonster>(nullptr, nullptr);
-    cm->SetCookieWithOptionsAsync(
-        url_requiring_auth_wo_cookies, "another_cookie=true", CookieOptions(),
-        base::nullopt /* server_time */, CookieStore::SetCookiesCallback());
+    auto another_cookie = CanonicalCookie::Create(
+        url_requiring_auth_wo_cookies, "another_cookie=true", base::Time::Now(),
+        base::nullopt /* server_time */);
+    cm->SetCanonicalCookieAsync(
+        std::move(another_cookie), url_requiring_auth_wo_cookies.scheme(),
+        CookieOptions(), CookieStore::SetCookiesCallback());
     context.set_cookie_store(cm.get());
     context.Init();
 
@@ -8774,9 +8782,12 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     // Check maybe_sent_cookies on second roundtrip.
     request->set_maybe_sent_cookies({});
     cm->DeleteAllAsync(CookieStore::DeleteCallback());
-    cm->SetCookieWithOptionsAsync(
-        url_requiring_auth_wo_cookies, "one_more_cookie=true", CookieOptions(),
-        base::nullopt /* server_time */, CookieStore::SetCookiesCallback());
+    auto one_more_cookie = CanonicalCookie::Create(
+        url_requiring_auth_wo_cookies, "one_more_cookie=true",
+        base::Time::Now(), base::nullopt /* server_time */);
+    cm->SetCanonicalCookieAsync(
+        std::move(one_more_cookie), url_requiring_auth_wo_cookies.scheme(),
+        CookieOptions(), CookieStore::SetCookiesCallback());
 
     request->SetAuth(AuthCredentials(kUser, kSecret));
     delegate.RunUntilComplete();
@@ -9145,9 +9156,12 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     context.set_network_delegate(&filtering_network_delegate);
     std::unique_ptr<CookieMonster> cm =
         std::make_unique<CookieMonster>(nullptr, nullptr);
-    cm->SetCookieWithOptionsAsync(
-        original_url, "another_cookie=true", CookieOptions(),
-        base::nullopt /* server_time */, CookieStore::SetCookiesCallback());
+    auto another_cookie = CanonicalCookie::Create(
+        original_url, "another_cookie=true", base::Time::Now(),
+        base::nullopt /* server_time */);
+    cm->SetCanonicalCookieAsync(std::move(another_cookie),
+                                original_url.scheme(), CookieOptions(),
+                                CookieStore::SetCookiesCallback());
     context.set_cookie_store(cm.get());
     context.Init();
 
@@ -9171,9 +9185,12 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     // Check maybe_sent_cookies on second round trip
     request->set_maybe_sent_cookies({});
     cm->DeleteAllAsync(CookieStore::DeleteCallback());
-    cm->SetCookieWithOptionsAsync(
-        original_url_wo_cookie, "one_more_cookie=true", CookieOptions(),
-        base::nullopt /* server_time */, CookieStore::SetCookiesCallback());
+    auto one_more_cookie = CanonicalCookie::Create(
+        original_url_wo_cookie, "one_more_cookie=true", base::Time::Now(),
+        base::nullopt /* server_time */);
+    cm->SetCanonicalCookieAsync(
+        std::move(one_more_cookie), original_url_wo_cookie.scheme(),
+        CookieOptions(), CookieStore::SetCookiesCallback());
 
     request->FollowDeferredRedirect(base::nullopt, base::nullopt);
     delegate.RunUntilComplete();

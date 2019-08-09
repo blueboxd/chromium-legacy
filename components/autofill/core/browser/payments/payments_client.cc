@@ -1091,17 +1091,15 @@ void PaymentsClient::InitializeResourceRequest() {
   resource_request_->load_flags = net::LOAD_DISABLE_CACHE;
   resource_request_->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request_->method = "POST";
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillSendExperimentIdsInPaymentsRPCs)) {
-    // Add Chrome experiment state to the request headers.
-    net::HttpRequestHeaders headers;
-    // User is always signed-in to be able to upload card to Google Payments.
-    variations::AppendVariationsHeader(
-        resource_request_->url,
-        is_off_the_record_ ? variations::InIncognito::kYes
-                           : variations::InIncognito::kNo,
-        variations::SignedIn::kYes, resource_request_.get());
-  }
+
+  // Add Chrome experiment state to the request headers.
+  net::HttpRequestHeaders headers;
+  // User is always signed-in to be able to upload card to Google Payments.
+  variations::AppendVariationsHeader(
+      resource_request_->url,
+      is_off_the_record_ ? variations::InIncognito::kYes
+                         : variations::InIncognito::kNo,
+      variations::SignedIn::kYes, resource_request_.get());
 }
 
 void PaymentsClient::OnSimpleLoaderComplete(

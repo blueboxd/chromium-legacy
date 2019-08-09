@@ -8,6 +8,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,6 +23,10 @@
 #include "content/public/common/origin_util.h"
 #include "net/base/url_util.h"
 #include "ui/gfx/color_palette.h"
+
+#if defined(OS_WIN)
+#include "ui/views/widget/native_widget_aura.h"
+#endif
 
 namespace {
 
@@ -49,6 +54,9 @@ void InitContentsBorderWidget(content::WebContents* contents) {
   // Let events go through to underlying view.
   params.accept_events = false;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+#if defined(OS_WIN)
+  params.native_widget = new views::NativeWidgetAura(widget);
+#endif
 
   widget->Init(std::move(params));
   views::View* border_view = new views::View();

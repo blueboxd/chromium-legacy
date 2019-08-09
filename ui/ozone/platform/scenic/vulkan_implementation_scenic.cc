@@ -33,8 +33,13 @@ namespace ui {
 
 VulkanImplementationScenic::VulkanImplementationScenic(
     ScenicSurfaceFactory* scenic_surface_factory,
-    SysmemBufferManager* sysmem_buffer_manager)
-    : scenic_surface_factory_(scenic_surface_factory),
+    SysmemBufferManager* sysmem_buffer_manager,
+    bool allow_protected_memory,
+    bool enforce_protected_memory)
+    : VulkanImplementation(false /* use_swiftshader */,
+                           allow_protected_memory,
+                           enforce_protected_memory),
+      scenic_surface_factory_(scenic_surface_factory),
       sysmem_buffer_manager_(sysmem_buffer_manager) {}
 
 VulkanImplementationScenic::~VulkanImplementationScenic() = default;
@@ -98,8 +103,9 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
     LOG(FATAL) << "vkCreateImagePipeSurfaceFUCHSIA failed: " << result;
   }
 
-  return std::make_unique<gpu::VulkanSurface>(vulkan_instance_.vk_instance(),
-                                              surface);
+  return std::make_unique<gpu::VulkanSurface>(
+      vulkan_instance_.vk_instance(), surface,
+      enforce_protected_memory() /* use_protected_memory */);
 }
 
 bool VulkanImplementationScenic::GetPhysicalDevicePresentationSupport(

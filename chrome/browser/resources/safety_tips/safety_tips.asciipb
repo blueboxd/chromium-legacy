@@ -2,17 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Placeholder for list of known bad URLs.
-# This file must be kept as-is and the full list must not be checked in to
-# Chromium source. When you want to update it, overwrite it locally, generate
-# and push the protobuffer to the storage bucket but do not check in the
-# changes.
+# Placeholder for list of known bad patterns.
+# This file must be kept as-is except for version_id. The full list must not be
+# checked in to Chromium source. When you want to update it, overwrite it
+# locally, generate and push the protobuffer to the storage bucket but do not
+# check in the changes.
 
 version_id: 2
 
 # See chrome/browser/lookalikes/safety_tips.proto for the full format.
-# These entries must be sorted by url.
-flagged_page {
-  url: "http://example.test/test-path-for-safety-tips/test.html"
-  type: BAD_REP
-}
+# These entries must be sorted alphabetically by pattern.
+
+# Example entry:
+# flagged_page {
+#  pattern: "example.test/test-path-for-safety-tips/test.html"
+#  type: BAD_REP
+#}

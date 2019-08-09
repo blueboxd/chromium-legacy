@@ -69,7 +69,8 @@ class POLICY_EXPORT CloudPolicyClient {
   // A callback which receives fetched remote commands.
   using RemoteCommandCallback = base::OnceCallback<void(
       DeviceManagementStatus,
-      const std::vector<enterprise_management::RemoteCommand>&)>;
+      const std::vector<enterprise_management::RemoteCommand>&,
+      const std::vector<enterprise_management::SignedData>&)>;
 
   // A callback for fetching device robot OAuth2 authorization tokens.
   // Only occurs during enrollment, after the device is registered.

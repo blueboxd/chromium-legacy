@@ -30,7 +30,9 @@ class DragEventGenerator {
   };
 
   DragEventGenerator(std::unique_ptr<PointProducer> producer,
-                     bool touch = false);
+                     bool touch = false,
+                     bool hover = false,
+                     bool use_120fps = false);
   ~DragEventGenerator();
 
   void Wait();
@@ -38,13 +40,18 @@ class DragEventGenerator {
  private:
   void Done(const gfx::Point position);
   void GenerateNext();
+  base::TimeDelta GetNextFrameDuration() const;
 
   std::unique_ptr<PointProducer> producer_;
   int count_ = 0;
 
+  // Whether the frame duration corresponds to 120fps (as opposed to 60fps).
+  const bool use_120fps_;
+
   const base::TimeTicks start_;
   base::TimeTicks expected_next_time_;
   const bool touch_;
+  const bool hover_;
 
   base::RunLoop run_loop_;
 

@@ -103,7 +103,30 @@ circumstances.
             // The spec requires all WebXR Gamepads to have index -1.
             return false;
           }
+          if (gamepad.id !== "") {
+            // The spec requires all WebXR Gamepads to have the empty string for
+            // their ID. Related information should go on the XRInputSource
+            // profiles array instead.
+            return false;
+          }
+
           if (!verificationFunction(gamepad)) {
+            return false;
+          }
+        }
+
+        return true;
+      }
+
+      function isFirstInputSourceAsExpected(verificationFunction) {
+        // There should only be one input source.
+        if (inputSourceCount() != 1) {
+          return false;
+        }
+
+        if (verificationFunction) {
+          let source = currentImmersiveSession().inputSources[0];
+          if (!verificationFunction(source)) {
             return false;
           }
         }
@@ -188,6 +211,26 @@ circumstances.
         }
 
         return isFirstGamepadAsExpected(verificationFunction);
+      }
+
+      function isProfileCountEqualTo(expected_count) {
+        let verificationFunction = function(source) {
+          return source.profiles.length == expected_count;
+        }
+
+        return isFirstInputSourceAsExpected(verificationFunction);
+      }
+
+      function isProfileEqualTo(profile_index, expected_string) {
+        let verificationFunction = function(source) {
+          if (profile_index >= source.profiles.length) {
+            return false;
+          }
+
+          return source.profiles[profile_index] === expected_string;
+        }
+
+        return isFirstInputSourceAsExpected(verificationFunction);
       }
     </script>
   </body>

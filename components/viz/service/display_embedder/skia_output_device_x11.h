@@ -18,7 +18,7 @@ namespace viz {
 class SkiaOutputDeviceX11 final : public SkiaOutputDeviceOffscreen {
  public:
   SkiaOutputDeviceX11(
-      GrContext* gr_context,
+      scoped_refptr<gpu::SharedContextState> context_state,
       gfx::AcceleratedWidget widget,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceX11() override;

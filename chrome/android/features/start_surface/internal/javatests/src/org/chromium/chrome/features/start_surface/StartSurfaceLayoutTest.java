@@ -14,6 +14,7 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAU
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
@@ -37,6 +38,7 @@ import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -130,6 +132,7 @@ public class StartSurfaceLayoutTest {
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testTabToGridFromLiveTabAnimation() throws InterruptedException {
         // clang-format on
         assertTrue(FeatureUtilities.isTabToGtsAnimationEnabled());
@@ -157,6 +160,7 @@ public class StartSurfaceLayoutTest {
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testTabToGridFromLiveTabWarmAnimation() throws InterruptedException {
         // clang-format on
         prepareTabs(2, NTP_URL);
@@ -344,7 +348,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
-    @DisabledTest(message = "crbug.com/981409")
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testGridToTabToCurrentLiveWithAnimation() throws InterruptedException {
         prepareTabs(1, mUrl);
         testGridToTab(false, false);
@@ -360,7 +364,7 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
-    @DisabledTest(message = "crbug.com/981341")
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testGridToTabToOtherLiveWithAnimation() throws InterruptedException {
         prepareTabs(2, mUrl);
         testGridToTab(true, false);

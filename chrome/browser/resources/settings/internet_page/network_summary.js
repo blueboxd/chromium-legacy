@@ -76,8 +76,8 @@ Polymer({
     },
   },
 
-  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
-  networkConfigProxy_: null,
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  networkConfig_: null,
 
   /**
    * Set of GUIDs identifying active networks, one for each type.
@@ -87,9 +87,8 @@ Polymer({
 
   /** @override */
   created: function() {
-    this.networkConfigProxy_ =
-        network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
   },
 
   /** @override */
@@ -135,7 +134,7 @@ Polymer({
    */
   getNetworkLists_: function() {
     // First get the device states.
-    this.networkConfigProxy_.getDeviceStateList().then(response => {
+    this.networkConfig_.getDeviceStateList().then(response => {
       // Second get the network states.
       this.getNetworkStates_(response.result);
     });
@@ -154,7 +153,7 @@ Polymer({
       limit: chromeos.networkConfig.mojom.kNoLimit,
       networkType: mojom.NetworkType.kAll,
     };
-    this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+    this.networkConfig_.getNetworkStateList(filter).then(response => {
       this.updateNetworkStates_(response.result, deviceStateList);
     });
   },

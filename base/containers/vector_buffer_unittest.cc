@@ -15,26 +15,26 @@ TEST(VectorBuffer, DeletePOD) {
   constexpr int size = 10;
   VectorBuffer<int> buffer(size);
   for (int i = 0; i < size; i++)
-    buffer.begin()[i] = i + 1;
+    buffer[i] = i + 1;
 
   buffer.DestructRange(buffer.begin(), buffer.end());
 
   // Delete should do nothing.
   for (int i = 0; i < size; i++)
-    EXPECT_EQ(i + 1, buffer.begin()[i]);
+    EXPECT_EQ(i + 1, buffer[i]);
 }
 
 TEST(VectorBuffer, DeleteMoveOnly) {
   constexpr int size = 10;
   VectorBuffer<MoveOnlyInt> buffer(size);
   for (int i = 0; i < size; i++)
-    new (buffer.begin() + i) MoveOnlyInt(i + 1);
+    buffer[i] = MoveOnlyInt(i + 1);
 
   buffer.DestructRange(buffer.begin(), buffer.end());
 
   // Delete should have reset all of the values to 0.
   for (int i = 0; i < size; i++)
-    EXPECT_EQ(0, buffer.begin()[i].data());
+    EXPECT_EQ(0, buffer[i].data());
 }
 
 TEST(VectorBuffer, PODMove) {
@@ -43,11 +43,11 @@ TEST(VectorBuffer, PODMove) {
 
   VectorBuffer<int> original(size);
   for (int i = 0; i < size; i++)
-    original.begin()[i] = i + 1;
+    original[i] = i + 1;
 
   original.MoveRange(original.begin(), original.end(), dest.begin());
   for (int i = 0; i < size; i++)
-    EXPECT_EQ(i + 1, dest.begin()[i]);
+    EXPECT_EQ(i + 1, dest[i]);
 }
 
 TEST(VectorBuffer, MovableMove) {
@@ -56,14 +56,13 @@ TEST(VectorBuffer, MovableMove) {
 
   VectorBuffer<MoveOnlyInt> original(size);
   for (int i = 0; i < size; i++)
-    new (original.begin() + i) MoveOnlyInt(i + 1);
+    original[i] = MoveOnlyInt(i + 1);
 
   original.MoveRange(original.begin(), original.end(), dest.begin());
-
   // Moving from a MoveOnlyInt resets to 0.
   for (int i = 0; i < size; i++) {
-    EXPECT_EQ(0, original.begin()[i].data());
-    EXPECT_EQ(i + 1, dest.begin()[i].data());
+    EXPECT_EQ(0, original[i].data());
+    EXPECT_EQ(i + 1, dest[i].data());
   }
 }
 
@@ -73,15 +72,15 @@ TEST(VectorBuffer, CopyToMove) {
 
   VectorBuffer<CopyOnlyInt> original(size);
   for (int i = 0; i < size; i++)
-    new (original.begin() + i) CopyOnlyInt(i + 1);
+    new (&original[i]) CopyOnlyInt(i + 1);
 
   original.MoveRange(original.begin(), original.end(), dest.begin());
 
   // The original should have been destructed, which should reset the value to
   // 0. Technically this dereferences the destructed object.
   for (int i = 0; i < size; i++) {
-    EXPECT_EQ(0, original.begin()[i].data());
-    EXPECT_EQ(i + 1, dest.begin()[i].data());
+    EXPECT_EQ(0, original[i].data());
+    EXPECT_EQ(i + 1, dest[i].data());
   }
 }
 

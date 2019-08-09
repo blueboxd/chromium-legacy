@@ -38,8 +38,9 @@ namespace {
 Vector<String> ConvertStdVectorOfStdStringsToVectorOfStrings(
     const std::vector<std::string>& input) {
   Vector<String> output;
+  output.ReserveInitialCapacity(input.size());
   for (const std::string& val : input) {
-    output.push_back(String::FromUTF8(val.c_str()));
+    output.UncheckedAppend(String::FromUTF8(val));
   }
   return output;
 }

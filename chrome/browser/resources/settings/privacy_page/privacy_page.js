@@ -152,6 +152,15 @@ Polymer({
       }
     },
 
+    /** @private */
+    enableNativeFileSystemWriteContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean(
+            'enableNativeFileSystemWriteContentSetting');
+      }
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,

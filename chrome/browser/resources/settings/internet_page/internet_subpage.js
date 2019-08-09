@@ -136,16 +136,15 @@ Polymer({
    * This UI will use both the networkingPrivate extension API and the
    * networkConfig mojo API until we provide all of the required functionality
    * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy}
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
    */
-  networkConfigProxy_: null,
+  networkConfig_: null,
 
   /** @override */
   created: function() {
     this.browserProxy_ = settings.InternetPageBrowserProxyImpl.getInstance();
-    this.networkConfigProxy_ =
-        network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
   },
 
   /** @override */
@@ -246,9 +245,9 @@ Polymer({
       return;
     }
     const INTERVAL_MS = 10 * 1000;
-    this.networkConfigProxy_.requestNetworkScan(this.deviceState.type);
+    this.networkConfig_.requestNetworkScan(this.deviceState.type);
     this.scanIntervalId_ = window.setInterval(() => {
-      this.networkConfigProxy_.requestNetworkScan(this.deviceState.type);
+      this.networkConfig_.requestNetworkScan(this.deviceState.type);
     }, INTERVAL_MS);
   },
 
@@ -271,7 +270,7 @@ Polymer({
       limit: chromeos.networkConfig.mojom.kNoLimit,
       networkType: this.deviceState.type,
     };
-    this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+    this.networkConfig_.getNetworkStateList(filter).then(response => {
       this.onGetNetworks_(response.result);
     });
   },
@@ -294,7 +293,7 @@ Polymer({
         limit: chromeos.networkConfig.mojom.kNoLimit,
         networkType: mojom.NetworkType.kTether,
       };
-      this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+      this.networkConfig_.getNetworkStateList(filter).then(response => {
         const tetherNetworkStates = response.result;
         this.networkStateList_ = networkStates.concat(tetherNetworkStates);
       });

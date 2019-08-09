@@ -130,6 +130,8 @@ class PLATFORM_EXPORT DisplayItem {
     // Used both for specifying the paint-order scroll location, and for non-
     // composited scroll hit testing (see: scroll_hit_test_display_item.h).
     kScrollHitTest,
+    // Used to prevent composited scrolling on the resize handle.
+    kResizerScrollHitTest,
     // Used to prevent composited scrolling on plugins with wheel handlers.
     kPluginScrollHitTest,
 
@@ -247,8 +249,10 @@ class PLATFORM_EXPORT DisplayItem {
 
   bool IsHitTest() const { return type_ == kHitTest; }
   bool IsScrollHitTest() const {
-    return type_ == kScrollHitTest || IsPluginScrollHitTest();
+    return type_ == kScrollHitTest || IsResizerScrollHitTest() ||
+           IsPluginScrollHitTest();
   }
+  bool IsResizerScrollHitTest() const { return type_ == kResizerScrollHitTest; }
   bool IsPluginScrollHitTest() const { return type_ == kPluginScrollHitTest; }
 
   bool IsCacheable() const { return is_cacheable_; }

@@ -17,7 +17,8 @@ enum class SharingMessageType {
   kPingMessage = 1,
   kAckMessage = 2,
   kClickToCallMessage = 3,
-  kMaxValue = kClickToCallMessage,
+  kSharedClipboardMessage = 4,
+  kMaxValue = kSharedClipboardMessage,
 };
 
 SharingMessageType PayloadCaseToMessageType(
@@ -31,6 +32,8 @@ SharingMessageType PayloadCaseToMessageType(
       return SharingMessageType::kAckMessage;
     case chrome_browser_sharing::SharingMessage::kClickToCallMessage:
       return SharingMessageType::kClickToCallMessage;
+    case chrome_browser_sharing::SharingMessage::kSharedClipboardMessage:
+      return SharingMessageType::kSharedClipboardMessage;
   }
 }
 

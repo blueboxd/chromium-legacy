@@ -34,6 +34,9 @@ class ASH_PUBLIC_EXPORT AssistantSetup {
       FlowType type,
       StartAssistantOptInFlowCallback on_completed) = 0;
 
+  // Returns true and bounces the opt-in window if it is active.
+  virtual bool BounceOptInWindowIfActive() = 0;
+
  protected:
   AssistantSetup();
   virtual ~AssistantSetup();

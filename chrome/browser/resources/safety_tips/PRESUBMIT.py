@@ -30,6 +30,12 @@ def CheckVersionUpdatedInProto(input_api, output_api):
       'Do not check in the full safety_tips.asciipb proto. '
       'Only increment |version_id|.')]
 
+  # This proto should not contain any actually-flagged pages. ContainsLine
+  # checks if any line *starts with* the given string.
+  if ContainsLine(contents, 'flagged_page:'):
+    return [output_api.PresubmitError(
+        'Remove entries from Chromium safety_tips.asciipb before submitting.')]
+
   # It's enticing to do something fancy like checking whether the ID was in fact
   # incremented or whether this is a whitespace-only or comment-only change.
   # However, currently deleted lines don't show up in ChangedContents() and

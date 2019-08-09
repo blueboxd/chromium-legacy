@@ -2468,5 +2468,43 @@ class BuildtoolsRevisionsAreInSyncTest(unittest.TestCase):
     self.assertNotEqual(results, [])
 
 
+class CheckFuzzTargetsTest(unittest.TestCase):
+
+  def _check(self, files):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = []
+    for fname, contents in files.items():
+      mock_input_api.files.append(MockFile(fname, contents.splitlines()))
+    return PRESUBMIT._CheckFuzzTargets(mock_input_api, MockOutputApi())
+
+  def testLibFuzzerSourcesIgnored(self):
+    results = self._check({
+        "third_party/lib/Fuzzer/FuzzerDriver.cpp": "LLVMFuzzerInitialize",
+    })
+    self.assertEqual(results, [])
+
+  def testNonCodeFilesIgnored(self):
+    results = self._check({
+        "README.md": "LLVMFuzzerInitialize",
+    })
+    self.assertEqual(results, [])
+
+  def testNoErrorHeaderPresent(self):
+    results = self._check({
+        "fuzzer.cc": (
+            "#include \"testing/libfuzzer/libfuzzer_exports.h\"\n" +
+            "LLVMFuzzerInitialize"
+        )
+    })
+    self.assertEqual(results, [])
+
+  def testErrorMissingHeader(self):
+    results = self._check({
+        "fuzzer.cc": "LLVMFuzzerInitialize"
+    })
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].items, ['fuzzer.cc'])
+
+
 if __name__ == '__main__':
   unittest.main()

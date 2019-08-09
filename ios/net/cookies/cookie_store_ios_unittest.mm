@@ -332,9 +332,12 @@ TEST_F(CookieStoreIOSTest, GetAllCookiesForURLAsync) {
   // Add a cookie.
   net::CookieOptions options;
   options.set_include_httponly();
-  cookie_store->SetCookieWithOptionsAsync(
-      kTestCookieURLFooBar, "a=b", options, base::nullopt /* server_time */,
-      net::CookieStore::SetCookiesCallback());
+  auto canonical_cookie = net::CanonicalCookie::Create(
+      kTestCookieURLFooBar, "a=b", base::Time::Now(),
+      base::nullopt /* server_time */);
+  cookie_store->SetCanonicalCookieAsync(std::move(canonical_cookie),
+                                        kTestCookieURLFooBar.scheme(), options,
+                                        net::CookieStore::SetCookiesCallback());
   // Check we can get the cookie.
   GetAllCookiesCallback callback;
   cookie_store->GetAllCookiesForURLAsync(

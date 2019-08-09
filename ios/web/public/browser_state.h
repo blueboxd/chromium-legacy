@@ -26,6 +26,10 @@ class SharedURLLoaderFactory;
 class WeakWrapperSharedURLLoaderFactory;
 }  // namespace network
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}  // namespace leveldb_proto
+
 namespace web {
 class CertificatePolicyCache;
 class NetworkContextOwner;
@@ -61,6 +65,9 @@ class BrowserState : public base::SupportsUserData {
 
   // Returns a CookieManager that is backed by GetRequestContext.
   network::mojom::CookieManager* GetCookieManager();
+
+  // Returns an provider to create ProtoDatabase tied to the profile directory.
+  leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider();
 
   // Binds a ProxyResolvingSocketFactory request to NetworkContext.
   void GetProxyResolvingSocketFactory(
@@ -98,6 +105,8 @@ class BrowserState : public base::SupportsUserData {
 
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
   network::mojom::CookieManagerPtr cookie_manager_;
+  std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
+      proto_database_provider_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       shared_url_loader_factory_;
   network::mojom::NetworkContextPtr network_context_;

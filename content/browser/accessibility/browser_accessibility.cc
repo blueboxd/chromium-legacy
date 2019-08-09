@@ -1855,9 +1855,12 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
     case ax::mojom::Role::kTextField: {
       std::string input_type;
       if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
-                                  &input_type) &&
-          input_type == "tel") {
-        return content_client->GetLocalizedString(IDS_AX_ROLE_TELEPHONE);
+                                  &input_type)) {
+        if (input_type == "tel") {
+          return content_client->GetLocalizedString(IDS_AX_ROLE_TELEPHONE);
+        } else if (input_type == "url") {
+          return content_client->GetLocalizedString(IDS_AX_ROLE_URL);
+        }
       }
       return {};
     }

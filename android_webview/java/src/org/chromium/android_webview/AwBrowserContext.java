@@ -33,6 +33,7 @@ public class AwBrowserContext {
     private AwGeolocationPermissions mGeolocationPermissions;
     private AwFormDatabase mFormDatabase;
     private AwServiceWorkerController mServiceWorkerController;
+    private AwQuotaManagerBridge mQuotaManagerBridge;
 
     /** Pointer to the Native-side AwBrowserContext. */
     private long mNativeAwBrowserContext;
@@ -85,6 +86,14 @@ public class AwBrowserContext {
         return mServiceWorkerController;
     }
 
+    public AwQuotaManagerBridge getQuotaManagerBridge() {
+        if (mQuotaManagerBridge == null) {
+            mQuotaManagerBridge =
+                    new AwQuotaManagerBridge(nativeGetQuotaManagerBridge(mNativeAwBrowserContext));
+        }
+        return mQuotaManagerBridge;
+    }
+
     /**
      * @see android.webkit.WebView#pauseTimers()
      */
@@ -121,4 +130,5 @@ public class AwBrowserContext {
     }
 
     private static native AwBrowserContext nativeGetDefaultJava();
+    private static native long nativeGetQuotaManagerBridge(long nativeAwBrowserContext);
 }

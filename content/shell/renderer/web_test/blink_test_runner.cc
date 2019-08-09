@@ -639,10 +639,11 @@ void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
     const std::vector<std::string>& event_platforms,
     base::OnceCallback<void(bool)> callback) {
   app_banner_service_.reset(new test_runner::AppBannerService());
-  blink::mojom::AppBannerControllerRequest request =
-      mojo::MakeRequest(&app_banner_service_->controller());
   render_view()->GetMainRenderFrame()->BindLocalInterface(
-      blink::mojom::AppBannerController::Name_, request.PassMessagePipe());
+      blink::mojom::AppBannerController::Name_,
+      app_banner_service_->controller()
+          .BindNewPipeAndPassReceiver()
+          .PassPipe());
   app_banner_service_->SendBannerPromptRequest(event_platforms,
                                                std::move(callback));
 }

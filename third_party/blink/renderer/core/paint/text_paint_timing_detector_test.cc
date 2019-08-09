@@ -77,8 +77,7 @@ class TextPaintTimingDetectorTest
   }
 
   base::Optional<LargestTextPaintManager>& GetLargestTextPaintManager() {
-    return GetTextPaintTimingDetector()
-        ->records_manager_.GetLargestTextPaintManager();
+    return GetTextPaintTimingDetector()->records_manager_.ltp_manager_;
   }
 
   wtf_size_t CountVisibleTexts() {
@@ -89,9 +88,7 @@ class TextPaintTimingDetectorTest
 
   wtf_size_t CountRankingSetSize() {
     DCHECK(GetTextPaintTimingDetector());
-    return GetTextPaintTimingDetector()
-        ->records_manager_.GetLargestTextPaintManager()
-        ->size_ordered_set_.size();
+    return GetLargestTextPaintManager()->size_ordered_set_.size();
   }
 
   wtf_size_t CountInvisibleTexts() {
@@ -126,6 +123,9 @@ class TextPaintTimingDetectorTest
   void InvokeSwapTimeCallback(
       MockPaintTimingCallbackManager* callback_manager) {
     callback_manager->InvokeSwapTimeCallback(test_task_runner_->NowTicks());
+    // Outside the tests, this is invoked by
+    // |PaintTimingCallbackManagerImpl::ReportPaintTime|.
+    GetLargestTextPaintManager()->UpdateCandidate();
   }
 
   base::TimeTicks LargestPaintStoredResult() {
@@ -192,19 +192,14 @@ class TextPaintTimingDetectorTest
   }
 
   base::WeakPtr<TextRecord> TextRecordOfLargestTextPaint() {
-    return GetFrameView()
-        .GetPaintTimingDetector()
-        .GetTextPaintTimingDetector()
-        ->records_manager_.GetLargestTextPaintManager()
-        ->FindLargestPaintCandidate();
+    return GetLargestTextPaintManager()->FindLargestPaintCandidate();
   }
 
   base::WeakPtr<TextRecord> ChildFrameTextRecordOfLargestTextPaint() {
     return GetChildFrameView()
         .GetPaintTimingDetector()
         .GetTextPaintTimingDetector()
-        ->records_manager_.GetLargestTextPaintManager()
-        ->FindLargestPaintCandidate();
+        ->records_manager_.ltp_manager_->FindLargestPaintCandidate();
   }
 
   void SetFontSize(Element* font_element, uint16_t font_size) {

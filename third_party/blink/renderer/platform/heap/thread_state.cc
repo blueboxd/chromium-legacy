@@ -130,13 +130,9 @@ ThreadState::ThreadState()
       persistent_region_(std::make_unique<PersistentRegion>()),
       weak_persistent_region_(std::make_unique<PersistentRegion>()),
       start_of_stack_(reinterpret_cast<Address*>(WTF::GetStackStart())),
-      gc_state_(kNoGCScheduled),
-      gc_phase_(GCPhase::kNone),
-      reason_for_scheduled_gc_(BlinkGC::GCReason::kForcedGCForTesting),
 #if defined(ADDRESS_SANITIZER)
       asan_fake_stack_(__asan_get_current_fake_stack()),
 #endif
-      reported_memory_to_v8_(0),
       sweeper_scheduler_(base::MakeRefCounted<WorkerPoolTaskRunner>()) {
   DCHECK(CheckThread());
   DCHECK(!**thread_specific_);
@@ -1173,24 +1169,21 @@ void ThreadState::LeaveStaticReferenceRegistrationDisabledScope() {
   static_persistent_registration_disabled_count_--;
 }
 
-void ThreadState::RegisterStaticPersistentNode(
-    PersistentNode* node,
-    PersistentClearCallback callback) {
+void ThreadState::RegisterStaticPersistentNode(PersistentNode* node) {
   if (static_persistent_registration_disabled_count_)
     return;
 
   DCHECK(!static_persistents_.Contains(node));
-  static_persistents_.insert(node, callback);
+  static_persistents_.insert(node);
 }
 
 void ThreadState::ReleaseStaticPersistentNodes() {
-  HashMap<PersistentNode*, ThreadState::PersistentClearCallback>
-      static_persistents;
+  HashSet<PersistentNode*> static_persistents;
   static_persistents.swap(static_persistents_);
 
   PersistentRegion* persistent_region = GetPersistentRegion();
-  for (const auto& it : static_persistents)
-    persistent_region->ReleasePersistentNode(it.key, it.value);
+  for (PersistentNode* it : static_persistents)
+    persistent_region->ReleasePersistentNode(it);
 }
 
 void ThreadState::FreePersistentNode(PersistentRegion* persistent_region,

@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -58,12 +57,6 @@ void InitializeOnDBSequence(
   origin_data->InitializeOnDBSequence();
 }
 
-GURL CreateRedirectURL(const std::string& scheme,
-                       const std::string& host,
-                       std::uint16_t port) {
-  return GURL(scheme + "://" + host + ":" + base::NumberToString(port));
-}
-
 }  // namespace
 
 PreconnectRequest::PreconnectRequest(
@@ -84,18 +77,18 @@ PreconnectPrediction::~PreconnectPrediction() = default;
 ////////////////////////////////////////////////////////////////////////////////
 // ResourcePrefetchPredictor static functions.
 
-bool ResourcePrefetchPredictor::GetRedirectOrigin(
-    const url::Origin& entry_origin,
+bool ResourcePrefetchPredictor::GetRedirectEndpoint(
+    const std::string& entry_point,
     const RedirectDataMap& redirect_data,
-    url::Origin* redirect_origin) {
-  DCHECK(redirect_origin);
+    std::string* redirect_endpoint) const {
+  DCHECK(redirect_endpoint);
 
   RedirectData data;
-  bool exists = redirect_data.TryGetData(entry_origin.host(), &data);
+  bool exists = redirect_data.TryGetData(entry_point, &data);
   if (!exists) {
     // Fallback to fetching URLs based on the incoming URL/host. By default
     // the predictor is confident that there is no redirect.
-    *redirect_origin = entry_origin;
+    *redirect_endpoint = entry_point;
     return true;
   }
 
@@ -116,37 +109,14 @@ bool ResourcePrefetchPredictor::GetRedirectOrigin(
   // The predictor doesn't apply a minimum-number-of-hits threshold to
   // the no-redirect case because the no-redirect is a default assumption.
   const RedirectStat& redirect = data.redirect_endpoints(0);
-
   if (ComputeRedirectConfidence(redirect) <
           kMinRedirectConfidenceToTriggerPrefetch ||
       (redirect.number_of_hits() < kMinRedirectHitsToTriggerPrefetch &&
-       redirect.url() != entry_origin.host())) {
+       redirect.url() != entry_point)) {
     return false;
   }
 
-  // Create a GURL from |redirect|, and get the origin from it. Origins can
-  // be created be directly passing in scheme, host, and port, but the class
-  // DCHECKs if any of them are invalid, and best not to DCHECK when loading bad
-  // data from disk. GURL does not DCHECK on bad input, so safest to rely on its
-  // logic, though more computationally expensive.
-
-  GURL redirect_url;
-  // Old entries may have no scheme or port.
-  if (redirect.has_url_scheme() && redirect.has_url_port()) {
-    redirect_url = CreateRedirectURL(redirect.url_scheme(), redirect.url(),
-                                     redirect.url_port());
-  }
-
-  // If there was no scheme or port, or they don't make for a valid URL (most
-  // likely due to using 0 or an empty scheme as default values), default to
-  // HTTPS / port 443.
-  if (!redirect_url.is_valid())
-    redirect_url = CreateRedirectURL("https", redirect.url(), 443);
-
-  if (!redirect_url.is_valid())
-    return false;
-
-  *redirect_origin = url::Origin::Create(redirect_url);
+  *redirect_endpoint = redirect.url();
   return true;
 }
 
@@ -240,25 +210,30 @@ bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
   if (initialization_state_ != INITIALIZED)
     return false;
 
-  url::Origin url_origin = url::Origin::Create(url);
-  url::Origin redirect_origin;
-  if (!GetRedirectOrigin(url_origin, *host_redirect_data_, &redirect_origin)) {
+  std::string host = url.host();
+  std::string redirect_endpoint;
+  if (!GetRedirectEndpoint(host, *host_redirect_data_, &redirect_endpoint))
     return false;
-  }
 
   OriginData data;
-  if (!origin_data_->TryGetData(redirect_origin.host(), &data))
+  if (!origin_data_->TryGetData(redirect_endpoint, &data))
     return false;
 
   if (prediction) {
-    prediction->host = redirect_origin.host();
-    prediction->is_redirected = (redirect_origin != url_origin);
+    prediction->host = redirect_endpoint;
+    prediction->is_redirected = (host != redirect_endpoint);
   }
 
   bool has_any_prediction = false;
 
-  net::NetworkIsolationKey network_isolation_key(redirect_origin,
-                                                 redirect_origin);
+  // TODO(https://crbug.com/987735): Use the NetworkIsolationKey of the final
+  // destination in the case of redirects. This will require recording the port,
+  // which is not currently logged. That will not result in using the correct
+  // NetworkIsolationKey in the case of intermediary redirects, but given the
+  // relatively low accurace of redirect predictions, seems likely not worth
+  // fixing.
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
 
   for (const OriginStat& origin : data.origins()) {
     float confidence = static_cast<float>(origin.number_of_hits()) /

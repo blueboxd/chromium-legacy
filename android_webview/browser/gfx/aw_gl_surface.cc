@@ -55,6 +55,10 @@ bool AwGLSurface::Resize(const gfx::Size& size,
   return true;
 }
 
+void AwGLSurface::SetSize(const gfx::Size& size) {
+  size_ = size;
+}
+
 void AwGLSurface::MaybeDidPresent(gfx::PresentationFeedback feedback) {
   if (pending_presentation_callback_.is_null())
     return;

@@ -11,7 +11,8 @@ cr.define('test_util', function() {
    * @param {*} attributeValue
    * @return {!Promise}
    */
-  function whenAttributeIs(target, attributeName, attributeValue) {
+  /* #export */ function whenAttributeIs(
+      target, attributeName, attributeValue) {
     function isDone() {
       return target.getAttribute(attributeName) == attributeValue;
     }
@@ -40,7 +41,7 @@ cr.define('test_util', function() {
    * @param {!HTMLElement} target
    * @return {!Promise} A promise firing once the event occurs.
    */
-  function eventToPromise(eventType, target) {
+  /* #export */ function eventToPromise(eventType, target) {
     return new Promise(function(resolve, reject) {
       target.addEventListener(eventType, function f(e) {
         target.removeEventListener(eventType, f);
@@ -57,7 +58,7 @@ cr.define('test_util', function() {
    * @param {!HTMLElement} el2
    * @param {string} property
    */
-  function fakeDataBind(el1, el2, property) {
+  /* #export */ function fakeDataBind(el1, el2, property) {
     const forwardChange = function(el, event) {
       if (event.detail.hasOwnProperty('path')) {
         el.notifyPath(event.detail.path, event.detail.value);
@@ -75,16 +76,17 @@ cr.define('test_util', function() {
    * @param {!Element} element
    * @return {!Promise}
    */
-  function waitForRender(element) {
+  /* #export */ function waitBeforeNextRender(element) {
     return new Promise(resolve => {
       Polymer.RenderStatus.beforeNextRender(element, resolve);
     });
   }
 
+  // #cr_define_end
   return {
     eventToPromise: eventToPromise,
     fakeDataBind: fakeDataBind,
-    waitForRender: waitForRender,
+    waitBeforeNextRender: waitBeforeNextRender,
     whenAttributeIs: whenAttributeIs,
   };
 });

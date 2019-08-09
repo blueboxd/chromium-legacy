@@ -13,6 +13,7 @@
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -200,7 +201,20 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
           ->SetClient(std::move(client_ptr), CreateNetworkServiceParams());
       g_network_service_is_responding = false;
       g_network_service_ptr->QueryVersion(base::BindRepeating(
-          [](uint32_t) { g_network_service_is_responding = true; }));
+          [](base::Time start_time, uint32_t) {
+            g_network_service_is_responding = true;
+            base::TimeDelta delta = base::Time::Now() - start_time;
+            UMA_HISTOGRAM_MEDIUM_TIMES("NetworkService.TimeToFirstResponse",
+                                       delta);
+            if (g_last_network_service_crash.is_null()) {
+              UMA_HISTOGRAM_MEDIUM_TIMES(
+                  "NetworkService.TimeToFirstResponse.OnStartup", delta);
+            } else {
+              UMA_HISTOGRAM_MEDIUM_TIMES(
+                  "NetworkService.TimeToFirstResponse.AfterCrash", delta);
+            }
+          },
+          base::Time::Now()));
 
       delete g_client;  // In case we're recreating the network service.
       g_client = new NetworkServiceClient(std::move(client_request));

@@ -43,13 +43,16 @@ bool VulkanSwapChain::Initialize(
     const gfx::Size& image_size,
     uint32_t min_image_count,
     VkSurfaceTransformFlagBitsKHR pre_transform,
+    bool use_protected_memory,
     std::unique_ptr<VulkanSwapChain> old_swap_chain) {
   DCHECK(device_queue);
+  DCHECK(!use_protected_memory || device_queue_->allow_protected_memory());
+  use_protected_memory_ = use_protected_memory;
   device_queue_ = device_queue;
   device_queue_->GetFenceHelper()->ProcessCleanupTasks();
   return InitializeSwapChain(surface, surface_format, image_size,
                              min_image_count, pre_transform,
-                             std::move(old_swap_chain)) &&
+                             use_protected_memory, std::move(old_swap_chain)) &&
          InitializeSwapImages(surface_format);
 }
 
@@ -122,12 +125,15 @@ bool VulkanSwapChain::InitializeSwapChain(
     const gfx::Size& image_size,
     uint32_t min_image_count,
     VkSurfaceTransformFlagBitsKHR pre_transform,
+    bool use_protected_memory,
     std::unique_ptr<VulkanSwapChain> old_swap_chain) {
   VkDevice device = device_queue_->GetVulkanDevice();
   VkResult result = VK_SUCCESS;
 
   VkSwapchainCreateInfoKHR swap_chain_create_info = {};
   swap_chain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  swap_chain_create_info.flags =
+      use_protected_memory ? VK_SWAPCHAIN_CREATE_PROTECTED_BIT_KHR : 0;
   swap_chain_create_info.surface = surface;
   swap_chain_create_info.minImageCount = min_image_count,
   swap_chain_create_info.imageFormat = surface_format.format;

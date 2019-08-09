@@ -550,3 +550,6 @@ crbug.com/985388 virtual/threaded/fast/scrolling/fractional-scroll-offset-iframe
 # Added to land BGPT-fixes
 crbug.com/979002 virtual/threaded/fast/scrolling/uncomposite-and-composite-scroll.html [ Failure ]
 crbug.com/981749 virtual/threaded/fast/scrolling/scroll-chaining-from-position-fixed.html [ Failure ]
+
+
+crbug.com/989673 svg/foreignObject/mask.html [ Failure ]

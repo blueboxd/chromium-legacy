@@ -29,7 +29,7 @@ PersistentRegion::~PersistentRegion() {
 }
 
 int PersistentRegion::NumberOfPersistents() {
-  int persistent_count = 0;
+  size_t persistent_count = 0;
   for (PersistentNodeSlots* slots = slots_; slots; slots = slots->next_) {
     for (int i = 0; i < PersistentNodeSlots::kSlotCount; ++i) {
       if (!slots->slot_[i].IsUnused())
@@ -56,17 +56,10 @@ void PersistentRegion::EnsurePersistentNodeSlots(void* self,
   slots_ = slots;
 }
 
-void PersistentRegion::ReleasePersistentNode(
-    PersistentNode* persistent_node,
-    ThreadState::PersistentClearCallback callback) {
+void PersistentRegion::ReleasePersistentNode(PersistentNode* persistent_node) {
   DCHECK(!persistent_node->IsUnused());
   // 'self' is in use, containing the persistent wrapper object.
   void* self = persistent_node->Self();
-  if (callback) {
-    (*callback)(self);
-    DCHECK(persistent_node->IsUnused());
-    return;
-  }
   Persistent<DummyGCBase>* persistent =
       reinterpret_cast<Persistent<DummyGCBase>*>(self);
   persistent->Clear();
@@ -80,7 +73,7 @@ void PersistentRegion::ReleasePersistentNode(
 void PersistentRegion::TracePersistentNodes(Visitor* visitor,
                                             ShouldTraceCallback should_trace) {
   free_list_head_ = nullptr;
-  int persistent_count = 0;
+  size_t persistent_count = 0;
   PersistentNodeSlots** prev_next = &slots_;
   PersistentNodeSlots* slots = slots_;
   while (slots) {
@@ -142,7 +135,7 @@ void PersistentRegion::PrepareForThreadStateTermination() {
     slots = slots->next_;
   }
 #if DCHECK_IS_ON()
-  DCHECK_EQ(persistent_count_, 0);
+  DCHECK_EQ(persistent_count_, 0u);
 #endif
 }
 
@@ -197,7 +190,7 @@ void CrossThreadPersistentRegion::UnpoisonCrossThreadPersistents() {
 #if DCHECK_IS_ON()
   ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
 #endif
-  int persistent_count = 0;
+  size_t persistent_count = 0;
   for (PersistentNodeSlots* slots = persistent_region_.slots_; slots;
        slots = slots->next_) {
     for (int i = 0; i < PersistentNodeSlots::kSlotCount; ++i) {

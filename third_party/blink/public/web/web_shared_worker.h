@@ -74,7 +74,8 @@ class BLINK_EXPORT WebSharedWorker {
       PrivacyPreferences privacy_preferences,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       mojo::ScopedMessagePipeHandle content_settings_handle,
-      mojo::ScopedMessagePipeHandle interface_provider) = 0;
+      mojo::ScopedMessagePipeHandle interface_provider,
+      mojo::ScopedMessagePipeHandle browser_interface_broker) = 0;
 
   // Sends a connect event to the SharedWorker context.
   virtual void Connect(MessagePortChannel) = 0;

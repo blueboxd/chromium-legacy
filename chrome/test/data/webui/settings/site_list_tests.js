@@ -257,6 +257,13 @@ function populateTestExceptions() {
                 // Non android sms setting that should be handled as usual.
                 test_util.createRawSiteException('http://bar.com')
               ])]);
+
+  prefsNativeFileSystemWrite = test_util.createSiteSettingsPrefs(
+      [], [test_util.createContentSettingTypeToValuePair(
+              settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
+              [test_util.createRawSiteException('http://foo.com', {
+                setting: settings.ContentSetting.BLOCK,
+              })])]);
 }
 
 suite('SiteList', function() {
@@ -835,7 +842,7 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
-          return test_util.waitForRender(testElement);
+          return test_util.waitBeforeNextRender(testElement);
         })
         .then(function() {
           assertFalse(testElement.$.category.hidden);
@@ -850,7 +857,7 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
-          return test_util.waitForRender(testElement);
+          return test_util.waitBeforeNextRender(testElement);
         })
         .then(function() {
           assertFalse(testElement.$.category.hidden);
@@ -865,7 +872,7 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
-          return test_util.waitForRender(testElement);
+          return test_util.waitBeforeNextRender(testElement);
         })
         .then(function() {
           assertFalse(testElement.$.category.hidden);
@@ -880,7 +887,7 @@ suite('SiteList', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(actualContentType) {
           assertEquals(contentType, actualContentType);
-          return test_util.waitForRender(testElement);
+          return test_util.waitBeforeNextRender(testElement);
         })
         .then(function() {
           assertFalse(testElement.$.category.hidden);
@@ -1009,6 +1016,21 @@ suite('SiteList', function() {
       });
     });
   });
+
+  test(
+      'Add site button is hidden for content settings that don\'t allow it',
+      function() {
+        setUpCategory(
+            settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
+            settings.ContentSetting.ALLOW, prefsNativeFileSystemWrite);
+        return browserProxy.whenCalled('getExceptionList').then(() => {
+          Polymer.dom.flush();
+          assertFalse(testElement.showAddSiteButton_);
+
+          const addSiteButton = testElement.$$('#addSite');
+          assertTrue(addSiteButton.hidden);
+        });
+      });
 });
 
 suite('EditExceptionDialog', function() {

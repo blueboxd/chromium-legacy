@@ -220,10 +220,11 @@ class PersistentBase {
   // clean LSan leak reports or to register a thread-local persistent
   // needing to be cleared out before the thread is terminated.
   PersistentBase* RegisterAsStaticReference() {
-    CHECK_EQ(weaknessConfiguration, kNonWeakPersistentConfiguration);
+    static_assert(weaknessConfiguration == kNonWeakPersistentConfiguration,
+                  "Can only register non-weak Persistent references as static "
+                  "references.");
     if (PersistentNode* node = persistent_node_.Get()) {
-      DCHECK(ThreadState::Current());
-      ThreadState::Current()->RegisterStaticPersistentNode(node, nullptr);
+      ThreadState::Current()->RegisterStaticPersistentNode(node);
       LEAK_SANITIZER_IGNORE_OBJECT(this);
     }
     return this;

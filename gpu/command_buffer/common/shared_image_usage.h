@@ -29,6 +29,8 @@ enum SharedImageUsage : uint32_t {
   SHARED_IMAGE_USAGE_RGB_EMULATION = 1 << 6,
   // Image will be used by Dawn (for WebGPU)
   SHARED_IMAGE_USAGE_WEBGPU = 1 << 7,
+  // Image will be used in a protected Vulkan context on Fuchsia.
+  SHARED_IMAGE_USAGE_PROTECTED = 1 << 8,
 };
 
 }  // namespace gpu

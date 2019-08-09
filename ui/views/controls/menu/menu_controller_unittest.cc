@@ -2338,5 +2338,33 @@ TEST_F(MenuControllerTest, AccessibilityEmitsSelectChildrenChanged) {
   DispatchKey(ui::VKEY_DOWN);
   EXPECT_EQ(observer.saw_selected_children_changed_, true);
 }
+
+#if defined(OS_MACOSX)
+// This test exercises a Mac-specific behavior, by which hotkeys using modifiers
+// cause menus to close and the hotkeys to be handled by the browser window.
+// This specific test case tries using cmd-ctrl-f, which normally means
+// "Fullscreen".
+TEST_F(MenuControllerTest, BrowserHotkeysCancelMenusAndAreRedispatched) {
+  menu_controller()->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                         MenuAnchorPosition::kTopLeft, false, false);
+
+  int options = ui::EF_COMMAND_DOWN;
+  ui::KeyEvent press_cmd(ui::ET_KEY_PRESSED, ui::VKEY_COMMAND, options);
+  menu_controller()->OnWillDispatchKeyEvent(&press_cmd);
+  EXPECT_TRUE(IsShowing());  // ensure the command press itself doesn't cancel
+
+  options |= ui::EF_CONTROL_DOWN;
+  ui::KeyEvent press_ctrl(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, options);
+  menu_controller()->OnWillDispatchKeyEvent(&press_ctrl);
+  EXPECT_TRUE(IsShowing());
+
+  ui::KeyEvent press_f(ui::ET_KEY_PRESSED, ui::VKEY_F, options);
+  menu_controller()->OnWillDispatchKeyEvent(&press_f);  // to pay respects
+  EXPECT_FALSE(IsShowing());
+  EXPECT_FALSE(press_f.handled());
+  EXPECT_FALSE(press_f.stopped_propagation());
+}
+#endif
+
 }  // namespace test
 }  // namespace views

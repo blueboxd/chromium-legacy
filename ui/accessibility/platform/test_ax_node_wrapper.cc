@@ -561,9 +561,12 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
     case ax::mojom::Role::kTextField: {
       std::string input_type;
       if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
-                                  &input_type) &&
-          input_type == "tel") {
-        return base::ASCIIToUTF16("telephone");
+                                  &input_type)) {
+        if (input_type == "tel") {
+          return base::ASCIIToUTF16("telephone");
+        } else if (input_type == "url") {
+          return base::ASCIIToUTF16("url");
+        }
       }
       return {};
     }

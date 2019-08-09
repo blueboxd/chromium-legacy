@@ -1216,6 +1216,15 @@ TEST_F(OverviewSessionTest, Shutdown) {
   ToggleOverview();
 }
 
+// Tests adding a display during overview.
+TEST_F(OverviewSessionTest, AddDisplay) {
+  UpdateDisplay("400x400");
+  ToggleOverview();
+  EXPECT_TRUE(InOverviewSession());
+  UpdateDisplay("400x400,400x400");
+  EXPECT_FALSE(InOverviewSession());
+}
+
 // Tests removing a display during overview.
 TEST_F(OverviewSessionTest, RemoveDisplay) {
   UpdateDisplay("400x400,400x400");

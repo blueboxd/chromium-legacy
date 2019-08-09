@@ -797,8 +797,6 @@ TEST_F(CreditCardSaveManagerTest,
 // upload failed because of unsupported bin and falling back to local save.
 TEST_F(CreditCardSaveManagerTest,
        Local_UnsupportedCard_SaveCreditCardOptions_WithNonFocusableField) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillDoNotUploadSaveUnsupportedCards);
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
   // Set supported bin range so that the used card is unsupported.
   std::vector<std::pair<int, int>> supported_card_bin_ranges{
@@ -968,8 +966,6 @@ TEST_F(CreditCardSaveManagerTest,
 // when upload failed because of unsupported bin and falling back to local save.
 TEST_F(CreditCardSaveManagerTest,
        Local_UnsupportedCard_SaveCreditCardOptions_WithDynamicForms) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillDoNotUploadSaveUnsupportedCards);
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
   // Set supported bin range so that the used card is unsupported.
   std::vector<std::pair<int, int>> supported_card_bin_ranges{
@@ -5090,8 +5086,6 @@ TEST_F(CreditCardSaveManagerTest,
 // Tests that if a card doesn't fall in any of the supported bin ranges, local
 // save is offered rather than upload save.
 TEST_F(CreditCardSaveManagerTest, UploadSaveNotOfferedForUnsupportedCard) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillDoNotUploadSaveUnsupportedCards);
   std::vector<std::pair<int, int>> supported_card_bin_ranges{
       std::make_pair(4111, 4113), std::make_pair(34, 34),
       std::make_pair(300, 305)};
@@ -5118,8 +5112,6 @@ TEST_F(CreditCardSaveManagerTest, UploadSaveNotOfferedForUnsupportedCard) {
 // Tests that if a card doesn't fall in any of the supported bin ranges, but is
 // already saved, then local save is not offered.
 TEST_F(CreditCardSaveManagerTest, LocalSaveNotOfferedForSavedUnsupportedCard) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillDoNotUploadSaveUnsupportedCards);
   std::vector<std::pair<int, int>> supported_card_bin_ranges{
       std::make_pair(4111, 4113), std::make_pair(34, 34),
       std::make_pair(300, 305)};
@@ -5152,8 +5144,6 @@ TEST_F(CreditCardSaveManagerTest, LocalSaveNotOfferedForSavedUnsupportedCard) {
 // Tests that if a card falls in one of the supported bin ranges, upload save
 // is offered.
 TEST_F(CreditCardSaveManagerTest, UploadSaveOfferedForSupportedCard) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillDoNotUploadSaveUnsupportedCards);
   // Set supported BIN ranges.
   std::vector<std::pair<int, int>> supported_card_bin_ranges{
       std::make_pair(4111, 4113)};

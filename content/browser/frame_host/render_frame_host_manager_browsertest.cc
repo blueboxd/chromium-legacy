@@ -6374,4 +6374,146 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerDefaultProcessTest,
   SetBrowserClientForTesting(old_client);
 }
 
+// 1. Navigate to A1(B2, B3(B4), C5)
+// 2. Crash process B
+// 3. Reload B2, creating RFH B6.
+//
+// Along the way, check the RenderFrameProxies.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       CrashFrameReloadAndCheckProxy) {
+  // This test explicitly requires multiple processes to be used. It won't mean
+  // anything without SiteIsolation.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  // 1. Navigate to A1(B2, B3(B4), C5).
+  StartEmbeddedServer();
+  GURL url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b(b),c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* a1 = web_contents->GetMainFrame();
+  RenderFrameHostImpl* b2 = a1->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* b3 = a1->child_at(1)->current_frame_host();
+  RenderFrameHostImpl* b4 = b3->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* c5 = a1->child_at(2)->current_frame_host();
+
+  RenderFrameDeletedObserver delete_a1(a1);
+  RenderFrameDeletedObserver delete_b2(b2);
+  RenderFrameDeletedObserver delete_b3(b3);
+  RenderFrameDeletedObserver delete_b4(b4);
+  RenderFrameDeletedObserver delete_c5(c5);
+
+  GURL b2_url = b2->GetLastCommittedURL();
+  int b2_routing_id = b2->routing_id();
+
+  auto proxy_count = [](RenderFrameHostImpl* rfh) {
+    return rfh->frame_tree_node()->render_manager()->GetProxyCount();
+  };
+
+  // There are 3 processes, so every frame has 2 frame proxies.
+  EXPECT_EQ(2u, proxy_count(a1));
+  EXPECT_EQ(2u, proxy_count(b2));
+  EXPECT_EQ(2u, proxy_count(b3));
+  EXPECT_EQ(2u, proxy_count(b4));
+  EXPECT_EQ(2u, proxy_count(c5));
+
+  auto is_proxy_live = [](RenderFrameHostImpl* rfh,
+                          scoped_refptr<SiteInstance> site_instance) {
+    return rfh->frame_tree_node()
+        ->render_manager()
+        ->GetRenderFrameProxyHost(site_instance.get())
+        ->is_render_frame_proxy_live();
+  };
+
+  // Store SiteInstance for later comparison.
+  scoped_refptr<SiteInstance> a_site_instance(a1->GetSiteInstance());
+  scoped_refptr<SiteInstance> b_site_instance(b2->GetSiteInstance());
+  scoped_refptr<SiteInstance> c_site_instance(c5->GetSiteInstance());
+
+  // Check the state of the proxies before the crash:
+  EXPECT_TRUE(is_proxy_live(a1, b_site_instance));
+  EXPECT_TRUE(is_proxy_live(a1, c_site_instance));
+  EXPECT_TRUE(is_proxy_live(b2, a_site_instance));
+  EXPECT_TRUE(is_proxy_live(b2, c_site_instance));
+  EXPECT_TRUE(is_proxy_live(b3, a_site_instance));
+  EXPECT_TRUE(is_proxy_live(b3, c_site_instance));
+  EXPECT_TRUE(is_proxy_live(c5, a_site_instance));
+  EXPECT_TRUE(is_proxy_live(c5, b_site_instance));
+
+  // 2. Crash process B.
+  RenderProcessHost* process = b2->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(0);
+  crash_observer.Wait();
+
+  // Only B4 is deleted. B2 and B3 are still there in a "crashed" state.
+  delete_b4.WaitUntilDeleted();
+
+  // A1 and C5 RenderFrameImpl are gone.
+  EXPECT_FALSE(delete_a1.deleted());
+  EXPECT_TRUE(delete_b2.deleted());
+  EXPECT_TRUE(delete_b3.deleted());
+  EXPECT_TRUE(delete_b4.deleted());
+  EXPECT_FALSE(delete_c5.deleted());
+
+  // B2 and B3 are still there, but not B4.
+  ASSERT_EQ(3u, a1->child_count());
+  EXPECT_EQ(b2, a1->child_at(0)->current_frame_host());
+  EXPECT_EQ(b3, a1->child_at(1)->current_frame_host());
+  ASSERT_EQ(0u, b3->child_count());
+
+  EXPECT_FALSE(a1->render_process_has_died());
+  EXPECT_TRUE(b2->render_process_has_died());
+  EXPECT_TRUE(b3->render_process_has_died());
+  EXPECT_FALSE(c5->render_process_has_died());
+
+  EXPECT_EQ(2u, proxy_count(a1));
+  EXPECT_EQ(2u, proxy_count(b2));
+  EXPECT_EQ(2u, proxy_count(b3));
+  EXPECT_EQ(2u, proxy_count(c5));
+
+  // Check the state of the proxies after the crash:
+  EXPECT_FALSE(is_proxy_live(a1, b_site_instance));
+  EXPECT_TRUE(is_proxy_live(a1, c_site_instance));
+  EXPECT_TRUE(is_proxy_live(b2, a_site_instance));
+  EXPECT_TRUE(is_proxy_live(b2, c_site_instance));
+  EXPECT_TRUE(is_proxy_live(b3, a_site_instance));
+  EXPECT_TRUE(is_proxy_live(b3, c_site_instance));
+  EXPECT_TRUE(is_proxy_live(c5, a_site_instance));
+  EXPECT_FALSE(is_proxy_live(c5, b_site_instance));
+
+  // 3. Reload B2, B6 is created.
+  NavigateFrameToURL(b2->frame_tree_node(), b2_url);
+
+  // B2 has been replaced, B3 hasn't.
+  EXPECT_NE(b2_routing_id, a1->child_at(0)->current_frame_host()->routing_id());
+  EXPECT_EQ(b3, a1->child_at(1)->current_frame_host());
+  RenderFrameHostImpl* b6 = a1->child_at(0)->current_frame_host();
+  EXPECT_TRUE(b3->render_process_has_died());
+  EXPECT_FALSE(b6->render_process_has_died());
+
+  EXPECT_EQ(a_site_instance, a1->GetSiteInstance());
+  EXPECT_EQ(b_site_instance, b6->GetSiteInstance());
+  EXPECT_EQ(c_site_instance, c5->GetSiteInstance());
+
+  EXPECT_EQ(2u, proxy_count(a1));
+  EXPECT_EQ(2u, proxy_count(b6));
+  EXPECT_EQ(2u, proxy_count(b3));
+  EXPECT_EQ(2u, proxy_count(c5));
+
+  // Check the state of the proxies after the reload.
+  EXPECT_TRUE(is_proxy_live(a1, b_site_instance));
+  EXPECT_TRUE(is_proxy_live(a1, c_site_instance));
+  EXPECT_TRUE(is_proxy_live(b6, a_site_instance));
+  EXPECT_TRUE(is_proxy_live(b6, c_site_instance));
+  EXPECT_TRUE(is_proxy_live(b3, a_site_instance));
+  EXPECT_TRUE(is_proxy_live(b3, c_site_instance));
+  EXPECT_TRUE(is_proxy_live(c5, a_site_instance));
+  EXPECT_TRUE(is_proxy_live(c5, b_site_instance));
+}
+
 }  // namespace content

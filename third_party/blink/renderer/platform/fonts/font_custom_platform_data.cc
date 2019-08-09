@@ -137,7 +137,7 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
                           italic && !base_typeface_->isItalic(), orientation);
 }
 
-SkString FontCustomPlatformData::FamilyNameForInspector() const {
+String FontCustomPlatformData::FamilyNameForInspector() const {
   SkTypeface::LocalizedStrings* font_family_iterator =
       base_typeface_->createFamilyNameIterator();
   SkTypeface::LocalizedString localized_string;
@@ -150,7 +150,8 @@ SkString FontCustomPlatformData::FamilyNameForInspector() const {
     }
   }
   font_family_iterator->unref();
-  return localized_string.fString;
+  return String::FromUTF8(localized_string.fString.c_str(),
+                          localized_string.fString.size());
 }
 
 scoped_refptr<FontCustomPlatformData> FontCustomPlatformData::Create(

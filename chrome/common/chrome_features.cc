@@ -35,10 +35,6 @@ const base::Feature kApkWebAppInstalls{"ApkWebAppInstalls",
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
-// Enables the menu item for Javascript execution via AppleScript.
-const base::Feature kAppleScriptExecuteJavaScriptMenuItem{
-    "AppleScriptExecuteJavaScriptMenuItem", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the "this OS is obsolete" infobar on Mac 10.9.
 // TODO(ellyjones): Remove this after the last 10.9 release.
 const base::Feature kShow10_9ObsoleteInfobar{"Show109ObsoleteInfobar",

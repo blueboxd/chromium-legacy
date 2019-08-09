@@ -504,6 +504,21 @@
             ]
         }
     ],
+    "AppListAppRanker": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "AppListAppRanker",
+                    "enable_features": [
+                        "EnableAppRanker"
+                    ]
+                }
+            ]
+        }
+    ],
     "AppListLaunchRecorder": [
         {
             "platforms": [
@@ -2898,6 +2913,44 @@
             ]
         }
     ],
+    "LightweightNoStatePrefetch": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "HTML_CSS_SyncScript_20190725",
+                    "params": {
+                        "skip_async_script": "true",
+                        "skip_other": "true"
+                    },
+                    "enable_features": [
+                        "LightweightNoStatePrefetch"
+                    ]
+                }
+            ]
+        }
+    ],
+    "LoadingOnlyLearnHighPriorityResources": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20190626",
+                    "enable_features": [
+                        "LoadingOnlyLearnHighPriorityResources"
+                    ]
+                }
+            ]
+        }
+    ],
     "LowPriorityIframes2": [
         {
             "platforms": [
@@ -3873,6 +3926,25 @@
                     "disable_features": [
                         "AutomaticPasswordGeneration",
                         "PasswordsKeyboardAccessory"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PaymentRequestAlwaysAllowJustInTimePaymentApp": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AlwaysAllowJustInTimePaymentApp"
                     ]
                 }
             ]

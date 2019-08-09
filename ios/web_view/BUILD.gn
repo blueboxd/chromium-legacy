@@ -148,8 +148,6 @@ ios_web_view_sources = [
   "internal/language/web_view_language_model_manager_factory.mm",
   "internal/language/web_view_url_language_histogram_factory.h",
   "internal/language/web_view_url_language_histogram_factory.mm",
-  "internal/leveldb_proto/web_view_proto_database_provider_factory.h",
-  "internal/leveldb_proto/web_view_proto_database_provider_factory.mm",
   "internal/passwords/mock_credentials_filter.h",
   "internal/passwords/mock_credentials_filter.mm",
   "internal/passwords/web_view_password_manager_client.h",

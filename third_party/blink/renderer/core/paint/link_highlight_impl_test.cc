@@ -30,7 +30,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -83,9 +82,7 @@ class LinkHighlightImplTest : public testing::Test,
   }
 
   void TearDown() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
 
     // Ensure we fully clean up while scoped settings are enabled. Without this,
     // garbage collection would occur after ScopedBlinkGenPropertyTreesForTest

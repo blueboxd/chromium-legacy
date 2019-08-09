@@ -28,7 +28,8 @@ RemoteCommandJob::~RemoteCommandJob() {
 
 bool RemoteCommandJob::Init(
     base::TimeTicks now,
-    const enterprise_management::RemoteCommand& command) {
+    const enterprise_management::RemoteCommand& command,
+    const enterprise_management::SignedData* signed_command) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(NOT_INITIALIZED, status_);
 
@@ -39,6 +40,8 @@ bool RemoteCommandJob::Init(
   DCHECK_EQ(command.type(), GetType());
 
   unique_id_ = command.command_id();
+  if (signed_command)
+    signed_command_ = *signed_command;
 
   if (command.has_age_of_command()) {
     // Use age of command provided by server to estimate the command issued time

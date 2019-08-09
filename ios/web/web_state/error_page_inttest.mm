@@ -68,10 +68,10 @@ class TestWebClient : public WebClient {
                         NSError* error,
                         bool is_post,
                         bool is_off_the_record,
-                        NSString** error_html) override {
-    *error_html = base::SysUTF8ToNSString(
+                        base::OnceCallback<void(NSString*)> callback) override {
+    std::move(callback).Run(base::SysUTF8ToNSString(
         GetErrorText(web_state, url, base::SysNSStringToUTF8(error.domain),
-                     error.code, is_post, is_off_the_record));
+                     error.code, is_post, is_off_the_record)));
   }
 };
 }  // namespace

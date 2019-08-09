@@ -73,6 +73,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialTask : public FidoTask {
   std::unique_ptr<SignOperation> silent_sign_operation_;
   MakeCredentialTaskCallback callback_;
   size_t current_credential_ = 0;
+  // probing_alternative_rp_id_ is true if |app_id| is set in |request_| and
+  // thus the exclude list is being probed a second time with the alternative RP
+  // ID.
+  bool probing_alternative_rp_id_ = false;
   bool canceled_ = false;
 
   base::WeakPtrFactory<MakeCredentialTask> weak_factory_;

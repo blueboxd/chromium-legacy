@@ -459,9 +459,10 @@ class BrowserWindow : public ui::BaseWindow {
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) = 0;
 
-  // Shows User Happiness Tracking Survey's invitation bubble anchored to the
-  // app menu button that will lead to a survey identified by |site_id|.
-  virtual void ShowHatsBubbleFromAppMenuButton(const std::string& site_id) = 0;
+  // Shows User Happiness Tracking Survey's invitation bubble when possible
+  // (such as having the proper anchor view).
+  // |site_id| is the site identification of the survey the bubble leads to.
+  virtual void ShowHatsBubble(const std::string& site_id) = 0;
 
   // Executes |command| registered by |extension|.
   virtual void ExecuteExtensionCommand(const extensions::Extension* extension,

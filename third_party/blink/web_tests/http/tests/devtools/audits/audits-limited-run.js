@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 (async function() {
-  TestRunner.addResult('Tests that audits panel works when only performance category is selected.\n');
+  TestRunner.addResult('Tests that audits panel works when only the pwa category is selected.\n');
 
   await TestRunner.loadModule('audits_test_runner');
   await TestRunner.showPanel('audits');
 
-  var dialogElement = AuditsTestRunner.getContainerElement();
-  var checkboxes = dialogElement.querySelectorAll('.checkbox');
-  for (var checkbox of checkboxes) {
-    if (checkbox.textElement.textContent === 'Performance' ||
+  const containerElement = AuditsTestRunner.getContainerElement();
+  const checkboxes = containerElement.querySelectorAll('.checkbox');
+  for (const checkbox of checkboxes) {
+    if (checkbox.textElement.textContent === 'Progressive Web App' ||
         checkbox.textElement.textContent === 'Clear storage')
       continue;
 
@@ -21,7 +21,7 @@
   AuditsTestRunner.dumpStartAuditState();
   AuditsTestRunner.getRunButton().click();
 
-  var results = await AuditsTestRunner.waitForResults();
+  const results = await AuditsTestRunner.waitForResults();
   TestRunner.addResult(`\n=============== Audits run ===============`);
   TestRunner.addResult(Object.keys(results.audits).sort().join('\n'));
 

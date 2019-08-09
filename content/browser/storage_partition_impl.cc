@@ -25,6 +25,7 @@
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -1129,6 +1130,21 @@ StoragePartitionImpl::GetNativeFileSystemManager() {
 
 ContentIndexContextImpl* StoragePartitionImpl::GetContentIndexContext() {
   return content_index_context_.get();
+}
+
+leveldb_proto::ProtoDatabaseProvider*
+StoragePartitionImpl::GetProtoDatabaseProvider() {
+  if (!proto_database_provider_) {
+    proto_database_provider_ =
+        std::make_unique<leveldb_proto::ProtoDatabaseProvider>(partition_path_);
+  }
+  return proto_database_provider_.get();
+}
+
+void StoragePartitionImpl::SetProtoDatabaseProvider(
+    std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> proto_db_provider) {
+  DCHECK(!proto_database_provider_);
+  proto_database_provider_ = std::move(proto_db_provider);
 }
 
 void StoragePartitionImpl::OpenLocalStorage(

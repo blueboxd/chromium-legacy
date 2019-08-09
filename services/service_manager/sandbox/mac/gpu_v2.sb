@@ -97,3 +97,16 @@
 (allow file-read* file-write*
   (subpath (param darwin-user-cache-dir))
 )
+
+(if (param-true? filter-syscalls)
+  (when (defined? 'syscall-unix)
+    (deny syscall-unix (with send-signal SIGSYS))
+    (allow syscall-unix
+      (syscall-number SYS_csrctl)
+      (syscall-number SYS_getentropy)
+      (syscall-number SYS_getxattr)
+      (syscall-number SYS_kdebug_typefilter)
+      (syscall-number SYS_sigaltstack)
+      (syscall-number SYS_write)
+      (syscall-number SYS_write_nocancel)
+)))

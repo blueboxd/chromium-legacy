@@ -65,6 +65,16 @@ Polymer({
     /** @private */
     hasIncognito_: Boolean,
 
+    /**
+     * Whether to show the Add button next to the header.
+     * @private
+     */
+    showAddSiteButton_: {
+      type: Boolean,
+      computed: 'computeShowAddSiteButton_(readOnlyList, category, ' +
+          'categorySubtype)',
+    },
+
     /** @private */
     showAddSiteDialog_: Boolean,
 
@@ -219,6 +229,20 @@ Polymer({
    */
   hasSites_: function() {
     return this.sites.length > 0;
+  },
+
+  /**
+   * Whether the Add Site button is shown in the header for the current category
+   * and category subtype.
+   * @return {boolean}
+   * @private
+   */
+  computeShowAddSiteButton_: function() {
+    return !(
+        this.readOnlyList ||
+        (this.category ==
+             settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE &&
+         this.categorySubtype == settings.ContentSetting.ALLOW));
   },
 
   /**

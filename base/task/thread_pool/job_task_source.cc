@@ -74,7 +74,12 @@ TaskSource::RunIntent JobTaskSource::WillRunTask() {
 }
 
 size_t JobTaskSource::GetRemainingConcurrency() const {
-  return GetMaxConcurrency() - worker_count_.load(std::memory_order_relaxed);
+  const size_t worker_count = worker_count_.load(std::memory_order_relaxed);
+  const size_t max_concurrency = GetMaxConcurrency();
+  // Avoid underflows.
+  if (worker_count > max_concurrency)
+    return 0;
+  return max_concurrency - worker_count;
 }
 
 void JobTaskSource::NotifyConcurrencyIncrease() {

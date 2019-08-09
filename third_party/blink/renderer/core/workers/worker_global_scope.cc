@@ -360,6 +360,11 @@ service_manager::InterfaceProvider* WorkerGlobalScope::GetInterfaceProvider() {
   return &interface_provider_;
 }
 
+const BrowserInterfaceBrokerProxy*
+WorkerGlobalScope::GetBrowserInterfaceBrokerProxy() const {
+  return &browser_interface_broker_proxy_;
+}
+
 ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
   return const_cast<WorkerGlobalScope*>(this);
 }
@@ -510,6 +515,13 @@ WorkerGlobalScope::WorkerGlobalScope(
         mojo::MakeProxy(service_manager::mojom::InterfaceProviderPtrInfo(
             creation_params->interface_provider.PassHandle(),
             service_manager::mojom::InterfaceProvider::Version_)));
+  }
+
+  if (creation_params->browser_interface_broker.is_valid()) {
+    auto pipe = creation_params->browser_interface_broker.PassPipe();
+    browser_interface_broker_proxy_.Bind(
+        mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>(
+            std::move(pipe), blink::mojom::BrowserInterfaceBroker::Version_));
   }
 
   // A FeaturePolicy is created by FeaturePolicy::CreateFromParentPolicy, even

@@ -101,7 +101,7 @@ AccessibilityTest.define('SettingsA11ySignOut', {
               parent = this.peoplePage;
               disconnectButtonSelector = '#disconnectButton';
             }
-            return test_util.waitForRender(parent);
+            return test_util.waitBeforeNextRender(parent);
           })
           .then(() => {
             disconnectButton = parent.$$(disconnectButtonSelector);

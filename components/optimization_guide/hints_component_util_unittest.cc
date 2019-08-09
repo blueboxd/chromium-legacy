@@ -139,6 +139,14 @@ TEST_F(HintsComponentUtilTest, RecordOptimizationFilterStatus) {
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.OptimizationFilterStatus.NoScript",
       OptimizationFilterStatus::kFoundServerBlacklistConfig, 1);
+
+  // Record again with a different suffix to make sure it doesn't choke.
+  RecordOptimizationFilterStatus(
+      proto::OptimizationType::DEFER_ALL_SCRIPT,
+      OptimizationFilterStatus::kFoundServerBlacklistConfig);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.OptimizationFilterStatus.DeferAllScript",
+      OptimizationFilterStatus::kFoundServerBlacklistConfig, 1);
 }
 
 TEST_F(HintsComponentUtilTest, ProcessOptimizationFilter) {

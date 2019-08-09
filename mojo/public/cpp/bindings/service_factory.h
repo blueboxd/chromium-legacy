@@ -47,8 +47,8 @@ struct ServiceFactoryTraits;
 //       return std::make_unique<foo::FooImpl>(std::move(receiver));
 //     }
 //
-//     auto RunFooService(mojo::PendingReceiver<foo::mojom::Foo> receiver) {
-//       return std::make_unique<foo::FooImpl>(std::move(receiver));
+//     auto RunBarService(mojo::PendingReceiver<bar::mojom::Bar> receiver) {
+//       return std::make_unique<bar::BarImpl>(std::move(receiver));
 //     }
 //
 //     void HandleServiceRequest(mojo::GenericPendingReceiver receiver) {

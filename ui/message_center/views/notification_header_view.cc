@@ -404,6 +404,9 @@ void NotificationHeaderView::UpdateSummaryTextVisibility() {
   const bool timestamp_visible = !has_progress_ && timestamp_;
   timestamp_divider_->SetVisible(timestamp_visible);
   timestamp_view_->SetVisible(timestamp_visible);
+
+  // TODO(crbug.com/991492): this should not be necessary.
+  detail_views_->InvalidateLayout();
 }
 
 }  // namespace message_center

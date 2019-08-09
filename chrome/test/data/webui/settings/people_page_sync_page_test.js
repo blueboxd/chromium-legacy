@@ -76,7 +76,7 @@ cr.define('settings_people_page_sync_page', function() {
       syncPage.set('syncStatus', {supervisedUser: false});
       Polymer.dom.flush();
 
-      return test_util.waitForRender().then(() => {
+      return test_util.waitBeforeNextRender().then(() => {
         encryptWithGoogle =
             syncPage.$$('cr-radio-button[name="encrypt-with-google"]');
         encryptWithPassphrase =
@@ -358,7 +358,7 @@ cr.define('settings_people_page_sync_page', function() {
 
         Polymer.dom.flush();
 
-        return test_util.waitForRender(syncPage).then(() => {
+        return test_util.waitBeforeNextRender(syncPage).then(() => {
           // Need to re-retrieve this, as a different show passphrase radio
           // button is shown once |syncPrefs.fullEncryptionBody| is non-empty.
           encryptWithPassphrase =

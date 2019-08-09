@@ -64,6 +64,7 @@ class VULKAN_EXPORT VulkanSwapChain {
                   const gfx::Size& image_size,
                   uint32_t min_image_count,
                   VkSurfaceTransformFlagBitsKHR pre_transform,
+                  bool use_protected_memory,
                   std::unique_ptr<VulkanSwapChain> old_swap_chain);
 
   // Destroy() should be called when all related GPU tasks have been finished.
@@ -74,6 +75,7 @@ class VULKAN_EXPORT VulkanSwapChain {
 
   uint32_t num_images() const { return static_cast<uint32_t>(images_.size()); }
   const gfx::Size& size() const { return size_; }
+  bool use_protected_memory() const { return use_protected_memory_; }
 
  private:
   bool InitializeSwapChain(VkSurfaceKHR surface,
@@ -81,6 +83,7 @@ class VULKAN_EXPORT VulkanSwapChain {
                            const gfx::Size& image_size,
                            uint32_t min_image_count,
                            VkSurfaceTransformFlagBitsKHR pre_transform,
+                           bool use_protected_memory,
                            std::unique_ptr<VulkanSwapChain> old_swap_chain);
   void DestroySwapChain();
 
@@ -93,6 +96,7 @@ class VULKAN_EXPORT VulkanSwapChain {
                               VkSemaphore* semaphore);
   void EndWriteCurrentImage(VkImageLayout layout, VkSemaphore semaphore);
 
+  bool use_protected_memory_ = false;
   VulkanDeviceQueue* device_queue_;
   VkSwapchainKHR swap_chain_ = VK_NULL_HANDLE;
 

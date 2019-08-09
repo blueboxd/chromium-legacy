@@ -106,8 +106,9 @@ ThreadGroup::GetNumAdditionalWorkersForBestEffortTaskSourcesLockRequired()
   if (priority_queue_.PeekSortKey().priority() == TaskPriority::BEST_EFFORT) {
     // Assign the correct number of workers for the top TaskSource (-1 for the
     // worker that is already accounted for in |num_queued|).
-    return num_queued +
-           priority_queue_.PeekTaskSource()->GetRemainingConcurrency() - 1;
+    return std::max<size_t>(
+        1, num_queued +
+               priority_queue_.PeekTaskSource()->GetRemainingConcurrency() - 1);
   }
   return num_queued;
 }
@@ -130,8 +131,9 @@ ThreadGroup::GetNumAdditionalWorkersForForegroundTaskSourcesLockRequired()
       priority == TaskPriority::USER_BLOCKING) {
     // Assign the correct number of workers for the top TaskSource (-1 for the
     // worker that is already accounted for in |num_queued|).
-    return num_queued +
-           priority_queue_.PeekTaskSource()->GetRemainingConcurrency() - 1;
+    return std::max<size_t>(
+        1, num_queued +
+               priority_queue_.PeekTaskSource()->GetRemainingConcurrency() - 1);
   }
   return num_queued;
 }

@@ -12,7 +12,6 @@ def _CheckForModularizedTests(input_api, output_api):
       'cr_elements/cr_view_manager_test.m.js',
       'extensions/test_util.m.js',
       'mock_timer.m.js',
-      'settings/test_util.m.js',
   ]
   affected_files = [
       input_api.os_path.relpath(f, input_api.PresubmitLocalPath())

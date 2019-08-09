@@ -215,7 +215,7 @@ PolymerTest.flushTasks = function() {
  * @return {!Promise} Promise that resolves when an afterNextRender()
  *     callback on |element| is run.
  */
-PolymerTest.afterNextRender = function(element) {
+PolymerTest.waitAfterNextRender = function(element) {
   return new Promise(resolve => {
     Polymer.RenderStatus.afterNextRender(element, resolve);
   });

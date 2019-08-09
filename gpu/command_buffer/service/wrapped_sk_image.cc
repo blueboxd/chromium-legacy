@@ -27,6 +27,11 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/trace_util.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/vulkan/vulkan_implementation.h"
+#endif
+
 namespace gpu {
 namespace raster {
 
@@ -128,14 +133,25 @@ class WrappedSkImage : public SharedImageBacking {
     // Initializing to bright green makes it obvious if the pixels are not
     // properly set before they are displayed (e.g. https://crbug.com/956555).
     // We don't do this on release builds because there is a slight overhead.
+#if BUILDFLAG(ENABLE_VULKAN)
+    auto is_protected = context_state_->GrContextIsVulkan() &&
+                                context_state_->vk_context_provider()
+                                    ->GetVulkanImplementation()
+                                    ->enforce_protected_memory()
+                            ? GrProtected::kYes
+                            : GrProtected::kNo;
+#else
+    auto is_protected = GrProtected::kNo;
+#endif
+
 #if DCHECK_IS_ON()
     backend_texture_ = context_state_->gr_context()->createBackendTexture(
         size().width(), size().height(), GetSkColorType(), SkColors::kGreen,
-        GrMipMapped::kNo, GrRenderable::kYes);
+        GrMipMapped::kNo, GrRenderable::kYes, is_protected);
 #else
     backend_texture_ = context_state_->gr_context()->createBackendTexture(
         size().width(), size().height(), GetSkColorType(), GrMipMapped::kNo,
-        GrRenderable::kYes);
+        GrRenderable::kYes, is_protected);
 #endif
 
     if (!backend_texture_.isValid())

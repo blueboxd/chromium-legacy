@@ -63,7 +63,7 @@ class CORE_EXPORT CSSMathFunctionValue : public CSSPrimitiveValue {
   double ComputeLengthPx(
       const CSSToLengthConversionData& conversion_data) const;
 
-  void AccumulateLengthArray(CSSLengthArray& length_array,
+  bool AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const;
   Length ConvertToLength(
       const CSSToLengthConversionData& conversion_data) const;

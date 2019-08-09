@@ -41,7 +41,8 @@ class TestingRemoteCommandsService : public RemoteCommandsService {
   explicit TestingRemoteCommandsService(MockCloudPolicyClient* client)
       : RemoteCommandsService(
             std::make_unique<DeviceCommandsFactoryChromeOS>(nullptr),
-            client) {}
+            client,
+            nullptr /* store */) {}
   // RemoteCommandsService:
   void SetOnCommandAckedCallback(base::OnceClosure callback) override {
     on_command_acked_callback_ = std::move(callback);
@@ -72,7 +73,7 @@ std::unique_ptr<policy::RemoteCommandJob> CreateWipeUsersJob(
   // Create the job and validate.
   auto job = std::make_unique<policy::DeviceCommandWipeUsersJob>(service);
 
-  EXPECT_TRUE(job->Init(base::TimeTicks::Now(), command_proto));
+  EXPECT_TRUE(job->Init(base::TimeTicks::Now(), command_proto, nullptr));
   EXPECT_EQ(kUniqueID, job->unique_id());
   EXPECT_EQ(policy::RemoteCommandJob::NOT_STARTED, job->status());
 

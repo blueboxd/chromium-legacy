@@ -31,7 +31,9 @@ class VULKAN_EXPORT VulkanSurface {
     DEFAULT_SURFACE_FORMAT = FORMAT_RGBA_32
   };
 
-  VulkanSurface(VkInstance vk_instance, VkSurfaceKHR surface);
+  VulkanSurface(VkInstance vk_instance,
+                VkSurfaceKHR surface,
+                bool enforce_protected_memory);
 
   virtual ~VulkanSurface();
 
@@ -64,6 +66,8 @@ class VULKAN_EXPORT VulkanSurface {
   VkSurfaceKHR surface_ = VK_NULL_HANDLE;
   VkSurfaceFormatKHR surface_format_ = {};
   VulkanDeviceQueue* device_queue_ = nullptr;
+
+  const bool enforce_protected_memory_;
 
   // The generation of |swap_chain_|, it will be increasted if a new
   // |swap_chain_| is created due to resizing, etec.

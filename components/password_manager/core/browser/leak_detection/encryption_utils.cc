@@ -8,14 +8,52 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "crypto/openssl_util.h"
+#include "crypto/sha2.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 
 namespace password_manager {
 
-std::string ScryptHashUsernameAndPassword(const std::string& username,
-                                          const std::string& password) {
+namespace {
+
+// Prefix length in bits used for BucketizeUsername().
+constexpr size_t kPrefixLen = 24;
+
+}  // namespace
+
+std::string CanonicalizeUsername(base::StringPiece username) {
+  std::string email_lower = base::ToLowerASCII(username);
+  // |email_lower| might be an email address. Strip off the mail-address host,
+  // remove periods from the username and return the result.
+  std::string user_lower = email_lower.substr(0, email_lower.find_last_of('@'));
+  base::RemoveChars(user_lower, ".", &user_lower);
+  return user_lower;
+}
+
+std::string HashUsername(base::StringPiece canonicalized_username) {
+  // Needs to stay in sync with server side constant: go/passwords-leak-salts
+  static constexpr char kUsernameSalt[] = {
+      -60, -108, -93, -107, -8, -64, -30, 62,   -87, 35,  4,
+      120, 112,  44,  114,  24, 86,  84,  -103, -77, -23, 33,
+      24,  108,  33,  26,   1,  34,  60,  69,   74,  -6};
+
+  return crypto::SHA256HashString(base::StrCat(
+      {canonicalized_username,
+       base::StringPiece(kUsernameSalt, base::size(kUsernameSalt))}));
+}
+
+std::string BucketizeUsername(base::StringPiece canonicalized_username) {
+  static_assert(
+      kPrefixLen % CHAR_BIT == 0,
+      "kPrefixLen must be a multiple of the number of bits in a char.");
+  return HashUsername(canonicalized_username).substr(0, kPrefixLen / CHAR_BIT);
+}
+
+std::string ScryptHashUsernameAndPassword(base::StringPiece username,
+                                          base::StringPiece password) {
   // Constant salt added to the password hash on top of username.
+  // Needs to stay in sync with server side constant: go/passwords-leak-salts
   static constexpr char kPasswordHashSalt[] = {
       48,   118, 42,  -46,  63,  123, -95, -101, -8,  -29, 66,
       -4,   -95, -89, -115, 6,   -26, 107, -28,  -37, -72, 79,
@@ -27,7 +65,7 @@ std::string ScryptHashUsernameAndPassword(const std::string& username,
   static constexpr size_t kScryptMaxMemory = 1024 * 1024 * 32;
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  std::string username_password = username + password;
+  std::string username_password = base::StrCat({username, password});
   std::string salt = base::StrCat(
       {username,
        base::StringPiece(kPasswordHashSalt, base::size(kPasswordHashSalt))});

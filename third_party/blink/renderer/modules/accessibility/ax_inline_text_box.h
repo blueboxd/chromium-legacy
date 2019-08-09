@@ -48,6 +48,8 @@ class AXInlineTextBox final : public AXObject {
   bool IsDetached() const override { return !inline_text_box_; }
   bool IsAXInlineTextBox() const override { return true; }
 
+  bool IsLineBreakingObject() const override;
+
  public:
   ax::mojom::Role RoleValue() const override {
     return ax::mojom::Role::kInlineTextBox;

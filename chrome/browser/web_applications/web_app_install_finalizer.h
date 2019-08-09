@@ -35,8 +35,6 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void CreateOsShortcuts(const AppId& app_id,
                          bool add_to_desktop,
                          CreateOsShortcutsCallback callback) override;
-  bool CanReparentTab(const AppId& app_id,
-                      bool shortcut_created) const override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const AppId& app_id) override;
   bool CanSkipAppUpdateForSync(

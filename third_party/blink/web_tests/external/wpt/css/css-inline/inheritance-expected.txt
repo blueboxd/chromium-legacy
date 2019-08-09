@@ -3,7 +3,7 @@ FAIL Property alignment-baseline has initial value baseline assert_equals: expec
 PASS Property alignment-baseline does not inherit
 PASS Property baseline-shift has initial value 0px
 PASS Property baseline-shift does not inherit
-FAIL Property dominant-baseline has initial value normal assert_equals: expected "normal" but got "auto"
+PASS Property dominant-baseline has initial value auto
 PASS Property dominant-baseline inherits
 FAIL Property initial-letters has initial value normal assert_true: initial-letters doesn't seem to be supported in the computed style expected true got false
 FAIL Property initial-letters does not inherit assert_true: expected true got false

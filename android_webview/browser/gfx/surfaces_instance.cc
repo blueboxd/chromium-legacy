@@ -241,6 +241,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
     // GL state could be changed across frames, so we need reset GrContext.
     shared_context_state_->PessimisticallyResetGrContext();
   }
+  gl_surface_->SetSize(viewport);
   display_->Resize(viewport);
   display_->DrawAndSwap();
   // SkiaRenderer generates DidReceiveSwapBuffersAck calls.

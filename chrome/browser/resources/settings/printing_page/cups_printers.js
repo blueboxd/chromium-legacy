@@ -65,19 +65,19 @@ Polymer({
         'openManufacturerModelDialogForSpecifiedPrinter_',
   },
 
-  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
-  networkConfigProxy_: null,
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  networkConfig_: null,
 
   /** @override */
   created: function() {
-    this.networkConfigProxy_ =
+    this.networkConfig_ =
         network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+            .getMojoServiceRemote();
   },
 
   /** @override */
   attached: function() {
-    this.networkConfigProxy_
+    this.networkConfig_
         .getNetworkStateList({
           filter: chromeos.networkConfig.mojom.FilterType.kActive,
           networkType: chromeos.networkConfig.mojom.NetworkType.kAll,

@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -1809,11 +1810,13 @@ TEST_F(DnsTransactionTest, HttpsPostTestNoCookies) {
   callback.WaitUntilDone();
   EXPECT_EQ(0u, callback.cookie_list_size());
   callback.Reset();
-  helper1.request_context()->cookie_store()->SetCookieWithOptionsAsync(
-      GURL(GetURLFromTemplateWithoutParameters(
-          config_.dns_over_https_servers[0].server_template)),
-      "test-cookie=you-still-fail", CookieOptions(),
-      base::nullopt /* server_time */,
+  GURL cookie_url(GetURLFromTemplateWithoutParameters(
+      config_.dns_over_https_servers[0].server_template));
+  auto cookie = CanonicalCookie::Create(
+      cookie_url, "test-cookie=you-still-fail", base::Time::Now(),
+      base::nullopt /* server_time */);
+  helper1.request_context()->cookie_store()->SetCanonicalCookieAsync(
+      std::move(cookie), cookie_url.scheme(), CookieOptions(),
       base::Bind(&CookieCallback::SetCookieCallback,
                  base::Unretained(&callback)));
   EXPECT_TRUE(helper1.RunUntilDone(transaction_factory_.get()));

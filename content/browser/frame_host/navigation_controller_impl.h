@@ -66,6 +66,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
                const std::string& extra_headers) override;
   void LoadURLWithParams(const LoadURLParams& params) override;
   void LoadIfNecessary() override;
+  void LoadErrorPage(RenderFrameHost* render_frame_host,
+                     const GURL& url,
+                     const std::string& error_page_html,
+                     net::Error error) override;
   bool CanGoBack() override;
   bool CanGoForward() override;
   bool CanGoToOffset(int offset) override;

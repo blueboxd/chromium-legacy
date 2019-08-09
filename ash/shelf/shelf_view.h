@@ -29,13 +29,13 @@
 #include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
 namespace ui {
@@ -105,12 +105,11 @@ enum ShelfAlignmentUmaEnumValue {
 //      (for the main shelf)        last_visible_index = 7
 //
 
-class ASH_EXPORT ShelfView : public views::View,
+class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                              public ShelfButtonDelegate,
                              public ShelfModelObserver,
                              public ShellObserver,
                              public views::ContextMenuController,
-                             public views::FocusTraversable,
                              public views::BoundsAnimatorObserver,
                              public app_list::ApplicationDragAndDropHost,
                              public ash::TabletModeObserver,
@@ -197,8 +196,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Overridden from FocusTraversable:
   views::FocusSearch* GetFocusSearch() override;
-  FocusTraversable* GetFocusTraversableParent() override;
-  View* GetFocusTraversableParentView() override;
 
   // Overridden from app_list::ApplicationDragAndDropHost:
   void CreateDragIconProxy(const gfx::Point& location_in_screen_coordinates,

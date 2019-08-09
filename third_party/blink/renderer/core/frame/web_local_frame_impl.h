@@ -33,6 +33,7 @@
 
 #include <memory>
 #include <set>
+#include <utility>
 
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -323,7 +324,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool DispatchBeforeUnloadEvent(bool) override;
   void CommitNavigation(
       std::unique_ptr<WebNavigationParams> navigation_params,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+      base::OnceClosure call_before_attaching_new_document) override;
   blink::mojom::CommitResult CommitSameDocumentNavigation(
       const WebURL&,
       WebFrameLoadType,

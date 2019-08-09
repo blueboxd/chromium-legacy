@@ -85,8 +85,10 @@ VkAccessFlags GetAccessMask(const VkImageLayout layout) {
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanDeviceQueue* device_queue,
                                          VulkanCommandPool* command_pool,
-                                         bool primary)
+                                         bool primary,
+                                         bool use_protected_memory)
     : primary_(primary),
+      use_protected_memory_(use_protected_memory),
       device_queue_(device_queue),
       command_pool_(command_pool) {
   command_pool_->IncrementCommandBufferCount();
@@ -145,17 +147,21 @@ bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
   std::vector<VkPipelineStageFlags> wait_dst_stage_mask(
       num_wait_semaphores, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 
-  VkSubmitInfo submit_info = {
-      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-      .pNext = nullptr,
-      .waitSemaphoreCount = num_wait_semaphores,
-      .pWaitSemaphores = wait_semaphores,
-      .pWaitDstStageMask = wait_dst_stage_mask.data(),
-      .commandBufferCount = 1,
-      .pCommandBuffers = &command_buffer_,
-      .signalSemaphoreCount = num_signal_semaphores,
-      .pSignalSemaphores = signal_semaphores,
-  };
+  VkProtectedSubmitInfo protected_submit_info = {};
+  protected_submit_info.sType = VK_STRUCTURE_TYPE_PROTECTED_SUBMIT_INFO;
+  protected_submit_info.pNext = nullptr;
+  protected_submit_info.protectedSubmit = VK_TRUE;
+
+  VkSubmitInfo submit_info = {};
+  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submit_info.pNext = use_protected_memory_ ? &protected_submit_info : nullptr;
+  submit_info.waitSemaphoreCount = num_wait_semaphores;
+  submit_info.pWaitSemaphores = wait_semaphores;
+  submit_info.pWaitDstStageMask = wait_dst_stage_mask.data();
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &command_buffer_;
+  submit_info.signalSemaphoreCount = num_signal_semaphores;
+  submit_info.pSignalSemaphores = signal_semaphores;
 
   VkResult result = VK_SUCCESS;
 

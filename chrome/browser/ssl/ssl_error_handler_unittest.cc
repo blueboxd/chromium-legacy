@@ -125,8 +125,7 @@ const char kCertWithoutOrganizationOrCommonName[] =
 std::unique_ptr<net::test_server::HttpResponse> WaitForRequest(
     const base::Closure& quit_closure,
     const net::test_server::HttpRequest& request) {
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           quit_closure);
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, quit_closure);
   return std::make_unique<net::test_server::HungResponse>();
 }
 
@@ -615,7 +614,7 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop run_loop;
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(CreateURLLoaderFactory, &url_loader_factory_info),
         run_loop.QuitClosure());

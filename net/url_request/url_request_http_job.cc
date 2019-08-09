@@ -763,11 +763,14 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
       continue;
     }
 
-    request_->context()->cookie_store()->SetCookieWithOptionsAsync(
-        request_->url(), cookie_string, options, server_time,
+    // Make a copy for the make_optional.
+    CanonicalCookie cookie_copy = *cookie;
+
+    request_->context()->cookie_store()->SetCanonicalCookieAsync(
+        std::move(cookie), request_->url().scheme(), options,
         base::BindOnce(&URLRequestHttpJob::OnSetCookieResult,
                        weak_factory_.GetWeakPtr(), options,
-                       base::make_optional<CanonicalCookie>(*cookie),
+                       base::make_optional<CanonicalCookie>(cookie_copy),
                        cookie_string));
   }
   // Removing the 1 that |num_cookie_lines_left| started with, signifing that

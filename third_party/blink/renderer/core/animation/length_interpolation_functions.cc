@@ -86,7 +86,11 @@ InterpolationValue LengthInterpolationFunctions::MaybeConvertCSSValue(
     return nullptr;
 
   CSSLengthArray length_array;
-  primitive_value->AccumulateLengthArray(length_array);
+  if (!primitive_value->AccumulateLengthArray(length_array)) {
+    // TODO(crbug.com/991672): Implement interpolation when CSS comparison
+    // functions min/max are involved.
+    return nullptr;
+  }
 
   auto values = std::make_unique<InterpolableList>(
       CSSPrimitiveValue::kLengthUnitTypeCount);

@@ -61,7 +61,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   enum class OutputFormat {
     UNDEFINED = 0,    // Unset state
     I420,             // 3 x R8 GMBs
-    UYVY,             // One 422 GMB
     NV12_SINGLE_GMB,  // One NV12 GMB
     NV12_DUAL_GMB,    // One R8, one RG88 GMB
     XR30,             // 10:10:10:2 BGRX in one GMB (Usually Mac)

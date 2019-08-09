@@ -57,7 +57,6 @@
 #include "media/mojo/buildflags.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "services/network/public/cpp/features.h"
 #include "services/preferences/tracked/segregated_pref_store.h"
 
 using base::FilePath;
@@ -451,6 +450,10 @@ AwBrowserContext::GetJavaBrowserContext() {
     obj_ = Java_AwBrowserContext_create(env, reinterpret_cast<intptr_t>(this));
   }
   return base::android::ScopedJavaLocalRef<jobject>(obj_);
+}
+
+jlong AwBrowserContext::GetQuotaManagerBridge(JNIEnv* env) {
+  return reinterpret_cast<intptr_t>(GetQuotaManagerBridge());
 }
 
 }  // namespace android_webview

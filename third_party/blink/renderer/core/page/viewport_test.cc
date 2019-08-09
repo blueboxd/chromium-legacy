@@ -29,7 +29,6 @@
  */
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -53,6 +52,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
@@ -64,8 +64,7 @@ class ViewportTest : public testing::Test {
       : base_url_("http://www.test.com/"), chrome_url_("chrome://") {}
 
   ~ViewportTest() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
+    platform_->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
@@ -88,6 +87,7 @@ class ViewportTest : public testing::Test {
 
   std::string base_url_;
   std::string chrome_url_;
+  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 
 static void SetViewportSettings(WebSettings* settings) {

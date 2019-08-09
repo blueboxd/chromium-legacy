@@ -366,8 +366,9 @@ void TestRenderFrame::BeginNavigation(
     auto navigation_params = blink::WebNavigationParams::CreateWithHTMLString(
         next_navigation_html_override_.value(), info->url_request.Url());
     next_navigation_html_override_ = base::nullopt;
-    frame_->CommitNavigation(std::move(navigation_params),
-                             nullptr /* extra_data */);
+    frame_->CommitNavigation(
+        std::move(navigation_params), nullptr /* extra_data */,
+        base::DoNothing::Once() /* call_before_attaching_new_document */);
     return;
   }
   if (info->navigation_policy == blink::kWebNavigationPolicyCurrentTab &&
@@ -391,8 +392,9 @@ void TestRenderFrame::BeginNavigation(
           navigation_params.get(), blink::WebString::FromUTF8(mime_type),
           blink::WebString::FromUTF8(charset), data);
     }
-    frame_->CommitNavigation(std::move(navigation_params),
-                             nullptr /* extra_data */);
+    frame_->CommitNavigation(
+        std::move(navigation_params), nullptr /* extra_data */,
+        base::DoNothing::Once() /* call_before_attaching_new_document */);
     return;
   }
   RenderFrameImpl::BeginNavigation(std::move(info));

@@ -464,10 +464,15 @@ class CORE_EXPORT LocalFrameView final
   // the bottom right of the object. We keep track of these resizer areas for
   // checking if touches (implemented using Scroll gesture) are targeting the
   // resizer.
+  // TODO(pdr): The resizers do not need to be tracked with
+  // PaintNonFastScrollableRegions and can be removed once that ships.
   typedef HashSet<LayoutBox*> ResizerAreaSet;
   void AddResizerArea(LayoutBox&);
   void RemoveResizerArea(LayoutBox&);
-  const ResizerAreaSet* ResizerAreas() const { return resizer_areas_.get(); }
+  const ResizerAreaSet* ResizerAreas() const {
+    DCHECK(!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
+    return resizer_areas_.get();
+  }
 
   void ScheduleAnimation();
 

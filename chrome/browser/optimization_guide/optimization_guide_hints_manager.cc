@@ -13,15 +13,15 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
+#include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hint_cache.h"
 #include "components/optimization_guide/hint_cache_store.h"
-#include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_processing_util.h"
+#include "components/optimization_guide/optimization_filter.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
-#include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -32,27 +32,6 @@ namespace {
 // component received from the OptimizationGuideService on a subsequent startup
 // will have a newer version than it.
 constexpr char kManualConfigComponentVersion[] = "0.0.0";
-
-std::unique_ptr<optimization_guide::HintUpdateData> ProcessHintsComponent(
-    const optimization_guide::HintsComponentInfo& info,
-    std::unique_ptr<optimization_guide::HintUpdateData> update_data) {
-  optimization_guide::ProcessHintsComponentResult out_result;
-  std::unique_ptr<optimization_guide::proto::Configuration> config =
-      optimization_guide::ProcessHintsComponent(info, &out_result);
-  if (!config) {
-    optimization_guide::RecordProcessHintsComponentResult(out_result);
-    return nullptr;
-  }
-
-  bool did_process_hints = optimization_guide::ProcessHints(
-      config->mutable_hints(), update_data.get());
-  optimization_guide::RecordProcessHintsComponentResult(
-      did_process_hints
-          ? optimization_guide::ProcessHintsComponentResult::kSuccess
-          : optimization_guide::ProcessHintsComponentResult::kProcessedNoHints);
-
-  return update_data;
-}
 
 void MaybeRunUpdateClosure(base::OnceClosure update_closure) {
   if (update_closure)
@@ -138,16 +117,6 @@ void OptimizationGuideHintsManager::OnHintsComponentAvailable(
     return;
   }
 
-  std::unique_ptr<optimization_guide::HintUpdateData> update_data =
-      hint_cache_->MaybeCreateUpdateDataForComponentHints(info.version);
-  if (!update_data) {
-    optimization_guide::RecordProcessHintsComponentResult(
-        optimization_guide::ProcessHintsComponentResult::
-            kSkippedProcessingHints);
-    MaybeRunUpdateClosure(std::move(next_update_closure_));
-    return;
-  }
-
   if (!CanProcessComponentVersion(pref_service_, info.version)) {
     optimization_guide::RecordProcessHintsComponentResult(
         optimization_guide::ProcessHintsComponentResult::
@@ -155,6 +124,9 @@ void OptimizationGuideHintsManager::OnHintsComponentAvailable(
     MaybeRunUpdateClosure(std::move(next_update_closure_));
     return;
   }
+
+  std::unique_ptr<optimization_guide::HintUpdateData> update_data =
+      hint_cache_->MaybeCreateUpdateDataForComponentHints(info.version);
 
   // Processes the hints from the newly available component on a background
   // thread, providing a HintUpdateData for component update from the hint
@@ -165,10 +137,107 @@ void OptimizationGuideHintsManager::OnHintsComponentAvailable(
   // created PreviewsHints, it is initialized in UpdateHints() on the UI thread.
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&ProcessHintsComponent, info, std::move(update_data)),
+      base::BindOnce(&OptimizationGuideHintsManager::ProcessHintsComponent,
+                     base::Unretained(this), info,
+                     registered_optimization_types_, std::move(update_data)),
       base::BindOnce(&OptimizationGuideHintsManager::UpdateComponentHints,
                      ui_weak_ptr_factory_.GetWeakPtr(),
                      std::move(next_update_closure_)));
+
+  // Only replace hints component info if it is not the same - otherwise we will
+  // destruct the object and it will be invalid later.
+  if (!hints_component_info_ ||
+      hints_component_info_->version.CompareTo(info.version) != 0) {
+    hints_component_info_.emplace(info.version, info.path);
+  }
+}
+
+std::unique_ptr<optimization_guide::HintUpdateData>
+OptimizationGuideHintsManager::ProcessHintsComponent(
+    const optimization_guide::HintsComponentInfo& info,
+    const std::unordered_set<optimization_guide::proto::OptimizationType>&
+        registered_optimization_types,
+    std::unique_ptr<optimization_guide::HintUpdateData> update_data) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+
+  optimization_guide::ProcessHintsComponentResult out_result;
+  std::unique_ptr<optimization_guide::proto::Configuration> config =
+      optimization_guide::ProcessHintsComponent(info, &out_result);
+  if (!config) {
+    optimization_guide::RecordProcessHintsComponentResult(out_result);
+    return nullptr;
+  }
+
+  ProcessOptimizationFilters(config->optimization_blacklists(),
+                             registered_optimization_types);
+
+  if (update_data) {
+    bool did_process_hints = optimization_guide::ProcessHints(
+        config->mutable_hints(), update_data.get());
+    optimization_guide::RecordProcessHintsComponentResult(
+        did_process_hints
+            ? optimization_guide::ProcessHintsComponentResult::kSuccess
+            : optimization_guide::ProcessHintsComponentResult::
+                  kProcessedNoHints);
+  } else {
+    optimization_guide::RecordProcessHintsComponentResult(
+        optimization_guide::ProcessHintsComponentResult::
+            kSkippedProcessingHints);
+  }
+
+  return update_data;
+}
+
+void OptimizationGuideHintsManager::ProcessOptimizationFilters(
+    const google::protobuf::RepeatedPtrField<
+        optimization_guide::proto::OptimizationFilter>&
+        blacklist_optimization_filters,
+    const std::unordered_set<optimization_guide::proto::OptimizationType>&
+        registered_optimization_types) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+  base::AutoLock lock(optimization_filters_lock_);
+
+  available_optimization_filters_.clear();
+  blacklist_optimization_filters_.clear();
+  for (const auto& filter : blacklist_optimization_filters) {
+    if (filter.optimization_type() !=
+        optimization_guide::proto::TYPE_UNSPECIFIED) {
+      available_optimization_filters_.insert(filter.optimization_type());
+    }
+
+    // Do not put anything in memory that we don't have registered.
+    if (registered_optimization_types.find(filter.optimization_type()) ==
+        registered_optimization_types.end()) {
+      continue;
+    }
+
+    optimization_guide::RecordOptimizationFilterStatus(
+        filter.optimization_type(),
+        optimization_guide::OptimizationFilterStatus::
+            kFoundServerBlacklistConfig);
+
+    // Do not parse duplicate optimization filters.
+    if (blacklist_optimization_filters_.find(filter.optimization_type()) !=
+        blacklist_optimization_filters_.end()) {
+      optimization_guide::RecordOptimizationFilterStatus(
+          filter.optimization_type(),
+          optimization_guide::OptimizationFilterStatus::
+              kFailedServerBlacklistDuplicateConfig);
+      continue;
+    }
+
+    // Parse optimization filter.
+    optimization_guide::OptimizationFilterStatus status;
+    std::unique_ptr<optimization_guide::OptimizationFilter>
+        optimization_filter =
+            optimization_guide::ProcessOptimizationFilter(filter, &status);
+    if (optimization_filter) {
+      blacklist_optimization_filters_.insert(
+          {filter.optimization_type(), std::move(optimization_filter)});
+    }
+    optimization_guide::RecordOptimizationFilterStatus(
+        filter.optimization_type(), status);
+  }
 }
 
 void OptimizationGuideHintsManager::OnHintCacheInitialized() {
@@ -265,4 +334,44 @@ void OptimizationGuideHintsManager::OnHintLoaded(
   // Run the callback now that the hint is loaded. This is used as a signal by
   // tests.
   std::move(callback).Run();
+}
+
+void OptimizationGuideHintsManager::RegisterOptimizationTypes(
+    std::vector<optimization_guide::proto::OptimizationType>
+        optimization_types) {
+  bool should_load_new_optimization_filter = false;
+  for (const auto optimization_type : optimization_types) {
+    if (optimization_type == optimization_guide::proto::TYPE_UNSPECIFIED)
+      continue;
+
+    if (registered_optimization_types_.find(optimization_type) !=
+        registered_optimization_types_.end()) {
+      continue;
+    }
+    registered_optimization_types_.insert(optimization_type);
+
+    if (!should_load_new_optimization_filter) {
+      base::AutoLock lock(optimization_filters_lock_);
+      if (available_optimization_filters_.find(optimization_type) !=
+          available_optimization_filters_.end()) {
+        should_load_new_optimization_filter = true;
+      }
+    }
+  }
+
+  if (should_load_new_optimization_filter) {
+    DCHECK(hints_component_info_);
+
+    OnHintsComponentAvailable(*hints_component_info_);
+  } else {
+    MaybeRunUpdateClosure(std::move(next_update_closure_));
+  }
+}
+
+bool OptimizationGuideHintsManager::HasLoadedOptimizationFilter(
+    optimization_guide::proto::OptimizationType optimization_type) {
+  base::AutoLock lock(optimization_filters_lock_);
+
+  return blacklist_optimization_filters_.find(optimization_type) !=
+         blacklist_optimization_filters_.end();
 }

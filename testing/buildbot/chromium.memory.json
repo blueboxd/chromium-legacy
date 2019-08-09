@@ -8225,7 +8225,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 25
+          "shards": 30
         },
         "test": "browser_tests"
       },

@@ -40,6 +40,10 @@ void AssistantSetup::StartAssistantOptInFlow(
   chromeos::AssistantOptInDialog::Show(type, std::move(callback));
 }
 
+bool AssistantSetup::BounceOptInWindowIfActive() {
+  return chromeos::AssistantOptInDialog::BounceIfActive();
+}
+
 void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
   if (state == ash::mojom::VoiceInteractionState::NOT_READY)
     return;

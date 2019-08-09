@@ -22,6 +22,7 @@
 #include "ash/assistant/util/histogram_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -347,6 +348,13 @@ void AssistantInteractionController::OnCommittedQueryChanged(
 
 void AssistantInteractionController::OnInteractionStarted(
     bool is_voice_interaction) {
+  // Stop the interaction if the opt-in window is active.
+  auto* assistant_setup = AssistantSetup::GetInstance();
+  if (assistant_setup && assistant_setup->BounceOptInWindowIfActive()) {
+    StopActiveInteraction(true);
+    return;
+  }
+
   if (is_voice_interaction) {
     // If the Assistant UI is not visible yet, and |is_voice_interaction| is
     // true, then it will be sure that Assistant is fired via OKG. ShowUi will

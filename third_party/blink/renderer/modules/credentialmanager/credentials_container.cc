@@ -710,6 +710,20 @@ ScriptPromise CredentialsContainer::create(
             "legacy FIDO U2F API."));
         return promise;
       }
+      if (options->publicKey()->extensions()->hasAppidExclude()) {
+        const auto& appid_exclude =
+            options->publicKey()->extensions()->appidExclude();
+        if (!appid_exclude.IsEmpty()) {
+          KURL appid_exclude_url(appid_exclude);
+          if (!appid_exclude_url.IsValid()) {
+            resolver->Reject(MakeGarbageCollected<DOMException>(
+                DOMExceptionCode::kSyntaxError,
+                "The `appidExclude` extension value is neither "
+                "empty/null nor a valid URL."));
+            return promise;
+          }
+        }
+      }
       if (options->publicKey()->extensions()->hasCableAuthentication()) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kNotSupportedError,

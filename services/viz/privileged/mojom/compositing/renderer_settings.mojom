@@ -24,6 +24,7 @@ struct RendererSettings {
   bool record_sk_picture;
   bool allow_overlays;
   bool requires_alpha_channel;
+  bool show_dc_layer_debug_borders;
 
   [EnableIf=is_android]
   gfx.mojom.Size initial_screen_size;

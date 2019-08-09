@@ -32,8 +32,6 @@
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
-#include "components/keyed_service/core/simple_key_map.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -137,10 +135,9 @@ std::unique_ptr<DomDistillerService> CreateDomDistillerService(
   // Setting up PrefService for DistilledPagePrefs.
   DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());
 
-  SimpleFactoryKey* key =
-      SimpleKeyMap::GetInstance()->GetForBrowserContext(context);
   auto* db_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(key);
+      content::BrowserContext::GetDefaultStoragePartition(context)
+          ->GetProtoDatabaseProvider();
 
   // TODO(cjhopman): use an in-memory database instead of an on-disk one with
   // temporary directory.

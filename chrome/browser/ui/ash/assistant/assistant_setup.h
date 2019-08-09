@@ -26,6 +26,7 @@ class AssistantSetup : public ash::AssistantSetup,
   void StartAssistantOptInFlow(
       ash::FlowType type,
       StartAssistantOptInFlowCallback callback) override;
+  bool BounceOptInWindowIfActive() override;
 
   // If prefs::kVoiceInteractionConsentStatus is nullptr, means the
   // pref is not set by user. Therefore we need to start OOBE.

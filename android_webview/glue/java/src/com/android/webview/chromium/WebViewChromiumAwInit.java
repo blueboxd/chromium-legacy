@@ -28,7 +28,6 @@ import org.chromium.android_webview.AwFirebaseConfig;
 import org.chromium.android_webview.AwLocaleConfig;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwProxyController;
-import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwServiceWorkerController;
 import org.chromium.android_webview.AwTracingController;
 import org.chromium.android_webview.HttpAuthDatabase;
@@ -205,7 +204,8 @@ public class WebViewChromiumAwInit {
                 AwBrowserContext awBrowserContext = getBrowserContextOnUiThread();
                 mGeolocationPermissions = new GeolocationPermissionsAdapter(
                         mFactory, awBrowserContext.getGeolocationPermissions());
-                mWebStorage = new WebStorageAdapter(mFactory, AwQuotaManagerBridge.getInstance());
+                mWebStorage =
+                        new WebStorageAdapter(mFactory, mBrowserContext.getQuotaManagerBridge());
                 mAwTracingController = getTracingController();
                 mServiceWorkerController = awBrowserContext.getServiceWorkerController();
                 mAwProxyController = new AwProxyController();

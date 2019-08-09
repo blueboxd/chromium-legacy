@@ -1201,20 +1201,20 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
-  RenderFrameHostImpl* main_frame =
+  RenderFrameHostImpl* main_rfh1 =
       static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
 
-  EXPECT_TRUE(main_frame->GetSuddenTerminationDisablerState(
+  EXPECT_TRUE(main_rfh1->GetSuddenTerminationDisablerState(
       blink::kBeforeUnloadHandler));
 
   // Make the renderer crash.
-  RenderProcessHost* renderer_process = main_frame->GetProcess();
+  RenderProcessHost* renderer_process = main_rfh1->GetProcess();
   RenderProcessHostWatcher crash_observer(
       renderer_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   renderer_process->Shutdown(0);
   crash_observer.Wait();
 
-  EXPECT_FALSE(main_frame->GetSuddenTerminationDisablerState(
+  EXPECT_FALSE(main_rfh1->GetSuddenTerminationDisablerState(
       blink::kBeforeUnloadHandler));
 
   // This should not trigger a DCHECK once the renderer sends up the termination
@@ -1222,7 +1222,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  EXPECT_TRUE(main_frame->GetSuddenTerminationDisablerState(
+  RenderFrameHostImpl* main_rfh2 =
+      static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+  EXPECT_TRUE(main_rfh2->GetSuddenTerminationDisablerState(
       blink::kBeforeUnloadHandler));
 }
 

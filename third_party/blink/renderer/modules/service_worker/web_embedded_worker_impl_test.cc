@@ -300,23 +300,6 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
 }  // namespace
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(
-      features::kOffMainThreadServiceWorkerScriptFetch);
-
-  worker_->StartWorkerContext(start_data_);
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(1);
-  worker_->TerminateWorkerContext();
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-}
-
-TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart_OMT_Fetch) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      features::kOffMainThreadServiceWorkerScriptFetch);
-
   worker_->StartWorkerContext(start_data_);
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
@@ -326,25 +309,6 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart_OMT_Fetch) {
 }
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(
-      features::kOffMainThreadServiceWorkerScriptFetch);
-
-  start_data_.wait_for_debugger_mode =
-      WebEmbeddedWorkerStartData::kWaitForDebugger;
-  worker_->StartWorkerContext(start_data_);
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(1);
-  worker_->TerminateWorkerContext();
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-}
-
-TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger_OMT_Fetch) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      features::kOffMainThreadServiceWorkerScriptFetch);
-
   start_data_.wait_for_debugger_mode =
       WebEmbeddedWorkerStartData::kWaitForDebugger;
   worker_->StartWorkerContext(start_data_);
@@ -355,30 +319,6 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger_OMT_Fetch) {
 }
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(
-      features::kOffMainThreadServiceWorkerScriptFetch);
-
-  // Load the shadow page.
-  EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(KURL(start_data_.script_url)))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::Return(false));
-  worker_->StartWorkerContext(start_data_);
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-  testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
-
-  // Terminate before loading the script.
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(1);
-  worker_->TerminateWorkerContext();
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-}
-
-TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript_OMT_Fetch) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      features::kOffMainThreadServiceWorkerScriptFetch);
-
   // Load the shadow page.
   EXPECT_CALL(*mock_installed_scripts_manager_,
               IsScriptInstalled(KURL(start_data_.script_url)))
@@ -394,71 +334,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript_OMT_Fetch) {
   worker_->WaitForShutdownForTesting();
 }
 
-// Tests terminating worker context between script download and execution.
-// No "OMT_Fetch" variant for this test because "pause after download" doesn't
-// have effect for off-main-thread script fetch. When off-main-thread fetch
-// is on, pausing/resuming is handled in ServiceWorkerGlobalScope.
-TEST_F(WebEmbeddedWorkerImplTest, TerminateWhilePausedAfterDownload) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(
-      features::kOffMainThreadServiceWorkerScriptFetch);
-
-  // Load the shadow page.
-  start_data_.pause_after_download_mode =
-      WebEmbeddedWorkerStartData::kPauseAfterDownload;
-  EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(KURL(start_data_.script_url)))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::Return(false));
-  worker_->StartWorkerContext(start_data_);
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-  testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
-
-  // Load the script.
-  EXPECT_CALL(*mock_client_, WorkerScriptLoadedOnMainThread()).Times(1);
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-
-  // Terminate before resuming after download.
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(1);
-  worker_->TerminateWorkerContext();
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-}
-
 TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(
-      features::kOffMainThreadServiceWorkerScriptFetch);
-
-  // Load the shadow page.
-  WebURL script_url = url_test_helpers::ToKURL(kNotFoundScriptURL);
-  WebURLResponse response;
-  response.SetMimeType("text/javascript");
-  response.SetHttpStatusCode(404);
-  ResourceError error = ResourceError::Failure(script_url);
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
-      script_url, response, error);
-  start_data_.script_url = script_url;
-  EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(KURL(start_data_.script_url)))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::Return(false));
-  worker_->StartWorkerContext(start_data_);
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-  testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
-
-  // Load the script.
-  EXPECT_CALL(*mock_client_, WorkerScriptLoadedOnMainThread()).Times(0);
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(1);
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-}
-
-TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound_OMT_Fetch) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndEnableFeature(
-      features::kOffMainThreadServiceWorkerScriptFetch);
-
   // Load the shadow page.
   WebURL script_url = url_test_helpers::ToKURL(kNotFoundScriptURL);
   WebURLResponse response;
@@ -483,98 +359,6 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound_OMT_Fetch) {
   // tasks to finish.
   worker_->TerminateWorkerContext();
   worker_->WaitForShutdownForTesting();
-}
-
-// The running worker is detected as a memory leak. crbug.com/586897 and
-// crbug.com/807754.
-// No "OMT_Fetch" variant. See comments on TerminateWhilePausedAfterDownload.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DontPauseAfterDownload DISABLED_DontPauseAfterDownload
-#else
-#define MAYBE_DontPauseAfterDownload DontPauseAfterDownload
-#endif
-TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(
-      features::kOffMainThreadServiceWorkerScriptFetch);
-
-  // Load the shadow page.
-  EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(KURL(start_data_.script_url)))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::Return(false));
-  worker_->StartWorkerContext(start_data_);
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-  testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
-
-  // Load the script.
-  EXPECT_CALL(*mock_client_, WorkerScriptLoadedOnMainThread()).Times(1);
-  EXPECT_CALL(*mock_client_,
-              WorkerReadyForInspectionOnMainThread(testing::_, testing::_))
-      .Times(1);
-  // This is called on the worker thread.
-  EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(KURL(start_data_.script_url)))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::Return(false));
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-  mock_client_->WaitUntilScriptEvaluated();
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-  testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
-
-  // Terminate the running worker thread.
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(0);
-  worker_->TerminateWorkerContext();
-  mock_client_->WaitUntilThreadTermination();
-}
-
-// The running worker is detected as a memory leak. crbug.com/586897 and
-// crbug.com/807754.
-// No "OMT_Fetch" variant. See comments on TerminateWhilePausedAfterDownload.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_PauseAfterDownload DISABLED_PauseAfterDownload
-#else
-#define MAYBE_PauseAfterDownload PauseAfterDownload
-#endif
-TEST_F(WebEmbeddedWorkerImplTest, MAYBE_PauseAfterDownload) {
-  base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitAndDisableFeature(
-      features::kOffMainThreadServiceWorkerScriptFetch);
-
-  // Load the shadow page.
-  EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(KURL(start_data_.script_url)))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::Return(false));
-  start_data_.pause_after_download_mode =
-      WebEmbeddedWorkerStartData::kPauseAfterDownload;
-  worker_->StartWorkerContext(start_data_);
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-  testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
-
-  // Load the script.
-  EXPECT_CALL(*mock_client_, WorkerScriptLoadedOnMainThread()).Times(1);
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-
-  // Resume after download.
-  // This is called on the worker thread.
-  EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(KURL(start_data_.script_url)))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::Return(false));
-  EXPECT_CALL(*mock_client_,
-              WorkerReadyForInspectionOnMainThread(testing::_, testing::_))
-      .Times(1);
-  worker_->ResumeAfterDownload();
-  mock_client_->WaitUntilScriptEvaluated();
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-  testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
-
-  // Terminate the running worker thread.
-  EXPECT_CALL(*mock_client_, WorkerContextFailedToStartOnMainThread()).Times(0);
-  worker_->TerminateWorkerContext();
-  mock_client_->WaitUntilThreadTermination();
 }
 
 }  // namespace blink

@@ -13,13 +13,12 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/android/usage_stats/website_event.pb.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "content/public/browser/storage_partition.h"
 
 namespace usage_stats {
 
 using leveldb_proto::ProtoDatabaseProvider;
-using leveldb_proto::ProtoDatabaseProviderFactory;
 
 const char kNamespace[] = "UsageStats";
 const char kEventsDbName[] = "Events";
@@ -39,7 +38,8 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
       token_mapping_db_initialized_(false),
       weak_ptr_factory_(this) {
   ProtoDatabaseProvider* db_provider =
-      ProtoDatabaseProviderFactory::GetForKey(profile->GetProfileKey());
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetProtoDatabaseProvider();
 
   base::FilePath usage_stats_dir = profile->GetPath().Append(kNamespace);
 

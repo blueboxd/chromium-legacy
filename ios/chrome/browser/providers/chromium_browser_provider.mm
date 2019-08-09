@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/providers/chromium_voice_search_provider.h"
 #import "ios/chrome/browser/providers/images/chromium_branded_image_provider.h"
 #include "ios/chrome/browser/providers/signin/chromium_signin_resources_provider.h"
-#include "ios/chrome/browser/providers/ui/chromium_styled_text_field.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/overrides_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
@@ -63,11 +62,6 @@ ChromiumBrowserProvider::GetChromeIdentityService() {
 
 UITextField* ChromiumBrowserProvider::CreateStyledTextField() const {
   return [[UITextField alloc] initWithFrame:CGRectZero];
-}
-
-UITextField<TextFieldStyling>* ChromiumBrowserProvider::CreateStyledTextField(
-    CGRect frame) const {
-  return [[ChromiumStyledTextField alloc] initWithFrame:CGRectZero];
 }
 
 VoiceSearchProvider* ChromiumBrowserProvider::GetVoiceSearchProvider() const {

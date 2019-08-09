@@ -122,7 +122,7 @@ TEST_F('HistoryFocusTest', 'All', function() {
 
       // Wait for next render to ensure that focus handlers have been
       // registered (see HistoryItemElement.attached).
-      await PolymerTest.afterNextRender(this);
+      await PolymerTest.waitAfterNextRender(this);
 
       MockInteractions.pressAndReleaseKeyOn(focused, 39, [], 'ArrowRight');
       Polymer.dom.flush();

@@ -75,7 +75,7 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
 // When enabled, gets payment identity from sync service instead of
 // identity manager.
 const base::Feature kAutofillGetPaymentsIdentityFromSync{
-    "AutofillGetPaymentsIdentityFromSync", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillGetPaymentsIdentityFromSync", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.

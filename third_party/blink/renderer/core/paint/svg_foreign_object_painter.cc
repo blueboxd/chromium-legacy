@@ -54,9 +54,6 @@ void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
   PaintInfo paint_info_before_filtering(paint_info);
   ScopedSVGPaintState paint_state(layout_svg_foreign_object_,
                                   paint_info_before_filtering);
-  if (paint_state.GetPaintInfo().phase == PaintPhase::kForeground &&
-      !paint_state.ApplyClipMaskAndFilterIfNecessary())
-    return;
 
   BlockPainter(layout_svg_foreign_object_).Paint(paint_info);
 }

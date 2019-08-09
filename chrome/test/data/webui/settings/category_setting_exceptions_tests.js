@@ -24,4 +24,77 @@ suite('CategorySettingExceptions', function() {
     // There's not much that merits testing.
     assertTrue(!!testElement);
   });
+
+  test(
+      'allow site list is hidden when showAllowSiteList_ is false', function() {
+        testElement.showAllowSiteList_ = false;
+
+        // Flush to be sure that the container is updated.
+        Polymer.dom.flush();
+
+        // Make sure that the Allow and Session Only site lists are hidden.
+        const siteListElements = testElement.querySelectorAll('site-list');
+        siteListElements.forEach(element => {
+          if (element.categorySubtype == ContentSetting.BLOCK) {
+            assertFalse(
+                element.hidden,
+                `site-list for ${
+                    element.categorySubtype} should not be hidden`);
+          } else {
+            assertTrue(
+                element.hidden,
+                `site-list for ${element.categorySubtype} should be hidden`);
+          }
+        });
+      });
+
+  test(
+      'block site list is hidden when showBlockSiteList_ is false', function() {
+        testElement.showBlockSiteList_ = false;
+
+        // Flush to be sure that the container is updated.
+        Polymer.dom.flush();
+
+        // Make sure that the Allow and Session Only site lists are hidden.
+        const siteListElements = testElement.querySelectorAll('site-list');
+        siteListElements.forEach(element => {
+          if (element.categorySubtype == ContentSetting.ALLOW) {
+            assertFalse(
+                element.hidden,
+                `site-list for ${
+                    element.categorySubtype} should not be hidden`);
+          } else {
+            assertTrue(
+                element.hidden,
+                `site-list for ${element.categorySubtype} should be hidden`);
+          }
+        });
+      });
+
+  test('allow site list is hidden for NATIVE_FILE_SYSTEM_WRITE', function() {
+    testElement.category =
+        settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
+
+    // Flush to be sure that the container is updated.
+    Polymer.dom.flush();
+
+    assertFalse(
+        testElement.showAllowSiteList_, 'showAllowSiteList_ should be false');
+    assertTrue(
+        testElement.showBlockSiteList_, 'showBlockSiteList_ should be true');
+
+    // Make sure that the Allow and Session Only site lists are hidden.
+    const siteListElements = testElement.querySelectorAll('site-list');
+    siteListElements.forEach(element => {
+      if (element.categorySubtype == ContentSetting.BLOCK) {
+        assertFalse(
+            element.hidden,
+            `site-list for ${element.categorySubtype} should not be hidden`);
+      } else {
+        assertTrue(
+            element.hidden,
+            `site-list for ${element.categorySubtype} should be hidden`);
+      }
+    });
+  });
 });

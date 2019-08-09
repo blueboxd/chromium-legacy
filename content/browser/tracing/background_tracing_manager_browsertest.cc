@@ -10,11 +10,14 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -184,6 +187,8 @@ class TestTraceReceiverHelper {
   void WaitForTraceReceived() { wait_for_trace_received_.Run(); }
   bool trace_received() const { return trace_received_; }
 
+  const base::Value& get_metadata() const { return *metadata_; }
+
   bool TraceHasMatchingString(const char* text) const {
     return file_contents_.find(text) != std::string::npos;
   }
@@ -192,7 +197,8 @@ class TestTraceReceiverHelper {
       const scoped_refptr<base::RefCountedString>& file_contents,
       std::unique_ptr<const base::DictionaryValue> metadata,
       BackgroundTracingManager::FinishedProcessingCallback done_callback) {
-    // Receive the trace.
+    metadata_ = std::move(metadata);
+
     EXPECT_TRUE(file_contents);
     EXPECT_FALSE(trace_received_);
     trace_received_ = true;
@@ -229,6 +235,7 @@ class TestTraceReceiverHelper {
   }
 
  private:
+  std::unique_ptr<const base::DictionaryValue> metadata_;
   base::RunLoop wait_for_trace_received_;
   bool trace_received_ = false;
   std::string file_contents_;
@@ -294,7 +301,10 @@ class TestTriggerHelper {
 
 class BackgroundTracingManagerBrowserTest : public ContentBrowserTest {
  public:
-  BackgroundTracingManagerBrowserTest() {}
+  BackgroundTracingManagerBrowserTest() {
+    feature_list_.InitAndDisableFeature(
+        features::kBackgroundTracingProtoOutput);
+  }
 
   void PreRunTestOnMainThread() override {
     BackgroundTracingManagerImpl::GetInstance()
@@ -304,6 +314,8 @@ class BackgroundTracingManagerBrowserTest : public ContentBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingManagerBrowserTest);
 };
 
@@ -892,10 +904,71 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   LOCAL_HISTOGRAM_COUNTS("fake", 2);
 
   trace_receiver_helper.WaitForTraceReceived();
+
+  EXPECT_TRUE(trace_receiver_helper.trace_received());
+
+  const std::string* trace_config =
+      trace_receiver_helper.get_metadata().FindStringKey("trace-config");
+  ASSERT_TRUE(trace_config);
+  EXPECT_NE(trace_config->find("record-continuously"), trace_config->npos)
+      << *trace_config;
+
+  EXPECT_TRUE(BackgroundTracingManager::GetInstance()->HasActiveScenario());
+
+  BackgroundTracingManager::GetInstance()->AbortScenarioForTesting();
+  background_tracing_helper.WaitForScenarioAborted();
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, CustomConfig) {
+  TestBackgroundTracingHelper background_tracing_helper;
+  TestTraceReceiverHelper trace_receiver_helper;
+
+  base::DictionaryValue dict;
+  dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
+  dict.SetString("category", "BENCHMARK");
+  dict.SetKey("trace_config", std::move(*base::JSONReader::Read(R"(
+        {
+          "included_categories": ["*"],
+          "record_mode": "record-until-full"
+        })")));
+
+  std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
+  {
+    std::unique_ptr<base::DictionaryValue> rules_dict(
+        new base::DictionaryValue());
+    rules_dict->SetString("rule",
+                          "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+    rules_dict->SetString("histogram_name", "fake");
+    rules_dict->SetInteger("histogram_value", 1);
+    rules_list->Append(std::move(rules_dict));
+  }
+
+  dict.Set("configs", std::move(rules_list));
+
+  std::unique_ptr<BackgroundTracingConfig> config(
+      BackgroundTracingConfigImpl::FromDict(&dict));
+  EXPECT_TRUE(config);
+
+  EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
+      std::move(config), trace_receiver_helper.get_receive_callback(),
+      BackgroundTracingManager::NO_DATA_FILTERING));
+
+  background_tracing_helper.WaitForTracingEnabled();
+
+  // Our reference value is "1", so a value of "2" should trigger a trace.
+  LOCAL_HISTOGRAM_COUNTS("fake", 2);
+
+  trace_receiver_helper.WaitForTraceReceived();
   BackgroundTracingManager::GetInstance()->AbortScenarioForTesting();
   background_tracing_helper.WaitForScenarioAborted();
 
   EXPECT_TRUE(trace_receiver_helper.trace_received());
+
+  const std::string* trace_config =
+      trace_receiver_helper.get_metadata().FindStringKey("trace-config");
+  ASSERT_TRUE(trace_config);
+  EXPECT_NE(trace_config->find("record-until-full"), trace_config->npos)
+      << *trace_config;
 }
 
 // This tests that histogram triggers for reactive mode configs.

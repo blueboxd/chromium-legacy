@@ -65,6 +65,7 @@ struct GpuPreferences {
   bool enable_oop_rasterization_ddl;
   bool watchdog_starts_backgrounded;
   VulkanImplementationName use_vulkan;
+  bool enforce_vulkan_protected_memory;
   bool disable_vulkan_surface;
   bool disable_vulkan_fallback_to_gl_for_testing;
   bool enable_metal;

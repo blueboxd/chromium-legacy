@@ -4,7 +4,6 @@ Properties of Object(5)
   foo own string cat
 Internal properties
   [[PrimitiveValue]] number 5
-  [[StableObjectId]] number 1
 Properties of Not own properties
   __defineGetter__ inherited function undefined
   __defineSetter__ inherited function undefined
@@ -22,8 +21,6 @@ Properties of Not own properties
   toLocaleString inherited function undefined
   toString inherited function undefined
   valueOf inherited function undefined
-Internal properties
-  [[StableObjectId]] number 2
 Properties of Accessor only properties
   b own no value, getter, setter
   d own no value, setter
@@ -33,8 +30,6 @@ Properties of array
   2 own string blue
   __proto__ own object undefined
   length own number 3
-Internal properties
-  [[StableObjectId]] number 3
 Properties of Bound function
   __proto__ own function undefined
   length own number 0
@@ -42,12 +37,9 @@ Properties of Bound function
 Internal properties
   [[BoundArgs]] object undefined
   [[BoundThis]] object undefined
-  [[StableObjectId]] number 4
   [[TargetFunction]] function undefined
 Properties of Event with user defined property
   __proto__ own object undefined
   eventPhase own no value, getter
   isTrusted own boolean false
-Internal properties
-  [[StableObjectId]] number 5
 

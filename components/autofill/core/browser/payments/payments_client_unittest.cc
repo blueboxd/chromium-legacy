@@ -112,19 +112,9 @@ class PaymentsClientTest : public testing::Test {
 
   void TearDown() override { client_.reset(); }
 
-  void EnableAutofillSendExperimentIdsInPaymentsRPCs() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillSendExperimentIdsInPaymentsRPCs);
-  }
-
   void EnableAutofillGetPaymentsIdentityFromSync() {
     scoped_feature_list_.InitAndEnableFeature(
         features::kAutofillGetPaymentsIdentityFromSync);
-  }
-
-  void DisableAutofillSendExperimentIdsInPaymentsRPCs() {
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kAutofillSendExperimentIdsInPaymentsRPCs);
   }
 
   // Registers a field trial with the specified name and group and an associated
@@ -693,29 +683,13 @@ TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTest) {
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
   // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do via
-  // DisableAutofillSendExperimentIdsInPaymentsRPCs().
+  // ScopedFeatureList, which provides its own, unlike other tests that do.
   base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartGettingUploadDetails();
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
-
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-}
-
-TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTestExperimentFlagOff) {
-  // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  DisableAutofillSendExperimentIdsInPaymentsRPCs();
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  CreateFieldTrialWithId("AutofillTest", "Group", 369);
-  StartGettingUploadDetails();
-
-  // Note that experiment information is stored in X-Client-Data.
-  EXPECT_FALSE(HasVariationsHeader());
 
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
@@ -823,8 +797,7 @@ TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
   // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do via
-  // DisableAutofillSendExperimentIdsInPaymentsRPCs().
+  // ScopedFeatureList, which provides its own, unlike other tests that do.
   base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUploading(/*include_cvc=*/true);
@@ -832,21 +805,6 @@ TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
-
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-}
-
-TEST_F(PaymentsClientTest, UploadCardVariationsTestExperimentFlagOff) {
-  // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  DisableAutofillSendExperimentIdsInPaymentsRPCs();
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  CreateFieldTrialWithId("AutofillTest", "Group", 369);
-  StartUploading(/*include_cvc=*/true);
-
-  // Note that experiment information is stored in X-Client-Data.
-  EXPECT_FALSE(HasVariationsHeader());
 
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
@@ -857,8 +815,7 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
   // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do via
-  // DisableAutofillSendExperimentIdsInPaymentsRPCs().
+  // ScopedFeatureList, which provides its own, unlike other tests that do.
   base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUnmasking(CardUnmaskOptions());
@@ -870,48 +827,20 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
 
-TEST_F(PaymentsClientTest, UnmaskCardVariationsTestExperimentOff) {
-  // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  DisableAutofillSendExperimentIdsInPaymentsRPCs();
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  CreateFieldTrialWithId("AutofillTest", "Group", 369);
-  StartUnmasking(CardUnmaskOptions());
-
-  // Note that experiment information is stored in X-Client-Data.
-  EXPECT_FALSE(HasVariationsHeader());
-
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-}
-
 TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
   // Register a trial and variation id, so that there is data in variations
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
-  EnableAutofillSendExperimentIdsInPaymentsRPCs();
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  // Note: This needs a base::FieldTrialList instance because it does not use
+  // ScopedFeatureList, which provides its own, unlike other tests that do.
+  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartMigrating(/*has_cardholder_name=*/true);
   IssueOAuthToken();
 
   // Note that experiment information is stored in X-Client-Data.
   EXPECT_TRUE(HasVariationsHeader());
-
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-}
-
-TEST_F(PaymentsClientTest, MigrateCardsVariationsTestExperimentFlagOff) {
-  // Register a trial and variation id, so that there is data in variations
-  // headers. Also, the variations header provider may have been registered to
-  // observe some other field trial list, so reset it.
-  DisableAutofillSendExperimentIdsInPaymentsRPCs();
-  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  CreateFieldTrialWithId("AutofillTest", "Group", 369);
-  StartMigrating(/*has_cardholder_name=*/true);
-
-  // Note that experiment information is stored in X-Client-Data.
-  EXPECT_FALSE(HasVariationsHeader());
 
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }

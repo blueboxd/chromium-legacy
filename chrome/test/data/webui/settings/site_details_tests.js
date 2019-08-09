@@ -86,6 +86,11 @@ suite('SiteDetails', function() {
       test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.PAYMENT_HANDLER,
           [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
+          [test_util.createRawSiteException('https://foo.com:443', {
+            setting: settings.ContentSetting.BLOCK,
+          })]),
     ], [
       test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.USB_DEVICES,
@@ -141,6 +146,9 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .BLUETOOTH_SCANNING] =
         'enableBluetoothScanningContentSetting';
+    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
+                                                .NATIVE_FILE_SYSTEM_WRITE] =
+        'enableNativeFileSystemWriteContentSetting';
     browserProxy.setPrefs(prefs);
 
     // First, explicitly set all the optional settings to false.
@@ -289,6 +297,8 @@ suite('SiteDetails', function() {
     loadTimeData.overrideValues({enableSafeBrowsingSubresourceFilter: true});
     loadTimeData.overrideValues({enableSensorsContentSetting: true});
     loadTimeData.overrideValues({enablePaymentHandlerContentSetting: true});
+    loadTimeData.overrideValues(
+        {enableNativeFileSystemWriteContentSetting: true});
     testElement = createSiteDetails('https://foo.com:443');
 
     return browserProxy.whenCalled('isOriginValid')
@@ -320,7 +330,10 @@ suite('SiteDetails', function() {
                     siteDetailsPermission.category ==
                         settings.ContentSettingsTypes.IMAGES ||
                     siteDetailsPermission.category ==
-                        settings.ContentSettingsTypes.POPUPS) {
+                        settings.ContentSettingsTypes.POPUPS ||
+                    siteDetailsPermission.category ==
+                        settings.ContentSettingsTypes
+                            .NATIVE_FILE_SYSTEM_WRITE) {
                   expectedSetting =
                       prefs.exceptions[siteDetailsPermission.category][0]
                           .setting;

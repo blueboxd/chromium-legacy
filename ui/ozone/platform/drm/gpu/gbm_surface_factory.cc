@@ -197,7 +197,8 @@ GLOzone* GbmSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
 
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
-GbmSurfaceFactory::CreateVulkanImplementation() {
+GbmSurfaceFactory::CreateVulkanImplementation(bool allow_protected_memory,
+                                              bool enforce_protected_memory) {
   return std::make_unique<ui::VulkanImplementationGbm>();
 }
 

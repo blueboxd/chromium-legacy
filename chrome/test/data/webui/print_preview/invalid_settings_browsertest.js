@@ -158,7 +158,7 @@ cr.define('invalid_settings_browsertest', function() {
       const destinationSettings =
           sidebar.$$('print-preview-destination-settings');
 
-      return test_util.waitForRender(page)
+      return test_util.waitBeforeNextRender(page)
           .then(() => {
             const parentElement =
                 loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
@@ -275,7 +275,7 @@ cr.define('invalid_settings_browsertest', function() {
                                   .$$('print-preview-number-settings-section');
       const layoutSettings = sidebar.$$('print-preview-layout-settings');
 
-      return test_util.waitForRender(page)
+      return test_util.waitBeforeNextRender(page)
           .then(() => {
             const parentElement =
                 loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?
@@ -367,7 +367,7 @@ cr.define('invalid_settings_browsertest', function() {
           const destinationSettings =
               sidebar.$$('print-preview-destination-settings');
 
-          return test_util.waitForRender(page)
+          return test_util.waitBeforeNextRender(page)
               .then(() => {
                 const parentElement =
                     loadTimeData.getBoolean('newPrintPreviewLayoutEnabled') ?

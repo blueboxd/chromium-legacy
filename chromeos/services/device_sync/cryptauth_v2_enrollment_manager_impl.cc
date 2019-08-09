@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_constants.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry.h"
 #include "chromeos/services/device_sync/cryptauth_v2_enroller_impl.h"
@@ -30,11 +31,13 @@ namespace device_sync {
 namespace {
 
 // Timeout values for asynchronous operations.
-// TODO(https://crbug.com/933656): Tune these values.
+// TODO(https://crbug.com/933656): Use async execution time metrics to tune
+// these timeout values. For now, set these timeouts to the max execution time
+// recorded by the metrics.
 constexpr base::TimeDelta kWaitingForGcmRegistrationTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 constexpr base::TimeDelta kWaitingForClientAppMetadataTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -119,6 +122,18 @@ void RecordEnrollmentResult(CryptAuthEnrollmentResult result) {
                                 result.result_code());
 }
 
+void RecordGcmRegistrationMetrics(const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.EnrollmentV2.ExecutionTime.GcmRegistration", execution_time);
+}
+
+void RecordClientAppMetadataFetchMetrics(
+    const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.EnrollmentV2.ExecutionTime.ClientAppMetadataFetch",
+      execution_time);
+}
+
 }  // namespace
 
 // static
@@ -168,7 +183,8 @@ CryptAuthV2EnrollmentManagerImpl::GetTimeoutForState(State state) {
 
 // static
 base::Optional<CryptAuthEnrollmentResult::ResultCode>
-CryptAuthV2EnrollmentManagerImpl::ResultCodeErrorFromState(State state) {
+CryptAuthV2EnrollmentManagerImpl::ResultCodeErrorFromTimeoutDuringState(
+    State state) {
   switch (state) {
     case State::kWaitingForGcmRegistration:
       return CryptAuthEnrollmentResult::ResultCode::
@@ -352,6 +368,8 @@ void CryptAuthV2EnrollmentManagerImpl::OnGCMRegistrationResult(bool success) {
   if (state_ != State::kWaitingForGcmRegistration)
     return;
 
+  RecordGcmRegistrationMetrics(clock_->Now() - last_state_change_timestamp_);
+
   if (!success || gcm_manager_->GetRegistrationId().empty()) {
     OnEnrollmentFinished(CryptAuthEnrollmentResult(
         CryptAuthEnrollmentResult::ResultCode::kErrorGcmRegistrationFailed,
@@ -371,6 +389,9 @@ void CryptAuthV2EnrollmentManagerImpl::OnReenrollMessage(
 void CryptAuthV2EnrollmentManagerImpl::OnClientAppMetadataFetched(
     const base::Optional<cryptauthv2::ClientAppMetadata>& client_app_metadata) {
   DCHECK(state_ == State::kWaitingForClientAppMetadata);
+
+  RecordClientAppMetadataFetchMetrics(clock_->Now() -
+                                      last_state_change_timestamp_);
 
   if (!client_app_metadata) {
     OnEnrollmentFinished(
@@ -464,26 +485,39 @@ void CryptAuthV2EnrollmentManagerImpl::SetState(State state) {
 
   PA_LOG(INFO) << "Transitioning from " << state_ << " to " << state;
   state_ = state;
+  last_state_change_timestamp_ = clock_->Now();
 
   base::Optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
   if (!timeout_for_state)
     return;
 
-  base::Optional<CryptAuthEnrollmentResult::ResultCode> error_code =
-      ResultCodeErrorFromState(state);
-
-  // If there's a timeout specified, there should be a corresponding error
-  // code.
-  DCHECK(error_code);
-
   // TODO(https://crbug.com/936273): Add metrics to track failure rates due to
   // async timeouts.
-  timer_->Start(
-      FROM_HERE, *timeout_for_state,
-      base::BindOnce(&CryptAuthV2EnrollmentManagerImpl::OnEnrollmentFinished,
-                     callback_weak_ptr_factory_.GetWeakPtr(),
-                     CryptAuthEnrollmentResult(
-                         *error_code, base::nullopt /*client_directive */)));
+  timer_->Start(FROM_HERE, *timeout_for_state,
+                base::BindOnce(&CryptAuthV2EnrollmentManagerImpl::OnTimeout,
+                               callback_weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CryptAuthV2EnrollmentManagerImpl::OnTimeout() {
+  // If there's a timeout specified, there should be a corresponding error code.
+  base::Optional<CryptAuthEnrollmentResult::ResultCode> error_code =
+      ResultCodeErrorFromTimeoutDuringState(state_);
+  DCHECK(error_code);
+
+  base::TimeDelta execution_time = clock_->Now() - last_state_change_timestamp_;
+  switch (state_) {
+    case State::kWaitingForGcmRegistration:
+      RecordGcmRegistrationMetrics(execution_time);
+      break;
+    case State::kWaitingForClientAppMetadata:
+      RecordClientAppMetadataFetchMetrics(execution_time);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  OnEnrollmentFinished(CryptAuthEnrollmentResult(
+      *error_code, base::nullopt /*client_directive */));
 }
 
 std::string CryptAuthV2EnrollmentManagerImpl::GetV1UserPublicKey() const {

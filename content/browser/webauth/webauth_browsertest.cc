@@ -483,7 +483,8 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
         device::AuthenticatorSelectionCriteria(),
         device::AttestationConveyancePreference::kNone, nullptr,
         false /* no hmac_secret */, blink::mojom::ProtectionPolicy::UNSPECIFIED,
-        false /* protection policy not enforced */);
+        false /* protection policy not enforced */,
+        base::nullopt /* no appid_exclude */);
 
     return mojo_options;
   }

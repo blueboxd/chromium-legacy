@@ -171,7 +171,12 @@ enum NTPLoggingEventType {
   // The 'Hide shortcuts' toggle was clicked in the richer picker.
   NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED = 80,
 
-  NTP_EVENT_TYPE_LAST = NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED
+  // The 'refresh daily' toggle was licked in the richer picker.
+  NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED = 81,
+  // Daily refresh was enabled by clicked 'Done' in the richer picker.
+  NTP_BACKGROUND_DAILY_REFRESH_ENABLED = 82,
+
+  NTP_EVENT_TYPE_LAST = NTP_BACKGROUND_DAILY_REFRESH_ENABLED
 };
 
 // The different types of events that are logged for NTP search suggestions,

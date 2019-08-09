@@ -115,7 +115,7 @@ double CSSNumericLiteralValue::ComputeLengthPx(
   return conversion_data.ZoomedComputedPixels(num_, GetType());
 }
 
-void CSSNumericLiteralValue::AccumulateLengthArray(CSSLengthArray& length_array,
+bool CSSNumericLiteralValue::AccumulateLengthArray(CSSLengthArray& length_array,
                                                    double multiplier) const {
   LengthUnitType length_type;
   bool conversion_success = UnitTypeToLengthUnitType(GetType(), length_type);
@@ -123,6 +123,7 @@ void CSSNumericLiteralValue::AccumulateLengthArray(CSSLengthArray& length_array,
   length_array.values[length_type] +=
       num_ * ConversionToCanonicalUnitsScaleFactor(GetType()) * multiplier;
   length_array.type_flags.set(length_type);
+  return true;
 }
 
 bool CSSNumericLiteralValue::IsComputationallyIndependent() const {

@@ -349,6 +349,8 @@ TEST_F('CrElementsPolicyNetworkIndicatorTest', 'All', function() {
   mocha.run();
 });
 
+GEN('#endif');
+
 /**
  * @constructor
  * @extends {CrElementsBrowserTest}
@@ -359,7 +361,7 @@ CrElementsFingerprintProgressArcTest.prototype = {
   __proto__: CrElementsBrowserTest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://resources/cr_elements/chromeos/fingerprint/' +
+  browsePreload: 'chrome://resources/cr_elements/cr_fingerprint/' +
       'cr_fingerprint_progress_arc.html',
 
   /** @override */
@@ -376,8 +378,6 @@ CrElementsFingerprintProgressArcTest.prototype = {
 TEST_F('CrElementsFingerprintProgressArcTest', 'All', function() {
   mocha.run();
 });
-
-GEN('#endif');
 
 /**
  * @constructor

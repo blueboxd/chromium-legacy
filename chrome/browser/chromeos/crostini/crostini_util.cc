@@ -86,7 +86,8 @@ void OnCrostiniRestarted(Profile* profile,
     OnLaunchFailed(app_id);
     if (browser && browser->window())
       browser->window()->Close();
-    if (result == crostini::CrostiniResult::OFFLINE_WHEN_UPGRADE_REQUIRED) {
+    if (result == crostini::CrostiniResult::OFFLINE_WHEN_UPGRADE_REQUIRED ||
+        result == crostini::CrostiniResult::LOAD_COMPONENT_FAILED) {
       ShowCrostiniUpgradeView(profile, crostini::CrostiniUISurface::kAppList);
     }
     return;

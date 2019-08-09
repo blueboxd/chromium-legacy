@@ -76,7 +76,9 @@ class MHTMLLoadingTest : public testing::Test {
     body_loader->Write(*buffer);
     body_loader->Finish();
     params->body_loader = std::move(body_loader);
-    frame->CommitNavigation(std::move(params), nullptr /* extra_data */);
+    frame->CommitNavigation(
+        std::move(params), nullptr /* extra_data */,
+        base::DoNothing::Once() /* call_before_attaching_new_document */);
     frame_test_helpers::PumpPendingRequestsForFrameToLoad(frame);
   }
 

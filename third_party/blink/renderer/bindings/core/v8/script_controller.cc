@@ -295,7 +295,8 @@ void ScriptController::ExecuteJavaScriptURL(
   String result = ToCoreString(v8::Local<v8::String>::Cast(v8_result));
   WebNavigationParams::FillStaticResponse(params.get(), "text/html", "UTF-8",
                                           StringUTF8Adaptor(result));
-  GetFrame()->Loader().CommitNavigation(std::move(params), nullptr, true);
+  GetFrame()->Loader().CommitNavigation(std::move(params), nullptr,
+                                        base::DoNothing::Once(), true);
 }
 
 void ScriptController::ExecuteScriptInMainWorld(

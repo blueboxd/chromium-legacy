@@ -64,7 +64,10 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
       // hosts referring to it are properly terminated.
       new ProfileDestroyer(profile, &profile_hosts);
     } else {
-      profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
+      if (profile->IsIndependentOffTheRecordProfile())
+        delete profile;
+      else
+        profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
     }
     return;
   }
@@ -193,8 +196,12 @@ void ProfileDestroyer::DestroyProfile() {
 
   DCHECK(profile_->IsOffTheRecord());
   DCHECK(profile_->GetOriginalProfile());
-  profile_->GetOriginalProfile()->DestroyOffTheRecordProfile();
-  profile_ = NULL;
+  if (profile_->IsIndependentOffTheRecordProfile())
+    delete profile_;
+  else
+    profile_->GetOriginalProfile()->DestroyOffTheRecordProfile();
+
+  profile_ = nullptr;
 
   // And stop the timer so we can be released early too.
   timer_.Stop();

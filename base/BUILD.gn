@@ -46,6 +46,13 @@ declare_args() {
   # file name) is saved.
   enable_location_source = true
 
+  # When enabled, iterators will validate that they are not used in ways that
+  # violate spatial safety (i.e. out-of-bounds memory accesses).
+  # TODO(https://crbug.com/817982): currently guarded by a buildflag since
+  # there are non-trivial binary size regressions which are especially
+  # noticeable on Android.
+  enable_checked_iterators = !is_android
+
   # Unsafe developer build. Has developer-friendly features that may weaken or
   # disable security measures like sandboxing or ASLR.
   # IMPORTANT: Unsafe developer builds should never be distributed to end users.
@@ -1267,6 +1274,7 @@ jumbo_component("base") {
     ":build_date",
     ":cfi_buildflags",
     ":debugging_buildflags",
+    ":iterator_buildflags",
     ":logging_buildflags",
     ":orderfile_buildflags",
     ":partition_alloc_buildflags",
@@ -2081,6 +2089,12 @@ buildflag_header("debugging_buildflags") {
   ]
 }
 
+buildflag_header("iterator_buildflags") {
+  header = "iterator_buildflags.h"
+  header_dir = "base/containers"
+  flags = [ "ENABLE_CHECKED_ITERATORS=$enable_checked_iterators" ]
+}
+
 buildflag_header("logging_buildflags") {
   header = "logging_buildflags.h"
 
@@ -2732,7 +2746,6 @@ test("base_unittests") {
     "template_util_unittest.cc",
     "test/gmock_callback_support_unittest.cc",
     "test/launcher/test_launcher_unittest.cc",
-    "test/launcher/unit_test_launcher_unittest.cc",
     "test/metrics/histogram_enum_reader_unittest.cc",
     "test/metrics/histogram_tester_unittest.cc",
     "test/metrics/user_action_tester_unittest.cc",
@@ -2910,9 +2923,12 @@ test("base_unittests") {
       add_unwind_tables_in_apk = true
       sources += [ "trace_event/cfi_backtrace_android_unittest.cc" ]
     }
+
+    # Android does not use test_launcher to run gtests.
     sources -= [
       "process/process_unittest.cc",
       "process/process_util_unittest.cc",
+      "test/launcher/test_launcher_unittest.cc",
     ]
     deps += [
       ":base_java",
@@ -2922,6 +2938,7 @@ test("base_unittests") {
   }
 
   if (is_ios) {
+    # ios does not use test_launcher to run gtests.
     sources -= [
       "files/file_path_watcher_unittest.cc",
       "memory/discardable_shared_memory_unittest.cc",
@@ -2932,7 +2949,6 @@ test("base_unittests") {
       "sync_socket_unittest.cc",
       "synchronization/waitable_event_watcher_unittest.cc",
       "test/launcher/test_launcher_unittest.cc",
-      "test/launcher/unit_test_launcher_unittest.cc",
     ]
 
     # Pull in specific Mac files for iOS (which have been filtered out by file

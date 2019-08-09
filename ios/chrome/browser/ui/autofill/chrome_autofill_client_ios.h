@@ -24,9 +24,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/web/public/web_state/web_state.h"
 
 @class UIViewController;
+
+namespace web {
+class WebState;
+}
 
 namespace autofill {
 

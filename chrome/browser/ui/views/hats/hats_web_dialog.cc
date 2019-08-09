@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -76,7 +77,7 @@ void HatsWebDialog::Show(const Browser* browser, const std::string& site_id) {
   Profile* profile = browser->profile();
 
   // Self deleting upon close.
-  auto* hats_dialog = new HatsWebDialog(site_id);
+  auto* hats_dialog = new HatsWebDialog(profile, site_id);
 
   // Create a web dialog aligned to the bottom center of the location bar.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
@@ -90,11 +91,21 @@ void HatsWebDialog::Show(const Browser* browser, const std::string& site_id) {
       bounds.bottom() - views::BubbleBorder::GetBorderAndShadowInsets().top(),
       kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
   chrome::ShowWebDialogWithBounds(browser_view->GetWidget()->GetNativeView(),
-                                  profile, hats_dialog, bounds);
+                                  hats_dialog->off_the_record_profile(),
+                                  hats_dialog, bounds);
 }
 
-HatsWebDialog::HatsWebDialog(const std::string& site_id) : site_id_(site_id) {
+HatsWebDialog::HatsWebDialog(Profile* profile, const std::string& site_id)
+    : otr_profile_registration_(
+          IndependentOTRProfileManager::GetInstance()
+              ->CreateFromOriginalProfile(
+                  profile,
+                  base::BindOnce(&HatsWebDialog::OnOriginalProfileDestroyed,
+                                 base::Unretained(this)))),
+      site_id_(site_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(
+      otr_profile_registration_->profile()->IsIndependentOffTheRecordProfile());
 }
 
 HatsWebDialog::~HatsWebDialog() {
@@ -152,4 +163,10 @@ bool HatsWebDialog::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;
+}
+
+void HatsWebDialog::OnOriginalProfileDestroyed(Profile* profile) {
+  if (otr_profile_registration_ &&
+      profile == otr_profile_registration_->profile())
+    otr_profile_registration_.reset();
 }

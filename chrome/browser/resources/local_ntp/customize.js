@@ -64,6 +64,8 @@ customize.LOG_TYPE = {
   NTP_CUSTOMIZE_SHORTCUT_MOST_VISITED_CLICKED: 79,
   // The visibility toggle in the shortcuts submenu was clicked.
   NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED: 80,
+  // The 'refresh daily' toggle was licked in the richer picker.
+  NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED: 81,
 };
 
 /**
@@ -617,6 +619,7 @@ customize.createTileThumbnail = function(
 
   // Accessibility support for screen readers.
   tileBackground.setAttribute('role', 'button');
+  tileBackground.setAttribute('aria-pressed', false);
 
   tileBackground.onclick = onClickInteraction;
   tileBackground.onkeydown = onKeyInteraction;
@@ -728,13 +731,13 @@ customize.tileOnKeyDownInteraction = function(event) {
     let target = null;
     if (event.keyCode === customize.KEYCODES.LEFT) {
       target = customize.getNextTile(
-          document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
+          window.chrome.embeddedSearch.searchBox.rtl ? 1 : -1, 0,
           /** @type HTMLElement */ (tile));
     } else if (event.keyCode === customize.KEYCODES.UP) {
       target = customize.getNextTile(0, -1, /** @type HTMLElement */ (tile));
     } else if (event.keyCode === customize.KEYCODES.RIGHT) {
       target = customize.getNextTile(
-          document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
+          window.chrome.embeddedSearch.searchBox.rtl ? -1 : 1, 0,
           /** @type HTMLElement */ (tile));
     } else if (event.keyCode === customize.KEYCODES.DOWN) {
       target = customize.getNextTile(0, 1, /** @type HTMLElement */ (tile));
@@ -1207,7 +1210,7 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
       tileId = 'coll_' + collIndex + '_' + tileId;
     }
     const tile = customize.createTileThumbnail(
-        tileId, collImg[i].imageUrl, dataset, tileOnClickInteraction,
+        tileId, collImg[i].thumbnailImageUrl, dataset, tileOnClickInteraction,
         customize.tileOnKeyDownInteraction);
 
     tile.setAttribute('aria-label', collImg[i].attributions[0]);
@@ -1749,7 +1752,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   const restoreDefaultInteraction = function() {
     editDialog.close();
     customize.clearAttribution();
-    window.chrome.embeddedSearch.newTabPage.setBackgroundURL('');
+    window.chrome.embeddedSearch.newTabPage.resetBackgroundInfo();
   };
   $(customize.IDS.RESTORE_DEFAULT).onclick = (event) => {
     if (!$(customize.IDS.RESTORE_DEFAULT)
@@ -1992,6 +1995,12 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   const clOption = $(customize.IDS.SHORTCUTS_OPTION_CUSTOM_LINKS);
   const mvOption = $(customize.IDS.SHORTCUTS_OPTION_MOST_VISITED);
   const hideToggle = $(customize.IDS.SHORTCUTS_HIDE_TOGGLE);
+
+  const rtl = window.chrome.embeddedSearch.searchBox.rtl;
+  const forwardArrowKey =
+      rtl ? customize.KEYCODES.LEFT : customize.KEYCODES.RIGHT;
+  const backArrowKey = rtl ? customize.KEYCODES.RIGHT : customize.KEYCODES.LEFT;
+
   $(customize.IDS.SHORTCUTS_MENU).onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
       clOption.focus();
@@ -2013,7 +2022,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
-      if (event.keyCode === customize.KEYCODES.RIGHT) {
+      if (event.keyCode === forwardArrowKey) {
         mvOption.focus();
       } else if (event.keyCode === customize.KEYCODES.DOWN) {
         hideToggle.focus();
@@ -2036,10 +2045,10 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
-      if (event.keyCode === customize.KEYCODES.LEFT) {
+      if (event.keyCode === backArrowKey) {
         clOption.focus();
       } else if (
-          event.keyCode === customize.KEYCODES.RIGHT ||
+          event.keyCode === forwardArrowKey ||
           event.keyCode === customize.KEYCODES.DOWN) {
         hideToggle.focus();
       }
@@ -2059,7 +2068,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
-      if (event.keyCode === customize.KEYCODES.LEFT ||
+      if (event.keyCode === backArrowKey ||
           event.keyCode === customize.KEYCODES.UP) {
         mvOption.focus();
       }
@@ -2073,6 +2082,8 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
 
   const refreshToggle = $(customize.IDS.REFRESH_TOGGLE);
   refreshToggle.onchange = function(event) {
+    ntpApiHandle.logEvent(
+        customize.LOG_TYPE.NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED);
     customize.richerPicker_toggleRefreshDaily(refreshToggle.checked);
   };
   refreshToggle.onkeydown = function(event) {
@@ -2228,8 +2239,8 @@ customize.loadColorsMenu = function() {
         customize.tileOnKeyDownInteraction);
     const label = configData.translatedStrings.colorLabelPrefix + ' ' +
         colorArrayToHex(colorsColl[i].color);
-    tile.setAttribute('aria-label', label);
-    tile.setAttribute('title', label);
+    tile.firstElementChild.setAttribute('aria-label', label);
+    tile.firstElementChild.setAttribute('title', label);
 
     $(customize.IDS.COLORS_MENU).appendChild(tile);
   }

@@ -585,4 +585,61 @@ cr.define('settings_people_page', function() {
       assertEquals(settings.getCurrentRoute(), settings.routes.SYNC);
     });
   });
+
+  if (cr.isChromeOS) {
+    suite('Chrome OS with SplitSettings', function() {
+      /** @type {SettingsPeoplePageElement} */
+      let peoplePage = null;
+      /** @type {settings.SyncBrowserProxy} */
+      let browserProxy = null;
+      /** @type {settings.ProfileInfoBrowserProxy} */
+      let profileInfoBrowserProxy = null;
+
+      suiteSetup(function() {
+        loadTimeData.overrideValues({
+          // Simulate SplitSettings (OS settings in their own surface).
+          showOSSettings: false,
+        });
+      });
+
+      setup(async function() {
+        browserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+
+        profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
+        settings.ProfileInfoBrowserProxyImpl.instance_ =
+            profileInfoBrowserProxy;
+
+        PolymerTest.clearBody();
+        peoplePage = document.createElement('settings-people-page');
+        peoplePage.pageVisibility = settings.pageVisibility;
+        document.body.appendChild(peoplePage);
+
+        Polymer.dom.flush();
+        await browserProxy.whenCalled('getSyncStatus');
+      });
+
+      teardown(function() {
+        peoplePage.remove();
+      });
+
+      test('clicking profile row does not open change picture page', () => {
+        // Simulate a signed-in user.
+        sync_test_util.simulateSyncStatus({
+          signedIn: true,
+        });
+
+        // Profile row items aren't actionable.
+        const profileIcon = assert(peoplePage.$$('#profile-icon'));
+        assertFalse(profileIcon.hasAttribute('actionable'));
+        const subpageArrow = assert(peoplePage.$$('#profile-subpage-arrow'));
+        assertFalse(subpageArrow.hasAttribute('actionable'));
+
+        // Clicking on profile icon doesn't navigate to a new route.
+        const oldRoute = settings.getCurrentRoute();
+        profileIcon.click();
+        assertEquals(oldRoute, settings.getCurrentRoute());
+      });
+    });
+  }
 });

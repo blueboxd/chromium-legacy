@@ -76,7 +76,7 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual double DoubleValue() const = 0;
 
   virtual double ComputeLengthPx(const CSSToLengthConversionData&) const = 0;
-  virtual void AccumulateLengthArray(CSSLengthArray&,
+  virtual bool AccumulateLengthArray(CSSLengthArray&,
                                      double multiplier) const = 0;
   virtual void AccumulatePixelsAndPercent(const CSSToLengthConversionData&,
                                           PixelsAndPercent&,
@@ -149,7 +149,7 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
   base::Optional<double> ComputeValueInCanonicalUnit() const final;
   double ComputeLengthPx(
       const CSSToLengthConversionData& conversion_data) const final;
-  void AccumulateLengthArray(CSSLengthArray& length_array,
+  bool AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;
   bool IsComputationallyIndependent() const final;
   bool operator==(const CSSMathExpressionNode& other) const final;
@@ -200,7 +200,7 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
   base::Optional<double> ComputeValueInCanonicalUnit() const final;
   double ComputeLengthPx(
       const CSSToLengthConversionData& conversion_data) const final;
-  void AccumulateLengthArray(CSSLengthArray& length_array,
+  bool AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;
   bool IsComputationallyIndependent() const final;
   String CustomCSSText() const final;

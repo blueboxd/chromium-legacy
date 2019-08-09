@@ -1075,6 +1075,24 @@ TEST_P(ThreadPoolImplTest, WorkerThreadObserver) {
   observer.WaitCallsOnMainExit();
 }
 
+// Verify a basic EnqueueJobTaskSource() runs the worker task.
+TEST_P(ThreadPoolImplTest, ScheduleJobTaskSource) {
+  StartThreadPool();
+
+  WaitableEvent threads_running;
+
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&threads_running](experimental::JobDelegate*) {
+        threads_running.Signal();
+      }),
+      /* num_tasks_to_run */ 1);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, {ThreadPool()});
+
+  thread_pool_->EnqueueJobTaskSource(task_source);
+  threads_running.Wait();
+}
+
 namespace {
 
 class MustBeDestroyed {

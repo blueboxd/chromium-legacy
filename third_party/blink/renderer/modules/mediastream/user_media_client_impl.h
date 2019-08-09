@@ -5,14 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CLIENT_IMPL_H_
 
-#include <list>
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/web/web_apply_constraints_request.h"
@@ -21,6 +19,11 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_processor.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace blink {
 
@@ -126,8 +129,7 @@ class MODULES_EXPORT UserMediaClientImpl : public blink::WebUserMediaClient {
   // and |pending_request_infos_| is a list of queued requests.
   bool is_processing_request_ = false;
 
-  // TODO(crbug.com/704136): Use WTF::HashSet.
-  std::list<Request> pending_request_infos_;
+  Deque<Request> pending_request_infos_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

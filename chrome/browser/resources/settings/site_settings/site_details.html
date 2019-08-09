@@ -178,6 +178,13 @@
             label="$i18n{siteSettingsSerialPorts}">
         </site-details-permission>
       </template>
+      <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
+        <site-details-permission
+            category="{{ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}}"
+            icon="settings:save-original" id="nativeFileSystemWrite"
+            label="$i18n{siteSettingsNativeFileSystemWrite}">
+        </site-details-permission>
+      </template>
       <site-details-permission
           category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}"
           icon="cr:extension" id="unsandboxedPlugins"

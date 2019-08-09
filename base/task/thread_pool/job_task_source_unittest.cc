@@ -25,6 +25,7 @@ TEST(ThreadPoolJobTaskSourceTest, RunTasks) {
 
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
+  EXPECT_EQ(2U, task_source->GetRemainingConcurrency());
   {
     auto run_intent = task_source->WillRunTask();
     EXPECT_TRUE(run_intent);
@@ -41,10 +42,12 @@ TEST(ThreadPoolJobTaskSourceTest, RunTasks) {
 
     // An attempt to run an additional task is not allowed.
     EXPECT_FALSE(task_source->WillRunTask());
+    EXPECT_EQ(0U, task_source->GetRemainingConcurrency());
     auto task = task_source_transaction.TakeTask(&run_intent);
     EXPECT_FALSE(task_source->WillRunTask());
 
     std::move(task->task).Run();
+    EXPECT_EQ(0U, task_source->GetRemainingConcurrency());
     // Returns false because the task source is out of tasks.
     EXPECT_FALSE(task_source_transaction.DidProcessTask(std::move(run_intent)));
   }

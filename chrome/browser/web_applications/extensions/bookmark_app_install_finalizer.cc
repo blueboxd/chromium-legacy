@@ -166,20 +166,6 @@ void BookmarkAppInstallFinalizer::CreateOsShortcuts(
                                std::move(callback));
 }
 
-bool BookmarkAppInstallFinalizer::CanReparentTab(const web_app::AppId& app_id,
-                                                 bool shortcut_created) const {
-  const Extension* app = GetExtensionById(app_id);
-  // Reparent the web contents into its own window only if that is the
-  // app's launch type.
-  if (!app ||
-      extensions::GetLaunchType(extensions::ExtensionPrefs::Get(profile_),
-                                app) != extensions::LAUNCH_TYPE_WINDOW) {
-    return false;
-  }
-
-  return InstallFinalizer::CanReparentTab(app_id, shortcut_created);
-}
-
 bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {
 #if defined(OS_MACOSX)
   return true;

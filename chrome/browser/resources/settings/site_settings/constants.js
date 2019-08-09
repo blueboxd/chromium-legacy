@@ -37,6 +37,7 @@ settings.ContentSettingsTypes = {
   SENSORS: 'sensors',
   PAYMENT_HANDLER: 'payment-handler',
   BLUETOOTH_SCANNING: 'bluetooth-scanning',
+  NATIVE_FILE_SYSTEM_WRITE: 'native-file-system-write',
 };
 
 /**

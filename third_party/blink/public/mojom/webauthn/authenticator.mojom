@@ -335,6 +335,10 @@ struct PublicKeyCredentialCreationOptions {
   // The value of the `enforceCredentialProtectionPolicy`, or false if none was
   // provided.
   bool enforce_protection_policy;
+
+  // The contents of the appidExclude extension, if any. See
+  // https://w3c.github.io/webauthn/#sctn-appid-exclude-extension
+  string? appid_exclude;
 };
 
 enum PublicKeyCredentialType {

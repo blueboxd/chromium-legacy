@@ -435,6 +435,14 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
   autofill::GetAddressComponents(chosen_country_code,
                                  state()->GetApplicationLocale(),
                                  components.get(), &language_code_);
+
+  // Insert the Country combobox at the top.
+  editor_fields_.emplace_back(
+      autofill::ADDRESS_HOME_COUNTRY,
+      l10n_util::GetStringUTF16(IDS_LIBADDRESSINPUT_COUNTRY_OR_REGION_LABEL),
+      EditorField::LengthHint::HINT_SHORT, /*required=*/true,
+      EditorField::ControlType::COMBOBOX);
+
   for (size_t line_index = 0; line_index < components->GetSize();
        ++line_index) {
     const base::ListValue* line = nullptr;
@@ -482,17 +490,9 @@ void ShippingAddressEditorViewController::UpdateEditorFields() {
       editor_fields_.emplace_back(server_field_type,
                                   base::UTF8ToUTF16(field_name), length_hint,
                                   autofill::i18n::IsFieldRequired(
-                                      server_field_type, chosen_country_code),
+                                      server_field_type, chosen_country_code) ||
+                                      server_field_type == autofill::NAME_FULL,
                                   control_type);
-      // Insert the Country combobox right after NAME_FULL.
-      if (server_field_type == autofill::NAME_FULL) {
-        editor_fields_.emplace_back(
-            autofill::ADDRESS_HOME_COUNTRY,
-            l10n_util::GetStringUTF16(
-                IDS_LIBADDRESSINPUT_COUNTRY_OR_REGION_LABEL),
-            EditorField::LengthHint::HINT_SHORT, /*required=*/true,
-            EditorField::ControlType::COMBOBOX);
-      }
     }
   }
   // Always add phone number at the end.

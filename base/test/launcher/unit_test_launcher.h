@@ -19,6 +19,8 @@
 
 namespace base {
 
+extern const char kDontUseJobObjectFlag[];
+
 // Callback that runs a test suite and returns exit code.
 using RunTestSuiteCallback = OnceCallback<int(void)>;
 

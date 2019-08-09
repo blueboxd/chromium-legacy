@@ -57,6 +57,7 @@ process_version("build_id") {
 #   cipd_path: The path where the package will be located inside the CIPD
 #              repository.
 #   cipd_description: Sets the "description" field in CIPD metadata.
+#   install_mode: String, should be either "symlink" or "copy".
 #   deps: A list of targets to build prior to copying files.
 #   sources: A list of files to copy into the staging root.
 template("cipd_archive") {
@@ -65,15 +66,21 @@ template("cipd_archive") {
                            "cipd_manifest_name",
                            "cipd_path",
                            "cipd_description",
+                           "install_mode",
                            "deps",
                            "sources",
                          ])
   archive_staging_dir = "${target_gen_dir}/${target_name}"
-
+  if (!defined(invoker.install_mode)) {
+    install_mode = "symlink"
+  }
+  assert(install_mode == "copy" || install_mode == "symlink",
+         "\"install_mode\" arg should be either \"copy\" or \"symlink\".")
   yaml_contents = [
     "package: ${cipd_path}",
     "description: ${cipd_description}",
     "root: \${outdir}/" + rebase_path(archive_staging_dir, root_build_dir),
+    "install_mode: ${install_mode}",
     "data:",
     "  - file: LICENSE",
   ]
@@ -178,7 +185,7 @@ cipd_archive("chromedriver") {
   cipd_manifest_name = "chromedriver.yaml"
   cipd_path = "chromium/fuchsia/chromedriver/\${os}-\${arch}"
   cipd_description = "Prebuilt Chromedriver binary for Fuchsia host."
-
+  install_mode = "copy"
   deps = [
     ":strip_chromedriver_binary",
   ]

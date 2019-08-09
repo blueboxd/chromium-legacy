@@ -162,6 +162,7 @@ class InfoBarDelegate {
     FLASH_DEPRECATION_INFOBAR_DELEGATE = 91,
     SEND_TAB_TO_SELF_INFOBAR_DELEGATE = 92,
     TAB_SHARING_INFOBAR_DELEGATE = 93,
+    SAFETY_TIP_INFOBAR_DELEGATE = 94,
   };
 
   // Describes navigation events, used to decide whether infobars should be

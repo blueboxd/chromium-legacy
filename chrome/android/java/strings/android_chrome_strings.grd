@@ -3959,6 +3959,14 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Confirm
       </message>
 
+      <message name="IDS_TEST_DUMMY_MODULE_TITLE"
+        translateable="false"
+        desc="Text shown when the test dummy module is referenced in install start, success,
+              failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
+              'Installing Test Dummy for Chrome…').">
+        Test Dummy
+      </message>
+
     </messages>
   </release>
 </grit>

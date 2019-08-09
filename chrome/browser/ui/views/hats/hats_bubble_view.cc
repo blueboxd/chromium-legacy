@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/hats/hats_web_dialog.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -36,8 +38,14 @@ views::BubbleDialogDelegateView* HatsBubbleView::GetHatsBubble() {
 
 // static
 void HatsBubbleView::Show(Browser* browser,
-                          AppMenuButton* anchor_button,
                           const std::string& site_id) {
+  AppMenuButton* anchor_button = BrowserView::GetBrowserViewForBrowser(browser)
+                                     ->toolbar_button_provider()
+                                     ->GetAppMenuButton();
+  // Do not show HaTS bubble if there is no avatar menu button to anchor to.
+  if (!anchor_button)
+    return;
+
   base::RecordAction(base::UserMetricsAction("HatsBubble.Show"));
 
   DCHECK(anchor_button->GetWidget());

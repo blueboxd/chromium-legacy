@@ -85,25 +85,6 @@ void DelayedCookieMonster::GetCookieListWithOptionsInternalCallback(
   did_run_ = true;
 }
 
-void DelayedCookieMonster::SetCookieWithOptionsAsync(
-    const GURL& url,
-    const std::string& cookie_line,
-    const CookieOptions& options,
-    base::Optional<base::Time> server_time,
-    CookieMonster::SetCookiesCallback callback) {
-  did_run_ = false;
-  cookie_monster_->SetCookieWithOptionsAsync(
-      url, cookie_line, options, server_time,
-      base::Bind(&DelayedCookieMonster::SetCookiesInternalCallback,
-                 base::Unretained(this)));
-  DCHECK_EQ(did_run_, true);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&DelayedCookieMonster::InvokeSetCookiesCallback,
-                     base::Unretained(this), std::move(callback)),
-      base::TimeDelta::FromMilliseconds(kDelayedTime));
-}
-
 void DelayedCookieMonster::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
     std::string source_scheme,
@@ -154,14 +135,6 @@ void DelayedCookieMonster::InvokeGetCookieListCallback(
     CookieMonster::GetCookieListCallback callback) {
   if (!callback.is_null())
     std::move(callback).Run(cookie_list_, CookieStatusList());
-}
-
-bool DelayedCookieMonster::SetCookieWithOptions(
-    const GURL& url,
-    const std::string& cookie_line,
-    const CookieOptions& options) {
-  ADD_FAILURE();
-  return false;
 }
 
 void DelayedCookieMonster::DeleteCanonicalCookieAsync(

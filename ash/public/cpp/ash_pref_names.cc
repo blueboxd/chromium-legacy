@@ -109,6 +109,11 @@ const char kAccessibilitySwitchAccessAutoScanEnabled[] =
 // scanning forward (when auto-scan is enabled).
 const char kAccessibilitySwitchAccessAutoScanSpeedMs[] =
     "settings.a11y.switch_access.auto_scan.speed_ms";
+// An integer pref which determines time delay in ms before automatically
+// scanning forward while navigating the keyboard (when auto-scan is
+// enabled).
+const char kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs[] =
+    "settings.a11y.switch_access.auto_scan.keyboard.speed_ms";
 // A boolean pref which determines whether dictation is enabled.
 const char kAccessibilityDictationEnabled[] = "settings.a11y.dictation";
 // A boolean pref which determines whether the accessibility menu shows

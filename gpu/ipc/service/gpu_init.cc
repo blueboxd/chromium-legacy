@@ -259,7 +259,12 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   if (gpu_preferences_.use_vulkan != gpu::VulkanImplementationName::kNone) {
     bool use_swiftshader = gpu_preferences_.use_vulkan ==
                            gpu::VulkanImplementationName::kSwiftshader;
-    vulkan_implementation_ = gpu::CreateVulkanImplementation(use_swiftshader);
+    const bool enforce_protected_memory =
+        gpu_preferences_.enforce_vulkan_protected_memory;
+    vulkan_implementation_ = gpu::CreateVulkanImplementation(
+        use_swiftshader,
+        enforce_protected_memory ? true : false /* allow_protected_memory */,
+        enforce_protected_memory);
     if (!vulkan_implementation_ ||
         !vulkan_implementation_->InitializeVulkanInstance(
             !gpu_preferences_.disable_vulkan_surface)) {

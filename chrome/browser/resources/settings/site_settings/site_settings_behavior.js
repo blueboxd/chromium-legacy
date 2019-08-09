@@ -206,6 +206,9 @@ const SiteSettingsBehaviorImpl = {
     addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
         'enableBluetoothScanningContentSetting');
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
+        'enableNativeFileSystemWriteContentSetting');
     return this.contentTypes_.slice(0);
   },
 

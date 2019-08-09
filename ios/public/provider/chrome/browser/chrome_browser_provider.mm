@@ -72,11 +72,6 @@ UITextField* ChromeBrowserProvider::CreateStyledTextField() const {
   return nil;
 }
 
-UITextField<TextFieldStyling>* ChromeBrowserProvider::CreateStyledTextField(
-    CGRect frame) const {
-  return nil;
-}
-
 void ChromeBrowserProvider::InitializeCastService(
     TabModel* main_tab_model) const {}
 

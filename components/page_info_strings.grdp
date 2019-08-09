@@ -37,10 +37,10 @@
     Safety tip:
   </message>
   <message name="IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE" desc="Title of Safety Tip bubble when triggered.">
-    <ph name="SAFETY_TIP">$1<ex>Safety tip:</ex></ph> suspicious behavior
+    <ph name="SAFETY_TIP">$1<ex>Safety tip:</ex></ph> suspicious site
   </message>
   <message name="IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION" desc="Body of message to display in the page info bubble when you are viewing a page that triggered a safety tip.">
-    This page might try to trick you, steal personal information, or harm your device. Be cautious when entering personal information or opening downloaded files.
+    This site could be fake or fraudulent. Chrome recommends leaving now.
   </message>
   <message name="IDS_PAGE_INFO_SAFETY_TIP_LEAVE_BUTTON" desc="Text of button to leave a suspicious page shown on the safety tip page info bubble.">
     Leave this site

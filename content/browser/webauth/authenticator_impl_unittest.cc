@@ -450,6 +450,26 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
     return callback_receiver.status();
   }
 
+  AuthenticatorStatus TryRegistrationWithAppIdExclude(
+      const std::string& origin,
+      const std::string& appid_exclude) {
+    const GURL origin_url(origin);
+    NavigateAndCommit(origin_url);
+    mojo::Remote<blink::mojom::Authenticator> authenticator =
+        ConnectToAuthenticator();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->relying_party.id = origin_url.host();
+    options->appid_exclude = appid_exclude;
+
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+
+    return callback_receiver.status();
+  }
+
   bool SupportsTransportProtocol(::device::FidoTransportProtocol protocol) {
     return base::Contains(
         authenticator_impl_->get_authenticator_common_for_testing()
@@ -858,6 +878,10 @@ TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
     EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
               TryAuthenticationWithAppId(test_case.origin,
                                          test_case.claimed_authority));
+
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS,
+              TryRegistrationWithAppIdExclude(test_case.origin,
+                                              test_case.claimed_authority));
   }
 
   // All the invalid relying party test cases should also be invalid as AppIDs.
@@ -873,6 +897,10 @@ TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
     EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN,
               TryAuthenticationWithAppId(test_case.origin,
                                          test_case.claimed_authority));
+
+    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN,
+              TryRegistrationWithAppIdExclude(test_case.origin,
+                                              test_case.claimed_authority));
   }
 }
 
@@ -1151,6 +1179,49 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
 
     EXPECT_EQ(true, callback_receiver.value()->echo_appid_extension);
     EXPECT_EQ(true, callback_receiver.value()->appid_extension);
+  }
+}
+
+TEST_F(AuthenticatorImplTest, AppIdExcludeExtension) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  auto authenticator = ConnectToAuthenticator();
+
+  // Attempt to register a credential using the appidExclude extension. It
+  // should fail when the registration already exists on the authenticator.
+  for (bool credential_already_exists : {false, true}) {
+    SCOPED_TRACE(credential_already_exists);
+
+    for (bool is_ctap2 : {false, true}) {
+      SCOPED_TRACE(is_ctap2);
+
+      ResetVirtualDevice();
+      virtual_device_factory_->SetSupportedProtocol(
+          is_ctap2 ? device::ProtocolVersion::kCtap2
+                   : device::ProtocolVersion::kU2f);
+
+      PublicKeyCredentialCreationOptionsPtr options =
+          GetTestPublicKeyCredentialCreationOptions();
+      options->appid_exclude = kTestOrigin1;
+      options->exclude_credentials = GetTestCredentials();
+
+      if (credential_already_exists) {
+        ASSERT_TRUE(
+            virtual_device_factory_->mutable_state()->InjectRegistration(
+                options->exclude_credentials[0].id(), kTestOrigin1));
+      }
+
+      TestMakeCredentialCallback callback_receiver;
+      authenticator->MakeCredential(std::move(options),
+                                    callback_receiver.callback());
+      callback_receiver.WaitForCallback();
+
+      if (credential_already_exists) {
+        ASSERT_EQ(AuthenticatorStatus::CREDENTIAL_EXCLUDED,
+                  callback_receiver.status());
+      } else {
+        ASSERT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+      }
+    }
   }
 }
 

@@ -623,6 +623,8 @@ void CloudPolicyClient::FetchRemoteCommands(
   for (const auto& command_result : command_results)
     *request->add_command_results() = command_result;
 
+  request->set_send_secure_commands(true);
+
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
@@ -1118,15 +1120,21 @@ void CloudPolicyClient::OnRemoteCommandsFetched(
     int net_error,
     const em::DeviceManagementResponse& response) {
   std::vector<em::RemoteCommand> commands;
+  std::vector<em::SignedData> signed_commands;
   if (status == DM_STATUS_SUCCESS) {
     if (response.has_remote_command_response()) {
       for (const auto& command : response.remote_command_response().commands())
         commands.push_back(command);
+
+      for (const auto& secure_command :
+           response.remote_command_response().secure_commands()) {
+        signed_commands.push_back(secure_command);
+      }
     } else {
       status = DM_STATUS_RESPONSE_DECODING_ERROR;
     }
   }
-  std::move(callback).Run(status, commands);
+  std::move(callback).Run(status, commands, signed_commands);
   // Must call RemoveJob() last, because it frees |callback|.
   RemoveJob(job);
 }

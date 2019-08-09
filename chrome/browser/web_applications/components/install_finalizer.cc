@@ -5,6 +5,8 @@
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 
 #include "base/logging.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 
 namespace web_app {
@@ -25,6 +27,12 @@ void InstallFinalizer::AddAppToQuickLaunchBar(const AppId& app_id) {
 
 bool InstallFinalizer::CanReparentTab(const AppId& app_id,
                                       bool shortcut_created) const {
+  // Reparent the web contents into its own window only if that is the
+  // app's launch type.
+  DCHECK(registrar_);
+  if (registrar_->GetAppLaunchContainer(app_id) != LaunchContainer::kWindow)
+    return false;
+
   return ui_manager().CanReparentAppTabToWindow(app_id, shortcut_created);
 }
 

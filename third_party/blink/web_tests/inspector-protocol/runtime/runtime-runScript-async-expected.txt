@@ -137,11 +137,22 @@ Running test: testAwaitRejectedPromise
     exceptionDetails : {
         columnNumber : 0
         exception : {
+            className : Object
+            description : Object
             objectId : <number>
-            type : object
-            value : {
-                a : 1
+            preview : {
+                description : Object
+                overflow : false
+                properties : [
+                    [0] : {
+                        name : a
+                        type : number
+                        value : 1
+                    }
+                ]
+                type : object
             }
+            type : object
         }
         exceptionId : 0
         lineNumber : 0

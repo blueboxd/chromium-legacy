@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -383,7 +385,8 @@ void WebViewPlugin::OnZoomLevelChanged() {
 void WebViewPlugin::LoadHTML(const std::string& html_data, const GURL& url) {
   web_view_helper_.main_frame()->CommitNavigation(
       blink::WebNavigationParams::CreateWithHTMLString(html_data, url),
-      nullptr /* extra_data */);
+      nullptr /* extra_data */,
+      base::DoNothing::Once() /* call_before_attaching_new_document */);
 }
 
 void WebViewPlugin::UpdatePluginForNewGeometry(

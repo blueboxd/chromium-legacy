@@ -9,7 +9,6 @@
 
 #import "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
-#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/web_state/ui/crw_touch_tracking_recognizer.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 
@@ -22,6 +21,7 @@ enum class WKNavigationState;
 
 @class CRWJSInjector;
 @protocol CRWNativeContentHolder;
+@protocol CRWScrollableContent;
 @protocol CRWSwipeRecognizerProvider;
 @class CRWWebViewContentView;
 @protocol CRWWebViewProxy;
@@ -29,6 +29,7 @@ class GURL;
 
 namespace web {
 class NavigationItem;
+class WebState;
 class WebStateImpl;
 }
 
@@ -93,7 +94,7 @@ class WebStateImpl;
 
 // Replaces the currently displayed content with |contentView|.  The content
 // view will be dismissed for the next navigation.
-- (void)showTransientContentView:(CRWContentView*)contentView;
+- (void)showTransientContentView:(UIView<CRWScrollableContent>*)contentView;
 
 // Clear the transient content view, if one is shown. This is a delegate
 // method for WebStateImpl::ClearTransientContent(). Callers should use the

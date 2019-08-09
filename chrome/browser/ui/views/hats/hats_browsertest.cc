@@ -18,7 +18,7 @@ class HatsBubbleTest : public DialogBrowserTest {
   void ShowUi(const std::string& name) override {
     ASSERT_TRUE(browser()->is_type_tabbed());
     BrowserView::GetBrowserViewForBrowser(InProcessBrowserTest::browser())
-        ->ShowHatsBubbleFromAppMenuButton(std::string());
+        ->ShowHatsBubble(std::string());
   }
 
  private:

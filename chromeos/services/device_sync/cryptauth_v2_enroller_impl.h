@@ -72,7 +72,7 @@ class CryptAuthV2EnrollerImpl : public CryptAuthV2Enroller {
 
   static base::Optional<base::TimeDelta> GetTimeoutForState(State state);
   static base::Optional<CryptAuthEnrollmentResult::ResultCode>
-  ResultCodeErrorFromState(State state);
+  ResultCodeErrorFromTimeoutDuringState(State state);
 
   // CryptAuthV2Enroller:
   void OnAttemptStarted(
@@ -91,6 +91,7 @@ class CryptAuthV2EnrollerImpl : public CryptAuthV2Enroller {
                           std::unique_ptr<base::OneShotTimer> timer);
 
   void SetState(State state);
+  void OnTimeout();
 
   // Constructs a SyncKeysRequest with information about every key bundle
   // contained in CryptAuthKeyBundle::AllEnrollableNames().
@@ -157,6 +158,9 @@ class CryptAuthV2EnrollerImpl : public CryptAuthV2Enroller {
   std::unique_ptr<base::OneShotTimer> timer_;
 
   State state_ = State::kNotStarted;
+
+  // The time of the last state change. Used for execution time metrics.
+  base::Time last_state_change_timestamp_;
 
   // The new ClientDirective from SyncKeysResponse. This value is stored in the
   // CryptAuthEnrollmentResult which is passed to the

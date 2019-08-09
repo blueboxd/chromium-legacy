@@ -6,12 +6,13 @@
 #define IOS_WEB_PUBLIC_TEST_FAKES_FAKE_WEB_STATE_POLICY_DECIDER_H_
 
 #import "ios/web/public/navigation/web_state_policy_decider.h"
-#import "ios/web/public/web_state/web_state.h"
 
 @class NSURLRequest;
 @class NSURLResponse;
 
 namespace web {
+
+class WebState;
 
 class FakeWebStatePolicyDecider : public WebStatePolicyDecider {
  public:

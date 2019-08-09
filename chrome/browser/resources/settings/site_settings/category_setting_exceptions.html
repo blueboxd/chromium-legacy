@@ -10,7 +10,8 @@
         category-subtype="[[ContentSetting.BLOCK]]"
         category-header="[[blockHeader]]"
         read-only-list="[[readOnlyList]]"
-        search-filter="[[searchFilter]]">
+        search-filter="[[searchFilter]]"
+        hidden$="[[!showBlockSiteList_]]">
     </site-list>
     <site-list
         category="[[category]]"
@@ -24,7 +25,8 @@
         category-subtype="[[ContentSetting.ALLOW]]"
         category-header="$i18n{siteSettingsAllow}"
         read-only-list="[[readOnlyList]]"
-        search-filter="[[searchFilter]]">
+        search-filter="[[searchFilter]]"
+        hidden$="[[!showAllowSiteList_]]">
     </site-list>
   </template>
   <script src="category_setting_exceptions.js"></script>

@@ -1370,7 +1370,6 @@ crbug.com/967329 virtual/layout_ng_experimental/external/wpt/css/css-multicol/co
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/filter-with-abspos.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/float-and-block.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/float-with-line-after-spanner.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_experimental/external/wpt/css/css-multicol/inline-block-and-column-span-all.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-basic-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-basic-002.html [ Failure ]
@@ -2822,12 +2821,10 @@ crbug.com/957181 virtual/omt-worker-fetch/external/wpt/resource-timing/nested-co
 # Chrome touch-action computation ignores div transforms.
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html  [ Skip ]
 
-# Disabled until v8 roll.
-crbug.com/906847 inspector-protocol/runtime/runtime-getProperties.js [ Skip ]
-crbug.com/906847 inspector-protocol/debugger/debugger-scope-skip-variables-with-empty-name.js [ Skip ]
-crbug.com/v8/8672 http/tests/devtools/bindings/suspendtarget-bindings.js [ Skip ]
-crbug.com/v8/8672 http/tests/devtools/bindings/suspendtarget-navigator.js [ Skip ]
-crbug.com/v8/8672 http/tests/devtools/tracing/decode-resize.js [ Skip ]
+# Rebaseline after next v8 roll.
+crbug.com/v8/9509 inspector-protocol/runtime/runtime-callFunctionOn-async.js [ Failure Pass ]
+crbug.com/v8/9509 inspector-protocol/runtime/runtime-await-promise.js [ Failure Pass ]
+crbug.com/v8/9509 inspector-protocol/runtime/runtime-runScript-async.js [ Failure Pass ]
 
 # Stack trace layout changes, disabled until v8 roll.
 crbug.com/v8/8742 fast/events/window-onerror-11.html [ Failure Pass ]
@@ -3172,9 +3169,6 @@ crbug.com/626703 crbug.com/946710 http/tests/devtools/extensions/extensions-side
 crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 [ Win ] editing/selection/modify_extend/extend_by_character.html [ Failure Pass ]
 
-crbug.com/800898 external/wpt/FileAPI/url/url-with-fetch.any.worker.html [ Pass Failure ]
-crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
-
 # Websockets
 # Cannot be rebaselined because the output contains a timestamp and a random number.
 crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure ]
@@ -3368,7 +3362,6 @@ crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media
 crbug.com/626703 [ Mac10.12 ] external/wpt/mediacapture-fromelement/ended.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-pause-on-exit.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/workers/data-url-shared.html [ Crash ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/webaudio/the-audio-api/the-convolvernode-interface/realtime-conv.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-svg-none-test_touch.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/extension/pointerevent_touch-action-pan-right-css_touch.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/shape-detection/detection-security-test.https.html [ Timeout ]
@@ -6570,3 +6563,10 @@ crbug.com/981522 [ Linux ] external/wpt/svg/animations/correct-events-for-short-
 crbug.com/991243 [ Linux ] external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
 crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
 crbug.com/991243 [ Linux ] virtual/not-omt-sw-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
+
+# Sheriff 2019-08-08
+crbug.com/992148 [ Linux ] virtual/disable-blink-gen-property-trees/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
+
+# Expected failure for experimental Scheduling API when running without the
+# BlinkSchedulerDisableAntiStarvationForPriorities feature.
+crbug.com/979017 wpt_internal/scheduler/task_order.html [ Failure ]

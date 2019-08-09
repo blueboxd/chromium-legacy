@@ -78,14 +78,13 @@ Polymer({
   /** @private {number|null} */
   scanIntervalId_: null,
 
-  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
-  networkConfigProxy_: null,
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  networkConfig_: null,
 
   /** @override */
   created: function() {
-    this.networkConfigProxy_ =
-        network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
   },
 
   /** @override */
@@ -94,9 +93,9 @@ Polymer({
 
     const INTERVAL_MS = 10 * 1000;
     const kAll = chromeos.networkConfig.mojom.NetworkType.kAll;
-    this.networkConfigProxy_.requestNetworkScan(kAll);
+    this.networkConfig_.requestNetworkScan(kAll);
     this.scanIntervalId_ = window.setInterval(function() {
-      this.networkConfigProxy_.requestNetworkScan(kAll);
+      this.networkConfig_.requestNetworkScan(kAll);
     }.bind(this), INTERVAL_MS);
   },
 
@@ -133,7 +132,7 @@ Polymer({
    * refresh and list update (e.g. when the element is shown).
    */
   refreshNetworks: function() {
-    this.networkConfigProxy_.getDeviceStateList().then(response => {
+    this.networkConfig_.getDeviceStateList().then(response => {
       this.onGetDeviceStates_(response.result);
     });
   },
@@ -186,7 +185,7 @@ Polymer({
       networkType: mojom.NetworkType.kAll,
       limit: chromeos.networkConfig.mojom.kNoLimit,
     };
-    this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+    this.networkConfig_.getNetworkStateList(filter).then(response => {
       this.onGetNetworkStateList_(deviceStates, response.result);
     });
   },

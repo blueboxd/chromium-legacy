@@ -21,12 +21,12 @@ class RE2;
 
 namespace feedback {
 
-struct CustomPatternWithoutContext {
+struct CustomPatternWithAlias {
   // A string literal used in anonymized tests. Matches to the |pattern| are
   // replaced with <|alias|: 1>, <|alias|: 2>, ...
   const char* alias;
-  // A RE2 regexp with exactly one capture group. Matches will be replaced by
-  // the alias reference described above.
+  // A RE2 regexp used in the replacing logic. Matches will be replaced by the
+  // alias reference described above.
   const char* pattern;
 };
 
@@ -55,12 +55,10 @@ class AnonymizerTool {
   std::string AnonymizeCustomPatterns(std::string input);
   std::string AnonymizeCustomPatternWithContext(
       const std::string& input,
-      const std::string& pattern,
-      std::map<std::string, std::string>* identifier_space);
+      const CustomPatternWithAlias& pattern);
   std::string AnonymizeCustomPatternWithoutContext(
       const std::string& input,
-      const CustomPatternWithoutContext& pattern,
-      std::map<std::string, std::string>* identifier_space);
+      const CustomPatternWithAlias& pattern);
 
   // Null-terminated list of first party extension IDs. We need to have this
   // passed into us because we can't refer to the code where these are defined.
@@ -81,10 +79,13 @@ class AnonymizerTool {
   std::map<std::string, std::string> hashes_;
 
   // Like mac addresses, identifiers in custom patterns are anonymized.
-  // custom_patterns_with_context_[i] contains a map of original identifier to
-  // anonymized identifier for custom pattern number i.
-  std::vector<std::map<std::string, std::string>> custom_patterns_with_context_;
-  std::vector<std::map<std::string, std::string>>
+  // custom_patterns_with_context_["alias"] contains a map of original
+  // identifier to anonymized identifier for custom pattern with the given
+  // "alias".  We key on alias to allow different patterns to use the same
+  // replacement maps.
+  std::map<std::string, std::map<std::string, std::string>>
+      custom_patterns_with_context_;
+  std::map<std::string, std::map<std::string, std::string>>
       custom_patterns_without_context_;
 
   // Cache to prevent the repeated compilation of the same regular expression

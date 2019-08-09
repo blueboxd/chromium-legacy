@@ -140,7 +140,9 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     std::bitset<kLengthUnitTypeCount> type_flags;
   };
 
-  void AccumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
+  // Returns false if the value cannot be represented as a length array, which
+  // happens when comparisons are involved (e.g., max(10px, 10%)).
+  bool AccumulateLengthArray(CSSLengthArray&, double multiplier = 1) const;
 
   enum UnitCategory {
     kUNumber,

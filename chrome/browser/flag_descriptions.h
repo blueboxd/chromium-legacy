@@ -293,9 +293,6 @@ extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsName[];
 extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[];
 
-extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[];
-extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[];
-
 extern const char kEnableAutofillImportDynamicFormsName[];
 extern const char kEnableAutofillImportDynamicFormsDescription[];
 
@@ -315,9 +312,6 @@ extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 
 extern const char kEnableAutofillNativeDropdownViewsName[];
 extern const char kEnableAutofillNativeDropdownViewsDescription[];
-
-extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[];
-extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
 
 extern const char kEnableAutofillUpdatedCardUnmaskPromptUiName[];
 extern const char kEnableAutofillUpdatedCardUnmaskPromptUiDescription[];
@@ -1721,6 +1715,9 @@ extern const char kEnableCustomMacPaperSizesDescription[];
 
 extern const char kMacTouchBarName[];
 extern const char kMacTouchBarDescription[];
+
+extern const char kMacSyscallSandboxName[];
+extern const char kMacSyscallSandboxDescription[];
 
 extern const char kMacV2GPUSandboxName[];
 extern const char kMacV2GPUSandboxDescription[];

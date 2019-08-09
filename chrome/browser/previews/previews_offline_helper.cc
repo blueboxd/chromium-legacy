@@ -159,7 +159,7 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
     // Schedule a low priority task with a slight delay to ensure that the
     // expensive DB query doesn't occur during startup or during other user
     // visible actions.
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE,
         {base::MayBlock(), content::BrowserThread::UI,
          base::TaskPriority::LOWEST,

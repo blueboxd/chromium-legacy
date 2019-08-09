@@ -122,11 +122,14 @@ bool GetCookieDomainWithString(const GURL& url,
                                std::string* result) {
   const std::string url_host(url.host());
 
+  url::CanonHostInfo ignored;
+  std::string cookie_domain(CanonicalizeHost(domain_string, &ignored));
+
   // If no domain was specified in the domain string, default to a host cookie.
   // We match IE/Firefox in allowing a domain=IPADDR if it matches the url
   // ip address hostname exactly.  It should be treated as a host cookie.
   if (domain_string.empty() ||
-      (url.HostIsIPAddress() && url_host == domain_string)) {
+      (url.HostIsIPAddress() && url_host == cookie_domain)) {
     *result = url_host;
     DCHECK(DomainIsHostOnly(*result));
     return true;
@@ -139,8 +142,6 @@ bool GetCookieDomainWithString(const GURL& url,
   }
 
   // Get the normalized domain specified in cookie line.
-  url::CanonHostInfo ignored;
-  std::string cookie_domain(CanonicalizeHost(domain_string, &ignored));
   if (cookie_domain.empty())
     return false;
   if (cookie_domain[0] != '.')
@@ -488,7 +489,7 @@ CanonicalCookie::CookieInclusionStatus CookieWouldBeExcludedDueToSameSite(
   bool cross_site_context = options.same_site_cookie_context() ==
                             CookieOptions::SameSiteCookieContext::CROSS_SITE;
   if (cross_site_context && cookie.SameSite() == CookieSameSite::UNSPECIFIED) {
-    DCHECK_EQ(CookieSameSite::NO_RESTRICTION, cookie.GetEffectiveSameSite());
+    DCHECK(cookie.IsEffectivelySameSiteNone());
     return CanonicalCookie::CookieInclusionStatus::
         EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX;
   }

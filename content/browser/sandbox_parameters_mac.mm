@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "sandbox/mac/seatbelt_exec.h"
@@ -109,6 +111,10 @@ void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
       service_manager::SandboxMac::GetCanonicalPath(base::GetHomeDir()).value();
   CHECK(client->SetParameter(
       service_manager::SandboxMac::kSandboxHomedirAsLiteral, homedir));
+
+  CHECK(client->SetBooleanParameter(
+      "FILTER_SYSCALLS",
+      base::FeatureList::IsEnabled(features::kMacV2GPUSandbox)));
 }
 
 void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {

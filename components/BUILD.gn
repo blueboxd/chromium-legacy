@@ -579,7 +579,6 @@ if (!is_ios) {
       sources += [ "dom_distiller/standalone/content_extractor_browsertest.cc" ]
       deps += [
         "//components/leveldb_proto",
-        "//components/leveldb_proto/content:factory",
         "//components/prefs:test_support",
         "//components/sync_preferences:test_support",
       ]

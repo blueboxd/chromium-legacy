@@ -2188,7 +2188,10 @@ void FormStructure::RationalizeTypeRelationships() {
 LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
   buffer << Tag{"div"} << Attrib{"class", "form"};
   buffer << Tag{"table"};
-  buffer << Tr{} << "Form signature:" << form.form_signature();
+  buffer << Tr{} << "Form signature:"
+         << base::StrCat({base::NumberToString(form.form_signature()), " - ",
+                          base::NumberToString(
+                              HashFormSignature(form.form_signature()))});
   buffer << Tr{} << "Form name:" << form.form_name();
   buffer << Tr{} << "Target URL:" << form.target_url();
   for (size_t i = 0; i < form.field_count(); ++i) {
@@ -2197,7 +2200,11 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
     const AutofillField* field = form.field(i);
     buffer << Tag{"td"};
     buffer << Tag{"table"};
-    buffer << Tr{} << "Signature:" << field->GetFieldSignature();
+    buffer << Tr{} << "Signature:"
+           << base::StrCat(
+                  {base::NumberToString(field->GetFieldSignature()), " - ",
+                   base::NumberToString(
+                       HashFieldSignature(field->GetFieldSignature()))});
     buffer << Tr{} << "Name:" << field->parseable_name();
 
     auto type = field->Type().ToString();

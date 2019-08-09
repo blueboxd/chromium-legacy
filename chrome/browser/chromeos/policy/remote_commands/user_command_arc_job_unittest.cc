@@ -42,7 +42,7 @@ std::unique_ptr<policy::RemoteCommandJob> CreateArcJob(
   // Create the job and validate.
   auto job = std::make_unique<policy::UserCommandArcJob>(profile);
 
-  EXPECT_TRUE(job->Init(base::TimeTicks::Now(), command_proto));
+  EXPECT_TRUE(job->Init(base::TimeTicks::Now(), command_proto, nullptr));
   EXPECT_EQ(kUniqueID, job->unique_id());
   EXPECT_EQ(policy::RemoteCommandJob::NOT_STARTED, job->status());
 

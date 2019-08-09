@@ -187,23 +187,18 @@ class UnderlayCastOverlayValidator : public SingleOverlayValidator {
 
 class DefaultOverlayProcessor : public OverlayProcessor {
  public:
-  explicit DefaultOverlayProcessor(ContextProvider* context_provider);
-  size_t GetStrategyCount() const;
+  DefaultOverlayProcessor()
+      : OverlayProcessor(std::make_unique<SingleOverlayValidator>()) {}
+
+  size_t GetStrategyCount() const {
+    if (auto* validator = overlay_validator_.get()) {
+      return static_cast<TestOverlayCandidateValidator*>(validator)
+          ->GetStrategyCount();
+    }
+
+    return 0;
+  }
 };
-
-DefaultOverlayProcessor::DefaultOverlayProcessor(
-    ContextProvider* context_provider)
-    : OverlayProcessor(context_provider) {
-  SetOverlayCandidateValidator(std::make_unique<SingleOverlayValidator>());
-}
-
-size_t DefaultOverlayProcessor::GetStrategyCount() const {
-  if (auto* validator = overlay_validator_.get())
-    return static_cast<TestOverlayCandidateValidator*>(validator)
-        ->GetStrategyCount();
-
-  return 0;
-}
 
 class OverlayOutputSurface : public OutputSurface {
  public:
@@ -261,11 +256,8 @@ template <typename OverlayCandidateValidatorType>
 class TypedOverlayProcessor : public OverlayProcessor {
  public:
   explicit TypedOverlayProcessor(
-      const ContextProvider* context_provider,
       std::unique_ptr<OverlayCandidateValidatorType> validator)
-      : OverlayProcessor(context_provider) {
-    SetOverlayCandidateValidator(std::move(validator));
-  }
+      : OverlayProcessor(std::move(validator)) {}
 
   OverlayCandidateValidatorType* GetTypedOverlayCandidateValidator() {
     const OverlayCandidateValidator* const_base_validator =
@@ -568,9 +560,7 @@ class OverlayTest : public testing::Test {
     child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
 
     overlay_processor_ = std::make_unique<OverlayProcessorType>(
-        output_surface_->context_provider(),
         std::make_unique<OverlayCandidateValidatorType>());
-    overlay_processor_->SetDCHasHwOverlaySupportForTesting();
   }
 
   void TearDown() override {
@@ -622,8 +612,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
                                                 provider.get(),
                                                 shared_bitmap_manager.get());
 
-  auto overlay_processor = std::make_unique<DefaultOverlayProcessor>(
-      output_surface.context_provider());
+  auto overlay_processor = std::make_unique<DefaultOverlayProcessor>();
   EXPECT_GE(2U, overlay_processor->GetStrategyCount());
 }
 
@@ -3108,8 +3097,7 @@ class OverlayInfoRendererGL : public GLRenderer {
 
   void SetOverlayProcessorWithValidator(
       std::unique_ptr<SingleOverlayValidator> validator) {
-    overlay_processor_.reset(new OverlayProcessorType(
-        output_surface_->context_provider(), std::move(validator)));
+    overlay_processor_.reset(new OverlayProcessorType(std::move(validator)));
   }
 
  private:

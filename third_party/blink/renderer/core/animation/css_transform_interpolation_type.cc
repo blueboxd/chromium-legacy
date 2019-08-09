@@ -194,7 +194,11 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertValue(
         const auto& primitive_value = To<CSSPrimitiveValue>(*argument);
         if (!primitive_value.IsLength())
           continue;
-        primitive_value.AccumulateLengthArray(length_array);
+        if (!primitive_value.AccumulateLengthArray(length_array)) {
+          // TODO(crbug.com/991672): Implement interpolation when CSS comparison
+          // functions min/max are involved.
+          return nullptr;
+        }
       }
     }
     std::unique_ptr<InterpolationType::ConversionChecker> length_units_checker =

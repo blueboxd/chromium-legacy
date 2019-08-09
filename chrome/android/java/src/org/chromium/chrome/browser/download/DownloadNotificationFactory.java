@@ -222,6 +222,10 @@ public final class DownloadNotificationFactory {
                                         context, cancelIntent, downloadUpdate.getNotificationId()),
                                 cancelActionType);
 
+                // On touchless devices, the only access point for downloads is the notification, so
+                // keep the notification persistent if not in the completed or failure state.
+                if (FeatureUtilities.isNoTouchModeEnabled()) builder.setOngoing(true);
+
                 if (!downloadUpdate.getIsOffTheRecord())
                     builder.setLargeIcon(downloadUpdate.getIcon());
 

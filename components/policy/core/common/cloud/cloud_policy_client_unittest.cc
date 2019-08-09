@@ -102,9 +102,10 @@ class MockRemoteCommandsObserver {
  public:
   MockRemoteCommandsObserver() {}
 
-  MOCK_METHOD2(OnRemoteCommandsFetched,
+  MOCK_METHOD3(OnRemoteCommandsFetched,
                void(DeviceManagementStatus,
-                    const std::vector<em::RemoteCommand>&));
+                    const std::vector<em::RemoteCommand>&,
+                    const std::vector<em::SignedData>&));
 };
 
 // A mock class to allow us to set expectations on available licenses fetch
@@ -244,6 +245,8 @@ class CloudPolicyClientTest : public testing::Test {
         em::RemoteCommandResult_ResultType_RESULT_SUCCESS);
     command_result->set_payload(kResultPayload);
     command_result->set_timestamp(kTimestamp);
+    remote_command_request_.mutable_remote_command_request()
+        ->set_send_secure_commands(true);
 
     em::RemoteCommand* command =
         remote_command_response_.mutable_remote_command_response()
@@ -1594,7 +1597,8 @@ TEST_F(CloudPolicyClientTest, FetchRemoteCommands) {
       OnRemoteCommandsFetched(
           DM_STATUS_SUCCESS,
           ElementsAre(MatchProto(
-              remote_command_response_.remote_command_response().commands(0)))))
+              remote_command_response_.remote_command_response().commands(0))),
+          _))
       .Times(1);
   CloudPolicyClient::RemoteCommandCallback callback =
       base::BindOnce(&MockRemoteCommandsObserver::OnRemoteCommandsFetched,

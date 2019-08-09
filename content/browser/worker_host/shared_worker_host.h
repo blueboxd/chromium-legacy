@@ -15,8 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/unguessable_token.h"
+#include "content/browser/browser_interface_broker_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -56,6 +58,11 @@ class CONTENT_EXPORT SharedWorkerHost
                    std::unique_ptr<SharedWorkerInstance> instance,
                    int worker_process_id);
   ~SharedWorkerHost() override;
+
+  // May return nullptr.
+  RenderProcessHost* GetProcessHost() {
+    return RenderProcessHost::FromID(worker_process_id_);
+  }
 
   // Allows overriding the URLLoaderFactory creation for subresources.
   // Passing a null callback will restore the default behavior.
@@ -194,6 +201,11 @@ class CONTENT_EXPORT SharedWorkerHost
 
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
+
+  BrowserInterfaceBrokerImpl<SharedWorkerHost, const url::Origin&> broker_{
+      this};
+  mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
+      &broker_};
 
   // The handle owns the precreated AppCacheHost until it's claimed by the
   // renderer after main script loading finishes.

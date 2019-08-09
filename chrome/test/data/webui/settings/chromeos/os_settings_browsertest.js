@@ -113,7 +113,8 @@ var OSSettingsAdvancedPageBrowserTest = class extends OSSettingsBrowserTest {
 // Times out on debug builders because the Settings page can take several
 // seconds to load in a Release build and several times that in a Debug build.
 // See https://crbug.com/558434.
-TEST_F('OSSettingsAdvancedPageBrowserTest', 'MAYBE_AllJsTests', () => {
+// Disabled due to flakiness on linux-chromeos-rel. https://crbug.com/992116
+TEST_F('OSSettingsAdvancedPageBrowserTest', 'DISABLED_AllJsTests', () => {
   // Run all registered tests.
   mocha.run();
 });

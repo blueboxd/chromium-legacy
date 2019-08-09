@@ -17,6 +17,7 @@
 namespace viz {
 class DisplayResourceProvider;
 class ContextProvider;
+class RendererSettings;
 
 // Holds all information necessary to construct a DCLayer from a DrawQuad.
 class VIZ_SERVICE_EXPORT DCLayerOverlay {
@@ -69,9 +70,12 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
 
 typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
 
-class DCLayerOverlayProcessor {
+class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
  public:
-  explicit DCLayerOverlayProcessor(const ContextProvider* context_provider);
+  DCLayerOverlayProcessor(const ContextProvider* context_provider,
+                          const RendererSettings& settings);
+  // For testing.
+  DCLayerOverlayProcessor();
   ~DCLayerOverlayProcessor();
 
   void Process(DisplayResourceProvider* resource_provider,
@@ -80,7 +84,6 @@ class DCLayerOverlayProcessor {
                gfx::Rect* damage_rect,
                DCLayerOverlayList* dc_layer_overlays);
   void ClearOverlayState();
-  void SetHasHwOverlaySupport() { has_hw_overlay_support_ = true; }
   // This is the damage contribution due to previous frame's overlays which can
   // be empty.
   gfx::Rect previous_frame_overlay_damage_contribution() {
@@ -92,18 +95,18 @@ class DCLayerOverlayProcessor {
   QuadList::Iterator ProcessRenderPassDrawQuad(RenderPass* render_pass,
                                                gfx::Rect* damage_rect,
                                                QuadList::Iterator it);
-
   void ProcessRenderPass(DisplayResourceProvider* resource_provider,
                          const gfx::RectF& display_rect,
                          RenderPass* render_pass,
                          bool is_root,
                          gfx::Rect* damage_rect,
                          DCLayerOverlayList* dc_layer_overlays);
-  void ProcessForOverlay(const gfx::RectF& display_rect,
-                         QuadList* quad_list,
-                         const gfx::Rect& quad_rectangle,
-                         QuadList::Iterator* it,
-                         gfx::Rect* damage_rect);
+  // Returns an iterator to the element after |it|.
+  QuadList::Iterator ProcessForOverlay(const gfx::RectF& display_rect,
+                                       RenderPass* render_pass,
+                                       const gfx::Rect& quad_rectangle,
+                                       const QuadList::Iterator& it,
+                                       gfx::Rect* damage_rect);
   void ProcessForUnderlay(const gfx::RectF& display_rect,
                           RenderPass* render_pass,
                           const gfx::Rect& quad_rectangle,
@@ -113,6 +116,14 @@ class DCLayerOverlayProcessor {
                           gfx::Rect* this_frame_underlay_rect,
                           DCLayerOverlay* dc_layer);
 
+  void InsertDebugBorderDrawQuads(const gfx::RectF& display_rect,
+                                  const gfx::Rect& overlay_rect,
+                                  RenderPass* root_render_pass,
+                                  gfx::Rect* damage_rect);
+
+  const bool has_hw_overlay_support_;
+  const bool show_debug_borders_;
+
   gfx::Rect previous_frame_underlay_rect_;
   gfx::RectF previous_display_rect_;
   // previous and current overlay_rect_union_ include both overlay and underlay
@@ -120,7 +131,6 @@ class DCLayerOverlayProcessor {
   gfx::Rect current_frame_overlay_rect_union_;
   int previous_frame_processed_overlay_count_ = 0;
   int current_frame_processed_overlay_count_ = 0;
-  bool has_hw_overlay_support_ = true;
 
   // Store information about clipped punch-through rects in target space for
   // non-root render passes. These rects are used to clear the corresponding

@@ -14,6 +14,7 @@ group("proto_lite") {
 proto_library("proto") {
   sources = [
     "click_to_call_message.proto",
+    "shared_clipboard_message.proto",
     "sharing_message.proto",
   ]
 }

@@ -34,15 +34,21 @@ class TestProvider : public FieldTrialsProvider {
 
 // Check that the values in |system_values| correspond to the test data
 // defined at the top of this file.
-void CheckSystemProfile(const metrics::SystemProfileProto& system_profile) {
-  ASSERT_EQ(base::size(kFieldTrialIds) + base::size(kSyntheticTrials),
-            static_cast<size_t>(system_profile.field_trial_size()));
+void CheckFieldTrialsInSystemProfile(
+    const metrics::SystemProfileProto& system_profile) {
+  // Verify the right data is present for the field trials.
   for (size_t i = 0; i < base::size(kFieldTrialIds); ++i) {
     const metrics::SystemProfileProto::FieldTrial& field_trial =
         system_profile.field_trial(i);
     EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
     EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
   }
+}
+
+// Check that the values in |system_values| correspond to the test data
+// defined at the top of this file.
+void CheckSyntheticTrialsInSystemProfile(
+    const metrics::SystemProfileProto& system_profile) {
   // Verify the right data is present for the synthetic trials.
   for (size_t i = 0; i < base::size(kSyntheticTrials); ++i) {
     const metrics::SystemProfileProto::FieldTrial& field_trial =
@@ -98,7 +104,22 @@ TEST_F(FieldTrialsProviderTest, ProvideSyntheticTrials) {
 
   metrics::SystemProfileProto proto;
   provider.ProvideSystemProfileMetrics(&proto);
-  CheckSystemProfile(proto);
+
+  ASSERT_EQ(base::size(kFieldTrialIds) + base::size(kSyntheticTrials),
+            static_cast<size_t>(proto.field_trial_size()));
+  CheckFieldTrialsInSystemProfile(proto);
+  CheckSyntheticTrialsInSystemProfile(proto);
+}
+
+TEST_F(FieldTrialsProviderTest, NoSyntheticTrials) {
+  TestProvider provider(nullptr, base::StringPiece());
+
+  metrics::SystemProfileProto proto;
+  provider.ProvideSystemProfileMetrics(&proto);
+
+  ASSERT_EQ(base::size(kFieldTrialIds),
+            static_cast<size_t>(proto.field_trial_size()));
+  CheckFieldTrialsInSystemProfile(proto);
 }
 
 }  // namespace variations

@@ -185,6 +185,12 @@ void SharedWorkerHost::Start(
       blink::mojom::kNavigation_SharedWorkerSpec, worker_process_id_,
       mojo::MakeRequest(&interface_provider)));
 
+  // Set up BrowserInterfaceBroker interface
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker;
+  broker_receiver_.Bind(
+      browser_interface_broker.InitWithNewPipeAndPassReceiver());
+
   // Set the default factory to the bundle for subresource loading to pass to
   // the renderer.
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
@@ -218,7 +224,7 @@ void SharedWorkerHost::Start(
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
       std::move(host), std::move(worker_request_),
-      std::move(interface_provider));
+      std::move(interface_provider), std::move(browser_interface_broker));
 
   // |service_worker_remote_object| is an associated interface ptr, so calls
   // can't be made on it until its request endpoint is sent. Now that the

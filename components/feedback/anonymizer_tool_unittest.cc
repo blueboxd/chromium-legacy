@@ -33,17 +33,14 @@ class AnonymizerToolTest : public testing::Test {
 
   std::string AnonymizeCustomPatternWithContext(
       const std::string& input,
-      const std::string& pattern,
-      std::map<std::string, std::string>* space) {
-    return anonymizer_.AnonymizeCustomPatternWithContext(input, pattern, space);
+      const CustomPatternWithAlias& pattern) {
+    return anonymizer_.AnonymizeCustomPatternWithContext(input, pattern);
   }
 
   std::string AnonymizeCustomPatternWithoutContext(
       const std::string& input,
-      const CustomPatternWithoutContext& pattern,
-      std::map<std::string, std::string>* space) {
-    return anonymizer_.AnonymizeCustomPatternWithoutContext(input, pattern,
-                                                            space);
+      const CustomPatternWithAlias& pattern) {
+    return anonymizer_.AnonymizeCustomPatternWithoutContext(input, pattern);
   }
 
   AnonymizerTool anonymizer_{kFakeFirstPartyExtensionIDs};
@@ -62,7 +59,8 @@ TEST_F(AnonymizerToolTest, Anonymize) {
             anonymizer_.Anonymize("11223344556677889900AABBCCDDEEFF"));
 
   // Make sure custom pattern anonymization is invoked.
-  EXPECT_EQ("Cell ID: '1'", AnonymizeCustomPatterns("Cell ID: 'A1B2'"));
+  EXPECT_EQ("Cell ID: '<CellID: 1>'",
+            AnonymizeCustomPatterns("Cell ID: 'A1B2'"));
 
   // Make sure UUIDs are anonymized.
   EXPECT_EQ(
@@ -158,40 +156,50 @@ TEST_F(AnonymizerToolTest, AnonymizeHashes) {
 TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
   EXPECT_EQ("", AnonymizeCustomPatterns(""));
 
-  EXPECT_EQ("Cell ID: '1'", AnonymizeCustomPatterns("Cell ID: 'A1B2'"));
-  EXPECT_EQ("Cell ID: '2'", AnonymizeCustomPatterns("Cell ID: 'C1D2'"));
-  EXPECT_EQ("foo Cell ID: '1' bar",
+  EXPECT_EQ("Cell ID: '<CellID: 1>'",
+            AnonymizeCustomPatterns("Cell ID: 'A1B2'"));
+  EXPECT_EQ("Cell ID: '<CellID: 2>'",
+            AnonymizeCustomPatterns("Cell ID: 'C1D2'"));
+  EXPECT_EQ("foo Cell ID: '<CellID: 1>' bar",
             AnonymizeCustomPatterns("foo Cell ID: 'A1B2' bar"));
 
-  EXPECT_EQ("foo Location area code: '1' bar",
+  EXPECT_EQ("foo Location area code: '<LocAC: 1>' bar",
             AnonymizeCustomPatterns("foo Location area code: 'A1B2' bar"));
 
-  EXPECT_EQ("foo\na SSID='1' b\n'",
+  EXPECT_EQ("foo\na SSID='<SSID: 1>' b\n'",
             AnonymizeCustomPatterns("foo\na SSID='Joe's' b\n'"));
-  EXPECT_EQ("ssid '2'", AnonymizeCustomPatterns("ssid 'My AP'"));
+  EXPECT_EQ("ssid '<SSID: 2>'", AnonymizeCustomPatterns("ssid 'My AP'"));
   EXPECT_EQ("bssid 'aa:bb'", AnonymizeCustomPatterns("bssid 'aa:bb'"));
 
-  EXPECT_EQ("Scan SSID - hexdump(len=6): 1\nfoo",
+  EXPECT_EQ("Scan SSID - hexdump(len=6): <SSIDHex: 1>\nfoo",
             AnonymizeCustomPatterns(
                 "Scan SSID - hexdump(len=6): 47 6f 6f 67 6c 65\nfoo"));
 
-  EXPECT_EQ(
-      "a\nb [SSID=1] [SSID=2] [SSID=foo\nbar] b",
-      AnonymizeCustomPatterns("a\nb [SSID=foo] [SSID=bar] [SSID=foo\nbar] b"));
+  EXPECT_EQ("a\nb [SSID=<SSID: 3>] [SSID=<SSID: 1>] [SSID=foo\nbar] b",
+            AnonymizeCustomPatterns(
+                "a\nb [SSID=foo] [SSID=Joe's] [SSID=foo\nbar] b"));
 
-  EXPECT_EQ("SerialNumber: 1",
+  EXPECT_EQ("SerialNumber: <Serial: 1>",
             AnonymizeCustomPatterns("SerialNumber: 1217D7EF"));
-  EXPECT_EQ("serial  number: 2",
+  EXPECT_EQ("serial  number: <Serial: 2>",
             AnonymizeCustomPatterns("serial  number: 50C971FEE7F3x010900"));
-  EXPECT_EQ("SerialNumber: 3",
+  EXPECT_EQ("SerialNumber: <Serial: 3>",
             AnonymizeCustomPatterns("SerialNumber: EVT23-17BA01-004"));
-  EXPECT_EQ("serial=4", AnonymizeCustomPatterns("serial=\"1234AA5678\""));
+  EXPECT_EQ("serial=\"<Serial: 4>\"",
+            AnonymizeCustomPatterns("serial=\"1234AA5678\""));
+  EXPECT_EQ("\"serial_number\"=\"<Serial: 1>\"",
+            AnonymizeCustomPatterns("\"serial_number\"=\"1217D7EF\""));
+  EXPECT_EQ("SerialNumber: <Serial: 5>",
+            AnonymizeCustomPatterns("SerialNumber: 5:00:14.0"));
+  EXPECT_EQ("Serial: <Serial: 6>",
+            AnonymizeCustomPatterns("Serial: ABCEFG\x01kjmn-as:342/234\\432"));
 
-  EXPECT_EQ("\"gaia_id\":\"1\"",
+  EXPECT_EQ("\"gaia_id\":\"<GAIA: 1>\"",
             AnonymizeCustomPatterns("\"gaia_id\":\"1234567890\""));
-  EXPECT_EQ("gaia_id='2'", AnonymizeCustomPatterns("gaia_id='987654321'"));
-  EXPECT_EQ("{id: 1, email:",
-            AnonymizeCustomPatterns("{id: 123454321, email:"));
+  EXPECT_EQ("gaia_id='<GAIA: 2>'",
+            AnonymizeCustomPatterns("gaia_id='987654321'"));
+  EXPECT_EQ("{id: <GAIA: 1>, email:",
+            AnonymizeCustomPatterns("{id: 1234567890, email:"));
 
   EXPECT_EQ("<email: 1>",
             AnonymizeCustomPatterns("foo@bar.com"));
@@ -210,8 +218,9 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
 
   EXPECT_EQ("<URL: 1>",
             AnonymizeCustomPatterns("http://example.com/foo?test=1"));
-  EXPECT_EQ("Foo <URL: 2> Bar",
-            AnonymizeCustomPatterns("Foo http://192.168.0.1/foo?test=1#123 Bar"));
+  EXPECT_EQ(
+      "Foo <URL: 2> Bar",
+      AnonymizeCustomPatterns("Foo http://192.168.0.1/foo?test=1#123 Bar"));
   const char* kURLs[] = {
     "http://example.com/foo?test=1",
     "http://userid:password@example.com:8080",
@@ -242,38 +251,38 @@ TEST_F(AnonymizerToolTest, AnonymizeCustomPatterns) {
 }
 
 TEST_F(AnonymizerToolTest, AnonymizeCustomPatternWithContext) {
-  const char kPattern[] = "(\\b(?i)id:? ')(\\d+)(')";
-  std::map<std::string, std::string> space;
-  EXPECT_EQ("", AnonymizeCustomPatternWithContext("", kPattern, &space));
+  const CustomPatternWithAlias kPattern1 = {"ID", "(\\b(?i)id:? ')(\\d+)(')"};
+  const CustomPatternWithAlias kPattern2 = {"ID", "(\\b(?i)id=')(\\d+)(')"};
+  const CustomPatternWithAlias kPattern3 = {"IDG", "(\\b(?i)idg=')(\\d+)(')"};
+  EXPECT_EQ("", AnonymizeCustomPatternWithContext("", kPattern1));
   EXPECT_EQ("foo\nbar\n",
-            AnonymizeCustomPatternWithContext("foo\nbar\n", kPattern, &space));
-  EXPECT_EQ("id '1'",
-            AnonymizeCustomPatternWithContext("id '2345'", kPattern, &space));
-  EXPECT_EQ("id '2'",
-            AnonymizeCustomPatternWithContext("id '1234'", kPattern, &space));
-  EXPECT_EQ("id: '2'",
-            AnonymizeCustomPatternWithContext("id: '1234'", kPattern, &space));
-  EXPECT_EQ("ID: '1'",
-            AnonymizeCustomPatternWithContext("ID: '2345'", kPattern, &space));
-  EXPECT_EQ("x1 id '1' 1x id '2'\nid '1'\n",
+            AnonymizeCustomPatternWithContext("foo\nbar\n", kPattern1));
+  EXPECT_EQ("id '<ID: 1>'",
+            AnonymizeCustomPatternWithContext("id '2345'", kPattern1));
+  EXPECT_EQ("id '<ID: 2>'",
+            AnonymizeCustomPatternWithContext("id '1234'", kPattern1));
+  EXPECT_EQ("id: '<ID: 2>'",
+            AnonymizeCustomPatternWithContext("id: '1234'", kPattern1));
+  EXPECT_EQ("ID: '<ID: 1>'",
+            AnonymizeCustomPatternWithContext("ID: '2345'", kPattern1));
+  EXPECT_EQ("x1 id '<ID: 1>' 1x id '<ID: 2>'\nid '<ID: 1>'\n",
             AnonymizeCustomPatternWithContext(
-                "x1 id '2345' 1x id '1234'\nid '2345'\n", kPattern, &space));
-  space.clear();
-  EXPECT_EQ("id '1'",
-            AnonymizeCustomPatternWithContext("id '1234'", kPattern, &space));
-
-  space.clear();
-  EXPECT_EQ("x1z",
-            AnonymizeCustomPatternWithContext("xyz", "()(y+)()", &space));
+                "x1 id '2345' 1x id '1234'\nid '2345'\n", kPattern1));
+  // Different pattern with same alias should reuse the replacements.
+  EXPECT_EQ("id='<ID: 2>'",
+            AnonymizeCustomPatternWithContext("id='1234'", kPattern2));
+  // Different alias should not reuse replacement from another pattern.
+  EXPECT_EQ("idg='<IDG: 1>'",
+            AnonymizeCustomPatternWithContext("idg='1234'", kPattern3));
+  EXPECT_EQ("x<FOO: 1>z",
+            AnonymizeCustomPatternWithContext("xyz", {"FOO", "()(y+)()"}));
 }
 
 TEST_F(AnonymizerToolTest, AnonymizeCustomPatternWithoutContext) {
-  CustomPatternWithoutContext kPattern = {"pattern", "(o+)"};
-  std::map<std::string, std::string> space;
-  EXPECT_EQ("", AnonymizeCustomPatternWithoutContext("", kPattern, &space));
+  CustomPatternWithAlias kPattern = {"pattern", "(o+)"};
+  EXPECT_EQ("", AnonymizeCustomPatternWithoutContext("", kPattern));
   EXPECT_EQ("f<pattern: 1>\nf<pattern: 2>z\nf<pattern: 1>l\n",
-            AnonymizeCustomPatternWithoutContext("fo\nfooz\nfol\n", kPattern,
-                                                 &space));
+            AnonymizeCustomPatternWithoutContext("fo\nfooz\nfol\n", kPattern));
 }
 
 TEST_F(AnonymizerToolTest, AnonymizeChunk) {
@@ -282,7 +291,7 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
   // output of the anonymizer.
   std::pair<std::string, std::string> data[] = {
     {"aaaaaaaa [SSID=123aaaaaa]aaaaa",  // SSID.
-     "aaaaaaaa [SSID=1]aaaaa"},
+     "aaaaaaaa [SSID=<SSID: 1>]aaaaa"},
     {"aaaaaaaahttp://tets.comaaaaaaa",  // URL.
      "aaaaaaaa<URL: 1>"},
     {"aaaaaemail@example.comaaa",  // Email address.

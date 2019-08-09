@@ -336,11 +336,10 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     // This method is called on embedded test server thread. Post the
     // information on UI thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&ResourceLoadingNoFeaturesBrowserTest::
-                           MonitorResourceRequestOnUIThread,
-                       base::Unretained(this), request.GetURL()));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&ResourceLoadingNoFeaturesBrowserTest::
+                                      MonitorResourceRequestOnUIThread,
+                                  base::Unretained(this), request.GetURL()));
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(

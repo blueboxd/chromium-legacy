@@ -19,9 +19,9 @@ namespace leveldb_proto {
 
 class SharedProtoDatabase;
 
-// A KeyedService that provides instances of ProtoDatabase tied to the current
+// Class that provides instances of ProtoDatabase tied to the current
 // profile directory.
-class ProtoDatabaseProvider : public KeyedService {
+class ProtoDatabaseProvider {
  public:
   using GetSharedDBInstanceCallback =
       base::OnceCallback<void(scoped_refptr<SharedProtoDatabase>)>;
@@ -52,7 +52,7 @@ class ProtoDatabaseProvider : public KeyedService {
       GetSharedDBInstanceCallback callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
 
-  ~ProtoDatabaseProvider() override;
+  virtual ~ProtoDatabaseProvider();
 
  private:
   friend class TestProtoDatabaseProvider;

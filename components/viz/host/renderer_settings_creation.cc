@@ -73,6 +73,8 @@ RendererSettings CreateRendererSettings() {
           switches::kDisableMacOverlays);
 #endif
   renderer_settings.record_sk_picture = features::IsRecordingSkPicture();
+  renderer_settings.show_dc_layer_debug_borders =
+      command_line->HasSwitch(switches::kShowDCLayerDebugBorders);
 
   if (command_line->HasSwitch(switches::kSlowDownCompositingScaleFactor)) {
     const int kMinSlowDownScaleFactor = 1;

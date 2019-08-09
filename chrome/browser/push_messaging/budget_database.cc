@@ -14,9 +14,9 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/budget.pb.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -53,8 +53,8 @@ BudgetDatabase::BudgetInfo::~BudgetInfo() = default;
 BudgetDatabase::BudgetDatabase(Profile* profile)
     : profile_(profile), clock_(base::WrapUnique(new base::DefaultClock)) {
   auto* protodb_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
-          profile->GetProfileKey());
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetProtoDatabaseProvider();
   // In incognito mode the provider service is not created.
   if (!protodb_provider)
     return;

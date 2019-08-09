@@ -27,12 +27,16 @@ SVGLengthInterpolationType::NeutralInterpolableValue() {
   return std::move(list_of_values);
 }
 
-InterpolationValue SVGLengthInterpolationType::ConvertSVGLength(
+InterpolationValue SVGLengthInterpolationType::MaybeConvertSVGLength(
     const SVGLength& length) {
   const CSSPrimitiveValue& primitive_value = length.AsCSSPrimitiveValue();
 
   CSSLengthArray length_array;
-  primitive_value.AccumulateLengthArray(length_array);
+  if (!primitive_value.AccumulateLengthArray(length_array)) {
+    // TODO(crbug.com/991672): Implement interpolation when CSS comparison
+    // functions min/max are involved.
+    return nullptr;
+  }
 
   auto list_of_values = std::make_unique<InterpolableList>(
       CSSPrimitiveValue::kLengthUnitTypeCount);
@@ -106,7 +110,7 @@ InterpolationValue SVGLengthInterpolationType::MaybeConvertSVGValue(
   if (svg_value.GetType() != kAnimatedLength)
     return nullptr;
 
-  return ConvertSVGLength(ToSVGLength(svg_value));
+  return MaybeConvertSVGLength(ToSVGLength(svg_value));
 }
 
 SVGPropertyBase* SVGLengthInterpolationType::AppliedSVGValue(

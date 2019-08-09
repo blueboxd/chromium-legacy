@@ -29,6 +29,7 @@ action("build_wpt_metadata") {
     "//third_party/blink/web_tests/StaleTestExpectations",
     "//third_party/blink/web_tests/TestExpectations",
     "//third_party/blink/web_tests/VirtualTestSuites",
+    "//third_party/blink/web_tests/WPTOverrideExpectations",
   ]
 }
 
@@ -62,5 +63,6 @@ group("wpt_tests_isolate") {
     "//third_party/blink/web_tests/StaleTestExpectations",
     "//third_party/blink/web_tests/TestExpectations",
     "//third_party/blink/web_tests/VirtualTestSuites",
+    "//third_party/blink/web_tests/WPTOverrideExpectations",
   ]
 }

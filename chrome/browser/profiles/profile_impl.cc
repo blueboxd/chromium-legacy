@@ -505,6 +505,13 @@ ProfileImpl::ProfileImpl(
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
 
+#if defined(OS_ANDROID)
+  // On Android StartupData creates proto database provider for the profile
+  // before profile is created, so move ownership to storage partition.
+  GetDefaultStoragePartition(this)->SetProtoDatabaseProvider(
+      startup_data->TakeProtoDatabaseProvider());
+#endif
+
   SimpleKeyMap::GetInstance()->Associate(this, key_.get());
 
 #if defined(OS_CHROMEOS)
@@ -697,6 +704,10 @@ void ProfileImpl::DoFinalInit() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterProfile(this);
 #endif
+
+  auto* db_provider =
+      GetDefaultStoragePartition(this)->GetProtoDatabaseProvider();
+  key_->SetProtoDatabaseProvider(db_provider);
 
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
   // as a URLDataSource early.

@@ -16,10 +16,10 @@
 namespace viz {
 
 SkiaOutputDeviceX11::SkiaOutputDeviceX11(
-    GrContext* gr_context,
+    scoped_refptr<gpu::SharedContextState> context_state,
     gfx::AcceleratedWidget widget,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDeviceOffscreen(gr_context,
+    : SkiaOutputDeviceOffscreen(context_state,
                                 true /* flipped */,
                                 true /* has_alpha */,
                                 did_swap_buffer_complete_callback),

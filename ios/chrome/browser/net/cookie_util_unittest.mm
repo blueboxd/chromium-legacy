@@ -102,9 +102,12 @@ TEST_F(CookieUtilTest, CreateCookieStoreInIOS11) {
   options.set_include_httponly();
   std::string cookie_line = base::SysNSStringToUTF8(cookie_name) + "=" +
                             base::SysNSStringToUTF8(cookie_value);
-  cookie_store->SetCookieWithOptionsAsync(
-      test_url, cookie_line, options, base::nullopt /* server_time */,
-      net::CookieStore::SetCookiesCallback());
+  auto canonical_cookie =
+      net::CanonicalCookie::Create(test_url, cookie_line, base::Time::Now(),
+                                   base::nullopt /* server_time */);
+  cookie_store->SetCanonicalCookieAsync(std::move(canonical_cookie),
+                                        test_url.scheme(), options,
+                                        net::CookieStore::SetCookiesCallback());
 
   __block NSArray<NSHTTPCookie*>* result_cookies = nil;
   __block bool callback_called = false;

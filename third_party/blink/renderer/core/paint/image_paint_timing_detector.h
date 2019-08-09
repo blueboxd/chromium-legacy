@@ -227,6 +227,9 @@ class CORE_EXPORT ImagePaintTimingDetector final
   }
   void ReportSwapTime(unsigned last_queued_frame_index, base::TimeTicks);
 
+  // Return the candidate.
+  ImageRecord* UpdateCandidate();
+
   void Trace(blink::Visitor*);
 
  private:
@@ -239,8 +242,6 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void ReportCandidateToTrace(ImageRecord&);
   void ReportNoCandidateToTrace();
   void Deactivate();
-
-  void UpdateCandidate();
 
   // Used to find the last candidate.
   unsigned count_candidates_ = 0;

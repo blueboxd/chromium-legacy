@@ -46,6 +46,10 @@
 #include "content/browser/host_zoom_level_context.h"
 #endif
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}
+
 namespace content {
 
 class BackgroundFetchContext;
@@ -129,6 +133,10 @@ class CONTENT_EXPORT StoragePartitionImpl
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
 #endif  // !defined(OS_ANDROID)
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
+  leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider() override;
+  void SetProtoDatabaseProvider(
+      std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> proto_db_provider)
+      override;
   void ClearDataForOrigin(uint32_t remove_mask,
                           uint32_t quota_storage_remove_mask,
                           const GURL& storage_origin) override;
@@ -364,6 +372,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<DevToolsBackgroundServicesContextImpl>
       devtools_background_services_context_;
   scoped_refptr<NativeFileSystemManagerImpl> native_file_system_manager_;
+  std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
+      proto_database_provider_;
   scoped_refptr<ContentIndexContextImpl> content_index_context_;
 
   // BindingSet for StoragePartitionService, using the process id as the

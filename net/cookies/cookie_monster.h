@@ -156,11 +156,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void SetAllCookiesAsync(const CookieList& list, SetCookiesCallback callback);
 
   // CookieStore implementation.
-  void SetCookieWithOptionsAsync(const GURL& url,
-                                 const std::string& cookie_line,
-                                 const CookieOptions& options,
-                                 base::Optional<base::Time> server_time,
-                                 SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
                                std::string source_scheme,
                                const CookieOptions& options,
@@ -368,12 +363,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   void DeleteAllMatchingInfo(net::CookieDeletionInfo delete_info,
                              DeleteCallback callback);
-
-  void SetCookieWithOptions(const GURL& url,
-                            const std::string& cookie_line,
-                            const CookieOptions& options,
-                            base::Optional<base::Time> server_time,
-                            SetCookiesCallback callback);
 
   void DeleteCanonicalCookie(const CanonicalCookie& cookie,
                              DeleteCallback callback);

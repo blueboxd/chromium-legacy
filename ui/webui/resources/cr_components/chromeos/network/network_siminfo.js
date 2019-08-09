@@ -118,14 +118,13 @@ Polymer({
   /** @private {boolean} */
   simUnlockSent_: false,
 
-  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
-  networkConfigProxy_: null,
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  networkConfig_: null,
 
   /** @override */
   created: function() {
-    this.networkConfigProxy_ =
-        network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
     this.getDeviceStateProperties_();
   },
 
@@ -176,7 +175,7 @@ Polymer({
 
   /** @private */
   getDeviceStateProperties_: function() {
-    this.networkConfigProxy_.getDeviceStateList().then(response => {
+    this.networkConfig_.getDeviceStateList().then(response => {
       const devices = response.result;
       const kCellular = chromeos.networkConfig.mojom.NetworkType.kCellular;
       this.deviceStateProperties_ =
@@ -310,18 +309,17 @@ Polymer({
    */
   setCellularSimState_: function(cellularSimState) {
     this.setInProgress_();
-    this.networkConfigProxy_.setCellularSimState(cellularSimState)
-        .then(response => {
-          this.inProgress_ = false;
-          if (!response.success) {
-            this.error_ = ErrorType.INCORRECT_PIN;
-            this.focusDialogInput_();
-          } else {
-            this.error_ = ErrorType.NONE;
-            this.closeDialogs_();
-            this.delayUpdateLockEnabled_();
-          }
-        });
+    this.networkConfig_.setCellularSimState(cellularSimState).then(response => {
+      this.inProgress_ = false;
+      if (!response.success) {
+        this.error_ = ErrorType.INCORRECT_PIN;
+        this.focusDialogInput_();
+      } else {
+        this.error_ = ErrorType.NONE;
+        this.closeDialogs_();
+        this.delayUpdateLockEnabled_();
+      }
+    });
   },
 
   /**
@@ -338,19 +336,17 @@ Polymer({
     if (puk) {
       cellularSimState.newPin = pin;
     }
-    this.networkConfigProxy_.setCellularSimState(cellularSimState)
-        .then(response => {
-          this.inProgress_ = false;
-          if (!response.success) {
-            this.error_ =
-                puk ? ErrorType.INCORRECT_PUK : ErrorType.INCORRECT_PIN;
-            this.focusDialogInput_();
-          } else {
-            this.error_ = ErrorType.NONE;
-            this.closeDialogs_();
-            this.delayUpdateLockEnabled_();
-          }
-        });
+    this.networkConfig_.setCellularSimState(cellularSimState).then(response => {
+      this.inProgress_ = false;
+      if (!response.success) {
+        this.error_ = puk ? ErrorType.INCORRECT_PUK : ErrorType.INCORRECT_PIN;
+        this.focusDialogInput_();
+      } else {
+        this.error_ = ErrorType.NONE;
+        this.closeDialogs_();
+        this.delayUpdateLockEnabled_();
+      }
+    });
   },
 
   /**

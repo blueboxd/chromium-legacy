@@ -7,6 +7,7 @@
 
 #include "content/common/prefetched_signed_exchange_info.mojom.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace mojo {
 
@@ -17,7 +18,7 @@ struct CloneTraits<content::mojom::PrefetchedSignedExchangeInfoPtr, true> {
     return content::mojom::PrefetchedSignedExchangeInfo::New(
         mojo::Clone(input->outer_url), mojo::Clone(input->header_integrity),
         mojo::Clone(input->inner_url), mojo::Clone(input->inner_response),
-        ScopedMessagePipeHandle());
+        mojo::PendingRemote<network::mojom::URLLoaderFactory>());
   }
 };
 

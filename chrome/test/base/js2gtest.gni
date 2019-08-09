@@ -15,6 +15,7 @@ import("//v8/gni/v8.gni")
 #       in the tests and therefore considered input to the C++ generation step.
 #   extra_js_files: List of javascript files needed by the test at runtime,
 #       typically listed in the extraLibraries member of the test fixture.
+#   data
 #   defines
 #   deps
 #   visibility
@@ -30,6 +31,11 @@ template("js2gtest") {
   copied_source_pattern = "$root_out_dir/test_data/{{source_root_relative_dir}}/{{source_file_part}}"
 
   gen_source_pattern = "{{source_gen_dir}}/{{source_name_part}}-gen.cc"
+
+  data = []
+  if (defined(invoker.data)) {
+    data += invoker.data
+  }
 
   action_foreach(action_name) {
     testonly = true
@@ -64,7 +70,7 @@ template("js2gtest") {
       copied_source_pattern,
       gen_source_pattern,
     ]
-    data = process_file_template(sources, [ copied_source_pattern ])
+    data += process_file_template(sources, [ copied_source_pattern ])
 
     args = []
     if (defined(invoker.deps_js)) {
@@ -135,7 +141,7 @@ template("js2gtest") {
       deps += invoker.deps
     }
     if (defined(invoker.gen_include_files)) {
-      data = invoker.gen_include_files
+      data += invoker.gen_include_files
     }
     if (defined(invoker.extra_js_files)) {
       data_deps = [

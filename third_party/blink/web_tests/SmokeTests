@@ -874,8 +874,6 @@ scrollbars/scrollbar-scrollbarparts-repaint-crash.html
 scrollbars/scrollbar-visibility-hidden.html
 security/lazy-event-listener.html
 security/set-form-autocomplete-attribute.html
-sensor/idl-AbsoluteOrientationSensor.html
-sensor/idl-Magnetometer.html
 shadow-dom/crashes/slots-nested-in-document-tree-crash.html
 shadow-dom/css-cascade-outer-scope2.html
 shadow-dom/slotted-pseudo-element-in-v0-tree-crash.html

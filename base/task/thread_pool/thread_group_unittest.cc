@@ -614,6 +614,36 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSource) {
   task_tracker_.FlushForTesting();
 }
 
+// Verify that a JobTaskSource that becomes empty while in the queue eventually
+// gets discarded.
+TEST_P(ThreadGroupTest, ScheduleEmptyJobTaskSource) {
+  StartThreadGroup();
+
+  task_tracker_.SetCanRunPolicy(CanRunPolicy::kNone);
+
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindRepeating([](experimental::JobDelegate*) { ShouldNotRun(); }),
+      /* num_tasks_to_run */ 1);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, {ThreadPool()});
+
+  auto registered_task_source =
+      task_tracker_.WillQueueTaskSource(std::move(task_source));
+  EXPECT_TRUE(registered_task_source);
+  thread_group_->PushTaskSourceAndWakeUpWorkers(
+      TransactionWithRegisteredTaskSource::FromTaskSource(
+          std::move(registered_task_source)));
+
+  // The worker task will never run.
+  job_task->SetNumTasksToRun(0);
+
+  task_tracker_.SetCanRunPolicy(CanRunPolicy::kAll);
+  thread_group_->DidUpdateCanRunPolicy();
+
+  // This should not block since there's no task to run.
+  task_tracker_.FlushForTesting();
+}
+
 // Verify that the maximum number of BEST_EFFORT tasks that can run concurrently
 // in a thread group does not affect JobTaskSource with a priority that was
 // increased from BEST_EFFORT to USER_BLOCKING.

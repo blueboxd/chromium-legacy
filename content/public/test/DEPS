@@ -3,6 +3,7 @@ include_rules = [
   "+content/public",
   "+components/discardable_memory/service",
   "+components/download/public/common",
+  "+components/leveldb_proto/public",
   "+components/viz/common",
   "+components/viz/host",
   "+components/viz/service",

@@ -223,7 +223,7 @@ cr.define('destination_settings_test', function() {
 
             // If the user is signed in, Save to Drive should be displayed.
             signIn();
-            return test_util.waitForRender(destinationSettings);
+            return test_util.waitBeforeNextRender(destinationSettings);
           })
           .then(() => {
             assertDropdownItems([
@@ -486,7 +486,7 @@ cr.define('destination_settings_test', function() {
             ]);
 
             dropdown.fire('selected-option-change', 'seeMore');
-            return test_util.waitForRender(destinationSettings);
+            return test_util.waitBeforeNextRender(destinationSettings);
           })
           .then(() => {
             assertTrue(
@@ -541,7 +541,7 @@ cr.define('destination_settings_test', function() {
             ]);
 
             dropdown.fire('selected-option-change', 'seeMore');
-            return test_util.waitForRender(destinationSettings);
+            return test_util.waitBeforeNextRender(destinationSettings);
           })
           .then(() => {
             const dialog =

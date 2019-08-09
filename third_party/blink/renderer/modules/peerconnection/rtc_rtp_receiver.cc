@@ -195,7 +195,7 @@ RTCRtpCapabilities* RTCRtpReceiver::getCapabilities(const String& kind) {
       SafeCast<wtf_size_t>(rtc_capabilities->codecs.size()));
   for (const auto& rtc_codec : rtc_capabilities->codecs) {
     auto* codec = RTCRtpCodecCapability::Create();
-    codec->setMimeType(WTF::String::FromUTF8(rtc_codec.mime_type().c_str()));
+    codec->setMimeType(WTF::String::FromUTF8(rtc_codec.mime_type()));
     if (rtc_codec.clock_rate)
       codec->setClockRate(rtc_codec.clock_rate.value());
     if (rtc_codec.num_channels)
@@ -218,8 +218,7 @@ RTCRtpCapabilities* RTCRtpReceiver::getCapabilities(const String& kind) {
       SafeCast<wtf_size_t>(rtc_capabilities->header_extensions.size()));
   for (const auto& rtc_header_extension : rtc_capabilities->header_extensions) {
     auto* header_extension = RTCRtpHeaderExtensionCapability::Create();
-    header_extension->setUri(
-        WTF::String::FromUTF8(rtc_header_extension.uri.c_str()));
+    header_extension->setUri(WTF::String::FromUTF8(rtc_header_extension.uri));
     header_extensions.push_back(header_extension);
   }
   capabilities->setHeaderExtensions(header_extensions);

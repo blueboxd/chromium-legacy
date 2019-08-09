@@ -16,6 +16,8 @@ import android.view.LayoutInflater;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegateFactory;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
@@ -130,8 +132,14 @@ public class NewTabPageView extends HistoryNavigationLayout {
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
         setNavigationDelegate(HistoryNavigationDelegateFactory.create(mTab));
 
-        mNewTabPageLayout.initialize(manager, tab, tileGroupDelegate, searchProviderHasLogo,
-                searchProviderIsGoogle, mRecyclerView, mContextMenuManager, mUiConfig);
+        OverviewModeBehavior overviewModeBehavior =
+                tab.getActivity() instanceof ChromeTabbedActivity
+                ? tab.getActivity().getOverviewModeBehavior()
+                : null;
+
+        mNewTabPageLayout.initialize(manager, tab.getActivity(), overviewModeBehavior,
+                tileGroupDelegate, searchProviderHasLogo, searchProviderIsGoogle, mRecyclerView,
+                mContextMenuManager, mUiConfig);
 
         NewTabPageUma.trackTimeToFirstDraw(this, constructedTimeNs);
 

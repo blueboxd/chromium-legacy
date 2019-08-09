@@ -5,18 +5,20 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_OFFSCREEN_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_OFFSCREEN_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
-
-class GrContext;
 
 namespace viz {
 
 class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
  public:
   SkiaOutputDeviceOffscreen(
-      GrContext* gr_context,
+      scoped_refptr<gpu::SharedContextState> context_state,
       bool flipped,
       bool has_alpha,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
@@ -39,13 +41,15 @@ class SkiaOutputDeviceOffscreen : public SkiaOutputDevice {
   void EndPaint(const GrBackendSemaphore& semaphore) override;
 
  protected:
-  GrContext* const gr_context_;
+  scoped_refptr<gpu::SharedContextState> context_state_;
   const bool has_alpha_;
   sk_sp<SkSurface> sk_surface_;
+  GrBackendTexture backend_texture_;
   bool supports_rgbx_ = true;
 
  private:
-  SkImageInfo image_info_;
+  gfx::Size size_;
+  sk_sp<SkColorSpace> sk_color_space_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceOffscreen);
 };

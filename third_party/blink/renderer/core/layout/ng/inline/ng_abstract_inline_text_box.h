@@ -50,6 +50,7 @@ class CORE_EXPORT NGAbstractInlineTextBox final : public AbstractInlineTextBox {
   bool IsLast() const final;
   scoped_refptr<AbstractInlineTextBox> NextOnLine() const final;
   scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const final;
+  bool IsLineBreak() const final;
 
   const NGPaintFragment* fragment_;
 

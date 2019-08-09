@@ -125,8 +125,9 @@ void MakeCredentialTask::StartTask() {
 CtapGetAssertionRequest MakeCredentialTask::NextSilentSignRequest() {
   DCHECK(request_.exclude_list &&
          current_credential_ < request_.exclude_list->size());
-  CtapGetAssertionRequest request(request_.rp.id,
-                                  /*client_data_json=*/"");
+  CtapGetAssertionRequest request(
+      probing_alternative_rp_id_ ? *request_.app_id : request_.rp.id,
+      /*client_data_json=*/"");
   request.allow_list = {{request_.exclude_list->at(current_credential_)}};
   request.user_presence_required = false;
   request.user_verification = UserVerificationRequirement::kDiscouraged;
@@ -135,8 +136,12 @@ CtapGetAssertionRequest MakeCredentialTask::NextSilentSignRequest() {
 
 void MakeCredentialTask::MakeCredential() {
   // Silently probe each credential in the allow list to work around
-  // authenticators rejecting lists over a certain size.
-  if (request_.exclude_list && request_.exclude_list->size() > 1) {
+  // authenticators rejecting lists over a certain size. Also do this if a
+  // second RP ID needs to be tested because the site used the appidExclude
+  // extension.
+  if (request_.exclude_list &&
+      (request_.exclude_list->size() > 1 ||
+       (!request_.exclude_list->empty() && request_.app_id))) {
     silent_sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), NextSilentSignRequest(),
@@ -172,6 +177,9 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
   if (response_code == CtapDeviceResponseCode::kSuccess) {
     CtapMakeCredentialRequest request = request_;
     request.exclude_list = {{request_.exclude_list->at(current_credential_)}};
+    if (probing_alternative_rp_id_) {
+      request.rp.id = *request_.app_id;
+    }
     register_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapMakeCredentialRequest, AuthenticatorMakeCredentialResponse>>(
         device(), std::move(request), std::move(callback_),
@@ -202,7 +210,16 @@ void MakeCredentialTask::HandleResponseToSilentSignRequest(
 
   // The authenticator doesn't recognize this particular credential from the
   // exclude list. Try the next one.
-  if (++current_credential_ < request_.exclude_list->size()) {
+  current_credential_++;
+  if (current_credential_ == request_.exclude_list->size() &&
+      !probing_alternative_rp_id_ && request_.app_id) {
+    // All elements of |request_.exclude_list| have been tested, but there's a
+    // second RP ID so they need to be tested again.
+    current_credential_ = 0;
+    probing_alternative_rp_id_ = true;
+  }
+
+  if (current_credential_ < request_.exclude_list->size()) {
     silent_sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), NextSilentSignRequest(),

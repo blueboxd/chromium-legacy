@@ -540,6 +540,20 @@
     "note": "This policy is retired, see http://crbug.com/598698."
   },
 
+  "PasswordLeakDetectionEnabled" : {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "can_be_recommended": true,
+    "test_policy": { "PasswordLeakDetectionEnabled": false },
+    "pref_mappings": [
+      {
+        "pref": "profile.password_manager_leak_detection",
+        "indicator_tests": [
+          { "policy": { "PasswordLeakDetectionEnabled" : false} }
+        ]
+      }
+    ]
+  },
+
   "ContextualSearchEnabled": {
     "os": ["android"]
   },

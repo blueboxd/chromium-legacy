@@ -20,7 +20,8 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
 #include "url/gurl.h"
@@ -343,7 +344,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // intention to show a prompt. The renderer will send a message back with the
   // opportunity to cancel.
   virtual void OnBannerPromptReply(
-      blink::mojom::AppBannerControllerPtr controller,
+      mojo::Remote<blink::mojom::AppBannerController> controller,
       blink::mojom::AppBannerPromptReply reply);
 
   // Does the non-platform specific parts of showing the app banner.
@@ -371,9 +372,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // background will appear when the tab is reactivated.
   std::vector<content::MediaPlayerId> active_media_players_;
 
-  // Mojo bindings and interface pointers.
-  mojo::Binding<blink::mojom::AppBannerService> binding_;
-  blink::mojom::AppBannerEventPtr event_;
+  mojo::Receiver<blink::mojom::AppBannerService> receiver_{this};
+  mojo::Remote<blink::mojom::AppBannerEvent> event_;
 
   // If a banner is requested before the page has finished loading, defer
   // triggering the pipeline until the load is complete.

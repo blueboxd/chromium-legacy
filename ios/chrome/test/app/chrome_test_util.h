@@ -6,9 +6,9 @@
 #ifndef IOS_CHROME_TEST_APP_CHROME_TEST_UTIL_H_
 #define IOS_CHROME_TEST_APP_CHROME_TEST_UTIL_H_
 
+#include "base/compiler_specific.h"
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/web/public/web_state/web_state.h"
 
 namespace ios {
 class ChromeBrowserState;

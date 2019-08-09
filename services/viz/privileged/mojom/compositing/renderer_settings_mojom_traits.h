@@ -83,6 +83,10 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.requires_alpha_channel;
   }
 
+  static bool show_dc_layer_debug_borders(const viz::RendererSettings& input) {
+    return input.show_dc_layer_debug_borders;
+  }
+
 #if defined(OS_ANDROID)
   static gfx::Size initial_screen_size(const viz::RendererSettings& input) {
     return input.initial_screen_size;

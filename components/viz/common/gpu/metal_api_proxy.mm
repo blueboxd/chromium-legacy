@@ -134,10 +134,99 @@ constexpr uint32_t kShaderCrashDumpLength = 8128;
 
 }  // namespace
 
+// A cache of the result of calls to NewLibraryWithRetry. This will store all
+// resulting MTLLibraries indefinitely, and will grow without bound. This is to
+// minimize the number of calls hitting the MTLCompilerService, which is prone
+// to hangs. Should this significantly help the situation, a more robust (and
+// not indefinitely-growing) cache will be added either here or in Skia.
+// https://crbug.com/974219
+class API_AVAILABLE(macos(10.11)) MTLLibraryCache {
+ public:
+  MTLLibraryCache() = default;
+  ~MTLLibraryCache() = default;
+
+  id<MTLLibrary> NewLibraryWithSource(id<MTLDevice> device,
+                                      NSString* source,
+                                      MTLCompileOptions* options,
+                                      __autoreleasing NSError** error) {
+    LibraryKey key(source, options);
+    auto found = libraries_.find(key);
+    if (found != libraries_.end()) {
+      const LibraryData& data = found->second;
+      *error = [[data.error retain] autorelease];
+      return [data.library retain];
+    }
+    SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewLibraryTime");
+    id<MTLLibrary> library =
+        NewLibraryWithRetry(device, source, options, error);
+    LibraryData data(library, *error);
+    libraries_.insert(std::make_pair(key, std::move(data)));
+    return library;
+  }
+  // The number of cache misses is the number of times that we have had to call
+  // the true newLibraryWithSource function.
+  uint64_t CacheMissCount() const { return libraries_.size(); }
+
+ private:
+  struct LibraryKey {
+    LibraryKey(NSString* source, MTLCompileOptions* options)
+        : source_(source, base::scoped_policy::RETAIN),
+          options_(options, base::scoped_policy::RETAIN) {}
+    LibraryKey(const LibraryKey& other) = default;
+    LibraryKey& operator=(const LibraryKey& other) = default;
+    ~LibraryKey() = default;
+
+    bool operator<(const LibraryKey& other) const {
+      switch ([source_ compare:other.source_]) {
+        case NSOrderedAscending:
+          return true;
+        case NSOrderedDescending:
+          return false;
+        case NSOrderedSame:
+          break;
+      }
+#define COMPARE(x)                       \
+  if ([options_ x] < [other.options_ x]) \
+    return true;                         \
+  if ([options_ x] > [other.options_ x]) \
+    return false;
+      COMPARE(fastMathEnabled);
+      COMPARE(languageVersion);
+#undef COMPARE
+      // Skia doesn't set any preprocessor macros, and defining an order on two
+      // NSDictionaries is a lot of code, so just assert that there are no
+      // macros. Should this alleviate https://crbug.com/974219, then a more
+      // robust cache should be implemented.
+      DCHECK_EQ([[options_ preprocessorMacros] count], 0u);
+      return false;
+    }
+
+   private:
+    base::scoped_nsobject<NSString> source_;
+    base::scoped_nsobject<MTLCompileOptions> options_;
+  };
+  struct LibraryData {
+    LibraryData(id<MTLLibrary> library_, NSError* error_)
+        : library(library_, base::scoped_policy::RETAIN),
+          error(error_, base::scoped_policy::RETAIN) {}
+    LibraryData(const LibraryData& other) = default;
+    LibraryData& operator=(const LibraryData& other) = default;
+    ~LibraryData() = default;
+
+    base::scoped_nsprotocol<id<MTLLibrary>> library;
+    base::scoped_nsobject<NSError> error;
+  };
+
+  std::map<LibraryKey, LibraryData> libraries_;
+  DISALLOW_COPY_AND_ASSIGN(MTLLibraryCache);
+};
+
 @implementation MTLDeviceProxy
 - (id)initWithDevice:(id<MTLDevice>)device {
-  if (self = [super init])
+  if (self = [super init]) {
     device_.reset(device, base::scoped_policy::RETAIN);
+    libraryCache_ = std::make_unique<MTLLibraryCache>();
+  }
   return self;
 }
 
@@ -298,7 +387,6 @@ PROXY_METHOD2_SLOW(nullable id<MTLLibrary>,
                  options:(nullable MTLCompileOptions*)options
                    error:(__autoreleasing NSError**)error {
   TRACE_EVENT0("gpu", "MTLDevice::newLibraryWithSource");
-  newLibraryCount_ += 1;
 
   // Capture the shader's source in a crash key in case newLibraryWithSource
   // hangs.
@@ -310,11 +398,15 @@ PROXY_METHOD2_SLOW(nullable id<MTLLibrary>,
     DLOG(WARNING) << "Truncating shader in crash log.";
 
   shaderKey.Set(sourceAsSysString);
+  static crash_reporter::CrashKeyString<16> newLibraryCountKey(
+      "MTLNewLibraryCount");
+  newLibraryCountKey.Set(base::NumberToString(libraryCache_->CacheMissCount()));
 
   gl::ScopedProgressReporter scoped_reporter(progressReporter_);
-  SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewLibraryTime");
-  id<MTLLibrary> library = NewLibraryWithRetry(device_, source, options, error);
+  id<MTLLibrary> library =
+      libraryCache_->NewLibraryWithSource(device_, source, options, error);
   shaderKey.Clear();
+  newLibraryCountKey.Clear();
 
   // Shaders from Skia will have either a vertexMain or fragmentMain function.
   // Save the source and a weak pointer to the function, so we can capture
@@ -367,7 +459,7 @@ PROXY_METHOD3_SLOW(void,
     DLOG(WARNING) << "Failed to capture fragment shader.";
   static crash_reporter::CrashKeyString<16> newLibraryCountKey(
       "MTLNewLibraryCount");
-  newLibraryCountKey.Set(base::NumberToString(newLibraryCount_));
+  newLibraryCountKey.Set(base::NumberToString(libraryCache_->CacheMissCount()));
 
   gl::ScopedProgressReporter scoped_reporter(progressReporter_);
   SCOPED_UMA_HISTOGRAM_TIMER("Gpu.MetalProxy.NewRenderPipelineStateTime");

@@ -204,7 +204,7 @@ const base::Feature kBuiltInModuleInfra{"BuiltInModuleInfra",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kLazyFrameVisibleLoadTimeMetrics{
   "LazyFrameVisibleLoadTimeMetrics",
 #if defined(OS_ANDROID)
@@ -214,7 +214,7 @@ const base::Feature kLazyFrameVisibleLoadTimeMetrics{
 #endif
 };
 const base::Feature kLazyImageLoading{"LazyImageLoading",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kLazyImageVisibleLoadTimeMetrics{
   "LazyImageVisibleLoadTimeMetrics",
 #if defined(OS_ANDROID)
@@ -782,6 +782,9 @@ const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",
 // Enable IOSurface based screen capturer.
 const base::Feature kIOSurfaceCapturer{"IOSurfaceCapturer",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kMacSyscallSandbox{"MacSyscallSandbox",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMacV2GPUSandbox{"MacV2GPUSandbox",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

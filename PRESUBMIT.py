@@ -3766,6 +3766,58 @@ def _CheckForTooLargeFiles(input_api, output_api):
   else:
     return []
 
+
+def _CheckFuzzTargets(input_api, output_api):
+  """Checks specific for fuzz target sources."""
+  EXPORTED_SYMBOLS = [
+      'LLVMFuzzerInitialize',
+      'LLVMFuzzerCustomMutator',
+      'LLVMFuzzerCustomCrossOver',
+      'LLVMFuzzerMutate',
+  ]
+
+  REQUIRED_HEADER = '#include "testing/libfuzzer/libfuzzer_exports.h"'
+
+  def FilterFile(affected_file):
+    """Ignore libFuzzer source code."""
+    white_list = r'.*fuzz.*\.(h|hpp|hcc|cc|cpp|cxx)$'
+    black_list = r"^third_party[\\/]libFuzzer"
+
+    return input_api.FilterSourceFile(
+        affected_file,
+        white_list=[white_list],
+        black_list=[black_list])
+
+  files_with_missing_header = []
+  for f in input_api.AffectedSourceFiles(FilterFile):
+    contents = input_api.ReadFile(f, 'r')
+    if REQUIRED_HEADER in contents:
+      continue
+
+    if any(symbol in contents for symbol in EXPORTED_SYMBOLS):
+      files_with_missing_header.append(f.LocalPath())
+
+  if not files_with_missing_header:
+    return []
+
+  long_text = (
+      'If you define any of the libFuzzer optional functions (%s), it is '
+      'recommended to add \'%s\' directive. Otherwise, the fuzz target may '
+      'work incorrectly on Mac (crbug.com/687076).\nNote that '
+      'LLVMFuzzerInitialize should not be used, unless your fuzz target needs '
+      'to access command line arguments passed to the fuzzer. Instead, prefer '
+      'static initialization and shared resources as documented in '
+      'https://chromium.googlesource.com/chromium/src/+/master/testing/'
+      'libfuzzer/efficient_fuzzing.md#simplifying-initialization_cleanup.\n' % (
+          ', '.join(EXPORTED_SYMBOLS), REQUIRED_HEADER)
+    )
+
+  return [output_api.PresubmitPromptWarning(
+        message="Missing '%s' in:" % REQUIRED_HEADER,
+        items=files_with_missing_header,
+        long_text=long_text)]
+
+
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups upload checks that target android code."""
   results = []
@@ -4239,6 +4291,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(_CheckGoogleSupportAnswerUrl(input_api, output_api))
   results.extend(_CheckUniquePtr(input_api, output_api))
   results.extend(_CheckNewHeaderWithoutGnChange(input_api, output_api))
+  results.extend(_CheckFuzzTargets(input_api, output_api))
   return results
 
 

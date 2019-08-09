@@ -366,9 +366,9 @@ TYPED_TEST_P(CookieStoreChangeGlobalTest, OverwriteWithHttpOnly) {
   // overwrite the non-http-only version.
   CookieOptions allow_httponly;
   allow_httponly.set_include_httponly();
-  EXPECT_TRUE(this->SetCookieWithOptions(cs, this->http_www_foo_.url(),
-                                         "A=C; path=/path1; httponly",
-                                         allow_httponly));
+  EXPECT_TRUE(this->CreateAndSetCookie(cs, this->http_www_foo_.url(),
+                                       "A=C; path=/path1; httponly",
+                                       allow_httponly));
   this->DeliverChangeNotifications();
 
   ASSERT_LE(1u, cookie_changes.size());
@@ -1092,9 +1092,9 @@ TYPED_TEST_P(CookieStoreChangeUrlTest, OverwriteWithHttpOnly) {
   // overwrite the non-http-only version.
   CookieOptions allow_httponly;
   allow_httponly.set_include_httponly();
-  EXPECT_TRUE(this->SetCookieWithOptions(cs, this->http_www_foo_.url(),
-                                         "A=C; path=/foo; httponly",
-                                         allow_httponly));
+  EXPECT_TRUE(this->CreateAndSetCookie(cs, this->http_www_foo_.url(),
+                                       "A=C; path=/foo; httponly",
+                                       allow_httponly));
   this->DeliverChangeNotifications();
 
   ASSERT_LE(1u, cookie_changes.size());
@@ -2063,9 +2063,9 @@ TYPED_TEST_P(CookieStoreChangeNamedTest, OverwriteWithHttpOnly) {
   // overwrite the non-http-only version.
   CookieOptions allow_httponly;
   allow_httponly.set_include_httponly();
-  EXPECT_TRUE(this->SetCookieWithOptions(cs, this->http_www_foo_.url(),
-                                         "abc=hij; path=/foo; httponly",
-                                         allow_httponly));
+  EXPECT_TRUE(this->CreateAndSetCookie(cs, this->http_www_foo_.url(),
+                                       "abc=hij; path=/foo; httponly",
+                                       allow_httponly));
   this->DeliverChangeNotifications();
 
   ASSERT_LE(1u, cookie_changes.size());

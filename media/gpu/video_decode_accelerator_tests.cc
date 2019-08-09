@@ -319,6 +319,15 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_Allocate) {
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
+// Test initializing the video decoder for the specified video. Initialization
+// will be successful if the video decoder is capable of decoding the test
+// video's configuration (e.g. codec and resolution). The test only verifies
+// initialization and doesn't decode the video.
+TEST_F(VideoDecoderTest, Initialize) {
+  auto tvp = CreateVideoPlayer(g_env->Video());
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kInitialized), 1u);
+}
+
 // Test video decoder re-initialization. Re-initialization is only supported by
 // the media::VideoDecoder interface, so the test will be skipped if --use_vd
 // is not specified.

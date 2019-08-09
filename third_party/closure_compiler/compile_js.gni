@@ -221,11 +221,11 @@ template("js_binary") {
     # //third_party/closure_compiler/closure_args.gni
     if (!defined(closure_flags)) {
       closure_flags = default_closure_args
-
-      if (is_polymer3) {
-        closure_flags += polymer3_args
-      }
     }
+    if (is_polymer3) {
+      closure_flags += polymer3_args
+    }
+
     args += [ "--flags" ] + closure_flags
     args += [
       "--externs",

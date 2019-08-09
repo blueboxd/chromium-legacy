@@ -350,7 +350,8 @@ class Vector
 
   // ABI::Windows::Foundation::Collections::IIterable:
   IFACEMETHODIMP First(
-      ABI::Windows::Foundation::Collections::IIterator<LogicalT>** first) {
+      ABI::Windows::Foundation::Collections::IIterator<LogicalT>** first)
+      override {
     Microsoft::WRL::ComPtr<
         ABI::Windows::Foundation::Collections::IVectorView<LogicalT>>
         view;

@@ -207,6 +207,19 @@
       </cr-link-row>
     </template>
 
+    <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
+      <cr-link-row class="hr two-line"
+          data-route="SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE"
+          icon-class="subpage-arrow" id="native-file-system-write"
+          label="$i18n{siteSettingsNativeFileSystemWrite}"
+          on-click="onTapNavigate_" start-icon="settings:save-original"
+          sub-label="[[defaultSettingLabel_(
+              default_.filesystem,
+              '$i18nPolymer{siteSettingsNativeFileSystemWriteAsk}',
+              '$i18nPolymer{siteSettingsNativeFileSystemWriteBlock}')]]">
+      </cr-link-row>
+    </template>
+
     <cr-link-row class="hr" data-route="SITE_SETTINGS_PDF_DOCUMENTS"
         id="pdf-documents" label="$i18n{siteSettingsPdfDocuments}"
         on-click="onTapNavigate_" start-icon="settings:pdf"></cr-link-row>

@@ -16,11 +16,12 @@ namespace content {
 // internal::PopulateBinderMap).
 // Note: this mechanism will eventually replace the usage of InterfaceProvider
 // and browser manifests, as well as DocumentInterfaceBroker.
-template <typename ExecutionContextHost>
+template <typename ExecutionContextHost, typename InterfaceBinderContext>
 class BrowserInterfaceBrokerImpl : public blink::mojom::BrowserInterfaceBroker {
  public:
   BrowserInterfaceBrokerImpl(ExecutionContextHost* host) : host_(host) {
     internal::PopulateBinderMap(host, &binder_map_);
+    internal::PopulateBinderMapWithContext(host, &binder_map_with_context);
   }
 
   // blink::mojom::BrowserInterfaceBroker
@@ -28,12 +29,17 @@ class BrowserInterfaceBrokerImpl : public blink::mojom::BrowserInterfaceBroker {
     DCHECK(receiver.interface_name().has_value());
     auto interface_name = receiver.interface_name().value();
     auto pipe = receiver.PassPipe();
-    binder_map_.TryBind(interface_name, &pipe);
+    if (!binder_map_.TryBind(interface_name, &pipe)) {
+      binder_map_with_context.TryBind(internal::GetContextForHost(host_),
+                                      interface_name, &pipe);
+    }
   }
 
  private:
   ExecutionContextHost* const host_;
   service_manager::BinderMap binder_map_;
+  service_manager::BinderMapWithContext<InterfaceBinderContext>
+      binder_map_with_context;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInterfaceBrokerImpl);
 };

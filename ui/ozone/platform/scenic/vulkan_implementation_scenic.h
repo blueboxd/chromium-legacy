@@ -20,7 +20,9 @@ class SysmemBufferManager;
 class VulkanImplementationScenic : public gpu::VulkanImplementation {
  public:
   VulkanImplementationScenic(ScenicSurfaceFactory* scenic_surface_factory,
-                             SysmemBufferManager* sysmem_buffer_manager);
+                             SysmemBufferManager* sysmem_buffer_manager,
+                             bool allow_protected_memory,
+                             bool enforce_protected_memory);
   ~VulkanImplementationScenic() override;
 
   // VulkanImplementation:

@@ -139,7 +139,7 @@ base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
 
 LaunchContainer WebAppRegistrar::GetAppLaunchContainer(
     const AppId& app_id) const {
-  NOTIMPLEMENTED();
+  // TODO(loyso): Implement it.
   return LaunchContainer::kTab;
 }
 

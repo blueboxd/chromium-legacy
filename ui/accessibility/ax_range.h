@@ -226,6 +226,7 @@ class AXRange {
                          int max_count = -1) const {
     base::string16 range_text;
     bool should_append_newline = false;
+    bool found_trailing_newline = false;
     for (const AXRange& leaf_text_range : *this) {
       AXPositionType* start = leaf_text_range.anchor();
       AXPositionType* end = leaf_text_range.focus();
@@ -236,7 +237,6 @@ class AXRange {
       if (should_append_newline)
         range_text += base::ASCIIToUTF16("\n");
 
-      bool current_leaf_is_line_break = false;
       base::string16 current_anchor_text = start->GetText();
       int current_leaf_text_length = end->text_offset() - start->text_offset();
 
@@ -246,7 +246,11 @@ class AXRange {
                                         current_leaf_text_length)
                              : current_leaf_text_length;
 
-        current_leaf_is_line_break = start->IsInLineBreak();
+        // Collapse all whitespace following any line break.
+        found_trailing_newline =
+            start->IsInLineBreak() ||
+            (found_trailing_newline && start->IsInWhiteSpace());
+
         range_text += current_anchor_text.substr(start->text_offset(),
                                                  characters_to_append);
       }
@@ -260,7 +264,7 @@ class AXRange {
       // its respective anchor is invisible to the text representation.
       if (concatenation_behavior == AXTextConcatenationBehavior::kAsInnerText)
         should_append_newline = current_anchor_text.length() > 0 &&
-                                !current_leaf_is_line_break &&
+                                !found_trailing_newline &&
                                 end->AtEndOfParagraph();
     }
     return range_text;

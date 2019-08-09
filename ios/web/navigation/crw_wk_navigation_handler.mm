@@ -1869,7 +1869,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 - (void)loadErrorPageForNavigationItem:(web::NavigationItemImpl*)item
                      navigationContext:(web::NavigationContextImpl*)context
                                webView:(WKWebView*)webView {
-  const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   NSError* error = context->GetError();
   DCHECK(error);
   DCHECK_EQ(item->GetUniqueID(), context->GetNavigationItemUniqueID());
@@ -1888,59 +1887,62 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   NSString* failingURLString =
       error.userInfo[NSURLErrorFailingURLStringErrorKey];
   GURL failingURL(base::SysNSStringToUTF8(failingURLString));
-  NSString* errorHTML = nil;
   web::GetWebClient()->PrepareErrorPage(
       self.webStateImpl, failingURL, error, context->IsPost(),
-      self.webStateImpl->GetBrowserState()->IsOffTheRecord(), &errorHTML);
+      self.webStateImpl->GetBrowserState()->IsOffTheRecord(),
+      base::BindOnce(^(NSString* errorHTML) {
+        WKNavigation* navigation =
+            [webView loadHTMLString:errorHTML
+                            baseURL:net::NSURLWithGURL(failingURL)];
 
-  WKNavigation* navigation =
-      [webView loadHTMLString:errorHTML baseURL:net::NSURLWithGURL(failingURL)];
+        auto loadHTMLContext =
+            web::NavigationContextImpl::CreateNavigationContext(
+                self.webStateImpl, failingURL,
+                /*has_user_gesture=*/false, ui::PAGE_TRANSITION_FIRST,
+                /*is_renderer_initiated=*/false);
+        loadHTMLContext->SetLoadingErrorPage(true);
+        loadHTMLContext->SetNavigationItemUniqueID(item->GetUniqueID());
 
-  auto loadHTMLContext = web::NavigationContextImpl::CreateNavigationContext(
-      self.webStateImpl, failingURL,
-      /*has_user_gesture=*/false, ui::PAGE_TRANSITION_FIRST,
-      /*is_renderer_initiated=*/false);
-  loadHTMLContext->SetLoadingErrorPage(true);
-  loadHTMLContext->SetNavigationItemUniqueID(item->GetUniqueID());
+        [self.navigationStates setContext:std::move(loadHTMLContext)
+                            forNavigation:navigation];
+        [self.navigationStates setState:web::WKNavigationState::REQUESTED
+                          forNavigation:navigation];
 
-  [self.navigationStates setContext:std::move(loadHTMLContext)
-                      forNavigation:navigation];
-  [self.navigationStates setState:web::WKNavigationState::REQUESTED
-                    forNavigation:navigation];
+        // TODO(crbug.com/803503): only call these for placeholder navigation
+        // because they should have already been triggered during navigation
+        // commit for failures that happen after commit.
+        [self.delegate navigationHandlerDidStartLoading:self];
+        // TODO(crbug.com/973765): This is a workaround because |item| might get
+        // released after
+        // |self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem()|.
+        // Remove this once navigation refactor is done.
+        GURL itemURL = item->GetURL();
+        self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
+        web::NavigationItem* lastCommittedItem =
+            self.navigationManagerImpl->GetLastCommittedItem();
+        [self.delegate navigationHandler:self
+                          setDocumentURL:lastCommittedItem->GetURL()
+                                 context:context];
 
-  // TODO(crbug.com/803503): only call these for placeholder navigation because
-  // they should have already been triggered during navigation commit for
-  // failures that happen after commit.
-  [self.delegate navigationHandlerDidStartLoading:self];
-  // TODO(crbug.com/973765): This is a workaround because |item| might get
-  // released after
-  // |self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem()|.
-  // Remove this once navigation refactor is done.
-  GURL itemURL = item->GetURL();
-  self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
-  web::NavigationItem* lastCommittedItem =
-      self.navigationManagerImpl->GetLastCommittedItem();
-  [self.delegate navigationHandler:self
-                    setDocumentURL:lastCommittedItem->GetURL()
-                           context:context];
+        // If |context| is a placeholder navigation, this is the second part of
+        // the error page load for a provisional load failure. Rewrite the
+        // context URL to actual URL and trigger the deferred
+        // |OnNavigationFinished| callback. This is also needed if |context| is
+        // not yet committed, which can happen on a reload/back/forward load
+        // that failed in provisional navigation.
+        if (context->IsPlaceholderNavigation() || !context->HasCommitted()) {
+          context->SetUrl(itemURL);
+          context->SetPlaceholderNavigation(false);
+          context->SetHasCommitted(true);
+          self.webStateImpl->OnNavigationFinished(context);
+        }
 
-  // If |context| is a placeholder navigation, this is the second part of the
-  // error page load for a provisional load failure. Rewrite the context URL to
-  // actual URL and trigger the deferred |OnNavigationFinished| callback. This
-  // is also needed if |context| is not yet committed, which can happen on a
-  // reload/back/forward load that failed in provisional navigation.
-  if (context->IsPlaceholderNavigation() || !context->HasCommitted()) {
-    context->SetUrl(itemURL);
-    context->SetPlaceholderNavigation(false);
-    context->SetHasCommitted(true);
-    self.webStateImpl->OnNavigationFinished(context);
-  }
-
-  [self.delegate navigationHandler:self
-        didCompleteLoadWithSuccess:NO
-                        forContext:context];
-  self.webStateImpl->SetIsLoading(false);
-  self.webStateImpl->OnPageLoaded(failingURL, NO);
+        [self.delegate navigationHandler:self
+              didCompleteLoadWithSuccess:NO
+                              forContext:context];
+        self.webStateImpl->SetIsLoading(false);
+        self.webStateImpl->OnPageLoaded(failingURL, NO);
+      }));
 }
 
 // Resets any state that is associated with a specific document object (e.g.,

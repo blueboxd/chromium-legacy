@@ -51,8 +51,9 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
                                gfx::BufferUsage usage,
                                NativePixmapCallback callback) override;
 #if BUILDFLAG(ENABLE_VULKAN)
-  std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation()
-      override;
+  std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation(
+      bool allow_protected_memory,
+      bool enforce_protected_memory) override;
 #endif
 
   // Registers a surface for a |widget|.

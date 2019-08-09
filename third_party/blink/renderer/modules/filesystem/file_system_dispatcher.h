@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
@@ -193,7 +194,7 @@ class FileSystemDispatcher
 
   void RemoveOperationPtr(int operation_id);
 
-  mojom::blink::FileSystemManagerPtr file_system_manager_ptr_;
+  mojo::Remote<mojom::blink::FileSystemManager> file_system_manager_;
   using OperationsMap =
       HashMap<int, mojom::blink::FileSystemCancellableOperationPtr>;
   OperationsMap cancellable_operations_;

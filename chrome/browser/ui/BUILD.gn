@@ -1364,6 +1364,7 @@ jumbo_split_static_library("ui") {
       "//device/fido",
       "//services/device/public/mojom",
       "//services/metrics/public/cpp:metrics_cpp",
+      "//third_party/blink/public/common:headers",
       "//third_party/libaddressinput",
       "//third_party/libaddressinput:strings",
       "//ui/events",

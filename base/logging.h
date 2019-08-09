@@ -18,7 +18,6 @@
 #include "base/base_export.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/debug/debugger.h"
 #include "base/immediate_crash.h"
 #include "base/logging_buildflags.h"
 #include "base/macros.h"

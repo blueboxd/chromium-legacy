@@ -157,9 +157,6 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")
                                           .AppendASCII("basics")));
-  // Ensure the extension is fully loaded, and that the next steps will happen
-  // with a clean slate.
-  base::RunLoop().RunUntilIdle();
 
   // Set up observers that will drive the test along.
   AppMenuButton* const app_menu_button = GetAppMenuButton();

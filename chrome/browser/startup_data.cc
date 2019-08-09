@@ -4,9 +4,11 @@
 
 #include "chrome/browser/startup_data.h"
 
+#include "base/files/file_path.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 #include "chrome/common/channel_info.h"
+#include "components/metrics/field_trials_provider.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/persistent_system_profile.h"
 #include "components/metrics/version_utils.h"
@@ -72,7 +74,13 @@ void StartupData::RecordCoreSystemProfile() {
       chrome_feature_list_creator_->actual_locale(),
       metrics::GetAppPackageName(), &system_profile);
 
-  // TODO(crbug.com/965482): Records other information, such as field trials.
+  // TODO(hanxi): Create SyntheticTrialRegistry and pass it to
+  // |field_trial_provider|.
+  variations::FieldTrialsProvider field_trial_provider(nullptr,
+                                                       base::StringPiece());
+  field_trial_provider.ProvideSystemProfileMetrics(&system_profile);
+
+  // TODO(crbug.com/965482): Records information from other providers.
   metrics::GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
       system_profile, /* complete */ false);
 }
@@ -81,7 +89,7 @@ void StartupData::RecordCoreSystemProfile() {
 void StartupData::CreateProfilePrefService() {
   key_ = std::make_unique<ProfileKey>(GetProfilePath());
   PreProfilePrefServiceInit();
-  CreateProfilePrefServiceInternal();
+  CreateServicesInternal();
   key_->SetPrefs(prefs_.get());
 
   ProfileKeyStartupAccessor::GetInstance()->SetProfileKey(key_.get());
@@ -124,13 +132,18 @@ StartupData::TakeProfilePrefService() {
   return std::move(prefs_);
 }
 
+std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
+StartupData::TakeProtoDatabaseProvider() {
+  return std::move(proto_db_provider_);
+}
+
 void StartupData::PreProfilePrefServiceInit() {
   pref_registry_ = base::MakeRefCounted<user_prefs::PrefRegistrySyncable>();
   ChromeBrowserMainExtraPartsProfiles::
       EnsureBrowserContextKeyedServiceFactoriesBuilt();
 }
 
-void StartupData::CreateProfilePrefServiceInternal() {
+void StartupData::CreateServicesInternal() {
   const base::FilePath& path = key_->GetPath();
   if (!base::PathExists(path)) {
     // TODO(rogerta): http://crbug/160553 - Bad things happen if we can't
@@ -166,6 +179,12 @@ void StartupData::CreateProfilePrefServiceInternal() {
       user_cloud_policy_manager_.get(),
       user_cloud_policy_manager_->core()->store(),
       true /* force_immediate_policy_load*/, nullptr /* user */);
+
+  // StoragePartitionImplMap uses profile directory as default storage
+  // partition, see StoragePartitionImplMap::GetStoragePartitionPath().
+  proto_db_provider_ =
+      std::make_unique<leveldb_proto::ProtoDatabaseProvider>(path);
+  key_->SetProtoDatabaseProvider(proto_db_provider_.get());
 
   RegisterProfilePrefs(false /* is_signin_profile */,
                        chrome_feature_list_creator_->actual_locale(),

@@ -185,7 +185,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
     PrivacyPreferences privacy_preferences,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     mojo::ScopedMessagePipeHandle content_settings_handle,
-    mojo::ScopedMessagePipeHandle interface_provider) {
+    mojo::ScopedMessagePipeHandle interface_provider,
+    mojo::ScopedMessagePipeHandle browser_interface_broker) {
   DCHECK(IsMainThread());
   script_request_url_ = script_request_url;
   name_ = name;
@@ -195,6 +196,11 @@ void WebSharedWorkerImpl::StartWorkerContext(
   content_settings_info_ = mojom::blink::WorkerContentSettingsProxyPtrInfo(
       std::move(content_settings_handle), 0u);
   pending_interface_provider_.set_handle(std::move(interface_provider));
+
+  browser_interface_broker_ =
+      mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>(
+          std::move(browser_interface_broker),
+          mojom::blink::BrowserInterfaceBroker::Version_);
 
   devtools_worker_token_ = devtools_worker_token;
   // |shadow_page_| must be created after |devtools_worker_token_| because it
@@ -275,7 +281,8 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
       nullptr /* origin_trial_tokens */, devtools_worker_token_,
       std::move(worker_settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_response_map */,
-      std::move(pending_interface_provider_), BeginFrameProviderParams(),
+      std::move(pending_interface_provider_),
+      std::move(browser_interface_broker_), BeginFrameProviderParams(),
       nullptr /* parent_feature_policy */, base::UnguessableToken());
   StartWorkerThread(std::move(creation_params), script_request_url_,
                     String() /* source_code */, *outside_settings_object);

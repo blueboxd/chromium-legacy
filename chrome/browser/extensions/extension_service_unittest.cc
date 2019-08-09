@@ -4907,9 +4907,11 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
       extensions::ChromeExtensionCookies::Get(profile())
           ->GetCookieStoreForTesting();
   ASSERT_TRUE(cookie_store);
-  cookie_store->SetCookieWithOptionsAsync(
-      ext_url, "dummy=value", net::CookieOptions(),
-      base::nullopt /* server_time */,
+  auto cookie =
+      net::CanonicalCookie::Create(ext_url, "dummy=value", base::Time::Now(),
+                                   base::nullopt /* server_time */);
+  cookie_store->SetCanonicalCookieAsync(
+      std::move(cookie), ext_url.scheme(), net::CookieOptions(),
       base::BindOnce(&ExtensionCookieCallback::SetCookieCallback,
                      base::Unretained(&callback)));
   content::RunAllTasksUntilIdle();

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/web_dedicated_worker.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
@@ -107,7 +108,8 @@ class CORE_EXPORT DedicatedWorker final
   // Implements WebDedicatedWorker.
   // Called only when PlzDedicatedWorker is enabled.
   void OnWorkerHostCreated(
-      mojo::ScopedMessagePipeHandle interface_provider) override;
+      mojo::ScopedMessagePipeHandle interface_provider,
+      mojo::ScopedMessagePipeHandle browser_interface_broker) override;
   void OnScriptLoadStarted() override;
   void OnScriptLoadStartFailed() override;
 
@@ -159,6 +161,9 @@ class CORE_EXPORT DedicatedWorker final
   v8_inspector::V8StackTraceId v8_stack_trace_id_;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider_;
+
+  mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
+      browser_interface_broker_;
 
   // Whether the worker is frozen due to a call from this context.
   bool requested_frozen_ = false;

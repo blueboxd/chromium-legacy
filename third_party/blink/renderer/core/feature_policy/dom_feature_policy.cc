@@ -100,7 +100,7 @@ Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
     }
     Vector<String> result;
     for (const auto& entry : values) {
-      result.push_back(WTF::String::FromUTF8(entry.first.Serialize().c_str()));
+      result.push_back(WTF::String::FromUTF8(entry.first.Serialize()));
     }
     return result;
   }

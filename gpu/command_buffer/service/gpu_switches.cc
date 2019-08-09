@@ -68,6 +68,9 @@ const char kUseVulkan[] = "use-vulkan";
 const char kVulkanImplementationNameNative[] = "native";
 const char kVulkanImplementationNameSwiftshader[] = "swiftshader";
 
+// Forces to use protected memory for vulkan compositing.
+const char kEnforceVulkanProtectedMemory[] = "enforce-vulkan-protected-memory";
+
 // Disables VK_KHR_surface extension. Instead of using swapchain, bitblt will be
 // used for present render result on screen.
 const char kDisableVulkanSurface[] = "disable-vulkan-surface";

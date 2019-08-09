@@ -7,6 +7,7 @@ module blink.mojom;
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
+import "third_party/blink/public/mojom/browser_interface_broker.mojom";
 import "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom";
@@ -27,7 +28,12 @@ interface DedicatedWorkerHostFactoryClient {
   // Called when the worker host is created.
   OnWorkerHostCreated(
       // Used for accessing services from the worker.
-      service_manager.mojom.InterfaceProvider interface_provider);
+      // TODO(crbug.com/990845): remove when no longer used.
+      service_manager.mojom.InterfaceProvider interface_provider,
+      // Used for accessing services from the worker.
+      // should replace the |interface_provider| above
+      pending_remote<blink.mojom.BrowserInterfaceBroker>
+       browser_interface_broker);
 
   // Called when the worker host started loading the main worker script. This
   // is called after OnWorkerHostCreated(). This is never called when
@@ -67,12 +73,18 @@ interface DedicatedWorkerHostFactory {
   // CreateWorkerHostAndStartScriptLoad() when PlzDedicatedWorker is disabled.
   //
   // Creates a new DedicatedWorkerHost, and requests |worker_interface_provider|
-  // to provide the worker access to mojo interfaces. |origin| must either be
+  // and |browser_interface_broker| (which is expected to replace
+  // |worker_interface_provider|) to provide the worker access to
+  // mojo interfaces.
+  // |origin| must either be
   // unique or match the origin of the creating context (Document or
   // DedicatedWorkerGlobalScope).
   CreateWorkerHost(
       url.mojom.Origin origin,
-      service_manager.mojom.InterfaceProvider& worker_interface_provider);
+      // TODO(crbug.com/990845): remove when no longer used.
+      service_manager.mojom.InterfaceProvider& worker_interface_provider,
+      pending_receiver<blink.mojom.BrowserInterfaceBroker>
+        browser_interface_broker);
 
   // PlzDedicatedWorker:
   // The factory client should call this instead of CreateWorkerHost() when

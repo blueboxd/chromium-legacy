@@ -136,7 +136,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
       mojom::CommitNavigationParamsPtr commit_params,
       bool browser_initiated,
       const std::string& extra_headers,
-      const FrameNavigationEntry& frame_entry,
+      FrameNavigationEntry* frame_entry,
       NavigationEntryImpl* entry,
       const scoped_refptr<network::ResourceRequestBody>& post_body,
       std::unique_ptr<NavigationUIData> navigation_ui_data);
@@ -430,6 +430,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 #endif
 
   bool was_redirected() { return was_redirected_; }
+
+  void set_error_page_html(const std::string& error_page_html) {
+    error_page_html_ = error_page_html;
+  }
 
   std::vector<GURL>& redirect_chain() { return redirect_chain_; }
 
@@ -1001,6 +1005,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   // Set in ReadyToCommitNavigation.
   bool is_same_process_ = true;
+
+  // If set, starting the navigation will immediately result in an error page
+  // with this html as content and |net_error| as the network error.
+  std::string error_page_html_;
 
   // This callback will be run when all throttle checks have been performed.
   // TODO(zetamoo): This can be removed once the navigation states are merged.

@@ -403,9 +403,9 @@ bool ThreadPoolImpl::EnqueueJobTaskSource(
     scoped_refptr<JobTaskSource> task_source) {
   auto registered_task_source =
       task_tracker_->WillQueueTaskSource(std::move(task_source));
-  if (registered_task_source)
+  if (!registered_task_source)
     return false;
-  auto transaction = task_source->BeginTransaction();
+  auto transaction = registered_task_source->BeginTransaction();
   const TaskTraits traits = transaction.traits();
   GetThreadGroupForTraits(traits)->PushTaskSourceAndWakeUpWorkers(
       {std::move(registered_task_source), std::move(transaction)});

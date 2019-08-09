@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/profiles/profile_key_android.h"
@@ -13,7 +14,6 @@
 
 ProfileKey::ProfileKey(const base::FilePath& path, ProfileKey* original_key)
     : SimpleFactoryKey(path, original_key != nullptr /* is_off_the_record */),
-      prefs_(nullptr),
       original_key_(original_key) {}
 
 ProfileKey::~ProfileKey() = default;
@@ -32,6 +32,19 @@ PrefService* ProfileKey::GetPrefs() {
 void ProfileKey::SetPrefs(PrefService* prefs) {
   DCHECK(!prefs_);
   prefs_ = prefs;
+}
+
+leveldb_proto::ProtoDatabaseProvider* ProfileKey::GetProtoDatabaseProvider() {
+  DCHECK(db_provider_);
+  return db_provider_;
+}
+
+void ProfileKey::SetProtoDatabaseProvider(
+    leveldb_proto::ProtoDatabaseProvider* db_provider) {
+  // If started from reduced mode on Android, the db provider is set by
+  // both StartupData and ProfileImpl.
+  DCHECK(!db_provider_ || db_provider_ == db_provider);
+  db_provider_ = db_provider;
 }
 
 // static

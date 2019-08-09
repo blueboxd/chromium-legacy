@@ -5,24 +5,25 @@
 cr.define('network_config', function() {
   /** @interface */
   class MojoInterfaceProvider {
-    /** @return {!chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
-    getMojoServiceProxy() {}
+    /** @return {!chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+    getMojoServiceRemote() {}
   }
 
   /** @implements {network_config.MojoInterfaceProvider} */
   class MojoInterfaceProviderImpl {
     constructor() {
-      /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
-      this.proxy_ = null;
+      /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+      this.remote_ = null;
     }
 
     /** @override */
-    getMojoServiceProxy() {
-      if (!this.proxy_) {
-        this.proxy_ = chromeos.networkConfig.mojom.CrosNetworkConfig.getProxy();
+    getMojoServiceRemote() {
+      if (!this.remote_) {
+        this.remote_ =
+            chromeos.networkConfig.mojom.CrosNetworkConfig.getRemote();
       }
 
-      return this.proxy_;
+      return this.remote_;
     }
   }
 

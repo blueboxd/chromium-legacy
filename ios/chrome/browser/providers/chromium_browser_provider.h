@@ -19,8 +19,6 @@ class ChromiumBrowserProvider : public ios::ChromeBrowserProvider {
       std::unique_ptr<ios::ChromeIdentityService> service) override;
   ios::ChromeIdentityService* GetChromeIdentityService() override;
   UITextField* CreateStyledTextField() const override NS_RETURNS_RETAINED;
-  UITextField<TextFieldStyling>* CreateStyledTextField(
-      CGRect frame) const override NS_RETURNS_RETAINED;
   VoiceSearchProvider* GetVoiceSearchProvider() const override;
   id<LogoVendor> CreateLogoVendor(ios::ChromeBrowserState* browser_state)
       const override NS_RETURNS_RETAINED;

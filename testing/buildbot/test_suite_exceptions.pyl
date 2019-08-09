@@ -212,7 +212,7 @@
         # These are very slow on the Chrome OS MSAN trybot for some reason.
         # crbug.com/865455
         'swarming': {
-          'shards': 25,
+          'shards': 30,
         },
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
@@ -1806,12 +1806,6 @@
         'args': [
           '--release',
           '--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking',
-        ],
-      },
-      'linux-blink-heap-unified-gc': {
-        'args': [
-          '--debug',
-          '--additional-driver-flag=--enable-blink-features=HeapUnifiedGarbageCollection',
         ],
       },
       'mac10.10-blink-rel-dummy': {

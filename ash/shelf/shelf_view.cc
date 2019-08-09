@@ -707,14 +707,6 @@ views::FocusSearch* ShelfView::GetFocusSearch() {
   return focus_search_.get();
 }
 
-views::FocusTraversable* ShelfView::GetFocusTraversableParent() {
-  return parent()->GetFocusTraversable();
-}
-
-View* ShelfView::GetFocusTraversableParentView() {
-  return this;
-}
-
 void ShelfView::CreateDragIconProxy(
     const gfx::Point& location_in_screen_coordinates,
     const gfx::ImageSkia& icon,

@@ -96,7 +96,11 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint() {
            surface_format == VK_FORMAT_R8G8B8A8_UNORM);
     GrVkImageInfo vk_image_info(
         scoped_write_->image(), GrVkAlloc(), VK_IMAGE_TILING_OPTIMAL,
-        scoped_write_->image_layout(), surface_format, 1 /* level_count */);
+        scoped_write_->image_layout(), surface_format, 1 /* level_count */,
+        VK_QUEUE_FAMILY_IGNORED,
+        vulkan_surface_->swap_chain()->use_protected_memory()
+            ? GrProtected::kYes
+            : GrProtected::kNo);
     const auto& vk_image_size = vulkan_surface_->image_size();
     GrBackendRenderTarget render_target(vk_image_size.width(),
                                         vk_image_size.height(),

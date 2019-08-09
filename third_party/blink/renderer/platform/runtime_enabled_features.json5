@@ -850,14 +850,14 @@
     },
     {
       name: "LazyFrameLoading",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "LazyFrameVisibleLoadTimeMetrics",
     },
     {
       name: "LazyImageLoading",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "LazyImageLoadingMetadataFetch",
@@ -1726,6 +1726,10 @@
     },
     {
       name: "WebNFC",
+      status: "experimental",
+    },
+    {
+      name: "WebScheduler",
       status: "experimental",
     },
     // WebShare is enabled by default on Android.

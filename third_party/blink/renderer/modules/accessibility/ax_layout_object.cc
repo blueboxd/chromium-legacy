@@ -1250,7 +1250,7 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
   DCHECK(!layout_object.IsListMarkerIncludingNG()) << layout_object;
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
   const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
-  if (fragments.IsEmpty() || fragments.IsInLayoutNGInlineFormattingContext())
+  if (fragments.IsEmpty() || !fragments.IsInLayoutNGInlineFormattingContext())
     return nullptr;
   for (NGPaintFragmentTraversalContext runner =
            NGPaintFragmentTraversal::NextInlineLeafOf(

@@ -71,7 +71,11 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
     return overlay_validator_.get();
   }
 
+  // Returns true if the platform supports hw overlays and surface occluding
+  // damage rect needs to be computed since it will be used by overlay
+  // processor (currently Windows only).
   bool NeedsSurfaceOccludingDamageRect() const;
+
   void SetDisplayTransformHint(gfx::OverlayTransform transform);
   void SetValidatorViewportSize(const gfx::Size& size);
 
@@ -89,22 +93,23 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       gfx::Rect* damage_rect,
       std::vector<gfx::Rect>* content_bounds);
 
-  void SetDCHasHwOverlaySupportForTesting() {
-    dc_processor_->SetHasHwOverlaySupport();
-  }
-
  protected:
-  explicit OverlayProcessor(const ContextProvider* context_provider);
-  void SetOverlayCandidateValidator(
+  // For testing.
+  explicit OverlayProcessor(
       std::unique_ptr<OverlayCandidateValidator> overlay_validator);
 
   StrategyList strategies_;
   std::unique_ptr<OverlayCandidateValidator> overlay_validator_;
+
   gfx::Rect overlay_damage_rect_;
   gfx::Rect previous_frame_underlay_rect_;
   bool previous_frame_underlay_was_unoccluded_ = false;
 
  private:
+  OverlayProcessor(
+      std::unique_ptr<OverlayCandidateValidator> overlay_validator,
+      std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor);
+
   bool ProcessForCALayers(
       DisplayResourceProvider* resource_provider,
       RenderPass* render_pass,
@@ -118,7 +123,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
       RenderPassList* render_passes,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
-      OverlayCandidateList* overlay_candidates,
       DCLayerOverlayList* dc_layer_overlays,
       gfx::Rect* damage_rect);
   // Update |damage_rect| by removing damage casued by |candidates|.
@@ -128,7 +132,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
                         const QuadList* quad_list,
                         gfx::Rect* damage_rect);
 
-  std::unique_ptr<DCLayerOverlayProcessor> dc_processor_;
+  std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessor);
 };

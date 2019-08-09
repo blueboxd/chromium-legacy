@@ -415,8 +415,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         nullptr /* worklet_module_respones_map */,
-        std::move(interface_provider_info_), BeginFrameProviderParams(),
-        nullptr /* parent_feature_policy */,
+        std::move(interface_provider_info_),
+        mojo::NullRemote(), /* TODO(crbug.com/985112) pass a real BIB */
+        BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
         base::UnguessableToken() /* agent_cluster_id */);
     source_code = main_script_loader_->SourceText();
     cached_meta_data = main_script_loader_->ReleaseCachedMetadata();
@@ -436,8 +437,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         nullptr /* worklet_module_respones_map */,
-        std::move(interface_provider_info_), BeginFrameProviderParams(),
-        nullptr /* parent_feature_policy */,
+        std::move(interface_provider_info_),
+        mojo::NullRemote() /* TODO(crbug.com/985112) pass a real BIB */,
+        BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
         base::UnguessableToken() /* agent_cluster_id */);
   }
 

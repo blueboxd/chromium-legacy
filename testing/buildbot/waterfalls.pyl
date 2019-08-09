@@ -1753,18 +1753,6 @@
           '--enable-features=BlinkHeapConcurrentMarking',
         ]
       },
-      'linux-blink-heap-unified-gc': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'gtest_args': [
-          '--enable-blink-features=HeapUnifiedGarbageCollection',
-        ],
-      },
       'linux-blink-heap-verification': {
         'mixins': [
           'linux-xenial',
@@ -1826,7 +1814,7 @@
       'linux-code-coverage': {
         'mixins': [
           'code-coverage',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',

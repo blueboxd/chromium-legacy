@@ -38,6 +38,7 @@ source_set("web") {
     ":resources",
     ":threads",
     "//base",
+    "//components/leveldb_proto",
     "//ios/web/common",
     "//ios/web/download",
     "//ios/web/favicon",

@@ -241,9 +241,6 @@ QUIC_FLAG(bool,
 // number space.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packets_acked, true)
 
-// QUIC version 99 will use this stream ID for the headers stream.
-QUIC_FLAG(int64_t, FLAGS_quic_headers_stream_id_in_v99, 0)
-
 // When true, QuicDispatcher will drop packets that have an initial destination
 // connection ID that is too short, instead of responding with a Version
 // Negotiation packet to reject it.
@@ -256,7 +253,7 @@ QUIC_FLAG(
 // versions.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_version_negotiation_grease,
-          false)
+          true)
 
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
@@ -277,7 +274,7 @@ QUIC_FLAG(
 // a READ_UNIDIRECTIONAL stream.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_no_window_update_on_read_only_stream,
-          false)
+          true)
 
 // If true and --quic_lumpy_pacing_size is 1, QUIC will use a lumpy size of two
 // for pacing.
@@ -298,20 +295,20 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_reject_unprocessable_packets_statelessly,
-    false)
+    true)
 
 // When true, QuicConnectionId::Hash uses SipHash instead of XOR.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_connection_id_use_siphash, false)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_connection_id_use_siphash, true)
 
 // If true, when RTO fires and there is no packet to be RTOed, let connection
 // send.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_rto_retransmission, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_rto_retransmission2, true)
 
 // If true, QuicSession::GetOrCreateDynamicStream() is deprecated, and its
 // contents are moved to GetOrCreateStream().
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_inline_getorcreatedynamicstream,
-          false)
+          true)
 
 // Maximum number of tracked packets.
 QUIC_FLAG(int64_t, FLAGS_quic_max_tracked_packet_count, 10000)
@@ -333,7 +330,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_restart_flag_quic_dispatcher_hands_chlo_extractor_one_version,
-    false)
+    true)
 
 // If true, will negotiate the ACK delay time.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, false)

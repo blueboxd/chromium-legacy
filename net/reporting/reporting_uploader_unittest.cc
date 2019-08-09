@@ -442,12 +442,12 @@ TEST_F(ReportingUploaderTest, DontSendCookies) {
 
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       cookie_callback;
-  context_.cookie_store()->SetCookieWithOptionsAsync(
-      server_.GetURL("/"), "foo=bar", CookieOptions(),
-      base::nullopt /* server_time */,
-      base::BindRepeating(&ResultSavingCookieCallback<
-                              CanonicalCookie::CookieInclusionStatus>::Run,
-                          base::Unretained(&cookie_callback)));
+  GURL url = server_.GetURL("/");
+  auto cookie = CanonicalCookie::Create(url, "foo=bar", base::Time::Now(),
+                                        base::nullopt /* server_time */);
+  context_.cookie_store()->SetCanonicalCookieAsync(
+      std::move(cookie), url.scheme(), CookieOptions(),
+      cookie_callback.MakeCallback());
   cookie_callback.WaitUntilDone();
   ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
             cookie_callback.result());

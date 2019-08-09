@@ -82,17 +82,15 @@ std::string PreviousSaveCreditCardPromptUserDecisionToString(
   return previous_response;
 }
 
-// Reduce FormSignature space (in UKM) to a small range for privacy reasons.
+}  // namespace
+
 int64_t HashFormSignature(autofill::FormSignature form_signature) {
   return static_cast<uint64_t>(form_signature) % 1021;
 }
 
-// Reduce FieldSignature space (in UKM) to a small range for privacy reasons.
 int64_t HashFieldSignature(autofill::FieldSignature field_signature) {
   return static_cast<uint64_t>(field_signature) % 1021;
 }
-
-}  // namespace
 
 // First, translates |field_type| to the corresponding logical |group| from
 // |FieldTypeGroupForMetrics|.  Then, interpolates this with the given |metric|,

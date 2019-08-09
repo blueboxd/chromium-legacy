@@ -9,8 +9,10 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -29,6 +31,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::test::ios::kWaitForActionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
 const char kTestUrl[] = "http://chromium.test";
@@ -187,11 +192,21 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPaymentRequest) {
 TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostNonOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
-  NSString* page = nil;
+  __block bool callback_called = false;
+  __block NSString* page = nil;
+  base::OnceCallback<void(NSString*)> callback =
+      base::BindOnce(^(NSString* error_html) {
+        callback_called = true;
+        page = error_html;
+      });
   web::TestWebState test_web_state;
   web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/false,
-                              /*is_off_the_record=*/false, &page);
+                              /*is_off_the_record=*/false, std::move(callback));
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
+    base::RunLoop().RunUntilIdle();
+    return callback_called;
+  }));
   EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/false,
                            /*is_off_the_record=*/false),
               page);
@@ -201,11 +216,21 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostNonOtr) {
 TEST_F(ChromeWebClientTest, PrepareErrorPagePostNonOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
-  NSString* page = nil;
+  __block bool callback_called = false;
+  __block NSString* page = nil;
+  base::OnceCallback<void(NSString*)> callback =
+      base::BindOnce(^(NSString* error_html) {
+        callback_called = true;
+        page = error_html;
+      });
   web::TestWebState test_web_state;
   web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/true,
-                              /*is_off_the_record=*/false, &page);
+                              /*is_off_the_record=*/false, std::move(callback));
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
+    base::RunLoop().RunUntilIdle();
+    return callback_called;
+  }));
   EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/true,
                            /*is_off_the_record=*/false),
               page);
@@ -215,11 +240,21 @@ TEST_F(ChromeWebClientTest, PrepareErrorPagePostNonOtr) {
 TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
-  NSString* page = nil;
+  __block bool callback_called = false;
+  __block NSString* page = nil;
+  base::OnceCallback<void(NSString*)> callback =
+      base::BindOnce(^(NSString* error_html) {
+        callback_called = true;
+        page = error_html;
+      });
   web::TestWebState test_web_state;
   web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/false,
-                              /*is_off_the_record=*/true, &page);
+                              /*is_off_the_record=*/true, std::move(callback));
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
+    base::RunLoop().RunUntilIdle();
+    return callback_called;
+  }));
   EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/false,
                            /*is_off_the_record=*/true),
               page);
@@ -229,11 +264,21 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageNonPostOtr) {
 TEST_F(ChromeWebClientTest, PrepareErrorPagePostOtr) {
   ChromeWebClient web_client;
   NSError* error = CreateTestError();
-  NSString* page = nil;
+  __block bool callback_called = false;
+  __block NSString* page = nil;
+  base::OnceCallback<void(NSString*)> callback =
+      base::BindOnce(^(NSString* error_html) {
+        callback_called = true;
+        page = error_html;
+      });
   web::TestWebState test_web_state;
   web_client.PrepareErrorPage(&test_web_state, GURL(kTestUrl), error,
                               /*is_post=*/true,
-                              /*is_off_the_record=*/true, &page);
+                              /*is_off_the_record=*/true, std::move(callback));
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
+    base::RunLoop().RunUntilIdle();
+    return callback_called;
+  }));
   EXPECT_NSEQ(GetErrorPage(GURL(kTestUrl), error, /*is_post=*/true,
                            /*is_off_the_record=*/true),
               page);

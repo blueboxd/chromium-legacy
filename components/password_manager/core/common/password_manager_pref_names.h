@@ -81,6 +81,10 @@ extern const char kPasswordHashDataList[];
 // Integer indicating the state of the password manager onboarding experience.
 extern const char kPasswordManagerOnboardingState[];
 
+// Boolean indicating whether Chrome should check whether the credentials
+// submitted by the user were part of a leak.
+extern const char kPasswordLeakDetectionEnabled[];
+
 }  // namespace prefs
 }  // namespace password_manager
 

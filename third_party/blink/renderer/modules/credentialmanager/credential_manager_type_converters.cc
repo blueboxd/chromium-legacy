@@ -468,6 +468,9 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
     if (extensions->hasHmacCreateSecret()) {
       mojo_options->hmac_create_secret = extensions->hmacCreateSecret();
     }
+    if (extensions->hasAppidExclude()) {
+      mojo_options->appid_exclude = extensions->appidExclude();
+    }
 #if defined(OS_ANDROID)
     if (extensions->hasUvm()) {
       mojo_options->user_verification_methods = extensions->uvm();

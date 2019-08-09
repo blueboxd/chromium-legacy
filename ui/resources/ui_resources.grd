@@ -114,6 +114,10 @@
         <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_UNLOCKED" file="common/easy_unlock_unlocked.png" />
         <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_UNLOCKED_HOVER" file="common/easy_unlock_unlocked_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_UNLOCKED_PRESSED" file="common/easy_unlock_unlocked_pressed.png" />
+        <if expr="not is_android">
+          <structure type="chrome_scaled_image" name="IDR_FINGERPRINT_COMPLETE_TICK" file="common/tick.png" />
+          <structure type="chrome_scaled_image" name="IDR_FINGERPRINT_ICON_ANIMATION" file="common/fingerprint.png" />
+        </if>
         <if expr="is_macosx or is_ios">
           <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="mac/folder.png" />
           <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED_WHITE" file="mac/folder_white.png" />

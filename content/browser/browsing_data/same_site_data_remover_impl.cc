@@ -31,7 +31,7 @@ void OnGetAllCookies(base::OnceClosure closure,
   base::RepeatingClosure barrier =
       base::BarrierClosure(cookies.size(), std::move(closure));
   for (const auto& cookie : cookies) {
-    if (cookie.GetEffectiveSameSite() == net::CookieSameSite::NO_RESTRICTION) {
+    if (cookie.IsEffectivelySameSiteNone()) {
       same_site_none_domains->emplace(cookie.Domain());
       cookie_manager->DeleteCanonicalCookie(
           cookie, base::BindOnce([](const base::RepeatingClosure& callback,

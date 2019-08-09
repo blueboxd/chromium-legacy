@@ -7,3 +7,4 @@ targets and code. E.g.:
   modules packaged into Chrome.
 * [chrome_feature_module_tmpl.gni](chrome_feature_module_tmpl.gni): Template
   to create a Chrome dynamic feature module.
+* Folders for module specific code such as module interfaces and providers.

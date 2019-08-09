@@ -32,6 +32,7 @@
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -128,6 +129,8 @@ class CORE_EXPORT WorkerGlobalScope
   void AddConsoleMessageImpl(ConsoleMessage*, bool discard_duplicates) final;
   bool IsSecureContext(String& error_message) const override;
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
+  const BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
+      const final;
 
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
 
@@ -266,6 +269,8 @@ class CORE_EXPORT WorkerGlobalScope
   Member<WorkerAnimationFrameProvider> animation_frame_provider_;
 
   service_manager::InterfaceProvider interface_provider_;
+
+  blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
 
   // State transition about worker-toplevel script evaluation.
   enum class ScriptEvalState {

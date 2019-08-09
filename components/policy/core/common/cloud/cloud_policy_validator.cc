@@ -240,6 +240,35 @@ void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
   ValidateDeviceId(expected_device_id, device_id_option);
 }
 
+// static
+bool CloudPolicyValidatorBase::VerifySignature(const std::string& data,
+                                               const std::string& key,
+                                               const std::string& signature,
+                                               SignatureType signature_type) {
+  crypto::SignatureVerifier verifier;
+  crypto::SignatureVerifier::SignatureAlgorithm algorithm;
+  switch (signature_type) {
+    case SHA1:
+      algorithm = crypto::SignatureVerifier::RSA_PKCS1_SHA1;
+      break;
+    case SHA256:
+      algorithm = crypto::SignatureVerifier::RSA_PKCS1_SHA256;
+      break;
+    default:
+      NOTREACHED() << "Invalid signature type: " << signature_type;
+      return false;
+  }
+
+  if (!verifier.VerifyInit(algorithm,
+                           base::as_bytes(base::make_span(signature)),
+                           base::as_bytes(base::make_span(key)))) {
+    DLOG(ERROR) << "Invalid verification signature/key format";
+    return false;
+  }
+  verifier.VerifyUpdate(base::as_bytes(base::make_span(data)));
+  return verifier.VerifyFinal();
+}
+
 CloudPolicyValidatorBase::CloudPolicyValidatorBase(
     std::unique_ptr<em::PolicyFetchResponse> policy_response,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
@@ -609,35 +638,6 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckDomain() {
   }
 
   return VALIDATION_OK;
-}
-
-// static
-bool CloudPolicyValidatorBase::VerifySignature(const std::string& data,
-                                               const std::string& key,
-                                               const std::string& signature,
-                                               SignatureType signature_type) {
-  crypto::SignatureVerifier verifier;
-  crypto::SignatureVerifier::SignatureAlgorithm algorithm;
-  switch (signature_type) {
-    case SHA1:
-      algorithm = crypto::SignatureVerifier::RSA_PKCS1_SHA1;
-      break;
-    case SHA256:
-      algorithm = crypto::SignatureVerifier::RSA_PKCS1_SHA256;
-      break;
-    default:
-      NOTREACHED() << "Invalid signature type: " << signature_type;
-      return false;
-  }
-
-  if (!verifier.VerifyInit(algorithm,
-                           base::as_bytes(base::make_span(signature)),
-                           base::as_bytes(base::make_span(key)))) {
-    DLOG(ERROR) << "Invalid verification signature/key format";
-    return false;
-  }
-  verifier.VerifyUpdate(base::as_bytes(base::make_span(data)));
-  return verifier.VerifyFinal();
 }
 
 template class CloudPolicyValidator<em::CloudPolicySettings>;

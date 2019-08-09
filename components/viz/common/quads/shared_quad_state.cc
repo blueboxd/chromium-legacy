@@ -13,14 +13,8 @@
 
 namespace viz {
 
-SharedQuadState::SharedQuadState()
-    : is_clipped(false),
-      opacity(0.f),
-      blend_mode(SkBlendMode::kSrcOver),
-      sorting_context_id(0) {}
-
+SharedQuadState::SharedQuadState() = default;
 SharedQuadState::SharedQuadState(const SharedQuadState& other) = default;
-
 SharedQuadState::~SharedQuadState() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(TRACE_DISABLED_BY_DEFAULT("viz.quads"),
                                      "viz::SharedQuadState", this);

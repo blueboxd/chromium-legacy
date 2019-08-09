@@ -1,5 +1,6 @@
 include_rules = [
   "+components/url_formatter",
+  "+components/leveldb_proto/public",
   "+crypto",
   "+ios/net",
   "+ios/web",

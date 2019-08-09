@@ -1274,7 +1274,7 @@ class SecurityStateLoadingTest : public SecurityStateTabHelperTest {
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&InstallLoadingInterceptor,
                        embedded_test_server()->GetURL("/title1.html").host()));

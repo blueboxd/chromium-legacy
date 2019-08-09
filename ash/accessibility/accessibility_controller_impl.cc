@@ -336,6 +336,9 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
     registry->RegisterIntegerPref(
         prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
         kDefaultSwitchAccessAutoScanSpeed.InMilliseconds());
+    registry->RegisterIntegerPref(
+        prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs,
+        kDefaultSwitchAccessAutoScanSpeed.InMilliseconds());
     registry->RegisterBooleanPref(prefs::kAccessibilityVirtualKeyboardEnabled,
                                   false);
     registry->RegisterBooleanPref(

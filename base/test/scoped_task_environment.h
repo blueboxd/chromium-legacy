@@ -104,7 +104,6 @@ class ScopedTaskEnvironment {
     //     runners.
     MOCK_TIME,
 
-    // TODO(gab): Consider making MOCK_TIME the default mode.
     DEFAULT = SYSTEM_TIME
   };
 

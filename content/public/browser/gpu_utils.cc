@@ -104,6 +104,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
     gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNone;
   }
 
+  gpu_preferences.enforce_vulkan_protected_memory =
+      command_line->HasSwitch(switches::kEnforceVulkanProtectedMemory);
   gpu_preferences.disable_vulkan_fallback_to_gl_for_testing =
       command_line->HasSwitch(switches::kDisableVulkanFallbackToGLForTesting);
 

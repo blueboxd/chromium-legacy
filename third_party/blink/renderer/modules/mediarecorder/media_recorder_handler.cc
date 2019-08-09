@@ -161,10 +161,10 @@ bool MediaRecorderHandler::CanSupportMimeType(const String& type,
   media::SplitCodecs(web_codecs.Utf8(), &codecs_list);
   media::StripCodecs(&codecs_list);
   for (const auto& codec : codecs_list) {
+    String codec_string = String::FromUTF8(codec);
     auto* const* found = std::find_if(
-        &codecs[0], &codecs[codecs_count], [&codec](const char* name) {
-          return !CodeUnitCompareIgnoringASCIICase(
-              String::FromUTF8(codec.c_str()), name);
+        &codecs[0], &codecs[codecs_count], [&codec_string](const char* name) {
+          return !CodeUnitCompareIgnoringASCIICase(codec_string, name);
         });
     if (found == &codecs[codecs_count])
       return false;

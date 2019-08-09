@@ -104,6 +104,9 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   scoped_refptr<UpdateableSequencedTaskRunner>
   CreateUpdateableSequencedTaskRunner(const TaskTraits& traits);
 
+  // PooledTaskRunnerDelegate:
+  bool EnqueueJobTaskSource(scoped_refptr<JobTaskSource> task_source) override;
+
   // Returns the TimeTicks of the next task scheduled on ThreadPool (Now() if
   // immediate, nullopt if none). This is thread-safe, i.e., it's safe if tasks
   // are being posted in parallel with this call but such a situation obviously
@@ -138,7 +141,6 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // PooledTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
-  bool EnqueueJobTaskSource(scoped_refptr<JobTaskSource> task_source) override;
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
   void UpdatePriority(scoped_refptr<TaskSource> task_source,
                       TaskPriority priority) override;

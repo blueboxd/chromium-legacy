@@ -72,9 +72,9 @@ class VIEWS_EXPORT ViewsDelegate {
     // is needed and the menu should be kept open.
     LEAVE_MENU_OPEN,
 
-    // The accelerator was not handled. Menu should be closed and the
-    // accelerator will be reposted to be handled after the menu closes.
-    CLOSE_MENU
+    // The accelerator was not handled. The menu should be closed and event
+    // handling should stop for this event.
+    CLOSE_MENU,
   };
 
   virtual ~ViewsDelegate();

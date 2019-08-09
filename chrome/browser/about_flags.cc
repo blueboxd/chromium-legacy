@@ -1167,6 +1167,7 @@ const FeatureEntry::FeatureVariation
 
 const FeatureEntry::FeatureParam kLazyFrameLoadingAutomatic[] = {
     {"automatic-lazy-load-frames-enabled", "true"},
+    {"restrict-lazy-load-frames-to-data-saver-only", "false"},
 };
 
 const FeatureEntry::FeatureVariation kLazyFrameLoadingVariations[] = {
@@ -1177,6 +1178,7 @@ const FeatureEntry::FeatureVariation kLazyFrameLoadingVariations[] = {
 
 const FeatureEntry::FeatureParam kLazyImageLoadingAutomatic[] = {
     {"automatic-lazy-load-images-enabled", "true"},
+    {"restrict-lazy-load-images-to-data-saver-only", "false"},
 };
 
 const FeatureEntry::FeatureVariation kLazyImageLoadingVariations[] = {
@@ -2025,6 +2027,9 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kTrySupportedChannelLayouts)},
 #endif  // OS_WIN
 #if defined(OS_MACOSX)
+    {"mac-syscall-sandbox", flag_descriptions::kMacSyscallSandboxName,
+     flag_descriptions::kMacSyscallSandboxDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kMacSyscallSandbox)},
     {"mac-v2-gpu-sandbox", flag_descriptions::kMacV2GPUSandboxName,
      flag_descriptions::kMacV2GPUSandboxDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kMacV2GPUSandbox)},
@@ -2521,13 +2526,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll | kExpireM77,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableExpirationDate)},
-    {"enable-autofill-do-not-upload-save-unsupported-cards",
-     flag_descriptions::kEnableAutofillDoNotUploadSaveUnsupportedCardsName,
-     flag_descriptions::
-         kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription,
-     kOsAll | kExpireM77,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillDoNotUploadSaveUnsupportedCards)},
     {"enable-autofill-import-dynamic-forms",
      flag_descriptions::kEnableAutofillImportDynamicFormsName,
      flag_descriptions::kEnableAutofillImportDynamicFormsDescription,
@@ -2540,13 +2538,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll | kExpireM77,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillLocalCardMigrationUsesStrikeSystemV2)},
-    {"enable-autofill-send-experiment-ids-in-payments-rpcs",
-     flag_descriptions::kEnableAutofillSendExperimentIdsInPaymentsRPCsName,
-     flag_descriptions::
-         kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription,
-     kOsAll | kExpireM77,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillSendExperimentIdsInPaymentsRPCs)},
 
 #if defined(OS_ANDROID)
     {"enable-autofill-manual-fallback",

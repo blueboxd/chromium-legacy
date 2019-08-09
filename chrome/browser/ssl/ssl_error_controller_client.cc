@@ -219,9 +219,10 @@ void SSLErrorControllerClient::LaunchDateAndTimeSettings() {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       ProfileManager::GetActiveUserProfile(), chrome::kDateTimeSubPage);
 #else
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-                           base::BindOnce(&LaunchDateAndTimeSettingsImpl));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&LaunchDateAndTimeSettingsImpl));
 #endif
 }
 

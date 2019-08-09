@@ -13,6 +13,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
@@ -84,8 +85,10 @@ void HatsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 void HatsService::LaunchSatisfactionSurvey() {
   if (ShouldShowSurvey(kHatsSurveyTriggerSatisfaction)) {
     Browser* browser = chrome::FindLastActive();
-    if (browser && browser->is_type_tabbed()) {
-      browser->window()->ShowHatsBubbleFromAppMenuButton(en_site_id_);
+    // Never show HaTS bubble in Incognito mode.
+    if (browser && browser->is_type_tabbed() &&
+        profiles::IsRegularOrGuestSession(browser)) {
+      browser->window()->ShowHatsBubble(en_site_id_);
 
       DictionaryPrefUpdate update(profile_->GetPrefs(),
                                   prefs::kHatsSurveyMetadata);

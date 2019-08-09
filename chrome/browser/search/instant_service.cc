@@ -435,8 +435,8 @@ void InstantService::SendNewTabPageURLToRenderer(
   }
 }
 
-void InstantService::SetCustomBackgroundURL(const GURL& url) {
-  SetCustomBackgroundInfo(url, std::string(), std::string(), GURL(),
+void InstantService::ResetCustomBackgroundInfo() {
+  SetCustomBackgroundInfo(GURL(), std::string(), std::string(), GURL(),
                           std::string());
 }
 

@@ -44,24 +44,28 @@ namespace {
 // (?i) turns on case insensitivity for the remainder of the regex.
 // (?-s) turns off "dot matches newline" for the remainder of the regex.
 // (?:regex) denotes non-capturing parentheses group.
-constexpr const char* kCustomPatternsWithContext[] = {
+CustomPatternWithAlias kCustomPatternsWithContext[] = {
     // ModemManager
-    "(\\bCell ID: ')([0-9a-fA-F]+)(')",
-    "(\\bLocation area code: ')([0-9a-fA-F]+)(')",
+    {"CellID", "(\\bCell ID: ')([0-9a-fA-F]+)(')"},
+    {"LocAC", "(\\bLocation area code: ')([0-9a-fA-F]+)(')"},
 
     // wpa_supplicant
-    "(?i-s)(\\bssid[= ]')(.+)(')",
-    "(?-s)(\\bSSID - hexdump\\(len=[0-9]+\\): )(.+)()",
+    {"SSID", "(?i-s)(\\bssid[= ]')(.+)(')"},
+    {"SSIDHex", "(?-s)(\\bSSID - hexdump\\(len=[0-9]+\\): )(.+)()"},
 
     // shill
-    "(?-s)(\\[SSID=)(.+?)(\\])",
+    {"SSID", "(?-s)(\\[SSID=)(.+?)(\\])"},
 
-    // Serial numbers
-    "(?i-s)(serial\\s*(?:number)?\\s*[:=]\\s*)([0-9a-zA-Z\\-\"]+)()",
+    // Serial numbers. The actual serial number itself can include any alphanum
+    // char as well as dashes, periods, colons, slashes and unprintable ASCII
+    // chars (except newline).
+    {"Serial",
+     "(?i-s)(\\bserial\\s*_?(?:number)?['\"]?\\s*[:=]\\s*['\"]?)"
+     "([0-9a-zA-Z\\-.:\\/\\\\\\x00-\\x09\\x0B-\\x1F]+)(\\b)"},
 
     // GAIA IDs
-    R"xxx((\"?\bgaia_id\"?[=:]['\"])(\d+)(\b['\"]))xxx",
-    R"xxx((\{id: )(\d+)(, email:))xxx",
+    {"GAIA", R"xxx((\"?\bgaia_id\"?[=:]['\"])(\d+)(\b['\"]))xxx"},
+    {"GAIA", R"xxx((\{id: )(\d+)(, email:))xxx"},
 };
 
 bool MaybeUnmapAddress(net::IPAddress* addr) {
@@ -292,7 +296,7 @@ std::string MaybeScrubIPAddress(const std::string& addr) {
 
 // The |kCustomPatternWithoutContext| array defines further patterns to match
 // and anonymize. Each pattern consists of a single capturing group.
-CustomPatternWithoutContext kCustomPatternsWithoutContext[] = {
+CustomPatternWithAlias kCustomPatternsWithoutContext[] = {
     {"URL", "(?i)(" IRI ")"},
     // Email Addresses need to come after URLs because they can be part
     // of a query parameter.
@@ -363,10 +367,7 @@ constexpr size_t kNumNonAnonymizedMacs = base::size(kNonAnonymizedMacAddresses);
 }  // namespace
 
 AnonymizerTool::AnonymizerTool(const char* const* first_party_extension_ids)
-    : first_party_extension_ids_(first_party_extension_ids),
-      custom_patterns_with_context_(base::size(kCustomPatternsWithContext)),
-      custom_patterns_without_context_(
-          base::size(kCustomPatternsWithoutContext)) {
+    : first_party_extension_ids_(first_party_extension_ids) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   // Identity-map these, so we don't mangle them.
   for (const char* mac : kNonAnonymizedMacAddresses)
@@ -562,23 +563,22 @@ std::string AnonymizerTool::AnonymizeAndroidAppStoragePaths(
 std::string AnonymizerTool::AnonymizeCustomPatterns(std::string input) {
   for (size_t i = 0; i < base::size(kCustomPatternsWithContext); i++) {
     input =
-        AnonymizeCustomPatternWithContext(input, kCustomPatternsWithContext[i],
-                                          &custom_patterns_with_context_[i]);
+        AnonymizeCustomPatternWithContext(input, kCustomPatternsWithContext[i]);
   }
   for (size_t i = 0; i < base::size(kCustomPatternsWithoutContext); i++) {
     input = AnonymizeCustomPatternWithoutContext(
-        input, kCustomPatternsWithoutContext[i],
-        &custom_patterns_without_context_[i]);
+        input, kCustomPatternsWithoutContext[i]);
   }
   return input;
 }
 
 std::string AnonymizerTool::AnonymizeCustomPatternWithContext(
     const std::string& input,
-    const std::string& pattern,
-    std::map<std::string, std::string>* identifier_space) {
-  RE2* re = GetRegExp(pattern);
+    const CustomPatternWithAlias& pattern) {
+  RE2* re = GetRegExp(pattern.pattern);
   DCHECK_EQ(3, re->NumberOfCapturingGroups());
+  std::map<std::string, std::string>* identifier_space =
+      &custom_patterns_with_context_[pattern.alias];
 
   std::string result;
   result.reserve(input.size());
@@ -592,7 +592,11 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithContext(
     std::string matched_id_as_string = matched_id.as_string();
     std::string replacement_id = (*identifier_space)[matched_id_as_string];
     if (replacement_id.empty()) {
-      replacement_id = base::NumberToString(identifier_space->size());
+      // The weird NumberToString trick is because Windows does not like
+      // to deal with %zu and a size_t in printf, nor does it support %llu.
+      replacement_id = base::StringPrintf(
+          "<%s: %s>", pattern.alias,
+          base::NumberToString(identifier_space->size()).c_str());
       (*identifier_space)[matched_id_as_string] = replacement_id;
     }
 
@@ -652,10 +656,12 @@ bool IsUrlWhitelisted(re2::StringPiece url,
 
 std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
     const std::string& input,
-    const CustomPatternWithoutContext& pattern,
-    std::map<std::string, std::string>* identifier_space) {
+    const CustomPatternWithAlias& pattern) {
   RE2* re = GetRegExp(pattern.pattern);
   DCHECK_EQ(1, re->NumberOfCapturingGroups());
+
+  std::map<std::string, std::string>* identifier_space =
+      &custom_patterns_without_context_[pattern.alias];
 
   std::string result;
   result.reserve(input.size());
@@ -675,7 +681,7 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
     if (replacement_id.empty()) {
       replacement_id = MaybeScrubIPAddress(matched_id_as_string);
       if (replacement_id != matched_id_as_string) {
-        // The weird Uint64toString trick is because Windows does not like
+        // The weird NumberToString trick is because Windows does not like
         // to deal with %zu and a size_t in printf, nor does it support %llu.
         replacement_id = base::StringPrintf(
             "<%s: %s>",

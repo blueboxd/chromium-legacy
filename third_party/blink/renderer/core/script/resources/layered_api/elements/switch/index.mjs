@@ -16,7 +16,6 @@ const STATE_ATTR = 'on';
 // TODO(tkent): Use private fields.
 const _internals = Symbol('an ElementInternals field');
 const _track = Symbol('a track element field');
-const _rippleElement = Symbol('a ripple element field');
 const _containerElement = Symbol('A container element field');
 
 export class StdSwitchElement extends HTMLElement {
@@ -83,10 +82,6 @@ export class StdSwitchElement extends HTMLElement {
         this[_containerElement].appendChild(factory.createElement('span'));
     thumbElement.id = 'thumb';
     thumbElement.part.add('thumb');
-
-    this[_rippleElement] =
-        thumbElement.appendChild(factory.createElement('span'));
-    this[_rippleElement].id = 'ripple';
 
     root.adoptedStyleSheets = [generateStyleSheet()];
   }

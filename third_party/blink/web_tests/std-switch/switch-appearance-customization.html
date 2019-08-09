@@ -10,6 +10,10 @@ std-switch {
 .material std-switch {
   block-size: 20px;
   inline-size: 36px;
+
+  --thumb-size: 20px;
+  --ripple-color: rgba(100,100,100,0.3);
+  --ripple-max-size: 48px;
 }
 
 .material std-switch::part(track) {
@@ -24,11 +28,11 @@ std-switch {
 }
 
 .material std-switch::part(thumb) {
-  block-size: 20px;
-  border-radius: 10px;
+  block-size: var(--thumb-size);
+  border-radius: calc(var(--thumb-size) / 2);
   border: none;
   box-shadow: 0 1px 5px 0 rgba(0,0,0,0.6);
-  inline-size: 20px;
+  inline-size: var(--thumb-size);
   margin-inline-start: -100%;
 }
 
@@ -38,10 +42,65 @@ std-switch {
 }
 
 .material std-switch:hover::part(thumb) {
-  inline-size: 20px;
+  inline-size: var(--thumb-size);
 }
 
-/* TODO(tkent): add style for ripple effect. */
+/*
+ * Ripple effect
+ *
+ * Translucent circle is painted on the thumb if the element is :active or
+ * :focus-visible.  It has
+ *   - Size transition when it appears
+ *   - Opacity transition when it disappears
+ * part(thumb)::before represents the former, and part(thumb)::after represents
+ * the latter.
+ */
+.material std-switch::part(thumb)::before {
+  background: var(--ripple-color);
+  block-size: 0px;
+  border-radius: 0px;
+  content: "";
+  display: inline-block;
+  inline-size: 0px;
+  left: calc(var(--thumb-size) / 2);
+  position: relative;
+  top: calc(var(--thumb-size) / 2);
+  transition: none;
+}
+
+.material std-switch:active::part(thumb)::before,
+.material std-switch:focus-visible::part(thumb)::before {
+  block-size: var(--ripple-max-size);
+  border-radius: calc(var(--ripple-max-size) / 2);
+  inline-size: var(--ripple-max-size);
+  left: calc((var(--thumb-size) - var(--ripple-max-size)) / 2);
+  top: calc((var(--thumb-size) - var(--ripple-max-size)) / 2);
+  /* transition: all linear 0.1s; transition is harmful in pixel tests. */
+}
+
+.material std-switch::part(thumb)::after {
+  background: var(--ripple-color);
+  block-size: var(--ripple-max-size);
+  border-radius: calc(var(--ripple-max-size) / 2);
+  content: "";
+  display: inline-block;
+  inline-size: var(--ripple-max-size);
+  left: calc((var(--thumb-size) - var(--ripple-max-size)) / 2);
+  opacity: 0;
+  position: relative;
+  /* Why 18px? */
+  top: calc((var(--thumb-size) - var(--ripple-max-size)) / 2 - 18px);
+  /* transition: opacity linear 0.3s; transition is harmful in pixel tests. */
+}
+
+.material std-switch:active::part(thumb)::after,
+.material std-switch:focus-visible::part(thumb)::after {
+  block-size: 0px;
+  content: "";
+  inline-size: 0px;
+  opacity: 1;
+  transition: none;
+}
 
 /* ---------------------------------------------------------------- */
 

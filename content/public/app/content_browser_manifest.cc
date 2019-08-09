@@ -163,8 +163,8 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:shared_worker", "renderer",
               std::set<const char*>{
-                  "blink.mojom.CacheStorage", "blink.mojom.FileSystemManager",
-                  "blink.mojom.IDBFactory", "blink.mojom.LockManager",
+                  "blink.mojom.CacheStorage", "blink.mojom.IDBFactory",
+                  "blink.mojom.LockManager",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.PermissionService",
@@ -180,8 +180,8 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               std::set<const char*>{
                   "blink.mojom.CacheStorage",
                   "blink.mojom.DedicatedWorkerHostFactory",
-                  "blink.mojom.FileSystemManager", "blink.mojom.IDBFactory",
-                  "blink.mojom.IdleManager", "blink.mojom.LockManager",
+                  "blink.mojom.IDBFactory", "blink.mojom.IdleManager",
+                  "blink.mojom.LockManager",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.PermissionService",
@@ -227,7 +227,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.FileChooser",
-                  "blink.mojom.FileSystemManager",
                   "blink.mojom.GeolocationService",
                   "blink.mojom.HidService",
                   "blink.mojom.IDBFactory",

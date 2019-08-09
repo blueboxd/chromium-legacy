@@ -7,9 +7,17 @@
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl.h"
 #include "ui/views/layout/box_layout.h"
 
+namespace {
+
+constexpr int kMediaListMaxHeight = 478;
+
+}  // anonymous namespace
+
 MediaNotificationListView::MediaNotificationListView() {
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
+  SetContents(std::make_unique<views::View>());
+  contents()->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
+  ClipHeightTo(0, kMediaListMaxHeight);
 }
 
 MediaNotificationListView::~MediaNotificationListView() = default;
@@ -20,7 +28,9 @@ void MediaNotificationListView::ShowNotification(
   DCHECK(!base::Contains(notifications_, id));
   DCHECK_NE(nullptr, notification.get());
 
-  notifications_[id] = AddChildView(std::move(notification));
+  notifications_[id] = contents()->AddChildView(std::move(notification));
+
+  contents()->InvalidateLayout();
   PreferredSizeChanged();
 }
 
@@ -28,7 +38,9 @@ void MediaNotificationListView::HideNotification(const std::string& id) {
   if (!base::Contains(notifications_, id))
     return;
 
-  RemoveChildView(notifications_[id]);
+  contents()->RemoveChildView(notifications_[id]);
   notifications_.erase(id);
+
+  contents()->InvalidateLayout();
   PreferredSizeChanged();
 }

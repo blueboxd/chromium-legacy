@@ -124,8 +124,9 @@ void RemoteCommandsQueueTest::InitializeJob(
     const std::string& payload) {
   EXPECT_TRUE(
       job->Init(clock_->NowTicks(),
-                GenerateCommandProto(
-                    unique_id, clock_->NowTicks() - issued_time, payload)));
+                GenerateCommandProto(unique_id,
+                                     clock_->NowTicks() - issued_time, payload),
+                nullptr));
   EXPECT_EQ(unique_id, job->unique_id());
   VerifyCommandIssuedTime(job, issued_time);
   EXPECT_EQ(RemoteCommandJob::NOT_STARTED, job->status());
@@ -138,8 +139,9 @@ void RemoteCommandsQueueTest::FailInitializeJob(
     const std::string& payload) {
   EXPECT_FALSE(
       job->Init(clock_->NowTicks(),
-                GenerateCommandProto(
-                    unique_id, clock_->NowTicks() - issued_time, payload)));
+                GenerateCommandProto(unique_id,
+                                     clock_->NowTicks() - issued_time, payload),
+                nullptr));
   EXPECT_EQ(RemoteCommandJob::INVALID, job->status());
 }
 

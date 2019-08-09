@@ -193,28 +193,29 @@ void ChromeWebClient::AllowCertificateError(
                                      overridable, callback);
 }
 
-void ChromeWebClient::PrepareErrorPage(web::WebState* web_state,
-                                       const GURL& url,
-                                       NSError* error,
-                                       bool is_post,
-                                       bool is_off_the_record,
-                                       NSString** error_html) {
+void ChromeWebClient::PrepareErrorPage(
+    web::WebState* web_state,
+    const GURL& url,
+    NSError* error,
+    bool is_post,
+    bool is_off_the_record,
+    base::OnceCallback<void(NSString*)> callback) {
   if (reading_list::IsOfflinePageWithoutNativeContentEnabled()) {
     OfflinePageTabHelper* offline_page_tab_helper =
         OfflinePageTabHelper::FromWebState(web_state);
-    // WebState that are not attached to a tab may not have a
+    // WebState that are not attached to a tab may not have an
     // OfflinePageTabHelper.
     if (offline_page_tab_helper &&
         offline_page_tab_helper->HasDistilledVersionForOnlineUrl(url)) {
       // An offline version of the page will be displayed to replace this error
       // page. Return an empty error page to avoid having the error page
       // flash vefore the offline version is loaded.
-      *error_html = @"";
+      std::move(callback).Run(@"");
       return;
     }
   }
   DCHECK(error);
-  *error_html = GetErrorPage(url, error, is_post, is_off_the_record);
+  std::move(callback).Run(GetErrorPage(url, error, is_post, is_off_the_record));
 }
 
 UIView* ChromeWebClient::GetWindowedContainer() {

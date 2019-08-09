@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "url/mojom/url.mojom";
 
@@ -19,5 +20,5 @@ struct PrefetchedSignedExchangeInfo {
   SHA256HashValue header_integrity;
   url.mojom.Url inner_url;
   network.mojom.URLResponseHead inner_response;
-  handle<message_pipe> loader_factory_handle;
+  pending_remote<network.mojom.URLLoaderFactory> loader_factory_handle;
 };

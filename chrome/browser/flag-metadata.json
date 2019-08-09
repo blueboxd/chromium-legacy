@@ -110,12 +110,12 @@
   {
     "name": "app-management",
     "owners": [ "//chrome/browser/resources/app_management/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "app-service-ash",
     "owners": [ "//chrome/services/app_service/OWNERS" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 79
   },
   {
     "name": "arc-available-for-child",
@@ -922,11 +922,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-autofill-do-not-upload-save-unsupported-cards",
-    "owners": [ "annelim@google.com", "jsaul@google.com" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "enable-autofill-import-dynamic-forms",
     "owners": [ "hozhng@google.com", "jiahuiguo@google.com" ],
     "expiry_milestone": 79
@@ -950,11 +945,6 @@
     "name": "enable-autofill-save-credit-card-uses-improved-messaging",
     "owners": [ "siyua@chromium.org", "payments-autofill-team@google.com" ],
     "expiry_milestone": 80
-  },
-  {
-    "name": "enable-autofill-send-experiment-ids-in-payments-rpcs",
-    "owners": [ "dlkumar@google.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "autofill-off-no-server-data",
@@ -994,7 +984,7 @@
   {
     "name": "enable-chromeos-account-manager",
     "owners": [ "sinhak@chromium.org" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 78
   },
   {
     "name": "enable-cloud-print-xps",
@@ -2261,6 +2251,11 @@
     "name": "lock-screen-media-controls",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "mac-syscall-sandbox",
+    "owners": [ "kerrnel@google.com" ],
+    "expiry_milestone": 80
   },
   {
     "name": "mac-v2-gpu-sandbox",

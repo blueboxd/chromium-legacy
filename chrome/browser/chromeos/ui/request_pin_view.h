@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host.h"
+#include "chromeos/constants/security_token_pin_types.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -30,9 +31,6 @@ namespace chromeos {
 class RequestPinView final : public views::DialogDelegateView,
                              public views::TextfieldController {
  public:
-  using PinCodeType = SecurityTokenPinDialogHost::SecurityTokenPinCodeType;
-  using PinErrorLabel = SecurityTokenPinDialogHost::SecurityTokenPinErrorLabel;
-
   using PinEnteredCallback =
       base::RepeatingCallback<void(const std::string& user_input)>;
   using ViewDestructionCallback = base::OnceClosure;
@@ -48,7 +46,7 @@ class RequestPinView final : public views::DialogDelegateView,
   // |pin_entered_callback| - called every time the user submits the input.
   // |view_destruction_callback| - called by the destructor.
   RequestPinView(const std::string& extension_name,
-                 PinCodeType code_type,
+                 SecurityTokenPinCodeType code_type,
                  int attempts_left,
                  const PinEnteredCallback& pin_entered_callback,
                  ViewDestructionCallback view_destruction_callback);
@@ -78,8 +76,8 @@ class RequestPinView final : public views::DialogDelegateView,
   //     have to enter correct code.
   // |accept_input| - specifies whether the textfield is enabled. If disabled
   //     the user is unable to provide input.
-  void SetDialogParameters(PinCodeType code_type,
-                           PinErrorLabel error_label,
+  void SetDialogParameters(SecurityTokenPinCodeType code_type,
+                           SecurityTokenPinErrorLabel error_label,
                            int attempts_left,
                            bool accept_input);
 
@@ -94,7 +92,8 @@ class RequestPinView final : public views::DialogDelegateView,
   // This initializes the view, with all the UI components.
   void Init();
   void SetAcceptInput(bool accept_input);
-  void SetErrorMessage(PinErrorLabel error_label, int attempts_left);
+  void SetErrorMessage(SecurityTokenPinErrorLabel error_label,
+                       int attempts_left);
   // Updates the header text |header_label_| based on values from
   // |window_title_| and |code_type_|.
   void UpdateHeaderText();

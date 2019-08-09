@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/interstitials/ios_chrome_metrics_helper.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/security/ssl_status.h"
-#import "ios/web/public/web_state/web_state.h"
 #include "net/base/net_errors.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"

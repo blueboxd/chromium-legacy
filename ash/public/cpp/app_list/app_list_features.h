@@ -41,10 +41,13 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateSuggestions;
 // Enables the feature to autocomplete text typed in the AppList search box.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListSearchAutocomplete;
 
-// Enable an model that ranks query based apps search result.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedAppsRanker;
+// Enable app ranking models.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppRanker;
 
 // Enable an model that ranks zero-state apps search result.
+// TODO(crbug.com/989350): This flag can be removed once the
+// AppSearchResultRanker is removed. Same with the
+// AppSearchResultRankerPredictorName.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateAppsRanker;
 
 // Enable an model that ranks query based non-apps result.
@@ -75,7 +78,7 @@ bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
-bool ASH_PUBLIC_EXPORT IsQueryBasedAppsRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsAppRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateMixedTypesRankerEnabled();

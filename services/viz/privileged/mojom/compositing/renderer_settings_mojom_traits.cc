@@ -33,6 +33,7 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->record_sk_picture = data.record_sk_picture();
   out->allow_overlays = data.allow_overlays();
   out->requires_alpha_channel = data.requires_alpha_channel();
+  out->show_dc_layer_debug_borders = data.show_dc_layer_debug_borders();
 
 #if defined(OS_ANDROID)
   if (!data.ReadInitialScreenSize(&out->initial_screen_size))

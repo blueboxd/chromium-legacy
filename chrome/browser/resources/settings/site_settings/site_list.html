@@ -33,7 +33,7 @@
       <div class="settings-box first">
         <h2 class="start">[[categoryHeader]]</h2>
         <cr-button id="addSite" class="header-aligned-button"
-            hidden="[[readOnlyList]]" on-click="onAddSiteTap_">
+            hidden$="[[!showAddSiteButton_]]" on-click="onAddSiteTap_">
           $i18n{add}
         </cr-button>
       </div>

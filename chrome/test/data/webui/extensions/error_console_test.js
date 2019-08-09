@@ -9,7 +9,7 @@ suite('CrExtensionsErrorConsoleTest', function() {
 
   // Initialize an extension activity log item before each test.
   setup(function() {
-    return test_util.waitForRender(document);
+    return test_util.waitBeforeNextRender(document);
   });
 
   test('TestUpDownErrors', function() {

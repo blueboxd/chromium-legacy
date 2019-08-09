@@ -76,6 +76,15 @@ Polymer({
       }
     },
 
+    /** @private */
+    enableNativeFileSystemWriteContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean(
+            'enableNativeFileSystemWriteContentSetting');
+      }
+    },
+
     /** @type {!Map<string, (string|Function)>} */
     focusConfig: {
       type: Object,
@@ -132,6 +141,12 @@ Polymer({
 
     if (this.enableBluetoothScanningContentSetting_) {
       pairs.push([R.SITE_SETTINGS_BLUETOOTH_SCANNING, 'bluetooth-scanning']);
+    }
+
+    if (this.enableNativeFileSystemWriteContentSetting_) {
+      pairs.push([
+        R.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE, 'native-file-system-write'
+      ]);
     }
 
     pairs.forEach(([route, id]) => {

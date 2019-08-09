@@ -508,6 +508,7 @@ java_group("chrome_all_java") {
     ":chrome_java",
     "//chrome/android/features/keyboard_accessory:internal_java",
     "//chrome/android/features/media_router:java",
+    "//chrome/android/features/test_dummy/internal:base_module_java",
   ]
 
   if (disable_autofill_assistant_dfm) {

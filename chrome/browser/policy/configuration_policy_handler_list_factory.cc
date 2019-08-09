@@ -1077,6 +1077,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kBrowserGuestModeEnforced,
     base::Value::Type::BOOLEAN },
 #endif
+  { key::kPasswordLeakDetectionEnabled,
+    password_manager::prefs::kPasswordLeakDetectionEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

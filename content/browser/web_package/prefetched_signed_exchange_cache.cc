@@ -19,6 +19,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_util.h"
@@ -731,14 +732,14 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
     // same origin.
     if (outer_url_origin.IsSameOriginWith(
             url::Origin::Create(exchange->outer_url()))) {
-      network::mojom::URLLoaderFactoryPtrInfo loader_factory_info;
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> loader_factory_info;
       new SubresourceSignedExchangeURLLoaderFactory(
-          mojo::MakeRequest(&loader_factory_info), exchange->Clone(),
-          request_initiator_site_lock);
+          loader_factory_info.InitWithNewPipeAndPassReceiver(),
+          exchange->Clone(), request_initiator_site_lock);
       info_list.emplace_back(mojom::PrefetchedSignedExchangeInfo::New(
           exchange->outer_url(), *exchange->header_integrity(),
           exchange->inner_url(), *exchange->inner_response(),
-          std::move(loader_factory_info).PassHandle()));
+          std::move(loader_factory_info)));
     }
     ++exchanges_it;
   }

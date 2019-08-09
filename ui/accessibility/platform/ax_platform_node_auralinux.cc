@@ -2051,7 +2051,7 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   // as well.
   interface_mask |= 1 << ATK_TEXT_INTERFACE;
 
-  if (!IsPlainTextField() && !IsChildOfLeaf())
+  if (!IsPlainTextField())
     interface_mask |= 1 << ATK_HYPERTEXT_INTERFACE;
 
   // Value Interface
@@ -2584,10 +2584,13 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kFigcaption:
       return ATK_ROLE_CAPTION;
+    case ax::mojom::Role::kUnknown:
+      // When we are not in web content, assume that a node with an unknown
+      // role is a view (which often have the unknown role).
+      return !GetDelegate()->IsWebContent() ? ATK_ROLE_PANEL : ATK_ROLE_UNKNOWN;
     case ax::mojom::Role::kKeyboard:
     case ax::mojom::Role::kNone:
     case ax::mojom::Role::kPresentational:
-    case ax::mojom::Role::kUnknown:
       return ATK_ROLE_REDUNDANT_OBJECT;
   }
 }
@@ -3745,12 +3748,6 @@ base::string16 AXPlatformNodeAuraLinux::GetHypertext() const {
   // Special case allows us to get text even in non-HTML case, e.g. browser UI.
   if (IsPlainTextField())
     return GetString16Attribute(ax::mojom::StringAttribute::kValue);
-
-  // Hypertext of platform leaves, which internally are composite objects, are
-  // represented with the inner text of the composite object.
-  if (IsChildOfLeaf())
-    return GetInnerText();
-
   return hypertext_.hypertext;
 }
 

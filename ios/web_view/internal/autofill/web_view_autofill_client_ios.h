@@ -19,8 +19,11 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
-#import "ios/web/public/web_state/web_state.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
+
+namespace web {
+class WebState;
+}
 
 namespace autofill {
 

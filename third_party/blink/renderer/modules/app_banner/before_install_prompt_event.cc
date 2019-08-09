@@ -16,22 +16,22 @@ namespace blink {
 BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     const AtomicString& name,
     LocalFrame& frame,
-    mojom::blink::AppBannerServicePtr service_ptr,
-    mojom::blink::AppBannerEventRequest event_request,
+    mojo::PendingRemote<mojom::blink::AppBannerService> service_remote,
+    mojo::PendingReceiver<mojom::blink::AppBannerEvent> event_receiver,
     const Vector<String>& platforms)
     : Event(name, Bubbles::kNo, Cancelable::kYes),
       ContextClient(&frame),
-      banner_service_(std::move(service_ptr)),
-      binding_(this,
-               std::move(event_request),
-               frame.GetTaskRunner(TaskType::kApplicationLifeCycle)),
+      banner_service_remote_(std::move(service_remote)),
+      receiver_(this,
+                std::move(event_receiver),
+                frame.GetTaskRunner(TaskType::kApplicationLifeCycle)),
       platforms_(platforms),
       user_choice_(MakeGarbageCollected<UserChoiceProperty>(
           frame.GetDocument(),
           this,
           UserChoiceProperty::kUserChoice)) {
-  DCHECK(banner_service_);
-  DCHECK(binding_.is_bound());
+  DCHECK(banner_service_remote_);
+  DCHECK(receiver_.is_bound());
   UseCounter::Count(frame.GetDocument(), WebFeature::kBeforeInstallPromptEvent);
 }
 
@@ -39,7 +39,7 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
     ExecutionContext* execution_context,
     const AtomicString& name,
     const BeforeInstallPromptEventInit* init)
-    : Event(name, init), ContextClient(execution_context), binding_(this) {
+    : Event(name, init), ContextClient(execution_context) {
   if (init->hasPlatforms())
     platforms_ = init->platforms();
 }
@@ -47,8 +47,8 @@ BeforeInstallPromptEvent::BeforeInstallPromptEvent(
 BeforeInstallPromptEvent::~BeforeInstallPromptEvent() = default;
 
 void BeforeInstallPromptEvent::Dispose() {
-  banner_service_.reset();
-  binding_.Close();
+  banner_service_remote_.reset();
+  receiver_.reset();
 }
 
 Vector<String> BeforeInstallPromptEvent::platforms() const {
@@ -60,7 +60,7 @@ ScriptPromise BeforeInstallPromptEvent::userChoice(ScriptState* script_state) {
                     WebFeature::kBeforeInstallPromptEventUserChoice);
   // |m_binding| must be bound to allow the AppBannerService to resolve the
   // userChoice promise.
-  if (user_choice_ && binding_.is_bound())
+  if (user_choice_ && receiver_.is_bound())
     return user_choice_->Promise(script_state->World());
   return ScriptPromise::RejectWithDOMException(
       script_state, MakeGarbageCollected<DOMException>(
@@ -71,7 +71,7 @@ ScriptPromise BeforeInstallPromptEvent::userChoice(ScriptState* script_state) {
 ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
   // |m_bannerService| must be bound to allow us to inform the AppBannerService
   // to display the banner now.
-  if (!banner_service_.is_bound()) {
+  if (!banner_service_remote_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidStateError,
@@ -91,7 +91,7 @@ ScriptPromise BeforeInstallPromptEvent::prompt(ScriptState* script_state) {
   }
 
   UseCounter::Count(context, WebFeature::kBeforeInstallPromptEventPrompt);
-  banner_service_->DisplayAppBanner();
+  banner_service_remote_->DisplayAppBanner();
   return user_choice_->Promise(script_state->World());
 }
 

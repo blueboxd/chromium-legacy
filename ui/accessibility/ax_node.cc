@@ -153,8 +153,9 @@ bool AXNode::IsText() const {
 
 bool AXNode::IsLineBreak() const {
   return data().role == ax::mojom::Role::kLineBreak ||
-         (IsText() && parent() &&
-          parent()->data().role == ax::mojom::Role::kLineBreak);
+         (data().role == ax::mojom::Role::kInlineTextBox &&
+          data().GetBoolAttribute(
+              ax::mojom::BoolAttribute::kIsLineBreakingObject));
 }
 
 void AXNode::SetData(const AXNodeData& src) {

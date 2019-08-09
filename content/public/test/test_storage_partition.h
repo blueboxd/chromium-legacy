@@ -10,6 +10,10 @@
 #include "build/build_config.h"
 #include "content/public/browser/storage_partition.h"
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}
+
 namespace content {
 
 class AppCacheService;
@@ -133,6 +137,11 @@ class TestStoragePartition : public StoragePartition {
     devtools_background_services_context_ = context;
   }
   DevToolsBackgroundServicesContext* GetDevToolsBackgroundServicesContext()
+      override;
+
+  leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider() override;
+  void SetProtoDatabaseProvider(
+      std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> proto_db_provider)
       override;
 
   void set_content_index_context(ContentIndexContext* context) {

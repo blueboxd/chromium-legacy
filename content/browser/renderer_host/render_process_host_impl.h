@@ -480,7 +480,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Binds request to the FileSystemManager instance owned by the render process
   // host, and is used by workers via RendererInterfaceBinders.
-  void BindFileSystemManager(blink::mojom::FileSystemManagerRequest request);
+  void BindFileSystemManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
   FileSystemManagerImpl* GetFileSystemManagerForTesting() {
     return file_system_manager_impl_.get();
   }

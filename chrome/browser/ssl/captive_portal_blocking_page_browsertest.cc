@@ -221,8 +221,8 @@ class CaptivePortalBlockingPageTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&AddURLRequestFilterOnIOThread));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&AddURLRequestFilterOnIOThread));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

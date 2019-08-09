@@ -22,7 +22,6 @@
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
-#include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "url/url_constants.h"
@@ -152,6 +151,12 @@ base::StringPiece CreateStringPiece(const ::flatbuffers::String& str) {
   return base::StringPiece(str.c_str(), str.size());
 }
 
+// Returns true if the given |vec| is nullptr or empty.
+template <typename T>
+bool IsEmpty(const flatbuffers::Vector<T>* vec) {
+  return !vec || vec->size() == 0;
+}
+
 // Performs any required query transformations on the |url|. Returns true if the
 // query should be modified and populates |modified_query|.
 bool GetModifiedQuery(const GURL& url,
@@ -159,39 +164,42 @@ bool GetModifiedQuery(const GURL& url,
                       std::string* modified_query) {
   DCHECK(modified_query);
 
-  // TODO(crbug.com/983685): We should be able to reduce the work here by
-  // storing the escaped query params in the indexed format.
-  const bool use_plus = true;
-  std::set<std::string> escaped_remove_query_params;
-  if (transform.remove_query_params()) {
-    for (const ::flatbuffers::String* str : *transform.remove_query_params()) {
-      escaped_remove_query_params.insert(
-          net::EscapeQueryParamValue(CreateStringPiece(*str), use_plus));
-    }
+  // |remove_query_params| should always be sorted.
+  DCHECK(
+      IsEmpty(transform.remove_query_params()) ||
+      std::is_sorted(transform.remove_query_params()->begin(),
+                     transform.remove_query_params()->end(),
+                     [](const flatbuffers::String* x1,
+                        const flatbuffers::String* x2) { return *x1 < *x2; }));
+
+  // Return early if there's nothing to modify.
+  if (IsEmpty(transform.remove_query_params()) &&
+      IsEmpty(transform.add_or_replace_query_params())) {
+    return false;
+  }
+
+  std::vector<base::StringPiece> remove_query_params;
+  if (!IsEmpty(transform.remove_query_params())) {
+    remove_query_params.reserve(transform.remove_query_params()->size());
+    for (const ::flatbuffers::String* str : *transform.remove_query_params())
+      remove_query_params.push_back(CreateStringPiece(*str));
   }
 
   // We don't use a map from keys to vector of values to ensure the relative
-  // order of different params specified by the extension is respected. We use
-  // a std::list to support fast removal from middle of the list.
-  std::list<std::pair<std::string, std::string>>
-      escaped_add_or_replace_query_params;
-  if (transform.add_or_replace_query_params()) {
+  // order of different params specified by the extension is respected. We use a
+  // std::list to support fast removal from middle of the list. Note that the
+  // key value pairs should already be escaped.
+  std::list<std::pair<base::StringPiece, base::StringPiece>>
+      add_or_replace_query_params;
+  if (!IsEmpty(transform.add_or_replace_query_params())) {
     for (const flat::QueryKeyValue* query_pair :
          *transform.add_or_replace_query_params()) {
       DCHECK(query_pair->key());
       DCHECK(query_pair->value());
-      std::string key = net::EscapeQueryParamValue(
-          CreateStringPiece(*query_pair->key()), use_plus);
-      std::string value = net::EscapeQueryParamValue(
-          CreateStringPiece(*query_pair->value()), use_plus);
-      escaped_add_or_replace_query_params.emplace_back(std::move(key),
-                                                       std::move(value));
+      add_or_replace_query_params.emplace_back(
+          CreateStringPiece(*query_pair->key()),
+          CreateStringPiece(*query_pair->value()));
     }
-  }
-
-  if (escaped_add_or_replace_query_params.empty() &&
-      escaped_remove_query_params.empty()) {
-    return false;
   }
 
   std::vector<std::string> query_parts;
@@ -204,20 +212,20 @@ bool GetModifiedQuery(const GURL& url,
   for (net::QueryIterator it(url); !it.IsAtEnd(); it.Advance()) {
     std::string key = it.GetKey();
     // Remove query param.
-    if (base::Contains(escaped_remove_query_params, key)) {
+    if (std::binary_search(remove_query_params.begin(),
+                           remove_query_params.end(), key)) {
       query_changed = true;
       continue;
     }
 
-    auto replace_iterator =
-        std::find_if(escaped_add_or_replace_query_params.begin(),
-                     escaped_add_or_replace_query_params.end(),
-                     [&key](const std::pair<std::string, std::string>& param) {
-                       return param.first == key;
-                     });
+    auto replace_iterator = std::find_if(
+        add_or_replace_query_params.begin(), add_or_replace_query_params.end(),
+        [&key](const std::pair<base::StringPiece, base::StringPiece>& param) {
+          return param.first == key;
+        });
 
     // Nothing to do.
-    if (replace_iterator == escaped_add_or_replace_query_params.end()) {
+    if (replace_iterator == add_or_replace_query_params.end()) {
       query_parts.push_back(create_query_part(key, it.GetValue()));
       continue;
     }
@@ -225,11 +233,11 @@ bool GetModifiedQuery(const GURL& url,
     // Replace query param.
     query_changed = true;
     query_parts.push_back(create_query_part(key, replace_iterator->second));
-    escaped_add_or_replace_query_params.erase(replace_iterator);
+    add_or_replace_query_params.erase(replace_iterator);
   }
 
   // Append any remaining query params.
-  for (const auto& params : escaped_add_or_replace_query_params) {
+  for (const auto& params : add_or_replace_query_params) {
     query_changed = true;
     query_parts.push_back(create_query_part(params.first, params.second));
   }

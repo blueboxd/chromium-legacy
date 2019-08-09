@@ -120,7 +120,9 @@ void LoadFrameDontWait(WebLocalFrame* frame, const WebURL& url) {
     params->navigation_timings.fetch_start = base::TimeTicks::Now();
     params->is_browser_initiated = true;
     FillNavigationParamsResponse(params.get());
-    impl->CommitNavigation(std::move(params), nullptr /* extra_data */);
+    impl->CommitNavigation(
+        std::move(params), nullptr /* extra_data */,
+        base::DoNothing::Once() /* call_before_attaching_new_document */);
   }
 }
 
@@ -137,8 +139,9 @@ void LoadHTMLString(WebLocalFrame* frame,
   std::unique_ptr<WebNavigationParams> navigation_params =
       WebNavigationParams::CreateWithHTMLString(html, base_url);
   navigation_params->tick_clock = clock;
-  impl->CommitNavigation(std::move(navigation_params),
-                         nullptr /* extra_data */);
+  impl->CommitNavigation(
+      std::move(navigation_params), nullptr /* extra_data */,
+      base::DoNothing::Once() /* call_before_attaching_new_document */);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
@@ -154,7 +157,9 @@ void LoadHistoryItem(WebLocalFrame* frame,
   params->navigation_timings.navigation_start = base::TimeTicks::Now();
   params->navigation_timings.fetch_start = base::TimeTicks::Now();
   FillNavigationParamsResponse(params.get());
-  impl->CommitNavigation(std::move(params), nullptr /* extra_data */);
+  impl->CommitNavigation(
+      std::move(params), nullptr /* extra_data */,
+      base::DoNothing::Once() /* call_before_attaching_new_document */);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 
@@ -567,7 +572,9 @@ void TestWebFrameClient::CommitNavigation(
   auto params = WebNavigationParams::CreateFromInfo(*info);
   if (info->archive_status != WebNavigationInfo::ArchiveStatus::Present)
     FillNavigationParamsResponse(params.get());
-  frame_->CommitNavigation(std::move(params), nullptr /* extra_data */);
+  frame_->CommitNavigation(
+      std::move(params), nullptr /* extra_data */,
+      base::DoNothing::Once() /* call_before_attaching_new_document */);
 }
 
 WebEffectiveConnectionType TestWebFrameClient::GetEffectiveConnectionType() {

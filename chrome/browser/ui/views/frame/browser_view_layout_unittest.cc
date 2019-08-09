@@ -19,9 +19,8 @@
 
 class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
  public:
-  explicit MockBrowserViewLayoutDelegate(views::View* contents_web_view)
-      : contents_web_view_(contents_web_view) {}
-  ~MockBrowserViewLayoutDelegate() override {}
+  MockBrowserViewLayoutDelegate() = default;
+  ~MockBrowserViewLayoutDelegate() override = default;
 
   void set_download_shelf_needs_layout(bool layout) {
     download_shelf_needs_layout_ = layout;
@@ -43,9 +42,6 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   }
 
   // BrowserViewLayout::Delegate overrides:
-  views::View* GetContentsWebView() const override {
-    return contents_web_view_;
-  }
   bool IsTabStripVisible() const override { return tab_strip_visible_; }
   gfx::Rect GetBoundsForTabStripRegionInBrowserView() const override {
     return gfx::Rect();
@@ -69,7 +65,6 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   }
 
  private:
-  views::View* contents_web_view_;
   bool tab_strip_visible_ = true;
   bool toolbar_visible_ = true;
   bool bookmark_bar_visible_ = true;
@@ -171,7 +166,7 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     root_view_->AddChildView(contents_container_);
 
     // TODO(jamescook): Attach |layout_| to |root_view_|?
-    delegate_ = new MockBrowserViewLayoutDelegate(contents_web_view_);
+    delegate_ = new MockBrowserViewLayoutDelegate();
     layout_ = std::make_unique<BrowserViewLayout>(
         std::unique_ptr<BrowserViewLayoutDelegate>(delegate_), browser(),
         nullptr,  // BrowserView.

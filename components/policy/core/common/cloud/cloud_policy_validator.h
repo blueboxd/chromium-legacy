@@ -123,6 +123,8 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     TIMESTAMP_NOT_VALIDATED,
   };
 
+  enum SignatureType { SHA1, SHA256 };
+
   struct POLICY_EXPORT ValidationResult {
     // Validation status.
     Status status = VALIDATION_OK;
@@ -256,6 +258,13 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   // Immediately performs validation on the current thread.
   void RunValidation();
 
+  // Verifies the SHA1/ or SHA256/RSA |signature| on |data| against |key|.
+  // |signature_type| specifies the type of signature (SHA1 or SHA256 ).
+  static bool VerifySignature(const std::string& data,
+                              const std::string& key,
+                              const std::string& signature,
+                              SignatureType signature_type);
+
  protected:
   // Internal flags indicating what to check.
   enum ValidationFlags {
@@ -296,8 +305,6 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   int validation_flags_;
 
  private:
-  enum SignatureType { SHA1, SHA256 };
-
   // Performs validation, called on a background thread.
   static void PerformValidation(
       std::unique_ptr<CloudPolicyValidatorBase> self,
@@ -346,13 +353,6 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   // part of derived classes.
   virtual Status CheckPayload() = 0;
   virtual Status CheckValues() = 0;
-
-  // Verifies the SHA1/ or SHA256/RSA |signature| on |data| against |key|.
-  // |signature_type| specifies the type of signature (SHA1 or SHA256).
-  static bool VerifySignature(const std::string& data,
-                              const std::string& key,
-                              const std::string& signature,
-                              SignatureType signature_type);
 
   Status status_;
   std::unique_ptr<enterprise_management::PolicyFetchResponse> policy_;

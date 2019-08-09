@@ -69,7 +69,7 @@ class CORE_EXPORT LargestTextPaintManager {
 
   void ReportCandidateToTrace(const TextRecord&);
   void ReportNoCandidateToTrace();
-  void UpdateCandidate();
+  base::WeakPtr<TextRecord> UpdateCandidate();
   void PopulateTraceValue(TracedValue&, const TextRecord& first_text_paint);
   inline void SetCachedResultInvalidated(bool value) {
     is_result_invalidated_ = value;
@@ -145,8 +145,9 @@ class CORE_EXPORT TextRecordsManager {
     text_element_timing_ = text_element_timing;
   }
 
-  inline base::Optional<LargestTextPaintManager>& GetLargestTextPaintManager() {
-    return ltp_manager_;
+  inline base::WeakPtr<TextRecord> UpdateCandidate() {
+    DCHECK(ltp_manager_);
+    return ltp_manager_->UpdateCandidate();
   }
 
   inline bool IsRecordingLargestTextPaint() const {
@@ -211,6 +212,12 @@ class CORE_EXPORT TextPaintTimingDetector final
   inline bool FinishedReportingText() const { return !is_recording_; }
   void ResetCallbackManager(PaintTimingCallbackManager* manager) {
     callback_manager_ = manager;
+  }
+  inline bool IsRecordingLargestTextPaint() const {
+    return records_manager_.IsRecordingLargestTextPaint();
+  }
+  inline base::WeakPtr<TextRecord> UpdateCandidate() {
+    return records_manager_.UpdateCandidate();
   }
   void ReportSwapTime(base::TimeTicks timestamp);
   void Trace(blink::Visitor*);

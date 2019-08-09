@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -93,7 +92,6 @@
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
@@ -154,26 +152,6 @@
 #endif
 
 namespace settings {
-
-namespace {
-
-#if defined(OS_CHROMEOS)
-bool ShouldShowParentalControls(Profile* profile) {
-  // Show Parental controls for regular and child accounts that are the
-  // primary profile.  Do not show it to any secondary profiles, managed
-  // accounts that aren't child accounts (i.e. enterprise and EDU accounts),
-  // OTR accounts, or legacy supervised user accounts.
-  return chromeos::features::IsParentalControlsSettingsEnabled() &&
-         profile == ProfileManager::GetPrimaryUserProfile() &&
-         !profile->IsLegacySupervised() && !profile->IsGuestSession() &&
-         (profile->IsChild() ||
-          !profile->GetProfilePolicyConnector()->IsManaged());
-}
-
-#endif  // defined(OS_CHROMEOS)
-
-}  // namespace
-
 // static
 void SettingsUI::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -301,8 +279,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                               password_manager::features::kPasswordImport));
 
 #if defined(OS_CHROMEOS)
-  html_source->AddBoolean("showParentalControls",
-                          ShouldShowParentalControls(profile));
+  html_source->AddBoolean(
+      "showParentalControls",
+      chromeos::settings::ShouldShowParentalControls(profile));
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -460,7 +439,7 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
                 : nullptr,
             android_sms_service ? android_sms_service->android_sms_app_manager()
                                 : nullptr));
-    if (ShouldShowParentalControls(profile)) {
+    if (chromeos::settings::ShouldShowParentalControls(profile)) {
       web_ui->AddMessageHandler(
           std::make_unique<chromeos::settings::ParentalControlsHandler>(
               profile));
@@ -536,8 +515,9 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::PowerHandler>(profile->GetPrefs()));
 
-  html_source->AddBoolean("showParentalControlsSettings",
-                          ShouldShowParentalControls(profile));
+  html_source->AddBoolean(
+      "showParentalControlsSettings",
+      chromeos::settings::ShouldShowParentalControls(profile));
 }
 #endif  // defined(OS_CHROMEOS)
 

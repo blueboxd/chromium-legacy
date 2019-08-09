@@ -74,9 +74,9 @@ double CSSMathFunctionValue::ComputeLengthPx(
   return ClampToPermittedRange(expression_->ComputeLengthPx(conversion_data));
 }
 
-void CSSMathFunctionValue::AccumulateLengthArray(CSSLengthArray& length_array,
+bool CSSMathFunctionValue::AccumulateLengthArray(CSSLengthArray& length_array,
                                                  double multiplier) const {
-  expression_->AccumulateLengthArray(length_array, multiplier);
+  return expression_->AccumulateLengthArray(length_array, multiplier);
 }
 
 Length CSSMathFunctionValue::ConvertToLength(

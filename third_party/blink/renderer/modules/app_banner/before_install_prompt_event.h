@@ -6,7 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_APP_BANNER_BEFORE_INSTALL_PROMPT_EVENT_H_
 
 #include <utility>
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -38,8 +39,8 @@ class BeforeInstallPromptEvent final
  public:
   BeforeInstallPromptEvent(const AtomicString& name,
                            LocalFrame&,
-                           mojom::blink::AppBannerServicePtr,
-                           mojom::blink::AppBannerEventRequest,
+                           mojo::PendingRemote<mojom::blink::AppBannerService>,
+                           mojo::PendingReceiver<mojom::blink::AppBannerEvent>,
                            const Vector<String>& platforms);
   BeforeInstallPromptEvent(ExecutionContext*,
                            const AtomicString& name,
@@ -49,11 +50,11 @@ class BeforeInstallPromptEvent final
   static BeforeInstallPromptEvent* Create(
       const AtomicString& name,
       LocalFrame& frame,
-      mojom::blink::AppBannerServicePtr service_ptr,
-      mojom::blink::AppBannerEventRequest event_request,
+      mojo::PendingRemote<mojom::blink::AppBannerService> service_remote,
+      mojo::PendingReceiver<mojom::blink::AppBannerEvent> event_receiver,
       const Vector<String>& platforms) {
     return MakeGarbageCollected<BeforeInstallPromptEvent>(
-        name, frame, std::move(service_ptr), std::move(event_request),
+        name, frame, std::move(service_remote), std::move(event_receiver),
         platforms);
   }
 
@@ -84,8 +85,8 @@ class BeforeInstallPromptEvent final
   void BannerAccepted(const String& platform) override;
   void BannerDismissed() override;
 
-  mojom::blink::AppBannerServicePtr banner_service_;
-  mojo::Binding<mojom::blink::AppBannerEvent> binding_;
+  mojo::Remote<mojom::blink::AppBannerService> banner_service_remote_;
+  mojo::Receiver<mojom::blink::AppBannerEvent> receiver_{this};
   Vector<String> platforms_;
   Member<UserChoiceProperty> user_choice_;
 };

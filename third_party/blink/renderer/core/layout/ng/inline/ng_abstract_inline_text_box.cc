@@ -256,4 +256,11 @@ scoped_refptr<AbstractInlineTextBox> NGAbstractInlineTextBox::PreviousOnLine()
   return nullptr;
 }
 
+bool NGAbstractInlineTextBox::IsLineBreak() const {
+  if (!fragment_)
+    return false;
+  DCHECK(!NeedsLayout());
+  return PhysicalTextFragment().IsLineBreak();
+}
+
 }  // namespace blink

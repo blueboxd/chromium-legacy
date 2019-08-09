@@ -6,11 +6,14 @@
 #define CONTENT_BROWSER_BROWSER_INTERFACE_BINDERS_H_
 
 #include "services/service_manager/public/cpp/binder_map.h"
+#include "url/origin.h"
 
 namespace content {
 
+class RenderFrameHost;
 class RenderFrameHostImpl;
 class DedicatedWorkerHost;
+class SharedWorkerHost;
 
 namespace internal {
 
@@ -26,10 +29,25 @@ namespace internal {
 // Registers the handlers for interfaces requested by frames.
 void PopulateBinderMap(RenderFrameHostImpl* rfhi,
                        service_manager::BinderMap* map);
+void PopulateBinderMapWithContext(
+    RenderFrameHostImpl* rfhi,
+    service_manager::BinderMapWithContext<RenderFrameHost*>* map);
+RenderFrameHost* GetContextForHost(RenderFrameHostImpl* rfhi);
 
 // Registers the handlers for interfaces requested by dedicated workers.
 void PopulateBinderMap(DedicatedWorkerHost* dwh,
                        service_manager::BinderMap* map);
+void PopulateBinderMapWithContext(
+    DedicatedWorkerHost* dwh,
+    service_manager::BinderMapWithContext<const url::Origin&>* map);
+const url::Origin& GetContextForHost(DedicatedWorkerHost* dwh);
+
+// Registers the handlers for interfaces requested by shared workers.
+void PopulateBinderMap(SharedWorkerHost* swh, service_manager::BinderMap* map);
+void PopulateBinderMapWithContext(
+    SharedWorkerHost* swh,
+    service_manager::BinderMapWithContext<const url::Origin&>* map);
+url::Origin GetContextForHost(SharedWorkerHost* swh);
 
 }  // namespace internal
 }  // namespace content

@@ -74,8 +74,12 @@ VulkanSurface::~VulkanSurface() {
   DCHECK_EQ(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
 }
 
-VulkanSurface::VulkanSurface(VkInstance vk_instance, VkSurfaceKHR surface)
-    : vk_instance_(vk_instance), surface_(surface) {
+VulkanSurface::VulkanSurface(VkInstance vk_instance,
+                             VkSurfaceKHR surface,
+                             bool enforce_protected_memory)
+    : vk_instance_(vk_instance),
+      surface_(surface),
+      enforce_protected_memory_(enforce_protected_memory) {
   DCHECK_NE(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
 }
 
@@ -239,6 +243,7 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& size,
   uint32_t min_image_count = std::max(surface_caps.minImageCount, 3u);
   if (!swap_chain->Initialize(device_queue_, surface_, surface_format_,
                               image_size_, min_image_count, vk_transform,
+                              enforce_protected_memory_,
                               std::move(swap_chain_))) {
     return false;
   }

@@ -308,7 +308,7 @@ cr.define('settings_people_page_quick_unlock', function() {
                     return true;
                   });
 
-              return test_util.waitForRender(testElement);
+              return test_util.waitBeforeNextRender(testElement);
             })
             .then(() => {
               passwordRadioButton =

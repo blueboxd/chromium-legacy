@@ -3742,9 +3742,12 @@ TEST_F(URLLoaderTest, RawRequestCookies) {
     // Set the devtools id to trigger the RawResponse call
     request.devtools_request_id = "TEST";
 
-    context()->cookie_store()->SetCookieWithOptionsAsync(
-        test_server()->GetURL("/"), "a=b", net::CookieOptions(),
-        base::nullopt /* server_time */, base::DoNothing());
+    GURL cookie_url = test_server()->GetURL("/");
+    auto cookie = net::CanonicalCookie::Create(
+        cookie_url, "a=b", base::Time::Now(), base::nullopt /* server_time */);
+    context()->cookie_store()->SetCanonicalCookieAsync(
+        std::move(cookie), cookie_url.scheme(), net::CookieOptions(),
+        base::DoNothing());
 
     base::RunLoop delete_run_loop;
     mojom::URLLoaderPtr loader;
@@ -3786,9 +3789,12 @@ TEST_F(URLLoaderTest, RawRequestCookiesFlagged) {
     request.devtools_request_id = "TEST";
 
     // Set the path to an irrelevant url to block the cookie from sending
-    context()->cookie_store()->SetCookieWithOptionsAsync(
-        test_server()->GetURL("/"), "a=b;Path=/something-else",
-        net::CookieOptions(), base::nullopt /* server_time */,
+    GURL cookie_url = test_server()->GetURL("/");
+    auto cookie = net::CanonicalCookie::Create(
+        cookie_url, "a=b;Path=/something-else", base::Time::Now(),
+        base::nullopt /* server_time */);
+    context()->cookie_store()->SetCanonicalCookieAsync(
+        std::move(cookie), cookie_url.scheme(), net::CookieOptions(),
         base::DoNothing());
 
     base::RunLoop delete_run_loop;

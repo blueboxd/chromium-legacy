@@ -117,19 +117,6 @@ VoiceError LoggingEventToVoiceError(NTPLoggingEventType event) {
   }
 }
 
-// Logs BackgroundCustomization availability on the NTP.
-void LogBackgroundCustomizationAvailability(
-    BackgroundCustomization availability) {
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.CustomizationAvailability.Backgrounds",
-                            availability);
-}
-
-// Logs ShortcutCustomization availability on the NTP.
-void LogShortcutCustomizationAvailability(ShortcutCustomization availability) {
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.CustomizationAvailability.Shortcuts",
-                            availability);
-}
-
 // Logs CustomizedShortcutSettings on the NTP.
 void LogCustomizedShortcutSettings(std::pair<bool, bool> settings) {
   bool using_most_visited = settings.first;
@@ -290,6 +277,10 @@ const char* LoggingEventToBackgroundUserActionName(NTPLoggingEventType event) {
       return "NTPRicherPicker.Backgrounds.UploadConfirmed";
     case NTP_BACKGROUND_IMAGE_RESET:
       return "NTPRicherPicker.Backgrounds.BackgroundReset";
+    case NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED:
+      return "NTPRicherPicker.Backgrounds.RefreshToggleClicked";
+    case NTP_BACKGROUND_DAILY_REFRESH_ENABLED:
+      return "NTPRicherPicker.Backgrounds.DailyRefreshEnabled";
     default:
       NOTREACHED();
       return nullptr;
@@ -532,6 +523,8 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     case NTP_BACKGROUND_UPLOAD_CANCEL:
     case NTP_BACKGROUND_UPLOAD_DONE:
     case NTP_BACKGROUND_IMAGE_RESET:
+    case NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED:
+    case NTP_BACKGROUND_DAILY_REFRESH_ENABLED:
       RecordAction(LoggingEventToBackgroundUserActionName(event));
       break;
     case NTP_CUSTOMIZATION_MENU_OPENED:
@@ -695,19 +688,7 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.NewTab", load_time);
   }
 
-  if (!is_google) {
-    // TODO(crbug.com/869931): This is only emitted upon search engine change.
-    LogBackgroundCustomizationAvailability(
-        BackgroundCustomization::
-            BACKGROUND_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
-    LogShortcutCustomizationAvailability(
-        ShortcutCustomization::
-            SHORTCUT_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
-  } else {
-    LogBackgroundCustomizationAvailability(
-        BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE);
-    LogShortcutCustomizationAvailability(
-        ShortcutCustomization::SHORTCUT_CUSTOMIZATION_AVAILABLE);
+  if (is_google) {
     LogCustomizedShortcutSettings(GetCurrentShortcutSettings());
 
     if (AreShortcutsCustomized()) {

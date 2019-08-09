@@ -238,7 +238,7 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
       frame_generator_, info, std::move(segment_reader), std::move(frames),
       complete_frame_content_id_, all_data_received_,
       !incremental_decode_needed_.value() /* able to do accelerated decoding */,
-      can_yuv_decode_);
+      can_yuv_decode_, image_type);
   first_decoding_generator_created_ = true;
 
   size_t image_byte_size = ByteSize();

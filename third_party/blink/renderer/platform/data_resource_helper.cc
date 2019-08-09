@@ -32,7 +32,7 @@ String UncompressResourceAsString(int resource_id) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   std::string uncompressed = bundle.DecompressDataResourceScaled(
       resource_id, bundle.GetMaxScaleFactor());
-  return String::FromUTF8(uncompressed.data());
+  return String::FromUTF8(uncompressed);
 }
 
 Vector<char> UncompressResourceAsBinary(int resource_id) {

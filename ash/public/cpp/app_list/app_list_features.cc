@@ -25,8 +25,8 @@ const base::Feature kEnableZeroStateSuggestions{
     "EnableZeroStateSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppListSearchAutocomplete{
     "EnableAppListSearchAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kEnableQueryBasedAppsRanker{
-    "EnableQueryBasedAppsRanker", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAppRanker{"EnableAppRanker",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableZeroStateAppsRanker{
     "EnableZeroStateAppsRanker", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableQueryBasedMixedTypesRanker{
@@ -76,8 +76,8 @@ bool IsAppListSearchAutocompleteEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppListSearchAutocomplete);
 }
 
-bool IsQueryBasedAppsRankerEnabled() {
-  return base::FeatureList::IsEnabled(kEnableQueryBasedAppsRanker);
+bool IsAppRankerEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAppRanker);
 }
 
 bool IsZeroStateAppsRankerEnabled() {

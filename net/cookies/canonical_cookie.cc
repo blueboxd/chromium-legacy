@@ -360,27 +360,6 @@ bool CanonicalCookie::IsDomainMatch(const std::string& host) const {
   return cookie_util::IsDomainMatch(domain_, host);
 }
 
-CookieSameSite CanonicalCookie::GetEffectiveSameSite() const {
-  CookieSameSite effective_same_site = SameSite();
-  // If a cookie does not have a SameSite attribute, the effective SameSite
-  // mode depends on the SameSiteByDefaultCookies setting and whether the cookie
-  // is short-lived.
-  if (SameSite() == CookieSameSite::UNSPECIFIED) {
-    effective_same_site = cookie_util::IsSameSiteByDefaultCookiesEnabled()
-                              ? (IsRecentlyCreated(kLaxAllowUnsafeMaxAge)
-                                     ? CookieSameSite::LAX_MODE_ALLOW_UNSAFE
-                                     : CookieSameSite::LAX_MODE)
-                              : CookieSameSite::NO_RESTRICTION;
-  }
-
-  // TODO(crbug.com/989171): Replace this with FirstParty{Lax,Strict}.
-  if (SameSite() == CookieSameSite::EXTENDED_MODE)
-    effective_same_site = CookieSameSite::LAX_MODE;
-
-  DCHECK(IsValidEffectiveSameSiteValue(effective_same_site));
-  return effective_same_site;
-}
-
 CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
     const GURL& url,
     const CookieOptions& options) const {
@@ -436,7 +415,7 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
   // experimental options were enabled (as non-SameSite, insecure cookies cannot
   // be set while the options are on).
   if (cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() &&
-      GetEffectiveSameSite() == CookieSameSite::NO_RESTRICTION && !IsSecure()) {
+      IsEffectivelySameSiteNone() && !IsSecure()) {
     return CanonicalCookie::CookieInclusionStatus::
         EXCLUDE_SAMESITE_NONE_INSECURE;
   }
@@ -515,6 +494,7 @@ bool CanonicalCookie::IsCanonical() const {
 
   url::CanonHostInfo canon_host_info;
   std::string canonical_domain(CanonicalizeHost(domain_, &canon_host_info));
+
   // TODO(rdsmith): This specifically allows for empty domains.  The spec
   // suggests this is invalid (if a domain attribute is empty, the cookie's
   // domain is set to the canonicalized request host; see
@@ -544,6 +524,14 @@ bool CanonicalCookie::IsCanonical() const {
     return false;
 
   return true;
+}
+
+bool CanonicalCookie::IsEffectivelySameSiteNone() const {
+  return GetEffectiveSameSite() == CookieSameSite::NO_RESTRICTION;
+}
+
+CookieSameSite CanonicalCookie::GetEffectiveSameSiteForTesting() const {
+  return GetEffectiveSameSite();
 }
 
 // static
@@ -616,6 +604,27 @@ bool CanonicalCookie::IsCookiePrefixValid(CanonicalCookie::CookiePrefix prefix,
     return secure && url.SchemeIsCryptographic() && domain_valid && path == "/";
   }
   return true;
+}
+
+CookieSameSite CanonicalCookie::GetEffectiveSameSite() const {
+  CookieSameSite effective_same_site = SameSite();
+  // If a cookie does not have a SameSite attribute, the effective SameSite
+  // mode depends on the SameSiteByDefaultCookies setting and whether the cookie
+  // is short-lived.
+  if (SameSite() == CookieSameSite::UNSPECIFIED) {
+    effective_same_site = cookie_util::IsSameSiteByDefaultCookiesEnabled()
+                              ? (IsRecentlyCreated(kLaxAllowUnsafeMaxAge)
+                                     ? CookieSameSite::LAX_MODE_ALLOW_UNSAFE
+                                     : CookieSameSite::LAX_MODE)
+                              : CookieSameSite::NO_RESTRICTION;
+  }
+
+  // TODO(crbug.com/989171): Replace this with FirstParty{Lax,Strict}.
+  if (SameSite() == CookieSameSite::EXTENDED_MODE)
+    effective_same_site = CookieSameSite::LAX_MODE;
+
+  DCHECK(IsValidEffectiveSameSiteValue(effective_same_site));
+  return effective_same_site;
 }
 
 bool CanonicalCookie::IsRecentlyCreated(base::TimeDelta age_threshold) const {

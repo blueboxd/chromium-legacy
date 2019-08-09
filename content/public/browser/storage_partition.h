@@ -28,6 +28,10 @@ namespace storage {
 class FileSystemContext;
 }
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}
+
 namespace network {
 namespace mojom {
 class CookieManager;
@@ -132,6 +136,13 @@ class CONTENT_EXPORT StoragePartition {
   virtual ZoomLevelDelegate* GetZoomLevelDelegate() = 0;
 #endif  // !defined(OS_ANDROID)
   virtual PlatformNotificationContext* GetPlatformNotificationContext() = 0;
+
+  virtual leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider() = 0;
+  // Must be set before the first call to GetProtoDatabaseProvider(), or a new
+  // one will be created by get.
+  virtual void SetProtoDatabaseProvider(
+      std::unique_ptr<leveldb_proto::ProtoDatabaseProvider>
+          optional_proto_db_provider) = 0;
 
   enum : uint32_t {
     REMOVE_DATA_MASK_APPCACHE = 1 << 0,

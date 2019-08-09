@@ -21,6 +21,10 @@ class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
 }  // namespace network
 
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}  // namespace leveldb_proto
+
 namespace download {
 
 class DownloadService;
@@ -43,6 +47,7 @@ std::unique_ptr<DownloadService> BuildDownloadService(
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
     SimpleDownloadManagerCoordinator* download_manager_coordinator,
+    leveldb_proto::ProtoDatabaseProvider* proto_db_provider,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     std::unique_ptr<TaskScheduler> task_scheduler);
 

@@ -108,7 +108,9 @@ void MockSharedWorkerFactory::CreateSharedWorker(
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     blink::mojom::SharedWorkerHostPtr host,
     blink::mojom::SharedWorkerRequest request,
-    service_manager::mojom::InterfaceProviderPtr interface_provider) {
+    service_manager::mojom::InterfaceProviderPtr interface_provider,
+    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker) {
   DCHECK(!create_params_);
   create_params_ = std::make_unique<CreateParams>();
   create_params_->info = std::move(info);

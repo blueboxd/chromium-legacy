@@ -62,6 +62,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/testing_profile_key.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_profile_validator.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -398,10 +399,10 @@ void TestingProfile::Init() {
   }
 
   if (IsOffTheRecord()) {
-    key_ = std::make_unique<ProfileKey>(original_profile_->GetPath(),
-                                        original_profile_->GetProfileKey());
+    key_ = std::make_unique<TestingProfileKey>(
+        this, original_profile_->GetPath(), original_profile_->GetProfileKey());
   } else {
-    key_ = std::make_unique<ProfileKey>(profile_path_);
+    key_ = std::make_unique<TestingProfileKey>(this, profile_path_);
   }
 
   BrowserContext::Initialize(this, profile_path_);

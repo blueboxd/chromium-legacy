@@ -6,6 +6,7 @@
 
 import argparse
 import json
+import logging
 import os
 
 from core import benchmark_utils
@@ -13,6 +14,8 @@ from core import benchmark_finders
 from core import path_util
 path_util.AddTelemetryToPath()
 path_util.AddAndroidPylibToPath()
+
+from typ import expectations_parser as typ_expectations_parser
 
 
 CLUSTER_TELEMETRY_DIR = os.path.join(
@@ -23,16 +26,19 @@ CLUSTER_TELEMETRY_BENCHMARKS = [
     benchmark_finders.GetBenchmarksInSubDirectory(CLUSTER_TELEMETRY_DIR)
 ]
 
-
-def validate_story_names(benchmarks, raw_expectations_data):
+def validate_story_names(benchmarks, test_expectations):
+  stories = []
   for benchmark in benchmarks:
     if benchmark.Name() in CLUSTER_TELEMETRY_BENCHMARKS:
       continue
-    b = benchmark()
-    b.AugmentExpectationsWithParser(raw_expectations_data)
-    story_set = benchmark_utils.GetBenchmarkStorySet(b)
-    failed_stories = b.GetBrokenExpectations(story_set)
-    assert not failed_stories, 'Incorrect story names: %s' % str(failed_stories)
+    story_set = benchmark_utils.GetBenchmarkStorySet(benchmark())
+    stories.extend([benchmark.Name() + '/' + s.name for s in story_set.stories])
+  broken_expectations = test_expectations.check_for_broken_expectations(stories)
+  unused_patterns = ''
+  for pattern in set([e.test for e in broken_expectations]):
+    unused_patterns += ("Expectations with pattern '%s'"
+                        " do not apply to any stories\n" % pattern)
+  assert not unused_patterns, unused_patterns
 
 
 def GetDisabledStories(benchmarks, raw_expectations_data):
@@ -73,9 +79,14 @@ def main(args):
   benchmarks = benchmark_finders.GetAllBenchmarks()
   with open(path_util.GetExpectationsPath()) as fp:
     raw_expectations_data = fp.read()
+  test_expectations = typ_expectations_parser.TestExpectations()
+  ret, msg = test_expectations.parse_tagged_list(raw_expectations_data)
+  if ret:
+    logging.error(msg)
+    return ret
   if options.list:
     stories = GetDisabledStories(benchmarks, raw_expectations_data)
     print json.dumps(stories, sort_keys=True, indent=4, separators=(',', ': '))
   else:
-    validate_story_names(benchmarks, raw_expectations_data)
+    validate_story_names(benchmarks, test_expectations)
   return 0

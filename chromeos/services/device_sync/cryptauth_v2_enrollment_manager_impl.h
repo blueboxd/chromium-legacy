@@ -111,7 +111,7 @@ class CryptAuthV2EnrollmentManagerImpl
 
   static base::Optional<base::TimeDelta> GetTimeoutForState(State state);
   static base::Optional<CryptAuthEnrollmentResult::ResultCode>
-  ResultCodeErrorFromState(State state);
+  ResultCodeErrorFromTimeoutDuringState(State state);
 
   // CryptAuthEnrollmentManager:
   void Start() override;
@@ -150,6 +150,7 @@ class CryptAuthV2EnrollmentManagerImpl
   void OnEnrollmentFinished(const CryptAuthEnrollmentResult& enrollment_result);
 
   void SetState(State state);
+  void OnTimeout();
 
   std::string GetV1UserPublicKey() const;
   std::string GetV1UserPrivateKey() const;
@@ -168,7 +169,12 @@ class CryptAuthV2EnrollmentManagerImpl
   std::unique_ptr<base::OneShotTimer> timer_;
 
   bool initial_v1_and_v2_user_key_pairs_disagree_ = false;
+
   State state_ = State::kIdle;
+
+  // The time of the last state change. Used for execution time metrics.
+  base::Time last_state_change_timestamp_;
+
   base::Optional<cryptauthv2::ClientMetadata> current_client_metadata_;
   base::Optional<cryptauthv2::PolicyReference>
       client_directive_policy_reference_;

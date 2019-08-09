@@ -25,6 +25,7 @@ class TickClock;
 namespace policy {
 
 class CloudPolicyClient;
+class CloudPolicyStore;
 class RemoteCommandsFactory;
 
 // Service class which will connect to a CloudPolicyClient in order to fetch
@@ -34,7 +35,8 @@ class POLICY_EXPORT RemoteCommandsService
     : public RemoteCommandsQueue::Observer {
  public:
   RemoteCommandsService(std::unique_ptr<RemoteCommandsFactory> factory,
-                        CloudPolicyClient* client);
+                        CloudPolicyClient* client,
+                        CloudPolicyStore* store);
   ~RemoteCommandsService() override;
 
   // Attempts to fetch remote commands, mainly supposed to be called by
@@ -57,8 +59,17 @@ class POLICY_EXPORT RemoteCommandsService
   virtual void SetOnCommandAckedCallback(base::OnceClosure callback);
 
  private:
-  // Helper function to enqueue a command which we get from server.
-  void EnqueueCommand(const enterprise_management::RemoteCommand& command);
+  // Helper functions to enqueue a command which we get from server.
+  // |VerifyAndEnqueueSignedCommand| is used for the case of secure remote
+  // commands; it verifies the command, decodes it, and passes it onto
+  // |EnqueueCommand|.  The latter one does some additional checks and then
+  // creates the correct job for the particular remote command (it also takes
+  // the original |signed_command| so it can pass it to the job for caching in
+  // case the particular job needs to do additional signature verification).
+  void VerifyAndEnqueueSignedCommand(
+      const enterprise_management::SignedData& signed_command);
+  void EnqueueCommand(const enterprise_management::RemoteCommand& command,
+                      const enterprise_management::SignedData* signed_command);
 
   // RemoteCommandsQueue::Observer:
   void OnJobStarted(RemoteCommandJob* command) override;
@@ -67,7 +78,8 @@ class POLICY_EXPORT RemoteCommandsService
   // Callback to handle commands we get from the server.
   void OnRemoteCommandsFetched(
       DeviceManagementStatus status,
-      const std::vector<enterprise_management::RemoteCommand>& commands);
+      const std::vector<enterprise_management::RemoteCommand>& commands,
+      const std::vector<enterprise_management::SignedData>& signed_commands);
 
   // Whether there is a command fetch on going or not.
   bool command_fetch_in_progress_ = false;
@@ -98,6 +110,7 @@ class POLICY_EXPORT RemoteCommandsService
   RemoteCommandsQueue queue_;
   std::unique_ptr<RemoteCommandsFactory> factory_;
   CloudPolicyClient* const client_;
+  CloudPolicyStore* const store_;
 
   // Callback which gets called after the last command got ACK'd to the server
   // as executed.

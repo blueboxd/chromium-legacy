@@ -972,7 +972,7 @@
     //
     {
       name: "lazyFrameLoadingDistanceThresholdPxUnknown",
-      initial: 6000,
+      initial: 4000,
       type: "int",
     },
     {
@@ -1006,7 +1006,7 @@
     //
     {
       name: "lazyImageLoadingDistanceThresholdPxUnknown",
-      initial: 5000,
+      initial: 3000,
       type: "int",
     },
     {

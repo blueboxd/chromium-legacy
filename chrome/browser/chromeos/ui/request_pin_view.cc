@@ -35,7 +35,7 @@ constexpr int kDefaultTextWidth = 200;
 
 RequestPinView::RequestPinView(
     const std::string& extension_name,
-    PinCodeType code_type,
+    SecurityTokenPinCodeType code_type,
     int attempts_left,
     const PinEnteredCallback& pin_entered_callback,
     ViewDestructionCallback view_destruction_callback)
@@ -44,8 +44,8 @@ RequestPinView::RequestPinView(
   Init();
   SetExtensionName(extension_name);
   const bool accept_input = (attempts_left != 0);
-  SetDialogParameters(code_type, PinErrorLabel::kNone, attempts_left,
-                      accept_input);
+  SetDialogParameters(code_type, SecurityTokenPinErrorLabel::kNone,
+                      attempts_left, accept_input);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::REQUEST_PIN);
 }
 
@@ -124,8 +124,8 @@ gfx::Size RequestPinView::CalculatePreferredSize() const {
   return gfx::Size(default_width, GetHeightForWidth(default_width));
 }
 
-void RequestPinView::SetDialogParameters(PinCodeType code_type,
-                                         PinErrorLabel error_label,
+void RequestPinView::SetDialogParameters(SecurityTokenPinCodeType code_type,
+                                         SecurityTokenPinErrorLabel error_label,
                                          int attempts_left,
                                          bool accept_input) {
   locked_ = false;
@@ -133,10 +133,10 @@ void RequestPinView::SetDialogParameters(PinCodeType code_type,
   SetAcceptInput(accept_input);
 
   switch (code_type) {
-    case PinCodeType::kPin:
+    case SecurityTokenPinCodeType::kPin:
       code_type_ = l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_PIN);
       break;
-    case PinCodeType::kPuk:
+    case SecurityTokenPinCodeType::kPuk:
       code_type_ = l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_PUK);
       break;
   }
@@ -224,27 +224,27 @@ void RequestPinView::SetAcceptInput(bool accept_input) {
   }
 }
 
-void RequestPinView::SetErrorMessage(PinErrorLabel error_label,
+void RequestPinView::SetErrorMessage(SecurityTokenPinErrorLabel error_label,
                                      int attempts_left) {
   base::string16 error_message;
   switch (error_label) {
-    case PinErrorLabel::kInvalidPin:
+    case SecurityTokenPinErrorLabel::kInvalidPin:
       error_message =
           l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_INVALID_PIN_ERROR);
       break;
-    case PinErrorLabel::kInvalidPuk:
+    case SecurityTokenPinErrorLabel::kInvalidPuk:
       error_message =
           l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_INVALID_PUK_ERROR);
       break;
-    case PinErrorLabel::kMaxAttemptsExceeded:
+    case SecurityTokenPinErrorLabel::kMaxAttemptsExceeded:
       error_message = l10n_util::GetStringUTF16(
           IDS_REQUEST_PIN_DIALOG_MAX_ATTEMPTS_EXCEEDED_ERROR);
       break;
-    case PinErrorLabel::kUnknown:
+    case SecurityTokenPinErrorLabel::kUnknown:
       error_message =
           l10n_util::GetStringUTF16(IDS_REQUEST_PIN_DIALOG_UNKNOWN_ERROR);
       break;
-    case PinErrorLabel::kNone:
+    case SecurityTokenPinErrorLabel::kNone:
       if (attempts_left < 0) {
         error_label_->SetVisible(false);
         textfield_->SetInvalid(false);

@@ -14,9 +14,9 @@ message FlaggedPage {
     BAD_REP = 1;
     YOUNG_DOMAIN = 2;
   }
-  // |url| is a full URL such as
-  // http://example.test/test-path-for-safety-tips/test.html.
-  optional string url = 1;
+  // |pattern| is a full URL, without scheme/username/password/port, such as
+  // example.test/test-path-for-safety-tips/test.html.
+  optional string pattern = 1;
   optional FlagType type = 2;
 }
 

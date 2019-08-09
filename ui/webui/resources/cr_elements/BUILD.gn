@@ -14,6 +14,7 @@ group("closure_compile") {
     "cr_dialog:closure_compile",
     "cr_drawer:closure_compile",
     "cr_expand_button:closure_compile",
+    "cr_fingerprint:closure_compile",
     "cr_icon_button:closure_compile",
     "cr_input:closure_compile",
     "cr_link_row:closure_compile",

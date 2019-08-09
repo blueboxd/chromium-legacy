@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -17,7 +16,6 @@
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -27,6 +25,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_processor.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 namespace {
@@ -119,11 +118,11 @@ UserMediaClientImpl::UserMediaClientImpl(
     : frame_(frame),
       user_media_processor_(std::move(user_media_processor)),
       apply_constraints_processor_(new ApplyConstraintsProcessor(
-          base::BindRepeating(&UserMediaClientImpl::GetMediaDevicesDispatcher,
-                              base::Unretained(this)),
+          WTF::BindRepeating(&UserMediaClientImpl::GetMediaDevicesDispatcher,
+                             WTF::Unretained(this)),
           std::move(task_runner))) {}
 
-// base::Unretained(this) is safe here because |this| owns
+// WTF::Unretained(this) is safe here because |this| owns
 // |user_media_processor_|.
 UserMediaClientImpl::UserMediaClientImpl(
     LocalFrame* frame,
@@ -135,9 +134,9 @@ UserMediaClientImpl::UserMediaClientImpl(
           std::make_unique<UserMediaProcessor>(
               frame,
               std::move(media_stream_device_observer),
-              base::BindRepeating(
+              WTF::BindRepeating(
                   &UserMediaClientImpl::GetMediaDevicesDispatcher,
-                  base::Unretained(this)),
+                  WTF::Unretained(this)),
               frame->GetTaskRunner(blink::TaskType::kInternalMedia)),
           std::move(task_runner)) {}
 
@@ -220,18 +219,18 @@ void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
   pending_request_infos_.pop_front();
   is_processing_request_ = true;
 
-  // base::Unretained() is safe here because |this| owns
+  // WTF::Unretained() is safe here because |this| owns
   // |user_media_processor_|.
   if (current_request.IsUserMedia()) {
     user_media_processor_->ProcessRequest(
         current_request.MoveUserMediaRequest(),
-        base::BindOnce(&UserMediaClientImpl::CurrentRequestCompleted,
-                       base::Unretained(this)));
+        WTF::Bind(&UserMediaClientImpl::CurrentRequestCompleted,
+                  WTF::Unretained(this)));
   } else if (current_request.IsApplyConstraints()) {
     apply_constraints_processor_->ProcessRequest(
         current_request.apply_constraints_request(),
-        base::BindOnce(&UserMediaClientImpl::CurrentRequestCompleted,
-                       base::Unretained(this)));
+        WTF::Bind(&UserMediaClientImpl::CurrentRequestCompleted,
+                  WTF::Unretained(this)));
   } else {
     DCHECK(current_request.IsStopTrack());
     blink::WebPlatformMediaStreamTrack* track =
@@ -239,8 +238,8 @@ void UserMediaClientImpl::MaybeProcessNextRequestInfo() {
             current_request.web_track_to_stop());
     if (track) {
       track->StopAndNotify(
-          base::BindOnce(&UserMediaClientImpl::CurrentRequestCompleted,
-                         weak_factory_.GetWeakPtr()));
+          WTF::Bind(&UserMediaClientImpl::CurrentRequestCompleted,
+                    weak_factory_.GetWeakPtr()));
     } else {
       CurrentRequestCompleted();
     }

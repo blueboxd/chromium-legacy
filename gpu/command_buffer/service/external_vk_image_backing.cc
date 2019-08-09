@@ -36,11 +36,13 @@ namespace {
 GrVkImageInfo CreateGrVkImageInfo(VkImage image,
                                   VkFormat vk_format,
                                   VkDeviceMemory memory,
-                                  size_t memory_size) {
+                                  size_t memory_size,
+                                  bool use_protected_memory) {
   GrVkAlloc alloc(memory, 0 /* offset */, memory_size, 0 /* flags */);
-  return GrVkImageInfo(image, alloc, VK_IMAGE_TILING_OPTIMAL,
-                       VK_IMAGE_LAYOUT_UNDEFINED, vk_format,
-                       1 /* levelCount */);
+  return GrVkImageInfo(
+      image, alloc, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED,
+      vk_format, 1 /* levelCount */, VK_QUEUE_FAMILY_IGNORED,
+      use_protected_memory ? GrProtected::kYes : GrProtected::kNo);
 }
 
 VkResult CreateVkImage(SharedContextState* context_state,
@@ -48,6 +50,7 @@ VkResult CreateVkImage(SharedContextState* context_state,
                        const gfx::Size& size,
                        bool is_transfer_dst,
                        bool is_external,
+                       bool use_protected_memory,
                        VkImage* image) {
   VkExternalMemoryImageCreateInfoKHR external_info = {
       .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR,
@@ -63,7 +66,7 @@ VkResult CreateVkImage(SharedContextState* context_state,
   VkImageCreateInfo create_info = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
       .pNext = is_external ? &external_info : nullptr,
-      .flags = 0,
+      .flags = use_protected_memory ? VK_IMAGE_CREATE_PROTECTED_BIT : 0,
       .imageType = VK_IMAGE_TYPE_2D,
       .format = format,
       .extent = {size.width(), size.height(), 1},
@@ -144,8 +147,14 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
   VkImage image;
   bool is_external = context_state->support_vulkan_external_object();
   bool is_transfer_dst = using_gmb || !pixel_data.empty() || !is_external;
-  VkResult result = CreateVkImage(context_state, vk_format, size,
-                                  is_transfer_dst, is_external, &image);
+  if (context_state->vk_context_provider()
+          ->GetVulkanImplementation()
+          ->enforce_protected_memory()) {
+    usage |= SHARED_IMAGE_USAGE_PROTECTED;
+  }
+  VkResult result =
+      CreateVkImage(context_state, vk_format, size, is_transfer_dst,
+                    is_external, usage & SHARED_IMAGE_USAGE_PROTECTED, &image);
   if (result != VK_SUCCESS) {
     DLOG(ERROR) << "Failed to create external VkImage: " << result;
     return nullptr;
@@ -366,7 +375,11 @@ ExternalVkImageBacking::ExternalVkImageBacking(
       backend_texture_(
           size.width(),
           size.height(),
-          CreateGrVkImageInfo(image, vk_format, memory, memory_size)),
+          CreateGrVkImageInfo(image,
+                              vk_format,
+                              memory,
+                              memory_size,
+                              usage & SHARED_IMAGE_USAGE_PROTECTED)),
       command_pool_(command_pool) {}
 
 ExternalVkImageBacking::~ExternalVkImageBacking() {

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import {eventToPromise} from 'chrome://test/settings/test_util.m.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
 
 suite('cr-button-v3', function() {
   let button;

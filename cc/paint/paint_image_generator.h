@@ -88,6 +88,8 @@ class CC_PAINT_EXPORT PaintImageGenerator : public SkRefCnt {
   const SkImageInfo& GetSkImageInfo() const { return info_; }
   const std::vector<FrameMetadata>& GetFrameMetadata() const { return frames_; }
 
+  virtual PaintImage::ImageType GetImageType() const;
+
  protected:
   // |info| is the info for this paint image generator.
   PaintImageGenerator(const SkImageInfo& info,

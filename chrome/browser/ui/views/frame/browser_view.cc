@@ -351,10 +351,6 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   ~BrowserViewLayoutDelegateImpl() override {}
 
   // BrowserViewLayoutDelegate overrides:
-  views::View* GetContentsWebView() const override {
-    return browser_view_->contents_web_view_;
-  }
-
   bool DownloadShelfNeedsLayout() const override {
     DownloadShelfView* download_shelf = browser_view_->download_shelf_.get();
     // Re-layout the shelf either if it is visible or if its close animation
@@ -3017,19 +3013,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
-void BrowserView::ShowHatsBubbleFromAppMenuButton(const std::string& site_id) {
-  // Never show any HaTS bubble in Incognito.
-  if (!IsRegularOrGuestSession())
-    return;
-
-  AppMenuButton* app_menu_button =
-      toolbar_button_provider()->GetAppMenuButton();
-
-  // Do not show HaTS bubble if there is no avatar menu button to anchor to.
-  if (!app_menu_button)
-    return;
-
-  HatsBubbleView::Show(browser(), app_menu_button, site_id);
+void BrowserView::ShowHatsBubble(const std::string& site_id) {
+  HatsBubbleView::Show(browser(), site_id);
 }
 
 void BrowserView::ExecuteExtensionCommand(

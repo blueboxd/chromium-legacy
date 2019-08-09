@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -102,27 +103,30 @@ std::unique_ptr<OverlayProcessor> OverlayProcessor::CreateOverlayProcessor(
     const ContextProvider* context_provider,
     gpu::SurfaceHandle surface_handle,
     const RendererSettings& renderer_settings) {
-  std::unique_ptr<OverlayProcessor> processor(
-      new OverlayProcessor(context_provider));
-
-  processor->SetOverlayCandidateValidator(OverlayCandidateValidator::Create(
-      surface_handle, context_provider, renderer_settings));
-
-  return processor;
+  return base::WrapUnique(new OverlayProcessor(
+      OverlayCandidateValidator::Create(surface_handle, context_provider,
+                                        renderer_settings),
+      std::make_unique<DCLayerOverlayProcessor>(context_provider,
+                                                renderer_settings)));
 }
 
-OverlayProcessor::OverlayProcessor(const ContextProvider* context_provider)
-    : dc_processor_(
-          std::make_unique<DCLayerOverlayProcessor>(context_provider)) {}
-
-void OverlayProcessor::SetOverlayCandidateValidator(
-    std::unique_ptr<OverlayCandidateValidator> overlay_validator) {
-  overlay_validator_.swap(overlay_validator);
+OverlayProcessor::OverlayProcessor(
+    std::unique_ptr<OverlayCandidateValidator> overlay_validator,
+    std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor)
+    : overlay_validator_(std::move(overlay_validator)),
+      dc_layer_overlay_processor_(std::move(dc_layer_overlay_processor)) {
+  DCHECK(dc_layer_overlay_processor_);
   if (overlay_validator_)
     overlay_validator_->InitializeStrategies();
 }
 
-OverlayProcessor::~OverlayProcessor() {}
+// For testing.
+OverlayProcessor::OverlayProcessor(
+    std::unique_ptr<OverlayCandidateValidator> overlay_validator)
+    : OverlayProcessor(std::move(overlay_validator),
+                       std::make_unique<DCLayerOverlayProcessor>()) {}
+
+OverlayProcessor::~OverlayProcessor() = default;
 
 gfx::Rect OverlayProcessor::GetAndResetOverlayDamage() {
   gfx::Rect result = overlay_damage_rect_;
@@ -161,17 +165,14 @@ bool OverlayProcessor::ProcessForDCLayers(
     RenderPassList* render_passes,
     const OverlayProcessor::FilterOperationsMap& render_pass_filters,
     const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
-    OverlayCandidateList* overlay_candidates,
     DCLayerOverlayList* dc_layer_overlays,
     gfx::Rect* damage_rect) {
   if (!overlay_validator_ || !overlay_validator_->AllowDCLayerOverlays())
     return false;
 
-  dc_processor_->Process(resource_provider,
-                         gfx::RectF(render_passes->back()->output_rect),
-                         render_passes, damage_rect, dc_layer_overlays);
-
-  DCHECK(overlay_candidates->empty());
+  dc_layer_overlay_processor_->Process(
+      resource_provider, gfx::RectF(render_passes->back()->output_rect),
+      render_passes, damage_rect, dc_layer_overlays);
   return true;
 }
 
@@ -202,31 +203,32 @@ void OverlayProcessor::ProcessForOverlays(
       previous_frame_underlay_was_unoccluded_;
   previous_frame_underlay_was_unoccluded_ = false;
 
-  RenderPass* render_pass = render_passes->back().get();
+  RenderPass* root_render_pass = render_passes->back().get();
 
-  // If we have any copy requests, we can't remove any quads for overlays or
-  // CALayers because the framebuffer would be missing the removed quads'
-  // contents.
-  if (!render_pass->copy_requests.empty()) {
-    damage_rect->Union(
-        dc_processor_->previous_frame_overlay_damage_contribution());
+  // If we have any copy requests, we can't remove any quads for overlays,
+  // CALayers, or DCLayers because the framebuffer would be missing the removed
+  // quads' contents.
+  if (!root_render_pass->copy_requests.empty()) {
+    damage_rect->Union(dc_layer_overlay_processor_
+                           ->previous_frame_overlay_damage_contribution());
     // Update damage rect before calling ClearOverlayState, otherwise
     // previous_frame_overlay_rect_union will be empty.
-    dc_processor_->ClearOverlayState();
-
+    dc_layer_overlay_processor_->ClearOverlayState();
     return;
   }
 
   // First attempt to process for CALayers.
-  if (ProcessForCALayers(resource_provider, render_passes->back().get(),
+  if (ProcessForCALayers(resource_provider, root_render_pass,
                          render_pass_filters, render_pass_backdrop_filters,
                          candidates, ca_layer_overlays, damage_rect)) {
+    DCHECK(candidates->empty());
     return;
   }
 
   if (ProcessForDCLayers(resource_provider, render_passes, render_pass_filters,
-                         render_pass_backdrop_filters, candidates,
-                         dc_layer_overlays, damage_rect)) {
+                         render_pass_backdrop_filters, dc_layer_overlays,
+                         damage_rect)) {
+    DCHECK(candidates->empty());
     return;
   }
 
@@ -241,7 +243,7 @@ void OverlayProcessor::ProcessForOverlays(
   if (success) {
     UpdateDamageRect(candidates, previous_frame_underlay_rect,
                      previous_frame_underlay_was_unoccluded,
-                     &render_pass->quad_list, damage_rect);
+                     &root_render_pass->quad_list, damage_rect);
   } else {
     if (!previous_frame_underlay_rect.IsEmpty())
       damage_rect->Union(previous_frame_underlay_rect);

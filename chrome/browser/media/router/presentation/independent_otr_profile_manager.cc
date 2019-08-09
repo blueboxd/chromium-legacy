@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/public/browser/browser_thread.h"
@@ -128,7 +129,7 @@ void IndependentOTRProfileManager::UnregisterProfile(Profile* profile) {
   --entry->second;
   if (entry->second == 0) {
     auto* original_profile = profile->GetOriginalProfile();
-    delete entry->first;
+    ProfileDestroyer::DestroyProfileWhenAppropriate(entry->first);
     refcounts_map_.erase(entry);
     if (!HasDependentProfiles(original_profile)) {
       registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,

@@ -12,7 +12,9 @@ subrepository, has its own [development workflow][cros-dev-guide].
 
 - [Life of a Chromium Developer][life-of-a-chromium-developer], which is mostly
   up-to-date.
-- [Tutorial][noms-tutorial] by committer emeritus noms@chromium.org
+- [Tutorial][noms-tutorial] by committer emeritus noms@chromium.org.
+- [Commit Checklist][commit-checklist], a useful checklist to go through before
+  submitting each CL on Gerrit.
 
 ## Communicate
 
@@ -107,6 +109,9 @@ git][github-tutorial] is useful for the basics. However, keep in mind that the
 Chromium workflow is not the same as the GitHub pull request workflow.
 
 ## Uploading a change for review
+
+Note: go through the [commit checklist][commit-checklist] for Chromium before
+uploading a change for review.
 
 Chromium uses a Gerrit instance hosted at
 <https://chromium-review.googlesource.com> for code reviews. In order to upload
@@ -306,6 +311,7 @@ feature in order to receive email notifications.
 [cl-footer-syntax]: https://dev.chromium.org/developers/contributing-code/-bug-syntax
 [code-reviews-owners]: code_reviews.md#OWNERS-files
 [code-reviews]: code_reviews.md
+[commit-checklist]: commit_checklist.md
 [commit-queue]: infra/cq.md
 [core-principles]: https://www.chromium.org/developers/core-principles
 [corporate-cla]: https://cla.developers.google.com/about/google-corporate?csw=1

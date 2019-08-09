@@ -731,7 +731,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
       int tile_source,
       int tile_type,
       v8::Local<v8::Value> data_generation_time);
-  static void SetCustomBackgroundURL(const std::string& background_url);
+  static void ResetCustomBackgroundInfo();
   static void SetCustomBackgroundInfo(const std::string& background_url,
                                       const std::string& attribution_line_1,
                                       const std::string& attribution_line_2,
@@ -804,8 +804,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
                  &NewTabPageBindings::LogMostVisitedImpression)
       .SetMethod("logMostVisitedNavigation",
                  &NewTabPageBindings::LogMostVisitedNavigation)
-      .SetMethod("setBackgroundURL",
-                 &NewTabPageBindings::SetCustomBackgroundURL)
+      .SetMethod("resetBackgroundInfo",
+                 &NewTabPageBindings::ResetCustomBackgroundInfo)
       .SetMethod("setBackgroundInfo",
                  &NewTabPageBindings::SetCustomBackgroundInfo)
       .SetMethod("selectLocalBackgroundImage",
@@ -1148,9 +1148,8 @@ void NewTabPageBindings::LogMostVisitedNavigation(
 }
 
 // static
-void NewTabPageBindings::SetCustomBackgroundURL(
-    const std::string& background_url) {
-  SetCustomBackgroundInfo(background_url, std::string(), std::string(),
+void NewTabPageBindings::ResetCustomBackgroundInfo() {
+  SetCustomBackgroundInfo(std::string(), std::string(), std::string(),
                           std::string(), std::string());
 }
 
@@ -1165,8 +1164,12 @@ void NewTabPageBindings::SetCustomBackgroundInfo(
   search_box->SetCustomBackgroundInfo(
       GURL(background_url), attribution_line_1, attribution_line_2,
       GURL(attribution_action_url), collection_id);
-  // Captures saving the background by double-clicking, or clicking 'Done'.
-  if (background_url.empty()) {
+  // Captures different events that occur when a background selection is made
+  // and 'Done' is clicked on the dialog.
+  if (!collection_id.empty()) {
+    search_box->LogEvent(
+        NTPLoggingEventType::NTP_BACKGROUND_DAILY_REFRESH_ENABLED);
+  } else if (background_url.empty()) {
     search_box->LogEvent(
         NTPLoggingEventType::NTP_CUSTOMIZE_RESTORE_BACKGROUND_CLICKED);
     search_box->LogEvent(NTPLoggingEventType::NTP_BACKGROUND_IMAGE_RESET);

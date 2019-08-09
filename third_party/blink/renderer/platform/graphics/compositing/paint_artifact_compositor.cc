@@ -630,6 +630,7 @@ void PaintArtifactCompositor::LayerizeGroup(
       const auto& last_display_item =
           paint_artifact.GetDisplayItemList()[chunk_it->begin_index];
       bool item_for_scrolling = last_display_item.IsScrollHitTest() &&
+                                !last_display_item.IsResizerScrollHitTest() &&
                                 !last_display_item.IsPluginScrollHitTest();
       bool requires_own_layer = last_display_item.IsForeignLayer() ||
                                 // TODO(pdr): This should require a direct

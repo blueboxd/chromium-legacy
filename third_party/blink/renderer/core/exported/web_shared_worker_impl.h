@@ -40,6 +40,7 @@
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
@@ -95,7 +96,8 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
       PrivacyPreferences privacy_preferences,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       mojo::ScopedMessagePipeHandle content_settings_handle,
-      mojo::ScopedMessagePipeHandle interface_provider) override;
+      mojo::ScopedMessagePipeHandle interface_provider,
+      mojo::ScopedMessagePipeHandle browser_interface_broker) override;
   void Connect(MessagePortChannel) override;
   void TerminateWorkerContext() override;
   void PauseWorkerContextOnStart() override;
@@ -146,8 +148,12 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   WebString user_agent_;
   network::mojom::IPAddressSpace creation_address_space_;
 
+  // TODO(crbug.com/990845): remove when no longer used.
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       pending_interface_provider_;
+
+  mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
+      browser_interface_broker_;
 
   Persistent<ApplicationCacheHostForSharedWorker> appcache_host_;
 

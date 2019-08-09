@@ -28,9 +28,9 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
       const MinMaxSizeInput&) const override;
 
  private:
-  bool IsItemCrossSizeAuto(const ComputedStyle& child_style) const;
-  bool ShouldItemShrinkToFit(NGBlockNode child) const;
-  bool DoesItemStretch(const ComputedStyle& child_style) const;
+  bool IsItemCrossSizeAuto(const NGBlockNode& child) const;
+  bool ShouldItemShrinkToFit(const NGBlockNode& child) const;
+  bool DoesItemStretch(const NGBlockNode& child) const;
   bool IsColumnContainerMainSizeDefinite() const;
   bool IsContainerCrossSizeDefinite() const;
 
@@ -38,7 +38,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   void GiveLinesAndItemsFinalPositionAndSize();
   // This is same method as FlexItem but we need that logic before FlexItem is
   // constructed.
-  bool MainAxisIsInlineAxis(NGBlockNode child) const;
+  bool MainAxisIsInlineAxis(const NGBlockNode& child) const;
   LayoutUnit MainAxisContentExtent(LayoutUnit sum_hypothetical_main_size);
 
   void HandleOutOfFlowPositioned(NGBlockNode child);

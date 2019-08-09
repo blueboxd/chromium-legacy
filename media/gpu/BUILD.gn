@@ -475,6 +475,8 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/mock_abstract_texture.h",
       "android/mock_android_video_surface_chooser.cc",
       "android/mock_android_video_surface_chooser.h",
+      "android/mock_codec_buffer_wait_coordinator.cc",
+      "android/mock_codec_buffer_wait_coordinator.h",
       "android/mock_codec_image.cc",
       "android/mock_codec_image.h",
       "android/mock_device_info.cc",

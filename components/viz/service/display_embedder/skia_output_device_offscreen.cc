@@ -6,24 +6,35 @@
 
 #include <utility>
 
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace viz {
 
+namespace {
+
+// Some Vulkan drivers do not support kRGB_888x_SkColorType. Always use
+// kRGBA_8888_SkColorType instead and initialize surface to opaque as necessary.
+constexpr SkColorType kSurfaceColorType = kRGBA_8888_SkColorType;
+
+}  // namespace
+
 SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
-    GrContext* gr_context,
+    scoped_refptr<gpu::SharedContextState> context_state,
     bool flipped,
     bool has_alpha,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
                        did_swap_buffer_complete_callback),
-      gr_context_(gr_context),
+      context_state_(context_state),
       has_alpha_(has_alpha) {
   capabilities_.flipped_output_surface = flipped;
   capabilities_.supports_post_sub_buffer = true;
 }
 
-SkiaOutputDeviceOffscreen::~SkiaOutputDeviceOffscreen() = default;
+SkiaOutputDeviceOffscreen::~SkiaOutputDeviceOffscreen() {
+  DiscardBackbuffer();
+}
 
 void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
                                         float device_scale_factor,
@@ -32,36 +43,21 @@ void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
                                         gfx::OverlayTransform transform) {
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
 
-  // Some Vulkan drivers do not support kRGB_888x_SkColorType. Always use
-  // kRGBA_8888_SkColorType instead and initialize surface to opaque alpha.
-  image_info_ =
-      SkImageInfo::Make(size.width(), size.height(), kRGBA_8888_SkColorType,
-                        has_alpha_ ? kPremul_SkAlphaType : kOpaque_SkAlphaType,
-                        color_space.ToSkColorSpace());
-  sk_surface_ = SkSurface::MakeRenderTarget(
-      gr_context_, SkBudgeted::kNo, image_info_, 0 /* sampleCount */,
-      capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
-                                           : kBottomLeft_GrSurfaceOrigin,
-      nullptr /* surfaceProps */);
-  DCHECK(!!sk_surface_);
-
-  if (!has_alpha_) {
-    is_emulated_rgbx_ = true;
-    // Initialize alpha channel to opaque.
-    auto* canvas = sk_surface_->getCanvas();
-    canvas->clear(SkColorSetARGB(255, 0, 0, 0));
-  }
+  DiscardBackbuffer();
+  size_ = size;
+  sk_color_space_ = color_space.ToSkColorSpace();
+  EnsureBackbuffer();
 }
 
 void SkiaOutputDeviceOffscreen::SwapBuffers(
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {
   // Reshape should have been called first.
-  DCHECK(sk_surface_);
+  DCHECK(backend_texture_.isValid());
 
   StartSwapBuffers(std::move(feedback));
   FinishSwapBuffers(gfx::SwapResult::SWAP_ACK,
-                    gfx::Size(sk_surface_->width(), sk_surface_->height()),
+                    gfx::Size(size_.width(), size_.height()),
                     std::move(latency_info));
 }
 
@@ -73,23 +69,44 @@ void SkiaOutputDeviceOffscreen::PostSubBuffer(
 }
 
 void SkiaOutputDeviceOffscreen::EnsureBackbuffer() {
-  if (!image_info_.isEmpty() && !sk_surface_) {
-    sk_surface_ = SkSurface::MakeRenderTarget(
-        gr_context_, SkBudgeted::kNo, image_info_, 0 /* sampleCount */,
-        capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
-                                             : kBottomLeft_GrSurfaceOrigin,
-        nullptr /* surfaceProps */);
+  // Ignore EnsureBackbuffer if Reshape has not been called yet.
+  if (size_.IsEmpty())
+    return;
+
+  if (has_alpha_) {
+    backend_texture_ = context_state_->gr_context()->createBackendTexture(
+        size_.width(), size_.height(), kSurfaceColorType, GrMipMapped::kNo,
+        GrRenderable::kYes);
+  } else {
+    is_emulated_rgbx_ = true;
+    // Initialize alpha channel to opaque.
+    backend_texture_ = context_state_->gr_context()->createBackendTexture(
+        size_.width(), size_.height(), kSurfaceColorType, SkColors::kBlack,
+        GrMipMapped::kNo, GrRenderable::kYes);
   }
+  DCHECK(backend_texture_.isValid());
 }
 
 void SkiaOutputDeviceOffscreen::DiscardBackbuffer() {
-  sk_surface_.reset();
+  if (backend_texture_.isValid()) {
+    DeleteGrBackendTexture(context_state_.get(), &backend_texture_);
+    backend_texture_ = GrBackendTexture();
+  }
 }
 
 SkSurface* SkiaOutputDeviceOffscreen::BeginPaint() {
+  DCHECK(backend_texture_.isValid());
+  sk_surface_ = SkSurface::MakeFromBackendTexture(
+      context_state_->gr_context(), backend_texture_,
+      capabilities_.flipped_output_surface ? kTopLeft_GrSurfaceOrigin
+                                           : kBottomLeft_GrSurfaceOrigin,
+      0 /* sampleCount */, kSurfaceColorType, sk_color_space_,
+      nullptr /* surfaceProps */);
   return sk_surface_.get();
 }
 
-void SkiaOutputDeviceOffscreen::EndPaint(const GrBackendSemaphore& semaphore) {}
+void SkiaOutputDeviceOffscreen::EndPaint(const GrBackendSemaphore& semaphore) {
+  sk_surface_.reset();
+}
 
 }  // namespace viz

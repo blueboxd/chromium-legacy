@@ -11,13 +11,20 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/process/launch.h"
+#include "base/strings/string_split.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 namespace base {
 namespace {
@@ -101,7 +108,6 @@ class TestLauncherTest : public testing::Test {
         scoped_task_environment(
             base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
-
   // Adds tests to be returned by the delegate.
   void AddMockedTests(std::string test_case_name,
                       const std::vector<std::string>& test_names) {
@@ -137,20 +143,11 @@ class TestLauncherTest : public testing::Test {
         .WillRepeatedly(testing::Return(batch_size));
   }
 
-  void ReadSummary(FilePath path) {
-    File resultFile(path, File::FLAG_OPEN | File::FLAG_READ);
-    const int size = 2048;
-    std::string json;
-    ASSERT_TRUE(ReadFileToStringWithMaxSize(path, &json, size));
-    root = JSONReader::Read(json);
-  }
-
   std::unique_ptr<CommandLine> command_line;
   MockTestLauncher test_launcher;
   MockTestLauncherDelegate delegate;
   base::test::ScopedTaskEnvironment scoped_task_environment;
   ScopedTempDir dir;
-  Optional<Value> root;
 
  private:
   std::vector<TestIdentifier> tests_;
@@ -469,6 +466,24 @@ void ValidateTestResult(Value* root, TestResult& result) {
   }
 }
 
+// Validate vital information of actual test results.
+void ValidateTestResult(Value* root,
+                        const std::string& test_name,
+                        const std::string& status,
+                        size_t result_part_count) {
+  Value* val = root->FindListKey(test_name);
+  ASSERT_TRUE(val) << test_name;
+  ASSERT_EQ(1u, val->GetList().size());
+  val = &val->GetList().at(0);
+  ASSERT_TRUE(val->is_dict()) << test_name;
+
+  ValidateKeyValue(val, "status", status);
+
+  Value* value = val->FindListKey("result_parts");
+  ASSERT_TRUE(value) << test_name;
+  EXPECT_EQ(result_part_count, value->GetList().size()) << test_name;
+}
+
 void ValidateStringList(Optional<Value>& root,
                         const std::string& key,
                         std::vector<const char*> values) {
@@ -490,6 +505,16 @@ void ValidateTestLocation(Value* root,
   EXPECT_EQ(2u, val->DictSize());
   ValidateKeyValue(val, "file", file);
   EXPECT_EQ(line, val->FindIntKey("line").value_or(0));
+}
+
+Optional<Value> ReadSummary(FilePath path) {
+  Optional<Value> result;
+  File resultFile(path, File::FLAG_OPEN | File::FLAG_READ);
+  const int size = 2e7;
+  std::string json;
+  CHECK(ReadFileToStringWithMaxSize(path, &json, size));
+  result = JSONReader::Read(json);
+  return result;
 }
 
 // Unit tests to validate TestLauncher outputs the correct JSON file.
@@ -523,7 +548,8 @@ TEST_F(TestLauncherTest, JsonSummary) {
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 
   // Validate the resulting JSON file is the expected output.
-  ReadSummary(path);
+  Optional<Value> root = ReadSummary(path);
+  ASSERT_TRUE(root);
   ValidateStringList(root, "all_tests",
                      {"Test.firstTest", "Test.firstTestDisabled",
                       "Test.secondTest", "TestDisabled.firstTest"});
@@ -571,7 +597,8 @@ TEST_F(TestLauncherTest, JsonSummaryWithDisabledTests) {
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 
   // Validate the resulting JSON file is the expected output.
-  ReadSummary(path);
+  Optional<Value> root = ReadSummary(path);
+  ASSERT_TRUE(root);
   Value* val = root->FindDictKey("test_locations");
   ASSERT_TRUE(val);
   EXPECT_EQ(1u, val->DictSize());
@@ -588,6 +615,117 @@ TEST_F(TestLauncherTest, JsonSummaryWithDisabledTests) {
   // We expect the result to be stripped of disabled prefix.
   test_result.full_name = "Test.Test";
   ValidateTestResult(iteration_val, test_result);
+}
+
+// Unit tests to validate UnitTestLauncherDelegate implementation.
+class UnitTestLauncherDelegateTester : public testing::Test {
+ protected:
+  DefaultUnitTestPlatformDelegate defaultPlatform;
+  ScopedTempDir dir;
+
+ private:
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+};
+
+// Validate delegate produces correct command line.
+TEST_F(UnitTestLauncherDelegateTester, GetCommandLine) {
+  UnitTestLauncherDelegate launcher_delegate(&defaultPlatform, 10u, true);
+  TestLauncherDelegate* delegate_ptr = &launcher_delegate;
+
+  std::vector<std::string> test_names(5, "Tests");
+  base::FilePath temp_dir;
+  base::FilePath result_file;
+  CreateNewTempDirectory(FilePath::StringType(), &temp_dir);
+
+  CommandLine cmd_line =
+      delegate_ptr->GetCommandLine(test_names, temp_dir, &result_file);
+  EXPECT_TRUE(cmd_line.HasSwitch("single-process-tests"));
+  EXPECT_EQ(cmd_line.GetSwitchValuePath("test-launcher-output"), result_file);
+
+  const int size = 2048;
+  std::string content;
+  ASSERT_TRUE(ReadFileToStringWithMaxSize(
+      cmd_line.GetSwitchValuePath("gtest_flagfile"), &content, size));
+  EXPECT_EQ(content.find("--gtest_filter="), 0u);
+  base::ReplaceSubstringsAfterOffset(&content, 0, "--gtest_filter=", "");
+  std::vector<std::string> gtest_filter_tests =
+      SplitString(content, ":", TRIM_WHITESPACE, SPLIT_WANT_ALL);
+  ASSERT_EQ(gtest_filter_tests.size(), test_names.size());
+  for (unsigned i = 0; i < test_names.size(); i++) {
+    EXPECT_EQ(gtest_filter_tests.at(i), test_names.at(i));
+  }
+}
+
+// Validate delegate sets batch size correctly.
+TEST_F(UnitTestLauncherDelegateTester, BatchSize) {
+  UnitTestLauncherDelegate launcher_delegate(&defaultPlatform, 15u, true);
+  TestLauncherDelegate* delegate_ptr = &launcher_delegate;
+  EXPECT_EQ(delegate_ptr->GetBatchSize(), 15u);
+}
+
+// The following 3 tests are disabled as they are meant to only run from
+// |RunMockTests| to validate tests launcher output for known results.
+
+// Basic Test to pass
+TEST(MockUnitTests, DISABLED_PassTest) {
+  ASSERT_TRUE(true);
+}
+// Basic Test to fail
+TEST(MockUnitTests, DISABLED_FailTest) {
+  ASSERT_TRUE(false);
+}
+// Basic Test to crash
+TEST(MockUnitTests, DISABLED_CrashTest) {
+  CHECK(false);
+}
+
+// Using UnitTestLauncherDelegate and TestLauncher (with minor mocks)
+// to launch 3 basic tests, and validate the resulting json file.
+TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
+  CommandLine command_line(CommandLine::ForCurrentProcess()->GetProgram());
+  command_line.AppendSwitchASCII("gtest_filter", "MockUnitTests.DISABLED_*");
+
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath path = dir.GetPath().AppendASCII("SaveSummaryResult.json");
+  command_line.AppendSwitchPath("test-launcher-summary-output", path);
+  command_line.AppendSwitch("gtest_also_run_disabled_tests");
+#if defined(OS_WIN)
+  // In Windows versions prior to Windows 8, nested job objects are
+  // not allowed and cause this test to fail.
+  if (win::GetVersion() < win::Version::WIN8) {
+    command_line.AppendSwitch(kDontUseJobObjectFlag);
+  }
+#endif  // defined(OS_WIN)
+
+  std::string output;
+  GetAppOutputAndError(command_line, &output);
+
+  // Validate the resulting JSON file is the expected output.
+  Optional<Value> root = ReadSummary(path);
+  ASSERT_TRUE(root);
+
+  Value* val = root->FindDictKey("test_locations");
+  ASSERT_TRUE(val);
+  EXPECT_EQ(3u, val->DictSize());
+  // If path or test location changes, the following expectation
+  // will need to change accordingly.
+  std::string file_name = "../../base/test/launcher/test_launcher_unittest.cc";
+  ValidateTestLocation(val, "MockUnitTests.DISABLED_PassTest", file_name, 670);
+  ValidateTestLocation(val, "MockUnitTests.DISABLED_FailTest", file_name, 674);
+  ValidateTestLocation(val, "MockUnitTests.DISABLED_CrashTest", file_name, 678);
+
+  val = root->FindListKey("per_iteration_data");
+  ASSERT_TRUE(val);
+  ASSERT_EQ(1u, val->GetList().size());
+
+  Value* iteration_val = &(val->GetList().at(0));
+  ASSERT_TRUE(iteration_val);
+  ASSERT_TRUE(iteration_val->is_dict());
+  EXPECT_EQ(3u, iteration_val->DictSize());
+  // We expect the result to be stripped of disabled prefix.
+  ValidateTestResult(iteration_val, "MockUnitTests.PassTest", "SUCCESS", 0u);
+  ValidateTestResult(iteration_val, "MockUnitTests.FailTest", "FAILURE", 1u);
+  ValidateTestResult(iteration_val, "MockUnitTests.CrashTest", "CRASH", 1u);
 }
 
 }  // namespace

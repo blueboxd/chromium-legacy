@@ -63,6 +63,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -941,24 +942,27 @@ void DownloadItemView::ShowWarningDialog() {
 
 gfx::ImageSkia DownloadItemView::GetWarningIcon() {
   switch (model_->GetDangerType()) {
+    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      if (safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
+              model()->profile())
+              ->RequestsAdvancedProtectionVerdicts()) {
+        return gfx::CreateVectorIcon(
+            vector_icons::kErrorIcon, kErrorIconSize,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_AlertSeverityMedium));
+      }
+      FALLTHROUGH;
+
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
-      return gfx::CreateVectorIcon(vector_icons::kWarningIcon, kWarningIconSize,
-                                   gfx::kGoogleRed700);
+      return gfx::CreateVectorIcon(
+          vector_icons::kWarningIcon, kWarningIconSize,
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_AlertSeverityHigh));
 
-    case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
-      if (safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
-              model()->profile())
-              ->RequestsAdvancedProtectionVerdicts()) {
-        return gfx::CreateVectorIcon(vector_icons::kErrorIcon, kErrorIconSize,
-                                     gfx::kGoogleYellow500);
-      } else {
-        return gfx::CreateVectorIcon(vector_icons::kWarningIcon,
-                                     kWarningIconSize, gfx::kGoogleRed700);
-      }
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:

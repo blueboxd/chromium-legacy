@@ -106,7 +106,10 @@ void PrintUsage() {
           "    Sets the total number of shards to N.\n"
           "\n"
           "  --test-launcher-shard-index=N\n"
-          "    Sets the shard index to run to N (from 0 to TOTAL - 1).\n");
+          "    Sets the shard index to run to N (from 0 to TOTAL - 1).\n"
+          "\n"
+          "  --dont-use-job-objects\n"
+          "    Avoids using job objects in Windows.\n");
   fflush(stdout);
 }
 
@@ -184,10 +187,13 @@ int LaunchUnitTestsInternal(RunTestSuiteCallback run_test_suite,
 #if defined(OS_POSIX)
   FileDescriptorWatcher file_descriptor_watcher(message_loop.task_runner());
 #endif
+  use_job_objects =
+      use_job_objects &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(kDontUseJobObjectFlag);
 
   DefaultUnitTestPlatformDelegate platform_delegate;
-  UnitTestLauncherDelegate delegate(
-      &platform_delegate, batch_limit, use_job_objects);
+  UnitTestLauncherDelegate delegate(&platform_delegate, batch_limit,
+                                    use_job_objects);
   TestLauncher launcher(&delegate, parallel_jobs);
   bool success = launcher.Run();
 
@@ -343,6 +349,9 @@ std::vector<TestResult> UnitTestProcessTestResults(
 
 }  // namespace
 
+// Flag to avoid using job objects
+const char kDontUseJobObjectFlag[] = "dont-use-job-objects";
+
 int LaunchUnitTests(int argc,
                     char** argv,
                     RunTestSuiteCallback run_test_suite) {
@@ -450,8 +459,7 @@ UnitTestLauncherDelegate::UnitTestLauncherDelegate(
     bool use_job_objects)
     : platform_delegate_(platform_delegate),
       batch_limit_(batch_limit),
-      use_job_objects_(use_job_objects) {
-}
+      use_job_objects_(use_job_objects) {}
 
 UnitTestLauncherDelegate::~UnitTestLauncherDelegate() {
   DCHECK(thread_checker_.CalledOnValidThread());

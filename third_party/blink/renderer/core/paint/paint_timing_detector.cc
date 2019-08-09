@@ -177,6 +177,7 @@ void PaintTimingDetector::StopRecordingIfNeeded() {
   }
   if (image_paint_timing_detector_)
     image_paint_timing_detector_->StopRecordEntries();
+  largest_contentful_paint_calculator_ = nullptr;
 }
 
 void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
@@ -306,6 +307,33 @@ FloatRect PaintTimingDetector::CalculateVisualRect(
   return float_rect;
 }
 
+void PaintTimingDetector::UpdateLargestContentfulPaintCandidate() {
+  auto* lcp_calculator = GetLargestContentfulPaintCalculator();
+  if (!lcp_calculator)
+    return;
+
+  // Optional, WeakPtr, Record have different roles:
+  // * !Optional means |UpdateCandidate() is not reachable, e.g., user input
+  // has been given to stop LCP. In this case, we still use the last recorded
+  // result.
+  // * !Weak means there is no candidate, e.g., no content show up on the page.
+  // * Record.paint_time == 0 means there is an image but the image is still
+  // loading. The perf API should wait until the paint-time is available.
+  base::Optional<base::WeakPtr<TextRecord>> largest_text_record;
+  base::Optional<const ImageRecord*> largest_image_record;
+  if (auto* text_timing_detector = GetTextPaintTimingDetector()) {
+    if (text_timing_detector->IsRecordingLargestTextPaint()) {
+      largest_text_record.emplace(text_timing_detector->UpdateCandidate());
+    }
+  }
+  if (auto* image_timing_detector = GetImagePaintTimingDetector()) {
+    largest_image_record.emplace(image_timing_detector->UpdateCandidate());
+  }
+
+  lcp_calculator->UpdateLargestContentPaintIfNeeded(largest_text_record,
+                                                    largest_image_record);
+}
+
 ScopedPaintTimingDetectorBlockPaintHook*
     ScopedPaintTimingDetectorBlockPaintHook::top_ = nullptr;
 
@@ -381,6 +409,7 @@ void PaintTimingCallbackManagerImpl::ReportPaintTime(
     std::move(frame_callbacks->front()).Run(paint_time);
     frame_callbacks->pop();
   }
+  frame_view_->GetPaintTimingDetector().UpdateLargestContentfulPaintCandidate();
 }
 
 void PaintTimingCallbackManagerImpl::Trace(Visitor* visitor) {

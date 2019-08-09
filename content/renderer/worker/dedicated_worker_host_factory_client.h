@@ -63,7 +63,9 @@ class DedicatedWorkerHostFactoryClient final
  private:
   // Implements blink::mojom::DedicatedWorkerHostFactoryClient.
   void OnWorkerHostCreated(
-      service_manager::mojom::InterfaceProviderPtr interface_provider) override;
+      service_manager::mojom::InterfaceProviderPtr interface_provider,
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+          browser_interface_broker) override;
   void OnScriptLoadStarted(
       blink::mojom::ServiceWorkerProviderInfoForClientPtr
           service_worker_provider_info,

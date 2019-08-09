@@ -14,8 +14,10 @@
 
 namespace gpu {
 
-VulkanDeviceQueue::VulkanDeviceQueue(VkInstance vk_instance)
-    : vk_instance_(vk_instance) {}
+VulkanDeviceQueue::VulkanDeviceQueue(VkInstance vk_instance,
+                                     bool enforce_protected_memory)
+    : vk_instance_(vk_instance),
+      enforce_protected_memory_(enforce_protected_memory) {}
 
 VulkanDeviceQueue::~VulkanDeviceQueue() {
   DCHECK_EQ(static_cast<VkPhysicalDevice>(VK_NULL_HANDLE), vk_physical_device_);
@@ -27,11 +29,13 @@ bool VulkanDeviceQueue::Initialize(
     uint32_t options,
     uint32_t max_api_version,
     const std::vector<const char*>& required_extensions,
+    bool allow_protected_memory,
     const GetPresentationSupportCallback& get_presentation_support) {
   DCHECK_EQ(static_cast<VkPhysicalDevice>(VK_NULL_HANDLE), vk_physical_device_);
   DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), owned_vk_device_);
   DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), vk_device_);
   DCHECK_EQ(static_cast<VkQueue>(VK_NULL_HANDLE), vk_queue_);
+  DCHECK(!enforce_protected_memory_ || allow_protected_memory);
 
   if (VK_NULL_HANDLE == vk_instance_)
     return false;
@@ -100,6 +104,8 @@ bool VulkanDeviceQueue::Initialize(
   queue_create_info.queueFamilyIndex = queue_index;
   queue_create_info.queueCount = 1;
   queue_create_info.pQueuePriorities = &queue_priority;
+  queue_create_info.flags =
+      allow_protected_memory ? VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT : 0;
 
   std::vector<const char*> enabled_layer_names;
 #if DCHECK_IS_ON()
@@ -134,6 +140,9 @@ bool VulkanDeviceQueue::Initialize(
                             std::begin(required_extensions),
                             std::end(required_extensions));
 
+  uint32_t device_api_version =
+      std::min(max_api_version, vk_physical_device_properties_.apiVersion);
+
 #if defined(OS_ANDROID)
   if (!vkGetPhysicalDeviceFeatures2) {
     DLOG(ERROR) << "Vulkan 1.1 or VK_KHR_get_physical_device_properties2 "
@@ -149,6 +158,8 @@ bool VulkanDeviceQueue::Initialize(
 
   // Add VkPhysicalDeviceSamplerYcbcrConversionFeatures struct to pNext chain
   // of VkPhysicalDeviceFeatures2.
+  enabled_device_features_2_.sType =
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
   enabled_device_features_2_.pNext = &sampler_ycbcr_conversion_features_;
   vkGetPhysicalDeviceFeatures2(vk_physical_device_,
                                &enabled_device_features_2_);
@@ -160,6 +171,33 @@ bool VulkanDeviceQueue::Initialize(
   // Disable all physical device features by default.
   memset(&enabled_device_features_2_.features, 0,
          sizeof(enabled_device_features_2_.features));
+#elif defined(OS_FUCHSIA)
+  // Used to Query if VkPhysicalDeviceProtectedMemoryFeatures is supported by
+  // the implementation on fuchsia.
+  VkPhysicalDeviceProtectedMemoryFeatures protected_memory_features = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES};
+  protected_memory_features.protectedMemory = VK_TRUE;
+
+  if (allow_protected_memory) {
+    if (device_api_version < VK_MAKE_VERSION(1, 1, 0)) {
+      DLOG(ERROR) << "Vulkan 1.1 is required for protected memory";
+      return false;
+    }
+
+    enabled_device_features_2_.sType =
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    enabled_device_features_2_.pNext = &protected_memory_features;
+    vkGetPhysicalDeviceFeatures2(vk_physical_device_,
+                                 &enabled_device_features_2_);
+    if (!protected_memory_features.protectedMemory) {
+      DLOG(ERROR) << "Protected memory is not supported";
+      return false;
+    }
+
+    // Disable all physical device features by default.
+    memset(&enabled_device_features_2_.features, 0,
+           sizeof(enabled_device_features_2_.features));
+  }
 #endif
 
   VkDeviceCreateInfo device_create_info = {};
@@ -181,8 +219,6 @@ bool VulkanDeviceQueue::Initialize(
   enabled_extensions_ = gfx::ExtensionSet(std::begin(enabled_extensions),
                                           std::end(enabled_extensions));
 
-  uint32_t device_api_version =
-      std::min(max_api_version, vk_physical_device_properties_.apiVersion);
   if (!gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(
           owned_vk_device_, device_api_version, enabled_extensions_)) {
     vkDestroyDevice(owned_vk_device_, nullptr);
@@ -195,6 +231,8 @@ bool VulkanDeviceQueue::Initialize(
   vkGetDeviceQueue(vk_device_, queue_index, 0, &vk_queue_);
 
   cleanup_helper_ = std::make_unique<VulkanFenceHelper>(this);
+
+  allow_protected_memory_ = allow_protected_memory;
 
   return true;
 }
@@ -238,7 +276,7 @@ void VulkanDeviceQueue::Destroy() {
 
 std::unique_ptr<VulkanCommandPool> VulkanDeviceQueue::CreateCommandPool() {
   std::unique_ptr<VulkanCommandPool> command_pool(new VulkanCommandPool(this));
-  if (!command_pool->Initialize())
+  if (!command_pool->Initialize(enforce_protected_memory_))
     return nullptr;
 
   return command_pool;

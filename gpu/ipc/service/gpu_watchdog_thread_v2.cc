@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "gpu/config/gpu_crash_keys.h"
 
 namespace gpu {
 
@@ -95,7 +96,9 @@ void GpuWatchdogThreadImplV2::Init() {
       FROM_HERE,
       base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
       watchdog_timeout_ * kInitFactor);
-  watchdog_start_time_ = base::TimeTicks::Now();
+  watchdog_start_timeticks_ = base::TimeTicks::Now();
+  last_on_watchdog_timeout_timeticks_ = watchdog_start_timeticks_;
+  last_on_watchdog_timeout_time_ = base::Time::Now();
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
 }
 
@@ -121,13 +124,14 @@ void GpuWatchdogThreadImplV2::OnSuspend() {
   in_power_suspension_ = true;
   // Revoke any pending watchdog timeout task
   weak_factory_.InvalidateWeakPtrs();
-  suspend_time_ = base::TimeTicks::Now();
+  suspend_timeticks_ = base::TimeTicks::Now();
 }
 
 void GpuWatchdogThreadImplV2::OnResume() {
   in_power_suspension_ = false;
   RestartWatchdogTimeoutTask();
-  resume_time_ = base::TimeTicks::Now();
+  resume_timeticks_ = base::TimeTicks::Now();
+  is_first_timeout_after_power_resume = true;
 }
 
 // Running on the watchdog thread.
@@ -141,14 +145,14 @@ void GpuWatchdogThreadImplV2::OnWatchdogBackgrounded() {
   is_backgrounded_ = true;
   // Revoke any pending watchdog timeout task
   weak_factory_.InvalidateWeakPtrs();
-  backgrounded_time_ = base::TimeTicks::Now();
+  backgrounded_timeticks_ = base::TimeTicks::Now();
 }
 
 // Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::OnWatchdogForegrounded() {
   is_backgrounded_ = false;
   RestartWatchdogTimeoutTask();
-  foregrounded_time_ = base::TimeTicks::Now();
+  foregrounded_timeticks_ = base::TimeTicks::Now();
 }
 
 void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask() {
@@ -160,6 +164,8 @@ void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask() {
         FROM_HERE,
         base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
         watchdog_timeout_ * kRestartFactor);
+    last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
+    last_on_watchdog_timeout_time_ = base::Time::Now();
   }
 }
 
@@ -198,6 +204,10 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
 
   // No gpu hang is detected. Continue with another OnWatchdogTimeout
   if (disarmed || gpu_makes_progress) {
+    last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
+    last_on_watchdog_timeout_time_ = base::Time::Now();
+    is_first_timeout_after_power_resume = false;
+
     task_runner()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
@@ -223,19 +233,34 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
 
   // Store variables so they're available in crash dumps to help determine the
   // cause of any hang.
-  base::TimeTicks current_time = base::TimeTicks::Now();
-  base::debug::Alias(&current_time);
-  base::debug::Alias(&watchdog_start_time_);
-  base::debug::Alias(&suspend_time_);
-  base::debug::Alias(&resume_time_);
-  base::debug::Alias(&backgrounded_time_);
-  base::debug::Alias(&foregrounded_time_);
+  base::TimeTicks current_timeticks = base::TimeTicks::Now();
+  base::debug::Alias(&current_timeticks);
+  base::debug::Alias(&watchdog_start_timeticks_);
+  base::debug::Alias(&suspend_timeticks_);
+  base::debug::Alias(&resume_timeticks_);
+  base::debug::Alias(&backgrounded_timeticks_);
+  base::debug::Alias(&foregrounded_timeticks_);
   base::debug::Alias(&in_power_suspension_);
   base::debug::Alias(&is_backgrounded_);
   base::debug::Alias(&is_add_power_observer_called_);
   base::debug::Alias(&is_power_observer_added_);
+  base::debug::Alias(&last_on_watchdog_timeout_timeticks_);
+  base::TimeDelta timeticks_elapses =
+      current_timeticks - last_on_watchdog_timeout_timeticks_;
+  base::debug::Alias(&timeticks_elapses);
+
+  // If clock_time_elapses is much longer than time_elapses, it might be a sign
+  // of a busy system.
+  base::Time current_time = base::Time::Now();
+  base::TimeDelta time_elapses = current_time - last_on_watchdog_timeout_time_;
+  base::debug::Alias(&current_time);
+  base::debug::Alias(&last_on_watchdog_timeout_time_);
+  base::debug::Alias(&time_elapses);
 
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogKill);
+
+  crash_keys::gpu_watchdog_kill_after_power_resume.Set(
+      is_first_timeout_after_power_resume ? "1" : "0");
 
   // Deliberately crash the process to create a crash dump.
   *((volatile int*)0) = 0xdeadface;

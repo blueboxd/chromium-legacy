@@ -34,6 +34,8 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     WorkletModuleResponsesMap* module_responses_map,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
         interface_provider_info,
+    mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
+        browser_interface_broker,
     BeginFrameProviderParams begin_frame_provider_params,
     const FeaturePolicy* parent_feature_policy,
     base::UnguessableToken agent_cluster_id)
@@ -55,6 +57,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       v8_cache_options(v8_cache_options),
       module_responses_map(module_responses_map),
       interface_provider(std::move(interface_provider_info)),
+      browser_interface_broker(std::move(browser_interface_broker)),
       begin_frame_provider_params(std::move(begin_frame_provider_params)),
       // At the moment, workers do not support their container policy being set,
       // so it will just be an empty ParsedFeaturePolicy for now.

@@ -9,10 +9,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/system/sys_info.h"
 #include "chrome/android/test_support_jni_headers/ServicificationBackgroundService_jni.h"
 #include "components/metrics/persistent_system_profile.h"
+#include "components/variations/active_field_trials.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
 // Verifies that the memory-mapped file for persistent histograms data exists
@@ -70,5 +72,16 @@ JNI_ServicificationBackgroundService_TestPersistentHistogramsOnDiskSystemProfile
   if (!os.has_version())
     return false;
 
-  return base::SysInfo::OperatingSystemVersion().compare(os.version()) == 0;
+  if (base::SysInfo::OperatingSystemVersion().compare(os.version()) != 0)
+    return false;
+
+  std::vector<variations::ActiveGroupId> field_trial_ids;
+  variations::GetFieldTrialActiveGroupIds("", &field_trial_ids);
+
+  int expeceted_size = static_cast<int>(field_trial_ids.size());
+  // The active field trial "PersistentHistograms" is guaranteed in the list.
+  if (expeceted_size <= 0)
+    return false;
+
+  return system_profile_proto.field_trial_size() == expeceted_size;
 }

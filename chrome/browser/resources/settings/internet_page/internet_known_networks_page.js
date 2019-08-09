@@ -64,15 +64,14 @@ Polymer({
    * This UI will use both the networkingPrivate extension API and the
    * networkConfig mojo API until we provide all of the required functionality
    * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy}
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
    */
-  networkConfigProxy_: null,
+  networkConfig_: null,
 
   /** @override */
   created: function() {
-    this.networkConfigProxy_ =
-        network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
   },
 
   /** CrosNetworkConfigObserver impl */
@@ -99,7 +98,7 @@ Polymer({
       limit: chromeos.networkConfig.mojom.kNoLimit,
       networkType: OncMojo.getNetworkTypeFromString(this.networkType),
     };
-    this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+    this.networkConfig_.getNetworkStateList(filter).then(response => {
       this.networkStateList_ = response.result;
     });
   },
@@ -162,7 +161,7 @@ Polymer({
     // We need to make a round trip to Chrome in order to retrieve the managed
     // properties for the network. The delay is not noticeable (~5ms) and is
     // preferable to initiating a query for every known network at load time.
-    this.networkConfigProxy_.getManagedProperties(this.selectedGuid_)
+    this.networkConfig_.getManagedProperties(this.selectedGuid_)
         .then(response => {
           const properties = response.result;
           if (!properties) {

@@ -57,10 +57,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   TestInstantService test_instant_service(browser()->profile());
   test_instant_service.get_instant_service()->AddValidBackdropUrlForTesting(
       GURL("https://www.test.com/"));
-  EXPECT_TRUE(content::ExecuteScript(active_tab,
-                                     "window.chrome.embeddedSearch.newTabPage."
-                                     "setBackgroundURL('https://www.test.com/"
-                                     "')"));
+  EXPECT_TRUE(content::ExecuteScript(
+      active_tab,
+      "window.chrome.embeddedSearch.newTabPage."
+      "setBackgroundInfo('https://www.test.com/', '', '', '', '')"));
+
   observer.WaitForThemeInfoUpdated("https://www.test.com/", "", "", "");
 
   // Check that a URL with attributions can be set.
@@ -75,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   // Setting the background URL to an empty string should clear everything.
   EXPECT_TRUE(content::ExecuteScript(
       active_tab,
-      "window.chrome.embeddedSearch.newTabPage.setBackgroundURL('')"));
+      "window.chrome.embeddedSearch.newTabPage.resetBackgroundInfo()"));
   observer.WaitForThemeInfoUpdated("", "", "", "");
 }
 
@@ -113,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest, AttributionSetAndReset) {
   // Reset custom background via the EmbeddedSearch API.
   EXPECT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
-                                     "setBackgroundURL('')"));
+                                     "resetBackgroundInfo()"));
   observer.WaitForThemeInfoUpdated("", "", "", "");
 
   // Check that the custom background attribution was cleared.
@@ -139,8 +140,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   EXPECT_TRUE(content::ExecuteScript(
       active_tab,
       "window.chrome.embeddedSearch.newTabPage."
-      "setBackgroundURL('chrome-search://local-ntp/background1.jpg"
-      "')"));
+      "setBackgroundInfo('chrome-search://local-ntp/background1.jpg"
+      "', '', '' ,'' ,'')"));
   observer.WaitForThemeInfoUpdated("chrome-search://local-ntp/background1.jpg",
                                    "", "", "");
 
@@ -158,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   // Clear the custom background image via the EmbeddedSearch API.
   EXPECT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
-                                     "setBackgroundURL('')"));
+                                     "resetBackgroundInfo()"));
   observer.WaitForThemeInfoUpdated("", "", "", "");
 
   // Check that the custom background was cleared.
@@ -184,8 +185,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   ASSERT_TRUE(content::ExecuteScript(
       active_tab,
       "window.chrome.embeddedSearch.newTabPage."
-      "setBackgroundURL('chrome-search://local-ntp/background1.jpg"
-      "')"));
+      "setBackgroundInfo('chrome-search://local-ntp/background1.jpg"
+      "', '', '', '', '')"));
   observer.WaitForThemeInfoUpdated("chrome-search://local-ntp/background1.jpg",
                                    "", "", "");
 
@@ -344,8 +345,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   ASSERT_TRUE(content::ExecuteScript(
       active_tab,
       "window.chrome.embeddedSearch.newTabPage."
-      "setBackgroundURL('chrome-search://local-ntp/background1.jpg"
-      "')"));
+      "setBackgroundInfo('chrome-search://local-ntp/background1.jpg"
+      "', '', '', '', '')"));
   observer.WaitForThemeInfoUpdated("chrome-search://local-ntp/background1.jpg",
                                    "", "", "");
 
@@ -408,8 +409,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
   ASSERT_TRUE(content::ExecuteScript(
       active_tab,
       "window.chrome.embeddedSearch.newTabPage."
-      "setBackgroundURL('chrome-search://local-ntp/background1.jpg"
-      "')"));
+      "setBackgroundInfo('chrome-search://local-ntp/background1.jpg"
+      "', '', '', '', '')"));
   observer.WaitForThemeInfoUpdated("chrome-search://local-ntp/background1.jpg",
                                    "", "", "");
 
@@ -478,8 +479,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPBackgroundsAndDarkModeTest,
   ASSERT_TRUE(content::ExecuteScript(
       active_tab,
       "window.chrome.embeddedSearch.newTabPage."
-      "setBackgroundURL('chrome-search://local-ntp/background1.jpg"
-      "')"));
+      "setBackgroundInfo('chrome-search://local-ntp/background1.jpg"
+      "', '', '', '', '')"));
   observer.WaitForThemeInfoUpdated("chrome-search://local-ntp/background1.jpg",
                                    "", "", "");
 
@@ -538,8 +539,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPBackgroundsAndDarkModeTest,
   ASSERT_TRUE(content::ExecuteScript(
       active_tab,
       "window.chrome.embeddedSearch.newTabPage."
-      "setBackgroundURL('chrome-search://local-ntp/background1.jpg"
-      "')"));
+      "setBackgroundInfo('chrome-search://local-ntp/background1.jpg',"
+      "'', '', '', '')"));
   observer.WaitForThemeInfoUpdated("chrome-search://local-ntp/background1.jpg",
                                    "", "", "");
 

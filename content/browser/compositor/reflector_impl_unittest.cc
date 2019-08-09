@@ -64,42 +64,25 @@ class TestOverlayCandidatesOzone : public ui::OverlayCandidatesOzone {
 };
 #endif  // defined(USE_OZONE)
 
+std::unique_ptr<viz::OverlayCandidateValidator> CreateTestValidator() {
 #if defined(USE_OZONE)
-std::unique_ptr<viz::OverlayCandidateValidator> CreateTestValidatorOzone() {
   std::vector<viz::OverlayStrategy> strategies = {
       viz::OverlayStrategy::kSingleOnTop, viz::OverlayStrategy::kUnderlay};
   return std::make_unique<viz::OverlayCandidateValidatorOzone>(
       std::make_unique<TestOverlayCandidatesOzone>(), std::move(strategies));
-}
-#endif  // defined(USE_OZONE)
-
-class TestOverlayProcessor : public viz::OverlayProcessor {
- public:
-  explicit TestOverlayProcessor(const viz::ContextProvider* context_provider)
-      : OverlayProcessor(context_provider) {
-#if defined(USE_OZONE)
-    auto validator = CreateTestValidatorOzone();
-    overlay_validator_ = validator.get();
-    SetOverlayCandidateValidator(std::move(validator));
-#endif  // defined(USE_OZONE)
-  }
-
-  viz::OverlayCandidateValidator* get_overlay_validator() const {
-    return overlay_validator_;
-  }
-
- private:
-  viz::OverlayCandidateValidator* overlay_validator_;
-};
-
-std::unique_ptr<TestOverlayProcessor> CreateTestOverlayProcessor(
-    const viz::ContextProvider* context_provider) {
-#if defined(USE_OZONE)
-  return std::make_unique<TestOverlayProcessor>(context_provider);
 #else
   return nullptr;
 #endif  // defined(USE_OZONE)
 }
+
+class TestOverlayProcessor : public viz::OverlayProcessor {
+ public:
+  TestOverlayProcessor() : OverlayProcessor(CreateTestValidator()) {}
+
+  viz::OverlayCandidateValidator* get_overlay_validator() const {
+    return overlay_validator_.get();
+  }
+};
 
 class TestOutputSurface : public BrowserCompositorOutputSurface {
  public:
@@ -172,8 +155,7 @@ class ReflectorImplTest : public testing::Test {
     context_provider->BindToCurrentThread();
     output_surface_ =
         std::make_unique<TestOutputSurface>(std::move(context_provider));
-    overlay_processor_ =
-        CreateTestOverlayProcessor(output_surface_->context_provider());
+    overlay_processor_ = std::make_unique<TestOverlayProcessor>();
 
     root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     compositor_->SetRootLayer(root_layer_.get());

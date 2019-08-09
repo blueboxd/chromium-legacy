@@ -37,7 +37,6 @@ class WebState;
 }
 
 @protocol LogoVendor;
-@protocol TextFieldStyling;
 @class TabModel;
 @class UITextField;
 @class UIView;
@@ -110,9 +109,6 @@ class ChromeBrowserProvider {
   virtual std::string GetRiskData();
   // Creates and returns a new styled text field.
   virtual UITextField* CreateStyledTextField() const NS_RETURNS_RETAINED;
-  // Deprecated.
-  virtual UITextField<TextFieldStyling>* CreateStyledTextField(
-      CGRect frame) const NS_RETURNS_RETAINED;
 
   // Initializes the cast service.  Should be called soon after the given
   // |main_tab_model| is created.

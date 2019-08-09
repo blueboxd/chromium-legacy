@@ -48,6 +48,9 @@ class AssistantOptInDialog : public SystemWebDialogDelegate {
                    ash::AssistantSetup::StartAssistantOptInFlowCallback
                        callback = base::DoNothing());
 
+  // Returns true and bounces the window if the dialog is active.
+  static bool BounceIfActive();
+
  protected:
   AssistantOptInDialog(
       ash::FlowType type,

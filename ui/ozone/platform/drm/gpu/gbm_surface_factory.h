@@ -38,8 +38,9 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
   GLOzone* GetGLOzone(gl::GLImplementation implementation) override;
 
 #if BUILDFLAG(ENABLE_VULKAN)
-  std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation()
-      override;
+  std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation(
+      bool allow_protected_memory,
+      bool enforce_protected_memory) override;
   scoped_refptr<gfx::NativePixmap> CreateNativePixmapForVulkan(
       gfx::AcceleratedWidget widget,
       gfx::Size size,

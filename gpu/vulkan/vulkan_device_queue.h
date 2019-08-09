@@ -28,7 +28,8 @@ class VULKAN_EXPORT VulkanDeviceQueue {
     PRESENTATION_SUPPORT_QUEUE_FLAG = 0x02,
   };
 
-  explicit VulkanDeviceQueue(VkInstance vk_instance);
+  VulkanDeviceQueue(VkInstance vk_instance,
+                    bool enforce_protected_memory = false);
   ~VulkanDeviceQueue();
 
   using GetPresentationSupportCallback =
@@ -39,6 +40,7 @@ class VULKAN_EXPORT VulkanDeviceQueue {
       uint32_t options,
       uint32_t max_api_version,
       const std::vector<const char*>& required_extensions,
+      bool allow_protected_memory,
       const GetPresentationSupportCallback& get_presentation_support);
 
   bool InitializeForWebView(VkPhysicalDevice vk_physical_device,
@@ -89,6 +91,8 @@ class VULKAN_EXPORT VulkanDeviceQueue {
     return enabled_device_features_2_.features;
   }
 
+  bool allow_protected_memory() const { return allow_protected_memory_; }
+
  private:
   gfx::ExtensionSet enabled_extensions_;
   VkPhysicalDevice vk_physical_device_ = VK_NULL_HANDLE;
@@ -100,6 +104,8 @@ class VULKAN_EXPORT VulkanDeviceQueue {
   const VkInstance vk_instance_;
   std::unique_ptr<VulkanFenceHelper> cleanup_helper_;
   VkPhysicalDeviceFeatures2 enabled_device_features_2_ = {};
+  const bool enforce_protected_memory_;
+  bool allow_protected_memory_ = false;
 
 #if defined(OS_ANDROID)
   VkPhysicalDeviceSamplerYcbcrConversionFeatures

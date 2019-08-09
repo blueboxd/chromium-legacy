@@ -28,7 +28,6 @@
 #include "components/feed/core/feed_networking_host.h"
 #include "components/feed/core/feed_scheduler_host.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -66,7 +65,6 @@ FeedHostServiceFactory::FeedHostServiceFactory()
   // SimpleDependencyManager.
   DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
-  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
 }
 
 FeedHostServiceFactory::~FeedHostServiceFactory() = default;
@@ -98,8 +96,8 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
 
   base::FilePath feed_dir(profile->GetPath().Append(kFeedFolder));
   leveldb_proto::ProtoDatabaseProvider* proto_database_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
-          profile->GetProfileKey());
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetProtoDatabaseProvider();
   auto content_database =
       std::make_unique<FeedContentDatabase>(proto_database_provider, feed_dir);
   auto journal_database =

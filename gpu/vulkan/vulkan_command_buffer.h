@@ -21,7 +21,8 @@ class VULKAN_EXPORT VulkanCommandBuffer {
  public:
   VulkanCommandBuffer(VulkanDeviceQueue* device_queue,
                       VulkanCommandPool* command_pool,
-                      bool primary);
+                      bool primary,
+                      bool use_protected_memory);
   ~VulkanCommandBuffer();
 
   bool Initialize();
@@ -81,6 +82,7 @@ class VULKAN_EXPORT VulkanCommandBuffer {
   void ResetIfDirty();
 
   const bool primary_;
+  const bool use_protected_memory_;
   bool recording_ = false;
   RecordType record_type_ = RECORD_TYPE_EMPTY;
   VulkanDeviceQueue* device_queue_;

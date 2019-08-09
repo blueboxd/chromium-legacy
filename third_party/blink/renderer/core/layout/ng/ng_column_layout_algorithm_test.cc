@@ -2430,6 +2430,41 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingEmptyBlock) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingOverflow) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:30px; height:20px;">
+          <div style="width:33px; height:300px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x20
+        offset:0,0 size:30x20
+          offset:0,0 size:33x100
+      offset:110,0 size:100x0
+        offset:0,0 size:30x0
+          offset:0,0 size:33x100
+      offset:220,0 size:100x0
+        offset:0,0 size:30x0
+          offset:0,0 size:33x100
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLines) {
   SetBodyInnerHTML(R"HTML(
     <style>

@@ -769,11 +769,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void ClearFocusedElement();
 
-  // Returns whether the given URL is allowed to commit in the current process.
-  // This is a more conservative check than RenderProcessHost::FilterURL, since
-  // it will be used to kill processes that commit unauthorized URLs.
-  bool CanCommitURL(const GURL& url);
-
   // Returns the PreviewsState of the last successful navigation
   // that made a network request. The PreviewsState is a bitmask of potentially
   // several Previews optimizations.
@@ -998,6 +993,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetAudioContextManager(
       mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver);
 
+  void GetFileSystemManager(
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
+
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
       const {
@@ -1014,6 +1012,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
       NavigationRequest* committing_navigation_request,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params);
+
+  // Return true if the process this RenderFrameHost is using has crashed.
+  //
+  // This is not exactly the opposite of IsRenderFrameLive().
+  // IsRenderFrameLive() is false when the RenderProcess died, but it is also
+  // false when it hasn't been initialized.
+  bool render_process_has_died() const { return render_process_has_died_; }
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1330,12 +1335,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // relevant.
   void ResetWaitingState();
 
-  // Returns whether the given origin is allowed to commit in the current
-  // RenderFrameHost. The |url| is used to ensure it matches the origin in cases
-  // where it is applicable. This is a more conservative check than
+  // Returns whether the given origin and URL is allowed to commit in the
+  // current RenderFrameHost. The |url| is used to ensure it matches the origin
+  // in cases where it is applicable. This is a more conservative check than
   // RenderProcessHost::FilterURL, since it will be used to kill processes that
   // commit unauthorized origins.
-  bool CanCommitOrigin(const url::Origin& origin, const GURL& url);
+  enum class CanCommitStatus {
+    CAN_COMMIT_ORIGIN_AND_URL,
+    CANNOT_COMMIT_ORIGIN,
+    CANNOT_COMMIT_URL
+  };
+  CanCommitStatus CanCommitOriginAndUrl(const url::Origin& origin,
+                                        const GURL& url);
 
   // Asserts that the given RenderFrameHostImpl is part of the same browser
   // context (and crashes if not), then returns whether the given frame is
@@ -2008,6 +2019,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   PreviewsState last_navigation_previews_state_;
 
   bool has_committed_any_navigation_ = false;
+  bool render_process_has_died_ = false;
+
   mojo::AssociatedBinding<mojom::FrameHost> frame_host_associated_binding_;
   mojom::FramePtr frame_;
   mojom::FrameBindingsControlAssociatedPtr frame_bindings_control_;
@@ -2150,7 +2163,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently
   // active document in the corresponding RenderFrame.
-  BrowserInterfaceBrokerImpl<RenderFrameHostImpl> broker_{this};
+  BrowserInterfaceBrokerImpl<RenderFrameHostImpl, RenderFrameHost*> broker_{
+      this};
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
       &broker_};
 

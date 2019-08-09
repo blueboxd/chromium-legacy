@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_HATS_HATS_WEB_DIALOG_H_
 #define CHROME_BROWSER_UI_VIEWS_HATS_HATS_WEB_DIALOG_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/media/router/presentation/independent_otr_profile_manager.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 class Browser;
+class Profile;
 
 // Happiness tracking survey dialog which shows the survey content.
 // This class lives on the UI thread and is self deleting.
@@ -22,9 +25,15 @@ class HatsWebDialog : public ui::WebDialogDelegate {
   static void Show(const Browser* browser, const std::string& site_id);
 
  private:
-  // Use Show() above. |site_id| is used to select the survey.
-  explicit HatsWebDialog(const std::string& site_id);
+  // Use Show() above. An off the record profile is created from the given
+  // browser profile which is used for navigating to the survey. |site_id| is
+  // used to select the survey.
+  explicit HatsWebDialog(Profile* profile, const std::string& site_id);
   ~HatsWebDialog() override;
+
+  Profile* off_the_record_profile() {
+    return otr_profile_registration_->profile();
+  }
 
   // ui::WebDialogDelegate implementation.
   ui::ModalType GetDialogModalType() const override;
@@ -43,6 +52,10 @@ class HatsWebDialog : public ui::WebDialogDelegate {
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
                          const content::ContextMenuParams& params) override;
 
+  void OnOriginalProfileDestroyed(Profile* profile);
+
+  std::unique_ptr<IndependentOTRProfileManager::OTRProfileRegistration>
+      otr_profile_registration_;
   const std::string site_id_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsWebDialog);

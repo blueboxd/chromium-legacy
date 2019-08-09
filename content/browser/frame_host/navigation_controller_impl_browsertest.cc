@@ -23,6 +23,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -8457,6 +8458,117 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // TODO(https://crbug.com/869710): This should be url2.
   EXPECT_EQ(url1, shell()->web_contents()->GetLastCommittedURL());
+}
+
+// Test to verify that LoadErrorPage loads an error page even with a
+// valid URL.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BrowserInitiatedLoadErrorPage) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHost* root = shell()->web_contents()->GetMainFrame();
+  scoped_refptr<SiteInstance> success_site_instance = root->GetSiteInstance();
+
+  std::string error_html = "Error page";
+  TestNavigationObserver error_observer(shell()->web_contents());
+  controller.LoadErrorPage(root, url, error_html, net::ERR_BLOCKED_BY_CLIENT);
+  error_observer.Wait();
+
+  scoped_refptr<SiteInstance> error_site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  EXPECT_FALSE(error_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
+  EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
+  EXPECT_EQ(error_html, EvalJs(shell(), "document.body.innerHTML"));
+
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
+    return;
+
+  // Verify the error page committed to the error page process.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_NE(success_site_instance, error_site_instance);
+  EXPECT_TRUE(
+      success_site_instance->IsRelatedSiteInstance(error_site_instance.get()));
+  EXPECT_NE(success_site_instance->GetProcess()->GetID(),
+            error_site_instance->GetProcess()->GetID());
+  EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+
+  // Verify that the error page process is locked to origin.
+  EXPECT_EQ(GURL(kUnreachableWebDataURL),
+            policy->GetOriginLock(error_site_instance->GetProcess()->GetID()));
+}
+
+// Test to verify that LoadErrorPage loads an error page in a subframe
+// correctly.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BrowserInitiatedLoadErrorPageForSubframe) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHost* child =
+      ChildFrameAt(shell()->web_contents()->GetMainFrame(), 0);
+  scoped_refptr<SiteInstance> success_site_instance = child->GetSiteInstance();
+
+  std::string error_html = "Error page";
+  TestNavigationObserver error_observer(shell()->web_contents());
+  controller.LoadErrorPage(child, url, error_html, net::ERR_BLOCKED_BY_CLIENT);
+  error_observer.Wait();
+
+  EXPECT_FALSE(error_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
+  EXPECT_EQ(child->GetLastCommittedURL(), url);
+  EXPECT_EQ(error_html, EvalJs(child, "document.body.innerHTML"));
+
+  // Verify that the subframe error page did not commit in the error page
+  // process.
+  scoped_refptr<SiteInstance> error_site_instance = child->GetSiteInstance();
+  EXPECT_EQ(success_site_instance, error_site_instance);
+  EXPECT_NE(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+}
+
+// Test to verify that LoadErrorPage works correctly when supplied with an
+// about:blank url for the error page.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BrowserInitiatedLoadErrorPageWithAboutBlankUrl) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHost* child =
+      ChildFrameAt(shell()->web_contents()->GetMainFrame(), 0);
+  scoped_refptr<SiteInstance> success_site_instance = child->GetSiteInstance();
+
+  std::string error_html = "Error page";
+  GURL error_url("about:blank#error");
+  TestNavigationObserver error_observer(shell()->web_contents());
+  controller.LoadErrorPage(child, error_url, error_html,
+                           net::ERR_BLOCKED_BY_CLIENT);
+  error_observer.Wait();
+
+  EXPECT_FALSE(error_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
+  EXPECT_EQ(child->GetLastCommittedURL(), error_url);
+  EXPECT_EQ(error_html, EvalJs(child, "document.body.innerHTML"));
+
+  // Verify that the subframe error page did not commit in the error page
+  // process.
+  scoped_refptr<SiteInstance> error_site_instance = child->GetSiteInstance();
+  EXPECT_EQ(success_site_instance, error_site_instance);
+  EXPECT_NE(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
 }
 
 using NavigationControllerHistoryInterventionBrowserTest =

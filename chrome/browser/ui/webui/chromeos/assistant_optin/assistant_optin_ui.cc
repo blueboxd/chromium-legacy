@@ -30,6 +30,7 @@
 #include "content/public/common/content_features.h"
 #include "net/base/url_util.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace chromeos {
 
@@ -133,6 +134,17 @@ void AssistantOptInDialog::Show(
   g_dialog = new AssistantOptInDialog(type, std::move(callback));
 
   g_dialog->ShowSystemDialog();
+}
+
+// static
+bool AssistantOptInDialog::BounceIfActive() {
+  if (!g_dialog)
+    return false;
+
+  g_dialog->Focus();
+  wm::AnimateWindow(g_dialog->dialog_window(),
+                    wm::WINDOW_ANIMATION_TYPE_BOUNCE);
+  return true;
 }
 
 AssistantOptInDialog::AssistantOptInDialog(

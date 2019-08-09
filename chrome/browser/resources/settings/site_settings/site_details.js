@@ -69,6 +69,15 @@ Polymer({
         return loadTimeData.getBoolean('enableBluetoothScanningContentSetting');
       }
     },
+
+    /** @private */
+    enableNativeFileSystemWriteContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean(
+            'enableNativeFileSystemWriteContentSetting');
+      }
+    },
   },
 
   listeners: {

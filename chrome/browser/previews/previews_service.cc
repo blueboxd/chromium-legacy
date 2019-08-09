@@ -140,8 +140,8 @@ void PreviewsService::Initialize(
 
   // Get the background thread to run SQLite on.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT});
 
   previews_ui_service_ = std::make_unique<previews::PreviewsUIService>(
       std::move(previews_decider_impl),

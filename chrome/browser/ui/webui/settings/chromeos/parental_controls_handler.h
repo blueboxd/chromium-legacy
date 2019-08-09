@@ -37,6 +37,9 @@ class ParentalControlsHandler : public ::settings::SettingsPageUIHandler {
   DISALLOW_COPY_AND_ASSIGN(ParentalControlsHandler);
 };
 
+// Indicates whether parental controls should be shown in the settings UI.
+bool ShouldShowParentalControls(Profile* profile);
+
 }  // namespace settings
 }  // namespace chromeos
 

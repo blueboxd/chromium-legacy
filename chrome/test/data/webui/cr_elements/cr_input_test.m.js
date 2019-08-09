@@ -5,7 +5,7 @@
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {eventToPromise, whenAttributeIs} from 'chrome://test/settings/test_util.m.js';
+import {eventToPromise, whenAttributeIs} from 'chrome://test/test_util.m.js';
 
 suite('cr-input', function() {
   let crInput;

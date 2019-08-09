@@ -32,7 +32,8 @@ NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 }
 
-bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(NGBlockNode child) const {
+bool NGFlexLayoutAlgorithm::MainAxisIsInlineAxis(
+    const NGBlockNode& child) const {
   return child.Style().IsHorizontalWritingMode() ==
          FlexLayoutAlgorithm::IsHorizontalFlow(Style());
 }
@@ -77,9 +78,9 @@ bool NGFlexLayoutAlgorithm::IsContainerCrossSizeDefinite() const {
                                   LengthResolvePhase::kLayout);
 }
 
-bool NGFlexLayoutAlgorithm::DoesItemStretch(
-    const ComputedStyle& child_style) const {
-  DCHECK(IsItemCrossSizeAuto(child_style));
+bool NGFlexLayoutAlgorithm::DoesItemStretch(const NGBlockNode& child) const {
+  DCHECK(IsItemCrossSizeAuto(child));
+  const ComputedStyle& child_style = child.Style();
   // https://drafts.csswg.org/css-flexbox/#valdef-align-items-stretch
   // If the cross size property of the flex item computes to auto, and neither
   // of the cross-axis margins are auto, the flex item is stretched.
@@ -94,12 +95,17 @@ bool NGFlexLayoutAlgorithm::DoesItemStretch(
 }
 
 bool NGFlexLayoutAlgorithm::IsItemCrossSizeAuto(
-    const ComputedStyle& child_style) const {
-  // TODO(dgrogan): Check if the cross size resolves to auto because of
-  // indefinite percent resolution.
-  if (is_horizontal_flow_)
-    return child_style.Height().IsAuto();
-  return child_style.Width().IsAuto();
+    const NGBlockNode& child) const {
+  const ComputedStyle& child_style = child.Style();
+  Length cross_size =
+      is_horizontal_flow_ ? child_style.Height() : child_style.Width();
+  // The following DCHECK assures that the container's cross axis is the
+  // same direction as the inline axis of the item, so the cross axis is never
+  // the item's block axis. That absolves this function of having to check for
+  // the cross axis being auto due to being a block-size percent without a
+  // definite block size to resolve against.
+  DCHECK(!MainAxisIsInlineAxis(child));
+  return cross_size.IsAuto();
 }
 
 // This function is used to handle two requirements from the spec.
@@ -113,13 +119,14 @@ bool NGFlexLayoutAlgorithm::IsItemCrossSizeAuto(
 // https://drafts.csswg.org/css-flexbox/#algo-cross-item : Determine the
 // hypothetical cross size of each item by performing layout with the used main
 // size and the available space, treating auto as fit-content.
-bool NGFlexLayoutAlgorithm::ShouldItemShrinkToFit(NGBlockNode child) const {
+bool NGFlexLayoutAlgorithm::ShouldItemShrinkToFit(
+    const NGBlockNode& child) const {
   if (MainAxisIsInlineAxis(child)) {
     // The cross size isn't needed to determine main size, so don't use
     // fit-content.
     return false;
   }
-  if (!IsItemCrossSizeAuto(child.Style())) {
+  if (!IsItemCrossSizeAuto(child)) {
     // The cross size is already specified, so don't use fit-content.
     return false;
   }
@@ -130,7 +137,7 @@ bool NGFlexLayoutAlgorithm::ShouldItemShrinkToFit(NGBlockNode child) const {
   // size (clamped to the flex item’s min and max cross size) and is considered
   // definite.
   if (!algorithm_->IsMultiline() && IsContainerCrossSizeDefinite() &&
-      DoesItemStretch(child.Style()))
+      DoesItemStretch(child))
     return false;
   return true;
 }

@@ -101,43 +101,6 @@ NotificationTrampoline* NotificationTrampoline::g_notification_trampoline =
 
 #pragma mark Utility functions
 
-// Builds a NSHTTPCookie from a header cookie line ("Set-Cookie: xxx") and a
-// URL.
-NSHTTPCookie* GetNSHTTPCookieFromCookieLine(
-    const std::string& cookie_line,
-    const GURL& url,
-    base::Optional<base::Time> server_time) {
-  NSURL* nsurl = net::NSURLWithGURL(url);
-  NSString* ns_cookie_line = base::SysUTF8ToNSString(cookie_line);
-  if (!ns_cookie_line) {
-    DLOG(ERROR) << "Cookie line is not UTF8: " << cookie_line;
-    return nil;
-  }
-  NSArray* cookies = [NSHTTPCookie cookiesWithResponseHeaderFields:@{
-    @"Set-Cookie" : ns_cookie_line
-  } forURL:nsurl];
-  if ([cookies count] != 1)
-    return nil;
-
-  NSHTTPCookie* cookie = [cookies objectAtIndex:0];
-  if (![cookie expiresDate] || !server_time.has_value() ||
-      server_time->is_null()) {
-    return cookie;
-  }
-
-  // Perform clock skew correction.
-  base::TimeDelta clock_skew = base::Time::Now() - server_time.value();
-  NSDate* corrected_expire_date =
-      [[cookie expiresDate] dateByAddingTimeInterval:clock_skew.InSecondsF()];
-  NSMutableDictionary* properties =
-      [NSMutableDictionary dictionaryWithDictionary:[cookie properties]];
-  [properties setObject:corrected_expire_date forKey:NSHTTPCookieExpires];
-  NSHTTPCookie* corrected_cookie =
-      [NSHTTPCookie cookieWithProperties:properties];
-  DCHECK(corrected_cookie);
-  return corrected_cookie;
-}
-
 // Returns an empty closure if |callback| is null callback or binds the
 // callback to |status|.
 base::OnceClosure BindSetCookiesCallback(
@@ -158,13 +121,6 @@ void OnlyCookiesWithName(const net::CookieList& cookies,
     if (cookie.Name() == name)
       filtered->push_back(cookie);
   }
-}
-
-// Returns whether the specified cookie line has an explicit Domain attribute or
-// not.
-bool HasExplicitDomain(const std::string& cookie_line) {
-  ParsedCookie cookie(cookie_line);
-  return cookie.HasDomain();
 }
 
 }  // namespace
@@ -270,75 +226,6 @@ void CookieStoreIOS::SetMetricsEnabled() {
 
 #pragma mark -
 #pragma mark CookieStore methods
-
-void CookieStoreIOS::SetCookieWithOptionsAsync(
-    const GURL& url,
-    const std::string& cookie_line,
-    const net::CookieOptions& options,
-    base::Optional<base::Time> server_time,
-    SetCookiesCallback callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // If cookies are not allowed, a CookieStoreIOS subclass should be used
-  // instead.
-  DCHECK(SystemCookiesAllowed());
-
-  // The exclude_httponly() option would only be used by a javascript
-  // engine.
-  DCHECK(!options.exclude_httponly());
-
-  NSHTTPCookie* cookie =
-      GetNSHTTPCookieFromCookieLine(cookie_line, url, server_time);
-  DLOG_IF(WARNING, !cookie) << "Could not create cookie for line: "
-                            << cookie_line;
-
-  // On iOS, [cookie domain] is not empty when the cookie domain is not
-  // specified: it is inferred from the URL instead. The only case when it
-  // is empty is when the domain attribute is incorrectly formatted.
-  std::string domain_string(base::SysNSStringToUTF8([cookie domain]));
-  std::string dummy;
-  bool has_explicit_domain = HasExplicitDomain(cookie_line);
-  bool has_valid_domain =
-      net::cookie_util::GetCookieDomainWithString(url, domain_string, &dummy);
-  net::CanonicalCookie::CookieInclusionStatus status =
-      net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
-
-  // A cookie can be set if all of the following conditions are met:
-  //   a) The cookie line is well-formed
-  //   b) The Domain attribute, if present, was not malformed
-  //   c) At least one of:
-  //       1) The cookie had no explicit Domain, so the Domain was inferred
-  //          from the URL, or
-  //       2) The cookie had an explicit Domain for which the URL is allowed
-  //          to set cookies.
-
-  // If |cookie| is nil, the cookie line was not well-formed.
-  if (cookie == nil)
-    status =
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE;
-
-  // If |domain_string| is empty, the domain was not well-formed.
-  if (domain_string.empty())
-    status =
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN;
-
-  // If the cookie had an explicit domain and it's not a domain it's allowed to
-  // set cookies to.
-  if (has_explicit_domain && !has_valid_domain)
-    status =
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN;
-
-  if (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
-    system_store_->SetCookieAsync(
-        cookie,
-        BindSetCookiesCallback(
-            &callback, net::CanonicalCookie::CookieInclusionStatus::INCLUDE));
-    return;
-  }
-
-  if (!callback.is_null())
-    std::move(callback).Run(status);
-}
 
 void CookieStoreIOS::SetCanonicalCookieAsync(
     std::unique_ptr<net::CanonicalCookie> cookie,

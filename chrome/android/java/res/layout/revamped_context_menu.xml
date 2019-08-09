@@ -6,7 +6,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/modal_dialog_scrim_color">
+    android:background="@android:color/transparent">
 
     <!-- We need 2 FrameLayouts here because the outer one is the scrim that covers the whole screen
          while the inner one is a frame for the ListView. We use this frame as a background for the

@@ -72,11 +72,22 @@ GURL TestDataSource::GetURLForPath(const std::string& path) {
 void TestDataSource::ReadFile(
     const std::string& path,
     const content::URLDataSource::GotDataCallback& callback) {
-  if (test_data_.empty()) {
-    CHECK(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_));
-    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_));
+  if (src_root_.empty()) {
+    base::FilePath test_data;
+    CHECK(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
+    src_root_ = test_data.Append(FILE_PATH_LITERAL("webui"));
   }
-  base::FilePath root = test_data_.Append(FILE_PATH_LITERAL("webui"));
+
+  if (gen_root_.empty()) {
+    std::string gen_path = "gen/chrome/test/data/webui/";
+#if defined(OS_WIN)
+    base::ReplaceChars(gen_path, "//", "\\", &gen_path);
+#endif
+    base::FilePath exe_dir;
+    base::PathService::Get(base::DIR_EXE, &exe_dir);
+    gen_root_ = exe_dir.AppendASCII(gen_path);
+  }
+
   std::string content;
 
   GURL url = GetURLForPath(path);
@@ -85,17 +96,27 @@ void TestDataSource::ReadFile(
                        base::CompareCase::INSENSITIVE_ASCII)) {
     std::string js_path = url.query().substr(strlen(kModuleQuery));
     base::FilePath file_path =
-        root.Append(base::FilePath::FromUTF8Unsafe(js_path));
+        src_root_.Append(base::FilePath::FromUTF8Unsafe(js_path));
     // Do some basic validation of the JS file path provided in the query.
     CHECK_EQ(file_path.Extension(), FILE_PATH_LITERAL(".js"));
     CHECK(base::PathExists(file_path))
         << url.spec() << "=" << file_path.value();
     content = "<script type=\"module\" src=\"" + js_path + "\"></script>";
   } else {
+    // Try the |src_root_| folder first.
     base::FilePath file_path =
-        root.Append(base::FilePath::FromUTF8Unsafe(path));
-    CHECK(base::ReadFileToString(file_path, &content))
-        << url.spec() << "=" << file_path.value();
+        src_root_.Append(base::FilePath::FromUTF8Unsafe(path));
+    if (base::PathExists(file_path)) {
+      CHECK(base::ReadFileToString(file_path, &content))
+          << url.spec() << "=" << file_path.value();
+    } else {
+      // Then try the |gen_root_| folder, covering cases where the test file is
+      // generated at build time.
+      base::FilePath file_path =
+          gen_root_.Append(base::FilePath::FromUTF8Unsafe(path));
+      CHECK(base::ReadFileToString(file_path, &content))
+          << url.spec() << "=" << file_path.value();
+    }
   }
 
   scoped_refptr<base::RefCountedString> response =

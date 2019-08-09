@@ -25,7 +25,6 @@
 #include "components/download/internal/background_service/scheduler/scheduler_impl.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/download/public/task/empty_task_scheduler.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -103,6 +102,7 @@ std::unique_ptr<DownloadService> BuildDownloadService(
     network::NetworkConnectionTracker* network_connection_tracker,
     const base::FilePath& storage_dir,
     SimpleDownloadManagerCoordinator* download_manager_coordinator,
+    leveldb_proto::ProtoDatabaseProvider* proto_db_provider,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     std::unique_ptr<TaskScheduler> task_scheduler) {
   auto config = Configuration::CreateFromFinch();
@@ -112,10 +112,7 @@ std::unique_ptr<DownloadService> BuildDownloadService(
 
   auto entry_db_storage_dir = storage_dir.Append(kEntryDBStorageDir);
 
-  leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
-          simple_factory_key);
-  auto entry_db = db_provider->GetDB<protodb::Entry>(
+  auto entry_db = proto_db_provider->GetDB<protodb::Entry>(
       leveldb_proto::ProtoDbType::DOWNLOAD_STORE, entry_db_storage_dir,
       background_task_runner);
   auto store = std::make_unique<DownloadStore>(std::move(entry_db));

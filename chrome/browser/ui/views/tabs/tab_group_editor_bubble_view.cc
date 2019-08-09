@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -93,10 +94,11 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   const auto* layout_provider = ChromeLayoutProvider::Get();
 
   // Add the text field for editing the title along with a label above it.
-  AddChildView(std::make_unique<views::Label>(base::ASCIIToUTF16("New title:"),
-                                              views::style::CONTEXT_LABEL,
-                                              views::style::STYLE_PRIMARY));
+  View* title_label = AddChildView(std::make_unique<views::Label>(
+      base::ASCIIToUTF16("New title"), views::style::CONTEXT_LABEL,
+      views::style::STYLE_PRIMARY));
   title_field_ = AddChildView(std::make_unique<views::Textfield>());
+  title_field_->SetAssociatedLabel(title_label);
   title_field_->SetDefaultWidthInChars(15);
 
   title_field_->SetProperty(
@@ -112,11 +114,13 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   auto combobox_model = std::make_unique<ui::SimpleComboboxModel>(color_names);
 
   // Add the color selector with label above it.
-  AddChildView(std::make_unique<views::Label>(base::ASCIIToUTF16("New color:"),
+  base::string16 color_label_text = base::ASCIIToUTF16("New color");
+  AddChildView(std::make_unique<views::Label>(color_label_text,
                                               views::style::CONTEXT_LABEL,
                                               views::style::STYLE_PRIMARY));
   color_selector_ = AddChildView(
       std::make_unique<views::Combobox>(std::move(combobox_model)));
+  color_selector_->SetTooltipText(color_label_text);
 
   // Layout vertically with margin collapsing. This allows us to use spacer
   // views with |DISTANCE_UNRELATED_CONTROL_VERTICAL| margins without worrying

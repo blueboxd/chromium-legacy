@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
+#include "net/base/escape.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -28,17 +29,18 @@ using FlatStringOffset = FlatOffset<flatbuffers::String>;
 using FlatStringListOffset = FlatVectorOffset<flatbuffers::String>;
 
 // Writes to |builder| a flatbuffer vector of shared strings corresponding to
-// |vec| and returns the offset to it. If |vec| is empty, returns an empty
-// offset.
+// |container| and returns the offset to it. If |container| is empty, returns an
+// empty offset.
+template <typename T>
 FlatStringListOffset BuildVectorOfSharedStrings(
     flatbuffers::FlatBufferBuilder* builder,
-    const std::vector<std::string>& vec) {
-  if (vec.empty())
+    const T& container) {
+  if (container.empty())
     return FlatStringListOffset();
 
   std::vector<FlatStringOffset> offsets;
-  offsets.reserve(vec.size());
-  for (const auto& str : vec)
+  offsets.reserve(container.size());
+  for (const std::string& str : container)
     offsets.push_back(builder->CreateSharedString(str));
   return builder->CreateVector(offsets);
 }
@@ -110,9 +112,18 @@ FlatOffset<flat::UrlTransform> BuildTransformOffset(
   FlatStringOffset password = create_string_offset(transform.password);
 
   FlatStringListOffset remove_query_params;
+  const bool use_plus = true;
   if (transform.query_transform && transform.query_transform->remove_params) {
-    remove_query_params = BuildVectorOfSharedStrings(
-        builder, *transform.query_transform->remove_params);
+    // Escape, sort and remove duplicates.
+    std::set<std::string> remove_params_escaped;
+    for (const std::string& remove_param :
+         *transform.query_transform->remove_params) {
+      remove_params_escaped.insert(
+          net::EscapeQueryParamValue(remove_param, use_plus));
+    }
+
+    remove_query_params =
+        BuildVectorOfSharedStrings(builder, remove_params_escaped);
   }
 
   FlatVectorOffset<flat::QueryKeyValue> add_or_replace_params;
@@ -124,9 +135,12 @@ FlatOffset<flat::UrlTransform> BuildTransformOffset(
         transform.query_transform->add_or_replace_params->size());
     for (const dnr_api::QueryKeyValue& query_pair :
          *transform.query_transform->add_or_replace_params) {
-      add_or_replace_queries.push_back(flat::CreateQueryKeyValue(
-          *builder, builder->CreateSharedString(query_pair.key),
-          builder->CreateSharedString(query_pair.value)));
+      FlatStringOffset key = builder->CreateSharedString(
+          net::EscapeQueryParamValue(query_pair.key, use_plus));
+      FlatStringOffset value = builder->CreateSharedString(
+          net::EscapeQueryParamValue(query_pair.value, use_plus));
+      add_or_replace_queries.push_back(
+          flat::CreateQueryKeyValue(*builder, key, value));
     }
     add_or_replace_params = builder->CreateVector(add_or_replace_queries);
   }

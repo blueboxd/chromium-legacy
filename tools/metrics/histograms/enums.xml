@@ -17730,6 +17730,7 @@ Called by update_net_error_codes.py.-->
   <int value="577" label="VmManagementCliAllowed"/>
   <int value="578" label="CheckURLsInRealTime"/>
   <int value="579" label="CACertificateManagementAllowed"/>
+  <int value="580" label="PasswordLeakDetectionEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -30701,6 +30702,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="91" label="FLASH_DEPRECATION_INFOBAR_DELEGATE"/>
   <int value="92" label="SEND_TAB_TO_SELF_INFOBAR_DELEGATE"/>
   <int value="93" label="TAB_SHARING_INFOBAR_DELEGATE"/>
+  <int value="94" label="SAFETY_TIP_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse">
@@ -35215,6 +35217,7 @@ from previous Chrome versions.
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
   <int value="-656345197" label="CrossOriginEmbedderPolicy:disabled"/>
   <int value="-654196854" label="PasswordsKeyboardAccessory:enabled"/>
+  <int value="-653616608" label="MacSyscallSandbox:disabled"/>
   <int value="-650504533" label="enable-speculative-launch-service-worker"/>
   <int value="-650213879" label="OmniboxZeroSuggestionsOnNTP:disabled"/>
   <int value="-650176557" label="OfflinePagesSvelteConcurrentLoading:enabled"/>
@@ -36699,6 +36702,7 @@ from previous Chrome versions.
   <int value="1481562816" label="disable-password-link"/>
   <int value="1482039233" label="SearchSuggestionsOnLocalNtp:disabled"/>
   <int value="1482839038" label="AutofillCreditCardAuthentication:enabled"/>
+  <int value="1483980996" label="MacSyscallSandbox:enabled"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
   <int value="1486784197" label="MouseSubframeNoImplicitCapture:disabled"/>
   <int value="1487341558" label="MacViewsAutofillPopup:enabled"/>
@@ -43218,6 +43222,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NTPBackgroundCustomizationAvailability">
+  <obsolete>
+    Removed 2019-08.
+  </obsolete>
   <int value="0" label="Background customization available"/>
   <int value="1" label="Background customization feature unavailable"/>
   <int value="2" label="Background customization unavailable due to theme"/>
@@ -43356,6 +43363,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NTPShortcutCustomizationAvailability">
+  <obsolete>
+    Removed 2019-08.
+  </obsolete>
   <int value="0" label="Shortcut customization available"/>
   <int value="1" label="Shortcut customization feature unavailable"/>
   <int value="2"
@@ -48125,6 +48135,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="No prediction"/>
   <int value="1" label="Successful prediction"/>
   <int value="2" label="Wrong prediction"/>
+</enum>
+
+<enum name="PrefetchRedirect">
+  <int value="0" label="Prefetch request made"/>
+  <int value="1" label="Prefetch request was redirected normally"/>
+  <int value="2"
+      label="Prefetch request was redirected to Signed Exchange handler"/>
 </enum>
 
 <enum name="PrefetchStatus">
@@ -53864,6 +53881,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Ping"/>
   <int value="2" label="Ack"/>
   <int value="3" label="ClickToCall"/>
+  <int value="4" label="SharedClipboard"/>
 </enum>
 
 <enum name="SharingVapidKeyCreationResult">

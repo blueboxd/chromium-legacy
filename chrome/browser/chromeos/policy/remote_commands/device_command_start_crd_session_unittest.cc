@@ -239,7 +239,8 @@ void DeviceCommandStartCRDSessionJobTest::InitializeJob(
   EXPECT_TRUE(job->Init(
       base::TimeTicks::Now(),
       GenerateCommandProto(unique_id, base::TimeTicks::Now() - issued_time,
-                           idleness_cutoff, terminate_upon_input)));
+                           idleness_cutoff, terminate_upon_input),
+      nullptr));
 
   EXPECT_EQ(unique_id, job->unique_id());
   EXPECT_EQ(RemoteCommandJob::NOT_STARTED, job->status());

@@ -86,7 +86,9 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       blink::mojom::SharedWorkerHostPtr host,
       blink::mojom::SharedWorkerRequest request,
-      service_manager::mojom::InterfaceProviderPtr interface_provider) override;
+      service_manager::mojom::InterfaceProviderPtr interface_provider,
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+          browser_interface_broker) override;
 
   struct CreateParams {
     CreateParams();

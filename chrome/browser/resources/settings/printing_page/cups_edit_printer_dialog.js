@@ -125,14 +125,13 @@ Polymer({
     'onModelChanged_(pendingPrinter_.ppdModel)',
   ],
 
-  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
-  networkConfigProxy_: null,
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  networkConfig_: null,
 
   /** @override */
   created: function() {
-    this.networkConfigProxy_ =
-        network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
   },
 
   /** @override */
@@ -431,7 +430,7 @@ Polymer({
    * @private
    */
   refreshNetworks_: function() {
-    this.networkConfigProxy_
+    this.networkConfig_
         .getNetworkStateList({
           filter: chromeos.networkConfig.mojom.FilterType.kActive,
           networkType: chromeos.networkConfig.mojom.NetworkType.kAll,

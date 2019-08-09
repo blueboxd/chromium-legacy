@@ -521,13 +521,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillImportDynamicFormsDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillImportDynamicForms)},
-    {"enable-autofill-do-not-upload-save-unsupported-cards",
-     flag_descriptions::kEnableAutofillDoNotUploadSaveUnsupportedCardsName,
-     flag_descriptions::
-         kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillDoNotUploadSaveUnsupportedCards)},
     {"enable-send-tab-to-self-broadcast",
      flag_descriptions::kSendTabToSelfBroadcastName,
      flag_descriptions::kSendTabToSelfBroadcastDescription, flags_ui::kOsIos,

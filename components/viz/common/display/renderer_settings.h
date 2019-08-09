@@ -39,6 +39,7 @@ class VIZ_COMMON_EXPORT RendererSettings {
   bool auto_resize_output_surface = true;
   bool requires_alpha_channel = false;
   bool record_sk_picture = false;
+  bool show_dc_layer_debug_borders = false;
 
   int slow_down_compositing_scale_factor = 1;
 

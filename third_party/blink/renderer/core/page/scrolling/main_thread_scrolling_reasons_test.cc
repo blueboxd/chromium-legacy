@@ -51,9 +51,7 @@ class MainThreadScrollingReasonsTest
   }
 
   ~MainThreadScrollingReasonsTest() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
   void NavigateTo(const String& url) {

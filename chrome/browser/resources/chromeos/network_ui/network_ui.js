@@ -64,9 +64,9 @@ const NetworkUI = (function() {
    * This UI will use both the networkingPrivate extension API and the
    * networkConfig mojo API until we provide all of the required functionality
    * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @type {?mojom.CrosNetworkConfigProxy}
+   * @type {?mojom.CrosNetworkConfigRemote}
    */
-  let networkConfigProxy = null;
+  let networkConfig = null;
 
   /**
    * Creates and returns a typed HTMLTableCellElement.
@@ -326,7 +326,7 @@ const NetworkUI = (function() {
     if (selectedId == 'shill') {
       chrome.send('getShillNetworkProperties', [guid]);
     } else if (selectedId == 'state') {
-      networkConfigProxy.getNetworkState(guid)
+      networkConfig.getNetworkState(guid)
           .then((responseParams) => {
             if (responseParams && responseParams.result) {
               showDetail(detailCell, responseParams.result);
@@ -339,7 +339,7 @@ const NetworkUI = (function() {
             showDetailError(detailCell, 'Mojo service failure: ' + error);
           });
     } else if (selectedId == 'managed') {
-      networkConfigProxy.getManagedProperties(guid)
+      networkConfig.getManagedProperties(guid)
           .then((responseParams) => {
             if (responseParams && responseParams.result) {
               showDetail(detailCell, responseParams.result);
@@ -475,7 +475,7 @@ const NetworkUI = (function() {
    * Requests an update of all network info.
    */
   const requestNetworks = function() {
-    networkConfigProxy
+    networkConfig
         .getNetworkStateList({
           filter: mojom.FilterType.kVisible,
           networkType: mojom.NetworkType.kAll,
@@ -485,7 +485,7 @@ const NetworkUI = (function() {
           onVisibleNetworksReceived(responseParams.result);
         });
 
-    networkConfigProxy
+    networkConfig
         .getNetworkStateList({
           filter: mojom.FilterType.kConfigured,
           networkType: mojom.NetworkType.kAll,
@@ -495,7 +495,7 @@ const NetworkUI = (function() {
           onFavoriteNetworksReceived(responseParams.result);
         });
 
-    networkConfigProxy.getDeviceStateList().then((responseParams) => {
+    networkConfig.getDeviceStateList().then((responseParams) => {
       onDeviceStatesReceived(responseParams.result);
     });
   };
@@ -512,8 +512,8 @@ const NetworkUI = (function() {
 
   /** Initialize NetworkUI state. */
   const init = function() {
-    networkConfigProxy = network_config.MojoInterfaceProviderImpl.getInstance()
-                             .getMojoServiceProxy();
+    networkConfig = network_config.MojoInterfaceProviderImpl.getInstance()
+                        .getMojoServiceRemote();
 
     /** Set the refresh rate if the interval is found in the url. */
     const interval = new URL(window.location.href).searchParams.get('refresh');

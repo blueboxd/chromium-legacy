@@ -48,7 +48,7 @@
 using content::BrowserThread;
 
 OffTheRecordProfileIOData::Handle::Handle(Profile* profile)
-    : io_data_(new OffTheRecordProfileIOData(profile->GetProfileType())),
+    : io_data_(new OffTheRecordProfileIOData),
       profile_(profile),
       initialized_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -87,18 +87,10 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
       profile_->GetPrefs());
   io_data_->safe_browsing_enabled()->MoveToSequence(
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
-#if BUILDFLAG(ENABLE_PLUGINS)
-  io_data_->always_open_pdf_externally()->Init(
-      prefs::kPluginsAlwaysOpenPdfExternally, profile_->GetPrefs());
-  io_data_->always_open_pdf_externally()->MoveToSequence(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
-#endif
   io_data_->InitializeOnUIThread(profile_);
 }
 
-OffTheRecordProfileIOData::OffTheRecordProfileIOData(
-    Profile::ProfileType profile_type)
-    : ProfileIOData(profile_type) {}
+OffTheRecordProfileIOData::OffTheRecordProfileIOData() = default;
 
 OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
   DestroyResourceContext();

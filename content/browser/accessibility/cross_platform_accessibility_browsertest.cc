@@ -707,7 +707,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   GURL url(
       "data:text/html,"
       "<input>"
-      "<input type='tel'>");
+      "<input type='tel'>"
+      "<input type='url'>");
 
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
@@ -717,7 +718,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   ASSERT_EQ(1u, root->PlatformChildCount());
 
   BrowserAccessibility* body = root->PlatformGetChild(0);
-  ASSERT_EQ(2u, body->PlatformChildCount());
+  ASSERT_EQ(3u, body->PlatformChildCount());
 
   auto TestLocalizedRoleDescription =
       [body](int child_index,
@@ -732,6 +733,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   // For testing purposes, assume we get en-US localized strings.
   TestLocalizedRoleDescription(0, base::ASCIIToUTF16(""));
   TestLocalizedRoleDescription(1, base::ASCIIToUTF16("telephone"));
+  TestLocalizedRoleDescription(2, base::ASCIIToUTF16("url"));
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,

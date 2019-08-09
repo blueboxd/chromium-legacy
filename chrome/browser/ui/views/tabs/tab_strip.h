@@ -310,6 +310,7 @@ class TabStrip : public views::AccessiblePaneView,
 
   friend class TabDragControllerTest;
   friend class TabDragContextImpl;
+  friend class TabGroupEditorBubbleViewDialogBrowserTest;
   friend class TabHoverCardBubbleViewBrowserTest;
   friend class TabHoverCardBubbleViewInteractiveUiTest;
   friend class TabStripTest;

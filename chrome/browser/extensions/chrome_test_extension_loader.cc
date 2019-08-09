@@ -133,7 +133,6 @@ scoped_refptr<const Extension> ChromeTestExtensionLoader::LoadExtension(
   if (!CheckInstallWarnings(*extension))
     return nullptr;
 
-  base::RunLoop().RunUntilIdle();
   if (!WaitForExtensionReady(*extension)) {
     ADD_FAILURE() << "Failed to wait for extension ready";
     return nullptr;

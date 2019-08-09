@@ -5,7 +5,7 @@
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 
 import {keyDownOn, keyUpOn, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
-import {eventToPromise} from 'chrome://test/settings/test_util.m.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
 
 suite('cr-checkbox-v3', function() {
   let checkbox;

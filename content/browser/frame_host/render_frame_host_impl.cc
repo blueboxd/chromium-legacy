@@ -396,7 +396,7 @@ void LogRendererKillCrashKeys(const GURL& site_url) {
 
 base::Optional<url::Origin> GetOriginForURLLoaderFactoryUnchecked(
     NavigationRequest* navigation_request) {
-  // Return a safe unique origin when there is no |navigation_request| (e.g.
+  // Return a safe opaque origin when there is no |navigation_request| (e.g.
   // when RFHI::CommitNavigation is called via RFHI::NavigateToInterstitialURL).
   if (!navigation_request)
     return url::Origin();
@@ -422,14 +422,14 @@ base::Optional<url::Origin> GetOriginForURLLoaderFactoryUnchecked(
     CHECK(navigation_request->browser_initiated());
 
     // loadDataWithBaseUrl submits a data: |common_params.url| (which has a
-    // unique origin), but commits that URL as if it came from
+    // opaque origin), but commits that URL as if it came from
     // |common_params.base_url_for_data_url|.  See also
     // https://crbug.com/976253.
     return url::Origin::Create(common_params.base_url_for_data_url);
   }
 
-  // MHTML frames should commit as unique origin (and should not be able to make
-  // network requests on behalf of the real origin).
+  // MHTML frames should commit as a opaque origin (and should not be able to
+  // make network requests on behalf of the real origin).
   //
   // TODO(lukasza): Cover MHTML main frames here.
   if (navigation_request->IsForMhtmlSubframe())
@@ -1597,6 +1597,8 @@ bool RenderFrameHostImpl::AccessibilityIsMainFrame() const {
 void RenderFrameHostImpl::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
+  render_process_has_died_ = true;
+
   if (base::FeatureList::IsEnabled(features::kCrashReporting))
     MaybeGenerateCrashReport(info.status, info.exit_code);
 
@@ -4337,10 +4339,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       GetProcess()->GetID(),
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
-  registry_->AddInterface(
-      base::BindRepeating(&FileSystemManagerImpl::BindRequest,
-                          base::Unretained(file_system_manager_.get())),
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
   registry_->AddInterface(base::BindRepeating(
       &BackgroundFetchServiceImpl::CreateForFrame, GetProcess(), routing_id_));
@@ -4405,37 +4403,88 @@ void RenderFrameHostImpl::ResetWaitingState() {
   network_service_connection_error_handler_holder_.reset();
 }
 
-bool RenderFrameHostImpl::CanCommitOrigin(
+RenderFrameHostImpl::CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
     const url::Origin& origin,
     const GURL& url) {
   // If the --disable-web-security flag is specified, all bets are off and the
   // renderer process can send any origin it wishes.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableWebSecurity)) {
-    return true;
+    return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
   }
 
-  // It is safe to commit into a unique origin, regardless of the URL, as it is
+  // Renderer-debug URLs can never be committed.
+  if (IsRendererDebugURL(url))
+    return CanCommitStatus::CANNOT_COMMIT_URL;
+
+  // TODO(creis): We should also check for WebUI pages here.  Also, when the
+  // out-of-process iframes implementation is ready, we should check for
+  // cross-site URLs that are not allowed to commit in this process.
+
+  // MHTML subframes can supply URLs at commit time that do not match the
+  // process lock. For example, it can be either "cid:..." or arbitrary URL at
+  // which the frame was at the time of generating the MHTML
+  // (e.g. "http://localhost"). In such cases, don't verify the URL, but require
+  // the URL to commit in the process of the main frame.
+  if (!frame_tree_node()->IsMainFrame()) {
+    RenderFrameHostImpl* main_frame =
+        frame_tree_node()->frame_tree()->GetMainFrame();
+    if (main_frame->is_mhtml_document()) {
+      if (IsSameSiteInstance(main_frame))
+        return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
+
+      // If an MHTML subframe commits in a different process (even one that
+      // appears correct for the subframe's URL), then we aren't correctly
+      // loading it from the archive and should kill the renderer.
+      base::debug::SetCrashKeyString(
+          base::debug::AllocateCrashKeyString(
+              "oopif_in_mhtml_page", base::debug::CrashKeySize::Size32),
+          is_mhtml_document() ? "is_mhtml_doc" : "not_mhtml_doc");
+      return CanCommitStatus::CANNOT_COMMIT_URL;
+    }
+  }
+
+  // Give the client a chance to disallow URLs from committing.
+  if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), url))
+    return CanCommitStatus::CANNOT_COMMIT_URL;
+
+  // TODO(nasko): This check should be updated to apply to all URLs, not just
+  // standard ones.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (url.IsStandard() &&
+      !policy->CanAccessDataForOrigin(GetProcess()->GetID(), url)) {
+    return CanCommitStatus::CANNOT_COMMIT_URL;
+  }
+
+  // It is safe to commit into a opaque origin, regardless of the URL, as it is
   // restricted from accessing other origins.
   if (origin.opaque())
-    return true;
+    return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
 
   // Standard URLs must match the reported origin.
   if (url.IsStandard() && !origin.IsSameOriginWith(url::Origin::Create(url)))
-    return false;
+    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
 
-  // A non-unique origin must be a valid URL, which allows us to safely do a
+  // A non-opaque origin must be a valid URL, which allows us to safely do a
   // conversion to GURL.
   GURL origin_url = origin.GetURL();
 
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(GetProcess()->GetID(), origin))
-    return false;
+    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
 
   // Verify that the origin is allowed to commit in this process.
   // Note: This also handles non-standard cases for |url|, such as
   // about:blank, data, and blob URLs.
-  return CanCommitURL(origin_url);
+
+  // Renderer-debug URLs can never be committed.
+  if (IsRendererDebugURL(origin_url))
+    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
+
+  // Give the client a chance to disallow URLs from committing.
+  if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), origin_url))
+    return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
+
+  return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
 }
 
 void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
@@ -5519,53 +5568,6 @@ void RenderFrameHostImpl::ClearFocusedElement() {
   Send(new FrameMsg_ClearFocusedElement(GetRoutingID()));
 }
 
-bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
-  // Renderer-debug URLs can never be committed.
-  if (IsRendererDebugURL(url))
-    return false;
-
-  // TODO(creis): We should also check for WebUI pages here.  Also, when the
-  // out-of-process iframes implementation is ready, we should check for
-  // cross-site URLs that are not allowed to commit in this process.
-
-  // MHTML subframes can supply URLs at commit time that do not match the
-  // process lock. For example, it can be either "cid:..." or arbitrary URL at
-  // which the frame was at the time of generating the MHTML
-  // (e.g. "http://localhost"). In such cases, don't verify the URL, but require
-  // the URL to commit in the process of the main frame.
-  if (!frame_tree_node()->IsMainFrame()) {
-    RenderFrameHostImpl* main_frame =
-        frame_tree_node()->frame_tree()->GetMainFrame();
-    if (main_frame->is_mhtml_document()) {
-      if (IsSameSiteInstance(main_frame))
-        return true;
-
-      // If an MHTML subframe commits in a different process (even one that
-      // appears correct for the subframe's URL), then we aren't correctly
-      // loading it from the archive and should kill the renderer.
-      base::debug::SetCrashKeyString(
-          base::debug::AllocateCrashKeyString(
-              "oopif_in_mhtml_page", base::debug::CrashKeySize::Size32),
-          is_mhtml_document() ? "is_mhtml_doc" : "not_mhtml_doc");
-      return false;
-    }
-  }
-
-  // Give the client a chance to disallow URLs from committing.
-  if (!GetContentClient()->browser()->CanCommitURL(GetProcess(), url))
-    return false;
-
-  // TODO(nasko): This check should be updated to apply to all URLs, not just
-  // standard ones.
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (url.IsStandard() &&
-      !policy->CanAccessDataForOrigin(GetProcess()->GetID(), url)) {
-    return false;
-  }
-
-  return true;
-}
-
 void RenderFrameHostImpl::BlockRequestsForFrame() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -6231,6 +6233,15 @@ void RenderFrameHostImpl::GetAudioContextManager(
   AudioContextManagerImpl::Create(this, std::move(receiver));
 }
 
+void RenderFrameHostImpl::GetFileSystemManager(
+    mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) {
+  // This is safe because file_system_manager_ is deleted on the IO thread
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&FileSystemManagerImpl::BindRequest,
+                                base::Unretained(file_system_manager_.get()),
+                                std::move(receiver)));
+}
+
 void RenderFrameHostImpl::GetAuthenticator(
     mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
 #if !defined(OS_ANDROID)
@@ -6462,8 +6473,8 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   RenderProcessHost* process = GetProcess();
 
   // Error pages may sometimes commit a URL in the wrong process, which requires
-  // an exception for the CanCommitURL checks.  This is ok as long as the origin
-  // is unique.
+  // an exception for the CanCommitOriginAndUrl() checks.  This is ok as long
+  // as the origin is opaque.
   bool bypass_checks_for_error_page = false;
   if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
           frame_tree_node_->IsMainFrame())) {
@@ -6512,29 +6523,30 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     // Attempts to commit certain off-limits URL should be caught more strictly
     // than our FilterURL checks.  If a renderer violates this policy, it
     // should be killed.
-    if (!CanCommitURL(validated_params->url)) {
-      VLOG(1) << "Blocked URL " << validated_params->url.spec();
-      LogCannotCommitUrlCrashKeys(validated_params->url,
-                                  is_same_document_navigation,
-                                  navigation_request);
+    switch (CanCommitOriginAndUrl(validated_params->origin,
+                                  validated_params->url)) {
+      case CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL:
+        // The origin and URL are safe to commit.
+        break;
+      case CanCommitStatus::CANNOT_COMMIT_URL:
+        VLOG(1) << "Blocked URL " << validated_params->url.spec();
+        LogCannotCommitUrlCrashKeys(validated_params->url,
+                                    is_same_document_navigation,
+                                    navigation_request);
 
-      // Kills the process.
-      bad_message::ReceivedBadMessage(process,
-                                      bad_message::RFH_CAN_COMMIT_URL_BLOCKED);
-      return false;
-    }
+        // Kills the process.
+        bad_message::ReceivedBadMessage(
+            process, bad_message::RFH_CAN_COMMIT_URL_BLOCKED);
+        return false;
+      case CanCommitStatus::CANNOT_COMMIT_ORIGIN:
+        DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
+        LogCannotCommitOriginCrashKeys(is_same_document_navigation,
+                                       navigation_request);
 
-    // Verify that the origin passed from the renderer process is valid and can
-    // be allowed to commit in this RenderFrameHost.
-    if (!CanCommitOrigin(validated_params->origin, validated_params->url)) {
-      DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, validated_params->origin);
-      LogCannotCommitOriginCrashKeys(is_same_document_navigation,
-                                     navigation_request);
-
-      // Kills the process.
-      bad_message::ReceivedBadMessage(
-          process, bad_message::RFH_INVALID_ORIGIN_ON_COMMIT);
-      return false;
+        // Kills the process.
+        bad_message::ReceivedBadMessage(
+            process, bad_message::RFH_INVALID_ORIGIN_ON_COMMIT);
+        return false;
     }
   }
 

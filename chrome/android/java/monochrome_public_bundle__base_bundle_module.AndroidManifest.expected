@@ -195,6 +195,13 @@
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:excludeFromRecents="true"
+        android:exported="true"
+        android:name="org.chromium.chrome.features.test_dummy.TestDummyActivity"
+        android:noHistory="true"
+        android:theme="@style/Theme.AppCompat"/>
+    <activity
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+        android:excludeFromRecents="true"
         android:hardwareAccelerated="true"
         android:label="Chrome.CafExpandedControllerActivity"
         android:launchMode="singleTask"

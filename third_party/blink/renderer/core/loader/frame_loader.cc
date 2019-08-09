@@ -850,6 +850,7 @@ static bool ShouldNavigate(WebNavigationParams* params, LocalFrame* frame) {
 void FrameLoader::CommitNavigation(
     std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+    base::OnceClosure call_before_attaching_new_document,
     bool is_javascript_url) {
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
@@ -939,6 +940,8 @@ void FrameLoader::CommitNavigation(
     if (!DetachDocument())
       return;
   }
+
+  std::move(call_before_attaching_new_document).Run();
 
   CommitDocumentLoader(provisional_document_loader_.Release());
 

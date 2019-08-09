@@ -56,14 +56,13 @@ Polymer({
     },
   },
 
-  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
-  networkConfigProxy_: null,
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  networkConfig_: null,
 
   /** @override */
   created: function() {
-    this.networkConfigProxy_ =
-        network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
   },
 
   /** @override */
@@ -87,7 +86,7 @@ Polymer({
     if (!networks.find(network => network.guid == guid)) {
       return;
     }
-    this.networkConfigProxy_.getNetworkState(guid).then(response => {
+    this.networkConfig_.getNetworkState(guid).then(response => {
       if (response.result) {
         this.activeNetworkState_ = response.result;
       }
@@ -113,7 +112,7 @@ Polymer({
    * @private
    */
   updateTetherDeviceState_: function() {
-    this.networkConfigProxy_.getDeviceStateList().then(response => {
+    this.networkConfig_.getDeviceStateList().then(response => {
       const kTether = chromeos.networkConfig.mojom.NetworkType.kTether;
       const deviceStates = response.result;
       const deviceState =
@@ -143,7 +142,7 @@ Polymer({
       limit: 1,
       networkType: kTether,
     };
-    this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+    this.networkConfig_.getNetworkStateList(filter).then(response => {
       const networks = response.result;
       this.activeNetworkState_ =
           networks[0] || OncMojo.getDefaultNetworkState(kTether);

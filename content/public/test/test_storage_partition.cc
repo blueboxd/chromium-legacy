@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_storage_partition.h"
 
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/public/browser/native_file_system_entry_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -113,6 +114,14 @@ TestStoragePartition::GetDevToolsBackgroundServicesContext() {
 ContentIndexContext* TestStoragePartition::GetContentIndexContext() {
   return content_index_context_;
 }
+
+leveldb_proto::ProtoDatabaseProvider*
+TestStoragePartition::GetProtoDatabaseProvider() {
+  return nullptr;
+}
+
+void TestStoragePartition::SetProtoDatabaseProvider(
+    std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> proto_db_provider) {}
 
 #if !defined(OS_ANDROID)
 HostZoomMap* TestStoragePartition::GetHostZoomMap() {

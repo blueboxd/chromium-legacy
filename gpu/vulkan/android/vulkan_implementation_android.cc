@@ -110,7 +110,8 @@ std::unique_ptr<VulkanSurface> VulkanImplementationAndroid::CreateViewSurface(
   }
 
   return std::make_unique<VulkanSurface>(vulkan_instance_.vk_instance(),
-                                         surface);
+                                         surface,
+                                         false /* use_protected_memory */);
 }
 
 bool VulkanImplementationAndroid::GetPhysicalDevicePresentationSupport(

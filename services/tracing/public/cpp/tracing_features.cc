@@ -29,7 +29,13 @@ const base::Feature kTracingPerfettoBackend {
 // Causes the BackgroundTracingManager to upload proto messages via UMA,
 // rather than JSON via the crash frontend.
 const base::Feature kBackgroundTracingProtoOutput{
-    "BackgroundTracingProtoOutput", base::FEATURE_DISABLED_BY_DEFAULT};
+  "BackgroundTracingProtoOutput",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Causes Perfetto to run in-process mode for in-process tracing producers.
 const base::Feature kPerfettoForceOutOfProcessProducer{

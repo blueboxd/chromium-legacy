@@ -1209,12 +1209,19 @@ class CONTENT_EXPORT RenderFrameImpl
   // is lazily cloned from the parent or opener's own bundle.
   ChildURLLoaderFactoryBundle* GetLoaderFactoryBundle();
 
-  void SetupLoaderFactoryBundle(
+  // Clones and returns the creator's (parent's or opener's)
+  // ChildURLLoaderFactoryBundle.
+  scoped_refptr<ChildURLLoaderFactoryBundle>
+  GetLoaderFactoryBundleFromCreator();
+
+  scoped_refptr<ChildURLLoaderFactoryBundle> CreateLoaderFactoryBundle(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory);
+  void SetLoaderFactoryBundle(
+      scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
@@ -1435,14 +1442,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Whether url download should be throttled.
   bool ShouldThrottleDownload();
-
-  // Creates a service worker network provider using browser provided data,
-  // to be supplied to the loader.
-  std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
-  BuildServiceWorkerNetworkProviderForNavigation(
-      blink::mojom::ControllerServiceWorkerInfoPtr
-          controller_service_worker_info,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info);
 
   // These functions avoid duplication between Commit*Navigation and
   // Commit*PerNavigationMojoInterfaceNavigation functions.
@@ -1735,6 +1734,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // Depending on how the frame was created, |loader_factories_| could be:
   //   * |HostChildURLLoaderFactoryBundle| for standalone frames, or
   //   * |TrackedChildURLLoaderFactoryBundle| for frames opened by other frames.
+  //
+  // This must be updated only via SetLoaderFactoryBundle, which is called at a
+  // certain timing - right before the new document is committed during
+  // FrameLoader::CommitNavigation.
   scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories_;
 
   scoped_refptr<FrameRequestBlocker> frame_request_blocker_;

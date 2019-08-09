@@ -29,7 +29,6 @@ source_set("ntp_snippets") {
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/json_parser",
-    "//ios/chrome/browser/leveldb_proto:factory",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui/util",

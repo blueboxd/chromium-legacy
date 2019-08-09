@@ -1947,13 +1947,14 @@ void RenderProcessHostImpl::ForceCrash() {
 }
 
 void RenderProcessHostImpl::BindFileSystemManager(
-    blink::mojom::FileSystemManagerRequest request) {
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&FileSystemManagerImpl::BindRequest,
                      base::Unretained(file_system_manager_impl_.get()),
-                     std::move(request)));
+                     std::move(receiver)));
 }
 
 void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {

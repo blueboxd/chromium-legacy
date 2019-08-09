@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
+import "third_party/blink/public/mojom/browser_interface_broker.mojom";
 import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/renderer_preference_watcher.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
@@ -66,5 +67,11 @@ interface SharedWorkerFactory {
 
       SharedWorkerHost host,
       SharedWorker& shared_worker,
-      service_manager.mojom.InterfaceProvider interface_provider);
+
+      // TODO(crbug.com/990845): remove when no longer used.
+      service_manager.mojom.InterfaceProvider interface_provider,
+
+      // BrowserInterfaceBroker for providing browser interfaces.
+      pending_remote<blink.mojom.BrowserInterfaceBroker>
+        browser_interface_broker);
 };

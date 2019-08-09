@@ -282,17 +282,16 @@ double CSSPrimitiveValue::ComputeLengthDouble(
   return To<CSSNumericLiteralValue>(this)->ComputeLengthPx(conversion_data);
 }
 
-void CSSPrimitiveValue::AccumulateLengthArray(CSSLengthArray& length_array,
+bool CSSPrimitiveValue::AccumulateLengthArray(CSSLengthArray& length_array,
                                               double multiplier) const {
   DCHECK_EQ(length_array.values.size(),
             static_cast<unsigned>(kLengthUnitTypeCount));
   if (IsCalculated()) {
-    To<CSSMathFunctionValue>(this)->AccumulateLengthArray(length_array,
-                                                          multiplier);
-    return;
+    return To<CSSMathFunctionValue>(this)->AccumulateLengthArray(length_array,
+                                                                 multiplier);
   }
-  To<CSSNumericLiteralValue>(this)->AccumulateLengthArray(length_array,
-                                                          multiplier);
+  return To<CSSNumericLiteralValue>(this)->AccumulateLengthArray(length_array,
+                                                                 multiplier);
 }
 
 double CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(

@@ -557,6 +557,24 @@
           </settings-subpage>
         </template>
       </template>
+      <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
+        <template is="dom-if" route-path="/content/filesystem" no-search>
+          <settings-subpage
+              page-title="$i18n{siteSettingsNativeFileSystemWrite}">
+            <category-default-setting
+                toggle-off-label="$i18n{siteSettingsNativeFileSystemWriteBlock}"
+                toggle-on-label=
+                    "$i18n{siteSettingsNativeFileSystemWriteAskRecommended}"
+                category="{{ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}}">
+            </category-default-setting>
+            <category-setting-exceptions
+                category="{{ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}}"
+                block-header="$i18n{siteSettingsBlock}"
+                search-filter="[[searchFilter_]]">
+            </category-setting-exceptions>
+          </settings-subpage>
+        </template>
+      </template>
       <template is="dom-if" route-path="/content/siteDetails" no-search>
         <settings-subpage page-title="[[pageTitle]]">
           <site-details

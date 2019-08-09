@@ -7,6 +7,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
+#include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
@@ -14,12 +16,17 @@
 #include "components/viz/service/display/output_surface.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_switches.h"
 
 namespace viz {
 
 namespace {
+
+constexpr int kDCLayerDebugBorderWidth = 4;
+constexpr gfx::Insets kDCLayerDebugBorderInsets = gfx::Insets(-2);
 
 // This is used for a histogram to determine why overlays are or aren't used,
 // so don't remove entries and make sure to update enums.xml if it changes.
@@ -203,17 +210,16 @@ DCLayerOverlay& DCLayerOverlay::operator=(const DCLayerOverlay& other) =
 DCLayerOverlay::~DCLayerOverlay() = default;
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor(
-    const ContextProvider* context_provider) {
-#if defined(OS_WIN)
-  if (context_provider) {
-    has_hw_overlay_support_ =
-        context_provider->ContextCapabilities().dc_layers &&
-        context_provider->ContextCapabilities().use_dc_overlays_for_video;
-  } else {
-    has_hw_overlay_support_ = false;
-  }
-#endif
-}
+    const ContextProvider* context_provider,
+    const RendererSettings& settings)
+    : has_hw_overlay_support_(
+          context_provider &&
+          context_provider->ContextCapabilities().dc_layers &&
+          context_provider->ContextCapabilities().use_dc_overlays_for_video),
+      show_debug_borders_(settings.show_dc_layer_debug_borders) {}
+
+DCLayerOverlayProcessor::DCLayerOverlayProcessor()
+    : has_hw_overlay_support_(true), show_debug_borders_(false) {}
 
 DCLayerOverlayProcessor::~DCLayerOverlayProcessor() = default;
 
@@ -298,20 +304,19 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
       pass_punch_through_rects_[rpdq->render_pass_id];
   const SharedQuadState* original_shared_quad_state = rpdq->shared_quad_state;
 
+  // Copy shared state from RPDQ to get the same clip rect.
+  SharedQuadState* new_shared_quad_state =
+      render_pass->shared_quad_state_list.AllocateAndCopyFrom(
+          original_shared_quad_state);
+  // Set opacity to 1 since we're not blending.
+  new_shared_quad_state->opacity = 1.f;
+
   // The iterator was advanced above so InsertBefore inserts after the RPDQ.
   it = render_pass->quad_list
            .InsertBeforeAndInvalidateAllPointers<SolidColorDrawQuad>(
                it, punch_through_rects.size());
   rpdq = nullptr;
   for (const gfx::Rect& punch_through_rect : punch_through_rects) {
-    // Copy shared state from RPDQ to get the same clip rect.
-    SharedQuadState* new_shared_quad_state =
-        render_pass->shared_quad_state_list
-            .AllocateAndCopyFrom<SharedQuadState>(original_shared_quad_state);
-
-    // Set opacity to 1 since we're not blending.
-    new_shared_quad_state->opacity = 1.f;
-
     auto* solid_quad = static_cast<SolidColorDrawQuad*>(*it++);
     solid_quad->SetAll(new_shared_quad_state, punch_through_rect,
                        punch_through_rect, false, SK_ColorTRANSPARENT, true);
@@ -331,6 +336,46 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
   return it;
 }
 
+void DCLayerOverlayProcessor::InsertDebugBorderDrawQuads(
+    const gfx::RectF& display_rect,
+    const gfx::Rect& overlay_rect,
+    RenderPass* root_render_pass,
+    gfx::Rect* damage_rect) {
+  auto* shared_quad_state = root_render_pass->CreateAndAppendSharedQuadState();
+  auto& quad_list = root_render_pass->quad_list;
+
+  if (!overlay_rect.IsEmpty()) {
+    auto it =
+        quad_list.InsertBeforeAndInvalidateAllPointers<DebugBorderDrawQuad>(
+            quad_list.begin(), 1u);
+    auto* debug_quad = static_cast<DebugBorderDrawQuad*>(*it);
+    gfx::Rect rect = overlay_rect;
+    rect.Inset(kDCLayerDebugBorderInsets);
+    debug_quad->SetNew(shared_quad_state, rect, rect, SK_ColorRED,
+                       kDCLayerDebugBorderWidth);
+  }
+
+  const auto& punch_through_rects =
+      pass_punch_through_rects_[root_render_pass->id];
+
+  auto it = quad_list.InsertBeforeAndInvalidateAllPointers<DebugBorderDrawQuad>(
+      quad_list.begin(), punch_through_rects.size());
+
+  for (const gfx::Rect& punch_through_rect : punch_through_rects) {
+    auto* debug_quad = static_cast<DebugBorderDrawQuad*>(*it++);
+    gfx::Rect rect = punch_through_rect;
+    rect.Inset(kDCLayerDebugBorderInsets);
+    debug_quad->SetNew(shared_quad_state, rect, rect, SK_ColorBLUE,
+                       kDCLayerDebugBorderWidth);
+  }
+
+  // Mark the entire output as damaged because the border quads might not be
+  // inside the current damage rect.  It's far simpler to mark the entire output
+  // as damaged instead of accounting for individual border quads which can
+  // change positions across frames.
+  damage_rect->Union(gfx::ToEnclosingRect(display_rect));
+}
+
 void DCLayerOverlayProcessor::ProcessRenderPass(
     DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
@@ -338,6 +383,7 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     bool is_root,
     gfx::Rect* damage_rect,
     DCLayerOverlayList* dc_layer_overlays) {
+  gfx::Rect this_frame_overlay_rect;
   gfx::Rect this_frame_underlay_rect;
 
   QuadList* quad_list = &render_pass->quad_list;
@@ -421,11 +467,10 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     // TODO(magchen): Collect all overlay candidates, and filter the list at the
     // end to find the best candidates (largest size?).
     if (is_overlay) {
-      ProcessForOverlay(display_rect, quad_list, quad_rectangle_in_target_space,
-                        &it, damage_rect);
-      // ProcessForOverlay makes the iterator point to the next value on
-      // success.
-      next_it = it;
+      next_it =
+          ProcessForOverlay(display_rect, render_pass,
+                            quad_rectangle_in_target_space, it, damage_rect);
+      this_frame_overlay_rect = quad_rectangle_in_target_space;
     } else {
       ProcessForUnderlay(display_rect, render_pass,
                          quad_rectangle_in_target_space, it, is_root,
@@ -465,24 +510,31 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     damage_rect->Intersect(gfx::ToEnclosingRect(display_rect));
     previous_display_rect_ = display_rect;
     previous_frame_underlay_rect_ = this_frame_underlay_rect;
+
+    if (show_debug_borders_) {
+      InsertDebugBorderDrawQuads(display_rect, this_frame_overlay_rect,
+                                 render_pass, damage_rect);
+    }
   }
 }
 
-void DCLayerOverlayProcessor::ProcessForOverlay(const gfx::RectF& display_rect,
-                                                QuadList* quad_list,
-                                                const gfx::Rect& quad_rectangle,
-                                                QuadList::Iterator* it,
-                                                gfx::Rect* damage_rect) {
+QuadList::Iterator DCLayerOverlayProcessor::ProcessForOverlay(
+    const gfx::RectF& display_rect,
+    RenderPass* render_pass,
+    const gfx::Rect& quad_rectangle,
+    const QuadList::Iterator& it,
+    gfx::Rect* damage_rect) {
   // The quad is on top, so promote it to an overlay and remove all damage
   // underneath it.
-  bool display_rect_changed = (display_rect != previous_display_rect_);
-  if ((*it)
-          ->shared_quad_state->quad_to_target_transform
-          .Preserves2dAxisAlignment() &&
-      !display_rect_changed && !(*it)->ShouldDrawWithBlending()) {
+  const bool display_rect_changed = (display_rect != previous_display_rect_);
+  const bool is_axis_aligned = it->shared_quad_state->quad_to_target_transform
+                                   .Preserves2dAxisAlignment();
+  const bool needs_blending = it->ShouldDrawWithBlending();
+
+  if (is_axis_aligned && !display_rect_changed && !needs_blending)
     damage_rect->Subtract(quad_rectangle);
-  }
-  *it = quad_list->EraseAndInvalidateAllPointers(*it);
+
+  return render_pass->quad_list.EraseAndInvalidateAllPointers(it);
 }
 
 void DCLayerOverlayProcessor::ProcessForUnderlay(
@@ -500,7 +552,8 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
   dc_layer->z_order = -1 - current_frame_processed_overlay_count_;
 
   const SharedQuadState* shared_quad_state = it->shared_quad_state;
-  gfx::Rect rect = it->visible_rect;
+  const gfx::Rect rect = it->visible_rect;
+  const bool needs_blending = it->needs_blending;
 
   // If the video is translucent and uses SrcOver blend mode, we can achieve the
   // same result as compositing with video on top if we replace video quad with
@@ -519,12 +572,13 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
     SharedQuadState* new_shared_quad_state =
         render_pass->shared_quad_state_list.AllocateAndCopyFrom(
             shared_quad_state);
+    new_shared_quad_state->blend_mode = SkBlendMode::kDstOut;
+
     auto* replacement =
         render_pass->quad_list.ReplaceExistingElement<SolidColorDrawQuad>(it);
-    new_shared_quad_state->blend_mode = SkBlendMode::kDstOut;
     // Use needs_blending from original quad because blending might be because
     // of this flag or opacity.
-    replacement->SetAll(new_shared_quad_state, rect, rect, it->needs_blending,
+    replacement->SetAll(new_shared_quad_state, rect, rect, needs_blending,
                         SK_ColorBLACK, true /* force_anti_aliasing_off */);
   } else {
     // When the opacity == 1.0, drawing with transparent will be done without

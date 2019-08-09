@@ -54,23 +54,6 @@ class NET_EXPORT CookieStore {
 
   virtual ~CookieStore();
 
-  // Sets the cookies specified by |cookie_line| returned from |url|
-  // with options |options| in effect.  Expects a cookie line, like
-  // "a=1; domain=b.com".
-  //
-  // |server_time| indicates what the server sending us the Cookie
-  // thought the current time was when the cookie was produced.  This is used to
-  // adjust for clock skew between server and host.
-  //
-  // Fails either if the cookie is invalid or if this is a non-HTTPONLY cookie
-  // and it would overwrite an existing HTTPONLY cookie.
-  // Returns true if the cookie is successfully set.
-  virtual void SetCookieWithOptionsAsync(const GURL& url,
-                                         const std::string& cookie_line,
-                                         const CookieOptions& options,
-                                         base::Optional<base::Time> server_time,
-                                         SetCookiesCallback callback) = 0;
-
   // Set the cookie on the cookie store.  |cookie.IsCanonical()| must
   // be true.  |source_scheme| denotes the scheme of the resource setting this.
   //

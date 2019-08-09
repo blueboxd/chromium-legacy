@@ -11,7 +11,6 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/leveldb_proto/proto_database_provider_factory.h"
 
 namespace autofill {
 
@@ -32,7 +31,6 @@ StrikeDatabaseFactory::StrikeDatabaseFactory()
     : BrowserStateKeyedServiceFactory(
           "AutofillStrikeDatabase",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
 }
 
 StrikeDatabaseFactory::~StrikeDatabaseFactory() {}
@@ -43,8 +41,7 @@ std::unique_ptr<KeyedService> StrikeDatabaseFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
 
   leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetInstance()
-          ->GetForBrowserState(chrome_browser_state);
+      chrome_browser_state->GetProtoDatabaseProvider();
 
   return std::make_unique<autofill::StrikeDatabase>(
       db_provider, chrome_browser_state->GetStatePath());

@@ -288,8 +288,7 @@ class WebState : public base::SupportsUserData {
   // will set the trustLevel enum to the appropriate level from a security point
   // of view. The caller has to handle the case where |trust_level| is not
   // appropriate.  Passing |null| will skip the trust check.
-  // TODO(stuartmorgan): Figure out a clean API for this.
-  // See http://crbug.com/457679
+  // TODO(crbug.com/457679): Figure out a clean API for this.
   virtual GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const = 0;
 
   // Returns true if a WebInterstitial is currently displayed.

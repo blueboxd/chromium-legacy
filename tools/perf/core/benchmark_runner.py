@@ -14,9 +14,9 @@ from core import results_processor
 from telemetry import command_line
 
 
-def main(config):
+def main(config, args=None):
   options = command_line.ParseArgs(
-      environment=config,
+      environment=config, args=args,
       results_arg_parser=results_processor.ArgumentParser())
   results_processor.ProcessOptions(options)
   run_return_code = command_line.RunCommand(options)

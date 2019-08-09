@@ -51,7 +51,8 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
       kV8CacheOptionsDefault, module_responses_map,
       service_manager::mojom::blink::InterfaceProviderPtrInfo(),
-      BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
+      mojo::NullRemote(), BeginFrameProviderParams(),
+      nullptr /* parent_feature_policy */,
       base::UnguessableToken() /* agent_cluster_id */);
   global_scope_ = LayoutWorkletGlobalScope::Create(
       frame, std::move(creation_params), *reporting_proxy_,

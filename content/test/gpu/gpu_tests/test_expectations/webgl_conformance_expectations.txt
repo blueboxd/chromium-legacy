@@ -233,11 +233,13 @@ crbug.com/angleproject/2929 [ win vulkan passthrough ] conformance/canvas/canvas
 crbug.com/angleproject/2918 [ win vulkan passthrough ] conformance/canvas/draw-static-webgl-to-multiple-canvas-test.html [ Failure ]
 crbug.com/angleproject/2918 [ win vulkan passthrough ] conformance/canvas/draw-webgl-to-canvas-test.html [ Failure ]
 crbug.com/angleproject/2913 [ win vulkan passthrough ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
+crbug.com/angleproject/3469 [ win vulkan passthrough ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
 crbug.com/angleproject/2987 [ win vulkan passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
 crbug.com/angleproject/2911 [ win vulkan passthrough ] conformance/more/functions/copyTexSubImage2D.html [ Failure ]
 crbug.com/angleproject/2916 [ win vulkan passthrough ] conformance/offscreencanvas/context-lost-restored-worker.html [ Failure ]
 crbug.com/angleproject/2916 [ win vulkan passthrough ] conformance/offscreencanvas/context-lost-restored.html [ Failure ]
 crbug.com/angleproject/2909 [ win vulkan passthrough ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Failure ]
+crbug.com/angleproject/3788 [ win vulkan passthrough ] conformance/reading/read-pixels-test.html [ RetryOnFailure ]
 crbug.com/angleproject/2722 [ win vulkan passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ Failure ]
 crbug.com/angleproject/2910 [ win vulkan passthrough ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
 crbug.com/angleproject/2722 [ win vulkan passthrough ] conformance/renderbuffers/framebuffer-state-restoration.html [ Failure ]
@@ -253,7 +255,6 @@ crbug.com/angleproject/2722 [ win vulkan passthrough ] conformance/textures/misc
 crbug.com/angleproject/2914 [ win vulkan passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
 crbug.com/angleproject/2913 [ win vulkan passthrough ] conformance/textures/misc/texture-hd-dpi.html [ Failure ]
 crbug.com/angleproject/2722 [ win vulkan passthrough ] conformance/textures/misc/texture-mips.html [ Failure ]
-crbug.com/angleproject/3469 [ win vulkan passthrough ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
 
 # Note: the following test crashes so it's skipped.  http://anglebug.com/3352
 crbug.com/angleproject/2921 [ win vulkan passthrough ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]

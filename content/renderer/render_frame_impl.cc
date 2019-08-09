@@ -509,7 +509,7 @@ void FillNavigationParamsRequest(
                   signed_exchange_utils::CreateHeaderIntegrityHashString(
                       exchange->header_integrity)),
               exchange->inner_url, web_response,
-              std::move(exchange->loader_factory_handle)));
+              std::move(exchange->loader_factory_handle).PassPipe()));
     }
   }
 
@@ -2536,7 +2536,11 @@ void RenderFrameImpl::OnDeleteFrame(FrameDeleteIntention intent) {
       // frame when a commit (and ownership transfer) is imminent.
       // TODO(dcheng): This is the case of https://crbug.com/838348.
       DCHECK(is_main_frame_);
+#if !defined(OS_ANDROID)
+      // This check is not enabled on Android, since it seems like it's much
+      // easier to trigger data races there.
       CHECK(!in_frame_tree_);
+#endif  // !defined(OS_ANDROID)
       break;
   }
 
@@ -3061,7 +3065,8 @@ void RenderFrameImpl::LoadNavigationErrorPage(
       ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
 
   // The load of the error page can result in this frame being removed.
-  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState());
+  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState(),
+                           base::DoNothing::Once());
   // Do not access |this| or |frame_| without checking weak self.
 }
 
@@ -3638,6 +3643,10 @@ void RenderFrameImpl::CommitNavigationWithParams(
       // about:blank.
       common_params->url == url::kAboutSrcdocURL;
 
+  // TODO(lukasza): https://crbug.com/936696: No need to postpone setting the
+  // |new_loader_factories| once we start swapping RenderFrame^H^H^H
+  // RenderDocument on every cross-document navigation.
+  scoped_refptr<ChildURLLoaderFactoryBundle> new_loader_factories;
   if (inherit_loaders_from_creator) {
     // The browser process didn't provide any way to fetch subresources, it
     // expects this document to inherit loaders from its parent.
@@ -3645,13 +3654,15 @@ void RenderFrameImpl::CommitNavigationWithParams(
     DCHECK(!subresource_overrides);
     DCHECK(!prefetch_loader_factory);
 
-    loader_factories_ = nullptr;  // Will be lazily initialized in
-                                  // GetLoaderFactoryBundle().
+    new_loader_factories = GetLoaderFactoryBundleFromCreator();
   } else {
-    SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
-                             std::move(subresource_overrides),
-                             std::move(prefetch_loader_factory));
+    new_loader_factories = CreateLoaderFactoryBundle(
+        std::move(subresource_loader_factories),
+        std::move(subresource_overrides), std::move(prefetch_loader_factory));
   }
+  base::OnceClosure call_before_attaching_new_document =
+      base::BindOnce(&RenderFrameImpl::SetLoaderFactoryBundle,
+                     weak_factory_.GetWeakPtr(), new_loader_factories);
 
   // If the navigation is for "view source", the WebLocalFrame needs to be put
   // in a special mode.
@@ -3690,12 +3701,24 @@ void RenderFrameImpl::CommitNavigationWithParams(
 
   navigation_params->frame_load_type = load_type;
   navigation_params->history_item = item_for_history_navigation;
-  navigation_params->service_worker_network_provider =
-      BuildServiceWorkerNetworkProviderForNavigation(
-          std::move(controller_service_worker_info), std::move(provider_info));
+
+  if (!provider_info) {
+    // An empty provider will always be created since it is expected in a
+    // certain number of places.
+    navigation_params->service_worker_network_provider =
+        ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
+  } else {
+    navigation_params->service_worker_network_provider =
+        ServiceWorkerNetworkProviderForFrame::Create(
+            this, std::move(provider_info),
+            std::move(controller_service_worker_info),
+            network::SharedURLLoaderFactory::Create(
+                new_loader_factories->CloneWithoutAppCacheFactory()));
+  }
 
   frame_->CommitNavigation(std::move(navigation_params),
-                           std::move(document_state));
+                           std::move(document_state),
+                           std::move(call_before_attaching_new_document));
   // The commit can result in this frame being removed. Do not use
   // |this| without checking a WeakPtr.
 }
@@ -3760,9 +3783,17 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   GetContentClient()->SetActiveURL(
       common_params->url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
-  SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
-                           base::nullopt /* subresource_overrides */,
-                           mojo::NullRemote() /* prefetch_loader_factory */);
+  // TODO(lukasza): https://crbug.com/936696: No need to postpone setting the
+  // |new_loader_factories| once we start swapping RenderFrame^H^H^H
+  // RenderDocument on every cross-document navigation.
+  scoped_refptr<ChildURLLoaderFactoryBundle> new_loader_factories =
+      CreateLoaderFactoryBundle(
+          std::move(subresource_loader_factories),
+          base::nullopt /* subresource_overrides */,
+          mojo::NullRemote() /* prefetch_loader_factory */);
+  base::OnceClosure call_before_attaching_new_document =
+      base::BindOnce(&RenderFrameImpl::SetLoaderFactoryBundle,
+                     weak_factory_.GetWeakPtr(), new_loader_factories);
 
   // Send the provisional load failure.
   WebURLError error(
@@ -3897,7 +3928,8 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   // this method should return immediately and not touch any part of the object,
   // otherwise it will result in a use-after-free bug.
   frame_->CommitNavigation(std::move(navigation_params),
-                           std::move(document_state));
+                           std::move(document_state),
+                           std::move(call_before_attaching_new_document));
   if (!weak_this)
     return;
 
@@ -6668,7 +6700,8 @@ void RenderFrameImpl::CommitSyncNavigation(
   // though the provider should not be used for any actual networking.
   navigation_params->service_worker_network_provider =
       ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
-  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState());
+  frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState(),
+                           base::DoNothing::Once());
 }
 
 void RenderFrameImpl::OnGetSavableResourceLinks() {
@@ -6969,58 +7002,68 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
 }
 
 ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
-  if (!loader_factories_) {
-    RenderFrameImpl* creator = RenderFrameImpl::FromWebFrame(
-        frame_->Parent() ? frame_->Parent() : frame_->Opener());
-    if (creator) {
-      auto bundle_info =
-          base::WrapUnique(static_cast<TrackedChildURLLoaderFactoryBundleInfo*>(
-              creator->GetLoaderFactoryBundle()->Clone().release()));
-      loader_factories_ =
-          base::MakeRefCounted<TrackedChildURLLoaderFactoryBundle>(
-              std::move(bundle_info));
-    } else {
-      SetupLoaderFactoryBundle(
-          nullptr, base::nullopt /* subresource_overrides */,
-          mojo::NullRemote() /* prefetch_loader_factory */);
-    }
-  }
+  if (!loader_factories_)
+    loader_factories_ = GetLoaderFactoryBundleFromCreator();
   return loader_factories_.get();
 }
 
-void RenderFrameImpl::SetupLoaderFactoryBundle(
+scoped_refptr<ChildURLLoaderFactoryBundle>
+RenderFrameImpl::GetLoaderFactoryBundleFromCreator() {
+  RenderFrameImpl* creator = RenderFrameImpl::FromWebFrame(
+      frame_->Parent() ? frame_->Parent() : frame_->Opener());
+  if (creator) {
+    auto bundle_info =
+        base::WrapUnique(static_cast<TrackedChildURLLoaderFactoryBundleInfo*>(
+            creator->GetLoaderFactoryBundle()->Clone().release()));
+    return base::MakeRefCounted<TrackedChildURLLoaderFactoryBundle>(
+        std::move(bundle_info));
+  }
+  return CreateLoaderFactoryBundle(
+      nullptr, base::nullopt /* subresource_overrides */,
+      mojo::NullRemote() /* prefetch_loader_factory */);
+}
+
+scoped_refptr<ChildURLLoaderFactoryBundle>
+RenderFrameImpl::CreateLoaderFactoryBundle(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory) {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-
-  loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
-      GetTaskRunner(blink::TaskType::kInternalLoading));
+  scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories =
+      base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
+          GetTaskRunner(blink::TaskType::kInternalLoading));
 
   // In some tests |render_thread| could be null.
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (render_thread && !info) {
     // This should only happen for a placeholder document or an initial empty
     // document cases.
     DCHECK(GetLoadingUrl().is_empty() ||
            GetLoadingUrl().spec() == url::kAboutBlankURL);
-    loader_factories_->Update(render_thread->blink_platform_impl()
-                                  ->CreateDefaultURLLoaderFactoryBundle()
-                                  ->PassInterface());
+    loader_factories->Update(render_thread->blink_platform_impl()
+                                 ->CreateDefaultURLLoaderFactoryBundle()
+                                 ->PassInterface());
   }
 
   if (info) {
-    loader_factories_->Update(
+    loader_factories->Update(
         std::make_unique<ChildURLLoaderFactoryBundleInfo>(std::move(info)));
   }
   if (subresource_overrides) {
-    loader_factories_->UpdateSubresourceOverrides(&*subresource_overrides);
+    loader_factories->UpdateSubresourceOverrides(&*subresource_overrides);
   }
   if (prefetch_loader_factory) {
-    loader_factories_->SetPrefetchLoaderFactory(
+    loader_factories->SetPrefetchLoaderFactory(
         std::move(prefetch_loader_factory));
   }
+
+  return loader_factories;
+}
+
+void RenderFrameImpl::SetLoaderFactoryBundle(
+    scoped_refptr<ChildURLLoaderFactoryBundle> loader_factories) {
+  loader_factories_ = std::move(loader_factories);
 }
 
 void RenderFrameImpl::UpdateEncoding(WebFrame* frame,
@@ -7532,8 +7575,9 @@ void RenderFrameImpl::LoadHTMLString(const std::string& html,
   navigation_params->frame_load_type =
       replace_current_item ? blink::WebFrameLoadType::kReplaceCurrentItem
                            : blink::WebFrameLoadType::kStandard;
-  frame_->CommitNavigation(std::move(navigation_params),
-                           nullptr /* extra_data */);
+  frame_->CommitNavigation(
+      std::move(navigation_params), nullptr /* extra_data */,
+      base::DoNothing::Once() /* call_before_attaching_new_document */);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> RenderFrameImpl::GetTaskRunner(
@@ -7735,23 +7779,6 @@ bool RenderFrameImpl::ShouldThrottleDownload() {
 
   num_burst_download_requests_++;
   return false;
-}
-
-std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
-RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
-    blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info) {
-  // An empty provider will always be created since it is expected in a certain
-  // number of places.
-  if (!provider_info) {
-    return ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
-  }
-  scoped_refptr<network::SharedURLLoaderFactory> fallback_factory =
-      network::SharedURLLoaderFactory::Create(
-          GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory());
-  return ServiceWorkerNetworkProviderForFrame::Create(
-      this, std::move(provider_info), std::move(controller_service_worker_info),
-      std::move(fallback_factory));
 }
 
 void RenderFrameImpl::AbortCommitNavigation(

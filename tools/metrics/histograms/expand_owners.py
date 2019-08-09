@@ -35,13 +35,16 @@ def _GetOwnersFilePath(path):
     Error: Raised if the given path is not well-formatted.
   """
   if _IsWellFormattedFilePath(path):
-    # Four '..' are used because calling dirname() yields the path to this
-    # module's directory, histograms, and the chromium directory is up four
+    # Three '..' are used because calling dirname() yields the path to this
+    # module's directory, histograms, and the directory above tools is up three
     # directory levels from the histograms directory.
-    path_to_chromium_directory = [
-        os.path.dirname(__file__), '..', '..', '..', '..']
+    path_to_dir_above_tools = [os.path.dirname(__file__), '..', '..', '..']
+
+    # _SRC is removed because the file system on the machine running the code
+    # may not have an src directory.
+    path_without_src = path[len(_SRC):]
     return os.path.abspath(
-        os.path.join(*(path_to_chromium_directory + path.split('/'))))
+        os.path.join(*(path_to_dir_above_tools + path_without_src.split('/'))))
   else:
     raise Error('The given path {} is not well-formatted.'
                 'Well-formatted paths begin with "src/" and end with "OWNERS"'

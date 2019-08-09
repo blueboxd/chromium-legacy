@@ -15,10 +15,11 @@ const CrNetworkListenerBehavior = {
   /** @override */
   attached: function() {
     this.observer_ =
-        new chromeos.networkConfig.mojom.CrosNetworkConfigObserver(this);
+        new chromeos.networkConfig.mojom.CrosNetworkConfigObserverReceiver(
+            this);
     network_config.MojoInterfaceProviderImpl.getInstance()
-        .getMojoServiceProxy()
-        .addObserver(this.observer_.$.createProxy());
+        .getMojoServiceRemote()
+        .addObserver(this.observer_.$.bindNewPipeAndPassRemote());
   },
 
   // CrosNetworkConfigObserver methods. Override these in the implementation.

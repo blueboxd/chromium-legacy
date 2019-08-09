@@ -270,4 +270,13 @@ LegacyAbstractInlineTextBox::PreviousOnLine() const {
   return nullptr;
 }
 
+bool LegacyAbstractInlineTextBox::IsLineBreak() const {
+  DCHECK(!inline_text_box_ ||
+         !inline_text_box_->GetLineLayoutItem().NeedsLayout());
+  if (!inline_text_box_)
+    return false;
+
+  return inline_text_box_->IsLineBreak();
+}
+
 }  // namespace blink

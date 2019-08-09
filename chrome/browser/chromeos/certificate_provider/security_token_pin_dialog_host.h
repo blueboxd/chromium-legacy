@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "chromeos/constants/security_token_pin_types.h"
 
 namespace chromeos {
 
@@ -17,21 +18,6 @@ namespace chromeos {
 // Only one dialog is supported at a time by a single host instance.
 class SecurityTokenPinDialogHost {
  public:
-  // Type of the information requested from the user.
-  enum class SecurityTokenPinCodeType {
-    kPin,
-    kPuk,
-  };
-
-  // Error to be displayed in the dialog.
-  enum class SecurityTokenPinErrorLabel {
-    kNone,
-    kUnknown,
-    kInvalidPin,
-    kInvalidPuk,
-    kMaxAttemptsExceeded,
-  };
-
   using SecurityTokenPinEnteredCallback =
       base::OnceCallback<void(const std::string& user_input)>;
   using SecurityTokenPinDialogClosedCallback = base::OnceClosure;

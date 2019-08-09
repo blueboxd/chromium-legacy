@@ -7,18 +7,15 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/supports_user_data.h"
-#include "base/task/post_task.h"
 #include "build/buildflag.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/header_modification_delegate.h"
-#include "chrome/browser/signin/header_modification_delegate_on_io_thread_impl.h"
+#include "chrome/browser/signin/header_modification_delegate_on_ui_thread_impl.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_context.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -28,37 +25,32 @@ namespace signin {
 
 namespace {
 
-// User data key for ResourceContextData.
-const void* const kResourceContextUserDataKey = &kResourceContextUserDataKey;
+// User data key for BrowserContextData.
+const void* const kBrowserContextUserDataKey = &kBrowserContextUserDataKey;
 
-// Owns all of the ProxyingURLLoaderFactorys for a given Profile. Since these
-// live on the IO thread this is done indirectly through the
-// content::ResourceContext.
-class ResourceContextData : public base::SupportsUserData::Data {
+// Owns all of the ProxyingURLLoaderFactorys for a given Profile.
+class BrowserContextData : public base::SupportsUserData::Data {
  public:
-  ~ResourceContextData() override {}
+  ~BrowserContextData() override {}
 
   static void StartProxying(
-      content::ResourceContext* resource_context,
+      Profile* profile,
       content::WebContents::Getter web_contents_getter,
       network::mojom::URLLoaderFactoryRequest request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-    auto* self = static_cast<ResourceContextData*>(
-        resource_context->GetUserData(kResourceContextUserDataKey));
+    auto* self = static_cast<BrowserContextData*>(
+        profile->GetUserData(kBrowserContextUserDataKey));
     if (!self) {
-      self = new ResourceContextData();
-      resource_context->SetUserData(kResourceContextUserDataKey,
-                                    base::WrapUnique(self));
+      self = new BrowserContextData();
+      profile->SetUserData(kBrowserContextUserDataKey, base::WrapUnique(self));
     }
 
-    auto delegate = std::make_unique<HeaderModificationDelegateOnIOThreadImpl>(
-        resource_context);
+    auto delegate =
+        std::make_unique<HeaderModificationDelegateOnUIThreadImpl>(profile);
     auto proxy = std::make_unique<ProxyingURLLoaderFactory>(
         std::move(delegate), std::move(web_contents_getter), std::move(request),
         std::move(target_factory),
-        base::BindOnce(&ResourceContextData::RemoveProxy,
+        base::BindOnce(&BrowserContextData::RemoveProxy,
                        self->weak_factory_.GetWeakPtr()));
     self->proxies_.emplace(std::move(proxy));
   }
@@ -70,14 +62,14 @@ class ResourceContextData : public base::SupportsUserData::Data {
   }
 
  private:
-  ResourceContextData() {}
+  BrowserContextData() {}
 
   std::set<std::unique_ptr<ProxyingURLLoaderFactory>, base::UniquePtrComparator>
       proxies_;
 
-  base::WeakPtrFactory<ResourceContextData> weak_factory_{this};
+  base::WeakPtrFactory<BrowserContextData> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(ResourceContextData);
+  DISALLOW_COPY_AND_ASSIGN(BrowserContextData);
 };
 
 }  // namespace
@@ -472,12 +464,9 @@ bool ProxyingURLLoaderFactory::MaybeProxyRequest(
       base::BindRepeating(&content::WebContents::FromFrameTreeNodeId,
                           render_frame_host->GetFrameTreeNodeId());
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&ResourceContextData::StartProxying,
-                                profile->GetResourceContext(),
-                                std::move(web_contents_getter),
-                                std::move(proxied_receiver),
-                                std::move(target_factory_info)));
+  BrowserContextData::StartProxying(profile, std::move(web_contents_getter),
+                                    std::move(proxied_receiver),
+                                    std::move(target_factory_info));
   return true;
 }
 

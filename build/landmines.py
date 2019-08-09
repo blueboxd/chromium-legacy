@@ -133,7 +133,8 @@ def main():
 
   landmines = []
   for s in options.landmine_scripts:
-    proc = subprocess.Popen([sys.executable, s], stdout=subprocess.PIPE)
+    proc = subprocess.Popen([sys.executable, s], stdout=subprocess.PIPE,
+                            universal_newlines=True)
     output, _ = proc.communicate()
     landmines.extend([('%s\n' % l.strip()) for l in output.splitlines()])
   clobber_if_necessary(landmines, options.src_dir)

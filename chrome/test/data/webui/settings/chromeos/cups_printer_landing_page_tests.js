@@ -202,13 +202,13 @@ suite('CupsSavedPrintersTests', function() {
   /** @type {NetworkingPrivate} */
   let api_;
 
-  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
+  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_;
 
   suiteSetup(function() {
     api_ = new chrome.FakeNetworkingPrivate();
     mojoApi_ = new FakeNetworkConfig(api_);
-    network_config.MojoInterfaceProviderImpl.getInstance().proxy_ = mojoApi_;
+    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
   });
 
   setup(function() {
@@ -411,7 +411,7 @@ suite('CupsNearbyPrintersTests', function() {
   /** @type {?NetworkingPrivate} */
   let api_;
 
-  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
+  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_;
 
   /** @type {!Array<crOnc.NetworkStateProperties>} networks */
@@ -438,7 +438,7 @@ suite('CupsNearbyPrintersTests', function() {
   suiteSetup(function() {
     api_ = new chrome.FakeNetworkingPrivate();
     mojoApi_ = new FakeNetworkConfig(api_);
-    network_config.MojoInterfaceProviderImpl.getInstance().proxy_ = mojoApi_;
+    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
   });
 
   setup(function() {

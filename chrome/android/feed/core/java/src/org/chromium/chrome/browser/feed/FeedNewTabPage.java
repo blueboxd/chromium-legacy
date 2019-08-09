@@ -18,6 +18,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -63,8 +65,12 @@ public class FeedNewTabPage
                 NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
-        mNewTabPageLayout.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
-                mSearchProviderHasLogo,
+        OverviewModeBehavior overviewModeBehavior = activity instanceof ChromeTabbedActivity
+                ? activity.getOverviewModeBehavior()
+                : null;
+
+        mNewTabPageLayout.initialize(mNewTabPageManager, activity, overviewModeBehavior,
+                mTileGroupDelegate, mSearchProviderHasLogo,
                 TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
                 mCoordinator.getScrollDelegate(), mContextMenuManager, mCoordinator.getUiConfig());
     }

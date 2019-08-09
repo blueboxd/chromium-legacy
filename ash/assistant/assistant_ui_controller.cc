@@ -15,6 +15,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/cpp/toast_data.h"
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -362,6 +363,11 @@ void AssistantUiController::OnUiVisibilityChanged(
 }
 
 void AssistantUiController::ShowUi(AssistantEntryPoint entry_point) {
+  // Skip if the opt-in window is active.
+  auto* assistant_setup = AssistantSetup::GetInstance();
+  if (assistant_setup && assistant_setup->BounceOptInWindowIfActive())
+    return;
+
   auto* voice_interaction_controller = VoiceInteractionController::Get();
 
   if (!voice_interaction_controller->settings_enabled().value_or(false) ||

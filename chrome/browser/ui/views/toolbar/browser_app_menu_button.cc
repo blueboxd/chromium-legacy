@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/in_product_help/in_product_help.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
@@ -307,6 +308,8 @@ bool BrowserAppMenuButton::AreDropTypesRequired() {
 }
 
 bool BrowserAppMenuButton::CanDrop(const ui::OSExchangeData& data) {
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    return false;
   return BrowserActionDragData::CanDrop(data,
                                         toolbar_view_->browser()->profile());
 }

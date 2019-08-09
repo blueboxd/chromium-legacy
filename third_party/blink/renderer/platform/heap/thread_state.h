@@ -338,15 +338,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     return weak_persistent_region_.get();
   }
 
-  // Visit all non-weak persistents allocated on this thread.
-  void VisitPersistents(Visitor*);
-
-  // Visit all weak persistents allocated on this thread.
-  void VisitWeakPersistents(Visitor*);
-
-  // Visit all DOM wrappers allocatd on this thread.
-  void VisitDOMWrappers(Visitor*);
-
   struct GCSnapshotInfo {
     STACK_ALLOCATED();
 
@@ -360,12 +351,9 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     Vector<size_t> dead_size;
   };
 
-  void FreePersistentNode(PersistentRegion*, PersistentNode*);
-
-  using PersistentClearCallback = void (*)(void*);
-
-  void RegisterStaticPersistentNode(PersistentNode*, PersistentClearCallback);
+  void RegisterStaticPersistentNode(PersistentNode*);
   void ReleaseStaticPersistentNodes();
+  void FreePersistentNode(PersistentRegion*, PersistentNode*);
 
   v8::Isolate* GetIsolate() const { return isolate_; }
 
@@ -520,6 +508,15 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
                                     Address*,
                                     Address*);
 
+  // Visit all non-weak persistents allocated on this thread.
+  void VisitPersistents(Visitor*);
+
+  // Visit all weak persistents allocated on this thread.
+  void VisitWeakPersistents(Visitor*);
+
+  // Visit all DOM wrappers allocatd on this thread.
+  void VisitDOMWrappers(Visitor*);
+
   // ShouldForceConservativeGC
   // implements the heuristics that are used to determine when to collect
   // garbage.
@@ -602,9 +599,10 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   base::TimeDelta next_incremental_marking_step_duration_;
   base::TimeDelta previous_incremental_marking_time_left_;
 
-  GCState gc_state_;
-  GCPhase gc_phase_;
-  BlinkGC::GCReason reason_for_scheduled_gc_;
+  GCState gc_state_ = GCState::kNoGCScheduled;
+  GCPhase gc_phase_ = GCPhase::kNone;
+  BlinkGC::GCReason reason_for_scheduled_gc_ =
+      BlinkGC::GCReason::kForcedGCForTesting;
 
   using PreFinalizerCallback = bool (*)(void*);
   using PreFinalizer = std::pair<void*, PreFinalizerCallback>;
@@ -630,10 +628,9 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // references that either have to be cleared upon the thread
   // detaching from Oilpan and shutting down or references we
   // have to clear before initiating LSan's leak detection.
-  HashMap<PersistentNode*, PersistentClearCallback> static_persistents_;
+  HashSet<PersistentNode*> static_persistents_;
 
-  size_t reported_memory_to_v8_;
-
+  size_t reported_memory_to_v8_ = 0;
   int gc_age_ = 0;
 
   struct GCData {

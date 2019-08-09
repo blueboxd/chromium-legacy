@@ -107,7 +107,7 @@ void ImagePaintTimingDetector::ReportNoCandidateToTrace() {
                ToTraceValue(&frame_view_->GetFrame()));
 }
 
-void ImagePaintTimingDetector::UpdateCandidate() {
+ImageRecord* ImagePaintTimingDetector::UpdateCandidate() {
   ImageRecord* largest_image_record =
       records_manager_.FindLargestPaintCandidate();
   const base::TimeTicks time = largest_image_record
@@ -116,27 +116,26 @@ void ImagePaintTimingDetector::UpdateCandidate() {
   const uint64_t size =
       largest_image_record ? largest_image_record->first_size : 0;
   PaintTimingDetector& detector = frame_view_->GetPaintTimingDetector();
+  // Two different candidates are rare to have the same time and size.
+  // So when they are unchanged, the candidate is considered unchanged.
   bool changed = detector.NotifyIfChangedLargestImagePaint(time, size);
-  if (!changed)
-    return;
-  if (!time.is_null()) {
-    if (auto* lcp_calculator = detector.GetLargestContentfulPaintCalculator())
-      lcp_calculator->OnLargestImageUpdated(largest_image_record);
-    // If an image has paint time, it must have been loaded.
-    DCHECK(largest_image_record->loaded);
-    ReportCandidateToTrace(*largest_image_record);
-  } else {
-    if (auto* lcp_calculator = detector.GetLargestContentfulPaintCalculator())
-      lcp_calculator->OnLargestImageUpdated(nullptr);
-    ReportNoCandidateToTrace();
+  if (changed) {
+    if (!time.is_null()) {
+      DCHECK(largest_image_record->loaded);
+      ReportCandidateToTrace(*largest_image_record);
+    } else {
+      ReportNoCandidateToTrace();
+    }
   }
+  return largest_image_record;
 }
 
 void ImagePaintTimingDetector::OnPaintFinished() {
   frame_index_++;
   if (need_update_timing_at_frame_end_) {
     need_update_timing_at_frame_end_ = false;
-    UpdateCandidate();
+    frame_view_->GetPaintTimingDetector()
+        .UpdateLargestContentfulPaintCandidate();
   }
 
   if (!records_manager_.HasUnregisteredRecordsInQueued(
@@ -187,7 +186,6 @@ void ImagePaintTimingDetector::ReportSwapTime(
   DCHECK(ThreadState::Current()->IsMainThread());
   records_manager_.AssignPaintTimeToRegisteredQueuedRecords(
       timestamp, last_queued_frame_index);
-  UpdateCandidate();
   num_pending_swap_callbacks_--;
   DCHECK_GE(num_pending_swap_callbacks_, 0);
 }

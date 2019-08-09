@@ -11,7 +11,7 @@
 #include "components/sessions/ios/ios_serialized_navigation_builder.h"
 #include "ios/web/public/web_state/web_state.h"
 
-namespace content {
+namespace web {
 class NavigationManager;
 }
 

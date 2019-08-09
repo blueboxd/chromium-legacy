@@ -354,9 +354,7 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
   if (result == AutofillClient::SUCCESS) {
     // Do *not* call payments_client_->Prepare() here. We shouldn't send
     // credentials until the user has explicitly accepted a prompt to upload.
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillDoNotUploadSaveUnsupportedCards) &&
-        !supported_card_bin_ranges.empty() &&
+    if (!supported_card_bin_ranges.empty() &&
         !payments::IsCreditCardNumberSupported(upload_request_.card.number(),
                                                supported_card_bin_ranges)) {
       // Attempt local card save if card not already saved.

@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host.h"
 #include "chrome/common/extensions/api/certificate_provider.h"
 #include "chrome/common/extensions/api/certificate_provider_internal.h"
+#include "chromeos/constants/security_token_pin_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_private_key.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -25,10 +26,8 @@
 
 namespace api_cp = extensions::api::certificate_provider;
 namespace api_cpi = extensions::api::certificate_provider_internal;
-using PinCodeType =
-    chromeos::SecurityTokenPinDialogHost::SecurityTokenPinCodeType;
-using PinErrorLabel =
-    chromeos::SecurityTokenPinDialogHost::SecurityTokenPinErrorLabel;
+using PinCodeType = chromeos::SecurityTokenPinCodeType;
+using PinErrorLabel = chromeos::SecurityTokenPinErrorLabel;
 
 namespace {
 

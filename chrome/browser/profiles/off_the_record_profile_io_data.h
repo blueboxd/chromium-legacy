@@ -60,7 +60,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   };
 
  private:
-  explicit OffTheRecordProfileIOData(Profile::ProfileType profile_type);
+  OffTheRecordProfileIOData();
   ~OffTheRecordProfileIOData() override;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileIOData);

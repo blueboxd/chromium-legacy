@@ -15,6 +15,7 @@
 #include "base/process/process_handle.h"
 #include "base/task/post_task.h"
 #include "base/token.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
 #include "ios/web/public/init/network_context_owner.h"
 #include "ios/web/public/security/certificate_policy_cache.h"
 #include "ios/web/public/thread/web_task_traits.h"
@@ -126,6 +127,14 @@ network::mojom::CookieManager* BrowserState::GetCookieManager() {
     network_context_->GetCookieManager(mojo::MakeRequest(&cookie_manager_));
   }
   return cookie_manager_.get();
+}
+
+leveldb_proto::ProtoDatabaseProvider* BrowserState::GetProtoDatabaseProvider() {
+  if (!proto_database_provider_) {
+    proto_database_provider_ =
+        std::make_unique<leveldb_proto::ProtoDatabaseProvider>(GetStatePath());
+  }
+  return proto_database_provider_.get();
 }
 
 void BrowserState::GetProxyResolvingSocketFactory(

@@ -3,6 +3,13 @@
 // found in the LICENSE file.
 
 /**
+ * @fileoverview 'switch-access-subpage' is the collapsible section containing
+ * Switch Access settings.
+ */
+
+(function() {
+
+/**
  * Available switch assignment values.
  * @enum {number}
  * @const
@@ -13,14 +20,29 @@ const SwitchAccessAssignmentValue = {
   ENTER: 2,
 };
 
+/** @type {!Array<number>} */
+const AUTO_SCAN_SPEED_RANGE_MS = [
+  500,  600,  700,  800,  900,  1000, 1100, 1200, 1300, 1400, 1500, 1600,
+  1700, 1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500, 2600, 2700, 2800,
+  2900, 3000, 3100, 3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900, 4000
+];
+
 /**
- * @fileoverview 'switch-access-subpage' is the collapsible section containing
- * Switch Access settings.
+ * @param {!Array<number>} ticksInMs
+ * @return {!Array<!cr_slider.SliderTick>}
  */
+function ticksWithLabelsInSec(ticksInMs) {
+  // Dividing by 1000 to convert milliseconds to seconds for the label.
+  return ticksInMs.map(x => ({label: `${x / 1000}`, value: x}));
+}
+
 Polymer({
   is: 'settings-switch-access-subpage',
 
-  behaviors: [I18nBehavior],
+  behaviors: [
+    I18nBehavior,
+    PrefsBehavior,
+  ],
 
   properties: {
     /**
@@ -32,15 +54,10 @@ Polymer({
     },
 
     /** @private {Array<number>} */
-    autoScanSpeedValuesMs_: {
+    autoScanSpeedRangeMs_: {
       readOnly: true,
       type: Array,
-      value: [
-        500,  600,  700,  800,  900,  1000, 1100, 1200, 1300,
-        1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100, 2200,
-        2300, 2400, 2500, 2600, 2700, 2800, 2900, 3000, 3100,
-        3200, 3300, 3400, 3500, 3600, 3700, 3800, 3900, 4000
-      ]
+      value: ticksWithLabelsInSec(AUTO_SCAN_SPEED_RANGE_MS),
     },
 
     /** @private {Object} */
@@ -123,6 +140,19 @@ Polymer({
   },
 
   /**
+   * @return {boolean} Whether to show settings for auto-scan within the
+   *     keyboard.
+   * @private
+   */
+  showKeyboardScanSettings_: function() {
+    const improvedTextInputEnabled = loadTimeData.getBoolean(
+        'showExperimentalAccessibilitySwitchAccessImprovedTextInput');
+    const autoScanEnabled = /** @type {boolean} */
+        (this.getPref('switch_access.auto_scan.enabled').value);
+    return improvedTextInputEnabled && autoScanEnabled;
+  },
+
+  /**
    * @param {string} command
    */
   onSwitchAssigned_: function(command) {
@@ -166,3 +196,4 @@ Polymer({
         'durationInSeconds', this.formatter_.format(scanSpeedValueSec));
   },
 });
+})();

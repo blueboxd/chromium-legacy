@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -21,6 +22,7 @@ import org.chromium.net.NetworkChangeNotifier;
  * start URL.
  */
 public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
+    private static final String TAG = "WebApkSplashNetObs";
     private Activity mActivity;
     private WebApkOfflineDialog mOfflineDialog;
     private String mWebApkName;
@@ -54,6 +56,11 @@ public class WebApkSplashNetworkErrorObserver extends EmptyTabObserver {
                 onNetworkChanged(tab);
                 break;
             default:
+                // TODO(mthiesse): These logs are for debugging https://crbug.com/983769 and should
+                // be removed once that's resolved.
+                Log.d(TAG,
+                        "Network error loading WebApk at URL: " + navigation.getUrl()
+                                + ", with error: " + navigation.errorCode());
                 onNetworkError(tab, navigation.errorCode());
                 break;
         }

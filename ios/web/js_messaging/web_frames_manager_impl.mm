@@ -27,7 +27,7 @@ NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 namespace web {
 
 WebFramesManagerImpl::WebFramesManagerImpl(WebFramesManagerDelegate& delegate)
-    : delegate_(delegate) {}
+    : delegate_(delegate), weak_factory_(this) {}
 
 WebFramesManagerImpl::~WebFramesManagerImpl() {
   RemoveAllWebFrames();
@@ -65,16 +65,26 @@ void WebFramesManagerImpl::OnWebViewUpdated(
   // time. This guarantees that when callbacks are invoked, |this| is always
   // valid.
   if (new_web_view) {
+    // TODO(crbug.com/991950): Clean up lifecycles of WebStateImpl and
+    // CRWWebController, ensure that callbacks will always be unregistered
+    // successfully during destruction. Remove WeakPtr here and use plain "this"
+    // instead.
+    base::WeakPtr<WebFramesManagerImpl> weak_ptr = weak_factory_.GetWeakPtr();
+
     [message_router
         setScriptMessageHandler:^(WKScriptMessage* message) {
-          this->OnFrameBecameAvailable(message);
+          if (weak_ptr) {
+            weak_ptr->OnFrameBecameAvailable(message);
+          }
         }
                            name:kFrameBecameAvailableMessageName
                         webView:new_web_view];
     [message_router
         setScriptMessageHandler:^(WKScriptMessage* message) {
           DCHECK(!delegate_.GetWebState()->IsBeingDestroyed());
-          this->OnFrameBecameUnavailable(message);
+          if (weak_ptr) {
+            weak_ptr->OnFrameBecameUnavailable(message);
+          }
         }
                            name:kFrameBecameUnavailableMessageName
                         webView:new_web_view];

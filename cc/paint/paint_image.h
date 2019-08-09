@@ -117,6 +117,7 @@ class CC_PAINT_EXPORT PaintImage {
     // CheckerImageTracker for all heuristics used.
     kAsync
   };
+  enum class ImageType { kPNG, kJPEG, kWEBP, kGIF, kICO, kBMP, kInvalid };
 
   // Returns the more conservative mode out of the two given ones.
   static DecodingMode GetConservative(DecodingMode one, DecodingMode two);
@@ -243,6 +244,9 @@ class CC_PAINT_EXPORT PaintImage {
 
   // Returns the color type of this image.
   SkColorType GetColorType() const;
+
+  // Returns the image type (e.g. PNG, WEBP) of this image.
+  ImageType GetImageType() const;
 
   // Returns a unique id for the pixel data for the frame at |frame_index|.
   FrameKey GetKeyForFrame(size_t frame_index) const;

@@ -25,7 +25,6 @@
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/prefs/pref_member.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "extensions/buildflags/buildflags.h"
@@ -85,58 +84,13 @@ class ProfileIOData {
   content_settings::CookieSettings* GetCookieSettings() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
 
-  StringPrefMember* google_services_account_id() const {
-    return &google_services_user_account_id_;
-  }
-
-  // Gets Sync state, for Dice account consistency.
-  bool IsSyncEnabled() const;
-
   BooleanPrefMember* safe_browsing_enabled() const {
     return &safe_browsing_enabled_;
   }
 
-  IntegerPrefMember* network_prediction_options() const {
-    return &network_prediction_options_;
-  }
-
-  BooleanPrefMember* signed_exchange_enabled() const {
-    return &signed_exchange_enabled_;
-  }
-
-  signin::AccountConsistencyMethod account_consistency() const {
-    return account_consistency_;
-  }
-
-#if !defined(OS_CHROMEOS)
-  std::string GetSigninScopedDeviceId() const;
-#endif
-
 #if defined(OS_CHROMEOS)
   std::string username_hash() const {
     return username_hash_;
-  }
-#endif
-
-  Profile::ProfileType profile_type() const {
-    return profile_type_;
-  }
-
-  bool IsOffTheRecord() const;
-
-  IntegerPrefMember* incognito_availibility() const {
-    return &incognito_availibility_pref_;
-  }
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  BooleanPrefMember* always_open_pdf_externally() const {
-    return &always_open_pdf_externally_;
-  }
-#endif
-
-#if defined(OS_CHROMEOS)
-  BooleanPrefMember* account_consistency_mirror_required() const {
-    return &account_consistency_mirror_required_pref_;
   }
 #endif
 
@@ -181,8 +135,6 @@ class ProfileIOData {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::InfoMap> extension_info_map;
 #endif
-    signin::AccountConsistencyMethod account_consistency =
-        signin::AccountConsistencyMethod::kDisabled;
 
 #if defined(OS_CHROMEOS)
     std::string username_hash;
@@ -196,7 +148,7 @@ class ProfileIOData {
     void* profile = nullptr;
   };
 
-  explicit ProfileIOData(Profile::ProfileType profile_type);
+  ProfileIOData();
 
   void InitializeOnUIThread(Profile* profile);
 
@@ -257,26 +209,8 @@ class ProfileIOData {
   mutable base::Callback<std::unique_ptr<net::ClientCertStore>()>
       client_cert_store_factory_;
 
-  mutable StringPrefMember google_services_user_account_id_;
-  mutable BooleanPrefMember sync_requested_;
-  mutable BooleanPrefMember sync_first_setup_complete_;
-  mutable signin::AccountConsistencyMethod account_consistency_;
-
-#if !defined(OS_CHROMEOS)
-  mutable StringPrefMember signin_scoped_device_id_;
-#endif
-
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember safe_browsing_enabled_;
-  mutable IntegerPrefMember network_prediction_options_;
-  mutable IntegerPrefMember incognito_availibility_pref_;
-  mutable BooleanPrefMember signed_exchange_enabled_;
-#if BUILDFLAG(ENABLE_PLUGINS)
-  mutable BooleanPrefMember always_open_pdf_externally_;
-#endif
-#if defined(OS_CHROMEOS)
-  mutable BooleanPrefMember account_consistency_mirror_required_pref_;
-#endif
 
   // Pointed to by URLRequestContext.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -297,8 +231,6 @@ class ProfileIOData {
   mutable scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
   mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-
-  const Profile::ProfileType profile_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIOData);
 };

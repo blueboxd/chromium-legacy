@@ -160,7 +160,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
       [](blink::mojom::FileSystemManagerRequest request,
          RenderProcessHost* host, const url::Origin& origin) {
         static_cast<RenderProcessHostImpl*>(host)->BindFileSystemManager(
-            std::move(request));
+            origin, std::move(request));
       }));
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     parameterized_binder_registry_.AddInterface(base::BindRepeating(

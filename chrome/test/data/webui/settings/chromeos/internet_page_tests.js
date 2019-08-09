@@ -12,7 +12,7 @@ suite('InternetPage', function() {
   /** @type {?NetworkingPrivate} */
   let api_;
 
-  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
+  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_;
 
   suiteSetup(function() {
@@ -47,7 +47,7 @@ suite('InternetPage', function() {
 
     api_ = new chrome.FakeNetworkingPrivate();
     mojoApi_ = new FakeNetworkConfig(api_);
-    network_config.MojoInterfaceProviderImpl.getInstance().proxy_ = mojoApi_;
+    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
 
     // Disable animations so sub-pages open within one event loop.
     testing.Test.disableAnimationsAndTransitions();

@@ -15,6 +15,7 @@
 #include "media/base/android/mock_media_codec_bridge.h"
 #include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/mock_abstract_texture.h"
+#include "media/gpu/android/mock_codec_buffer_wait_coordinator.h"
 #include "media/gpu/android/mock_texture_owner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

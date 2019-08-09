@@ -230,7 +230,8 @@ Polymer({
     return !(
         category == settings.ContentSettingsTypes.SERIAL_PORTS ||
         category == settings.ContentSettingsTypes.USB_DEVICES ||
-        category == settings.ContentSettingsTypes.BLUETOOTH_SCANNING);
+        category == settings.ContentSettingsTypes.BLUETOOTH_SCANNING ||
+        category == settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE);
   },
 
   /**
@@ -248,8 +249,10 @@ Polymer({
       return true;
     }
 
-    // For Bluetooth scanning permission 'ask' takes the place of 'allow'.
-    if (category == settings.ContentSettingsTypes.BLUETOOTH_SCANNING) {
+    // For Bluetooth scanning permission and Native File System write permission
+    // 'ask' takes the place of 'allow'.
+    if (category == settings.ContentSettingsTypes.BLUETOOTH_SCANNING ||
+        category == settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE) {
       return true;
     }
 

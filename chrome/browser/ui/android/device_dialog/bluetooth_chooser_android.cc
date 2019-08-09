@@ -42,7 +42,7 @@ BluetoothChooserAndroid::BluetoothChooserAndroid(
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> origin_string =
       base::android::ConvertUTF16ToJavaString(
-          env, url_formatter::FormatUrlForSecurityDisplay(origin.GetURL()));
+          env, url_formatter::FormatOriginForSecurityDisplay(origin));
   java_dialog_.Reset(Java_BluetoothChooserDialog_create(
       env, window_android, origin_string, helper->GetSecurityLevel(),
       reinterpret_cast<intptr_t>(this)));

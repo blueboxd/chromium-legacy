@@ -102,6 +102,10 @@ used when committed.
     update the clang-format binaries that come with a checkout of Chromium
 
 ### General Development
+*   [Contributing to Chromium](contributing.md) - Reference workflow process for
+    contributing to the Chromium code base.
+*   [Commit Checklist](commit_checklist.md) - Streamlined checklist to go
+    through before uploading CLs on Gerrit.
 *   [Code Reviews](code_reviews.md) - Code review requirements and guidelines
 *   [Respectful Code Reviews](cr_respect.md) - A guide for code reviewers
 *   [Respectful Changes](cl_respect.md) - A guide for code authors

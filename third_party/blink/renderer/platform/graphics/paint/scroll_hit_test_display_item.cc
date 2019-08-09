@@ -20,9 +20,10 @@ ScrollHitTestDisplayItem::ScrollHitTestDisplayItem(
       scroll_container_bounds_(scroll_container_bounds) {
   DCHECK(RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
 #if DCHECK_IS_ON()
-  if (type == DisplayItem::Type::kPluginScrollHitTest) {
-    // Plugin scroll hit tests are only used to prevent composited scrolling
-    // and should not have a scroll offset node.
+  if (type == DisplayItem::Type::kResizerScrollHitTest ||
+      type == DisplayItem::Type::kPluginScrollHitTest) {
+    // Resizer and plugin scroll hit tests are only used to prevent composited
+    // scrolling and should not have a scroll offset node.
     DCHECK(!scroll_offset_node);
   } else if (type == DisplayItem::Type::kScrollHitTest) {
     DCHECK(scroll_offset_node);

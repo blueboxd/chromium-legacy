@@ -283,21 +283,6 @@ base::Optional<std::string> ProcessAppIdExtension(std::string appid,
   return base::nullopt;
 }
 
-device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
-    const std::string& client_data_json,
-    const blink::mojom::PublicKeyCredentialCreationOptionsPtr& options,
-    bool is_incognito) {
-  device::CtapMakeCredentialRequest make_credential_param(
-      client_data_json, options->relying_party, options->user,
-      device::PublicKeyCredentialParams(options->public_key_parameters));
-
-  make_credential_param.exclude_list = options->exclude_credentials;
-
-  make_credential_param.hmac_secret = options->hmac_create_secret;
-  make_credential_param.is_incognito_mode = is_incognito;
-  return make_credential_param;
-}
-
 // The application parameter is the SHA-256 hash of the UTF-8 encoding of
 // the application identity (i.e. relying_party_id) of the application
 // requesting the registration.
@@ -698,6 +683,19 @@ void AuthenticatorCommon::MakeCredential(
     return;
   }
 
+  base::Optional<std::string> appid_exclude;
+  if (options->appid_exclude) {
+    appid_exclude =
+        ProcessAppIdExtension(*options->appid_exclude, caller_origin);
+    if (!appid_exclude) {
+      InvokeCallbackAndCleanup(
+          std::move(callback),
+          blink::mojom::AuthenticatorStatus::INVALID_DOMAIN, nullptr,
+          Focus::kDontCheck);
+      return;
+    }
+  }
+
   if (!IsAPrioriAuthenticatedUrl(options->user.icon_url) ||
       !IsAPrioriAuthenticatedUrl(options->relying_party.icon_url)) {
     ReportSecurityCheckFailure(
@@ -808,8 +806,14 @@ void AuthenticatorCommon::MakeCredential(
       "WebAuthentication.MakeCredentialExcludeCredentialsCount",
       options->exclude_credentials.size());
 
-  ctap_make_credential_request_ = CreateCtapMakeCredentialRequest(
-      client_data_json_, options, browser_context()->IsOffTheRecord());
+  ctap_make_credential_request_ = device::CtapMakeCredentialRequest(
+      client_data_json_, options->relying_party, options->user,
+      device::PublicKeyCredentialParams(options->public_key_parameters));
+  ctap_make_credential_request_->exclude_list = options->exclude_credentials;
+  ctap_make_credential_request_->hmac_secret = options->hmac_create_secret;
+  ctap_make_credential_request_->app_id = std::move(appid_exclude);
+  ctap_make_credential_request_->is_incognito_mode =
+      browser_context()->IsOffTheRecord();
   // On dual protocol CTAP2/U2F devices, force credential creation over U2F.
   ctap_make_credential_request_->is_u2f_only =
       OriginIsCryptoTokenExtension(caller_origin_);

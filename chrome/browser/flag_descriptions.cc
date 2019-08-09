@@ -472,12 +472,6 @@ const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[] =
     "If enabled, local cards from unsupported networks will not be offered "
     "local card migration.";
 
-const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[] =
-    "Prevents upload save on cards from unsupported networks";
-const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[] =
-    "If enabled, cards from unsupported networks will not be offered upload "
-    "save, and will instead be offered local save.";
-
 const char kEnableAutofillImportDynamicFormsName[] =
     "Allow credit card import from dynamic forms after entry";
 const char kEnableAutofillImportDynamicFormsDescription[] =
@@ -508,12 +502,6 @@ const char kEnableAutofillSaveCreditCardUsesImprovedMessagingName[] =
 const char kEnableAutofillSaveCreditCardUsesImprovedMessagingDescription[] =
     "If enabled, four variations of new messaging will be used in credit card "
     "upload bubble.";
-
-const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[] =
-    "Send experiment flag IDs in calls to Google Payments";
-const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[] =
-    "If enabled, adds the status of certain experiment variations when making "
-    "calls to Google Payments.";
 
 const char kEnableAutofillUpdatedCardUnmaskPromptUiName[] =
     "Enable new card unmask prompt UI";
@@ -2914,6 +2902,10 @@ const char kEnableCustomMacPaperSizesDescription[] =
 
 const char kMacTouchBarName[] = "Hardware Touch Bar";
 const char kMacTouchBarDescription[] = "Control the use of the Touch Bar.";
+
+const char kMacSyscallSandboxName[] = "Mac Syscall Filtering Sandbox";
+const char kMacSyscallSandboxDescription[] =
+    "Controls whether the macOS sandbox filters syscalls.";
 
 const char kMacV2GPUSandboxName[] = "Mac V2 GPU Sandbox";
 const char kMacV2GPUSandboxDescription[] =

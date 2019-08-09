@@ -336,7 +336,8 @@ suite('<history-synced-device-manager>', function() {
     // Should show no synced tabs message on initial load. Regression test for
     // https://crbug.com/915641.
     return Promise
-        .all([PolymerTest.flushTasks(), test_util.waitForRender(element)])
+        .all(
+            [PolymerTest.flushTasks(), test_util.waitBeforeNextRender(element)])
         .then(() => {
           assertNoSyncedTabsMessageShown(element, 'noSyncedResults');
           const cards = getCards(element);

@@ -290,9 +290,9 @@ window.chrome.embeddedSearch.newTabPage.searchSuggestionSelected;
 window.chrome.embeddedSearch.newTabPage.selectLocalBackgroundImage;
 
 /**
- * @param {string} background_url
+ * No params.
  */
-window.chrome.embeddedSearch.newTabPage.setBackgroundURL;
+window.chrome.embeddedSearch.newTabPage.resetBackgroundInfo;
 
 /**
  * @param {string} background_url
@@ -352,6 +352,7 @@ window.chrome.embeddedSearch.newTabPage.updateCustomLink;
 window.chrome.embeddedSearch.searchBox;
 window.chrome.embeddedSearch.searchBox.isKeyCaptureEnabled;
 window.chrome.embeddedSearch.searchBox.paste;
+window.chrome.embeddedSearch.searchBox.rtl;
 window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes;
 window.chrome.embeddedSearch.searchBox.stopCapturingKeyStrokes;
 

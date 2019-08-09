@@ -27,6 +27,37 @@ inline bool NeedsColumnBalancing(LayoutUnit block_size,
          style.GetColumnFill() == EColumnFill::kBalance;
 }
 
+LayoutUnit CalculateColumnContentBlockSize(
+    const NGPhysicalContainerFragment& fragment,
+    bool multicol_is_horizontal_writing_mode) {
+  // TODO(mstensho): Once LayoutNG is capable of calculating overflow on its
+  // own, we should probably just move over to relying on that machinery,
+  // instead of doing all this on our own.
+  LayoutUnit total_size;
+  for (const auto& child : fragment.Children()) {
+    LayoutUnit size;
+    LayoutUnit offset;
+    if (multicol_is_horizontal_writing_mode) {
+      offset = child.Offset().top;
+      size = child->Size().height;
+    } else {
+      offset = child.Offset().left;
+      size = child->Size().width;
+    }
+    if (child->IsContainer()) {
+      LayoutUnit children_size = CalculateColumnContentBlockSize(
+          To<NGPhysicalContainerFragment>(*child),
+          multicol_is_horizontal_writing_mode);
+      if (size < children_size)
+        size = children_size;
+    }
+    LayoutUnit block_end = offset + size;
+    if (total_size < block_end)
+      total_size = block_end;
+  }
+  return total_size;
+}
+
 }  // namespace
 
 NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
@@ -320,11 +351,9 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
       {Node(), fragment_geometry, space});
   scoped_refptr<const NGLayoutResult> result = balancing_algorithm.Layout();
 
-  // TODO(mstensho): This is where the fun begins. We need to examine the entire
-  // fragment tree, not just the root.
-  LayoutUnit single_strip_block_size =
-      NGFragment(space.GetWritingMode(), result->PhysicalFragment())
-          .BlockSize();
+  LayoutUnit single_strip_block_size = CalculateColumnContentBlockSize(
+      result->PhysicalFragment(),
+      IsHorizontalWritingMode(space.GetWritingMode()));
 
   // Some extra care is required the division here. We want a the resulting
   // LayoutUnit value to be large enough to prevent overflowing columns. Use

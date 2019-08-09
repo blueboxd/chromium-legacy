@@ -162,17 +162,10 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
       pref_service);
   io_data_->safe_browsing_enabled()->MoveToSequence(
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
-#if BUILDFLAG(ENABLE_PLUGINS)
-  io_data_->always_open_pdf_externally()->Init(
-      prefs::kPluginsAlwaysOpenPdfExternally, pref_service);
-  io_data_->always_open_pdf_externally()->MoveToSequence(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
-#endif
   io_data_->InitializeOnUIThread(profile_);
 }
 
-ProfileImplIOData::ProfileImplIOData()
-    : ProfileIOData(Profile::REGULAR_PROFILE) {}
+ProfileImplIOData::ProfileImplIOData() = default;
 
 ProfileImplIOData::~ProfileImplIOData() {
   DestroyResourceContext();

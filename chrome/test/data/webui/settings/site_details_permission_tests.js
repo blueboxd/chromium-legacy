@@ -457,4 +457,41 @@ suite('SiteDetailsPermission', function() {
         assertFalse(testElement.$.permission.disabled);
         assertFalse(testElement.$.permission.options.block.hidden);
       });
+
+  test(
+      'Native File System Write: ASK/BLOCK can be chosen as a preference by ' +
+          'users',
+      function() {
+        const origin = 'https://www.example.com';
+        testElement.category =
+            settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE;
+        testElement.label = 'Save to original files';
+        testElement.site = {
+          origin: origin,
+          embeddingOrigin: origin,
+          setting: settings.ContentSetting.ASK,
+          source: settings.SiteSettingSource.PREFERENCE,
+        };
+
+        // In addition to the assertions below, the main goal of this test is to
+        // ensure we do not hit any assertions when choosing ASK as a setting.
+        assertEquals(
+            testElement.$.permission.value, settings.ContentSetting.ASK);
+        assertFalse(testElement.$.permission.disabled);
+        assertFalse(testElement.$.permission.options.ask.hidden);
+
+        testElement.site = {
+          origin: origin,
+          embeddingOrigin: origin,
+          setting: settings.ContentSetting.BLOCK,
+          source: settings.SiteSettingSource.PREFERENCE,
+        };
+
+        // In addition to the assertions below, the main goal of this test is to
+        // ensure we do not hit any assertions when choosing BLOCK as a setting.
+        assertEquals(
+            testElement.$.permission.value, settings.ContentSetting.BLOCK);
+        assertFalse(testElement.$.permission.disabled);
+        assertFalse(testElement.$.permission.options.block.hidden);
+      });
 });

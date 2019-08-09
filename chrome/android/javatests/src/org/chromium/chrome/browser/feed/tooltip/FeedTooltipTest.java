@@ -13,8 +13,9 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static com.google.android.libraries.feed.basicstream.internal.viewholders.ViewHolderType.TYPE_CARD;
 
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
-import android.os.Build;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.filters.MediumTest;
@@ -31,7 +32,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -112,8 +112,6 @@ public class FeedTooltipTest {
 
     @Test
     @MediumTest
-    @DisableIf.
-    Build(sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/990135")
     @Feature({"FeedNewTabPage"})
     public void testShowTooltip() throws Exception {
         int callCount = mTestObserver.firstCardShownCallback.getCallCount();
@@ -124,7 +122,8 @@ public class FeedTooltipTest {
                 .perform(RecyclerViewActions.scrollToPosition(FIRST_CARD_POSITION),
                         RecyclerViewActions.actionOnItemAtPosition(FIRST_CARD_POSITION, click()));
         onView(withText(TOOLTIP_TEXT))
-                .inRoot(RootMatchers.isPlatformPopup())
+                .inRoot(RootMatchers.withDecorView(
+                        not(is(mActivityTestRule.getActivity().getWindow().getDecorView()))))
                 .check(matches(isDisplayed()));
     }
 }

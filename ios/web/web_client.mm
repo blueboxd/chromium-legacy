@@ -95,9 +95,9 @@ void WebClient::PrepareErrorPage(WebState* web_state,
                                  NSError* error,
                                  bool is_post,
                                  bool is_off_the_record,
-                                 NSString** error_html) {
+                                 base::OnceCallback<void(NSString*)> callback) {
   DCHECK(error);
-  *error_html = error.localizedDescription;
+  std::move(callback).Run(error.localizedDescription);
 }
 
 UIView* WebClient::GetWindowedContainer() {

@@ -9,6 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "components/optimization_guide/bloom_filter.h"
@@ -81,10 +82,12 @@ std::unique_ptr<proto::Configuration> ProcessHintsComponent(
 
 void RecordOptimizationFilterStatus(proto::OptimizationType optimization_type,
                                     OptimizationFilterStatus status) {
-  std::string histogram_name = base::StringPrintf(
-      "OptimizationGuide.OptimizationFilterStatus.%s",
-      GetStringNameForOptimizationType(optimization_type).c_str());
-  UMA_HISTOGRAM_ENUMERATION(histogram_name, status);
+  base::UmaHistogramExactLinear(
+      base::StringPrintf(
+          "OptimizationGuide.OptimizationFilterStatus.%s",
+          GetStringNameForOptimizationType(optimization_type).c_str()),
+      static_cast<int>(status),
+      static_cast<int>(OptimizationFilterStatus::kMaxValue));
 }
 
 std::unique_ptr<OptimizationFilter> ProcessOptimizationFilter(

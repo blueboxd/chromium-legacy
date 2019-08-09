@@ -577,7 +577,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return context->GetItem();
 }
 
-- (void)showTransientContentView:(CRWContentView*)contentView {
+- (void)showTransientContentView:(UIView<CRWScrollableContent>*)contentView {
   DCHECK(contentView);
   DCHECK(contentView.scrollView);
   // TODO(crbug.com/556848) Reenable DCHECK when |CRWWebControllerContainerView|

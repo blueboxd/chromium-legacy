@@ -2215,11 +2215,8 @@ class TestOverlayProcessor : public OverlayProcessor {
   };
 
   explicit TestOverlayProcessor(
-      ContextProvider* context_provider,
       std::unique_ptr<OverlayCandidateValidator> overlay_validator)
-      : OverlayProcessor(context_provider) {
-    SetOverlayCandidateValidator(std::move(overlay_validator));
-  }
+      : OverlayProcessor(std::move(overlay_validator)) {}
   ~TestOverlayProcessor() override = default;
 
   const Validator* GetTestValidator() const {
@@ -2288,7 +2285,6 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   renderer.SetVisible(true);
 
   TestOverlayProcessor* processor = new TestOverlayProcessor(
-      output_surface->context_provider(),
       std::make_unique<TestOverlayProcessor::Validator>());
   renderer.SetOverlayProcessor(processor);
   const TestOverlayProcessor::Validator* validator =
@@ -2408,10 +2404,8 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
     bool multiple_candidates_ = false;
   };
 
-  explicit SingleOverlayOnTopProcessor(ContextProvider* context_provider)
-      : OverlayProcessor(context_provider) {
-    SetOverlayCandidateValidator(std::make_unique<SingleOverlayValidator>());
-  }
+  SingleOverlayOnTopProcessor()
+      : OverlayProcessor(std::make_unique<SingleOverlayValidator>()) {}
 
   void AllowMultipleCandidates() {
     // Cast away const from the validator pointer to set on it.
@@ -2500,8 +2494,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   renderer.Initialize();
   renderer.SetVisible(true);
 
-  SingleOverlayOnTopProcessor* processor = new SingleOverlayOnTopProcessor(
-      output_surface->context_provider());
+  SingleOverlayOnTopProcessor* processor = new SingleOverlayOnTopProcessor();
   renderer.SetOverlayProcessor(processor);
 
   gfx::Size viewport_size(1, 1);
@@ -2885,9 +2878,8 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
                           parent_resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
-  TestOverlayProcessor* processor = new TestOverlayProcessor(
-      output_surface->context_provider(), std::make_unique<DCLayerValidator>());
-  processor->SetDCHasHwOverlaySupportForTesting();
+  TestOverlayProcessor* processor =
+      new TestOverlayProcessor(std::make_unique<DCLayerValidator>());
   renderer.SetOverlayProcessor(processor);
 
   gfx::Size viewport_size(100, 100);
@@ -3047,11 +3039,9 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
     std::vector<gfx::Rect> content_bounds_;
   };
 
-  ContentBoundsOverlayProcessor(OutputSurface* surface,
-                                const std::vector<gfx::Rect>& content_bounds)
-      : OverlayProcessor(surface->context_provider()) {
-    SetOverlayCandidateValidator(std::make_unique<Validator>(content_bounds));
-  }
+  explicit ContentBoundsOverlayProcessor(
+      const std::vector<gfx::Rect>& content_bounds)
+      : OverlayProcessor(std::make_unique<Validator>(content_bounds)) {}
 
   Strategy& strategy() {
     DCHECK(overlay_validator_);
@@ -3087,7 +3077,7 @@ class GLRendererSwapWithBoundsTest : public GLRendererTest {
     renderer.SetVisible(true);
 
     OverlayProcessor* processor =
-        new ContentBoundsOverlayProcessor(output_surface.get(), content_bounds);
+        new ContentBoundsOverlayProcessor(content_bounds);
     renderer.SetOverlayProcessor(processor);
 
     gfx::Size viewport_size(100, 100);
@@ -3191,8 +3181,7 @@ class CALayerGLRendererTest : public GLRendererTest {
     // quads can be turned into CALayer overlays, then all damage is removed and
     // we can skip the root RenderPass, swapping empty.
     TestOverlayProcessor* processor =
-        new TestOverlayProcessor(output_surface_->context_provider(),
-                                 std::make_unique<CALayerValidator>());
+        new TestOverlayProcessor(std::make_unique<CALayerValidator>());
     renderer_->SetOverlayProcessor(processor);
   }
 
@@ -4188,8 +4177,7 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
     renderer_->Initialize();
     renderer_->SetVisible(true);
 
-    auto* processor = new SingleOverlayOnTopProcessor(
-        output_surface_->context_provider());
+    auto* processor = new SingleOverlayOnTopProcessor();
     processor->AllowMultipleCandidates();
     renderer_->SetOverlayProcessor(processor);
 

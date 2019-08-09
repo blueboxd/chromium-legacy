@@ -234,11 +234,11 @@ double CSSMathExpressionNumericLiteral::ComputeLengthPx(
   return 0;
 }
 
-void CSSMathExpressionNumericLiteral::AccumulateLengthArray(
+bool CSSMathExpressionNumericLiteral::AccumulateLengthArray(
     CSSLengthArray& length_array,
     double multiplier) const {
   DCHECK_NE(Category(), kCalcNumber);
-  value_->AccumulateLengthArray(length_array, multiplier);
+  return value_->AccumulateLengthArray(length_array, multiplier);
 }
 
 bool CSSMathExpressionNumericLiteral::operator==(
@@ -549,36 +549,39 @@ double CSSMathExpressionBinaryOperation::ComputeLengthPx(
   return Evaluate(left_value, right_value);
 }
 
-void CSSMathExpressionBinaryOperation::AccumulateLengthArray(
+bool CSSMathExpressionBinaryOperation::AccumulateLengthArray(
     CSSLengthArray& length_array,
     double multiplier) const {
   switch (operator_) {
     case CSSMathOperator::kAdd:
-      left_side_->AccumulateLengthArray(length_array, multiplier);
-      right_side_->AccumulateLengthArray(length_array, multiplier);
-      break;
+      if (!left_side_->AccumulateLengthArray(length_array, multiplier))
+        return false;
+      if (!right_side_->AccumulateLengthArray(length_array, multiplier))
+        return false;
+      return true;
     case CSSMathOperator::kSubtract:
-      left_side_->AccumulateLengthArray(length_array, multiplier);
-      right_side_->AccumulateLengthArray(length_array, -multiplier);
-      break;
+      if (!left_side_->AccumulateLengthArray(length_array, multiplier))
+        return false;
+      if (!right_side_->AccumulateLengthArray(length_array, -multiplier))
+        return false;
+      return true;
     case CSSMathOperator::kMultiply:
       DCHECK_NE((left_side_->Category() == kCalcNumber),
                 (right_side_->Category() == kCalcNumber));
       if (left_side_->Category() == kCalcNumber) {
-        right_side_->AccumulateLengthArray(
+        return right_side_->AccumulateLengthArray(
             length_array, multiplier * left_side_->DoubleValue());
       } else {
-        left_side_->AccumulateLengthArray(
+        return left_side_->AccumulateLengthArray(
             length_array, multiplier * right_side_->DoubleValue());
       }
-      break;
     case CSSMathOperator::kDivide:
       DCHECK_EQ(right_side_->Category(), kCalcNumber);
-      left_side_->AccumulateLengthArray(
+      return left_side_->AccumulateLengthArray(
           length_array, multiplier / right_side_->DoubleValue());
-      break;
     default:
       NOTREACHED();
+      return false;
   }
 }
 

@@ -41,6 +41,7 @@ namespace content {
 
 class BrowserContext;
 class NavigationEntry;
+class RenderFrameHost;
 class WebContents;
 
 // A NavigationController maintains the back-forward list for a WebContents and
@@ -371,6 +372,14 @@ class NavigationController {
   // history and the current page has not loaded yet or if the load was
   // explicitly requested using SetNeedsReload().
   virtual void LoadIfNecessary() = 0;
+
+  // Navigates directly to an error page, with |error_page_html| as the
+  // contents, and |url| as the url. |error| is the code that will be used
+  // when triggering the error page.
+  virtual void LoadErrorPage(RenderFrameHost* render_frame_host,
+                             const GURL& url,
+                             const std::string& error_page_html,
+                             net::Error error) = 0;
 
   // Renavigation --------------------------------------------------------------
 

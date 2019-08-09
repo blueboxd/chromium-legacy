@@ -48,7 +48,6 @@
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
@@ -198,9 +197,7 @@ class WebFrameTest : public testing::Test {
         chrome_url_("chrome://") {}
 
   ~WebFrameTest() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
   void DisableRendererSchedulerThrottling() {
@@ -228,6 +225,13 @@ class WebFrameTest : public testing::Test {
         WebString::FromUTF8(file_name));
   }
 
+  void RegisterMockedURLLoadWithCustomResponse(const WebURL& full_url,
+                                               const WebString& file_path,
+                                               WebURLResponse response) {
+    url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
+        full_url, file_path, response);
+  }
+
   void RegisterMockedHttpURLLoadWithCSP(const std::string& file_name,
                                         const std::string& csp,
                                         bool report_only = false) {
@@ -238,7 +242,7 @@ class WebFrameTest : public testing::Test {
                     : WebString("Content-Security-Policy"),
         WebString::FromUTF8(csp));
     std::string full_string = base_url_ + file_name;
-    url_test_helpers::RegisterMockedURLLoadWithCustomResponse(
+    RegisterMockedURLLoadWithCustomResponse(
         ToKURL(full_string),
         test::CoreTestDataPath(WebString::FromUTF8(file_name)), response);
   }
@@ -6998,13 +7002,13 @@ TEST_F(WebFrameTest, SiteForCookiesForRedirect) {
   redirect_response.SetMimeType("text/html");
   redirect_response.SetHttpStatusCode(302);
   redirect_response.SetHttpHeaderField("Location", redirect);
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
-      test_url, redirect_response, file_path);
+  RegisterMockedURLLoadWithCustomResponse(test_url, file_path,
+                                          redirect_response);
 
   WebURLResponse final_response;
   final_response.SetMimeType("text/html");
-  Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
-      redirect_url, final_response, file_path);
+  RegisterMockedURLLoadWithCustomResponse(redirect_url, file_path,
+                                          final_response);
 
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "first_party_redirect.html");
@@ -10930,10 +10934,10 @@ TEST_F(WebFrameTest, ImageDocumentDecodeError) {
   url_test_helpers::RegisterMockedURLLoad(
       ToKURL(url), test::CoreTestDataPath("not_an_image.ico"), "image/x-icon");
   MultipleDataChunkDelegate delegate;
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(&delegate);
+  url_test_helpers::SetLoaderDelegate(&delegate);
   frame_test_helpers::WebViewHelper helper;
   helper.InitializeAndLoad(url);
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(nullptr);
+  url_test_helpers::SetLoaderDelegate(nullptr);
 
   Document* document =
       To<LocalFrame>(helper.GetWebView()->GetPage()->MainFrame())
@@ -12400,7 +12404,7 @@ TEST_F(WebFrameTest, FallbackForNonexistentProvisionalNavigation) {
   // Because the child frame will have placeholder document loader, the main
   // frame will not finish loading, so
   // frame_test_helpers::PumpPendingRequestsForFrameToLoad doesn't work here.
-  Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
+  url_test_helpers::ServeAsynchronousRequests();
 
   // Overwrite the client-handled child frame navigation with about:blank.
   WebLocalFrame* child = main_frame->FirstChild()->ToWebLocalFrame();

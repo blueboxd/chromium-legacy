@@ -781,8 +781,8 @@ void InspectorCSSAgent::FontsUpdated(
           .setFontStretch(font->stretch())
           .setUnicodeRange(font->unicodeRange())
           .setSrc(src)
-          .setPlatformFontFamily(String::FromUTF8(
-              fontCustomPlatformData->FamilyNameForInspector().c_str()))
+          .setPlatformFontFamily(
+              fontCustomPlatformData->FamilyNameForInspector())
           .build();
   GetFrontend()->fontsUpdated(std::move(font_face));
 }

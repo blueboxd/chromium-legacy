@@ -235,7 +235,8 @@ void DeviceCommandScreenshotTest::InitializeScreenshotJob(
   EXPECT_TRUE(job->Init(
       base::TimeTicks::Now(),
       GenerateScreenshotCommandProto(
-          unique_id, base::TimeTicks::Now() - issued_time, upload_url)));
+          unique_id, base::TimeTicks::Now() - issued_time, upload_url),
+      nullptr));
   EXPECT_EQ(unique_id, job->unique_id());
   EXPECT_EQ(RemoteCommandJob::NOT_STARTED, job->status());
 }

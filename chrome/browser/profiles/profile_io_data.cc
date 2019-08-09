@@ -36,7 +36,6 @@
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -53,8 +52,6 @@
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
-#include "components/prefs/pref_service.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync/base/pref_names.h"
 #include "components/url_formatter/url_fixer.h"
@@ -244,7 +241,6 @@ void StartNSSInitOnIOThread(const AccountId& account_id,
 
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PrefService* pref_service = profile->GetPrefs();
 
   std::unique_ptr<ProfileParams> params(new ProfileParams);
   params->path = profile->GetPath();
@@ -257,9 +253,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
 #endif
-
-  params->account_consistency =
-      AccountConsistencyModeManager::GetMethodForProfile(profile);
 
   ProtocolHandlerRegistry* protocol_handler_registry =
       ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
@@ -315,47 +308,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->profile = profile;
   profile_params_ = std::move(params);
 
-  signed_exchange_enabled_.Init(prefs::kSignedHTTPExchangeEnabled,
-                                pref_service);
-  signed_exchange_enabled_.MoveToSequence(
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
-
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       base::CreateSingleThreadTaskRunner({BrowserThread::IO});
-
-  // These members are used only for sign in, which is not enabled in incognito
-  // and guest modes. So no need to initialize them.
-  if (!IsOffTheRecord()) {
-    google_services_user_account_id_.Init(prefs::kGoogleServicesUserAccountId,
-                                          pref_service);
-    google_services_user_account_id_.MoveToSequence(io_task_runner);
-    sync_requested_.Init(syncer::prefs::kSyncRequested, pref_service);
-    sync_requested_.MoveToSequence(io_task_runner);
-    sync_first_setup_complete_.Init(syncer::prefs::kSyncFirstSetupComplete,
-                                    pref_service);
-    sync_first_setup_complete_.MoveToSequence(io_task_runner);
-  }
-
-#if !defined(OS_CHROMEOS)
-  signin_scoped_device_id_.Init(prefs::kGoogleServicesSigninScopedDeviceId,
-                                pref_service);
-  signin_scoped_device_id_.MoveToSequence(io_task_runner);
-#endif
-
-  network_prediction_options_.Init(prefs::kNetworkPredictionOptions,
-                                   pref_service);
-
-  network_prediction_options_.MoveToSequence(io_task_runner);
-
-  incognito_availibility_pref_.Init(prefs::kIncognitoModeAvailability,
-                                    pref_service);
-  incognito_availibility_pref_.MoveToSequence(io_task_runner);
-
-#if defined(OS_CHROMEOS)
-  account_consistency_mirror_required_pref_.Init(
-      prefs::kAccountConsistencyMirrorRequired, pref_service);
-  account_consistency_mirror_required_pref_.MoveToSequence(io_task_runner);
-#endif
 
   // We need to make sure that content initializes its own data structures that
   // are associated with each ResourceContext because we might post this
@@ -370,14 +324,12 @@ ProfileIOData::ProfileParams::ProfileParams() = default;
 
 ProfileIOData::ProfileParams::~ProfileParams() = default;
 
-ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
+ProfileIOData::ProfileIOData()
     : initialized_(false),
-      account_consistency_(signin::AccountConsistencyMethod::kDisabled),
 #if defined(OS_CHROMEOS)
       system_key_slot_use_type_(SystemKeySlotUseType::kNone),
 #endif
-      resource_context_(new ResourceContext(this)),
-      profile_type_(profile_type) {
+      resource_context_(new ResourceContext(this)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -459,21 +411,6 @@ HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
   return host_content_settings_map_.get();
 }
 
-bool ProfileIOData::IsSyncEnabled() const {
-  return sync_first_setup_complete_.GetValue() && sync_requested_.GetValue();
-}
-
-#if !defined(OS_CHROMEOS)
-std::string ProfileIOData::GetSigninScopedDeviceId() const {
-  return signin_scoped_device_id_.GetValue();
-}
-#endif
-
-bool ProfileIOData::IsOffTheRecord() const {
-  return profile_type() == Profile::INCOGNITO_PROFILE ||
-         profile_type() == Profile::GUEST_PROFILE;
-}
-
 std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {
   if (!client_cert_store_factory_.is_null())
     return client_cert_store_factory_.Run();
@@ -528,8 +465,6 @@ void ProfileIOData::Init() const {
   DCHECK(!initialized_);
   DCHECK(profile_params_.get());
 
-  account_consistency_ = profile_params_->account_consistency;
-
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
   host_content_settings_map_ = profile_params_->host_content_settings_map;
@@ -560,22 +495,7 @@ void ProfileIOData::Init() const {
 void ProfileIOData::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  google_services_user_account_id_.Destroy();
-  sync_requested_.Destroy();
-  sync_first_setup_complete_.Destroy();
-#if !defined(OS_CHROMEOS)
-  signin_scoped_device_id_.Destroy();
-#endif
   safe_browsing_enabled_.Destroy();
-  network_prediction_options_.Destroy();
-  incognito_availibility_pref_.Destroy();
-  signed_exchange_enabled_.Destroy();
-#if BUILDFLAG(ENABLE_PLUGINS)
-  always_open_pdf_externally_.Destroy();
-#endif
-#if defined(OS_CHROMEOS)
-  account_consistency_mirror_required_pref_.Destroy();
-#endif
 
   bool posted = BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
   if (!posted)

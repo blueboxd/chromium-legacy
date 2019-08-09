@@ -1009,9 +1009,6 @@ void BrowserThemePack::AdjustThemePack() {
   // with the frame/tab behind them.
   GenerateMissingTextColors();
 
-  // Generates missing NTP related colors.
-  GenerateMissingNtpColors();
-
   // Make sure the |images_on_file_thread_| has bitmaps for supported
   // scale factors before passing to FILE thread.
   images_on_file_thread_ = images_;
@@ -1038,6 +1035,10 @@ void BrowserThemePack::AdjustThemePack() {
   for (size_t i = 0; i < base::size(kPreloadIDs); ++i) {
     GenerateRawImageForAllSupportedScales(kPreloadIDs[i]);
   }
+
+  // Generates missing NTP related colors. Should be called after theme images
+  // are prepared.
+  GenerateMissingNtpColors();
 }
 
 void BrowserThemePack::InitEmptyPack() {

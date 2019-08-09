@@ -9,6 +9,7 @@
 
 #import <WebKit/WebKit.h>
 #include <map>
+#include "base/memory/weak_ptr.h"
 
 @class CRWWKScriptMessageRouter;
 
@@ -85,6 +86,8 @@ class WebFramesManagerImpl : public WebFramesManager {
 
   // Reference to the delegate.
   WebFramesManagerDelegate& delegate_;
+
+  base::WeakPtrFactory<WebFramesManagerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFramesManagerImpl);
 };

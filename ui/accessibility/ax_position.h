@@ -365,6 +365,20 @@ class AXPosition {
     return false;
   }
 
+  // |AtStartOfParagraph| is asymmetric from |AtEndOfParagraph| because of
+  // trailing whitespace collapse rules.
+  // The start of a paragraph should be a leaf text position (or equivalent),
+  // either at the start of the document, or at the start of the next leaf text
+  // position from the one representing the end of the previous paragraph.
+  // A position |AsLeafTextPosition| is the start of a paragraph if all of the
+  // following are true :
+  // 1. The current leaf text position must be at the start of an anchor.
+  // 2. The current position is not whitespace only, unless it is also
+  //    the first leaf text position within the document.
+  // 3. Either (a) the current leaf text position is the first leaf text
+  //    position in the document, or (b) there are no line breaking
+  //    objects between it and the previous non-whitespace leaf text
+  //    position.
   bool AtStartOfParagraph() const {
     AXPositionInstance text_position = AsLeafTextPosition();
     switch (text_position->kind_) {
@@ -374,24 +388,68 @@ class AXPosition {
         NOTREACHED();
         return false;
       case AXPositionKind::TEXT_POSITION: {
+        // 1. The current leaf text position must be at the start of an anchor.
         if (!text_position->AtStartOfAnchor())
           return false;
 
+        // 2. The current position is not whitespace only, unless it is also
+        //    the first leaf text position within the document.
+        if (text_position->IsInWhiteSpace()) {
+          return text_position->CreatePreviousLeafTextPosition()
+              ->IsNullPosition();
+        }
+
+        // 3. Either (a) the current leaf text position is the first leaf text
+        //    position in the document, or (b) there are no line breaking
+        //    objects between it and the previous non-whitespace leaf text
+        //    position.
+        //
         // Search for the previous text position within the current paragraph,
         // using the paragraph boundary abort predicate.
         // If a valid position was found, then this position cannot be
         // the start of a paragraph.
         // This will return a null position when an anchor movement would
         // cross a paragraph boundary, or the start of document was reached.
-        auto previous_text_position =
-            text_position->CreatePreviousTextAnchorPosition(
-                base::BindRepeating(&AbortMoveAtParagraphBoundary));
+        bool crossed_potential_boundary_token = false;
+        const AbortMovePredicate abort_move_predicate =
+            base::BindRepeating(&AbortMoveAtParagraphBoundary,
+                                std::ref(crossed_potential_boundary_token));
+        auto previous_text_position = text_position->Clone();
+        do {
+          previous_text_position =
+              previous_text_position->CreatePreviousTextAnchorPosition(
+                  abort_move_predicate);
+          // If the previous position is whitespace, then continue searching
+          // until a non-whitespace leaf text position is found within the
+          // current paragraph because whitespace is supposed to be collapsed.
+          // There's a chance that |CreatePreviousTextAnchorPosition| will
+          // return whitespace that should be appended to a previous paragraph
+          // rather than separating two pieces of the current paragraph.
+        } while (previous_text_position->IsInWhiteSpace());
         return previous_text_position->IsNullPosition();
       }
     }
     return false;
   }
 
+  // |AtEndOfParagraph| is asymmetric from |AtStartOfParagraph| because of
+  // trailing whitespace collapse rules.
+  // The end of a paragraph should be a leaf text position (or equivalent),
+  // either at the end of the document, or at the end of the previous leaf text
+  // position from the one representing the start of the next paragraph.
+  // A position |AsLeafTextPosition| is the end of a paragraph if all of the
+  // following are true :
+  // 1. The current leaf text position must be at the end of an anchor.
+  // 2. Either (a) the current leaf text position is the last leaf text
+  //    position in the document, or (b) there are no line breaking
+  //    objects between it and the next leaf text position except when
+  //    the next leaf text position is whitespace only since whitespace
+  //    must be collapsed.
+  // 3. If there is a next leaf text position then it must not be
+  //    whitespace only.
+  // 4. If there is a next leaf text position and it is not whitespace
+  //    only, it must also be the start of a paragraph for the current
+  //    position to be the end of a paragraph.
   bool AtEndOfParagraph() const {
     AXPositionInstance text_position = AsLeafTextPosition();
     switch (text_position->kind_) {
@@ -401,18 +459,56 @@ class AXPosition {
         NOTREACHED();
         return false;
       case AXPositionKind::TEXT_POSITION: {
+        // 1. The current leaf text position must be at the end of an anchor.
         if (!text_position->AtEndOfAnchor())
           return false;
 
+        // 2. Either (a) the current leaf text position is the last leaf text
+        //    position in the document, or (b) there are no line breaking
+        //    objects between it and the next leaf text position except when
+        //    the next leaf text position is whitespace only since whitespace
+        //    must be collapsed.
+        //
         // Search for the next text position within the current paragraph,
         // using the paragraph boundary abort predicate.
-        // If a valid position was found, then this position cannot be
-        // the end of a paragraph.
-        // This will return a null position when an anchor movement would
-        // cross a paragraph boundary, or the end of document was reached.
-        auto next_text_position = text_position->CreateNextTextAnchorPosition(
-            base::BindRepeating(&AbortMoveAtParagraphBoundary));
-        return next_text_position->IsNullPosition();
+        // If a null position was found, then this position must be the end of
+        // a paragraph.
+        // |CreateNextTextAnchorPosition| + |AbortMoveAtParagraphBoundary|
+        // will return a null position when an anchor movement would
+        // cross a paragraph boundary and there is no doubt that it is the end
+        // of a paragraph, or the end of document was reached.
+        // There are some fringe cases related to whitespace collapse that
+        // cannot be handled easily with only |AbortMoveAtParagraphBoundary|.
+        bool crossed_potential_boundary_token = false;
+        const AbortMovePredicate abort_move_predicate =
+            base::BindRepeating(&AbortMoveAtParagraphBoundary,
+                                std::ref(crossed_potential_boundary_token));
+        auto next_text_position =
+            text_position->CreateNextTextAnchorPosition(abort_move_predicate);
+        if (next_text_position->IsNullPosition())
+          return true;
+
+        // 3. If there is a next leaf text position then it must not be
+        //    whitespace only.
+        if (next_text_position->IsInWhiteSpace())
+          return false;
+
+        // 4. If there is a next leaf text position and it is not whitespace
+        //    only, it must also be the start of a paragraph for the current
+        //    position to be the end of a paragraph.
+        //
+        // Consider the following example :
+        // ++{1} kStaticText "First Paragraph"
+        // ++++{2} kInlineTextBox "First Paragraph"
+        // ++{3} kStaticText "\n Second Paragraph"
+        // ++++{4} kInlineTextBox "\n" kIsLineBreakingObject
+        // ++++{5} kInlineTextBox " "
+        // ++++{6} kInlineTextBox "Second Paragraph"
+        // A position at the end of {5} is the end of a paragraph, because
+        // the first paragraph must collapse trailing whitespace and contain
+        // leaf text anchors {2, 4, 5}. The second paragraph is only {6}.
+        return next_text_position->CreatePositionAtStartOfAnchor()
+            ->AtStartOfParagraph();
       }
     }
     return false;
@@ -2029,7 +2125,7 @@ class AXPosition {
 
   // Uses depth-first pre-order traversal.
   AXPositionInstance CreateNextAnchorPosition(
-      const AbortMovePredicate abort_predicate) const {
+      const AbortMovePredicate& abort_predicate) const {
     if (IsNullPosition())
       return CreateNullPosition();
 
@@ -2092,7 +2188,7 @@ class AXPosition {
 
   // Uses depth-first pre-order traversal.
   AXPositionInstance CreatePreviousAnchorPosition(
-      const AbortMovePredicate abort_predicate) const {
+      const AbortMovePredicate& abort_predicate) const {
     if (IsNullPosition())
       return CreateNullPosition();
 
@@ -2137,7 +2233,7 @@ class AXPosition {
   // Creates a position using the next text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
   AXPositionInstance CreateNextTextAnchorPosition(
-      const AbortMovePredicate abort_predicate) const {
+      const AbortMovePredicate& abort_predicate) const {
     // If this is an ancestor text position, resolve to its leaf text position.
     if (IsTextPosition() && AnchorChildCount())
       return AsLeafTextPosition();
@@ -2154,7 +2250,7 @@ class AXPosition {
   // Creates a position using the previous text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
   AXPositionInstance CreatePreviousTextAnchorPosition(
-      const AbortMovePredicate abort_predicate) const {
+      const AbortMovePredicate& abort_predicate) const {
     // If this is an ancestor text position, resolve to its leaf text position.
     if (IsTextPosition() && AnchorChildCount())
       return AsLeafTextPosition();
@@ -2207,6 +2303,7 @@ class AXPosition {
 
   // AbortMovePredicate function used to detect paragraph boundaries.
   static bool AbortMoveAtParagraphBoundary(
+      bool& crossed_potential_boundary_token,
       const AXPosition<AXPositionType, AXNodeType>& move_from,
       const AXPosition<AXPositionType, AXNodeType>& move_to,
       const AXMoveType move_type,
@@ -2217,48 +2314,34 @@ class AXPosition {
     const bool move_from_break = move_from.IsInLineBreakingObject();
     const bool move_to_break = move_to.IsInLineBreakingObject();
 
-    bool potential_paragraph_boundary = false;
     switch (move_type) {
       case AXMoveType::kAncestor:
         // For Ancestor moves, only abort when exiting a block descendant.
         // We don't care if the ancestor is a block or not, since the
         // descendant is contained by it.
-        potential_paragraph_boundary = move_from_break;
+        crossed_potential_boundary_token |= move_from_break;
         break;
       case AXMoveType::kDescendant:
         // For Descendant moves, only abort when entering a block descendant.
         // We don't care if the ancestor is a block or not, since the
         // descendant is contained by it.
-        potential_paragraph_boundary = move_to_break;
+        crossed_potential_boundary_token |= move_to_break;
         break;
       case AXMoveType::kSibling:
         // For Sibling moves, abort if at least one of the siblings are a block,
         // because that would mean exiting and/or entering a block.
-        potential_paragraph_boundary = move_from_break || move_to_break;
+        crossed_potential_boundary_token |= (move_from_break || move_to_break);
         break;
     }
 
-    // If there's a sequence of whitespace-only blocks, collapse so only the
-    // trailing whitespace-only block is considered a paragraph boundary.
-    if (potential_paragraph_boundary) {
-      switch (direction) {
-        case AXMoveDirection::kNextInTree: {
-          // Forward navigation, collapse trailing whitespace only nodes.
-          // Move into all whitespace only blocks that are available
-          // before aborting.
-          if (move_to.IsInWhiteSpace())
-            return false;
-          break;
-        }
-        case AXMoveDirection::kPreviousInTree: {
-          // Reverse navigation, skip over all whitespace nodes unless
-          // it is the last trailing whitespace node, signaling the end
-          // of a previous paragraph.
-          if (move_from.IsInWhiteSpace())
-            return false;
-          break;
-        }
+    if (crossed_potential_boundary_token && move_to.IsLeafTextPosition()) {
+      // If there's a sequence of whitespace-only anchors, collapse so only the
+      // last whitespace-only anchor is considered a paragraph boundary.
+      if (direction == AXMoveDirection::kNextInTree &&
+          move_to.IsInWhiteSpace()) {
+        return false;
       }
+
       return true;
     }
 

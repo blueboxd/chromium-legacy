@@ -135,8 +135,8 @@ class InstantService : public KeyedService,
   // Sends the current NTP URL to a renderer process.
   void SendNewTabPageURLToRenderer(content::RenderProcessHost* rph);
 
-  // Invoked when a custom background is selected on the NTP.
-  void SetCustomBackgroundURL(const GURL& url);
+  // Invoked when the background is reset on the NTP.
+  void ResetCustomBackgroundInfo();
 
   // Invoked when a custom background is configured on the NTP.
   void SetCustomBackgroundInfo(const GURL& background_url,

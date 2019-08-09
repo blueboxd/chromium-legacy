@@ -162,16 +162,15 @@ Polymer({
    * This UI will use both the networkingPrivate extension API and the
    * networkConfig mojo API until we provide all of the required functionality
    * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy}
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
    */
-  networkConfigProxy_: null,
+  networkConfig_: null,
 
   /** @override */
   created: function() {
     this.browserProxy_ = settings.InternetPageBrowserProxyImpl.getInstance();
-    this.networkConfigProxy_ =
-        network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
   },
 
   /** @override */
@@ -287,7 +286,7 @@ Polymer({
    * @private
    */
   onDeviceEnabledToggled_: function(event) {
-    this.networkConfigProxy_.setNetworkTypeEnabledState(
+    this.networkConfig_.setNetworkTypeEnabledState(
         event.detail.type, event.detail.enabled);
   },
 

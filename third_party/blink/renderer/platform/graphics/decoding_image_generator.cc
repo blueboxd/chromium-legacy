@@ -38,6 +38,27 @@
 
 namespace blink {
 
+namespace {
+
+// These filename extension strings come from ImageDecoder::FilenameExtension.
+PaintImage::ImageType FileExtensionToImageType(String image_extension) {
+  if (image_extension == "png")
+    return PaintImage::ImageType::kPNG;
+  if (image_extension == "jpg")
+    return PaintImage::ImageType::kJPEG;
+  if (image_extension == "webp")
+    return PaintImage::ImageType::kWEBP;
+  if (image_extension == "gif")
+    return PaintImage::ImageType::kGIF;
+  if (image_extension == "ico")
+    return PaintImage::ImageType::kICO;
+  if (image_extension == "bmp")
+    return PaintImage::ImageType::kBMP;
+  return PaintImage::ImageType::kInvalid;
+}
+
+}  // namespace
+
 // static
 std::unique_ptr<SkImageGenerator>
 DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
@@ -70,7 +91,7 @@ DecodingImageGenerator::CreateAsSkImageGenerator(sk_sp<SkData> data) {
       std::move(frame), info, std::move(segment_reader), std::move(frames),
       PaintImage::GetNextContentId(), true /* all_data_received */,
       true /* is_eligible_for_accelerated_decoding */,
-      false /* can_yuv_decode */);
+      false /* can_yuv_decode */, decoder->FilenameExtension());
   return std::make_unique<SkiaPaintImageGenerator>(
       std::move(generator), PaintImage::kDefaultFrameIndex,
       PaintImage::kDefaultGeneratorClientId);
@@ -85,11 +106,13 @@ sk_sp<DecodingImageGenerator> DecodingImageGenerator::Create(
     PaintImage::ContentId content_id,
     bool all_data_received,
     bool is_eligible_for_accelerated_decoding,
-    bool can_yuv_decode) {
+    bool can_yuv_decode,
+    String image_type) {
+  PaintImage::ImageType paint_image_type = FileExtensionToImageType(image_type);
   return sk_sp<DecodingImageGenerator>(new DecodingImageGenerator(
       std::move(frame_generator), info, std::move(data), std::move(frames),
       content_id, all_data_received, is_eligible_for_accelerated_decoding,
-      can_yuv_decode));
+      can_yuv_decode, paint_image_type));
 }
 
 DecodingImageGenerator::DecodingImageGenerator(
@@ -100,7 +123,8 @@ DecodingImageGenerator::DecodingImageGenerator(
     PaintImage::ContentId complete_frame_content_id,
     bool all_data_received,
     bool is_eligible_for_accelerated_decoding,
-    bool can_yuv_decode)
+    bool can_yuv_decode,
+    PaintImage::ImageType image_type)
     : PaintImageGenerator(info, frames.ReleaseVector()),
       frame_generator_(std::move(frame_generator)),
       data_(std::move(data)),
@@ -108,7 +132,8 @@ DecodingImageGenerator::DecodingImageGenerator(
       is_eligible_for_accelerated_decoding_(
           is_eligible_for_accelerated_decoding),
       can_yuv_decode_(can_yuv_decode),
-      complete_frame_content_id_(complete_frame_content_id) {}
+      complete_frame_content_id_(complete_frame_content_id),
+      image_type_(image_type) {}
 
 DecodingImageGenerator::~DecodingImageGenerator() = default;
 

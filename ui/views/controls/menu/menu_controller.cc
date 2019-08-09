@@ -69,6 +69,38 @@ namespace views {
 
 namespace {
 
+#if defined(OS_MACOSX)
+bool AcceleratorShouldCancelMenu(const ui::Accelerator& accelerator) {
+  // Since AcceleratorShouldCancelMenu() is called quite early in key
+  // event handling, it is actually invoked for modifier keys themselves
+  // changing. In that case, the key code reflects that the modifier key is
+  // being pressed/released. We should never treat those presses as
+  // accelerators, so bail out here.
+  //
+  // Also, we have to check for VKEY_SHIFT here even though we don't check
+  // IsShiftDown() - otherwise this sequence of keypresses will dismiss the
+  // menu:
+  //   Press Cmd
+  //   Press Shift
+  // Which makes it impossible to use menus that have Cmd-Shift accelerators.
+  if (accelerator.key_code() == ui::VKEY_CONTROL ||
+      accelerator.key_code() == ui::VKEY_MENU ||  // aka Alt
+      accelerator.key_code() == ui::VKEY_COMMAND ||
+      accelerator.key_code() == ui::VKEY_SHIFT) {
+    return false;
+  }
+
+  // Using an accelerator on Mac closes any open menu. Note that Mac behavior is
+  // different between context menus (which block use of accelerators) and other
+  // types of menus, which close when an accelerator is sent and do repost the
+  // accelerator. In MacViews, this happens naturally because context menus are
+  // (modal) Cocoa menus and other menus are Views menus, which will go through
+  // this code path.
+  return accelerator.IsCtrlDown() || accelerator.IsAltDown() ||
+         accelerator.IsCmdDown();
+}
+#endif
+
 // When showing context menu on mouse down, the user might accidentally select
 // the menu item on the subsequent mouse up. To prevent this, we add the
 // following delay before the user is able to select an item.
@@ -1169,7 +1201,8 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     if (!IsEditableCombobox() && !event->stopped_propagation()) {
       // Do not check mnemonics if the Alt or Ctrl modifiers are pressed. For
       // example Ctrl+<T> is an accelerator, but <T> only is a mnemonic.
-      const int kKeyFlagsMask = ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN;
+      const int kKeyFlagsMask =
+          ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN;
       const int flags = event->flags();
       if (exit_type() == ExitType::kNone && (flags & kKeyFlagsMask) == 0) {
         base::char16 c = event->GetCharacter();
@@ -1184,6 +1217,14 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
   }
 
   ui::Accelerator accelerator(*event);
+
+#if defined(OS_MACOSX)
+  if (AcceleratorShouldCancelMenu(accelerator)) {
+    Cancel(ExitType::kAll);
+    return ui::POST_DISPATCH_PERFORM_DEFAULT;
+  }
+#endif
+
   ViewsDelegate::ProcessMenuAcceleratorResult result =
       ViewsDelegate::GetInstance()->ProcessAcceleratorWhileMenuShowing(
           accelerator);
@@ -1192,6 +1233,7 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     event->StopPropagation();
     return ui::POST_DISPATCH_NONE;
   }
+
   if (result == ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU) {
     Cancel(ExitType::kAll);
     event->StopPropagation();

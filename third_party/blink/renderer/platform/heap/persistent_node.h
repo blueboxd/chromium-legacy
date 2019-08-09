@@ -161,15 +161,7 @@ class PLATFORM_EXPORT PersistentRegion final {
   USING_FAST_MALLOC(PersistentRegion);
 
  public:
-  PersistentRegion()
-      : free_list_head_(nullptr),
-        slots_(nullptr)
-#if DCHECK_IS_ON()
-        ,
-        persistent_count_(0)
-#endif
-  {
-  }
+  PersistentRegion() = default;
   ~PersistentRegion();
 
   PersistentNode* AllocatePersistentNode(void* self, TraceCallback trace) {
@@ -188,7 +180,7 @@ class PLATFORM_EXPORT PersistentRegion final {
 
   void FreePersistentNode(PersistentNode* persistent_node) {
 #if DCHECK_IS_ON()
-    DCHECK_GT(persistent_count_, 0);
+    DCHECK_GT(persistent_count_, 0u);
 #endif
     persistent_node->SetFreeListNext(free_list_head_);
     free_list_head_ = persistent_node;
@@ -201,8 +193,7 @@ class PLATFORM_EXPORT PersistentRegion final {
     return true;
   }
 
-  void ReleasePersistentNode(PersistentNode*,
-                             ThreadState::PersistentClearCallback);
+  void ReleasePersistentNode(PersistentNode*);
   using ShouldTraceCallback = bool (*)(Visitor*, PersistentNode*);
   void TracePersistentNodes(
       Visitor*,
@@ -215,10 +206,10 @@ class PLATFORM_EXPORT PersistentRegion final {
 
   void EnsurePersistentNodeSlots(void*, TraceCallback);
 
-  PersistentNode* free_list_head_;
-  PersistentNodeSlots* slots_;
+  PersistentNode* free_list_head_ = nullptr;
+  PersistentNodeSlots* slots_ = nullptr;
 #if DCHECK_IS_ON()
-  int persistent_count_;
+  size_t persistent_count_ = 0;
 #endif
 };
 
@@ -272,7 +263,6 @@ class PLATFORM_EXPORT CrossThreadPersistentRegion final {
 #endif
 
  private:
-
   // We don't make CrossThreadPersistentRegion inherit from PersistentRegion
   // because we don't want to virtualize performance-sensitive methods
   // such as PersistentRegion::allocate/freePersistentNode.

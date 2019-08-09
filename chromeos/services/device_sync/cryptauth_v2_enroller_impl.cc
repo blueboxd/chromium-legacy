@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "base/time/default_clock.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/services/device_sync/async_execution_time_metrics_logger.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_constants.h"
 #include "chromeos/services/device_sync/cryptauth_key_creator_impl.h"
@@ -45,13 +47,15 @@ using EnrollSingleKeyResponse =
     cryptauthv2::EnrollKeysResponse::EnrollSingleKeyResponse;
 
 // Timeout values for asynchronous operations.
-// TODO(https://crbug.com/933656): Tune these values.
+// TODO(https://crbug.com/933656): Use async execution time metrics to tune
+// these timeout values. For now, set these timeouts to the max execution time
+// recorded by the metrics.
 constexpr base::TimeDelta kWaitingForSyncKeysResponseTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 constexpr base::TimeDelta kWaitingForKeyCreationTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 constexpr base::TimeDelta kWaitingForEnrollKeysResponseTimeout =
-    base::TimeDelta::FromSeconds(10);
+    kMaxAsyncExecutionTime;
 
 CryptAuthEnrollmentResult::ResultCode SyncKeysNetworkRequestErrorToResultCode(
     NetworkRequestError error) {
@@ -311,6 +315,21 @@ ProcessNewUserKeyPairInstructions(
   return base::nullopt;
 }
 
+void RecordSyncKeysMetrics(const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric("CryptAuth.EnrollmentV2.ExecutionTime.SyncKeys",
+                              execution_time);
+}
+
+void RecordKeyCreationMetrics(const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric(
+      "CryptAuth.EnrollmentV2.ExecutionTime.KeyCreation", execution_time);
+}
+
+void RecordEnrollKeysMetrics(const base::TimeDelta& execution_time) {
+  LogAsyncExecutionTimeMetric("CryptAuth.EnrollmentV2.ExecutionTime.EnrollKeys",
+                              execution_time);
+}
+
 }  // namespace
 
 // static
@@ -373,7 +392,7 @@ base::Optional<base::TimeDelta> CryptAuthV2EnrollerImpl::GetTimeoutForState(
 
 // static
 base::Optional<CryptAuthEnrollmentResult::ResultCode>
-CryptAuthV2EnrollerImpl::ResultCodeErrorFromState(State state) {
+CryptAuthV2EnrollerImpl::ResultCodeErrorFromTimeoutDuringState(State state) {
   switch (state) {
     case State::kWaitingForSyncKeysResponse:
       return CryptAuthEnrollmentResult::ResultCode::
@@ -413,22 +432,42 @@ void CryptAuthV2EnrollerImpl::SetState(State state) {
 
   PA_LOG(INFO) << "Transitioning from " << state_ << " to " << state;
   state_ = state;
+  last_state_change_timestamp_ = base::DefaultClock::GetInstance()->Now();
 
   base::Optional<base::TimeDelta> timeout_for_state = GetTimeoutForState(state);
   if (!timeout_for_state)
     return;
 
-  base::Optional<CryptAuthEnrollmentResult::ResultCode> error_code =
-      ResultCodeErrorFromState(state);
+  // TODO(https://crbug.com/936273): Add metrics to track failure rates due
+  // to async timeouts.
+  timer_->Start(FROM_HERE, *timeout_for_state,
+                base::BindOnce(&CryptAuthV2EnrollerImpl::OnTimeout,
+                               base::Unretained(this)));
+}
 
+void CryptAuthV2EnrollerImpl::OnTimeout() {
   // If there's a timeout specified, there should be a corresponding error code.
+  base::Optional<CryptAuthEnrollmentResult::ResultCode> error_code =
+      ResultCodeErrorFromTimeoutDuringState(state_);
   DCHECK(error_code);
 
-  // TODO(https://crbug.com/936273): Add metrics to track failure rates due to
-  // async timeouts.
-  timer_->Start(FROM_HERE, *timeout_for_state,
-                base::BindOnce(&CryptAuthV2EnrollerImpl::FinishAttempt,
-                               base::Unretained(this), *error_code));
+  base::TimeDelta execution_time =
+      base::DefaultClock::GetInstance()->Now() - last_state_change_timestamp_;
+  switch (state_) {
+    case State::kWaitingForSyncKeysResponse:
+      RecordSyncKeysMetrics(execution_time);
+      break;
+    case State::kWaitingForKeyCreation:
+      RecordKeyCreationMetrics(execution_time);
+      break;
+    case State::kWaitingForEnrollKeysResponse:
+      RecordEnrollKeysMetrics(execution_time);
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  FinishAttempt(*error_code);
 }
 
 SyncKeysRequest CryptAuthV2EnrollerImpl::BuildSyncKeysRequest(
@@ -501,6 +540,9 @@ SyncSingleKeyRequest CryptAuthV2EnrollerImpl::BuildSyncSingleKeyRequest(
 void CryptAuthV2EnrollerImpl::OnSyncKeysSuccess(
     const SyncKeysResponse& response) {
   DCHECK(state_ == State::kWaitingForSyncKeysResponse);
+
+  RecordSyncKeysMetrics(base::DefaultClock::GetInstance()->Now() -
+                        last_state_change_timestamp_);
 
   if (response.server_status() == SyncKeysResponse::SERVER_OVERLOADED) {
     FinishAttempt(
@@ -677,6 +719,9 @@ CryptAuthV2EnrollerImpl::ProcessKeyCreationInstructions(
 }
 
 void CryptAuthV2EnrollerImpl::OnSyncKeysFailure(NetworkRequestError error) {
+  RecordSyncKeysMetrics(base::DefaultClock::GetInstance()->Now() -
+                        last_state_change_timestamp_);
+
   FinishAttempt(SyncKeysNetworkRequestErrorToResultCode(error));
 }
 
@@ -687,6 +732,9 @@ void CryptAuthV2EnrollerImpl::OnKeysCreated(
     const base::flat_map<CryptAuthKeyBundle::Name, CryptAuthKey>& new_keys,
     const base::Optional<CryptAuthKey>& client_ephemeral_dh) {
   DCHECK(state_ == State::kWaitingForKeyCreation);
+
+  RecordKeyCreationMetrics(base::DefaultClock::GetInstance()->Now() -
+                           last_state_change_timestamp_);
 
   EnrollKeysRequest request;
   request.set_random_session_id(session_id);
@@ -743,6 +791,9 @@ void CryptAuthV2EnrollerImpl::OnEnrollKeysSuccess(
     const EnrollKeysResponse& response) {
   DCHECK(state_ == State::kWaitingForEnrollKeysResponse);
 
+  RecordEnrollKeysMetrics(base::DefaultClock::GetInstance()->Now() -
+                          last_state_change_timestamp_);
+
   for (const std::pair<CryptAuthKeyBundle::Name, CryptAuthKey>& new_key :
        new_keys) {
     key_registry_->AddKey(new_key.first, new_key.second);
@@ -758,6 +809,9 @@ void CryptAuthV2EnrollerImpl::OnEnrollKeysSuccess(
 }
 
 void CryptAuthV2EnrollerImpl::OnEnrollKeysFailure(NetworkRequestError error) {
+  RecordEnrollKeysMetrics(base::DefaultClock::GetInstance()->Now() -
+                          last_state_change_timestamp_);
+
   FinishAttempt(EnrollKeysNetworkRequestErrorToResultCode(error));
 }
 

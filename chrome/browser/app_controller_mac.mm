@@ -82,7 +82,6 @@
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_class_mac.h"
@@ -427,18 +426,6 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   }
 
   [self initShareMenu];
-
-  // Remove "Enable Javascript in Apple Events" if the feature is disabled.
-  if (!base::FeatureList::IsEnabled(
-          features::kAppleScriptExecuteJavaScriptMenuItem)) {
-    NSMenu* mainMenu = [NSApp mainMenu];
-    NSMenu* viewMenu = [[mainMenu itemWithTag:IDC_VIEW_MENU] submenu];
-    NSMenu* devMenu = [[viewMenu itemWithTag:IDC_DEVELOPER_MENU] submenu];
-    NSMenuItem* javascriptAppleEventItem =
-        [devMenu itemWithTag:IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS];
-    if (javascriptAppleEventItem)
-      [devMenu removeItem:javascriptAppleEventItem];
-  }
 }
 
 - (void)applicationWillHide:(NSNotification*)notification {

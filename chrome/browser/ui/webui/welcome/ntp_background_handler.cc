@@ -54,7 +54,7 @@ void NtpBackgroundHandler::RegisterMessages() {
 void NtpBackgroundHandler::HandleClearBackground(const base::ListValue* args) {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-  instant_service->SetCustomBackgroundURL(GURL(""));
+  instant_service->ResetCustomBackgroundInfo();
 }
 
 void NtpBackgroundHandler::HandleGetBackgrounds(const base::ListValue* args) {

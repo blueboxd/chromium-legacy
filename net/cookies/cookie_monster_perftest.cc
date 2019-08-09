@@ -8,10 +8,12 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/perf_time_logger.h"
+#include "base/time/time.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_monster_store_test.h"
@@ -60,9 +62,11 @@ class SetCookieCallback : public CookieTestCallback {
  public:
   void SetCookie(CookieMonster* cm,
                  const GURL& gurl,
-                 const std::string& cookie) {
-    cm->SetCookieWithOptionsAsync(
-        gurl, cookie, options_, base::nullopt /* server_time */,
+                 const std::string& cookie_line) {
+    auto cookie = CanonicalCookie::Create(gurl, cookie_line, base::Time::Now(),
+                                          base::nullopt /* server_time */);
+    cm->SetCanonicalCookieAsync(
+        std::move(cookie), gurl.scheme(), options_,
         base::BindOnce(&SetCookieCallback::Run, base::Unretained(this)));
     WaitForCallback();
   }

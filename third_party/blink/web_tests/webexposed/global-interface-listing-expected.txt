@@ -7427,6 +7427,11 @@ interface SVGViewElement : SVGElement
     getter zoomAndPan
     method constructor
     setter zoomAndPan
+interface Scheduler
+    attribute @@toStringTag
+    method constructor
+    method getTaskQueue
+    method postTask
 interface Scheduling
     attribute @@toStringTag
     method constructor
@@ -7789,6 +7794,12 @@ interface SyncManager
     method constructor
     method getTags
     method register
+interface Task
+    attribute @@toStringTag
+    getter priority
+    getter status
+    method cancel
+    method constructor
 interface TaskAttributionTiming : PerformanceEntry
     attribute @@toStringTag
     getter containerId
@@ -7797,6 +7808,11 @@ interface TaskAttributionTiming : PerformanceEntry
     getter containerType
     method constructor
     method toJSON
+interface TaskQueue
+    attribute @@toStringTag
+    getter priority
+    method constructor
+    method postTask
 interface Text : CharacterData
     attribute @@toStringTag
     getter assignedSlot
@@ -11254,6 +11270,7 @@ interface webkitURL
     getter performance
     getter personalbar
     getter portalHost
+    getter scheduler
     getter screen
     getter screenLeft
     getter screenTop
@@ -11449,6 +11466,7 @@ interface webkitURL
     setter pageYOffset
     setter performance
     setter personalbar
+    setter scheduler
     setter screen
     setter screenLeft
     setter screenTop

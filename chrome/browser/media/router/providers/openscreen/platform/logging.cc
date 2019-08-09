@@ -4,6 +4,8 @@
 
 #include "third_party/openscreen/src/platform/api/logging.h"
 
+#include "base/debug/debugger.h"
+#include "base/immediate_crash.h"
 #include "base/logging.h"
 
 namespace openscreen {

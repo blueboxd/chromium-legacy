@@ -7,12 +7,27 @@
 
 #include <string>
 
+#include "base/strings/string_piece_forward.h"
+
 namespace password_manager {
+
+// Canonicalizes |username| by lower-casing and and stripping a mail-address
+// host in case the username is a mail address. |username| must be a UTF-8
+// string.
+std::string CanonicalizeUsername(base::StringPiece username);
+
+// Hashes |canonicalized_username| by appending a fixed salt and computing the
+// SHA256 hash.
+std::string HashUsername(base::StringPiece canonicalized_username);
+
+// Bucketizes |canonicalized_username| by hashing it and returning a prefix of
+// 24 bits.
+std::string BucketizeUsername(base::StringPiece canonicalized_username);
 
 // Produces the username/password pair hash using scrypt algorithm.
 // |username| and |password| are UTF-8 strings.
-std::string ScryptHashUsernameAndPassword(const std::string& username,
-                                          const std::string& password);
+std::string ScryptHashUsernameAndPassword(base::StringPiece username,
+                                          base::StringPiece password);
 
 }  // namespace password_manager
 

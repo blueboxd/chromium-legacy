@@ -18,7 +18,6 @@
 #include "base/containers/linked_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "ios/net/cookies/cookie_cache.h"
@@ -84,11 +83,6 @@ class CookieStoreIOS : public net::CookieStore,
   void SetMetricsEnabled();
 
   // Implementation of the net::CookieStore interface.
-  void SetCookieWithOptionsAsync(const GURL& url,
-                                 const std::string& cookie_line,
-                                 const net::CookieOptions& options,
-                                 base::Optional<base::Time> server_time,
-                                 SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
                                std::string source_scheme,
                                const net::CookieOptions& options,
@@ -258,7 +252,7 @@ class CookieStoreIOS : public net::CookieStore,
   // hence running callbacks).
   //
   // When this CookieStoreIOS object is not synchronized, the various mutator
-  // methods (SetCookieWithOptionsAsync &c) instead store their state in a
+  // methods (SetCanonicalCookieAsync &c) instead store their state in a
   // CookieMonster object to be written back when the system store synchronizes.
   // To deliver notifications in a timely manner, the mutators have to ensure
   // that hooks get run, but only after the changes have been written back to

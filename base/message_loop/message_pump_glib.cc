@@ -131,9 +131,9 @@ struct ThreadInfo {
 // Used for accesing |thread_info|.
 static LazyInstance<Lock>::Leaky thread_info_lock = LAZY_INSTANCE_INITIALIZER;
 
-// If non-NULL it means a MessagePumpGlib exists and has been Run. This is
+// If non-null it means a MessagePumpGlib exists and has been Run. This is
 // destroyed when the MessagePump is destroyed.
-ThreadInfo* thread_info = NULL;
+ThreadInfo* thread_info = nullptr;
 
 void CheckThread(MessagePumpGlib* pump) {
   AutoLock auto_lock(thread_info_lock.Get());
@@ -151,11 +151,37 @@ void PumpDestroyed(MessagePumpGlib* pump) {
   AutoLock auto_lock(thread_info_lock.Get());
   if (thread_info && thread_info->pump == pump) {
     delete thread_info;
-    thread_info = NULL;
+    thread_info = nullptr;
   }
 }
 
 #endif
+
+struct FdWatchSource : public GSource {
+  MessagePumpGlib* pump;
+  MessagePumpGlib::FdWatchController* controller;
+};
+
+gboolean FdWatchSourcePrepare(GSource* source, gint* timeout_ms) {
+  *timeout_ms = -1;
+  return FALSE;
+}
+
+gboolean FdWatchSourceCheck(GSource* gsource) {
+  auto* source = static_cast<FdWatchSource*>(gsource);
+  return source->pump->HandleFdWatchCheck(source->controller) ? TRUE : FALSE;
+}
+
+gboolean FdWatchSourceDispatch(GSource* gsource,
+                               GSourceFunc unused_func,
+                               gpointer unused_data) {
+  auto* source = static_cast<FdWatchSource*>(gsource);
+  source->pump->HandleFdWatchDispatch(source->controller);
+  return TRUE;
+}
+
+GSourceFuncs g_fd_watch_source_funcs = {
+    FdWatchSourcePrepare, FdWatchSourceCheck, FdWatchSourceDispatch, nullptr};
 
 }  // namespace
 
@@ -207,6 +233,116 @@ MessagePumpGlib::~MessagePumpGlib() {
   g_source_unref(work_source_);
   close(wakeup_pipe_read_);
   close(wakeup_pipe_write_);
+}
+
+MessagePumpGlib::FdWatchController::FdWatchController(const Location& location)
+    : FdWatchControllerInterface(location) {}
+
+MessagePumpGlib::FdWatchController::~FdWatchController() {
+  if (IsInitialized()) {
+    CHECK(StopWatchingFileDescriptor());
+  }
+  if (was_destroyed_) {
+    DCHECK(!*was_destroyed_);
+    *was_destroyed_ = true;
+  }
+}
+
+bool MessagePumpGlib::FdWatchController::StopWatchingFileDescriptor() {
+  if (!IsInitialized())
+    return false;
+
+  g_source_destroy(source_);
+  g_source_unref(source_);
+  source_ = nullptr;
+  watcher_ = nullptr;
+  return true;
+}
+
+bool MessagePumpGlib::FdWatchController::IsInitialized() const {
+  return !!source_;
+}
+
+bool MessagePumpGlib::FdWatchController::InitOrUpdate(int fd,
+                                                      int mode,
+                                                      FdWatcher* watcher) {
+  gushort event_flags = 0;
+  if (mode & WATCH_READ) {
+    event_flags |= G_IO_IN;
+  }
+  if (mode & WATCH_WRITE) {
+    event_flags |= G_IO_OUT;
+  }
+
+  if (!IsInitialized()) {
+    poll_fd_ = std::make_unique<GPollFD>();
+    poll_fd_->fd = fd;
+  } else {
+    if (poll_fd_->fd != fd)
+      return false;
+    // Combine old/new event masks.
+    event_flags |= poll_fd_->events;
+    // Destroy previous source
+    bool stopped = StopWatchingFileDescriptor();
+    DCHECK(stopped);
+  }
+  poll_fd_->events = event_flags;
+  poll_fd_->revents = 0;
+
+  source_ = g_source_new(&g_fd_watch_source_funcs, sizeof(FdWatchSource));
+  DCHECK(source_);
+  g_source_add_poll(source_, poll_fd_.get());
+  g_source_set_can_recurse(source_, FALSE);
+  g_source_set_callback(source_, nullptr, nullptr, nullptr);
+
+  watcher_ = watcher;
+  return true;
+}
+
+bool MessagePumpGlib::FdWatchController::Attach(MessagePumpGlib* pump) {
+  DCHECK(pump);
+  if (!IsInitialized()) {
+    return false;
+  }
+  auto* source = static_cast<FdWatchSource*>(source_);
+  source->controller = this;
+  source->pump = pump;
+  g_source_attach(source_, pump->context_);
+  return true;
+}
+
+void MessagePumpGlib::FdWatchController::NotifyCanRead() {
+  if (!watcher_)
+    return;
+  DCHECK(poll_fd_);
+  watcher_->OnFileCanReadWithoutBlocking(poll_fd_->fd);
+}
+
+void MessagePumpGlib::FdWatchController::NotifyCanWrite() {
+  if (!watcher_)
+    return;
+  DCHECK(poll_fd_);
+  watcher_->OnFileCanWriteWithoutBlocking(poll_fd_->fd);
+}
+
+bool MessagePumpGlib::WatchFileDescriptor(int fd,
+                                          bool persistent,
+                                          int mode,
+                                          FdWatchController* controller,
+                                          FdWatcher* watcher) {
+  DCHECK_GE(fd, 0);
+  DCHECK(controller);
+  DCHECK(watcher);
+  DCHECK(mode == WATCH_READ || mode == WATCH_WRITE || mode == WATCH_READ_WRITE);
+  // WatchFileDescriptor should be called on the pump thread. It is not
+  // threadsafe, so the watcher may never be registered.
+  DCHECK_CALLED_ON_VALID_THREAD(watch_fd_caller_checker_);
+
+  if (!controller->InitOrUpdate(fd, mode, watcher)) {
+    DPLOG(ERROR) << "FdWatchController init failed (fd=" << fd << ")";
+    return false;
+  }
+  return controller->Attach(this);
 }
 
 // Return the timeout we want passed to poll.
@@ -325,6 +461,33 @@ void MessagePumpGlib::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   // We need to wake up the loop in case the poll timeout needs to be
   // adjusted.  This will cause us to try to do work, but that's OK.
   ScheduleWork();
+}
+
+bool MessagePumpGlib::HandleFdWatchCheck(FdWatchController* controller) {
+  DCHECK(controller);
+  gushort flags = controller->poll_fd_->revents;
+  return (flags & G_IO_IN) || (flags & G_IO_OUT);
+}
+
+void MessagePumpGlib::HandleFdWatchDispatch(FdWatchController* controller) {
+  DCHECK(controller);
+  DCHECK(controller->poll_fd_);
+  gushort flags = controller->poll_fd_->revents;
+  if ((flags & G_IO_IN) && (flags & G_IO_OUT)) {
+    // Both callbacks will be called. It is necessary to check that
+    // |controller| is not destroyed.
+    bool controller_was_destroyed = false;
+    controller->was_destroyed_ = &controller_was_destroyed;
+    controller->NotifyCanWrite();
+    if (!controller_was_destroyed)
+      controller->NotifyCanRead();
+    if (!controller_was_destroyed)
+      controller->was_destroyed_ = nullptr;
+  } else if (flags & G_IO_IN) {
+    controller->NotifyCanRead();
+  } else if (flags & G_IO_OUT) {
+    controller->NotifyCanWrite();
+  }
 }
 
 bool MessagePumpGlib::ShouldQuit() const {

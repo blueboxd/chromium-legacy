@@ -31,6 +31,7 @@ class AwGLSurface : public gl::GLSurface {
               ColorSpace color_space,
               bool has_alpha) override;
 
+  void SetSize(const gfx::Size& size);
   void MaybeDidPresent(gfx::PresentationFeedback feedback);
 
  protected:

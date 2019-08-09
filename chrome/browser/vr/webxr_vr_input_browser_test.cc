@@ -17,6 +17,25 @@
 
 namespace vr {
 
+// Helper function for verifying the XRInputSource.profiles array contents.
+void VerifyInputSourceProfilesArray(
+    WebXrVrBrowserTestBase* t,
+    const std::vector<std::string>& expected_values) {
+  t->PollJavaScriptBooleanOrFail(
+      "isProfileCountEqualTo(" + base::NumberToString(expected_values.size()) +
+          ")",
+      WebXrVrBrowserTestBase::kPollTimeoutShort);
+
+  // We don't expect the contents of the profiles array to change once we've
+  // verified its size above, so we can check the expressions a single time
+  // here instead of polling them.
+  for (size_t i = 0; i < expected_values.size(); ++i) {
+    t->RunJavaScriptAndExtractBoolOrFail("isProfileEqualTo(" +
+                                         base::NumberToString(i) + ", '" +
+                                         expected_values[i] + "')");
+  }
+}
+
 // Test that focus is locked to the presenting display for the purposes of VR/XR
 // input.
 void TestPresentationLocksFocusImpl(WebXrVrBrowserTestBase* t,
@@ -423,6 +442,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadIncompleteData) {
       GetFileUrlForHtmlTestFile("test_webxr_gamepad_support"));
   EnterSessionWithUserGestureOrFail();
   PollJavaScriptBooleanOrFail("inputSourceHasNoGamepad()", kPollTimeoutShort);
+  PollJavaScriptBooleanOrFail("isProfileCountEqualTo(0)", kPollTimeoutShort);
   RunJavaScriptOrFail("done()");
   EndTest();
 }
@@ -462,6 +482,18 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
                                  WebXrVrBrowserTestBase::kPollTimeoutShort);
   t->PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(0, true)",
                                  WebXrVrBrowserTestBase::kPollTimeoutShort);
+
+  if (t->GetRuntimeType() == XrBrowserTestBase::RuntimeType::RUNTIME_WMR) {
+    // WMR will still report having grip, touchpad, and thumbstick because it
+    // only supports that type of controller and fills in default values if
+    // those inputs don't exist.
+    VerifyInputSourceProfilesArray(
+        t, {"windows-mixed-reality", "grip-touchpad-thumbstick-controller"});
+  } else if (t->GetRuntimeType() ==
+             XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR) {
+    VerifyInputSourceProfilesArray(t, {"test-value-test-value", "controller"});
+  }
+
   t->RunJavaScriptOrFail("done()");
   t->EndTest();
 }
@@ -551,6 +583,18 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
                                  WebVrBrowserTestBase::kPollTimeoutShort);
   t->PollJavaScriptBooleanOrFail("isButtonTouchedEqualTo(3, true)",
                                  WebVrBrowserTestBase::kPollTimeoutShort);
+
+  if (t->GetRuntimeType() == XrBrowserTestBase::RuntimeType::RUNTIME_WMR) {
+    // WMR will still report having grip, touchpad, and thumbstick because it
+    // only supports that type of controller and fills in default values if
+    // those inputs don't exist.
+    VerifyInputSourceProfilesArray(
+        t, {"windows-mixed-reality", "grip-touchpad-thumbstick-controller"});
+  } else if (t->GetRuntimeType() ==
+             XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR) {
+    VerifyInputSourceProfilesArray(
+        t, {"test-value-test-value", "grip-touchpad-thumbstick-controller"});
+  }
 
   t->RunJavaScriptOrFail("done()");
   t->EndTest();
@@ -660,6 +704,9 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadReservedData) {
   PollJavaScriptBooleanOrFail("isButtonPressedEqualTo(4, true)",
                               kPollTimeoutShort);
 
+  VerifyInputSourceProfilesArray(
+      this, {"test-value-test-value", "touchpad-controller"});
+
   RunJavaScriptOrFail("done()");
   EndTest();
 }
@@ -697,6 +744,9 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadOptionalData) {
   PollJavaScriptBooleanOrFail("isMappingEqualTo('xr-standard')",
                               kPollTimeoutShort);
   PollJavaScriptBooleanOrFail("isButtonCountEqualTo(3)", kPollTimeoutShort);
+
+  VerifyInputSourceProfilesArray(
+      this, {"test-value-test-value", "grip-touchpad-controller"});
 
   RunJavaScriptOrFail("done()");
   EndTest();

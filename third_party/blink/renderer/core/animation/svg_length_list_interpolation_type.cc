@@ -41,7 +41,9 @@ InterpolationValue SVGLengthListInterpolationType::MaybeConvertSVGValue(
   auto result = std::make_unique<InterpolableList>(length_list.length());
   for (wtf_size_t i = 0; i < length_list.length(); i++) {
     InterpolationValue component =
-        SVGLengthInterpolationType::ConvertSVGLength(*length_list.at(i));
+        SVGLengthInterpolationType::MaybeConvertSVGLength(*length_list.at(i));
+    if (!component)
+      return nullptr;
     result->Set(i, std::move(component.interpolable_value));
   }
   return InterpolationValue(std::move(result));

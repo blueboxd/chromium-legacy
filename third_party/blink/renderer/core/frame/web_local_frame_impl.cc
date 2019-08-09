@@ -2028,13 +2028,15 @@ bool WebLocalFrameImpl::DispatchBeforeUnloadEvent(bool is_reload) {
 
 void WebLocalFrameImpl::CommitNavigation(
     std::unique_ptr<WebNavigationParams> navigation_params,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+    base::OnceClosure call_before_attaching_new_document) {
   DCHECK(GetFrame());
   DCHECK(!navigation_params->url.ProtocolIs("javascript"));
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
-  GetFrame()->Loader().CommitNavigation(std::move(navigation_params),
-                                        std::move(extra_data));
+  GetFrame()->Loader().CommitNavigation(
+      std::move(navigation_params), std::move(extra_data),
+      std::move(call_before_attaching_new_document));
 }
 
 blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(

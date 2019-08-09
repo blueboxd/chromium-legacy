@@ -57,7 +57,7 @@ suite('ZoomLevels', function() {
     testElement = document.createElement('zoom-levels');
     document.body.appendChild(testElement);
     return browserProxy.whenCalled('fetchZoomLevels').then(() => {
-      return test_util.waitForRender(testElement);
+      return test_util.waitBeforeNextRender(testElement);
     });
   }
 

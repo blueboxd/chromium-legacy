@@ -10,9 +10,6 @@ class ExclusiveAccessBubbleViews;
 namespace gfx {
 class Rect;
 }
-namespace views {
-class View;
-}
 
 // Delegate class to allow BrowserViewLayout to be decoupled from BrowserView
 // for testing.
@@ -20,7 +17,6 @@ class BrowserViewLayoutDelegate {
  public:
   virtual ~BrowserViewLayoutDelegate() {}
 
-  virtual views::View* GetContentsWebView() const = 0;
   virtual bool IsTabStripVisible() const = 0;
   virtual gfx::Rect GetBoundsForTabStripRegionInBrowserView() const = 0;
   virtual int GetTopInsetInBrowserView() const = 0;

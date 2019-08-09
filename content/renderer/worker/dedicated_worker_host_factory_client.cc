@@ -35,9 +35,13 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHostDeprecated(
     const blink::WebSecurityOrigin& script_origin) {
   DCHECK(!blink::features::IsPlzDedicatedWorkerEnabled());
   service_manager::mojom::InterfaceProviderPtr interface_provider_ptr;
-  factory_->CreateWorkerHost(script_origin,
-                             mojo::MakeRequest(&interface_provider_ptr));
-  OnWorkerHostCreated(std::move(interface_provider_ptr));
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker;
+  factory_->CreateWorkerHost(
+      script_origin, mojo::MakeRequest(&interface_provider_ptr),
+      browser_interface_broker.InitWithNewPipeAndPassReceiver());
+  OnWorkerHostCreated(std::move(interface_provider_ptr),
+                      std::move(browser_interface_broker));
 }
 
 void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
@@ -113,8 +117,11 @@ DedicatedWorkerHostFactoryClient::CreateWorkerFetchContext(
 }
 
 void DedicatedWorkerHostFactoryClient::OnWorkerHostCreated(
-    service_manager::mojom::InterfaceProviderPtr interface_provider) {
-  worker_->OnWorkerHostCreated(interface_provider.PassInterface().PassHandle());
+    service_manager::mojom::InterfaceProviderPtr interface_provider,
+    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker) {
+  worker_->OnWorkerHostCreated(interface_provider.PassInterface().PassHandle(),
+                               browser_interface_broker.PassPipe());
 }
 
 void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(

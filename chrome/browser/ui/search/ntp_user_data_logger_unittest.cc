@@ -713,14 +713,6 @@ TEST_F(NTPUserDataLoggerTest, ShouldRecordLoadTimeLocalNTPGoogle) {
                                          delta_tiles_loaded, 1);
   histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.LocalNTP.Google",
                                          delta_tiles_loaded, 1);
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "NewTabPage.CustomizationAvailability.Backgrounds"),
-      ElementsAre(Bucket(
-          static_cast<int>(
-              BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE),
-          1)));
 }
 
 TEST_F(NTPUserDataLoggerTest, ShouldRecordLoadTimeLocalNTPOther) {
@@ -752,14 +744,6 @@ TEST_F(NTPUserDataLoggerTest, ShouldRecordLoadTimeLocalNTPOther) {
                                          delta_tiles_loaded, 1);
   histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.LocalNTP.Other",
                                          delta_tiles_loaded, 1);
-
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.CustomizationAvailability.Backgrounds"),
-              ElementsAre(Bucket(
-                  static_cast<int>(
-                      BackgroundCustomization::
-                          BACKGROUND_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER),
-                  1)));
 }
 
 TEST_F(NTPUserDataLoggerTest, ShouldRecordLoadTimeRemoteNTPOther) {
@@ -789,14 +773,6 @@ TEST_F(NTPUserDataLoggerTest, ShouldRecordLoadTimeRemoteNTPOther) {
                                          delta_tiles_loaded, 1);
   histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.Web.Other",
                                          delta_tiles_loaded, 1);
-
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.CustomizationAvailability.Backgrounds"),
-              ElementsAre(Bucket(
-                  static_cast<int>(
-                      BackgroundCustomization::
-                          BACKGROUND_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER),
-                  1)));
 }
 
 TEST_F(NTPUserDataLoggerTest, ShouldRecordImpressionsAge) {
@@ -853,15 +829,6 @@ TEST_F(NTPUserDataLoggerTest, ShouldRecordBackgroundIsCustomized) {
                                          delta_tiles_loaded, 1);
   histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.LocalNTP.Google",
                                          delta_tiles_loaded, 1);
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "NewTabPage.CustomizationAvailability.Backgrounds"),
-      ElementsAre(Bucket(
-          static_cast<int>(
-              BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE),
-          1)));
-
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.Customized"),
       ElementsAre(Bucket(
@@ -975,15 +942,6 @@ TEST_F(NTPUserDataLoggerTest, ShouldRecordCustomizationActionFromNTPGoogle) {
                                          delta_tiles_loaded, 1);
   histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.LocalNTP.Google",
                                          delta_tiles_loaded, 1);
-
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "NewTabPage.CustomizationAvailability.Backgrounds"),
-      ElementsAre(Bucket(
-          static_cast<int>(
-              BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE),
-          1)));
-
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.CustomizeAction"),
               ElementsAre(Bucket(
                   static_cast<int>(
@@ -1022,14 +980,6 @@ TEST_F(NTPUserDataLoggerTest, ShouldNotRecordCustomizationActionFromNTPOther) {
                                          delta_tiles_loaded, 1);
   histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.Web.Other",
                                          delta_tiles_loaded, 1);
-
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.CustomizationAvailability.Backgrounds"),
-              ElementsAre(Bucket(
-                  static_cast<int>(
-                      BackgroundCustomization::
-                          BACKGROUND_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER),
-                  1)));
 
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.CustomizeAction"),
               IsEmpty());

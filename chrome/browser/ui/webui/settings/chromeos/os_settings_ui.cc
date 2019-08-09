@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
@@ -67,6 +68,10 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   // Needed for JS code shared between browser and OS settings (for example,
   // page_visibility.js).
   html_source->AddBoolean("showOSSettings", true);
+
+  html_source->AddBoolean(
+      "showParentalControls",
+      chromeos::settings::ShouldShowParentalControls(profile));
 
   AddSettingsPageUIHandler(
       std::make_unique<::settings::AccessibilityMainHandler>());

@@ -76,7 +76,7 @@ void LargestTextPaintManager::ReportNoCandidateToTrace() {
                ToTraceValue(&frame_view_->GetFrame()));
 }
 
-void LargestTextPaintManager::UpdateCandidate() {
+base::WeakPtr<TextRecord> LargestTextPaintManager::UpdateCandidate() {
   base::WeakPtr<TextRecord> largest_text_record = FindLargestPaintCandidate();
   const base::TimeTicks time =
       largest_text_record ? largest_text_record->paint_time : base::TimeTicks();
@@ -85,27 +85,20 @@ void LargestTextPaintManager::UpdateCandidate() {
   DCHECK(paint_timing_detector_);
   bool changed =
       paint_timing_detector_->NotifyIfChangedLargestTextPaint(time, size);
-  if (!changed)
-    return;
-
-  if (!time.is_null()) {
-    if (auto* lcp_calculator =
-            paint_timing_detector_->GetLargestContentfulPaintCalculator())
-      lcp_calculator->OnLargestTextUpdated(largest_text_record);
-    ReportCandidateToTrace(*largest_text_record);
-  } else {
-    if (auto* lcp_calculator =
-            paint_timing_detector_->GetLargestContentfulPaintCalculator())
-      lcp_calculator->OnLargestTextUpdated(nullptr);
-    ReportNoCandidateToTrace();
+  if (changed) {
+    if (!time.is_null())
+      ReportCandidateToTrace(*largest_text_record);
+    else
+      ReportNoCandidateToTrace();
   }
+  return largest_text_record;
 }
 
 void TextPaintTimingDetector::OnPaintFinished() {
   if (need_update_timing_at_frame_end_) {
     need_update_timing_at_frame_end_ = false;
-    if (records_manager_.GetLargestTextPaintManager())
-      records_manager_.GetLargestTextPaintManager()->UpdateCandidate();
+    frame_view_->GetPaintTimingDetector()
+        .UpdateLargestContentfulPaintCandidate();
   }
   if (records_manager_.NeedMeausuringPaintTime()) {
     if (!awaiting_swap_promise_) {
@@ -150,8 +143,8 @@ void TextPaintTimingDetector::ReportSwapTime(base::TimeTicks timestamp) {
     }
   }
   records_manager_.AssignPaintTimeToQueuedRecords(timestamp);
-  if (records_manager_.GetLargestTextPaintManager())
-    records_manager_.GetLargestTextPaintManager()->UpdateCandidate();
+  if (IsRecordingLargestTextPaint())
+    UpdateCandidate();
   awaiting_swap_promise_ = false;
 }
 

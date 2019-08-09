@@ -18,8 +18,6 @@ const CGFloat kButtonAnimationDuration = 0.2;
 const CGFloat kButtonEdgeInset = 6;
 // To achieve a circular corner radius, divide length of a side by 2.
 const CGFloat kButtonCircularCornerRadiusDivisor = 2.0;
-// Alpha value of button in an inactive state.
-const CGFloat kButtonInactiveAlpha = 0.38;
 }  // namespace
 
 @interface BadgeButton ()
@@ -53,8 +51,7 @@ const CGFloat kButtonInactiveAlpha = 0.38;
 - (void)setAccepted:(BOOL)accepted animated:(BOOL)animated {
   void (^changeTintColor)() = ^{
     self.tintColor = accepted ? [UIColor colorNamed:kBlueColor]
-                              : [UIColor colorWithWhite:0
-                                                  alpha:kButtonInactiveAlpha];
+                              : [UIColor colorNamed:kToolbarButtonColor];
   };
   if (animated) {
     [UIView animateWithDuration:kButtonAnimationDuration

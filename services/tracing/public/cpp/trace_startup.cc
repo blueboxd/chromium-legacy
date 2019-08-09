@@ -37,14 +37,17 @@ void EnableStartupTracingIfNeeded() {
   auto* startup_config = TraceStartupConfig::GetInstance();
 
   if (startup_config->IsEnabled()) {
+    const TraceConfig& trace_config = startup_config->GetTraceConfig();
     if (TracingUsesPerfettoBackend()) {
-      TracingSamplerProfiler::SetupStartupTracing();
+      if (trace_config.IsCategoryGroupEnabled(
+              TRACE_DISABLED_BY_DEFAULT("cpu_profiler"))) {
+        TracingSamplerProfiler::SetupStartupTracing();
+      }
       TraceEventDataSource::GetInstance()->SetupStartupTracing(
           startup_config->GetSessionOwner() ==
           TraceStartupConfig::SessionOwner::kBackgroundTracing);
     }
 
-    const TraceConfig& trace_config = startup_config->GetTraceConfig();
     uint8_t modes = TraceLog::RECORDING_MODE;
     if (!trace_config.event_filters().empty())
       modes |= TraceLog::FILTERING_MODE;

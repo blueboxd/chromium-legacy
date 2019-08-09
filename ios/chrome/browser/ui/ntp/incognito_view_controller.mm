@@ -35,9 +35,8 @@
 }
 
 - (void)viewDidLoad {
-  self.incognitoView = [[IncognitoView alloc]
-          initWithFrame:[UIApplication sharedApplication].keyWindow.bounds
-      urlLoadingService:_urlLoadingService];
+  self.incognitoView = [[IncognitoView alloc] initWithFrame:self.view.bounds
+                                          urlLoadingService:_urlLoadingService];
   [self.incognitoView setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
                                           UIViewAutoresizingFlexibleWidth];
 

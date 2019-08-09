@@ -15,7 +15,7 @@
 namespace blink {
 
 // Intentionally leaked during fuzzing.
-// See testing/libfuzzer/efficient_fuzzer.md.
+// See testing/libfuzzer/efficient_fuzzing.md.
 DummyPageHolder* g_page_holder = nullptr;
 
 int LLVMFuzzerInitialize(int* argc, char*** argv) {

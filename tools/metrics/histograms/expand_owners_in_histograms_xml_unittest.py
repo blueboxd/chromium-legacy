@@ -11,7 +11,9 @@ import xml.dom.minidom
 
 class ExpandOwnersInHistogramsXmlTest(unittest.TestCase):
 
-  def testExpandOwners(self):
+  # TODO(caitlinfischer): Figure out what to do with this test after seeing the
+  # results of attempting to submit dummy histograms in crrev.com/c/1737370.
+  def DISABLED_testExpandOwners(self):
     """Checks that no errors are raised when expanding OWNERS files."""
     path = os.path.join(os.path.dirname(__file__), 'histograms.xml')
     with open(path, 'r') as histograms_file:

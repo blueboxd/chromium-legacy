@@ -54,6 +54,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegisterOperation
 
   size_t current_key_handle_index_ = 0;
   bool canceled_ = false;
+  // probing_alternative_rp_id_ is true if |app_id| is set in |request()| and
+  // thus the exclude list is being probed a second time with the alternative RP
+  // ID.
+  bool probing_alternative_rp_id_ = false;
   base::WeakPtrFactory<U2fRegisterOperation> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(U2fRegisterOperation);

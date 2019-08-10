@@ -49,7 +49,7 @@ bool RegisterBlinkTestPlugin(base::CommandLine* command_line)
 using CreateUDPSocketCallback = base::RepeatingCallback<void(
     network::mojom::NetworkContext* network_context,
     network::mojom::UDPSocketRequest socket_request,
-    network::mojom::UDPSocketReceiverPtr socket_receiver)>;
+    network::mojom::UDPSocketListenerPtr socket_listener)>;
 
 // Sets a NetworkContext to be used by the Pepper TCP classes for testing.
 // Passed in NetworkContext must remain valid until the method is called again

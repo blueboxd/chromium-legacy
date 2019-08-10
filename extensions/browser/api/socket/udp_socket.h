@@ -19,10 +19,10 @@
 
 namespace extensions {
 
-class UDPSocket : public Socket, public network::mojom::UDPSocketReceiver {
+class UDPSocket : public Socket, public network::mojom::UDPSocketListener {
  public:
   UDPSocket(network::mojom::UDPSocketPtrInfo socket,
-            network::mojom::UDPSocketReceiverRequest receiver_request,
+            network::mojom::UDPSocketListenerRequest listener_request,
             const std::string& owner_extension_id);
   ~UDPSocket() override;
 
@@ -71,7 +71,7 @@ class UDPSocket : public Socket, public network::mojom::UDPSocketReceiver {
 
   bool IsConnectedOrBound() const;
 
-  // network::mojom::UDPSocketReceiver implementation.
+  // network::mojom::UDPSocketListener implementation.
   void OnReceived(int32_t result,
                   const base::Optional<net::IPEndPoint>& src_addr,
                   base::Optional<base::span<const uint8_t>> data) override;
@@ -100,7 +100,7 @@ class UDPSocket : public Socket, public network::mojom::UDPSocketReceiver {
   network::mojom::UDPSocketOptionsPtr socket_options_;
 
   bool is_bound_;
-  mojo::Binding<network::mojom::UDPSocketReceiver> receiver_binding_;
+  mojo::Binding<network::mojom::UDPSocketListener> listener_binding_;
   base::Optional<net::IPEndPoint> local_addr_;
   base::Optional<net::IPEndPoint> peer_addr_;
 
@@ -117,7 +117,7 @@ class UDPSocket : public Socket, public network::mojom::UDPSocketReceiver {
 class ResumableUDPSocket : public UDPSocket {
  public:
   ResumableUDPSocket(network::mojom::UDPSocketPtrInfo socket,
-                     network::mojom::UDPSocketReceiverRequest receiver_request,
+                     network::mojom::UDPSocketListenerRequest listener_request,
                      const std::string& owner_extension_id);
 
   // Overriden from ApiResource

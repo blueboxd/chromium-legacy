@@ -230,7 +230,7 @@ arc::mojom::ConnectionStateType TranslateConnectionState(
       state == shill::kStateConfiguration)
     return arc::mojom::ConnectionStateType::CONNECTING;
   if ((state == shill::kStateIdle) || (state == shill::kStateFailure) ||
-      (state == ""))
+      (state == shill::kStateDisconnect) || (state == ""))
     return arc::mojom::ConnectionStateType::NOT_CONNECTED;
   if (chromeos::NetworkState::StateIsPortalled(state))
     return arc::mojom::ConnectionStateType::PORTAL;
@@ -239,7 +239,7 @@ arc::mojom::ConnectionStateType TranslateConnectionState(
 
   // The remaining cases defined in shill dbus-constants are legacy values from
   // Flimflam and are not expected to be encountered. These are: kStateCarrier,
-  // kStateActivationFailure, kStateDisconnect, and kStateOffline.
+  // kStateActivationFailure, and kStateOffline.
   NOTREACHED() << "Unknown connection state: " << state;
   return arc::mojom::ConnectionStateType::NOT_CONNECTED;
 }

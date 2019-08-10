@@ -88,14 +88,14 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   // Figure out how much space we've already been able to process in previous
   // fragments, if this multicol container participates in an outer
   // fragmentation context.
-  LayoutUnit previously_used_block_size;
+  LayoutUnit previously_consumed_block_size;
   if (const auto* token = BreakToken())
-    previously_used_block_size = token->UsedBlockSize();
+    previously_consumed_block_size = token->ConsumedBlockSize();
 
   bool needs_more_fragments_in_outer = false;
   if (ConstraintSpace().HasBlockFragmentation()) {
     // Subtract the space for content we've processed in previous fragments.
-    column_size.block_size -= previously_used_block_size;
+    column_size.block_size -= previously_consumed_block_size;
 
     // Check if we can fit everything (that's remaining), block-wise, within the
     // current outer fragmentainer. If we can't, we need to adjust the block
@@ -203,17 +203,17 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
         // Calculate how much block space we've been able to process so far, in
         // this fragment and all previous fragments generated for this multicol
         // container.
-        LayoutUnit used_block_size = fragment_block_size;
+        LayoutUnit consumed_block_size = fragment_block_size;
         // If this isn't the first fragment, add the amount that we were able to
         // process in previous fragments. Otherwise, we're the first fragment,
         // and we have to add leading border+padding+scrollbar to the fragment
         // size (which would otherwise only be the size of the columns), since
         // that's put at the start of the first fragment.
-        if (previously_used_block_size)
-          used_block_size += previously_used_block_size;
+        if (previously_consumed_block_size)
+          consumed_block_size += previously_consumed_block_size;
         else
           fragment_block_size += border_scrollbar_padding_.block_start;
-        container_builder_.SetUsedBlockSize(used_block_size);
+        container_builder_.SetConsumedBlockSize(consumed_block_size);
         container_builder_.SetBlockSize(fragment_block_size);
         container_builder_.SetDidBreak();
         break;
@@ -266,7 +266,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     } else {
       // TODO(mstensho): end border and padding may overflow the parent
       // fragmentainer, and we should avoid that.
-      block_size = border_box_size.block_size - previously_used_block_size;
+      block_size = border_box_size.block_size - previously_consumed_block_size;
     }
     container_builder_.SetBlockSize(block_size);
   }

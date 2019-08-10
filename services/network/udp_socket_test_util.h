@@ -47,8 +47,8 @@ class UDPSocketTestHelper {
   mojom::UDPSocketPtr* socket_;
 };
 
-// An implementation of mojom::UDPSocketReceiver that records received results.
-class UDPSocketReceiverImpl : public mojom::UDPSocketReceiver {
+// An implementation of mojom::UDPSocketListener that records received results.
+class UDPSocketListenerImpl : public mojom::UDPSocketListener {
  public:
   struct ReceivedResult {
     ReceivedResult(int net_error_arg,
@@ -62,8 +62,8 @@ class UDPSocketReceiverImpl : public mojom::UDPSocketReceiver {
     base::Optional<std::vector<uint8_t>> data;
   };
 
-  UDPSocketReceiverImpl();
-  ~UDPSocketReceiverImpl() override;
+  UDPSocketListenerImpl();
+  ~UDPSocketListenerImpl() override;
 
   const std::vector<ReceivedResult>& results() const { return results_; }
 
@@ -77,7 +77,7 @@ class UDPSocketReceiverImpl : public mojom::UDPSocketReceiver {
   std::vector<ReceivedResult> results_;
   size_t expected_receive_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(UDPSocketReceiverImpl);
+  DISALLOW_COPY_AND_ASSIGN(UDPSocketListenerImpl);
 };
 
 }  // namespace test

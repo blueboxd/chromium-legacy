@@ -43,7 +43,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
 
   // These all correspond to the NetworkContext methods of the same name.
   void CreateUDPSocket(mojom::UDPSocketRequest request,
-                       mojom::UDPSocketReceiverPtr receiver);
+                       mojom::UDPSocketListenerPtr listener);
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,
       int backlog,

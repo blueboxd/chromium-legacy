@@ -41,32 +41,34 @@ UsbInternalsTest.prototype = {
   ],
 
   preLoad: function() {
-    /** @implements {mojom.UsbInternalsPageHandlerProxy} */
-    class FakePageHandlerProxy extends TestBrowserProxy {
-      constructor() {
+    /** @implements {mojom.UsbInternalsPageHandlerRemote} */
+    class FakePageHandlerRemote extends TestBrowserProxy {
+      constructor(handle) {
         super([
           'bindUsbDeviceManagerInterface',
           'bindTestInterface',
         ]);
+
+        this.receiver_ = new mojom.UsbInternalsPageHandlerReceiver(this);
+        this.receiver_.$.bindHandle(handle);
       }
 
-      async bindUsbDeviceManagerInterface(deviceManagerRequest) {
+      async bindUsbDeviceManagerInterface(deviceManagerPendingReceiver) {
         this.methodCalled(
-            'bindUsbDeviceManagerInterface', deviceManagerRequest);
-        this.deviceManager = new FakeDeviceManagerProxy();
-        this.deviceManagerBinding_ =
-            new device.mojom.UsbDeviceManager(this.deviceManager);
-        this.deviceManagerBinding_.$.bindHandle(deviceManagerRequest.handle);
+            'bindUsbDeviceManagerInterface', deviceManagerPendingReceiver);
+        this.deviceManager =
+            new FakeDeviceManagerRemote(deviceManagerPendingReceiver);
       }
 
-      async bindTestInterface(testDeviceManagerRequest) {
-        this.methodCalled('bindTestInterface', testDeviceManagerRequest);
+      async bindTestInterface(testDeviceManagerPendingReceiver) {
+        this.methodCalled(
+            'bindTestInterface', testDeviceManagerPendingReceiver);
       }
     }
 
-    /** @implements {device.mojom.UsbDeviceManagerProxy} */
-    class FakeDeviceManagerProxy extends TestBrowserProxy {
-      constructor() {
+    /** @implements {device.mojom.UsbDeviceManagerRemote} */
+    class FakeDeviceManagerRemote extends TestBrowserProxy {
+      constructor(pendingReceiver) {
         super([
           'enumerateDevicesAndSetClient',
           'getDevice',
@@ -76,8 +78,11 @@ UsbInternalsTest.prototype = {
           'setClient',
         ]);
 
+        this.receiver_ = new device.mojom.UsbDeviceManagerReceiver(this);
+        this.receiver_.$.bindHandle(pendingReceiver.handle);
+
         this.devices = [];
-        this.deviceProxyMap = new Map();
+        this.deviceRemoteMap = new Map();
         this.addFakeDevice(
             fakeDeviceInfo(0), createDeviceWithValidDeviceDescriptor());
         this.addFakeDevice(
@@ -87,19 +92,19 @@ UsbInternalsTest.prototype = {
       /**
        * Adds a fake device to this device manager.
        * @param {!Object} device
-       * @param {!FakeUsbDeviceProxy} deviceProxy
+       * @param {!FakeUsbDeviceRemote} deviceRemote
        */
-      addFakeDevice(device, deviceProxy) {
+      addFakeDevice(device, deviceRemote) {
         this.devices.push(device);
-        this.deviceProxyMap.set(device.guid, deviceProxy);
+        this.deviceRemoteMap.set(device.guid, deviceRemote);
       }
 
       async enumerateDevicesAndSetClient() {}
 
-      async getDevice(guid, deviceRequest, deviceClient) {
+      async getDevice(guid, devicePendingReceiver, deviceClient) {
         this.methodCalled('getDevice');
-        const deviceProxy = this.deviceProxyMap.get(guid);
-        deviceProxy.router.$.bindHandle(deviceRequest.handle);
+        const deviceRemote = this.deviceRemoteMap.get(guid);
+        deviceRemote.router.$.bindHandle(devicePendingReceiver.handle);
       }
 
       async getDevices() {
@@ -114,8 +119,8 @@ UsbInternalsTest.prototype = {
       async setClient() {}
     }
 
-    /** @implements {device.mojom.UsbDeviceProxy} */
-    class FakeUsbDeviceProxy extends TestBrowserProxy {
+    /** @implements {device.mojom.UsbDeviceRemote} */
+    class FakeUsbDeviceRemote extends TestBrowserProxy {
       constructor() {
         super([
           'open',
@@ -209,27 +214,27 @@ UsbInternalsTest.prototype = {
      * Creates a device with correct descriptors.
      */
     function createDeviceWithValidDeviceDescriptor() {
-      const deviceProxy = new FakeUsbDeviceProxy();
-      deviceProxy.setDeviceDescriptor({
+      const deviceRemote = new FakeUsbDeviceRemote();
+      deviceRemote.setDeviceDescriptor({
         status: device.mojom.UsbTransferStatus.COMPLETED,
         data: [
           0x12, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x40, 0x50, 0x10, 0xEF,
           0x17, 0x21, 0x03, 0x01, 0x02, 0x00, 0x01
         ],
       });
-      return deviceProxy;
+      return deviceRemote;
     }
 
     /**
      * Creates a device with too short descriptors.
      */
     function createDeviceWithShortDeviceDescriptor() {
-      const deviceProxy = new FakeUsbDeviceProxy();
-      deviceProxy.setDeviceDescriptor({
+      const deviceRemote = new FakeUsbDeviceRemote();
+      deviceRemote.setDeviceDescriptor({
         status: device.mojom.UsbTransferStatus.SHORT_PACKET,
         data: [0x12, 0x01, 0x00, 0x02, 0x00, 0x00, 0x00, 0x40, 0x50],
       });
-      return deviceProxy;
+      return deviceRemote;
     }
 
     /**
@@ -268,10 +273,7 @@ UsbInternalsTest.prototype = {
       this.pageHandlerInterceptor = new MojoInterfaceInterceptor(
           mojom.UsbInternalsPageHandler.$interfaceName);
       this.pageHandlerInterceptor.oninterfacerequest = (e) => {
-        this.pageHandler = new FakePageHandlerProxy();
-        this.pageHandlerBinding_ =
-            new mojom.UsbInternalsPageHandler(this.pageHandler);
-        this.pageHandlerBinding_.$.bindHandle(e.handle);
+        this.pageHandler = new FakePageHandlerRemote(e.handle);
       };
       this.pageHandlerInterceptor.start();
 

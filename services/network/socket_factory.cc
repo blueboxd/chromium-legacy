@@ -42,9 +42,9 @@ SocketFactory::SocketFactory(net::NetLog* net_log,
 SocketFactory::~SocketFactory() {}
 
 void SocketFactory::CreateUDPSocket(mojom::UDPSocketRequest request,
-                                    mojom::UDPSocketReceiverPtr receiver) {
+                                    mojom::UDPSocketListenerPtr listener) {
   udp_socket_bindings_.AddBinding(
-      std::make_unique<UDPSocket>(std::move(receiver), net_log_),
+      std::make_unique<UDPSocket>(std::move(listener), net_log_),
       std::move(request));
 }
 

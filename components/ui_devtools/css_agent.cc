@@ -141,6 +141,10 @@ Response ParseProperties(const std::string& style_text,
                          bool* visible) {
   std::vector<std::string> tokens = base::SplitString(
       style_text, ":;", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  if (tokens.size() < 2 || tokens.size() % 2 != 0)
+    return Response::Error("Need both a property name and value.");
+
   for (size_t i = 0; i < tokens.size() - 1; i += 2) {
     const std::string& property = tokens.at(i);
     int value;

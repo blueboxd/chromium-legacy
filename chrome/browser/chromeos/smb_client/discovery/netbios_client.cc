@@ -49,11 +49,11 @@ constexpr net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag() {
 
 NetBiosClient::NetBiosClient(network::mojom::NetworkContext* network_context)
     : bind_address_(net::IPAddress::IPv4AllZeros(), 0 /* port */),
-      receiver_binding_(this) {
+      listener_binding_(this) {
   DCHECK(network_context);
 
-  network::mojom::UDPSocketReceiverPtr rec_int_ptr;
-  receiver_binding_.Bind(mojo::MakeRequest(&rec_int_ptr));
+  network::mojom::UDPSocketListenerPtr rec_int_ptr;
+  listener_binding_.Bind(mojo::MakeRequest(&rec_int_ptr));
 
   network_context->CreateUDPSocket(mojo::MakeRequest(&server_socket_),
                                    std::move(rec_int_ptr));

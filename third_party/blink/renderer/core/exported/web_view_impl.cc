@@ -143,6 +143,7 @@
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -1534,6 +1535,8 @@ void WebViewImpl::EndUpdateLayers() {
     MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kUpdateLayers,
         update_layers_start_time_.value(), base::TimeTicks::Now());
+    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+      probe::LayerTreeDidChange(MainFrameImpl()->GetFrame());
   }
   update_layers_start_time_.reset();
 }

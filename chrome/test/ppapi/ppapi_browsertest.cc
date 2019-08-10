@@ -1043,18 +1043,18 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
     kBroadcastDropPipe,
     kSendToDropPipe,
     kSendToError,
-    kDropReceiverPipeOnConstruction,
-    kDropReceiverPipeOnReceiveMore,
+    kDropListenerPipeOnConstruction,
+    kDropListenerPipeOnReceiveMore,
     kReadError,
   };
   WrappedUDPSocket(FailureType failure_type,
                    network::mojom::NetworkContext* network_context,
                    network::mojom::UDPSocketRequest socket_request,
-                   network::mojom::UDPSocketReceiverPtr socket_receiver)
+                   network::mojom::UDPSocketListenerPtr socket_listener)
       : failure_type_(failure_type), binding_(this, std::move(socket_request)) {
-    if (failure_type == FailureType::kDropReceiverPipeOnConstruction)
-      socket_receiver.reset();
-    socket_receiver_ = std::move(socket_receiver);
+    if (failure_type == FailureType::kDropListenerPipeOnConstruction)
+      socket_listener.reset();
+    socket_listener_ = std::move(socket_listener);
     network_context->CreateUDPSocket(mojo::MakeRequest(&wrapped_socket_),
                                      nullptr);
     binding_.set_connection_error_handler(
@@ -1111,13 +1111,13 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
     wrapped_socket_->LeaveGroup(group_address, std::move(callback));
   }
   void ReceiveMore(uint32_t num_additional_datagrams) override {
-    if (failure_type_ == FailureType::kDropReceiverPipeOnReceiveMore) {
-      socket_receiver_.reset();
+    if (failure_type_ == FailureType::kDropListenerPipeOnReceiveMore) {
+      socket_listener_.reset();
       return;
     }
     if (failure_type_ == FailureType::kReadError) {
       for (uint32_t i = 0; i < num_additional_datagrams; ++i) {
-        socket_receiver_->OnReceived(net::ERR_FAILED, base::nullopt,
+        socket_listener_->OnReceived(net::ERR_FAILED, base::nullopt,
                                      base::nullopt);
       }
       return;
@@ -1154,7 +1154,7 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
     // Deleting |this| before closing the bindings can cause Mojo to DCHECK if
     // there's a pending callback.
     binding_.Close();
-    socket_receiver_.reset();
+    socket_listener_.reset();
     delete this;
   }
 
@@ -1164,7 +1164,7 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
   network::mojom::UDPSocketPtr wrapped_socket_;
 
   // Only populated on certain read FailureTypes.
-  network::mojom::UDPSocketReceiverPtr socket_receiver_;
+  network::mojom::UDPSocketListenerPtr socket_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(WrappedUDPSocket);
 };
@@ -1173,10 +1173,10 @@ void TestCreateUDPSocketCallback(
     WrappedUDPSocket::FailureType failure_type,
     network::mojom::NetworkContext* network_context,
     network::mojom::UDPSocketRequest socket_request,
-    network::mojom::UDPSocketReceiverPtr socket_receiver) {
+    network::mojom::UDPSocketListenerPtr socket_listener) {
   // This will delete itself when one of its Mojo pipes is closed.
   new WrappedUDPSocket(failure_type, network_context, std::move(socket_request),
-                       std::move(socket_receiver));
+                       std::move(socket_listener));
 }
 
 #define RUN_UDP_FAILURE_TEST(test_name, failure_type)                    \
@@ -1233,13 +1233,13 @@ UDPSOCKET_FAILURE_TEST(UDPSocket_ReadError,
                        UDPSocket_ReadFails,
                        WrappedUDPSocket::FailureType::kReadError)
 UDPSOCKET_FAILURE_TEST(
-    UDPSocket_DropReceiverPipeOnConstruction,
+    UDPSocket_DropListenerPipeOnConstruction,
     UDPSocket_ReadFails,
-    WrappedUDPSocket::FailureType::kDropReceiverPipeOnConstruction)
+    WrappedUDPSocket::FailureType::kDropListenerPipeOnConstruction)
 UDPSOCKET_FAILURE_TEST(
-    UDPSocket_DropReceiverPipeOnReceiveMore,
+    UDPSocket_DropListenerPipeOnReceiveMore,
     UDPSocket_ReadFails,
-    WrappedUDPSocket::FailureType::kDropReceiverPipeOnReceiveMore)
+    WrappedUDPSocket::FailureType::kDropListenerPipeOnReceiveMore)
 
 // Disallowed socket tests.
 TEST_PPAPI_NACL_DISALLOWED_SOCKETS(HostResolverPrivateDisallowed)

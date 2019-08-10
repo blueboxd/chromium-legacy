@@ -26,6 +26,7 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/layout/layout_theme_font_provider.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -91,16 +92,19 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
   String extra_style_sheet = LayoutTheme::ExtraDefaultStyleSheet();
   String multiple_fields_style_sheet =
       RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled()
-          ? GetDataResourceAsASCIIString("input_multiple_fields.css")
+          ? UncompressResourceAsASCIIString(
+                IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS)
           : String();
-  String windows_style_sheet = GetDataResourceAsASCIIString("win.css");
+  String windows_style_sheet =
+      UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_WIN_CSS);
   String controls_refresh_style_sheet =
       RuntimeEnabledFeatures::FormControlsRefreshEnabled()
-          ? GetDataResourceAsASCIIString("controls_refresh.css")
+          ? UncompressResourceAsASCIIString(
+                IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS)
           : String();
   String forced_colors_style_sheet =
       RuntimeEnabledFeatures::ForcedColorsEnabled()
-          ? GetDataResourceAsASCIIString("forced_colors.css")
+          ? UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_FORCED_COLORS_CSS)
           : String();
   StringBuilder builder;
   builder.ReserveCapacity(
@@ -116,7 +120,7 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
 }
 
 String LayoutThemeDefault::ExtraQuirksStyleSheet() {
-  return GetDataResourceAsASCIIString("win_quirks.css");
+  return UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_WIN_QUIRKS_CSS);
 }
 
 Color LayoutThemeDefault::ActiveListBoxSelectionBackgroundColor() const {

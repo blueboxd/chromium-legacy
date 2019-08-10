@@ -274,8 +274,10 @@ Response InspectorLayerTreeAgent::enable() {
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
       RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    if (document->Lifecycle().GetState() >= DocumentLifecycle::kPaintClean)
+    if (document->Lifecycle().GetState() >= DocumentLifecycle::kPaintClean) {
       LayerTreePainted();
+      LayerTreeDidChange();
+    }
   } else if (document->Lifecycle().GetState() >=
              DocumentLifecycle::kCompositingClean) {
     LayerTreeDidChange();
@@ -290,8 +292,6 @@ Response InspectorLayerTreeAgent::disable() {
 }
 
 void InspectorLayerTreeAgent::LayerTreeDidChange() {
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   GetFrontend()->layerTreeDidChange(BuildLayerTree());
 }
 
@@ -319,8 +319,6 @@ void InspectorLayerTreeAgent::DidPaint(const cc::Layer* layer,
 void InspectorLayerTreeAgent::LayerTreePainted() {
   DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
          RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
-  GetFrontend()->layerTreeDidChange(BuildLayerTree());
 
   for (const auto& layer :
        inspected_frames_->Root()->View()->RootCcLayer()->children()) {

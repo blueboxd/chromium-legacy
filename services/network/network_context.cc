@@ -1163,8 +1163,8 @@ void NetworkContext::GetExpectCTState(const std::string& domain,
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 void NetworkContext::CreateUDPSocket(mojom::UDPSocketRequest request,
-                                     mojom::UDPSocketReceiverPtr receiver) {
-  socket_factory_->CreateUDPSocket(std::move(request), std::move(receiver));
+                                     mojom::UDPSocketListenerPtr listener) {
+  socket_factory_->CreateUDPSocket(std::move(request), std::move(listener));
 }
 
 void NetworkContext::CreateTCPServerSocket(

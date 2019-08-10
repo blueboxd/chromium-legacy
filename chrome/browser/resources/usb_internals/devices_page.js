@@ -8,17 +8,17 @@
  */
 
 cr.define('devices_page', function() {
-  const UsbDeviceProxy = device.mojom.UsbDeviceProxy;
+  const UsbDeviceRemote = device.mojom.UsbDeviceRemote;
 
   /**
    * Page that contains a tab header and a tab panel displaying devices table.
    */
   class DevicesPage {
     /**
-     * @param {!device.mojom.UsbDeviceManagerProxy} usbManager
+     * @param {!device.mojom.UsbDeviceManagerRemote} usbManager
      */
     constructor(usbManager) {
-      /** @private {!device.mojom.UsbDeviceManagerProxy} */
+      /** @private {!device.mojom.UsbDeviceManagerRemote} */
       this.usbManager_ = usbManager;
       this.renderDeviceList_();
     }
@@ -91,7 +91,7 @@ cr.define('devices_page', function() {
    */
   class DevicePage {
     /**
-     * @param {!device.mojom.UsbDeviceManagerProxy} usbManager
+     * @param {!device.mojom.UsbDeviceManagerRemote} usbManager
      * @param {!device.mojom.UsbDeviceInfo} device
      */
     constructor(usbManager, device) {
@@ -156,25 +156,25 @@ cr.define('devices_page', function() {
      * @private
      */
     async initializeDescriptorPanels_(tabPanel, guid) {
-      const usbDeviceProxy = new UsbDeviceProxy;
+      const usbDevice = new UsbDeviceRemote;
       await this.usbManager_.getDevice(
-          guid, usbDeviceProxy.$.createRequest(), null);
+          guid, usbDevice.$.bindNewPipeAndPassReceiver(), null);
 
-      const deviceDescriptorPanel = initialInspectorPanel(
-          tabPanel, 'device-descriptor', usbDeviceProxy, guid);
+      const deviceDescriptorPanel =
+          initialInspectorPanel(tabPanel, 'device-descriptor', usbDevice, guid);
 
       const configurationDescriptorPanel = initialInspectorPanel(
-          tabPanel, 'configuration-descriptor', usbDeviceProxy, guid);
+          tabPanel, 'configuration-descriptor', usbDevice, guid);
 
-      const stringDescriptorPanel = initialInspectorPanel(
-          tabPanel, 'string-descriptor', usbDeviceProxy, guid);
+      const stringDescriptorPanel =
+          initialInspectorPanel(tabPanel, 'string-descriptor', usbDevice, guid);
       deviceDescriptorPanel.setStringDescriptorPanel(stringDescriptorPanel);
       configurationDescriptorPanel.setStringDescriptorPanel(
           stringDescriptorPanel);
 
-      initialInspectorPanel(tabPanel, 'bos-descriptor', usbDeviceProxy, guid);
+      initialInspectorPanel(tabPanel, 'bos-descriptor', usbDevice, guid);
 
-      initialInspectorPanel(tabPanel, 'testing-tool', usbDeviceProxy, guid);
+      initialInspectorPanel(tabPanel, 'testing-tool', usbDevice, guid);
 
       // window.deviceTabInitializedFn() provides a hook for the test suite to
       // perform test actions after the device tab query descriptors actions are
@@ -360,16 +360,16 @@ cr.define('devices_page', function() {
    * Initialize a descriptor panel.
    * @param {!HTMLElement} tabPanel
    * @param {string} panelType
-   * @param {!device.mojom.UsbDeviceInterface} usbDeviceProxy
+   * @param {!device.mojom.UsbDeviceRemote} usbDevice
    * @param {string} guid
    * @return {!descriptor_panel.DescriptorPanel}
    */
-  function initialInspectorPanel(tabPanel, panelType, usbDeviceProxy, guid) {
+  function initialInspectorPanel(tabPanel, panelType, usbDevice, guid) {
     const button = queryRequiredElement(`.${panelType}-button`, tabPanel);
     const displayElement =
         queryRequiredElement(`.${panelType}-panel`, tabPanel);
     const descriptorPanel =
-        new descriptor_panel.DescriptorPanel(usbDeviceProxy, displayElement);
+        new descriptor_panel.DescriptorPanel(usbDevice, displayElement);
     switch (panelType) {
       case 'string-descriptor':
         descriptorPanel.initialStringDescriptorPanel(guid);

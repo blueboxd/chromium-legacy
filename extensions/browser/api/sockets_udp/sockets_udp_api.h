@@ -58,7 +58,7 @@ class SocketsUdpCreateFunction : public UDPSocketAsyncApiFunction {
   FRIEND_TEST_ALL_PREFIXES(SocketsUdpUnitTest, Create);
 
   network::mojom::UDPSocketPtrInfo socket_;
-  network::mojom::UDPSocketReceiverRequest socket_receiver_request_;
+  network::mojom::UDPSocketListenerRequest socket_listener_request_;
   std::unique_ptr<sockets_udp::Create::Params> params_;
 };
 

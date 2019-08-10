@@ -163,6 +163,35 @@ TEST_F(CSSAgentTest, UnrecognizedValueFails) {
   EXPECT_EQ(element()->bounds(), gfx::Rect(1, 2, 3, 4));
 }
 
+TEST_F(CSSAgentTest, BadInputsFail) {
+  element()->SetVisible(true);
+  element()->SetBounds(gfx::Rect(1, 2, 3, 4));
+
+  // Input with no property name.
+  auto result = SetStyle(": 1;", element()->node_id());
+  EXPECT_FALSE(result.first);
+  EXPECT_FALSE(result.second);
+  // Ensure element didn't change.
+  EXPECT_TRUE(element()->visible());
+  EXPECT_EQ(element()->bounds(), gfx::Rect(1, 2, 3, 4));
+
+  // Input with no property value.
+  result = SetStyle("visibility:", element()->node_id());
+  EXPECT_FALSE(result.first);
+  EXPECT_FALSE(result.second);
+  // Ensure element didn't change.
+  EXPECT_TRUE(element()->visible());
+  EXPECT_EQ(element()->bounds(), gfx::Rect(1, 2, 3, 4));
+
+  // Blank input.
+  result = SetStyle(":", element()->node_id());
+  EXPECT_FALSE(result.first);
+  EXPECT_FALSE(result.second);
+  // Ensure element didn't change.
+  EXPECT_TRUE(element()->visible());
+  EXPECT_EQ(element()->bounds(), gfx::Rect(1, 2, 3, 4));
+}
+
 TEST_F(CSSAgentTest, SettingVisibility) {
   element()->SetVisible(false);
   DCHECK(!element()->visible());

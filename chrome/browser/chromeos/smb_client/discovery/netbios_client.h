@@ -48,7 +48,7 @@ namespace smb_client {
 // The socket remains open and receives response as long as the instance of this
 // class is alive. Upon destruction, the socket and corresponding firewall hole
 // are closed.
-class NetBiosClient : public network::mojom::UDPSocketReceiver,
+class NetBiosClient : public network::mojom::UDPSocketListener,
                       public NetBiosClientInterface,
                       public base::SupportsWeakPtr<NetBiosClient> {
  public:
@@ -90,7 +90,7 @@ class NetBiosClient : public network::mojom::UDPSocketReceiver,
   // Callback handler for SendPacket.
   void OnSendCompleted(int32_t result);
 
-  // network::mojom::UDPSocketReceiver implementation.
+  // network::mojom::UDPSocketListener implementation.
   void OnReceived(int32_t result,
                   const base::Optional<net::IPEndPoint>& src_ip,
                   base::Optional<base::span<const uint8_t>> data) override;
@@ -107,7 +107,7 @@ class NetBiosClient : public network::mojom::UDPSocketReceiver,
   NetBiosResponseCallback callback_;
   std::unique_ptr<FirewallHole> firewall_hole_;
   network::mojom::UDPSocketPtr server_socket_;
-  mojo::Binding<network::mojom::UDPSocketReceiver> receiver_binding_;
+  mojo::Binding<network::mojom::UDPSocketListener> listener_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(NetBiosClient);
 };

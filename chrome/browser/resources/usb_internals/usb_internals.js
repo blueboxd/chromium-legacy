@@ -14,20 +14,20 @@ cr.define('usb_internals', function() {
       // actions after the page is loaded but before any script is run.
       await window.setupFn();
 
-      const pageHandler = mojom.UsbInternalsPageHandler.getProxy();
+      const pageHandler = mojom.UsbInternalsPageHandler.getRemote();
 
       // Connection to the UsbInternalsPageHandler instance running in the
       // browser process.
-      /** @type {device.mojom.UsbDeviceManagerProxy} */
-      const usbManager = new device.mojom.UsbDeviceManagerProxy;
+      /** @type {device.mojom.UsbDeviceManagerRemote} */
+      const usbManager = new device.mojom.UsbDeviceManagerRemote;
       await pageHandler.bindUsbDeviceManagerInterface(
           usbManager.$.createRequest());
 
       /** @private {devices_page.DevicesPage} */
       this.devicesPage_ = new devices_page.DevicesPage(usbManager);
 
-      /** @private {device.mojom.UsbDeviceManagerTestProxy} */
-      this.usbManagerTest_ = new device.mojom.UsbDeviceManagerTestProxy;
+      /** @private {device.mojom.UsbDeviceManagerTestRemote} */
+      this.usbManagerTest_ = new device.mojom.UsbDeviceManagerTestRemote;
       await pageHandler.bindTestInterface(
           this.usbManagerTest_.$.createRequest());
 

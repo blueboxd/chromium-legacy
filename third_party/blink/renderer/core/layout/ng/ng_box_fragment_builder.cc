@@ -224,8 +224,8 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     }
     if (did_break_) {
       break_token_ = NGBlockBreakToken::Create(
-          node_, used_block_size_, child_break_tokens_, has_last_resort_break_,
-          has_seen_all_children_);
+          node_, consumed_block_size_, child_break_tokens_,
+          has_last_resort_break_, has_seen_all_children_);
     }
   }
 
@@ -305,7 +305,7 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
 void NGBoxFragmentBuilder::CheckNoBlockFragmentation() const {
   DCHECK(!did_break_);
   DCHECK(!has_forced_break_);
-  DCHECK_EQ(used_block_size_, LayoutUnit());
+  DCHECK_EQ(consumed_block_size_, LayoutUnit());
   DCHECK_EQ(minimal_space_shortage_, LayoutUnit::Max());
   DCHECK_EQ(initial_break_before_, EBreakBetween::kAuto);
   DCHECK_EQ(previous_break_after_, EBreakBetween::kAuto);

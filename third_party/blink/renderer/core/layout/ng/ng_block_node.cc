@@ -711,7 +711,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
         << "Variable fragment inline size not supported";
     LayoutUnit logical_height = fragment_logical_size.block_size;
     if (previous_break_token)
-      logical_height += previous_break_token->UsedBlockSize();
+      logical_height += previous_break_token->ConsumedBlockSize();
     box_->SetLogicalHeight(logical_height);
     intrinsic_content_logical_height = box_->IntrinsicContentLogicalHeight();
   }
@@ -753,7 +753,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
       // TODO(mstensho): writing modes
       if (previous_break_token)
-        offset_from_start.top = previous_break_token->UsedBlockSize();
+        offset_from_start.top = previous_break_token->ConsumedBlockSize();
     }
     PlaceChildrenInLayoutBox(physical_fragment, offset_from_start);
   }
@@ -762,7 +762,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   if (LIKELY(block && is_last_fragment)) {
     LayoutUnit intrinsic_block_size = layout_result.IntrinsicBlockSize();
     if (UNLIKELY(previous_break_token))
-      intrinsic_block_size += previous_break_token->UsedBlockSize();
+      intrinsic_block_size += previous_break_token->ConsumedBlockSize();
 
 #if DCHECK_IS_ON()
     block->CheckPositionedObjectsNeedLayout();
@@ -847,7 +847,7 @@ void NGBlockNode::PlaceChildrenInFlowThread(
     const auto* column = To<NGPhysicalBoxFragment>(child.get());
     PlaceChildrenInLayoutBox(*column, offset);
     if (const auto* token = To<NGBlockBreakToken>(column->BreakToken()))
-      flowthread_offset = token->UsedBlockSize();
+      flowthread_offset = token->ConsumedBlockSize();
   }
 }
 

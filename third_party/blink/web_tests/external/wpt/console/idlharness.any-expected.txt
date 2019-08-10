@@ -1,0 +1,23 @@
+This is a testharness.js-based test.
+PASS idl_test setup
+PASS console namespace: operation assert(boolean, any...)
+PASS console namespace: operation clear()
+PASS console namespace: operation debug(any...)
+PASS console namespace: operation error(any...)
+PASS console namespace: operation info(any...)
+PASS console namespace: operation log(any...)
+FAIL console namespace: operation table(any, [object Object]) assert_equals: operation has wrong .length expected 0 but got 1
+PASS console namespace: operation trace(any...)
+PASS console namespace: operation warn(any...)
+FAIL console namespace: operation dir(any, object) assert_equals: operation has wrong .length expected 0 but got 1
+PASS console namespace: operation dirxml(any...)
+PASS console namespace: operation count(DOMString)
+PASS console namespace: operation countReset(DOMString)
+PASS console namespace: operation group(any...)
+PASS console namespace: operation groupCollapsed(any...)
+PASS console namespace: operation groupEnd()
+PASS console namespace: operation time(DOMString)
+PASS console namespace: operation timeLog(DOMString, any...)
+PASS console namespace: operation timeEnd(DOMString)
+Harness: the test ran to completion.
+

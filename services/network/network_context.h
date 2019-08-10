@@ -235,7 +235,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                         GetExpectCTStateCallback callback) override;
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
   void CreateUDPSocket(mojom::UDPSocketRequest request,
-                       mojom::UDPSocketReceiverPtr receiver) override;
+                       mojom::UDPSocketListenerPtr listener) override;
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,
       uint32_t backlog,

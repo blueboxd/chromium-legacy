@@ -26,7 +26,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // anonymous box.
   static scoped_refptr<NGBlockBreakToken> Create(
       NGLayoutInputNode node,
-      LayoutUnit used_block_size,
+      LayoutUnit consumed_block_size,
       const NGBreakTokenVector& child_break_tokens,
       bool has_last_resort_break,
       bool has_seen_all_children) {
@@ -37,7 +37,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
         sizeof(NGBlockBreakToken) +
             child_break_tokens.size() * sizeof(NGBreakToken*),
         ::WTF::GetStringWithTypeName<NGBlockBreakToken>());
-    new (data) NGBlockBreakToken(node, used_block_size, child_break_tokens,
+    new (data) NGBlockBreakToken(node, consumed_block_size, child_break_tokens,
                                  has_last_resort_break, has_seen_all_children);
     return base::AdoptRef(static_cast<NGBlockBreakToken*>(data));
   }
@@ -57,12 +57,14 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
       token->Release();
   }
 
-  // Represents the amount of block size used in previous fragments.
+  // Represents the amount of block-size consumed by previous fragments.
   //
-  // E.g. if the layout block specifies a block size of 200px, and the previous
-  // fragments of this block used 150px (used block size), the next fragment
-  // should have a size of 50px (assuming no additional fragmentation).
-  LayoutUnit UsedBlockSize() const { return used_block_size_; }
+  // E.g. if the node specifies a block-size of 200px, and the previous
+  // fragments generated for this box consumed 150px in total (which is what
+  // this method would return then), there's 50px left to consume. The next
+  // fragment will become 50px tall, assuming no additional fragmentation (if
+  // the fragmentainer is shorter than 50px, for instance).
+  LayoutUnit ConsumedBlockSize() const { return consumed_block_size_; }
 
   // Return true if this is a break token that was produced without any
   // "preceding" fragment. This happens when we determine that the first
@@ -102,14 +104,14 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // Must only be called from Create(), because it assumes that enough space
   // has been allocated in the flexible array to store the children.
   NGBlockBreakToken(NGLayoutInputNode node,
-                    LayoutUnit used_block_size,
+                    LayoutUnit consumed_block_size,
                     const NGBreakTokenVector& child_break_tokens,
                     bool has_last_resort_break,
                     bool has_seen_all_children);
 
   explicit NGBlockBreakToken(NGLayoutInputNode node);
 
-  LayoutUnit used_block_size_;
+  LayoutUnit consumed_block_size_;
 
   wtf_size_t num_children_;
   // This must be the last member, because it is a flexible array.

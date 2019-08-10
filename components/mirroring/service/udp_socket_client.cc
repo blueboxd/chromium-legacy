@@ -105,10 +105,10 @@ void UdpSocketClient::StartReceiving(
     const media::cast::PacketReceiverCallbackWithStatus& packet_receiver) {
   DVLOG(1) << __func__;
   packet_receiver_callback_ = packet_receiver;
-  network::mojom::UDPSocketReceiverPtr udp_socket_receiver;
-  binding_.Bind(mojo::MakeRequest(&udp_socket_receiver));
+  network::mojom::UDPSocketListenerPtr udp_socket_listener;
+  binding_.Bind(mojo::MakeRequest(&udp_socket_listener));
   network_context_->CreateUDPSocket(mojo::MakeRequest(&udp_socket_),
-                                    std::move(udp_socket_receiver));
+                                    std::move(udp_socket_listener));
   network::mojom::UDPSocketOptionsPtr options;
   udp_socket_->Connect(remote_endpoint_, std::move(options),
                        base::BindOnce(&UdpSocketClient::OnSocketConnected,

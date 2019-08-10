@@ -58,7 +58,7 @@ class BrowserPpapiHostImpl;
 
 class CONTENT_EXPORT PepperUDPSocketMessageFilter
     : public ppapi::host::ResourceMessageFilter,
-      public network::mojom::UDPSocketReceiver {
+      public network::mojom::UDPSocketListener {
  public:
   PepperUDPSocketMessageFilter(BrowserPpapiHostImpl* host,
                                PP_Instance instance,
@@ -67,7 +67,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   using CreateUDPSocketCallback = base::RepeatingCallback<void(
       network::mojom::NetworkContext* network_context,
       network::mojom::UDPSocketRequest socket_request,
-      network::mojom::UDPSocketReceiverPtr socket_receiver)>;
+      network::mojom::UDPSocketListenerPtr socket_listener)>;
 
   static void SetCreateUDPSocketCallbackForTesting(
       const CreateUDPSocketCallback* create_udp_socket_callback);
@@ -125,16 +125,16 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   int32_t OnMsgLeaveGroup(const ppapi::host::HostMessageContext* context,
                           const PP_NetAddress_Private& addr);
 
-  void DoBindCallback(network::mojom::UDPSocketReceiverRequest receiver_request,
+  void DoBindCallback(network::mojom::UDPSocketListenerRequest listener_request,
                       const ppapi::host::ReplyMessageContext& context,
                       int result,
                       const base::Optional<net::IPEndPoint>& local_addr_out);
-  void OnBindComplete(network::mojom::UDPSocketReceiverRequest receiver_request,
+  void OnBindComplete(network::mojom::UDPSocketListenerRequest listener_request,
                       const ppapi::host::ReplyMessageContext& context,
                       const PP_NetAddress_Private& net_address);
 #if defined(OS_CHROMEOS)
   void OnFirewallHoleOpened(
-      network::mojom::UDPSocketReceiverRequest receiver_request,
+      network::mojom::UDPSocketListenerRequest listener_request,
       const ppapi::host::ReplyMessageContext& context,
       const PP_NetAddress_Private& net_address,
       std::unique_ptr<chromeos::FirewallHole> hole);
@@ -142,7 +142,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   void StartPendingSend();
   void Close();
 
-  // network::mojom::UDPSocketReceiver override:
+  // network::mojom::UDPSocketListener override:
   void OnReceived(int result,
                   const base::Optional<net::IPEndPoint>& src_addr,
                   base::Optional<base::span<const uint8_t>> data) override;
@@ -215,7 +215,7 @@ class CONTENT_EXPORT PepperUDPSocketMessageFilter
   // Binding late avoids receiving data when still setting up the socket. Closed
   // in Close() and on Mojo pipe errors. Must only be accessed (and destroyed)
   // on UI thread.
-  mojo::Binding<network::mojom::UDPSocketReceiver> binding_;
+  mojo::Binding<network::mojom::UDPSocketListener> binding_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::FirewallHole,

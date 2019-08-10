@@ -107,9 +107,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                                    const NGLogicalStaticPosition&,
                                    const LayoutInline* inline_container);
 
-  // Set how much of the block size we've used so far for this box.
-  NGBoxFragmentBuilder& SetUsedBlockSize(LayoutUnit used_block_size) {
-    used_block_size_ = used_block_size;
+  // Set how much of the block-size we've used so far for this box. This will be
+  // the sum of the block-size of all previous fragments PLUS the one we're
+  // building now.
+  NGBoxFragmentBuilder& SetConsumedBlockSize(LayoutUnit size) {
+    consumed_block_size_ = size;
     return *this;
   }
 
@@ -264,7 +266,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool has_forced_break_ = false;
   bool is_new_fc_ = false;
   bool has_seen_all_children_ = false;
-  LayoutUnit used_block_size_;
+  LayoutUnit consumed_block_size_;
 
   LayoutUnit minimal_space_shortage_ = LayoutUnit::Max();
 

@@ -436,18 +436,6 @@ const DataResource kDataResources[] = {
     // Not limited to Linux since it's used for mobile layouts in inspector.
     {"linux.css", IDR_UASTYLE_THEME_CHROMIUM_LINUX_CSS, ui::SCALE_FACTOR_NONE,
      true},
-    {"input_multiple_fields.css", IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-#if defined(OS_MACOSX)
-    {"mac.css", IDR_UASTYLE_THEME_MAC_CSS, ui::SCALE_FACTOR_NONE, true},
-#endif
-    {"win.css", IDR_UASTYLE_THEME_WIN_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"win_quirks.css", IDR_UASTYLE_THEME_WIN_QUIRKS_CSS, ui::SCALE_FACTOR_NONE,
-     true},
-    {"controls_refresh.css", IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    {"forced_colors.css", IDR_UASTYLE_THEME_FORCED_COLORS_CSS,
-     ui::SCALE_FACTOR_NONE, true},
 #if defined(ENABLE_TOUCHLESS_UASTYLE_THEME)
     {"touchless.css", IDR_UASTYLE_THEME_TOUCHLESS_CSS, ui::SCALE_FACTOR_NONE,
      true},

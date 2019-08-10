@@ -18,7 +18,7 @@ namespace mirroring {
 class MockUdpSocket final : public network::mojom::UDPSocket {
  public:
   MockUdpSocket(network::mojom::UDPSocketRequest request,
-                network::mojom::UDPSocketReceiverPtr receiver);
+                network::mojom::UDPSocketListenerPtr listener);
   ~MockUdpSocket() override;
 
   MOCK_METHOD0(OnSend, void());
@@ -58,7 +58,7 @@ class MockUdpSocket final : public network::mojom::UDPSocket {
 
  private:
   mojo::Binding<network::mojom::UDPSocket> binding_;
-  network::mojom::UDPSocketReceiverPtr receiver_;
+  network::mojom::UDPSocketListenerPtr listener_;
   std::unique_ptr<media::cast::Packet> sending_packet_;
   int num_ask_for_receive_ = 0;
 
@@ -74,7 +74,7 @@ class MockNetworkContext final : public network::TestNetworkContext {
 
   // network::mojom::NetworkContext implementation:
   void CreateUDPSocket(network::mojom::UDPSocketRequest request,
-                       network::mojom::UDPSocketReceiverPtr receiver) override;
+                       network::mojom::UDPSocketListenerPtr listener) override;
   void CreateURLLoaderFactory(
       network::mojom::URLLoaderFactoryRequest request,
       network::mojom::URLLoaderFactoryParamsPtr params) override;

@@ -81,6 +81,7 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 
@@ -317,6 +318,8 @@ void WebFrameWidgetImpl::EndUpdateLayers() {
     LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kUpdateLayers,
         update_layers_start_time_.value(), base::TimeTicks::Now());
+    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+      probe::LayerTreeDidChange(LocalRootImpl()->GetFrame());
   }
   update_layers_start_time_.reset();
 }

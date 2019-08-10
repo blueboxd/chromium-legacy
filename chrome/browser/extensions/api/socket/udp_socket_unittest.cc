@@ -38,13 +38,13 @@ class UDPSocketUnitTest : public extensions::ExtensionServiceTestBase {
         content::BrowserContext::GetDefaultStoragePartition(profile())
             ->GetNetworkContext();
     network::mojom::UDPSocketPtrInfo socket;
-    network::mojom::UDPSocketReceiverPtr receiver_ptr;
-    network::mojom::UDPSocketReceiverRequest receiver_request =
-        mojo::MakeRequest(&receiver_ptr);
+    network::mojom::UDPSocketListenerPtr listener_ptr;
+    network::mojom::UDPSocketListenerRequest listener_request =
+        mojo::MakeRequest(&listener_ptr);
     network_context->CreateUDPSocket(mojo::MakeRequest(&socket),
-                                     std::move(receiver_ptr));
+                                     std::move(listener_ptr));
     return std::make_unique<UDPSocket>(
-        std::move(socket), std::move(receiver_request), "abcdefghijklmnopqrst");
+        std::move(socket), std::move(listener_request), "abcdefghijklmnopqrst");
   }
 };
 
@@ -174,7 +174,7 @@ TEST_F(UDPSocketUnitTest, TestUDPMulticastRecv) {
   std::unique_ptr<UDPSocket> src = CreateSocket();
   std::unique_ptr<UDPSocket> dest = CreateSocket();
 
-  // Receiver
+  // Listener
   {
     net::TestCompletionCallback callback;
     dest->Bind("0.0.0.0", kPort, callback.callback());

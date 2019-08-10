@@ -71,7 +71,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
                          net::CompletionOnceCallback callback) = 0;
   };
 
-  UDPSocket(mojom::UDPSocketReceiverPtr receiver, net::NetLog* net_log);
+  UDPSocket(mojom::UDPSocketListenerPtr listener, net::NetLog* net_log);
   ~UDPSocket() override;
 
   // UDPSocket implementation.
@@ -147,7 +147,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
   bool is_connected_;
 
   // The interface which gets data from fulfilled receive requests.
-  mojom::UDPSocketReceiverPtr receiver_;
+  mojom::UDPSocketListenerPtr listener_;
 
   std::unique_ptr<SocketWrapper> wrapped_socket_;
 

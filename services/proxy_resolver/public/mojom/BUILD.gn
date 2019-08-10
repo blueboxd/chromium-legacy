@@ -18,7 +18,4 @@ mojom("mojom") {
     export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
     export_header_blink = "third_party/blink/public/platform/web_common.h"
   }
-
-  # TODO(https://crbug.com/968369): Change to use new names.
-  use_old_js_lite_bindings_names = true
 }

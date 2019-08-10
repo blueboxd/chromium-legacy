@@ -1841,15 +1841,15 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
     container_builder_.SetDidBreak();
   }
 
-  LayoutUnit used_block_size =
-      BreakToken() ? BreakToken()->UsedBlockSize() : LayoutUnit();
+  LayoutUnit consumed_block_size =
+      BreakToken() ? BreakToken()->ConsumedBlockSize() : LayoutUnit();
   LayoutUnit block_size =
       ComputeBlockSizeForFragment(ConstraintSpace(), Node(), border_padding_,
-                                  used_block_size + intrinsic_block_size_);
+                                  consumed_block_size + intrinsic_block_size_);
 
-  block_size -= used_block_size;
+  block_size -= consumed_block_size;
   DCHECK_GE(block_size, LayoutUnit())
-      << "Adding and subtracting the used_block_size shouldn't leave the "
+      << "Adding and subtracting the consumed_block_size shouldn't leave the "
          "block_size for this fragment smaller than zero.";
 
   LayoutUnit space_left = FragmentainerSpaceAvailable();
@@ -1871,8 +1871,8 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   if (container_builder_.DidBreak()) {
     // One of our children broke. Even if we fit within the remaining space we
     // need to prepare a break token.
-    container_builder_.SetUsedBlockSize(std::min(space_left, block_size) +
-                                        used_block_size);
+    container_builder_.SetConsumedBlockSize(std::min(space_left, block_size) +
+                                            consumed_block_size);
     container_builder_.SetBlockSize(std::min(space_left, block_size));
     container_builder_.SetIntrinsicBlockSize(space_left);
 
@@ -1895,7 +1895,7 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
 
   if (block_size > space_left) {
     // Need a break inside this block.
-    container_builder_.SetUsedBlockSize(space_left + used_block_size);
+    container_builder_.SetConsumedBlockSize(space_left + consumed_block_size);
     container_builder_.SetDidBreak();
     container_builder_.SetBlockSize(space_left);
     container_builder_.SetIntrinsicBlockSize(space_left);
@@ -1904,7 +1904,7 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   }
 
   // The end of the block fits in the current fragmentainer.
-  container_builder_.SetUsedBlockSize(used_block_size + block_size);
+  container_builder_.SetConsumedBlockSize(consumed_block_size + block_size);
   container_builder_.SetBlockSize(block_size);
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
 }

@@ -43,13 +43,13 @@ class PrivetTrafficDetector
  private:
   // Constructed by PrivetTrafficDetector on the UI thread. but lives on the IO
   // thread and destroyed on the IO thread.
-  class Helper : public network::mojom::UDPSocketReceiver {
+  class Helper : public network::mojom::UDPSocketListener {
    public:
     Helper(content::BrowserContext* profile,
            base::RepeatingClosure on_traffic_detected);
     ~Helper() override;
 
-    // network::mojom::UDPSocketReceiver:
+    // network::mojom::UDPSocketListener:
     void OnReceived(int32_t result,
                     const base::Optional<net::IPEndPoint>& src_addr,
                     base::Optional<base::span<const uint8_t>> data) override;
@@ -81,9 +81,9 @@ class PrivetTrafficDetector
     net::IPEndPoint recv_addr_;
     network::mojom::UDPSocketPtr socket_;
 
-    // Implementation of socket receiver callback.
+    // Implementation of socket listener callback.
     // Initialized on the UI thread, but only accessed on the IO thread.
-    mojo::Binding<network::mojom::UDPSocketReceiver> receiver_binding_;
+    mojo::Binding<network::mojom::UDPSocketListener> listener_binding_;
 
     base::WeakPtrFactory<Helper> weak_ptr_factory_{this};
 

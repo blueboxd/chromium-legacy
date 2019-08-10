@@ -28,6 +28,7 @@
 #import "base/mac/mac_util.h"
 #import "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #import "third_party/blink/public/platform/platform.h"
+#import "third_party/blink/public/resources/grit/blink_resources.h"
 #import "third_party/blink/renderer/core/css_value_keywords.h"
 #import "third_party/blink/renderer/core/fileapi/file_list.h"
 #import "third_party/blink/renderer/core/html_names.h"
@@ -1067,8 +1068,9 @@ String LayoutThemeMac::ExtraFullscreenStyleSheet() {
 
 String LayoutThemeMac::ExtraDefaultStyleSheet() {
   return LayoutTheme::ExtraDefaultStyleSheet() +
-         GetDataResourceAsASCIIString("input_multiple_fields.css") +
-         GetDataResourceAsASCIIString("mac.css");
+         UncompressResourceAsASCIIString(
+             IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS) +
+         UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_MAC_CSS);
 }
 
 bool LayoutThemeMac::ThemeDrawsFocusRing(const ComputedStyle& style) const {

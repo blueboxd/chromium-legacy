@@ -145,7 +145,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'fe19203eb7d7e8bef528287494d82c2eb4efff0e',
+  'skia_revision': '3e7fa79f2c79bc7e873c0cde3de3254f00136577',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -161,7 +161,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '20fb1d687848daf6128ee7165ffd03f23665ff71',
+  'swiftshader_revision': '88ac367cf835c5181a1f7cadcce26c28ac0cba50',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -280,7 +280,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '8cb23933b12e61a5a66bce75d37e8f62dbe97f0d',
+  'dawn_revision': '74e4834d3d2583abf5c24e7de83980e536809718',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -814,7 +814,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'e4226f9aa1ac9c62224f52915b85592638767116',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'bdb31ac63ba0bcfec297df9ae9c6b5e33d8be37f',
       'condition': 'checkout_linux',
   },
 
@@ -908,7 +908,7 @@ deps = {
   },
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '3cea2e5882e3455731a8b6657fb06db913eb3aa1',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '37fc4d27d612d3b0c916933e16dab3da5bb7ab34',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1078,7 +1078,7 @@ deps = {
   },
 
   'src/third_party/libjpeg_turbo':
-    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + '81aef9014e059f9bf4838db49ba4fd47fd9d14ce',
+    Var('chromium_git') + '/chromium/deps/libjpeg_turbo.git' + '@' + 'cd241207cb905ff768837208e84bd0808835089d',
 
   'src/third_party/liblouis/src': {
       'url': Var('chromium_git') + '/external/liblouis-github.git' + '@' + '97ce1c67fccbd3668291b7e63c06161c095d49f2',
@@ -1380,7 +1380,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'abaae129d9a0c6e1e092067e0b105475df43352e',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'e427996c6174be0ce25d08d32da3c7be4f3792db',
+    Var('webrtc_git') + '/src.git' + '@' + '1544915bb427ec076c075e9150c8c0214584f0ac',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',

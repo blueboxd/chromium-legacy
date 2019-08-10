@@ -762,12 +762,12 @@ interface NetworkContext {
   [EnableIf=is_ct_supported]
   GetExpectCTState(string domain) => (mojo_base.mojom.DictionaryValue state);
 
-  // Creates a UDP socket. Caller can supply a |receiver| interface pointer
-  // to listen for incoming datagrams. A null |receiver| is acceptable if caller
+  // Creates a UDP socket. Caller can supply a |listener| interface pointer
+  // to listen for incoming datagrams. A null |listener| is acceptable if caller
   // is not interested in incoming data.
   // Any sockets that are created but are yet to be destroyed will be destroyed
   // when NetworkContext goes away.
-  CreateUDPSocket(UDPSocket& request, UDPSocketReceiver? receiver);
+  CreateUDPSocket(UDPSocket& request, UDPSocketListener? listener);
 
   // Creates a TCP server socket that listens on |local_addr|. The socket
   // created can only be used for the purpose specified in |traffic_annotation|,

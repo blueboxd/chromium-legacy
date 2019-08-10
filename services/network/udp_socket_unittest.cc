@@ -252,14 +252,14 @@ TEST_F(UDPSocketTest, TestSendWithBind) {
 // should only be used after Bind().
 TEST_F(UDPSocketTest, TestSendToWithConnect) {
   // Create a server socket to listen for incoming datagrams.
-  test::UDPSocketReceiverImpl receiver;
-  mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
-  mojom::UDPSocketReceiverPtr receiver_interface_ptr;
-  receiver_binding.Bind(mojo::MakeRequest(&receiver_interface_ptr));
+  test::UDPSocketListenerImpl listener;
+  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
+  mojom::UDPSocketListenerPtr listener_interface_ptr;
+  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
 
   mojom::UDPSocketPtr server_socket;
   factory()->CreateUDPSocket(mojo::MakeRequest(&server_socket),
-                             std::move(receiver_interface_ptr));
+                             std::move(listener_interface_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -313,7 +313,7 @@ TEST_F(UDPSocketTest, TestUnexpectedSequences) {
 // ERR_IO_PENDING, udp_socket.cc doesn't free the send buffer.
 TEST_F(UDPSocketTest, TestBufferValid) {
   mojom::UDPSocketPtr socket_ptr;
-  UDPSocket impl(nullptr /*receiver*/, nullptr /*net_log*/);
+  UDPSocket impl(nullptr /*listener*/, nullptr /*net_log*/);
   mojo::Binding<mojom::UDPSocket> binding(&impl);
   binding.Bind(mojo::MakeRequest(&socket_ptr));
 
@@ -353,7 +353,7 @@ TEST_F(UDPSocketTest, TestBufferValid) {
 // ERR_INSUFFICIENT_RESOURCES is returned appropriately.
 TEST_F(UDPSocketTest, TestInsufficientResources) {
   mojom::UDPSocketPtr socket_ptr;
-  UDPSocket impl(nullptr /*receiver*/, nullptr /*net_log*/);
+  UDPSocket impl(nullptr /*listener*/, nullptr /*net_log*/);
   mojo::Binding<mojom::UDPSocket> binding(&impl);
   binding.Bind(mojo::MakeRequest(&socket_ptr));
 
@@ -396,13 +396,13 @@ TEST_F(UDPSocketTest, TestInsufficientResources) {
 
 TEST_F(UDPSocketTest, TestReceiveMoreOverflow) {
   // Create a server socket to listen for incoming datagrams.
-  test::UDPSocketReceiverImpl receiver;
-  mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
-  mojom::UDPSocketReceiverPtr receiver_interface_ptr;
-  receiver_binding.Bind(mojo::MakeRequest(&receiver_interface_ptr));
+  test::UDPSocketListenerImpl listener;
+  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
+  mojom::UDPSocketListenerPtr listener_interface_ptr;
+  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
 
   mojom::UDPSocketPtr server_socket;
-  UDPSocket impl(std::move(receiver_interface_ptr), nullptr /*net_log*/);
+  UDPSocket impl(std::move(listener_interface_ptr), nullptr /*net_log*/);
   mojo::Binding<mojom::UDPSocket> binding(&impl);
   binding.Bind(mojo::MakeRequest(&server_socket));
 
@@ -420,14 +420,14 @@ TEST_F(UDPSocketTest, TestReceiveMoreOverflow) {
 
 TEST_F(UDPSocketTest, TestReadSend) {
   // Create a server socket to listen for incoming datagrams.
-  test::UDPSocketReceiverImpl receiver;
-  mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
-  mojom::UDPSocketReceiverPtr receiver_interface_ptr;
-  receiver_binding.Bind(mojo::MakeRequest(&receiver_interface_ptr));
+  test::UDPSocketListenerImpl listener;
+  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
+  mojom::UDPSocketListenerPtr listener_interface_ptr;
+  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
 
   mojom::UDPSocketPtr server_socket;
   factory()->CreateUDPSocket(mojo::MakeRequest(&server_socket),
-                             std::move(receiver_interface_ptr));
+                             std::move(listener_interface_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -451,11 +451,11 @@ TEST_F(UDPSocketTest, TestReadSend) {
     EXPECT_EQ(net::OK, result);
   }
 
-  receiver.WaitForReceivedResults(kDatagramCount);
-  EXPECT_EQ(kDatagramCount, receiver.results().size());
+  listener.WaitForReceivedResults(kDatagramCount);
+  EXPECT_EQ(kDatagramCount, listener.results().size());
 
   int i = 0;
-  for (const auto& result : receiver.results()) {
+  for (const auto& result : listener.results()) {
     EXPECT_EQ(net::OK, result.net_error);
     EXPECT_EQ(result.src_addr, client_addr);
     EXPECT_EQ(CreateTestMessage(static_cast<uint8_t>(i), kDatagramSize),
@@ -478,10 +478,10 @@ TEST_F(UDPSocketTest, TestReadSend) {
   std::vector<uint8_t> msg(CreateTestMessage(0, kDatagramSize));
   EXPECT_EQ(net::OK, client_helper.SendSync(msg));
 
-  receiver.WaitForReceivedResults(kDatagramCount + 1);
-  ASSERT_EQ(kDatagramCount + 1, receiver.results().size());
+  listener.WaitForReceivedResults(kDatagramCount + 1);
+  ASSERT_EQ(kDatagramCount + 1, listener.results().size());
 
-  auto result = receiver.results()[kDatagramCount];
+  auto result = listener.results()[kDatagramCount];
   EXPECT_EQ(net::OK, result.net_error);
   EXPECT_EQ(result.src_addr, client_addr);
   EXPECT_EQ(msg, result.data.value());
@@ -497,14 +497,14 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
   ASSERT_EQ(net::OK, helper.BindSync(server_addr, nullptr, &server_addr));
 
   // Create a client socket to send datagrams.
-  test::UDPSocketReceiverImpl receiver;
-  mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
-  mojom::UDPSocketReceiverPtr client_receiver_ptr;
-  receiver_binding.Bind(mojo::MakeRequest(&client_receiver_ptr));
+  test::UDPSocketListenerImpl listener;
+  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
+  mojom::UDPSocketListenerPtr client_listener_ptr;
+  listener_binding.Bind(mojo::MakeRequest(&client_listener_ptr));
 
   mojom::UDPSocketPtr client_socket;
   factory()->CreateUDPSocket(mojo::MakeRequest(&client_socket),
-                             std::move(client_receiver_ptr));
+                             std::move(client_listener_ptr));
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper client_helper(&client_socket);
   ASSERT_EQ(net::OK,
@@ -520,11 +520,11 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
     EXPECT_EQ(net::OK, result);
   }
 
-  receiver.WaitForReceivedResults(kDatagramCount);
-  EXPECT_EQ(kDatagramCount, receiver.results().size());
+  listener.WaitForReceivedResults(kDatagramCount);
+  EXPECT_EQ(kDatagramCount, listener.results().size());
 
   int i = 0;
-  for (const auto& result : receiver.results()) {
+  for (const auto& result : listener.results()) {
     EXPECT_EQ(net::OK, result.net_error);
     EXPECT_FALSE(result.src_addr);
     EXPECT_EQ(CreateTestMessage(static_cast<uint8_t>(i), kDatagramSize),
@@ -544,10 +544,10 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
   std::vector<uint8_t> msg(CreateTestMessage(0, kDatagramSize));
   EXPECT_EQ(net::OK, helper.SendToSync(client_addr, msg));
 
-  receiver.WaitForReceivedResults(kDatagramCount + 1);
-  ASSERT_EQ(kDatagramCount + 1, receiver.results().size());
+  listener.WaitForReceivedResults(kDatagramCount + 1);
+  ASSERT_EQ(kDatagramCount + 1, listener.results().size());
 
-  auto result = receiver.results()[kDatagramCount];
+  auto result = listener.results()[kDatagramCount];
   EXPECT_EQ(net::OK, result.net_error);
   EXPECT_FALSE(result.src_addr);
   EXPECT_EQ(msg, result.data.value());
@@ -555,14 +555,14 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
 
 TEST_F(UDPSocketTest, TestReceiveMoreWithBufferSize) {
   // Create a server socket to listen for incoming datagrams.
-  test::UDPSocketReceiverImpl receiver;
-  mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
-  mojom::UDPSocketReceiverPtr receiver_interface_ptr;
-  receiver_binding.Bind(mojo::MakeRequest(&receiver_interface_ptr));
+  test::UDPSocketListenerImpl listener;
+  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
+  mojom::UDPSocketListenerPtr listener_interface_ptr;
+  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
 
   mojom::UDPSocketPtr server_socket;
   factory()->CreateUDPSocket(mojo::MakeRequest(&server_socket),
-                             std::move(receiver_interface_ptr));
+                             std::move(listener_interface_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -584,9 +584,9 @@ TEST_F(UDPSocketTest, TestReceiveMoreWithBufferSize) {
   std::vector<uint8_t> test_msg(CreateTestMessage(0, kDatagramSize));
   ASSERT_EQ(net::OK, client_helper.SendSync(test_msg));
 
-  receiver.WaitForReceivedResults(1);
-  ASSERT_EQ(1u, receiver.results().size());
-  auto result = receiver.results()[0];
+  listener.WaitForReceivedResults(1);
+  ASSERT_EQ(1u, listener.results().size());
+  auto result = listener.results()[0];
   EXPECT_EQ(net::ERR_MSG_TOO_BIG, result.net_error);
   EXPECT_FALSE(result.data);
 
@@ -594,9 +594,9 @@ TEST_F(UDPSocketTest, TestReceiveMoreWithBufferSize) {
   server_socket->ReceiveMoreWithBufferSize(1, kDatagramSize);
   ASSERT_EQ(net::OK, client_helper.SendSync(test_msg));
 
-  receiver.WaitForReceivedResults(2);
-  ASSERT_EQ(2u, receiver.results().size());
-  result = receiver.results()[1];
+  listener.WaitForReceivedResults(2);
+  ASSERT_EQ(2u, listener.results().size());
+  result = listener.results()[1];
   EXPECT_EQ(net::OK, result.net_error);
   EXPECT_EQ(client_addr, result.src_addr.value());
   EXPECT_EQ(test_msg, result.data.value());
@@ -629,16 +629,16 @@ TEST_F(UDPSocketTest, TestSendToInvalidAddress) {
   run_loop.Run();
 }
 
-// Tests that it is legal for UDPSocketReceiver::OnReceive() to be called with
+// Tests that it is legal for UDPSocketListener::OnReceive() to be called with
 // 0 byte payload.
 TEST_F(UDPSocketTest, TestReadZeroByte) {
-  test::UDPSocketReceiverImpl receiver;
-  mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
-  mojom::UDPSocketReceiverPtr receiver_interface_ptr;
-  receiver_binding.Bind(mojo::MakeRequest(&receiver_interface_ptr));
+  test::UDPSocketListenerImpl listener;
+  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
+  mojom::UDPSocketListenerPtr listener_interface_ptr;
+  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
 
   mojom::UDPSocketPtr socket_ptr;
-  UDPSocket impl(std::move(receiver_interface_ptr), nullptr /*net_log*/);
+  UDPSocket impl(std::move(listener_interface_ptr), nullptr /*net_log*/);
   mojo::Binding<mojom::UDPSocket> binding(&impl);
   binding.Bind(mojo::MakeRequest(&socket_ptr));
 
@@ -650,10 +650,10 @@ TEST_F(UDPSocketTest, TestReadZeroByte) {
 
   socket_ptr->ReceiveMore(1);
 
-  receiver.WaitForReceivedResults(1);
-  ASSERT_EQ(1u, receiver.results().size());
+  listener.WaitForReceivedResults(1);
+  ASSERT_EQ(1u, listener.results().size());
 
-  auto result = receiver.results()[0];
+  auto result = listener.results()[0];
   EXPECT_EQ(net::OK, result.net_error);
   EXPECT_TRUE(result.data);
   EXPECT_EQ(std::vector<uint8_t>(), result.data.value());
@@ -673,12 +673,12 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
   net::IPAddress group_ip;
   EXPECT_TRUE(group_ip.AssignFromIPLiteral(kGroup));
   mojom::UDPSocketPtr socket_ptr;
-  mojom::UDPSocketReceiverPtr receiver_ptr;
-  test::UDPSocketReceiverImpl receiver;
-  mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
-  receiver_binding.Bind(mojo::MakeRequest(&receiver_ptr));
+  mojom::UDPSocketListenerPtr listener_ptr;
+  test::UDPSocketListenerImpl listener;
+  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
+  listener_binding.Bind(mojo::MakeRequest(&listener_ptr));
   factory()->CreateUDPSocket(mojo::MakeRequest(&socket_ptr),
-                             std::move(receiver_ptr));
+                             std::move(listener_ptr));
 
   test::UDPSocketTestHelper helper(&socket_ptr);
 
@@ -707,9 +707,9 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
   net::IPEndPoint group_alias(group_ip, port);
   EXPECT_EQ(net::OK, helper.SendToSync(group_alias, test_msg));
   socket_ptr->ReceiveMore(1);
-  receiver.WaitForReceivedResults(1);
-  ASSERT_EQ(1u, receiver.results().size());
-  auto result = receiver.results()[0];
+  listener.WaitForReceivedResults(1);
+  ASSERT_EQ(1u, listener.results().size());
+  auto result = listener.results()[0];
   EXPECT_EQ(net::OK, result.net_error);
   EXPECT_EQ(port, result.src_addr.value().port());
   EXPECT_EQ(test_msg, result.data.value());
@@ -727,9 +727,9 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
 
   // First socket should receive packet sent by the second socket.
   socket_ptr->ReceiveMore(1);
-  receiver.WaitForReceivedResults(2);
-  ASSERT_EQ(2u, receiver.results().size());
-  result = receiver.results()[1];
+  listener.WaitForReceivedResults(2);
+  ASSERT_EQ(2u, listener.results().size());
+  result = listener.results()[1];
   EXPECT_EQ(net::OK, result.net_error);
   EXPECT_EQ(second_port, result.src_addr.value().port());
   EXPECT_EQ(test_msg, result.data.value());
@@ -743,7 +743,7 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
   ASSERT_EQ(net::OK, second_socket_helper.SendToSync(group_alias, test_msg));
   socket_ptr->ReceiveMore(1);
   socket_ptr.FlushForTesting();
-  ASSERT_EQ(2u, receiver.results().size());
+  ASSERT_EQ(2u, listener.results().size());
 }
 
 TEST_F(UDPSocketTest, ErrorHappensDuringSocketOptionsConfiguration) {

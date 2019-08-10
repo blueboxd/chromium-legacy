@@ -64,12 +64,12 @@ void GetNetworkListOnUIThread(
 void CreateUDPSocketOnUIThread(
     content::BrowserContext* profile,
     network::mojom::UDPSocketRequest request,
-    network::mojom::UDPSocketReceiverPtr receiver_ptr) {
+    network::mojom::UDPSocketListenerPtr listener_ptr) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   network::mojom::NetworkContext* network_context =
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetNetworkContext();
-  network_context->CreateUDPSocket(std::move(request), std::move(receiver_ptr));
+  network_context->CreateUDPSocket(std::move(request), std::move(listener_ptr));
 }
 
 }  // namespace
@@ -109,7 +109,7 @@ PrivetTrafficDetector::Helper::Helper(
     : profile_(profile),
       on_traffic_detected_(on_traffic_detected),
       restart_attempts_(kMaxRestartAttempts),
-      receiver_binding_(this) {
+      listener_binding_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -148,14 +148,14 @@ void PrivetTrafficDetector::Helper::Restart(
 void PrivetTrafficDetector::Helper::Bind() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  network::mojom::UDPSocketReceiverPtr receiver_ptr;
-  network::mojom::UDPSocketReceiverRequest receiver_request =
-      mojo::MakeRequest(&receiver_ptr);
-  receiver_binding_.Bind(std::move(receiver_request));
+  network::mojom::UDPSocketListenerPtr listener_ptr;
+  network::mojom::UDPSocketListenerRequest listener_request =
+      mojo::MakeRequest(&listener_ptr);
+  listener_binding_.Bind(std::move(listener_request));
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&CreateUDPSocketOnUIThread, profile_,
-                     mojo::MakeRequest(&socket_), std::move(receiver_ptr)));
+                     mojo::MakeRequest(&socket_), std::move(listener_ptr)));
 
   network::mojom::UDPSocketOptionsPtr socket_options =
       network::mojom::UDPSocketOptions::New();
@@ -238,7 +238,7 @@ void PrivetTrafficDetector::Helper::OnJoinGroupComplete(int rv) {
 void PrivetTrafficDetector::Helper::ResetConnection() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   socket_.reset();
-  receiver_binding_.Close();
+  listener_binding_.Close();
 }
 
 void PrivetTrafficDetector::Helper::OnReceived(

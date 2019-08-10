@@ -23,7 +23,7 @@ namespace mirroring {
 // will be called if the UDPSocket is failed to be created or connected.
 class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
     : public media::cast::PacketTransport,
-      public network::mojom::UDPSocketReceiver {
+      public network::mojom::UDPSocketListener {
  public:
   UdpSocketClient(const net::IPEndPoint& remote_endpoint,
                   network::mojom::NetworkContext* context,
@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
                           packet_receiver) override;
   void StopReceiving() override;
 
-  // network::mojom::UDPSocketReceiver implementation.
+  // network::mojom::UDPSocketListener implementation.
   void OnReceived(int32_t result,
                   const base::Optional<net::IPEndPoint>& src_addr,
                   base::Optional<base::span<const uint8_t>> data) override;
@@ -59,7 +59,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
   network::mojom::NetworkContext* const network_context_;
   base::OnceClosure error_callback_;
 
-  mojo::Binding<network::mojom::UDPSocketReceiver> binding_;
+  mojo::Binding<network::mojom::UDPSocketListener> binding_;
 
   // The callback to deliver the received packets to the packet parser. Set
   // when StartReceiving() is called.

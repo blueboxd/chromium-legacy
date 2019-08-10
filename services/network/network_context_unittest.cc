@@ -2404,15 +2404,15 @@ TEST_F(NetworkContextTest, CreateUDPSocket) {
       CreateContextWithParams(CreateContextParams());
 
   // Create a server socket to listen for incoming datagrams.
-  test::UDPSocketReceiverImpl receiver;
-  mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
-  mojom::UDPSocketReceiverPtr receiver_interface_ptr;
-  receiver_binding.Bind(mojo::MakeRequest(&receiver_interface_ptr));
+  test::UDPSocketListenerImpl listener;
+  mojo::Binding<mojom::UDPSocketListener> listener_binding(&listener);
+  mojom::UDPSocketListenerPtr listener_interface_ptr;
+  listener_binding.Bind(mojo::MakeRequest(&listener_interface_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   mojom::UDPSocketPtr server_socket;
   network_context->CreateUDPSocket(mojo::MakeRequest(&server_socket),
-                                   std::move(receiver_interface_ptr));
+                                   std::move(listener_interface_ptr));
   test::UDPSocketTestHelper helper(&server_socket);
   ASSERT_EQ(net::OK, helper.BindSync(server_addr, nullptr, &server_addr));
 
@@ -2440,11 +2440,11 @@ TEST_F(NetworkContextTest, CreateUDPSocket) {
     EXPECT_EQ(net::OK, result);
   }
 
-  receiver.WaitForReceivedResults(kDatagramCount);
-  EXPECT_EQ(kDatagramCount, receiver.results().size());
+  listener.WaitForReceivedResults(kDatagramCount);
+  EXPECT_EQ(kDatagramCount, listener.results().size());
 
   int i = 0;
-  for (const auto& result : receiver.results()) {
+  for (const auto& result : listener.results()) {
     EXPECT_EQ(net::OK, result.net_error);
     EXPECT_EQ(result.src_addr, client_addr);
     EXPECT_EQ(CreateTestMessage(static_cast<uint8_t>(i), kDatagramSize),

@@ -36,6 +36,7 @@
 #include "components/variations/pref_names.h"
 #include "components/variations/service/safe_seed_manager.h"
 #include "components/variations/service/variations_service.h"
+#include "content/public/common/content_switch_dependent_feature_overrides.h"
 #include "services/preferences/tracked/segregated_pref_store.h"
 
 namespace android_webview {
@@ -144,9 +145,11 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   variations_field_trial_creator_->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
       switches::kDisableFeatures, unforceable_field_trials,
-      std::vector<std::string>(), /*low_entropy_provider=*/nullptr,
-      std::make_unique<base::FeatureList>(), aw_field_trials_.get(),
-      &ignored_safe_seed_manager);
+      std::vector<std::string>(),
+      content::GetSwitchDependentFeatureOverrides(
+          *base::CommandLine::ForCurrentProcess()),
+      /*low_entropy_provider=*/nullptr, std::make_unique<base::FeatureList>(),
+      aw_field_trials_.get(), &ignored_safe_seed_manager);
 }
 
 void AwFeatureListCreator::CreateLocalState() {

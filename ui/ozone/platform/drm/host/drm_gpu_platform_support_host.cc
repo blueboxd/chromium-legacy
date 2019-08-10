@@ -274,24 +274,19 @@ bool DrmGpuPlatformSupportHost::GpuRelinquishDisplayControl() {
   return Send(new OzoneGpuMsg_RelinquishDisplayControl());
 }
 
-bool DrmGpuPlatformSupportHost::GpuAddGraphicsDevice(const base::FilePath& path,
-                                                     base::ScopedFD fd) {
-  IPC::Message* message = new OzoneGpuMsg_AddGraphicsDevice(
-      path, base::FileDescriptor(std::move(fd)));
+bool DrmGpuPlatformSupportHost::GpuAddGraphicsDeviceOnUIThread(
+    const base::FilePath& path,
+    base::ScopedFD fd) {
+  return Send(new OzoneGpuMsg_AddGraphicsDevice(
+      path, base::FileDescriptor(std::move(fd))));
+}
 
-  // This function may be called from two places:
-  // - DrmDisplayHostManager::OnGpuProcessLaunched() invoked synchronously
-  //   by GpuProcessHost::Init() on IO thread, which is the same thread as
-  //   |send_runner_|. In this case we can synchronously send the IPC;
-  // - DrmDisplayHostManager::OnAddGraphicsDevice() on UI thread. In this
-  //   case we need to post the send task to IO thread.
-  if (send_runner_ && send_runner_->BelongsToCurrentThread()) {
-    DCHECK(!send_callback_.is_null());
-    send_callback_.Run(message);
-    return true;
-  }
-
-  return Send(message);
+void DrmGpuPlatformSupportHost::GpuAddGraphicsDeviceOnIOThread(
+    const base::FilePath& path,
+    base::ScopedFD fd) {
+  DCHECK(!send_callback_.is_null());
+  send_callback_.Run(new OzoneGpuMsg_AddGraphicsDevice(
+      path, base::FileDescriptor(std::move(fd))));
 }
 
 bool DrmGpuPlatformSupportHost::GpuRemoveGraphicsDevice(

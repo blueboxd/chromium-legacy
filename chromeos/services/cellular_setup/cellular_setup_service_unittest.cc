@@ -11,13 +11,10 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/services/cellular_setup/cellular_setup_impl.h"
-#include "chromeos/services/cellular_setup/cellular_setup_service.h"
 #include "chromeos/services/cellular_setup/public/cpp/fake_activation_delegate.h"
 #include "chromeos/services/cellular_setup/public/cpp/fake_carrier_portal_handler.h"
 #include "chromeos/services/cellular_setup/public/cpp/fake_cellular_setup.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
-#include "chromeos/services/cellular_setup/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -36,27 +33,6 @@ const char kTestMeid[] = "testMeid";
 const char kTestImei[] = "testImei";
 const char kTestMdn[] = "testMdn";
 
-class FakeCellularSetupFactory : public CellularSetupImpl::Factory {
- public:
-  FakeCellularSetupFactory() = default;
-  ~FakeCellularSetupFactory() override = default;
-
-  FakeCellularSetup* instance() { return instance_; }
-
- private:
-  // CellularSetupImpl::Factory:
-  std::unique_ptr<CellularSetupBase> BuildInstance() override {
-    EXPECT_FALSE(instance_);
-    auto instance = std::make_unique<FakeCellularSetup>();
-    instance_ = instance.get();
-    return instance;
-  }
-
-  FakeCellularSetup* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeCellularSetupFactory);
-};
-
 }  // namespace
 
 class CellularSetupServiceTest : public testing::Test {
@@ -66,20 +42,9 @@ class CellularSetupServiceTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    fake_cellular_setup_factory_ = std::make_unique<FakeCellularSetupFactory>();
-    CellularSetupImpl::Factory::SetFactoryForTesting(
-        fake_cellular_setup_factory_.get());
-
-    service_ = std::make_unique<CellularSetupService>(
-        connector_factory_.RegisterInstance(mojom::kServiceName));
-
-    connector_factory_.GetDefaultConnector()->BindInterface(
-        mojom::kServiceName, &cellular_setup_ptr_);
+    service_ = std::make_unique<FakeCellularSetup>();
+    service_->BindRequest(mojo::MakeRequest(&cellular_setup_ptr_));
     cellular_setup_ptr_.FlushForTesting();
-  }
-
-  void TearDown() override {
-    CellularSetupImpl::Factory::SetFactoryForTesting(nullptr);
   }
 
   // Calls StartActivation() and returns the fake CarrierPortalHandler and its
@@ -184,9 +149,7 @@ class CellularSetupServiceTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
-  FakeCellularSetup* fake_cellular_setup() {
-    return fake_cellular_setup_factory_->instance();
-  }
+  FakeCellularSetup* fake_cellular_setup() { return service_.get(); }
 
   mojom::ActivationDelegatePtr& GetLastActivationDelegate() {
     return fake_cellular_setup()
@@ -197,9 +160,7 @@ class CellularSetupServiceTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  std::unique_ptr<FakeCellularSetupFactory> fake_cellular_setup_factory_;
-  service_manager::TestConnectorFactory connector_factory_;
-  std::unique_ptr<CellularSetupService> service_;
+  std::unique_ptr<FakeCellularSetup> service_;
 
   base::Optional<mojom::CarrierPortalHandlerPtr> last_carrier_portal_observer_;
 

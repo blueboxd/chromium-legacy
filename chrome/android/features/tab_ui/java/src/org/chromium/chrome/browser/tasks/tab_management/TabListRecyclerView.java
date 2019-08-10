@@ -401,15 +401,17 @@ class TabListRecyclerView extends RecyclerView {
     }
 
     /**
-     * @param currentTabIndex The the current tab's index in the model.
+     * @param selectedTabIndex The index in the RecyclerView of the selected tab.
+     * @param selectedTabId The tab ID of the selected tab.
      * @return The {@link Rect} of the thumbnail of the current tab, relative to the
      *         {@link TabListRecyclerView} coordinates.
      */
     @Nullable
-    Rect getRectOfCurrentThumbnail(int currentTabIndex) {
+    Rect getRectOfCurrentThumbnail(int selectedTabIndex, int selectedTabId) {
         TabGridViewHolder holder =
-                (TabGridViewHolder) findViewHolderForAdapterPosition(currentTabIndex);
+                (TabGridViewHolder) findViewHolderForAdapterPosition(selectedTabIndex);
         if (holder == null) return null;
+        assert holder.getTabId() == selectedTabId;
         return getRectOfComponent(holder.thumbnail);
     }
 

@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -2011,6 +2012,35 @@ TEST_F(RenderWidgetHostTest, RendererHangRecordsMetrics) {
       InputEventAckSource::UNKNOWN);
   tester.ExpectTotalCount("Renderer.Hung.Duration", 1u);
   tester.ExpectUniqueSample("Renderer.Hung.Duration", 17000, 1);
+}
+
+TEST_F(RenderWidgetHostTest, PendingUserActivationTimeout) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kBrowserVerifiedUserActivation);
+
+  // One event allows one activation notification.
+  SimulateMouseEvent(WebInputEvent::kMouseDown);
+  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+
+  // Mouse move and up does not increase pending user activation counter.
+  SimulateMouseEvent(WebInputEvent::kMouseMove);
+  SimulateMouseEvent(WebInputEvent::kMouseUp);
+  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+
+  // 2 events allow 2 activation notifications.
+  SimulateMouseEvent(WebInputEvent::kMouseDown);
+  SimulateKeyboardEvent(WebInputEvent::kKeyDown);
+  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_TRUE(host_->ConsumePendingUserActivationIfAllowed());
+  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
+
+  // Pending activation is reset after |kActivationNotificationExpireTime|.
+  SimulateMouseEvent(WebInputEvent::kMouseDown);
+  SimulateMouseEvent(WebInputEvent::kMouseDown);
+  RunLoopFor(RenderWidgetHostImpl::kActivationNotificationExpireTime);
+  EXPECT_FALSE(host_->ConsumePendingUserActivationIfAllowed());
 }
 
 }  // namespace content

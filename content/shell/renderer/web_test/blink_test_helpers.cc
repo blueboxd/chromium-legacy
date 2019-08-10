@@ -72,7 +72,6 @@ namespace content {
 void ExportWebTestSpecificPreferences(const test_runner::TestPreferences& from,
                                       WebPreferences* to) {
   to->javascript_can_access_clipboard = from.java_script_can_access_clipboard;
-  to->xss_auditor_enabled = from.xss_auditor_enabled;
   to->editing_behavior = static_cast<EditingBehavior>(from.editing_behavior);
   to->default_font_size = from.default_font_size;
   to->minimum_font_size = from.minimum_font_size;
@@ -105,7 +104,6 @@ void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
   prefs->dom_paste_enabled = true;
   prefs->javascript_can_access_clipboard = true;
   prefs->xslt_enabled = true;
-  prefs->xss_auditor_enabled = false;
 #if defined(OS_MACOSX)
   prefs->editing_behavior = EDITING_BEHAVIOR_MAC;
 #else

@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, Limit) {
   // any sort of limit. This will cause client #1 to have 3 * chunk_size. When
   // client #1 then tries to commit changes, that is when it obeys the limit
   // and will cause client #0 to only see the limit worth of words.
-  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
+  ASSERT_TRUE(GetClient(1)->EnableSyncForRegisteredDatatypes());
   ASSERT_TRUE(NumDictionaryEntriesChecker(1, 3 * chunk_size).Wait());
   ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::DICTIONARY,
                                             kMaxSyncableDictionaryWords)

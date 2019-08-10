@@ -19,6 +19,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
@@ -138,6 +139,10 @@ class SyncTest : public InProcessBrowserTest {
 
   // Returns the set of ProfileSyncServices.
   std::vector<syncer::ProfileSyncService*> GetSyncServices();
+
+  // Returns the set of registered UserSelectableTypes.  This is retrieved from
+  // the ProfileSyncService at the given |index|.
+  syncer::UserSelectableTypeSet GetRegisteredSelectableTypes(int index);
 
   // Returns a pointer to the sync profile that is used to verify changes to
   // individual sync profiles. Callee owns the object and manages its lifetime.

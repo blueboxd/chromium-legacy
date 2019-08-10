@@ -16,6 +16,7 @@ class Dualshock4ControllerBase : public AbstractHapticGamepad {
 
   static bool IsDualshock4(uint16_t vendor_id, uint16_t product_id);
 
+  // AbstractHapticGamepad implementation.
   void SetVibration(double strong_magnitude, double weak_magnitude) override;
 
   virtual size_t WriteOutputReport(void* report, size_t report_length);

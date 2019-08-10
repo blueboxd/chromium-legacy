@@ -28,7 +28,7 @@
 
 <!-- Composited non-custom fast scroller -->
 <div id="scroller" class="appearance location fast">
-  <div class="space"></div>
+  <div id="divContent" class="space"></div>
 </div>
 
 <script>
@@ -99,4 +99,34 @@
     err = `scroller.scrollTop = ${scroller.scrollTop} current_offset = ${current_offset}`;
     await conditionHolds(() => { return scroller.scrollTop == current_offset; }, err);
   },"Test track autoscroll down and autoscroll stop.");
+
+  promise_test (async () => {
+    await waitForCompositorCommit();
+    scroller.scrollTop = MAX_SCROLLER_OFFSET;
+
+    // Schedule a scroller height increment 500ms out and immediately initiate autoscroll.
+    const content = document.getElementById("divContent");
+    const originalDivHeight = content.clientHeight;
+    const extendedDivHeight = originalDivHeight + 500;
+    setTimeout(function() {
+      content.setAttribute("style","height:" + extendedDivHeight + "px");
+    }, 500);
+
+    const down_arrow_x = scrollerRect.right - BUTTON_WIDTH / 2;
+    const down_arrow_y = scrollerRect.bottom - SCROLL_CORNER - BUTTON_WIDTH / 2;
+
+    // Keep the mouse pressed for 1000ms. Before this call completes, the previously
+    // scheduled scroller height increment kicks in. At this point, the autoscrolling
+    // is expected to take place. This should prove that scrolling occured *after* the
+    // scroller length was extended (as long as the pointer was kept pressed).
+    await mousePressOn(down_arrow_x, down_arrow_y, PRESS_DURATION);
+    var err = `Infinite autoscroll down failed (scroller.scrollTop = ${scroller.scrollTop})`;
+
+    // Verify that autoscroll took place beyond the old bounds. If there is a regression here,
+    // the scroller.scrollTop would've stayed at MAX_SCROLLER_OFFSET.
+    assert_greater_than(scroller.scrollTop, MAX_SCROLLER_OFFSET, err);
+
+    // Reset the scroller dimensions.
+    content.setAttribute("style","height:" + originalDivHeight + "px");
+  },"Test infinite scrolling when content is extended dynamically.");
 </script>

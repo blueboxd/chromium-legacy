@@ -201,7 +201,7 @@ suite('settings-fingerprint-list', function() {
       // Verify that by tapping the continue button we should exit the dialog
       // and the fingerprint list should have one fingerprint registered.
       dialog.$$('#closeButton').click();
-      return PolymerTest.flushTasks().then(function() {
+      return test_util.flushTasks().then(function() {
         Promise
             .all([
               browserProxy.whenCalled('startAuthentication'),

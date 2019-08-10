@@ -48,6 +48,11 @@
 // can display.
 @property(nonatomic, strong)
     NSMutableDictionary<NSNumber*, InfobarCoordinator*>* infobarCoordinators;
+// Array of Coordinators which banners haven't been presented yet. Once a
+// Coordinator banner is presented it should be removed from this Array. If
+// empty then it means there are no banners queued to be presented.
+@property(nonatomic, strong)
+    NSMutableArray<InfobarCoordinator*>* infobarCoordinatorsToPresent;
 
 @end
 
@@ -62,6 +67,7 @@
   if (self) {
     _webStateList = webStateList;
     _infobarCoordinators = [NSMutableDictionary dictionary];
+    _infobarCoordinatorsToPresent = [NSMutableArray array];
   }
   return self;
 }
@@ -156,6 +162,13 @@
     completion();
 }
 
+- (void)baseViewDidAppear {
+  InfobarCoordinator* coordinator =
+      [self.infobarCoordinatorsToPresent firstObject];
+  if (coordinator)
+    [self presentBannerForInfobarCoordinator:coordinator];
+}
+
 #pragma mark - ChromeCoordinator
 
 - (MutableCoordinatorArray*)childCoordinators {
@@ -193,7 +206,9 @@
   return InfobarBannerPresentationState::NotPresented;
 }
 
-#pragma mark - InfobarConsumer
+#pragma mark - Protocols
+
+#pragma mark InfobarContainerConsumer
 
 - (void)addInfoBarWithDelegate:(id<InfobarUIDelegate>)infoBarDelegate {
   DCHECK(IsInfobarUIRebootEnabled());
@@ -211,24 +226,12 @@
   infobarCoordinator.baseViewController = self.baseViewController;
   infobarCoordinator.dispatcher = self.dispatcher;
   infobarCoordinator.infobarContainer = self;
-  if (!infobarCoordinator.bannerWasPresented)
-    [infobarCoordinator presentInfobarBannerAnimated:YES completion:nil];
-  self.infobarViewController = infobarCoordinator.bannerViewController;
-
-  // Dismisses the presented InfobarCoordinator banner after
-  // kInfobarBannerPresentationDurationInSeconds seconds.
-  if (!UIAccessibilityIsVoiceOverRunning()) {
-    dispatch_time_t popTime = dispatch_time(
-        DISPATCH_TIME_NOW,
-        kInfobarBannerPresentationDurationInSeconds * NSEC_PER_SEC);
-    dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
-      [infobarCoordinator dismissInfobarBannerAfterInteraction];
-    });
-  }
+  [self presentBannerForInfobarCoordinator:infobarCoordinator];
 }
 
 - (void)infobarManagerWillChange {
   self.infobarCoordinators = [NSMutableDictionary dictionary];
+  self.infobarCoordinatorsToPresent = [NSMutableArray array];
 }
 
 - (void)setUserInteractionEnabled:(BOOL)enabled {
@@ -243,18 +246,63 @@
 
 #pragma mark InfobarContainer
 
+- (void)childCoordinatorBannerWasDismissed:(InfobarType)infobarType {
+  InfobarCoordinator* coordinator =
+      [self.infobarCoordinatorsToPresent firstObject];
+  if (coordinator)
+    [self presentBannerForInfobarCoordinator:coordinator];
+}
+
 - (void)childCoordinatorStopped:(InfobarType)infobarType {
   DCHECK(IsInfobarUIRebootEnabled());
   NSNumber* infobarKey = [NSNumber numberWithInt:static_cast<int>(infobarType)];
   [self.infobarCoordinators removeObjectForKey:infobarKey];
 }
 
-#pragma mark - InfobarCommands
+#pragma mark InfobarCommands
 
 - (void)displayModalInfobar:(InfobarType)infobarType {
   NSArray* allCoordinators = [self.infobarCoordinators allValues];
   InfobarCoordinator* infobarCoordinator = [allCoordinators lastObject];
   [infobarCoordinator presentInfobarModal];
+}
+
+#pragma mark - Private
+
+// Presents the infobarBanner for |infobarCoordinator| if possible, if not it
+// queues the banner in self.infobarCoordinatorsToPresent for future
+// presentation.
+- (void)presentBannerForInfobarCoordinator:
+    (InfobarCoordinator*)infobarCoordinator {
+  // Each banner can only be presented once.
+  if (infobarCoordinator.bannerWasPresented)
+    return;
+
+  // If a banner is being presented or base VC is not in window, queue it then
+  // return.
+  if (!(self.infobarBannerState ==
+        InfobarBannerPresentationState::NotPresented) ||
+      (!self.baseViewController.view.window)) {
+    if (![self.infobarCoordinatorsToPresent containsObject:infobarCoordinator])
+      [self.infobarCoordinatorsToPresent addObject:infobarCoordinator];
+    return;
+  }
+
+  // Present Banner.
+  [infobarCoordinator presentInfobarBannerAnimated:YES completion:nil];
+  self.infobarViewController = infobarCoordinator.bannerViewController;
+  [self.infobarCoordinatorsToPresent removeObject:infobarCoordinator];
+
+  // Dismisses the presented InfobarCoordinator banner after
+  // kInfobarBannerPresentationDurationInSeconds seconds.
+  if (!UIAccessibilityIsVoiceOverRunning()) {
+    dispatch_time_t popTime = dispatch_time(
+        DISPATCH_TIME_NOW,
+        kInfobarBannerPresentationDurationInSeconds * NSEC_PER_SEC);
+    dispatch_after(popTime, dispatch_get_main_queue(), ^(void) {
+      [infobarCoordinator dismissInfobarBannerAfterInteraction];
+    });
+  }
 }
 
 @end

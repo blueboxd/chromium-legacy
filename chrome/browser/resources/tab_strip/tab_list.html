@@ -1,7 +1,12 @@
 <style>
   :host {
-    display: flex;
+    display: block;
     padding: 16px;
+    width: fit-content;
+  }
+
+  #tabsContainer {
+    display: flex;
     width: fit-content;
   }
 
@@ -15,9 +20,4 @@
   }
 </style>
 
-<tabstrip-tab></tabstrip-tab>
-<tabstrip-tab></tabstrip-tab>
-<tabstrip-tab></tabstrip-tab>
-<tabstrip-tab></tabstrip-tab>
-<tabstrip-tab></tabstrip-tab>
-<tabstrip-tab></tabstrip-tab>
+<div id="tabsContainer"></div>

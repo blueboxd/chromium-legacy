@@ -5,12 +5,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_IMAGE_CLASSIFIER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_IMAGE_CLASSIFIER_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
-#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
+
+class Image;
 
 class PLATFORM_EXPORT DarkModeImageClassifier {
   DISALLOW_NEW();
@@ -19,23 +22,31 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
   DarkModeImageClassifier();
   ~DarkModeImageClassifier() = default;
 
-  bool GetFeaturesForTesting(Image* image, Vector<float>* features) {
-    Vector<SkColor> sampled_pixels;
-    return GetFeatures(image,
-                       FloatRect(0, 0, static_cast<float>(image->width()),
-                                 static_cast<float>(image->height())),
-                       features);
-  }
-
   DarkModeClassification Classify(Image* image, const FloatRect& src_rect);
 
-  // Computes the features vector for a given image.
-  bool GetFeatures(Image* image,
-                   const FloatRect& src_rect,
-                   Vector<float>* features);
+  struct Features {
+    // True if the image is in color, false if it is grayscale.
+    bool is_colorful;
+
+    // Whether the image was originally an SVG.
+    bool is_svg;
+
+    // Ratio of the number of bucketed colors used in the image to all
+    // possibilities. Color buckets are represented with 4 bits per color
+    // channel.
+    float color_buckets_ratio;
+
+    // How much of the image is transparent or considered part of the
+    // background.
+    float background_ratio;
+    float transparency_ratio;
+  };
+
+  // Computes the features for a given image.
+  base::Optional<Features> GetFeatures(Image* image, const FloatRect& src_rect);
 
   virtual DarkModeClassification ClassifyWithFeatures(
-      const Vector<float> features) {
+      const Features& features) {
     return DarkModeClassification::kDoNotApplyFilter;
   }
 
@@ -62,11 +73,10 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
                        int* transparent_pixels_count);
 
   // Given |sampled_pixels|, |transparency_ratio|, and |background_ratio| for an
-  // image, computes the required |features| for classification.
-  void ComputeFeatures(const Vector<SkColor>& sampled_pixels,
-                       const float transparency_ratio,
-                       const float background_ratio,
-                       Vector<float>* features);
+  // image, computes and returns the features required for classification.
+  Features ComputeFeatures(const Vector<SkColor>& sampled_pixels,
+                           const float transparency_ratio,
+                           const float background_ratio);
 
   // Receives sampled pixels and color mode, and returns the ratio of color
   // buckets count to all possible color buckets. If image is in color, a color

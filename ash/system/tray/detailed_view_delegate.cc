@@ -6,6 +6,8 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
@@ -145,7 +147,9 @@ TriView* DetailedViewDelegate::CreateTitleRow(int string_id) {
 
 views::View* DetailedViewDelegate::CreateTitleSeparator() {
   views::Separator* separator = new views::Separator();
-  separator->SetColor(kSeparatorOnDarkBackgroundColor);
+  separator->SetColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kSeparator,
+      kSeparatorOnDarkBackgroundColor));
   separator->SetBorder(views::CreateEmptyBorder(
       kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0));
   return separator;
@@ -155,8 +159,11 @@ void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
                                                      bool show_separator) {
   if (show_separator) {
     view->SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(0, 0, kTraySeparatorWidth, 0,
-                                      kSeparatorOnDarkBackgroundColor),
+        views::CreateSolidSidedBorder(
+            0, 0, kTraySeparatorWidth, 0,
+            AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+                AshColorProvider::ControlsLayerType::kSeparator,
+                kSeparatorOnDarkBackgroundColor)),
         gfx::Insets(kMenuSeparatorVerticalPadding, 0,
                     kMenuSeparatorVerticalPadding - kTraySeparatorWidth, 0)));
   } else {
@@ -168,7 +175,9 @@ void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
 
 views::Separator* DetailedViewDelegate::CreateListSubHeaderSeparator() {
   views::Separator* separator = new views::Separator();
-  separator->SetColor(kSeparatorOnDarkBackgroundColor);
+  separator->SetColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kSeparator,
+      kSeparatorOnDarkBackgroundColor));
   separator->SetBorder(views::CreateEmptyBorder(
       kMenuSeparatorVerticalPadding - views::Separator::kThickness, 0, 0, 0));
   return separator;

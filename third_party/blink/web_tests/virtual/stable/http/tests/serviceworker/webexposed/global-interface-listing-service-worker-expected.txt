@@ -2621,7 +2621,6 @@ interface WritableStream
     getter onpush
     getter onsync
     getter registration
-    method fetch
     method gc
     method skipWaiting
     setter onabortpayment

@@ -23,16 +23,25 @@ class AutoScanManager {
     this.intervalID_;
 
     /**
-     * Length of auto-scan interval in milliseconds.
+     * Length of the default auto-scan interval (used wherever there is not
+     * a more specific scan time set) in milliseconds.
      * @private {number}
      */
-    this.scanTime_ = SCAN_TIME_NOT_INITIALIZED;
+    this.defaultScanTime_ = SCAN_TIME_NOT_INITIALIZED;
+
+    /**
+     * Length of auto-scan interval for the on-screen keyboard in milliseconds.
+     * @private {number}
+     */
+    this.keyboardScanTime_ = SCAN_TIME_NOT_INITIALIZED;
   }
 
   /** Finishes setup of auto scan manager once Prefs are loaded. */
   onPrefsReady() {
-    this.scanTime_ = this.switchAccess_.getNumberPreference(
+    this.defaultScanTime_ = this.switchAccess_.getNumberPreference(
         SAConstants.Preference.AUTO_SCAN_TIME);
+    this.keyboardScanTime_ = this.switchAccess_.getNumberPreference(
+        SAConstants.Preference.AUTO_SCAN_KEYBOARD_TIME);
     const enabled = this.switchAccess_.getBooleanPreference(
         SAConstants.Preference.AUTO_SCAN_ENABLED);
     if (enabled) this.start_();
@@ -70,14 +79,23 @@ class AutoScanManager {
   }
 
   /**
-   * Update this.scanTime_ to |scanTime|. Then, if auto-scan is currently
+   * Update this.defaultScanTime_ to |scanTime|. Then, if auto-scan is currently
    * running, restart it.
    *
    * @param {number} scanTime Auto-scan interval time in milliseconds.
    */
-  setScanTime(scanTime) {
-    this.scanTime_ = scanTime;
+  setDefaultScanTime(scanTime) {
+    this.defaultScanTime_ = scanTime;
     this.restartIfRunning();
+  }
+
+  /**
+   * Update this.keyboardScanTime_ to |scanTime|.
+   *
+   * @param {number} scanTime Auto-scan interval time in milliseconds.
+   */
+  setKeyboardScanTime(scanTime) {
+    this.keyboardScanTime_ = scanTime;
   }
 
   /**
@@ -91,16 +109,29 @@ class AutoScanManager {
 
   /**
    * Set the window to move to the next node at an interval in milliseconds
-   * equal to this.scanTime_.
+   * depending on where the user is navigating. Currently,
+   * this.keyboardScanTime_ is used as the interval if the user is
+   * navigating in the virtual keyboard, and this.defaultScanTime_ is used
+   * otherwise.
    * @private
    */
   start_() {
-    if (this.scanTime_ === SCAN_TIME_NOT_INITIALIZED)
+    if (this.defaultScanTime_ === SCAN_TIME_NOT_INITIALIZED)
       return;
+
+    let currentScanTime = this.defaultScanTime_;
+
+    if (this.switchAccess_.improvedTextInputEnabled()) {
+      if (this.switchAccess_.inVirtualKeyboard()) {
+        if (this.keyboardScanTime_ !== SCAN_TIME_NOT_INITIALIZED) {
+          currentScanTime = this.keyboardScanTime_;
+        }
+      }
+    }
 
     this.intervalID_ = window.setInterval(
         this.switchAccess_.moveForward.bind(this.switchAccess_),
-        this.scanTime_);
+        currentScanTime);
   }
 }
 

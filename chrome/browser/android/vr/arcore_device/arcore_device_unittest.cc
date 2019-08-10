@@ -97,7 +97,7 @@ class StubArCoreSessionUtils : public vr::ArCoreSessionUtils {
     std::move(ready_callback)
         .Run(nullptr, display::Display::Rotation::ROTATE_0, {1024, 512});
   }
-  void DestroyDrawingSurface() override {}
+  void EndSession() override {}
 
   bool EnsureLoaded() override { return true; }
 

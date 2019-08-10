@@ -259,16 +259,10 @@ struct AutocompleteMatch {
   // - If the match's keyword is known, it can be provided in |keyword|.
   //   Otherwise, it can be left empty and the template URL (if any) is
   //   determined from the destination's hostname.
-  // - If |additional_query_params| is provided, these will be added to the
-  //   resulting URL in the cases where a template URL is used. This is used to
-  //   distinguish cases such as entity suggestions where the response contains
-  //   additional meaningful parameters beyond the search terms themselves.
-  static GURL GURLToStrippedGURL(
-      const GURL& url,
-      const AutocompleteInput& input,
-      const TemplateURLService* template_url_service,
-      const base::string16& keyword,
-      const std::string& additional_query_params = "");
+  static GURL GURLToStrippedGURL(const GURL& url,
+                                 const AutocompleteInput& input,
+                                 const TemplateURLService* template_url_service,
+                                 const base::string16& keyword);
 
   // Sets the |match_in_scheme| and |match_in_subdomain| flags based on the
   // provided |url| and list of substring |match_positions|. |match_positions|
@@ -291,6 +285,20 @@ struct AutocompleteMatch {
   // components are important (part of the match), and should not be trimmed.
   static url_formatter::FormatUrlTypes GetFormatTypes(bool preserve_scheme,
                                                       bool preserve_subdomain);
+
+  // Determines whether a particular match is allowed to be the default match
+  // by comparing |input.text| and |match.inline_autocompletion|. Therefore,
+  // |match.inline_autocompletion| should be set prior to invoking this method.
+  // Also considers trailing whitespace in the input, so the input should not be
+  // fixed up.
+  //
+  // Input "x" will allow default matches "x", "xy", and "x y".
+  // Input "x " will allow default matches "x" and "x y".
+  // Input "x  " will allow default match "x".
+  // Input "x y" will allow default match "x y".
+  // Input "x" with prevent_inline_autocomplete will allow default match "x".
+  static bool AllowedToBeDefault(const AutocompleteInput& input,
+                                 AutocompleteMatch& match);
 
   // Logs the search engine used to navigate to a search page or auto complete
   // suggestion. For direct URL navigations, nothing is logged.
@@ -374,6 +382,14 @@ struct AutocompleteMatch {
   // what will happen when they press enter in those cases if the match is not
   // shown.
   bool IsVerbatimType() const;
+
+  // Returns whether this match is a search suggestion provided by search
+  // provider.
+  bool IsSearchProviderSearchSuggestion() const;
+
+  // Returns whether this match is a search suggestion provided by on device
+  // providers.
+  bool IsOnDeviceSearchSuggestion() const;
 
   // Returns whether this match or any duplicate of this match can be deleted.
   // This is used to decide whether we should call DeleteMatch().

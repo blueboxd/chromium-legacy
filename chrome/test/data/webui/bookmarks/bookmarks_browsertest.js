@@ -51,6 +51,7 @@ BookmarksAppTest.prototype = {
   __proto__: BookmarksBrowserTest.prototype,
 
   extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
     'app_test.js',
     '//ui/webui/resources/js/util.js',
   ]),
@@ -158,6 +159,7 @@ BookmarksRouterTest.prototype = {
   __proto__: BookmarksBrowserTest.prototype,
 
   extraLibraries: BookmarksBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
     'router_test.js',
   ]),
 };

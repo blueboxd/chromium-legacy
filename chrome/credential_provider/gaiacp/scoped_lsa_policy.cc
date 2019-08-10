@@ -102,9 +102,26 @@ HRESULT ScopedLsaPolicy::RetrievePrivateData(const wchar_t* key,
     return HRESULT_FROM_NT(sts);
 
   errno_t err = wcscpy_s(value, length, lsa_value->Buffer);
+  SecurelyClearBuffer(lsa_value->Buffer, lsa_value->Length);
   ::LsaFreeMemory(lsa_value);
 
   return err == 0 ? S_OK : E_FAIL;
+}
+
+bool ScopedLsaPolicy::PrivateDataExists(const wchar_t* key) {
+  LSA_UNICODE_STRING lsa_key;
+  InitLsaString(key, &lsa_key);
+  LSA_UNICODE_STRING* lsa_value;
+
+  NTSTATUS sts = ::LsaRetrievePrivateData(handle_, &lsa_key, &lsa_value);
+
+  if (sts != STATUS_SUCCESS)
+    return false;
+
+  SecurelyClearBuffer(lsa_value->Buffer, lsa_value->Length);
+  ::LsaFreeMemory(lsa_value);
+
+  return true;
 }
 
 HRESULT ScopedLsaPolicy::AddAccountRights(PSID sid, const wchar_t* right) {

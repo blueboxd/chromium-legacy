@@ -9,7 +9,7 @@ namespace blink {
 DarkModeIconClassifier::DarkModeIconClassifier() {}
 
 DarkModeClassification DarkModeIconClassifier::ClassifyWithFeatures(
-    const Vector<float> features) {
+    const Features& features) {
   return DarkModeClassification::kDoNotApplyFilter;
 }
 

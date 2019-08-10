@@ -424,6 +424,12 @@
       <structure name="IDR_SETTINGS_SECURITY_KEYS_RESET_DIALOG_JS"
                  file="privacy_page/security_keys_reset_dialog.js"
                  type="chrome_html"/>
+      <structure name="IDR_SETTINGS_SECURITY_KEYS_BIO_ENROLL_DIALOG_HTML"
+                 file="privacy_page/security_keys_bio_enroll_dialog.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SECURITY_KEYS_BIO_ENROLL_DIALOG_JS"
+                 file="privacy_page/security_keys_bio_enroll_dialog.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SECURITY_KEYS_DIALOG_BROWSER_PROXY_HTML"
                  file="privacy_page/security_keys_browser_proxy.html"
                  type="chrome_html" />

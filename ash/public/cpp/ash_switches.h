@@ -18,7 +18,6 @@ namespace switches {
 // TODO(sky): fix order!
 ASH_PUBLIC_EXPORT extern const char kAshColorMode[];
 ASH_PUBLIC_EXPORT extern const char kAshColorModeDark[];
-ASH_PUBLIC_EXPORT extern const char kAshColorModeDefault[];
 ASH_PUBLIC_EXPORT extern const char kAshColorModeLight[];
 ASH_PUBLIC_EXPORT extern const char kAshConstrainPointerToRoot[];
 ASH_PUBLIC_EXPORT extern const char kAshDebugShortcuts[];

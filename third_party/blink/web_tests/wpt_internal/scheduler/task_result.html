@@ -1,0 +1,50 @@
+<!doctype html>
+<title>Scheduling API: Basic Task.result Functionality</title>
+<link rel="author" title="Scott Haseley" href="mailto:shaseley@chromium.org">
+<link rel="help" href="https://github.com/WICG/main-thread-scheduling">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<script>
+'use strict';
+
+async_test(t => {
+  // Access task.result before the task runs.
+  (function() {
+    let task = scheduler.postTask(() => 1234);
+    task.result.then(t.step_func((res) => {
+      assert_equals(task.status, 'completed');
+      assert_equals(res, 1234);
+    }));
+  })();
+
+  // Canceling a task should cause task.result to be rejected.
+  (function() {
+    let task = scheduler.postTask(() => 5678);
+    task.cancel();
+    task.result.then(t.step_func((res) => {
+      assert_true(false, 'task.result should not be fulfilled when the task is canceled');
+    }))
+    .catch(t.step_func((e) => {
+      assert_equals(e.name, 'AbortError');
+    }));
+  })();
+
+  // Access task.result after the task runs.
+  (function() {
+    let task = scheduler.postTask(t.step_func(() => {
+      // This task will run after |task| finishes.
+      scheduler.postTask(t.step_func(() => {
+        assert_equals(task.status,  'completed');
+        task.result.then(t.step_func((res) => {
+          assert_equals(res, 'foo');
+          t.done();
+        }));
+      }));
+      return 'foo';
+    }));
+  })();
+
+}, 'Test scheduler.result is resolved properly');
+
+</script>

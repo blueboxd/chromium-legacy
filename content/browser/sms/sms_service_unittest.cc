@@ -81,7 +81,7 @@ class Service {
   void SetupSmsDialog(content::RenderFrameHost* rfh) {
     auto* dialog = new NiceMock<MockSmsDialog>();
 
-    EXPECT_CALL(*delegate(), CreateSmsDialog())
+    EXPECT_CALL(*delegate(), CreateSmsDialog(_))
         .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
     EXPECT_CALL(*dialog, Open(rfh, _, _))
@@ -438,7 +438,7 @@ TEST_F(SmsServiceTest, Cancel) {
 
   auto* dialog = new NiceMock<MockSmsDialog>();
 
-  EXPECT_CALL(*service.delegate(), CreateSmsDialog())
+  EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
       .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
   EXPECT_CALL(*dialog, Open(main_rfh(), _, _))
@@ -472,7 +472,7 @@ TEST_F(SmsServiceTest, TimeoutClosesDialog) {
 
   auto* dialog = new NiceMock<MockSmsDialog>();
 
-  EXPECT_CALL(*service.delegate(), CreateSmsDialog())
+  EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
       .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
   EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Return());
@@ -498,7 +498,7 @@ TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
 
   base::OnceClosure on_confirm_callback;
 
-  EXPECT_CALL(*service.delegate(), CreateSmsDialog())
+  EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
       .WillOnce(Return(ByMove(base::WrapUnique(dialog1))))
       .WillOnce(Return(ByMove(base::WrapUnique(dialog2))));
 
@@ -598,7 +598,7 @@ TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
 
     auto* dialog = new NiceMock<MockSmsDialog>();
 
-    EXPECT_CALL(*service.delegate(), CreateSmsDialog())
+    EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
         .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
     EXPECT_CALL(*dialog, Open(main_rfh(), _, _))
@@ -639,7 +639,7 @@ TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
     auto* dialog = new NiceMock<MockSmsDialog>();
     base::OnceClosure on_cancel_callback;
 
-    EXPECT_CALL(*service.delegate(), CreateSmsDialog())
+    EXPECT_CALL(*service.delegate(), CreateSmsDialog(_))
         .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
     EXPECT_CALL(*dialog, Open(main_rfh(), _, _))

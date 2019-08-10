@@ -14,6 +14,8 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "device/fido/fido_constants.h"
 
+#include "device/fido/bio/enrollment.h"
+
 namespace base {
 class ListValue;
 }
@@ -24,6 +26,7 @@ class FidoDiscoveryFactory;
 class CredentialManagementHandler;
 class SetPINRequestHandler;
 class ResetRequestHandler;
+class BioEnrollmentHandler;
 }  // namespace device
 
 namespace settings {
@@ -159,6 +162,52 @@ class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
 
   std::string callback_id_;
   base::WeakPtrFactory<SecurityKeysCredentialHandler> weak_factory_{this};
+};
+
+class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
+ public:
+  SecurityKeysBioEnrollmentHandler();
+  ~SecurityKeysBioEnrollmentHandler() override;
+
+ private:
+  enum class State {
+    kNone,
+    kStart,
+    kGatherPIN,
+    kReady,
+    kEnumerating,
+    kEnrolling,
+    kCancelling,
+  };
+
+  void RegisterMessages() override;
+  void Close() override;
+
+  void HandleStart(const base::ListValue* args);
+  void OnReady();
+  void OnError(device::FidoReturnCode code);
+  void OnGatherPIN(int64_t retries, base::OnceCallback<void(std::string)>);
+
+  void HandleProvidePIN(const base::ListValue* args);
+
+  void HandleEnumerate(const base::ListValue* args);
+  void OnHaveEnumeration(
+      device::CtapDeviceResponseCode,
+      base::Optional<std::map<std::vector<uint8_t>, std::string>>);
+
+  void HandleStartEnrolling(const base::ListValue* args);
+  void OnEnrollingResponse(device::BioEnrollmentSampleStatus, uint8_t);
+  void OnEnrollmentFinished(device::CtapDeviceResponseCode);
+
+  void HandleCancel(const base::ListValue* args);
+  void OnEnrollCancel(device::CtapDeviceResponseCode);
+
+  State state_ = State::kNone;
+  std::string callback_id_;
+  base::OnceCallback<void(std::string)> provide_pin_cb_;
+  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
+  std::unique_ptr<device::BioEnrollmentHandler> bio_;
+  base::WeakPtrFactory<SecurityKeysBioEnrollmentHandler> weak_factory_{this};
 };
 
 }  // namespace settings

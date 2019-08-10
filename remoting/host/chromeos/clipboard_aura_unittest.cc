@@ -8,10 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/event.pb.h"
@@ -56,7 +56,8 @@ class ClipboardAuraTest : public testing::Test {
  protected:
   void StopAndResetClipboard();
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   ClientClipboard* client_clipboard_;
   std::unique_ptr<ClipboardAura> clipboard_;
 };
@@ -69,8 +70,6 @@ void ClipboardAuraTest::SetUp() {
   ui::Clipboard::SetAllowedThreads(allowed_clipboard_threads);
 
   // Setup the clipboard.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      message_loop_.task_runner();
   client_clipboard_ = new ClientClipboard();
   clipboard_.reset(new ClipboardAura());
 
@@ -120,13 +119,13 @@ TEST_F(ClipboardAuraTest, MonitorClipboardChanges) {
                                             Eq("Test data.")))).Times(1);
 
   base::RunLoop run_loop;
-  message_loop_.task_runner()->PostDelayedTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&ClipboardAuraTest_MonitorClipboardChanges_Test::
                          StopAndResetClipboard,
                      base::Unretained(this)),
       TestTimeouts::tiny_timeout());
-  message_loop_.task_runner()->PostDelayedTask(
+  scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
   run_loop.Run();
 }

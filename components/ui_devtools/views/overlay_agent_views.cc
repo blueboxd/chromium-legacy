@@ -471,6 +471,9 @@ Response OverlayAgentViews::HighlightNode(int node_id, bool show_size) {
   if (!element)
     return Response::Error("No node found with that id");
 
+  if (element->type() == UIElementType::ROOT)
+    return Response::Error("Cannot highlight root node.");
+
   if (!layer_for_highlighting_) {
     layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
     layer_for_highlighting_->set_name("HighlightingLayer");

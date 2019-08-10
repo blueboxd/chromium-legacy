@@ -10,18 +10,21 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/containers/span.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/tabs/color_picker_view.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/models/simple_combobox_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_types.h"
@@ -30,17 +33,18 @@
 namespace {
 
 // Returns our hard-coded set of colors.
-const base::flat_map<std::string, SkColor>& GetColorPickerMap() {
-  static const base::NoDestructor<base::flat_map<std::string, SkColor>> map(
-      {{"Blue", gfx::kGoogleBlue600},
-       {"Red", gfx::kGoogleRed600},
-       {"Yellow", gfx::kGoogleYellow600},
-       {"Green", gfx::kGoogleGreen600},
-       {"Orange", gfx::kGoogleOrange600},
-       {"Pink", gfx::kGooglePink600},
-       {"Purple", gfx::kGooglePurple600},
-       {"Cyan", gfx::kGoogleCyan600}});
-  return *map;
+const std::vector<std::pair<SkColor, base::string16>>& GetColorPickerList() {
+  static const base::NoDestructor<
+      std::vector<std::pair<SkColor, base::string16>>>
+      list({{gfx::kGoogleBlue600, base::ASCIIToUTF16("Blue")},
+            {gfx::kGoogleRed600, base::ASCIIToUTF16("Red")},
+            {gfx::kGoogleYellow600, base::ASCIIToUTF16("Yellow")},
+            {gfx::kGoogleGreen600, base::ASCIIToUTF16("Green")},
+            {gfx::kGoogleOrange600, base::ASCIIToUTF16("Orange")},
+            {gfx::kGooglePink600, base::ASCIIToUTF16("Pink")},
+            {gfx::kGooglePurple600, base::ASCIIToUTF16("Purple")},
+            {gfx::kGoogleCyan600, base::ASCIIToUTF16("Cyan")}});
+  return *list;
 }
 
 }  // namespace
@@ -73,10 +77,9 @@ bool TabGroupEditorBubbleView::Accept() {
   if (title.empty())
     title = old_data.title();
 
-  const base::string16 color_name =
-      color_selector_->model()->GetItemAt(color_selector_->GetSelectedIndex());
+  base::Optional<SkColor> selected_color = color_selector_->GetSelectedColor();
   const SkColor color =
-      GetColorPickerMap().find(base::UTF16ToASCII(color_name))->second;
+      selected_color.has_value() ? selected_color.value() : old_data.color();
   TabGroupVisualData new_data(std::move(title), color);
 
   tab_controller_->SetVisualDataForGroup(group_, new_data);
@@ -108,19 +111,8 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
                       views::DISTANCE_UNRELATED_CONTROL_VERTICAL),
                   0));
 
-  std::vector<base::string16> color_names;
-  for (const auto& entry : GetColorPickerMap())
-    color_names.push_back(base::ASCIIToUTF16(entry.first));
-  auto combobox_model = std::make_unique<ui::SimpleComboboxModel>(color_names);
-
-  // Add the color selector with label above it.
-  base::string16 color_label_text = base::ASCIIToUTF16("New color");
-  AddChildView(std::make_unique<views::Label>(color_label_text,
-                                              views::style::CONTEXT_LABEL,
-                                              views::style::STYLE_PRIMARY));
-  color_selector_ = AddChildView(
-      std::make_unique<views::Combobox>(std::move(combobox_model)));
-  color_selector_->SetTooltipText(color_label_text);
+  color_selector_ =
+      AddChildView(std::make_unique<ColorPickerView>(GetColorPickerList()));
 
   // Layout vertically with margin collapsing. This allows us to use spacer
   // views with |DISTANCE_UNRELATED_CONTROL_VERTICAL| margins without worrying

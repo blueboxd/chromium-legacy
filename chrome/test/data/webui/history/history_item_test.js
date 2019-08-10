@@ -46,7 +46,7 @@ suite('<history-item> unit test', function() {
   });
 
   test('refocus checkbox on click', function() {
-    return PolymerTest.flushTasks().then(function() {
+    return test_util.flushTasks().then(function() {
       item.$['menu-button'].focus();
       assertEquals(item.$['menu-button'], item.root.activeElement);
 
@@ -76,7 +76,7 @@ suite('<history-item> integration test', function() {
 
   test('basic separator insertion', function() {
     element.addNewResults(TEST_HISTORY_RESULTS);
-    return PolymerTest.flushTasks().then(function() {
+    return test_util.flushTasks().then(function() {
       Polymer.dom.flush();
       // Check that the correct number of time gaps are inserted.
       const items = element.shadowRoot.querySelectorAll('history-item');
@@ -94,7 +94,7 @@ suite('<history-item> integration test', function() {
     element.addNewResults(SEARCH_HISTORY_RESULTS);
     element.searchedTerm = 'search';
 
-    return PolymerTest.flushTasks().then(function() {
+    return test_util.flushTasks().then(function() {
       Polymer.dom.flush();
       const items = element.shadowRoot.querySelectorAll('history-item');
 
@@ -106,7 +106,7 @@ suite('<history-item> integration test', function() {
 
   test('separator insertion after deletion', function() {
     element.addNewResults(TEST_HISTORY_RESULTS);
-    return PolymerTest.flushTasks().then(function() {
+    return test_util.flushTasks().then(function() {
       Polymer.dom.flush();
       const items = element.shadowRoot.querySelectorAll('history-item');
 
@@ -125,11 +125,11 @@ suite('<history-item> integration test', function() {
 
   test('remove bookmarks', function() {
     element.addNewResults(TEST_HISTORY_RESULTS);
-    return PolymerTest.flushTasks()
+    return test_util.flushTasks()
         .then(function() {
           element.set('historyData_.1.starred', true);
           element.set('historyData_.5.starred', true);
-          return PolymerTest.flushTasks();
+          return test_util.flushTasks();
         })
         .then(function() {
           items = element.shadowRoot.querySelectorAll('history-item');

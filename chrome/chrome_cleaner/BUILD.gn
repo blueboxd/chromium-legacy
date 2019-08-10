@@ -9,14 +9,16 @@ import("//testing/test.gni")
 # Generate a buildflag header so code can check is_official_chrome_cleaner_build.
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags =
-      [ "IS_OFFICIAL_CHROME_CLEANER_BUILD=$is_official_chrome_cleaner_build" ]
+  flags = [
+    "IS_INTERNAL_CHROME_CLEANER_BUILD=$is_internal_chrome_cleaner_build",
+    "IS_OFFICIAL_CHROME_CLEANER_BUILD=$is_official_chrome_cleaner_build",
+  ]
 }
 
 group("engine_definitions") {
-  if (is_official_chrome_cleaner_build) {
+  if (is_internal_chrome_cleaner_build) {
     deps = [
-      "//chrome_cleaner_internal:engine_definitions",
+      "${chrome_cleaner_internal_root}:engine_definitions",
     ]
   } else {
     deps = [
@@ -29,7 +31,7 @@ group("engine_definitions") {
 group("engine_target_factory") {
   if (is_internal_chrome_cleaner_build) {
     deps = [
-      "//chrome_cleaner_internal:engine_target_factory",
+      "${chrome_cleaner_internal_root}:engine_target_factory",
     ]
   } else {
     deps = [
@@ -61,7 +63,6 @@ static_library("other_executable_definitions") {
 test("chrome_cleaner_unittests") {
   sources = [
     "//chrome/chrome_cleaner/test/test_main.cc",
-    "//chrome/chrome_cleaner/test/unit_test_override_command_line.cc",
   ]
 
   deps = [
@@ -71,6 +72,7 @@ test("chrome_cleaner_unittests") {
     ":other_executable_definitions",
     "//base",
     "//base/test:test_support",
+    "//chrome/chrome_cleaner:buildflags",
     "//chrome/chrome_cleaner/crash:crashpad_lib",
     "//chrome/chrome_cleaner/ipc:sandbox",
     "//chrome/chrome_cleaner/logging:common",
@@ -91,9 +93,9 @@ test("chrome_cleaner_unittests") {
     "//chrome/chrome_cleaner/engines/controllers:unittest_sources",
     "//chrome/chrome_cleaner/engines/target:unittest_sources",
     "//chrome/chrome_cleaner/http:unittest_sources",
-    "//chrome/chrome_cleaner/mojom/typemaps:unittest_sources",
     "//chrome/chrome_cleaner/ipc:unittest_sources",
     "//chrome/chrome_cleaner/logging:unittest_sources",
+    "//chrome/chrome_cleaner/mojom/typemaps:unittest_sources",
     "//chrome/chrome_cleaner/os:unittest_sources",
     "//chrome/chrome_cleaner/parsers/broker:unittest_sources",
     "//chrome/chrome_cleaner/parsers/json_parser:unittest_sources",
@@ -105,20 +107,16 @@ test("chrome_cleaner_unittests") {
     "//chrome/chrome_cleaner/scanner:unittest_sources",
     "//chrome/chrome_cleaner/settings:unittest_sources",
     "//chrome/chrome_cleaner/strings:unittest_sources",
+    "//chrome/chrome_cleaner/test:integration_test_sources",
     "//chrome/chrome_cleaner/test:unittest_sources",
     "//chrome/chrome_cleaner/ui:unittest_sources",
     "//chrome/chrome_cleaner/zip_archiver:unittest_sources",
   ]
 
   if (is_internal_chrome_cleaner_build) {
-    deps += [ "//chrome_cleaner_internal:unittest_sources" ]
+    deps += [
+      "${chrome_cleaner_internal_root}:integration_test_sources",
+      "${chrome_cleaner_internal_root}:unittest_sources",
+    ]
   }
-
-  # TODO(crbug.com/949669): Add an integration test of the top-level
-  # executables. For now, just add a dependency on them to make sure they
-  # build.
-  data_deps = [
-    "//chrome/chrome_cleaner/executables:chrome_cleanup_tool",
-    "//chrome/chrome_cleaner/executables:software_reporter_tool",
-  ]
 }

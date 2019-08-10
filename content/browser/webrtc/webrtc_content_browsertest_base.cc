@@ -84,7 +84,7 @@ void WebRtcContentBrowserTestBase::MakeTypicalCall(
     ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL(html_file));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   ExecuteJavascriptAndWaitForOk(javascript);
 }

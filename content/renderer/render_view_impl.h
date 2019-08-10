@@ -516,8 +516,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void UpdateThemePrefs() {}
 #endif
 
-  bool ForwardToWidgetAndCheckIfHandled(const IPC::Message& message);
-
   // ---------------------------------------------------------------------------
   // ADDING NEW FUNCTIONS? Please keep private functions alphabetized and put
   // it in the same order in the .cc file as it was in the header.

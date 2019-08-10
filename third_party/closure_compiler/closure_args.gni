@@ -26,26 +26,28 @@ strict_error_checking_closure_args = [
 
 # Additional closure args for performing full checks.
 default_closure_args = strict_error_checking_closure_args + [
-                         "compilation_level=SIMPLE_OPTIMIZATIONS",
+  "compilation_level=SIMPLE_OPTIMIZATIONS",
 
-                         "extra_annotation_name=attribute",
-                         "extra_annotation_name=demo",
-                         "extra_annotation_name=element",
+  "extra_annotation_name=attribute",
+  "extra_annotation_name=demo",
+  "extra_annotation_name=element",
 
-                         "language_in=ECMASCRIPT_2017",
-                         "language_out=ECMASCRIPT5_STRICT",
+  "language_in=ECMASCRIPT_2017",
+  "language_out=ECMASCRIPT5_STRICT",
 
-                         "chrome_pass",
-                         "polymer_pass",
+  "chrome_pass",
+  "polymer_pass",
 
-                         "jscomp_off=duplicate",
+  "jscomp_off=duplicate",
 
-                         "module_resolution=BROWSER_WITH_TRANSFORMED_PREFIXES",
-                         "browser_resolver_prefix_replacements=\"chrome://resources/=../../ui/webui/resources/\"",
+  "js_module_root=../../ui/webui/resources/",
+  "js_module_root=gen/ui/webui/resources/",
 
-                         "js_module_root=../../ui/webui/resources/",
-                         "js_module_root=gen/ui/webui/resources/",
-                       ]
+  # chrome://resources maps to root, since both ../../ui/webui/resources and
+  # gen/ui/webui/resources are js_module_roots.
+  "module_resolution=BROWSER_WITH_TRANSFORMED_PREFIXES",
+  "browser_resolver_prefix_replacements=\"chrome://resources/=./\"",
+]
 
 polymer3_args = [
   "browser_resolver_prefix_replacements=\"../polymer/polymer_bundled.min.js=../polymer/polymer_bundled.js\"",

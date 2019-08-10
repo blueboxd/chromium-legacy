@@ -39,7 +39,7 @@ suite('<app-management-managed-apps>', () => {
     appDetailView =
         document.createElement('app-management-pwa-permission-view');
     replaceBody(appDetailView);
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
   });
 
   test('Uninstall button affected by policy', () => {

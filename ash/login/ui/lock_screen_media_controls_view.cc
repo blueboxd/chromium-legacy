@@ -194,7 +194,9 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   session_artwork_ = contents_view_->AddChildView(std::move(session_artwork));
 
   progress_ = contents_view_->AddChildView(
-      std::make_unique<media_message_center::MediaControlsProgressView>());
+      std::make_unique<media_message_center::MediaControlsProgressView>(
+          base::BindRepeating(&LockScreenMediaControlsView::SeekTo,
+                              base::Unretained(this))));
 
   // |button_row_| contains the buttons for controlling playback.
   auto button_row = std::make_unique<NonAccessibleView>();
@@ -410,13 +412,22 @@ void LockScreenMediaControlsView::MediaSessionPositionChanged(
   if (hide_controls_timer_->IsRunning())
     return;
 
+  position_ = position;
+
   if (!position.has_value()) {
-    progress_->SetVisible(false);
+    if (progress_->GetVisible()) {
+      progress_->SetVisible(false);
+      Layout();
+    }
     return;
   }
 
   progress_->UpdateProgress(*position);
-  progress_->SetVisible(true);
+
+  if (!progress_->GetVisible()) {
+    progress_->SetVisible(true);
+    Layout();
+  }
 }
 
 void LockScreenMediaControlsView::MediaControllerImageChanged(
@@ -562,6 +573,12 @@ void LockScreenMediaControlsView::SetIsPlaying(bool playing) {
   play_pause_button_->set_tag(static_cast<int>(action));
 
   UpdateActionButtonsVisibility();
+}
+
+void LockScreenMediaControlsView::SeekTo(double seek_progress) {
+  DCHECK(position_.has_value());
+
+  media_controller_remote_->SeekTo(seek_progress * position_->duration());
 }
 
 void LockScreenMediaControlsView::Dismiss() {

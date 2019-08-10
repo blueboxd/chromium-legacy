@@ -125,14 +125,15 @@ class EnableDisableSingleClientTest : public SyncTest {
       ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
     }
 
-    registered_types_ = GetSyncService(0)->GetRegisteredDataTypes();
-    multi_grouped_types_ = MultiGroupTypes(registered_types_);
+    registered_data_types_ = GetSyncService(0)->GetRegisteredDataTypes();
+    multi_grouped_types_ = MultiGroupTypes(registered_data_types_);
+    registered_selectable_types_ = GetRegisteredSelectableTypes(0);
   }
 
   ModelTypeSet ResolveGroup(UserSelectableType type) {
     ModelTypeSet grouped_types =
         syncer::SyncUserSettingsImpl::ResolvePreferredTypesForTesting({type});
-    grouped_types.RetainAll(registered_types_);
+    grouped_types.RetainAll(registered_data_types_);
     grouped_types.RemoveAll(ProxyTypes());
     return grouped_types;
   }
@@ -141,8 +142,9 @@ class EnableDisableSingleClientTest : public SyncTest {
     return Difference(input, multi_grouped_types_);
   }
 
-  ModelTypeSet registered_types_;
+  ModelTypeSet registered_data_types_;
   ModelTypeSet multi_grouped_types_;
+  UserSelectableTypeSet registered_selectable_types_;
 
  private:
   fake_server::EntityBuilderFactory entity_builder_factory_;
@@ -154,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
   // Setup sync with no enabled types.
   SetupTest(/*all_types_enabled=*/false);
 
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+  for (UserSelectableType type : registered_selectable_types_) {
     const ModelTypeSet grouped_types = ResolveGroup(type);
     for (ModelType single_grouped_type : WithoutMultiTypes(grouped_types)) {
       ASSERT_FALSE(ModelTypeExists(single_grouped_type))
@@ -187,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
   // Setup sync with no disabled types.
   SetupTest(/*all_types_enabled=*/true);
 
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+  for (UserSelectableType type : registered_selectable_types_) {
     const ModelTypeSet grouped_types = ResolveGroup(type);
     for (ModelType grouped_type : grouped_types) {
       ASSERT_TRUE(ModelTypeExists(grouped_type))
@@ -215,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   // Setup sync with no enabled types.
   SetupTest(/*all_types_enabled=*/false);
 
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+  for (UserSelectableType type : registered_selectable_types_) {
     const ModelTypeSet grouped_types = ResolveGroup(type);
     const ModelTypeSet single_grouped_types = WithoutMultiTypes(grouped_types);
     for (ModelType single_grouped_type : single_grouped_types) {
@@ -247,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   // Setup sync with no disabled types.
   SetupTest(/*all_types_enabled=*/true);
 
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+  for (UserSelectableType type : registered_selectable_types_) {
     const ModelTypeSet grouped_types = ResolveGroup(type);
     for (ModelType grouped_type : grouped_types) {
       ASSERT_TRUE(ModelTypeExists(grouped_type))
@@ -271,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   // Setup sync with no enabled types.
   SetupTest(/*all_types_enabled=*/false);
 
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
+  for (UserSelectableType type : registered_selectable_types_) {
     const ModelTypeSet single_grouped_types =
         WithoutMultiTypes(ResolveGroup(type));
     for (ModelType single_grouped_type : single_grouped_types) {
@@ -298,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableDisable) {
   // Enable all, and then disable immediately afterwards, before datatypes
   // have had the chance to finish startup (which usually involves task
   // posting).
-  GetClient(0)->EnableSyncForAllDatatypes();
+  GetClient(0)->EnableSyncForRegisteredDatatypes();
   GetClient(0)->DisableSyncForAllDatatypes();
 
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
@@ -332,9 +334,9 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, FastEnableDisableEnable) {
   // Enable all, and then disable+reenable immediately afterwards, before
   // datatypes have had the chance to finish startup (which usually involves
   // task posting).
-  GetClient(0)->EnableSyncForAllDatatypes();
+  GetClient(0)->EnableSyncForRegisteredDatatypes();
   GetClient(0)->DisableSyncForAllDatatypes();
-  GetClient(0)->EnableSyncForAllDatatypes();
+  GetClient(0)->EnableSyncForRegisteredDatatypes();
 
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
     for (ModelType model_type : ResolveGroup(type)) {

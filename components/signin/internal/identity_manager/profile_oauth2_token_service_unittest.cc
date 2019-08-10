@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service_delegate.h"
@@ -116,7 +116,9 @@ class ProfileOAuth2TokenServiceTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::
+          IO};  // net:: stuff needs IO message loop.
   network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
   FakeProfileOAuth2TokenServiceDelegate* delegate_ptr_ = nullptr;  // Not owned.
   std::unique_ptr<ProfileOAuth2TokenService> oauth2_service_;

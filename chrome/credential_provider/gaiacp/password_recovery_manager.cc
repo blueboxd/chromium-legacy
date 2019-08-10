@@ -62,13 +62,6 @@ const char kGenerateKeyPairResponseResourceIdParameterName[] = "resourceId";
 const char kEscrowServiceGetPrivateKeyPath[] = "/v1/getprivatekey";
 const char kGetPrivateKeyResponsePrivateKeyParameterName[] = "base64PrivateKey";
 
-constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
-#if defined(GOOGLE_CHROME_BUILD)
-    L"Chrome-GCPW-";
-#else
-    L"Chromium-GCPW-";
-#endif
-
 // Constants used during padding and unpadding given secret.
 constexpr char kPaddedPassword[] = "password";
 
@@ -648,16 +641,6 @@ PasswordRecoveryManager::PasswordRecoveryManager(
 
 PasswordRecoveryManager::~PasswordRecoveryManager() = default;
 
-HRESULT PasswordRecoveryManager::GetUserPasswordLsaStoreKey(
-    const base::string16& sid,
-    base::string16* store_key) {
-  DCHECK(store_key);
-  DCHECK(sid.size());
-
-  *store_key = kUserPasswordLsaStoreKeyPrefix + sid;
-  return S_OK;
-}
-
 HRESULT PasswordRecoveryManager::ClearUserRecoveryPassword(
     const base::string16& sid) {
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
@@ -667,12 +650,7 @@ HRESULT PasswordRecoveryManager::ClearUserRecoveryPassword(
     LOGFN(ERROR) << "ScopedLsaPolicy::Create hr=" << putHR(hr);
     return hr;
   }
-  base::string16 store_key;
-  HRESULT hr = GetUserPasswordLsaStoreKey(sid, &store_key);
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetUserPasswordLsaStoreKey hr=" << putHR(hr);
-    return hr;
-  }
+  base::string16 store_key = GetUserPasswordLsaStoreKey(sid);
   return policy->RemovePrivateData(store_key.c_str());
 }
 
@@ -702,24 +680,9 @@ HRESULT PasswordRecoveryManager::StoreWindowsPasswordIfNeeded(
   }
 
   // See if a password key is already stored in the LSA for this user.
-  base::string16 store_key;
-  hr = GetUserPasswordLsaStoreKey(sid, &store_key);
+  base::string16 store_key = GetUserPasswordLsaStoreKey(sid);
 
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetUserPasswordLsaStoreKey hr=" << putHR(hr);
-    return hr;
-  }
-
-  // Only check if a value already exists for the user's password. The call to
-  // RetrievePrivateData always succeeds if the value exists, regardless of
-  // the size of the buffer passed in. It will merely copy whatever it can
-  // into the buffer. In this case we don't care about the contents and
-  // just want to check the existence of a value.
-  wchar_t password_lsa_data[32];
-  hr = policy->RetrievePrivateData(store_key.c_str(), password_lsa_data,
-                                   base::size(password_lsa_data));
-  if (SUCCEEDED(hr)) {
-    SecurelyClearBuffer(password_lsa_data, sizeof(password_lsa_data));
+  if (policy->PrivateDataExists(store_key.c_str())) {
     return S_OK;
   }
 
@@ -770,17 +733,10 @@ HRESULT PasswordRecoveryManager::RecoverWindowsPasswordIfPossible(
   }
 
   // See if a password key is already stored in the LSA for this user.
-  base::string16 store_key;
-  HRESULT hr = GetUserPasswordLsaStoreKey(sid, &store_key);
-
-  if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetUserPasswordLsaStoreKey hr=" << putHR(hr);
-    return hr;
-  }
-
+  base::string16 store_key = GetUserPasswordLsaStoreKey(sid);
   wchar_t password_lsa_data[1024];
-  hr = policy->RetrievePrivateData(store_key.c_str(), password_lsa_data,
-                                   base::size(password_lsa_data));
+  HRESULT hr = policy->RetrievePrivateData(store_key.c_str(), password_lsa_data,
+                                           base::size(password_lsa_data));
 
   if (FAILED(hr))
     LOGFN(ERROR) << "RetrievePrivateData hr=" << putHR(hr);

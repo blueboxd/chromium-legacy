@@ -20,6 +20,7 @@
 #include "ash/tray_action/tray_action.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/display/display.h"
@@ -147,6 +148,14 @@ void LockScreen::FocusPreviousUser() {
 
 void LockScreen::ShowParentAccessDialog() {
   contents_view_->ShowParentAccessDialog(true);
+}
+
+void LockScreen::RequestSecurityTokenPin(SecurityTokenPinRequest request) {
+  contents_view_->RequestSecurityTokenPin(std::move(request));
+}
+
+void LockScreen::ClearSecurityTokenPinRequest() {
+  contents_view_->ClearSecurityTokenPinRequest();
 }
 
 void LockScreen::OnLockScreenNoteStateChanged(mojom::TrayActionState state) {

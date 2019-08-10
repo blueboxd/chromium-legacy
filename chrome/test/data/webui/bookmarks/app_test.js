@@ -70,7 +70,7 @@ suite('<bookmarks-app>', function() {
   });
 
   test('focus ring hides and restores', async function() {
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     const list = app.$$('bookmarks-list');
     const item = list.root.querySelectorAll('bookmarks-item')[0];
     const getFocusAttribute = () =>

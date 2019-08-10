@@ -16,9 +16,7 @@ namespace gfx {
 class Size;
 }
 
-namespace views {
-class Combobox;
-}
+class ColorPickerView;
 
 // A dialog for changing a tab group's visual parameters.
 //
@@ -46,8 +44,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
 
   views::Textfield* title_field_;
 
-  // TODO(crbug.com/989174): replace this with a color palette.
-  views::Combobox* color_selector_;
+  ColorPickerView* color_selector_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_EDITOR_BUBBLE_VIEW_H_

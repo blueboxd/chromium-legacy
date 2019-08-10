@@ -869,7 +869,8 @@ GpuImageDecodeCache::ImageData::ImageData(
     bool needs_mips,
     bool is_bitmap_backed,
     bool do_hardware_accelerated_decode,
-    bool is_yuv_format)
+    bool is_yuv_format,
+    SkYUVColorSpace yuv_cs)
     : paint_image_id(paint_image_id),
       mode(mode),
       size(size),
@@ -879,7 +880,14 @@ GpuImageDecodeCache::ImageData::ImageData(
       needs_mips(needs_mips),
       is_bitmap_backed(is_bitmap_backed),
       is_yuv(is_yuv_format),
-      decode(is_bitmap_backed, do_hardware_accelerated_decode) {}
+      decode(is_bitmap_backed, do_hardware_accelerated_decode) {
+  // Only fill out the base::Optional |yuv_color_space| if doing YUV decoding.
+  // Otherwise it was filled out with a default "identity" value by the decoder.
+  if (is_yuv) {
+    DCHECK_LE(yuv_cs, SkYUVColorSpace::kLastEnum_SkYUVColorSpace);
+    yuv_color_space = yuv_cs;
+  }
+}
 
 GpuImageDecodeCache::ImageData::~ImageData() {
   // We should never delete ImageData while it is in use or before it has been
@@ -2027,6 +2035,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
 
     // Non-hardware-accelerated path.
     if (image_data->is_yuv) {
+      DCHECK(image_data->yuv_color_space);
       SkPixmap y_pixmap;
       SkPixmap u_pixmap;
       SkPixmap v_pixmap;
@@ -2035,14 +2044,9 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
           !image_data->decode.v_image()->peekPixels(&v_pixmap)) {
         return;
       }
-      // WebP documentation says to use Rec 601 for converting to RGB.
-      // TODO(crbug.com/915707): Change QueryYUVA8 to set the colorspace based
-      // on image type.
-      SkYUVColorSpace yuva_color_space =
-          SkYUVColorSpace::kRec601_SkYUVColorSpace;
       ClientImageTransferCacheEntry image_entry(
           &y_pixmap, &u_pixmap, &v_pixmap, decoded_target_colorspace.get(),
-          yuva_color_space, image_data->needs_mips);
+          image_data->yuv_color_space.value(), image_data->needs_mips);
       InsertTransferCacheEntry(image_entry, image_data);
     } else {
       SkPixmap pixmap;
@@ -2066,6 +2070,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
       image_data->needs_mips ? GrMipMapped::kYes : GrMipMapped::kNo;
 
   if (image_data->is_yuv) {
+    DCHECK(image_data->yuv_color_space.has_value());
     // Grab a reference to our decoded image. For the kCpu path, we will use
     // this directly as our "uploaded" data.
     sk_sp<SkImage> uploaded_y_image = image_data->decode.y_image();
@@ -2076,13 +2081,6 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     if (image_data->mode == DecodedDataMode::kGpu) {
       DCHECK(!use_transfer_cache_);
       base::AutoUnlock unlock(lock_);
-
-      // WebP documentation says to use Rec 601 for converting to RGB.
-      // TODO(crbug.com/915707): Change QueryYUVA8 to set the colorspace based
-      // on image type.
-      SkYUVColorSpace yuva_color_space =
-          SkYUVColorSpace::kRec601_SkYUVColorSpace;
-
       uploaded_y_image = uploaded_y_image->makeTextureImage(
           context_->GrContext(), nullptr /* colorspace */, image_needs_mips);
       uploaded_u_image = uploaded_u_image->makeTextureImage(
@@ -2098,8 +2096,9 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
       size_t image_height = uploaded_y_image->height();
       uploaded_image = CreateImageFromYUVATexturesInternal(
           uploaded_y_image.get(), uploaded_u_image.get(),
-          uploaded_v_image.get(), image_width, image_height, &yuva_color_space,
-          color_space, decoded_target_colorspace);
+          uploaded_v_image.get(), image_width, image_height,
+          image_data->yuv_color_space.value(), color_space,
+          decoded_target_colorspace);
     }
 
     // At-raster may have decoded this while we were unlocked. If so, ignore our
@@ -2300,13 +2299,16 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   // If draw_image.paint_image().IsEligibleForAcceleratedDecoding() returns
   // true, the image should not be backed by a bitmap.
   DCHECK(!do_hardware_accelerated_decode || !is_bitmap_backed);
-
   SkYUVASizeInfo target_yuva_size_info;
-  const bool is_yuv = !do_hardware_accelerated_decode &&
-                      draw_image.paint_image().IsYuv(&target_yuva_size_info) &&
-                      mode != DecodedDataMode::kCpu &&
-                      !image_larger_than_max_texture;
-
+  // We fill out a default value for |yuv_color_space| but only fill out the
+  // base::Optional member in ImageData if it is YUV.
+  SkYUVColorSpace yuv_color_space = SkYUVColorSpace::kIdentity_SkYUVColorSpace;
+  const bool is_yuv =
+      !do_hardware_accelerated_decode &&
+      draw_image.paint_image().IsYuv(&target_yuva_size_info,
+                                     nullptr /* plane_indices */,
+                                     &yuv_color_space) &&
+      mode != DecodedDataMode::kCpu && !image_larger_than_max_texture;
   // TODO(crbug.com/910276): Change after alpha support.
   if (is_yuv) {
     size_t y_size_bytes = image_info.width() * image_info.height();
@@ -2327,11 +2329,12 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
     data_size = y_size_bytes + u_size_bytes + v_size_bytes;
   }
 
-  return base::WrapRefCounted(new ImageData(
-      draw_image.paint_image().stable_id(), mode, data_size,
-      draw_image.target_color_space(),
-      CalculateDesiredFilterQuality(draw_image), upload_scale_mip_level,
-      needs_mips, is_bitmap_backed, do_hardware_accelerated_decode, is_yuv));
+  return base::WrapRefCounted(
+      new ImageData(draw_image.paint_image().stable_id(), mode, data_size,
+                    draw_image.target_color_space(),
+                    CalculateDesiredFilterQuality(draw_image),
+                    upload_scale_mip_level, needs_mips, is_bitmap_backed,
+                    do_hardware_accelerated_decode, is_yuv, yuv_color_space));
 }
 
 void GpuImageDecodeCache::WillAddCacheEntry(const DrawImage& draw_image) {
@@ -2770,13 +2773,12 @@ sk_sp<SkImage> GpuImageDecodeCache::CreateImageFromYUVATexturesInternal(
     const SkImage* uploaded_v_image,
     const size_t image_width,
     const size_t image_height,
-    const SkYUVColorSpace* yuva_color_space,
+    const SkYUVColorSpace& yuv_color_space,
     sk_sp<SkColorSpace> target_color_space,
     sk_sp<SkColorSpace> decoded_color_space) const {
   DCHECK(uploaded_y_image);
   DCHECK(uploaded_u_image);
   DCHECK(uploaded_v_image);
-  DCHECK(yuva_color_space);
   GrSurfaceOrigin origin_temp = kTopLeft_GrSurfaceOrigin;
   GrBackendTexture yuv_textures[3]{};
   yuv_textures[0] = uploaded_y_image->getBackendTexture(false);
@@ -2795,7 +2797,7 @@ sk_sp<SkImage> GpuImageDecodeCache::CreateImageFromYUVATexturesInternal(
   }
 
   sk_sp<SkImage> yuva_image = SkImage::MakeFromYUVATextures(
-      context_->GrContext(), *yuva_color_space, yuv_textures, indices,
+      context_->GrContext(), yuv_color_space, yuv_textures, indices,
       SkISize::Make(image_width, image_height), origin_temp,
       std::move(decoded_color_space));
   if (target_color_space)
@@ -2872,10 +2874,6 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
       return;
     }
 
-    // WebP documentation says to use Rec 601 for converting to RGB.
-    // TODO(crbug.com/915707): Change QueryYUVA8 to set the colorspace based
-    // on image type.
-    SkYUVColorSpace yuva_color_space = SkYUVColorSpace::kRec601_SkYUVColorSpace;
     size_t width = image_y_with_mips_owned->width();
     size_t height = image_y_with_mips_owned->height();
     sk_sp<SkColorSpace> color_space =
@@ -2885,11 +2883,13 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
             : nullptr;
     sk_sp<SkColorSpace> decoded_color_space =
         ColorSpaceForImageDecode(draw_image, image_data->mode);
+    DCHECK(image_data->yuv_color_space.has_value());
     sk_sp<SkImage> yuv_image_with_mips_owned =
         CreateImageFromYUVATexturesInternal(
             image_y_with_mips_owned.get(), image_u_with_mips_owned.get(),
-            image_v_with_mips_owned.get(), width, height, &yuva_color_space,
-            color_space, decoded_color_space);
+            image_v_with_mips_owned.get(), width, height,
+            image_data->yuv_color_space.value(), color_space,
+            decoded_color_space);
     // In case of lost context
     if (!yuv_image_with_mips_owned) {
       DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";

@@ -88,7 +88,7 @@ void ExternalDateTimeChooser::OpenDateTimeChooser(
 
   auto response_callback = WTF::Bind(&ExternalDateTimeChooser::ResponseHandler,
                                      WrapPersistent(this));
-  GetDateTimeChooser(frame)->OpenDateTimeDialog(
+  GetDateTimeChooser(frame).OpenDateTimeDialog(
       std::move(date_time_dialog_value), std::move(response_callback));
 }
 
@@ -105,11 +105,15 @@ bool ExternalDateTimeChooser::IsShowingDateTimeChooserUI() const {
   return client_;
 }
 
-mojom::blink::DateTimeChooser* ExternalDateTimeChooser::GetDateTimeChooser(
+mojom::blink::DateTimeChooser& ExternalDateTimeChooser::GetDateTimeChooser(
     LocalFrame* frame) {
-  if (!date_time_chooser_)
-    frame->GetInterfaceProvider().GetInterface(&date_time_chooser_);
-  return date_time_chooser_.get();
+  if (!date_time_chooser_) {
+    frame->GetInterfaceProvider().GetInterface(
+        date_time_chooser_.BindNewPipeAndPassReceiver());
+  }
+
+  DCHECK(date_time_chooser_);
+  return *date_time_chooser_.get();
 }
 
 void ExternalDateTimeChooser::DidChooseValue(double value) {

@@ -202,6 +202,43 @@ source_set("test_util") {
 
 # Targets that contain tests.
 
+# These tests run the executables and test their behaviour. They're run as part
+# of chrome_cleaner_unittests so that we don't need a separate test binary for
+# the integration tests.
+source_set("integration_test_sources") {
+  testonly = true
+
+  sources = [
+    "cleaner_test.cc",
+    "secure_dll_loading_test.cc",
+  ]
+
+  deps = [
+    ":test_util",
+    "//base",
+    "//base/test:test_support",
+    "//chrome/chrome_cleaner:buildflags",
+    "//chrome/chrome_cleaner/constants:common_strings",
+    "//chrome/chrome_cleaner/logging/proto:chrome_cleaner_report_proto",
+    "//chrome/chrome_cleaner/logging/proto:reporter_logs_proto",
+    "//chrome/chrome_cleaner/logging/proto:shared_data_proto",
+    "//chrome/chrome_cleaner/os:common_os",
+    "//chrome/chrome_cleaner/pup_data:pup_data_base",
+    "//chrome/chrome_cleaner/pup_data:test_uws",
+    "//chrome/chrome_cleaner/zip_archiver:common",
+    "//components/chrome_cleaner/public/constants",
+    "//components/chrome_cleaner/test:test_name_helper",
+    "//testing/gtest",
+  ]
+
+  data_deps = [
+    # Binaries that will be loaded by the tests.
+    ":empty_dll",
+    "//chrome/chrome_cleaner/executables:chrome_cleanup_tool",
+    "//chrome/chrome_cleaner/executables:software_reporter_tool",
+  ]
+}
+
 source_set("unittest_sources") {
   testonly = true
 

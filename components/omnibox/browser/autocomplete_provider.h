@@ -290,6 +290,8 @@ class AutocompleteProvider
  protected:
   friend class base::RefCountedThreadSafe<AutocompleteProvider>;
   FRIEND_TEST_ALL_PREFIXES(BookmarkProviderTest, InlineAutocompletion);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           DemoteOnDeviceSearchSuggestions);
 
   typedef std::pair<bool, base::string16> FixupReturn;
 

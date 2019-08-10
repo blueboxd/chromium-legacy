@@ -190,12 +190,17 @@ void DeviceService::OnStart() {
 
 #if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
     defined(OS_MACOSX)
-  // SerialPortManagerImpl must live on a thread that is allowed to do
-  // blocking IO.
   serial_port_manager_ = std::make_unique<SerialPortManagerImpl>(
       io_task_runner_, base::ThreadTaskRunnerHandle::Get());
+#if defined(OS_MACOSX)
+  // On macOS the SerialDeviceEnumerator needs to run on the UI thread so that
+  // it has access to a CFRunLoop where it can register a notification source.
+  serial_port_manager_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+#else
+  // On other platforms it must be allowed to do blocking IO.
   serial_port_manager_task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+#endif
   registry_.AddInterface<mojom::SerialPortManager>(
       base::BindRepeating(&SerialPortManagerImpl::Bind,
                           base::Unretained(serial_port_manager_.get())),

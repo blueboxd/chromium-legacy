@@ -21,6 +21,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/challenge_response_auth_keys_loader.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/security_token_pin_dialog_host_ash_impl.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/challenge_response_key.h"
@@ -285,6 +286,8 @@ class ScreenLocker : public AuthStatusConsumer,
   base::OneShotTimer update_fingerprint_state_timer_;
 
   ChallengeResponseAuthKeysLoader challenge_response_auth_keys_loader_;
+
+  SecurityTokenPinDialogHostAshImpl security_token_pin_dialog_host_ash_impl_;
 
   base::WeakPtrFactory<ScreenLocker> weak_factory_;
 

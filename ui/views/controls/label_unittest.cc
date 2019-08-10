@@ -944,6 +944,33 @@ TEST_F(LabelTest, DefaultDirectionalityIsFromText) {
             rtl.GetTextDirectionForTesting());
 }
 
+TEST_F(LabelTest, IsDisplayTextTruncated) {
+  const base::string16 text = ASCIIToUTF16("A random string");
+  label()->SetText(text);
+
+  gfx::Size zero_size;
+  label()->SetElideBehavior(gfx::ELIDE_TAIL);
+  label()->SetBoundsRect(gfx::Rect(zero_size));
+  EXPECT_TRUE(label()->IsDisplayTextTruncated());
+
+  label()->SetElideBehavior(gfx::NO_ELIDE);
+  EXPECT_TRUE(label()->IsDisplayTextTruncated());
+
+  gfx::Size minimum_size(1, 1);
+  label()->SetBoundsRect(gfx::Rect(minimum_size));
+  EXPECT_TRUE(label()->IsDisplayTextTruncated());
+
+  gfx::Size enough_size(100, 100);
+  label()->SetBoundsRect(gfx::Rect(enough_size));
+  EXPECT_FALSE(label()->IsDisplayTextTruncated());
+
+  const base::string16 empty_text;
+  label()->SetText(empty_text);
+  EXPECT_FALSE(label()->IsDisplayTextTruncated());
+  label()->SetBoundsRect(gfx::Rect(zero_size));
+  EXPECT_FALSE(label()->IsDisplayTextTruncated());
+}
+
 TEST_F(LabelSelectionTest, Selectable) {
   // By default, labels don't support text selection.
   EXPECT_FALSE(label()->GetSelectable());

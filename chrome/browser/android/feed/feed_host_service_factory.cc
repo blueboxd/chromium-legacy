@@ -125,7 +125,7 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
   auto logging_metrics = std::make_unique<FeedLoggingMetrics>(
       base::BindRepeating(&FeedHistoryHelper::CheckURL,
                           std::move(history_helper)),
-      base::DefaultClock::GetInstance());
+      base::DefaultClock::GetInstance(), scheduler_host.get());
 
   return new FeedHostService(
       std::move(logging_metrics), std::move(networking_host),

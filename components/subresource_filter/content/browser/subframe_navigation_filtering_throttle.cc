@@ -54,17 +54,29 @@ SubframeNavigationFilteringThrottle::~SubframeNavigationFilteringThrottle() {
 
 content::NavigationThrottle::ThrottleCheckResult
 SubframeNavigationFilteringThrottle::WillStartRequest() {
-  return DeferToCalculateLoadPolicy();
+  return MaybeDeferToCalculateLoadPolicy();
 }
 
 content::NavigationThrottle::ThrottleCheckResult
 SubframeNavigationFilteringThrottle::WillRedirectRequest() {
-  return DeferToCalculateLoadPolicy();
+  return MaybeDeferToCalculateLoadPolicy();
 }
 
 content::NavigationThrottle::ThrottleCheckResult
 SubframeNavigationFilteringThrottle::WillProcessResponse() {
   DCHECK_NE(load_policy_, LoadPolicy::DISALLOW);
+
+  // Load policy notifications should go out by WillProcessResponse,
+  // defer if we are still performing any ruleset checks. If we are here,
+  // and there are outstanding load policy calculations, we are in dry run
+  // mode.
+  if (pending_load_policy_calculations_ > 0) {
+    DCHECK((parent_frame_filter_->activation_state().activation_level ==
+            mojom::ActivationLevel::kDryRun));
+    DeferStart(DeferStage::kWillProcessResponse);
+    return DEFER;
+  }
+
   NotifyLoadPolicy();
   return PROCEED;
 }
@@ -73,46 +85,95 @@ const char* SubframeNavigationFilteringThrottle::GetNameForLogging() {
   return "SubframeNavigationFilteringThrottle";
 }
 
+void SubframeNavigationFilteringThrottle::HandleDisallowedLoad() {
+  if (parent_frame_filter_->activation_state().enable_logging) {
+    std::string console_message = base::StringPrintf(
+        kDisallowSubframeConsoleMessageFormat,
+        navigation_handle()->GetURL().possibly_invalid_spec().c_str());
+    navigation_handle()->GetWebContents()->GetMainFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError, console_message);
+  }
+
+  parent_frame_filter_->ReportDisallowedLoad();
+}
+
 content::NavigationThrottle::ThrottleCheckResult
-SubframeNavigationFilteringThrottle::DeferToCalculateLoadPolicy() {
+SubframeNavigationFilteringThrottle::MaybeDeferToCalculateLoadPolicy() {
   DCHECK_NE(load_policy_, LoadPolicy::DISALLOW);
   if (load_policy_ == LoadPolicy::WOULD_DISALLOW)
     return PROCEED;
+
+  pending_load_policy_calculations_ += 1;
   parent_frame_filter_->GetLoadPolicyForSubdocument(
       navigation_handle()->GetURL(),
       base::BindOnce(
           &SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy,
           weak_ptr_factory_.GetWeakPtr()));
-  last_defer_timestamp_ = base::TimeTicks::Now();
-  return DEFER;
+
+  // If the embedder document has activation enabled, we calculate frame load
+  // policy before proceeding with navigation as filtered navigations are not
+  // allowed to get a response. As a result, we must defer while
+  // we wait for the ruleset check to complete and pass handling the navigation
+  // decision to the callback.
+  if (parent_frame_filter_->activation_state().activation_level ==
+      mojom::ActivationLevel::kEnabled) {
+    DeferStart(DeferStage::kWillStartOrRedirectRequest);
+    return DEFER;
+  }
+
+  // Otherwise, issue the ruleset request in parallel as an optimization.
+  return PROCEED;
 }
 
 void SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy(
     LoadPolicy policy) {
+  load_policy_ = MoreRestrictiveLoadPolicy(policy, load_policy_);
+  pending_load_policy_calculations_ -= 1;
+
+  // Callback is not responsible for handling navigation if we are not deferred.
+  if (defer_stage_ == DeferStage::kNotDeferring)
+    return;
+
+  // When we are deferred, callback is not responsible for handling navigation
+  // if there are still outstanding load policy calculations.
+  if (pending_load_policy_calculations_ > 0) {
+    // We defer waiting for each load policy calculations when the embedder
+    // document has activation enabled.
+    DCHECK(parent_frame_filter_->activation_state().activation_level !=
+           mojom::ActivationLevel::kEnabled);
+    return;
+  }
+
+  // If we are deferred and there are no pending load policy calculations,
+  // handle the deferred navigation.
+  DCHECK(defer_stage_ == DeferStage::kWillProcessResponse ||
+         defer_stage_ == DeferStage::kWillStartOrRedirectRequest);
   DCHECK(!last_defer_timestamp_.is_null());
-  load_policy_ = policy;
+  bool deferring_response = defer_stage_ == DeferStage::kWillProcessResponse;
   total_defer_time_ += base::TimeTicks::Now() - last_defer_timestamp_;
-
-  if (policy == LoadPolicy::DISALLOW) {
-    if (parent_frame_filter_->activation_state().enable_logging) {
-      std::string console_message = base::StringPrintf(
-          kDisallowSubframeConsoleMessageFormat,
-          navigation_handle()->GetURL().possibly_invalid_spec().c_str());
-      navigation_handle()
-          ->GetWebContents()
-          ->GetMainFrame()
-          ->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
-                                console_message);
-    }
-
-    parent_frame_filter_->ReportDisallowedLoad();
-    // Other load policies will be reported in WillProcessResponse.
+  defer_stage_ = DeferStage::kNotDeferring;
+  if (deferring_response) {
     NotifyLoadPolicy();
+    Resume();
+    return;
+  }
 
+  // Otherwise, we deferred at start/redirect time. Either cancel navigation
+  // or resume here according to load policy.
+  if (load_policy_ == LoadPolicy::DISALLOW) {
+    HandleDisallowedLoad();
+    NotifyLoadPolicy();
     CancelDeferredNavigation(BLOCK_REQUEST_AND_COLLAPSE);
   } else {
     Resume();
   }
+}
+
+void SubframeNavigationFilteringThrottle::DeferStart(DeferStage stage) {
+  DCHECK(defer_stage_ == DeferStage::kNotDeferring);
+  DCHECK(stage != DeferStage::kNotDeferring);
+  defer_stage_ = stage;
+  last_defer_timestamp_ = base::TimeTicks::Now();
 }
 
 void SubframeNavigationFilteringThrottle::NotifyLoadPolicy() const {

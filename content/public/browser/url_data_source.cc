@@ -116,4 +116,8 @@ bool URLDataSource::IsGzipped(const std::string& path) {
 
 void URLDataSource::DisablePolymer2ForHost(const std::string& host) {}
 
+bool URLDataSource::ShouldReplaceI18nInJS() {
+  return false;
+}
+
 }  // namespace content

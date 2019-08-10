@@ -19,6 +19,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -81,9 +82,6 @@ struct NET_EXPORT ServerNetworkStats {
 typedef std::vector<AlternativeService> AlternativeServiceVector;
 typedef std::vector<AlternativeServiceInfo> AlternativeServiceInfoVector;
 
-// Store at most 300 MRU SupportsSpdyServerHostPortPairs in memory and disk.
-const int kMaxSupportsSpdyServerEntries = 300;
-
 // Store at most 200 MRU AlternateProtocolHostPortPairs in memory and disk.
 const int kMaxAlternateProtocolEntries = 200;
 
@@ -97,14 +95,6 @@ const int kMaxRecentlyBrokenAlternativeServiceEntries = 200;
 
 // Store at most 5 MRU QUIC servers by default. This is mainly used by cronet.
 const int kDefaultMaxQuicServerEntries = 5;
-
-// Stores flattened representation of servers (scheme, host, port) and whether
-// or not they support SPDY.
-class SpdyServersMap : public base::MRUCache<std::string, bool> {
- public:
-  SpdyServersMap()
-      : base::MRUCache<std::string, bool>(kMaxSupportsSpdyServerEntries) {}
-};
 
 class AlternativeServiceMap
     : public base::MRUCache<url::SchemeHostPort, AlternativeServiceInfoVector> {
@@ -136,6 +126,9 @@ typedef base::MRUCache<quic::QuicServerId, std::string> QuicServerInfoMap;
 class NET_EXPORT HttpServerProperties
     : public BrokenAlternativeServices::Delegate {
  public:
+  // Store at most 500 MRU ServerInfos in memory and disk.
+  static const int kMaxServerInfoEntries = 500;
+
   // Provides an interface to interact with persistent preferences storage
   // implemented by the embedder. The prefs are assumed not to have been loaded
   // before HttpServerPropertiesManager construction.
@@ -158,6 +151,44 @@ class NET_EXPORT HttpServerProperties
     // invoked even if prefs fail to load. Will only be called once by the
     // HttpServerPropertiesManager.
     virtual void WaitForPrefLoad(base::OnceClosure pref_loaded_callback) = 0;
+  };
+
+  // Contains metadata about a particular server.
+  struct NET_EXPORT ServerInfo {
+    ServerInfo();
+    ServerInfo(const ServerInfo& server_info);
+    ServerInfo(ServerInfo&& server_info);
+    ~ServerInfo();
+
+    // IMPORTANT:  When adding a field here, be sure to update
+    // HttpServerProperties::OnServerInfoLoaded() as well as
+    // HttpServerPropertiesManager to correctly load/save the from/to the pref
+    // store.
+
+    // Whether or not a server is known to support H2/SPDY. False indicates
+    // known lack of support, true indicates known support, and not set
+    // indicates unknown. The difference between false and not set only matters
+    // when loading from disk, when an initialized false value will take
+    // priority over a not set value.
+    base::Optional<bool> supports_spdy;
+
+    // TODO(mmenke):  Add a base::Optional<AlternativeServiceInfoVector> and
+    // base::Optional<ServerNetworkStats>, and probably other per-server data as
+    // well (Http11ServerHostPortSet, QUIC server info).
+  };
+
+  class NET_EXPORT ServerInfoMap
+      : public base::MRUCache<url::SchemeHostPort, ServerInfo> {
+   public:
+    ServerInfoMap();
+
+    // If there's an entry corresponding to |key|, brings that entry to the
+    // front and returns an iterator to it. Otherwise, inserts an empty
+    // ServerInfo using |key|, and returns an iterator to it.
+    iterator GetOrPut(const url::SchemeHostPort& key);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ServerInfoMap);
   };
 
   // If a |pref_delegate| is specified, it will be used to read/write the
@@ -193,7 +224,7 @@ class NET_EXPORT HttpServerProperties
 
   // Add |server| into the persistent store. Should only be called from IO
   // thread.
-  void SetSupportsSpdy(const url::SchemeHostPort& server, bool support_spdy);
+  void SetSupportsSpdy(const url::SchemeHostPort& server, bool supports_spdy);
 
   // Returns true if |server| has required HTTP/1.1 via HTTP/2 error code.
   bool RequiresHTTP11(const HostPortPair& server);
@@ -324,9 +355,9 @@ class NET_EXPORT HttpServerProperties
   // Test-only routines that call the methods used to load the specified
   // field(s) from a prefs file. Unlike OnPrefsLoaded(), these may be invoked
   // multiple times.
-  void OnSpdyServersLoadedForTesting(
-      std::unique_ptr<SpdyServersMap> spdy_servers_map) {
-    OnSpdyServersLoaded(std::move(spdy_servers_map));
+  void OnServerInfoLoadedForTesting(
+      std::unique_ptr<ServerInfoMap> server_info_map) {
+    OnServerInfoLoaded(std::move(server_info_map));
   }
   void OnAlternativeServiceServersLoadedForTesting(
       std::unique_ptr<AlternativeServiceMap> alternate_protocol_servers) {
@@ -358,8 +389,8 @@ class NET_EXPORT HttpServerProperties
     return GetCanonicalSuffix(host);
   }
 
-  const SpdyServersMap& spdy_servers_map_for_testing() const {
-    return spdy_servers_map_;
+  const ServerInfoMap& server_info_map_for_testing() const {
+    return server_info_map_;
   }
 
   // TODO(mmenke): Look into removing this.
@@ -407,7 +438,7 @@ class NET_EXPORT HttpServerProperties
   const std::string* GetCanonicalSuffix(const std::string& host) const;
 
   void OnPrefsLoaded(
-      std::unique_ptr<SpdyServersMap> spdy_servers_map,
+      std::unique_ptr<ServerInfoMap> server_info_map,
       std::unique_ptr<AlternativeServiceMap> alternative_service_map,
       std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
       const IPAddress& last_quic_address,
@@ -420,7 +451,7 @@ class NET_EXPORT HttpServerProperties
   // These methods are called by OnPrefsLoaded to handle merging properties
   // loaded from prefs with what has been learned while waiting for prefs to
   // load.
-  void OnSpdyServersLoaded(std::unique_ptr<SpdyServersMap> spdy_servers_map);
+  void OnServerInfoLoaded(std::unique_ptr<ServerInfoMap> server_info_map);
   void OnAlternativeServiceServersLoaded(
       std::unique_ptr<AlternativeServiceMap> alternate_protocol_servers);
   void OnServerNetworkStatsLoaded(
@@ -458,7 +489,7 @@ class NET_EXPORT HttpServerProperties
   // Used to load/save properties from/to preferences. May be nullptr.
   std::unique_ptr<HttpServerPropertiesManager> properties_manager_;
 
-  SpdyServersMap spdy_servers_map_;
+  ServerInfoMap server_info_map_;
   Http11ServerHostPortSet http11_servers_;
 
   AlternativeServiceMap alternative_service_map_;

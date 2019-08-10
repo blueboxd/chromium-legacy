@@ -413,8 +413,7 @@ android_aar_prebuilt("google_play_services_cast_framework_java") {
     ":google_play_services_cast_java",
   ]
 
-  # Removing all resources from cast framework as they are unused bloat.
-  strip_resources = true
+  # Cannot get rid of cast framework resources: crbug.com/985139.
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

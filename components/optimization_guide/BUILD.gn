@@ -39,6 +39,10 @@ static_library("optimization_guide") {
     "url_pattern_with_wildcards.h",
   ]
 
+  public_deps = [
+    "//third_party/re2",
+  ]
+
   deps = [
     "//base",
     "//components/leveldb_proto",

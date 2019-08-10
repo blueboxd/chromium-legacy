@@ -5,23 +5,27 @@
 #ifndef DEVICE_GAMEPAD_DUALSHOCK4_CONTROLLER_WIN_
 #define DEVICE_GAMEPAD_DUALSHOCK4_CONTROLLER_WIN_
 
+#include "base/memory/weak_ptr.h"
 #include "base/win/scoped_handle.h"
 #include "device/gamepad/dualshock4_controller_base.h"
 
 namespace device {
 
-class Dualshock4ControllerWin : public Dualshock4ControllerBase {
+class Dualshock4ControllerWin final : public Dualshock4ControllerBase {
  public:
   explicit Dualshock4ControllerWin(HANDLE device_handle);
   ~Dualshock4ControllerWin() override;
 
-  // Close the HID handle.
+  // AbstractHapticGamepad implementation.
   void DoShutdown() override;
+  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
 
+  // Dualshock4ControllerBase implementation.
   size_t WriteOutputReport(void* report, size_t report_length) override;
 
  private:
   base::win::ScopedHandle hid_handle_;
+  base::WeakPtrFactory<Dualshock4ControllerWin> weak_factory_{this};
 };
 
 }  // namespace device

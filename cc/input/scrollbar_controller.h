@@ -12,7 +12,6 @@
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 
 namespace cc {
-
 // This class is responsible for hit testing composited scrollbars, event
 // handling and creating gesture scroll deltas.
 class CC_EXPORT ScrollbarController {
@@ -26,11 +25,11 @@ class CC_EXPORT ScrollbarController {
       const gfx::PointF position_in_widget);
   InputHandlerPointerResult HandleMouseUp(const gfx::PointF position_in_widget);
 
-  // scroll_offset is the delta from the initial click. This is needed to
-  // determine whether we should set up the autoscrolling in the forwards or the
-  // backwards direction and the speed of the animation.
-  void StartAutoScrollAnimation(gfx::ScrollOffset scroll_offset,
-                                ElementId element_id);
+  // "velocity" here is calculated based on the initial scroll delta (See
+  // InitialDeltaToAutoscrollVelocity). This value carries a "sign" which is
+  // needed to determine whether we should set up the autoscrolling in the
+  // forwards or the backwards direction.
+  void StartAutoScrollAnimation(float velocity, ElementId element_id);
   bool ScrollbarScrollIsActive() { return scrollbar_scroll_is_active_; }
   ScrollbarOrientation orientation() {
     return currently_captured_scrollbar_->orientation();
@@ -39,6 +38,26 @@ class CC_EXPORT ScrollbarController {
   void WillBeginImplFrame();
 
  private:
+  // "Autoscroll" here means the continuous scrolling that occurs when the
+  // pointer is held down on a hit-testable area of the scrollbar such as an
+  // arrows of the track itself.
+  enum AutoScrollDirection { AUTOSCROLL_FORWARD, AUTOSCROLL_BACKWARD };
+
+  struct CC_EXPORT AutoScrollState {
+    // Can only be either AUTOSCROLL_FORWARD or AUTOSCROLL_BACKWARD.
+    AutoScrollDirection direction = AutoScrollDirection::AUTOSCROLL_FORWARD;
+
+    // Stores the autoscroll velocity. The sign is used to set the "direction".
+    float velocity = 0.f;
+
+    // Used to track the scroller length while autoscrolling. Helpful for
+    // setting up infinite scrolling.
+    float scroll_layer_length = 0.f;
+  };
+
+  // Helper to convert scroll offset to autoscroll velocity.
+  float InitialDeltaToAutoscrollVelocity(gfx::ScrollOffset scroll_offset) const;
+
   // Returns the hit tested ScrollbarPart based on the position_in_widget.
   ScrollbarPart GetScrollbarPartFromPointerDown(
       const gfx::PointF position_in_widget);
@@ -69,25 +88,23 @@ class CC_EXPORT ScrollbarController {
   // Returns the ratio of the scroller length to the scrollbar length. This is
   // needed to scale the scroll delta for thumb drag.
   float GetScrollerToScrollbarRatio();
-
   LayerTreeHostImpl* layer_tree_host_impl_;
 
   // Used to safeguard against firing GSE without firing GSB and GSU. For
   // example, if mouse is pressed outside the scrollbar but released after
   // moving inside the scrollbar, a GSE will get queued up without this flag.
   bool scrollbar_scroll_is_active_;
-
-  // "Autoscroll" here means the continuous scrolling that occurs when the
-  // pointer is held down on a hit-testable area of the scrollbar such as an
-  // arrows of the track itself.
-  AutoScrollState autoscroll_state_;
   const ScrollbarLayerImplBase* currently_captured_scrollbar_;
 
   // This is relative to the RenderWidget's origin.
   gfx::PointF previous_pointer_position_;
 
+  // Holds information pertaining to autoscrolling. This member is empty if and
+  // only if an autoscroll is *not* in progress.
+  base::Optional<AutoScrollState> autoscroll_state_;
+
   // This is used to track the pointer location relative to the thumb origin
-  // when a drag has started.
+  // when a drag has started. It is empty if a thumb drag is *not* in progress.
   base::Optional<gfx::Vector2dF> drag_anchor_relative_to_thumb_;
 
   std::unique_ptr<base::CancelableClosure> cancelable_autoscroll_task_;

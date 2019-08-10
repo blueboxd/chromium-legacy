@@ -99,7 +99,7 @@ suite('CupsAddPrinterDialogTests', function() {
    * to add a printer.
    */
   test('DiscoveryShowing', function() {
-    return PolymerTest.flushTasks().then(function() {
+    return test_util.flushTasks().then(function() {
       // Discovery is showing.
       assertTrue(dialog.showDiscoveryDialog_);
       assertTrue(!!dialog.$$('add-printer-discovery-dialog'));
@@ -193,7 +193,7 @@ suite('CupsAddPrinterDialogTests', function() {
     return cupsPrintersBrowserProxy
         .whenCalled('getCupsPrinterManufacturersList')
         .then(function() {
-          return PolymerTest.flushTasks();
+          return test_util.flushTasks();
         })
         .then(function() {
           // Showing model selection.
@@ -1105,7 +1105,7 @@ suite('EditPrinterDialog', function() {
     let modelDropdown = null;
     let urlElement = null;
 
-    return PolymerTest.flushTasks()
+    return test_util.flushTasks()
         .then(function() {
           urlElement = dialog.$$('#eulaUrl');
           // Check that the EULA text is hidden.

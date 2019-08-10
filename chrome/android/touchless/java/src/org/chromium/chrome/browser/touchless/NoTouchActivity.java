@@ -183,7 +183,8 @@ public class NoTouchActivity extends SingleTabActivity {
     public void onNewIntent(Intent intent) {
         mIntentHandlingTimeMs = SystemClock.uptimeMillis();
 
-        if (DINOSAUR_GAME_INTENT.equals(intent.getComponent().getClassName())) {
+        if (intent.getComponent() != null
+                && DINOSAUR_GAME_INTENT.equals(intent.getComponent().getClassName())) {
             intent.setData(Uri.parse(UrlConstants.CHROME_DINO_URL));
         }
 

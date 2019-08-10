@@ -49,6 +49,7 @@ class EventRewriterDelegateImpl;
 class FastTransitionObserver;
 class GnubbyNotification;
 class IdleActionWarningObserver;
+class LoginScreenExtensionsLifetimeManager;
 class LowDiskNotification;
 class NetworkChangeManagerClient;
 class NetworkPrefStateObserver;
@@ -178,6 +179,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<SessionTerminationManager> session_termination_manager_;
   std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
   std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
+  std::unique_ptr<LoginScreenExtensionsLifetimeManager>
+      login_screen_extensions_lifetime_manager_;
 
   std::unique_ptr<GnubbyNotification> gnubby_notification_;
 

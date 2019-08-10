@@ -52,6 +52,7 @@ class CanvasCaptureHandlerTest
 
   void SetUp() override {
     canvas_capture_handler_ = CanvasCaptureHandler::CreateCanvasCaptureHandler(
+        /*LocalFrame =*/nullptr,
         blink::WebSize(kTestCanvasCaptureWidth, kTestCanvasCaptureHeight),
         kTestCanvasCaptureFramesPerSecond,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(), &track_);

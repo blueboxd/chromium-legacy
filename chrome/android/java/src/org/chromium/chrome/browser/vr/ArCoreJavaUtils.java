@@ -66,11 +66,10 @@ public class ArCoreJavaUtils {
     }
 
     @CalledByNative
-    private void destroyArImmersiveOverlay() {
-        if (DEBUG_LOGS) Log.i(TAG, "destroyArImmersiveOverlay");
+    private void endSession() {
+        if (DEBUG_LOGS) Log.i(TAG, "endSession");
         if (mArImmersiveOverlay != null) {
-            mArImmersiveOverlay.destroyDialog();
-            mArImmersiveOverlay = null;
+            mArImmersiveOverlay.cleanupAndExit();
         }
     }
 

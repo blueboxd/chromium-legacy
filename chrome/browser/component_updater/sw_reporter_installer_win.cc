@@ -415,7 +415,7 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
   // Once the component is ready and browser startup is complete, run
   // |safe_browsing::OnSwReporterReady|.
   auto lambda = [](safe_browsing::SwReporterInvocationSequence&& invocations) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::BindOnce(

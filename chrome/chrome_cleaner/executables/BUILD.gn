@@ -4,23 +4,10 @@
 
 import("//chrome/chrome_cleaner/chrome_cleaner_args.gni")
 
-group("engine_definitions") {
-  if (is_internal_chrome_cleaner_build) {
-    deps = [
-      "//chrome_cleaner_internal:engine_definitions",
-    ]
-  } else {
-    deps = [
-      "//chrome/chrome_cleaner/engines/common:dummy_engine_resources",
-      "//chrome/chrome_cleaner/settings:dummy_engine_settings",
-    ]
-  }
-}
-
 group("engine_target_factory") {
   if (is_internal_chrome_cleaner_build) {
     deps = [
-      "//chrome_cleaner_internal:engine_target_factory",
+      "${chrome_cleaner_internal_root}:engine_target_factory",
     ]
   } else {
     deps = [
@@ -70,12 +57,12 @@ template("chrome_cleaner_executable") {
     }
 
     deps = [
-      ":engine_definitions",
       ":engine_target_factory",
       ":shutdown_sequence",
       "//base",
       "//build/win:default_exe_manifest",
       "//chrome/chrome_cleaner:buildflags",
+      "//chrome/chrome_cleaner:engine_definitions",
       "//chrome/chrome_cleaner/constants:common_strings",
       "//chrome/chrome_cleaner/constants:version_header",
       "//chrome/chrome_cleaner/crash:crashpad_lib",

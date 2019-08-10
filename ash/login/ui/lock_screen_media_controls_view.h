@@ -115,6 +115,10 @@ class ASH_EXPORT LockScreenMediaControlsView
  private:
   friend class LockScreenMediaControlsViewTest;
 
+  // Performs "SeekTo" through |media_controller_ptr_|. The seek time is
+  // calculated using |seek_progress| and the total duration of the media.
+  void SeekTo(double seek_progress);
+
   // Hides the controls and stops media playback.
   void Dismiss();
 
@@ -174,6 +178,9 @@ class ASH_EXPORT LockScreenMediaControlsView
   // The id of the current media session. It will be null if there is not
   // a current session.
   base::Optional<base::UnguessableToken> media_session_id_;
+
+  // The MediaPosition associated with the current media session.
+  base::Optional<media_session::MediaPosition> position_;
 
   // Spacing between controls and user.
   std::unique_ptr<views::View> middle_spacing_;

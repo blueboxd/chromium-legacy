@@ -51,9 +51,11 @@ bool EncryptOutgoingMessage(
   if (!nonce)
     return false;
 
-  DCHECK_EQ(nonce->size(), encryption_data->aes_key.NonceLength());
+  crypto::Aead aes_key(crypto::Aead::AES_256_GCM);
+  aes_key.Init(&encryption_data->session_key);
+  DCHECK_EQ(nonce->size(), aes_key.NonceLength());
   std::string ciphertext;
-  bool encryption_success = encryption_data->aes_key.Seal(
+  bool encryption_success = aes_key.Seal(
       fido_parsing_utils::ConvertToStringPiece(*message_to_encrypt),
       fido_parsing_utils::ConvertToStringPiece(*nonce),
       std::string(1, base::strict_cast<uint8_t>(FidoBleDeviceCommand::kMsg)),
@@ -77,10 +79,12 @@ bool DecryptIncomingMessage(
   if (!nonce)
     return false;
 
-  DCHECK_EQ(nonce->size(), encryption_data->aes_key.NonceLength());
+  crypto::Aead aes_key(crypto::Aead::AES_256_GCM);
+  aes_key.Init(&encryption_data->session_key);
+  DCHECK_EQ(nonce->size(), aes_key.NonceLength());
   std::string plaintext;
 
-  bool decryption_success = encryption_data->aes_key.Open(
+  bool decryption_success = aes_key.Open(
       fido_parsing_utils::ConvertToStringPiece(incoming_frame->data()),
       fido_parsing_utils::ConvertToStringPiece(*nonce),
       std::string(1, base::strict_cast<uint8_t>(incoming_frame->command())),
@@ -100,10 +104,7 @@ FidoCableDevice::EncryptionData::EncryptionData(
     std::string encryption_key,
     base::span<const uint8_t, 8> nonce)
     : session_key(std::move(encryption_key)),
-      nonce(fido_parsing_utils::Materialize(nonce)) {
-  DCHECK_EQ(session_key.size(), aes_key.KeyLength());
-  aes_key.Init(&session_key);
-}
+      nonce(fido_parsing_utils::Materialize(nonce)) {}
 
 FidoCableDevice::EncryptionData::EncryptionData(EncryptionData&& data) =
     default;

@@ -31,6 +31,7 @@
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/history_provider.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
@@ -443,13 +444,14 @@ HistoryURLProvider::VisitClassifier::VisitClassifier(
 
 HistoryURLProviderParams::HistoryURLProviderParams(
     const AutocompleteInput& input,
+    const AutocompleteInput& input_before_fixup,
     bool trim_http,
     const AutocompleteMatch& what_you_typed_match,
     const TemplateURL* default_search_provider,
     const SearchTermsData* search_terms_data)
     : origin_task_runner(base::SequencedTaskRunnerHandle::Get()),
       input(input),
-      prevent_inline_autocomplete(input.prevent_inline_autocomplete()),
+      input_before_fixup(input_before_fixup),
       trim_http(trim_http),
       what_you_typed_match(what_you_typed_match),
       failed(false),
@@ -566,11 +568,8 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   // onto the |params_| member for later deletion below if we need to run pass
   // 2.
   std::unique_ptr<HistoryURLProviderParams> params(new HistoryURLProviderParams(
-      fixed_up_input, trim_http, what_you_typed_match, default_search_provider,
-      search_terms_data));
-  // Note that we use the non-fixed-up input here, since fixup may strip
-  // trailing whitespace.
-  params->prevent_inline_autocomplete = PreventInlineAutocomplete(input);
+      fixed_up_input, input, trim_http, what_you_typed_match,
+      default_search_provider, search_terms_data));
 
   // Pass 1: Get the in-memory URL database, and use it to find and promote
   // the inline autocomplete match, if any.
@@ -888,7 +887,7 @@ void HistoryURLProvider::PromoteMatchesIfNecessary(
   //     params.have_what_you_typed_match is false, the SearchProvider should
   //     take care of adding this defaultable match.)
   if ((params.promote_type == HistoryURLProviderParams::WHAT_YOU_TYPED_MATCH) ||
-      (params.prevent_inline_autocomplete &&
+      (!matches_.back().allowed_to_be_default_match &&
        params.have_what_you_typed_match)) {
     matches_.push_back(params.what_you_typed_match);
   }
@@ -1245,16 +1244,13 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   // be default.
   const bool autocomplete_offset_valid =
       inline_autocomplete_offset != base::string16::npos;
-  if (!params.prevent_inline_autocomplete && autocomplete_offset_valid) {
+  if (autocomplete_offset_valid) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
+    match.allowed_to_be_default_match =
+        AutocompleteMatch::AllowedToBeDefault(params.input_before_fixup, match);
   }
-  // The latter part of the test effectively asks "is the inline completion
-  // empty?" (i.e., is this match effectively the what-you-typed match?).
-  match.allowed_to_be_default_match = autocomplete_offset_valid &&
-      (!params.prevent_inline_autocomplete ||
-       (inline_autocomplete_offset >= match.fill_into_edit.length()));
 
   const auto format_types = AutocompleteMatch::GetFormatTypes(
       params.input.parts().scheme.len > 0 || !params.trim_http ||

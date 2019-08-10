@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS Checks that styles defined inside/outside forced-colors are overridden in forced colors mode.
+Harness: the test ran to completion.
+

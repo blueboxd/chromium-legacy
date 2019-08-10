@@ -15,6 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_names_util.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
@@ -25,6 +27,9 @@
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -130,11 +135,82 @@ ArcAccessibilityHelperBridge::GetForBrowserContext(
   return ArcAccessibilityHelperBridgeFactory::GetForBrowserContext(context);
 }
 
+static constexpr const char* kTextShadowRaised =
+    "-2px -2px 4px rgba(0, 0, 0, 0.5)";
+static constexpr const char* kTextShadowDepressed =
+    "2px 2px 4px rgba(0, 0, 0, 0.5)";
+static constexpr const char* kTextShadowUniform =
+    "-1px 0px 0px black, 0px -1px 0px black, 1px 0px 0px black, 0px  1px 0px "
+    "black";
+static constexpr const char* kTextShadowDropShadow =
+    "0px 0px 2px rgba(0, 0, 0, 0.5), 2px 2px 2px black";
+
+void ArcAccessibilityHelperBridge::UpdateCaptionSettings() const {
+  base::Optional<ui::CaptionStyle> prefs_caption_style =
+      pref_names_util::GetCaptionStyleFromPrefs(profile_->GetPrefs());
+
+  if (!prefs_caption_style)
+    return;
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->accessibility_helper(), SetCaptionStyle);
+
+  if (!instance)
+    return;
+
+  arc::mojom::CaptionStylePtr caption_style = arc::mojom::CaptionStyle::New();
+  caption_style->text_size = prefs_caption_style->text_size.c_str();
+  caption_style->background_color = prefs_caption_style->background_color;
+  caption_style->text_color = prefs_caption_style->text_color;
+  caption_style->user_locale =
+      profile_->GetPrefs()->GetString(language::prefs::kApplicationLocale);
+
+  // Convert the text shadow CSS string to a mojom::CaptionTextShadowType enum.
+  if (prefs_caption_style->text_shadow == kTextShadowRaised) {
+    caption_style->text_shadow_type = arc::mojom::CaptionTextShadowType::RAISED;
+  } else if (prefs_caption_style->text_shadow == kTextShadowDepressed) {
+    caption_style->text_shadow_type =
+        arc::mojom::CaptionTextShadowType::DEPRESSED;
+  } else if (prefs_caption_style->text_shadow == kTextShadowUniform) {
+    caption_style->text_shadow_type =
+        arc::mojom::CaptionTextShadowType::UNIFORM;
+  } else if (prefs_caption_style->text_shadow == kTextShadowDropShadow) {
+    caption_style->text_shadow_type =
+        arc::mojom::CaptionTextShadowType::DROP_SHADOW;
+  } else {
+    caption_style->text_shadow_type = arc::mojom::CaptionTextShadowType::NONE;
+  }
+
+  instance->SetCaptionStyle(std::move(caption_style));
+}
+
+// The list of prefs we want to observe.
+const char* const kCaptionStylePrefsToObserve[] = {
+    prefs::kAccessibilityCaptionsTextSize,
+    prefs::kAccessibilityCaptionsTextFont,
+    prefs::kAccessibilityCaptionsTextColor,
+    prefs::kAccessibilityCaptionsTextOpacity,
+    prefs::kAccessibilityCaptionsBackgroundColor,
+    prefs::kAccessibilityCaptionsTextShadow,
+    prefs::kAccessibilityCaptionsBackgroundOpacity,
+    language::prefs::kApplicationLocale};
+
 ArcAccessibilityHelperBridge::ArcAccessibilityHelperBridge(
     content::BrowserContext* browser_context,
     ArcBridgeService* arc_bridge_service)
     : profile_(Profile::FromBrowserContext(browser_context)),
       arc_bridge_service_(arc_bridge_service) {
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(
+      Profile::FromBrowserContext(browser_context)->GetPrefs());
+
+  for (const char* const pref_name : kCaptionStylePrefsToObserve) {
+    pref_change_registrar_->Add(
+        pref_name,
+        base::Bind(&ArcAccessibilityHelperBridge::UpdateCaptionSettings,
+                   base::Unretained(this)));
+  }
+
   arc_bridge_service_->accessibility_helper()->SetHost(this);
   arc_bridge_service_->accessibility_helper()->AddObserver(this);
 
@@ -218,6 +294,7 @@ void ArcAccessibilityHelperBridge::Shutdown() {
 
 void ArcAccessibilityHelperBridge::OnConnectionReady() {
   UpdateFilterType();
+  UpdateCaptionSettings();
 
   chromeos::AccessibilityManager* accessibility_manager =
       chromeos::AccessibilityManager::Get();

@@ -16,8 +16,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -32,7 +32,8 @@ import java.util.List;
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 public class FeaturesAnnotationsTest {
     @Rule
-    public ChromeTabbedActivityTestRule mActivityRule = new ChromeTabbedActivityTestRule();
+    public ChromeActivityTestRule<? extends ChromeActivity> mActivityRule =
+            ChromeActivityTestRule.forMainActivity();
 
     /**
      * Tests that {@link EnableFeatures} and {@link DisableFeatures} can alter the flags registered

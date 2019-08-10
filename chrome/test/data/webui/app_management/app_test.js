@@ -18,7 +18,7 @@ suite('<app-management-app>', () => {
   /** @param {String} term  */
   async function searchApps(term) {
     app.dispatch(app_management.actions.setSearchTerm(term));
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
   }
 
   /** @return {boolean} */
@@ -42,7 +42,7 @@ suite('<app-management-app>', () => {
     app = document.createElement('app-management-app');
     replaceBody(app);
     await app.$$('app-management-dom-switch').firstRenderForTesting_.promise;
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
   });
 
   test('loads', async () => {
@@ -67,7 +67,7 @@ suite('<app-management-app>', () => {
 
           // Click app to go to detail page.
           appList.querySelector('app-management-app-item').click();
-          return PolymerTest.flushTasks();
+          return test_util.flushTasks();
         })
         .then(() => {
           return fakeHandler.addApp();
@@ -85,7 +85,7 @@ suite('<app-management-app>', () => {
               .$$('app-management-permission-view-header')
               .$$('#backButton')
               .click();
-          PolymerTest.flushTasks();
+          test_util.flushTasks();
         });
   });
 

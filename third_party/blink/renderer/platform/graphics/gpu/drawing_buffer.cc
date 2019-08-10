@@ -433,6 +433,8 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
   } else {
     // If we can't discard the backbuffer, create (or recycle) a buffer to put
     // in the mailbox, and copy backbuffer's contents there.
+    // TODO(sunnyps): We can skip this test if explicit resolve is used since
+    // we'll render to the multisample fbo which will be preserved.
     color_buffer_for_mailbox = CreateOrRecycleColorBuffer();
     gl_->CopySubTextureCHROMIUM(
         back_color_buffer_->texture_id, 0, texture_target_,
@@ -711,14 +713,19 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
   }
 
   auto webgl_preferences = ContextProvider()->GetWebglPreferences();
+  // We can't use anything other than explicit resolve for swap chain.
+  bool supports_implicit_resolve =
+      !UsingSwapChain() && extensions_util_->SupportsExtension(
+                               "GL_EXT_multisampled_render_to_texture");
+  bool supports_screen_space_aa =
+      !UsingSwapChain() && extensions_util_->SupportsExtension(
+                               "GL_CHROMIUM_screen_space_antialiasing");
   if (webgl_preferences.anti_aliasing_mode == kAntialiasingModeUnspecified) {
     if (use_multisampling) {
       anti_aliasing_mode_ = kAntialiasingModeMSAAExplicitResolve;
-      if (extensions_util_->SupportsExtension(
-              "GL_EXT_multisampled_render_to_texture")) {
+      if (supports_implicit_resolve) {
         anti_aliasing_mode_ = kAntialiasingModeMSAAImplicitResolve;
-      } else if (extensions_util_->SupportsExtension(
-                     "GL_CHROMIUM_screen_space_antialiasing") &&
+      } else if (supports_screen_space_aa &&
                  ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
                      gpu::USE_FRAMEBUFFER_CMAA)) {
         anti_aliasing_mode_ = kAntialiasingModeScreenSpaceAntialiasing;
@@ -727,14 +734,12 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
       anti_aliasing_mode_ = kAntialiasingModeNone;
     }
   } else {
-    if ((webgl_preferences.anti_aliasing_mode ==
-             kAntialiasingModeMSAAImplicitResolve &&
-         !extensions_util_->SupportsExtension(
-             "GL_EXT_multisampled_render_to_texture")) ||
-        (webgl_preferences.anti_aliasing_mode ==
-             kAntialiasingModeScreenSpaceAntialiasing &&
-         !extensions_util_->SupportsExtension(
-             "GL_CHROMIUM_screen_space_antialiasing"))) {
+    bool prefer_implicit_resolve = (webgl_preferences.anti_aliasing_mode ==
+                                    kAntialiasingModeMSAAImplicitResolve);
+    bool prefer_screen_space_aa = (webgl_preferences.anti_aliasing_mode ==
+                                   kAntialiasingModeScreenSpaceAntialiasing);
+    if ((prefer_implicit_resolve && !supports_implicit_resolve) ||
+        (prefer_screen_space_aa && !supports_screen_space_aa)) {
       DLOG(ERROR) << "Invalid anti-aliasing mode specified.";
       return false;
     }
@@ -803,6 +808,16 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
       //  - extra command buffer validation for CopyTexImage
       //  - explicity re-binding as RGB for FramebufferBlit
       allocate_alpha_channel_ = false;
+      have_alpha_channel_ = true;
+    }
+    if (UsingSwapChain()) {
+      // Swap chains always have an alpha channel, and multisample resolve
+      // doesn't work if we pretend we don't have one.
+      // This configuration will
+      //  - allow invalid CopyTexImage to RGBA targets
+      //  - fail valid FramebufferBlit from RGB targets
+      // TODO(sunnyps): Copy into intermediate texture for blitFramebuffer.
+      allocate_alpha_channel_ = true;
       have_alpha_channel_ = true;
     }
   }
@@ -1018,8 +1033,9 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
   // GpuMemoryBuffers are being used, allocate a non-GMB texture which will hold
   // the non-premultiplied rendering results. These will be copied into the GMB
   // via CopySubTextureCHROMIUM, performing the premultiplication step then.
-  if (ShouldUseChromiumImage() && allocate_alpha_channel_ &&
-      !premultiplied_alpha_) {
+  // This also applies to swap chains which are exported via AsCanvasResource().
+  if ((ShouldUseChromiumImage() || UsingSwapChain()) &&
+      allocate_alpha_channel_ && !premultiplied_alpha_) {
     gpu::SharedImageInterface* sii = ContextProvider()->SharedImageInterface();
     state_restorer_->SetTextureBindingDirty();
     // TODO(kbr): unify with code in CreateColorBuffer.
@@ -1419,12 +1435,43 @@ void DrawingBuffer::FlipVertically(uint8_t* framebuffer,
 
 void DrawingBuffer::PresentSwapChain() {
   DCHECK(UsingSwapChain());
+  DCHECK_EQ(texture_target_, static_cast<unsigned>(GL_TEXTURE_2D));
+
+  ScopedStateRestorer scoped_state_restorer(this);
+  ResolveIfNeeded();
+
+  if (premultiplied_alpha_false_texture_) {
+    // The rendering results are in |premultiplied_alpha_false_texture_| rather
+    // than the |back_color_buffer_|'s texture. Copy them in, multiplying the
+    // alpha channel into the color channels.
+    gl_->CopySubTextureCHROMIUM(premultiplied_alpha_false_texture_, 0,
+                                texture_target_, back_color_buffer_->texture_id,
+                                0, 0, 0, 0, 0, size_.Width(), size_.Height(),
+                                GL_FALSE, GL_TRUE, GL_FALSE);
+  }
+
   gpu::SyncToken sync_token;
   gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+
   auto* sii = ContextProvider()->SharedImageInterface();
   sii->PresentSwapChain(sync_token, back_color_buffer_->mailbox);
+
   sync_token = sii->GenUnverifiedSyncToken();
   gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+
+  // If a multisample fbo is used it already preserves the previous contents.
+  if (preserve_drawing_buffer_ == kPreserve && !WantExplicitResolve()) {
+    // If premultiply alpha is false rendering results are in
+    // |premultiplied_alpha_false_texture_|.
+    GLuint dest_texture_id = premultiplied_alpha_false_texture_
+                                 ? premultiplied_alpha_false_texture_
+                                 : back_color_buffer_->texture_id;
+    gl_->CopySubTextureCHROMIUM(front_color_buffer_->texture_id, 0,
+                                texture_target_, dest_texture_id, 0, 0, 0, 0, 0,
+                                size_.Width(), size_.Height(), GL_FALSE,
+                                GL_FALSE, GL_FALSE);
+  }
+  ResetBuffersToAutoClear();
 }
 
 scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
@@ -1451,6 +1498,7 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     format = use_half_float_storage_ ? viz::RGBA_F16 : viz::RGBA_8888;
   } else {
     DCHECK(!use_half_float_storage_);
+    DCHECK(!UsingSwapChain());
     format = viz::RGBX_8888;
   }
 

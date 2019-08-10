@@ -59,8 +59,8 @@ Polymer({
       type: Array,
       value: function() {
         return [
-          {value: '50%', name: loadTimeData.getString('verySmall')},
-          {value: '75%', name: loadTimeData.getString('small')},
+          {value: '25%', name: loadTimeData.getString('verySmall')},
+          {value: '50%', name: loadTimeData.getString('small')},
           {value: '', name: loadTimeData.getString('medium')}, // Default = 100%
           {value: '150%', name: loadTimeData.getString('large')},
           {value: '200%', name: loadTimeData.getString('veryLarge')},

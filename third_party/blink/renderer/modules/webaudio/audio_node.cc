@@ -445,6 +445,14 @@ void AudioHandler::DisableOutputsIfNecessary() {
   // so assert that this needs graph ownership too.
   deferred_task_handler_->AssertGraphOwner();
 
+#if DEBUG_AUDIONODE_REFERENCES > 1
+  fprintf(stderr,
+          "[%16p]: %16p: %2d: DisableOutputsIfNecessary is_disabled %d count %d"
+          " tail %d\n",
+          Context(), this, GetNodeType(), is_disabled_, connection_ref_count_,
+          RequiresTailProcessing());
+#endif
+
   // Disable outputs if appropriate. We do this if the number of connections is
   // 0 or 1. The case of 0 is from deref() where there are no connections left.
   // The case of 1 is from AudioNodeInput::disable() where we want to disable

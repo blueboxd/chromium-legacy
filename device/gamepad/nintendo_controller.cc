@@ -812,8 +812,7 @@ NintendoController::NintendoController(int source_id,
       bus_type_(GAMEPAD_BUS_UNKNOWN),
       output_report_size_bytes_(0),
       device_info_(std::move(device_info)),
-      hid_manager_(hid_manager),
-      weak_factory_(this) {
+      hid_manager_(hid_manager) {
   if (device_info_) {
     bus_type_ = BusTypeFromDeviceInfo(device_info_.get());
     output_report_size_bytes_ = device_info_->max_output_report_size;
@@ -829,10 +828,7 @@ NintendoController::NintendoController(
     std::unique_ptr<NintendoController> composite1,
     std::unique_ptr<NintendoController> composite2,
     mojom::HidManager* hid_manager)
-    : source_id_(source_id),
-      is_composite_(true),
-      hid_manager_(hid_manager),
-      weak_factory_(this) {
+    : source_id_(source_id), is_composite_(true), hid_manager_(hid_manager) {
   // Require exactly one left component and one right component, but allow them
   // to be provided in either order.
   DCHECK(composite1);
@@ -1735,6 +1731,10 @@ void NintendoController::OnTimeout() {
     retry_count_ = 0;
     StartInitSequence();
   }
+}
+
+base::WeakPtr<AbstractHapticGamepad> NintendoController::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace device

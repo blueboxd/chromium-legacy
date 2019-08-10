@@ -28,7 +28,7 @@
     Open the wallpaper app
   </message>
   <message name="IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE" desc="Label for row in settings page that shows the user image picker.">
-    Change account image
+    Change device account image
   </message>
 
   <!-- Search and Assistant section. -->

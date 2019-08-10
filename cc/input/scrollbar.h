@@ -24,7 +24,6 @@ namespace cc {
 
 enum ScrollbarOrientation { HORIZONTAL, VERTICAL };
 enum ScrollDirection { SCROLL_BACKWARD, SCROLL_FORWARD };
-enum AutoScrollState { NO_AUTOSCROLL, AUTOSCROLL_FORWARD, AUTOSCROLL_BACKWARD };
 
 enum ScrollbarPart {
   THUMB,

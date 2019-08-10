@@ -1,5 +1,4 @@
 include_rules = [
   "+dbus/object_path.h",
-  "+mojo/public/cpp/bindings",
-  "+services/service_manager/public",
+  "+mojo/public",
 ]

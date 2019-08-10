@@ -576,8 +576,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   TestInterstitialNotShown(browser(), GetURL("google.com.tw"));
   CheckNoUkm();
 
-  // Matches bing.com but is a top domain itself.
-  TestInterstitialNotShown(browser(), GetURL("ning.com"));
+  // Matches academia.edu but is a top domain itself.
+  TestInterstitialNotShown(browser(), GetURL("academic.ru"));
   CheckNoUkm();
 
   // Matches ask.com but is too short.

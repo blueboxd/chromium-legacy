@@ -128,7 +128,7 @@ source_set("dummy_api_keys") {
 group("api_keys") {
   if (is_internal_chrome_cleaner_build) {
     deps = [
-      "//chrome_cleaner_internal/logging:api_keys",
+      "${chrome_cleaner_internal_root}/logging:api_keys",
     ]
   } else {
     deps = [

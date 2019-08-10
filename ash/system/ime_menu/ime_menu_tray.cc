@@ -17,6 +17,8 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/detailed_view_delegate.h"
@@ -127,8 +129,11 @@ class ImeTitleView : public views::View, public views::ButtonListener {
  public:
   explicit ImeTitleView(bool show_settings_button) : settings_button_(nullptr) {
     SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(0, 0, kMenuSeparatorWidth, 0,
-                                      kSeparatorOnLightBackgroundColor),
+        views::CreateSolidSidedBorder(
+            0, 0, kMenuSeparatorWidth, 0,
+            AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+                AshColorProvider::ControlsLayerType::kSeparator,
+                kSeparatorOnLightBackgroundColor)),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth, 0)));
     auto box_layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal);
@@ -230,8 +235,11 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
     box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
     SetLayoutManager(std::move(box_layout));
     SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(kMenuSeparatorWidth, 0, 0, 0,
-                                      kSeparatorOnLightBackgroundColor),
+        views::CreateSolidSidedBorder(
+            kMenuSeparatorWidth, 0, 0, 0,
+            AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+                AshColorProvider::ControlsLayerType::kSeparator,
+                kSeparatorOnLightBackgroundColor)),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth,
                     kMenuExtraMarginFromLeftEdge)));
 

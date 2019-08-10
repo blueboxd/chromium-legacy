@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/native_file_system/native_file_system_access_icon_view.h"
 
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
@@ -14,6 +15,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+
+const base::Feature kNativeFileSystemReadOnlyUsageIndicatorFeature{
+    "NativeFileSystemReadOnlyUsageIndicator",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 NativeFileSystemAccessIconView::NativeFileSystemAccessIconView(
     Delegate* delegate)
@@ -30,12 +35,19 @@ bool NativeFileSystemAccessIconView::Update() {
   const bool was_visible = GetVisible();
   const bool had_write_access = has_write_access_;
 
-  SetVisible(GetWebContents() &&
-             (GetWebContents()->HasWritableNativeFileSystemHandles() ||
-              GetWebContents()->HasNativeFileSystemDirectoryHandles()));
-
   has_write_access_ = GetWebContents() &&
                       GetWebContents()->HasWritableNativeFileSystemHandles();
+
+  // TODO(https://crbug.com/992158): Also take read-only files into account
+  // once inconsistencies in old APIs are fixed.
+  bool show_read_indicator =
+      base::FeatureList::IsEnabled(
+          kNativeFileSystemReadOnlyUsageIndicatorFeature) &&
+      GetWebContents() &&
+      GetWebContents()->HasNativeFileSystemDirectoryHandles();
+
+  SetVisible(has_write_access_ || show_read_indicator);
+
   if (has_write_access_ != had_write_access)
     UpdateIconImage();
 
@@ -79,8 +91,11 @@ void NativeFileSystemAccessIconView::OnExecuting(ExecuteSource execute_source) {
             }
 
             NativeFileSystemUsageBubbleView::Usage usage;
-            usage.readable_directories =
-                web_contents->GetNativeFileSystemDirectoryHandles();
+            if (base::FeatureList::IsEnabled(
+                    kNativeFileSystemReadOnlyUsageIndicatorFeature)) {
+              usage.readable_directories =
+                  web_contents->GetNativeFileSystemDirectoryHandles();
+            }
             usage.writable_files = std::move(grants.file_write_grants);
             usage.writable_directories =
                 std::move(grants.directory_write_grants);

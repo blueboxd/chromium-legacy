@@ -196,27 +196,3 @@ PolymerTest.clearBody = function() {
     document.body.appendChild(vulcanizeDiv);
   }
 };
-
-/*
- * Waits for queued up tasks to finish before proceeding. Inspired by:
- * https://github.com/Polymer/web-component-tester/blob/master/browser/environment/helpers.js#L97
- */
-PolymerTest.flushTasks = function() {
-  Polymer.dom.flush();
-  // Promises have microtask timing, so we use setTimeout to explicity force a
-  // new task.
-  return new Promise(function(resolve, reject) {
-    window.setTimeout(resolve, 0);
-  });
-};
-
-/**
- * @param {!HTMLElement} element
- * @return {!Promise} Promise that resolves when an afterNextRender()
- *     callback on |element| is run.
- */
-PolymerTest.waitAfterNextRender = function(element) {
-  return new Promise(resolve => {
-    Polymer.RenderStatus.afterNextRender(element, resolve);
-  });
-};

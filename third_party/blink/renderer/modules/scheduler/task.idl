@@ -9,5 +9,6 @@ enum TaskStatus { "pending", "running", "canceled", "completed" };
 [RuntimeEnabled=WebScheduler] interface Task {
     readonly attribute TaskStatus status;
     readonly attribute TaskQueuePriority priority;
-    void cancel();
+    [CallWith=ScriptState] readonly attribute Promise<any> result;
+    [CallWith=ScriptState] void cancel();
 };

@@ -27,10 +27,13 @@
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
+
+#if defined(USE_X11)
+#include "ui/events/platform/x11/x11_event_source.h"  // nogncheck
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"  // nogncheck
+#endif
 
 namespace {
 
@@ -63,12 +66,14 @@ void OnFileFilterDataDestroyed(std::string* file_extension) {
   delete file_extension;
 }
 
+#if defined(USE_X11)
 // Runs DesktopWindowTreeHostX11::EnableEventListening() when the file-picker
 // is closed.
 void OnFilePickerDestroy(base::OnceClosure* callback_raw) {
   std::unique_ptr<base::OnceClosure> callback = base::WrapUnique(callback_raw);
   std::move(*callback).Run();
 }
+#endif
 
 }  // namespace
 
@@ -184,6 +189,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
 
   params_map_[dialog] = params;
 
+#if defined(USE_X11)
   // Disable input events handling in the host window to make this dialog modal.
   if (owning_window) {
     aura::WindowTreeHost* host = owning_window->GetHost();
@@ -206,6 +212,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
       gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
     }
   }
+#endif
 
 #if !GTK_CHECK_VERSION(3, 90, 0)
   gtk_widget_show_all(dialog);
@@ -213,8 +220,12 @@ void SelectFileDialogImplGTK::SelectFileImpl(
 
   // We need to call gtk_window_present after making the widgets visible to make
   // sure window gets correctly raised and gets focus.
+#if defined(USE_X11)
   gtk_window_present_with_time(
       GTK_WINDOW(dialog), ui::X11EventSource::GetInstance()->GetTimestamp());
+#else
+  gtk_window_present(GTK_WINDOW(dialog));
+#endif
 }
 
 void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {

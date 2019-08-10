@@ -291,7 +291,6 @@ class TestRunner : public WebTestRunner {
   void SetPopupBlockingEnabled(bool block_popups);
 
   void SetJavaScriptCanAccessClipboard(bool can_access);
-  void SetXSSAuditorEnabled(bool enabled);
   void SetAllowFileAccessFromFileURLs(bool allow);
   void OverridePreference(gin::Arguments* arguments);
 

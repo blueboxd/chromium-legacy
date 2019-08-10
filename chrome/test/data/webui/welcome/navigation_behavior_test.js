@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('onboarding_welcome_navigation_behavior_test', function() {
+cr.define('welcome_navigation_behavior_test', function() {
   suite('NavigationBehaviorTest', function() {
     let elements = [];
     let callOrders = [];

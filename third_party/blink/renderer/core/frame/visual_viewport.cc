@@ -36,6 +36,7 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -46,8 +47,10 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
@@ -55,6 +58,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_overlay.h"
+#include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
@@ -811,6 +815,32 @@ void VisualViewport::SetScrollOffset(const ScrollOffset& offset,
   ScrollOffset new_scroll_offset = ClampScrollOffset(offset);
   ScrollableArea::SetScrollOffset(new_scroll_offset, scroll_type,
                                   scroll_behavior, std::move(on_finish));
+}
+
+PhysicalRect VisualViewport::ScrollIntoView(
+    const PhysicalRect& rect_in_absolute,
+    const WebScrollIntoViewParams& params) {
+  PhysicalRect scroll_snapport_rect = VisibleScrollSnapportRect();
+
+  ScrollOffset new_scroll_offset =
+      ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
+          scroll_snapport_rect, rect_in_absolute, params.GetScrollAlignmentX(),
+          params.GetScrollAlignmentY(), GetScrollOffset()));
+
+  if (new_scroll_offset != GetScrollOffset()) {
+    ScrollBehavior behavior = params.GetScrollBehavior();
+    if (params.is_for_scroll_sequence) {
+      DCHECK(params.GetScrollType() == kProgrammaticScroll ||
+             params.GetScrollType() == kUserScroll);
+      GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
+                                                 behavior);
+    } else {
+      SetScrollOffset(new_scroll_offset, params.GetScrollType(), behavior,
+                      ScrollCallback());
+    }
+  }
+
+  return rect_in_absolute;
 }
 
 int VisualViewport::ScrollSize(ScrollbarOrientation orientation) const {

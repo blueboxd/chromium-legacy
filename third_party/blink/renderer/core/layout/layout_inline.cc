@@ -1613,6 +1613,7 @@ PhysicalOffset LayoutInline::OffsetForInFlowPositionedInline(
     inline_position = FirstLineBox()->LogicalLeft();
     block_position = FirstLineBox()->LogicalTop();
   } else {
+    DCHECK(Layer());
     inline_position = Layer()->StaticInlinePosition();
     block_position = Layer()->StaticBlockPosition();
   }

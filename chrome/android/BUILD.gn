@@ -2102,6 +2102,27 @@ instrumentation_test_apk("chrome_smoke_test") {
   }
 }
 
+# TODO(crbug.com/989654): Add Chrome bundle as test target once the test runner
+# knows how to install bundles.
+instrumentation_test_apk("chrome_bundle_smoke_test") {
+  apk_name = "ChromeBundleSmokeTest"
+  android_manifest =
+      "javatests/src/org/chromium/chrome/test/smoke/AndroidManifest_bundle.xml"
+  target_sdk_version = 28
+  testonly = true
+  java_files = [
+    "javatests/src/org/chromium/chrome/test/smoke/ChromeBundleSmokeTest.java",
+  ]
+  deps = [
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//chrome/test/android:chrome_java_test_pagecontroller",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
+  ]
+}
+
 if (defined(expected_static_initializer_count)) {
   action_with_pydeps("monochrome_static_initializers") {
     script = "//build/android/gyp/assert_static_initializers.py"

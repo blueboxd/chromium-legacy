@@ -16,27 +16,6 @@ namespace chromeos {
 
 namespace cellular_setup {
 
-namespace {
-
-CellularSetupImpl::Factory* g_test_factory = nullptr;
-
-}  // namespace
-
-// static
-std::unique_ptr<CellularSetupBase> CellularSetupImpl::Factory::Create() {
-  if (g_test_factory)
-    return g_test_factory->BuildInstance();
-
-  return base::WrapUnique(new CellularSetupImpl());
-}
-
-// static
-void CellularSetupImpl::Factory::SetFactoryForTesting(Factory* test_factory) {
-  g_test_factory = test_factory;
-}
-
-CellularSetupImpl::Factory::~Factory() = default;
-
 CellularSetupImpl::CellularSetupImpl() = default;
 
 CellularSetupImpl::~CellularSetupImpl() = default;

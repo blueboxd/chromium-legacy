@@ -17,7 +17,7 @@ class MockSmsWebContentsDelegate : public WebContentsDelegate {
   MockSmsWebContentsDelegate();
   ~MockSmsWebContentsDelegate() override;
 
-  MOCK_METHOD0(CreateSmsDialog, std::unique_ptr<SmsDialog>());
+  MOCK_METHOD1(CreateSmsDialog, std::unique_ptr<SmsDialog>(const url::Origin&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSmsWebContentsDelegate);

@@ -118,6 +118,10 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 
   const url::Origin origin_;
 
+  // The network isolation key to be used for both the worker script and the
+  // worker's subresources.
+  net::NetworkIsolationKey network_isolation_key_;
+
   // This is kept alive during the lifetime of the dedicated worker, since it's
   // associated with Mojo interfaces (ServiceWorkerContainer and
   // URLLoaderFactory) that are needed to stay alive while the worker is

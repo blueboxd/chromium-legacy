@@ -8,7 +8,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chrome/browser/search/background/onboarding_ntp_backgrounds.h"
+#include "chrome/browser/search/background/ntp_backgrounds.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
@@ -46,7 +46,7 @@ NtpBackgroundFetcher::NtpBackgroundFetcher(
           policy_exception_justification: "Not implemented."
         })");
 
-  auto backgrounds = GetOnboardingNtpBackgrounds();
+  auto backgrounds = GetNtpBackgrounds();
 
   if (index_ >= backgrounds.size()) {
     OnFetchCompleted(nullptr);

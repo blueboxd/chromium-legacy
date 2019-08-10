@@ -384,7 +384,7 @@ cr.define('settings_about_page', function() {
         aboutBrowserProxy.refreshTPMFirmwareUpdateStatus();
         assertFalse(page.$.aboutTPMFirmwareUpdate.hidden);
         page.$.aboutTPMFirmwareUpdate.click();
-        await PolymerTest.flushTasks();
+        await test_util.flushTasks();
         const dialog = page.$$('os-settings-powerwash-dialog');
         assertTrue(!!dialog);
         assertTrue(dialog.$.dialog.open);

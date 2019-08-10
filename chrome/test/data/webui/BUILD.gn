@@ -128,7 +128,7 @@ js2gtest("browser_tests_js_webui") {
       "signin/signin_browsertest.js",
       "user_manager/user_manager_browsertest.js",
       "welcome/a11y_tests.js",
-      "welcome/onboarding_welcome_browsertest.js",
+      "welcome/welcome_browsertest.js",
     ]
   }
 
@@ -144,6 +144,9 @@ js2gtest("browser_tests_js_webui") {
   }
   if (enable_print_preview) {
     sources += [ "print_preview/print_preview_ui_browsertest.js" ]
+  }
+  if (enable_webui_tab_strip) {
+    sources += [ "tab_strip/tab_strip_browsertest.js" ]
   }
   deps = [
     ":modulize",

@@ -33,7 +33,7 @@ class APP_LIST_EXPORT AppListPage : public views::View {
 
   // Triggered when the page transition animation started.
   virtual void OnAnimationStarted(ash::AppListState from_state,
-                                  ash::AppListState to_state);
+                                  ash::AppListState to_state) = 0;
 
   // Triggered after the page transition animation has updated.
   virtual void OnAnimationUpdated(double progress,

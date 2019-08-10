@@ -138,6 +138,8 @@ public class ModuleInstallerImpl implements ModuleInstaller {
     private void onFinished(boolean success, List<String> moduleNames) {
         ThreadUtils.assertOnUiThread();
 
+        ModuleActivityObserver.onModuleInstalled();
+
         for (String moduleName : moduleNames) {
             List<OnModuleInstallFinishedListener> onFinishedListeners =
                     mModuleNameListenerMap.get(moduleName);
@@ -173,6 +175,5 @@ public class ModuleInstallerImpl implements ModuleInstaller {
         // they don't get sanitized.
         return TextUtils.join(",", moduleNames).replace('.', '$');
     }
-
     private ModuleInstallerImpl() {}
 }

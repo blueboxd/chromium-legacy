@@ -7,7 +7,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("mojom") {
   sources = [
     "cellular_setup.mojom",
-    "constants.mojom",
   ]
 
   public_deps = [

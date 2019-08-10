@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('onboarding_signin_view_test', function() {
+cr.define('signin_view_test', function() {
   suite('SigninViewTest', function() {
 
     /** @type {SigninViewElement} */

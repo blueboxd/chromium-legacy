@@ -410,7 +410,7 @@ class CONTENT_EXPORT WebContentsDelegate {
       const BluetoothChooser::EventHandler& event_handler);
 
   // Creates a dialog for the user to control the receiving of the SMS.
-  virtual std::unique_ptr<SmsDialog> CreateSmsDialog();
+  virtual std::unique_ptr<SmsDialog> CreateSmsDialog(const url::Origin&);
 
   // Shows a prompt for the user to allow/block Bluetooth scanning. The
   // observer must live at least as long as the returned prompt object.

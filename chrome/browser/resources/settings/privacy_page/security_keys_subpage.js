@@ -21,6 +21,15 @@ Polymer({
     },
 
     /** @private */
+    enableBioEnrollment_: {
+      type: Boolean,
+      readOnly: true,
+      value: function() {
+        return loadTimeData.getBoolean('enableSecurityKeysBioEnrollment');
+      }
+    },
+
+    /** @private */
     showSetPINDialog_: {
       type: Boolean,
       value: false,
@@ -32,6 +41,11 @@ Polymer({
     },
     /** @private */
     showResetDialog_: {
+      type: Boolean,
+      value: false,
+    },
+    /** @private */
+    showBioEnrollDialog_: {
       type: Boolean,
       value: false,
     },
@@ -68,5 +82,16 @@ Polymer({
   onResetDialogClosed_: function() {
     this.showResetDialog_ = false;
     cr.ui.focusWithoutInk(this.$.resetButton);
+  },
+
+  /** @private */
+  onBioEnroll_: function() {
+    this.showBioEnrollDialog_ = true;
+  },
+
+  /** @private */
+  onBioEnrollDialogClosed_: function() {
+    this.showBioEnrollDialog_ = false;
+    cr.ui.focusWithoutInk(assert(this.$$('#bioEnrollButton')));
   },
 });

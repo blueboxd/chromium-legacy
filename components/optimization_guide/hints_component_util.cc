@@ -41,6 +41,67 @@ void PopulateOptimizationFilterStatusIfSet(
     *out_status = status;
 }
 
+// Attempts to construct a valid bloom filter from the given
+// |optimization_filter|. If given, |out_status| will be populated with the
+// status of the operation. If a valid bloom filter cannot be constructed,
+// nullptr is returned.
+std::unique_ptr<BloomFilter> ProcessBloomFilter(
+    const proto::OptimizationFilter& optimization_filter,
+    OptimizationFilterStatus* out_status) {
+  const auto& bloom_filter_proto = optimization_filter.bloom_filter();
+  DCHECK_GT(bloom_filter_proto.num_hash_functions(), 0u);
+  DCHECK_GT(bloom_filter_proto.num_bits(), 0u);
+  DCHECK(bloom_filter_proto.has_data());
+
+  if (!bloom_filter_proto.has_data() || bloom_filter_proto.num_bits() <= 0 ||
+      bloom_filter_proto.num_bits() > bloom_filter_proto.data().size() * 8) {
+    DLOG(ERROR) << "Bloom filter config issue";
+    PopulateOptimizationFilterStatusIfSet(
+        OptimizationFilterStatus::kFailedServerBlacklistBadConfig, out_status);
+    return nullptr;
+  }
+
+  if (static_cast<int>(bloom_filter_proto.num_bits()) >
+      features::MaxServerBloomFilterByteSize() * 8) {
+    DLOG(ERROR) << "Bloom filter data exceeds maximum size of "
+                << optimization_guide::features::MaxServerBloomFilterByteSize()
+                << " bytes";
+    PopulateOptimizationFilterStatusIfSet(
+        OptimizationFilterStatus::kFailedServerBlacklistTooBig, out_status);
+    return nullptr;
+  }
+
+  std::unique_ptr<BloomFilter> bloom_filter = std::make_unique<BloomFilter>(
+      bloom_filter_proto.num_hash_functions(), bloom_filter_proto.num_bits(),
+      bloom_filter_proto.data());
+  PopulateOptimizationFilterStatusIfSet(
+      OptimizationFilterStatus::kCreatedServerBlacklist, out_status);
+  return bloom_filter;
+}
+
+// Attempts to construct a valid RegexpList from the given
+// |optimization_filter|. If given, |out_status| will be populated with the
+// status of the operation. If a valid RegexpList cannot be constructed, nullptr
+// is returned.
+std::unique_ptr<RegexpList> ProcessRegexps(
+    const proto::OptimizationFilter& optimization_filter,
+    OptimizationFilterStatus* out_status) {
+  std::unique_ptr<RegexpList> regexps = std::make_unique<RegexpList>();
+  for (int i = 0; i < optimization_filter.regexps_size(); ++i) {
+    regexps->emplace_back(
+        std::make_unique<re2::RE2>(optimization_filter.regexps(i)));
+    if (!regexps->at(i)->ok()) {
+      PopulateOptimizationFilterStatusIfSet(
+          OptimizationFilterStatus::kInvalidRegexp, out_status);
+      return nullptr;
+    }
+  }
+
+  PopulateOptimizationFilterStatusIfSet(
+      OptimizationFilterStatus::kCreatedServerBlacklist, out_status);
+  return regexps;
+}
+
 }  // namespace
 
 const char kComponentHintsUpdatedResultHistogramString[] =
@@ -93,35 +154,22 @@ void RecordOptimizationFilterStatus(proto::OptimizationType optimization_type,
 std::unique_ptr<OptimizationFilter> ProcessOptimizationFilter(
     const proto::OptimizationFilter& optimization_filter,
     OptimizationFilterStatus* out_status) {
-  const auto& bloom_filter_proto = optimization_filter.bloom_filter();
-  DCHECK_GT(bloom_filter_proto.num_hash_functions(), 0u);
-  DCHECK_GT(bloom_filter_proto.num_bits(), 0u);
-  DCHECK(bloom_filter_proto.has_data());
-
-  if (!bloom_filter_proto.has_data() || bloom_filter_proto.num_bits() <= 0 ||
-      bloom_filter_proto.num_bits() > bloom_filter_proto.data().size() * 8) {
-    DLOG(ERROR) << "Bloom filter config issue";
-    PopulateOptimizationFilterStatusIfSet(
-        OptimizationFilterStatus::kFailedServerBlacklistBadConfig, out_status);
-    return nullptr;
+  std::unique_ptr<BloomFilter> bloom_filter;
+  if (optimization_filter.has_bloom_filter()) {
+    bloom_filter = ProcessBloomFilter(optimization_filter, out_status);
+    if (!bloom_filter)
+      return nullptr;
   }
 
-  if (static_cast<int>(bloom_filter_proto.num_bits()) >
-      features::MaxServerBloomFilterByteSize() * 8) {
-    DLOG(ERROR) << "Bloom filter data exceeds maximum size of "
-                << optimization_guide::features::MaxServerBloomFilterByteSize()
-                << " bytes";
-    PopulateOptimizationFilterStatusIfSet(
-        OptimizationFilterStatus::kFailedServerBlacklistTooBig, out_status);
-    return nullptr;
+  std::unique_ptr<RegexpList> regexps;
+  if (optimization_filter.regexps_size() > 0) {
+    regexps = ProcessRegexps(optimization_filter, out_status);
+    if (!regexps)
+      return nullptr;
   }
 
-  std::unique_ptr<BloomFilter> bloom_filter = std::make_unique<BloomFilter>(
-      bloom_filter_proto.num_hash_functions(), bloom_filter_proto.num_bits(),
-      bloom_filter_proto.data());
-  PopulateOptimizationFilterStatusIfSet(
-      OptimizationFilterStatus::kCreatedServerBlacklist, out_status);
-  return std::make_unique<OptimizationFilter>(std::move(bloom_filter));
+  return std::make_unique<OptimizationFilter>(std::move(bloom_filter),
+                                              std::move(regexps));
 }
 
 }  // namespace optimization_guide

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_helper.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/resource_tracker.h"
@@ -169,8 +170,10 @@ void AdsPageLoadMetricsObserver::MaybeTriggerHeavyAdIntervention(
   // Ensure that this RenderFrameHost is a subframe.
   DCHECK(render_frame_host->GetParent());
 
-  // TODO(959849): Navigate the frame to an error page once error pages can be
-  // loaded from the browser process.
+  GetDelegate()->GetWebContents()->GetController().LoadErrorPage(
+      render_frame_host, render_frame_host->GetLastCommittedURL(),
+      heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
+
   ADS_HISTOGRAM("HeavyAds.InterventionType", UMA_HISTOGRAM_ENUMERATION,
                 FrameData::FrameVisibility::kAnyVisibility,
                 frame_data->heavy_ad_status());

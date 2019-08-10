@@ -107,6 +107,18 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
       [configuration_ setIgnoresViewportScaleLimits:YES];
     }
 
+    if (@available(iOS 13, *)) {
+      @try {
+        // Disable system context menu on iOS 13 and later. Disabling
+        // "longPressActions" prevents the WKWebView ContextMenu from being
+        // displayed.
+        // https://github.com/WebKit/webkit/blob/1233effdb7826a5f03b3cdc0f67d713741e70976/Source/WebKit/UIProcess/API/Cocoa/WKWebViewConfiguration.mm#L307
+        [configuration_ setValue:@NO forKey:@"longPressActionsEnabled"];
+      } @catch (NSException* exception) {
+        NOTREACHED() << "Error setting value for longPressActionsEnabled";
+      }
+    }
+
     [configuration_ setAllowsInlineMediaPlayback:YES];
     // setJavaScriptCanOpenWindowsAutomatically is required to support popups.
     [[configuration_ preferences] setJavaScriptCanOpenWindowsAutomatically:YES];

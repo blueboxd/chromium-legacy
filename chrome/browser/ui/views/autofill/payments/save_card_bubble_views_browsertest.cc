@@ -87,6 +87,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 using base::Bucket;
@@ -710,6 +711,39 @@ class SaveCardBubbleViewsFullFormBrowserTest
     return icon_view;
   }
 
+  void OpenSettingsFromManageCardsPrompt() {
+    FillForm();
+    SubmitFormAndWaitForCardLocalSaveBubble();
+
+    // Adding an event observer to the controller so we can wait for the bubble
+    // to show.
+    AddEventObserverToController();
+    ReduceAnimationTime();
+
+#if !defined(OS_CHROMEOS)
+    ResetEventWaiterForSequence(
+        {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+#endif
+
+    // Click [Save] should close the offer-to-save bubble and show "Card saved"
+    // animation -- followed by the sign-in promo (if not on Chrome OS).
+    ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+
+#if !defined(OS_CHROMEOS)
+    // Wait for and then close the promo.
+    WaitForObservedEvent();
+    ClickOnCloseButton();
+#endif
+
+    // Open up Manage Cards prompt.
+    ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
+    ClickOnView(GetSaveCardIconView());
+    WaitForObservedEvent();
+
+    // Click on the redirect button.
+    ClickOnDialogViewWithId(DialogViewId::MANAGE_CARDS_BUTTON);
+  }
+
   content::WebContents* GetActiveWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
@@ -983,41 +1017,18 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                                       AutofillMetrics::MANAGE_CARDS_SHOWN, 1);
 }
 
+// TODO(crbug/950007): Remove this test when kSplitSettings is on by default
 // Tests the manage cards bubble. Ensures that clicking the [Manage cards]
 // button redirects properly.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ManageCardsButtonRedirects) {
-  FillForm();
-  SubmitFormAndWaitForCardLocalSaveBubble();
-
-  // Adding an event observer to the controller so we can wait for the bubble to
-  // show.
-  AddEventObserverToController();
-  ReduceAnimationTime();
-
-#if !defined(OS_CHROMEOS)
-  ResetEventWaiterForSequence(
-      {DialogEvent::BUBBLE_CLOSED, DialogEvent::BUBBLE_SHOWN});
+#if defined(OS_CHROMEOS)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(chromeos::features::kSplitSettings);
 #endif
 
-  // Click [Save] should close the offer-to-save bubble and show "Card saved"
-  // animation -- followed by the sign-in promo (if not on Chrome OS).
-  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
-
-#if !defined(OS_CHROMEOS)
-  // Wait for and then close the promo.
-  WaitForObservedEvent();
-  ClickOnCloseButton();
-#endif
-
-  // Open up Manage Cards prompt.
   base::HistogramTester histogram_tester;
-  ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
-  ClickOnView(GetSaveCardIconView());
-  WaitForObservedEvent();
-
-  // Click on the redirect button.
-  ClickOnDialogViewWithId(DialogViewId::MANAGE_CARDS_BUTTON);
+  OpenSettingsFromManageCardsPrompt();
 
 #if defined(OS_CHROMEOS)
   // ChromeOS should have opened up the settings window.
@@ -1028,6 +1039,28 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Otherwise, another tab should have opened.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 #endif
+
+  // Metrics should have been recorded correctly.
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.ManageCardsPrompt.Local"),
+      ElementsAre(Bucket(AutofillMetrics::MANAGE_CARDS_SHOWN, 1),
+                  Bucket(AutofillMetrics::MANAGE_CARDS_MANAGE_CARDS, 1)));
+}
+
+// Tests the manage cards bubble. Ensures that clicking the [Manage cards]
+// button redirects properly.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Local_ManageCardsButtonRedirects_WithSplitSettings) {
+#if defined(OS_CHROMEOS)
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
+#endif
+
+  base::HistogramTester histogram_tester;
+  OpenSettingsFromManageCardsPrompt();
+
+  // Another tab should have opened.
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   // Metrics should have been recorded correctly.
   EXPECT_THAT(

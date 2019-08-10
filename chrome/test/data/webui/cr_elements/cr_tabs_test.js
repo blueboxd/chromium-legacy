@@ -11,7 +11,7 @@ suite('cr_tabs_test', function() {
     document.body.innerHTML = `<cr-tabs></cr-tabs>`;
     tabs = document.querySelector('cr-tabs');
     tabs.tabNames = ['tab1', 'tab2', 'tab3'];
-    return PolymerTest.flushTasks();
+    return test_util.flushTasks();
   });
 
   /**
@@ -123,7 +123,7 @@ suite('cr_tabs_test', function() {
     tabs.tabNames = ['tab1', 'tab2'];
     assertEquals(undefined, tabs.selected);
     tabs.selected = 0;
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     assertNotEquals(fullyExpanded, underline.style.transform);
     underline.style.transform = fullyExpanded;
     const wait = test_util.eventToPromise('transitionend', underline);

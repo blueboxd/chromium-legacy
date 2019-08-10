@@ -652,4 +652,8 @@ void GamepadDeviceLinux::SetZeroVibration() {
     StartOrStopEffect(evdev_fd_, effect_id_, false);
 }
 
+base::WeakPtr<AbstractHapticGamepad> GamepadDeviceLinux::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace device

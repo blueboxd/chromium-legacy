@@ -11,7 +11,7 @@ suite('cr-slider', function() {
 
     crSlider = document.body.querySelector('cr-slider');
     crSlider.value = 0;
-    return PolymerTest.flushTasks();
+    return test_util.flushTasks();
   });
 
   /** @param {boolean} expected */

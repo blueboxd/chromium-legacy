@@ -40,11 +40,8 @@ void LocationBarBubbleDelegateView::WebContentMouseHandler::OnEvent(
 
 LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents)
-    : BubbleDialogDelegateView(anchor_view,
-                               anchor_view ? views::BubbleBorder::TOP_RIGHT
-                                           : views::BubbleBorder::NONE),
+    : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       WebContentsObserver(web_contents) {
   // Add observer to close the bubble if the fullscreen state changes.
   if (web_contents) {
@@ -52,8 +49,6 @@ LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
     fullscreen_observer_.Add(
         browser->exclusive_access_manager()->fullscreen_controller());
   }
-  if (!anchor_view)
-    SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
 }
 
 LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() = default;

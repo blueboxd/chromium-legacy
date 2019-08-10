@@ -47,21 +47,20 @@ namespace content {
 // DateTimeChooserAndroid implementation
 DateTimeChooserAndroid::DateTimeChooserAndroid(WebContentsImpl* web_contents)
     : content::WebContentsObserver(web_contents),
-      date_time_chooser_binding_(this) {
-  registry_.AddInterface(
-      base::BindRepeating(&DateTimeChooserAndroid::OnDateTimeChooserRequest,
+      date_time_chooser_receiver_(this) {
+  binders_.Add(
+      base::BindRepeating(&DateTimeChooserAndroid::OnDateTimeChooserReceiver,
                           base::Unretained(this)));
 }
 
 DateTimeChooserAndroid::~DateTimeChooserAndroid() {
 }
 
-void DateTimeChooserAndroid::OnDateTimeChooserRequest(
-    blink::mojom::DateTimeChooserRequest request) {
+void DateTimeChooserAndroid::OnDateTimeChooserReceiver(
+    mojo::PendingReceiver<blink::mojom::DateTimeChooser> receiver) {
   // Disconnect the previous picker first.
-  date_time_chooser_binding_.Close();
-
-  date_time_chooser_binding_.Bind(std::move(request));
+  date_time_chooser_receiver_.reset();
+  date_time_chooser_receiver_.Bind(std::move(receiver));
 }
 
 void DateTimeChooserAndroid::OpenDateTimeDialog(
@@ -70,7 +69,7 @@ void DateTimeChooserAndroid::OpenDateTimeDialog(
   JNIEnv* env = AttachCurrentThread();
 
   if (open_date_time_response_callback_) {
-    date_time_chooser_binding_.ReportBadMessage(
+    date_time_chooser_receiver_.ReportBadMessage(
         "DateTimeChooserAndroid: Previous picker's binding isn't closed.");
     return;
   }
@@ -121,7 +120,7 @@ void DateTimeChooserAndroid::OnInterfaceRequestFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
+  binders_.TryBind(interface_name, interface_pipe);
 }
 
 }  // namespace content

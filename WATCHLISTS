@@ -1714,6 +1714,9 @@
                   'chromeos/.*(language|keyboard)'\
                   '|chromeos/ime/*'
     },
+    'third_party_conflicts': {
+      'filepath': 'chrome/browser/win/conflicts/'
+    },
     'timers': {
       'filepath': 'base/timer/'\
                   '|components/timers/'
@@ -2193,7 +2196,8 @@
                                  'martijn+crwatch@martijnc.be',
                                  'rsleevi+watch@chromium.org'],
     'chrome_cleaner': ['joenotcharles+watch@google.com'],
-    'chrome_elf': ['caitkp+watch@chromium.org'],
+    'chrome_elf': ['caitkp+watch@chromium.org',
+                   'pmonette+watch@chromium.org'],
     'chrome_grc': ['chrome-grc-reviews@chromium.org'],
     'chrome_performance_manager': ['performance-manager-reviews@chromium.org'],
     'chromecast': ['alokp+watch@chromium.org',
@@ -2609,6 +2613,7 @@
                            'shuchen+watch@chromium.org',
                            'yhanada+watch@chromium.org',
                            'yusukes+watch@chromium.org'],
+    'third_party_conflicts': ['pmonette+watch@chromium.org'],
     'timers': [],
     'tools_win_chromeexts': ['robliao+watch@chromium.org'],
     'touch_selection': ['ajith.v@samsung.com',

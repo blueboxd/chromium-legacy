@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "base/format_macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -378,11 +379,63 @@ TEST_F(FeatureListTest, AssociateReportingFieldTrial) {
   }
 }
 
+TEST_F(FeatureListTest, RegisterExtraFeatureOverrides) {
+  ClearFeatureListInstance();
+
+  auto feature_list = std::make_unique<FeatureList>();
+  std::vector<FeatureList::FeatureOverrideInfo> overrides;
+  overrides.push_back({std::cref(kFeatureOnByDefault),
+                       FeatureList::OverrideState::OVERRIDE_DISABLE_FEATURE});
+  overrides.push_back({std::cref(kFeatureOffByDefault),
+                       FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE});
+  feature_list->RegisterExtraFeatureOverrides(std::move(overrides));
+  RegisterFeatureListInstance(std::move(feature_list));
+
+  EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOnByDefault));
+  EXPECT_TRUE(FeatureList::IsEnabled(kFeatureOffByDefault));
+}
+
+TEST_F(FeatureListTest, InitializeFromCommandLineThenRegisterExtraOverrides) {
+  ClearFeatureListInstance();
+
+  auto feature_list = std::make_unique<FeatureList>();
+  feature_list->InitializeFromCommandLine(kFeatureOnByDefaultName,
+                                          kFeatureOffByDefaultName);
+  std::vector<FeatureList::FeatureOverrideInfo> overrides;
+  overrides.push_back({std::cref(kFeatureOnByDefault),
+                       FeatureList::OverrideState::OVERRIDE_DISABLE_FEATURE});
+  overrides.push_back({std::cref(kFeatureOffByDefault),
+                       FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE});
+  feature_list->RegisterExtraFeatureOverrides(std::move(overrides));
+  RegisterFeatureListInstance(std::move(feature_list));
+
+  // The InitializeFromCommandLine supersedes the RegisterExtraFeatureOverrides
+  // because it was called first.
+  EXPECT_TRUE(FeatureList::IsEnabled(kFeatureOnByDefault));
+  EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOffByDefault));
+
+  std::string enable_features;
+  std::string disable_features;
+  FeatureList::GetInstance()->GetFeatureOverrides(&enable_features,
+                                                  &disable_features);
+  EXPECT_EQ(kFeatureOnByDefaultName, SortFeatureListString(enable_features));
+  EXPECT_EQ(kFeatureOffByDefaultName, SortFeatureListString(disable_features));
+}
+
 TEST_F(FeatureListTest, GetFeatureOverrides) {
   ClearFeatureListInstance();
   FieldTrialList field_trial_list(nullptr);
   std::unique_ptr<FeatureList> feature_list(new FeatureList);
   feature_list->InitializeFromCommandLine("A,X", "D");
+
+  Feature feature_b = {"B", FEATURE_ENABLED_BY_DEFAULT};
+  Feature feature_c = {"C", FEATURE_DISABLED_BY_DEFAULT};
+  std::vector<FeatureList::FeatureOverrideInfo> overrides;
+  overrides.push_back({std::cref(feature_b),
+                       FeatureList::OverrideState::OVERRIDE_DISABLE_FEATURE});
+  overrides.push_back({std::cref(feature_c),
+                       FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE});
+  feature_list->RegisterExtraFeatureOverrides(std::move(overrides));
 
   FieldTrial* trial = FieldTrialList::CreateFieldTrial("Trial", "Group");
   feature_list->RegisterFieldTrialOverride(kFeatureOffByDefaultName,
@@ -395,13 +448,13 @@ TEST_F(FeatureListTest, GetFeatureOverrides) {
   std::string disable_features;
   FeatureList::GetInstance()->GetFeatureOverrides(&enable_features,
                                                   &disable_features);
-  EXPECT_EQ("A,OffByDefault<Trial,X", SortFeatureListString(enable_features));
-  EXPECT_EQ("D", SortFeatureListString(disable_features));
+  EXPECT_EQ("A,C,OffByDefault<Trial,X", SortFeatureListString(enable_features));
+  EXPECT_EQ("B,D", SortFeatureListString(disable_features));
 
   FeatureList::GetInstance()->GetCommandLineFeatureOverrides(&enable_features,
                                                              &disable_features);
-  EXPECT_EQ("A,X", SortFeatureListString(enable_features));
-  EXPECT_EQ("D", SortFeatureListString(disable_features));
+  EXPECT_EQ("A,C,X", SortFeatureListString(enable_features));
+  EXPECT_EQ("B,D", SortFeatureListString(disable_features));
 }
 
 TEST_F(FeatureListTest, GetFeatureOverrides_UseDefault) {

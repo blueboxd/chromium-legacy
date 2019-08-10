@@ -108,7 +108,7 @@ cr.define('key_event_test', function() {
       const whenKeyEventFired = test_util.eventToPromise('keydown', button);
       MockInteractions.keyEventOn(button, 'keydown', 'Enter', [], 'Enter');
       await whenKeyEventFired;
-      await PolymerTest.flushTasks();
+      await test_util.flushTasks();
       assertEquals(0, nativeLayer.getCallCount('print'));
     });
 

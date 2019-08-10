@@ -30,6 +30,12 @@ constexpr wchar_t kRegMdmUrl[] = L"mdm";
 constexpr wchar_t kRegMdmEscrowServiceServerUrl[] = L"mdm_ess_url";
 constexpr wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
 constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"mdm_aca";
+constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
+#if defined(GOOGLE_CHROME_BUILD)
+    L"Chrome-GCPW-";
+#else
+    L"Chromium-GCPW-";
+#endif
 
 // Overridden in tests to force the MDM enrollment to either succeed or fail.
 enum class EnrollmentStatus {
@@ -316,6 +322,12 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
     LOGFN(ERROR) << "RegisterWithGoogleDeviceManagement hr=" << putHR(hr);
 
   return hr;
+}
+
+base::string16 GetUserPasswordLsaStoreKey(const base::string16& sid) {
+  DCHECK(sid.size());
+
+  return kUserPasswordLsaStoreKeyPrefix + sid;
 }
 
 // GoogleMdmEnrollmentStatusForTesting ////////////////////////////////////////

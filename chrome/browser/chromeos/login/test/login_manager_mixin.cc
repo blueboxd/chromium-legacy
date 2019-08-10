@@ -32,6 +32,9 @@ namespace chromeos {
 
 namespace {
 
+// Ensure LoginManagerMixin is only created once.
+bool g_instance_created = false;
+
 // Chrome main extra part used for login manager tests to set up initially
 // registered users. The main part injects itself into browser startup after
 // local state has been set up, but before the user manager instance is created.
@@ -98,9 +101,14 @@ UserContext LoginManagerMixin::CreateDefaultUserContext(
 LoginManagerMixin::LoginManagerMixin(
     InProcessBrowserTestMixinHost* host,
     const std::vector<TestUserInfo>& initial_users)
-    : InProcessBrowserTestMixin(host), initial_users_(initial_users) {}
+    : InProcessBrowserTestMixin(host), initial_users_(initial_users) {
+  DCHECK(!g_instance_created);
+  g_instance_created = true;
+}
 
-LoginManagerMixin::~LoginManagerMixin() = default;
+LoginManagerMixin::~LoginManagerMixin() {
+  g_instance_created = false;
+}
 
 void LoginManagerMixin::SetDefaultLoginSwitches(
     const std::vector<test::SessionFlagsManager::Switch>& switches) {

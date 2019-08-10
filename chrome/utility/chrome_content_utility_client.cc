@@ -32,8 +32,6 @@
 #include "ui/base/buildflags.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/utility/importer/profile_import_impl.h"
-#include "chrome/utility/importer/profile_import_service.h"
 #include "services/network/url_request_context_builder_mojo.h"
 #endif  // !defined(OS_ANDROID)
 
@@ -43,15 +41,8 @@
 #include "components/services/quarantine/quarantine_service.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_WIN)
-#include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
-#include "chrome/services/wifi_util_win/wifi_util_win_service.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chromeos/assistant/buildflags.h"  // nogncheck
-#include "chromeos/services/ime/ime_service.h"
-#include "chromeos/services/ime/public/mojom/constants.mojom.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_service.h"  // nogncheck
@@ -143,18 +134,6 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 bool ChromeContentUtilityClient::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-  if (utility_process_running_elevated_) {
-    // This process is running with elevated privileges. Only handle a limited
-    // set of service requests in this case.
-    auto service = MaybeCreateElevatedService(service_name, std::move(request));
-    if (service) {
-      RunServiceAsyncThenTerminateProcess(std::move(service));
-      return true;
-    }
-
-    return false;
-  }
-
   auto service = MaybeCreateMainThreadService(service_name, std::move(request));
   if (service) {
     RunServiceAsyncThenTerminateProcess(std::move(service));
@@ -181,9 +160,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 #endif  // OS_WIN
 
 #if !defined(OS_ANDROID)
-  if (service_name == chrome::mojom::kProfileImportServiceName)
-    return std::make_unique<ProfileImportService>(std::move(request));
-
   if (base::FeatureList::IsEnabled(mirroring::features::kMirroringService) &&
       base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams) &&
       service_name == mirroring::mojom::kServiceName) {
@@ -193,30 +169,13 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (service_name == chromeos::ime::mojom::kServiceName)
-    return std::make_unique<chromeos::ime::ImeService>(std::move(request));
-
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   if (service_name == chromeos::assistant::mojom::kAudioDecoderServiceName) {
     return std::make_unique<chromeos::assistant::AssistantAudioDecoderService>(
         std::move(request));
   }
 #endif
-
-#endif  // defined(OS_CHROMEOS)
-  return nullptr;
-}
-
-std::unique_ptr<service_manager::Service>
-ChromeContentUtilityClient::MaybeCreateElevatedService(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-  DCHECK(utility_process_running_elevated_);
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_EXTENSIONS)
-  if (service_name == chrome::mojom::kWifiUtilWinServiceName)
-    return std::make_unique<WifiUtilWinService>(std::move(request));
 #endif
-
   return nullptr;
 }
 

@@ -34,13 +34,6 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
 }
 
 // static
-bool HistoryProvider::PreventInlineAutocomplete(
-    const AutocompleteInput& input) {
-  return input.prevent_inline_autocomplete() ||
-      (!input.text().empty() && base::IsUnicodeWhitespace(input.text().back()));
-}
-
-// static
 ACMatchClassifications HistoryProvider::SpansFromTermMatch(
     const TermMatches& matches,
     size_t text_length,

@@ -218,8 +218,7 @@ void PreviewsHints::ParseOptimizationFilters(
         ConvertProtoOptimizationTypeToPreviewsType(
             blacklist.optimization_type());
     if (previews_type == PreviewsType::LITE_PAGE_REDIRECT &&
-        previews::params::IsLitePageServerPreviewsEnabled() &&
-        blacklist.has_bloom_filter()) {
+        previews::params::IsLitePageServerPreviewsEnabled()) {
       RecordOptimizationFilterStatus(
           blacklist.optimization_type(),
           optimization_guide::OptimizationFilterStatus::
@@ -331,7 +330,7 @@ bool PreviewsHints::IsBlacklisted(const GURL& url, PreviewsType type) const {
       return true;
     }
 
-    return lite_page_redirect_blacklist_->ContainsHostSuffix(url);
+    return lite_page_redirect_blacklist_->Matches(url);
   }
 
   return false;

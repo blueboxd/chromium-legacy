@@ -2,19 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chromeos/services/cellular_setup/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
-}
-
 static_library("test_support") {
   testonly = true
 

@@ -106,7 +106,7 @@ int GetSanitizedArg(const std::string& switch_name) {
   if (int_value > policy::AutoEnrollmentClient::kMaximumPower) {
     LOG(ERROR) << "Switch \"" << switch_name << "\" can't be greater than "
                << policy::AutoEnrollmentClient::kMaximumPower << ". Using "
-               << policy::AutoEnrollmentClient::kMaximumPower;
+               << policy::AutoEnrollmentClient::kMaximumPower << ".";
     return policy::AutoEnrollmentClient::kMaximumPower;
   }
   return int_value;
@@ -334,7 +334,8 @@ bool AutoEnrollmentController::IsFREEnabled() {
   if (command_line_mode == kForcedReEnrollmentNever)
     return false;
 
-  LOG(FATAL) << "Unknown auto-enrollment mode for FRE " << command_line_mode;
+  LOG(FATAL) << "Unknown auto-enrollment mode for FRE: " << command_line_mode
+             << ".";
   return false;
 }
 
@@ -358,8 +359,8 @@ bool AutoEnrollmentController::IsInitialEnrollmentEnabled() {
   if (command_line_mode == kInitialEnrollmentNever)
     return false;
 
-  LOG(FATAL) << "Unknown auto-enrollment mode for initial enrollment "
-             << command_line_mode;
+  LOG(FATAL) << "Unknown auto-enrollment mode for initial enrollment: "
+             << command_line_mode << ".";
   return false;
 }
 
@@ -553,7 +554,7 @@ AutoEnrollmentController::GetInitialEnrollmentRequirement() {
 void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
   // Skip everything if neither FRE nor Initial Enrollment are enabled.
   if (!IsEnabled()) {
-    LOGIN_LOG(EVENT) << "Auto-enrollment disabled";
+    LOGIN_LOG(EVENT) << "Auto-enrollment disabled.";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
     return;
   }
@@ -570,20 +571,20 @@ void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
   fre_requirement_ = GetFRERequirement();
   LOGIN_LOG(EVENT) << FRERequirementToString(fre_requirement_);
   if (fre_requirement_ == FRERequirement::kExplicitlyNotRequired) {
-    LOGIN_LOG(EVENT) << "Auto-enrollment disabled: VPD";
+    LOGIN_LOG(EVENT) << "Auto-enrollment disabled: VPD.";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
     return;
   }
 
   if (ShouldDoFRECheck(command_line, fre_requirement_)) {
     // FRE has precedence over Initial Enrollment.
-    LOGIN_LOG(EVENT) << "Proceeding with FRE check";
+    LOGIN_LOG(EVENT) << "Proceeding with FRE check.";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kFRE;
     return;
   }
 
   if (ShouldDoInitialEnrollmentCheck()) {
-    LOGIN_LOG(EVENT) << "Proceeding with Initial Enrollment check";
+    LOGIN_LOG(EVENT) << "Proceeding with Initial Enrollment check.";
     auto_enrollment_check_type_ = AutoEnrollmentCheckType::kInitialEnrollment;
     return;
   }
@@ -598,13 +599,13 @@ bool AutoEnrollmentController::ShouldDoFRECheck(
   // Skip FRE check if modulus configuration is not present.
   if (!command_line->HasSwitch(switches::kEnterpriseEnrollmentInitialModulus) &&
       !command_line->HasSwitch(switches::kEnterpriseEnrollmentModulusLimit)) {
-    LOGIN_LOG(EVENT) << "FRE disabled: command line (config)";
+    LOGIN_LOG(EVENT) << "FRE disabled through command line (config).";
     return false;
   }
 
   // Skip FRE check if it is not enabled by command-line switches.
   if (!IsFREEnabled()) {
-    LOGIN_LOG(EVENT) << "FRE disabled";
+    LOGIN_LOG(EVENT) << "FRE disabled.";
     return false;
   }
 
@@ -672,7 +673,7 @@ void AutoEnrollmentController::OnOwnershipStatusCheckDone(
 void AutoEnrollmentController::StartClientForFRE(
     const std::vector<std::string>& state_keys) {
   if (state_keys.empty()) {
-    LOG(ERROR) << "No state keys available";
+    LOG(ERROR) << "No state keys available.";
     if (fre_requirement_ == FRERequirement::kExplicitlyRequired) {
       if (request_state_keys_tries_ >= kMaxRequestStateKeysTries) {
         if (safeguard_timer_.IsRunning())

@@ -81,8 +81,7 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
     match.allowed_to_be_default_match =
-        match.inline_autocompletion.empty() ||
-        !HistoryProvider::PreventInlineAutocomplete(input);
+        AutocompleteMatch::AllowedToBeDefault(input, match);
   }
   match.description = titled_url_match.node->GetTitledUrlNodeTitle();
   base::TrimWhitespace(match.description, base::TRIM_LEADING,

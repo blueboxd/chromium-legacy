@@ -19,7 +19,6 @@ include_rules = [
   "+chrome/services/printing/public",
   "+chrome/services/removable_storage_writer/public",
   "+chrome/services/util_win/public",
-  "+chrome/services/wifi_util_win/public",
   "+chromeos",
   "+components/about_ui",
   "+components/account_id",

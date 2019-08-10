@@ -407,6 +407,8 @@ void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
                  ::tolower);
   set_high_contrast(theme_name.find("high") != std::string::npos &&
                     theme_name.find("contrast") != std::string::npos);
+
+  NotifyObservers();
 }
 
 SkColor NativeThemeGtk::GetSystemColor(ColorId color_id,

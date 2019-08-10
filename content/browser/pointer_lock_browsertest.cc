@@ -4,6 +4,7 @@
 
 #include "content/browser/pointer_lock_browsertest.h"
 
+#include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -187,7 +188,14 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockAndUserActivation) {
                    EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
+// Flaky on Windows.  https://crbug.com/992529
+#if defined(OS_WIN)
+#define MAYBE_PointerLockEventRouting DISABLED_PointerLockEventRouting
+#else
+#define MAYBE_PointerLockEventRouting PointerLockEventRouting
+#endif
+
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, MAYBE_PointerLockEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

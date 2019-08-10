@@ -42,7 +42,7 @@ class ArCoreSessionUtils {
       SurfaceReadyCallback ready_callback,
       SurfaceTouchCallback touch_callback,
       SurfaceDestroyedCallback destroyed_callback) = 0;
-  virtual void DestroyDrawingSurface() = 0;
+  virtual void EndSession() = 0;
 };
 
 }  // namespace vr

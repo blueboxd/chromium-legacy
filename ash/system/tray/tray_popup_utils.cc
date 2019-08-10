@@ -13,6 +13,8 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/size_range_layout.h"
 #include "ash/system/tray/tray_constants.h"
@@ -228,7 +230,9 @@ views::LabelButton* TrayPopupUtils::CreateTrayPopupButton(
 views::Separator* TrayPopupUtils::CreateVerticalSeparator() {
   views::Separator* separator = new views::Separator();
   separator->SetPreferredHeight(24);
-  separator->SetColor(kSeparatorOnLightBackgroundColor);
+  separator->SetColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kSeparator,
+      kSeparatorOnLightBackgroundColor));
   return separator;
 }
 
@@ -313,7 +317,9 @@ gfx::Rect TrayPopupUtils::GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
 
 views::Separator* TrayPopupUtils::CreateListItemSeparator(bool left_inset) {
   views::Separator* separator = new views::Separator();
-  separator->SetColor(kSeparatorOnLightBackgroundColor);
+  separator->SetColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kSeparator,
+      kSeparatorOnLightBackgroundColor));
   separator->SetBorder(views::CreateEmptyBorder(
       kMenuSeparatorVerticalPadding - views::Separator::kThickness,
       left_inset

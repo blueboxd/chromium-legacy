@@ -413,6 +413,9 @@ void WebRemoteFrameImpl::UpdateUserActivationState(
     case UserActivationUpdateType::kClearActivation:
       GetFrame()->ClearUserActivationInLocalTree();
       break;
+    case UserActivationUpdateType::kNotifyActivationPendingBrowserVerification:
+      NOTREACHED() << "Unexpected UserActivationUpdateType from browser";
+      break;
   }
 }
 

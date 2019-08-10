@@ -252,6 +252,17 @@ void Label::SetObscured(bool obscured) {
   OnPropertyChanged(&full_text_ + kLabelObscured, kPropertyEffectsLayout);
 }
 
+bool Label::IsDisplayTextTruncated() const {
+  MaybeBuildDisplayText();
+  if (!full_text_ || full_text_->text().empty())
+    return false;
+  auto text_bounds = GetTextBounds();
+  return (display_text_ &&
+          display_text_->text() != display_text_->GetDisplayText()) ||
+         text_bounds.width() > GetContentsBounds().width() ||
+         text_bounds.height() > GetContentsBounds().height();
+}
+
 bool Label::GetAllowCharacterBreak() const {
   return full_text_->word_wrap_behavior() == gfx::WRAP_LONG_WORDS ? true
                                                                   : false;

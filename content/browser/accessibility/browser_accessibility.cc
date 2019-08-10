@@ -1849,6 +1849,15 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
   const ui::AXNodeData& data = GetData();
 
   switch (data.role) {
+    case ax::mojom::Role::kAudio:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_AUDIO);
+
+    case ax::mojom::Role::kDetails:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DETAILS);
+
+    case ax::mojom::Role::kMeter:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_METER);
+
     case ax::mojom::Role::kSearchBox:
       return content_client->GetLocalizedString(IDS_AX_ROLE_SEARCH_BOX);
 
@@ -1856,7 +1865,9 @@ base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
       std::string input_type;
       if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
                                   &input_type)) {
-        if (input_type == "tel") {
+        if (input_type == "email") {
+          return content_client->GetLocalizedString(IDS_AX_ROLE_EMAIL);
+        } else if (input_type == "tel") {
           return content_client->GetLocalizedString(IDS_AX_ROLE_TELEPHONE);
         } else if (input_type == "url") {
           return content_client->GetLocalizedString(IDS_AX_ROLE_URL);

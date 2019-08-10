@@ -42,30 +42,17 @@ void HostDrmDevice::BlockingStartDrmDevice() {
 }
 
 void HostDrmDevice::OnDrmServiceStarted() {
+  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
+
   // This can be called multiple times in the course of single-threaded startup.
   // Ignore invocations after we've started.
   if (connected_)
     return;
 
   connected_ = true;
-  RunObservers();
 
-  // TODO(rjkroege): Handle failure of launching a viz process with the
-  // ServiceManager.
-}
-
-void HostDrmDevice::ProvideManagers(DrmDisplayHostManager* display_manager,
-                                    DrmOverlayManagerHost* overlay_manager) {
-  display_manager_ = display_manager;
-  overlay_manager_ = overlay_manager;
-}
-
-void HostDrmDevice::RunObservers() {
-  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
-  for (GpuThreadObserver& observer : gpu_thread_observers_) {
-    observer.OnGpuProcessLaunched();
+  for (GpuThreadObserver& observer : gpu_thread_observers_)
     observer.OnGpuThreadReady();
-  }
 
   DCHECK(cursor_proxy_)
       << "We should have already created a cursor proxy previously";
@@ -75,13 +62,17 @@ void HostDrmDevice::RunObservers() {
   // DRM thread is broken.
 }
 
+void HostDrmDevice::ProvideManagers(DrmDisplayHostManager* display_manager,
+                                    DrmOverlayManagerHost* overlay_manager) {
+  display_manager_ = display_manager;
+  overlay_manager_ = overlay_manager;
+}
+
 void HostDrmDevice::AddGpuThreadObserver(GpuThreadObserver* observer) {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   gpu_thread_observers_.AddObserver(observer);
-  if (IsConnected()) {
-    observer->OnGpuProcessLaunched();
+  if (IsConnected())
     observer->OnGpuThreadReady();
-  }
 }
 
 void HostDrmDevice::RemoveGpuThreadObserver(GpuThreadObserver* observer) {
@@ -234,8 +225,8 @@ bool HostDrmDevice::GpuRelinquishDisplayControl() {
   return true;
 }
 
-bool HostDrmDevice::GpuAddGraphicsDevice(const base::FilePath& path,
-                                         base::ScopedFD fd) {
+bool HostDrmDevice::GpuAddGraphicsDeviceOnUIThread(const base::FilePath& path,
+                                                   base::ScopedFD fd) {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
     return false;
@@ -244,6 +235,14 @@ bool HostDrmDevice::GpuAddGraphicsDevice(const base::FilePath& path,
   drm_device_ptr_->AddGraphicsDevice(path, std::move(file));
 
   return true;
+}
+
+void HostDrmDevice::GpuAddGraphicsDeviceOnIOThread(const base::FilePath& path,
+                                                   base::ScopedFD fd) {
+  DCHECK_CALLED_ON_VALID_THREAD(on_io_thread_);
+  DCHECK(drm_device_ptr_on_io_thread_.is_bound());
+  base::File file(fd.release());
+  drm_device_ptr_on_io_thread_->AddGraphicsDevice(path, std::move(file));
 }
 
 bool HostDrmDevice::GpuRemoveGraphicsDevice(const base::FilePath& path) {
@@ -352,8 +351,28 @@ void HostDrmDevice::GpuSetHDCPStateCallback(int64_t display_id,
   display_manager_->GpuUpdatedHDCPState(display_id, success);
 }
 
-// Invoked in response to the successful launching of the GPU service.
-void HostDrmDevice::OnGpuServiceLaunched(
+void HostDrmDevice::OnGpuServiceLaunchedOnIOThread(
+    ui::ozone::mojom::DrmDevicePtr drm_device_ptr,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_runner) {
+  DCHECK_CALLED_ON_VALID_THREAD(on_io_thread_);
+  // The observers might send IPC messages from the IO thread during the call to
+  // OnGpuProcessLaunched.
+  drm_device_ptr_on_io_thread_ = std::move(drm_device_ptr);
+  for (GpuThreadObserver& observer : gpu_thread_observers_)
+    observer.OnGpuProcessLaunched();
+  // In the single-threaded mode, there won't be separate UI and IO threads.
+  if (ui_runner->BelongsToCurrentThread()) {
+    OnGpuServiceLaunchedOnUIThread(
+        drm_device_ptr_on_io_thread_.PassInterface());
+  } else {
+    ui_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HostDrmDevice::OnGpuServiceLaunchedOnUIThread, this,
+                       drm_device_ptr_on_io_thread_.PassInterface()));
+  }
+}
+
+void HostDrmDevice::OnGpuServiceLaunchedOnUIThread(
     ui::ozone::mojom::DrmDevicePtrInfo drm_device_ptr_info) {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
 

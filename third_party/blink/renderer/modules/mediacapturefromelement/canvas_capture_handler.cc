@@ -19,6 +19,7 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
@@ -134,6 +135,7 @@ class CanvasCaptureHandler::CanvasCaptureHandlerDelegate {
 };
 
 CanvasCaptureHandler::CanvasCaptureHandler(
+    LocalFrame* frame,
     const blink::WebSize& size,
     double frame_rate,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -142,7 +144,7 @@ CanvasCaptureHandler::CanvasCaptureHandler(
   std::unique_ptr<media::VideoCapturerSource> video_source(
       new VideoCapturerSource(weak_ptr_factory_.GetWeakPtr(), size,
                               frame_rate));
-  AddVideoCapturerSourceToVideoTrack(std::move(video_source), track);
+  AddVideoCapturerSourceToVideoTrack(frame, std::move(video_source), track);
 }
 
 CanvasCaptureHandler::~CanvasCaptureHandler() {
@@ -154,6 +156,7 @@ CanvasCaptureHandler::~CanvasCaptureHandler() {
 // static
 std::unique_ptr<CanvasCaptureHandler>
 CanvasCaptureHandler::CreateCanvasCaptureHandler(
+    LocalFrame* frame,
     const blink::WebSize& size,
     double frame_rate,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -163,7 +166,7 @@ CanvasCaptureHandler::CreateCanvasCaptureHandler(
   UpdateWebRTCMethodCount(blink::WebRTCAPIName::kCanvasCaptureStream);
 
   return std::unique_ptr<CanvasCaptureHandler>(new CanvasCaptureHandler(
-      size, frame_rate, std::move(io_task_runner), track));
+      frame, size, frame_rate, std::move(io_task_runner), track));
 }
 
 void CanvasCaptureHandler::SendNewFrame(
@@ -476,6 +479,7 @@ void CanvasCaptureHandler::SendFrame(scoped_refptr<VideoFrame> video_frame,
 }
 
 void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
+    LocalFrame* frame,
     std::unique_ptr<media::VideoCapturerSource> source,
     blink::WebMediaStreamTrack* web_track) {
   uint8_t track_id_bytes[64];
@@ -484,7 +488,7 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
   media::VideoCaptureFormats preferred_formats = source->GetPreferredFormats();
   blink::MediaStreamVideoSource* media_stream_source =
       new blink::MediaStreamVideoCapturerSource(
-          blink::WebPlatformMediaStreamSource::SourceStoppedCallback(),
+          frame, blink::WebPlatformMediaStreamSource::SourceStoppedCallback(),
           std::move(source));
   blink::WebMediaStreamSource webkit_source;
   webkit_source.Initialize(track_id, blink::WebMediaStreamSource::kTypeVideo,

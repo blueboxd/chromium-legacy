@@ -108,6 +108,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     delegate_ = delegate.get();
     EXPECT_CALL(*delegate_, GetPreferredFormats());
     source_ = new MediaStreamVideoCapturerSource(
+        /*LocalFrame =*/nullptr,
         WTF::BindRepeating(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                            WTF::Unretained(this)),
         std::move(delegate));

@@ -24,9 +24,45 @@
 namespace gpu {
 namespace {
 
-class SwapChainFactoryDXGITest : public testing::Test {
+static const char* kVertexShaderSrc =
+    "attribute vec2 a_position;\n"
+    "varying vec2 v_texCoord;\n"
+    "void main() {\n"
+    "  gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);\n"
+    "  v_texCoord = (a_position + vec2(1.0, 1.0)) * 0.5;\n"
+    "}\n";
+
+static const char* kFragmentShaderSrc =
+    "precision mediump float;\n"
+    "uniform mediump sampler2D u_texture;\n"
+    "varying vec2 v_texCoord;\n"
+    "void main() {\n"
+    "  gl_FragColor = texture2D(u_texture, v_texCoord);"
+    "}\n";
+
+GLuint MakeTextureAndSetParameters(gl::GLApi* api, GLenum target, bool fbo) {
+  GLuint texture_id = 0;
+  api->glGenTexturesFn(1, &texture_id);
+  api->glBindTextureFn(target, texture_id);
+  api->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  api->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  if (fbo) {
+    api->glTexParameteriFn(target, GL_TEXTURE_USAGE_ANGLE,
+                           GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
+  }
+  return texture_id;
+}
+
+class SwapChainFactoryDXGITest : public testing::TestWithParam<bool> {
  public:
   void SetUp() override {
+    if (!SwapChainFactoryDXGI::IsSupported())
+      return;
+
+    use_passthrough_texture_ = GetParam();
+
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
     ASSERT_TRUE(surface_);
     context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
@@ -39,246 +75,25 @@ class SwapChainFactoryDXGITest : public testing::Test {
     shared_image_representation_factory_ =
         std::make_unique<SharedImageRepresentationFactory>(
             &shared_image_manager_, nullptr);
+    swap_chain_factory_ =
+        std::make_unique<SwapChainFactoryDXGI>(use_passthrough_texture_);
   }
 
  protected:
-  bool UsesPassthrough() const {
-    return gles2::PassthroughCommandDecoderSupported();
-  }
-  void CreateAndPresentSwapChain(bool uses_passthrough_texture);
-
+  bool use_passthrough_texture_ = false;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   SharedImageManager shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_type_tracker_;
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
+  std::unique_ptr<SwapChainFactoryDXGI> swap_chain_factory_;
 };
 
-void SwapChainFactoryDXGITest::CreateAndPresentSwapChain(
-    bool uses_passthrough_texture) {
-  DCHECK(SwapChainFactoryDXGI::IsSupported());
-  std::unique_ptr<SwapChainFactoryDXGI> swap_chain_factory_ =
-      std::make_unique<SwapChainFactoryDXGI>(uses_passthrough_texture);
-  auto front_buffer_mailbox = Mailbox::GenerateForSharedImage();
-  auto back_buffer_mailbox = Mailbox::GenerateForSharedImage();
-  auto format = viz::RGBA_8888;
-  gfx::Size size(1, 1);
-  auto color_space = gfx::ColorSpace::CreateSRGB();
-  uint32_t usage = gpu::SHARED_IMAGE_USAGE_GLES2 |
-                   gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
-                   gpu::SHARED_IMAGE_USAGE_DISPLAY |
-                   gpu::SHARED_IMAGE_USAGE_SCANOUT;
-
-  auto backings = swap_chain_factory_->CreateSwapChain(
-      front_buffer_mailbox, back_buffer_mailbox, format, size, color_space,
-      usage);
-  ASSERT_TRUE(backings.front_buffer);
-  ASSERT_TRUE(backings.back_buffer);
-
-  GLenum expected_target = GL_TEXTURE_2D;
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
-  scoped_refptr<gles2::TexturePassthrough> back_passthrough_texture;
-  gles2::Texture* back_texture = nullptr;
-  gl::GLImageDXGISwapChain* back_image = nullptr;
-  gl::GLImageDXGISwapChain* front_image = nullptr;
-
-  std::unique_ptr<SharedImageRepresentationFactoryRef> back_factory_ref =
-      shared_image_manager_.Register(std::move(backings.back_buffer),
-                                     memory_type_tracker_.get());
-  std::unique_ptr<SharedImageRepresentationFactoryRef> front_factory_ref =
-      shared_image_manager_.Register(std::move(backings.front_buffer),
-                                     memory_type_tracker_.get());
-
-  if (uses_passthrough_texture) {
-    auto back_gl_representation =
-        shared_image_representation_factory_->ProduceGLTexturePassthrough(
-            back_buffer_mailbox);
-    ASSERT_TRUE(back_gl_representation);
-    back_passthrough_texture = back_gl_representation->GetTexturePassthrough();
-    EXPECT_TRUE(back_passthrough_texture);
-    EXPECT_EQ(TextureBase::Type::kPassthrough,
-              back_passthrough_texture->GetType());
-    EXPECT_EQ(expected_target, back_passthrough_texture->target());
-    back_gl_representation.reset();
-
-    back_image = gl::GLImageDXGISwapChain::FromGLImage(
-        back_passthrough_texture->GetLevelImage(
-            back_passthrough_texture->target(), 0));
-    ASSERT_TRUE(back_image);
-
-    auto front_gl_representation =
-        shared_image_representation_factory_->ProduceGLTexturePassthrough(
-            front_buffer_mailbox);
-    ASSERT_TRUE(front_gl_representation);
-    auto front_passthrough_texture =
-        front_gl_representation->GetTexturePassthrough();
-    EXPECT_TRUE(front_passthrough_texture);
-    EXPECT_EQ(TextureBase::Type::kPassthrough,
-              front_passthrough_texture->GetType());
-    EXPECT_EQ(expected_target, front_passthrough_texture->target());
-    front_gl_representation.reset();
-
-    front_image = gl::GLImageDXGISwapChain::FromGLImage(
-        front_passthrough_texture->GetLevelImage(
-            front_passthrough_texture->target(), 0));
-    ASSERT_TRUE(front_image);
-    front_passthrough_texture.reset();
-  } else {
-    auto back_gl_representation =
-        shared_image_representation_factory_->ProduceGLTexture(
-            back_buffer_mailbox);
-    ASSERT_TRUE(back_gl_representation);
-    back_texture = back_gl_representation->GetTexture();
-    EXPECT_TRUE(back_texture);
-    EXPECT_EQ(TextureBase::Type::kValidated, back_texture->GetType());
-    EXPECT_EQ(expected_target, back_texture->target());
-    // Ensures that back buffer is explicitly cleared.
-    EXPECT_TRUE(back_texture->IsLevelCleared(back_texture->target(), 0));
-    back_gl_representation.reset();
-
-    gles2::Texture::ImageState image_state;
-    back_image = gl::GLImageDXGISwapChain::FromGLImage(
-        back_texture->GetLevelImage(back_texture->target(), 0, &image_state));
-    ASSERT_TRUE(back_image);
-    EXPECT_EQ(gles2::Texture::BOUND, image_state);
-
-    auto front_gl_representation =
-        shared_image_representation_factory_->ProduceGLTexture(
-            front_buffer_mailbox);
-    ASSERT_TRUE(front_gl_representation);
-    gles2::Texture* front_texture = front_gl_representation->GetTexture();
-    EXPECT_TRUE(front_texture);
-    EXPECT_EQ(TextureBase::Type::kValidated, front_texture->GetType());
-    EXPECT_EQ(expected_target, front_texture->target());
-    // Ensures that front buffer is explicitly cleared.
-    EXPECT_TRUE(front_texture->IsLevelCleared(front_texture->target(), 0));
-    front_gl_representation.reset();
-
-    front_image = gl::GLImageDXGISwapChain::FromGLImage(
-        front_texture->GetLevelImage(front_texture->target(), 0, &image_state));
-    ASSERT_TRUE(front_image);
-    EXPECT_EQ(gles2::Texture::BOUND, image_state);
-  }
-
-  EXPECT_EQ(S_OK, back_image->swap_chain()->GetBuffer(
-                      0 /* buffer_index */, IID_PPV_ARGS(&d3d11_texture)));
-  EXPECT_TRUE(d3d11_texture);
-  EXPECT_EQ(d3d11_texture, back_image->texture());
-  d3d11_texture.Reset();
-
-  EXPECT_EQ(S_OK, front_image->swap_chain()->GetBuffer(
-                      1 /* buffer_index */, IID_PPV_ARGS(&d3d11_texture)));
-  EXPECT_TRUE(d3d11_texture);
-  EXPECT_EQ(d3d11_texture, front_image->texture());
-  d3d11_texture.Reset();
-
-  GLenum target;
-  GLuint service_id;
-  if (uses_passthrough_texture) {
-    target = back_passthrough_texture->target();
-    service_id = back_passthrough_texture->service_id();
-    back_passthrough_texture.reset();
-  } else {
-    target = back_texture->target();
-    service_id = back_texture->service_id();
-  }
-
-  // Create an FBO.
-  GLuint fbo = 0;
-  gl::GLApi* api = gl::g_current_gl_context;
-  api->glGenFramebuffersEXTFn(1, &fbo);
-  api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, fbo);
-  api->glBindTextureFn(target, service_id);
-  ASSERT_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
-
-  // Attach the texture to FBO.
-  api->glFramebufferTexture2DEXTFn(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target,
-                                   service_id, 0);
-  EXPECT_EQ(api->glCheckFramebufferStatusEXTFn(GL_FRAMEBUFFER),
-            static_cast<unsigned>(GL_FRAMEBUFFER_COMPLETE));
-  ASSERT_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
-
-  api->glViewportFn(0, 0, size.width(), size.height());
-  // Set the clear color to green.
-  api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
-  api->glClearFn(GL_COLOR_BUFFER_BIT);
-  ASSERT_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
-
-  {
-    GLubyte pixel_color[4];
-    const uint8_t expected_color[4] = {0, 255, 0, 255};
-    // Checks if rendering to back buffer was successful.
-    api->glReadPixelsFn(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel_color);
-    EXPECT_EQ(expected_color[0], pixel_color[0]);
-    EXPECT_EQ(expected_color[1], pixel_color[1]);
-    EXPECT_EQ(expected_color[2], pixel_color[2]);
-    EXPECT_EQ(expected_color[3], pixel_color[3]);
-  }
-
-  back_factory_ref->PresentSwapChain();
-
-  {
-    GLubyte pixel_color[4];
-    const uint8_t expected_color[4] = {0, 0, 0, 255};
-    // After present, back buffer should now have a clear texture.
-    api->glReadPixelsFn(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel_color);
-    EXPECT_EQ(expected_color[0], pixel_color[0]);
-    EXPECT_EQ(expected_color[1], pixel_color[1]);
-    EXPECT_EQ(expected_color[2], pixel_color[2]);
-    EXPECT_EQ(expected_color[3], pixel_color[3]);
-  }
-
-  {
-    // A staging texture must be used to check front buffer since it cannot be
-    // bound to an FBO or use ReadPixels.
-    D3D11_TEXTURE2D_DESC desc = {};
-    desc.Width = 1;
-    desc.Height = 1;
-    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    desc.MipLevels = 1;
-    desc.ArraySize = 1;
-    desc.Usage = D3D11_USAGE_STAGING;
-    desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-    desc.SampleDesc.Count = 1;
-
-    auto d3d11_device = gl::QueryD3D11DeviceObjectFromANGLE();
-    ASSERT_TRUE(d3d11_device);
-
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> staging_texture;
-    ASSERT_TRUE(SUCCEEDED(
-        d3d11_device->CreateTexture2D(&desc, nullptr, &staging_texture)));
-
-    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
-    d3d11_device->GetImmediateContext(&context);
-    ASSERT_TRUE(context);
-
-    context->CopyResource(staging_texture.Get(), front_image->texture().Get());
-
-    D3D11_MAPPED_SUBRESOURCE mapped_resource;
-    ASSERT_TRUE(SUCCEEDED(context->Map(staging_texture.Get(), 0, D3D11_MAP_READ,
-                                       0, &mapped_resource)));
-    ASSERT_GE(mapped_resource.RowPitch, 4u);
-    // After present, front buffer should have color rendered to back buffer.
-    const uint8_t* pixel_color =
-        static_cast<const uint8_t*>(mapped_resource.pData);
-    const uint8_t expected_color[4] = {0, 255, 0, 255};
-    EXPECT_EQ(expected_color[0], pixel_color[0]);
-    EXPECT_EQ(expected_color[1], pixel_color[1]);
-    EXPECT_EQ(expected_color[2], pixel_color[2]);
-    EXPECT_EQ(expected_color[3], pixel_color[3]);
-
-    context->Unmap(staging_texture.Get(), 0);
-  }
-
-  api->glDeleteFramebuffersEXTFn(1, &fbo);
-}
-
-TEST_F(SwapChainFactoryDXGITest, InvalidFormat) {
+TEST_P(SwapChainFactoryDXGITest, InvalidFormat) {
   if (!SwapChainFactoryDXGI::IsSupported())
     return;
-  std::unique_ptr<SwapChainFactoryDXGI> swap_chain_factory_ =
-      std::make_unique<SwapChainFactoryDXGI>(false /* use_passthrough */);
+
   auto front_buffer_mailbox = Mailbox::GenerateForSharedImage();
   auto back_buffer_mailbox = Mailbox::GenerateForSharedImage();
   gfx::Size size(1, 1);
@@ -295,7 +110,7 @@ TEST_F(SwapChainFactoryDXGITest, InvalidFormat) {
     backings.back_buffer->Destroy();
   }
   {
-    auto invalid_format = viz::BGRA_8888;
+    auto invalid_format = viz::RGBA_4444;
     auto backings = swap_chain_factory_->CreateSwapChain(
         front_buffer_mailbox, back_buffer_mailbox, invalid_format, size,
         color_space, usage);
@@ -304,17 +119,261 @@ TEST_F(SwapChainFactoryDXGITest, InvalidFormat) {
   }
 }
 
-TEST_F(SwapChainFactoryDXGITest, CreateAndPresentSwapChain) {
-  if (!SwapChainFactoryDXGI::IsSupported() || UsesPassthrough())
+TEST_P(SwapChainFactoryDXGITest, CreateAndPresentSwapChain) {
+  if (!SwapChainFactoryDXGI::IsSupported())
     return;
-  CreateAndPresentSwapChain(false /* uses_passthrough_texture */);
+
+  auto front_buffer_mailbox = Mailbox::GenerateForSharedImage();
+  auto back_buffer_mailbox = Mailbox::GenerateForSharedImage();
+  auto format = viz::RGBA_8888;
+  gfx::Size size(1, 1);
+  auto color_space = gfx::ColorSpace::CreateSRGB();
+  uint32_t usage = gpu::SHARED_IMAGE_USAGE_GLES2 |
+                   gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+                   gpu::SHARED_IMAGE_USAGE_DISPLAY |
+                   gpu::SHARED_IMAGE_USAGE_SCANOUT;
+
+  auto backings = swap_chain_factory_->CreateSwapChain(
+      front_buffer_mailbox, back_buffer_mailbox, format, size, color_space,
+      usage);
+  EXPECT_TRUE(backings.front_buffer);
+  EXPECT_TRUE(backings.back_buffer);
+
+  std::unique_ptr<SharedImageRepresentationFactoryRef> back_factory_ref =
+      shared_image_manager_.Register(std::move(backings.back_buffer),
+                                     memory_type_tracker_.get());
+  std::unique_ptr<SharedImageRepresentationFactoryRef> front_factory_ref =
+      shared_image_manager_.Register(std::move(backings.front_buffer),
+                                     memory_type_tracker_.get());
+
+  GLuint back_texture_id, front_texture_id = 0u;
+  gl::GLImageDXGISwapChain *back_image, *front_image = 0u;
+  if (use_passthrough_texture_) {
+    auto back_texture = shared_image_representation_factory_
+                            ->ProduceGLTexturePassthrough(back_buffer_mailbox)
+                            ->GetTexturePassthrough();
+    ASSERT_TRUE(back_texture);
+    EXPECT_EQ(back_texture->target(), static_cast<unsigned>(GL_TEXTURE_2D));
+
+    back_texture_id = back_texture->service_id();
+    EXPECT_NE(back_texture_id, 0u);
+
+    back_image = gl::GLImageDXGISwapChain::FromGLImage(
+        back_texture->GetLevelImage(GL_TEXTURE_2D, 0));
+
+    auto front_texture = shared_image_representation_factory_
+                             ->ProduceGLTexturePassthrough(front_buffer_mailbox)
+                             ->GetTexturePassthrough();
+    ASSERT_TRUE(front_texture);
+    EXPECT_EQ(front_texture->target(), static_cast<unsigned>(GL_TEXTURE_2D));
+
+    front_texture_id = front_texture->service_id();
+    EXPECT_NE(front_texture_id, 0u);
+
+    front_image = gl::GLImageDXGISwapChain::FromGLImage(
+        front_texture->GetLevelImage(GL_TEXTURE_2D, 0));
+  } else {
+    auto* back_texture = shared_image_representation_factory_
+                             ->ProduceGLTexture(back_buffer_mailbox)
+                             ->GetTexture();
+    ASSERT_TRUE(back_texture);
+    EXPECT_EQ(back_texture->target(), static_cast<unsigned>(GL_TEXTURE_2D));
+
+    back_texture_id = back_texture->service_id();
+    EXPECT_NE(back_texture_id, 0u);
+
+    gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
+    back_image = gl::GLImageDXGISwapChain::FromGLImage(
+        back_texture->GetLevelImage(GL_TEXTURE_2D, 0, &image_state));
+    EXPECT_EQ(image_state, gles2::Texture::BOUND);
+
+    auto* front_texture = shared_image_representation_factory_
+                              ->ProduceGLTexture(front_buffer_mailbox)
+                              ->GetTexture();
+    ASSERT_TRUE(front_texture);
+    EXPECT_EQ(front_texture->target(), static_cast<unsigned>(GL_TEXTURE_2D));
+
+    front_texture_id = front_texture->service_id();
+    EXPECT_NE(front_texture_id, 0u);
+
+    image_state = gles2::Texture::UNBOUND;
+    front_image = gl::GLImageDXGISwapChain::FromGLImage(
+        front_texture->GetLevelImage(GL_TEXTURE_2D, 0, &image_state));
+    EXPECT_EQ(image_state, gles2::Texture::BOUND);
+  }
+
+  ASSERT_TRUE(back_image);
+  EXPECT_EQ(back_image->ShouldBindOrCopy(), gl::GLImage::BIND);
+
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
+  EXPECT_EQ(S_OK, back_image->swap_chain()->GetBuffer(
+                      0 /* buffer_index */, IID_PPV_ARGS(&d3d11_texture)));
+  EXPECT_TRUE(d3d11_texture);
+  EXPECT_EQ(d3d11_texture, back_image->texture());
+  d3d11_texture.Reset();
+
+  ASSERT_TRUE(front_image);
+  EXPECT_EQ(front_image->ShouldBindOrCopy(), gl::GLImage::BIND);
+
+  EXPECT_EQ(S_OK, front_image->swap_chain()->GetBuffer(
+                      1 /* buffer_index */, IID_PPV_ARGS(&d3d11_texture)));
+  EXPECT_TRUE(d3d11_texture);
+  EXPECT_EQ(d3d11_texture, front_image->texture());
+  d3d11_texture.Reset();
+
+  gl::GLApi* api = gl::g_current_gl_context;
+  // Create a multisampled FBO.
+  GLuint multisample_fbo, renderbuffer = 0u;
+  api->glGenFramebuffersEXTFn(1, &multisample_fbo);
+  api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, multisample_fbo);
+  api->glGenRenderbuffersEXTFn(1, &renderbuffer);
+  api->glBindRenderbufferEXTFn(GL_RENDERBUFFER, renderbuffer);
+  ASSERT_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
+
+  api->glRenderbufferStorageMultisampleFn(GL_RENDERBUFFER, 4 /* sample_count */,
+                                          GL_RGBA8_OES, 1, 1);
+  api->glFramebufferRenderbufferEXTFn(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                      GL_RENDERBUFFER, renderbuffer);
+  EXPECT_EQ(api->glCheckFramebufferStatusEXTFn(GL_FRAMEBUFFER),
+            static_cast<unsigned>(GL_FRAMEBUFFER_COMPLETE));
+  ASSERT_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
+
+  // Set the clear color to green.
+  api->glViewportFn(0, 0, size.width(), size.height());
+  api->glClearColorFn(0.0f, 1.0f, 0.0f, 1.0f);
+  api->glClearFn(GL_COLOR_BUFFER_BIT);
+  ASSERT_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
+
+  api->glBindFramebufferEXTFn(GL_READ_FRAMEBUFFER, multisample_fbo);
+
+  // Attach the back buffer texture to an FBO.
+  GLuint fbo = 0u;
+  api->glGenFramebuffersEXTFn(1, &fbo);
+  api->glBindFramebufferEXTFn(GL_DRAW_FRAMEBUFFER, fbo);
+  api->glBindTextureFn(GL_TEXTURE_2D, back_texture_id);
+  api->glFramebufferTexture2DEXTFn(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                   GL_TEXTURE_2D, back_texture_id, 0);
+  EXPECT_EQ(api->glCheckFramebufferStatusEXTFn(GL_DRAW_FRAMEBUFFER),
+            static_cast<unsigned>(GL_FRAMEBUFFER_COMPLETE));
+  ASSERT_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
+
+  api->glBlitFramebufferFn(0, 0, 1, 1, 0, 0, 1, 1, GL_COLOR_BUFFER_BIT,
+                           GL_NEAREST);
+  ASSERT_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
+
+  api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, fbo);
+
+  // Checks if rendering to back buffer was successful.
+  {
+    GLubyte pixel_color[4];
+    const uint8_t expected_color[4] = {0, 255, 0, 255};
+    api->glReadPixelsFn(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel_color);
+    EXPECT_EQ(expected_color[0], pixel_color[0]);
+    EXPECT_EQ(expected_color[1], pixel_color[1]);
+    EXPECT_EQ(expected_color[2], pixel_color[2]);
+    EXPECT_EQ(expected_color[3], pixel_color[3]);
+  }
+
+  EXPECT_TRUE(back_factory_ref->PresentSwapChain());
+
+  // After present, back buffer should now have a clear texture.
+  {
+    GLubyte pixel_color[4];
+    const uint8_t expected_color[4] = {0, 0, 0, 255};
+    api->glReadPixelsFn(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel_color);
+    EXPECT_EQ(expected_color[0], pixel_color[0]);
+    EXPECT_EQ(expected_color[1], pixel_color[1]);
+    EXPECT_EQ(expected_color[2], pixel_color[2]);
+    EXPECT_EQ(expected_color[3], pixel_color[3]);
+  }
+
+  // And front buffer should have the rendered contents.  Test that binding
+  // front buffer as a sampler works.
+  {
+    // Create a destination texture to render into since we can't bind front
+    // buffer to an FBO.
+    GLuint dest_texture_id =
+        MakeTextureAndSetParameters(api, GL_TEXTURE_2D, true);
+    api->glTexImage2DFn(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+                        GL_UNSIGNED_BYTE, nullptr);
+    api->glFramebufferTexture2DEXTFn(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                     GL_TEXTURE_2D, dest_texture_id, 0);
+    EXPECT_EQ(api->glCheckFramebufferStatusEXTFn(GL_FRAMEBUFFER),
+              static_cast<unsigned>(GL_FRAMEBUFFER_COMPLETE));
+    api->glClearColorFn(0.0f, 0.0f, 0.0f, 0.0f);
+    api->glClearFn(GL_COLOR_BUFFER_BIT);
+    ASSERT_EQ(api->glGetErrorFn(), static_cast<GLenum>(GL_NO_ERROR));
+
+    GLint status = 0;
+    GLuint vertex_shader = api->glCreateShaderFn(GL_VERTEX_SHADER);
+    ASSERT_NE(vertex_shader, 0u);
+    api->glShaderSourceFn(vertex_shader, 1, &kVertexShaderSrc, nullptr);
+    api->glCompileShaderFn(vertex_shader);
+    api->glGetShaderivFn(vertex_shader, GL_COMPILE_STATUS, &status);
+    ASSERT_NE(status, 0);
+
+    GLuint fragment_shader = api->glCreateShaderFn(GL_FRAGMENT_SHADER);
+    ASSERT_NE(fragment_shader, 0u);
+    api->glShaderSourceFn(fragment_shader, 1, &kFragmentShaderSrc, nullptr);
+    api->glCompileShaderFn(fragment_shader);
+    api->glGetShaderivFn(fragment_shader, GL_COMPILE_STATUS, &status);
+    ASSERT_NE(status, 0);
+
+    GLuint program = api->glCreateProgramFn();
+    ASSERT_NE(program, 0u);
+    api->glAttachShaderFn(program, vertex_shader);
+    api->glAttachShaderFn(program, fragment_shader);
+    api->glLinkProgramFn(program);
+    api->glGetProgramivFn(program, GL_LINK_STATUS, &status);
+    ASSERT_NE(status, 0);
+
+    GLuint vbo = 0u;
+    api->glGenBuffersARBFn(1, &vbo);
+    ASSERT_NE(vbo, 0u);
+    api->glBindBufferFn(GL_ARRAY_BUFFER, vbo);
+    static const float vertices[] = {
+        1.0f, 1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+    };
+    api->glBufferDataFn(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
+                        GL_STATIC_DRAW);
+    GLint vertex_location = api->glGetAttribLocationFn(program, "a_position");
+    ASSERT_NE(vertex_location, -1);
+    api->glEnableVertexAttribArrayFn(vertex_location);
+    api->glVertexAttribPointerFn(vertex_location, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    GLint sampler_location = api->glGetUniformLocationFn(program, "u_texture");
+    ASSERT_NE(sampler_location, -1);
+    api->glActiveTextureFn(GL_TEXTURE0);
+    // ExpectUnboundAndBindOrCopyTexImage(front_buffer_mailbox);
+    api->glBindTextureFn(GL_TEXTURE_2D, front_texture_id);
+    api->glUniform1iFn(sampler_location, 0);
+
+    api->glUseProgramFn(program);
+    api->glDrawArraysFn(GL_TRIANGLES, 0, 6);
+
+    {
+      GLubyte pixel_color[4];
+      const uint8_t expected_color[4] = {0, 255, 0, 255};
+      api->glReadPixelsFn(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel_color);
+      EXPECT_EQ(expected_color[0], pixel_color[0]);
+      EXPECT_EQ(expected_color[1], pixel_color[1]);
+      EXPECT_EQ(expected_color[2], pixel_color[2]);
+      EXPECT_EQ(expected_color[3], pixel_color[3]);
+    }
+
+    api->glDeleteProgramFn(program);
+    api->glDeleteShaderFn(vertex_shader);
+    api->glDeleteShaderFn(fragment_shader);
+    api->glDeleteBuffersARBFn(1, &vbo);
+  }
+
+  api->glDeleteFramebuffersEXTFn(1, &fbo);
 }
 
-TEST_F(SwapChainFactoryDXGITest, CreateAndPresentSwapChain_PassthroughTexture) {
-  if (!SwapChainFactoryDXGI::IsSupported() || !UsesPassthrough())
-    return;
-  CreateAndPresentSwapChain(true /* uses_passthrough_texture */);
-}
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         SwapChainFactoryDXGITest,
+                         testing::Bool());
 
 }  // anonymous namespace
 }  // namespace gpu

@@ -31,4 +31,8 @@ size_t HidHapticGamepadLinux::WriteOutputReport(void* report,
   return bytes_written < 0 ? 0 : static_cast<size_t>(bytes_written);
 }
 
+base::WeakPtr<AbstractHapticGamepad> HidHapticGamepadLinux::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace device

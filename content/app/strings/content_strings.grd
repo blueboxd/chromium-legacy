@@ -249,6 +249,10 @@ below:
       <message name="IDS_AX_ROLE_ARTICLE" desc="Accessibility role description for article">
         article
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-audio -->
+      <message name="IDS_AX_ROLE_AUDIO" desc="Accessible role description for audio">
+        audio
+      </message>
       <message name="IDS_AX_ROLE_BANNER" desc="Accessibility role description for banner">
         banner
       </message>
@@ -275,6 +279,10 @@ below:
       </message>
       <message name="IDS_AX_ROLE_DESCRIPTION_TERM" desc="Accessibility role description for description term (as in a description list)">
         term
+      </message>
+      <!-- https://w3c.github.io/html-aam/#el-details -->
+      <message name="IDS_AX_ROLE_DETAILS" desc="Accessibility role description for details">
+        details
       </message>
       <message name="IDS_AX_ROLE_DISCLOSURE_TRIANGLE" desc="Accessibility role description for a disclosure triangle, a control shaped like a triangle that expands or collapses to show or hide extra content">
         disclosure triangle
@@ -417,6 +425,10 @@ below:
       <message name="IDS_AX_ROLE_GRAPHICS_SYMBOL" desc="Accessibility role description for graphics symbol">
         graphics symbol
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-input-email -->
+      <message name="IDS_AX_ROLE_EMAIL" desc="Accessibility role description for email input">
+        email
+      </message>
       <message name="IDS_AX_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA" desc="The accessibility text to speak when we display an autofill popup">
         Autofill
       </message>
@@ -442,6 +454,10 @@ below:
       </message>
       <message name="IDS_AX_ROLE_MATH" desc="Accessibility role description for math">
         math
+      </message>
+      <!-- https://w3c.github.io/html-aam/#el-meter -->
+      <message name="IDS_AX_ROLE_METER" desc="Accessibility role description for a meter, for example a temperature indicator or progress bar">
+          meter
       </message>
       <message name="IDS_AX_ROLE_NAVIGATIONAL_LINK" desc="Accessibility role description for group of navigational links.">
         navigation
@@ -549,9 +565,6 @@ below:
         </message>
         <message name="IDS_AX_ROLE_MENU_ITEM" desc="Accessibility role description for a menu item">
           menu item
-        </message>
-        <message name="IDS_AX_ROLE_METER" desc="Accessibility role description for a meter, for example a temperature indicator or progress bar">
-          meter
         </message>
         <message name="IDS_AX_ROLE_NOTE" desc="Accessibility role description for a note">
           note

@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_presentation_state.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
@@ -238,6 +239,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.bannerTransitionDriver = nil;
   animatedFullscreenDisabler_ = nullptr;
   [self infobarWasDismissed];
+  [self.infobarContainer childCoordinatorBannerWasDismissed:self.infobarType];
 }
 
 #pragma mark InfobarBannerPositioner

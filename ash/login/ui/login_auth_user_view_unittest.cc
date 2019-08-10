@@ -217,4 +217,18 @@ TEST_F(LoginAuthUserViewUnittest, AttemptsUnlockOnLidOpen) {
       views::Button::STATE_NORMAL);
 }
 
+TEST_F(LoginAuthUserViewUnittest, PasswordFieldChangeOnUpdateUser) {
+  LoginAuthUserView::TestApi test_auth_user_view(view_);
+  LoginPasswordView::TestApi password_test(test_auth_user_view.password_view());
+
+  const auto password = base::ASCIIToUTF16("abc1");
+  password_test.textfield()->SetText(password);
+  view_->UpdateForUser(user_);
+  EXPECT_EQ(password_test.textfield()->GetText(), password);
+
+  auto another_user = CreateUser("user2@domain.com");
+  view_->UpdateForUser(another_user);
+  EXPECT_TRUE(password_test.textfield()->GetText().empty());
+}
+
 }  // namespace ash

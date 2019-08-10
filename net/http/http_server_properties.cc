@@ -34,6 +34,24 @@ constexpr base::TimeDelta kUpdatePrefsDelay = base::TimeDelta::FromSeconds(60);
 
 HttpServerProperties::PrefDelegate::~PrefDelegate() = default;
 
+HttpServerProperties::ServerInfo::ServerInfo() = default;
+HttpServerProperties::ServerInfo::ServerInfo(const ServerInfo& server_info) =
+    default;
+HttpServerProperties::ServerInfo::ServerInfo(ServerInfo&& server_info) =
+    default;
+HttpServerProperties::ServerInfo::~ServerInfo() = default;
+
+HttpServerProperties::ServerInfoMap::ServerInfoMap()
+    : base::MRUCache<url::SchemeHostPort, ServerInfo>(kMaxServerInfoEntries) {}
+
+HttpServerProperties::ServerInfoMap::iterator
+HttpServerProperties::ServerInfoMap::GetOrPut(const url::SchemeHostPort& key) {
+  auto it = Get(key);
+  if (it != end())
+    return it;
+  return Put(key, ServerInfo());
+}
+
 HttpServerProperties::HttpServerProperties(
     std::unique_ptr<PrefDelegate> pref_delegate,
     NetLog* net_log,
@@ -79,7 +97,7 @@ HttpServerProperties::~HttpServerProperties() {
 
 void HttpServerProperties::Clear(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  spdy_servers_map_.Clear();
+  server_info_map_.Clear();
   alternative_service_map_.Clear();
   broken_alternative_services_.Clear();
   canonical_alt_svc_map_.clear();
@@ -129,33 +147,25 @@ bool HttpServerProperties::GetSupportsSpdy(const url::SchemeHostPort& server) {
   if (server.host().empty())
     return false;
 
-  auto spdy_server = spdy_servers_map_.Get(server.Serialize());
-  return spdy_server != spdy_servers_map_.end() && spdy_server->second;
+  auto spdy_info = server_info_map_.Get(server);
+  return spdy_info != server_info_map_.end() &&
+         spdy_info->second.supports_spdy.value_or(false);
 }
 
 void HttpServerProperties::SetSupportsSpdy(const url::SchemeHostPort& server,
-                                           bool support_spdy) {
+                                           bool supports_spdy) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (server.host().empty())
     return;
 
-  auto spdy_server = spdy_servers_map_.Get(server.Serialize());
-  if ((spdy_server != spdy_servers_map_.end()) &&
-      (spdy_server->second == support_spdy)) {
-    return;
-  }
+  auto server_info = server_info_map_.GetOrPut(server);
+  // If value is already the same as |supports_spdy|, or value is unset and
+  // |supports_spdy| is false, don't queue a write.
+  bool queue_write =
+      server_info->second.supports_spdy.value_or(false) != supports_spdy;
+  server_info->second.supports_spdy = supports_spdy;
 
-  // If |supports_spdy| is false, and the server doesn't appear in the map, add
-  // the server to the map, but don't call MaybeQueueWriteProperties().
-  //
-  // TODO(mmenke): Can lack of SPDY support always be represented by not being
-  // in the cache instead? GetSupportsSpdy() does not distinguish between
-  // missing entries and entries that affirmatively do not support SPDY.
-  bool changed = !(spdy_server == spdy_servers_map_.end() && !support_spdy);
-
-  // Cache the data.
-  spdy_servers_map_.Put(server.Serialize(), support_spdy);
-  if (changed)
+  if (queue_write)
     MaybeQueueWriteProperties();
 }
 
@@ -749,7 +759,7 @@ const std::string* HttpServerProperties::GetCanonicalSuffix(
 }
 
 void HttpServerProperties::OnPrefsLoaded(
-    std::unique_ptr<SpdyServersMap> spdy_servers_map,
+    std::unique_ptr<ServerInfoMap> server_info_map,
     std::unique_ptr<AlternativeServiceMap> alternative_service_map,
     std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
     const IPAddress& last_quic_address,
@@ -764,8 +774,8 @@ void HttpServerProperties::OnPrefsLoaded(
 
   // Either all of these are nullptr, or none of them are (except the broken alt
   // service fields).
-  if (spdy_servers_map) {
-    OnSpdyServersLoaded(std::move(spdy_servers_map));
+  if (server_info_map) {
+    OnServerInfoLoaded(std::move(server_info_map));
     OnAlternativeServiceServersLoaded(std::move(alternative_service_map));
     OnServerNetworkStatsLoaded(std::move(server_network_stats_map));
     OnSupportsQuicLoaded(last_quic_address);
@@ -788,20 +798,28 @@ void HttpServerProperties::OnPrefsLoaded(
   }
 }
 
-void HttpServerProperties::OnSpdyServersLoaded(
-    std::unique_ptr<SpdyServersMap> spdy_servers_map) {
+void HttpServerProperties::OnServerInfoLoaded(
+    std::unique_ptr<ServerInfoMap> server_info_map) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Add the entries from persisted data.
-  spdy_servers_map_.Swap(*spdy_servers_map);
+  // Swap in the entries from persisted data. This allows the MRU cache to be
+  // sorted based on the order of the entries in the newer in-memory cache.
+  server_info_map_.Swap(*server_info_map);
 
   // Add the entries from the memory cache.
-  for (auto it = spdy_servers_map->rbegin(); it != spdy_servers_map->rend();
+  for (auto it = server_info_map->rbegin(); it != server_info_map->rend();
        ++it) {
-    // Add the entry if it is not in the cache, otherwise move it to the front
-    // of recency list.
-    if (spdy_servers_map_.Get(it->first) == spdy_servers_map_.end())
-      spdy_servers_map_.Put(it->first, it->second);
+    // If there's no corresponding old entry, add the new entry directly.
+    auto old_entry = server_info_map_.Get(it->first);
+    if (old_entry == server_info_map_.end()) {
+      server_info_map_.Put(it->first, std::move(it->second));
+      continue;
+    }
+
+    // Otherwise, merge the old and new entries. Prefer values from older
+    // entries.
+    if (!old_entry->second.supports_spdy.has_value())
+      old_entry->second.supports_spdy = it->second.supports_spdy;
   }
 }
 
@@ -940,7 +958,7 @@ void HttpServerProperties::WriteProperties(base::OnceClosure callback) const {
   DCHECK(!prefs_update_timer_.IsRunning());
 
   properties_manager_->WriteToPrefs(
-      spdy_servers_map_, alternative_service_map_,
+      server_info_map_, alternative_service_map_,
       base::BindRepeating(&HttpServerProperties::GetCanonicalSuffix,
                           base::Unretained(this)),
       server_network_stats_map_, last_quic_address_, quic_server_info_map_,

@@ -179,6 +179,7 @@ var OSSettingsBluetoothPageTest = class extends OSSettingsBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/assert.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       'fake_bluetooth.js',
       'fake_bluetooth_private.js',
@@ -251,6 +252,7 @@ var OSSettingsDevicePageTest = class extends OSSettingsBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/assert.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
       'fake_system_display.js',
@@ -294,6 +296,7 @@ var OSSettingsFingerprintListTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       'fingerprint_browsertest_chromeos.js',
     ]);
@@ -382,7 +385,8 @@ var OSSettingsInternetPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsInternetPageTest', 'InternetPage', () => {
+// Flaky on linux-chromeos-rel builder. https://crbug.com/992116
+TEST_F('OSSettingsInternetPageTest', 'DISABLED_InternetPage', () => {
   mocha.run();
 });
 

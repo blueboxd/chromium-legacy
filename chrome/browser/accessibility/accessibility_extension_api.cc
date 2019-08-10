@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -92,8 +91,6 @@ AccessibilityPrivateOpenSettingsSubpageFunction::Run() {
   if (chrome::IsOSSettingsSubPage(params->subpage)) {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
         profile, params->subpage);
-  } else {
-    chrome::ShowSettingsSubPageForProfile(profile, params->subpage);
   }
 #else
   // This function should only be available on ChromeOS.

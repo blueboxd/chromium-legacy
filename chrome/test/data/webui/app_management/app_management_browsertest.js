@@ -17,6 +17,7 @@ AppManagementBrowserTest.prototype = {
 
   extraLibraries: [
     ...PolymerTest.prototype.extraLibraries,
+    '../test_util.js',
     '../test_store.js',
     'test_util.js',
     'test_store.js',

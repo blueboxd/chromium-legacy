@@ -212,6 +212,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<SecurityKeysPINHandler>());
   AddSettingsPageUIHandler(std::make_unique<SecurityKeysResetHandler>());
   AddSettingsPageUIHandler(std::make_unique<SecurityKeysCredentialHandler>());
+  AddSettingsPageUIHandler(
+      std::make_unique<SecurityKeysBioEnrollmentHandler>());
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   AddSettingsPageUIHandler(std::make_unique<CaptionsHandler>());

@@ -81,8 +81,8 @@ base::ThreadLocalStorage::Slot& DangerousPatternTLS() {
 
 #include "components/url_formatter/spoof_checks/top_domains/domains-trie-inc.cc"
 
-// All the domains in the above file have 3 or fewer labels.
-const size_t kNumberOfLabelsToCheck = 3;
+// All the domains in the above file have 4 or fewer labels.
+const size_t kNumberOfLabelsToCheck = 4;
 
 IDNSpoofChecker::HuffmanTrieParams g_trie_params{
     kTopDomainsHuffmanTree, sizeof(kTopDomainsHuffmanTree), kTopDomainsTrie,

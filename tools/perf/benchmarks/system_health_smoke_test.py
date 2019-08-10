@@ -228,7 +228,7 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
 
       single_page_benchmark = SinglePageBenchmark()
       with open(path_util.GetExpectationsPath()) as fp:
-        single_page_benchmark.AugmentExpectationsWithParser(fp.read())
+        single_page_benchmark.AugmentExpectationsWithFile(fp.read())
 
       return_code = single_page_benchmark.Run(options)
 

@@ -97,6 +97,9 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
     return parent_->deny_xframe_options_;
   }
   bool ShouldServeMimeTypeAsContentTypeHeader() override { return true; }
+  bool ShouldReplaceI18nInJS() override {
+    return parent_->ShouldReplaceI18nInJS();
+  }
 
  private:
   WebUIDataSourceImpl* parent_;
@@ -113,7 +116,8 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
       frame_src_set_(false),
       deny_xframe_options_(true),
       add_load_time_data_defaults_(true),
-      replace_existing_source_(true) {}
+      replace_existing_source_(true),
+      should_replace_i18n_in_js_(false) {}
 
 WebUIDataSourceImpl::~WebUIDataSourceImpl() {
 }
@@ -215,6 +219,10 @@ void WebUIDataSourceImpl::DisableDenyXFrameOptions() {
   deny_xframe_options_ = false;
 }
 
+void WebUIDataSourceImpl::EnableReplaceI18nInJS() {
+  should_replace_i18n_in_js_ = true;
+}
+
 const ui::TemplateReplacements* WebUIDataSourceImpl::GetReplacements() const {
   return &replacements_;
 }
@@ -295,6 +303,10 @@ void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
 
 const base::DictionaryValue* WebUIDataSourceImpl::GetLocalizedStrings() const {
   return &localized_strings_;
+}
+
+bool WebUIDataSourceImpl::ShouldReplaceI18nInJS() const {
+  return should_replace_i18n_in_js_;
 }
 
 int WebUIDataSourceImpl::PathToIdrOrDefault(const std::string& path) const {

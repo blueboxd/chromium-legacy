@@ -9,6 +9,8 @@
 
 #include "ui/gfx/image/image.h"
 
+// THIS FILE IS DEPRECATED (REPLACED BY DbusMenu) AND WILL SOON BE REMOVED.
+
 namespace ui {
 class MenuModel;
 }

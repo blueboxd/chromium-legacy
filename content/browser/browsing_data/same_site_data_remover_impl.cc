@@ -4,6 +4,7 @@
 
 #include "content/browser/browsing_data/same_site_data_remover_impl.h"
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -54,6 +55,17 @@ bool DoesOriginMatchDomain(const std::set<std::string>& same_site_none_domains,
   return false;
 }
 
+void OnDeleteSameSiteNoneCookies(
+    base::OnceClosure closure,
+    std::unique_ptr<SameSiteDataRemoverImpl> remover,
+    bool clear_storage) {
+  if (clear_storage) {
+    remover->ClearStoragePartitionData(std::move(closure));
+  } else {
+    std::move(closure).Run();
+  }
+}
+
 }  // namespace
 
 SameSiteDataRemoverImpl::SameSiteDataRemoverImpl(
@@ -99,6 +111,17 @@ void SameSiteDataRemoverImpl::ClearStoragePartitionData(
       storage_partition_removal_mask, quota_storage_removal_mask,
       base::BindRepeating(&DoesOriginMatchDomain, same_site_none_domains_),
       nullptr, false, base::Time(), base::Time::Max(), std::move(closure));
+}
+
+void SameSiteDataRemoverImpl::ClearData(base::OnceClosure closure,
+                                        BrowserContext* context,
+                                        bool clear_storage) {
+  auto same_site_remover = std::make_unique<SameSiteDataRemoverImpl>(context);
+  SameSiteDataRemoverImpl* remover = same_site_remover.get();
+
+  remover->DeleteSameSiteNoneCookies(
+      base::BindOnce(&OnDeleteSameSiteNoneCookies, std::move(closure),
+                     std::move(same_site_remover), clear_storage));
 }
 
 }  // namespace content

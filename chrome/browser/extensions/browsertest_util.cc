@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -62,8 +63,10 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
   web_app::AppId app_id;
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
   DCHECK(provider);
-  provider->install_manager().InstallWebAppForTesting(
+  provider->install_manager().InstallWebAppFromInfo(
       std::make_unique<WebApplicationInfo>(info),
+      /*no_network_install=*/false,
+      /*install_source=*/WebappInstallSource::DEVTOOLS,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
         DCHECK_EQ(web_app::InstallResultCode::kSuccess, code);

@@ -304,9 +304,9 @@ bool OverviewController::InOverviewSession() const {
   return overview_session_ && !overview_session_->is_shutting_down();
 }
 
-void OverviewController::IncrementSelection(int increment) {
+void OverviewController::IncrementSelection(bool forward) {
   DCHECK(InOverviewSession());
-  overview_session_->IncrementSelection(increment);
+  overview_session_->IncrementSelection(forward);
 }
 
 bool OverviewController::AcceptSelection() {

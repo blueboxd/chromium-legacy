@@ -49,6 +49,10 @@ class WebStateList;
 // Updates the InfobarContainer according to the positioner information.
 - (void)updateInfobarContainer;
 
+// Notifies the coordinator that its baseViewController's viewDidAppear. This
+// means the view is now visible and part of the main window hierarchy.
+- (void)baseViewDidAppear;
+
 // YES if an Infobar is being presented for |webState|.
 - (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState;
 

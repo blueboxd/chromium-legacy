@@ -70,6 +70,10 @@ h1 {
   width: 20vh;
 }
 
+.heavy-ad .icon {
+  background-image: url(images/heavy_ad.svg);
+}
+
 .interstitial-wrapper {
   align-items: center;
   box-sizing: border-box;

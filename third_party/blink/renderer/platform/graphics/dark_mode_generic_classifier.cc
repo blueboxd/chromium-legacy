@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/graphics/dark_mode_generic_classifier.h"
+
 #include "third_party/blink/renderer/platform/graphics/darkmode/darkmode_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 
 namespace blink {
 namespace {
@@ -13,24 +15,31 @@ const float kLowColorCountThreshold[2] = {0.8125, 0.015137};
 const float kHighColorCountThreshold[2] = {1, 0.025635};
 
 DarkModeClassification ClassifyUsingDecisionTree(
-    const Vector<float>& features) {
-  DCHECK_EQ(features.size(), 5u);
-
-  int is_color = features[0] > 0;
-  float color_count_ratio = features[1];
-  float low_color_count_threshold = kLowColorCountThreshold[is_color];
-  float high_color_count_threshold = kHighColorCountThreshold[is_color];
+    const DarkModeImageClassifier::Features& features) {
+  float low_color_count_threshold =
+      kLowColorCountThreshold[features.is_colorful];
+  float high_color_count_threshold =
+      kHighColorCountThreshold[features.is_colorful];
 
   // Very few colors means it's not a photo, apply the filter.
-  if (color_count_ratio < low_color_count_threshold)
+  if (features.color_buckets_ratio < low_color_count_threshold)
     return DarkModeClassification::kApplyFilter;
 
   // Too many colors means it's probably photorealistic, do not apply it.
-  if (color_count_ratio > high_color_count_threshold)
+  if (features.color_buckets_ratio > high_color_count_threshold)
     return DarkModeClassification::kDoNotApplyFilter;
 
   // In-between, decision tree cannot give a precise result.
   return DarkModeClassification::kNotClassified;
+}
+
+// The neural network expects these features to be in a specific order within
+// the vector. Do not change the order here without also changing the neural
+// network code!
+Vector<float> ToVector(const DarkModeImageClassifier::Features& features) {
+  return {features.is_colorful, features.color_buckets_ratio,
+          features.transparency_ratio, features.background_ratio,
+          features.is_svg};
 }
 
 }  // namespace
@@ -38,7 +47,7 @@ DarkModeClassification ClassifyUsingDecisionTree(
 DarkModeGenericClassifier::DarkModeGenericClassifier() {}
 
 DarkModeClassification DarkModeGenericClassifier::ClassifyWithFeatures(
-    const Vector<float> features) {
+    const Features& features) {
   DarkModeClassification result = ClassifyUsingDecisionTree(features);
 
   // If decision tree cannot decide, we use a neural network to decide whether
@@ -46,7 +55,8 @@ DarkModeClassification DarkModeGenericClassifier::ClassifyWithFeatures(
   if (result == DarkModeClassification::kNotClassified) {
     darkmode_tfnative_model::FixedAllocations nn_temp;
     float nn_out;
-    darkmode_tfnative_model::Inference(&features[0], &nn_out, &nn_temp);
+    auto feature_vector = ToVector(features);
+    darkmode_tfnative_model::Inference(&feature_vector[0], &nn_out, &nn_temp);
     result = nn_out > 0 ? DarkModeClassification::kApplyFilter
                         : DarkModeClassification::kDoNotApplyFilter;
   }
@@ -56,7 +66,7 @@ DarkModeClassification DarkModeGenericClassifier::ClassifyWithFeatures(
 
 DarkModeClassification
 DarkModeGenericClassifier::ClassifyUsingDecisionTreeForTesting(
-    const Vector<float>& features) {
+    const Features& features) {
   return ClassifyUsingDecisionTree(features);
 }
 

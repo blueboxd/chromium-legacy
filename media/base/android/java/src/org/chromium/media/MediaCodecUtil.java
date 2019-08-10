@@ -187,7 +187,11 @@ class MediaCodecUtil {
 
             for (String supportedType : info.getSupportedTypes()) {
                 if (supportedType.equalsIgnoreCase(mime)) {
-                    return info.getCapabilitiesForType(supportedType).colorFormats;
+                    try {
+                        return info.getCapabilitiesForType(supportedType).colorFormats;
+                    } catch (IllegalArgumentException e) {
+                        // Type is not supported.
+                    }
                 }
             }
         }
@@ -305,14 +309,19 @@ class MediaCodecUtil {
                 // support. In this case, estimate the level from MediaCodecInfo.VideoCapabilities
                 // instead. Assume VP9 is not supported before L. For more information, consult
                 // https://developer.android.com/reference/android/media/MediaCodecInfo.CodecProfileLevel.html
-                CodecCapabilities codecCapabilities = info.getCapabilitiesForType(mime);
-                if (mime.endsWith("vp9") && Build.VERSION_CODES.LOLLIPOP <= Build.VERSION.SDK_INT
-                        && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
-                    addVp9CodecProfileLevels(profileLevels, codecCapabilities);
-                    continue;
-                }
-                for (CodecProfileLevel profileLevel : codecCapabilities.profileLevels) {
-                    profileLevels.addCodecProfileLevel(mime, profileLevel);
+                try {
+                    CodecCapabilities codecCapabilities = info.getCapabilitiesForType(mime);
+                    if (mime.endsWith("vp9")
+                            && Build.VERSION_CODES.LOLLIPOP <= Build.VERSION.SDK_INT
+                            && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+                        addVp9CodecProfileLevels(profileLevels, codecCapabilities);
+                        continue;
+                    }
+                    for (CodecProfileLevel profileLevel : codecCapabilities.profileLevels) {
+                        profileLevels.addCodecProfileLevel(mime, profileLevel);
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Type is not supported.
                 }
             }
         }

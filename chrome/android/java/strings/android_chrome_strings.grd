@@ -3947,7 +3947,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 
       <!-- SMS strings -->
       <message name="IDS_SMS_DIALOG_TITLE" desc="Title shown when Chrome is waiting for an SMS on the user's behalf">
-        Phone number verification
+        <ph name="ORIGIN">%1$s<ex>example.com</ex></ph> sent a text message to your phone number. If you confirm, the site will be able to know it's you.
       </message>
       <message name="IDS_SMS_DIALOG_STATUS_WAITING" desc="Message shown when Chrome is waiting for an SMS on the user's behalf">
         Waiting for text message

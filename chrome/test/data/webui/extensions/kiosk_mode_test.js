@@ -73,7 +73,7 @@ cr.define('extension_kiosk_mode_tests', function() {
       document.body.appendChild(dialog);
 
       return browserProxy.whenCalled('getKioskAppSettings')
-          .then(() => PolymerTest.flushTasks());
+          .then(() => test_util.flushTasks());
     }
 
     setup(function() {

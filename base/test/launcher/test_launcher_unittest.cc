@@ -676,7 +676,7 @@ TEST(MockUnitTests, DISABLED_FailTest) {
 }
 // Basic Test to crash
 TEST(MockUnitTests, DISABLED_CrashTest) {
-  CHECK(false);
+  IMMEDIATE_CRASH();
 }
 
 // Using UnitTestLauncherDelegate and TestLauncher (with minor mocks)
@@ -725,7 +725,7 @@ TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   // We expect the result to be stripped of disabled prefix.
   ValidateTestResult(iteration_val, "MockUnitTests.PassTest", "SUCCESS", 0u);
   ValidateTestResult(iteration_val, "MockUnitTests.FailTest", "FAILURE", 1u);
-  ValidateTestResult(iteration_val, "MockUnitTests.CrashTest", "CRASH", 1u);
+  ValidateTestResult(iteration_val, "MockUnitTests.CrashTest", "CRASH", 0u);
 }
 
 }  // namespace

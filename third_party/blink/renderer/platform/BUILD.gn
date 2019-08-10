@@ -1912,9 +1912,6 @@ group("blink_platform_unittests_data") {
     # Required by some image decoder tests.
     "image-decoders/testing/",
     "//third_party/blink/web_tests/images/resources/",
-
-    # Required by some mediastream tests.
-    "//media/test/data/",
   ]
 }
 

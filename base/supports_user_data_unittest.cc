@@ -36,5 +36,23 @@ TEST(SupportsUserDataTest, ClearWorksRecursively) {
   // Destruction of supports_user_data runs the actual test.
 }
 
+struct TestData : public SupportsUserData::Data {};
+
+TEST(SupportsUserDataTest, Movable) {
+  TestSupportsUserData supports_user_data_1;
+  char key1 = 0;
+  supports_user_data_1.SetUserData(&key1, std::make_unique<TestData>());
+  void* data_1_ptr = supports_user_data_1.GetUserData(&key1);
+
+  TestSupportsUserData supports_user_data_2;
+  char key2 = 0;
+  supports_user_data_2.SetUserData(&key2, std::make_unique<TestData>());
+
+  supports_user_data_2 = std::move(supports_user_data_1);
+
+  EXPECT_EQ(data_1_ptr, supports_user_data_2.GetUserData(&key1));
+  EXPECT_EQ(nullptr, supports_user_data_2.GetUserData(&key2));
+}
+
 }  // namespace
 }  // namespace base

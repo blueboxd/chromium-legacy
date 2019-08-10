@@ -16,6 +16,9 @@ SupportsUserData::SupportsUserData() {
   sequence_checker_.DetachFromSequence();
 }
 
+SupportsUserData::SupportsUserData(SupportsUserData&&) = default;
+SupportsUserData& SupportsUserData::operator=(SupportsUserData&&) = default;
+
 SupportsUserData::Data* SupportsUserData::GetUserData(const void* key) const {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   // Avoid null keys; they are too vulnerable to collision.

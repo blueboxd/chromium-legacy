@@ -135,6 +135,8 @@ jumbo_source_set("common_sources") {
     "content_features.h",
     "content_ipc_logging.h",
     "content_paths.h",
+    "content_switch_dependent_feature_overrides.cc",
+    "content_switch_dependent_feature_overrides.h",
     "content_switches.cc",
     "content_switches.h",
     "context_menu_params.cc",

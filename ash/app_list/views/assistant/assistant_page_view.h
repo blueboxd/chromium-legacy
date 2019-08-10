@@ -48,6 +48,8 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // AppListPage:
+  void OnAnimationStarted(ash::AppListState from_state,
+                          ash::AppListState to_state) override;
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;

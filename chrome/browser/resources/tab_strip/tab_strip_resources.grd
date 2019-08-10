@@ -18,6 +18,11 @@
           type="chrome_html"
           compress="gzip"/>
       <structure
+          name="IDR_TAB_STRIP_TABS_API_PROXY_JS"
+          file="tabs_api_proxy.js"
+          type="chrome_html"
+          compress="gzip"/>
+      <structure
           name="IDR_TAB_STRIP_CUSTOM_ELEMENT_JS"
           file="custom_element.js"
           type="chrome_html"

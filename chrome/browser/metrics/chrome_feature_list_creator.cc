@@ -41,6 +41,7 @@
 #include "components/variations/pref_names.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_crash_keys.h"
+#include "content/public/common/content_switch_dependent_feature_overrides.h"
 #include "services/service_manager/embedder/result_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -194,6 +195,8 @@ void ChromeFeatureListCreator::SetupFieldTrials() {
   variations_service->SetupFieldTrials(
       cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
       switches::kDisableFeatures, unforceable_field_trials, variation_ids,
+      content::GetSwitchDependentFeatureOverrides(
+          *base::CommandLine::ForCurrentProcess()),
       std::move(feature_list), browser_field_trials_.get());
   variations::InitCrashKeys();
 

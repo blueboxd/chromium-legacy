@@ -81,21 +81,27 @@ void HorizontalPageContainer::OnWillBeHidden() {
 
 void HorizontalPageContainer::OnAnimationStarted(ash::AppListState from_state,
                                                  ash::AppListState to_state) {
-  AppListPage::OnAnimationStarted(from_state, to_state);
+  const gfx::Rect from_rect = GetPageBoundsForState(from_state);
+  const gfx::Rect to_rect = GetPageBoundsForState(to_state);
+  if (from_rect != to_rect) {
+    SetBoundsRect(from_rect);
+    auto settings = contents_view()->CreateTransitionAnimationSettings(layer());
+    SetBoundsRect(to_rect);
+  }
 
   for (size_t i = 0; i < horizontal_pages_.size(); ++i) {
     HorizontalPage* page = horizontal_pages_[i];
-    gfx::Rect to_rect = page->GetPageBoundsForState(to_state);
-    gfx::Rect from_rect = page->GetPageBoundsForState(from_state);
+    gfx::Rect page_to_rect = page->GetPageBoundsForState(to_state);
+    gfx::Rect page_from_rect = page->GetPageBoundsForState(from_state);
 
-    if (to_rect == from_rect)
+    if (page_to_rect == page_from_rect)
       continue;
 
-    to_rect.Offset(GetOffsetForPageIndex(i));
+    page_to_rect.Offset(GetOffsetForPageIndex(i));
 
     auto settings =
         contents_view()->CreateTransitionAnimationSettings(page->layer());
-    page->SetBoundsRect(to_rect);
+    page->SetBoundsRect(page_to_rect);
   }
 }
 

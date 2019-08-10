@@ -94,7 +94,9 @@ SAConstants.KEY_PRESS_DURATION_MS = 100;
  */
 SAConstants.Preference = {
   AUTO_SCAN_ENABLED: 'settings.a11y.switch_access.auto_scan.enabled',
-  AUTO_SCAN_TIME: 'settings.a11y.switch_access.auto_scan.speed_ms'
+  AUTO_SCAN_TIME: 'settings.a11y.switch_access.auto_scan.speed_ms',
+  AUTO_SCAN_KEYBOARD_TIME:
+      'settings.a11y.switch_access.auto_scan.keyboard.speed_ms'
 };
 
 /**

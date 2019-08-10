@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "components/feed/core/feed_scheduler_host.h"
 #include "ui/base/mojom/window_open_disposition.mojom.h"
 
 namespace feed {
@@ -476,9 +477,13 @@ void RecordElementTimeUMA(const char* base_name,
 
 FeedLoggingMetrics::FeedLoggingMetrics(
     HistoryURLCheckCallback history_url_check_callback,
-    base::Clock* clock)
+    base::Clock* clock,
+    FeedSchedulerHost* scheduler_host)
     : history_url_check_callback_(std::move(history_url_check_callback)),
-      clock_(clock) {}
+      clock_(clock),
+      scheduler_host_(scheduler_host) {
+  DCHECK(scheduler_host_);
+}
 
 FeedLoggingMetrics::~FeedLoggingMetrics() = default;
 
@@ -612,6 +617,10 @@ void FeedLoggingMetrics::OnMoreButtonShown(int position) {
 }
 
 void FeedLoggingMetrics::OnMoreButtonClicked(int position) {
+  // Inform the user classifier that a suggestion was consumed
+  // (https://crbug.com/992517).
+  scheduler_host_->OnSuggestionConsumed();
+
   // The "more" card can appear in addition to the actual suggestions, so add
   // one extra bucket to this histogram.
   UMA_HISTOGRAM_EXACT_LINEAR(

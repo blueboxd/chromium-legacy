@@ -171,8 +171,7 @@ TEST_F(HintsComponentUtilTest, ProcessOptimizationFilter) {
 
   EXPECT_EQ(status, OptimizationFilterStatus::kCreatedServerBlacklist);
   ASSERT_TRUE(optimization_filter);
-  EXPECT_TRUE(
-      optimization_filter->ContainsHostSuffix(GURL("https://m.black.com")));
+  EXPECT_TRUE(optimization_filter->Matches(GURL("https://m.black.com")));
 }
 
 TEST_F(HintsComponentUtilTest, ProcessOptimizationFilterWithBadNumBits) {
@@ -193,6 +192,57 @@ TEST_F(HintsComponentUtilTest, ProcessOptimizationFilterWithBadNumBits) {
       ProcessOptimizationFilter(optimization_filter_proto, &status);
 
   EXPECT_EQ(status, OptimizationFilterStatus::kFailedServerBlacklistBadConfig);
+  EXPECT_EQ(nullptr, optimization_filter);
+}
+
+TEST_F(HintsComponentUtilTest, ProcessOptimizationFilterWithRegexps) {
+  proto::OptimizationFilter optimization_filter_proto;
+  optimization_filter_proto.add_regexps("test");
+
+  OptimizationFilterStatus status;
+  std::unique_ptr<OptimizationFilter> optimization_filter =
+      ProcessOptimizationFilter(optimization_filter_proto, &status);
+
+  EXPECT_EQ(status, OptimizationFilterStatus::kCreatedServerBlacklist);
+  ASSERT_TRUE(optimization_filter);
+  EXPECT_TRUE(optimization_filter->Matches(GURL("https://test.com")));
+}
+
+TEST_F(HintsComponentUtilTest, ProcessOptimizationFilterWithInvalidRegexps) {
+  proto::OptimizationFilter optimization_filter_proto;
+  optimization_filter_proto.add_regexps("test[");
+
+  OptimizationFilterStatus status;
+  std::unique_ptr<OptimizationFilter> optimization_filter =
+      ProcessOptimizationFilter(optimization_filter_proto, &status);
+
+  EXPECT_EQ(status, OptimizationFilterStatus::kInvalidRegexp);
+  EXPECT_EQ(nullptr, optimization_filter);
+}
+
+TEST_F(HintsComponentUtilTest,
+       ProcessOptimizationFilterInvalidRegexpsOverridesBloomFilterStatus) {
+  int num_hash_functions = 7;
+  int num_bits = 1234;
+
+  proto::OptimizationFilter optimization_filter_proto;
+  optimization_filter_proto.add_regexps("test[");
+  BloomFilter bloom_filter(num_hash_functions, num_bits);
+  bloom_filter.Add("black.com");
+  proto::BloomFilter* bloom_filter_proto =
+      optimization_filter_proto.mutable_bloom_filter();
+  bloom_filter_proto->set_num_hash_functions(num_hash_functions);
+  bloom_filter_proto->set_num_bits(num_bits);
+  std::string blacklist_data(
+      reinterpret_cast<const char*>(&bloom_filter.bytes()[0]),
+      bloom_filter.bytes().size());
+  bloom_filter_proto->set_data(blacklist_data);
+
+  OptimizationFilterStatus status;
+  std::unique_ptr<OptimizationFilter> optimization_filter =
+      ProcessOptimizationFilter(optimization_filter_proto, &status);
+
+  EXPECT_EQ(status, OptimizationFilterStatus::kInvalidRegexp);
   EXPECT_EQ(nullptr, optimization_filter);
 }
 
@@ -241,8 +291,7 @@ TEST_F(HintsComponentUtilTest,
                                 /*out_status=*/nullptr);
 
   ASSERT_TRUE(optimization_filter);
-  EXPECT_TRUE(
-      optimization_filter->ContainsHostSuffix(GURL("https://m.black.com")));
+  EXPECT_TRUE(optimization_filter->Matches(GURL("https://m.black.com")));
 }
 
 }  // namespace optimization_guide

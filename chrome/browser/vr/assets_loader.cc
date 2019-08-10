@@ -244,8 +244,8 @@ void AssetsLoader::LoadAssetsTask(
 }
 
 AssetsLoader::AssetsLoader()
-    : main_thread_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI})) {
+    : main_thread_task_runner_(
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})) {
   DCHECK(main_thread_task_runner_.get());
 }
 
@@ -268,8 +268,9 @@ void AssetsLoader::LoadInternal(
     OnAssetsLoadedCallback on_loaded) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(component_ready_);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&AssetsLoader::LoadAssetsTask, task_runner,
                      component_version_, component_install_dir_,
                      std::move(on_loaded)));

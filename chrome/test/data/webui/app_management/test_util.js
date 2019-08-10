@@ -67,7 +67,7 @@ function getCurrentUrlSuffix() {
 async function navigateTo(route) {
   window.history.replaceState({}, '', route);
   window.dispatchEvent(new CustomEvent('location-changed'));
-  await PolymerTest.flushTasks();
+  await test_util.flushTasks();
 }
 
 /**

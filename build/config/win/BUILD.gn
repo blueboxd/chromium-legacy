@@ -384,6 +384,85 @@ config("cfi_linker") {
   }
 }
 
+# This is a superset of all the delayloads needed for chrome.exe, chrome.dll,
+# chrome_child.dll, and chrome_elf.dll. The linker will automatically ignore
+# anything which is not linked to the binary at all.
+# Most of the dlls are simply not required at startup (or at all, depending
+# on how the browser is used). The following dlls are interconnected and need to
+# be delayloaded together to ensure user32 does not load too early or at all,
+# depending on the process type: user32, gdi32, comctl32, comdlg32, cryptui,
+# d3d9, dwmapi, imm32, msi, ole32, oleacc, rstrtmgr, shell32, shlwapi, and
+# uxtheme.
+# There are some exceptions to this list which need to be declared separately.
+# Some dlls cannot be delayloaded by chrome_child.dll due to the sandbox
+# restrictions that prevent them from being loaded properly. Those dlls are
+# specified in the separate config below.
+# This config should also be used for any test binary whose goal is to run
+# tests with the full browser.
+config("delayloads") {
+  ldflags = [
+    "/DELAYLOAD:api-ms-win-core-winrt-error-l1-1-0.dll",
+    "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll",
+    "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll",
+    "/DELAYLOAD:comctl32.dll",
+    "/DELAYLOAD:comdlg32.dll",
+    "/DELAYLOAD:credui.dll",
+    "/DELAYLOAD:cryptui.dll",
+    "/DELAYLOAD:d3d11.dll",
+    "/DELAYLOAD:d3d9.dll",
+    "/DELAYLOAD:dwmapi.dll",
+    "/DELAYLOAD:dxgi.dll",
+    "/DELAYLOAD:dxva2.dll",
+    "/DELAYLOAD:esent.dll",
+    "/DELAYLOAD:gdi32.dll",
+    "/DELAYLOAD:hid.dll",
+    "/DELAYLOAD:imagehlp.dll",
+    "/DELAYLOAD:imm32.dll",
+    "/DELAYLOAD:msi.dll",
+    "/DELAYLOAD:netapi32.dll",
+    "/DELAYLOAD:ncrypt.dll",
+    "/DELAYLOAD:ole32.dll",
+    "/DELAYLOAD:oleacc.dll",
+    "/DELAYLOAD:propsys.dll",
+    "/DELAYLOAD:psapi.dll",
+    "/DELAYLOAD:rpcrt4.dll",
+    "/DELAYLOAD:rstrtmgr.dll",
+    "/DELAYLOAD:setupapi.dll",
+    "/DELAYLOAD:shell32.dll",
+    "/DELAYLOAD:shlwapi.dll",
+    "/DELAYLOAD:urlmon.dll",
+    "/DELAYLOAD:user32.dll",
+    "/DELAYLOAD:usp10.dll",
+    "/DELAYLOAD:uxtheme.dll",
+    "/DELAYLOAD:wer.dll",
+    "/DELAYLOAD:wevtapi.dll",
+    "/DELAYLOAD:wininet.dll",
+    "/DELAYLOAD:winusb.dll",
+    "/DELAYLOAD:wsock32.dll",
+    "/DELAYLOAD:wtsapi32.dll",
+  ]
+}
+
+config("delayloads_not_for_child_dll") {
+  ldflags = [
+    "/DELAYLOAD:advapi32.dll",
+    "/DELAYLOAD:crypt32.dll",
+    "/DELAYLOAD:dbghelp.dll",
+    "/DELAYLOAD:dhcpcsvc.dll",
+    "/DELAYLOAD:dwrite.dll",
+    "/DELAYLOAD:iphlpapi.dll",
+    "/DELAYLOAD:oleaut32.dll",
+    "/DELAYLOAD:secur32.dll",
+    "/DELAYLOAD:uiautomationcore.dll",
+    "/DELAYLOAD:userenv.dll",
+    "/DELAYLOAD:winhttp.dll",
+    "/DELAYLOAD:winmm.dll",
+    "/DELAYLOAD:winspool.drv",
+    "/DELAYLOAD:wintrust.dll",
+    "/DELAYLOAD:ws2_32.dll",
+  ]
+}
+
 # CRT --------------------------------------------------------------------------
 
 # Configures how the runtime library (CRT) is going to be used.

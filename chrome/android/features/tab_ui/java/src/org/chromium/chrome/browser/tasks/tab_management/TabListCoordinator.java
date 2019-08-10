@@ -212,7 +212,8 @@ public class TabListCoordinator implements Destroyable {
      * @return Whether a valid {@link Rect} is obtained.
      */
     boolean updateThumbnailLocation() {
-        Rect rect = mRecyclerView.getRectOfCurrentThumbnail(mMediator.indexOfSelected());
+        Rect rect = mRecyclerView.getRectOfCurrentThumbnail(
+                mMediator.indexOfSelected(), mMediator.selectedTabId());
         if (rect == null) return false;
         mThumbnailLocationOfCurrentTab.set(rect);
         return true;

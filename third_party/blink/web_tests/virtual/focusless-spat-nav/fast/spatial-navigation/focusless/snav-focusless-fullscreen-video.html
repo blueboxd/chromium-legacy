@@ -29,9 +29,11 @@
     await fullscreened;
 
     // snav state racily may have changed once or twice when fullscreen state
-    // changes. Waiting until a rAF after fullscreen changes should give snav
-    // state time to update properly.
-    await snav.rAF();
+    // changes, so if it hasn't updated in response to video controls getting
+    // focused yet, wait for the next update.
+    if (!mockSnavService.hasDefaultVideoControls) {
+      await snavCallback();
+    }
 
     assert_equals(window.internals.interestedElement,
                   video,
@@ -41,7 +43,7 @@
                   "Video element should be focused.");
 
     assert_true(mockSnavService.canExitFocus,
-                 "Should be able to exit focus.");
+                "Should be able to exit focus.");
     assert_true(mockSnavService.canSelectElement,
                 "Should be able to select element.");
     assert_false(mockSnavService.isFormFocused,

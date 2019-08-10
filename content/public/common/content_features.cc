@@ -73,6 +73,10 @@ const base::Feature kTouchpadOverscrollHistoryNavigation {
 const base::Feature kBlockCredentialedSubresources{
     "BlockCredentialedSubresources", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Verify user activation notification by the browser side state.
+const base::Feature kBrowserVerifiedUserActivation{
+    "BrowserVerifiedUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether Bundled HTTP Exchanges is enabled.
 // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html
 const base::Feature kBundledHTTPExchanges{"BundledHTTPExchanges",
@@ -355,6 +359,10 @@ const base::Feature kPepper3DImageChromium {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+// Whether we should composite a PLSA even if it means losing lcd text.
+const base::Feature kPreferCompositingToLCDText = {
+    "PreferCompositingToLCDText", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables process sharing for sites that do not require a dedicated process
 // by using a default SiteInstance. Default SiteInstances will only be used
@@ -713,6 +721,10 @@ const base::Feature kWebUsb{"WebUSB", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the WebXR Device API is enabled.
 const base::Feature kWebXr{"WebXR", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables access to anchors via WebXR API.
+const base::Feature kWebXrAnchors{"WebXRAnchors",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables access to raycasting against estimated XR scene geometry.
 const base::Feature kWebXrHitTest{"WebXRHitTest",

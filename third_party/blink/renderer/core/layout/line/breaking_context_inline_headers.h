@@ -311,6 +311,7 @@ inline void SetStaticPositions(LineLayoutBlockFlow block,
     // determine our position as though we were an inline.
     // Set |staticInlinePosition| and |staticBlockPosition| on the relative
     // positioned inline so that we can obtain the value later.
+    DCHECK(LineLayoutInline(container_block).Layer());
     LineLayoutInline(container_block)
         .Layer()
         ->SetStaticInlinePosition(

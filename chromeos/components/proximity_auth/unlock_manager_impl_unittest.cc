@@ -396,7 +396,8 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
-  EXPECT_CALL(proximity_auth_client_, UpdateScreenlockState(_)).Times(0);
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
 }
 

@@ -23,6 +23,7 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool IsAuthErrorBubbleShown();
   static bool IsGuestButtonShown();
   static bool IsAddUserButtonShown();
+  static bool IsParentAccessButtonShown();
   static void SubmitPassword(const AccountId& account_id,
                              const std::string& password);
   static int64_t GetUiUpdateCount();

@@ -150,7 +150,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("ui", "window_manager")
         .RequireCapability("unzip", "unzip_file")
         .RequireCapability("util_win", "util_win")
-        .RequireCapability("wifi_util_win", "wifi_credentials")
         .RequireCapability("xr_device_service", "xr_device_provider")
         .RequireCapability("xr_device_service", "xr_device_test_hook")
 #if defined(OS_CHROMEOS)
@@ -162,7 +161,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             chromeos::network_config::mojom::kNetworkConfigCapability,
             service_manager::Manifest::InterfaceList<
                 chromeos::network_config::mojom::CrosNetworkConfig>())
-        .RequireCapability("cellular_setup", "cellular_setup")
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "cellular_setup",
             service_manager::Manifest::InterfaceList<

@@ -14,6 +14,7 @@
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/session/user_info.h"
+#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -133,6 +134,13 @@ class ASH_EXPORT LoginAuthUserView
   // auth method is |AUTH_DISABLED|.
   void SetAuthDisabledMessage(const AuthDisabledData& auth_disabled_data);
 
+  // Called to request the user to enter the PIN of the security token (e.g.,
+  // the smart card).
+  void RequestSecurityTokenPin(SecurityTokenPinRequest request);
+
+  // Called to close the UI previously opened with RequestSecurityTokenPin().
+  void ClearSecurityTokenPinRequest();
+
   const LoginUserInfo& current_user() const;
 
   LoginPasswordView* password_view() { return password_view_; }
@@ -181,6 +189,9 @@ class ASH_EXPORT LoginAuthUserView
   // starts the asynchronous authentication process against a security token.
   void AttemptAuthenticateWithChallengeResponse();
 
+  // Aborts the current active security token PIN request, if there's one.
+  void AbortSecurityTokenPinRequest();
+
   AuthMethods auth_methods_ = AUTH_NONE;
   // True if the user's password might be a PIN. PIN is hashed differently from
   // password. The PIN keyboard may not always be visible even when the user
@@ -208,6 +219,9 @@ class ASH_EXPORT LoginAuthUserView
   // |CaptureStateForAnimationPreLayout| and consumed by
   // |ApplyAnimationPostLayout|.
   std::unique_ptr<AnimationState> cached_animation_state_;
+
+  // Parameters of the active security token PIN request, if there's one.
+  base::Optional<SecurityTokenPinRequest> security_token_pin_request_;
 
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>

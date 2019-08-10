@@ -35,12 +35,12 @@ constexpr char kAndroidIntentScheme[] = "intent";
 AssistantController::AssistantController()
     : assistant_volume_control_binding_(this),
       assistant_alarm_timer_controller_(this),
-      assistant_cache_controller_(this),
       assistant_interaction_controller_(this),
       assistant_notification_controller_(this),
       assistant_prefs_controller_(),
       assistant_screen_context_controller_(this),
       assistant_setup_controller_(this),
+      assistant_suggestions_controller_(this),
       assistant_ui_controller_(this),
       view_delegate_(this),
       weak_factory_(this) {

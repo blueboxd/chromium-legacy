@@ -9,7 +9,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/sharing/sharing_service.h"
@@ -116,7 +116,7 @@ void ClickToCallSharingDialogController::OnDeviceChosen(
                                        unescaped_phone_number.length())));
 
   sharing_service_->SendMessageToDevice(
-      device.guid(), kSharingClickToCallMessageTTL, std::move(sharing_message),
+      device.guid(), kSharingMessageTTL, std::move(sharing_message),
       base::Bind(&ClickToCallSharingDialogController::OnMessageSentToDevice,
                  weak_ptr_factory_.GetWeakPtr(), last_dialog_id_));
 }

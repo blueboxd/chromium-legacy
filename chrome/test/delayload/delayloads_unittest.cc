@@ -92,9 +92,6 @@ TEST_F(DelayloadsTest, ChromeDllDelayloadsCheck) {
   static const char* const kValidFilePatterns[] = {
       "KERNEL32.dll",
       "chrome_elf.dll",
-      "DWrite.dll",
-      "oneds.dll",
-      "telclient.dll",
       // On 64 bit the Version API's like VerQueryValue come from VERSION.dll.
       // It depends on kernel32, advapi32 and api-ms-win-crt*.dll. This should
       // be ok.
@@ -271,11 +268,9 @@ TEST_F(DelayloadsTest, ChromeElfDllDelayloadsCheck) {
 
   static const char* const kValidFilePatterns[] = {
     "KERNEL32.dll",
-    "RPCRT4.dll",
 #if defined(ADDRESS_SANITIZER) && defined(COMPONENT_BUILD)
     "clang_rt.asan_dynamic-i386.dll",
 #endif
-    "ADVAPI32.dll",
     // On 64 bit the Version API's like VerQueryValue come from VERSION.dll.
     // It depends on kernel32, advapi32 and api-ms-win-crt*.dll. This should
     // be ok.

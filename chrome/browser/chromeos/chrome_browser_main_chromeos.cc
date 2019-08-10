@@ -74,6 +74,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/login_screen_extensions_lifetime_manager.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/chrome_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -1002,6 +1003,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   crosvm_metrics_ = std::make_unique<crostini::CrosvmMetrics>();
   crosvm_metrics_->Start();
 
+  login_screen_extensions_lifetime_manager_ =
+      std::make_unique<LoginScreenExtensionsLifetimeManager>();
+
   ChromeBrowserMainPartsLinux::PostProfileInit();
 }
 
@@ -1140,6 +1144,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   lock_to_single_user_manager_.reset();
   wilco_dtc_supportd_manager_.reset();
   gnubby_notification_.reset();
+  login_screen_extensions_lifetime_manager_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();

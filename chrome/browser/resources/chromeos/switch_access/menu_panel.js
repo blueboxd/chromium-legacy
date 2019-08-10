@@ -16,7 +16,7 @@ class Panel {
 
     /**
      * Reference to switch access.
-     * @private {SwitchAccess}
+     * @private {SwitchAccessInterface}
      */
     this.switchAccess_;
   }
@@ -114,11 +114,11 @@ class Panel {
 
     let rowHeight;
 
-    if (this.switchAccess_.textEditingEnabled()) {
+    if (this.switchAccess_.improvedTextInputEnabled()) {
       rowHeight = 85;
       const actions = document.getElementsByClassName('action');
       for (let action of actions) {
-        action.classList.add('textEditingEnabled');
+        action.classList.add('improvedTextInputEnabled');
       }
     } else {
       rowHeight = 60;

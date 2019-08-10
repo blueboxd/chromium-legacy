@@ -73,16 +73,26 @@ class VariationsFieldTrialCreator {
   // |safe_seed_manager| should be notified of the combined server and client
   // state that was activated to create the field trials (only when the return
   // value is true).
-  bool SetupFieldTrials(const char* kEnableGpuBenchmarking,
-                        const char* kEnableFeatures,
-                        const char* kDisableFeatures,
-                        const std::set<std::string>& unforceable_field_trials,
-                        const std::vector<std::string>& variation_ids,
-                        std::unique_ptr<const base::FieldTrial::EntropyProvider>
-                            low_entropy_provider,
-                        std::unique_ptr<base::FeatureList> feature_list,
-                        PlatformFieldTrials* platform_field_trials,
-                        SafeSeedManager* safe_seed_manager);
+  // |extra_overrides| gives a list of feature overrides that should be applied
+  // after the features explicitly disabled/enabled from the command line via
+  // --disable-features and --enable-features, but before field trials.
+  // Note: The ordering of the FeatureList method calls is such that the
+  // explicit --disable-features and --enable-features from the command line
+  // take precedence over the |extra_overrides|, which take precedence over the
+  // field trials.
+  bool SetupFieldTrials(
+      const char* kEnableGpuBenchmarking,
+      const char* kEnableFeatures,
+      const char* kDisableFeatures,
+      const std::set<std::string>& unforceable_field_trials,
+      const std::vector<std::string>& variation_ids,
+      const std::vector<base::FeatureList::FeatureOverrideInfo>&
+          extra_overrides,
+      std::unique_ptr<const base::FieldTrial::EntropyProvider>
+          low_entropy_provider,
+      std::unique_ptr<base::FeatureList> feature_list,
+      PlatformFieldTrials* platform_field_trials,
+      SafeSeedManager* safe_seed_manager);
 
   // Returns all of the client state used for filtering studies.
   // As a side-effect, may update the stored permanent consistency country.

@@ -28,7 +28,7 @@
 namespace {
 
 constexpr base::TaskTraits kTaskTraits = {
-    base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+    base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 }  // namespace
@@ -55,7 +55,7 @@ class PatchTest : public InProcessBrowserTest {
     base::FilePath path = installed_dir_.GetPath().AppendASCII(name);
 
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, kTaskTraits,
         base::BindOnce(&PatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
@@ -68,7 +68,7 @@ class PatchTest : public InProcessBrowserTest {
     base::FilePath path = input_dir_.GetPath().AppendASCII(name);
 
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, kTaskTraits,
         base::BindOnce(&PatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
@@ -94,7 +94,7 @@ class PatchTest : public InProcessBrowserTest {
     quit_closure_ = run_loop.QuitClosure();
     done_called_ = false;
 
-    base::CreateSequencedTaskRunnerWithTraits(kTaskTraits)
+    base::CreateSequencedTaskRunner(kTaskTraits)
         ->PostTask(FROM_HERE,
                    base::BindOnce(&PatchTest::PatchAsyncSequencedTaskRunner,
                                   base::Unretained(this), operation, input,
@@ -118,7 +118,7 @@ class PatchTest : public InProcessBrowserTest {
   void PatchDone(int expected, int result) {
     EXPECT_EQ(expected, result);
     done_called_ = true;
-    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
         ->PostTask(FROM_HERE, std::move(quit_closure_));
   }
 

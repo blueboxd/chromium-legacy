@@ -5,6 +5,7 @@
 #include "components/previews/content/previews_hints.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -56,6 +57,22 @@ void AddBlacklistBloomFilterToConfig(
   bloom_filter_proto->set_num_bits(num_bits);
   bloom_filter_proto->set_data(blacklist_data);
   blacklist_proto->set_allocated_bloom_filter(bloom_filter_proto.release());
+}
+
+void AddRegexpsFilterToConfig(optimization_guide::proto::Configuration* config,
+                              const std::vector<std::string>& regexps) {
+  optimization_guide::proto::OptimizationFilter* blacklist_proto;
+  if (config->optimization_blacklists_size() > 0) {
+    blacklist_proto = config->mutable_optimization_blacklists(0);
+  } else {
+    blacklist_proto = config->add_optimization_blacklists();
+    blacklist_proto->set_optimization_type(
+        optimization_guide::proto::LITE_PAGE_REDIRECT);
+  }
+
+  for (const std::string& regexp : regexps) {
+    blacklist_proto->add_regexps(regexp);
+  }
 }
 
 }  // namespace
@@ -278,7 +295,36 @@ TEST_F(PreviewsHintsTest, IsBlacklistedReturnsTrueIfNoBloomFilter) {
       GURL("https://nonblack.com"), PreviewsType::LITE_PAGE_REDIRECT));
 }
 
-TEST_F(PreviewsHintsTest, IsBlacklisted) {
+TEST_F(PreviewsHintsTest, IsBlacklisted_BloomFilterAndRegexps) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
+
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
+  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
+
+  optimization_guide::proto::Configuration config;
+  AddBlacklistBloomFilterToConfig(blacklist_bloom_filter,
+                                  kBlackBlacklistBloomFilterNumHashFunctions,
+                                  kBlackBlacklistBloomFilterNumBits, &config);
+  AddRegexpsFilterToConfig(&config, {"blackpath"});
+  ParseConfig(config);
+
+  EXPECT_TRUE(HasLitePageRedirectBlacklist());
+  EXPECT_FALSE(previews_hints()->IsBlacklisted(GURL("https://black.com/path"),
+                                               PreviewsType::OFFLINE));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://joe.black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_FALSE(previews_hints()->IsBlacklisted(
+      GURL("https://ok-host.com/"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://ok-host.com/blackpath"), PreviewsType::LITE_PAGE_REDIRECT));
+}
+
+TEST_F(PreviewsHintsTest, IsBlacklisted_BloomFilter) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
 
@@ -302,6 +348,47 @@ TEST_F(PreviewsHintsTest, IsBlacklisted) {
       GURL("https://joe.black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
   EXPECT_FALSE(previews_hints()->IsBlacklisted(
       GURL("https://nonblack.com"), PreviewsType::LITE_PAGE_REDIRECT));
+}
+
+TEST_F(PreviewsHintsTest, IsBlacklisted_Regexps) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
+
+  optimization_guide::proto::Configuration config;
+  AddRegexpsFilterToConfig(&config, {"black\\.com"});
+  ParseConfig(config);
+
+  EXPECT_TRUE(HasLitePageRedirectBlacklist());
+  EXPECT_FALSE(previews_hints()->IsBlacklisted(GURL("https://black.com/path"),
+                                               PreviewsType::OFFLINE));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_TRUE(previews_hints()->IsBlacklisted(
+      GURL("https://joe.black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
+  EXPECT_FALSE(previews_hints()->IsBlacklisted(
+      GURL("https://blackish.com"), PreviewsType::LITE_PAGE_REDIRECT));
+}
+
+TEST_F(PreviewsHintsTest, ParseConfigWithBadRegexp) {
+  base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
+
+  optimization_guide::proto::Configuration config;
+  AddRegexpsFilterToConfig(&config, {"["});
+  ParseConfig(config);
+
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::kFoundServerBlacklistConfig,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::kInvalidRegexp, 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect", 2);
+
+  EXPECT_FALSE(HasLitePageRedirectBlacklist());
 }
 
 TEST_F(PreviewsHintsTest, ParseConfigWithInsufficientConfigDetails) {

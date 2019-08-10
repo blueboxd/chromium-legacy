@@ -54,14 +54,6 @@ views::Widget* RelaunchRecommendedBubbleView::ShowBubble(
       anchor_button, detection_time, std::move(on_accept));
   bubble_view->SetArrow(views::BubbleBorder::TOP_RIGHT);
 
-#if defined(OS_MACOSX)
-  // Parent the bubble to the browser window when there is no anchor view.
-  if (!anchor_button) {
-    bubble_view->set_parent_window(
-        platform_util::GetViewForWindow(browser->window()->GetNativeWindow()));
-  }
-#endif  // defined(OS_MACOSX)
-
   views::Widget* bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(bubble_view);
   bubble_view->ShowForReason(AUTOMATIC);
@@ -157,12 +149,10 @@ gfx::Size RelaunchRecommendedBubbleView::CalculatePreferredSize() const {
 void RelaunchRecommendedBubbleView::VisibilityChanged(
     views::View* starting_from,
     bool is_visible) {
-  views::Button* anchor_button = views::Button::AsButton(GetAnchorView());
-  if (anchor_button) {
-    anchor_button->AnimateInkDrop(is_visible ? views::InkDropState::ACTIVATED
-                                             : views::InkDropState::DEACTIVATED,
-                                  nullptr);
-  }
+  views::Button::AsButton(GetAnchorView())
+      ->AnimateInkDrop(is_visible ? views::InkDropState::ACTIVATED
+                                  : views::InkDropState::DEACTIVATED,
+                       nullptr);
 }
 
 // |relaunch_recommended_timer_| automatically starts for the next time the
@@ -171,7 +161,7 @@ RelaunchRecommendedBubbleView::RelaunchRecommendedBubbleView(
     views::Button* anchor_button,
     base::Time detection_time,
     base::RepeatingClosure on_accept)
-    : LocationBarBubbleDelegateView(anchor_button, gfx::Point(), nullptr),
+    : LocationBarBubbleDelegateView(anchor_button, nullptr),
       on_accept_(std::move(on_accept)),
       body_label_(nullptr),
       relaunch_recommended_timer_(

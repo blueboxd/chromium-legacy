@@ -71,12 +71,6 @@ constexpr int kMenuSeparatorWidth = 1;
 // in tray detailed views.
 constexpr int kTraySeparatorWidth = 0;
 
-// Colors of separator on light/dark background.
-constexpr SkColor kSeparatorOnLightBackgroundColor =
-    SkColorSetA(SK_ColorBLACK, 0x23);  // 14%
-constexpr SkColor kSeparatorOnDarkBackgroundColor =
-    SkColorSetA(SK_ColorWHITE, 0x23);  // 14%
-
 // Primary colors of icon on light/dark background. Color of disabled icon is
 // 38% of corresponding non-disabled icon.
 constexpr SkColor kIconOnDarkBackgroundColor = gfx::kGoogleGrey200;
@@ -127,10 +121,6 @@ extern const int kTrayPopupInkDropInset;
 // The radius used to draw the corners of the rounded rect style ink drops.
 extern const int kTrayPopupInkDropCornerRadius;
 
-constexpr SkColor kUnifiedMenuBackgroundColor =
-    SkColorSetARGB(0xf2, 0x20, 0x21, 0x24);
-constexpr SkColor kUnifiedMenuBackgroundColorWithBlur =
-    SkColorSetA(kUnifiedMenuBackgroundColor, 0x99);
 constexpr float kUnifiedMenuBackgroundBlur = 30.f;
 constexpr SkColor kUnifiedMenuTextColor = SkColorSetRGB(0xf1, 0xf3, 0xf4);
 constexpr SkColor kUnifiedMenuSecondaryTextColor =
@@ -156,6 +146,7 @@ constexpr gfx::Insets kUnifiedSliderPadding(0, 16);
 
 constexpr int kUnifiedSliderViewSpacing = 12;
 constexpr int kUnifiedMenuPadding = 8;
+constexpr int kUnifiedMessageCenterBubbleSpacing = 8;
 constexpr int kUnifiedNotificationCenterSpacing = 16;
 constexpr int kUnifiedTrayIconSize = 20;
 constexpr int kUnifiedTraySpacingBetweenIcons = 6;

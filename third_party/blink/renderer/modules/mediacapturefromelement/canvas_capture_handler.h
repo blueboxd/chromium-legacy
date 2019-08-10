@@ -26,6 +26,7 @@ class SkImage;
 
 namespace blink {
 
+class LocalFrame;
 class WebGraphicsContext3DProvider;
 
 // CanvasCaptureHandler acts as the link between Blink side HTMLCanvasElement
@@ -43,6 +44,7 @@ class MODULES_EXPORT CanvasCaptureHandler {
 
   // Creates a CanvasCaptureHandler instance and updates UMA histogram.
   static std::unique_ptr<CanvasCaptureHandler> CreateCanvasCaptureHandler(
+      LocalFrame* frame,
       const blink::WebSize& size,
       double frame_rate,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -67,6 +69,7 @@ class MODULES_EXPORT CanvasCaptureHandler {
   // is then plugged into a MediaStreamTrack passed as |track|, and it is owned
   // by the Blink side MediaStreamSource.
   CanvasCaptureHandler(
+      LocalFrame* frame,
       const blink::WebSize& size,
       double frame_rate,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
@@ -102,6 +105,7 @@ class MODULES_EXPORT CanvasCaptureHandler {
                  const gfx::ColorSpace& color_space);
 
   void AddVideoCapturerSourceToVideoTrack(
+      LocalFrame* frame,
       std::unique_ptr<media::VideoCapturerSource> source,
       blink::WebMediaStreamTrack* web_track);
 

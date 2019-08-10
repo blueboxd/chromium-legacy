@@ -21,7 +21,7 @@ suite('history-list supervised-user', function() {
   });
 
   test('checkboxes disabled for supervised user', function() {
-    return PolymerTest.flushTasks().then(function() {
+    return test_util.flushTasks().then(function() {
       const items = historyList.shadowRoot.querySelectorAll('history-item');
 
       MockInteractions.tap(items[0].$['checkbox']);

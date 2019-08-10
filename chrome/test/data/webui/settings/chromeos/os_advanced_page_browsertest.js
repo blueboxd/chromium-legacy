@@ -13,7 +13,7 @@ suite('OSSettingsPage', function() {
         document.querySelector('os-settings-ui').$$('os-settings-main');
     assert(!!settingsMain);
     settingsMain.advancedToggleExpanded = !settingsMain.advancedToggleExpanded;
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
   });
 
   function getSection(page, section) {

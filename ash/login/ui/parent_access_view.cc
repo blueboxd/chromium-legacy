@@ -636,7 +636,7 @@ void ParentAccessView::OnPaint(gfx::Canvas* canvas) {
       session_manager::SessionState::ACTIVE) {
     SkColor extracted_color =
         Shell::Get()->wallpaper_controller()->GetProminentColor(
-            color_utils::ColorProfile(color_utils::LumaRange::DARK,
+            color_utils::ColorProfile(color_utils::LumaRange::NORMAL,
                                       color_utils::SaturationRange::MUTED));
     if (extracted_color != kInvalidWallpaperColor &&
         extracted_color != SK_ColorTRANSPARENT) {

@@ -73,7 +73,7 @@ class WebRtcImageCaptureStressBrowserTest
   // skipped or it works as intended, or false otherwise.
   virtual bool RunImageCaptureTestCase(const std::string& command) {
     GURL url(embedded_test_server()->GetURL(kImageCaptureStressHtmlFile));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
 
     if (!IsWebcamAvailableOnSystem(shell()->web_contents())) {
       LOG(WARNING) << "No video device; skipping test...";

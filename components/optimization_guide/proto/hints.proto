@@ -243,6 +243,9 @@ message OptimizationFilter {
   optional OptimizationType optimization_type = 1;
   // The filter data represented as a Bloom filter.
   optional BloomFilter bloom_filter = 2;
+  // Additional filters represented as regexps matched against the main page
+  // URL.
+  repeated string regexps = 3;
 }
 
 message Configuration {

@@ -45,6 +45,15 @@ self.addEventListener('install', e => {
     await cache.addAll([
       `${SCRIPT_PATH}?cached_in_install_event`,
     ]);
+
+    // Create a synthetic response with a mime-type that has a charset
+    const script_body = "function test_function() { return 'SUCCESS'; }";
+    const response = new Response(script_body, {
+      headers: { 'content-type': 'application/javascript; charset=utf-8' }
+    });
+    await cache.put(
+        `${SCRIPT_PATH}?cached_in_install_event_with_mime_type_param`,
+        response);
   }());
 });
 

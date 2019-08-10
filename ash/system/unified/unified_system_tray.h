@@ -108,6 +108,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   const char* GetClassName() const override;
 
   UnifiedSystemTrayModel* model() { return model_.get(); }
+  UnifiedSystemTrayBubble* bubble() { return bubble_.get(); }
 
  private:
   static const base::TimeDelta kNotificationCountUpdateDelay;

@@ -49,7 +49,7 @@ test.customizeMenu.IDS = {
  * @const
  */
 test.customizeMenu.CLASSES = {
-  COLLECTION_TILE_BG: 'bg-sel-tile-bg',
+  COLLECTION_TILE: 'bg-sel-tile',
   ENTRY_POINT_ENHANCED: 'ep-enhanced',
   SELECTED: 'selected',
 };
@@ -226,8 +226,8 @@ test.customizeMenu.testMenu_SaveUserSelections = function() {
   $('coll_tile_0').click();
   const background = $('coll_0_img_tile_0');
   background.click();
-  assertTrue(
-      background.classList.contains(test.customizeMenu.CLASSES.SELECTED));
+  assertTrue(background.parentElement.classList.contains(
+      test.customizeMenu.CLASSES.SELECTED));
   // The submenu's title should be the image collection's.
   assertEquals(
       'Collection 1', $(test.customizeMenu.IDS.MENU_TITLE).textContent);
@@ -243,17 +243,18 @@ test.customizeMenu.testMenu_SaveUserSelections = function() {
 
   // Select a color.
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
-  const colorOptions = $(test.customizeMenu.IDS.COLORS_MENU)
-                           .getElementsByClassName(
-                               test.customizeMenu.CLASSES.COLLECTION_TILE_BG);
+  const colorOptions =
+      $(test.customizeMenu.IDS.COLORS_MENU)
+          .getElementsByClassName(test.customizeMenu.CLASSES.COLLECTION_TILE);
   const color = colorOptions[1];  // Skip the default theme option.
   color.click();
-  assertTrue(color.classList.contains(test.customizeMenu.CLASSES.SELECTED));
+  assertTrue(color.parentElement.classList.contains(
+      test.customizeMenu.CLASSES.SELECTED));
 
   // Open the Background submenu and check that it's still selected.
   $(test.customizeMenu.IDS.BACKGROUNDS_BUTTON).click();
-  assertTrue(
-      background.classList.contains(test.customizeMenu.CLASSES.SELECTED));
+  assertTrue(background.parentElement.classList.contains(
+      test.customizeMenu.CLASSES.SELECTED));
   // The image collection should still be open.
   assertEquals(
       'Collection 1', $(test.customizeMenu.IDS.MENU_TITLE).textContent);
@@ -265,7 +266,8 @@ test.customizeMenu.testMenu_SaveUserSelections = function() {
 
   // Open the Color submenu and check that it's still selected.
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
-  assertTrue(color.classList.contains(test.customizeMenu.CLASSES.SELECTED));
+  assertTrue(color.parentElement.classList.contains(
+      test.customizeMenu.CLASSES.SELECTED));
 
   $(test.customizeMenu.IDS.MENU_CANCEL).click();
 };
@@ -290,9 +292,9 @@ test.customizeMenu.testMenu_ApplyUserSelections = function() {
 
   // Select a color.
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
-  const colorOptions = $(test.customizeMenu.IDS.COLORS_MENU)
-                           .getElementsByClassName(
-                               test.customizeMenu.CLASSES.COLLECTION_TILE_BG);
+  const colorOptions =
+      $(test.customizeMenu.IDS.COLORS_MENU)
+          .getElementsByClassName(test.customizeMenu.CLASSES.COLLECTION_TILE);
   // Skip the color picker and the default theme option.
   colorOptions[2].click();
 
@@ -366,9 +368,9 @@ test.customizeMenu.testMenu_CancelUserSelections = function() {
 
   // Select a color.
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
-  const colorOptions = $(test.customizeMenu.IDS.COLORS_MENU)
-                           .getElementsByClassName(
-                               test.customizeMenu.CLASSES.COLLECTION_TILE_BG);
+  const colorOptions =
+      $(test.customizeMenu.IDS.COLORS_MENU)
+          .getElementsByClassName(test.customizeMenu.CLASSES.COLLECTION_TILE);
   // Skip the color picker and the default theme option.
   const color = colorOptions[2];
   color.click();
@@ -402,9 +404,9 @@ test.customizeMenu.testMenu_CancelUserSelectionsKeyboard = function() {
 
   // Select a color.
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
-  const colorOptions = $(test.customizeMenu.IDS.COLORS_MENU)
-                           .getElementsByClassName(
-                               test.customizeMenu.CLASSES.COLLECTION_TILE_BG);
+  const colorOptions =
+      $(test.customizeMenu.IDS.COLORS_MENU)
+          .getElementsByClassName(test.customizeMenu.CLASSES.COLLECTION_TILE);
   // Skip the color picker and the default theme option.
   const color = colorOptions[2];
   color.click();
@@ -639,7 +641,7 @@ test.customizeMenu.testColors_ColorTilesLoaded = function() {
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
   assertTrue($(test.customizeMenu.IDS.COLORS_MENU).children.length > 1);
   assertTrue(!!$('color_0').dataset.color);
-  assertTrue(!!$('color_0').firstElementChild.style.backgroundImage);
+  assertTrue(!!$('color_0').style.backgroundImage);
 };
 
 /**
@@ -714,24 +716,6 @@ test.customizeMenu.testColors_PreselectDefault = function() {
 };
 
 /**
- * Test 'Done' button enabled/disabled when preselect is present.
- */
-test.customizeMenu.testColors_DoneButtonWithPreselect = function() {
-  test.customizeMenu.mockThemeBackgroundInfo = {usingDefaultTheme: true};
-  init();
-  $(test.customizeMenu.IDS.EDIT_BG).click();
-  $(test.customizeMenu.IDS.COLORS_BUTTON).click();
-
-  assertTrue($(test.customizeMenu.IDS.MENU_DONE).disabled);
-
-  !!$('color_0').click();
-  assertFalse($(test.customizeMenu.IDS.MENU_DONE).disabled);
-
-  $(test.customizeMenu.IDS.COLORS_DEFAULT).click();
-  assertTrue($(test.customizeMenu.IDS.MENU_DONE).disabled);
-};
-
-/**
  * Test preselect color tile.
  */
 test.customizeMenu.testColors_PreselectColor = function() {
@@ -748,7 +732,8 @@ test.customizeMenu.testColors_PreselectColor = function() {
           .getElementsByClassName('selected')
           .length === 1);
   const tile = $(test.customizeMenu.IDS.COLORS_MENU)
-                   .getElementsByClassName('selected')[0];
+                   .getElementsByClassName('selected')[0]
+                   .firstChild;
   assertTrue(
       parseInt(tile.dataset.id) ===
       test.customizeMenu.mockThemeBackgroundInfo.colorId);
@@ -1090,10 +1075,12 @@ assertShortcutOptionsSelected = function(clSelected, mvSelected, isHidden) {
   const hiddenToggle = $(test.customizeMenu.IDS.SHORTCUTS_HIDE_TOGGLE);
   assertEquals(
       clSelected,
-      clOption.classList.contains(test.customizeMenu.CLASSES.SELECTED));
+      clOption.parentElement.classList.contains(
+          test.customizeMenu.CLASSES.SELECTED));
   assertEquals(
       mvSelected,
-      mvOption.classList.contains(test.customizeMenu.CLASSES.SELECTED));
+      mvOption.parentElement.classList.contains(
+          test.customizeMenu.CLASSES.SELECTED));
   assertEquals(isHidden, hiddenToggle.checked);
 };
 
@@ -1108,21 +1095,18 @@ assertImageSubmenuOpenWithFirstTileSelected = function() {
 
   assertFalse(elementIsVisible(backgroundSubmenu));
   assertTrue(elementIsVisible(backgroundImageSubmenu));
-  assertEquals(
-      4,
-      backgroundImageSubmenu
-          .getElementsByClassName(test.customizeMenu.CLASSES.COLLECTION_TILE_BG)
-          .length);
-  assertEquals(
-      1,
-      backgroundImageSubmenu
-          .getElementsByClassName(test.customizeMenu.CLASSES.SELECTED)
-          .length);
-  assertEquals(
-      'coll_0_img_tile_0',
-      backgroundImageSubmenu
-          .getElementsByClassName(test.customizeMenu.CLASSES.SELECTED)[0]
-          .id);
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 4);
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('selected')
+          .length === 1);
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('selected')[0]
+          .firstChild.id === 'coll_0_img_tile_0');
 };
 
 /**
@@ -1136,16 +1120,14 @@ assertImageSubmenuOpenWithNoTileSelected = function() {
 
   assertFalse(elementIsVisible(backgroundSubmenu));
   assertTrue(elementIsVisible(backgroundImageSubmenu));
-  assertEquals(
-      4,
-      backgroundImageSubmenu
-          .getElementsByClassName(test.customizeMenu.CLASSES.COLLECTION_TILE_BG)
-          .length);
-  assertEquals(
-      0,
-      backgroundImageSubmenu
-          .getElementsByClassName(test.customizeMenu.CLASSES.SELECTED)
-          .length);
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 4);
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('selected')
+          .length === 0);
 };
 
 /**

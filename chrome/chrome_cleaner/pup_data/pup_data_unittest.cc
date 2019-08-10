@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <map>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -16,8 +17,11 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
+#include "chrome/chrome_cleaner/os/file_path_sanitization.h"
 #include "chrome/chrome_cleaner/proto/shared_pup_enums.pb.h"
+#include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
 #include "chrome/chrome_cleaner/test/test_registry_util.h"
@@ -666,6 +670,49 @@ TEST_F(PUPDataTest, InitializeTest) {
   PUPData::InitializePUPData({&TestUwSCatalog::GetInstance()});
   EXPECT_EQ(PUPData::GetUwSIds()->size(),
             TestUwSCatalog::GetInstance().GetUwSIds().size());
+}
+
+// Verify that SanitizePath is written to handle all the CSIDL values used in
+// the PuP data.
+TEST(SanitizePathVsRawPupDataCsidlTest, TestAllCsidlValues) {
+  using chrome_cleaner::PUPData;
+  using chrome_cleaner::sanitization_internal::PATH_CSIDL_END;
+  using chrome_cleaner::sanitization_internal::PATH_CSIDL_START;
+
+  // Get set containing the distinct CSIDL values used in rewrite_rules[].
+  std::set<int> csidl_list;
+  for (const auto& entry : chrome_cleaner::PathKeyToSanitizeString()) {
+    int id = entry.first;
+    // Exclude non-CSIDL replacements.
+    if (id < PATH_CSIDL_START || id > PATH_CSIDL_END) {
+      continue;
+    }
+
+    // id represents a key used by PathService to lookup a FilePath. A
+    // PathService Provider was registered to handle the CSIDL values with an
+    // offset of PATH_CSIDL_START to avoid collisions with other PathService
+    // Providers.
+    int csidl = id - PATH_CSIDL_START;
+    csidl_list.insert(csidl);
+  }
+
+  // Report any unchecked CSIDLs as unsanitized.
+  for (const auto& pup_id : *PUPData::GetUwSIds()) {
+    const PUPData::UwSSignature& signature =
+        PUPData::GetPUP(pup_id)->signature();
+    for (const PUPData::StaticDiskFootprint* disk_footprint =
+             signature.disk_footprints;
+         disk_footprint->path != nullptr;
+         ++disk_footprint) {
+      int csidl = disk_footprint->csidl;
+      if (csidl != PUPData::kInvalidCsidl &&
+          csidl_list.find(csidl) == csidl_list.end()) {
+        ADD_FAILURE() << "CSIDL " << csidl << " is not sanitized in "
+                      << signature.name << " with footprint "
+                      << disk_footprint->path;
+      }
+    }
+  }
 }
 
 }  // namespace chrome_cleaner

@@ -96,13 +96,13 @@ void CookieChangeEvent::ToEventInfo(
     HeapVector<Member<CookieListItem>>& changed,
     HeapVector<Member<CookieListItem>>& deleted) {
   switch (change_cause) {
-    case ::network::mojom::CookieChangeCause::INSERTED:
-    case ::network::mojom::CookieChangeCause::EXPLICIT: {
+    case ::network::mojom::CookieChangeCause::INSERTED: {
       CookieListItem* cookie =
           ToCookieListItem(backend_cookie, false /* is_deleted */);
       changed.push_back(cookie);
       break;
     }
+    case ::network::mojom::CookieChangeCause::EXPLICIT:
     case ::network::mojom::CookieChangeCause::UNKNOWN_DELETION:
     case ::network::mojom::CookieChangeCause::EXPIRED:
     case ::network::mojom::CookieChangeCause::EVICTED:

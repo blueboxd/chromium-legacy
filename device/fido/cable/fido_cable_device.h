@@ -36,7 +36,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDevice : public FidoBleDevice {
 
     std::string session_key;
     std::array<uint8_t, 8> nonce;
-    crypto::Aead aes_key{crypto::Aead::AES_256_GCM};
     uint32_t write_sequence_num = 0;
     uint32_t read_sequence_num = 0;
 

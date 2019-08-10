@@ -19,7 +19,7 @@ cr.exportPath('settings');
  *   unmigrated: boolean,
  *   fullName: string,
  *   email: string,
- *   pic: (string|undefined),
+ *   pic: string,
  *   organization: (string|undefined),
  * }}
  */
@@ -30,11 +30,9 @@ cr.define('settings', function() {
   class AccountManagerBrowserProxy {
     /**
      * Returns a Promise for the list of GAIA accounts held in AccountManager.
-     * @param {boolean} includeImages Include the profile icon images in
-     *    settings.Account.pic field, which increases IPC data from the browser.
      * @return {!Promise<!Array<settings.Account>>}
      */
-    getAccounts(includeImages) {}
+    getAccounts() {}
 
     /**
      * Triggers the 'Add account' flow.
@@ -72,8 +70,8 @@ cr.define('settings', function() {
    */
   class AccountManagerBrowserProxyImpl {
     /** @override */
-    getAccounts(includeImages) {
-      return cr.sendWithPromise('getAccounts', includeImages);
+    getAccounts() {
+      return cr.sendWithPromise('getAccounts');
     }
 
     /** @override */

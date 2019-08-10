@@ -1088,6 +1088,21 @@ TEST_P(PaintLayerTest, CompositingContainerStackedFloatUnderStackingInline) {
   }
 }
 
+TEST_P(PaintLayerTest, CompositingContainerColumnSpanAll) {
+  SetBodyInnerHTML(R"HTML(
+    <div>
+      <div id='compositedContainer' style='columns: 1'>
+        <div id='columnSpan' style='-webkit-column-span: all; overflow: hidden'>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  PaintLayer* target = GetPaintLayerByElementId("columnSpan");
+  EXPECT_EQ(target->Parent(), target->CompositingContainer());
+  EXPECT_EQ(target->Parent()->Parent(), target->ContainingLayer());
+}
+
 TEST_P(PaintLayerTest,
        CompositingContainerStackedFloatUnderStackingCompositedInline) {
   SetBodyInnerHTML(R"HTML(

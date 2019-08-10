@@ -342,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, DisableSync) {
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   ASSERT_FALSE(AllProfilesHaveSameAppList());
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
+  ASSERT_TRUE(GetClient(1)->EnableSyncForRegisteredDatatypes());
   AwaitQuiescenceAndInstallAppsPendingForSync();
 
   ASSERT_TRUE(AllProfilesHaveSameAppList());

@@ -236,6 +236,10 @@ views::Widget* UnifiedSystemTrayBubble::GetBubbleWidget() const {
   return bubble_widget_;
 }
 
+int UnifiedSystemTrayBubble::GetCurrentTrayHeight() const {
+  return unified_view_->GetCurrentHeight();
+}
+
 int UnifiedSystemTrayBubble::CalculateMaxHeight() const {
   gfx::Rect anchor_bounds =
       tray_->shelf()->GetSystemTrayAnchorView()->GetBoundsInScreen();

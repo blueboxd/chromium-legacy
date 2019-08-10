@@ -96,6 +96,18 @@ class BASE_EXPORT FeatureList {
   FeatureList();
   ~FeatureList();
 
+  // Specifies whether a feature override enables or disables the feature.
+  enum OverrideState {
+    OVERRIDE_USE_DEFAULT,
+    OVERRIDE_DISABLE_FEATURE,
+    OVERRIDE_ENABLE_FEATURE,
+  };
+
+  // Describes a feature override. The first member is a Feature that will be
+  // overridden with the state given by the second member.
+  using FeatureOverrideInfo =
+      std::pair<const std::reference_wrapper<const Feature>, OverrideState>;
+
   // Initializes feature overrides via command-line flags |enable_features| and
   // |disable_features|, each of which is a comma-separated list of features to
   // enable or disable, respectively. If a feature appears on both lists, then
@@ -114,15 +126,10 @@ class BASE_EXPORT FeatureList {
   // of the associated field trial.
   void InitializeFromSharedMemory(PersistentMemoryAllocator* allocator);
 
-  // Specifies whether a feature override enables or disables the feature.
-  enum OverrideState {
-    OVERRIDE_USE_DEFAULT,
-    OVERRIDE_DISABLE_FEATURE,
-    OVERRIDE_ENABLE_FEATURE,
-  };
-
   // Returns true if the state of |feature_name| has been overridden via
-  // |InitializeFromCommandLine()|.
+  // |InitializeFromCommandLine()|. This includes features explicitly
+  // disabled/enabled with --disable-features and --enable-features, as well as
+  // any extra feature overrides that depend on command line switches.
   bool IsFeatureOverriddenFromCommandLine(const std::string& feature_name,
                                           OverrideState state) const;
 
@@ -145,6 +152,15 @@ class BASE_EXPORT FeatureList {
   void RegisterFieldTrialOverride(const std::string& feature_name,
                                   OverrideState override_state,
                                   FieldTrial* field_trial);
+
+  // Adds extra overrides (not associated with a field trial). Should be called
+  // before SetInstance().
+  // The ordering of calls with respect to InitializeFromCommandLine(),
+  // RegisterFieldTrialOverride(), etc. matters. The first call wins out,
+  // because the |overrides_| map uses insert(), which retains the first
+  // inserted entry and does not overwrite it on subsequent calls to insert().
+  void RegisterExtraFeatureOverrides(
+      const std::vector<FeatureOverrideInfo>& extra_overrides);
 
   // Loops through feature overrides and serializes them all into |allocator|.
   void AddFeaturesToAllocator(PersistentMemoryAllocator* allocator);
@@ -187,6 +203,14 @@ class BASE_EXPORT FeatureList {
   // about |enable_features| and |disable_features| parameters.
   static bool InitializeInstance(const std::string& enable_features,
                                  const std::string& disable_features);
+
+  // Like the above, but also adds extra overrides. If a feature appears in
+  // |extra_overrides| and also |enable_features| or |disable_features|, the
+  // disable/enable will supersede the extra overrides.
+  static bool InitializeInstance(
+      const std::string& enable_features,
+      const std::string& disable_features,
+      const std::vector<FeatureOverrideInfo>& extra_overrides);
 
   // Returns the singleton instance of FeatureList. Will return null until an
   // instance is registered via SetInstance().

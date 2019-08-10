@@ -393,6 +393,7 @@ const char kKerberosAccountsSubPage[] = "kerberosAccounts";
 const char kKeyboardOverlaySubPage[] = "keyboard-overlay";
 const char kLockScreenSubPage[] = "lockScreen";
 const char kManageAccessibilitySubPage[] = "manageAccessibility";
+const char kManageAccessibilityTtsSubPage[] = "manageAccessibility/tts";
 const char kMultideviceSubPage[] = "multidevice";
 const char kNativePrintingSettingsSubPage[] = "cupsPrinters";
 const char kNetworkDetailSubPage[] = "networkDetail";
@@ -434,6 +435,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kLanguageOptionsSubPage,
       kLockScreenSubPage,
       kManageAccessibilitySubPage,
+      kManageAccessibilityTtsSubPage,
       kMultideviceSubPage,
       kNativePrintingSettingsSubPage,
       kNetworkDetailSubPage,

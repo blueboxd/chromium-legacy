@@ -139,9 +139,9 @@ ImageDownloaderImpl::ImageDownloaderImpl(LocalFrame& frame)
 ImageDownloaderImpl::~ImageDownloaderImpl() {}
 
 void ImageDownloaderImpl::CreateMojoService(
-    mojom::blink::ImageDownloaderRequest request) {
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(
+    mojo::PendingReceiver<mojom::blink::ImageDownloader> receiver) {
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(
       WTF::Bind(&ImageDownloaderImpl::Dispose, WrapWeakPersistent(this)));
 }
 
@@ -187,7 +187,7 @@ void ImageDownloaderImpl::DidDownloadImage(
 }
 
 void ImageDownloaderImpl::Dispose() {
-  binding_.Close();
+  receiver_.reset();
 }
 
 void ImageDownloaderImpl::FetchImage(const KURL& image_url,

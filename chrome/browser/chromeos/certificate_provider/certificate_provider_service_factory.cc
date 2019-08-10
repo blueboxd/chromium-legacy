@@ -40,6 +40,7 @@ namespace api_cp = extensions::api::certificate_provider;
 class DefaultDelegate : public CertificateProviderService::Delegate,
                         public extensions::ExtensionRegistryObserver {
  public:
+  // |event_router| may be null in tests.
   DefaultDelegate(CertificateProviderService* service,
                   extensions::ExtensionRegistry* registry,
                   extensions::EventRouter* event_router);
@@ -73,7 +74,6 @@ DefaultDelegate::DefaultDelegate(CertificateProviderService* service,
                                  extensions::EventRouter* event_router)
     : service_(service), registry_(registry), event_router_(event_router) {
   DCHECK(service_);
-  DCHECK(event_router_);
   registry_->AddObserver(this);
 }
 

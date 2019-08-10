@@ -163,27 +163,26 @@ Polymer({
   /** @private {?settings.SyncBrowserProxy} */
   syncBrowserProxy_: null,
 
-  /** @private {?settings.AccountManagerBrowserProxy} */
-  accountManagerBrowserProxy_: null,
-
   /** @override */
   attached: function() {
-    const profileInfoProxy = settings.ProfileInfoBrowserProxyImpl.getInstance();
-    profileInfoProxy.getProfileInfo().then(this.handleProfileInfo_.bind(this));
-    this.addWebUIListener(
-        'profile-info-changed', this.handleProfileInfo_.bind(this));
+    if (this.isAccountManagerEnabled_) {
+      // If we have the Google Account manager, use GAIA name and icon.
+      this.addWebUIListener(
+          'accounts-changed', this.updateAccounts_.bind(this));
+      this.updateAccounts_();
+    } else {
+      // Otherwise use the Profile name and icon.
+      settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileInfo().then(
+          this.handleProfileInfo_.bind(this));
+      this.addWebUIListener(
+          'profile-info-changed', this.handleProfileInfo_.bind(this));
+    }
 
     this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
     this.syncBrowserProxy_.getSyncStatus().then(
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
         'sync-status-changed', this.handleSyncStatus_.bind(this));
-
-    this.accountManagerBrowserProxy_ =
-        settings.AccountManagerBrowserProxyImpl.getInstance();
-    this.addWebUIListener(
-        'accounts-changed', this.updateProfileLabel_.bind(this));
-    this.updateProfileLabel_();
   },
 
   /** @protected */
@@ -229,18 +228,22 @@ Polymer({
   },
 
   /**
-   * Updates the label underneath the primary profile name.
+   * Handler for when the account list is updated.
    * @private
    */
-  updateProfileLabel_: async function() {
-    const includeImages = false;
+  updateAccounts_: async function() {
     const /** @type {!Array<settings.Account>} */ accounts =
-        await this.accountManagerBrowserProxy_.getAccounts(includeImages);
-    // The user might not have any GAIA accounts.
+        await settings.AccountManagerBrowserProxyImpl.getInstance()
+            .getAccounts();
+    // The user might not have any GAIA accounts (e.g. guest mode, Kerberos,
+    // Active Directory). In these cases the profile row is hidden, so there's
+    // nothing to do.
     if (accounts.length == 0) {
-      this.profileLabel_ = '';
       return;
     }
+    this.profileName_ = accounts[0].fullName;
+    this.profileIconUrl_ = accounts[0].pic;
+
     const moreAccounts = accounts.length - 1;
     // Template: "$1, +$2 more accounts" with correct plural of "account".
     // Localization handles the case of 0 more accounts.

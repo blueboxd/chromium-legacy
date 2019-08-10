@@ -60,9 +60,6 @@ class WebAppInstallManager final : public InstallManager {
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) override;
   void Shutdown() override;
-  void InstallWebAppForTesting(
-      std::unique_ptr<WebApplicationInfo> web_application_info,
-      OnceInstallCallback callback) override;
 
   using DataRetrieverFactory =
       base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()>;

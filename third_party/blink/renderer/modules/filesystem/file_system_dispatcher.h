@@ -31,6 +31,7 @@ class FileSystemDispatcher
     : public GarbageCollectedFinalized<FileSystemDispatcher>,
       public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(FileSystemDispatcher);
+  USING_PRE_FINALIZER(FileSystemDispatcher, Prefinalize);
 
  public:
   using StatusCallback = base::OnceCallback<void(base::File::Error error)>;
@@ -193,6 +194,8 @@ class FileSystemDispatcher
       mojom::blink::ReceivedSnapshotListenerPtr listener);
 
   void RemoveOperationPtr(int operation_id);
+
+  void Prefinalize();
 
   mojo::Remote<mojom::blink::FileSystemManager> file_system_manager_;
   using OperationsMap =

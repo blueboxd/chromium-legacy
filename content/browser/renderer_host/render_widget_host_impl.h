@@ -765,6 +765,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
 
+  // This function validates a renderer's attempt to enable user activation on a
+  // frame. Gaining user activation is allowed if this widget had previously
+  // seen an input event (e.g., mousedown or keydown) that may lead to user
+  // activation; in this case, this "pending user activation" is consumed and
+  // this function returns true.  Otherwise, this function returns false.
+  bool ConsumePendingUserActivationIfAllowed();
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -804,6 +811,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            DontPostponeInputEventAckTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, HideShowMessages);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, PendingUserActivationTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, RendererExitedNoDrag);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            StopAndStartInputEventAckTimeout);
@@ -974,6 +982,19 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   TouchEmulator* GetExistingTouchEmulator();
 
   void CreateSyntheticGestureControllerIfNecessary();
+
+  // The following functions are used to keep track of pending user activation
+  // events, which are input events (e.g., mousedown or keydown) that allow a
+  // renderer to gain user activation.  AddPendingUserActivation() increments a
+  // counter of such events and sets a timer, which allows the renderer to claim
+  // user activation within |kActivationNotificationExpireTime| ms.
+  // ClearPendingUserActivation() clears the counter and is called after
+  // navigations or timeouts
+  void AddPendingUserActivation(const blink::WebInputEvent& event);
+  void ClearPendingUserActivation();
+
+  // An expiry time for resetting the pending_user_activation_timer_.
+  static const base::TimeDelta kActivationNotificationExpireTime;
 
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
@@ -1225,6 +1246,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // True when the cursor has entered the autoscroll mode. A GSB is not
   // necessarily sent yet.
   bool autoscroll_in_progress_ = false;
+
+  // Counter for possible-activation-triggering input event.
+  int pending_user_activation_counter_ = 0;
+  // This timer resets |pending_user_activation_counter_| after a short delay.
+  // See comments on Add/ClearPendingUserActivation().
+  base::OneShotTimer pending_user_activation_timer_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 

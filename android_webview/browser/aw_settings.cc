@@ -455,18 +455,9 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   bool enable_supported_hardware_accelerated_features =
       Java_AwSettings_getEnableSupportedHardwareAcceleratedFeaturesLocked(env,
                                                                           obj);
-
-  bool accelerated_2d_canvas_enabled_by_switch =
-      web_prefs->accelerated_2d_canvas_enabled;
-  web_prefs->accelerated_2d_canvas_enabled = true;
-  if (!accelerated_2d_canvas_enabled_by_switch ||
-      !enable_supported_hardware_accelerated_features) {
-    // Any canvas smaller than this will fallback to software. Abusing this
-    // slightly to turn canvas off without changing
-    // accelerated_2d_canvas_enabled, which also affects compositing mode.
-    // Using 100M instead of max int to avoid overflows.
-    web_prefs->minimum_accelerated_2d_canvas_size = 100 * 1000 * 1000;
-  }
+  web_prefs->accelerated_2d_canvas_enabled =
+      web_prefs->accelerated_2d_canvas_enabled &&
+      enable_supported_hardware_accelerated_features;
   // Always allow webgl. Webview always requires access to the GPU even if
   // it only does software draws. WebGL will not show up in software draw so
   // there is no more brokenness for user. This makes it easier for apps that

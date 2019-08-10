@@ -384,22 +384,25 @@ class BoundsAnimationObserver : public ui::ImplicitAnimationObserver {
 // The view for the app list background shield which changes color and radius.
 class AppListBackgroundShieldView : public views::View {
  public:
-  AppListBackgroundShieldView()
-      : color_(AppListView::kDefaultBackgroundColor) {}
+  AppListBackgroundShieldView() : color_(AppListView::kDefaultBackgroundColor) {
+    SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetRoundedCornerRadius(
+        {AppListConfig::instance().background_radius(),
+         AppListConfig::instance().background_radius(), 0, 0});
+    layer()->SetColor(color_);
+  }
 
   ~AppListBackgroundShieldView() override = default;
 
   void UpdateBackground(bool use_blur) {
-    DestroyLayer();
-    SetPaintToLayer(use_blur ? ui::LAYER_SOLID_COLOR : ui::LAYER_TEXTURED);
-    layer()->SetFillsBoundsOpaquely(false);
+    if (blur_value_ == use_blur)
+      return;
+    blur_value_ = use_blur;
+
     if (use_blur) {
-      layer()->SetColor(color_);
       layer()->SetBackgroundBlur(AppListConfig::instance().blur_radius());
       layer()->SetBackdropFilterQuality(kAppListBlurQuality);
-      layer()->SetRoundedCornerRadius(
-          {AppListConfig::instance().background_radius(),
-           AppListConfig::instance().background_radius(), 0, 0});
     } else {
       layer()->SetBackgroundBlur(0);
     }
@@ -410,10 +413,7 @@ class AppListBackgroundShieldView : public views::View {
       return;
 
     color_ = color;
-    if (layer()->type() == ui::LAYER_SOLID_COLOR)
-      layer()->SetColor(color);
-    else
-      SchedulePaint();
+    layer()->SetColor(color);
   }
 
   void UpdateBounds(const gfx::Rect& bounds) {
@@ -427,15 +427,6 @@ class AppListBackgroundShieldView : public views::View {
     SetBoundsRect(new_bounds);
   }
 
-  // Overridden from views::View:
-  void OnPaint(gfx::Canvas* canvas) override {
-    cc::PaintFlags flags;
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(color_);
-    canvas->DrawRoundRect(GetContentsBounds(),
-                          AppListConfig::instance().background_radius(), flags);
-  }
-
   SkColor GetColorForTest() const { return color_; }
 
   const char* GetClassName() const override {
@@ -443,6 +434,9 @@ class AppListBackgroundShieldView : public views::View {
   }
 
  private:
+  // Whether the background blur has been set on the background shield.
+  bool blur_value_ = false;
+
   SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListBackgroundShieldView);

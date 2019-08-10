@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":personalization_options",
     ":privacy_page",
     ":privacy_page_browser_proxy",
+    ":security_keys_bio_enroll_dialog",
     ":security_keys_credential_management_dialog",
     ":security_keys_reset_dialog",
     ":security_keys_set_pin_dialog",
@@ -100,6 +101,16 @@ js_library("security_keys_credential_management_dialog") {
 js_library("security_keys_reset_dialog") {
   deps = [
     ":security_keys_browser_proxy",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
+  externs_list = [ "$externs_path/settings_private.js" ]
+}
+
+js_library("security_keys_bio_enroll_dialog") {
+  deps = [
+    ":security_keys_browser_proxy",
+    ":security_keys_pin_field",
+    "//ui/webui/resources/cr_elements/cr_fingerprint:cr_fingerprint_progress_arc",
     "//ui/webui/resources/js:i18n_behavior",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]

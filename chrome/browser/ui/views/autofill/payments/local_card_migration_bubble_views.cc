@@ -45,7 +45,7 @@ LocalCardMigrationBubbleViews::LocalCardMigrationBubbleViews(
     views::View* anchor_view,
     content::WebContents* web_contents,
     LocalCardMigrationBubbleController* controller)
-    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
   DCHECK(controller);
 }

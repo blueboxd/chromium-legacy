@@ -96,4 +96,8 @@ size_t HidHapticGamepadWin::WriteOutputReport(void* report,
   return write_success ? bytes_written : 0;
 }
 
+base::WeakPtr<AbstractHapticGamepad> HidHapticGamepadWin::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace device

@@ -30,7 +30,7 @@ using ::testing::_;
 
 // This is essentially an "enum" with human-readable strings (e.g. "adaboost",
 // "none") as values.
-using namespace switches::reader_mode_heuristics;
+using namespace switches::reader_mode_heuristics;  // NOLINT
 
 const char kSimpleArticlePath[] = "/dom_distiller/simple_article.html";
 const char kSimpleArticleIFramePath[] =

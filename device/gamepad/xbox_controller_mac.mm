@@ -887,4 +887,8 @@ void XboxControllerMac::WriteXboxOneAckGuide(uint8_t sequence_number) {
   }
 }
 
+base::WeakPtr<AbstractHapticGamepad> XboxControllerMac::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace device

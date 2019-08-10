@@ -291,7 +291,7 @@ FlashComponentInstallerPolicy::OnCustomInstall(
   }
 
 #if defined(OS_CHROMEOS)
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
       ->PostTask(FROM_HERE, base::BindOnce(&ImageLoaderRegistration, version,
                                            install_dir));
 #elif defined(OS_LINUX)
@@ -319,9 +319,10 @@ void FlashComponentInstallerPolicy::ComponentReady(
   // Flash version, so we do not do this.
   RegisterPepperFlashWithChrome(path.Append(chrome::kPepperFlashPluginFilename),
                                 version);
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-                           base::BindOnce(&UpdatePathService, path));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+      base::BindOnce(&UpdatePathService, path));
 #endif  // !defined(OS_LINUX)
 }
 

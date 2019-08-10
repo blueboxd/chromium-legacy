@@ -554,7 +554,7 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
   std::set<int> request_ids;
 
   while (!fetched_crx_files_.empty() && !crx_install_is_running_) {
-    const FetchedCRXFile& crx_file = fetched_crx_files_.top();
+    const FetchedCRXFile& crx_file = fetched_crx_files_.front();
 
     VLOG(2) << "updating " << crx_file.info.extension_id
             << " with " << crx_file.info.path.value();

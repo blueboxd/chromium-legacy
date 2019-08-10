@@ -94,7 +94,7 @@ std::string ConvertRestoreMode(
   }
 
   // Return is required to avoid compiler warning.
-  NOTREACHED() << "Bad restore_mode=" << restore_mode;
+  NOTREACHED() << "Bad restore_mode=" << restore_mode << ".";
   return std::string();
 }
 
@@ -324,7 +324,10 @@ class StateDownloadMessageProcessorInitialEnrollment
 
     // Logging as "WARNING" to make sure it's preserved in the logs.
     LOG(WARNING) << "Received initial_enrollment_mode="
-                 << state_response.initial_enrollment_mode();
+                 << state_response.initial_enrollment_mode() << ". "
+                 << (state_response.is_license_packaged_with_device()
+                         ? "Device has a packaged license for management."
+                         : "No packaged license.");
 
     return true;
   }

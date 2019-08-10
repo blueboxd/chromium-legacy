@@ -268,7 +268,7 @@ class MenuManager {
       return false;
 
 
-    if (window.switchAccess.textEditingEnabled()) {
+    if (window.switchAccess.improvedTextInputEnabled()) {
       if (this.node_.role == RoleType.BUTTON) {
         this.node_.doDefault();
       } else {
@@ -402,7 +402,7 @@ class MenuManager {
       actions.push(SAConstants.MenuAction.KEYBOARD);
       actions.push(SAConstants.MenuAction.DICTATION);
 
-      if (window.switchAccess.textEditingEnabled() &&
+      if (window.switchAccess.improvedTextInputEnabled() &&
           node.state[StateType.FOCUSED]) {
         actions.push(SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT);
         actions.push(SAConstants.MenuAction.JUMP_TO_END_OF_TEXT);
@@ -452,25 +452,35 @@ class MenuManager {
    * @param {!SAConstants.MenuAction} action
    */
   performAction(action) {
-    if (!window.switchAccess.textEditingEnabled()) {
+    if (!window.switchAccess.improvedTextInputEnabled()) {
       this.exit();
     }
 
-    // Whether or not the menu should exit after performing
-    // the action.
-    let exitAfterAction = true;
-
     switch (action) {
       case SAConstants.MenuAction.SELECT:
+        if (window.switchAccess.improvedTextInputEnabled()) {
+          // Explicitly call exit for actions where the menu closes after
+          // the icon is clicked.
+          this.exit();
+        }
         this.navigationManager_.selectCurrentNode();
         break;
       case SAConstants.MenuAction.KEYBOARD:
+        if (window.switchAccess.improvedTextInputEnabled()) {
+          this.exit();
+        }
         this.navigationManager_.openKeyboard();
         break;
       case SAConstants.MenuAction.DICTATION:
+        if (window.switchAccess.improvedTextInputEnabled()) {
+          this.exit();
+        }
         chrome.accessibilityPrivate.toggleDictation();
         break;
       case SAConstants.MenuAction.SETTINGS:
+        if (window.switchAccess.improvedTextInputEnabled()) {
+          this.exit();
+        }
         chrome.accessibilityPrivate.openSettingsSubpage(
             'manageAccessibility/switchAccess');
         break;
@@ -478,68 +488,57 @@ class MenuManager {
       case SAConstants.MenuAction.SCROLL_UP:
       case SAConstants.MenuAction.SCROLL_LEFT:
       case SAConstants.MenuAction.SCROLL_RIGHT:
+        if (window.switchAccess.improvedTextInputEnabled()) {
+          this.exit();
+        }
         this.navigationManager_.scroll(action);
         break;
       case SAConstants.MenuAction.JUMP_TO_BEGINNING_OF_TEXT:
         this.navigationManager_.jumpToBeginningOfText();
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.JUMP_TO_END_OF_TEXT:
         this.navigationManager_.jumpToEndOfText();
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT:
         this.navigationManager_.moveBackwardOneCharOfText();
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT:
         this.navigationManager_.moveBackwardOneWordOfText();
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT:
         this.navigationManager_.moveDownOneLineOfText();
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT:
         this.navigationManager_.moveForwardOneCharOfText();
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT:
         this.navigationManager_.moveForwardOneWordOfText();
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT:
         this.navigationManager_.moveUpOneLineOfText();
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.CUT:
         this.navigationManager_.cut();
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.COPY:
         this.navigationManager_.copy();
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.PASTE:
         this.navigationManager_.paste();
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.SELECT_START:
         this.navigationManager_.saveSelectStart();
         if (this.menuOriginNode_)
           this.reloadMenu_(this.menuOriginNode_);
-        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.SELECT_END:
         this.navigationManager_.saveSelectEnd();
-        exitAfterAction = false;
         break;
       default:
+        if (window.switchAccess.improvedTextInputEnabled()) {
+          this.exit();
+        }
         this.navigationManager_.performActionOnCurrentNode(action);
-    }
-
-    if (window.switchAccess.textEditingEnabled() && exitAfterAction) {
-      this.exit();
     }
   }
 

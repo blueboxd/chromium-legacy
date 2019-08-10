@@ -302,12 +302,13 @@ TEST_F(FtlMessageReceptionChannelTest, StreamsTwoMessages) {
             on_incoming_msg.Run(response);
             response.Clear();
 
-            std::move(on_channel_closed).Run(grpc::Status::OK);
+            std::move(on_channel_closed).Run(grpc::Status::CANCELLED);
           }));
 
   channel_->StartReceivingMessages(
-      base::DoNothing(), test::CheckStatusThenQuitRunLoopCallback(
-                             FROM_HERE, grpc::StatusCode::OK, &run_loop));
+      base::DoNothing(),
+      test::CheckStatusThenQuitRunLoopCallback(
+          FROM_HERE, grpc::StatusCode::CANCELLED, &run_loop));
 
   run_loop.Run();
 }
@@ -353,7 +354,7 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
   run_loop.Run();
 }
 
-TEST_F(FtlMessageReceptionChannelTest, LifetimeExceeded_ResetsStream) {
+TEST_F(FtlMessageReceptionChannelTest, ServerClosesStream_ResetsStream) {
   base::RunLoop run_loop;
 
   base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
@@ -365,18 +366,8 @@ TEST_F(FtlMessageReceptionChannelTest, LifetimeExceeded_ResetsStream) {
             auto fake_server_stream = CreateFakeServerStream();
             std::move(on_channel_ready).Run();
 
-            // Keep sending pong until lifetime exceeded.
-            base::TimeDelta pong_period =
-                FtlMessageReceptionChannel::kPongTimeout -
-                base::TimeDelta::FromSeconds(1);
-            ASSERT_LT(base::TimeDelta(), pong_period);
-            base::TimeDelta ticked_time;
-
-            // The last FastForwardBy() will make the channel reopen the stream.
-            while (ticked_time <= FtlMessageReceptionChannel::kPongTimeout) {
-              scoped_task_environment_.FastForwardBy(pong_period);
-              ticked_time += pong_period;
-            }
+            // Close the stream with OK.
+            std::move(on_channel_closed).Run(grpc::Status::OK);
           },
           &old_stream))
       .WillOnce(StartStream(

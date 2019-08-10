@@ -64,6 +64,7 @@
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "components/printing/browser/print_composite_client.h"
@@ -163,8 +164,8 @@ TabWebContentsDelegateAndroid::RunBluetoothChooser(
 }
 
 std::unique_ptr<content::SmsDialog>
-TabWebContentsDelegateAndroid::CreateSmsDialog() {
-  return std::make_unique<SmsDialogAndroid>();
+TabWebContentsDelegateAndroid::CreateSmsDialog(const url::Origin& origin) {
+  return std::make_unique<SmsDialogAndroid>(origin);
 }
 
 std::unique_ptr<content::BluetoothScanningPrompt>

@@ -49,7 +49,9 @@ class PendingReceiver {
   // Temporary implicit move constructor to aid in converting from use of
   // InterfaceRequest<Interface> to PendingReceiver.
   PendingReceiver(InterfaceRequest<Interface>&& request)
-      : PendingReceiver(request.PassMessagePipe()) {}
+      : PendingReceiver(request.PassMessagePipe()) {
+    set_connection_group(request.PassConnectionGroupRef());
+  }
 
   // Constructs a valid PendingReceiver from a valid raw message pipe handle.
   explicit PendingReceiver(ScopedMessagePipeHandle pipe)
@@ -62,7 +64,9 @@ class PendingReceiver {
   // Temporary implicit conversion operator to InterfaceRequest<Interface> to
   // aid in converting usage to PendingReceiver.
   operator InterfaceRequest<Interface>() {
-    return InterfaceRequest<Interface>(PassPipe());
+    InterfaceRequest<Interface> request(PassPipe());
+    request.set_connection_group(PassConnectionGroupRef());
+    return request;
   }
 
   // Indicates whether the PendingReceiver is valid, meaning it can ne used to

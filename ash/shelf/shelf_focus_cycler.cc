@@ -19,6 +19,8 @@ namespace ash {
 ShelfFocusCycler::ShelfFocusCycler(Shelf* shelf) : shelf_(shelf) {}
 
 void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
+  // TODO(manucornet): Once the non-views-based shelf is gone, make this a
+  // simple cycling logic instead of a long switch.
   switch (source_view) {
     case SourceView::kShelfNavigationView:
       if (reverse)
@@ -27,8 +29,18 @@ void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
         FocusShelf(reverse);
       break;
     case SourceView::kShelfView:
-      if (reverse)
+      if (reverse) {
         FocusNavigation(reverse);
+      } else {
+        if (shelf_->shelf_widget()->IsShowingOverflowBubble())
+          FocusOverflowShelf(reverse);
+        else
+          FocusStatusArea(reverse);
+      }
+      break;
+    case SourceView::kShelfOverflowView:
+      if (reverse)
+        FocusShelf(reverse);
       else
         FocusStatusArea(reverse);
       break;
@@ -44,7 +56,10 @@ void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
         // Login/lock screen or OOBE.
         Shell::Get()->system_tray_notifier()->NotifyFocusOut(reverse);
       } else if (reverse) {
-        FocusShelf(reverse);
+        if (shelf_->shelf_widget()->IsShowingOverflowBubble())
+          FocusOverflowShelf(reverse);
+        else
+          FocusShelf(reverse);
       } else {
         FocusNavigation(reverse);
       }
@@ -65,6 +80,10 @@ void ShelfFocusCycler::FocusShelf(bool last_element) {
   shelf_widget->set_default_last_focusable_child(last_element);
   Shell::Get()->focus_cycler()->FocusWidget(shelf_widget);
   shelf_widget->FocusFirstOrLastFocusableChild(last_element);
+}
+
+void ShelfFocusCycler::FocusOverflowShelf(bool last_element) {
+  shelf_->shelf_widget()->FocusOverflowShelf(last_element);
 }
 
 void ShelfFocusCycler::FocusStatusArea(bool last_element) {

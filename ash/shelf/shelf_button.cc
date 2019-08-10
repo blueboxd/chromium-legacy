@@ -22,7 +22,7 @@ ShelfButton::ShelfButton(Shelf* shelf,
   set_hide_ink_drop_when_showing_context_menu(false);
   set_ink_drop_base_color(kShelfInkDropBaseColor);
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
-  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kShelfFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));

@@ -34,15 +34,15 @@ SuggestionContainerView::SuggestionContainerView(
   InitLayout();
 
   // The AssistantViewDelegate should outlive SuggestionContainerView.
-  delegate_->AddCacheModelObserver(this);
   delegate_->AddInteractionModelObserver(this);
+  delegate_->AddSuggestionsModelObserver(this);
   delegate_->AddUiModelObserver(this);
 }
 
 SuggestionContainerView::~SuggestionContainerView() {
   delegate_->RemoveUiModelObserver(this);
+  delegate_->RemoveSuggestionsModelObserver(this);
   delegate_->RemoveInteractionModelObserver(this);
-  delegate_->RemoveCacheModelObserver(this);
 }
 
 const char* SuggestionContainerView::GetClassName() const {
@@ -82,13 +82,6 @@ void SuggestionContainerView::InitLayout() {
       views::BoxLayout::MainAxisAlignment::kCenter);
 }
 
-void SuggestionContainerView::OnConversationStartersChanged(
-    const std::map<int, const AssistantSuggestion*>& conversation_starters) {
-  // TODO(dmblack): If UI is visible, we may want to animate this transition.
-  OnSuggestionsCleared();
-  OnSuggestionsChanged(conversation_starters);
-}
-
 void SuggestionContainerView::OnResponseChanged(
     const std::shared_ptr<AssistantResponse>& response) {
   has_received_response_ = true;
@@ -107,6 +100,12 @@ void SuggestionContainerView::OnResponseCleared() {
   // to whether we've received a response during the current Assistant session,
   // not whether we are currently displaying a response.
   OnSuggestionsCleared();
+}
+
+void SuggestionContainerView::OnConversationStartersChanged(
+    const std::map<int, const AssistantSuggestion*>& conversation_starters) {
+  OnSuggestionsCleared();
+  OnSuggestionsChanged(conversation_starters);
 }
 
 void SuggestionContainerView::OnSuggestionsChanged(
@@ -175,8 +174,8 @@ void SuggestionContainerView::ButtonPressed(views::Button* sender,
   // If we haven't yet received a query response, the suggestion chip that was
   // pressed was a conversation starter.
   if (!has_received_response_) {
-    suggestion =
-        delegate_->GetCacheModel()->GetConversationStarterById(sender->GetID());
+    suggestion = delegate_->GetSuggestionsModel()->GetConversationStarterById(
+        sender->GetID());
   } else {
     // Otherwise, the suggestion chip belonged to the interaction response.
     suggestion =
@@ -197,7 +196,7 @@ void SuggestionContainerView::OnUiVisibilityChanged(
     // Show conversation starters at the start of a new Assistant session except
     // when the user already started a query in Launcher quick search box (QSB).
     OnConversationStartersChanged(
-        delegate_->GetCacheModel()->GetConversationStarters());
+        delegate_->GetSuggestionsModel()->GetConversationStarters());
     return;
   }
 

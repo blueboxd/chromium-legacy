@@ -146,7 +146,8 @@ void SmsService::OnCancel() {
 void SmsService::Prompt() {
   WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
-  prompt_ = web_contents->GetDelegate()->CreateSmsDialog();
+  const url::Origin origin = render_frame_host()->GetLastCommittedOrigin();
+  prompt_ = web_contents->GetDelegate()->CreateSmsDialog(origin);
   if (prompt_) {
     prompt_->Open(
         render_frame_host(),

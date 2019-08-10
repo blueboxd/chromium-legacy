@@ -4,15 +4,15 @@
 
 #include "gpu/command_buffer/service/swap_chain_factory_dxgi.h"
 
-#include <d3d11.h>
-
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
+#include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
@@ -23,18 +23,23 @@ namespace gpu {
 
 namespace {
 
-GLuint MakeTextureAndSetParameters(gl::GLApi* api, GLenum target) {
-  GLuint service_id = 0;
-  api->glGenTexturesFn(1, &service_id);
-  api->glBindTextureFn(target, service_id);
-  api->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  api->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  api->glTexParameteriFn(target, GL_TEXTURE_USAGE_ANGLE,
-                         GL_FRAMEBUFFER_ATTACHMENT_ANGLE);
-  return service_id;
-}
+class ScopedRestoreTexture2D {
+ public:
+  ScopedRestoreTexture2D(gl::GLApi* api) : api_(api) {
+    GLint binding = 0;
+    api->glGetIntegervFn(GL_TEXTURE_BINDING_2D, &binding);
+    prev_binding_ = binding;
+  }
+
+  ~ScopedRestoreTexture2D() {
+    api_->glBindTextureFn(GL_TEXTURE_2D, prev_binding_);
+  }
+
+ private:
+  gl::GLApi* const api_;
+  GLuint prev_binding_ = 0;
+  DISALLOW_COPY_AND_ASSIGN(ScopedRestoreTexture2D);
+};
 
 bool ClearBackBuffer(Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain,
                      Microsoft::WRL::ComPtr<ID3D11Device>& d3d11_device) {
@@ -63,17 +68,6 @@ bool ClearBackBuffer(Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain,
   float color_rgba[4] = {0.0f, 0.0f, 0.0f, 1.0f};
   d3d11_device_context->ClearRenderTargetView(render_target.Get(), color_rgba);
   return true;
-}
-
-bool SupportedFormat(viz::ResourceFormat format) {
-  switch (format) {
-    case viz::RGBA_F16:
-    case viz::RGBA_8888:
-    case viz::RGBX_8888:
-      return true;
-    default:
-      return false;
-  };
 }
 
 }  // anonymous namespace
@@ -132,27 +126,30 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
       uint32_t usage,
       Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain,
       gles2::Texture* texture,
-      scoped_refptr<gles2::TexturePassthrough> passthrough_texture)
+      scoped_refptr<gles2::TexturePassthrough> texture_passthrough,
+      scoped_refptr<gl::GLImageDXGISwapChain> image,
+      size_t buffer_index)
       : SharedImageBacking(mailbox,
                            format,
                            size,
                            color_space,
                            usage,
                            texture ? texture->estimated_size()
-                                   : passthrough_texture->estimated_size(),
+                                   : texture_passthrough->estimated_size(),
                            false /* is_thread_safe */),
-        swap_chain_(swap_chain),
+        swap_chain_(std::move(swap_chain)),
         texture_(texture),
-        texture_passthrough_(std::move(passthrough_texture)) {
+        texture_passthrough_(std::move(texture_passthrough)),
+        image_(std::move(image)),
+        buffer_index_(buffer_index) {
     DCHECK(swap_chain_);
     DCHECK((texture_ && !texture_passthrough_) ||
            (!texture_ && texture_passthrough_));
   }
 
   ~SharedImageBackingDXGISwapChain() override {
-    DCHECK(!swap_chain_);
-    DCHECK(!texture_);
-    DCHECK(!texture_passthrough_);
+    // Destroy() is safe to call even if it's already been called.
+    Destroy();
   }
 
   // Texture is cleared on initialization.
@@ -166,10 +163,9 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
   }
 
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override {
-    if (texture_)
+    if (texture_) {
       mailbox_manager->ProduceTexture(mailbox(), texture_);
-    else {
-      DCHECK(texture_passthrough_);
+    } else {
       mailbox_manager->ProduceTexture(mailbox(), texture_passthrough_.get());
     }
     return true;
@@ -179,15 +175,12 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
     if (texture_) {
       texture_->RemoveLightweightRef(have_context());
       texture_ = nullptr;
-    } else {
-      DCHECK(texture_passthrough_);
+    } else if (texture_passthrough_) {
       if (!have_context())
         texture_passthrough_->MarkContextLost();
-      texture_passthrough_.reset();
+      texture_passthrough_ = nullptr;
     }
-
-    DCHECK(swap_chain_);
-    swap_chain_.Reset();
+    swap_chain_ = nullptr;
   }
 
   void OnMemoryDump(const std::string& dump_name,
@@ -197,31 +190,29 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
     // Add a |service_guid| which expresses shared ownership between the
     // various GPU dumps.
     auto client_guid = GetSharedImageGUIDForTracing(mailbox());
-    base::trace_event::MemoryAllocatorDumpGuid service_guid;
-    if (texture_)
-      service_guid =
-          gl::GetGLTextureServiceGUIDForTracing(texture_->service_id());
-    else {
-      DCHECK(texture_passthrough_);
-      service_guid = gl::GetGLTextureServiceGUIDForTracing(
-          texture_passthrough_->service_id());
-    }
+    GLuint service_id =
+        texture_ ? texture_->service_id() : texture_passthrough_->service_id();
+    base::trace_event::MemoryAllocatorDumpGuid service_guid =
+        gl::GetGLTextureServiceGUIDForTracing(service_id);
     pmd->CreateSharedGlobalAllocatorDump(service_guid);
 
-    // TODO(piman): coalesce constant with TextureManager::DumpTextureRef.
     int importance = 2;  // This client always owns the ref.
-
     pmd->AddOwnershipEdge(client_guid, service_guid, importance);
 
-    // Dump all sub-levels held by the texture. They will appear below the
-    // main gl/textures/client_X/mailbox_Y dump.
-    texture_->DumpLevelMemory(pmd, client_tracing_id, dump_name);
+    // Swap chain textures only have one level backed by an image.
+    image_->OnMemoryDump(pmd, client_tracing_id, dump_name);
   }
 
   bool PresentSwapChain() override {
+    if (buffer_index_ != 0) {
+      DLOG(ERROR) << "Swap chain backing does not correspond to back buffer";
+      return false;
+    }
+
     DXGI_PRESENT_PARAMETERS params = {};
     params.DirtyRectsCount = 0;
     params.pDirtyRects = nullptr;
+
     HRESULT hr =
         swap_chain_->Present1(0 /* interval */, 0 /* flags */, &params);
     if (FAILED(hr)) {
@@ -229,20 +220,16 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
       return false;
     }
 
-    gl::GLImage* image;
-    unsigned target = GL_TEXTURE_2D;
-    if (texture_) {
-      gles2::Texture::ImageState image_state;
-      image = texture_->GetLevelImage(target, 0, &image_state);
-      DCHECK_EQ(image_state, gles2::Texture::BOUND);
-    } else {
-      DCHECK(texture_passthrough_);
-      image = texture_passthrough_->GetLevelImage(target, 0);
-    }
-    DCHECK(image);
+    gl::GLApi* const api = gl::g_current_gl_context;
+    ScopedRestoreTexture2D scoped_restore(api);
 
-    if (!image->BindTexImage(target)) {
-      DLOG(ERROR) << "Failed to rebind texture to new surface.";
+    const GLenum target = GL_TEXTURE_2D;
+    const GLuint service_id =
+        texture_ ? texture_->service_id() : texture_passthrough_->service_id();
+    api->glBindTextureFn(target, service_id);
+
+    if (!image_->BindTexImage(target)) {
+      DLOG(ERROR) << "GLImageDXGISwapChain::BindTexImage failed";
       return false;
     }
     return true;
@@ -253,6 +240,7 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker) override {
     DCHECK(texture_);
+    TRACE_EVENT0("gpu", "SharedImageBackingDXGISwapChain::ProduceGLTexture");
     return std::make_unique<SharedImageRepresentationGLTextureDXGISwapChain>(
         manager, this, tracker, texture_);
   }
@@ -261,6 +249,8 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
   ProduceGLTexturePassthrough(SharedImageManager* manager,
                               MemoryTypeTracker* tracker) override {
     DCHECK(texture_passthrough_);
+    TRACE_EVENT0(
+        "gpu", "SharedImageBackingDXGISwapChain::ProduceGLTexturePassthrough");
     return std::make_unique<
         SharedImageRepresentationGLTexturePassthroughDXGISwapChain>(
         manager, this, tracker, texture_passthrough_);
@@ -270,11 +260,16 @@ class SharedImageBackingDXGISwapChain : public SharedImageBacking {
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;
   gles2::Texture* texture_ = nullptr;
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
+  scoped_refptr<gl::GLImageDXGISwapChain> image_;
+  const size_t buffer_index_;
   DISALLOW_COPY_AND_ASSIGN(SharedImageBackingDXGISwapChain);
 };
 
 SwapChainFactoryDXGI::SwapChainFactoryDXGI(bool use_passthrough)
-    : use_passthrough_(use_passthrough) {}
+    : use_passthrough_(use_passthrough),
+      d3d11_device_(gl::QueryD3D11DeviceObjectFromANGLE()) {
+  DCHECK(d3d11_device_);
+}
 
 SwapChainFactoryDXGI::~SwapChainFactoryDXGI() = default;
 
@@ -305,7 +300,19 @@ std::unique_ptr<SharedImageBacking> SwapChainFactoryDXGI::MakeBacking(
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     const Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain,
-    int buffer_index) {
+    size_t buffer_index) {
+  gl::GLApi* const api = gl::g_current_gl_context;
+  ScopedRestoreTexture2D scoped_restore(api);
+
+  const GLenum target = GL_TEXTURE_2D;
+  GLuint service_id = 0;
+  api->glGenTexturesFn(1, &service_id);
+  api->glBindTextureFn(target, service_id);
+  api->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  api->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
   HRESULT hr =
       swap_chain->GetBuffer(buffer_index, IID_PPV_ARGS(&d3d11_texture));
@@ -315,35 +322,35 @@ std::unique_ptr<SharedImageBacking> SwapChainFactoryDXGI::MakeBacking(
   }
   DCHECK(d3d11_texture);
 
-  const unsigned target = GL_TEXTURE_2D;
-  gl::GLApi* api = gl::g_current_gl_context;
-  const GLuint service_id = MakeTextureAndSetParameters(api, target);
+  gfx::BufferFormat buffer_format = format == viz::RGBA_F16
+                                        ? gfx::BufferFormat::RGBA_F16
+                                        : gfx::BufferFormat::BGRA_8888;
 
   auto image = base::MakeRefCounted<gl::GLImageDXGISwapChain>(
-      size, viz::BufferFormat(format), d3d11_texture, swap_chain);
+      size, buffer_format, std::move(d3d11_texture), swap_chain);
   if (!image->Initialize()) {
-    DLOG(ERROR) << "Failed to create EGL image";
+    DLOG(ERROR) << "GLImageDXGISwapChain::Initialize failed";
     return nullptr;
   }
   if (!image->BindTexImage(target)) {
-    DLOG(ERROR) << "Failed to bind image to swap chain D3D11 texture.";
+    DLOG(ERROR) << "GLImageDXGISwapChain::BindTexImage failed";
     return nullptr;
   }
 
   gles2::Texture* texture = nullptr;
-  scoped_refptr<gles2::TexturePassthrough> passthrough_texture;
+  scoped_refptr<gles2::TexturePassthrough> texture_passthrough;
 
   if (use_passthrough_) {
-    passthrough_texture =
+    texture_passthrough =
         base::MakeRefCounted<gles2::TexturePassthrough>(service_id, target);
-    passthrough_texture->SetLevelImage(target, 0, image.get());
+    texture_passthrough->SetLevelImage(target, 0, image.get());
     GLint texture_memory_size = 0;
     api->glGetTexParameterivFn(target, GL_MEMORY_SIZE_ANGLE,
                                &texture_memory_size);
-    passthrough_texture->SetEstimatedSize(texture_memory_size);
+    texture_passthrough->SetEstimatedSize(texture_memory_size);
   } else {
-    GLuint internal_format = viz::GLInternalFormat(format);
-    DCHECK_EQ(internal_format, image->GetInternalFormat());
+    // Image internal format could be different from |format| e.g. BGRA vs RGBA.
+    GLuint internal_format = image->GetInternalFormat();
     GLenum gl_format =
         gles2::TextureManager::ExtractFormatFromStorageFormat(internal_format);
     GLenum gl_type =
@@ -356,16 +363,17 @@ std::unique_ptr<SharedImageBacking> SwapChainFactoryDXGI::MakeBacking(
     texture->sampler_state_.mag_filter = GL_LINEAR;
     texture->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
     texture->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
-    texture->SetLevelInfo(target, 0, internal_format, size.width(),
-                          size.height(), 1, 0, gl_format, gl_type,
-                          gfx::Rect(size));
-    texture->SetLevelImage(target, 0, image.get(), gles2::Texture::BOUND);
+    texture->SetLevelInfo(target, 0 /* level */, internal_format, size.width(),
+                          size.height(), 1 /* depth */, 0 /* border */,
+                          gl_format, gl_type, gfx::Rect(size));
+    texture->SetLevelImage(target, 0 /* level */, image.get(),
+                           gles2::Texture::BOUND);
     texture->SetImmutable(true, false);
   }
 
   return std::make_unique<SharedImageBackingDXGISwapChain>(
-      mailbox, format, size, color_space, usage, swap_chain, texture,
-      passthrough_texture);
+      mailbox, format, size, color_space, usage, std::move(swap_chain), texture,
+      std::move(texture_passthrough), std::move(image), buffer_index);
 }
 
 SwapChainFactoryDXGI::SwapChainBackings SwapChainFactoryDXGI::CreateSwapChain(
@@ -375,16 +383,14 @@ SwapChainFactoryDXGI::SwapChainBackings SwapChainFactoryDXGI::CreateSwapChain(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  if (!SupportedFormat(format)) {
-    DLOG(ERROR) << format << " format is not supported by swap chain.";
+  if (format != viz::RGBA_8888 && format != viz::RGBA_F16) {
+    DLOG(ERROR) << gfx::BufferFormatToString(viz::BufferFormat(format))
+                << " format is not supported by swap chain.";
     return {nullptr, nullptr};
   }
 
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
-  DCHECK(d3d11_device);
   Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
-  d3d11_device.As(&dxgi_device);
+  d3d11_device_.As(&dxgi_device);
   DCHECK(dxgi_device);
   Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
   dxgi_device->GetAdapter(&dxgi_adapter);
@@ -412,7 +418,7 @@ SwapChainFactoryDXGI::SwapChainBackings SwapChainFactoryDXGI::CreateSwapChain(
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain;
 
   HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
-      d3d11_device.Get(), &desc, nullptr, &swap_chain);
+      d3d11_device_.Get(), &desc, nullptr, &swap_chain);
 
   if (FAILED(hr)) {
     DLOG(ERROR) << "CreateSwapChainForComposition failed with error "
@@ -422,25 +428,31 @@ SwapChainFactoryDXGI::SwapChainBackings SwapChainFactoryDXGI::CreateSwapChain(
 
   // Explicitly clear front and back buffers to ensure that there are no
   // uninitialized pixels.
-  if (!ClearBackBuffer(swap_chain, d3d11_device))
+  if (!ClearBackBuffer(swap_chain, d3d11_device_))
     return {nullptr, nullptr};
+
   DXGI_PRESENT_PARAMETERS params = {};
   params.DirtyRectsCount = 0;
   params.pDirtyRects = nullptr;
-  swap_chain->Present1(0 /* interval */, 0 /* flags */, &params);
-  if (!ClearBackBuffer(swap_chain, d3d11_device))
+  hr = swap_chain->Present1(0 /* interval */, 0 /* flags */, &params);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Present1 failed with error " << std::hex << hr;
+    return {nullptr, nullptr};
+  }
+
+  if (!ClearBackBuffer(swap_chain, d3d11_device_))
     return {nullptr, nullptr};
 
-  std::unique_ptr<SharedImageBacking> front_buffer_backing =
-      MakeBacking(front_buffer_mailbox, format, size, color_space, usage,
-                  swap_chain, 1 /* buffer index */);
-
-  std::unique_ptr<SharedImageBacking> back_buffer_backing =
+  auto back_buffer_backing =
       MakeBacking(back_buffer_mailbox, format, size, color_space, usage,
-                  swap_chain, 0 /* buffer index */);
+                  swap_chain, 0 /* buffer_index */);
+  if (!back_buffer_backing)
+    return {nullptr, nullptr};
 
-  // To avoid registering one backing when the other backing does not exist.
-  if (!(front_buffer_backing && back_buffer_backing))
+  auto front_buffer_backing =
+      MakeBacking(front_buffer_mailbox, format, size, color_space, usage,
+                  swap_chain, 1 /* buffer_index */);
+  if (!front_buffer_backing)
     return {nullptr, nullptr};
 
   return {std::move(front_buffer_backing), std::move(back_buffer_backing)};

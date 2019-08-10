@@ -31,6 +31,10 @@ enum SharedImageUsage : uint32_t {
   SHARED_IMAGE_USAGE_WEBGPU = 1 << 7,
   // Image will be used in a protected Vulkan context on Fuchsia.
   SHARED_IMAGE_USAGE_PROTECTED = 1 << 8,
+  // Image may use concurrent read/write access. Used by single buffered canvas.
+  // TODO(crbug.com/969114): This usage is currently not supported in GL/Vulkan
+  // interop cases.
+  SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE = 1 << 9,
 };
 
 }  // namespace gpu

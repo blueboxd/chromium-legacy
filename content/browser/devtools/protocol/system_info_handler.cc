@@ -156,7 +156,7 @@ VideoEncodeAcceleratorSupportedProfileToProtocol(
 std::unique_ptr<SystemInfo::ImageDecodeAcceleratorCapability>
 ImageDecodeAcceleratorSupportedProfileToProtocol(
     const gpu::ImageDecodeAcceleratorSupportedProfile& profile) {
-  std::unique_ptr<protocol::Array<std::string>> subsamplings;
+  auto subsamplings = std::make_unique<protocol::Array<std::string>>();
   for (const auto subsampling : profile.subsamplings) {
     switch (subsampling) {
       case gpu::ImageDecodeAcceleratorSubsampling::k420:

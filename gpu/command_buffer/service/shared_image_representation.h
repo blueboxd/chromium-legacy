@@ -80,12 +80,10 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) {
     backing()->Update(std::move(in_fence));
   }
-#if defined(OS_WIN)
-  void PresentSwapChain() { backing()->PresentSwapChain(); }
-#endif  // OS_WIN
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) {
     return backing()->ProduceLegacyMailbox(mailbox_manager);
   }
+  bool PresentSwapChain() { return backing()->PresentSwapChain(); }
 };
 
 class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture

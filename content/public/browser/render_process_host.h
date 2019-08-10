@@ -29,6 +29,7 @@
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -475,6 +476,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // here to support MockRenderProcessHost usage in tests.
   virtual void BindCacheStorage(blink::mojom::CacheStorageRequest request,
                                 const url::Origin& origin) = 0;
+
+  // Binds |request| to the FileSystemManager instance. The binding is
+  // sent to the IO thread. This is for internal use only, and is only exposed
+  // here to support MockRenderProcessHost usage in tests.
+  virtual void BindFileSystemManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) = 0;
 
   // Binds |request| to the IndexedDBDispatcherHost instance. The binding is
   // sent to the IO thread. This is for internal use only, and is only exposed

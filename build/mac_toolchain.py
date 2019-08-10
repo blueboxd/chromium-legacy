@@ -28,16 +28,6 @@ import subprocess
 import sys
 
 
-# This can be changed after running:
-#    mac_toolchain upload -xcode-path path/to/Xcode.app
-# The hermetic install of Xcode is used:
-#  1) For sizes support
-#  2) To build clang
-#  3) For code-coverage support.
-# These should eventually be phased out to use the new deployment of
-# xcode_binaries, see InstallXcodeBinaries. https://crbug.com/984746
-MAC_TOOLCHAIN_VERSION = '9E501'
-
 # This contains binaries from Xcode 10.12.1, along with the 10.14 SDKs. To build
 # this package, see comments in build/xcode_binaries.yaml
 MAC_BINARIES_LABEL = 'infra_internal/ios/xcode/xcode_binaries/mac-amd64'
@@ -47,8 +37,6 @@ MAC_BINARIES_TAG = 'hKD0dobc7nP5I5bX5OZ0v9GkUJXb7ADJO7SuK5070G8C'
 # 17 is the major version number for macOS 10.13.
 # 9E145 (Xcode 9.3) only runs on 10.13.2 and newer.
 MAC_MINIMUM_OS_VERSION = 17
-
-MAC_TOOLCHAIN_INSTALLER = 'mac_toolchain'
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 TOOLCHAIN_ROOT = os.path.join(BASE_DIR, 'mac_files')
@@ -96,46 +84,6 @@ def PrintError(message):
   sys.stderr.flush()
 
 
-def InstallXcode(xcode_build_version, installer_cmd, xcode_app_path):
-  """Installs the requested Xcode build version.
-
-  Args:
-    xcode_build_version: (string) Xcode build version to install.
-    installer_cmd: (string) Path to mac_toolchain command to install Xcode.
-      See https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/cmd/mac_toolchain/
-    xcode_app_path: (string) Path to install the contents of Xcode.app.
-
-  Returns:
-    True if installation was successful. False otherwise.
-  """
-  args = [
-      installer_cmd, 'install',
-      '-kind', 'mac',
-      '-xcode-version', xcode_build_version.lower(),
-      '-output-dir', xcode_app_path,
-  ]
-
-  # Buildbot slaves need to use explicit credentials. LUCI bots should NOT set
-  # this variable.
-  creds = os.environ.get('MAC_TOOLCHAIN_CREDS')
-  if creds:
-    args.extend(['--service-account-json', creds])
-
-  try:
-    subprocess.check_call(args)
-  except subprocess.CalledProcessError as e:
-    PrintError('Xcode build version %s failed to install: %s\n' % (
-        xcode_build_version, e))
-    RequestCipdAuthentication()
-    return False
-  except OSError as e:
-    PrintError(('Xcode installer "%s" failed to execute'
-                ' (not on PATH or not installed).') % installer_cmd)
-    return False
-
-  return True
-
-
 def InstallXcodeBinaries():
   """Installs the Xcode binaries needed to build Chrome and accepts the license.
 
@@ -146,7 +94,7 @@ def InstallXcodeBinaries():
   # also ensures that there will be no conflicts of cipd root.
   binaries_root = os.path.join(TOOLCHAIN_ROOT, 'xcode_binaries')
   if not os.path.exists(binaries_root):
-    os.mkdir(binaries_root)
+    os.makedirs(binaries_root)
 
   # 'cipd ensure' is idempotent.
   args = [
@@ -230,20 +178,14 @@ def main():
     print('OS version does not support toolchain.')
     return 0
 
-  toolchain_version = os.environ.get('MAC_TOOLCHAIN_REVISION',
-                                      MAC_TOOLCHAIN_VERSION)
-
-  # On developer machines, mac_toolchain tool is provided by
-  # depot_tools. On the bots, the recipe is responsible for installing
-  # it and providing the path to the executable.
-  installer_cmd = os.environ.get('MAC_TOOLCHAIN_INSTALLER',
-                                 MAC_TOOLCHAIN_INSTALLER)
-
-  xcode_app_path = TOOLCHAIN_BUILD_DIR
-
-  success = InstallXcode(toolchain_version, installer_cmd, xcode_app_path)
-  if not success:
-    return 1
+  # Delete obsolete hermetic full Xcode folder, the build now uses
+  # build/mac_files/xcode_binaries instead.
+  if os.path.exists(TOOLCHAIN_BUILD_DIR):
+    # TODO(thakis): Remove this after it's been here for a few months.
+    print('Deleting obsolete build/mac_files/Xcode.app...', end='')
+    sys.stdout.flush()
+    shutil.rmtree(TOOLCHAIN_BUILD_DIR)
+    print('done')
 
   return InstallXcodeBinaries()
 

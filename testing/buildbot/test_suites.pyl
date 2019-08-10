@@ -3150,9 +3150,25 @@
       },
     },
 
+    # Actually uploads results to the perf dashboard
+    'gpu_angle_perf_isolated_scripts': {
+      'angle_perftests': {
+        'args': [
+          '--gtest-benchmark-name=angle_perftests',
+          '-v',
+        ],
+        'android_args': [
+          '--shard-timeout=600',
+        ],
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+        },
+      },
+    },
+
     # The angle perf tests should eventually be run on every platform
     # ANGLE supports. Currently they run on Windows, Linux and Android.
-    'gpu_angle_perf_isolated_scripts': {
+    'gpu_angle_perf_smoke_isolated_scripts': {
       'angle_perftests': {
         'args': [
           '--gtest-benchmark-name=angle_perftests',
@@ -3165,6 +3181,7 @@
         ],
         'merge': {
           'script': '//tools/perf/process_perf_results.py',
+          # Does not upload to the perf dashboard
           'args': [
             '--smoke-test-mode',
           ],
@@ -5001,12 +5018,12 @@
     # BEGIN composition test suites used by the GPU bots
 
     'gpu_angle_and_desktop_representative_perf_fyi_isolated_scripts': [
-      'gpu_angle_perf_isolated_scripts',
+      'gpu_angle_perf_smoke_isolated_scripts',
       'rendering_desktop_representative_perf_tests_isolated_scripts',
     ],
 
     'gpu_angle_and_mobile_representative_perf_fyi_isolated_scripts': [
-      'gpu_angle_perf_isolated_scripts',
+      'gpu_angle_perf_smoke_isolated_scripts',
       'rendering_mobile_representative_perf_tests_isolated_scripts',
     ],
 
@@ -5069,14 +5086,14 @@
     ],
 
     'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts': [
-      'gpu_angle_perf_isolated_scripts',
+      'gpu_angle_perf_smoke_isolated_scripts',
       'gpu_command_buffer_perf_passthrough_isolated_scripts',
       'gpu_command_buffer_perf_validating_isolated_scripts',
       'rendering_desktop_representative_perf_tests_isolated_scripts',
     ],
 
     'gpu_angle_fyi_win_optional_isolated_scripts': [
-      'gpu_angle_perf_isolated_scripts',
+      'gpu_angle_perf_smoke_isolated_scripts',
       'gpu_command_buffer_perf_passthrough_isolated_scripts',
       'gpu_command_buffer_perf_validating_isolated_scripts',
     ],
@@ -5116,8 +5133,8 @@
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    'gpu_angle_perf_isolated_scripts_and_test_buildbucket_api_gpu_use_cases': [
-      'gpu_angle_perf_isolated_scripts',
+    'gpu_angle_perf_smoke_isolated_scripts_and_test_buildbucket_api_gpu_use_cases': [
+      'gpu_angle_perf_smoke_isolated_scripts',
       'test_buildbucket_api_gpu_use_cases',
     ],
 

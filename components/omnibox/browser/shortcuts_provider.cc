@@ -331,8 +331,7 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
         match.inline_autocompletion =
             match.fill_into_edit.substr(inline_autocomplete_offset);
         match.allowed_to_be_default_match =
-            !HistoryProvider::PreventInlineAutocomplete(input) ||
-            match.inline_autocompletion.empty();
+            AutocompleteMatch::AllowedToBeDefault(input, match);
       }
     }
   }

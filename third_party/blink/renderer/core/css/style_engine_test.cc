@@ -1564,6 +1564,9 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColors) {
   ScopedForcedColorsForTest scoped_feature(true);
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
+      body {
+        forced-color-adjust: none;
+      }
       @media (forced-colors: none) {
         body { color: red }
       }
@@ -1590,6 +1593,9 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
   ScopedForcedColorsForTest scoped_feature(true);
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
+      body {
+        forced-color-adjust: none;
+      }
       @media (forced-colors: none) and (prefers-color-scheme: light) {
         body { color: red }
       }

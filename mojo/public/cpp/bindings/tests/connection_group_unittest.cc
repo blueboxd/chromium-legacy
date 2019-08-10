@@ -234,6 +234,25 @@ TEST_P(ConnectionGroupBindingsTest, OldBindingsTypes) {
   ptr->BindRequest(MakeRequest(&ptr2));
   ptr2.FlushForTesting();
   EXPECT_EQ(1u, group->GetNumRefsForTesting());
+
+  // Also verify that implicit conversion between PendingReceiver and
+  // InterfaceRequest retains the connection group reference. First we set up
+  // a new PendingReceiver holding a strong ConnectionGroup ref.
+  ref = ConnectionGroup::Create(base::DoNothing(), nullptr);
+  group = ref.GetGroupForTesting();
+  mojo::Remote<mojom::TestInterface> remote;
+  auto receiver = remote.BindNewPipeAndPassReceiver();
+  receiver.set_connection_group(ref);
+  EXPECT_EQ(1u, group->GetNumRefsForTesting());
+
+  // Now verify implicit conversion both to and from the InterfaceRequest type.
+  request = std::move(receiver);
+  receiver.reset();
+  EXPECT_EQ(1u, group->GetNumRefsForTesting());
+
+  receiver = std::move(request);
+  request = {};
+  EXPECT_EQ(1u, group->GetNumRefsForTesting());
 }
 
 INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(ConnectionGroupBindingsTest);

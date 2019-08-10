@@ -949,6 +949,11 @@ void JPEGImageDecoder::DecodeToYUV() {
   }
 }
 
+// TODO(crbug.com/919627): Confirm that this is correct for all cases.
+SkYUVColorSpace JPEGImageDecoder::GetYUVColorSpace() const {
+  return SkYUVColorSpace::kJPEG_SkYUVColorSpace;
+}
+
 void JPEGImageDecoder::SetImagePlanes(
     std::unique_ptr<ImagePlanes> image_planes) {
   image_planes_ = std::move(image_planes);

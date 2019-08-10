@@ -12,6 +12,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/wm/window_util.h"
 #include "base/i18n/rtl.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -745,11 +746,14 @@ bool OverflowBubbleView::CanActivate() const {
     return false;
 
   // Do not activate the bubble unless the current active window is the shelf
-  // window.
+  // window or the status widget window.
   aura::Window* active_window = window_util::GetActiveWindow();
   aura::Window* bubble_window = GetWidget()->GetNativeWindow();
   aura::Window* shelf_window = shelf_->shelf_widget()->GetNativeWindow();
-  return active_window == bubble_window || active_window == shelf_window;
+  aura::Window* status_area_window =
+      shelf_->shelf_widget()->status_area_widget()->GetNativeWindow();
+  return active_window == bubble_window || active_window == shelf_window ||
+         active_window == status_area_window;
 }
 
 bool OverflowBubbleView::ShouldCloseOnPressDown() {

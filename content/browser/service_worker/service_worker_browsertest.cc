@@ -3411,6 +3411,7 @@ class ServiceWorkerCodeCacheStrategyTestBase : public ServiceWorkerBrowserTest {
   static const char kWorkerUrl[];
   static const char kPageUrl[];
   static const char kCachedInInstallEventUrl[];
+  static const char kCachedInInstallEventWithMimeTypeParamUrl[];
   static const char kCachedInFetchEventUrl[];
   static const char kCachedInMessageEventUrl[];
 
@@ -3479,6 +3480,11 @@ const char ServiceWorkerCodeCacheStrategyTestBase::kWorkerUrl[] =
 const char ServiceWorkerCodeCacheStrategyTestBase::kCachedInInstallEventUrl[] =
     "/service_worker/"
     "code_cache_strategy_test_script.js?cached_in_install_event";
+const char ServiceWorkerCodeCacheStrategyTestBase::
+    kCachedInInstallEventWithMimeTypeParamUrl[] =
+        "/service_worker/"
+        "code_cache_strategy_test_script.js?cached_in_install_event_with_mime_"
+        "type_param";
 const char ServiceWorkerCodeCacheStrategyTestBase::kCachedInFetchEventUrl[] =
     "/service_worker/code_cache_strategy_test_script.js?cached_in_fetch_event";
 const char ServiceWorkerCodeCacheStrategyTestBase::kCachedInMessageEventUrl[] =
@@ -3501,6 +3507,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerCodeCacheStrategyDontGenerateTest,
   NavigateToTestPage();
   InitiateEventsToCacheScript();
   EXPECT_FALSE(HasSideData(kCachedInInstallEventUrl));
+  EXPECT_FALSE(HasSideData(kCachedInInstallEventWithMimeTypeParamUrl));
   EXPECT_FALSE(HasSideData(kCachedInFetchEventUrl));
   EXPECT_FALSE(HasSideData(kCachedInMessageEventUrl));
 }
@@ -3521,6 +3528,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerCodeCacheStrategyInstallEventTest,
   NavigateToTestPage();
   InitiateEventsToCacheScript();
   EXPECT_TRUE(HasSideData(kCachedInInstallEventUrl));
+  EXPECT_TRUE(HasSideData(kCachedInInstallEventWithMimeTypeParamUrl));
   EXPECT_FALSE(HasSideData(kCachedInFetchEventUrl));
   EXPECT_FALSE(HasSideData(kCachedInMessageEventUrl));
 }
@@ -3541,6 +3549,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerCodeCacheStrategyIdleTaskTest,
   NavigateToTestPage();
   InitiateEventsToCacheScript();
   EXPECT_TRUE(HasSideData(kCachedInInstallEventUrl));
+  EXPECT_TRUE(HasSideData(kCachedInInstallEventWithMimeTypeParamUrl));
   // These should not time out.
   WaitForSideData(kCachedInFetchEventUrl);
   WaitForSideData(kCachedInMessageEventUrl);

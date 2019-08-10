@@ -64,6 +64,8 @@ class MODULES_EXPORT MediaSession final
 
   void NotifyActionChange(const String& action, ActionChangeType);
 
+  void RecalculatePositionState(bool notify);
+
   // blink::mojom::blink::MediaSessionClient implementation.
   void DidReceiveAction(media_session::mojom::blink::MediaSessionAction,
                         mojom::blink::MediaSessionActionDetailsPtr) override;
@@ -72,6 +74,8 @@ class MODULES_EXPORT MediaSession final
   mojom::blink::MediaSessionService* GetService();
 
   mojom::blink::MediaSessionPlaybackState playback_state_;
+  media_session::mojom::blink::MediaPositionPtr position_state_;
+  double declared_playback_rate_ = 0.0;
   Member<MediaMetadata> metadata_;
   HeapHashMap<String, Member<V8MediaSessionActionHandler>> action_handlers_;
   mojom::blink::MediaSessionServicePtr service_;

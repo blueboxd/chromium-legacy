@@ -149,8 +149,8 @@ class ProfileSyncServiceHarness {
   // all corresponding datatypes). Returns true on success.
   bool DisableSyncForType(syncer::UserSelectableType type);
 
-  // Enables sync for all sync datatypes. Returns true on success.
-  bool EnableSyncForAllDatatypes();
+  // Enables sync for all registered sync datatypes. Returns true on success.
+  bool EnableSyncForRegisteredDatatypes();
 
   // Disables sync for all sync datatypes. Returns true on success.
   bool DisableSyncForAllDatatypes();

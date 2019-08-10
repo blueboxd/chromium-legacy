@@ -15,9 +15,12 @@
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/ime/text_edit_commands.h"
-#include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
-#include "ui/gfx/x/x11.h"
+
+#if defined(USE_X11)
+#include "ui/base/x/x11_util.h"  // nogncheck
+#include "ui/gfx/x/x11.h"        // nogncheck
+#endif
 
 using ui::TextEditCommand;
 
@@ -38,6 +41,37 @@ GtkWidget* CreateInvisibleWindow() {
 #endif
 }
 
+#if !defined(USE_X11)
+GdkModifierType EventFlagsToGdkModifierType(ui::EventFlags event_flags) {
+  static const struct {
+    ui::EventFlags event_flag;
+    GdkModifierType gdk_modifier;
+  } mapping[] = {
+      {ui::EF_SHIFT_DOWN, GDK_SHIFT_MASK},
+      {ui::EF_CAPS_LOCK_ON, GDK_LOCK_MASK},
+      {ui::EF_CONTROL_DOWN, GDK_CONTROL_MASK},
+      {ui::EF_ALT_DOWN, GDK_MOD1_MASK},
+      {ui::EF_NUM_LOCK_ON, GDK_MOD2_MASK},
+      {ui::EF_MOD3_DOWN, GDK_MOD3_MASK},
+      {ui::EF_COMMAND_DOWN, GDK_MOD4_MASK},
+      {ui::EF_ALTGR_DOWN, GDK_MOD5_MASK},
+      {ui::EF_LEFT_MOUSE_BUTTON, GDK_BUTTON1_MASK},
+      {ui::EF_MIDDLE_MOUSE_BUTTON, GDK_BUTTON2_MASK},
+      {ui::EF_RIGHT_MOUSE_BUTTON, GDK_BUTTON3_MASK},
+      {ui::EF_BACK_MOUSE_BUTTON, GDK_BUTTON4_MASK},
+      {ui::EF_FORWARD_MOUSE_BUTTON, GDK_BUTTON5_MASK},
+  };
+  GdkModifierType gdk_modifier_type = static_cast<GdkModifierType>(0);
+  for (const auto& map : mapping) {
+    if (event_flags & map.event_flag) {
+      gdk_modifier_type =
+          static_cast<GdkModifierType>(gdk_modifier_type | map.gdk_modifier);
+    }
+  }
+  return gdk_modifier_type;
+}
+#endif
+
 }  // namespace
 
 namespace libgtkui {
@@ -48,11 +82,15 @@ GtkKeyBindingsHandler::GtkKeyBindingsHandler()
       has_xkb_(false) {
   gtk_container_add(GTK_CONTAINER(fake_window_), handler_);
 
+#if defined(USE_X11)
   int opcode, event, error;
   int major = XkbMajorVersion;
   int minor = XkbMinorVersion;
   has_xkb_ = XkbQueryExtension(gfx::GetXDisplay(), &opcode, &event, &error,
                                &major, &minor);
+#else
+  has_xkb_ = false;
+#endif
 }
 
 GtkKeyBindingsHandler::~GtkKeyBindingsHandler() {
@@ -70,7 +108,7 @@ bool GtkKeyBindingsHandler::MatchEvent(
     return false;
 
   GdkEventKey gdk_event;
-  BuildGdkEventKeyFromXEvent(key_event.native_event(), &gdk_event);
+  BuildGdkEventKeyFromKeyEvent(key_event, &gdk_event);
 
   edit_commands_.clear();
   // If this key event matches a predefined key binding, corresponding signal
@@ -111,18 +149,19 @@ void GtkKeyBindingsHandler::EditCommandMatched(TextEditCommand command,
   edit_commands_.push_back(ui::TextEditCommandAuraLinux(command, value));
 }
 
-void GtkKeyBindingsHandler::BuildGdkEventKeyFromXEvent(
-    const ui::PlatformEvent& xevent,
+void GtkKeyBindingsHandler::BuildGdkEventKeyFromKeyEvent(
+    const ui::KeyEvent& key_event,
     GdkEventKey* gdk_event) {
   GdkKeymap* keymap = gdk_keymap_get_for_display(gdk_display_get_default());
   GdkModifierType consumed, state;
 
+#if defined(USE_X11)
+  const ui::PlatformEvent& xevent = key_event.native_event();
   gdk_event->type =
       xevent->xany.type == KeyPress ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
   gdk_event->time = xevent->xkey.time;
   gdk_event->state = static_cast<GdkModifierType>(xevent->xkey.state);
   gdk_event->hardware_keycode = xevent->xkey.keycode;
-
   if (has_xkb_) {
     gdk_event->group = XkbGroupForCoreState(xevent->xkey.state);
   } else {
@@ -137,6 +176,15 @@ void GtkKeyBindingsHandler::BuildGdkEventKeyFromXEvent(
     }
     gdk_event->group = 0;
   }
+#else
+  gdk_event->type =
+      key_event.type() == ui::ET_KEY_PRESSED ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
+  gdk_event->time =
+      (key_event.time_stamp() - base::TimeTicks()).InMilliseconds();
+  gdk_event->state = EventFlagsToGdkModifierType(
+      static_cast<ui::EventFlags>(key_event.flags()));
+  gdk_event->hardware_keycode = key_event.key_code();
+#endif
 
   gdk_event->keyval = GDK_KEY_VoidSymbol;
   gdk_keymap_translate_keyboard_state(

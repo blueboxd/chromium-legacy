@@ -42,8 +42,9 @@ void CleanupOnWorker(const base::FilePath& sth_directory) {
 }  // namespace
 
 void DeleteLegacySTHSet(const base::FilePath& user_data_dir) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&CleanupOnWorker, user_data_dir.Append(FILE_PATH_LITERAL(
                                            "CertificateTransparency"))));
 }

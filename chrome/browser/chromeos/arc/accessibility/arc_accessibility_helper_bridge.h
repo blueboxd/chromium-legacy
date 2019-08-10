@@ -114,6 +114,9 @@ class ArcAccessibilityHelperBridge
   virtual extensions::EventRouter* GetEventRouter() const;
 
  private:
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  void UpdateCaptionSettings() const;
+
   // wm::ActivationChangeObserver overrides.
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,

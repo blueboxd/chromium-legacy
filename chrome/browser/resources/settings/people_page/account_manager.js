@@ -169,8 +169,7 @@ Polymer({
    * @private
    */
   refreshAccounts_: function() {
-    const includeImages = true;
-    this.browserProxy_.getAccounts(includeImages).then(accounts => {
+    this.browserProxy_.getAccounts().then(accounts => {
       this.set('accounts_', accounts);
     });
   },

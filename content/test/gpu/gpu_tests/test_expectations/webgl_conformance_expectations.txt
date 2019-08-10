@@ -342,6 +342,7 @@ crbug.com/635081 [ mac nvidia-0xfe9 ] conformance/attribs/gl-disabled-vertex-att
 crbug.com/923080 [ mac nvidia-0xfe9 ] conformance/ogles/GL/exp2/exp2_001_to_008.html [ RetryOnFailure ]
 crbug.com/635081 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-location-long-names-test.html [ Failure ]
 crbug.com/635081 [ mac nvidia-0xfe9 ] conformance/programs/gl-bind-attrib-location-test.html [ Failure ]
+crbug.com/992313 [ mac nvidia-0xfe9 ] conformance/rendering/rendering-stencil-large-viewport.html [ RetryOnFailure ]
 crbug.com/635081 [ mac nvidia-0xfe9 no-passthrough ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
 crbug.com/635081 [ mac nvidia-0xfe9 no-passthrough ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/784817 [ mac nvidia-0xfe9 ] conformance/glsl/bugs/init-array-with-loop.html [ Failure ]

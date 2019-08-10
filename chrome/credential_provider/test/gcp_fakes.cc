@@ -490,6 +490,10 @@ HRESULT FakeScopedLsaPolicy::RetrievePrivateData(const wchar_t* key,
   return S_OK;
 }
 
+bool FakeScopedLsaPolicy::PrivateDataExists(const wchar_t* key) {
+  return private_data().count(key) != 0;
+}
+
 HRESULT FakeScopedLsaPolicy::AddAccountRights(PSID sid, const wchar_t* right) {
   return S_OK;
 }

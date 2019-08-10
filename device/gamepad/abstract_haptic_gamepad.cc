@@ -120,9 +120,8 @@ void AbstractHapticGamepad::PlayDualRumbleEffect(int sequence_id,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&AbstractHapticGamepad::StartVibration,
-                     weak_factory_.GetWeakPtr(), sequence_id, duration,
-                     strong_magnitude, weak_magnitude),
+      base::BindOnce(&AbstractHapticGamepad::StartVibration, GetWeakPtr(),
+                     sequence_id, duration, strong_magnitude, weak_magnitude),
       base::TimeDelta::FromMillisecondsD(start_delay));
 }
 
@@ -142,15 +141,15 @@ void AbstractHapticGamepad::StartVibration(int sequence_id,
     double remaining_duration = duration - max_duration;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&AbstractHapticGamepad::StartVibration,
-                       weak_factory_.GetWeakPtr(), sequence_id,
-                       remaining_duration, strong_magnitude, weak_magnitude),
+        base::BindOnce(&AbstractHapticGamepad::StartVibration, GetWeakPtr(),
+                       sequence_id, remaining_duration, strong_magnitude,
+                       weak_magnitude),
         base::TimeDelta::FromMillisecondsD(max_duration));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&AbstractHapticGamepad::FinishEffect,
-                       weak_factory_.GetWeakPtr(), sequence_id),
+        base::BindOnce(&AbstractHapticGamepad::FinishEffect, GetWeakPtr(),
+                       sequence_id),
         base::TimeDelta::FromMillisecondsD(duration));
   }
 }

@@ -334,7 +334,8 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
       SkFilterQuality,
       const CanvasColorParams&,
       bool is_overlay_candidate,
-      bool is_origin_top_left);
+      bool is_origin_top_left,
+      bool allow_concurrent_read_write_access);
   ~CanvasResourceSharedImage() override;
 
   bool IsRecycleable() const final { return true; }
@@ -359,9 +360,13 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   void TakeSkImage(sk_sp<SkImage> image) final { NOTREACHED(); }
   void NotifyResourceLost() final;
 
-  GLuint GetTextureIdForBackendTexture() const {
-    return owning_thread_data().texture_id;
+  GLuint GetTextureIdForReadAccess() const {
+    return owning_thread_data().texture_id_for_read_access;
   }
+  GLuint GetTextureIdForWriteAccess() const {
+    return owning_thread_data().texture_id_for_write_access;
+  }
+
   void WillDraw();
   bool is_cross_thread() const {
     return base::PlatformThread::CurrentId() != owning_thread_id_;
@@ -382,9 +387,16 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
     gpu::SyncToken sync_token;
     bool needs_gl_filter_reset = true;
     size_t bitmap_image_read_refs = 0u;
-    GLuint texture_id = 0u;
     MailboxSyncMode mailbox_sync_mode = kVerifiedSyncToken;
     bool is_lost = false;
+
+    // We need to create 2 representations if canvas is operating in single
+    // buffered mode to allow concurrent scopes for read and write access,
+    // because the Begin/EndSharedImageAccessDirectCHROMIUM APIs allow only one
+    // active access mode for a representation.
+    // In non single buffered mode, the 2 texture ids are the same.
+    GLuint texture_id_for_read_access = 0u;
+    GLuint texture_id_for_write_access = 0u;
   };
 
   static void OnBitmapImageDestroyed(
@@ -409,7 +421,8 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
                             SkFilterQuality,
                             const CanvasColorParams&,
                             bool is_overlay_candidate,
-                            bool is_origin_top_left);
+                            bool is_origin_top_left,
+                            bool allow_concurrent_read_write_access);
   void SetGLFilterIfNeeded();
 
   OwningThreadData& owning_thread_data() {

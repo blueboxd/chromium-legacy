@@ -49,8 +49,7 @@ NSString* const kMemoryWarningInProgress = @"memory_warning_in_progress";
 NSString* const kMemoryWarningCount = @"memory_warning_count";
 NSString* const kUptimeAtRestoreInMs = @"uptime_at_restore_in_ms";
 NSString* const kUploadedInRecoveryMode = @"uploaded_in_recovery_mode";
-NSString* const kBVCPresentingActiveViewController =
-    @"bvc_presenting_active_vc";
+NSString* const kGridToVisibleTabAnimation = @"grid_to_visible_tab_animation";
 
 // Multiple state information are combined into one CrachReportMultiParameter
 // to save limited and finite number of ReportParameters.
@@ -342,18 +341,20 @@ void SetDestroyingAndRebuildingIncognitoBrowserState(bool in_progress) {
   }
 }
 
-void SetBVCPresentingActiveViewController(NSString* active_view_controller,
-                                          NSString* presenting_view_controller,
-                                          NSString* parent_view_controller) {
-  NSString* formatted_value = [NSString
-      stringWithFormat:@"{activeVC:%@, presentingVC:%@, parentVC:%@}",
-                       active_view_controller, presenting_view_controller,
-                       parent_view_controller];
-  AddReportParameter(kBVCPresentingActiveViewController, formatted_value, true);
+void SetGridToVisibleTabAnimation(NSString* to_view_controller,
+                                  NSString* presenting_view_controller,
+                                  NSString* presented_view_controller,
+                                  NSString* parent_view_controller) {
+  NSString* formatted_value =
+      [NSString stringWithFormat:
+                    @"{toVC:%@, presentingVC:%@, presentedVC:%@, parentVC:%@}",
+                    to_view_controller, presenting_view_controller,
+                    presented_view_controller, parent_view_controller];
+  AddReportParameter(kGridToVisibleTabAnimation, formatted_value, true);
 }
 
-void RemoveBVCPresentingActiveViewController() {
-  RemoveReportParameter(kBVCPresentingActiveViewController);
+void RemoveGridToVisibleTabAnimation() {
+  RemoveReportParameter(kGridToVisibleTabAnimation);
 }
 
 void MediaStreamPlaybackDidStart() {

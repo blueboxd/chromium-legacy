@@ -153,6 +153,10 @@ class VIEWS_EXPORT Label : public View,
   bool GetObscured() const;
   void SetObscured(bool obscured);
 
+  // Returns true if some portion of the text is not displayed, either because
+  // of eliding or clipping.
+  bool IsDisplayTextTruncated() const;
+
   // Gets/Sets whether multi-line text can wrap mid-word; the default is false.
   // TODO(mukai): allow specifying WordWrapBehavior.
   bool GetAllowCharacterBreak() const;
@@ -280,6 +284,7 @@ class VIEWS_EXPORT Label : public View,
   FRIEND_TEST_ALL_PREFIXES(LabelTest, EmptyLabel);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, FocusBounds);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, MultiLineSizingWithElide);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, IsDisplayTextTruncated);
   friend class LabelSelectionTest;
 
   // ContextMenuController overrides:

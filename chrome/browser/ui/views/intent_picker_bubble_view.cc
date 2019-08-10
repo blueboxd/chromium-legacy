@@ -248,13 +248,12 @@ IntentPickerBubbleView::IntentPickerBubbleView(
     content::WebContents* web_contents,
     bool show_stay_in_chrome,
     bool show_remember_selection)
-    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       intent_picker_cb_(std::move(intent_picker_cb)),
       selected_app_tag_(0),
       app_info_(std::move(app_info)),
       show_stay_in_chrome_(show_stay_in_chrome),
       show_remember_selection_(show_remember_selection) {
-  DCHECK(anchor_view);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INTENT_PICKER);
 }
 

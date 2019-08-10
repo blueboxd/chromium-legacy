@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLIBILITY_DRIVER_H_
 #define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLIBILITY_DRIVER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"

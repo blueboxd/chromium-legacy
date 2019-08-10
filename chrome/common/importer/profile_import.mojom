@@ -8,8 +8,6 @@ import "components/autofill/core/common/mojom/autofill_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "url/mojom/url.mojom";
 
-const string kProfileImportServiceName = "profile_import";
-
 [Native]
 struct ImportedBookmarkEntry;
 

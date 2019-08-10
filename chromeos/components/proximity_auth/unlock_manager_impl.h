@@ -233,6 +233,9 @@ class UnlockManagerImpl : public UnlockManager,
   // to scan for the phone until the user unlocks the screen.
   bool is_performing_initial_scan_ = false;
 
+  // True if a secure connection is currently active with the host.
+  bool is_bluetooth_connection_to_phone_active_ = false;
+
   // TODO(crbug.com/986896): For a short time window after resuming from
   // suspension, BluetoothAdapter returns incorrect presence and power values.
   // This field acts as a cache in case we need to check those values during

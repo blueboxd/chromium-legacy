@@ -190,6 +190,8 @@ class CORE_EXPORT VisualViewport final
                        ScrollType,
                        ScrollBehavior,
                        ScrollCallback on_finish) override;
+  PhysicalRect ScrollIntoView(const PhysicalRect&,
+                              const WebScrollIntoViewParams&) override;
   bool IsThrottled() const override {
     // VisualViewport is always in the main frame, so the frame does not get
     // throttled.

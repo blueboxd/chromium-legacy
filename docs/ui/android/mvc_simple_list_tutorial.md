@@ -37,13 +37,10 @@ public class SimpleMenuCoordinator {
         // Once this is attached to the ListView, there is no need to hold a reference to it.
         ModelListAdapter adapter = new ModelListAdapter(listItems);
 
-        final LayoutInflater layoutInflater =
-                (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
-
         // If this is a heterogeneous list, register more than one type.
         adapter.registerType(
                 ListItemType.DEFAULT,
-                () -> layoutInflater.inflate(R.layout.simple_menu_item, null),
+                () -> LayoutInflater.from(context).inflate(R.layout.simple_menu_item, null),
                 SimpleMenuItemViewBinder::bind);
 
         listView.setAdapter(adapter);

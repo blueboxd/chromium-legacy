@@ -66,8 +66,8 @@ void CacheStorageScheduler::CompleteOperationAndRunNext(
     DCHECK_GT(num_running_shared_, 0);
     num_running_shared_ -= 1;
     if (num_running_shared_ == 0) {
-      UMA_HISTOGRAM_COUNTS_1000("ServiceWorkerCache.PeakParallelSharedOps",
-                                peak_parallel_shared_);
+      UMA_HISTOGRAM_COUNTS_100("ServiceWorkerCache.PeakParallelSharedOps2",
+                               peak_parallel_shared_);
       peak_parallel_shared_ = 0;
     }
   } else {

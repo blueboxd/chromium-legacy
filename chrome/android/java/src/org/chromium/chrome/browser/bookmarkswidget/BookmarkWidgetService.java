@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -103,9 +104,18 @@ public class BookmarkWidgetService extends RemoteViewsService {
         if (widgetId >= 0 && serializedFolder != null) {
             SharedPreferences prefs = getWidgetState(widgetId);
             prefs.edit().putString(PREF_CURRENT_FOLDER, serializedFolder).apply();
-            AppWidgetManager.getInstance(ContextUtils.getApplicationContext())
-                    .notifyAppWidgetViewDataChanged(widgetId, R.id.bookmarks_list);
+            redrawWidget(widgetId);
         }
+    }
+
+    /**
+     * Redraws / refreshes a bookmark widget.
+     *
+     * @param widgetId The ID of the widget to redraw.
+     */
+    static void redrawWidget(int widgetId) {
+        AppWidgetManager.getInstance(ContextUtils.getApplicationContext())
+                .notifyAppWidgetViewDataChanged(widgetId, R.id.bookmarks_list);
     }
 
     /**
@@ -267,13 +277,13 @@ public class BookmarkWidgetService extends RemoteViewsService {
     /**
      * Provides the RemoteViews, one per bookmark, to be shown in the widget.
      */
-    private static class BookmarkAdapter implements RemoteViewsService.RemoteViewsFactory {
-
+    private static class BookmarkAdapter
+            implements RemoteViewsFactory, SystemNightModeMonitor.Observer {
         // Can be accessed on any thread
         private final Context mContext;
         private final int mWidgetId;
         private final SharedPreferences mPreferences;
-        private final int mIconColor;
+        private int mIconColor;
 
         // Accessed only on the UI thread
         private BookmarkModel mBookmarkModel;
@@ -287,7 +297,8 @@ public class BookmarkWidgetService extends RemoteViewsService {
             mWidgetId = widgetId;
             mPreferences = getWidgetState(mWidgetId);
             mIconColor = ApiCompatibilityUtils.getColor(
-                    mContext.getResources(), R.color.default_icon_color_dark);
+                    mContext.getResources(), R.color.default_icon_color);
+            SystemNightModeMonitor.getInstance().addObserver(this);
         }
 
         @UiThread
@@ -316,7 +327,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
 
                 @Override
                 public void bookmarkModelChanged() {
-                    refreshWidget();
+                    redrawWidget(mWidgetId);
                 }
             });
         }
@@ -353,6 +364,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
                 if (mBookmarkModel != null) mBookmarkModel.destroy();
             });
             deleteWidgetState(mWidgetId);
+            SystemNightModeMonitor.getInstance().removeObserver(this);
         }
 
         @BinderThread
@@ -505,6 +517,13 @@ public class BookmarkWidgetService extends RemoteViewsService {
             }
             views.setOnClickFillInIntent(R.id.list_item, fillIn);
             return views;
+        }
+
+        @Override
+        public void onSystemNightModeChanged() {
+            mIconColor = ApiCompatibilityUtils.getColor(
+                    mContext.getResources(), R.color.default_icon_color);
+            redrawWidget(mWidgetId);
         }
     }
 }

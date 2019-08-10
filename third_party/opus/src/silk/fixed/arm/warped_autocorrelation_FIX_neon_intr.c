@@ -172,7 +172,7 @@ void silk_warped_autocorrelation_FIX_neon(
                     state_QS_s32x4[ 0 ][ 1 ] = calc_state( state_QS_s32x4[ 0 ][ 1 ], state_QS_s32x4[ 2 ][ 1 ], state_QS_s32x4[ 1 ][ 1 ], warping_Q16_s32x4 );
                     state_QS_s32x4[ 1 ][ 0 ] = state_QS_s32x4[ 2 ][ 0 ];
                     state_QS_s32x4[ 1 ][ 1 ] = state_QS_s32x4[ 2 ][ 1 ];
-                } while( ++n < ( length + order ) );
+                } while( ++n < ( length + order - 3 ) );
                 in = state;
                 o -= 8;
             } while( o > 4 );

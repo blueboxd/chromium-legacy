@@ -25,19 +25,39 @@ ScrollbarController::ScrollbarController(
     LayerTreeHostImpl* layer_tree_host_impl)
     : layer_tree_host_impl_(layer_tree_host_impl),
       scrollbar_scroll_is_active_(false),
-      autoscroll_state_(AutoScrollState::NO_AUTOSCROLL),
       currently_captured_scrollbar_(nullptr),
       previous_pointer_position_(gfx::PointF(0, 0)),
       cancelable_autoscroll_task_(nullptr) {}
 
 void ScrollbarController::WillBeginImplFrame() {
+  // Since this function deals only with autoscrolling (for now), early out if
+  // there's no autoscroll in progress.
+  if (!autoscroll_state_.has_value())
+    return;
+
   // TODO(arakeri): Revisit this when addressing crbug.com/967004. The
   // animations need to be aborted/restarted based on the pointer location (i.e
   // leaving/entering the track/arrows, reaching the track end etc). The
   // autoscroll_state_ however, needs to be reset on pointer changes.
-  if (autoscroll_state_ != AutoScrollState::NO_AUTOSCROLL &&
-      ShouldCancelTrackAutoscroll())
+  if (ShouldCancelTrackAutoscroll())
     layer_tree_host_impl_->mutator_host()->ScrollAnimationAbort();
+
+  // When the scroller is autoscrolling forward, its dimensions need to be
+  // monitored. If the length of the scroller layer increases, the old one needs
+  // to be aborted and a new autoscroll animation needs to start. This needs to
+  // be done only for the "autoscroll forward" case. Autoscrolling backward
+  // always has a constant value to animate to (which is '0'. See the function
+  // ScrollbarController::StartAutoScrollAnimation).
+  if (autoscroll_state_->direction == AutoScrollDirection::AUTOSCROLL_FORWARD) {
+    const float scroll_layer_length =
+        currently_captured_scrollbar_->scroll_layer_length();
+    if (autoscroll_state_->scroll_layer_length != scroll_layer_length) {
+      layer_tree_host_impl_->mutator_host()->ScrollAnimationAbort();
+      StartAutoScrollAnimation(
+          autoscroll_state_->velocity,
+          currently_captured_scrollbar_->scroll_element_id());
+    }
+  }
 }
 
 gfx::Vector2dF ScrollbarController::GetThumbRelativePoint(
@@ -93,10 +113,12 @@ InputHandlerPointerResult ScrollbarController::HandleMouseDown(
     // have the potential of initiating an autoscroll (if held down for long
     // enough).
     DCHECK(scrollbar_part != ScrollbarPart::THUMB);
-    cancelable_autoscroll_task_ = std::make_unique<base::CancelableClosure>(
-        base::Bind(&ScrollbarController::StartAutoScrollAnimation,
-                   base::Unretained(this), scroll_result.scroll_offset,
-                   currently_captured_scrollbar_->scroll_element_id()));
+    cancelable_autoscroll_task_ =
+        std::make_unique<base::CancelableClosure>(base::Bind(
+            &ScrollbarController::StartAutoScrollAnimation,
+            base::Unretained(this),
+            InitialDeltaToAutoscrollVelocity(scroll_result.scroll_offset),
+            currently_captured_scrollbar_->scroll_element_id()));
     layer_tree_host_impl_->task_runner_provider()
         ->ImplThreadTaskRunner()
         ->PostDelayedTask(FROM_HERE, cancelable_autoscroll_task_->callback(),
@@ -252,8 +274,8 @@ float ScrollbarController::GetScrollerToScrollbarRatio() {
 }
 
 bool ScrollbarController::ShouldCancelTrackAutoscroll() {
-  // Should only ever be called if an autoscroll is in progress.
-  DCHECK(autoscroll_state_ != AutoScrollState::NO_AUTOSCROLL);
+  // This function should only ever be called if an autoscroll is in progress.
+  DCHECK(autoscroll_state_.has_value());
 
   layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
   const ScrollbarOrientation orientation =
@@ -284,18 +306,34 @@ bool ScrollbarController::ShouldCancelTrackAutoscroll() {
     pointer_position = scroller_relative_position.x();
   }
 
-  if ((autoscroll_state_ == AutoScrollState::AUTOSCROLL_FORWARD &&
+  if ((autoscroll_state_->direction ==
+           AutoScrollDirection::AUTOSCROLL_FORWARD &&
        thumb_end > pointer_position) ||
-      (autoscroll_state_ == AutoScrollState::AUTOSCROLL_BACKWARD &&
+      (autoscroll_state_->direction ==
+           AutoScrollDirection::AUTOSCROLL_BACKWARD &&
        thumb_start < pointer_position))
     return true;
 
   return false;
 }
 
-void ScrollbarController::StartAutoScrollAnimation(
-    gfx::ScrollOffset scroll_offset,
-    ElementId element_id) {
+// Helper to calculate the autoscroll velocity.
+float ScrollbarController::InitialDeltaToAutoscrollVelocity(
+    gfx::ScrollOffset scroll_offset) const {
+  const float scroll_delta = currently_captured_scrollbar_->orientation() ==
+                                     ScrollbarOrientation::VERTICAL
+                                 ? scroll_offset.y()
+                                 : scroll_offset.x();
+  return scroll_delta * kAutoscrollMultiplier;
+}
+
+void ScrollbarController::StartAutoScrollAnimation(const float velocity,
+                                                   ElementId element_id) {
+  // Autoscroll and thumb drag are mutually exclusive. Both can't be active at
+  // the same time.
+  DCHECK(!drag_anchor_relative_to_thumb_.has_value());
+  DCHECK_NE(velocity, 0);
+
   // scroll_node is set up while handling GSB. If there's no node to scroll, we
   // don't need to create any animation for it.
   ScrollTree& scroll_tree =
@@ -306,8 +344,7 @@ void ScrollbarController::StartAutoScrollAnimation(
     return;
 
   layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
-  ScrollbarOrientation orientation =
-      currently_captured_scrollbar_->orientation();
+
   // TODO(arakeri): The animation needs to be readjusted if the scroller length
   // changes. Tracked here: crbug.com/972485
   float scroll_layer_length =
@@ -315,29 +352,26 @@ void ScrollbarController::StartAutoScrollAnimation(
 
   gfx::ScrollOffset current_offset =
       scroll_tree.current_scroll_offset(scroll_node->element_id);
-  gfx::Vector2dF target_offset;
 
   // Determine the max offset for the scroll based on the scrolling direction.
-  // Negative scroll_delta indicates backwards scrolling whereas a positive
-  // scroll_delta indicates forwards scrolling.
-  float scroll_delta = 0;
-  if (orientation == ScrollbarOrientation::VERTICAL) {
-    DCHECK_NE(scroll_offset.y(), 0);
-    scroll_delta = scroll_offset.y();
-    float final_offset = scroll_delta < 0 ? 0 : scroll_layer_length;
-    target_offset = gfx::Vector2dF(current_offset.x(), final_offset);
-  } else {
-    DCHECK_NE(scroll_offset.x(), 0);
-    scroll_delta = scroll_offset.x();
-    float final_offset = scroll_delta < 0 ? 0 : scroll_layer_length;
-    target_offset = gfx::Vector2dF(final_offset, current_offset.y());
-  }
+  // Negative scroll velocity indicates backwards scrolling whereas a positive
+  // value indicates forwards scrolling.
+  const float target_offset = velocity < 0 ? 0 : scroll_layer_length;
+  const gfx::Vector2dF target_offset_vector =
+      currently_captured_scrollbar_->orientation() ==
+              ScrollbarOrientation::VERTICAL
+          ? gfx::Vector2dF(current_offset.x(), target_offset)
+          : gfx::Vector2dF(target_offset, current_offset.y());
 
-  autoscroll_state_ = scroll_delta < 0 ? AutoScrollState::AUTOSCROLL_BACKWARD
-                                       : AutoScrollState::AUTOSCROLL_FORWARD;
-  float autoscroll_velocity = std::abs(scroll_delta) * kAutoscrollMultiplier;
-  layer_tree_host_impl_->AutoScrollAnimationCreate(scroll_node, target_offset,
-                                                   autoscroll_velocity);
+  autoscroll_state_ = AutoScrollState();
+  autoscroll_state_->velocity = velocity;
+  autoscroll_state_->scroll_layer_length = scroll_layer_length;
+  autoscroll_state_->direction = velocity < 0
+                                     ? AutoScrollDirection::AUTOSCROLL_BACKWARD
+                                     : AutoScrollDirection::AUTOSCROLL_FORWARD;
+
+  layer_tree_host_impl_->AutoScrollAnimationCreate(
+      scroll_node, target_offset_vector, std::abs(velocity));
 }
 
 // Performs hit test and prepares scroll deltas that will be used by GSE.
@@ -352,7 +386,7 @@ InputHandlerPointerResult ScrollbarController::HandleMouseUp(
   // TODO(arakeri): This needs to be moved to ScrollOffsetAnimationsImpl as it
   // has knowledge about what type of animation is running. crbug.com/976353
   // Only abort the animation if it is an "autoscroll" animation.
-  if (autoscroll_state_ != AutoScrollState::NO_AUTOSCROLL)
+  if (autoscroll_state_.has_value())
     layer_tree_host_impl_->mutator_host()->ScrollAnimationAbort();
 
   if (cancelable_autoscroll_task_) {
@@ -361,7 +395,7 @@ InputHandlerPointerResult ScrollbarController::HandleMouseUp(
   }
 
   drag_anchor_relative_to_thumb_ = base::nullopt;
-  autoscroll_state_ = AutoScrollState::NO_AUTOSCROLL;
+  autoscroll_state_ = base::nullopt;
   return scroll_result;
 }
 

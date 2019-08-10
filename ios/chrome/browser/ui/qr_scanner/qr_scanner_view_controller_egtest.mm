@@ -119,11 +119,9 @@ void ShowQRScanner() {
       waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
 
   // Tap the QR Code scanner button in the keyboard accessory view.
-  id<GREYMatcher> matcher =
-      grey_allOf(grey_accessibilityLabel(@"QR code Search"),
-                 grey_kindOfClass([UIButton class]), nil);
-
-  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(@"QR code Search")]
+      performAction:grey_tap()];
 }
 
 // Taps the |button|.

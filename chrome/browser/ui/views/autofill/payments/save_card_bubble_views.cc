@@ -53,7 +53,7 @@ void SaveCardBubbleViews::SyncPromoDelegate::OnEnableSync(
 SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
                                          content::WebContents* web_contents,
                                          SaveCardBubbleController* controller)
-    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
   DCHECK(controller);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SAVE_CARD);

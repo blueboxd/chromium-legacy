@@ -632,7 +632,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       !profile->IsOffTheRecord())
     return &NewWebUI<SigninEmailConfirmationUI>;
   if (url.host_piece() == chrome::kChromeUIWelcomeHost &&
-      welcome::IsOnboardingEnabled(profile))
+      welcome::IsEnabled(profile))
     return &NewWebUI<WelcomeUI>;
 #endif
 

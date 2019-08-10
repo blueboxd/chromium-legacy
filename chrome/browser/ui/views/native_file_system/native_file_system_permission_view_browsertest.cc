@@ -17,6 +17,7 @@ class NativeFileSystemPermissionViewTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     base::FilePath path;
+    url::Origin origin = kTestOrigin;
     bool is_directory = false;
     if (name == "LongFileName") {
       path = base::FilePath(FILE_PATH_LITERAL(
@@ -24,13 +25,26 @@ class NativeFileSystemPermissionViewTest : public DialogBrowserTest {
     } else if (name == "Folder") {
       path = base::FilePath(FILE_PATH_LITERAL("/bar/MyProject"));
       is_directory = true;
+    } else if (name == "LongOrigin") {
+      path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
+      origin =
+          url::Origin::Create(GURL("https://"
+                                   "longextendedsubdomainnamewithoutdashesinord"
+                                   "ertotestwordwrapping.appspot.com"));
+    } else if (name == "FileOrigin") {
+      path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
+      origin = url::Origin::Create(GURL("file:///foo/bar/bla"));
+    } else if (name == "ExtensionOrigin") {
+      path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
+      origin = url::Origin::Create(GURL(
+          "chrome-extension://ehoadneljpdggcbbknedodolkkjodefl/capture.html"));
     } else if (name == "default") {
       path = base::FilePath(FILE_PATH_LITERAL("/foo/README.txt"));
     } else {
       NOTREACHED() << "Unimplemented test: " << name;
     }
     widget_ = NativeFileSystemPermissionView::ShowDialog(
-        kTestOrigin, path, is_directory,
+        origin, path, is_directory,
         base::BindLambdaForTesting([&](PermissionAction result) {
           callback_called_ = true;
           callback_result_ = result;
@@ -91,5 +105,20 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
 }
 
 IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest, InvokeUi_Folder) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
+                       InvokeUi_LongOrigin) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
+                       InvokeUi_FileOrigin) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
+                       InvokeUi_ExtensionOrigin) {
   ShowAndVerifyUi();
 }

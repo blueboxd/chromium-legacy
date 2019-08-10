@@ -601,4 +601,8 @@ void FileSystemDispatcher::RemoveOperationPtr(int operation_id) {
   cancellable_operations_.erase(it);
 }
 
+void FileSystemDispatcher::Prefinalize() {
+  op_listeners_.CloseAllBindings();
+}
+
 }  // namespace blink

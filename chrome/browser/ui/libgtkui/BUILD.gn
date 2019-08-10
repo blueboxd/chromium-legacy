@@ -17,8 +17,6 @@ jumbo_component("libgtkui") {
     "app_indicator_icon_menu.h",
     "gtk_background_painter.cc",
     "gtk_background_painter.h",
-    "gtk_event_loop.cc",
-    "gtk_event_loop.h",
     "gtk_key_bindings_handler.cc",
     "gtk_key_bindings_handler.h",
     "gtk_ui.cc",
@@ -48,8 +46,6 @@ jumbo_component("libgtkui") {
     "skia_utils_gtk.h",
     "unity_service.cc",
     "unity_service.h",
-    "x11_input_method_context_impl_gtk.cc",
-    "x11_input_method_context_impl_gtk.h",
   ]
 
   if (gtk_version <= 3) {
@@ -112,10 +108,8 @@ jumbo_component("libgtkui") {
     "//ui/events:dom_keyboard_layout",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
-    "//ui/events/platform/x11",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/gfx/x",
     "//ui/native_theme",
     "//ui/resources",
     "//ui/shell_dialogs",
@@ -125,4 +119,18 @@ jumbo_component("libgtkui") {
   public_deps = [
     "//chrome/browser:theme_properties",
   ]
+
+  if (use_x11) {
+    sources += [
+      "gtk_event_loop_x11.cc",
+      "gtk_event_loop_x11.h",
+      "x11_input_method_context_impl_gtk.cc",
+      "x11_input_method_context_impl_gtk.h",
+    ]
+
+    deps += [
+      "//ui/events/platform/x11",
+      "//ui/gfx/x",
+    ]
+  }
 }

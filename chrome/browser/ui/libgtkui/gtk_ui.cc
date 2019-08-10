@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
 
-#include <dlfcn.h>
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
-#include <math.h>
 #include <pango/pango.h>
 
 #include <cmath>
@@ -27,7 +25,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/libgtkui/app_indicator_icon.h"
-#include "chrome/browser/ui/libgtkui/gtk_event_loop.h"
 #include "chrome/browser/ui/libgtkui/gtk_key_bindings_handler.h"
 #include "chrome/browser/ui/libgtkui/gtk_status_icon.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
@@ -39,7 +36,6 @@
 #include "chrome/browser/ui/libgtkui/settings_provider_gtk.h"
 #include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
 #include "chrome/browser/ui/libgtkui/unity_service.h"
-#include "chrome/browser/ui/libgtkui/x11_input_method_context_impl_gtk.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "printing/buildflags/buildflags.h"
@@ -47,6 +43,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/ime/linux/fake_input_method_context.h"
+#include "ui/base/ime/linux/linux_input_method_context.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -60,8 +58,6 @@
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/x/x11.h"
-#include "ui/gfx/x/x11_types.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/views/controls/button/button.h"
@@ -73,6 +69,13 @@
 
 #if defined(USE_GIO)
 #include "chrome/browser/ui/libgtkui/settings_provider_gsettings.h"
+#endif
+
+#if defined(USE_X11)
+#include "chrome/browser/ui/libgtkui/gtk_event_loop_x11.h"  // nogncheck
+#include "chrome/browser/ui/libgtkui/x11_input_method_context_impl_gtk.h"  // nogncheck
+#include "ui/gfx/x/x11.h"        // nogncheck
+#include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -383,8 +386,10 @@ void GtkUi::Initialize() {
 
   indicators_count = 0;
 
-  // Instantiate the singleton instance of GtkEventLoop.
-  GtkEventLoop::GetInstance();
+#if defined(USE_X11)
+  // Instantiate the singleton instance of GtkEventLoopX11.
+  GtkEventLoopX11::GetInstance();
+#endif
 }
 
 bool GtkUi::GetTint(int id, color_utils::HSL* tint) const {
@@ -648,8 +653,13 @@ void GtkUi::SetWindowFrameAction(WindowFrameActionSource source,
 std::unique_ptr<ui::LinuxInputMethodContext> GtkUi::CreateInputMethodContext(
     ui::LinuxInputMethodContextDelegate* delegate,
     bool is_simple) const {
+#if defined(USE_X11)
   return std::unique_ptr<ui::LinuxInputMethodContext>(
       new X11InputMethodContextImplGtk(delegate, is_simple));
+#else
+  NOTIMPLEMENTED();
+  return std::make_unique<ui::FakeInputMethodContext>();
+#endif
 }
 
 gfx::FontRenderParams GtkUi::GetDefaultFontRenderParams() const {
@@ -957,6 +967,7 @@ void GtkUi::UpdateColors() {
 }
 
 void GtkUi::UpdateCursorTheme() {
+#if defined(USE_X11)
   GtkSettings* settings = gtk_settings_get_default();
 
   gchar* theme = nullptr;
@@ -970,6 +981,14 @@ void GtkUi::UpdateCursorTheme() {
     XcursorSetDefaultSize(gfx::GetXDisplay(), size);
 
   g_free(theme);
+#else
+  // TODO(thomasanderson): GtkUi shouldn't be the class to make X11 or wayland
+  // calls. Instead, this function should be a getter for X11
+  // (XCursorSetTheme/XcursorSetDefaultSize) and Wayland (wl_cursor_theme_load)
+  // cursor code to call into. In addition, cursor theme name/size changes are
+  // not handled, so an observer interface should be added as well.
+  NOTIMPLEMENTED();
+#endif
 }
 
 void GtkUi::UpdateDefaultFont() {

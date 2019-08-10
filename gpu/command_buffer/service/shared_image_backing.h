@@ -13,7 +13,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
-#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_gles2_export.h"
@@ -83,11 +82,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Destroys the underlying backing. Must be called before destruction.
   virtual void Destroy() = 0;
 
-#if defined(OS_WIN)
-  // Swaps buffers of the swap chain associated with this backing. Returns true
-  // on success.
   virtual bool PresentSwapChain();
-#endif  // OS_WIN
 
   // Allows the backing to attach additional data to the dump or dump
   // additional sub paths.

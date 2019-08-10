@@ -19,7 +19,7 @@ class PLATFORM_EXPORT DarkModeIconClassifier : public DarkModeImageClassifier {
   ~DarkModeIconClassifier() = default;
 
   DarkModeClassification ClassifyWithFeatures(
-      const Vector<float> features) override;
+      const Features& features) override;
 };
 
 }  // namespace blink

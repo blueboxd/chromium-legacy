@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import android.content.Context;
-
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -36,19 +34,18 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
     }
 
     @Override
-    public AutofillAssistantModuleEntry getModuleEntryIfInstalled(Context context) {
+    public AutofillAssistantModuleEntry getModuleEntryIfInstalled() {
         if (mNotInstalled) return null;
-        return super.getModuleEntryIfInstalled(context);
+        return super.getModuleEntryIfInstalled();
     }
 
     @Override
-    public void getModuleEntry(
-            Context context, Tab tab, Callback<AutofillAssistantModuleEntry> callback) {
+    public void getModuleEntry(Tab tab, Callback<AutofillAssistantModuleEntry> callback) {
         if (mCannotInstall) {
             callback.onResult(null);
             return;
         }
         mNotInstalled = false;
-        super.getModuleEntry(context, tab, callback);
+        super.getModuleEntry(tab, callback);
     }
 }

@@ -97,8 +97,9 @@ void SafetyTipsComponentInstallerPolicy::ComponentReady(
   // The default proto will always be a placeholder since the updated versions
   // are not checked in to the repo. Simply load whatever the component updater
   // gave us without checking the default proto from the resource bundle.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&LoadSafetyTipsProtoFromDisk, pb_path),
       base::BindOnce(&safety_tips::SetProto));
 }

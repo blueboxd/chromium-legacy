@@ -231,8 +231,8 @@ void ArCoreDevice::OnDrawingSurfaceDestroyed() {
 void ArCoreDevice::OnSessionEnded() {
   DVLOG(1) << __func__;
 
-  // This may be a no-op in case it's destroyed already.
-  arcore_session_utils_->DestroyDrawingSurface();
+  // This may be a no-op in case session end was initiated from the Java side.
+  arcore_session_utils_->EndSession();
 
   // The GL thread had initialized its context with a drawing_widget based on
   // the ArImmersiveOverlay's Surface, and the one it has is no longer valid.

@@ -152,9 +152,8 @@ CrOSComponentInstallerPolicy::OnCustomInstall(
 void CrOSComponentInstallerPolicy::OnCustomUninstall() {
   cros_component_installer_->UnregisterCompatiblePath(name_);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&FinishCustomUninstallOnUIThread, name_));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&FinishCustomUninstallOnUIThread, name_));
 }
 
 void CrOSComponentInstallerPolicy::ComponentReady(
@@ -256,8 +255,9 @@ bool CrOSComponentInstaller::Unload(const std::string& name) {
 }
 
 void CrOSComponentInstaller::RegisterInstalled() {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()}, base::BindOnce(GetInstalled),
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::BindOnce(GetInstalled),
       base::BindOnce(&CrOSComponentInstaller::RegisterN,
                      base::Unretained(this)));
 }

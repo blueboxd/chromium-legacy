@@ -7,24 +7,22 @@
 #include <utility>
 #include <vector>
 
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromecast/bindings/grit/resources.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/messaging/transferable_message_mojom_traits.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace chromecast {
 namespace bindings {
 
 namespace {
 
-const char kNamedMessagePortConnectorJsPath[] =
-    FILE_PATH_LITERAL("chromecast/bindings/named_message_port_connector.js");
 const char kNamedMessagePortConnectorBindingsId[] =
     "NAMED_MESSAGE_PORT_CONNECTOR";
 const char kControlPortConnectMessage[] = "cast.master.connect";
@@ -32,22 +30,10 @@ const char kControlPortConnectMessage[] = "cast.master.connect";
 }  // namespace
 
 BindingsManagerCast::BindingsManagerCast() : cast_web_contents_(nullptr) {
-  // Add the script providing the connection API into the Page.
-  base::FilePath named_message_port_connector_path;
-  bool path_service_result = base::PathService::Get(
-      base::DIR_SOURCE_ROOT, &named_message_port_connector_path);
-  DCHECK(path_service_result);
-
-  named_message_port_connector_path =
-      named_message_port_connector_path.AppendASCII(
-          kNamedMessagePortConnectorJsPath);
-
-  std::string port_connector_js;
-  CHECK(base::ReadFileToString(named_message_port_connector_path,
-                               &port_connector_js));
-
   // NamedMessagePortConnector binding will be injected into page first.
-  AddBinding(kNamedMessagePortConnectorBindingsId, port_connector_js);
+  AddBinding(kNamedMessagePortConnectorBindingsId,
+             ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+                 IDR_PORT_CONNECTOR_JS));
 }
 
 BindingsManagerCast::~BindingsManagerCast() = default;

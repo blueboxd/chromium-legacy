@@ -99,7 +99,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
     DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
     embedded_test_server()->StartAcceptingConnections();
     GURL url(embedded_test_server()->GetURL(kVideoCaptureHtmlFile));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
 
     const std::string javascript_to_execute = base::StringPrintf(
         kStartVideoCaptureAndVerify, kVideoSize.width(), kVideoSize.height());

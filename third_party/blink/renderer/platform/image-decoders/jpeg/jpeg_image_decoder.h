@@ -48,6 +48,7 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   size_t DecodedYUVWidthBytes(int component) const override;
   bool CanDecodeToYUV() override;
   void DecodeToYUV() override;
+  SkYUVColorSpace GetYUVColorSpace() const override;
   void SetImagePlanes(std::unique_ptr<ImagePlanes>) override;
   Vector<SkISize> GetSupportedDecodeSizes() const override;
   bool HasImagePlanes() const { return image_planes_.get(); }

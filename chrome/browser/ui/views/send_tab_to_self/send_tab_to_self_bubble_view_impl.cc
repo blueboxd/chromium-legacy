@@ -40,7 +40,7 @@ SendTabToSelfBubbleViewImpl::SendTabToSelfBubbleViewImpl(
     views::View* anchor_view,
     content::WebContents* web_contents,
     SendTabToSelfBubbleController* controller)
-    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       web_contents_(web_contents),
       controller_(controller) {
   DCHECK(controller);

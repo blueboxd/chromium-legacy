@@ -5,23 +5,28 @@
 #ifndef DEVICE_GAMEPAD_DUALSHOCK4_CONTROLLER_MAC_H_
 #define DEVICE_GAMEPAD_DUALSHOCK4_CONTROLLER_MAC_H_
 
-#include "device/gamepad/dualshock4_controller_base.h"
-
 #include <IOKit/hid/IOHIDManager.h>
+
+#include "base/memory/weak_ptr.h"
+#include "device/gamepad/dualshock4_controller_base.h"
 
 namespace device {
 
-class Dualshock4ControllerMac : public Dualshock4ControllerBase {
+class Dualshock4ControllerMac final : public Dualshock4ControllerBase {
  public:
   Dualshock4ControllerMac(IOHIDDeviceRef device_ref);
   ~Dualshock4ControllerMac() override;
 
+  // AbstractHapticGamepad implementation.
   void DoShutdown() override;
+  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
 
+  // Dualshock4ControllerBase implementation.
   size_t WriteOutputReport(void* report, size_t report_length) override;
 
  private:
   IOHIDDeviceRef device_ref_;
+  base::WeakPtrFactory<Dualshock4ControllerMac> weak_factory_{this};
 };
 
 }  // namespace device

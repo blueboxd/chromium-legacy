@@ -182,7 +182,7 @@ void SpeechRecognizerOnIO::Stop() {
 
 void SpeechRecognizerOnIO::NotifyRecognitionStateChanged(
     SpeechRecognitionState new_state) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&IOBrowserUIInterface::OnSpeechRecognitionStateChanged,
                      browser_ui_, new_state));
@@ -224,7 +224,7 @@ void SpeechRecognizerOnIO::OnRecognitionResults(
       final_count++;
     result_str += result->hypotheses[0]->utterance;
   }
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&IOBrowserUIInterface::OnSpeechResult, browser_ui_,
                      result_str, final_count == results.size()));
@@ -268,7 +268,7 @@ void SpeechRecognizerOnIO::OnAudioLevelsChange(int session_id,
   DCHECK_LE(0.0, noise_volume);
   DCHECK_GE(1.0, noise_volume);
   volume = std::max(0.0f, volume - noise_volume);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&IOBrowserUIInterface::OnSpeechSoundLevelChanged,
                      browser_ui_, volume));
@@ -322,7 +322,7 @@ void SpeechRecognizer::Start() {
 
   // It is safe to use unretained because speech_recognizer_on_io_ only gets
   // deleted on IO thread when SpeechRecognizer is deleted.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&SpeechRecognizerOnIO::Start,
                      base::Unretained(speech_recognizer_on_io_.get()),
@@ -340,7 +340,7 @@ void SpeechRecognizer::Stop() {
 
   // It is safe to use unretained because speech_recognizer_on_io_ only gets
   // deleted on IO thread when SpeechRecognizer is deleted.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&SpeechRecognizerOnIO::Stop,
                      base::Unretained(speech_recognizer_on_io_.get())));

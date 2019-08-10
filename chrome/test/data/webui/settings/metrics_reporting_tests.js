@@ -25,7 +25,7 @@ suite('metrics reporting', function() {
     let toggled;
     return testBrowserProxy.whenCalled('getMetricsReporting')
         .then(function() {
-          return PolymerTest.flushTasks();
+          return test_util.flushTasks();
         })
         .then(function() {
           const control = page.$.metricsReportingControl;

@@ -26,6 +26,31 @@ cr.exportPath('settings');
  */
 let Credential;
 
+/**
+ * EnrollmentStatus represents the current status of an enrollment suboperation,
+ * where 'remaining' indicates the number of samples left, 'status' indicates
+ * the last enrollment status, and 'code' indicates the CtapDeviceResponseCode.
+ * For each enrollment sample, 'status' is set - when the enrollment operation
+ * reaches an end state, 'code' is set. A 'code' of CtapDeviceResponseCode 0
+ * indicates successful enrollment.
+ *
+ * @typedef {{status: ?number,
+ *            code: ?number,
+ *            remaining: number}}
+ * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
+ */
+let EnrollmentStatus;
+
+/**
+ * Enrollment represents a valid fingerprint template stored on a security key,
+ * which can be used in a user verification request.
+ *
+ * @typedef {{name: string,
+ *            id: string}}
+ * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
+ */
+let Enrollment;
+
 cr.define('settings', function() {
   /** @interface */
   class SecurityKeysPINBrowserProxy {
@@ -118,6 +143,70 @@ cr.define('settings', function() {
     close() {}
   }
 
+  /** @interface */
+  class SecurityKeysBioEnrollProxy {
+    /**
+     * Starts a biometric enrollment operation.
+     *
+     * Callers must listen to errors that can occur during this operation via a
+     * 'security-keys-bio-enrollment-error' WebUIListener. Values received via
+     * this listener are localized error strings. The WebListener may fire at
+     * any point during the operation (enrolling, deleting, etc) and when it
+     * fires, the operation must be considered terminated.
+     *
+     * @return {!Promise} resolves when the handler is ready for the
+     *     authentcation PIN to be provided.
+     */
+    startBioEnroll() {}
+
+    /**
+     * Provides a PIN for a biometric enrollment operation. The startBioEnroll()
+     * Promise must have resolved before this method may be called.
+     *
+     * @return {!Promise<?number>} resolves with null if the PIN was correct,
+     *     the number of retries remaining otherwise.
+     */
+    providePIN(pin) {}
+
+    /**
+     * Enumerates enrollments on the authenticator. A correct PIN must have
+     * previously been supplied via bioEnrollProvidePIN() before this method may
+     * be called.
+     *
+     * @return {!Promise<!Array<!Enrollment>>}
+     */
+    enumerateEnrollments() {}
+
+    /**
+     * Move the operation into enrolling mode, which instructs the authenticator
+     * to start sampling for touches.
+     *
+     * Callers must listen to status updates that will occur during this
+     * suboperation via a 'security-keys-bio-enroll-status' WebListener. Values
+     * received via this listener are DictionaryValues with two elements (see
+     * below). When the WebListener fires, the authenticator has either timed
+     * out waiting for a touch, or has successfully processed a touch. Any
+     * errors will fire the 'security-keys-bio-enrollment-error' WebListener.
+     *
+     * @return {!Promise<!EnrollmentStatus>} resolves when the enrollment
+     *     operation is finished successfully.
+     */
+    startEnrolling() {}
+
+    /**
+     * Cancel an ongoing enrollment suboperation. This can safely be called at
+     * any time and only has an impact when the authenticator is currently
+     * sampling.
+     *
+     * @return {!Promise} resolves when the ongoing enrollment suboperation has
+     *     been cancelled.
+     */
+    cancelEnrollment() {}
+
+    /** Cancels all outstanding operations. */
+    close() {}
+  }
+
   /** @implements {settings.SecurityKeysPINBrowserProxy} */
   class SecurityKeysPINBrowserProxyImpl {
     /** @override */
@@ -182,11 +271,45 @@ cr.define('settings', function() {
     }
   }
 
+  /** @implements {settings.SecurityKeysBioEnrollProxy} */
+  class SecurityKeysBioEnrollProxyImpl {
+    /** @override */
+    startBioEnroll() {
+      return cr.sendWithPromise('securityKeyBioEnrollStart');
+    }
+
+    /** @override */
+    providePIN(pin) {
+      return cr.sendWithPromise('securityKeyBioEnrollProvidePIN', pin);
+    }
+
+    /** @override */
+    enumerateEnrollments() {
+      return cr.sendWithPromise('securityKeyBioEnrollEnumerate');
+    }
+
+    /** @override */
+    startEnrolling() {
+      return cr.sendWithPromise('securityKeyBioEnrollStartEnrolling');
+    }
+
+    /** @override */
+    cancelEnrollment() {
+      return cr.sendWithPromise('securityKeyBioEnrollCancel');
+    }
+
+    /** @override */
+    close() {
+      return chrome.send('securityKeyBioEnrollClose');
+    }
+  }
+
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
   cr.addSingletonGetter(SecurityKeysPINBrowserProxyImpl);
   cr.addSingletonGetter(SecurityKeysCredentialBrowserProxyImpl);
   cr.addSingletonGetter(SecurityKeysResetBrowserProxyImpl);
+  cr.addSingletonGetter(SecurityKeysBioEnrollProxyImpl);
 
   return {
     SecurityKeysPINBrowserProxy: SecurityKeysPINBrowserProxy,
@@ -196,5 +319,7 @@ cr.define('settings', function() {
         SecurityKeysCredentialBrowserProxyImpl,
     SecurityKeysResetBrowserProxy: SecurityKeysResetBrowserProxy,
     SecurityKeysResetBrowserProxyImpl: SecurityKeysResetBrowserProxyImpl,
+    SecurityKeysBioEnrollProxy: SecurityKeysBioEnrollProxy,
+    SecurityKeysBioEnrollProxyImpl: SecurityKeysBioEnrollProxyImpl,
   };
 });

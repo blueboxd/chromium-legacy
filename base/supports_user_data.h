@@ -20,6 +20,8 @@ namespace base {
 class BASE_EXPORT SupportsUserData {
  public:
   SupportsUserData();
+  SupportsUserData(SupportsUserData&&);
+  SupportsUserData& operator=(SupportsUserData&&);
 
   // Derive from this class and add your own data members to associate extra
   // information with this object. Alternatively, add this as a public base

@@ -61,7 +61,7 @@ void WelcomeHandler::OnSyncConfirmationUIClosed(
   if (result != LoginUIService::ABORT_SIGNIN) {
     result_ = WelcomeResult::SIGNED_IN;
 
-    // When signed in from NUX onboarding flow, it's possible to come back to
+    // When signed in from welcome flow, it's possible to come back to
     // chrome://welcome/... after closing sync-confirmation UI. If current URL
     // matches such a case, do not navigate away.
     if (!is_redirected_welcome_impression_) {
@@ -110,7 +110,7 @@ void WelcomeHandler::HandleUserDecline(const base::ListValue* args) {
 
 // Override from WebUIMessageHandler.
 void WelcomeHandler::RegisterMessages() {
-  // Check if this instance of WelcomeHandler is spawned by onboarding flow
+  // Check if this instance of WelcomeHandler is spawned by welcome flow
   // redirecting users back to welcome page. This is done here instead of
   // constructor, because web_ui hasn't loaded yet at that time.
   is_redirected_welcome_impression_ = isValidRedirectUrl();

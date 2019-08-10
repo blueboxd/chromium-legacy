@@ -38,6 +38,10 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -215,6 +219,12 @@ class NetworkContextConfigurationBrowserTest
   }
 
   ~NetworkContextConfigurationBrowserTest() override {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+  }
 
   void SetUpOnMainThread() override {
     // Used in a bunch of proxy tests. Should not resolve.
@@ -626,6 +636,73 @@ class NetworkContextConfigurationBrowserTest
            content::IsInProcessNetworkService();
   }
 
+  enum class WayToEnableSSLConfig { kViaPrefs, kViaPolicy };
+
+  // This helper function enables the kSSLVersionMin pref and tests that this
+  // pref is respected. kSSLVersionMin can be set in two ways: over prefs
+  // directly or over a policy. |way_to_enable| is used to determine the way to
+  // set the pref.
+  void TestEnablingSSLVersionMin(WayToEnableSSLConfig way_to_enable) {
+    // Start a TLS 1.0 server.
+    net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
+    net::SSLServerConfig ssl_config;
+    ssl_config.version_min = net::SSL_PROTOCOL_VERSION_TLS1;
+    ssl_config.version_max = net::SSL_PROTOCOL_VERSION_TLS1;
+    ssl_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
+    ssl_server.AddDefaultHandlers(GetChromeTestDataDir());
+    ASSERT_TRUE(ssl_server.Start());
+
+    std::unique_ptr<network::ResourceRequest> request =
+        std::make_unique<network::ResourceRequest>();
+    request->url = ssl_server.GetURL("/echo");
+    content::SimpleURLLoaderTestHelper simple_loader_helper;
+    std::unique_ptr<network::SimpleURLLoader> simple_loader =
+        network::SimpleURLLoader::Create(std::move(request),
+                                         TRAFFIC_ANNOTATION_FOR_TESTS);
+    simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        loader_factory(), simple_loader_helper.GetCallback());
+    simple_loader_helper.WaitForCallback();
+    ASSERT_TRUE(simple_loader_helper.response_body());
+    EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
+
+    if (way_to_enable == WayToEnableSSLConfig::kViaPrefs) {
+      // Disallow TLS 1.0 via prefs.
+      g_browser_process->local_state()->SetString(prefs::kSSLVersionMin,
+                                                  switches::kSSLVersionTLSv11);
+    } else {
+      // Disallow TLS 1.0 via policy.
+      policy::PolicyMap values;
+      values.Set(policy::key::kSSLVersionMin, policy::POLICY_LEVEL_MANDATORY,
+                 policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(switches::kSSLVersionTLSv11),
+                 nullptr);
+
+      base::RunLoop run_loop;
+      PrefChangeRegistrar pref_change_registrar;
+      pref_change_registrar.Init(g_browser_process->local_state());
+      pref_change_registrar.Add(prefs::kSSLVersionMin, run_loop.QuitClosure());
+      provider_.UpdateChromePolicy(values);
+
+      run_loop.Run();
+    }
+
+    g_browser_process->system_network_context_manager()
+        ->FlushSSLConfigManagerForTesting();
+
+    // With the new prefs, requests to the server should be blocked.
+    request = std::make_unique<network::ResourceRequest>();
+    request->url = ssl_server.GetURL("/echo");
+    content::SimpleURLLoaderTestHelper simple_loader_helper2;
+    simple_loader = network::SimpleURLLoader::Create(
+        std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
+    simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        loader_factory(), simple_loader_helper2.GetCallback());
+    simple_loader_helper2.WaitForCallback();
+    EXPECT_FALSE(simple_loader_helper2.response_body());
+    EXPECT_EQ(net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH,
+              simple_loader->NetError());
+  }
+
  private:
   void SimulateNetworkServiceCrashIfNecessary() {
     if (GetParam().network_service_state != NetworkServiceState::kRestarted ||
@@ -654,6 +731,7 @@ class NetworkContextConfigurationBrowserTest
   std::unique_ptr<net::test_server::ControllableHttpResponse>
       controllable_http_response_;
 
+  policy::MockConfigurationPolicyProvider provider_;
   // Used in tests that need a live request during browser shutdown.
   std::unique_ptr<network::SimpleURLLoader> live_during_shutdown_simple_loader_;
   std::unique_ptr<content::SimpleURLLoaderTestHelper>
@@ -1096,47 +1174,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Hsts) {
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_SSLConfig) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
-  // Start a TLS 1.0 server.
-  net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  net::SSLServerConfig ssl_config;
-  ssl_config.version_min = net::SSL_PROTOCOL_VERSION_TLS1;
-  ssl_config.version_max = net::SSL_PROTOCOL_VERSION_TLS1;
-  ssl_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config);
-  ssl_server.AddDefaultHandlers(GetChromeTestDataDir());
-  ASSERT_TRUE(ssl_server.Start());
-
-  std::unique_ptr<network::ResourceRequest> request =
-      std::make_unique<network::ResourceRequest>();
-  request->url = ssl_server.GetURL("/echo");
-  content::SimpleURLLoaderTestHelper simple_loader_helper;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory(), simple_loader_helper.GetCallback());
-  simple_loader_helper.WaitForCallback();
-  ASSERT_TRUE(simple_loader_helper.response_body());
-  EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
-
-  // Disallow TLS 1.0 via prefs.
-  g_browser_process->local_state()->SetString(prefs::kSSLVersionMin,
-                                              switches::kSSLVersionTLSv11);
-  // Flush the changes to the network process, to avoid a race between updating
-  // the config and the next request.
-  g_browser_process->system_network_context_manager()
-      ->FlushSSLConfigManagerForTesting();
-
-  // With the new prefs, requests to the server should be blocked.
-  request = std::make_unique<network::ResourceRequest>();
-  request->url = ssl_server.GetURL("/echo");
-  content::SimpleURLLoaderTestHelper simple_loader_helper2;
-  simple_loader = network::SimpleURLLoader::Create(
-      std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory(), simple_loader_helper2.GetCallback());
-  simple_loader_helper2.WaitForCallback();
-  EXPECT_FALSE(simple_loader_helper2.response_body());
-  EXPECT_EQ(net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH, simple_loader->NetError());
+  TestEnablingSSLVersionMin(WayToEnableSSLConfig::kViaPrefs);
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, SSLConfig) {
@@ -1164,6 +1202,16 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, SSLConfig) {
   simple_loader_helper.WaitForCallback();
   EXPECT_FALSE(simple_loader_helper.response_body());
   EXPECT_EQ(net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH, simple_loader->NetError());
+}
+
+// This test does the same as
+// 'NetworkContextConfigurationBrowserTest.PRE_SSLConfig' but with the
+// difference that the SSLVersionMin is set via a policy (not via the prefs).
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       SSLVersionMinSetViaPolicy) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
+  TestEnablingSSLVersionMin(WayToEnableSSLConfig::kViaPolicy);
 }
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {

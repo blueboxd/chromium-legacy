@@ -145,7 +145,7 @@ class FakeSpeechRecognitionManager : public content::SpeechRecognitionManager {
 
   void FakeSpeechRecognitionEvent(FakeRecognitionEvent event) {
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(
               &FakeSpeechRecognitionManager::FakeSpeechRecognitionEvent,

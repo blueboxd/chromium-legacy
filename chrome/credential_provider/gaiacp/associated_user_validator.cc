@@ -469,6 +469,17 @@ bool AssociatedUserValidator::IsTokenHandleValidForUserInternal(
   if (NeedsToEnrollWithMdm())
     return false;
 
+  if (MdmPasswordRecoveryEnabled()) {
+    base::string16 store_key = GetUserPasswordLsaStoreKey(sid);
+    auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
+    if (!policy->PrivateDataExists(store_key.c_str())) {
+      LOGFN(INFO) << "Enforcing re-auth due to missing password lsa store "
+                     "data for user "
+                  << sid;
+      return false;
+    }
+  }
+
   // This function will start a new query if the current info for the token
   // handle is stale or has not yet been queried. At the end of this function,
   // either we will already have the validity of the token handle or we have a

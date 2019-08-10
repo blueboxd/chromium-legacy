@@ -9,6 +9,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
@@ -42,13 +43,6 @@ constexpr float kInkDropHighlightVisibleOpacity = 0.3f;
 constexpr SkColor kTextAndIconColor = gfx::kGoogleGrey200;
 constexpr SkColor kDisabledTextAndIconColor =
     SkColorSetA(kTextAndIconColor, 0x61);
-
-// The background color when the new desk button is enabled/disabled. The
-// disabled color is 38% opacity of the enabled color.
-// TODO(minch): Migrate to use ControlsLayerType::kInactiveControlBackground in
-// AshColorProvider.
-constexpr SkColor kBackgroundColor = SkColorSetA(SK_ColorWHITE, 0x1A);
-constexpr SkColor kDisabledBackgroundColor = SkColorSetA(SK_ColorWHITE, 0xA);
 
 }  // namespace
 
@@ -86,8 +80,15 @@ void NewDeskButton::UpdateButtonState() {
     overview_session->highlight_controller()->OnViewDestroyingOrDisabling(this);
   }
   SetEnabled(enabled);
+
+  const SkColor background_color =
+      AshColorProvider::Get()->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+          AshColorProvider::AshColorMode::kDark);
+  const SkColor disabled_background_color =
+      AshColorProvider::Get()->GetDisabledColor(background_color);
   SetBackground(views::CreateRoundedRectBackground(
-      enabled ? kBackgroundColor : kDisabledBackgroundColor, kCornerRadius));
+      enabled ? background_color : disabled_background_color, kCornerRadius));
 }
 
 void NewDeskButton::OnButtonPressed() {

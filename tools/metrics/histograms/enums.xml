@@ -24257,8 +24257,8 @@ Called by update_net_error_codes.py.-->
   <int value="2978" label="ToggleEventHandlerDuringParsing"/>
   <int value="2979" label="FragmentDoubleHash"/>
   <int value="2980" label="V8RegExpMatchAllWithNonGlobalRegExp"/>
-  <int value="2981" label="CSSValueOverflowXOverlay"/>
-  <int value="2982" label="CSSValueOverflowYOverlay"/>
+  <int value="2981" label="OBSOLETE_CSSValueOverflowXOverlay"/>
+  <int value="2982" label="OBSOLETE_CSSValueOverflowYOverlay"/>
   <int value="2983" label="ContentIndexAdd"/>
   <int value="2984" label="ContentIndexDelete"/>
   <int value="2985" label="ContentIndexGet"/>
@@ -24271,6 +24271,7 @@ Called by update_net_error_codes.py.-->
   <int value="2992" label="V8SpeechRecognition_Grammars_AttributeSetter"/>
   <int value="2993" label="ContactsManagerSelect"/>
   <int value="2994" label="V8MediaSession_SetPositionState_Method"/>
+  <int value="2995" label="CSSValueOverflowOverlay"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34095,6 +34096,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2123795624" label="ArcSmartTextSelection:enabled"/>
   <int value="-2122048316"
       label="DisplayPersistenceToggleInPermissionPrompts:enabled"/>
+  <int value="-2119958901" label="WebXRAnchors:disabled"/>
   <int value="-2119827860" label="ash-disable-maximize-mode-window-backdrop"/>
   <int value="-2119530966" label="enable-webrtc-dtls12"/>
   <int value="-2119493239" label="enable-app-info-dialog-mac"/>
@@ -36410,6 +36412,7 @@ from previous Chrome versions.
   <int value="1081546525" label="ash-enable-docked-windows"/>
   <int value="1082054180" label="PersistentWindowBounds:disabled"/>
   <int value="1083201516" label="PersistentWindowBounds:enabled"/>
+  <int value="1084972292" label="WebXRAnchors:enabled"/>
   <int value="1085130793" label="LongPressBackForHistory:disabled"/>
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>
   <int value="1088915385" label="new-password-form-parsing:enabled"/>
@@ -44750,6 +44753,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="Found duplicate config">
     Failed to create a server blacklist because it has more than one
     configuration.
+  </int>
+  <int value="5" label="Invalid regular expression">
+    There was an invalid RE2 in the regexps field.
   </int>
 </enum>
 
@@ -55136,12 +55142,24 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Unset"/>
 </enum>
 
+<enum name="SmartLockFindAndConnectToHostResult">
+  <int value="0" label="Found and connected to host"/>
+  <int value="1" label="Canceled, Bluetooth disabled"/>
+  <int value="2" label="Canceled, user entered password"/>
+  <int value="3" label="Connection attempt failure with SecureChannel service"/>
+  <int value="4"
+      label="Timed out (phone is too far, it or its Bluetooth is off, or a
+             connection error occurred)"/>
+</enum>
+
 <enum name="SmartLockGetRemoteStatusResultFailureReason">
-  <int value="0" label="Timed out Bluetooth disabled"/>
-  <int value="1" label="Timed out could not establish authenticated channel"/>
+  <int value="0" label="Canceled, Bluetooth disabled"/>
+  <int value="1"
+      label="(Deprecated) Timed out could not establish authenticated channel"/>
   <int value="2" label="Timed out did not receive remote status update"/>
-  <int value="3" label="User entered password while Bluetooth disabled"/>
-  <int value="4" label="User entered password while connecting"/>
+  <int value="3"
+      label="(Deprecated) User entered password while Bluetooth disabled"/>
+  <int value="4" label="Canceled, user entered password"/>
   <int value="5" label="Authenticated channel dropped"/>
 </enum>
 
@@ -61173,6 +61191,7 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Results do not match"/>
   <int value="1" label="Results match"/>
   <int value="2" label="Results changed"/>
+  <int value="3" label="HitTestData outdated"/>
 </enum>
 
 <enum name="VoiceInteractionEventSource">

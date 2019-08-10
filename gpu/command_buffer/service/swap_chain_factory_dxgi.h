@@ -5,9 +5,11 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SWAP_CHAIN_FACTORY_DXGI_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SWAP_CHAIN_FACTORY_DXGI_H_
 
-#include <windows.h>
+#include <d3d11.h>
 #include <dxgi1_2.h>
+#include <windows.h>
 #include <wrl/client.h>
+
 #include <memory>
 
 #include "base/macros.h"
@@ -65,10 +67,12 @@ class GPU_GLES2_EXPORT SwapChainFactoryDXGI {
       const gfx::ColorSpace& color_space,
       uint32_t usage,
       const Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain,
-      int buffer_index);
+      size_t buffer_index);
+
   // Whether we're using the passthrough command decoder and should generate
   // passthrough textures.
-  bool use_passthrough_ = false;
+  const bool use_passthrough_ = false;
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   DISALLOW_COPY_AND_ASSIGN(SwapChainFactoryDXGI);
 };
 

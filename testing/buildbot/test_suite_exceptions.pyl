@@ -1087,6 +1087,13 @@
       'Lollipop Tablet Tester',
       'Marshmallow Tablet Tester',
     ],
+    'modifications': {
+      'android-pie-x86-fyi-rel': {
+        'swarming': {
+          'shards': 10,
+        },
+      },
+    },
   },
   'network_service_out_of_process_content_shell_test_apk': {
     'remove_from': [
@@ -1446,7 +1453,6 @@
       'Win10 FYI x64 Debug (NVIDIA)',
       'Win7 FYI Debug (AMD)',
       # Disabled due to dbus crashes crbug.com/927465
-      'Linux FYI Experimental Release (Intel HD 630)',
       'Linux FYI Release (Intel HD 630)',
       'Linux FYI Release (NVIDIA)',
       'Linux FYI SkiaRenderer Vulkan (Intel HD 630)',

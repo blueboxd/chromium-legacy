@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog.h"
 
 #include "base/bind.h"
+#include "base/supports_user_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -12,9 +13,10 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/cellular_setup_resources.h"
 #include "chrome/grit/cellular_setup_resources_map.h"
-#include "chromeos/services/cellular_setup/public/mojom/constants.mojom.h"
+#include "chromeos/services/cellular_setup/cellular_setup_base.h"
+#include "chromeos/services/cellular_setup/cellular_setup_impl.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/aura/window.h"
 
 namespace chromeos {
@@ -29,6 +31,37 @@ constexpr int kDialogHeightPx = 850;
 constexpr int kDialogWidthPx = 650;
 
 CellularSetupDialog* dialog_instance = nullptr;
+
+// Used to attach an instance of the CellularSetup service to a BrowserContext.
+class CellularSetupServiceHolder : public base::SupportsUserData::Data {
+ public:
+  CellularSetupServiceHolder() = default;
+  ~CellularSetupServiceHolder() override = default;
+
+  void BindReceiver(mojo::PendingReceiver<mojom::CellularSetup> receiver) {
+    service_.BindRequest(std::move(receiver));
+  }
+
+ private:
+  CellularSetupImpl service_;
+
+  DISALLOW_COPY_AND_ASSIGN(CellularSetupServiceHolder);
+};
+
+const char kCellularSetupServiceHolderKey[] = "cellular_setup_service_holder";
+
+CellularSetupServiceHolder* GetOrCreateServiceHolder(
+    content::BrowserContext* browser_context) {
+  auto* holder = static_cast<CellularSetupServiceHolder*>(
+      browser_context->GetUserData(kCellularSetupServiceHolderKey));
+  if (!holder) {
+    auto new_holder = std::make_unique<CellularSetupServiceHolder>();
+    holder = new_holder.get();
+    browser_context->SetUserData(kCellularSetupServiceHolderKey,
+                                 std::move(new_holder));
+  }
+  return holder;
+}
 
 }  // namespace
 
@@ -100,10 +133,8 @@ CellularSetupDialogUI::~CellularSetupDialogUI() = default;
 
 void CellularSetupDialogUI::BindCellularSetup(
     mojom::CellularSetupRequest request) {
-  service_manager::Connector* connector =
-      content::BrowserContext::GetConnectorFor(
-          web_ui()->GetWebContents()->GetBrowserContext());
-  connector->BindInterface(mojom::kServiceName, std::move(request));
+  GetOrCreateServiceHolder(web_ui()->GetWebContents()->GetBrowserContext())
+      ->BindReceiver(std::move(request));
 }
 
 }  // namespace cellular_setup

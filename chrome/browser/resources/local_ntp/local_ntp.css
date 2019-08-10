@@ -915,38 +915,24 @@ html[dir=rtl] .menu-option {
   visibility: visible;
 }
 
-#customization-menu .bg-sel-tile-wrapper {
-  cursor: pointer;
-  display: inline-block;
-  position: relative;
-  vertical-align: top;
-}
-
 #backgrounds-menu .bg-sel-tile-bg,
 #backgrounds-image-menu .bg-sel-tile-bg {
   border-radius: 4px;
   height: 176px;
+  margin-bottom: 45px;
   margin-inline-end: 8px;
   margin-inline-start: 0;
   margin-top: 0;
   width: 176px;
 }
 
-#backgrounds-menu .bg-sel-tile-wrapper,
-#backgrounds-image-menu .bg-sel-tile-wrapper {
-  height: 176px;
-  margin-bottom: 45px;
-  margin-inline-end: 8px;
-  width: 176px;
-}
-
 /* Remove left/right spacing from the last tile in each row. */
-#backgrounds-menu .bg-sel-tile-wrapper:nth-of-type(3n),
-#backgrounds-image-menu .bg-sel-tile-wrapper:nth-of-type(3n) {
+#backgrounds-menu .bg-sel-tile-bg:nth-of-type(3n),
+#backgrounds-image-menu .bg-sel-tile-bg:nth-of-type(3n) {
   margin-inline-end: 0;
 }
 
-#backgrounds-image-menu .bg-sel-tile-wrapper {
+#backgrounds-image-menu .bg-sel-tile-bg {
   margin-bottom: 8px;
 }
 
@@ -966,12 +952,7 @@ html[dir=rtl] .menu-option {
   }
 }
 
-:not(.using-mouse-nav) :-webkit-any(#backgrounds-menu, #backgrounds-image-menu)
-  .bg-sel-tile-bg.selected:focus-within {
-  outline: auto -webkit-focus-ring-color;
-}
-
-.using-mouse-nav .bg-sel-tile-bg:focus {
+.using-mouse-nav .bg-sel-tile:focus {
   outline: none;
 }
 
@@ -979,7 +960,7 @@ html[dir=rtl] .menu-option {
 #backgrounds-image-menu .bg-sel-tile {
   background-position: center;
   border-radius: 4px;
-  pointer-events: none;
+  cursor: pointer;
 }
 
 #customization-menu .bg-sel-tile-title {
@@ -1133,7 +1114,7 @@ html[dir=rtl] #menu-back {
   }
 }
 
-#customization-menu .bg-sel-tile-bg .selected-circle {
+#customization-menu .bg-sel-tile .selected-circle {
   height: 20px;
   left: initial;
   right: 10px;
@@ -1141,12 +1122,12 @@ html[dir=rtl] #menu-back {
   width: 20px;
 }
 
-html[dir=rtl] #customization-menu .bg-sel-tile-bg .selected-circle {
+html[dir=rtl] #customization-menu .bg-sel-tile .selected-circle {
   left: 10px;
   right: initial;
 }
 
-#customization-menu .bg-sel-tile-bg .selected-check {
+#customization-menu .bg-sel-tile .selected-check {
   height: 24px;
   left: initial;
   right: 9px;
@@ -1154,7 +1135,7 @@ html[dir=rtl] #customization-menu .bg-sel-tile-bg .selected-circle {
   width: 24px;
 }
 
-html[dir=rtl] #customization-menu .bg-sel-tile-bg .selected-check {
+html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   left: 9px;
   right: initial;
 }
@@ -1269,13 +1250,13 @@ html[dir=rtl] #customization-menu .bg-sel-tile-bg .selected-check {
   }
 }
 
-.sh-option-image.selected {
+.selected .sh-option-image {
   background-color: rgb(var(--GB050-rgb));
   border-color: rgb(var(--GB600-rgb));
 }
 
 @media (prefers-color-scheme: dark) {
-  .sh-option-image.selected {
+  .selected .sh-option-image {
     background-color: rgba(var(--GB200-rgb), .1);
     border-color: rgb(var(--GB300-rgb));
   }
@@ -1586,42 +1567,30 @@ input:checked + .toggle .highlight {
   --custom-color-border: rgb(var(--GG300-rgb));
   --custom-color-dark: rgb(var(--GG100-rgb));
   --custom-color-light: white;
-  --border-size: 4px;
   --tile-size: 64px;
   --tile-margin: 25px;
-}
-
-/*
- Tile wrapper on colors menu should be the desired tile-size + 2 * border-size.
- And the margin between the wrapper size should be decreased by 2 * border-size.
- */
-#colors-menu .bg-sel-tile-wrapper {
-  height: calc(var(--tile-size) + 2 * var(--border-size));
-  margin-bottom: calc(var(--tile-margin) - 2 * var(--border-size));
-  margin-inline-end: calc(var(--tile-margin) - 2 * var(--border-size));
-  position: relative;
-  width: calc(var(--tile-size) + 2 * var(--border-size));
 }
 
 #colors-menu .bg-sel-tile-bg {
   background-color: unset;
   border-radius: 50%;
+  box-sizing: border-box;
   cursor: pointer;
   height: var(--tile-size);
-  margin-inline-start: var(--border-size);
-  margin-top: var(--border-size);
+  margin-bottom: var(--tile-margin);
+  margin-inline-end: var(--tile-margin);
+  margin-inline-start: 0;
+  margin-top: 0;
   width: var(--tile-size);
 }
 
 #colors-menu .bg-sel-tile-bg.selected {
-  border: var(--border-size) solid rgba(var(--GB600-rgb), .4);
-  margin-inline-start: 0;
-  margin-top: 0;
+  box-shadow: 0 0 0 4px rgba(var(--GB600-rgb), .4);
 }
 
 @media (prefers-color-scheme: dark) {
   #colors-menu .bg-sel-tile-bg.selected {
-    border: var(--border-size) solid rgba(var(--GB600-rgb), .4);
+    box-shadow: 0 0 0 4px rgba(var(--GB600-rgb), .4);
   }
 }
 
@@ -1629,18 +1598,18 @@ input:checked + .toggle .highlight {
  To avoid circle showing behind the checkmark, draw it 2px smaller and 1px
  below so that it is always 1px smaller then the checkmark from all sides.
  */
-#colors-menu .bg-sel-tile-bg .selected-circle {
+#colors-menu .bg-sel-tile .selected-circle {
   height: calc(var(--check-mark-size) - 2px);
   right: 0;
   top: 1px;
   width: calc(var(--check-mark-size) - 2px);
 }
 
-html[dir=rtl] #colors-menu .bg-sel-tile-bg .selected-circle {
+html[dir=rtl] #colors-menu .bg-sel-tile .selected-circle {
   left: 0;
 }
 
-#colors-menu .bg-sel-tile-bg .selected-check {
+#colors-menu .bg-sel-tile .selected-check {
   background: url(icons/check_circle.svg) no-repeat center;
   background-size: var(--check-mark-size) var(--check-mark-size);
   height: var(--check-mark-size);
@@ -1649,21 +1618,17 @@ html[dir=rtl] #colors-menu .bg-sel-tile-bg .selected-circle {
   width: var(--check-mark-size);
 }
 
-html[dir=rtl] #colors-menu .bg-sel-tile-bg .selected-check {
+html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
   left: 0;
 }
 
 @media (prefers-color-scheme: dark) {
-  #colors-menu .bg-sel-tile-bg .selected-check::after {
+  #colors-menu .bg-sel-tile .selected-check::after {
     -webkit-mask-image: url(icons/check_circle.svg);
     -webkit-mask-size: var(--check-mark-size);
     height: var(--check-mark-size);
     width: var(--check-mark-size);
   }
-}
-
-#colors-menu .bg-sel-tile {
-  pointer-events: none;
 }
 
 #colors-default-icon {
@@ -1767,7 +1732,6 @@ html[dir=rtl] #colors-menu .bg-sel-tile-bg .selected-check {
   border-radius: 50%;
   box-sizing: border-box;
   opacity: 1;
-  position: absolute;
 }
 
 #color-picker-icon {

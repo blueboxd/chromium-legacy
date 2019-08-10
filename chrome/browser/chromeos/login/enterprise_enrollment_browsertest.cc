@@ -8,6 +8,7 @@
 #include "base/json/string_escape.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
@@ -535,16 +536,18 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest, StoragePartitionUpdated) {
       test::GetOobeElementPath({kEnrollmentUI, kWebview}) + kPartitionAttribute;
   std::string webview_partition_name_1 =
       test::OobeJS().GetString(webview_partition_path);
+  EXPECT_FALSE(webview_partition_name_1.empty());
 
   // Simulate navigating over the enrollment screen a second time (without using
   // 'Back' and 'Next' buttons).
   ShowEnrollmentScreen();
   ExecutePendingJavaScript();
-  std::string webview_partition_name_2 =
-      test::OobeJS().GetString(webview_partition_path);
 
-  // Check that the partition was updated.
-  EXPECT_NE(webview_partition_name_1, webview_partition_name_2);
+  // Verify that the partition name changes.
+  const std::string partition_valid_and_changed_condition = base::StringPrintf(
+      "%s && (%s != '%s')", webview_partition_path.c_str(),
+      webview_partition_path.c_str(), webview_partition_name_1.c_str());
+  test::OobeJS().CreateWaiter(partition_valid_and_changed_condition)->Wait();
 }
 
 // Shows the enrollment screen and mocks the enrollment helper to show Active

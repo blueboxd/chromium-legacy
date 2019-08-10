@@ -87,7 +87,7 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
 
         for (CreditCard card : PersonalDataManager.getInstance().getCreditCardsForSettings()) {
             // Add a preference for the credit card.
-            Preference card_pref = new Preference(getActivity());
+            Preference card_pref = new Preference(getStyledContext());
             card_pref.setTitle(card.getObfuscatedNumber());
             card_pref.setSummary(card.getFormattedExpirationDate(getActivity()));
             card_pref.setIcon(
@@ -108,7 +108,7 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
         // Add 'Add credit card' button. Tap of it brings up card editor which allows users type in
         // new credit cards.
         if (PersonalDataManager.isAutofillCreditCardEnabled()) {
-            Preference add_card_pref = new Preference(getActivity());
+            Preference add_card_pref = new Preference(getStyledContext());
             Drawable plusIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.plus);
             plusIcon.mutate();
             plusIcon.setColorFilter(

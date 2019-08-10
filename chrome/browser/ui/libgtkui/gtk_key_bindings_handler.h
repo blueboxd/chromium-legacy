@@ -15,6 +15,7 @@
 
 namespace ui {
 class Event;
+class KeyEvent;
 }
 
 namespace libgtkui {
@@ -70,8 +71,8 @@ class GtkKeyBindingsHandler {
                           const std::string& value);
 
   // Builds a fake GdkEventKey from an XEvent.
-  void BuildGdkEventKeyFromXEvent(const ui::PlatformEvent& xevent,
-                                  GdkEventKey* gdk_event);
+  void BuildGdkEventKeyFromKeyEvent(const ui::KeyEvent& key_event,
+                                    GdkEventKey* gdk_event);
 
   // Initializes Handler structure.
   static void HandlerInit(Handler* self);

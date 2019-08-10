@@ -186,13 +186,16 @@ class VariationsService
   }
 
   // Wrapper around VariationsFieldTrialCreator::SetupFieldTrials().
-  bool SetupFieldTrials(const char* kEnableGpuBenchmarking,
-                        const char* kEnableFeatures,
-                        const char* kDisableFeatures,
-                        const std::set<std::string>& unforceable_field_trials,
-                        const std::vector<std::string>& variation_ids,
-                        std::unique_ptr<base::FeatureList> feature_list,
-                        variations::PlatformFieldTrials* platform_field_trials);
+  bool SetupFieldTrials(
+      const char* kEnableGpuBenchmarking,
+      const char* kEnableFeatures,
+      const char* kDisableFeatures,
+      const std::set<std::string>& unforceable_field_trials,
+      const std::vector<std::string>& variation_ids,
+      const std::vector<base::FeatureList::FeatureOverrideInfo>&
+          extra_overrides,
+      std::unique_ptr<base::FeatureList> feature_list,
+      variations::PlatformFieldTrials* platform_field_trials);
 
   // Overrides cached UI strings on the resource bundle once it is initialized.
   void OverrideCachedUIStrings();

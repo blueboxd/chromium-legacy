@@ -43,11 +43,11 @@ suite('<bookmarks-router>', function() {
     store.data.selectedFolder = '2';
     store.notifyObservers();
 
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     assertEquals('chrome://bookmarks/?id=2', window.location.href);
     store.data.selectedFolder = '1';
     store.notifyObservers();
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     // Selecting Bookmarks bar clears route.
     assertEquals('chrome://bookmarks/', window.location.href);
   });
@@ -55,14 +55,14 @@ suite('<bookmarks-router>', function() {
   test('route updates from search', async function() {
     store.data.search = {term: 'bloop'};
     store.notifyObservers();
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
 
     assertEquals('chrome://bookmarks/?q=bloop', window.location.href);
 
     // Ensure that the route doesn't change when the search finishes.
     store.data.selectedFolder = null;
     store.notifyObservers();
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     assertEquals('chrome://bookmarks/?q=bloop', window.location.href);
   });
 

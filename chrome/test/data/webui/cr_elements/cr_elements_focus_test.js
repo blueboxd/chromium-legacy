@@ -136,6 +136,7 @@ CrElementsIconButtonFocusTest.prototype = {
 
   /** @override */
   extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
+    '../test_util.js',
     'cr_icon_button_focus_tests.js',
   ]),
 };

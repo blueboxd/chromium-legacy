@@ -51,3 +51,12 @@ const constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
     // is the first delay once we start exponential backoff.
     false,
 };
+
+constexpr base::TimeDelta kSharingMessageTTL = base::TimeDelta::FromSeconds(10);
+
+constexpr int kMaxDevicesShown = 10;
+
+constexpr int kSubMenuFirstDeviceCommandId = 2150;
+
+constexpr int kSubMenuLastDeviceCommandId =
+    kSubMenuFirstDeviceCommandId + kMaxDevicesShown - 1;

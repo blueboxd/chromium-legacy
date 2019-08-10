@@ -124,6 +124,8 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   void SetAllowLoginAsGuest(bool allow_guest) override;
   std::unique_ptr<ScopedGuestButtonBlocker> GetScopedGuestButtonBlocker()
       override;
+  void RequestSecurityTokenPin(SecurityTokenPinRequest request) override;
+  void ClearSecurityTokenPinRequest() override;
 
   // KioskAppMenu:
   void SetKioskApps(

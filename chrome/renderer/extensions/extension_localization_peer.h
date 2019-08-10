@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "content/public/renderer/request_peer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 

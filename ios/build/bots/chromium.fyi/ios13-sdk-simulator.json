@@ -58,7 +58,6 @@
       "priority": 30
     },
     {
-      "shards": 1,
       "include": "eg_tests.json",
       "device type": "iPhone 7",
       "os": "13.0",
@@ -72,7 +71,6 @@
       "priority": 30
     },
     {
-      "shards": 1,
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
       "os": "13.0",
@@ -86,7 +84,6 @@
       "priority": 30
     },
     {
-      "shards": 1,
       "include": "eg_tests.json",
       "device type": "iPhone X",
       "os": "13.0",
@@ -100,7 +97,6 @@
       "priority": 30
     },
     {
-      "shards": 1,
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "13.0",
@@ -114,7 +110,6 @@
       "priority": 30
     },
     {
-      "shards": 1,
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
       "os": "13.0",

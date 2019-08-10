@@ -108,140 +108,151 @@ class HttpServerPropertiesTest : public TestWithScopedTaskEnvironment {
   HttpServerProperties impl_;
 };
 
-typedef HttpServerPropertiesTest SpdyServerPropertiesTest;
-
-TEST_F(SpdyServerPropertiesTest, SetWithSchemeHostPort) {
+TEST_F(HttpServerPropertiesTest, SetSupportsSpdy) {
   // Check spdy servers are correctly set with SchemeHostPort key.
   url::SchemeHostPort https_www_server("https", "www.google.com", 443);
   url::SchemeHostPort http_photo_server("http", "photos.google.com", 80);
+  url::SchemeHostPort https_mail_server("https", "mail.google.com", 443);
   // Servers with port equal to default port in scheme will drop port components
   // when calling Serialize().
-  std::string spdy_server_g = https_www_server.Serialize();
-  std::string spdy_server_p = http_photo_server.Serialize();
 
   url::SchemeHostPort http_google_server("http", "www.google.com", 443);
   url::SchemeHostPort https_photos_server("https", "photos.google.com", 443);
   url::SchemeHostPort valid_google_server((GURL("https://www.google.com")));
 
-  // Initializing https://www.google.com:443 and https://photos.google.com:443
-  // as spdy servers.
-  std::unique_ptr<SpdyServersMap> spdy_servers1 =
-      std::make_unique<SpdyServersMap>();
-  spdy_servers1->Put(spdy_server_g, true);
-  spdy_servers1->Put(spdy_server_p, true);
-  impl_.OnSpdyServersLoadedForTesting(std::move(spdy_servers1));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(http_photo_server));
+  impl_.SetSupportsSpdy(https_www_server, true);
+  impl_.SetSupportsSpdy(http_photo_server, true);
+  impl_.SetSupportsSpdy(https_mail_server, false);
+  EXPECT_TRUE(impl_.GetSupportsSpdy(https_www_server));
   EXPECT_TRUE(impl_.SupportsRequestPriority(https_www_server));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(http_photo_server));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(http_photo_server));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(https_mail_server));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(https_mail_server));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(http_google_server));
   EXPECT_FALSE(impl_.SupportsRequestPriority(http_google_server));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(https_photos_server));
   EXPECT_FALSE(impl_.SupportsRequestPriority(https_photos_server));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(valid_google_server));
   EXPECT_TRUE(impl_.SupportsRequestPriority(valid_google_server));
+
+  // Flip values of two servers.
+  impl_.SetSupportsSpdy(https_www_server, false);
+  impl_.SetSupportsSpdy(https_mail_server, true);
+  EXPECT_FALSE(impl_.GetSupportsSpdy(https_www_server));
+  EXPECT_FALSE(impl_.SupportsRequestPriority(https_www_server));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(https_mail_server));
+  EXPECT_TRUE(impl_.SupportsRequestPriority(https_mail_server));
 }
 
-TEST_F(SpdyServerPropertiesTest, Set) {
+TEST_F(HttpServerPropertiesTest, LoadSupportsSpdy) {
+  HttpServerProperties::ServerInfo supports_spdy;
+  supports_spdy.supports_spdy = true;
+  HttpServerProperties::ServerInfo no_spdy;
+  no_spdy.supports_spdy = false;
+
   url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
-  std::string spdy_server_g = spdy_server_google.Serialize();
-
   url::SchemeHostPort spdy_server_photos("https", "photos.google.com", 443);
-  std::string spdy_server_p = spdy_server_photos.Serialize();
-
   url::SchemeHostPort spdy_server_docs("https", "docs.google.com", 443);
-  std::string spdy_server_d = spdy_server_docs.Serialize();
-
   url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
-  std::string spdy_server_m = spdy_server_mail.Serialize();
 
   // Check by initializing empty spdy servers.
-  std::unique_ptr<SpdyServersMap> spdy_servers =
-      std::make_unique<SpdyServersMap>();
-  impl_.OnSpdyServersLoadedForTesting(std::move(spdy_servers));
-  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_google));
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> spdy_servers =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
+  impl_.OnServerInfoLoadedForTesting(std::move(spdy_servers));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_google));
 
   // Check by initializing www.google.com:443 and photos.google.com:443 as spdy
   // servers.
-  std::unique_ptr<SpdyServersMap> spdy_servers1 =
-      std::make_unique<SpdyServersMap>();
-  spdy_servers1->Put(spdy_server_g, true);
-  spdy_servers1->Put(spdy_server_p, true);
-  impl_.OnSpdyServersLoadedForTesting(std::move(spdy_servers1));
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> spdy_servers1 =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
+  spdy_servers1->Put(spdy_server_google, supports_spdy);
+  spdy_servers1->Put(spdy_server_photos, no_spdy);
+  impl_.OnServerInfoLoadedForTesting(std::move(spdy_servers1));
   // Note: these calls affect MRU order.
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_photos));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_photos));
 
-  // Verify spdy_server_g and spdy_server_d are in the list in MRU order.
-  ASSERT_EQ(2U, impl_.spdy_servers_map_for_testing().size());
-  auto it = impl_.spdy_servers_map_for_testing().begin();
-  EXPECT_EQ(spdy_server_p, it->first);
-  EXPECT_TRUE(it->second);
+  // Verify google and photos are in the list in MRU order.
+  ASSERT_EQ(2U, impl_.server_info_map_for_testing().size());
+  auto it = impl_.server_info_map_for_testing().begin();
+  EXPECT_EQ(spdy_server_photos, it->first);
+  ASSERT_TRUE(it->second.supports_spdy.has_value());
+  EXPECT_FALSE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_g, it->first);
-  EXPECT_TRUE(it->second);
+  EXPECT_EQ(spdy_server_google, it->first);
+  ASSERT_TRUE(it->second.supports_spdy.has_value());
+  EXPECT_TRUE(*it->second.supports_spdy);
 
-  // Check by initializing mail.google.com:443 and docs.google.com:443 as spdy
-  // servers.
-  std::unique_ptr<SpdyServersMap> spdy_servers2 =
-      std::make_unique<SpdyServersMap>();
-  spdy_servers2->Put(spdy_server_m, true);
-  spdy_servers2->Put(spdy_server_d, true);
-  impl_.OnSpdyServersLoadedForTesting(std::move(spdy_servers2));
+  // Check by initializing mail.google.com:443 and docs.google.com:443.
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> spdy_servers2 =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
+  spdy_servers2->Put(spdy_server_mail, supports_spdy);
+  spdy_servers2->Put(spdy_server_docs, supports_spdy);
+  impl_.OnServerInfoLoadedForTesting(std::move(spdy_servers2));
 
   // Verify all the servers are in the list in MRU order. Note that
-  // OnSpdyServersLoadedForTesting will put existing spdy server entries in
+  // OnServerInfoLoadedForTesting will put existing spdy server entries in
   // front of newly added entries.
-  ASSERT_EQ(4U, impl_.spdy_servers_map_for_testing().size());
-  it = impl_.spdy_servers_map_for_testing().begin();
-  EXPECT_EQ(spdy_server_p, it->first);
-  EXPECT_TRUE(it->second);
+  ASSERT_EQ(4U, impl_.server_info_map_for_testing().size());
+  it = impl_.server_info_map_for_testing().begin();
+  EXPECT_EQ(spdy_server_photos, it->first);
+  ASSERT_TRUE(it->second.supports_spdy.has_value());
+  EXPECT_FALSE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_g, it->first);
-  EXPECT_TRUE(it->second);
+  EXPECT_EQ(spdy_server_google, it->first);
+  ASSERT_TRUE(it->second.supports_spdy.has_value());
+  EXPECT_TRUE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_d, it->first);
-  EXPECT_TRUE(it->second);
+  EXPECT_EQ(spdy_server_docs, it->first);
+  ASSERT_TRUE(it->second.supports_spdy.has_value());
+  EXPECT_TRUE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_m, it->first);
-  EXPECT_TRUE(it->second);
+  EXPECT_EQ(spdy_server_mail, it->first);
+  ASSERT_TRUE(it->second.supports_spdy.has_value());
+  EXPECT_TRUE(*it->second.supports_spdy);
 
   // Check these in reverse MRU order so that MRU order stays the same.
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_mail));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_docs));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_photos));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_mail));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_docs));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_photos));
 
-  // Verify new data that is being initialized overwrites what is already in the
-  // memory and also verify the recency list order.
-  //
-  // Change supports SPDY value for photos and mails servers and order of
-  // initalization shouldn't matter.
-  std::unique_ptr<SpdyServersMap> spdy_servers3 =
-      std::make_unique<SpdyServersMap>();
-  spdy_servers3->Put(spdy_server_m, false);
-  spdy_servers3->Put(spdy_server_p, false);
-  impl_.OnSpdyServersLoadedForTesting(std::move(spdy_servers3));
+  // Verify that old values loaded from disk take precedence over newer learned
+  // values and also verify the recency list order is unchanged.
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> spdy_servers3 =
+      std::make_unique<HttpServerProperties::ServerInfoMap>();
+  spdy_servers3->Put(spdy_server_mail, no_spdy);
+  spdy_servers3->Put(spdy_server_photos, supports_spdy);
+  impl_.OnServerInfoLoadedForTesting(std::move(spdy_servers3));
 
   // Verify the entries are in the same order.
-  ASSERT_EQ(4U, impl_.spdy_servers_map_for_testing().size());
-  it = impl_.spdy_servers_map_for_testing().begin();
-  EXPECT_EQ(spdy_server_p, it->first);
-  EXPECT_FALSE(it->second);
+  ASSERT_EQ(4U, impl_.server_info_map_for_testing().size());
+  it = impl_.server_info_map_for_testing().begin();
+  EXPECT_EQ(spdy_server_photos, it->first);
+  ASSERT_TRUE(it->second.supports_spdy.has_value());
+  EXPECT_TRUE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_g, it->first);
-  EXPECT_TRUE(it->second);
+  EXPECT_EQ(spdy_server_google, it->first);
+  ASSERT_TRUE(it->second.supports_spdy.has_value());
+  EXPECT_TRUE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_d, it->first);
-  EXPECT_TRUE(it->second);
+  EXPECT_EQ(spdy_server_docs, it->first);
+  ASSERT_TRUE(it->second.supports_spdy.has_value());
+  EXPECT_TRUE(*it->second.supports_spdy);
   ++it;
-  EXPECT_EQ(spdy_server_m, it->first);
-  EXPECT_FALSE(it->second);
+  EXPECT_EQ(spdy_server_mail, it->first);
+  ASSERT_TRUE(it->second.supports_spdy.has_value());
+  EXPECT_FALSE(*it->second.supports_spdy);
 
-  // Verify photos and mail servers don't support SPDY and other servers support
-  // SPDY.
-  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_mail));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_docs));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
-  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_photos));
+  // Verify photos server doesn't support SPDY and other servers support SPDY.
+  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_mail));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_docs));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_photos));
 }
 
-TEST_F(SpdyServerPropertiesTest, SupportsRequestPriorityTest) {
+TEST_F(HttpServerPropertiesTest, SupportsRequestPriority) {
   url::SchemeHostPort spdy_server_empty("https", std::string(), 443);
   EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_empty));
 
@@ -281,15 +292,15 @@ TEST_F(SpdyServerPropertiesTest, SupportsRequestPriorityTest) {
   EXPECT_TRUE(impl_.SupportsRequestPriority(example_server));
 }
 
-TEST_F(SpdyServerPropertiesTest, Clear) {
+TEST_F(HttpServerPropertiesTest, ClearSupportsSpdy) {
   // Add www.google.com:443 and mail.google.com:443 as supporting SPDY.
   url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
   impl_.SetSupportsSpdy(spdy_server_google, true);
   url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
   impl_.SetSupportsSpdy(spdy_server_mail, true);
 
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_mail));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_mail));
 
   base::RunLoop run_loop;
   bool callback_invoked_ = false;
@@ -299,8 +310,8 @@ TEST_F(SpdyServerPropertiesTest, Clear) {
         std::move(quit_closure).Run();
       },
       &callback_invoked_, run_loop.QuitClosure()));
-  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_google));
-  EXPECT_FALSE(impl_.SupportsRequestPriority(spdy_server_mail));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_google));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(spdy_server_mail));
 
   // Callback should be run asynchronously.
   EXPECT_FALSE(callback_invoked_);
@@ -308,34 +319,32 @@ TEST_F(SpdyServerPropertiesTest, Clear) {
   EXPECT_TRUE(callback_invoked_);
 }
 
-TEST_F(SpdyServerPropertiesTest, MRUOfSpdyServersMap) {
+TEST_F(HttpServerPropertiesTest, MRUOfServerInfoMap) {
   url::SchemeHostPort spdy_server_google("https", "www.google.com", 443);
-  std::string spdy_server_g = spdy_server_google.Serialize();
   url::SchemeHostPort spdy_server_mail("https", "mail.google.com", 443);
-  std::string spdy_server_m = spdy_server_mail.Serialize();
 
   // Add www.google.com:443 as supporting SPDY.
   impl_.SetSupportsSpdy(spdy_server_google, true);
-  ASSERT_EQ(1u, impl_.spdy_servers_map_for_testing().size());
-  auto it = impl_.spdy_servers_map_for_testing().begin();
-  ASSERT_EQ(spdy_server_g, it->first);
+  ASSERT_EQ(1u, impl_.server_info_map_for_testing().size());
+  auto it = impl_.server_info_map_for_testing().begin();
+  ASSERT_EQ(spdy_server_google, it->first);
 
   // Add mail.google.com:443 as supporting SPDY. Verify mail.google.com:443 and
   // www.google.com:443 are in the list.
   impl_.SetSupportsSpdy(spdy_server_mail, true);
-  ASSERT_EQ(2u, impl_.spdy_servers_map_for_testing().size());
-  it = impl_.spdy_servers_map_for_testing().begin();
-  ASSERT_EQ(spdy_server_m, it->first);
+  ASSERT_EQ(2u, impl_.server_info_map_for_testing().size());
+  it = impl_.server_info_map_for_testing().begin();
+  ASSERT_EQ(spdy_server_mail, it->first);
   ++it;
-  ASSERT_EQ(spdy_server_g, it->first);
+  ASSERT_EQ(spdy_server_google, it->first);
 
   // Get www.google.com:443. It should become the most-recently-used server.
-  EXPECT_TRUE(impl_.SupportsRequestPriority(spdy_server_google));
-  ASSERT_EQ(2u, impl_.spdy_servers_map_for_testing().size());
-  it = impl_.spdy_servers_map_for_testing().begin();
-  ASSERT_EQ(spdy_server_g, it->first);
+  EXPECT_TRUE(impl_.GetSupportsSpdy(spdy_server_google));
+  ASSERT_EQ(2u, impl_.server_info_map_for_testing().size());
+  it = impl_.server_info_map_for_testing().begin();
+  ASSERT_EQ(spdy_server_google, it->first);
   ++it;
-  ASSERT_EQ(spdy_server_m, it->first);
+  ASSERT_EQ(spdy_server_mail, it->first);
 }
 
 typedef HttpServerPropertiesTest AlternateProtocolServerPropertiesTest;

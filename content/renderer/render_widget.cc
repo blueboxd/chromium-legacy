@@ -385,6 +385,8 @@ static bool PreferCompositingToLCDText(CompositorDependencies* compositor_deps,
     return true;
   if (!compositor_deps->IsLcdTextEnabled())
     return true;
+  if (base::FeatureList::IsEnabled(features::kPreferCompositingToLCDText))
+    return true;
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 

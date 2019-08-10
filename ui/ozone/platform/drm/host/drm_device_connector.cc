@@ -71,10 +71,9 @@ void DrmDeviceConnector::OnGpuServiceLaunched(
 
   ui::ozone::mojom::DrmDevicePtr drm_device_ptr;
   BindInterfaceDrmDevice(&drm_device_ptr);
-  ui_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&HostDrmDevice::OnGpuServiceLaunched, host_drm_device_,
-                     drm_device_ptr.PassInterface()));
+
+  host_drm_device_->OnGpuServiceLaunchedOnIOThread(std::move(drm_device_ptr),
+                                                   ui_runner);
 }
 
 void DrmDeviceConnector::OnMessageReceived(const IPC::Message& message) {
@@ -90,7 +89,8 @@ void DrmDeviceConnector::BindInterfaceDrmDevice(
 
 void DrmDeviceConnector::ConnectSingleThreaded(
     ui::ozone::mojom::DrmDevicePtr drm_device_ptr) {
-  host_drm_device_->OnGpuServiceLaunched(drm_device_ptr.PassInterface());
+  host_drm_device_->OnGpuServiceLaunchedOnIOThread(
+      std::move(drm_device_ptr), base::ThreadTaskRunnerHandle::Get());
 }
 
 }  // namespace ui

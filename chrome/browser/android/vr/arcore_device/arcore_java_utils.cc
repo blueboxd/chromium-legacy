@@ -57,11 +57,11 @@ void ArCoreJavaUtils::RequestArSession(
       getTabFromRenderer(render_process_id, render_frame_id));
 }
 
-void ArCoreJavaUtils::DestroyDrawingSurface() {
+void ArCoreJavaUtils::EndSession() {
   DVLOG(1) << __func__;
   JNIEnv* env = AttachCurrentThread();
 
-  Java_ArCoreJavaUtils_destroyArImmersiveOverlay(env, j_arcore_java_utils_);
+  Java_ArCoreJavaUtils_endSession(env, j_arcore_java_utils_);
 }
 
 void ArCoreJavaUtils::OnDrawingSurfaceReady(

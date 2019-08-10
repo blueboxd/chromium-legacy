@@ -407,6 +407,96 @@ TEST(CSSPropertyParserTest, CrossFadeUseCount) {
   EXPECT_TRUE(document.IsUseCounted(feature));
 }
 
+TEST(CSSPropertyParserTest, TwoValueOverflowOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow: overlay overlay;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_TRUE(document.IsUseCounted(feature2));
+}
+
+TEST(CSSPropertyParserTest, OneValueOverflowOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow: overlay;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+}
+
+TEST(CSSPropertyParserTest, OverflowXOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow-x: overlay;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+}
+
+TEST(CSSPropertyParserTest, OverflowYOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow-y: overlay;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+}
+
+TEST(CSSPropertyParserTest, OverflowFirstValueOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow: overlay scroll;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_TRUE(document.IsUseCounted(feature2));
+}
+
+TEST(CSSPropertyParserTest, OverflowSecondValueOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow: scroll overlay;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_TRUE(document.IsUseCounted(feature2));
+}
+
 TEST(CSSPropertyParserTest, DropViewportDescriptor) {
   EXPECT_FALSE(IsValidPropertyValueForStyleRule(CSSPropertyID::kOrientation,
                                                 "portrait"));

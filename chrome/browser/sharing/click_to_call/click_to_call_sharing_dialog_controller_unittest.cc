@@ -10,8 +10,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
@@ -115,9 +115,9 @@ TEST_F(ClickToCallSharingDialogControllerTest, OnDeviceChosen) {
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(
       kExpectedPhoneNumber);
-  EXPECT_CALL(*service(), SendMessageToDevice(Eq(kReceiverGuid),
-                                              Eq(kSharingClickToCallMessageTTL),
-                                              ProtoEquals(sharing_message), _));
+  EXPECT_CALL(*service(),
+              SendMessageToDevice(Eq(kReceiverGuid), Eq(kSharingMessageTTL),
+                                  ProtoEquals(sharing_message), _));
   click_to_call_sharing_dialog_controller_->OnDeviceChosen(sharing_device_info);
 }
 

@@ -93,13 +93,25 @@ void DedicatedWorkerHost::StartScriptLoad(
   auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
       worker_process_host->GetStoragePartition());
 
-  // Get a storage domain.
+  // Compute network isolation key.
   RenderFrameHostImpl* ancestor_render_frame_host =
       GetAncestorRenderFrameHost();
   if (!ancestor_render_frame_host) {
     client_->OnScriptLoadStartFailed();
     return;
   }
+  // Get the origin of the frame tree's root to use as top-frame origin.
+  // TODO(crbug.com/986167): Resolve issue of potential race condition.
+  url::Origin top_frame_origin(ancestor_render_frame_host->frame_tree_node()
+                                   ->frame_tree()
+                                   ->root()
+                                   ->current_origin());
+  url::Origin current_frame_origin(
+      ancestor_render_frame_host->GetLastCommittedOrigin());
+  network_isolation_key_ =
+      net::NetworkIsolationKey(top_frame_origin, current_frame_origin);
+
+  // Get a storage domain.
   SiteInstance* site_instance = ancestor_render_frame_host->GetSiteInstance();
   if (!site_instance) {
     client_->OnScriptLoadStartFailed();
@@ -135,8 +147,9 @@ void DedicatedWorkerHost::StartScriptLoad(
 
   WorkerScriptFetchInitiator::Start(
       worker_process_id_, script_url, request_initiator_origin,
-      credentials_mode, std::move(outside_fetch_client_settings_object),
-      ResourceType::kWorker, storage_partition_impl->GetServiceWorkerContext(),
+      network_isolation_key_, credentials_mode,
+      std::move(outside_fetch_client_settings_object), ResourceType::kWorker,
+      storage_partition_impl->GetServiceWorkerContext(),
       service_worker_handle_.get(), appcache_handle_->core(),
       std::move(blob_url_loader_factory), nullptr, storage_partition_impl,
       storage_domain,
@@ -244,19 +257,11 @@ void DedicatedWorkerHost::CreateNetworkFactory(
   DCHECK(render_frame_host);
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
 
-  // Get the origin of the frame tree's root to use as top-frame origin.
-  // TODO(crbug.com/986167): Resolve issue of potential race condition.
-  url::Origin top_frame_origin(render_frame_host->frame_tree_node()
-                                   ->frame_tree()
-                                   ->root()
-                                   ->current_origin());
-
   RenderProcessHost* worker_process_host = render_frame_host->GetProcess();
   DCHECK(worker_process_host);
   worker_process_host->CreateURLLoaderFactory(
       origin_, render_frame_host->cross_origin_embedder_policy(),
-      nullptr /* preferences */,
-      net::NetworkIsolationKey(top_frame_origin, origin_),
+      nullptr /* preferences */, network_isolation_key_,
       std::move(no_header_client), std::move(request));
 }
 

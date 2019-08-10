@@ -486,7 +486,7 @@ suite('CupsNearbyPrintersTests', function() {
       createCupsPrinterInfo('test4', '4', 'id4'),
     ];
 
-    return PolymerTest.flushTasks().then(() => {
+    return test_util.flushTasks().then(() => {
       nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
       assertTrue(!!nearbyPrintersElement);
 
@@ -513,7 +513,7 @@ suite('CupsNearbyPrintersTests', function() {
     const automaticPrinterList = [createCupsPrinterInfo('test1', '1', 'id1')];
     const discoveredPrinterList = [];
 
-    return PolymerTest.flushTasks()
+    return test_util.flushTasks()
         .then(() => {
           nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
           assertTrue(!!nearbyPrintersElement);
@@ -556,7 +556,7 @@ suite('CupsNearbyPrintersTests', function() {
 
     let manufacturerDialog = null;
 
-    return PolymerTest.flushTasks()
+    return test_util.flushTasks()
         .then(() => {
           nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
           assertTrue(!!nearbyPrintersElement);
@@ -619,7 +619,7 @@ suite('CupsNearbyPrintersTests', function() {
   test('NetworkConnectedButNoInternet', function() {
     // Simulate connecting to a network with no internet connection.
     setNetworkConnectionState('wifi1_guid', 'Connected');
-    return PolymerTest.flushTasks().then(() => {
+    return test_util.flushTasks().then(() => {
       // We require internet to be able to add a new printer. Connecting to
       // a network without connectivity should be equivalent to not being
       // connected to a network.
@@ -631,7 +631,7 @@ suite('CupsNearbyPrintersTests', function() {
   test('checkNetworkConnection', function() {
     // Simulate disconnecting from a network.
     setNetworkConnectionState('wifi1_guid', 'NotConnected');
-    return PolymerTest.flushTasks()
+    return test_util.flushTasks()
         .then(() => {
           // Expect "Check Connection" text to show up when no internet is
           // connected.
@@ -640,7 +640,7 @@ suite('CupsNearbyPrintersTests', function() {
 
           // Simulate connecting to a network with connectivity.
           setNetworkConnectionState('wifi1_guid', 'Online');
-          return PolymerTest.flushTasks();
+          return test_util.flushTasks();
         })
         .then(() => {
           const automaticPrinterList = [

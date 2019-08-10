@@ -47,12 +47,9 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
 
   // Check using stapled OCSP, if available.
   if (!stapled_ocsp_response.empty() && issuer_cert) {
-    // TODO(eroman): CheckOCSP() re-parses the certificates, perhaps just pass
-    //               ParsedCertificate into it.
     OCSPVerifyResult::ResponseStatus response_details;
     OCSPRevocationStatus ocsp_status =
-        CheckOCSP(stapled_ocsp_response, cert->der_cert().AsStringPiece(),
-                  issuer_cert->der_cert().AsStringPiece(), base::Time::Now(),
+        CheckOCSP(stapled_ocsp_response, cert, issuer_cert, base::Time::Now(),
                   max_age, &response_details);
 
     // TODO(eroman): Save the stapled OCSP response to cache.
@@ -135,9 +132,7 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
           base::StringPiece(
               reinterpret_cast<const char*>(ocsp_response_bytes.data()),
               ocsp_response_bytes.size()),
-          cert->der_cert().AsStringPiece(),
-          issuer_cert->der_cert().AsStringPiece(), base::Time::Now(), max_age,
-          &response_details);
+          cert, issuer_cert, base::Time::Now(), max_age, &response_details);
 
       switch (ocsp_status) {
         case OCSPRevocationStatus::REVOKED:

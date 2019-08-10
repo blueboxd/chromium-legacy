@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/importer/profile_import.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 class ExternalProcessImporterBridge;
 class Importer;
@@ -29,7 +29,7 @@ struct SourceProfile;
 class ProfileImportImpl : public chrome::mojom::ProfileImport {
  public:
   explicit ProfileImportImpl(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+      mojo::PendingReceiver<chrome::mojom::ProfileImport> receiver);
   ~ProfileImportImpl() override;
 
  private:
@@ -45,6 +45,8 @@ class ProfileImportImpl : public chrome::mojom::ProfileImport {
   // The following are used with out of process profile import:
   void ImporterCleanup();
 
+  mojo::Receiver<chrome::mojom::ProfileImport> receiver_;
+
   // Thread that importer runs on, while ProfileImportThread handles messages
   // from the browser process.
   std::unique_ptr<base::Thread> import_thread_;
@@ -58,8 +60,6 @@ class ProfileImportImpl : public chrome::mojom::ProfileImport {
 
   // Importer of the appropriate type (Firefox, Safari, IE, etc.)
   scoped_refptr<Importer> importer_;
-
-  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImportImpl);
 };

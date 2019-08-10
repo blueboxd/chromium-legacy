@@ -60,6 +60,7 @@ class WorkerScriptFetchInitiator {
       int worker_process_id,
       const GURL& script_url,
       const url::Origin& request_initiator,
+      const net::NetworkIsolationKey& trusted_network_isolation_key,
       network::mojom::CredentialsMode credentials_mode,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,

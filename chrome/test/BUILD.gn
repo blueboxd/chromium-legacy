@@ -862,6 +862,7 @@ if (!is_android) {
       "../browser/first_run/first_run_browsertest.cc",
       "../browser/geolocation/geolocation_browsertest.cc",
       "../browser/guest_view/mime_handler_view/chrome_mime_handler_view_browsertest.cc",
+      "../browser/heavy_ad_intervention/heavy_ad_helper_browsertest.cc",
       "../browser/history/history_browsertest.cc",
       "../browser/history/redirect_browsertest.cc",
       "../browser/iframe_browsertest.cc",
@@ -1080,6 +1081,7 @@ if (!is_android) {
       "../browser/sessions/tab_restore_service_load_waiter.h",
       "../browser/sharing/click_to_call/click_to_call_browsertest.cc",
       "../browser/signin/consistency_cookie_browsertest.cc",
+      "../browser/signin/e2e_tests/demo_signin_e2e_test.cc",
       "../browser/site_isolation/chrome_site_per_process_browsertest.cc",
       "../browser/site_isolation/site_details_browsertest.cc",
       "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
@@ -2401,6 +2403,9 @@ if (!is_android) {
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
         "../browser/ui/views/uninstall_view_browsertest.cc",
       ]
+
+      configs += [ "//build/config/win:delayloads" ]
+
       deps += [
         "//chrome:other_version",
         "//chrome/app:command_ids",
@@ -2460,6 +2465,8 @@ if (!is_android) {
 
     if (enable_supervised_users) {
       sources += [
+        "../browser/supervised_user/logged_in_user_mixin.cc",
+        "../browser/supervised_user/logged_in_user_mixin.h",
         "../browser/supervised_user/supervised_user_navigation_throttle_browsertest.cc",
         "../browser/supervised_user/supervised_user_service_browsertest.cc",
         "../browser/supervised_user/supervised_user_test_base.cc",
@@ -2760,6 +2767,7 @@ test("unit_tests") {
     "../browser/android/tab_web_contents_delegate_android_unittest.cc",
     "../browser/autofill/automated_tests/cache_replayer_unittest.cc",
     "../browser/security_events/security_event_recorder_impl_unittest.cc",
+    "../browser/signin/e2e_tests/test_accounts_util_unittest.cc",
     "../browser/ui/webui/version_handler_win_unittest.cc",
 
     # TODO(newt): move this to test_support_unit?
@@ -3914,6 +3922,7 @@ test("unit_tests") {
       "../browser/sharing/click_to_call/click_to_call_context_menu_observer_unittest.cc",
       "../browser/sharing/click_to_call/click_to_call_sharing_dialog_controller_unittest.cc",
       "../browser/sharing/click_to_call/click_to_call_utils_unittest.cc",
+      "../browser/sharing/shared_clipboard/shared_clipboard_ui_controller_unittest.cc",
       "../browser/ui/autofill/payments/local_card_migration_bubble_controller_impl_unittest.cc",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_unittest.cc",
       "../browser/ui/bluetooth/bluetooth_chooser_controller_unittest.cc",
@@ -4895,6 +4904,7 @@ test("unit_tests") {
       "../browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl_unittest.cc",
       "../browser/ui/views/status_icons/status_tray_win_unittest.cc",
       "../browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views_unittest.cc",
+      "../browser/ui/views/tabs/color_picker_view_unittest.cc",
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.cc",
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.h",
       "../browser/ui/views/tabs/stacked_tab_strip_layout_unittest.cc",
@@ -5588,11 +5598,7 @@ if (!is_android) {
         "runtimeobject.lib",
       ]
 
-      ldflags += [
-        "/DELAYLOAD:api-ms-win-core-winrt-error-l1-1-0.dll",
-        "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll",
-        "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll",
-      ]
+      configs += [ "//build/config/win:delayloads" ]
     }
 
     if (is_mac) {
@@ -6419,13 +6425,10 @@ if (is_win) {
 
     # Don't want the test-specific dependencies to affect load tests.
     # In particular, a few system DLLs cause user32 to be loaded, which is bad.
-    ldflags = [
-      "/DELAYLOAD:advapi32.dll",
-      "/DELAYLOAD:ole32.dll",
-      "/DELAYLOAD:shell32.dll",
-      "/DELAYLOAD:shlwapi.dll",
-      "/DELAYLOAD:user32.dll",
-      "/DELAYLOAD:winmm.dll",
+    # Add delayloads to ensure loader validations occur properly.
+    configs += [
+      "//build/config/win:delayloads",
+      "//build/config/win:delayloads_not_for_child_dll",
     ]
   }
 }

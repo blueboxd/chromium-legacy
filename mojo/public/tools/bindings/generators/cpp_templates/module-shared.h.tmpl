@@ -56,7 +56,8 @@ namespace {{namespace}} {
 #include "{{import.path}}-shared.h"
 {%- endfor %}
 
-{% if not disallow_interfaces -%}
+{#- Avoid transitive includes of interface headers if possible. #}
+{% if not disallow_interfaces and uses_interfaces -%}
 #include "mojo/public/cpp/bindings/lib/interface_serialization.h"
 {%- endif %}
 

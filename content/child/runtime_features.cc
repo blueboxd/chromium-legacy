@@ -197,6 +197,9 @@ void SetIndividualRuntimeFeatures(
   if (base::FeatureList::IsEnabled(features::kWebXrHitTest))
     WebRuntimeFeatures::EnableWebXRHitTest(true);
 
+  if (base::FeatureList::IsEnabled(features::kWebXrAnchors))
+    WebRuntimeFeatures::EnableWebXRAnchors(true);
+
   if (base::FeatureList::IsEnabled(features::kWebXrPlaneDetection))
     WebRuntimeFeatures::EnableWebXRPlaneDetection(true);
 
@@ -521,9 +524,9 @@ void SetIndividualRuntimeFeatures(
       features::IsFormControlsRefreshEnabled());
 
   if (base::FeatureList::IsEnabled(
-      blink::features::kAudioWorkletRealtimeThread)) {
-    WebRuntimeFeatures::EnableFeatureFromString(
-        "AudioWorkletRealtimeThread", true);
+          blink::features::kAudioWorkletRealtimeThread)) {
+    WebRuntimeFeatures::EnableFeatureFromString("AudioWorkletRealtimeThread",
+                                                true);
   }
 
   if (!base::FeatureList::IsEnabled(

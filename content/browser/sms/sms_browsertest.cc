@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
 
   base::OnceClosure on_confirm_callback;
 
-  EXPECT_CALL(delegate_, CreateSmsDialog())
+  EXPECT_CALL(delegate_, CreateSmsDialog(_))
       .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
   EXPECT_CALL(*dialog, Open(_, _, _))
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
 
   base::OnceClosure on_confirm_callback;
 
-  EXPECT_CALL(delegate_, CreateSmsDialog())
+  EXPECT_CALL(delegate_, CreateSmsDialog(_))
       .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
   EXPECT_CALL(*dialog, Open(_, _, _))
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
 
     tab1->web_contents()->SetDelegate(&delegate_);
 
-    EXPECT_CALL(delegate_, CreateSmsDialog())
+    EXPECT_CALL(delegate_, CreateSmsDialog(_))
         .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
     EXPECT_CALL(*provider, Retrieve()).WillOnce(Invoke([&loop]() {
@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
 
     tab2->web_contents()->SetDelegate(&delegate_);
 
-    EXPECT_CALL(delegate_, CreateSmsDialog())
+    EXPECT_CALL(delegate_, CreateSmsDialog(_))
         .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
     EXPECT_CALL(*provider, Retrieve()).WillOnce(Invoke([&loop]() {
@@ -359,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
   base::OnceClosure on_confirm_callback1;
   base::OnceClosure on_confirm_callback2;
 
-  EXPECT_CALL(delegate_, CreateSmsDialog())
+  EXPECT_CALL(delegate_, CreateSmsDialog(_))
       .WillOnce(Return(ByMove(base::WrapUnique(dialog1))))
       .WillOnce(Return(ByMove(base::WrapUnique(dialog2))));
 
@@ -443,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
 
   auto* dialog = new StrictMock<MockSmsDialog>();
 
-  EXPECT_CALL(delegate, CreateSmsDialog())
+  EXPECT_CALL(delegate, CreateSmsDialog(_))
       .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
   EXPECT_CALL(*dialog, Open(_, _, _))

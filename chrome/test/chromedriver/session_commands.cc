@@ -386,14 +386,16 @@ bool MatchCapabilities(const base::DictionaryValue* capabilities) {
       std::string requested_platform_name = platform_name_value->GetString();
       std::string actual_platform_name =
           base::ToLowerASCII(base::SysInfo::OperatingSystemName());
-      bool is_android =
-          capabilities->HasKey("goog:chromeOptions.androidPackage");
-      bool is_remote =
-          capabilities->HasKey("goog:chromeOptions.debuggerAddress");
-      if (requested_platform_name == "any" || is_remote) {
-        // "any" can be used as a wild card for platformName
-        // and if |is_remote| there is no easy way to know
-        // target platform, so will skip check
+      bool is_android = capabilities->FindPath(
+                            "goog:chromeOptions.androidPackage") != nullptr;
+      bool is_remote = capabilities->FindPath(
+                           "goog:chromeOptions.debuggerAddress") != nullptr;
+      if (requested_platform_name == "any" || is_remote ||
+          (is_android && requested_platform_name == "android")) {
+        // "any" can be used as a wild card for platformName.
+        // if |is_remote| there is no easy way to know
+        // target platform. Android check also occurs here.
+        // If any of the above cases pass, we return true.
       } else if (is_android && requested_platform_name != "android") {
         return false;
       } else if (requested_platform_name == "mac" ||

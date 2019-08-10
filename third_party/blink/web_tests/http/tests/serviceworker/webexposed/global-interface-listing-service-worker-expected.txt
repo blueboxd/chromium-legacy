@@ -3712,7 +3712,6 @@ interface WritableStreamDefaultWriter
     getter onpushsubscriptionchange
     getter onsync
     getter registration
-    method fetch
     method gc
     method skipWaiting
     setter cookieStore

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import android.content.Context;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.BundleUtils;
@@ -33,9 +32,8 @@ public class AutofillAssistantModuleEntryProvider {
 
     /* Returns the AA module entry, if it is already installed. */
     @Nullable
-    /* package */ AutofillAssistantModuleEntry getModuleEntryIfInstalled(Context context) {
-        // Required to access resources in DFM using this activity as context.
-        ModuleInstaller.getInstance().initActivity(context);
+    /* package */
+    AutofillAssistantModuleEntry getModuleEntryIfInstalled() {
         if (AutofillAssistantModule.isInstalled()) {
             return AutofillAssistantModule.getImpl();
         }
@@ -43,14 +41,14 @@ public class AutofillAssistantModuleEntryProvider {
     }
 
     /** Gets the AA module entry, installing it if necessary. */
-    /* package */ void getModuleEntry(
-            Context context, Tab tab, Callback<AutofillAssistantModuleEntry> callback) {
-        AutofillAssistantModuleEntry entry = getModuleEntryIfInstalled(context);
+    /* package */
+    void getModuleEntry(Tab tab, Callback<AutofillAssistantModuleEntry> callback) {
+        AutofillAssistantModuleEntry entry = getModuleEntryIfInstalled();
         if (entry != null) {
             callback.onResult(entry);
             return;
         }
-        loadDynamicModuleWithUi(context, tab, callback);
+        loadDynamicModuleWithUi(tab, callback);
     }
 
     /**
@@ -85,12 +83,12 @@ public class AutofillAssistantModuleEntryProvider {
     }
 
     private static void loadDynamicModuleWithUi(
-            Context activity, Tab tab, Callback<AutofillAssistantModuleEntry> callback) {
+            Tab tab, Callback<AutofillAssistantModuleEntry> callback) {
         ModuleInstallUi ui = new ModuleInstallUi(tab, R.string.autofill_assistant_module_title,
                 new ModuleInstallUi.FailureUiListener() {
                     @Override
                     public void onRetry() {
-                        loadDynamicModuleWithUi(activity, tab, callback);
+                        loadDynamicModuleWithUi(tab, callback);
                     }
 
                     @Override
@@ -102,9 +100,6 @@ public class AutofillAssistantModuleEntryProvider {
         ui.showInstallStartUi();
         ModuleInstaller.getInstance().install("autofill_assistant", (success) -> {
             if (success) {
-                // Clean install of chrome will have issues here without initializing
-                // after installation of DFM.
-                ModuleInstaller.getInstance().initActivity(activity);
                 // Don't show success UI from DFM, transition to autobot UI directly.
                 callback.onResult(AutofillAssistantModule.getImpl());
                 return;

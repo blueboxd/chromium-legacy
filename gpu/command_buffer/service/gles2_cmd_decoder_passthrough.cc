@@ -777,6 +777,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_EXT_blend_minmax",
           "GL_EXT_discard_framebuffer",
           "GL_EXT_disjoint_timer_query",
+          "GL_EXT_multisampled_render_to_texture",
           "GL_EXT_occlusion_query_boolean",
           "GL_EXT_sRGB",
           "GL_EXT_sRGB_write_control",

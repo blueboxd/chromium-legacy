@@ -175,6 +175,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/pref_names_util.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
 #include "chrome/common/prerender_util.h"
 #include "chrome/common/render_messages.h"
@@ -369,7 +370,6 @@
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)
@@ -404,10 +404,6 @@
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/services/cellular_setup/cellular_setup_service.h"
-#include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
-#include "chromeos/services/cellular_setup/public/mojom/constants.mojom.h"
-#include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/network_config/network_config_service.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
@@ -2953,39 +2949,6 @@ content::TtsPlatform* ChromeContentBrowserClient::GetTtsPlatform() {
 #endif
 }
 
-base::Optional<ui::CaptionStyle> GetCaptionStyleFromPrefs(PrefService* prefs) {
-  if (!prefs) {
-    return base::nullopt;
-  }
-
-  ui::CaptionStyle style;
-
-  style.text_size = prefs->GetString(prefs::kAccessibilityCaptionsTextSize);
-  style.font_family = prefs->GetString(prefs::kAccessibilityCaptionsTextFont);
-  if (!prefs->GetString(prefs::kAccessibilityCaptionsTextColor).empty()) {
-    style.text_color = base::StringPrintf(
-        "rgba(%s,%s)",
-        prefs->GetString(prefs::kAccessibilityCaptionsTextColor).c_str(),
-        base::NumberToString(
-            prefs->GetInteger(prefs::kAccessibilityCaptionsTextOpacity) / 100.0)
-            .c_str());
-  }
-
-  if (!prefs->GetString(prefs::kAccessibilityCaptionsBackgroundColor).empty()) {
-    style.background_color = base::StringPrintf(
-        "rgba(%s,%s)",
-        prefs->GetString(prefs::kAccessibilityCaptionsBackgroundColor).c_str(),
-        base::NumberToString(
-            prefs->GetInteger(prefs::kAccessibilityCaptionsBackgroundOpacity) /
-            100.0)
-            .c_str());
-  }
-
-  style.text_shadow = prefs->GetString(prefs::kAccessibilityCaptionsTextShadow);
-
-  return style;
-}
-
 void ChromeContentBrowserClient::OverrideWebkitPrefs(
     RenderViewHost* rvh, WebPreferences* web_prefs) {
   Profile* profile = Profile::FromBrowserContext(
@@ -3336,7 +3299,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   // Apply caption style from preferences if system caption style is undefined.
   if (!style && base::FeatureList::IsEnabled(features::kCaptionSettings)) {
-    style = GetCaptionStyleFromPrefs(prefs);
+    style = pref_names_util::GetCaptionStyleFromPrefs(prefs);
   }
 
   if (style) {
@@ -3917,15 +3880,6 @@ void ChromeContentBrowserClient::RunServiceInstance(
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kUpdatedCellularActivationUi) &&
-      service_name == chromeos::cellular_setup::mojom::kServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<chromeos::cellular_setup::CellularSetupService>(
-            std::move(*receiver)));
-    return;
-  }
-
   if (service_name == chromeos::secure_channel::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::secure_channel::SecureChannelService>(
@@ -5274,6 +5228,10 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
 
   if (!current_navigation_url.SchemeIsHTTPOrHTTPS())
     return content::PREVIEWS_OFF;
+
+  // Check if initial state specifies no previews should be considered.
+  if (initial_state == content::PREVIEWS_OFF)
+    return initial_state;
 
   // Do not allow previews on POST navigations since the primary opt-out
   // mechanism is to reload the page. Because POST navigations are not

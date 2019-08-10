@@ -41,4 +41,8 @@ size_t HidHapticGamepadMac::WriteOutputReport(void* report,
   return (success == kIOReturnSuccess) ? report_length : 0;
 }
 
+base::WeakPtr<AbstractHapticGamepad> HidHapticGamepadMac::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace device

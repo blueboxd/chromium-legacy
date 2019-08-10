@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
@@ -33,7 +34,7 @@ constexpr base::TimeDelta kPendingTaskDuration =
 
 // An implementation of AbstractHapticGamepad that records how many times its
 // SetVibration and SetZeroVibration methods have been called.
-class FakeHapticGamepad : public AbstractHapticGamepad {
+class FakeHapticGamepad final : public AbstractHapticGamepad {
  public:
   FakeHapticGamepad() : set_vibration_count_(0), set_zero_vibration_count_(0) {}
   ~FakeHapticGamepad() override = default;
@@ -44,8 +45,13 @@ class FakeHapticGamepad : public AbstractHapticGamepad {
 
   void SetZeroVibration() override { set_zero_vibration_count_++; }
 
+  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
   int set_vibration_count_;
   int set_zero_vibration_count_;
+  base::WeakPtrFactory<FakeHapticGamepad> weak_factory_{this};
 };
 
 // Main test fixture

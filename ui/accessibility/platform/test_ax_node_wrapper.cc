@@ -555,6 +555,15 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForLandmarkType() const {
 base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
   const AXNodeData& data = GetData();
   switch (data.role) {
+    case ax::mojom::Role::kAudio:
+      return base::ASCIIToUTF16("audio");
+
+    case ax::mojom::Role::kDetails:
+      return base::ASCIIToUTF16("details");
+
+    case ax::mojom::Role::kMeter:
+      return base::ASCIIToUTF16("meter");
+
     case ax::mojom::Role::kSearchBox:
       return base::ASCIIToUTF16("search box");
 
@@ -562,7 +571,9 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
       std::string input_type;
       if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
                                   &input_type)) {
-        if (input_type == "tel") {
+        if (input_type == "email") {
+          return base::ASCIIToUTF16("email");
+        } else if (input_type == "tel") {
           return base::ASCIIToUTF16("telephone");
         } else if (input_type == "url") {
           return base::ASCIIToUTF16("url");

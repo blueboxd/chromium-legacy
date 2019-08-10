@@ -65,6 +65,8 @@ class DEVICE_GAMEPAD_EXPORT AbstractHapticGamepad {
   // must be divided into effects of this duration or less.
   virtual double GetMaxEffectDurationMillis();
 
+  virtual base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() = 0;
+
  private:
   // Override to perform additional shutdown actions after vibration effects
   // are halted and callbacks are issued.
@@ -88,7 +90,6 @@ class DEVICE_GAMEPAD_EXPORT AbstractHapticGamepad {
       playing_effect_callback_;
   scoped_refptr<base::SequencedTaskRunner> callback_runner_;
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<AbstractHapticGamepad> weak_factory_{this};
 };
 
 }  // namespace device

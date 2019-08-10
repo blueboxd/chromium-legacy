@@ -9,14 +9,13 @@
 #import "ios/chrome/browser/ui/badges/badge_button_factory.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface BadgeViewController () <FullscreenUIElement>
+@interface BadgeViewController ()
 
 // Button factory.
 @property(nonatomic, strong) BadgeButtonFactory* buttonFactory;

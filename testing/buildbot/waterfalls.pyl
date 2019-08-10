@@ -2252,7 +2252,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
         },
       },
@@ -2264,7 +2264,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_linux_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_linux_telemetry_tests',
         },
       },
@@ -2276,7 +2276,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_linux_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_linux_telemetry_tests',
         },
       },
@@ -2321,7 +2321,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_win_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_angle_win_intel_telemetry_tests',
         },
       },
@@ -2351,7 +2351,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
         },
       },
       'Android FYI 32 dEQP Vk Release (Pixel 2)': {
@@ -2364,6 +2364,17 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_android_vulkan_gtests',
+        },
+      },
+      'Android FYI 64 Perf (Pixel 2)': {
+        'os_type': 'android',
+        'mixins': [
+          'gpu_pool',
+          'android_q',
+          'walleye',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
         },
       },
       'Android FYI 64 Vk Release (Pixel 2)': {
@@ -2379,7 +2390,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_angle_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
         },
       },
       'Android FYI 64 dEQP Vk Release (Pixel 2)': {
@@ -2405,7 +2416,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2449,7 +2460,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2464,7 +2475,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2479,7 +2490,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
@@ -2560,10 +2571,12 @@
           'limited_capacity_bot',
           'linux_intel_hd_630_experimental',
         ],
+        # Currently the experimental driver is identical to the stable
+        # driver. If it's upgraded, change these test_suites to be the same as
+        # 'Linux FYI Release (Intel HD 630)'.
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
-        }
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+        },
       },
       'Linux FYI Experimental Release (NVIDIA)': {
         'os_type': 'linux',
@@ -2590,7 +2603,7 @@
           # This bot doesn't run any browser-based tests
           # (tab_capture_end2end_tests) either.
           'gtest_tests': 'gpu_fyi_linux_debug_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
         },
       },
       'Linux FYI Ozone (Intel)': {
@@ -2638,7 +2651,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
@@ -2921,7 +2934,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_optional_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts_and_test_buildbucket_api_gpu_use_cases',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts_and_test_buildbucket_api_gpu_use_cases',
           'gpu_telemetry_tests': 'gpu_fyi_optional_linux_telemetry_tests',
         },
       },
@@ -2967,7 +2980,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_optional_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'isolated_scripts': 'gpu_angle_perf_smoke_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_optional_win_intel_telemetry_tests',
         },
       },

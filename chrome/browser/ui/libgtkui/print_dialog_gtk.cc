@@ -28,7 +28,10 @@
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 #include "ui/aura/window.h"
-#include "ui/events/platform/x11/x11_event_source.h"
+
+#if defined(USE_X11)
+#include "ui/events/platform/x11/x11_event_source.h"  // nogncheck
+#endif
 
 using content::BrowserThread;
 using printing::PageRanges;
@@ -353,8 +356,12 @@ void PrintDialogGtk::ShowDialog(
 
   // We need to call gtk_window_present after making the widgets visible to make
   // sure window gets correctly raised and gets focus.
+#if defined(USE_X11)
   gtk_window_present_with_time(
       GTK_WINDOW(dialog_), ui::X11EventSource::GetInstance()->GetTimestamp());
+#else
+  gtk_window_present(GTK_WINDOW(dialog_));
+#endif
 }
 
 void PrintDialogGtk::PrintDocument(const printing::MetafilePlayer& metafile,

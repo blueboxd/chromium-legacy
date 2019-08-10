@@ -10,14 +10,32 @@ js_type_check("closure_compile") {
     ":custom_element",
     ":tab",
     ":tab_list",
+    ":tabs_api_proxy",
   ]
 }
 
 js_library("custom_element") {
 }
-js_library("tab") {
+
+js_library("tabs_api_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr.m",
+  ]
+  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
+
+js_library("tab") {
+  externs_list = [ "$externs_path/chrome.js" ]
+}
+
 js_library("tab_list") {
+  deps = [
+    ":types",
+  ]
+  externs_list = [ "$externs_path/chrome.js" ]
+}
+
+js_library("types") {
 }
 
 group("tab_strip_modules") {

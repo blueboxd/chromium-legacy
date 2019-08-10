@@ -135,6 +135,9 @@ void MediaSession::Dispose() {
 
 void MediaSession::setPlaybackState(const String& playback_state) {
   playback_state_ = StringToMediaSessionPlaybackState(playback_state);
+
+  RecalculatePositionState(false /* notify */);
+
   mojom::blink::MediaSessionService* service = GetService();
   if (service)
     service->SetPlaybackState(playback_state_);
@@ -211,8 +214,12 @@ void MediaSession::setPositionState(MediaPositionState* position_state,
   // If the dictionary is empty / null then we should reset the position state.
   if (!position_state->hasDuration() && !position_state->hasPlaybackRate() &&
       !position_state->hasPosition()) {
+    position_state_ = nullptr;
+    declared_playback_rate_ = 0.0;
+
     if (auto* service = GetService())
       service->SetPositionState(nullptr);
+
     return;
   }
 
@@ -252,13 +259,13 @@ void MediaSession::setPositionState(MediaPositionState* position_state,
     return;
   }
 
-  auto* service = GetService();
-  if (!service)
-    return;
-
-  service->SetPositionState(
+  position_state_ =
       mojo::ConvertTo<media_session::mojom::blink::MediaPositionPtr>(
-          position_state));
+          position_state);
+
+  declared_playback_rate_ = position_state_->playback_rate;
+
+  RecalculatePositionState(true /* notify */);
 }
 
 void MediaSession::NotifyActionChange(const String& action,
@@ -278,6 +285,25 @@ void MediaSession::NotifyActionChange(const String& action,
       service->DisableAction(mojom_action.value());
       break;
   }
+}
+
+void MediaSession::RecalculatePositionState(bool notify) {
+  if (!position_state_)
+    return;
+
+  double new_playback_rate =
+      playback_state_ == mojom::blink::MediaSessionPlaybackState::PAUSED
+          ? 0.0
+          : declared_playback_rate_;
+
+  notify = notify || new_playback_rate != position_state_->playback_rate;
+  position_state_->playback_rate = new_playback_rate;
+
+  if (!notify)
+    return;
+
+  if (auto* service = GetService())
+    service->SetPositionState(position_state_.Clone());
 }
 
 mojom::blink::MediaSessionService* MediaSession::GetService() {

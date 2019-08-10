@@ -448,6 +448,17 @@ bool ShelfWidget::IsShowingOverflowBubble() const {
   return shelf_view_->IsShowingOverflowBubble();
 }
 
+void ShelfWidget::FocusOverflowShelf(bool last_element) {
+  if (!IsShowingOverflowBubble())
+    return;
+  Shell::Get()->focus_cycler()->FocusWidget(
+      shelf_view_->overflow_bubble()->bubble_view()->GetWidget());
+  views::View* to_focus =
+      shelf_view_->overflow_shelf()->FindFirstOrLastFocusableChild(
+          last_element);
+  to_focus->RequestFocus();
+}
+
 void ShelfWidget::SetFocusCycler(FocusCycler* focus_cycler) {
   delegate_view_->set_focus_cycler(focus_cycler);
   if (focus_cycler)
@@ -504,16 +515,8 @@ void ShelfWidget::FocusFirstOrLastFocusableChild(bool last) {
 bool ShelfWidget::OnNativeWidgetActivationChanged(bool active) {
   if (!Widget::OnNativeWidgetActivationChanged(active))
     return false;
-  if (active) {
-    // Do not focus the default element if the widget activation came from the
-    // overflow bubble's focus cycling. The setter of
-    // |activated_from_overflow_bubble_| should handle focusing the correct
-    // view.
-    if (activated_from_overflow_bubble_)
-      activated_from_overflow_bubble_ = false;
-    else
-      delegate_view_->SetPaneFocusAndFocusDefault();
-  }
+  if (active)
+    delegate_view_->SetPaneFocusAndFocusDefault();
   return true;
 }
 

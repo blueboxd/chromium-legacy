@@ -3156,6 +3156,20 @@ void AddExtensionsStrings(content::WebUIDataSource* html_source) {
 
 void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kSecurityKeysStrings[] = {
+      {"securityKeysBioEnrollmentDialogTitle",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_DIALOG_TITLE},
+      {"securityKeysBioEnrollmentEnrollingLabel",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_LABEL},
+      {"securityKeysBioEnrollmentLabel",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_LABEL},
+      {"securityKeysBioEnrollmentNoEnrollments",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_NO_ENROLLMENTS},
+      {"securityKeysBioEnrollmentPinPrompt",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_PIN_PROMPT},
+      {"securityKeysBioEnrollmentSubpageDescription",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_SUBPAGE_DESCRIPTION},
+      {"securityKeysBioEnrollmentTouch",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_TOUCH},
       {"securityKeysPINTooShort",
        IDS_SETTINGS_SECURITY_KEYS_PIN_ERROR_TOO_SHORT},
       {"securityKeysConfirmPIN", IDS_SETTINGS_SECURITY_KEYS_CONFIRM_PIN},
@@ -3229,24 +3243,25 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kSecurityKeysStrings,
                           base::size(kSecurityKeysStrings));
-
+  bool win_native_api_available = false;
+#if defined(OS_WIN)
+  win_native_api_available =
+      base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
+      device::WinWebAuthnApi::GetDefault()->IsAvailable();
+#endif
   html_source->AddBoolean(
       "enableSecurityKeysSubpage",
-      base::FeatureList::IsEnabled(device::kWebAuthPINSupport)
-#if defined(OS_WIN)
-          && (!base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) ||
-              !device::WinWebAuthnApi::GetDefault()->IsAvailable())
-#endif
-  );
+      base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
+          !win_native_api_available);
   html_source->AddBoolean(
       "enableSecurityKeysCredentialManagement",
       base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-          base::FeatureList::IsEnabled(device::kWebAuthCredentialManagement)
-#if defined(OS_WIN)
-          && (!base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) ||
-              !device::WinWebAuthnApi::GetDefault()->IsAvailable())
-#endif
-  );
+          base::FeatureList::IsEnabled(device::kWebAuthCredentialManagement) &&
+          !win_native_api_available);
+  html_source->AddBoolean(
+      "enableSecurityKeysBioEnrollment",
+      base::FeatureList::IsEnabled(device::kWebAuthBiometricEnrollment) &&
+          !win_native_api_available);
 }
 
 }  // namespace

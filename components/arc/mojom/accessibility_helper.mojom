@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 16
+// Next MinVersion: 17
 
 module arc.mojom;
 
@@ -376,6 +376,36 @@ struct AccessibilityActionData {
   [MinVersion=13] int32 end_index;
 };
 
+// The type of shadow used for Chrome captions.
+// https://developer.android.com/reference/android/view/accessibility/CaptioningManager.CaptionStyle
+[Extensible]
+enum CaptionTextShadowType {
+  // Edge type value specifying no character edges.
+  NONE = 0,
+
+  // Edge type value specifying uniformly outlined character edges.
+  UNIFORM = 1,
+
+  // Edge type value specifying drop-shadowed character edges.
+  DROP_SHADOW = 2,
+
+  // Edge type value specifying raised bevel character edges.
+  RAISED = 3,
+
+  // Edge type value specifying depressed bevel character edges.
+  DEPRESSED = 4,
+};
+
+// Encapsulates settings to stylize captions.
+// https://developer.android.com/reference/android/view/accessibility/CaptioningManager.CaptionStyle.html
+struct CaptionStyle {
+  string user_locale;
+  string text_size;
+  string text_color;
+  string background_color;
+  CaptionTextShadowType text_shadow_type;
+};
+
 // Interface for Android communicating to Chrome.
 // Deprecated method IDs: 0
 // Next method ID: 3
@@ -392,7 +422,7 @@ interface AccessibilityHelperHost {
 
 // Interface for communicating to Android.
 // Deprecated method IDs: 0, 1, 3, 5
-// Next method ID: 10
+// Next method ID: 11
 interface AccessibilityHelperInstance {
   // Establishes full-duplex communication with the host.
   [MinVersion=9] Init@7(AccessibilityHelperHost host) => ();
@@ -416,4 +446,7 @@ interface AccessibilityHelperInstance {
   // Returns Rect specifying location, or null if textLocation is not available.
   [MinVersion=13] RefreshWithExtraData@9(AccessibilityActionData refresh_data)
       => (Rect? text_location);
+
+  // Requests the service to set the caption style.
+  [MinVersion=16] SetCaptionStyle@10(CaptionStyle style);
 };

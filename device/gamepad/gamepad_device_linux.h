@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
+#include "base/memory/weak_ptr.h"
 #include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/dualshock4_controller_linux.h"
 #include "device/gamepad/gamepad_id_list.h"
@@ -31,16 +32,13 @@ namespace device {
 //
 // For some devices, haptics are not supported through evdev and are instead
 // sent through the raw HID (hidraw) interface.
-class GamepadDeviceLinux : public AbstractHapticGamepad {
+class GamepadDeviceLinux final : public AbstractHapticGamepad {
  public:
   using OpenDeviceNodeCallback = base::OnceCallback<void(GamepadDeviceLinux*)>;
 
   GamepadDeviceLinux(const std::string& syspath_prefix,
                      scoped_refptr<base::SequencedTaskRunner> dbus_runner);
   ~GamepadDeviceLinux() override;
-
-  // Delete any stored effect and close file descriptors.
-  void DoShutdown() override;
 
   // Returns true if no device nodes are associated with this device.
   bool IsEmpty() const;
@@ -93,9 +91,11 @@ class GamepadDeviceLinux : public AbstractHapticGamepad {
   // Closes the hidraw device node and shuts down haptics.
   void CloseHidrawNode();
 
-  // AbstractHapticGamepad
+  // AbstractHapticGamepad implementation.
+  void DoShutdown() override;
   void SetVibration(double strong_magnitude, double weak_magnitude) override;
   void SetZeroVibration() override;
+  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
 
  private:
   using OpenPathCallback = base::OnceCallback<void(base::ScopedFD)>;

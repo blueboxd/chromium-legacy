@@ -122,7 +122,7 @@ cr.define('extension_pack_dialog_tests', function() {
             expectEquals(kRootPath, packDialog.$$('#root-dir').value);
             packDialog.$$('.action-button').click();
 
-            return PolymerTest.flushTasks();
+            return test_util.flushTasks();
           })
           .then(() => {
             packDialogAlert = packDialog.$$('extensions-pack-dialog-alert');
@@ -214,7 +214,7 @@ cr.define('extension_pack_dialog_tests', function() {
             // Make sure "proceed anyway" try to pack extension again.
             packDialogAlert.$$('.action-button').click();
 
-            return PolymerTest.flushTasks();
+            return test_util.flushTasks();
           })
           .then(() => {
             // Make sure packExtension is called again with the right params.

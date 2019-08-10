@@ -60,8 +60,6 @@ class PasswordRecoveryManager {
       const std::string& private_key);
 
  private:
-  HRESULT GetUserPasswordLsaStoreKey(const base::string16& sid,
-                                     base::string16* store_key);
 
   base::TimeDelta request_timeout_;
 };

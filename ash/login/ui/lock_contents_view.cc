@@ -39,6 +39,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -366,6 +367,11 @@ views::View* LockContentsView::TestApi::main_view() const {
   return view_->main_view_;
 }
 
+void LockContentsView::TestApi::SimulateParentAccessValidationFinished(
+    bool access_granted) {
+  view_->OnParentAccessValidationFinished(access_granted);
+}
+
 LockContentsView::UserState::UserState(const LoginUserInfo& user_info)
     : account_id(user_info.basic_user_info.account_id) {
   fingerprint_state = user_info.fingerprint_state;
@@ -558,12 +564,33 @@ void LockContentsView::ShowParentAccessDialog(bool show) {
   if (!primary_big_view_)
     return;
 
-  if (show)
+  if (show) {
     primary_big_view_->ShowParentAccessView();
-  else
+    Shell::Get()->login_screen_controller()->ShowParentAccessButton(false);
+  } else {
     primary_big_view_->HideParentAccessView();
+  }
 
   Layout();
+}
+
+void LockContentsView::RequestSecurityTokenPin(
+    SecurityTokenPinRequest request) {
+  if (!primary_big_view_ || !primary_big_view_->auth_user() ||
+      primary_big_view_->GetCurrentUser().basic_user_info.account_id !=
+          request.account_id) {
+    // The PIN request is obsolete.
+    std::move(request.pin_ui_closed_callback).Run();
+    return;
+  }
+  primary_big_view_->auth_user()->RequestSecurityTokenPin(std::move(request));
+}
+
+void LockContentsView::ClearSecurityTokenPinRequest() {
+  // Note that if the PIN UI used to be shown in a different primary big view,
+  // then it was already closed while switching the view.
+  if (primary_big_view_ && primary_big_view_->auth_user())
+    primary_big_view_->auth_user()->ClearSecurityTokenPinRequest();
 }
 
 void LockContentsView::Layout() {
@@ -1819,6 +1846,8 @@ void LockContentsView::OnEasyUnlockIconTapped() {
 
 void LockContentsView::OnParentAccessValidationFinished(bool access_granted) {
   ShowParentAccessDialog(false);
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(
+      !access_granted);
 }
 
 keyboard::KeyboardUIController* LockContentsView::GetKeyboardControllerForView()

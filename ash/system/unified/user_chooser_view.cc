@@ -13,6 +13,8 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/tray_constants.h"
@@ -119,7 +121,9 @@ class Separator : public views::View {
     AddChildView(child);
     child->SetBorder(views::CreateSolidSidedBorder(
         0, 0, kUnifiedNotificationSeparatorThickness, 0,
-        kSeparatorOnDarkBackgroundColor));
+        AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+            AshColorProvider::ControlsLayerType::kSeparator,
+            kSeparatorOnDarkBackgroundColor)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(Separator);

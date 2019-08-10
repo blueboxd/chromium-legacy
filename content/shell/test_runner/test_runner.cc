@@ -269,7 +269,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetViewSourceForFrame(const std::string& name, bool enabled);
   void SetWillSendRequestClearHeader(const std::string& header);
   void SetWindowIsKey(bool value);
-  void SetXSSAuditorEnabled(bool enabled);
   void NavigateSecondaryWindow(const std::string& url);
   void InspectSecondaryWindow();
   void SimulateWebNotificationClick(gin::Arguments* args);
@@ -597,8 +596,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setWillSendRequestClearHeader",
                  &TestRunnerBindings::SetWillSendRequestClearHeader)
       .SetMethod("setWindowIsKey", &TestRunnerBindings::SetWindowIsKey)
-      .SetMethod("setXSSAuditorEnabled",
-                 &TestRunnerBindings::SetXSSAuditorEnabled)
       .SetMethod("navigateSecondaryWindow",
                  &TestRunnerBindings::NavigateSecondaryWindow)
       .SetMethod("inspectSecondaryWindow",
@@ -947,11 +944,6 @@ void TestRunnerBindings::SetPopupBlockingEnabled(bool block_popups) {
 void TestRunnerBindings::SetJavaScriptCanAccessClipboard(bool can_access) {
   if (runner_)
     runner_->SetJavaScriptCanAccessClipboard(can_access);
-}
-
-void TestRunnerBindings::SetXSSAuditorEnabled(bool enabled) {
-  if (runner_)
-    runner_->SetXSSAuditorEnabled(enabled);
 }
 
 void TestRunnerBindings::SetAllowFileAccessFromFileURLs(bool allow) {
@@ -2192,11 +2184,6 @@ void TestRunner::SetPopupBlockingEnabled(bool block_popups) {
 
 void TestRunner::SetJavaScriptCanAccessClipboard(bool can_access) {
   delegate_->Preferences()->java_script_can_access_clipboard = can_access;
-  delegate_->ApplyPreferences();
-}
-
-void TestRunner::SetXSSAuditorEnabled(bool enabled) {
-  delegate_->Preferences()->xss_auditor_enabled = enabled;
   delegate_->ApplyPreferences();
 }
 

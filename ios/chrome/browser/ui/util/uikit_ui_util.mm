@@ -67,9 +67,10 @@ void GetRGBA(UIColor* color, CGFloat* r, CGFloat* g, CGFloat* b, CGFloat* a) {
 
 }  // namespace
 
-void SetA11yLabelAndUiAutomationName(UIView* element,
-                                     int idsAccessibilityLabel,
-                                     NSString* englishUiAutomationName) {
+void SetA11yLabelAndUiAutomationName(
+    NSObject<UIAccessibilityIdentification>* element,
+    int idsAccessibilityLabel,
+    NSString* englishUiAutomationName) {
   [element setAccessibilityLabel:l10n_util::GetNSString(idsAccessibilityLabel)];
   [element setAccessibilityIdentifier:englishUiAutomationName];
 }

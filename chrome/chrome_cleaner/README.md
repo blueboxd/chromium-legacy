@@ -39,7 +39,7 @@ Tool includes:
 ## Internal Resources
 
 If |is_official_chrome_cleaner_build| is set in GN, the build looks for
-internal resources in the chrome_cleaner_internal/ directory. These resources
+internal resources in the chrome_cleaner/internal directory. These resources
 are not open source so are only available internally to Google. They include
 the licensed scanning engine used to find real-world UwS.
 

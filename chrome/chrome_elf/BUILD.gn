@@ -86,23 +86,14 @@ shared_library("chrome_elf") {
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]
 
-  # Delay loads in this list will prevent user32.dll
-  # from loading too early.
-  ldflags = [
-    "/DELAYLOAD:advapi32.dll",
-    "/DELAYLOAD:dbghelp.dll",
-    "/DELAYLOAD:ole32.dll",
-    "/DELAYLOAD:oleaut32.dll",
-    "/DELAYLOAD:propsys.dll",
-    "/DELAYLOAD:rpcrt4.dll",
-    "/DELAYLOAD:shell32.dll",
-    "/DELAYLOAD:shlwapi.dll",
-    "/DELAYLOAD:user32.dll",
-    "/DELAYLOAD:winmm.dll",
+  configs += [
+    "//build/config/win:delayloads",
+    "//build/config/win:delayloads_not_for_child_dll",
   ]
+
   if (current_cpu == "x86") {
     # Don"t set an x64 base address (to avoid breaking HE-ASLR).
-    ldflags += [ "/BASE:0x01c20000" ]
+    ldflags = [ "/BASE:0x01c20000" ]
   }
 }
 

@@ -271,7 +271,7 @@ NET_EXPORT_PRIVATE bool ParseOCSPResponse(const der::Input& raw_tlv,
                                           OCSPResponse* out);
 
 // Checks the revocation status of the certificate |certificate_der| by using
-// the der-encoded |raw_response|.
+// the DER-encoded |raw_response|.
 //
 // Returns GOOD if the OCSP response indicates the certificate is not revoked,
 // REVOKED if it indicates it is revoked, or UNKNOWN for all other cases.
@@ -291,6 +291,19 @@ NET_EXPORT OCSPRevocationStatus CheckOCSP(
     base::StringPiece raw_response,
     base::StringPiece certificate_der,
     base::StringPiece issuer_certificate_der,
+    const base::Time& verify_time,
+    const base::TimeDelta& max_age,
+    OCSPVerifyResult::ResponseStatus* response_details) WARN_UNUSED_RESULT;
+
+// Checks the revocation status of |certificate| by using the DER-encoded
+// |raw_response|.
+//
+// Arguments are the same as above, except that it takes already parsed
+// instances of the certificate and issuer certificate.
+NET_EXPORT OCSPRevocationStatus CheckOCSP(
+    base::StringPiece raw_response,
+    const ParsedCertificate* certificate,
+    const ParsedCertificate* issuer_certificate,
     const base::Time& verify_time,
     const base::TimeDelta& max_age,
     OCSPVerifyResult::ResponseStatus* response_details) WARN_UNUSED_RESULT;

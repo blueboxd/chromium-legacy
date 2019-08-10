@@ -498,6 +498,7 @@ if (is_fuchsia) {
 repack("cast_shell_pak") {
   sources = [
     "$root_gen_dir/chromecast/app/shell_resources.pak",
+    "$root_gen_dir/chromecast/bindings/bindings_resources.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
     "$root_gen_dir/content/content_resources.pak",
@@ -515,6 +516,7 @@ repack("cast_shell_pak") {
 
   deps = [
     "//chromecast/app:resources",
+    "//chromecast/bindings:bindings_resources_grit",
     "//content:resources",
     "//content/app/resources",
     "//content/app/strings",

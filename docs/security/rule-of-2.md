@@ -9,6 +9,13 @@ is: Pick no more than 2 of
   * unsafe implementation language; and
   * high privilege.
 
+![alt text](rule-of-2-drawing.png "Venn diagram showing you should always use
+a safe language, a sandbox, or not be processing untrustworthy inputs in the first
+place.)
+
+(drawing source
+[here](https://docs.google.com/drawings/d/1JsXilEJA3y_-jZMBZ_ZaQEBT8c4_VoFhTlD1eocUNeA/edit?usp=sharing))
+
 ## Why?
 
 When code that handles untrustworthy inputs at high privilege has bugs, the

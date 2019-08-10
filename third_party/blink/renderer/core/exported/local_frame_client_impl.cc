@@ -1058,10 +1058,15 @@ KURL LocalFrameClientImpl::OverrideFlashEmbedWithHTML(const KURL& url) {
   return web_frame_->Client()->OverrideFlashEmbedWithHTML(WebURL(url));
 }
 
-void LocalFrameClientImpl::NotifyUserActivation() {
+void LocalFrameClientImpl::NotifyUserActivation(
+    bool need_browser_verification) {
   DCHECK(web_frame_->Client());
-  web_frame_->Client()->UpdateUserActivationState(
-      UserActivationUpdateType::kNotifyActivation);
+  UserActivationUpdateType update_type =
+      need_browser_verification
+          ? UserActivationUpdateType::
+                kNotifyActivationPendingBrowserVerification
+          : UserActivationUpdateType::kNotifyActivation;
+  web_frame_->Client()->UpdateUserActivationState(update_type);
   if (WebAutofillClient* autofill_client = web_frame_->AutofillClient())
     autofill_client->UserGestureObserved();
 }

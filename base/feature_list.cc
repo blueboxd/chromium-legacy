@@ -161,6 +161,14 @@ void FeatureList::RegisterFieldTrialOverride(const std::string& feature_name,
   RegisterOverride(feature_name, override_state, field_trial);
 }
 
+void FeatureList::RegisterExtraFeatureOverrides(
+    const std::vector<FeatureOverrideInfo>& extra_overrides) {
+  for (const FeatureOverrideInfo& override_info : extra_overrides) {
+    RegisterOverride(override_info.first.get().name, override_info.second,
+                     /* field_trial = */ nullptr);
+  }
+}
+
 void FeatureList::AddFeaturesToAllocator(PersistentMemoryAllocator* allocator) {
   DCHECK(initialized_);
 
@@ -223,6 +231,15 @@ std::vector<StringPiece> FeatureList::SplitFeatureListString(
 // static
 bool FeatureList::InitializeInstance(const std::string& enable_features,
                                      const std::string& disable_features) {
+  return InitializeInstance(enable_features, disable_features,
+                            std::vector<FeatureOverrideInfo>());
+}
+
+// static
+bool FeatureList::InitializeInstance(
+    const std::string& enable_features,
+    const std::string& disable_features,
+    const std::vector<FeatureOverrideInfo>& extra_overrides) {
   // We want to initialize a new instance here to support command-line features
   // in testing better. For example, we initialize a dummy instance in
   // base/test/test_suite.cc, and override it in content/browser/
@@ -247,6 +264,7 @@ bool FeatureList::InitializeInstance(const std::string& enable_features,
 
   std::unique_ptr<FeatureList> feature_list(new FeatureList);
   feature_list->InitializeFromCommandLine(enable_features, disable_features);
+  feature_list->RegisterExtraFeatureOverrides(extra_overrides);
   FeatureList::SetInstance(std::move(feature_list));
   return !instance_existed_before;
 }

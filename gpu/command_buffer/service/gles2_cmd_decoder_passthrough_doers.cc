@@ -3223,9 +3223,9 @@ error::Error GLES2DecoderPassthroughImpl::DoRenderbufferStorageMultisampleEXT(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  // This is for GL_EXT_multisampled_render_to_texture, which is not currently
-  // supported by ANGLE.
-  NOTREACHED();
+  DCHECK(feature_info_->feature_flags().multisampled_render_to_texture);
+  api()->glRenderbufferStorageMultisampleEXTFn(target, samples, internalformat,
+                                               width, height);
   return error::kNoError;
 }
 
@@ -3236,9 +3236,16 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTexture2DMultisampleEXT(
     GLuint texture,
     GLint level,
     GLsizei samples) {
-  // This is for GL_EXT_multisampled_render_to_texture, which is not currently
-  // supported by ANGLE.
-  NOTREACHED();
+  DCHECK(feature_info_->feature_flags().multisampled_render_to_texture);
+  if (IsEmulatedFramebufferBound(target)) {
+    InsertError(GL_INVALID_OPERATION,
+                "Cannot change the attachments of the default framebuffer.");
+    return error::kNoError;
+  }
+  BindPendingImageForClientIDIfNeeded(texture);
+  api()->glFramebufferTexture2DMultisampleEXTFn(
+      target, attachment, textarget,
+      GetTextureServiceID(api(), texture, resources_, false), level, samples);
   return error::kNoError;
 }
 

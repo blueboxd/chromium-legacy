@@ -95,6 +95,14 @@ class RenderWidgetTargeter {
         RenderWidgetHostViewBase* target_view) const = 0;
   };
 
+  enum class HitTestResultsMatch {
+    kDoNotMatch = 0,
+    kMatch = 1,
+    kHitTestResultChanged = 2,
+    kHitTestDataOutdated = 3,
+    kMaxValue = kHitTestDataOutdated,
+  };
+
   // The delegate must outlive this targeter.
   explicit RenderWidgetTargeter(Delegate* delegate);
   ~RenderWidgetTargeter();
@@ -238,6 +246,10 @@ class RenderWidgetTargeter {
       base::WeakPtr<RenderWidgetHostViewBase> last_request_target,
       const gfx::PointF& last_target_location,
       const bool is_verification_request);
+
+  HitTestResultsMatch GetHitTestResultsMatchBucket(
+      RenderWidgetHostViewBase* target,
+      TargetingRequest* request) const;
 
   base::TimeDelta async_hit_test_timeout_delay() {
     return async_hit_test_timeout_delay_;

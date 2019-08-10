@@ -8,13 +8,15 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 
 @class BadgeButtonFactory;
 @protocol InfobarCommands;
 
 // Manages badges to display that are received through BadgeConsumer. Currently
 // only displays the newest badge.
-@interface BadgeViewController : UIViewController <BadgeConsumer>
+@interface BadgeViewController
+    : UIViewController <BadgeConsumer, FullscreenUIElement>
 
 // The dispatcher for badge button actions.
 @property(nonatomic, weak) id<InfobarCommands> dispatcher;

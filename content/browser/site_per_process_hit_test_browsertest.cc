@@ -6338,6 +6338,89 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       RenderWidgetUserActivationStateTest) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kBrowserVerifiedUserActivation);
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "foo.com", "/frame_tree/page_with_positioned_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  ASSERT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://foo.com/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
+
+  WaitForHitTestData(child->current_frame_host());
+
+  RenderWidgetHostMouseEventMonitor main_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor child_frame_monitor(
+      child->current_frame_host()->GetRenderWidgetHost());
+
+  RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  // Send a mouse down event to main frame.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebPointerProperties::Button::kLeft;
+  mouse_event.click_count = 1;
+  main_frame_monitor.ResetEventReceived();
+
+  gfx::PointF click_point(10, 10);
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), mouse_event, rwhv_root,
+                                         click_point, rwhv_root, click_point);
+  EXPECT_TRUE(main_frame_monitor.EventWasReceived());
+
+  // Root frame pending activation state has been cleared by activation
+  // notification, and it has user activation.
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetRenderWidgetHost()
+                   ->ConsumePendingUserActivationIfAllowed());
+  EXPECT_TRUE(root->HasTransientUserActivation());
+  // Child frame doesn't have allowed_activation state set, and does not have
+  // user activation.
+  EXPECT_FALSE(child->current_frame_host()
+                   ->GetRenderWidgetHost()
+                   ->ConsumePendingUserActivationIfAllowed());
+  EXPECT_FALSE(child->HasTransientUserActivation());
+
+  // Clear the activation state.
+  root->UpdateUserActivationState(
+      blink::UserActivationUpdateType::kClearActivation);
+
+  // Send a mouse down to child frame.
+  mouse_event.SetType(blink::WebInputEvent::kMouseDown);
+  child_frame_monitor.ResetEventReceived();
+  DispatchMouseEventAndWaitUntilDispatch(web_contents(), mouse_event,
+                                         rwhv_child, click_point, rwhv_child,
+                                         click_point);
+  EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+
+  // Child frame's activation state has been cleared by
+  // the activation notification, and it has user activation.
+  EXPECT_FALSE(child->current_frame_host()
+                   ->GetRenderWidgetHost()
+                   ->ConsumePendingUserActivationIfAllowed());
+  EXPECT_TRUE(child->HasTransientUserActivation());
+  // Root frame doesn't have allowed_activation state set, but has user
+  // activation because with UAv2, ancestor frames get activated as well.
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetRenderWidgetHost()
+                   ->ConsumePendingUserActivationIfAllowed());
+  EXPECT_TRUE(root->HasTransientUserActivation());
+}
+
 class SitePerProcessHitTestDataGenerationBrowserTest
     : public SitePerProcessHitTestBrowserTest {
  public:

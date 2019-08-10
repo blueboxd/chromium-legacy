@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcTwoDeviceDepthCaptureBrowserTest,
 
   GURL url(
       embedded_test_server()->GetURL("/media/getusermedia-depth-capture.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   ExecuteJavascriptAndWaitForOk(base::StringPrintf(
       "%s({video: true});", kGetDepthStreamAndCallCreateImageBitmap));
@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcTwoDeviceDepthCaptureVideoKindBrowserTest,
 
   GURL url(
       embedded_test_server()->GetURL("/media/getusermedia-depth-capture.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   ExecuteJavascriptAndWaitForOk(
       base::StringPrintf("%s({video: true});", kGetStreamsByVideoKind));
@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcOneDeviceDepthCaptureVideoKindBrowserTest,
 
   GURL url(
       embedded_test_server()->GetURL("/media/getusermedia-depth-capture.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   ExecuteJavascriptAndWaitForOk(
       base::StringPrintf("%s({video: true});", kGetStreamsByVideoKindNoDepth));

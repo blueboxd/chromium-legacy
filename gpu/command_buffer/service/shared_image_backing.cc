@@ -35,11 +35,9 @@ void SharedImageBacking::OnContextLost() {
   have_context_ = false;
 }
 
-#if defined(OS_WIN)
 bool SharedImageBacking::PresentSwapChain() {
   return false;
 }
-#endif  // OS_WIN
 
 std::unique_ptr<SharedImageRepresentationGLTexture>
 SharedImageBacking::ProduceGLTexture(SharedImageManager* manager,

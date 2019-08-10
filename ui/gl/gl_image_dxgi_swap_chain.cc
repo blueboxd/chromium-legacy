@@ -6,6 +6,7 @@
 
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_surface_egl.h"
 
 #ifndef EGL_ANGLE_image_d3d11_texture
 #define EGL_D3D11_TEXTURE_ANGLE 0x3484
@@ -13,34 +14,42 @@
 
 namespace gl {
 
-namespace {
-
-bool SwapChainHasAlpha(gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBA_F16:
-      return true;
-    case gfx::BufferFormat::RGBX_8888:
-      return false;
-    default:
-      NOTREACHED();
-      return false;
-  };
-}
-
-}  // anonymous namespace
-
 GLImageDXGISwapChain::GLImageDXGISwapChain(
     const gfx::Size& size,
     gfx::BufferFormat buffer_format,
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
     Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain)
-    : GLImageEGL(size),
+    : GLImage(),
+      size_(size),
       buffer_format_(buffer_format),
-      texture_(texture),
-      swap_chain_(swap_chain) {
+      texture_(std::move(texture)),
+      swap_chain_(std::move(swap_chain)) {
   DCHECK(texture_);
   DCHECK(swap_chain_);
+}
+
+GLImageDXGISwapChain::~GLImageDXGISwapChain() {
+  if (egl_image_ != EGL_NO_IMAGE_KHR) {
+    if (eglDestroyImageKHR(GLSurfaceEGL::GetHardwareDisplay(), egl_image_) ==
+        EGL_FALSE) {
+      DLOG(ERROR) << "Error destroying EGLImage: "
+                  << ui::GetLastEGLErrorString();
+    }
+  }
+}
+
+bool GLImageDXGISwapChain::Initialize() {
+  DCHECK_EQ(egl_image_, EGL_NO_IMAGE_KHR);
+  const EGLint attribs[] = {EGL_NONE};
+  egl_image_ =
+      eglCreateImageKHR(GLSurfaceEGL::GetHardwareDisplay(), EGL_NO_CONTEXT,
+                        EGL_D3D11_TEXTURE_ANGLE,
+                        static_cast<EGLClientBuffer>(texture_.Get()), attribs);
+  if (egl_image_ == EGL_NO_IMAGE_KHR) {
+    LOG(ERROR) << "Error creating EGLImage: " << ui::GetLastEGLErrorString();
+    return false;
+  }
+  return true;
 }
 
 // static
@@ -50,37 +59,46 @@ GLImageDXGISwapChain* GLImageDXGISwapChain::FromGLImage(GLImage* image) {
   return static_cast<GLImageDXGISwapChain*>(image);
 }
 
-bool GLImageDXGISwapChain::Initialize() {
-  DCHECK(texture_);
-  const EGLint attribs[] = {EGL_NONE};
-  return GLImageEGL::Initialize(EGL_NO_CONTEXT, EGL_D3D11_TEXTURE_ANGLE,
-                                static_cast<EGLClientBuffer>(texture_.Get()),
-                                attribs);
+GLImage::Type GLImageDXGISwapChain::GetType() const {
+  return Type::DXGI_SWAP_CHAIN;
+}
+
+GLImage::BindOrCopy GLImageDXGISwapChain::ShouldBindOrCopy() {
+  return GLImage::BIND;
+}
+
+gfx::Size GLImageDXGISwapChain::GetSize() {
+  return size_;
+}
+
+unsigned GLImageDXGISwapChain::GetInternalFormat() {
+  return buffer_format_ == gfx::BufferFormat::RGBA_F16 ? GL_RGBA16F_EXT
+                                                       : GL_BGRA8_EXT;
+}
+
+bool GLImageDXGISwapChain::BindTexImage(unsigned target) {
+  DCHECK_NE(egl_image_, EGL_NO_IMAGE_KHR);
+  glEGLImageTargetTexture2DOES(target, egl_image_);
+  return glGetError() == static_cast<GLenum>(GL_NO_ERROR);
 }
 
 bool GLImageDXGISwapChain::CopyTexImage(unsigned target) {
+  NOTREACHED();
   return false;
 }
 
 bool GLImageDXGISwapChain::CopyTexSubImage(unsigned target,
                                            const gfx::Point& offset,
                                            const gfx::Rect& rect) {
+  NOTREACHED();
   return false;
-}
-
-void GLImageDXGISwapChain::Flush() {}
-
-unsigned GLImageDXGISwapChain::GetInternalFormat() {
-  return SwapChainHasAlpha(buffer_format_) ? GL_RGBA : GL_RGB;
 }
 
 void GLImageDXGISwapChain::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
     uint64_t process_tracing_id,
-    const std::string& dump_name) {}
-
-GLImage::Type GLImageDXGISwapChain::GetType() const {
-  return Type::DXGI_SWAP_CHAIN;
+    const std::string& dump_name) {
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool GLImageDXGISwapChain::ScheduleOverlayPlane(
@@ -94,7 +112,5 @@ bool GLImageDXGISwapChain::ScheduleOverlayPlane(
   NOTREACHED();
   return false;
 }
-
-GLImageDXGISwapChain::~GLImageDXGISwapChain() {}
 
 }  // namespace gl

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/rand_util.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -133,7 +134,9 @@ CanvasRenderingContext2D::CanvasRenderingContext2D(
           canvas->GetDocument().GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
           &CanvasRenderingContext2D::TryRestoreContextEvent),
-      should_prune_local_font_cache_(false) {
+      should_prune_local_font_cache_(false),
+      random_generator_((uint32_t)base::RandUint64()),
+      bernoulli_distribution_(kRasterMetricProbability) {
   if (canvas->GetDocument().GetSettings() &&
       canvas->GetDocument().GetSettings()->GetAntialiasedClips2dCanvasEnabled())
     clip_antialiasing_ = kAntiAliased;
@@ -576,10 +579,11 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       new_font);  // Create a string copy since newFont can be
                   // deleted inside realizeSaves.
   ModifiableState().SetUnparsedFont(new_font_safe_copy);
-
-  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-  base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
-      "Canvas.TextMetrics.SetFont", elapsed);
+  if (bernoulli_distribution_(random_generator_)) {
+    base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+    base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
+        "Canvas.TextMetrics.SetFont", elapsed);
+  }
 }
 
 void CanvasRenderingContext2D::DidProcessTask(
@@ -811,9 +815,11 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   TextMetrics* text_metrics = MakeGarbageCollected<TextMetrics>(
       font, direction, GetState().GetTextBaseline(), GetState().GetTextAlign(),
       text);
-  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-  base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
-      "Canvas.TextMetrics.MeasureText", elapsed);
+  if (bernoulli_distribution_(random_generator_)) {
+    base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+    base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
+        "Canvas.TextMetrics.MeasureText", elapsed);
+  }
   return text_metrics;
 }
 

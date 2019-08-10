@@ -8,11 +8,15 @@
 #include "base/android/scoped_java_ref.h"
 #include "content/public/browser/sms_dialog.h"
 
+namespace url {
+class Origin;
+}
+
 // The SmsDialogAndroid implements the SmsDialog interface to offer users
 // the awareness and controls over receiving SMS messages.
 class SmsDialogAndroid : public content::SmsDialog {
  public:
-  SmsDialogAndroid();
+  explicit SmsDialogAndroid(const url::Origin& origin);
   ~SmsDialogAndroid() override;
 
   void Open(content::RenderFrameHost*,

@@ -7797,6 +7797,7 @@ interface SyncManager
 interface Task
     attribute @@toStringTag
     getter priority
+    getter result
     getter status
     method cancel
     method constructor

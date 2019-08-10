@@ -379,6 +379,7 @@ source_set("eg2_tests") {
   sources = [
     "child_window_open_by_dom_egtest.mm",
     "error_page_egtest.mm",
+    "js_print_egtest.mm",
   ]
 
   deps = [

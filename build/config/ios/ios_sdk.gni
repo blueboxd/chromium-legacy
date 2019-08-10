@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ios/ios_sdk_overrides.gni")
+import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 
 assert(use_system_xcode, "Hermetic xcode doesn't work for ios.")
@@ -53,6 +54,10 @@ declare_args() {
   # using the syntax --args='additional_target_cpus=["arm"] target_cpu="arm64"'.
   additional_target_cpus = []
 }
+
+# Official builds may not use goma.
+assert(!(is_chrome_branded && is_official_build && target_cpu == "arm64"),
+       "goma use is forbidden for official iOS builds.")
 
 assert(custom_toolchain == "" || additional_target_cpus == [],
        "cannot define both custom_toolchain and additional_target_cpus")

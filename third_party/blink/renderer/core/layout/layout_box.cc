@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -722,10 +723,19 @@ PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(
     absolute_rect_for_parent = absolute_rect_to_scroll;
   }
 
-  // If we are fixed-position and stick to the viewport, it is useless to
-  // scroll the parent.
-  if (StyleRef().GetPosition() == EPosition::kFixed && Container() == View())
-    return absolute_rect_for_parent;
+  // If we're in a position:fixed element, scrolling the layout viewport won't
+  // have any effect, so we avoid using the RootFrameViewport and explicitly
+  // scroll the visual viewport if we can.  If not, we're done.
+  if (StyleRef().GetPosition() == EPosition::kFixed && Container() == View() &&
+      params.make_visible_in_visual_viewport) {
+    if (GetFrame()->IsMainFrame()) {
+      // TODO(donnd): We should continue the recursion if we're in a subframe.
+      return GetFrame()->GetPage()->GetVisualViewport().ScrollIntoView(
+          absolute_rect_for_parent, params);
+    } else {
+      return absolute_rect_for_parent;
+    }
+  }
 
   if (parent_box) {
     return parent_box->ScrollRectToVisibleRecursive(absolute_rect_for_parent,

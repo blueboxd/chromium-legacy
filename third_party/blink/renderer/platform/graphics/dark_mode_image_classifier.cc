@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
+
+#include "base/optional.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -45,23 +48,22 @@ DarkModeClassification DarkModeImageClassifier::Classify(
     return result;
   }
 
-  Vector<float> features;
-  if (!GetFeatures(image, src_rect, &features)) {
+  auto features_or_null = GetFeatures(image, src_rect);
+  if (!features_or_null) {
     // Do not cache this classification.
     return DarkModeClassification::kDoNotApplyFilter;
   }
 
-  result = ClassifyWithFeatures(features);
+  result = ClassifyWithFeatures(features_or_null.value());
   image->AddDarkModeClassification(src_rect, result);
   return result;
 }
 
-bool DarkModeImageClassifier::GetFeatures(Image* image,
-                                          const FloatRect& src_rect,
-                                          Vector<float>* features) {
+base::Optional<DarkModeImageClassifier::Features>
+DarkModeImageClassifier::GetFeatures(Image* image, const FloatRect& src_rect) {
   SkBitmap bitmap;
   if (!image->GetImageBitmap(src_rect, &bitmap))
-    return false;
+    return base::nullopt;
 
   if (pixels_to_sample_ > src_rect.Width() * src_rect.Height())
     pixels_to_sample_ = src_rect.Width() * src_rect.Height();
@@ -74,11 +76,9 @@ bool DarkModeImageClassifier::GetFeatures(Image* image,
   // loaded and how we can fetch the correct resource. This condition will
   // prevent going further with the rest of the classification logic.
   if (sampled_pixels.size() == 0)
-    return false;
+    return base::nullopt;
 
-  ComputeFeatures(sampled_pixels, transparency_ratio, background_ratio,
-                  features);
-  return true;
+  return ComputeFeatures(sampled_pixels, transparency_ratio, background_ratio);
 }
 
 // Extracts sample pixels from the image. The image is separated into uniformly
@@ -170,19 +170,10 @@ void DarkModeImageClassifier::GetBlockSamples(const SkBitmap& bitmap,
   }
 }
 
-// This function computes a single feature vector from a sample set of image
-// pixels. The current features are:
-// 0: 1 if color, 0 if grayscale.
-// 1: Ratio of the number of bucketed colors used in the image to all
-//    possibilities. Color buckets are represented with 4 bits per color
-//    channel.
-// 2: Ratio of transparent area to the whole image.
-// 3: Ratio of the background area to the whole image.
-void DarkModeImageClassifier::ComputeFeatures(
+DarkModeImageClassifier::Features DarkModeImageClassifier::ComputeFeatures(
     const Vector<SkColor>& sampled_pixels,
     const float transparency_ratio,
-    const float background_ratio,
-    Vector<float>* features) {
+    const float background_ratio) {
   int samples_count = static_cast<int>(sampled_pixels.size());
 
   // Is image grayscale.
@@ -195,22 +186,15 @@ void DarkModeImageClassifier::ComputeFeatures(
                              ? ColorMode::kColor
                              : ColorMode::kGrayscale;
 
-  features->resize(5);
+  DarkModeImageClassifier::Features features;
+  features.is_colorful = color_mode == ColorMode::kColor;
+  features.color_buckets_ratio =
+      ComputeColorBucketsRatio(sampled_pixels, color_mode);
+  features.transparency_ratio = transparency_ratio;
+  features.background_ratio = background_ratio;
+  features.is_svg = image_type_ == ImageType::kSvg;
 
-  // Feature 0: Is Colorful?
-  (*features)[0] = color_mode == ColorMode::kColor;
-
-  // Feature 1: Color Buckets Ratio.
-  (*features)[1] = ComputeColorBucketsRatio(sampled_pixels, color_mode);
-
-  // Feature 2: Transparency Ratio
-  (*features)[2] = transparency_ratio;
-
-  // Feature 3: Background Ratio.
-  (*features)[3] = background_ratio;
-
-  // Feature 4: Is SVG?
-  (*features)[4] = image_type_ == ImageType::kSvg;
+  return features;
 }
 
 float DarkModeImageClassifier::ComputeColorBucketsRatio(

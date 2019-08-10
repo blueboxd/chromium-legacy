@@ -675,6 +675,14 @@ void NavigatorImpl::OnBeginNavigation(
   }
   NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
   NavigationEntryImpl* current_entry = controller_->GetLastCommittedEntry();
+  if (current_entry && common_params->url == current_entry->GetReferrer().url) {
+    // Looks like a potential client redirect loop. Turn off any preview
+    // interventions in case they are at fault. Motivated by crbug.com/987062
+    common_params->previews_state = PREVIEWS_OFF;
+    UMA_HISTOGRAM_BOOLEAN("Navigation.ClientRedirectCycle.RedirectToReferrer",
+                          true);
+  }
+
   // Only consult the delegate for override state if there is no current entry,
   // since that state should only apply to newly created tabs (and not cases
   // where the NavigationEntry recorded the state).

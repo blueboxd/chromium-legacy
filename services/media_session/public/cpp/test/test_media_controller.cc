@@ -261,6 +261,11 @@ void TestMediaController::Seek(base::TimeDelta seek_time) {
   }
 }
 
+void TestMediaController::SeekTo(base::TimeDelta seek_time) {
+  seek_to_time_ = seek_time;
+  ++seek_to_count_;
+}
+
 void TestMediaController::SimulateMediaSessionInfoChanged(
     mojom::MediaSessionInfoPtr session_info) {
   for (auto& observer : observers_)

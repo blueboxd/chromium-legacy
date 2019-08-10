@@ -231,15 +231,14 @@ class BuildConfigGenerator extends DefaultTask {
     private static void addSpecialTreatment(StringBuilder sb, String dependencyId) {
         if (isPlayServicesTarget(dependencyId)) {
             if (Pattern.matches(".*cast_framework.*", dependencyId)) {
-                sb.append('  # Removing all resources from cast framework as they are unused bloat.\n')
-                sb.append('  strip_resources = true\n')
+                sb.append('  # Cannot get rid of cast framework resources: crbug.com/985139.\n')
             } else {
                 sb.append('  # Removing drawables from GMS .aars as they are unused bloat.\n')
                 sb.append('  strip_drawables = true\n')
             }
         }
         switch(dependencyId) {
-            case 'android_arch_lifecycle_runtime_java':
+            case 'android_arch_lifecycle_runtime':
                 sb.append('  # https://crbug.com/887942#c1\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break

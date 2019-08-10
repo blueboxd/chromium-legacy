@@ -2360,8 +2360,8 @@ enum WebFeature {
   kToggleEventHandlerDuringParsing = 2978,
   kFragmentDoubleHash = 2979,
   kV8RegExpMatchAllWithNonGlobalRegExp = 2980,
-  kCSSValueOverflowXOverlay = 2981,
-  kCSSValueOverflowYOverlay = 2982,
+  kOBSOLETE_CSSValueOverflowXOverlay = 2981,
+  kOBSOLETE_CSSValueOverflowYOverlay = 2982,
   kContentIndexAdd = 2983,
   kContentIndexDelete = 2984,
   kContentIndexGet = 2985,
@@ -2374,6 +2374,7 @@ enum WebFeature {
   kV8SpeechRecognition_Grammars_AttributeSetter = 2992,
   kContactsManagerSelect = 2993,
   kV8MediaSession_SetPositionState_Method = 2994,
+  kCSSValueOverflowOverlay = 2995,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

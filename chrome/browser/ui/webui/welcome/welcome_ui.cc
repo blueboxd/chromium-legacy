@@ -19,8 +19,8 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/onboarding_welcome_resources.h"
-#include "chrome/grit/onboarding_welcome_resources_map.h"
+#include "chrome/grit/welcome_resources.h"
+#include "chrome/grit/welcome_resources_map.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
@@ -66,49 +66,44 @@ void HandleRequestCallback(
   weak_ptr->CreateBackgroundFetcher(background_index, callback);
 }
 
-void AddOnboardingStrings(content::WebUIDataSource* html_source) {
+void AddStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
       // Shared strings.
-      {"bookmarkAdded", IDS_ONBOARDING_WELCOME_BOOKMARK_ADDED},
-      {"bookmarksAdded", IDS_ONBOARDING_WELCOME_BOOKMARKS_ADDED},
-      {"bookmarkRemoved", IDS_ONBOARDING_WELCOME_BOOKMARK_REMOVED},
-      {"bookmarksRemoved", IDS_ONBOARDING_WELCOME_BOOKMARKS_REMOVED},
-      {"defaultBrowserChanged", IDS_ONBOARDING_DEFAULT_BROWSER_CHANGED},
+      {"bookmarkAdded", IDS_WELCOME_BOOKMARK_ADDED},
+      {"bookmarksAdded", IDS_WELCOME_BOOKMARKS_ADDED},
+      {"bookmarkRemoved", IDS_WELCOME_BOOKMARK_REMOVED},
+      {"bookmarksRemoved", IDS_WELCOME_BOOKMARKS_REMOVED},
+      {"defaultBrowserChanged", IDS_DEFAULT_BROWSER_CHANGED},
       {"headerText", IDS_WELCOME_HEADER},
-      {"next", IDS_ONBOARDING_WELCOME_NEXT},
+      {"next", IDS_WELCOME_NEXT},
       {"noThanks", IDS_NO_THANKS},
-      {"skip", IDS_ONBOARDING_WELCOME_SKIP},
+      {"skip", IDS_WELCOME_SKIP},
 
       // Sign-in view strings.
-      {"signInHeader", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_HEADER},
-      {"signInSubHeader", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SUB_HEADER},
-      {"signIn", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SIGNIN},
+      {"signInHeader", IDS_WELCOME_SIGNIN_VIEW_HEADER},
+      {"signInSubHeader", IDS_WELCOME_SIGNIN_VIEW_SUB_HEADER},
+      {"signIn", IDS_WELCOME_SIGNIN_VIEW_SIGNIN},
 
       // Google apps module strings.
-      {"googleAppsDescription",
-       IDS_ONBOARDING_WELCOME_NUX_GOOGLE_APPS_DESCRIPTION},
+      {"googleAppsDescription", IDS_WELCOME_GOOGLE_APPS_DESCRIPTION},
 
       // New Tab Page background module strings.
-      {"ntpBackgroundDescription",
-       IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_DESCRIPTION},
-      {"ntpBackgroundDefault",
-       IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_DEFAULT_TITLE},
+      {"ntpBackgroundDescription", IDS_WELCOME_NTP_BACKGROUND_DESCRIPTION},
+      {"ntpBackgroundDefault", IDS_WELCOME_NTP_BACKGROUND_DEFAULT_TITLE},
       {"ntpBackgroundPreviewUpdated",
-       IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PREVIEW_UPDATED},
-      {"ntpBackgroundReset", IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_RESET},
+       IDS_WELCOME_NTP_BACKGROUND_PREVIEW_UPDATED},
+      {"ntpBackgroundReset", IDS_WELCOME_NTP_BACKGROUND_RESET},
 
       // Set as default module strings.
-      {"setDefaultHeader", IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_HEADER},
-      {"setDefaultSubHeader",
-       IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SUB_HEADER},
-      {"setDefaultConfirm",
-       IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SET_AS_DEFAULT},
+      {"setDefaultHeader", IDS_WELCOME_SET_AS_DEFAULT_HEADER},
+      {"setDefaultSubHeader", IDS_WELCOME_SET_AS_DEFAULT_SUB_HEADER},
+      {"setDefaultConfirm", IDS_WELCOME_SET_AS_DEFAULT_SET_AS_DEFAULT},
 
       // Landing view strings.
-      {"landingTitle", IDS_ONBOARDING_WELCOME_LANDING_TITLE},
-      {"landingDescription", IDS_ONBOARDING_WELCOME_LANDING_DESCRIPTION},
-      {"landingNewUser", IDS_ONBOARDING_WELCOME_LANDING_NEW_USER},
-      {"landingExistingUser", IDS_ONBOARDING_WELCOME_LANDING_EXISTING_USER},
+      {"landingTitle", IDS_WELCOME_LANDING_TITLE},
+      {"landingDescription", IDS_WELCOME_LANDING_DESCRIPTION},
+      {"landingNewUser", IDS_WELCOME_LANDING_NEW_USER},
+      {"landingExistingUser", IDS_WELCOME_LANDING_EXISTING_USER},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
@@ -133,13 +128,13 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
 
-  // Add Onboarding welcome strings.
-  AddOnboardingStrings(html_source);
+  // Add welcome strings.
+  AddStrings(html_source);
 
-  // Add all Onboarding resources.
-  for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
-    html_source->AddResourcePath(kOnboardingWelcomeResources[i].name,
-                                 kOnboardingWelcomeResources[i].value);
+  // Add all welcome resources.
+  for (size_t i = 0; i < kWelcomeResourcesSize; ++i) {
+    html_source->AddResourcePath(kWelcomeResources[i].name,
+                                 kWelcomeResources[i].value);
   }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -173,33 +168,32 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   // chrome://welcome
-  html_source->SetDefaultResource(IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);
+  html_source->SetDefaultResource(IDR_WELCOME_HTML);
 
 #if defined(OS_WIN)
   html_source->AddBoolean("is_win10",
                           base::win::GetVersion() >= base::win::Version::WIN10);
 #endif
 
-  // Add the shared bookmark handler for onboarding modules.
+  // Add the shared bookmark handler for welcome modules.
   web_ui->AddMessageHandler(
       std::make_unique<welcome::BookmarkHandler>(profile->GetPrefs()));
 
-  // Add google apps bookmarking onboarding module.
+  // Add google apps bookmarking module.
   web_ui->AddMessageHandler(std::make_unique<welcome::GoogleAppsHandler>());
 
-  // Add NTP custom background onboarding module.
+  // Add NTP custom background module.
   web_ui->AddMessageHandler(std::make_unique<welcome::NtpBackgroundHandler>());
 
-  // Add set-as-default onboarding module.
+  // Add set-as-default module.
   web_ui->AddMessageHandler(std::make_unique<welcome::SetAsDefaultHandler>());
 
   html_source->AddString(
       "newUserModules",
-      welcome::GetOnboardingModules(profile).FindKey("new-user")->GetString());
-  html_source->AddString("returningUserModules",
-                         welcome::GetOnboardingModules(profile)
-                             .FindKey("returning-user")
-                             ->GetString());
+      welcome::GetModules(profile).FindKey("new-user")->GetString());
+  html_source->AddString(
+      "returningUserModules",
+      welcome::GetModules(profile).FindKey("returning-user")->GetString());
   html_source->AddBoolean(
       "signinAllowed", profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
   html_source->SetRequestFilter(

@@ -274,9 +274,9 @@ TEST_F('BookmarksFocusTest', 'All', function() {
      */
     async function doAndWait(fn) {
       fn();
-      await PolymerTest.flushTasks();
+      await test_util.flushTasks();
       // Focus is done asynchronously.
-      await PolymerTest.flushTasks();
+      await test_util.flushTasks();
     }
 
     /** @param {string} id */

@@ -103,6 +103,7 @@ struct HistoryURLProviderParams {
   };
 
   HistoryURLProviderParams(const AutocompleteInput& input,
+                           const AutocompleteInput& input_before_fixup,
                            bool trim_http,
                            const AutocompleteMatch& what_you_typed_match,
                            const TemplateURL* default_search_provider,
@@ -118,11 +119,10 @@ struct HistoryURLProviderParams {
   // A copy of the autocomplete input. We need the copy since this object will
   // live beyond the original query while it runs on the history thread.
   AutocompleteInput input;
-
-  // Should inline autocompletion be disabled? This is initalized from
-  // |input.prevent_inline_autocomplete()|, but set to false is the input
-  // contains trailing white space.
-  bool prevent_inline_autocomplete;
+  // |input_before_fixup| is needed for invoking
+  // |AutocompleteMatch::AllowedToBeDefault| which considers trailing input
+  // whitespaces which the fixed up |input| will have trimmed.
+  AutocompleteInput input_before_fixup;
 
   // Set when "http://" should be trimmed from the beginning of the URLs.
   bool trim_http;

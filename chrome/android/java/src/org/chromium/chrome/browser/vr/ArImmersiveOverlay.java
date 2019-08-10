@@ -9,68 +9,97 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.support.annotation.NonNull;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
+import org.chromium.ui.widget.Toast;
 
 /**
  * Provides a fullscreen overlay for immersive AR mode.
  */
-public class ArImmersiveOverlay implements SurfaceHolder.Callback2,
-                                           DialogInterface.OnCancelListener, View.OnTouchListener,
-                                           ScreenOrientationDelegate {
+public class ArImmersiveOverlay
+        implements SurfaceHolder.Callback2, View.OnTouchListener, ScreenOrientationDelegate {
     private static final String TAG = "ArImmersiveOverlay";
     private static final boolean DEBUG_LOGS = false;
-
-    // Android supports multiple variants of fullscreen applications. Currently, we use a fullscreen
-    // layout with translucent navigation bar, where the content shows behind the navigation bar.
-    // Alternatively, we could add FLAG_HIDE_NAVIGATION and FLAG_IMMERSIVE_STICKY to hide the
-    // navigation bar, but then we'd need to show a "pull from top and press back button to exit"
-    // prompt.
-    private static final int VISIBILITY_FLAGS_IMMERSIVE = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
 
     private ArCoreJavaUtils mArCoreJavaUtils;
     private ChromeActivity mActivity;
     private boolean mSurfaceReportedReady;
-    private Dialog mDialog;
     private Integer mRestoreOrientation;
     private boolean mCleanupInProgress;
+    private SurfaceUiWrapper mSurfaceUi;
 
     public void show(@NonNull ChromeActivity activity, @NonNull ArCoreJavaUtils caller) {
         if (DEBUG_LOGS) Log.i(TAG, "constructor");
         mArCoreJavaUtils = caller;
         mActivity = activity;
 
-        // Create a fullscreen dialog and set the system / navigation bars translucent.
-        mDialog = new Dialog(activity, android.R.style.Theme_NoTitleBar_Fullscreen);
-        mDialog.getWindow().setBackgroundDrawable(null);
-        int wmFlags = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
-                | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
-        mDialog.getWindow().addFlags(wmFlags);
-
-        mDialog.getWindow().takeSurface(this);
-
-        View view = mDialog.getWindow().getDecorView();
-        view.setSystemUiVisibility(VISIBILITY_FLAGS_IMMERSIVE);
-        view.setOnTouchListener(this);
-        mDialog.setOnCancelListener(this);
-
-        mDialog.getWindow().setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        mDialog.show();
+        // Choose a concrete implementation to create a drawable Surface and make it fullscreen.
+        // It forwards SurfaceHolder callbacks and touch events to this ArImmersiveOverlay object.
+        mSurfaceUi = new SurfaceUiDialog(this);
     }
 
-    public void destroyDialog() {
-        if (DEBUG_LOGS) Log.i(TAG, "destroyDialog");
-        cleanupAndExit();
+    private interface SurfaceUiWrapper {
+        public void onSurfaceVisible();
+        public void destroy();
+    }
+
+    private class SurfaceUiDialog implements SurfaceUiWrapper, DialogInterface.OnCancelListener {
+        private Toast mNotificationToast;
+        private Dialog mDialog;
+        // Android supports multiple variants of fullscreen applications. Use fully-immersive
+        // "sticky" mode without navigation or status bars, and show a toast with a "pull from top
+        // and press back button to exit" prompt.
+        private static final int VISIBILITY_FLAGS_IMMERSIVE = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+        public SurfaceUiDialog(ArImmersiveOverlay parent) {
+            // Create a fullscreen dialog and use its backing Surface for drawing.
+            mDialog = new Dialog(mActivity, android.R.style.Theme_NoTitleBar_Fullscreen);
+            mDialog.getWindow().setBackgroundDrawable(null);
+            mDialog.getWindow().takeSurface(parent);
+            View view = mDialog.getWindow().getDecorView();
+            view.setSystemUiVisibility(VISIBILITY_FLAGS_IMMERSIVE);
+            view.setOnTouchListener(parent);
+            mDialog.setOnCancelListener(this);
+            mDialog.getWindow().setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            mDialog.show();
+        }
+
+        @Override // SurfaceUiWrapper
+        public void onSurfaceVisible() {
+            if (mNotificationToast == null) {
+                int resId = R.string.immersive_fullscreen_api_notification;
+                mNotificationToast = Toast.makeText(mActivity, resId, Toast.LENGTH_LONG);
+                mNotificationToast.setGravity(Gravity.TOP | Gravity.CENTER, 0, 0);
+            }
+            mNotificationToast.show();
+        }
+
+        @Override // SurfaceUiWrapper
+        public void destroy() {
+            if (mNotificationToast != null) {
+                mNotificationToast.cancel();
+            }
+            mDialog.dismiss();
+        }
+
+        @Override // DialogInterface.OnCancelListener
+        public void onCancel(DialogInterface dialog) {
+            if (DEBUG_LOGS) Log.i(TAG, "onCancel");
+            cleanupAndExit();
+        }
     }
 
     @Override // View.OnTouchListener
@@ -137,6 +166,9 @@ public class ArImmersiveOverlay implements SurfaceHolder.Callback2,
             Log.i(TAG, "surfaceChanged size=" + width + "x" + height + " rotation=" + rotation);
         mArCoreJavaUtils.onDrawingSurfaceReady(holder.getSurface(), rotation, width, height);
         mSurfaceReportedReady = true;
+
+        // Show a toast with instructions how to exit fullscreen mode now if necessary.
+        mSurfaceUi.onSurfaceVisible();
     }
 
     @Override // SurfaceHolder.Callback2
@@ -145,19 +177,20 @@ public class ArImmersiveOverlay implements SurfaceHolder.Callback2,
         cleanupAndExit();
     }
 
-    @Override // DialogInterface.OnCancelListener
-    public void onCancel(DialogInterface dialog) {
-        if (DEBUG_LOGS) Log.i(TAG, "onCancel");
-        cleanupAndExit();
-    }
-
     public void cleanupAndExit() {
         if (DEBUG_LOGS) Log.i(TAG, "cleanupAndExit");
 
-        // Avoid duplicate cleanup if we're exiting via destroyDialog, that
-        // triggers cleanupAndExit -> dismiss -> surfaceDestroyed -> cleanupAndExit.
+        // Avoid duplicate cleanup if we're exiting via ArCoreJavaUtils's endSession.
+        // That triggers cleanupAndExit -> remove SurfaceView -> surfaceDestroyed -> cleanupAndExit.
         if (mCleanupInProgress) return;
         mCleanupInProgress = true;
+
+        mSurfaceUi.destroy();
+
+        // The JS app may have put an element into fullscreen mode during the immersive session,
+        // even if this wasn't visible to the user. Ensure that we fully exit out of any active
+        // fullscreen state on session end to avoid being left in a confusing state.
+        mActivity.getActivityTab().exitFullscreenMode();
 
         // Restore orientation.
         ScreenOrientationProvider.getInstance().setOrientationDelegate(null);
@@ -166,9 +199,8 @@ public class ArImmersiveOverlay implements SurfaceHolder.Callback2,
 
         // The surface is destroyed when exiting via "back" button, but also in other lifecycle
         // situations such as switching apps or toggling the phone's power button. Treat each of
-        // these as exiting the immersive session. We need to dismiss the dialog to ensure
+        // these as exiting the immersive session. We need to run the destroy callbacks to ensure
         // consistent state after non-exiting lifecycle events.
-        mDialog.dismiss();
         mArCoreJavaUtils.onDrawingSurfaceDestroyed();
     }
 }

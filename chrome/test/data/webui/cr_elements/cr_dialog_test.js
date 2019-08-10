@@ -348,7 +348,7 @@ suite('cr-dialog', function() {
     const bottomShadow = dialog.$$('#cr-container-shadow-bottom');
     assertTrue(!!bottomShadow);
 
-    return PolymerTest.flushTasks().then(() => {
+    return test_util.flushTasks().then(() => {
       assertFalse(topShadow.classList.contains('has-shadow'));
       assertFalse(bottomShadow.classList.contains('has-shadow'));
     });
@@ -499,7 +499,7 @@ suite('cr-dialog', function() {
     }
     document.addEventListener('keydown', assertKeydownNotReached);
 
-    return PolymerTest.flushTasks().then(() => {
+    return test_util.flushTasks().then(() => {
       MockInteractions.keyDownOn(dialog, 65, undefined, 'a');
       MockInteractions.keyDownOn(document.body, 65, undefined, 'a');
       document.removeEventListener('keydown', assertKeydownNotReached);
@@ -523,7 +523,7 @@ suite('cr-dialog', function() {
     }
     document.addEventListener('keydown', assertKeydownCount);
 
-    return PolymerTest.flushTasks().then(() => {
+    return test_util.flushTasks().then(() => {
       MockInteractions.keyDownOn(dialog, 65, undefined, 'a');
       assertEquals(1, keydownCounter);
       document.removeEventListener('keydown', assertKeydownCount);

@@ -50,6 +50,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
+  void EnableReplaceI18nInJS() override;
   std::string GetSource() override;
 
   // URLDataSourceImpl:
@@ -91,6 +92,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
     add_load_time_data_defaults_ = false;
   }
 
+  bool ShouldReplaceI18nInJS() const;
+
   // The name of this source.
   // E.g., for favicons, this could be "favicon", which results in paths for
   // specific resources like "favicon/34" getting sent to this source.
@@ -119,6 +122,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   bool deny_xframe_options_;
   bool add_load_time_data_defaults_;
   bool replace_existing_source_;
+  bool should_replace_i18n_in_js_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIDataSourceImpl);
 };

@@ -58,3 +58,8 @@ std::unique_ptr<ash::ScopedGuestButtonBlocker>
 TestLoginScreen::GetScopedGuestButtonBlocker() {
   return std::make_unique<ScopedGuestButtonBlockerTestImpl>();
 }
+
+void TestLoginScreen::RequestSecurityTokenPin(
+    ash::SecurityTokenPinRequest request) {}
+
+void TestLoginScreen::ClearSecurityTokenPinRequest() {}

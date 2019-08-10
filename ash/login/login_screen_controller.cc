@@ -24,6 +24,7 @@
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/debug/alias.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -389,6 +390,26 @@ LoginScreenController::GetScopedGuestButtonBlocker() {
       ->shelf_widget()
       ->login_shelf_view()
       ->GetScopedGuestButtonBlocker();
+}
+
+void LoginScreenController::RequestSecurityTokenPin(
+    SecurityTokenPinRequest request) {
+  if (!LockScreen::HasInstance()) {
+    // Corner case: the PIN request is made at inappropriate time, racing with
+    // the lock screen showing/hiding.
+    std::move(request.pin_ui_closed_callback).Run();
+    return;
+  }
+  LockScreen::Get()->RequestSecurityTokenPin(std::move(request));
+}
+
+void LoginScreenController::ClearSecurityTokenPinRequest() {
+  if (!LockScreen::HasInstance()) {
+    // Corner case: the request is made at inappropriate time, racing with the
+    // lock screen showing/hiding.
+    return;
+  }
+  LockScreen::Get()->ClearSecurityTokenPinRequest();
 }
 
 void LoginScreenController::ShowLockScreen() {

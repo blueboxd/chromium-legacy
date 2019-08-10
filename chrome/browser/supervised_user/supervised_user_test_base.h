@@ -9,10 +9,12 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/ui/browser.h"
 
-// Base class for child user browser tests.
-// Inherit from this class if logging in as child user is required for tests.
-// This class inherits from LoginPolicyTestBase because signing in a child
-// account requires fetching user policies.
+// TODO (crbug.com/990909): Deprecate this class in favor of
+// LoggedInUserMixin.
+// Base class for child user browser tests. Inherit from
+// this class if logging in as child user is required for tests. This class
+// inherits from LoginPolicyTestBase because signing in a child account requires
+// fetching user policies.
 class SupervisedUserTestBase : public policy::LoginPolicyTestBase {
  public:
   enum class LogInType { kRegular, kChild };

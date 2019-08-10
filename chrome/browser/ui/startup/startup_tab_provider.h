@@ -133,6 +133,7 @@ class StartupTabProviderImpl : public StartupTabProvider {
   // URL parameter will be appended so as to access the variant page used when
   // onboarding occurs after the first Chrome execution (e.g., when creating an
   // additional profile).
+  // TODO(hcarmona): it might be possible to deprecate use_later_run_variant.
   static GURL GetWelcomePageUrl(bool use_later_run_variant);
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)

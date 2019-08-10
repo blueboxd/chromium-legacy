@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
@@ -191,7 +190,6 @@ class InputMethodEngineTest : public testing::Test {
   GURL input_view_;
 
   content::TestBrowserThreadBundle thread_bundle_;
-  content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<ui::MockIMEInputContextHandler>
       mock_ime_input_context_handler_;
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>

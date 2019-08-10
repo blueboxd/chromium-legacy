@@ -602,13 +602,12 @@ TranslateBubbleView::TranslateBubbleView(
     std::unique_ptr<TranslateBubbleModel> model,
     translate::TranslateErrors::Type error_type,
     content::WebContents* web_contents)
-    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       model_(std::move(model)),
       error_type_(error_type),
       is_in_incognito_window_(
           web_contents && web_contents->GetBrowserContext()->IsOffTheRecord()),
       bubble_ui_model_(language::GetTranslateUiBubbleModel()) {
-  DCHECK(anchor_view);
   translate_bubble_view_ = this;
   if (web_contents)  // web_contents can be null in unit_tests.
     mouse_handler_.reset(new WebContentMouseHandler(this, web_contents));

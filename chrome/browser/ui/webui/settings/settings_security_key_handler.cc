@@ -11,11 +11,14 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chrome/browser/ui/webui/settings/settings_security_key_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/service_manager_connection.h"
+#include "device/fido/bio/enrollment_handler.h"
 #include "device/fido/credential_management.h"
 #include "device/fido/credential_management_handler.h"
 #include "device/fido/fido_discovery_factory.h"
@@ -513,6 +516,235 @@ void SecurityKeysCredentialHandler::OnFinished(device::FidoReturnCode status) {
 
   FireWebUIListener("security-keys-credential-management-finished",
                     base::Value(l10n_util::GetStringUTF8(std::move(error))));
+}
+
+SecurityKeysBioEnrollmentHandler::SecurityKeysBioEnrollmentHandler() = default;
+SecurityKeysBioEnrollmentHandler::~SecurityKeysBioEnrollmentHandler() = default;
+
+void SecurityKeysBioEnrollmentHandler::RegisterMessages() {
+  web_ui()->RegisterMessageCallback(
+      "securityKeyBioEnrollStart",
+      base::BindRepeating(&SecurityKeysBioEnrollmentHandler::HandleStart,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "securityKeyBioEnrollProvidePIN",
+      base::BindRepeating(&SecurityKeysBioEnrollmentHandler::HandleProvidePIN,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "securityKeyBioEnrollEnumerate",
+      base::BindRepeating(&SecurityKeysBioEnrollmentHandler::HandleEnumerate,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "securityKeyBioEnrollStartEnrolling",
+      base::BindRepeating(
+          &SecurityKeysBioEnrollmentHandler::HandleStartEnrolling,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "securityKeyBioEnrollCancel",
+      base::BindRepeating(&SecurityKeysBioEnrollmentHandler::HandleCancel,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "securityKeyBioEnrollClose",
+      base::BindRepeating(
+          &HandleClose,
+          base::BindRepeating(&SecurityKeysBioEnrollmentHandler::Close,
+                              base::Unretained(this))));
+}
+
+void SecurityKeysBioEnrollmentHandler::Close() {
+  weak_factory_.InvalidateWeakPtrs();
+  state_ = State::kNone;
+  discovery_factory_.reset();
+  bio_.reset();
+  callback_id_.clear();
+  discovery_factory_.reset();
+  provide_pin_cb_.Reset();
+}
+
+void SecurityKeysBioEnrollmentHandler::HandleStart(
+    const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(state_, State::kNone);
+  DCHECK_EQ(1u, args->GetSize());
+  DCHECK(callback_id_.empty());
+
+  AllowJavascript();
+  state_ = State::kStart;
+  callback_id_ = args->GetList()[0].GetString();
+  discovery_factory_ = std::make_unique<device::FidoDiscoveryFactory>();
+  bio_ = std::make_unique<device::BioEnrollmentHandler>(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      supported_transports(),
+      base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnReady,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnError,
+                     weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&SecurityKeysBioEnrollmentHandler::OnGatherPIN,
+                          weak_factory_.GetWeakPtr()),
+      discovery_factory_.get());
+}
+
+void SecurityKeysBioEnrollmentHandler::OnReady() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(bio_);
+  DCHECK_EQ(state_, State::kGatherPIN);
+  DCHECK(!callback_id_.empty());
+  state_ = State::kReady;
+  ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
+                            base::Value());
+}
+
+void SecurityKeysBioEnrollmentHandler::OnError(device::FidoReturnCode code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  state_ = State::kNone;
+
+  int error;
+  switch (code) {
+    case device::FidoReturnCode::kSoftPINBlock:
+      error = IDS_SETTINGS_SECURITY_KEYS_PIN_SOFT_LOCK;
+      break;
+    case device::FidoReturnCode::kHardPINBlock:
+      error = IDS_SETTINGS_SECURITY_KEYS_PIN_HARD_LOCK;
+      break;
+    case device::FidoReturnCode::kAuthenticatorMissingBioEnrollment:
+      error = IDS_SETTINGS_SECURITY_KEYS_NO_BIOMETRIC_ENROLLMENT;
+      break;
+    case device::FidoReturnCode::kAuthenticatorMissingUserVerification:
+      error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_NO_PIN;
+      break;
+    case device::FidoReturnCode::kAuthenticatorResponseInvalid:
+      error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_ERROR;
+      break;
+    case device::FidoReturnCode::kSuccess:
+      error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_REMOVED;
+      break;
+    default:
+      NOTREACHED();
+      error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_ERROR;
+      break;
+  }
+
+  FireWebUIListener("security-keys-bio-enroll-error",
+                    base::Value(l10n_util::GetStringUTF8(error)));
+
+  // If |callback_id_| is not empty, there is an ongoing operation,
+  // which means there is an unresolved Promise. Reject it so that
+  // it isn't leaked.
+  if (!callback_id_.empty()) {
+    RejectJavascriptCallback(base::Value(std::move(callback_id_)),
+                             base::Value());
+  }
+}
+
+void SecurityKeysBioEnrollmentHandler::OnGatherPIN(
+    int64_t retries,
+    base::OnceCallback<void(std::string)> cb) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!callback_id_.empty());
+  DCHECK(state_ == State::kStart || state_ == State::kGatherPIN);
+  state_ = State::kGatherPIN;
+  provide_pin_cb_ = std::move(cb);
+  ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
+                            base::Value(static_cast<int>(retries)));
+}
+
+void SecurityKeysBioEnrollmentHandler::HandleProvidePIN(
+    const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(2u, args->GetSize());
+  DCHECK_EQ(state_, State::kGatherPIN);
+  state_ = State::kGatherPIN;
+  callback_id_ = args->GetList()[0].GetString();
+  std::move(provide_pin_cb_).Run(args->GetList()[1].GetString());
+}
+
+void SecurityKeysBioEnrollmentHandler::HandleEnumerate(
+    const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(1u, args->GetSize());
+  DCHECK_EQ(state_, State::kReady);
+  state_ = State::kEnumerating;
+  callback_id_ = args->GetList()[0].GetString();
+  bio_->EnumerateTemplates(
+      base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnHaveEnumeration,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SecurityKeysBioEnrollmentHandler::OnHaveEnumeration(
+    device::CtapDeviceResponseCode code,
+    base::Optional<std::map<std::vector<uint8_t>, std::string>> enrollments) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!callback_id_.empty());
+  DCHECK_EQ(state_, State::kEnumerating);
+
+  base::Value::ListStorage list;
+  if (enrollments) {
+    for (const auto& enrollment : *enrollments) {
+      base::DictionaryValue elem;
+      elem.SetStringKey("name", std::move(enrollment.second));
+      elem.SetStringKey("id", base::HexEncode(enrollment.first.data(),
+                                              enrollment.first.size()));
+      list.emplace_back(std::move(elem));
+    }
+  }
+
+  state_ = State::kReady;
+  ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
+                            base::ListValue(std::move(list)));
+}
+
+void SecurityKeysBioEnrollmentHandler::HandleStartEnrolling(
+    const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(1u, args->GetSize());
+  DCHECK_EQ(state_, State::kReady);
+  state_ = State::kEnrolling;
+  callback_id_ = args->GetList()[0].GetString();
+  bio_->EnrollTemplate(
+      base::BindRepeating(
+          &SecurityKeysBioEnrollmentHandler::OnEnrollingResponse,
+          weak_factory_.GetWeakPtr()),
+      base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnEnrollmentFinished,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SecurityKeysBioEnrollmentHandler::OnEnrollingResponse(
+    device::BioEnrollmentSampleStatus status,
+    uint8_t remaining_samples) {
+  DCHECK_EQ(state_, State::kEnrolling);
+  base::DictionaryValue d;
+  d.SetIntKey("status", static_cast<int>(status));
+  d.SetIntKey("remaining", static_cast<int>(remaining_samples));
+  FireWebUIListener("security-keys-bio-enroll-status", std::move(d));
+}
+
+void SecurityKeysBioEnrollmentHandler::OnEnrollmentFinished(
+    device::CtapDeviceResponseCode code) {
+  DCHECK_EQ(state_, State::kEnrolling);
+  DCHECK(!callback_id_.empty());
+  state_ = State::kReady;
+  base::DictionaryValue d;
+  d.SetIntKey("code", static_cast<int>(code));
+  d.SetIntKey("remaining", 0);
+  ResolveJavascriptCallback(base::Value(std::move(callback_id_)), std::move(d));
+}
+
+void SecurityKeysBioEnrollmentHandler::HandleCancel(
+    const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(1u, args->GetSize());
+  state_ = State::kCancelling;
+  callback_id_ = args->GetList()[0].GetString();
+  bio_->Cancel(base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnEnrollCancel,
+                              weak_factory_.GetWeakPtr()));
+}
+
+void SecurityKeysBioEnrollmentHandler::OnEnrollCancel(
+    device::CtapDeviceResponseCode) {
+  DCHECK_EQ(state_, State::kCancelling);
+  state_ = State::kReady;
+  ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
+                            base::Value());
 }
 
 }  // namespace settings

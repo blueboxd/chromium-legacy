@@ -44,7 +44,7 @@ suite('<app-management-router>', () => {
     };
     store.notifyObservers();
 
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     expectEquals('/detail?id=1', getCurrentUrlSuffix());
 
     // Returning main page clears the route.
@@ -53,7 +53,7 @@ suite('<app-management-router>', () => {
       selectedAppId: null,
     };
     store.notifyObservers();
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     expectEquals('/', getCurrentUrlSuffix());
 
     store.data.currentPage = {
@@ -61,7 +61,7 @@ suite('<app-management-router>', () => {
       selectedAppId: null,
     };
     store.notifyObservers();
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     expectEquals('/notifications', getCurrentUrlSuffix());
   });
 
@@ -69,7 +69,7 @@ suite('<app-management-router>', () => {
     await navigateTo('/');
     store.data.search = {term: 'bloop'};
     store.notifyObservers();
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
 
     expectEquals('/?q=bloop', getCurrentUrlSuffix());
   });
@@ -78,7 +78,7 @@ suite('<app-management-router>', () => {
     await navigateTo('/detail?id=1');
     store.data.search = {term: 'bloop'};
     store.notifyObservers();
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
 
     expectEquals('/detail?id=1&q=bloop', getCurrentUrlSuffix());
   });

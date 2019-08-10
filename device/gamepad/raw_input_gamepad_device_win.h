@@ -15,6 +15,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/dualshock4_controller_win.h"
 #include "device/gamepad/hid_dll_functions_win.h"
@@ -23,7 +24,7 @@
 
 namespace device {
 
-class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
+class RawInputGamepadDeviceWin final : public AbstractHapticGamepad {
  public:
   // Relevant usage IDs within the Generic Desktop usage page. RawInput gamepads
   // must have one of these usage IDs.
@@ -57,8 +58,9 @@ class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
   // Read the current gamepad state into |pad|.
   void ReadPadState(Gamepad* pad) const;
 
-  // Set the vibration magnitude for the strong and weak vibration actuators.
+  // AbstractHapticGamepad implementation.
   void SetVibration(double strong_magnitude, double weak_magnitude) override;
+  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
 
  private:
   // Axis state and capabilities for a single RawInput axis.
@@ -69,7 +71,7 @@ class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
     unsigned long bitmask;
   };
 
-  // Stop vibration and release held resources.
+  // AbstractHapticGamepad implementation.
   void DoShutdown() override;
 
   // Fetch information about this device. Returns true if the device appears to
@@ -140,6 +142,8 @@ class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
 
   // A controller that uses a HID output report for vibration effects.
   std::unique_ptr<HidHapticGamepadWin> hid_haptics_;
+
+  base::WeakPtrFactory<RawInputGamepadDeviceWin> weak_factory_{this};
 };
 
 }  // namespace device

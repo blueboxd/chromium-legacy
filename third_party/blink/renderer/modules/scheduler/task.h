@@ -5,14 +5,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_TASK_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_TASK_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
+class ScriptState;
 class ScriptValue;
 class TaskQueue;
 class V8Function;
@@ -26,7 +30,8 @@ class MODULES_EXPORT Task : public ScriptWrappable {
   // Task IDL Interface.
   AtomicString priority() const;
   AtomicString status() const;
-  void cancel();
+  void cancel(ScriptState*);
+  ScriptPromise result(ScriptState*);
 
   // Set the TaskHandle associated with this task, which is used for
   // cancellation.
@@ -56,6 +61,8 @@ class MODULES_EXPORT Task : public ScriptWrappable {
   };
 
   void SetTaskStatus(Status);
+  void InvokeInternal(ScriptState*);
+  void ResolveOrRejectPromiseIfNeeded(ScriptState*);
 
   static bool IsValidStatusChange(Status from, Status to);
   static AtomicString TaskStatusToString(Status);
@@ -65,6 +72,13 @@ class MODULES_EXPORT Task : public ScriptWrappable {
   Member<TaskQueue> task_queue_;
   Member<V8Function> callback_;
   Vector<ScriptValue> arguments_;
+
+  using TaskResultPromise =
+      ScriptPromiseProperty<Member<Task>, ScriptValue, ScriptValue>;
+  Member<TaskResultPromise> result_promise_;
+
+  TraceWrapperV8Reference<v8::Value> result_value_;
+  TraceWrapperV8Reference<v8::Value> exception_;
 };
 
 }  // namespace blink

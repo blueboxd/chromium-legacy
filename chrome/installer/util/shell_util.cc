@@ -1510,9 +1510,9 @@ const wchar_t* ShellUtil::kPotentialFileAssociations[] = {L".htm", L".html",
     L".pdf", L".shtml", L".svg", L".xht", L".xhtml", L".webp", NULL};
 const wchar_t* ShellUtil::kBrowserProtocolAssociations[] = {L"ftp", L"http",
     L"https", NULL};
-const wchar_t* ShellUtil::kPotentialProtocolAssociations[] = {L"ftp", L"http",
-    L"https", L"irc", L"mailto", L"mms", L"news", L"nntp", L"sms", L"smsto",
-    L"tel", L"urn", L"webcal", NULL};
+const wchar_t* ShellUtil::kPotentialProtocolAssociations[] = {
+    L"ftp", L"http",  L"https", L"irc", L"mailto", L"mms",    L"news", L"nntp",
+    L"sms", L"smsto", L"snews", L"tel", L"urn",    L"webcal", nullptr};
 const wchar_t* ShellUtil::kRegUrlProtocol = L"URL Protocol";
 const wchar_t* ShellUtil::kRegApplication = L"\\Application";
 const wchar_t* ShellUtil::kRegAppUserModelId = L"AppUserModelId";

@@ -167,6 +167,10 @@ class CONTENT_EXPORT URLDataSource {
   // TODO (rbpotter): Remove this function when the OOBE page Polymer 2
   // migration is complete.
   virtual void DisablePolymer2ForHost(const std::string& host);
+
+  // Whether i18n template expression replacement should be allowed in HTML
+  // templates within JS files.
+  virtual bool ShouldReplaceI18nInJS();
 };
 
 }  // namespace content

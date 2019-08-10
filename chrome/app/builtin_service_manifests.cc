@@ -13,19 +13,15 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/manifest.h"
-#include "chromeos/services/cellular_setup/public/cpp/manifest.h"
-#include "chromeos/services/ime/public/cpp/manifest.h"
 #include "chromeos/services/network_config/public/cpp/manifest.h"
 #include "chromeos/services/secure_channel/public/cpp/manifest.h"
 #endif
 
 #if defined(OS_WIN)
 #include "base/feature_list.h"
-#include "chrome/services/wifi_util_win/public/cpp/manifest.h"
 #endif
 
 #if !defined(OS_ANDROID)
-#include "chrome/utility/importer/profile_import_manifest.h"
 #include "components/mirroring/service/manifest.h"  // nogncheck
 #endif
 
@@ -40,17 +36,11 @@ GetChromeBuiltinServiceManifests() {
 #if BUILDFLAG(ENABLE_PRINTING)
       printing::GetPdfCompositorManifest(),
 #endif
-#if defined(OS_WIN)
-      GetWifiUtilWinManifest(),
-#endif
 #if !defined(OS_ANDROID)
       mirroring::GetManifest(),
-      GetProfileImportManifest(),
 #endif
 #if defined(OS_CHROMEOS)
       ash::GetManifest(),
-      chromeos::cellular_setup::GetManifest(),
-      chromeos::ime::GetManifest(),
       chromeos::network_config::GetManifest(),
       chromeos::secure_channel::GetManifest(),
 #endif

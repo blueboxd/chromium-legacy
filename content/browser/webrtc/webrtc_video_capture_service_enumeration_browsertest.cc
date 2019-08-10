@@ -212,8 +212,8 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     embedded_test_server()->StartAcceptingConnections();
 
-    NavigateToURL(shell(),
-                  GURL(embedded_test_server()->GetURL(kVideoCaptureHtmlFile)));
+    EXPECT_TRUE(NavigateToURL(
+        shell(), GURL(embedded_test_server()->GetURL(kVideoCaptureHtmlFile))));
   }
 
   std::map<std::string, video_capture::mojom::TextureVirtualDevicePtr>

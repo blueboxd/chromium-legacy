@@ -32,4 +32,8 @@ void XInputHapticGamepadWin::SetVibration(double strong_magnitude,
   TRACE_EVENT_END1("GAMEPAD", "XInputSetState", "id", pad_id_);
 }
 
+base::WeakPtr<AbstractHapticGamepad> XInputHapticGamepadWin::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace device

@@ -183,6 +183,13 @@ void AssistantPageView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
+void AssistantPageView::OnAnimationStarted(ash::AppListState from_state,
+                                           ash::AppListState to_state) {
+  if (to_state != ash::AppListState::kStateEmbeddedAssistant)
+    return;
+  SetBoundsRect(GetPageBoundsForState(to_state));
+}
+
 gfx::Rect AssistantPageView::GetPageBoundsForState(
     ash::AppListState state) const {
   gfx::Rect bounds = AppListPage::GetSearchBoxBounds();

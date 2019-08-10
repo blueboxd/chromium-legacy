@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('onboarding_set_as_default_test', function() {
+cr.define('set_as_default_test', function() {
   suite('SetAsDefaultTest', function() {
     /** @type {NuxSetAsDefaultElement} */
     let testElement;

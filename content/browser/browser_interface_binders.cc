@@ -45,11 +45,10 @@ const url::Origin& GetContextForHost(DedicatedWorkerHost* dwh) {
 void PopulateBinderMapWithContext(
     DedicatedWorkerHost* dwh,
     service_manager::BinderMapWithContext<const url::Origin&>* map) {
-  RenderProcessHostImpl* rphi =
-      static_cast<RenderProcessHostImpl*>(dwh->GetProcessHost());
   // TODO(https://crbug.com/873661): Pass origin to FileSystemManager.
-  map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
-      &RenderProcessHostImpl::BindFileSystemManager, base::Unretained(rphi)));
+  map->Add<blink::mojom::FileSystemManager>(
+      base::BindRepeating(&RenderProcessHost::BindFileSystemManager,
+                          base::Unretained(dwh->GetProcessHost())));
 }
 
 void PopulateBinderMap(DedicatedWorkerHost* dwh,
@@ -67,11 +66,10 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* swh,
 void PopulateBinderMapWithContext(
     SharedWorkerHost* swh,
     service_manager::BinderMapWithContext<const url::Origin&>* map) {
-  RenderProcessHostImpl* rphi =
-      static_cast<RenderProcessHostImpl*>(swh->GetProcessHost());
   // TODO(https://crbug.com/873661): Pass origin to FileSystemManager.
-  map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
-      &RenderProcessHostImpl::BindFileSystemManager, base::Unretained(rphi)));
+  map->Add<blink::mojom::FileSystemManager>(
+      base::BindRepeating(&RenderProcessHost::BindFileSystemManager,
+                          base::Unretained(swh->GetProcessHost())));
 }
 
 void PopulateBinderMap(SharedWorkerHost* swh, service_manager::BinderMap* map) {

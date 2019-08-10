@@ -28,10 +28,22 @@ class SwitchAccessInterface {
   selectCurrentNode() {}
 
   /**
-   * Perform actions as the result of actions by the user. Currently, restarts
-   * auto-scan if it is enabled.
+   * Restarts auto-scan if it is enabled.
    */
-  performedUserAction() {}
+  restartAutoScan() {}
+
+  /**
+   * Check if the current node is in the virtual keyboard.
+   * @return {boolean}
+   */
+  inVirtualKeyboard() {}
+
+  /**
+   * Check whether or not the feature flag
+   * for improved text input is enabled.
+   * @return {boolean}
+   */
+  improvedTextInputEnabled() {}
 
   /**
    * Handle a change in user preferences.

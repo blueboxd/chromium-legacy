@@ -20,8 +20,8 @@
 
 namespace {
 
-const char kBindingsJsPath[] =
-    FILE_PATH_LITERAL("chromecast/bindings/named_message_port_connector.js");
+const char kBindingsJsPath[] = FILE_PATH_LITERAL(
+    "chromecast/bindings/resources/named_message_port_connector.js");
 const char kControlPortConnectMessage[] = "cast.master.connect";
 
 }  // namespace

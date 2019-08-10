@@ -26,9 +26,9 @@
 namespace mojo {
 
 // A PlatformHandle is a generic wrapper around a platform-specific system
-// handle type, e.g. a POSIX file descriptor or Windows HANDLE. This can wrap
-// any of various such types depending on the host platform for which it's
-// compiled.
+// handle type, e.g. a POSIX file descriptor, Windows HANDLE, or macOS Mach
+// port. This can wrap any of various such types depending on the host platform
+// for which it's compiled.
 //
 // This is useful primarily for two reasons:
 //

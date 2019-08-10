@@ -67,14 +67,27 @@ class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
   const char* GetNameForLogging() override;
 
  private:
-  content::NavigationThrottle::ThrottleCheckResult DeferToCalculateLoadPolicy();
+  enum class DeferStage {
+    kNotDeferring,
+    kWillStartOrRedirectRequest,
+    kWillProcessResponse
+  };
+
+  content::NavigationThrottle::ThrottleCheckResult
+  MaybeDeferToCalculateLoadPolicy();
+
   void OnCalculatedLoadPolicy(LoadPolicy policy);
+  void HandleDisallowedLoad();
 
   void NotifyLoadPolicy() const;
+
+  void DeferStart(DeferStage stage);
 
   // Must outlive this class.
   AsyncDocumentSubresourceFilter* parent_frame_filter_;
 
+  int pending_load_policy_calculations_ = 0;
+  DeferStage defer_stage_ = DeferStage::kNotDeferring;
   base::TimeTicks last_defer_timestamp_;
   base::TimeDelta total_defer_time_;
   LoadPolicy load_policy_ = LoadPolicy::ALLOW;

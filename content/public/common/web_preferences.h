@@ -95,7 +95,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool remote_fonts_enabled;
   bool javascript_can_access_clipboard;
   bool xslt_enabled;
-  bool xss_auditor_enabled;
   // We don't use dns_prefetching_enabled to disable DNS prefetching.  Instead,
   // we disable the feature at a lower layer so that we catch non-WebKit uses
   // of DNS prefetch as well.

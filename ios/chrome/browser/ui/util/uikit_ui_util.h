@@ -24,9 +24,10 @@ enum { FONT_HELVETICA, FONT_HELVETICA_NEUE, FONT_HELVETICA_NEUE_LIGHT };
 // localized string corresponding to |idsAccessibilityLabel|.
 // |englishUiAutomationName| is the name used in JavaScript UI Automation test
 // scripts to identify the |element|.
-void SetA11yLabelAndUiAutomationName(UIView* element,
-                                     int idsAccessibilityLabel,
-                                     NSString* englishUiAutomationName);
+void SetA11yLabelAndUiAutomationName(
+    NSObject<UIAccessibilityIdentification>* element,
+    int idsAccessibilityLabel,
+    NSString* englishUiAutomationName);
 
 // Sets the given |button|'s width to exactly fit its image and text.  Does not
 // modify the button's height.

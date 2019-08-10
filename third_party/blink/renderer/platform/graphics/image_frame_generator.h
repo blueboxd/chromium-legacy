@@ -112,7 +112,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   bool HasAlpha(size_t index);
 
   // TODO(crbug.com/943519): Do not call unless the SkROBuffer has all the data.
-  bool GetYUVComponentSizes(SegmentReader*, SkYUVASizeInfo*);
+  bool GetYUVComponentSizes(SegmentReader*, SkYUVASizeInfo*, SkYUVColorSpace*);
 
  private:
   class ClientMutexLocker {

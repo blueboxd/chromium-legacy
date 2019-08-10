@@ -14,6 +14,10 @@ enum class InfobarType;
 @protocol InfobarContainer
 
 // Informs the InfobarContainer Coordinator that its child coordinator of type
+// |infobarType| has dismissed its banner.
+- (void)childCoordinatorBannerWasDismissed:(InfobarType)infobarType;
+
+// Informs the InfobarContainer Coordinator that its child coordinator of type
 // |infobarType| has stopped.
 - (void)childCoordinatorStopped:(InfobarType)infobarType;
 

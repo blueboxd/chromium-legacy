@@ -162,6 +162,10 @@ class MockRenderProcessHost : public RenderProcessHost {
                     const GURL& lock_url) override;
   void BindCacheStorage(blink::mojom::CacheStorageRequest request,
                         const url::Origin& origin) override;
+  void BindFileSystemManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver)
+      override {}
   void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
                      const url::Origin& origin) override;
   void CleanupCorbExceptionForPluginUponDestruction() override;

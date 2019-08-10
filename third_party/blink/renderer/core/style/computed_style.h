@@ -2319,7 +2319,10 @@ class ComputedStyle : public ComputedStyleBase,
     return HasTransformRelatedProperty() ||
            // Filter establishes containing block for non-document elements:
            // https://drafts.fxtf.org/filter-effects-1/#FilterProperty
-           (!is_document_element && HasFilter());
+           // Backdrop-filter creates a containing block for fixed and absolute
+           // positioned elements:
+           // https://drafts.fxtf.org/filter-effects-2/#backdrop-filter-operation
+           (!is_document_element && (HasFilter() || HasBackdropFilter()));
   }
 
   // Whitespace utility functions.

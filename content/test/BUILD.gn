@@ -52,6 +52,8 @@ jumbo_static_library("test_support") {
     "../browser/background_fetch/background_fetch_test_service_worker.h",
     "../browser/background_fetch/mock_background_fetch_delegate.cc",
     "../browser/background_fetch/mock_background_fetch_delegate.h",
+    "../browser/browsing_data/browsing_data_test_utils.cc",
+    "../browser/browsing_data/browsing_data_test_utils.h",
     "../browser/media/session/mock_media_session_player_observer.cc",
     "../browser/media/session/mock_media_session_player_observer.h",
     "../browser/media/session/mock_media_session_service_impl.cc",
@@ -868,6 +870,7 @@ test("content_browsertests") {
     "../browser/browsing_data/browsing_data_remover_impl_browsertest.cc",
     "../browser/browsing_data/clear_site_data_handler_browsertest.cc",
     "../browser/browsing_data/conditional_cache_deletion_helper_browsertest.cc",
+    "../browser/browsing_data/same_site_data_remover_impl_browsertest.cc",
     "../browser/child_process_launcher_browsertest.cc",
     "../browser/child_process_security_policy_browsertest.cc",
     "../browser/content_service_browsertest.cc",
@@ -1265,6 +1268,8 @@ test("content_browsertests") {
     ]
 
     libs = [ "uiautomationcore.lib" ]
+
+    configs += [ "//build/config/win:delayloads" ]
 
     if (symbol_level != 0) {
       data += [ "$root_out_dir/content_browsertests.exe.pdb" ]
@@ -1911,7 +1916,6 @@ test("content_unittests") {
     "../renderer/media/audio/mojo_audio_output_ipc_unittest.cc",
     "../renderer/media/render_media_log_unittest.cc",
     "../renderer/media/renderer_webaudiodevice_impl_unittest.cc",
-    "../renderer/media/stream/processed_local_audio_source_unittest.cc",
     "../renderer/media/webrtc/fake_rtc_rtp_transceiver.cc",
     "../renderer/media/webrtc/fake_rtc_rtp_transceiver.h",
     "../renderer/media/webrtc/media_stream_remote_video_source_unittest.cc",

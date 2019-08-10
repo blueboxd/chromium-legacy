@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
+#include "content/browser/browsing_data/browsing_data_test_utils.h"
 #include "content/browser/browsing_data/same_site_data_remover_impl.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_context.h"
@@ -75,55 +76,11 @@ class SameSiteDataRemoverImplTest : public testing::Test {
 
   void TearDown() override { browser_context_.reset(); }
 
-  void CreateCookieForTest(
-      const std::string& cookie_name,
-      const std::string& cookie_domain,
-      net::CookieSameSite same_site,
-      net::CookieOptions::SameSiteCookieContext cookie_context) {
-    network::mojom::CookieManager* cookie_manager = GetCookieManager();
-
-    base::RunLoop run_loop;
-    net::CookieOptions options;
-    options.set_same_site_cookie_context(cookie_context);
-    bool result_out;
-    cookie_manager->SetCanonicalCookie(
-        net::CanonicalCookie(cookie_name, "1", cookie_domain, "/", base::Time(),
-                             base::Time(), base::Time(), false, false,
-                             same_site, net::COOKIE_PRIORITY_LOW),
-        "https", options,
-        base::BindLambdaForTesting(
-            [&](net::CanonicalCookie::CookieInclusionStatus result) {
-              result_out =
-                  (result ==
-                   net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-              run_loop.Quit();
-            }));
-    run_loop.Run();
-    EXPECT_TRUE(result_out);
-  }
-
-  std::vector<net::CanonicalCookie> GetAllCookies(
-      network::mojom::CookieManager* cookie_manager) {
-    base::RunLoop run_loop;
-    std::vector<net::CanonicalCookie> cookies_out;
-    cookie_manager->GetAllCookies(base::BindLambdaForTesting(
-        [&](const std::vector<net::CanonicalCookie>& cookies) {
-          cookies_out = cookies;
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return cookies_out;
-  }
-
   SameSiteDataRemoverImpl* GetSameSiteDataRemoverImpl() {
     return same_site_remover_.get();
   }
 
-  network::mojom::CookieManager* GetCookieManager() {
-    StoragePartition* storage_partition =
-        BrowserContext::GetDefaultStoragePartition(browser_context_.get());
-    return storage_partition->GetCookieManagerForBrowserProcess();
-  }
+  BrowserContext* GetBrowserContext() { return browser_context_.get(); }
 
   void DeleteSameSiteNoneCookies() {
     base::RunLoop run_loop;
@@ -148,12 +105,15 @@ class SameSiteDataRemoverImplTest : public testing::Test {
 };
 
 TEST_F(SameSiteDataRemoverImplTest, TestRemoveSameSiteNoneCookies) {
-  CreateCookieForTest("TestCookie1", "www.google.com",
-                      net::CookieSameSite::NO_RESTRICTION,
-                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE);
+  BrowserContext* browser_context = GetBrowserContext();
+
+  CreateCookieForTest(
+      "TestCookie1", "www.google.com", net::CookieSameSite::NO_RESTRICTION,
+      net::CookieOptions::SameSiteCookieContext::CROSS_SITE, browser_context);
   CreateCookieForTest("TestCookie2", "www.gmail.google.com",
                       net::CookieSameSite::NO_RESTRICTION,
-                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE);
+                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE,
+                      browser_context);
 
   DeleteSameSiteNoneCookies();
 
@@ -161,18 +121,20 @@ TEST_F(SameSiteDataRemoverImplTest, TestRemoveSameSiteNoneCookies) {
               UnorderedElementsAre("www.google.com", "www.gmail.google.com"));
 
   const std::vector<net::CanonicalCookie>& cookies =
-      GetAllCookies(GetCookieManager());
+      GetAllCookies(browser_context);
   EXPECT_THAT(cookies, IsEmpty());
 }
 
 TEST_F(SameSiteDataRemoverImplTest, TestRemoveOnlySameSiteNoneCookies) {
-  CreateCookieForTest("TestCookie1", "www.google.com",
-                      net::CookieSameSite::NO_RESTRICTION,
-                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE);
+  BrowserContext* browser_context = GetBrowserContext();
+  CreateCookieForTest(
+      "TestCookie1", "www.google.com", net::CookieSameSite::NO_RESTRICTION,
+      net::CookieOptions::SameSiteCookieContext::CROSS_SITE, browser_context);
   // The second cookie has SameSite value STRICT_MODE instead of NO_RESTRICTION.
   CreateCookieForTest(
       "TestCookie2", "www.gmail.google.com", net::CookieSameSite::STRICT_MODE,
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+      browser_context);
 
   DeleteSameSiteNoneCookies();
 
@@ -180,20 +142,22 @@ TEST_F(SameSiteDataRemoverImplTest, TestRemoveOnlySameSiteNoneCookies) {
               UnorderedElementsAre("www.google.com"));
 
   const std::vector<net::CanonicalCookie>& cookies =
-      GetAllCookies(GetCookieManager());
+      GetAllCookies(browser_context);
   ASSERT_EQ(1u, cookies.size());
   ASSERT_EQ(cookies[0].Name(), "TestCookie2");
 }
 
 TEST_F(SameSiteDataRemoverImplTest, TestRemoveSameDomainCookies) {
-  CreateCookieForTest("TestCookie1", "www.google.com",
-                      net::CookieSameSite::NO_RESTRICTION,
-                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE);
+  BrowserContext* browser_context = GetBrowserContext();
+  CreateCookieForTest(
+      "TestCookie1", "www.google.com", net::CookieSameSite::NO_RESTRICTION,
+      net::CookieOptions::SameSiteCookieContext::CROSS_SITE, browser_context);
   // The second cookie has the same domain as the first cookie, but also has
   // SameSite value STRICT_MODE instead of NO_RESTRICTION.
   CreateCookieForTest(
       "TestCookie2", "www.google.com", net::CookieSameSite::STRICT_MODE,
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+      browser_context);
 
   DeleteSameSiteNoneCookies();
 
@@ -201,18 +165,21 @@ TEST_F(SameSiteDataRemoverImplTest, TestRemoveSameDomainCookies) {
               UnorderedElementsAre("www.google.com"));
 
   const std::vector<net::CanonicalCookie>& cookies =
-      GetAllCookies(GetCookieManager());
+      GetAllCookies(browser_context);
   ASSERT_EQ(1u, cookies.size());
   ASSERT_EQ(cookies[0].Name(), "TestCookie2");
 }
 
 TEST_F(SameSiteDataRemoverImplTest, TestKeepSameSiteCookies) {
+  BrowserContext* browser_context = GetBrowserContext();
   CreateCookieForTest("TestCookie1", "www.google.com",
                       net::CookieSameSite::LAX_MODE,
-                      net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+                      net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
+                      browser_context);
   CreateCookieForTest(
       "TestCookie2", "www.gmail.google.com", net::CookieSameSite::STRICT_MODE,
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+      browser_context);
 
   DeleteSameSiteNoneCookies();
 
@@ -220,12 +187,14 @@ TEST_F(SameSiteDataRemoverImplTest, TestKeepSameSiteCookies) {
               IsEmpty());
 
   const std::vector<net::CanonicalCookie>& cookies =
-      GetAllCookies(GetCookieManager());
+      GetAllCookies(browser_context);
   EXPECT_THAT(2u, cookies.size());
 }
 
 TEST_F(SameSiteDataRemoverImplTest, TestCookieRemovalUnaffectedByParameters) {
-  network::mojom::CookieManager* cookie_manager = GetCookieManager();
+  BrowserContext* browser_context = GetBrowserContext();
+  network::mojom::CookieManager* cookie_manager =
+      GetCookieManager(browser_context);
 
   base::RunLoop run_loop1;
   net::CookieOptions options;
@@ -271,20 +240,23 @@ TEST_F(SameSiteDataRemoverImplTest, TestCookieRemovalUnaffectedByParameters) {
               UnorderedElementsAre("google.com"));
 
   const std::vector<net::CanonicalCookie>& cookies =
-      GetAllCookies(cookie_manager);
+      GetAllCookies(browser_context);
   ASSERT_EQ(1u, cookies.size());
   ASSERT_EQ(cookies[0].Name(), "TestCookie2");
 }
 
 TEST_F(SameSiteDataRemoverImplTest, TestStoragePartitionDataRemoval) {
+  BrowserContext* browser_context = GetBrowserContext();
+  network::mojom::CookieManager* cookie_manager =
+      GetCookieManager(browser_context);
   SameSiteRemoverTestStoragePartition storage_partition;
-  storage_partition.set_cookie_manager_for_browser_process(GetCookieManager());
+  storage_partition.set_cookie_manager_for_browser_process(cookie_manager);
   GetSameSiteDataRemoverImpl()->OverrideStoragePartitionForTesting(
       &storage_partition);
 
-  CreateCookieForTest("TestCookie1", ".google.com",
-                      net::CookieSameSite::NO_RESTRICTION,
-                      net::CookieOptions::SameSiteCookieContext::CROSS_SITE);
+  CreateCookieForTest(
+      "TestCookie1", ".google.com", net::CookieSameSite::NO_RESTRICTION,
+      net::CookieOptions::SameSiteCookieContext::CROSS_SITE, browser_context);
   DeleteSameSiteNoneCookies();
 
   ClearStoragePartitionData();

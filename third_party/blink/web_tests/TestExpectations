@@ -3331,6 +3331,12 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-verti
 crbug.com/991295 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/origin-when-cross-origin/meta-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unset-referrer-policy/http-rp/same-origin/http-http/img-tag/swap-origin-redirect/insecure-protocol.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unsafe-url/attr-referrer/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/unsafe-url/attr-referrer/cross-origin/http-http/img-tag/swap-origin-redirect/generic.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/referrer-policy/origin-when-cross-origin/attr-referrer/same-origin/http-http/img-tag/no-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text-decor/text-decoration-shorthands-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-shorthands-002.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-shorthands-002.html [ Failure ]
@@ -6526,3 +6532,9 @@ crbug.com/992148 [ Linux ] virtual/disable-blink-gen-property-trees/animations/s
 # Expected failure for experimental Scheduling API when running without the
 # BlinkSchedulerDisableAntiStarvationForPriorities feature.
 crbug.com/979017 wpt_internal/scheduler/task_order.html [ Failure ]
+
+# Sheriff 2019-08-09
+crbug.com/992531 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Failure ]
+crbug.com/992615 [ Linux ] external/wpt/import-maps/data.sub.tentative.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/generic-sensor/idlharness.https.window.html [ Pass Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/secure-contexts/idlharness.any.html [ Pass Timeout ]

@@ -32,15 +32,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 
 @implementation PaymentsTextItem
 
-@synthesize text = _text;
-@synthesize detailText = _detailText;
-@synthesize textColor = _textColor;
-@synthesize detailTextColor = _detailTextColor;
-@synthesize leadingImage = _leadingImage;
-@synthesize trailingImage = _trailingImage;
-@synthesize accessoryType = _accessoryType;
 @synthesize complete = _complete;
-@synthesize cellType = _cellType;
 
 #pragma mark CollectionViewItem
 
@@ -75,6 +67,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   cell.detailTextLabel.textColor = self.detailTextColor;
   cell.leadingImageView.image = self.leadingImage;
   cell.trailingImageView.image = self.trailingImage;
+  cell.trailingImageView.tintColor = self.trailingImageTintColor;
   cell.cellType = self.cellType;
 }
 
@@ -249,6 +242,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   self.detailTextLabel.text = nil;
   self.leadingImageView.image = nil;
   self.trailingImageView.image = nil;
+  self.trailingImageView.tintColor = nil;
   self.cellType = PaymentsTextCellTypeNormal;
 }
 

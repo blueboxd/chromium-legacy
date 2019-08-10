@@ -80,7 +80,7 @@ ClickToCallDialogView::ClickToCallDialogView(
     views::View* anchor_view,
     content::WebContents* web_contents,
     ClickToCallSharingDialogController* controller)
-    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller),
       devices_(controller_->GetSyncedDevices()),
       apps_(controller_->GetApps()),

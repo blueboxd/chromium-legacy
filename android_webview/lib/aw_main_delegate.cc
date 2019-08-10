@@ -55,7 +55,6 @@
 #include "gpu/ipc/gl_in_process_context.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -206,10 +205,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // TODO(https://crbug.com/963653): SmsReceiver is not yet supported on
     // WebView.
     features.DisableIfNotSet(::features::kSmsReceiver);
-
-    // WebView relies on tweaking the size heuristic to dynamically enable
-    // or disable accelerated cavnas 2d.
-    features.DisableIfNotSet(blink::features::kAlwaysAccelerateCanvas);
   }
 
   android_webview::RegisterPathProvider();

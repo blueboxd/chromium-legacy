@@ -71,7 +71,8 @@ public class SmsReceiverDialogTest {
 
     private SmsReceiverDialog createDialog() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            SmsReceiverDialog dialog = SmsReceiverDialog.create(/*nativeSmsDialogAndroid=*/42);
+            SmsReceiverDialog dialog =
+                    SmsReceiverDialog.create(/*nativeSmsDialogAndroid=*/42, "https://example.com");
             mWindowAndroid = new ActivityWindowAndroid(mActivityTestRule.getActivity());
             dialog.open(mWindowAndroid);
             return dialog;

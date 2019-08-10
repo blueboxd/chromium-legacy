@@ -38,8 +38,6 @@ void GtkInitFromCommandLine(const base::CommandLine& command_line);
 // Returns the name of the ".desktop" file associated with our running process.
 std::string GetDesktopName(base::Environment* env);
 
-guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator);
-
 GdkModifierType GetGdkModifierForAccelerator(
     const ui::Accelerator& accelerator);
 
@@ -187,6 +185,11 @@ SkColor GetSeparatorColor(const std::string& css_selector);
 // Get a GtkSettings property as a C++ string.
 std::string GetGtkSettingsStringProperty(GtkSettings* settings,
                                          const gchar* prop_name);
+
+#if defined(USE_X11)
+// TODO(thomasanderson): Remove this once GtkStatusIcon is removed.
+guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator);
+#endif
 }  // namespace libgtkui
 
 #endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_UTIL_H_

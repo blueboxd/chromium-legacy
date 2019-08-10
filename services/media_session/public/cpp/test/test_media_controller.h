@@ -153,7 +153,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
                      int desired_size_px,
                      mojo::PendingRemote<mojom::MediaControllerImageObserver>
                          observer) override {}
-  void SeekTo(base::TimeDelta seek_time) override {}
+  void SeekTo(base::TimeDelta seek_time) override;
   void ScrubTo(base::TimeDelta seek_time) override {}
 
   int toggle_suspend_resume_count() const {
@@ -168,6 +168,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   int next_track_count() const { return next_track_count_; }
   int seek_backward_count() const { return seek_backward_count_; }
   int seek_forward_count() const { return seek_forward_count_; }
+  int seek_to_count() const { return seek_to_count_; }
+
+  base::Optional<base::TimeDelta> seek_to_time() { return seek_to_time_; }
 
   void SimulateMediaSessionInfoChanged(mojom::MediaSessionInfoPtr session_info);
   void SimulateMediaSessionActionsChanged(
@@ -184,6 +187,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   int next_track_count_ = 0;
   int seek_backward_count_ = 0;
   int seek_forward_count_ = 0;
+  int seek_to_count_ = 0;
+
+  base::Optional<base::TimeDelta> seek_to_time_;
 
   mojo::RemoteSet<mojom::MediaControllerObserver> observers_;
 

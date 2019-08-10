@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV id='top'",
+      "name": "LayoutNGBlockFlow DIV id='top'",
       "position": [8, 8],
       "bounds": [500, 500]
     },
@@ -34,28 +34,22 @@
       "bounds": [485, 5000]
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='middle'",
+      "name": "Squashing Containment Layer",
       "position": [8, 8],
-      "bounds": [400, 400],
-      "contentsOpaque": true,
-      "backgroundColor": "#008000",
-      "hasClipParent": true
+      "drawsContent": false
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='child'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='child'",
       "position": [8, 8],
       "bounds": [300, 300],
       "contentsOpaque": true,
       "backfaceVisibility": "hidden",
-      "backgroundColor": "#FFFF00",
-      "hasClipParent": true
+      "backgroundColor": "#FFFF00"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='tall'",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='tall')",
       "position": [8, 8],
-      "bounds": [20, 5000],
-      "contentsOpaque": true,
-      "backgroundColor": "#FA8072"
+      "bounds": [20, 5000]
     },
     {
       "name": "Overflow Controls Host Layer",

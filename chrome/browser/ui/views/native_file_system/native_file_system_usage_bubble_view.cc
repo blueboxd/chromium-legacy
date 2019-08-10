@@ -288,7 +288,7 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
     content::WebContents* web_contents,
     const url::Origin& origin,
     Usage usage)
-    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       origin_(origin),
       usage_(std::move(usage)),
       writable_paths_model_(usage_.writable_files, usage_.writable_directories),

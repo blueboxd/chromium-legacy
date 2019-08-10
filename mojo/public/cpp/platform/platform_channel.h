@@ -15,11 +15,11 @@
 namespace mojo {
 
 // PlatformChannel encapsulates construction and ownership of two entangled
-// endpoints of a platform-specific communication primitive, e.g. a Windows pipe
-// or a Unix domain socket. One endpoint is designated as the "local" endpoint
-// and should be retained by the creating process; the other endpoint is
-// designated as the "remote" endpoint and should be passed to an external
-// process.
+// endpoints of a platform-specific communication primitive, e.g. a Windows
+// pipe, a Unix domain socket, or a macOS Mach port pair. One endpoint is
+// designated as the "local" endpoint and should be retained by the creating
+// process; the other endpoint is designated as the "remote" endpoint and
+// should be passed to an external process.
 //
 // PlatformChannels can be used to bootstrap Mojo IPC between one process and
 // another. Typically the other process is a child of this process, and there

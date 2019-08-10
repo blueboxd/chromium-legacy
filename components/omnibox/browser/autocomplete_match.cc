@@ -592,8 +592,7 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
     const GURL& url,
     const AutocompleteInput& input,
     const TemplateURLService* template_url_service,
-    const base::string16& keyword,
-    const std::string& additional_query_params) {
+    const base::string16& keyword) {
   if (!url.is_valid())
     return url;
 
@@ -620,12 +619,10 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
         stripped_destination_url,
         template_url_service->search_terms_data(),
         &search_terms)) {
-      TemplateURLRef::SearchTermsArgs search_terms_args(search_terms);
-      if (!additional_query_params.empty())
-        search_terms_args.additional_query_params = additional_query_params;
       stripped_destination_url =
           GURL(template_url->url_ref().ReplaceSearchTerms(
-              search_terms_args, template_url_service->search_terms_data()));
+              TemplateURLRef::SearchTermsArgs(search_terms),
+              template_url_service->search_terms_data()));
     }
   }
 
@@ -723,6 +720,34 @@ url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
   }
 
   return format_types;
+}
+
+// static
+bool AutocompleteMatch::AllowedToBeDefault(const AutocompleteInput& input,
+                                           AutocompleteMatch& match) {
+  if (match.inline_autocompletion.empty())
+    return true;
+  if (input.prevent_inline_autocomplete())
+    return false;
+  if (input.text().empty() || !base::IsUnicodeWhitespace(input.text().back()))
+    return true;
+
+  // If we've reached here, the input ends in trailing whitespace. If the
+  // trailing whitespace prefixes |match.inline_autocompletion|, then allow the
+  // match to be default and remove the whitespace from
+  // |match.inline_autocompletion|.
+  size_t last_non_whitespace_pos =
+      input.text().find_last_not_of(base::kWhitespaceUTF16);
+  DCHECK_NE(last_non_whitespace_pos, std::string::npos);
+  auto whitespace_suffix = input.text().substr(last_non_whitespace_pos + 1);
+  if (base::StartsWith(match.inline_autocompletion, whitespace_suffix,
+                       base::CompareCase::SENSITIVE)) {
+    match.inline_autocompletion =
+        match.inline_autocompletion.substr(whitespace_suffix.size());
+    return true;
+  }
+
+  return false;
 }
 
 // static
@@ -874,6 +899,19 @@ bool AutocompleteMatch::IsVerbatimType() const {
   return type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
       type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
       is_keyword_verbatim_match;
+}
+
+bool AutocompleteMatch::IsSearchProviderSearchSuggestion() const {
+  const bool from_search_provider =
+      (provider && provider->type() == AutocompleteProvider::TYPE_SEARCH);
+  return from_search_provider && type == AutocompleteMatchType::SEARCH_SUGGEST;
+}
+
+bool AutocompleteMatch::IsOnDeviceSearchSuggestion() const {
+  const bool from_on_device_provider =
+      (provider &&
+       provider->type() == AutocompleteProvider::TYPE_ON_DEVICE_HEAD);
+  return from_on_device_provider && subtype_identifier == 271;
 }
 
 bool AutocompleteMatch::SupportsDeletion() const {

@@ -102,7 +102,7 @@ class SettingsWindowManagerTest : public InProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, OpenSettingsWindow) {
   // Open a settings window.
-  ShowSettingsForProfile(browser()->profile());
+  settings_manager_->ShowOSSettings(browser()->profile());
   Browser* settings_browser =
       settings_manager_->FindBrowserForProfile(browser()->profile());
   ASSERT_TRUE(settings_browser);
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, OpenSettingsWindow) {
   EXPECT_EQ(settings_browser, observer_.browser());
 
   // Open the settings again: no new window.
-  ShowSettingsForProfile(browser()->profile());
+  settings_manager_->ShowOSSettings(browser()->profile());
   EXPECT_EQ(settings_browser,
             settings_manager_->FindBrowserForProfile(browser()->profile()));
   EXPECT_EQ(1u, observer_.new_settings_count());
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, OpenSettingsWindow) {
   EXPECT_FALSE(settings_manager_->FindBrowserForProfile(browser()->profile()));
 
   // Open a new settings window.
-  ShowSettingsForProfile(browser()->profile());
+  settings_manager_->ShowOSSettings(browser()->profile());
   Browser* settings_browser2 =
       settings_manager_->FindBrowserForProfile(browser()->profile());
   ASSERT_TRUE(settings_browser2);
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, OpenChromePages) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
   // Settings should open a new browser window.
-  chrome::ShowSettings(browser());
+  settings_manager_->ShowOSSettings(browser()->profile());
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 
   // About should reuse the existing Settings window.
@@ -155,8 +155,24 @@ IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, OpenChromePages) {
   // Downloads should open in an existing browser window.
   chrome::ShowDownloads(browser());
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+}
 
-  // About should open a new browser window.
+// TODO(crbug/950007): Remove ScopedFeatureList when kSplitSettings flag is on
+// by default.
+IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, OpenAboutPageSplitSettings) {
+  // About should open settings window when split settings feature flag is on.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
+  chrome::ShowAboutChrome(browser());
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+}
+
+// TODO(crbug/950007): Remove when kSplitSettings flag is on by default.
+IN_PROC_BROWSER_TEST_P(SettingsWindowManagerTest, OpenAboutPage) {
+  // About should open a new browser window when split settings feature flag is
+  // off.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(chromeos::features::kSplitSettings);
   chrome::ShowAboutChrome(browser());
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
 }

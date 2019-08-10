@@ -211,7 +211,8 @@ class AvSettings {
   // non-0 |brightness| values don't turn off the display.
   // Returns false if set fails. Returns true otherwise.
   // Not all displays support this function.
-  static bool SetDisplayBrightness(float brightness, bool smooth)
+  static CHROMECAST_EXPORT bool SetDisplayBrightness(float brightness,
+                                                     bool smooth)
       __attribute__((weak));
 
   // Gets the current screen (backlight) brightness.
@@ -219,14 +220,16 @@ class AvSettings {
   // Returns false and does not modify |brightness| if get fails.
   // Returns true and sets |brightness| to the current brightness otherwise.
   // Not all displays support this function.
-  static bool GetDisplayBrightness(float* brightness) __attribute__((weak));
+  static CHROMECAST_EXPORT bool GetDisplayBrightness(float* brightness)
+      __attribute__((weak));
 
   // Gets the nits output by the display at 100% brightness.
   // |nits|: The maximum brightness in nits.
   // Returns false and does not modify |nits| if get fails.
   // Returns true and sets |nits| on success.
   // Not all displays support this function.
-  static bool GetDisplayMaxBrightnessNits(float* nits) __attribute__((weak));
+  static CHROMECAST_EXPORT bool GetDisplayMaxBrightnessNits(float* nits)
+      __attribute__((weak));
 
   // Set Hdmi content type. Return false if such operation fails. The operation
   // fails if unexpected errors occur, or if the desired |content_type| is not
@@ -241,7 +244,7 @@ class AvSettings {
   // Returns 0 when HDMI is not connected or when the latency cannot be
   // measured.
   // This function should only be implemented on HDMI platforms.
-  static int GetHdmiLatencyUs() __attribute__((weak));
+  static CHROMECAST_EXPORT int GetHdmiLatencyUs() __attribute__((weak));
 
   // Returns the type of volume control, i.e. MASTER_VOLUME, FIXED_VOLUME or
   // ATTENUATION_VOLUME. For example, normal TVs, devices of CEC audio

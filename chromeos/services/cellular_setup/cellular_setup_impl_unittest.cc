@@ -75,7 +75,7 @@ class CellularSetupImplTest : public testing::Test {
         &fake_ota_activator_factory_);
     shill_clients::InitializeFakes();
     NetworkHandler::Initialize();
-    cellular_setup_ = CellularSetupImpl::Factory::Create();
+    cellular_setup_ = std::make_unique<CellularSetupImpl>();
   }
 
   void TearDown() override {

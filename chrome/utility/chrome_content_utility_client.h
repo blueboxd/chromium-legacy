@@ -44,9 +44,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   std::unique_ptr<service_manager::Service> MaybeCreateMainThreadService(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request);
-  std::unique_ptr<service_manager::Service> MaybeCreateElevatedService(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request);
 
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Last IPC message handler.

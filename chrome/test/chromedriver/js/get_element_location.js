@@ -2,25 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function getInViewPoint(rect) {
-  var left = Math.max(0, rect.left);
-  var right = Math.min(window.innerWidth, rect.right);
-  var top = Math.max(0, rect.top);
-  var bottom = Math.min(window.innerHeight, rect.bottom);
-
-  var x = 0.5 * (left + right);
-  var y = 0.5 * (top + bottom);
-
-  return [x, y, rect.left, rect.top];
+function getParentRect(element) {
+  var parent = element.parentElement;
+  var parentRect = parent.getClientRects()[0];
+  return parentRect;
 }
 
-function inView(element) {
+function getInViewPoint(element) {
   var rectangles = element.getClientRects();
   if (rectangles.length === 0) {
     return false;
   }
 
-  var elementPoint = getInViewPoint(rectangles[0]);
+  var rect = rectangles[0];
+  var left = Math.max(0, rect.left);
+  var right = Math.min(window.innerWidth, rect.right);
+  var top = Math.max(0, rect.top);
+  var bottom = Math.min(window.innerHeight, rect.bottom);
+
+  // Find the view boundry of the element by checking itself and all of its
+  // ancestor's boundry.
+  while (element.parentElement != null &&
+         element.parentElement != document.body &&
+         element.parentElement.getClientRects().length > 0) {
+    var parentRect = getParentRect(element);
+    left = Math.max(left, parentRect.left);
+    right = Math.min(right, parentRect.right);
+    top = Math.max(top, parentRect.top);
+    bottom = Math.min(bottom, parentRect.bottom);
+    element = element.parentElement;
+  }
+
+  var x = 0.5 * (left + right);
+  var y = 0.5 * (top + bottom);
+
+  return [x, y, left, top];
+}
+
+function inView(element) {
+  var elementPoint = getInViewPoint(element);
   if (elementPoint[0] <= 0 || elementPoint[1] <= 0 ||
       elementPoint[0] >= window.innerWidth ||
       elementPoint[1] >= window.innerHeight ||
@@ -50,8 +70,8 @@ function getElementLocation(element, center) {
     e.code = 60;
     throw e;
   }
-  var rect = clientRects[0];
-  var elementPoint = getInViewPoint(rect);
+
+  var elementPoint = getInViewPoint(element);
   if (center) {
     return {
         'x': elementPoint[0],

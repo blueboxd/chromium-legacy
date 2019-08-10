@@ -839,10 +839,6 @@
         parent="@style/TextAppearance.AppCompat.Medium">
         <item name="android:textColor">@color/standard_mode_tint</item>
     </style>
-    <style name="TextAppearance.BookmarkWidgetItemText"
-        parent="@style/TextAppearance.BlackTitle1">
-        <item name="android:textColor">@color/default_text_color_dark</item>
-    </style>
 
     <!-- Download Home -->
     <style name="DateView">
@@ -984,5 +980,10 @@
         <item name="android:gravity">center_vertical</item>
         <item name="android:textAlignment">viewStart</item>
         <item name="android:textAppearance">@style/TextAppearance.BlackTitle1</item>
+    </style>
+
+    <!-- Scrolling -->
+    <style name="DarkModeCompatibleVerticalScrolling">
+        <item name="android:scrollbarThumbVertical">@color/default_scroll_thumb</item>
     </style>
 </resources>

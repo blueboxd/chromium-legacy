@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_generic_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -53,32 +54,24 @@ class FakeImageForCacheTest : public Image {
 
 class DarkModeImageClassifierTest : public testing::Test {
  public:
-  // Loads the image from |file_name|, computes features vector into |features|,
+  // Loads the image from |file_name|, computes features into |features|,
   // and returns the classification result.
-  bool GetFeaturesAndClassification(const String& file_name,
-                                    Vector<float>* features) {
+  bool GetFeaturesAndClassification(
+      const String& file_name,
+      DarkModeImageClassifier::Features* features) {
+    CHECK(features);
     SCOPED_TRACE(file_name);
     scoped_refptr<BitmapImage> image = LoadImage(file_name);
     DarkModeImageClassifier dark_mode_image_classifier;
     dark_mode_image_classifier.SetImageType(
         DarkModeImageClassifier::ImageType::kBitmap);
-    if (!dark_mode_image_classifier.GetFeatures(
-            image.get(), FloatRect(0, 0, image->width(), image->height()),
-            features)) {
-      return false;
-    }
+    auto features_or_null = dark_mode_image_classifier.GetFeatures(
+        image.get(), FloatRect(0, 0, image->width(), image->height()));
+    CHECK(features_or_null.has_value());
+    (*features) = features_or_null.value();
     DarkModeClassification result =
         dark_mode_generic_classifier_.ClassifyWithFeatures(*features);
     return result == DarkModeClassification::kApplyFilter;
-  }
-
-  void AssertFeaturesEqual(const Vector<float>& features,
-                           const Vector<float>& expected_features) {
-    EXPECT_EQ(features.size(), expected_features.size());
-    for (unsigned i = 0; i < features.size(); i++) {
-      EXPECT_NEAR(features[i], expected_features[i], kEpsilon)
-          << "Feature " << i;
-    }
   }
 
   DarkModeGenericClassifier* classifier() {
@@ -102,7 +95,7 @@ class DarkModeImageClassifierTest : public testing::Test {
 };
 
 TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
-  Vector<float> features;
+  DarkModeImageClassifier::Features features;
 
   // Test Case 1:
   // Grayscale
@@ -113,7 +106,11 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
                                            &features));
   EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyFilter);
-  AssertFeaturesEqual(features, {0.0f, 0.1875f, 0.0f, 0.0f, 0.0f});
+  EXPECT_FALSE(features.is_colorful);
+  EXPECT_FALSE(features.is_svg);
+  EXPECT_NEAR(0.1875f, features.color_buckets_ratio, kEpsilon);
+  EXPECT_NEAR(0.0f, features.transparency_ratio, kEpsilon);
+  EXPECT_NEAR(0.0f, features.background_ratio, kEpsilon);
 
   // Test Case 2:
   // Grayscale
@@ -124,7 +121,11 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
                                             &features));
   EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
             DarkModeClassification::kNotClassified);
-  AssertFeaturesEqual(features, {0.0f, 0.8125f, 0.446667f, 0.03f, 0.0f});
+  EXPECT_FALSE(features.is_colorful);
+  EXPECT_FALSE(features.is_svg);
+  EXPECT_NEAR(0.8125f, features.color_buckets_ratio, kEpsilon);
+  EXPECT_NEAR(0.446667f, features.transparency_ratio, kEpsilon);
+  EXPECT_NEAR(0.03f, features.background_ratio, kEpsilon);
 
   // Test Case 3:
   // Color
@@ -135,8 +136,11 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
       "/images/resources/twitter_favicon.ico", &features));
   EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyFilter);
-  AssertFeaturesEqual(features,
-                      {1.0f, 0.0002441f, 0.542092f, 0.1500000f, 0.0f});
+  EXPECT_TRUE(features.is_colorful);
+  EXPECT_FALSE(features.is_svg);
+  EXPECT_NEAR(0.0002441f, features.color_buckets_ratio, kEpsilon);
+  EXPECT_NEAR(0.542092f, features.transparency_ratio, kEpsilon);
+  EXPECT_NEAR(0.1500000f, features.background_ratio, kEpsilon);
 
   // Test Case 4:
   // Color
@@ -147,7 +151,11 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
       "/images/resources/blue-wheel-srgb-color-profile.png", &features));
   EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
             DarkModeClassification::kDoNotApplyFilter);
-  AssertFeaturesEqual(features, {1.0f, 0.032959f, 0.0f, 0.0f, 0.0f});
+  EXPECT_TRUE(features.is_colorful);
+  EXPECT_FALSE(features.is_svg);
+  EXPECT_NEAR(0.032959f, features.color_buckets_ratio, kEpsilon);
+  EXPECT_NEAR(0.0f, features.transparency_ratio, kEpsilon);
+  EXPECT_NEAR(0.0f, features.background_ratio, kEpsilon);
 
   // Test Case 5:
   // Color
@@ -158,7 +166,11 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
       "/images/resources/ycbcr-444-float.jpg", &features));
   EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyFilter);
-  AssertFeaturesEqual(features, {1.0f, 0.0151367f, 0.0f, 0.0f, 0.0f});
+  EXPECT_TRUE(features.is_colorful);
+  EXPECT_FALSE(features.is_svg);
+  EXPECT_NEAR(0.0151367f, features.color_buckets_ratio, kEpsilon);
+  EXPECT_NEAR(0.0f, features.transparency_ratio, kEpsilon);
+  EXPECT_NEAR(0.0f, features.background_ratio, kEpsilon);
 }
 
 TEST_F(DarkModeImageClassifierTest, Caching) {

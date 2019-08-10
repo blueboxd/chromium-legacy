@@ -38,11 +38,11 @@ class LocationBarBubbleDelegateView : public views::BubbleDialogDelegateView,
   };
 
   // Constructs LocationBarBubbleDelegateView. Anchors the bubble to
-  // |anchor_view| when it is not nullptr or alternatively, to |anchor_point|.
+  // |anchor_view|. If |anchor_view| is nullptr, the bubble is anchored at
+  // (0,0).
   // Registers with a fullscreen controller identified by |web_contents| to
   // close the bubble if the fullscreen state changes.
   LocationBarBubbleDelegateView(views::View* anchor_view,
-                                const gfx::Point& anchor_point,
                                 content::WebContents* web_contents);
 
   ~LocationBarBubbleDelegateView() override;

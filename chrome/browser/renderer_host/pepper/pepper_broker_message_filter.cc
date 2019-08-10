@@ -37,7 +37,7 @@ PepperBrokerMessageFilter::~PepperBrokerMessageFilter() {}
 scoped_refptr<base::TaskRunner>
 PepperBrokerMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
-  return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+  return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
 }
 
 int32_t PepperBrokerMessageFilter::OnResourceMessageReceived(

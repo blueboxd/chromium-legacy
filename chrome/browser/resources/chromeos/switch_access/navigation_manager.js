@@ -9,8 +9,15 @@
 class NavigationManager {
   /**
    * @param {!chrome.automation.AutomationNode} desktop
+   * @param {!SwitchAccessInterface} switchAccess
    */
-  constructor(desktop) {
+  constructor(desktop, switchAccess) {
+    /**
+     * Handles communication with Switch Access.
+     * @private {!SwitchAccessInterface}
+     */
+    this.switchAccess_ = switchAccess;
+
     /**
      * Handles communication with and navigation within the Switch Access menu.
      * @private {!MenuManager}
@@ -400,7 +407,7 @@ class NavigationManager {
     if (!this.node_.role)
       return;
 
-    if (window.switchAccess.textEditingEnabled()) {
+    if (this.switchAccess_.improvedTextInputEnabled()) {
       if (SwitchAccessPredicate.isTextInput(this.node_)) {
         this.node_.focus();
         return;
@@ -456,6 +463,15 @@ class NavigationManager {
   }
 
   /**
+   * Checks if the current scope is in the virtual keyboard.
+   * @return {boolean}
+   * @public
+   */
+  inVirtualKeyboard() {
+    return this.textInputManager_.inVirtualKeyboard(this.scope_);
+  }
+
+  /**
    * Puts focus on the virtual keyboard, if the current node is a text input.
    * TODO(946190): Handle the case where the user has not enabled the onscreen
    *               keyboard.
@@ -467,6 +483,10 @@ class NavigationManager {
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(
         true /* is_visible */);
     this.setScope_(this.textInputManager_.getKeyboard(this.desktop_));
+
+    if (this.switchAccess_.improvedTextInputEnabled()) {
+      this.switchAccess_.restartAutoScan();
+    }
   }
 
   /**
@@ -561,6 +581,11 @@ class NavigationManager {
     this.buildScopeStack_(event.target);
 
     this.textNavigationManager_.resetSelStartIndex();
+
+    // Restart auto-scan.
+    if (this.switchAccess_.improvedTextInputEnabled()) {
+      this.switchAccess_.restartAutoScan();
+    }
 
     // Move to focused node.
     this.node_ = event.target;

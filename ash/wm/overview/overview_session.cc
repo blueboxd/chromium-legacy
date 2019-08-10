@@ -357,8 +357,8 @@ void OverviewSession::OnGridEmpty() {
     EndOverview();
 }
 
-void OverviewSession::IncrementSelection(int increment) {
-  Move(increment < 0);
+void OverviewSession::IncrementSelection(bool forward) {
+  Move(/*reverse=*/!forward);
 }
 
 bool OverviewSession::AcceptSelection() {

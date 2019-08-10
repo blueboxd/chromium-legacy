@@ -177,6 +177,8 @@ void AutocompleteResult::SortAndCull(
 #endif
   SortAndDedupMatches(input.current_page_classification(), &matches_);
 
+  DemoteOnDeviceSearchSuggestions();
+
   // Sort and trim to the most relevant GetMaxMatches() matches.
   CompareWithDemoteByType<AutocompleteMatch> comparing_object(
       input.current_page_classification());
@@ -195,6 +197,8 @@ void AutocompleteResult::SortAndCull(
     }
     std::rotate(matches_.begin(), it, next);
   }
+
+  DiscourageTopMatchFromBeingSearchEntity(&matches_);
 
   size_t max_url_count = 0;
   if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
@@ -279,6 +283,69 @@ void AutocompleteResult::SortAndCull(
   // Set the alternate nav URL.
   alternate_nav_url_ = (default_match_ == matches_.end()) ?
       GURL() : ComputeAlternateNavUrl(input, *default_match_);
+}
+
+void AutocompleteResult::DemoteOnDeviceSearchSuggestions() {
+  const std::string mode = base::GetFieldTrialParamValueByFeature(
+      omnibox::kOnDeviceHeadProvider, "DemoteOnDeviceSearchSuggestionsMode");
+  if (mode != "decrease-relevances" && mode != "remove-suggestions")
+    return;
+
+  std::vector<AutocompleteMatch*> on_device_search_suggestions;
+  int search_provider_search_suggestion_min_relevance = -1,
+      on_device_search_suggestion_max_relevance = -1;
+  bool search_provider_search_suggestion_exists = false;
+
+  // Loop through all matches to check the existence of SearchProvider search
+  // suggestions and OnDeviceProvider search suggestions. Also calculate the
+  // maximum OnDeviceProvider search suggestion relevance and the minimum
+  // SearchProvider search suggestion relevance, in preparation to adjust the
+  // relevances for OnDeviceProvider search suggestions next.
+  for (auto& m : matches_) {
+    if (m.IsSearchProviderSearchSuggestion()) {
+      search_provider_search_suggestion_exists = true;
+      if (mode == "decrease-relevances") {
+        search_provider_search_suggestion_min_relevance =
+            search_provider_search_suggestion_min_relevance < 0
+                ? m.relevance
+                : std::min(search_provider_search_suggestion_min_relevance,
+                           m.relevance);
+      }
+    } else if (m.IsOnDeviceSearchSuggestion()) {
+      on_device_search_suggestions.push_back(&m);
+      if (mode == "decrease-relevances") {
+        on_device_search_suggestion_max_relevance =
+            std::max(on_device_search_suggestion_max_relevance, m.relevance);
+      }
+    }
+  }
+
+  // If SearchProvider search suggestions present, adjust the relevances for
+  // OnDeviceProvider search suggestions, determined by mode:
+  // 1. decrease-relevances: if any OnDeviceProvider search suggestion has a
+  //    higher relevance than any SearchProvider one, subtract the difference
+  //    b/w the maximum OnDeviceProvider search suggestion relevance and the
+  //    minimum SearchProvider search suggestion relevance from the relevances
+  //    for all OnDeviceProvider ones.
+  // 2. remove-suggestions: set the relevances to 0 for all OnDeviceProvider
+  //    search suggestions.
+  if (search_provider_search_suggestion_exists &&
+      !on_device_search_suggestions.empty()) {
+    if (mode == "decrease-relevances" &&
+        on_device_search_suggestion_max_relevance >=
+            search_provider_search_suggestion_min_relevance) {
+      int relevance_offset =
+          (on_device_search_suggestion_max_relevance -
+           search_provider_search_suggestion_min_relevance + 1);
+      for (auto* m : on_device_search_suggestions)
+        m->relevance = m->relevance > relevance_offset
+                           ? m->relevance - relevance_offset
+                           : 0;
+    } else if (mode == "remove-suggestions") {
+      for (auto* m : on_device_search_suggestions)
+        m->relevance = 0;
+    }
+  }
 }
 
 void AutocompleteResult::AppendDedicatedPedalMatches(
@@ -390,7 +457,7 @@ ACMatches::iterator AutocompleteResult::FindTopMatch(
   // the first allowed-to-be--default match in the list.
   // The goal of this behavior is to ensure that in situations where the user
   // expects to see a commonly visited URL as the default match, the URL is not
-  // supressed by type demotion.
+  // suppressed by type demotion.
   // However, even if IsPreserveDefaultMatchScoreEnabled is true, we don't care
   // about this URL behavior when the user is using the fakebox, which is
   // intended to work more like a search-only box. Unless the user's input is a
@@ -413,6 +480,39 @@ ACMatches::iterator AutocompleteResult::FindTopMatch(
     return std::find_if(matches->begin(), matches->end(), [](const auto& m) {
       return m.allowed_to_be_default_match;
     });
+  }
+}
+
+// static
+void AutocompleteResult::DiscourageTopMatchFromBeingSearchEntity(
+    ACMatches* matches) {
+  if (matches->empty())
+    return;
+
+  auto top_match = matches->begin();
+  if (top_match->type != ACMatchType::SEARCH_SUGGEST_ENTITY)
+    return;
+
+  // Search the duplicates for a equivalent non-entity search suggestion.
+  for (auto it = top_match->duplicate_matches.begin();
+       it != top_match->duplicate_matches.end(); ++it) {
+    // Reject any ineligible duplicates.
+    if (it->type == ACMatchType::SEARCH_SUGGEST_ENTITY ||
+        !AutocompleteMatch::IsSearchType(it->type) ||
+        !it->allowed_to_be_default_match) {
+      continue;
+    }
+
+    // Copy the non-entity match, then erase it from the list of duplicates.
+    // We do this first, because the insertion operation invalidates all
+    // iterators, including |top_match|.
+    AutocompleteMatch non_entity_match_copy = *it;
+    top_match->duplicate_matches.erase(it);
+
+    // Promote the non-entity match to the top, then immediately return, since
+    // all our iterators are invalid after the insertion.
+    matches->insert(matches->begin(), std::move(non_entity_match_copy));
+    return;
   }
 }
 

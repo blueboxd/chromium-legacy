@@ -7,17 +7,7 @@
   await TestRunner.loadModule('axe_core_test_runner');
   await TestRunner.showPanel('security');
 
-  // Using an insecure request since the insecure overview page encompasses the most elements.
-  /** @type {!Protocol.Security.InsecureContentStatus} */
-  const insecureContentStatus = {
-    ranMixedContent: false,
-    displayedMixedContent: false,
-    ranContentWithCertErrors: false,
-    displayedContentWithCertErrors: true,
-    ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure,
-    displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral
-  };
-  const pageSecurityState = new Security.PageSecurityState(Protocol.Security.SecurityState.Secure, [], insecureContentStatus, null);
+  const pageSecurityState = new Security.PageSecurityState(Protocol.Security.SecurityState.Secure, /* explanations= */ [], null);
 
   TestRunner.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(
     Security.SecurityModel.Events.SecurityStateChanged, pageSecurityState);

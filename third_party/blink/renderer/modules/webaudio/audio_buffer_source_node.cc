@@ -624,6 +624,18 @@ bool AudioBufferSourceHandler::PropagatesSilence() const {
 
 void AudioBufferSourceHandler::HandleStoppableSourceNode() {
   DCHECK(Context()->IsAudioThread());
+  // If the source node has been scheduled to stop, we can stop the node once
+  // the current time reaches that value.  Usually,
+  // AudioScheduledSourceHandler::UpdateSchedulingInfo handles stopped nodes,
+  // but we can get here if the node is stopped and then disconnected.  Then
+  // UpdateSchedulingInfo never gets a chance to finish the node.
+
+  if (end_time_ != AudioScheduledSourceHandler::kUnknownTime &&
+      Context()->currentTime() > end_time_) {
+    Finish();
+    return;
+  }
+
   // If the source node is not looping, and we have a buffer, we can determine
   // when the source would stop playing.  This is intended to handle the
   // (uncommon) scenario where start() has been called but is never connected to

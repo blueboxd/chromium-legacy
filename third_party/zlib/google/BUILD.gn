@@ -26,6 +26,8 @@ if (build_with_chromium) {
     sources = [
       "compression_utils.cc",
       "compression_utils.h",
+      "compression_utils_portable.cc",
+      "compression_utils_portable.h",
     ]
     deps = [
       "//base",

@@ -104,13 +104,13 @@ TEST_F(StartupBrowserPolicyUnitTest, ForceEphemeralProfiles) {
   content::TestBrowserThreadBundle thread_bundle;
   auto profile = builder.Build();
 
-  EXPECT_TRUE(welcome::DoesOnboardingHaveModulesToShow(profile.get()));
+  EXPECT_TRUE(welcome::HasModulesToShow(profile.get()));
 
   SetPolicy(policy_map, policy::key::kForceEphemeralProfiles, true);
-  EXPECT_FALSE(welcome::DoesOnboardingHaveModulesToShow(profile.get()));
+  EXPECT_FALSE(welcome::HasModulesToShow(profile.get()));
 
   SetPolicy(policy_map, policy::key::kForceEphemeralProfiles, false);
-  EXPECT_TRUE(welcome::DoesOnboardingHaveModulesToShow(profile.get()));
+  EXPECT_TRUE(welcome::HasModulesToShow(profile.get()));
 }
 
 TEST_F(StartupBrowserPolicyUnitTest, NewTabPageLocation) {

@@ -141,21 +141,18 @@ void AccountManagerUIHandler::HandleGetAccounts(const base::ListValue* args) {
   AllowJavascript();
 
   const auto& args_list = args->GetList();
-  CHECK_EQ(args_list.size(), 2u);
+  CHECK_EQ(args_list.size(), 1u);
   CHECK(args_list[0].is_string());
-  CHECK(args_list[1].is_bool());
 
   base::Value callback_id = args_list[0].Clone();
-  bool include_images = args_list[1].GetBool();
 
-  account_manager_->GetAccounts(base::BindOnce(
-      &AccountManagerUIHandler::OnGetAccounts, weak_factory_.GetWeakPtr(),
-      std::move(callback_id), include_images));
+  account_manager_->GetAccounts(
+      base::BindOnce(&AccountManagerUIHandler::OnGetAccounts,
+                     weak_factory_.GetWeakPtr(), std::move(callback_id)));
 }
 
 void AccountManagerUIHandler::OnGetAccounts(
     base::Value callback_id,
-    bool include_images,
     const std::vector<AccountManager::Account>& stored_accounts) {
   base::ListValue accounts;
 
@@ -190,20 +187,17 @@ void AccountManagerUIHandler::OnGetAccounts(
             maybe_account_info->account_id));
     account.SetString("fullName", maybe_account_info->full_name);
     account.SetString("email", stored_account.raw_email);
-    // Images can be large, so only send them if requested.
-    if (include_images) {
-      if (!maybe_account_info->account_image.IsEmpty()) {
-        account.SetString("pic",
-                          webui::GetBitmapDataUrl(
-                              maybe_account_info->account_image.AsBitmap()));
-      } else {
-        gfx::ImageSkia default_icon =
-            *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                IDR_LOGIN_DEFAULT_USER);
-        account.SetString(
-            "pic", webui::GetBitmapDataUrl(
-                       default_icon.GetRepresentation(1.0f).GetBitmap()));
-      }
+    if (!maybe_account_info->account_image.IsEmpty()) {
+      account.SetString("pic",
+                        webui::GetBitmapDataUrl(
+                            maybe_account_info->account_image.AsBitmap()));
+    } else {
+      gfx::ImageSkia default_icon =
+          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+              IDR_LOGIN_DEFAULT_USER);
+      account.SetString("pic",
+                        webui::GetBitmapDataUrl(
+                            default_icon.GetRepresentation(1.0f).GetBitmap()));
     }
     account.SetBoolean("unmigrated",
                        account_manager_->HasDummyGaiaToken(account_key));

@@ -26,7 +26,7 @@ class ArCoreJavaUtils : public ArCoreSessionUtils {
                         SurfaceReadyCallback ready_callback,
                         SurfaceTouchCallback touch_callback,
                         SurfaceDestroyedCallback destroyed_callback) override;
-  void DestroyDrawingSurface() override;
+  void EndSession() override;
   bool EnsureLoaded() override;
   base::android::ScopedJavaLocalRef<jobject> GetApplicationContext() override;
 

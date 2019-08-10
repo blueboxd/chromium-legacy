@@ -685,7 +685,8 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
     bool is_overlay_candidate,
-    bool is_origin_top_left)
+    bool is_origin_top_left,
+    bool allow_concurrent_read_write_access)
     : CanvasResource(std::move(provider), filter_quality, color_params),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       is_overlay_candidate_(is_overlay_candidate),
@@ -713,6 +714,8 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
                    gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT;
   if (is_overlay_candidate_)
     flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+  if (allow_concurrent_read_write_access)
+    flags |= gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
 
   auto shared_image_mailbox = shared_image_interface->CreateSharedImage(
       ColorParams().TransferableResourceFormat(), gfx::Size(size),
@@ -724,8 +727,15 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
   auto* gl = ContextGL();
   DCHECK(gl);
   owning_thread_data().shared_image_mailbox = shared_image_mailbox;
-  owning_thread_data().texture_id =
+  owning_thread_data().texture_id_for_read_access =
       gl->CreateAndTexStorage2DSharedImageCHROMIUM(shared_image_mailbox.name);
+  if (allow_concurrent_read_write_access) {
+    owning_thread_data().texture_id_for_write_access =
+        gl->CreateAndTexStorage2DSharedImageCHROMIUM(shared_image_mailbox.name);
+  } else {
+    owning_thread_data().texture_id_for_write_access =
+        owning_thread_data().texture_id_for_read_access;
+  }
 }
 
 scoped_refptr<CanvasResourceSharedImage> CanvasResourceSharedImage::Create(
@@ -735,11 +745,13 @@ scoped_refptr<CanvasResourceSharedImage> CanvasResourceSharedImage::Create(
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
     bool is_overlay_candidate,
-    bool is_origin_top_left) {
+    bool is_origin_top_left,
+    bool allow_concurrent_read_write_access) {
   TRACE_EVENT0("blink", "CanvasResourceSharedImage::Create");
   auto resource = base::AdoptRef(new CanvasResourceSharedImage(
       size, std::move(context_provider_wrapper), std::move(provider),
-      filter_quality, color_params, is_overlay_candidate, is_origin_top_left));
+      filter_quality, color_params, is_overlay_candidate, is_origin_top_left,
+      allow_concurrent_read_write_access));
   return resource->IsValid() ? resource : nullptr;
 }
 
@@ -768,10 +780,19 @@ void CanvasResourceSharedImage::TearDown() {
       shared_image_interface->DestroySharedImage(shared_image_sync_token,
                                                  mailbox());
     }
-    if (gl && owning_thread_data().texture_id)
-      gl->DeleteTextures(1, &owning_thread_data().texture_id);
+    if (gl) {
+      if (owning_thread_data().texture_id_for_read_access) {
+        gl->DeleteTextures(1, &owning_thread_data().texture_id_for_read_access);
+      }
+      if (owning_thread_data().texture_id_for_write_access) {
+        gl->DeleteTextures(1,
+                           &owning_thread_data().texture_id_for_write_access);
+      }
+    }
   }
-  owning_thread_data().texture_id = 0u;
+
+  owning_thread_data().texture_id_for_read_access = 0u;
+  owning_thread_data().texture_id_for_write_access = 0u;
 }
 
 void CanvasResourceSharedImage::Abandon() {
@@ -815,7 +836,7 @@ void CanvasResourceSharedImage::OnBitmapImageDestroyed(
     if (resource->owning_thread_data().bitmap_image_read_refs == 0u &&
         resource->ContextGL()) {
       resource->ContextGL()->EndSharedImageAccessDirectCHROMIUM(
-          resource->owning_thread_data().texture_id);
+          resource->owning_thread_data().texture_id_for_read_access);
     }
   }
 
@@ -859,7 +880,7 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
   const bool has_read_ref_on_texture = !is_cross_thread();
   GLuint texture_id_for_image = 0u;
   if (has_read_ref_on_texture) {
-    texture_id_for_image = owning_thread_data().texture_id;
+    texture_id_for_image = owning_thread_data().texture_id_for_read_access;
     owning_thread_data().bitmap_image_read_refs++;
     if (owning_thread_data().bitmap_image_read_refs == 1u && ContextGL()) {
       ContextGL()->BeginSharedImageAccessDirectCHROMIUM(
@@ -919,7 +940,7 @@ void CanvasResourceSharedImage::SetGLFilterIfNeeded() {
       !WeakProvider())
     return;
 
-  ContextGL()->BindTexture(TextureTarget(), GetTextureIdForBackendTexture());
+  ContextGL()->BindTexture(TextureTarget(), GetTextureIdForReadAccess());
   ContextGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GLFilter());
   ContextGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GLFilter());
   ContextGL()->BindTexture(TextureTarget(), 0u);

@@ -152,8 +152,8 @@ class TestUpdater : public OnDemandUpdater {
     if (!installer)
       return false;
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTask(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(
             &update_client::CrxInstaller::Install, installer, unpacked_path, "",
             base::BindOnce(&WrapInstallerCallback, std::move(callback))));

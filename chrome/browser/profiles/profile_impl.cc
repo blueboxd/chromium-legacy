@@ -162,6 +162,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_app_manager.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_pairing_state_tracker_impl.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
+#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/authpolicy/auth_policy_credentials_manager.h"
 #include "chrome/browser/chromeos/cryptauth/client_app_metadata_provider_service.h"
@@ -981,6 +982,7 @@ void ProfileImpl::OnLocaleReady() {
 
 #if defined(OS_CHROMEOS)
   arc::ArcServiceLauncher::Get()->MaybeSetProfile(this);
+  arc::ArcAccessibilityHelperBridge::GetForBrowserContext(this);
 #endif
 
   FullBrowserTransitionManager::Get()->OnProfileCreated(this);

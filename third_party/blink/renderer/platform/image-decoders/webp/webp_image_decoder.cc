@@ -445,6 +445,10 @@ size_t WEBPImageDecoder::DecodedYUVWidthBytes(int component) const {
   return 0;
 }
 
+SkYUVColorSpace WEBPImageDecoder::GetYUVColorSpace() const {
+  return SkYUVColorSpace::kRec601_SkYUVColorSpace;
+}
+
 bool WEBPImageDecoder::CanReusePreviousFrameBuffer(size_t frame_index) const {
   DCHECK(frame_index < frame_buffer_cache_.size());
   return frame_buffer_cache_[frame_index].GetAlphaBlendSource() !=

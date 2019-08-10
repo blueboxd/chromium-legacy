@@ -69,12 +69,15 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
-using content::WebContents;
 using content::NativeWebKeyboardEvent;
+using content::WebContents;
+using testing::_;
+using testing::Return;
 
 namespace {
 
@@ -455,6 +458,9 @@ class PopupBlockerSpecialPolicyBrowserTest : public PopupBlockerBrowserTest {
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+
     policy::PolicyMap policy_map;
 
     policy_map.Set(policy::key::kAllowPopupsDuringPageUnload,

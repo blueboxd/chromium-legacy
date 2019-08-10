@@ -6,6 +6,7 @@
 <link rel="import" href="../settings_shared_css.html">
 
 <link rel="import" href="security_keys_credential_management_dialog.html">
+<link rel="import" href="security_keys_bio_enroll_dialog.html">
 <link rel="import" href="security_keys_set_pin_dialog.html">
 <link rel="import" href="security_keys_reset_dialog.html">
 
@@ -32,6 +33,14 @@
       label="$i18n{securityKeysReset}"
       sub-label="$i18n{securityKeysResetDesc}"
       on-click="onReset_"></cr-link-row>
+    <template is="dom-if" if="[[enableBioEnrollment_]]">
+      <cr-link-row
+        id="bioEnrollButton"
+        class="hr"
+        label="$i18n{securityKeysBioEnrollmentDialogTitle}"
+        sub-label="$i18n{securityKeysBioEnrollmentSubpageDescription}"
+        on-click="onBioEnroll_"></cr-link-row>
+    </template>
 
     <template is="dom-if" if="[[showSetPINDialog_]]" restamp>
       <settings-security-keys-set-pin-dialog on-close="onSetPINDialogClosed_">
@@ -47,6 +56,12 @@
     <template is="dom-if" if="[[showResetDialog_]]" restamp>
       <settings-security-keys-reset-dialog on-close="onResetDialogClosed_">
       </settings-security-keys-reset-dialog>
+    </template>
+
+    <template is="dom-if" if="[[showBioEnrollDialog_]]" restamp>
+      <settings-security-keys-bio-enroll-dialog
+          on-close="onBioEnrollDialogClosed_">
+      </settings-security-keys-bio-enroll-dialog>
     </template>
 
   </template>

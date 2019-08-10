@@ -24,7 +24,7 @@ suite('SettingsSlider', function() {
     };
     document.body.appendChild(slider);
     crSlider = slider.$$('cr-slider');
-    return PolymerTest.flushTasks();
+    return test_util.flushTasks();
   });
 
   function press(key) {

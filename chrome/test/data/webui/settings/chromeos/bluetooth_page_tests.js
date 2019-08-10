@@ -242,8 +242,8 @@ suite('Bluetooth', function() {
 
       // Adding two flushTasks ensures that all events are fully handled after
       // being fired.
-      await PolymerTest.flushTasks();
-      await PolymerTest.flushTasks();
+      await test_util.flushTasks();
+      await test_util.flushTasks();
     }
 
     test('pair device', async function() {

@@ -471,13 +471,13 @@ bool TestRecipeReplayer::StartWebPageReplayServer(
   if (!RunWebPageReplayCmd("replay", args, &web_page_replay_server_))
     return false;
 
-  // Sleep 20 seconds to wait for the web page replay server to start.
+  // Sleep 5 seconds to wait for the web page replay server to start.
   // TODO(crbug.com/847910): create a process std stream reader class to use the
   // process output to determine when the server is ready
   base::RunLoop wpr_launch_waiter;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, wpr_launch_waiter.QuitClosure(),
-      base::TimeDelta::FromSeconds(20));
+      base::TimeDelta::FromSeconds(5));
   wpr_launch_waiter.Run();
 
   if (!web_page_replay_server_.IsValid()) {
@@ -1232,7 +1232,7 @@ bool TestRecipeReplayer::ExecuteValidateFieldValueAction(
 
   const std::string* expected_value = FindPopulateString(action,
     "expectedValue", "validation expected value");
-  if(!expected_value)
+  if (!expected_value)
     return false;
 
   VLOG(1) << "Checking the field `" << xpath << "`.";

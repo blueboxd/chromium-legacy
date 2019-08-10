@@ -11,4 +11,10 @@ specific_include_rules = {
     # Profile embeds the image_annotation service.
     "+services/image_annotation/image_annotation_service.h",
   ],
+
+  "off_the_record_profile_impl.cc": [
+    # Chrome OS guest profiles create an App Service to manage installed apps.
+    "+chrome/services/app_service/app_service.h",
+    "+chrome/services/app_service/public/mojom/constants.mojom.h",
+  ],
 }

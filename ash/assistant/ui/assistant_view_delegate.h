@@ -9,12 +9,12 @@
 #include <string>
 
 #include "ash/assistant/assistant_prefs_controller.h"
-#include "ash/assistant/model/assistant_cache_model.h"
-#include "ash/assistant/model/assistant_cache_model_observer.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
+#include "ash/assistant/model/assistant_suggestions_model.h"
+#include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/assistant_mini_view.h"
@@ -74,14 +74,14 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
 
   virtual ~AssistantViewDelegate() {}
 
-  // Gets the cache model associated with the view delegate.
-  virtual const AssistantCacheModel* GetCacheModel() const = 0;
-
   // Gets the interaction model associated with the view delegate.
   virtual const AssistantInteractionModel* GetInteractionModel() const = 0;
 
   // Gets the notification model associated with the view delegate.
   virtual const AssistantNotificationModel* GetNotificationModel() const = 0;
+
+  // Gets the suggestions model associated with the view delegate.
+  virtual const AssistantSuggestionsModel* GetSuggestionsModel() const = 0;
 
   // Gets the ui model associated with the view delegate.
   virtual const AssistantUiModel* GetUiModel() const = 0;
@@ -90,10 +90,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void AddObserver(AssistantViewDelegateObserver* observer) = 0;
   virtual void RemoveObserver(AssistantViewDelegateObserver* observer) = 0;
 
-  // Adds/removes the cache model observer associated with the view delegate.
-  virtual void AddCacheModelObserver(AssistantCacheModelObserver* observer) = 0;
-  virtual void RemoveCacheModelObserver(
-      AssistantCacheModelObserver* observer) = 0;
+  // Adds/removes the state observer associated with the view delegate.
+  virtual void AddStateObserver(AssistantStateObserver* observer) = 0;
+  virtual void RemoveStateObserver(AssistantStateObserver* observer) = 0;
 
   // Adds/removes the interaction model observer associated with the view
   // delegate.
@@ -109,13 +108,16 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void RemoveNotificationModelObserver(
       AssistantNotificationModelObserver* observer) = 0;
 
+  // Adds/removes the suggestions model observer associated with the view
+  // delegate.
+  virtual void AddSuggestionsModelObserver(
+      AssistantSuggestionsModelObserver* observer) = 0;
+  virtual void RemoveSuggestionsModelObserver(
+      AssistantSuggestionsModelObserver* observer) = 0;
+
   // Adds/removes the ui model observer associated with the view delegate.
   virtual void AddUiModelObserver(AssistantUiModelObserver* observer) = 0;
   virtual void RemoveUiModelObserver(AssistantUiModelObserver* observer) = 0;
-
-  // Adds/removes the state observer associated with the view delegate.
-  virtual void AddStateObserver(AssistantStateObserver* observer) = 0;
-  virtual void RemoveStateObserver(AssistantStateObserver* observer) = 0;
 
   // Gets the caption bar delegate associated with the view delegate.
   virtual CaptionBarDelegate* GetCaptionBarDelegate() = 0;

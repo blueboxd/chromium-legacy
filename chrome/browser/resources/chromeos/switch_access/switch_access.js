@@ -52,7 +52,7 @@ class SwitchAccess {
      * Feature flag controlling improvement of text input capabilities.
      * @private {boolean}
      */
-    this.enableTextEditing_ = false;
+    this.enableImprovedTextInput_ = false;
 
     this.init_();
   }
@@ -70,7 +70,7 @@ class SwitchAccess {
         new SwitchAccessPreferences(this, onPrefsReady);
 
     chrome.automation.getDesktop(function(desktop) {
-      this.navigationManager_ = new NavigationManager(desktop);
+      this.navigationManager_ = new NavigationManager(desktop, this);
 
       if (this.navReadyCallback_)
         this.navReadyCallback_();
@@ -78,7 +78,7 @@ class SwitchAccess {
 
     chrome.commandLinePrivate.hasSwitch(
         'enable-experimental-accessibility-switch-access-text', (result) => {
-          this.enableTextEditing_ = result;
+          this.enableImprovedTextInput_ = result;
         });
   }
 
@@ -120,21 +120,35 @@ class SwitchAccess {
   }
 
   /**
-   * Returns whether or not the feature flag
-   * for text editing is enabled.
+   * Check if the current node is in the virtual keyboard.
    * @return {boolean}
+   * @override
    * @public
    */
-  textEditingEnabled() {
-    return this.enableTextEditing_;
+  inVirtualKeyboard() {
+    if (this.navigationManager_) {
+      return this.navigationManager_.inVirtualKeyboard();
+    }
+    return false;
   }
 
   /**
-   * Perform actions as the result of actions by the user. Currently, restarts
-   * auto-scan if it is enabled.
+   * Returns whether or not the feature flag
+   * for improved text input is enabled.
+   * @return {boolean}
    * @override
+   * @public
    */
-  performedUserAction() {
+  improvedTextInputEnabled() {
+    return this.enableImprovedTextInput_;
+  }
+
+  /**
+   * Restarts auto-scan if it is enabled.
+   * @override
+   * @public
+   */
+  restartAutoScan() {
     this.autoScanManager_.restartIfRunning();
   }
 
@@ -150,7 +164,10 @@ class SwitchAccess {
           this.autoScanManager_.setEnabled(changes[key]);
           break;
         case SAConstants.Preference.AUTO_SCAN_TIME:
-          this.autoScanManager_.setScanTime(changes[key]);
+          this.autoScanManager_.setDefaultScanTime(changes[key]);
+          break;
+        case SAConstants.Preference.AUTO_SCAN_KEYBOARD_TIME:
+          this.autoScanManager_.setKeyboardScanTime(changes[key]);
           break;
       }
     }

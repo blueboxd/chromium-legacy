@@ -55,6 +55,7 @@ void CallOnError(network::mojom::URLLoaderClientPtrInfo client_info,
 
 void ReadData(scoped_refptr<network::ResourceResponse> headers,
               const ui::TemplateReplacements* replacements,
+              bool replace_in_js,
               scoped_refptr<URLDataSourceImpl> data_source,
               network::mojom::URLLoaderClientPtrInfo client_info,
               scoped_refptr<base::RefCountedMemory> bytes) {
@@ -72,7 +73,13 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
     // use an intermediate string.
     base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
                             bytes->size());
-    std::string temp_str = ui::ReplaceTemplateExpressions(input, *replacements);
+    std::string temp_str;
+    if (replace_in_js) {
+      CHECK(
+          ui::ReplaceTemplateExpressionsInJS(input, *replacements, &temp_str));
+    } else {
+      temp_str = ui::ReplaceTemplateExpressions(input, *replacements);
+    }
     bytes = base::RefCountedString::TakeString(&temp_str);
   }
 
@@ -101,6 +108,7 @@ void ReadData(scoped_refptr<network::ResourceResponse> headers,
 
 void DataAvailable(scoped_refptr<network::ResourceResponse> headers,
                    const ui::TemplateReplacements* replacements,
+                   bool replace_in_js,
                    scoped_refptr<URLDataSourceImpl> source,
                    network::mojom::URLLoaderClientPtrInfo client_info,
                    scoped_refptr<base::RefCountedMemory> bytes) {
@@ -111,8 +119,8 @@ void DataAvailable(scoped_refptr<network::ResourceResponse> headers,
       {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
       ->PostTask(FROM_HERE,
-                 base::BindOnce(ReadData, headers, replacements, source,
-                                std::move(client_info), bytes));
+                 base::BindOnce(ReadData, headers, replacements, replace_in_js,
+                                source, std::move(client_info), bytes));
 }
 
 void StartURLLoader(const network::ResourceRequest& request,
@@ -158,14 +166,19 @@ void StartURLLoader(const network::ResourceRequest& request,
   WebContents::Getter wc_getter =
       base::Bind(WebContents::FromFrameTreeNodeId, frame_tree_node_id);
 
+  bool replace_in_js =
+      source->source()->ShouldReplaceI18nInJS() &&
+      source->source()->GetMimeType(path) == "application/javascript";
+
   const ui::TemplateReplacements* replacements = nullptr;
-  if (source->source()->GetMimeType(path) == "text/html")
+  if (source->source()->GetMimeType(path) == "text/html" || replace_in_js)
     replacements = source->GetReplacements();
+
   // To keep the same behavior as the old WebUI code, we call the source to get
   // the value for |replacements| on the IO thread. Since |replacements| is
   // owned by |source| keep a reference to it in the callback.
   auto data_available_callback =
-      base::Bind(DataAvailable, resource_response, replacements,
+      base::Bind(DataAvailable, resource_response, replacements, replace_in_js,
                  base::RetainedRef(source), base::Passed(&client_info));
 
   // TODO(jam): once we only have this code path for WebUI, and not the

@@ -105,7 +105,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
         mMoreIcon.setVisibility(GONE);
 
         if (mReorderBookmarksEnabled && mDelegate.getDragStateDelegate().getDragActive()) {
-            mDragHandle.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
+            mDragHandle.setVisibility(bookmarkItem.isMovable() ? VISIBLE : GONE);
             mDragHandle.setEnabled(isItemSelected());
         } else {
             mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
@@ -154,8 +154,9 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
                         new Item(getContext(), R.string.bookmark_item_delete, true)));
         if (mReorderBookmarksEnabled
                 && mDelegate.getCurrentState() == BookmarkUIState.STATE_FOLDER) {
-            // Only add move up / move down buttons if there is more than 1 item
-            if (mLocation != Location.SOLO) {
+            // Only add move up / move down buttons if there is more than 1 item,
+            // and the bookmark item is moveable.
+            if (mLocation != Location.SOLO && canMove) {
                 if (mLocation != Location.TOP) {
                     menuItems.add(new Item(getContext(), R.string.menu_item_move_up, true));
                 }

@@ -61,7 +61,7 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
     // do this because we don't know how often our client is going
     // to call and we can't cache the |monitor_| value.
     if (InterlockedCompareExchange(&request_sent_, 1, 0) == 0) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&MonitorFinder::FetchMonitorFromWidget, this));
     }

@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {afterNextRender, beforeNextRender, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// clang-format on
+
 cr.define('test_util', function() {
   /**
    * Observes an HTML attribute and fires a promise when it matches a given
@@ -82,10 +86,37 @@ cr.define('test_util', function() {
     });
   }
 
+  /**
+   * @param {!HTMLElement} element
+   * @return {!Promise} Promise that resolves when an afterNextRender()
+   *     callback on |element| is run.
+   */
+  /* #export */ function waitAfterNextRender(element) {
+    return new Promise(resolve => {
+      Polymer.RenderStatus.afterNextRender(element, resolve);
+    });
+  }
+
+  /*
+   * Waits for queued up tasks to finish before proceeding. Inspired by:
+   * https://github.com/Polymer/web-component-tester/blob/master/browser/environment/helpers.js#L97
+   */
+  /* #export */ function flushTasks() {
+    Polymer.dom.flush();
+    // Promises have microtask timing, so we use setTimeout to explicitly force
+    // a new task.
+    return new Promise(function(resolve, reject) {
+      window.setTimeout(resolve, 0);
+    });
+  }
+
+
   // #cr_define_end
   return {
     eventToPromise: eventToPromise,
     fakeDataBind: fakeDataBind,
+    flushTasks: flushTasks,
+    waitAfterNextRender: waitAfterNextRender,
     waitBeforeNextRender: waitBeforeNextRender,
     whenAttributeIs: whenAttributeIs,
   };

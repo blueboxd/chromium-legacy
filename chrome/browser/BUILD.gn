@@ -546,6 +546,8 @@ jumbo_split_static_library("browser") {
     "hang_monitor/hang_crash_dump.h",
     "hang_monitor/hang_crash_dump_mac.cc",
     "hang_monitor/hang_crash_dump_win.cc",
+    "heavy_ad_intervention/heavy_ad_helper.cc",
+    "heavy_ad_intervention/heavy_ad_helper.h",
     "history/chrome_history_backend_client.cc",
     "history/chrome_history_backend_client.h",
     "history/chrome_history_client.cc",
@@ -3294,8 +3296,8 @@ jumbo_split_static_library("browser") {
       "search/background/ntp_background_service_factory.cc",
       "search/background/ntp_background_service_factory.h",
       "search/background/ntp_background_service_observer.h",
-      "search/background/onboarding_ntp_backgrounds.cc",
-      "search/background/onboarding_ntp_backgrounds.h",
+      "search/background/ntp_backgrounds.cc",
+      "search/background/ntp_backgrounds.h",
       "search/chrome_colors/chrome_colors_factory.cc",
       "search/chrome_colors/chrome_colors_factory.h",
       "search/chrome_colors/chrome_colors_service.cc",
@@ -3353,13 +3355,14 @@ jumbo_split_static_library("browser") {
       "serial/serial_chooser_context.h",
       "serial/serial_chooser_context_factory.cc",
       "serial/serial_chooser_context_factory.h",
-      "sharing/click_to_call/click_to_call_constants.h",
       "sharing/click_to_call/click_to_call_context_menu_observer.cc",
       "sharing/click_to_call/click_to_call_context_menu_observer.h",
       "sharing/click_to_call/click_to_call_sharing_dialog_controller.cc",
       "sharing/click_to_call/click_to_call_sharing_dialog_controller.h",
       "sharing/click_to_call/click_to_call_utils.cc",
       "sharing/click_to_call/click_to_call_utils.h",
+      "sharing/shared_clipboard/shared_clipboard_ui_controller.cc",
+      "sharing/shared_clipboard/shared_clipboard_ui_controller.h",
       "sharing/sharing_dialog.h",
       "sharing/sharing_dialog_controller.cc",
       "sharing/sharing_dialog_controller.h",
@@ -3642,7 +3645,6 @@ jumbo_split_static_library("browser") {
       "//chromeos/services/cellular_setup",
       "//chromeos/services/device_sync",
       "//chromeos/services/device_sync/public/mojom",
-      "//chromeos/services/ime/public/mojom",
       "//chromeos/services/multidevice_setup",
       "//chromeos/services/multidevice_setup/public/cpp:first_run_field_trial",
       "//chromeos/services/multidevice_setup/public/mojom",
@@ -3867,6 +3869,8 @@ jumbo_split_static_library("browser") {
       "platform_util_linux.cc",
       "shell_integration_linux.cc",
       "shell_integration_linux.h",
+      "themes/theme_service_aura_linux.cc",
+      "themes/theme_service_aura_linux.h",
     ]
 
     if (use_dbus) {
@@ -3884,14 +3888,6 @@ jumbo_split_static_library("browser") {
       sources += [
         "fullscreen_aurax11.cc",
         "media/webrtc/window_icon_util_x11.cc",
-
-        # ThemeServiceAuraX11 does not depend on X11, although its
-        # instantiation/inclusion in theme_service_factory.cc is conditioned
-        # by USE_X11.
-        # TODO(tonikitoo): Check if non-x11 could benefit from it. If so,
-        # rename and use it.
-        "themes/theme_service_aurax11.cc",
-        "themes/theme_service_aurax11.h",
       ]
     }
 
@@ -5403,6 +5399,8 @@ static_library("test_support") {
     "search_engines/template_url_service_test_util.h",
     "signin/chrome_signin_client_test_util.cc",
     "signin/chrome_signin_client_test_util.h",
+    "signin/e2e_tests/test_accounts_util.cc",
+    "signin/e2e_tests/test_accounts_util.h",
     "signin/identity_test_environment_profile_adaptor.cc",
     "signin/identity_test_environment_profile_adaptor.h",
     "signin/scoped_account_consistency.cc",

@@ -172,7 +172,7 @@ class MODULES_EXPORT UserMediaProcessor
   void DelayedGetUserMediaRequestFailed(
       blink::WebUserMediaRequest web_request,
       blink::mojom::blink::MediaStreamRequestResult result,
-      const blink::WebString& constraint_name);
+      const String& constraint_name);
 
   // Called when |source| has been stopped from JavaScript.
   void OnLocalSourceStopped(const blink::WebMediaStreamSource& source);
@@ -218,7 +218,7 @@ class MODULES_EXPORT UserMediaProcessor
   void OnAudioSourceStarted(
       blink::WebPlatformMediaStreamSource* source,
       blink::mojom::blink::MediaStreamRequestResult result,
-      const blink::WebString& result_name);
+      const String& result_name);
 
   void NotifyCurrentRequestInfoOfAudioSourceStarted(
       blink::WebPlatformMediaStreamSource* source,

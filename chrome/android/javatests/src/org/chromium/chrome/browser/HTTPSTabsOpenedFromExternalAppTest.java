@@ -16,8 +16,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 import org.chromium.network.mojom.ReferrerPolicy;
@@ -30,7 +30,8 @@ import org.chromium.network.mojom.ReferrerPolicy;
 
 public class HTTPSTabsOpenedFromExternalAppTest {
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    public ChromeActivityTestRule<? extends ChromeActivity> mActivityTestRule =
+            ChromeActivityTestRule.forMainActivity();
 
     private EmbeddedTestServer mTestServer;
 

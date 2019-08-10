@@ -34,8 +34,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -61,7 +62,8 @@ import java.util.concurrent.TimeoutException;
 @RetryOnFailure
 public class TabsOpenedFromExternalAppTest {
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    public ChromeActivityTestRule<? extends ChromeActivity> mActivityTestRule =
+            ChromeActivityTestRule.forMainActivity();
 
     static final String HTTP_REFERRER = "http://chromium.org/";
 
@@ -194,7 +196,7 @@ public class TabsOpenedFromExternalAppTest {
      * Returns when the URL has been navigated to.
      * @throws InterruptedException
      */
-    private static void launchUrlFromExternalApp(ChromeTabbedActivityTestRule testRule, String url,
+    private static void launchUrlFromExternalApp(ChromeActivityTestRule testRule, String url,
             String expectedUrl, String appId, boolean createNewTab, Bundle extras,
             boolean firstParty) throws InterruptedException {
         final Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -215,7 +217,9 @@ public class TabsOpenedFromExternalAppTest {
 
         final Tab originalTab = testRule.getActivity().getActivityTab();
         TestThreadUtils.runOnUiThreadBlocking(() -> testRule.getActivity().onNewIntent(intent));
-        if (createNewTab) {
+        // NoTouchMode changes external app launch behaviour depending on whether Chrome is
+        // foregrounded - which it is for these tests.
+        if (createNewTab && !FeatureUtilities.isNoTouchModeEnabled()) {
             CriteriaHelper.pollUiThread(new Criteria("Failed to select different tab") {
                 @Override
                 public boolean isSatisfied() {
@@ -377,11 +381,11 @@ public class TabsOpenedFromExternalAppTest {
     }
 
     /**
-     * Launches a tab with the given url using the given {@link ChromeTabbedActivityTestRule},
+     * Launches a tab with the given url using the given {@link ChromeActivityTestRule},
      * adds a {@link Referrer} with given policy and checks whether it matches the expected
      * referrer after loaded.
      */
-    static void launchAndVerifyReferrerWithPolicy(String url, ChromeTabbedActivityTestRule testRule,
+    static void launchAndVerifyReferrerWithPolicy(String url, ChromeActivityTestRule testRule,
             int policy, String referrer, String expectedReferrer) throws InterruptedException {
         testRule.startMainActivityFromLauncher();
         Bundle extras = new Bundle();

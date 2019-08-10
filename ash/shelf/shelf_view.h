@@ -537,6 +537,11 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Set background blur to the dragged image. |size| is the image size.
   void SetDragImageBlur(const gfx::Size& size, int blur_radius);
 
+  bool ShouldHandleGestures(const ui::GestureEvent& event) const;
+
+  // Handles the gesture event.
+  void HandleGestureEvent(ui::GestureEvent* event);
+
   // The model; owned by Launcher.
   ShelfModel* model_;
 

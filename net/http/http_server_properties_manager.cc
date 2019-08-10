@@ -68,6 +68,9 @@ void AddAlternativeServiceFieldsToDictionaryValue(
 
 // A local or temporary data structure to hold preferences for a server.
 // This is used only in UpdatePrefs.
+//
+// TODO(mmenke): Replace this with HttpServerProperties::ServerInfo, once it
+// contains all the relevant data.
 struct ServerPref {
   bool supports_spdy = false;
   AlternativeServiceInfoVector alternative_service_info_vector;
@@ -128,7 +131,7 @@ HttpServerPropertiesManager::~HttpServerPropertiesManager() {
 }
 
 void HttpServerPropertiesManager::ReadPrefs(
-    std::unique_ptr<SpdyServersMap>* spdy_servers_map,
+    std::unique_ptr<HttpServerProperties::ServerInfoMap>* server_info_map,
     std::unique_ptr<AlternativeServiceMap>* alternative_service_map,
     std::unique_ptr<ServerNetworkStatsMap>* server_network_stats_map,
     IPAddress* last_quic_address,
@@ -181,7 +184,7 @@ void HttpServerPropertiesManager::ReadPrefs(
 
   ReadSupportsQuic(*http_server_properties_dict, last_quic_address);
 
-  *spdy_servers_map = std::make_unique<SpdyServersMap>();
+  *server_info_map = std::make_unique<HttpServerProperties::ServerInfoMap>();
   *alternative_service_map = std::make_unique<AlternativeServiceMap>();
   *server_network_stats_map = std::make_unique<ServerNetworkStatsMap>();
   *quic_server_info_map = std::make_unique<QuicServerInfoMap>(
@@ -196,7 +199,7 @@ void HttpServerPropertiesManager::ReadPrefs(
       DVLOG(1) << "Malformed http_server_properties for servers dictionary.";
       continue;
     }
-    AddServersData(*servers_dict, spdy_servers_map->get(),
+    AddServersData(*servers_dict, server_info_map->get(),
                    alternative_service_map->get(),
                    server_network_stats_map->get());
   }
@@ -232,8 +235,9 @@ void HttpServerPropertiesManager::ReadPrefs(
 
   // Set the properties loaded from prefs on |http_server_properties_impl_|.
 
-  UMA_HISTOGRAM_COUNTS_1M("Net.CountOfSpdyServers",
-                          (*spdy_servers_map)->size());
+  // TODO(mmenke): Rename this once more information is stored in this map.
+  UMA_HISTOGRAM_COUNTS_1M("Net.HttpServerProperties.CountOfServers",
+                          (*server_info_map)->size());
 
   // Update the cached data and use the new alternative service list from
   // preferences.
@@ -316,7 +320,7 @@ void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
 
 void HttpServerPropertiesManager::AddServersData(
     const base::DictionaryValue& servers_dict,
-    SpdyServersMap* spdy_servers_map,
+    HttpServerProperties::ServerInfoMap* server_info_map,
     AlternativeServiceMap* alternative_service_map,
     ServerNetworkStatsMap* network_stats_map) {
   for (base::DictionaryValue::Iterator it(servers_dict); !it.IsAtEnd();
@@ -337,10 +341,11 @@ void HttpServerPropertiesManager::AddServersData(
     }
 
     // Get if server supports Spdy.
-    bool supports_spdy = false;
-    if (server_pref_dict->GetBoolean(kSupportsSpdyKey, &supports_spdy) &&
-        supports_spdy) {
-      spdy_servers_map->Put(spdy_server.Serialize(), supports_spdy);
+    bool supports_spdy;
+    if (server_pref_dict->GetBoolean(kSupportsSpdyKey, &supports_spdy)) {
+      HttpServerProperties::ServerInfo server_info;
+      server_info.supports_spdy = supports_spdy;
+      server_info_map->Put(spdy_server, std::move(server_info));
     }
 
     if (AddToAlternativeServiceMap(spdy_server, *server_pref_dict,
@@ -589,7 +594,7 @@ void HttpServerPropertiesManager::AddToQuicServerInfoMap(
 }
 
 void HttpServerPropertiesManager::WriteToPrefs(
-    const SpdyServersMap& spdy_servers_map,
+    const HttpServerProperties::ServerInfoMap& server_info_map,
     const AlternativeServiceMap& alternative_service_map,
     const GetCannonicalSuffix& get_canonical_suffix,
     const ServerNetworkStatsMap& server_network_stats_map,
@@ -609,14 +614,12 @@ void HttpServerPropertiesManager::WriteToPrefs(
   ServerPrefMap server_pref_map(ServerPrefMap::NO_AUTO_EVICT);
 
   // Add SPDY servers to |server_pref_map|.
-  for (auto it = spdy_servers_map.rbegin(); it != spdy_servers_map.rend();
-       ++it) {
+  for (auto it = server_info_map.rbegin(); it != server_info_map.rend(); ++it) {
     // Only add servers that support SPDY.
-    if (!it->second)
+    if (!it->second.supports_spdy.value_or(false))
       continue;
 
-    url::SchemeHostPort server(GURL(it->first));
-    auto map_it = server_pref_map.Put(server, ServerPref());
+    auto map_it = server_pref_map.Put(it->first, ServerPref());
     map_it->second.supports_spdy = true;
   }
 
@@ -884,7 +887,7 @@ void HttpServerPropertiesManager::OnHttpServerPropertiesLoaded() {
   if (!on_prefs_loaded_callback_)
     return;
 
-  std::unique_ptr<SpdyServersMap> spdy_servers_map;
+  std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map;
   std::unique_ptr<AlternativeServiceMap> alternative_service_map;
   std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map;
   IPAddress last_quic_address;
@@ -893,13 +896,13 @@ void HttpServerPropertiesManager::OnHttpServerPropertiesLoaded() {
   std::unique_ptr<RecentlyBrokenAlternativeServices>
       recently_broken_alternative_services;
 
-  ReadPrefs(&spdy_servers_map, &alternative_service_map,
+  ReadPrefs(&server_info_map, &alternative_service_map,
             &server_network_stats_map, &last_quic_address,
             &quic_server_info_map, &broken_alternative_service_list,
             &recently_broken_alternative_services);
 
   std::move(on_prefs_loaded_callback_)
-      .Run(std::move(spdy_servers_map), std::move(alternative_service_map),
+      .Run(std::move(server_info_map), std::move(alternative_service_map),
            std::move(server_network_stats_map), last_quic_address,
            std::move(quic_server_info_map),
            std::move(broken_alternative_service_list),

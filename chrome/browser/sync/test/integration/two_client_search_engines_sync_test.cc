@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, DisableSync) {
   ASSERT_TRUE(search_engines_helper::ServiceMatchesVerifier(0));
   ASSERT_FALSE(search_engines_helper::ServiceMatchesVerifier(1));
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
+  ASSERT_TRUE(GetClient(1)->EnableSyncForRegisteredDatatypes());
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 }

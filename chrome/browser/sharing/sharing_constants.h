@@ -29,4 +29,16 @@ extern const base::TimeDelta kSendMessageTimeout;
 // Backoff policy for registration retry.
 extern const net::BackoffEntry::Policy kRetryBackoffPolicy;
 
+// Time limit for message expiration.
+extern const base::TimeDelta kSharingMessageTTL;
+
+// Maximum number of devices to be shown in dialog and context menu.
+extern const int kMaxDevicesShown;
+
+// Command id for first device shown in submenu.
+extern const int kSubMenuFirstDeviceCommandId;
+
+// Command id for last device shown in submenu.
+extern const int kSubMenuLastDeviceCommandId;
+
 #endif  // CHROME_BROWSER_SHARING_SHARING_CONSTANTS_H_

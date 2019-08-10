@@ -69,7 +69,6 @@ constexpr float kOverviewInsetRatio = 0.05f;
 constexpr float kOverviewVerticalInset = 0.1f;
 
 // Number of columns and rows for windows in tablet overview mode.
-constexpr int kTabletLayoutCol = 3;
 constexpr int kTabletLayoutRow = 2;
 
 // Histogram names for overview enter/exit smoothness in clamshell,
@@ -1422,41 +1421,49 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
   // Windows occupy vertically centered area with additional vertical insets.
   total_bounds.Inset(GetGridInsets(total_bounds));
 
-  // TODO(dantonvu): Width calculation should maintain the aspect ratio of the
-  // window.
+  // TODO(sammiequon): Check why scrolling during split view stacks windows.
   // When the dragged item becomes an |ignored_item|, move the other windows
   // accordingly. |window_position| matches the positions of the windows'
   // indexes from |window_list_|. However, if a window turns out to be an
   // ignored item, |window_position| remains where the item was as to then
   // reposition the other window's bounds in place of that item.
-  // Currently, this function does not work well if overview grid bounds change
-  // eg: during SplitView, since the windows remain the same size and end up
-  // overlapping with smaller grid bounds.
 
-  // For tablet overview mode, windows are being limited to fit six per screen -
-  // 2 rows of 3. Additional windows are placed offscreen. This is more
-  // efficient performance-wise since windows out of screen would not need
-  // animation compared to having every window in overview mode needing
-  // animation.
   // Since the number of rows is limited, windows are laid out column-wise so
   // that the most recently used windows are displayed first.
-  const int width = total_bounds.width() / kTabletLayoutCol;
   const int height = total_bounds.height() / kTabletLayoutRow;
-  size_t window_position = 0u;
+  int window_position = 0;
   std::vector<gfx::RectF> rects;
 
+  int i = 0;
   for (const auto& window : window_list_) {
     if (window->animating_to_close() || ignored_items.contains(window.get())) {
       rects.push_back(gfx::RectF());
+      ++i;
       continue;
     }
-    const int x = width * (window_position / kTabletLayoutRow) +
-                  total_bounds.x() + scroll_offset_;
+    const float ratio = float{height} / window->GetWindow()->bounds().height();
+    const int width = window->GetWindow()->bounds().width() * ratio;
+
     const int y =
         height * (window_position % kTabletLayoutRow) + total_bounds.y();
+
+    // TODO(sammiequon): Remove this loop and cache the values of the last
+    // bounds for each row.
+    // Search for closest window in the same row to the
+    // left of where the current window would be placed and set the current
+    // window's |x| value to the right of the other window.
+    int x = total_bounds.x() + scroll_offset_;
+    for (int j = i - 1; j >= 0; --j) {
+      if (rects[j].y() == y) {
+        x = rects[j].right();
+        break;
+      }
+    }
+
     const gfx::RectF bounds(x, y, width, height);
     rects.push_back(bounds);
     ++window_position;
+    ++i;
   }
 
   return rects;

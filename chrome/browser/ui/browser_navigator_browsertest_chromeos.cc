@@ -48,7 +48,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToSettings) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowSettings(browser());
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        browser()->profile());
     observer.Wait();
   }
   // browser() tab contents should be unaffected.
@@ -62,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToSettings) {
           browser()->profile());
   EXPECT_NE(browser(), settings_browser);
   EXPECT_EQ(
-      GURL("chrome://settings"),
+      GURL(chrome::GetOSSettingsUrl(std::string())),
       settings_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 

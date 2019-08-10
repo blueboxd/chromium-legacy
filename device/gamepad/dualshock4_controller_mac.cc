@@ -29,4 +29,8 @@ size_t Dualshock4ControllerMac::WriteOutputReport(void* report,
   return (success == kIOReturnSuccess) ? report_length : 0;
 }
 
+base::WeakPtr<AbstractHapticGamepad> Dualshock4ControllerMac::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace device

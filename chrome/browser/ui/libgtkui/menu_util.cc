@@ -179,6 +179,7 @@ void BuildSubmenuFromModel(ui::MenuModel* model,
       connect_to_activate = false;
     }
 
+#if defined(USE_X11)
     ui::Accelerator accelerator;
     if (model->GetAcceleratorAt(i, &accelerator)) {
       gtk_widget_add_accelerator(menu_item, "activate", nullptr,
@@ -186,6 +187,7 @@ void BuildSubmenuFromModel(ui::MenuModel* model,
                                  GetGdkModifierForAccelerator(accelerator),
                                  GTK_ACCEL_VISIBLE);
     }
+#endif
 
     g_object_set_data(G_OBJECT(menu_item), "model", model);
     AppendMenuItemToMenu(i,

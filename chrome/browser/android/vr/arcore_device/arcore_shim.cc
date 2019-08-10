@@ -13,6 +13,14 @@ namespace {
 
 // Run CALL macro for every function defined in the API.
 #define FOR_EACH_API_FN                       \
+  CALL(ArAnchorList_acquireItem)              \
+  CALL(ArAnchorList_create)                   \
+  CALL(ArAnchorList_destroy)                  \
+  CALL(ArAnchorList_getSize)                  \
+  CALL(ArAnchor_detach)                       \
+  CALL(ArAnchor_getPose)                      \
+  CALL(ArAnchor_getTrackingState)             \
+  CALL(ArAnchor_release)                      \
   CALL(ArCamera_getDisplayOrientedPose)       \
   CALL(ArCamera_getProjectionMatrix)          \
   CALL(ArCamera_getTrackingState)             \
@@ -22,6 +30,7 @@ namespace {
   CALL(ArFrame_acquireCamera)                 \
   CALL(ArFrame_create)                        \
   CALL(ArFrame_destroy)                       \
+  CALL(ArFrame_getUpdatedAnchors)             \
   CALL(ArFrame_getUpdatedTrackables)          \
   CALL(ArFrame_hitTestRay)                    \
   CALL(ArFrame_transformCoordinates2d)        \
@@ -43,10 +52,12 @@ namespace {
   CALL(ArPose_destroy)                        \
   CALL(ArPose_getMatrix)                      \
   CALL(ArPose_getPoseRaw)                     \
+  CALL(ArSession_acquireNewAnchor)            \
   CALL(ArSession_configure)                   \
   CALL(ArSession_create)                      \
   CALL(ArSession_destroy)                     \
   CALL(ArSession_enableIncognitoMode_private) \
+  CALL(ArSession_getAllAnchors)               \
   CALL(ArSession_getAllTrackables)            \
   CALL(ArSession_pause)                       \
   CALL(ArSession_resume)                      \
@@ -115,6 +126,50 @@ bool IsArCoreSupported() {
 
 #undef FOR_EACH_API_FN
 
+void ArAnchorList_acquireItem(const ArSession* session,
+                              const ArAnchorList* anchor_list,
+                              int32_t index,
+                              ArAnchor** out_anchor) {
+  arcore_api->impl_ArAnchorList_acquireItem(session, anchor_list, index,
+                                            out_anchor);
+}
+
+void ArAnchorList_create(const ArSession* session,
+                         ArAnchorList** out_anchor_list) {
+  arcore_api->impl_ArAnchorList_create(session, out_anchor_list);
+}
+
+void ArAnchorList_destroy(ArAnchorList* anchor_list) {
+  arcore_api->impl_ArAnchorList_destroy(anchor_list);
+}
+
+void ArAnchorList_getSize(const ArSession* session,
+                          const ArAnchorList* anchor_list,
+                          int32_t* out_size) {
+  arcore_api->impl_ArAnchorList_getSize(session, anchor_list, out_size);
+}
+
+void ArAnchor_detach(ArSession* session, ArAnchor* anchor) {
+  arcore_api->impl_ArAnchor_detach(session, anchor);
+}
+
+void ArAnchor_getPose(const ArSession* session,
+                      const ArAnchor* anchor,
+                      ArPose* out_pose) {
+  arcore_api->impl_ArAnchor_getPose(session, anchor, out_pose);
+}
+
+void ArAnchor_getTrackingState(const ArSession* session,
+                               const ArAnchor* anchor,
+                               ArTrackingState* out_tracking_state) {
+  arcore_api->impl_ArAnchor_getTrackingState(session, anchor,
+                                             out_tracking_state);
+}
+
+void ArAnchor_release(ArAnchor* anchor) {
+  arcore_api->impl_ArAnchor_release(anchor);
+}
+
 void ArCamera_getDisplayOrientedPose(const ArSession* session,
                                      const ArCamera* camera,
                                      ArPose* out_pose) {
@@ -162,6 +217,12 @@ void ArFrame_create(const ArSession* session, ArFrame** out_frame) {
 
 void ArFrame_destroy(ArFrame* frame) {
   arcore_api->impl_ArFrame_destroy(frame);
+}
+
+void ArFrame_getUpdatedAnchors(const ArSession* session,
+                               const ArFrame* frame,
+                               ArAnchorList* out_anchor_list) {
+  arcore_api->impl_ArFrame_getUpdatedAnchors(session, frame, out_anchor_list);
 }
 
 void ArFrame_getUpdatedTrackables(const ArSession* session,
@@ -338,6 +399,12 @@ void ArPose_getPoseRaw(const ArSession* session,
   arcore_api->impl_ArPose_getPoseRaw(session, pose, out_pose_raw);
 }
 
+ArStatus ArSession_acquireNewAnchor(ArSession* session,
+                                    const ArPose* pose,
+                                    ArAnchor** out_anchor) {
+  return arcore_api->impl_ArSession_acquireNewAnchor(session, pose, out_anchor);
+}
+
 ArStatus ArSession_configure(ArSession* session, const ArConfig* config) {
   return arcore_api->impl_ArSession_configure(session, config);
 }
@@ -355,6 +422,11 @@ void ArSession_destroy(ArSession* session) {
 
 void ArSession_enableIncognitoMode_private(ArSession* session) {
   arcore_api->impl_ArSession_enableIncognitoMode_private(session);
+}
+
+void ArSession_getAllAnchors(const ArSession* session,
+                             ArAnchorList* out_anchor_list) {
+  arcore_api->impl_ArSession_getAllAnchors(session, out_anchor_list);
 }
 
 void ArSession_getAllTrackables(const ArSession* session,

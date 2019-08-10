@@ -139,7 +139,8 @@
           </cr-button>
           <cr-button id="addPrinterButton" class="action-button"
               on-click="addPressed_"
-              disabled="[[!canAddPrinter_(newPrinter.*, inProgress_)]]">
+              disabled="[[!canAddPrinter_(newPrinter.*,
+                                          addPrinterInProgress_)]]">
             $i18n{addPrinterButtonText}
           </cr-button>
         </div>
@@ -216,7 +217,8 @@
         <cr-button class="action-button" id="addPrinterButton"
             disabled="[[!canAddPrinter_(activePrinter.ppdManufacturer,
                                         activePrinter.ppdModel,
-                                        activePrinter.printerPPDPath)]]"
+                                        activePrinter.printerPPDPath,
+                                        addPrinterInProgress_)]]"
             on-click="addPrinter_">
           $i18n{addPrinterButtonText}
         </cr-button>

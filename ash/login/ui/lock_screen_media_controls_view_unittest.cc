@@ -725,4 +725,47 @@ TEST_F(LockScreenMediaControlsViewTest, DragBounds) {
   EXPECT_TRUE(media_controls_view_->IsDrawn());
 }
 
+TEST_F(LockScreenMediaControlsViewTest, SeekToClick) {
+  EXPECT_EQ(0, media_controller()->seek_to_count());
+
+  media_session::MediaPosition media_position(
+      1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
+      base::TimeDelta::FromSeconds(100) /* position */);
+
+  // Simulate initial position change.
+  media_controls_view_->MediaSessionPositionChanged(media_position);
+
+  // Click exactly halfway on the progress bar.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(progress_view()->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+
+  // Verify the media was seeked to its halfway point.
+  media_controls_view_->FlushForTesting();
+  EXPECT_EQ(1, media_controller()->seek_to_count());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(300),
+            media_controller()->seek_to_time());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, SeekToTouch) {
+  EXPECT_EQ(0, media_controller()->seek_to_count());
+
+  media_session::MediaPosition media_position(
+      1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
+      base::TimeDelta::FromSeconds(100) /* position */);
+
+  // Simulate initial position change.
+  media_controls_view_->MediaSessionPositionChanged(media_position);
+
+  // Tap exactly halfway on the progress bar.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->GestureTapAt(progress_view()->GetBoundsInScreen().CenterPoint());
+
+  // Verify the media was seeked to its halfway point.
+  media_controls_view_->FlushForTesting();
+  EXPECT_EQ(1, media_controller()->seek_to_count());
+  EXPECT_EQ(base::TimeDelta::FromSeconds(300),
+            media_controller()->seek_to_time());
+}
+
 }  // namespace ash

@@ -567,25 +567,16 @@ source_set("builtin_service_manifests") {
     deps += [ "//components/services/pdf_compositor/public/cpp:manifest" ]
   }
 
-  if (is_win) {
-    deps += [ "//chrome/services/wifi_util_win/public/cpp:manifest" ]
-  }
-
   if (is_chromeos) {
     deps += [
       "//ash/public/cpp:manifest",
-      "//chromeos/services/cellular_setup/public/cpp:manifest",
-      "//chromeos/services/ime/public/cpp:manifest",
       "//chromeos/services/network_config/public/cpp:manifest",
       "//chromeos/services/secure_channel/public/cpp:manifest",
     ]
   }
 
   if (!is_android) {
-    deps += [
-      "//chrome/utility:profile_import_manifest",
-      "//components/mirroring/service:manifest",
-    ]
+    deps += [ "//components/mirroring/service:manifest" ]
   }
 }
 

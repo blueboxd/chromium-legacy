@@ -2,14 +2,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//tools/grit/grit_rule.gni")
+
 if (is_fuchsia) {
   import("//build/config/fuchsia/rules.gni")
 }
 
 source_set("named_message_port_connector_resources") {
   data = [
-    "named_message_port_connector.js",
+    "resources/named_message_port_connector.js",
   ]
+}
+
+grit("bindings_resources") {
+  source = "bindings_resources.grd"
+  outputs = [
+    "grit/resources.h",
+    "bindings_resources.pak",
+  ]
+  resource_ids = ""
 }
 
 source_set("bindings_manager") {
@@ -53,6 +64,7 @@ if (is_linux) {
     ]
 
     deps = [
+      ":bindings_resources",
       "//base",
       "//chromecast/browser:public",
       "//mojo/public/cpp/system",

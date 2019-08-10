@@ -58,10 +58,13 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
  protected:
   // Creates a bookmark bubble view.
   void CreateBubbleView() {
+    // Create a fake anchor view for the bubble.
+    anchor_ = std::make_unique<views::View>();
+
     std::unique_ptr<BubbleSyncPromoDelegate> delegate;
-    bubble_.reset(new BookmarkBubbleView(NULL, NULL, std::move(delegate),
-                                         profile(), GURL(kTestBookmarkURL),
-                                         true));
+    bubble_.reset(new BookmarkBubbleView(anchor_.get(), nullptr,
+                                         std::move(delegate), profile(),
+                                         GURL(kTestBookmarkURL), true));
     bubble_->Init();
   }
 
@@ -72,6 +75,8 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
   std::unique_ptr<BookmarkBubbleView> bubble_;
 
  private:
+  std::unique_ptr<views::View> anchor_;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleViewTest);
 };
 

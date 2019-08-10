@@ -1540,9 +1540,10 @@ const mojom::blink::ReportingServiceProxyPtr& LocalFrame::GetReportingService()
 // static
 std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
     LocalFrame* frame,
-    UserGestureToken::Status status) {
+    UserGestureToken::Status status,
+    bool need_browser_verification) {
   if (frame)
-    frame->NotifyUserActivation();
+    frame->NotifyUserActivation(need_browser_verification);
   return std::make_unique<UserGestureIndicator>(status);
 }
 
@@ -1552,7 +1553,7 @@ std::unique_ptr<UserGestureIndicator> LocalFrame::NotifyUserActivation(
     UserGestureToken* token) {
   DCHECK(!RuntimeEnabledFeatures::UserActivationV2Enabled());
   if (frame)
-    frame->NotifyUserActivation();
+    frame->NotifyUserActivation(false);
   return std::make_unique<UserGestureIndicator>(token);
 }
 
@@ -1580,8 +1581,8 @@ bool LocalFrame::ConsumeTransientUserActivation(
              : UserGestureIndicator::ConsumeUserGesture();
 }
 
-void LocalFrame::NotifyUserActivation() {
-  Client()->NotifyUserActivation();
+void LocalFrame::NotifyUserActivation(bool need_browser_verification) {
+  Client()->NotifyUserActivation(need_browser_verification);
   NotifyUserActivationInLocalTree();
 }
 

@@ -191,7 +191,7 @@ suite('CrActionMenu', function() {
     item.classList.add('dropdown-item');
     menu.insertBefore(item, items[0]);
     menu.showAt(dots);
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
 
     down();
     assertEquals(item, getDeepActiveElement());
@@ -289,12 +289,12 @@ suite('CrActionMenu', function() {
     items[1].setAttribute('role', 'checkbox');
     menu.showAt(dots);
 
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     assertEquals('menuitem', items[0].getAttribute('role'));
     assertEquals('checkbox', items[1].getAttribute('role'));
 
     menu.insertBefore(newItem, items[0]);
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     assertEquals('menuitem', newItem.getAttribute('role'));
   });
 

@@ -216,6 +216,7 @@ class FakeScopedLsaPolicy : public ScopedLsaPolicy {
   HRESULT RetrievePrivateData(const wchar_t* key,
                               wchar_t* value,
                               size_t length) override;
+  bool PrivateDataExists(const wchar_t* key) override;
   HRESULT AddAccountRights(PSID sid, const wchar_t* right) override;
   HRESULT RemoveAccount(PSID sid) override;
 

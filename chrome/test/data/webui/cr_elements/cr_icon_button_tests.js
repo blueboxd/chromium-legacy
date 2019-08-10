@@ -9,7 +9,7 @@ suite('cr-icon-button', function() {
     PolymerTest.clearBody();
     button = document.createElement('cr-icon-button');
     document.body.appendChild(button);
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
   });
 
   test('enabled/disabled', () => {
@@ -52,28 +52,28 @@ suite('cr-icon-button', function() {
     button.addEventListener('click', clickHandler);
 
     button.disabled = true;
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     MockInteractions.pressAndReleaseKeyOn(button, -1, [], 'Enter');
     MockInteractions.pressAndReleaseKeyOn(button, -1, [], ' ');
     MockInteractions.downAndUp(button);
     button.click();
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     assertEquals(0, clickCount);
 
     button.disabled = false;
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     MockInteractions.pressAndReleaseKeyOn(button, -1, [], 'Enter');
     MockInteractions.pressAndReleaseKeyOn(button, -1, [], ' ');
     MockInteractions.downAndUp(button);
     button.click();
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     assertEquals(4, clickCount);
     button.removeEventListener('click', clickHandler);
   });
 
   test('when tabindex is -1, it stays -1', async () => {
     document.body.innerHTML = '<cr-icon-button tabindex="-1"></cr-icon-button>';
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     button = document.body.querySelector('cr-icon-button');
     assertEquals('-1', button.getAttribute('tabindex'));
   });

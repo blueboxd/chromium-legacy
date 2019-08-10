@@ -4,12 +4,12 @@
 
 #include "ash/assistant/assistant_view_delegate_impl.h"
 
-#include "ash/assistant/assistant_cache_controller.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_prefs_controller.h"
+#include "ash/assistant/assistant_suggestions_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 
@@ -21,10 +21,6 @@ AssistantViewDelegateImpl::AssistantViewDelegateImpl(
 
 AssistantViewDelegateImpl::~AssistantViewDelegateImpl() = default;
 
-const AssistantCacheModel* AssistantViewDelegateImpl::GetCacheModel() const {
-  return assistant_controller_->cache_controller()->model();
-}
-
 const AssistantInteractionModel*
 AssistantViewDelegateImpl::GetInteractionModel() const {
   return assistant_controller_->interaction_controller()->model();
@@ -33,6 +29,11 @@ AssistantViewDelegateImpl::GetInteractionModel() const {
 const AssistantNotificationModel*
 AssistantViewDelegateImpl::GetNotificationModel() const {
   return assistant_controller_->notification_controller()->model();
+}
+
+const AssistantSuggestionsModel*
+AssistantViewDelegateImpl::GetSuggestionsModel() const {
+  return assistant_controller_->suggestions_controller()->model();
 }
 
 const AssistantUiModel* AssistantViewDelegateImpl::GetUiModel() const {
@@ -49,14 +50,14 @@ void AssistantViewDelegateImpl::RemoveObserver(
   view_delegate_observers_.RemoveObserver(observer);
 }
 
-void AssistantViewDelegateImpl::AddCacheModelObserver(
-    AssistantCacheModelObserver* observer) {
-  assistant_controller_->cache_controller()->AddModelObserver(observer);
+void AssistantViewDelegateImpl::AddStateObserver(
+    AssistantStateObserver* observer) {
+  assistant_controller_->state()->AddObserver(observer);
 }
 
-void AssistantViewDelegateImpl::RemoveCacheModelObserver(
-    AssistantCacheModelObserver* observer) {
-  assistant_controller_->cache_controller()->RemoveModelObserver(observer);
+void AssistantViewDelegateImpl::RemoveStateObserver(
+    AssistantStateObserver* observer) {
+  assistant_controller_->state()->RemoveObserver(observer);
 }
 
 void AssistantViewDelegateImpl::AddInteractionModelObserver(
@@ -81,14 +82,15 @@ void AssistantViewDelegateImpl::RemoveNotificationModelObserver(
       observer);
 }
 
-void AssistantViewDelegateImpl::AddStateObserver(
-    AssistantStateObserver* observer) {
-  assistant_controller_->state()->AddObserver(observer);
+void AssistantViewDelegateImpl::AddSuggestionsModelObserver(
+    AssistantSuggestionsModelObserver* observer) {
+  assistant_controller_->suggestions_controller()->AddModelObserver(observer);
 }
 
-void AssistantViewDelegateImpl::RemoveStateObserver(
-    AssistantStateObserver* observer) {
-  assistant_controller_->state()->RemoveObserver(observer);
+void AssistantViewDelegateImpl::RemoveSuggestionsModelObserver(
+    AssistantSuggestionsModelObserver* observer) {
+  assistant_controller_->suggestions_controller()->RemoveModelObserver(
+      observer);
 }
 
 void AssistantViewDelegateImpl::AddUiModelObserver(

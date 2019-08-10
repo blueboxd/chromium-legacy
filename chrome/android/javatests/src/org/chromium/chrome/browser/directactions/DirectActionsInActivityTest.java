@@ -27,8 +27,8 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -42,7 +42,8 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 @TargetApi(24) // For java.util.function.Consumer.
 public class DirectActionsInActivityTest {
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    public ChromeActivityTestRule<? extends ChromeActivity> mActivityTestRule =
+            ChromeActivityTestRule.forMainActivity();
 
     @Rule
     public DirectActionTestRule mDirectActionRule = new DirectActionTestRule();

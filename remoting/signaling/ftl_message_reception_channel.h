@@ -23,8 +23,6 @@ class FtlMessageReceptionChannel final : public MessageReceptionChannel {
  public:
   static constexpr base::TimeDelta kPongTimeout =
       base::TimeDelta::FromSeconds(15);
-  static constexpr base::TimeDelta kStreamLifetime =
-      base::TimeDelta::FromMinutes(13);
 
   FtlMessageReceptionChannel();
   ~FtlMessageReceptionChannel() override;
@@ -65,7 +63,6 @@ class FtlMessageReceptionChannel final : public MessageReceptionChannel {
 
   void BeginStreamTimers();
   void OnPongTimeout();
-  void OnStreamLifetimeExceeded();
 
   StreamOpener stream_opener_;
   MessageCallback on_incoming_msg_;
@@ -75,7 +72,6 @@ class FtlMessageReceptionChannel final : public MessageReceptionChannel {
   State state_ = State::STOPPED;
   net::BackoffEntry reconnect_retry_backoff_;
   base::OneShotTimer reconnect_retry_timer_;
-  base::OneShotTimer stream_lifetime_timer_;
   std::unique_ptr<base::DelayTimer> stream_pong_timer_;
 
   base::WeakPtrFactory<FtlMessageReceptionChannel> weak_factory_;

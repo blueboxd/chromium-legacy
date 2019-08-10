@@ -728,12 +728,12 @@ OCSPRevocationStatus GetRevocationStatusForCert(
   return result;
 }
 
-}  // namespace
-
 OCSPRevocationStatus CheckOCSP(
     base::StringPiece raw_response,
     base::StringPiece certificate_der,
+    const ParsedCertificate* certificate,
     base::StringPiece issuer_certificate_der,
+    const ParsedCertificate* issuer_certificate,
     const base::Time& verify_time,
     const base::TimeDelta& max_age,
     OCSPVerifyResult::ResponseStatus* response_details) {
@@ -781,10 +781,16 @@ OCSPRevocationStatus CheckOCSP(
     return OCSPRevocationStatus::UNKNOWN;
   }
 
-  scoped_refptr<ParsedCertificate> certificate =
-      OCSPParseCertificate(certificate_der);
-  scoped_refptr<ParsedCertificate> issuer_certificate =
-      OCSPParseCertificate(issuer_certificate_der);
+  scoped_refptr<ParsedCertificate> parsed_certificate;
+  scoped_refptr<ParsedCertificate> parsed_issuer_certificate;
+  if (!certificate) {
+    parsed_certificate = OCSPParseCertificate(certificate_der);
+    certificate = parsed_certificate.get();
+  }
+  if (!issuer_certificate) {
+    parsed_issuer_certificate = OCSPParseCertificate(issuer_certificate_der);
+    issuer_certificate = parsed_issuer_certificate.get();
+  }
 
   if (!certificate || !issuer_certificate) {
     *response_details = OCSPVerifyResult::NOT_CHECKED;
@@ -801,9 +807,9 @@ OCSPRevocationStatus CheckOCSP(
 
   // Look through all of the OCSPSingleResponses for a match (based on CertID
   // and time).
-  OCSPRevocationStatus status = GetRevocationStatusForCert(
-      response_data, certificate.get(), issuer_certificate.get(), verify_time,
-      max_age, response_details);
+  OCSPRevocationStatus status =
+      GetRevocationStatusForCert(response_data, certificate, issuer_certificate,
+                                 verify_time, max_age, response_details);
 
   // TODO(eroman): Process the OCSP extensions. In particular, must reject if
   // there are any critical extensions that are not understood.
@@ -812,11 +818,37 @@ OCSPRevocationStatus CheckOCSP(
   // signed directly by the issuing certificate, or a valid authorized
   // responder.
   if (!VerifyOCSPResponseSignature(response, response_data,
-                                   issuer_certificate.get())) {
+                                   issuer_certificate)) {
     return OCSPRevocationStatus::UNKNOWN;
   }
 
   return status;
+}
+
+}  // namespace
+
+OCSPRevocationStatus CheckOCSP(
+    base::StringPiece raw_response,
+    base::StringPiece certificate_der,
+    base::StringPiece issuer_certificate_der,
+    const base::Time& verify_time,
+    const base::TimeDelta& max_age,
+    OCSPVerifyResult::ResponseStatus* response_details) {
+  return CheckOCSP(raw_response, certificate_der, nullptr,
+                   issuer_certificate_der, nullptr, verify_time, max_age,
+                   response_details);
+}
+
+OCSPRevocationStatus CheckOCSP(
+    base::StringPiece raw_response,
+    const ParsedCertificate* certificate,
+    const ParsedCertificate* issuer_certificate,
+    const base::Time& verify_time,
+    const base::TimeDelta& max_age,
+    OCSPVerifyResult::ResponseStatus* response_details) {
+  return CheckOCSP(raw_response, base::StringPiece(), certificate,
+                   base::StringPiece(), issuer_certificate, verify_time,
+                   max_age, response_details);
 }
 
 bool CreateOCSPRequest(const ParsedCertificate* cert,

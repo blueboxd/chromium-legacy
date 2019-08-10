@@ -15,15 +15,27 @@
 #include "chrome/utility/importer/importer.h"
 #include "chrome/utility/importer/importer_creator.h"
 #include "content/public/utility/utility_thread.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+
+#if defined(OS_MACOSX)
+#include <stdlib.h>
+
+#include "chrome/common/importer/firefox_importer_utils.h"
+#endif
 
 using chrome::mojom::ThreadSafeProfileImportObserverPtr;
 
 ProfileImportImpl::ProfileImportImpl(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+    mojo::PendingReceiver<chrome::mojom::ProfileImport> receiver)
+    : receiver_(this, std::move(receiver)) {
+#if defined(OS_MACOSX)
+  std::string dylib_path = GetFirefoxDylibPath().value();
+  if (!dylib_path.empty())
+    ::setenv("DYLD_FALLBACK_LIBRARY_PATH", dylib_path.c_str(),
+             1 /* overwrite */);
+#endif
+}
 
-ProfileImportImpl::~ProfileImportImpl() {}
+ProfileImportImpl::~ProfileImportImpl() = default;
 
 void ProfileImportImpl::StartImport(
     const importer::SourceProfile& source_profile,

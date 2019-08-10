@@ -237,10 +237,12 @@ void SharedWorkerServiceImpl::CreateWorker(
   // credentials mode specified by WorkerOptions for module script.
   const auto credentials_mode = network::mojom::CredentialsMode::kSameOrigin;
 
+  // TODO(crbug.com/955476): Populate the network isolation key based
+  // on script origin here and add test coverage.
   WorkerScriptFetchInitiator::Start(
       weak_host->worker_process_id(), weak_host->instance()->url(),
-      weak_host->instance()->constructor_origin(), credentials_mode,
-      std::move(outside_fetch_client_settings_object),
+      weak_host->instance()->constructor_origin(), net::NetworkIsolationKey(),
+      credentials_mode, std::move(outside_fetch_client_settings_object),
       ResourceType::kSharedWorker, service_worker_context_,
       service_worker_handle_raw, appcache_handle_core,
       std::move(blob_url_loader_factory), url_loader_factory_override_,

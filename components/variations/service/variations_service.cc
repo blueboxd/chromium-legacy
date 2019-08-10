@@ -908,12 +908,14 @@ bool VariationsService::SetupFieldTrials(
     const char* kDisableFeatures,
     const std::set<std::string>& unforceable_field_trials,
     const std::vector<std::string>& variation_ids,
+    const std::vector<base::FeatureList::FeatureOverrideInfo>& extra_overrides,
     std::unique_ptr<base::FeatureList> feature_list,
     variations::PlatformFieldTrials* platform_field_trials) {
   return field_trial_creator_.SetupFieldTrials(
       kEnableGpuBenchmarking, kEnableFeatures, kDisableFeatures,
-      unforceable_field_trials, variation_ids, CreateLowEntropyProvider(),
-      std::move(feature_list), platform_field_trials, &safe_seed_manager_);
+      unforceable_field_trials, variation_ids, extra_overrides,
+      CreateLowEntropyProvider(), std::move(feature_list),
+      platform_field_trials, &safe_seed_manager_);
 }
 
 void VariationsService::OverrideCachedUIStrings() {

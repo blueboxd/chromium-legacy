@@ -1,0 +1,107 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/login/security_token_pin_dialog_host_ash_impl.h"
+
+#include <utility>
+
+#include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/login_screen_model.h"
+#include "ash/public/cpp/login_types.h"
+#include "base/bind.h"
+#include "base/logging.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
+#include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
+
+namespace chromeos {
+
+namespace {
+
+PinDialogManager* GetLoginScreenPinDialogManager() {
+  DCHECK(ProfileHelper::IsSigninProfileInitialized());
+  CertificateProviderService* certificate_provider_service =
+      CertificateProviderServiceFactory::GetForBrowserContext(
+          ProfileHelper::GetSigninProfile());
+  return certificate_provider_service->pin_dialog_manager();
+}
+
+}  // namespace
+
+SecurityTokenPinDialogHostAshImpl::SecurityTokenPinDialogHostAshImpl() {
+  GetLoginScreenPinDialogManager()->AddPinDialogHost(this);
+}
+
+SecurityTokenPinDialogHostAshImpl::~SecurityTokenPinDialogHostAshImpl() {
+  GetLoginScreenPinDialogManager()->RemovePinDialogHost(this);
+}
+
+void SecurityTokenPinDialogHostAshImpl::ShowSecurityTokenPinDialog(
+    const std::string& /*caller_extension_name*/,
+    SecurityTokenPinCodeType code_type,
+    bool enable_user_input,
+    SecurityTokenPinErrorLabel error_label,
+    int attempts_left,
+    const base::Optional<AccountId>& authenticating_user_account_id,
+    SecurityTokenPinEnteredCallback pin_entered_callback,
+    SecurityTokenPinDialogClosedCallback pin_dialog_closed_callback) {
+  DCHECK(!enable_user_input || attempts_left);
+  DCHECK_GE(attempts_left, -1);
+  DCHECK(!pin_entered_callback_);
+  DCHECK(!pin_dialog_closed_callback_);
+
+  Reset();
+
+  if (!authenticating_user_account_id) {
+    // This class only supports requests associated with user authentication
+    // attempts.
+    std::move(pin_dialog_closed_callback).Run();
+    return;
+  }
+
+  pin_entered_callback_ = std::move(pin_entered_callback);
+  pin_dialog_closed_callback_ = std::move(pin_dialog_closed_callback);
+
+  ash::SecurityTokenPinRequest request;
+  request.account_id = *authenticating_user_account_id;
+  request.code_type = code_type;
+  request.enable_user_input = enable_user_input;
+  request.error_label = error_label;
+  request.attempts_left = attempts_left;
+  request.pin_entered_callback =
+      base::BindOnce(&SecurityTokenPinDialogHostAshImpl::OnUserInputReceived,
+                     weak_ptr_factory_.GetWeakPtr());
+  request.pin_ui_closed_callback =
+      base::BindOnce(&SecurityTokenPinDialogHostAshImpl::OnClosed,
+                     weak_ptr_factory_.GetWeakPtr());
+
+  ash::LoginScreen::Get()->RequestSecurityTokenPin(std::move(request));
+}
+
+void SecurityTokenPinDialogHostAshImpl::CloseSecurityTokenPinDialog() {
+  Reset();
+  ash::LoginScreen::Get()->ClearSecurityTokenPinRequest();
+}
+
+void SecurityTokenPinDialogHostAshImpl::OnUserInputReceived(
+    const std::string& user_input) {
+  DCHECK(!user_input.empty());
+  std::move(pin_entered_callback_).Run(user_input);
+}
+
+void SecurityTokenPinDialogHostAshImpl::OnClosed() {
+  auto closed_callback = std::move(pin_dialog_closed_callback_);
+  Reset();
+  std::move(closed_callback).Run();
+}
+
+void SecurityTokenPinDialogHostAshImpl::Reset() {
+  pin_entered_callback_.Reset();
+  pin_dialog_closed_callback_.Reset();
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+}  // namespace chromeos

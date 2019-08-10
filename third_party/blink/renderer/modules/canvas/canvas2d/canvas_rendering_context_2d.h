@@ -27,6 +27,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_H_
 
+#include <random>
+
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
@@ -270,6 +272,10 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   HashMap<String, Font> fonts_resolved_using_current_style_;
   bool should_prune_local_font_cache_;
   LinkedHashSet<String> font_lru_list_;
+
+  static constexpr float kRasterMetricProbability = 0.01;
+  std::mt19937 random_generator_;
+  std::bernoulli_distribution bernoulli_distribution_;
 };
 
 }  // namespace blink

@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/new_desk_button.h"
@@ -33,9 +34,6 @@ namespace ash {
 namespace {
 
 constexpr int kBarHeight = 104;
-
-// TODO(minch): Migrate this to retrieve the color from AshColorProvider.
-constexpr SkColor kBarColor = SkColorSetA(gfx::kGoogleGrey900, 0xBC);  // 74%
 
 base::string16 GetMiniViewTitle(int mini_view_index) {
   DCHECK_GE(mini_view_index, 0);
@@ -127,7 +125,10 @@ DesksBarView::DesksBarView()
 
   background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   background_view_->layer()->SetFillsBoundsOpaquely(false);
-  background_view_->layer()->SetColor(kBarColor);
+  background_view_->layer()->SetColor(
+      AshColorProvider::Get()->GetBaseLayerColor(
+          AshColorProvider::BaseLayerType::kTransparentWithBlur,
+          AshColorProvider::AshColorMode::kDark));
 
   AddChildView(background_view_);
   AddChildView(new_desk_button_);

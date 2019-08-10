@@ -204,6 +204,7 @@ js_library("navigation_manager") {
     ":menu_panel_interface",
     ":rect_helper",
     ":switch_access_constants",
+    ":switch_access_interface",
     ":switch_access_predicate",
     ":text_input_manager",
     ":text_navigation_manager",

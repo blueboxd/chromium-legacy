@@ -237,10 +237,12 @@ class CC_PAINT_EXPORT PaintImage {
   }
 
   // Returns whether this image will be decoded and rendered from YUV data
-  // and fills out plane size and plane index information respectively in
-  // |yuva_size_info| and |plane_indices|, if provided.
+  // and fills out plane size info, plane index info, and the matrix for
+  // conversion from YUV to RGB in, respectively, |yuva_size_info|,
+  // |plane_indices|, and |yuv_color_space| if any are provided.
   bool IsYuv(SkYUVASizeInfo* yuva_size_info = nullptr,
-             SkYUVAIndex* plane_indices = nullptr) const;
+             SkYUVAIndex* plane_indices = nullptr,
+             SkYUVColorSpace* yuv_color_space = nullptr) const;
 
   // Returns the color type of this image.
   SkColorType GetColorType() const;

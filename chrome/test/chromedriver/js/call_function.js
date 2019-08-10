@@ -377,7 +377,8 @@ function jsonDeserialize(item, opt_seen, opt_cache) {
       item === null ||
       typeof item === 'boolean' ||
       typeof item === 'number' ||
-      typeof item === 'string')
+      typeof item === 'string' ||
+      typeof item === 'function')
     return item;
   if (item.hasOwnProperty(ELEMENT_KEY)) {
     if (opt_cache === undefined || opt_cache === null) {

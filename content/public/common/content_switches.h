@@ -99,7 +99,6 @@ CONTENT_EXPORT extern const char kDisableThreadedScrolling[];
 extern const char kDisableV8IdleTasks[];
 CONTENT_EXPORT extern const char kDisableWebGLImageChromium[];
 CONTENT_EXPORT extern const char kDisableWebSecurity[];
-extern const char kDisableXSSAuditor[];
 CONTENT_EXPORT extern const char kDisableZeroCopy[];
 CONTENT_EXPORT extern const char kDisableZeroCopyDxgiVideo[];
 CONTENT_EXPORT extern const char kDomAutomationController[];

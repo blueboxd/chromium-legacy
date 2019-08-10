@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace ui {
 class ScrollEvent;
@@ -31,11 +32,22 @@ class ASH_EXPORT OverviewGestureHandler {
  private:
   friend class OverviewGestureHandlerTest;
 
-  // The total distance scrolled with three fingers up to the point when an
-  // action is triggered. When the action (enter / exit overview mode or move
-  // selection in overview) is triggered those values are reset to zero.
-  float scroll_x_ = 0.f;
-  float scroll_y_ = 0.f;
+  // A struct containing the relevant data during a scroll session.
+  struct ScrollData {
+    int finger_count = 0;
+    float scroll_x = 0.f;
+    float scroll_y = 0.f;
+  };
+
+  // Called when a scroll is ended. Returns true if the scroll is processed.
+  bool EndScroll();
+
+  // Tries to move the overview selector. Returns true if successful. Called in
+  // the middle of scrolls and when scrolls have ended.
+  bool MoveOverviewSelection(int finger_count, float scroll_x, float scroll_y);
+
+  // Contains the data during a scroll session. Empty is no scroll is underway.
+  base::Optional<ScrollData> scroll_data_;
 
   // The threshold before engaging overview with a touchpad three-finger scroll.
   static const float vertical_threshold_pixels_;

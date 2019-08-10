@@ -20,10 +20,10 @@ class PLATFORM_EXPORT DarkModeGenericClassifier
   ~DarkModeGenericClassifier() = default;
 
   DarkModeClassification ClassifyWithFeatures(
-      const Vector<float> features) override;
+      const Features& features) override;
 
   DarkModeClassification ClassifyUsingDecisionTreeForTesting(
-      const Vector<float>& features);
+      const Features& features);
 };
 
 }  // namespace blink

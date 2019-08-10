@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGE_DOWNLOADER_IMAGE_DOWNLOADER_IMPL_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -61,7 +61,8 @@ class ImageDownloaderImpl final
                         int32_t http_status_code,
                         const WTF::Vector<SkBitmap>& images);
 
-  void CreateMojoService(mojom::blink::ImageDownloaderRequest request);
+  void CreateMojoService(
+      mojo::PendingReceiver<mojom::blink::ImageDownloader> receiver);
 
   // USING_PRE_FINALIZER interface.
   // Called before the object gets garbage collected.
@@ -89,7 +90,7 @@ class ImageDownloaderImpl final
   // ImageResourceFetchers schedule via FetchImage.
   ImageResourceFetcherList image_fetchers_;
 
-  mojo::Binding<mojom::blink::ImageDownloader> binding_{this};
+  mojo::Receiver<mojom::blink::ImageDownloader> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageDownloaderImpl);
 };

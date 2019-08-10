@@ -30,6 +30,7 @@
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "ash/public/mojom/tray_action.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -1983,6 +1984,36 @@ TEST_F(LockContentsViewUnitTest, ParentAccessDialog) {
   EXPECT_TRUE(LoginPasswordView::TestApi(auth_user.password_view())
                   .textfield()
                   ->HasFocus());
+}
+
+// Tests parent access shelf button is showing and hiding.
+TEST_F(LockContentsViewUnitTest, ParentAccessButton) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::LOCKED);
+
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  LockContentsView::TestApi contents_test_api(contents);
+  AddChildUsers(1);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  // Simulate initial state - button shown.
+  Shell::Get()->login_screen_controller()->ShowParentAccessButton(true);
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+
+  // Validation failed - show the button.
+  contents->ShowParentAccessDialog(true);
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  contents_test_api.SimulateParentAccessValidationFinished(false);
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+
+  // Validation succeeded - hide the button.
+  contents->ShowParentAccessDialog(true);
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  contents_test_api.SimulateParentAccessValidationFinished(true);
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
 }
 
 using LockContentsViewPowerManagerUnitTest = LockContentsViewUnitTest;

@@ -73,22 +73,28 @@ constexpr SandboxConfig kSandboxConfigs[] = {
     {
         SANDBOX_TYPE_GPU,
         base::make_span((const char* const[]){
+            fuchsia::sysmem::Allocator::Name_,
+            "fuchsia.vulkan.loader.Loader",
             fuchsia::ui::scenic::Scenic::Name_,
-            fuchsia::sysmem::Allocator::Name_, "fuchsia.vulkan.loader.Loader"}),
+        }),
         kProvideVulkanResources,
     },
     {
         SANDBOX_TYPE_NETWORK,
         base::make_span((const char* const[]){
-            fuchsia::net::NameLookup::Name_, fuchsia::netstack::Netstack::Name_,
-            "fuchsia.posix.socket.Provider"}),
+            fuchsia::net::NameLookup::Name_,
+            fuchsia::netstack::Netstack::Name_,
+            "fuchsia.posix.socket.Provider",
+        }),
         kProvideSslConfig,
     },
     {
         SANDBOX_TYPE_RENDERER,
-        base::make_span(
-            (const char* const[]){fuchsia::fonts::Provider::Name_,
-                                  fuchsia::mediacodec::CodecFactory::Name_}),
+        base::make_span((const char* const[]){
+            fuchsia::fonts::Provider::Name_,
+            fuchsia::mediacodec::CodecFactory::Name_,
+            fuchsia::sysmem::Allocator::Name_,
+        }),
         0,
     },
 };

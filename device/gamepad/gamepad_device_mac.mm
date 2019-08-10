@@ -487,4 +487,8 @@ FFEffectObjectReference GamepadDeviceMac::CreateForceFeedbackEffect(
   return ff_effect_ref;
 }
 
+base::WeakPtr<AbstractHapticGamepad> GamepadDeviceMac::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace device

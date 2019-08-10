@@ -281,7 +281,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_change_default_lumpy_pacing_size_to_two,
-    false)
+    true)
 
 // If true, QuicSpdySession::GetSpdyDataStream() will close the connection
 // if the returned stream is static.
@@ -381,4 +381,10 @@ QUIC_FLAG(bool,
 // If true, QUIC will track max ack height in BandwidthSampler.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_track_ack_height_in_bandwidth_sampler,
+          false)
+
+// If true, QuicSession::ShouldKeepConnectionAlive() will not consider locally
+// closed streams whose highest byte offset is not received yet.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_aggressive_connection_aliveness,
           false)

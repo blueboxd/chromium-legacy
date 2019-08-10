@@ -32,6 +32,8 @@ class FakeAccessibilityHelperInstance
   void RefreshWithExtraData(mojom::AccessibilityActionDataPtr action_data_ptr,
                             RefreshWithExtraDataCallback callback) override;
 
+  void SetCaptionStyle(mojom::CaptionStylePtr style_ptr) override;
+
  private:
   mojom::AccessibilityFilterType filter_type_ =
       mojom::AccessibilityFilterType::OFF;

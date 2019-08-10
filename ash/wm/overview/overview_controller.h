@@ -40,9 +40,8 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // Returns true if overview mode is active.
   bool InOverviewSession() const;
 
-  // Moves the current selection by |increment| items. Positive values of
-  // |increment| move the selection forward, negative values move it backward.
-  void IncrementSelection(int increment);
+  // Moves the current selection forward or backward.
+  void IncrementSelection(bool forward);
 
   // Accepts current selection if any. Returns true if a selection was made,
   // false otherwise.

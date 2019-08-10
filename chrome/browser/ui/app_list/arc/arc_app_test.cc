@@ -227,6 +227,7 @@ void ArcAppTest::TearDown() {
   arc_play_store_enabled_preference_handler_.reset();
   arc_session_manager_.reset();
   arc_service_manager_.reset();
+  arc::ResetArcAllowedCheckForTesting(profile_);
   if (dbus_thread_manager_initialized_) {
     // DBusThreadManager may be initialized from other testing utility,
     // such as ash::AshTestHelper::SetUp(), so Shutdown() only when

@@ -505,6 +505,10 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
   synthetic_gesture_controller_.reset();
 }
 
+// static
+const base::TimeDelta RenderWidgetHostImpl::kActivationNotificationExpireTime =
+    base::TimeDelta::FromMilliseconds(300);
+
 RenderProcessHost* RenderWidgetHostImpl::GetProcess() {
   return process_;
 }
@@ -1169,6 +1173,8 @@ void RenderWidgetHostImpl::DidNavigate() {
     return;
 
   new_content_rendering_timeout_->Start(new_content_rendering_delay_);
+
+  ClearPendingUserActivation();
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
@@ -2629,10 +2635,38 @@ void RenderWidgetHostImpl::SetNeedsBeginFrameForFlingProgress() {
   SetNeedsBeginFrame(true);
 }
 
+void RenderWidgetHostImpl::AddPendingUserActivation(
+    const WebInputEvent& event) {
+  if (base::FeatureList::IsEnabled(features::kBrowserVerifiedUserActivation) &&
+      (event.GetType() == WebInputEvent::kMouseDown ||
+       event.GetType() == WebInputEvent::kKeyDown ||
+       event.GetType() == WebInputEvent::kRawKeyDown)) {
+    pending_user_activation_timer_.Start(
+        FROM_HERE, kActivationNotificationExpireTime,
+        base::BindOnce(&RenderWidgetHostImpl::ClearPendingUserActivation,
+                       base::Unretained(this)));
+    pending_user_activation_counter_++;
+  }
+}
+
+void RenderWidgetHostImpl::ClearPendingUserActivation() {
+  pending_user_activation_counter_ = 0;
+  pending_user_activation_timer_.Stop();
+}
+
+bool RenderWidgetHostImpl::ConsumePendingUserActivationIfAllowed() {
+  if (pending_user_activation_counter_ > 0) {
+    pending_user_activation_counter_--;
+    return true;
+  }
+  return false;
+}
+
 void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(
     const blink::WebInputEvent& event,
     ui::LatencyInfo* latency) {
   latency_tracker_.OnInputEvent(event, latency);
+  AddPendingUserActivation(event);
   for (auto& observer : input_event_observers_)
     observer.OnInputEvent(event);
 }

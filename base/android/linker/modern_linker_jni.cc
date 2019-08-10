@@ -7,36 +7,23 @@
 // This source code *cannot* depend on anything from base/ or the C++
 // STL, to keep the final library small, and avoid ugly dependency issues.
 
-#include "base/android/linker/modern_linker_jni.h"
+#include "modern_linker_jni.h"
 
-#include <android/dlext.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <jni.h>
 #include <limits.h>
 #include <link.h>
-#include <linux/memfd.h>
 #include <stddef.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <sys/syscall.h>
 #include <sys/types.h>
-#include <sys/utsname.h>
 #include <unistd.h>
 
-#include "base/android/linker/linker_jni.h"
-
-// From //base/posix/eintr_wrapper.h, but we don't want to depend on //base.
-#define HANDLE_EINTR(x)                                     \
-  ({                                                        \
-    decltype(x) eintr_wrapper_result;                       \
-    do {                                                    \
-      eintr_wrapper_result = (x);                           \
-    } while (eintr_wrapper_result == -1 && errno == EINTR); \
-    eintr_wrapper_result;                                   \
-  })
+#include <android/dlext.h>
+#include "linker_jni.h"
 
 // Not defined on all platforms. As this linker is only supported on ARM32/64,
 // x86/x86_64 and MIPS, page size is always 4k.
@@ -64,36 +51,6 @@ int dl_iterate_phdr(int (*cb)(dl_phdr_info* info, size_t size, void* data),
 
 namespace chromium_android_linker {
 namespace {
-
-// Returns whether memfd_create() is supported on this kernel.
-bool IsMemfdSupported() {
-  // Check the kernel version. There is precedent of OEMs adding syscalls to
-  // shipping kernels with a number used on later ones, so relying on the kernel
-  // to return ENOSYS doesn't work.
-  static constexpr int kRequiredMajor = 3;
-  static constexpr int kRequiredMinor = 17;
-  struct utsname uts;
-  int major, minor;
-
-  if (uname(&uts))
-    return false;
-
-  if (strcmp(uts.sysname, "Linux") != 0 ||
-      sscanf(uts.release, "%d.%d", &major, &minor) != 2)
-    return false;
-
-  if (major < kRequiredMajor ||
-      (major == kRequiredMajor && minor < kRequiredMinor)) {
-    return false;
-  }
-
-  return true;
-}
-
-// Wrapper, as bionic doesn't expose it.
-int memfd_create(const char* name, unsigned int flags) {
-  return syscall(__NR_memfd_create, name, flags);
-}
 
 // Record of the Java VM passed to JNI_OnLoad().
 static JavaVM* s_java_vm = nullptr;
@@ -226,97 +183,33 @@ class ScopedAnonymousMmap {
 };
 
 // Makes sure the file descriptor is closed unless |Release()| is called.
-//
-// May either be backed by a memfd or a regular file, depending on the kernel.
 class ScopedFileDescriptor {
  public:
-  static ScopedFileDescriptor Open(const String& path);
-
+  ScopedFileDescriptor(int fd) : fd_(fd), owned_(true) {}
   ~ScopedFileDescriptor() {
     if (owned_)
       Close();
   }
-
   ScopedFileDescriptor(ScopedFileDescriptor&& o)
       : fd_(o.fd_), owned_(o.owned_) {
     o.owned_ = false;
   }
-
   int get() const { return fd_; }
-
   void Release() { owned_ = false; }
-
   void Close() {
     if (fd_ != -1)
       close(fd_);
     owned_ = false;
   }
 
-  bool ReopenReadOnly(const String& original_path);
-
  private:
-  int fd_ = -1;
-  bool owned_ = false;
-  bool is_memfd_ = false;
-
-  static ScopedFileDescriptor OpenFile(const String& path);
-  // Must only be called if memfd is supported on this kernel.
-  static ScopedFileDescriptor OpenMemfd(const String& path);
-
-  ScopedFileDescriptor(int fd, bool is_memfd)
-      : fd_(fd), owned_(true), is_memfd_(is_memfd) {}
+  const int fd_;
+  bool owned_;
 
   // Move only.
   ScopedFileDescriptor(const ScopedFileDescriptor&) = delete;
   ScopedFileDescriptor& operator=(const ScopedFileDescriptor&) = delete;
 };
-
-ScopedFileDescriptor ScopedFileDescriptor::Open(const String& path) {
-  return IsMemfdSupported() ? ScopedFileDescriptor::OpenMemfd(path)
-                            : ScopedFileDescriptor::OpenFile(path);
-}
-
-ScopedFileDescriptor ScopedFileDescriptor::OpenFile(const String& path) {
-  int flags = O_RDWR | O_CREAT | O_EXCL;
-  int mode = S_IRUSR | S_IWUSR;
-  int fd = HANDLE_EINTR(open(path.c_str(), flags, mode));
-  return {fd, false};
-}
-
-ScopedFileDescriptor ScopedFileDescriptor::OpenMemfd(const String& path) {
-  LOG_INFO("Using a memfd file descriptor.");
-  return {memfd_create(path.c_str(), MFD_ALLOW_SEALING), true};
-}
-
-bool ScopedFileDescriptor::ReopenReadOnly(const String& original_path) {
-  if (is_memfd_) {
-    // This is safe as we seal the fd before sending it to another process.
-    // The target process cannot do anything to alter the underlying "file".
-    int err = fcntl(fd_, F_ADD_SEALS,
-                    F_SEAL_WRITE | F_SEAL_GROW | F_SEAL_SHRINK | F_SEAL_SEAL);
-    if (err) {
-      LOG_ERROR("Cannot seal the fd: %s", strerror(errno));
-      return false;
-    }
-  } else {
-    const char* filepath = original_path.c_str();
-    Close();
-    fd_ = HANDLE_EINTR(open(filepath, O_RDONLY));
-    if (fd_ == -1) {
-      LOG_ERROR("open: %s: %s", filepath, strerror(errno));
-      return false;
-    }
-
-    // Delete the directory entry for the RELRO file. The fd we hold ensures
-    // that its data remains intact.
-    if (unlink(filepath) == -1) {
-      LOG_ERROR("unlink: %s: %s", filepath, strerror(errno));
-      return false;
-    }
-  }
-
-  return true;
-}
 
 // Reserves an address space range, starting at |address|.
 // If successful, returns a valid mapping, otherwise returns an empty one.
@@ -358,6 +251,28 @@ bool GetLibraryLoadSize(void* addr, size_t* load_size, size_t* min_vaddr) {
   *load_size = callback_data.load_size;
   *min_vaddr = callback_data.min_vaddr;
   return true;
+}
+
+// Reopens |fd| that was initially opened from |path| as a read-only fd.
+// Deletes the file in the process, and returns the new read only file
+// descriptor in case of success, -1 otherwise.
+ScopedFileDescriptor ReopenReadOnly(const String& path,
+                                    ScopedFileDescriptor original_fd) {
+  const char* filepath = path.c_str();
+  original_fd.Close();
+  ScopedFileDescriptor scoped_fd{open(filepath, O_RDONLY)};
+  if (scoped_fd.get() == -1) {
+    LOG_ERROR("open: %s: %s", path.c_str(), strerror(errno));
+    return -1;
+  }
+
+  // Delete the directory entry for the RELRO file. The fd we hold ensures
+  // that its data remains intact.
+  if (unlink(filepath) == -1) {
+    LOG_ERROR("unlink: %s: %s", filepath, strerror(errno));
+    return -1;
+  }
+  return scoped_fd;
 }
 
 // Resizes the address space reservation to the actual required size.
@@ -411,10 +326,11 @@ bool CallJniOnLoad(void* handle) {
   return true;
 }
 
-// Loads the library at |path| at address |wanted_address| if possible, and
+// Load the library at |path| at address |wanted_address| if possible, and
 // creates a file with relro at |relocations_path|.
 //
-// Returns a readonly file descriptor to the relocations, or -1 for failure;
+// In case of success, returns a readonly file descriptor to the relocations,
+// otherwise returns -1.
 int LoadCreateSharedRelocations(const String& path,
                                 void* wanted_address,
                                 const String& relocations_path) {
@@ -425,9 +341,8 @@ int LoadCreateSharedRelocations(const String& path,
     return -1;
 
   unlink(relocations_path.c_str());
-  // TODO(lizeb): Don't fallback to a file, instead don't even reach here
-  // when memfd is not supported, and use the system linker in Java.
-  ScopedFileDescriptor relro_fd = ScopedFileDescriptor::Open(relocations_path);
+  ScopedFileDescriptor relro_fd = ScopedFileDescriptor{open(
+      relocations_path.c_str(), O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR)};
   if (relro_fd.get() == -1) {
     LOG_ERROR("open: %s: %s", relocations_path.c_str(), strerror(errno));
     return -1;
@@ -452,14 +367,13 @@ int LoadCreateSharedRelocations(const String& path,
     unlink(relocations_path.c_str());
     return false;
   }
-  if (!relro_fd.ReopenReadOnly(relocations_path))
-    return -1;
-
-  relro_fd.Release();
-  return relro_fd.get();
+  ScopedFileDescriptor scoped_fd =
+      ReopenReadOnly(relocations_path, std::move(relro_fd));
+  scoped_fd.Release();
+  return scoped_fd.get();
 }
 
-// Loads the library at |path| at address |wanted_address| if possible, and
+// Load the library at |path| at address |wanted_address| if possible, and
 // uses the relocations in |relocations_fd| if possible.
 bool LoadUseSharedRelocations(const String& path,
                               void* wanted_address,

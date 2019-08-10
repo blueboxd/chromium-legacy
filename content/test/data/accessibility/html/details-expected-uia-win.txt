@@ -1,8 +1,8 @@
 document
-++group
+++group LocalizedControlType='details'
 ++++button Name='details tag' ExpandCollapse.ExpandCollapseState='Collapsed'
 ++++++description Name='details tag'
-++group
+++group LocalizedControlType='details'
 ++++button Name='details tag open' ExpandCollapse.ExpandCollapseState='Expanded'
 ++++++description Name='details tag open'
 ++++group

@@ -716,7 +716,8 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     return WebInputEventResult::kHandledSuppressed;
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(frame_);
+      LocalFrame::NotifyUserActivation(
+          frame_, UserGestureToken::kPossiblyExistingGesture, true);
   frame_->LocalFrameRoot()
       .GetEventHandler()
       .last_mouse_down_user_gesture_token_ =

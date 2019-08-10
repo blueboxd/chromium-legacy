@@ -5,22 +5,26 @@
 #ifndef DEVICE_GAMEPAD_DUALSHOCK4_CONTROLLER_LINUX_
 #define DEVICE_GAMEPAD_DUALSHOCK4_CONTROLLER_LINUX_
 
-#include "device/gamepad/dualshock4_controller_base.h"
-
 #include "base/files/scoped_file.h"
+#include "base/memory/weak_ptr.h"
+#include "device/gamepad/dualshock4_controller_base.h"
 
 namespace device {
 
-class Dualshock4ControllerLinux : public Dualshock4ControllerBase {
+class Dualshock4ControllerLinux final : public Dualshock4ControllerBase {
  public:
   Dualshock4ControllerLinux(const base::ScopedFD& fd);
   ~Dualshock4ControllerLinux() override;
 
+  // AbstractHapticGamepad implementation.
+  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
+
+  // Dualshock4ControllerBase implementation.
   size_t WriteOutputReport(void* report, size_t report_length) override;
 
  private:
-  // Not owned.
-  int fd_;
+  int fd_;  // Not owned.
+  base::WeakPtrFactory<Dualshock4ControllerLinux> weak_factory_{this};
 };
 
 }  // namespace device

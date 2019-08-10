@@ -1762,7 +1762,10 @@ TEST_F(AppListViewTest, ShowFullscreenWhenInSideShelfMode) {
   Show(false /*is_tablet_mode*/, true /*is_side_shelf*/);
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
   // The rounded corners should be off screen in side shelf.
-  EXPECT_EQ(gfx::Transform(),
+  gfx::Transform translation;
+  translation.Translate(0, -AppListConfig::instance().background_radius());
+  // The rounded corners should be off screen in side shelf.
+  EXPECT_EQ(translation,
             view_->GetAppListBackgroundShieldForTest()->GetTransform());
 }
 

@@ -72,4 +72,11 @@ AuthDisabledData& AuthDisabledData::operator=(const AuthDisabledData& other) =
 AuthDisabledData& AuthDisabledData::operator=(AuthDisabledData&& other) =
     default;
 
+SecurityTokenPinRequest::SecurityTokenPinRequest() = default;
+SecurityTokenPinRequest::SecurityTokenPinRequest(SecurityTokenPinRequest&&) =
+    default;
+SecurityTokenPinRequest& SecurityTokenPinRequest::operator=(
+    SecurityTokenPinRequest&&) = default;
+SecurityTokenPinRequest::~SecurityTokenPinRequest() = default;
+
 }  // namespace ash

@@ -508,4 +508,8 @@ void RawInputGamepadDeviceWin::QueryAxisCapabilities(uint16_t axis_count) {
   }
 }
 
+base::WeakPtr<AbstractHapticGamepad> RawInputGamepadDeviceWin::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace device

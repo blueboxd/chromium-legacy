@@ -81,8 +81,7 @@ PepperIsolatedFileSystemMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& msg) {
   // In order to reach ExtensionSystem, we need to get ProfileManager first.
   // ProfileManager lives in UI thread, so we need to do this in UI thread.
-  return base::CreateSingleThreadTaskRunnerWithTraits(
-      {content::BrowserThread::UI});
+  return base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
 }
 
 int32_t PepperIsolatedFileSystemMessageFilter::OnResourceMessageReceived(

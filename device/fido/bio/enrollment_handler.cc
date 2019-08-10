@@ -55,6 +55,10 @@ void BioEnrollmentHandler::EnrollTemplate(SampleCallback sample_callback,
 
 void BioEnrollmentHandler::Cancel(StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Must CTAPHID_CANCEL before cancelCurrentEnrollment so the
+  // authenticator doesn't queue the enrollment cancel behind
+  // an ongoing enrollment.
+  authenticator_->Cancel();
   authenticator_->BioEnrollCancel(
       base::BindOnce(&BioEnrollmentHandler::OnCancel,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -62,6 +66,7 @@ void BioEnrollmentHandler::Cancel(StatusCallback callback) {
 
 void BioEnrollmentHandler::EnumerateTemplates(EnumerationCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(pin_token_response_);
   authenticator_->BioEnrollEnumerate(
       *pin_token_response_,
       base::BindOnce(&BioEnrollmentHandler::OnEnumerateTemplates,
@@ -104,10 +109,7 @@ void BioEnrollmentHandler::AuthenticatorRemoved(
   }
 
   authenticator_ = nullptr;
-  std::move(error_callback_)
-      .Run(pin_token_response_
-               ? FidoReturnCode::kAuthenticatorRemovedDuringPINEntry
-               : FidoReturnCode::kSuccess);
+  std::move(error_callback_).Run(FidoReturnCode::kSuccess);
 }
 
 void BioEnrollmentHandler::OnTouch(FidoAuthenticator* authenticator) {

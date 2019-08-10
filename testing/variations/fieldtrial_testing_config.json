@@ -2476,6 +2476,24 @@
             ]
         }
     ],
+    "GridLayoutForNtpShortcuts": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "GridLayoutForNtpShortcuts"
+                    ]
+                }
+            ]
+        }
+    ],
     "GwpAsanUnified": [
         {
             "platforms": [

@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view_targeter_delegate.h"
 
@@ -41,6 +42,9 @@ class ASH_EXPORT CloseDeskButton : public views::ImageButton,
   bool DoesIntersectScreenRect(const gfx::Rect& screen_rect) const;
 
  private:
+  float highlight_opacity_ = 0.f;
+  SkColor inkdrop_base_color_ = gfx::kPlaceholderColor;
+
   DISALLOW_COPY_AND_ASSIGN(CloseDeskButton);
 };
 

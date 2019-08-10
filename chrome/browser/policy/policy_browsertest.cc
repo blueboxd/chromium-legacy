@@ -6702,8 +6702,7 @@ class PromotionalTabsEnabledPolicyTest
       public testing::WithParamInterface<BooleanPolicy> {
  protected:
   PromotionalTabsEnabledPolicyTest() {
-    scoped_feature_list_.InitWithFeatures({welcome::kOnboardingForceEnabled},
-                                          {});
+    scoped_feature_list_.InitWithFeatures({welcome::kForceEnabled}, {});
   }
   ~PromotionalTabsEnabledPolicyTest() = default;
 

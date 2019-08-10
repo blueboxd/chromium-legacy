@@ -2047,6 +2047,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"webxr-hit-test", flag_descriptions::kWebXrHitTestName,
      flag_descriptions::kWebXrHitTestDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrHitTest)},
+    {"webxr-anchors", flag_descriptions::kWebXrAnchorsName,
+     flag_descriptions::kWebXrAnchorsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebXrPlaneDetection)},
     {"webxr-plane-detection", flag_descriptions::kWebXrPlaneDetectionName,
      flag_descriptions::kWebXrPlaneDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrPlaneDetection)},
@@ -2515,7 +2518,7 @@ const FeatureEntry kFeatureEntries[] = {
          kEnableAutofillCreditCardUploadEditableCardholderNameName,
      flag_descriptions::
          kEnableAutofillCreditCardUploadEditableCardholderNameDescription,
-     kOsAll | kExpireM77,
+     kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableCardholderName)},
     {"enable-autofill-credit-card-upload-editable-expiration-date",
@@ -2523,19 +2526,18 @@ const FeatureEntry kFeatureEntries[] = {
          kEnableAutofillCreditCardUploadEditableExpirationDateName,
      flag_descriptions::
          kEnableAutofillCreditCardUploadEditableExpirationDateDescription,
-     kOsAll | kExpireM77,
+     kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableExpirationDate)},
     {"enable-autofill-import-dynamic-forms",
      flag_descriptions::kEnableAutofillImportDynamicFormsName,
-     flag_descriptions::kEnableAutofillImportDynamicFormsDescription,
-     kOsAll | kExpireM77,
+     flag_descriptions::kEnableAutofillImportDynamicFormsDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillImportDynamicForms)},
     {"enable-autofill-local-card-migration-uses-strike-system-v2",
      flag_descriptions::kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name,
      flag_descriptions::
          kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Description,
-     kOsAll | kExpireM77,
+     kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillLocalCardMigrationUsesStrikeSystemV2)},
 
@@ -3914,7 +3916,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableLocalCardMigrationForNonSyncUserName,
      flag_descriptions::
          kAutofillEnableLocalCardMigrationForNonSyncUserDescription,
-     kOsDesktop | kExpireM77,
+     kOsDesktop,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableLocalCardMigrationForNonSyncUser)},
 

@@ -342,6 +342,15 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     LOG_IF(ERROR, !interop_backing_factory_)
         << "Unable to create SharedImage backing: GL / Vulkan interoperability "
            "is not supported on this platform";
+
+    // TODO(crbug.com/969114): Not all shared image factory implementations
+    // support concurrent read/write usage.
+    if (usage & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
+      LOG(ERROR) << "Unable to create SharedImage backing: Interoperability is "
+                    "not supported for concurrent read/write usage";
+      return nullptr;
+    }
+
     return interop_backing_factory_.get();
   }
 

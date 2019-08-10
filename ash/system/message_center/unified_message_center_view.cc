@@ -11,6 +11,8 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/message_center/unified_message_list_view.h"
@@ -243,7 +245,9 @@ void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawSharpLine(
       gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
       gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
-      kSeparatorOnLightBackgroundColor);
+      AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kSeparator,
+          kSeparatorOnLightBackgroundColor));
 }
 
 const char* StackingNotificationCounterView::GetClassName() const {

@@ -85,6 +85,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   bool IsShowingMenu() const;
   bool IsShowingOverflowBubble() const;
 
+  // Focuses the first or the last app shortcut inside the overflow shelf.
+  // Does nothing if the overflow shelf is not currently shown.
+  void FocusOverflowShelf(bool last_element);
+
   // Sets the focus cycler.  Also adds the shelf to the cycle.
   void SetFocusCycler(FocusCycler* focus_cycler);
   FocusCycler* GetFocusCycler();
@@ -137,10 +141,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
     return &background_animator_;
   }
 
-  void set_activated_from_overflow_bubble(bool val) {
-    activated_from_overflow_bubble_ = val;
-  }
-
  private:
   class DelegateView;
   friend class DelegateView;
@@ -174,11 +174,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // View containing the shelf items for Login/Lock/OOBE/Add User screens.
   // Owned by the views hierarchy.
   LoginShelfView* login_shelf_view_;
-
-  // Set to true when the widget is activated from another widget. Do not
-  // focus the default element in this case. This should be set when
-  // cycling focus from another widget to the shelf.
-  bool activated_from_overflow_bubble_ = false;
 
   ScopedSessionObserver scoped_session_observer_;
 

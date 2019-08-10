@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -51,7 +52,8 @@ class ConfigFileWatcherTest : public testing::Test {
   void StopWatcher();
 
  protected:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   base::RunLoop run_loop_;
 
   ConfigFileWatcherDelegate delegate_;
@@ -76,7 +78,8 @@ void ConfigFileWatcherTest::SetUp() {
 
   // Arrange to run |message_loop_| until no components depend on it.
   scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
-      message_loop_.task_runner(), run_loop_.QuitClosure());
+      scoped_task_environment_.GetMainThreadTaskRunner(),
+      run_loop_.QuitClosure());
 
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
       AutoThread::CreateWithType("IPC thread", task_runner,

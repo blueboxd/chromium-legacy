@@ -11,6 +11,8 @@
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/enterprise/enterprise_domain_observer.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/clock_observer.h"
@@ -388,7 +390,10 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
 
   if (PowerStatus::Get()->IsBatteryPresent()) {
     auto* separator = new views::Separator();
-    separator->SetColor(kSeparatorOnDarkBackgroundColor);
+    separator->SetColor(
+        AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+            AshColorProvider::ControlsLayerType::kSeparator,
+            kSeparatorOnDarkBackgroundColor));
     separator->SetPreferredHeight(kUnifiedSystemInfoHeight);
     AddChildView(separator);
 

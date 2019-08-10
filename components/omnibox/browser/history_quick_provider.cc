@@ -233,8 +233,8 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   if (inline_autocomplete_offset != base::string16::npos) {
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
-    match.allowed_to_be_default_match = match.inline_autocompletion.empty() ||
-        !PreventInlineAutocomplete(autocomplete_input_);
+    match.allowed_to_be_default_match =
+        AutocompleteMatch::AllowedToBeDefault(autocomplete_input_, match);
   }
 
   // HistoryQuick classification diverges from relevance scoring. Specifically,

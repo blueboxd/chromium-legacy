@@ -1148,17 +1148,10 @@ void Shell::Init(
       std::make_unique<ScreenOrientationController>();
   screen_layout_observer_.reset(new ScreenLayoutObserver());
   sms_observer_.reset(new SmsObserver());
-
   split_view_controller_.reset(new SplitViewController());
-
   snap_controller_ = std::make_unique<SnapControllerImpl>();
-
   key_accessibility_enabler_ = std::make_unique<KeyAccessibilityEnabler>();
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshColorMode)) {
-    ash_color_provider_ = std::make_unique<AshColorProvider>();
-  }
+  ash_color_provider_ = std::make_unique<AshColorProvider>();
 
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop

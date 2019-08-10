@@ -41,7 +41,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   // |broken_alternative_service_list| and
   // |recently_broken_alternative_services|, which may be null.
   using OnPrefsLoadedCallback = base::OnceCallback<void(
-      std::unique_ptr<SpdyServersMap> spdy_servers_map,
+      std::unique_ptr<HttpServerProperties::ServerInfoMap> server_info_map,
       std::unique_ptr<AlternativeServiceMap> alternative_service_map,
       std::unique_ptr<ServerNetworkStatsMap> server_network_stats_map,
       const IPAddress& last_quic_address,
@@ -82,7 +82,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   // TODO(mmenke): Consider always populating fields, unconditionally, for a
   // simpler API.
   void ReadPrefs(
-      std::unique_ptr<SpdyServersMap>* spdy_servers_map,
+      std::unique_ptr<HttpServerProperties::ServerInfoMap>* server_info_map,
       std::unique_ptr<AlternativeServiceMap>* alternative_service_map,
       std::unique_ptr<ServerNetworkStatsMap>* server_network_stats_map,
       IPAddress* last_quic_address,
@@ -105,7 +105,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   // by the time this method is called, calling this will prevent it from ever
   // being invoked, as this method will overwrite any previous preferences.
   void WriteToPrefs(
-      const SpdyServersMap& spdy_servers_map,
+      const HttpServerProperties::ServerInfoMap& server_info_map,
       const AlternativeServiceMap& alternative_service_map,
       const GetCannonicalSuffix& get_canonical_suffix,
       const ServerNetworkStatsMap& server_network_stats_map,
@@ -128,7 +128,7 @@ class NET_EXPORT_PRIVATE HttpServerPropertiesManager {
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
                            DoNotLoadExpiredAlternativeService);
   void AddServersData(const base::DictionaryValue& server_dict,
-                      SpdyServersMap* spdy_servers_map,
+                      HttpServerProperties::ServerInfoMap* server_info_map,
                       AlternativeServiceMap* alternative_service_map,
                       ServerNetworkStatsMap* network_stats_map);
   // Helper method used for parsing an alternative service from JSON.

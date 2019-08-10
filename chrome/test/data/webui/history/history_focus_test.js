@@ -18,6 +18,7 @@ HistoryFocusTest.prototype = {
 
   extraLibraries: [
     ...PolymerInteractiveUITest.prototype.extraLibraries,
+    '../test_util.js',
     'test_util.js',
   ],
 
@@ -51,7 +52,7 @@ TEST_F('HistoryFocusTest', 'All', function() {
       toolbar.$['main-toolbar'].narrow = false;
 
       historyResult(createHistoryInfo(), []);
-      return PolymerTest.flushTasks().then(() => {
+      return test_util.flushTasks().then(() => {
         // Ensure the search bar is focused on load.
         assertTrue(
             app.$.toolbar.$['main-toolbar'].getSearchField().isSearchFocused());
@@ -62,7 +63,7 @@ TEST_F('HistoryFocusTest', 'All', function() {
       toolbar.$['main-toolbar'].narrow = true;
 
       historyResult(createHistoryInfo(), []);
-      return PolymerTest.flushTasks().then(() => {
+      return test_util.flushTasks().then(() => {
         // Ensure the search bar is focused on load.
         assertFalse($('history-app')
                         .$.toolbar.$['main-toolbar']
@@ -106,14 +107,14 @@ TEST_F('HistoryFocusTest', 'All', function() {
     setup(function() {
       app = replaceApp();
       element = app.$.history;
-      return PolymerTest.flushTasks();
+      return test_util.flushTasks();
     });
 
     test('list focus and keyboard nav', async () => {
       app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
       let focused;
       let items;
-      await PolymerTest.flushTasks();
+      await test_util.flushTasks();
       Polymer.dom.flush();
       items = polymerSelectAll(element, 'history-item');
 
@@ -122,7 +123,7 @@ TEST_F('HistoryFocusTest', 'All', function() {
 
       // Wait for next render to ensure that focus handlers have been
       // registered (see HistoryItemElement.attached).
-      await PolymerTest.waitAfterNextRender(this);
+      await test_util.waitAfterNextRender(this);
 
       MockInteractions.pressAndReleaseKeyOn(focused, 39, [], 'ArrowRight');
       Polymer.dom.flush();
@@ -198,7 +199,7 @@ TEST_F('HistoryFocusTest', 'All', function() {
         lastFocused = e.currentTarget;
       };
 
-      return PolymerTest.flushTasks()
+      return test_util.flushTasks()
           .then(function() {
             cards = polymerSelectAll(element, 'history-synced-device-card');
 
@@ -243,7 +244,7 @@ TEST_F('HistoryFocusTest', 'All', function() {
             // Remove the second URL from the first card.
             sessionList[0].windows[0].tabs.splice(1, 1);
             element.sessionList = sessionList.slice();
-            return PolymerTest.flushTasks();
+            return test_util.flushTasks();
           })
           .then(function() {
             cards = polymerSelectAll(element, 'history-synced-device-card');
@@ -260,7 +261,7 @@ TEST_F('HistoryFocusTest', 'All', function() {
             // Remove the second card.
             sessionList.splice(1, 1);
             element.sessionList = sessionList.slice();
-            return PolymerTest.flushTasks();
+            return test_util.flushTasks();
           })
           .then(function() {
             cards = polymerSelectAll(element, 'history-synced-device-card');

@@ -22,6 +22,7 @@ HistoryBrowserTest.prototype = {
 
   extraLibraries: [
     ...PolymerTest.prototype.extraLibraries,
+    '../test_util.js',
     'test_util.js',
   ],
 
@@ -188,7 +189,6 @@ HistorySyncedTabsTest.prototype = {
   __proto__: HistoryBrowserTest.prototype,
 
   extraLibraries: HistoryBrowserTest.prototype.extraLibraries.concat([
-    '../test_util.js',
     'history_synced_tabs_test.js',
   ]),
 };

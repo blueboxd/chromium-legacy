@@ -634,14 +634,20 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
                       -SkFloatToScalar(image.height() * 0.5f));
   }
 
-  // As we are using SharedImages to handle the image we are not using the skia
-  // internals to handle the image or the drawing in the canvas. The cache is
-  // modified to track the mailbox for the source texture, rather than a
-  // SkImage, to be able to import it into multiple contexts. Also the cached
-  // shared image is reused if possible (same context provider, same size) to
-  // reflect equivalent skia optimizations (SkImage pooling). See
-  // https://chromium-review.googlesource.com/c/chromium/src/+/1616978
-  // todo(juanmihd) remove the above comment once we are sure this is not needed
+  // This is a workaround for crbug.com/524717. A texture backed image is not
+  // safe to access on another thread or GL context. So if we're drawing into a
+  // recording canvas we read the texture back into CPU memory and record that
+  // sw image into the SkPicture. The long term solution is for Skia to provide
+  // a SkPicture filter that makes a picture safe for multiple CPU raster
+  // threads. (skbug.com/4321).
+  if (canvas->imageInfo().colorType() == kUnknown_SkColorType &&
+      image.IsTextureBacked()) {
+    sk_sp<SkImage> non_texture_image =
+        image.GetSkImage()->makeNonTextureImage();
+    image = cc::PaintImageBuilder::WithProperties(image)
+                .set_image(std::move(non_texture_image), image.content_id())
+                .TakePaintImage();
+  }
   canvas->drawImage(image, 0, 0, &video_flags);
 
   if (need_transform)

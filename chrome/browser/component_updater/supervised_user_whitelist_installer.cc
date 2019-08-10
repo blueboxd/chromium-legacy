@@ -68,7 +68,7 @@ const char kExtensionIcons[] = "icons";
 const char kExtensionLargeIcon[] = "128";
 
 constexpr base::TaskTraits kTaskTraits = {
-    base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+    base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
 base::string16 GetWhitelistTitle(const base::DictionaryValue& manifest) {
@@ -122,7 +122,7 @@ base::FilePath GetSanitizedWhitelistPath(const std::string& crx_id) {
 }
 
 void RecordUncleanUninstall() {
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&base::RecordAction,
@@ -403,7 +403,7 @@ class SupervisedUserWhitelistInstallerImpl
       observer_;
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits(kTaskTraits);
+      base::CreateSequencedTaskRunner(kTaskTraits);
 
   base::WeakPtrFactory<SupervisedUserWhitelistInstallerImpl> weak_ptr_factory_{
       this};
@@ -476,7 +476,7 @@ void SupervisedUserWhitelistInstallerImpl::OnRawWhitelistReady(
     const base::FilePath& large_icon_path,
     const base::FilePath& whitelist_path) {
   // TODO(sorin): avoid using a single thread task runner crbug.com/744718.
-  auto task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+  auto task_runner = base::CreateSingleThreadTaskRunner(
       kTaskTraits, base::SingleThreadTaskRunnerThreadMode::SHARED);
   task_runner->PostTask(
       FROM_HERE,

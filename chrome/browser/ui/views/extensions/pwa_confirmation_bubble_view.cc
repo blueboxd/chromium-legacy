@@ -84,7 +84,7 @@ PWAConfirmationBubbleView::PWAConfirmationBubbleView(
     views::Button* highlight_button,
     std::unique_ptr<WebApplicationInfo> web_app_info,
     chrome::AppInstallationAcceptanceCallback callback)
-    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), nullptr),
+    : LocationBarBubbleDelegateView(anchor_view, nullptr),
       web_app_info_(std::move(web_app_info)),
       callback_(std::move(callback)) {
   DCHECK(web_app_info_);

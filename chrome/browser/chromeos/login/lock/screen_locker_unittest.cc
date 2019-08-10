@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
@@ -85,6 +86,7 @@ class ScreenLockerUnitTest : public testing::Test {
     chromeos::AccessibilityManager::Initialize();
 
     // Initialize ScreenLocker dependencies:
+    chromeos::ProfileHelper::GetSigninProfile();
     SystemSaltGetter::Initialize();
     const AccountId account_id =
         AccountId::FromUserEmail("testemail@example.com");

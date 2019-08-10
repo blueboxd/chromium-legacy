@@ -62,6 +62,7 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
   void SetImagePlanes(std::unique_ptr<ImagePlanes>) override;
   bool CanDecodeToYUV() override;
   void DecodeToYUV() override;
+  SkYUVColorSpace GetYUVColorSpace() const override;
 
   WEBP_CSP_MODE RGBOutputMode();
   // Returns true if the image data received so far (as stored in

@@ -22,7 +22,7 @@ constexpr char kCanvasAppId[] = "ieailfmhaghpphfffooibmlghaeopach";
 // Generated as
 // web_app::GenerateAppIdFromURL(GURL(
 // "https://google.com/chromebook/whatsnew/embedded/")).
-constexpr char kReleaseNotesAppId[] = "kddjchdmnnpakappplfnloipgcbioilo";
+constexpr char kReleaseNotesAppId[] = "lddhblppcjmenljhdleiahjighahdcje";
 
 // Generated as web_app::GenerateAppIdFromURL(GURL("chrome://settings/")).
 constexpr char kSettingsAppId[] = "inogagmajamaleonmanpkpkkigmklfad";

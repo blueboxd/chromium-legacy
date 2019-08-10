@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureBrowserTest,
     return;
 
   GURL url(embedded_test_server()->GetURL(kVideoCaptureHtmlFile));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   std::string result;
   // Start video capture and wait until it started rendering

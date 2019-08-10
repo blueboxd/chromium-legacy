@@ -482,7 +482,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // host, and is used by workers via RendererInterfaceBinders.
   void BindFileSystemManager(
       const url::Origin& origin,
-      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) override;
+
   FileSystemManagerImpl* GetFileSystemManagerForTesting() {
     return file_system_manager_impl_.get();
   }

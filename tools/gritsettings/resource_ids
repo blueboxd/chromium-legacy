@@ -158,7 +158,7 @@
   "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
     "includes": [13910],
   },
-  "chrome/browser/resources/welcome/onboarding_welcome_resources.grd": {
+  "chrome/browser/resources/welcome/welcome_resources.grd": {
     "includes": [13920],
     "structures": [13970],
   },

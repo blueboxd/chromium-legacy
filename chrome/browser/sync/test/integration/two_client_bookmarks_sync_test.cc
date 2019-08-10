@@ -1620,7 +1620,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
   ASSERT_NE(nullptr, AddFolder(1, IndexedFolderName(1)));
   ASSERT_FALSE(AllModelsMatch());
 
-  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
+  ASSERT_TRUE(GetClient(1)->EnableSyncForRegisteredDatatypes());
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 

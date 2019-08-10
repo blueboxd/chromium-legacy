@@ -89,6 +89,7 @@ source_set("payments") {
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/payments/cells",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web/common",
     "//ios/web/public",

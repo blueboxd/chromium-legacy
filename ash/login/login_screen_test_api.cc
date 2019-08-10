@@ -153,6 +153,11 @@ bool LoginScreenTestApi::IsAddUserButtonShown() {
 }
 
 // static
+bool LoginScreenTestApi::IsParentAccessButtonShown() {
+  return IsLoginShelfViewButtonShown(LoginShelfView::kParentAccess);
+}
+
+// static
 void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,
                                         const std::string& password) {
   // It'd be better to generate keyevents dynamically and dispatch them instead

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('onboarding_ntp_background_test', function() {
+cr.define('ntp_background_test', function() {
   suite('NuxNtpBackgroundTest', function() {
     /** @type {!Array<!welcome.NtpBackgroundData} */
     let backgrounds = [

@@ -4,14 +4,42 @@
 
 import {CustomElement} from './custom_element.js';
 
-class Tab extends CustomElement {
+export class TabElement extends CustomElement {
   static get template() {
     return `{__html_template__}`;
+  }
+
+  constructor() {
+    super();
+
+    /** @private {!Tab} */
+    this.tab_;
+
+    /** @private {!HTMLElement} */
+    this.titleTextEl_ = /** @type {!HTMLElement} */ (
+        this.shadowRoot.querySelector('#titleText'));
   }
 
   connectedCallback() {
     this.setAttribute('tabindex', 0);
   }
+
+  /** @return {!Tab} */
+  get tab() {
+    return this.tab_;
+  }
+
+  /** @param {!Tab} tab */
+  set tab(tab) {
+    if (!this.tab_ || this.tab_.title !== tab.title) {
+      this.titleTextEl_.textContent = tab.title;
+    }
+
+    // Expose the ID to an attribute to allow easy querySelector use
+    this.setAttribute('data-tab-id', tab.id);
+
+    this.tab_ = Object.freeze(tab);
+  }
 }
 
-customElements.define('tabstrip-tab', Tab);
+customElements.define('tabstrip-tab', TabElement);

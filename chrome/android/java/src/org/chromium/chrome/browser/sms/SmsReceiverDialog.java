@@ -40,16 +40,18 @@ public class SmsReceiverDialog {
     private ImageView mDoneIcon;
     private TextView mStatus;
     private Button mConfirmButton;
+    private String mOrigin;
 
     @VisibleForTesting
     @CalledByNative
-    static SmsReceiverDialog create(long nativeSmsDialogAndroid) {
+    static SmsReceiverDialog create(long nativeSmsDialogAndroid, String origin) {
         if (DEBUG) Log.d(TAG, "SmsReceiverDialog.create()");
-        return new SmsReceiverDialog(nativeSmsDialogAndroid);
+        return new SmsReceiverDialog(nativeSmsDialogAndroid, origin);
     }
 
-    private SmsReceiverDialog(long nativeSmsDialogAndroid) {
+    private SmsReceiverDialog(long nativeSmsDialogAndroid, String origin) {
         mNativeSmsDialogAndroid = nativeSmsDialogAndroid;
+        mOrigin = origin;
     }
 
     private void createAndShowDialog(WindowAndroid windowAndroid) {
@@ -57,6 +59,9 @@ public class SmsReceiverDialog {
 
         LinearLayout dialogContainer = (LinearLayout) LayoutInflater.from(mActivity).inflate(
                 R.layout.sms_receiver_dialog, null);
+
+        TextView title = (TextView) dialogContainer.findViewById(R.id.dialog_title);
+        title.setText(mActivity.getResources().getString(R.string.sms_dialog_title, mOrigin));
 
         mProgressBar = (ProgressBar) dialogContainer.findViewById(R.id.progress);
 

@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK_STATUS_ICON_H_
 #define CHROME_BROWSER_UI_LIBGTKUI_GTK_STATUS_ICON_H_
 
+// THIS FILE IS DEPRECATED (REPLACED BY StatusIconLinuxDbus) AND WILL SOON BE
+// REMOVED.
+
 #include <memory>
 
 #include "base/macros.h"

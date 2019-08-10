@@ -142,6 +142,14 @@ class CanvasResourceProviderTest : public Test {
         ->SetCapabilities(capabilities);
   }
 
+  void EnsureOverlaysSupported() {
+    auto* context_provider = context_provider_wrapper_->ContextProvider();
+    auto capabilities = context_provider->GetCapabilities();
+    capabilities.texture_storage_image = true;
+    static_cast<MockWebGraphisContext3DProviderWrapper*>(context_provider)
+        ->SetCapabilities(capabilities);
+  }
+
  protected:
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform_;
@@ -400,6 +408,7 @@ TEST_F(CanvasResourceProviderTest,
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
+  EnsureOverlaysSupported();
 
   auto provider = CanvasResourceProvider::Create(
       kSize,

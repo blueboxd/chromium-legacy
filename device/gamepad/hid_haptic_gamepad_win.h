@@ -5,6 +5,7 @@
 #ifndef DEVICE_GAMEPAD_HID_HAPTIC_GAMEPAD_WIN_H_
 #define DEVICE_GAMEPAD_HID_HAPTIC_GAMEPAD_WIN_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/win/scoped_handle.h"
 #include "device/gamepad/hid_haptic_gamepad_base.h"
 
@@ -12,7 +13,7 @@
 
 namespace device {
 
-class HidHapticGamepadWin : public HidHapticGamepadBase {
+class HidHapticGamepadWin final : public HidHapticGamepadBase {
  public:
   HidHapticGamepadWin(HANDLE device_handle, const HapticReportData& data);
   ~HidHapticGamepadWin() override;
@@ -21,12 +22,16 @@ class HidHapticGamepadWin : public HidHapticGamepadBase {
                                                      uint16_t product_id,
                                                      HANDLE device_handle);
 
+  // AbstractHapticGamepad implementation.
   void DoShutdown() override;
+  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
 
+  // HidHapticGamepadBase implementation.
   size_t WriteOutputReport(void* report, size_t report_length) override;
 
  private:
   base::win::ScopedHandle hid_handle_;
+  base::WeakPtrFactory<HidHapticGamepadWin> weak_factory_{this};
 };
 
 }  // namespace device

@@ -16,7 +16,6 @@
 namespace remoting {
 
 constexpr base::TimeDelta FtlMessageReceptionChannel::kPongTimeout;
-constexpr base::TimeDelta FtlMessageReceptionChannel::kStreamLifetime;
 
 FtlMessageReceptionChannel::FtlMessageReceptionChannel()
     : reconnect_retry_backoff_(&FtlGrpcContext::GetBackoffPolicy()),
@@ -82,6 +81,15 @@ void FtlMessageReceptionChannel::OnReceiveMessagesStreamClosed(
     // Previously closed by the caller.
     return;
   }
+  if (status.error_code() == grpc::StatusCode::OK) {
+    // The backend closes the stream. This is not an error so we restart it
+    // without backoff.
+    VLOG(1) << "Stream has been closed by the server. Reconnecting...";
+    reconnect_retry_backoff_.Reset();
+    RetryStartReceivingMessages();
+    return;
+  }
+
   reconnect_retry_backoff_.InformOfRequest(false);
   if (status.error_code() == grpc::StatusCode::ABORTED ||
       status.error_code() == grpc::StatusCode::UNAVAILABLE) {
@@ -179,7 +187,6 @@ void FtlMessageReceptionChannel::StopReceivingMessagesInternal() {
   state_ = State::STOPPED;
   receive_messages_stream_.reset();
   reconnect_retry_timer_.Stop();
-  stream_lifetime_timer_.Stop();
   stream_pong_timer_.reset();
 }
 
@@ -193,22 +200,12 @@ void FtlMessageReceptionChannel::BeginStreamTimers() {
       FROM_HERE, kPongTimeout, this,
       &FtlMessageReceptionChannel::OnPongTimeout);
   stream_pong_timer_->Reset();
-  stream_lifetime_timer_.Start(
-      FROM_HERE, kStreamLifetime,
-      base::BindOnce(&FtlMessageReceptionChannel::OnStreamLifetimeExceeded,
-                     base::Unretained(this)));
 }
 
 void FtlMessageReceptionChannel::OnPongTimeout() {
   LOG(WARNING) << "Timed out waiting for PONG message from server.";
   reconnect_retry_backoff_.InformOfRequest(false);
   RetryStartReceivingMessagesWithBackoff();
-}
-
-void FtlMessageReceptionChannel::OnStreamLifetimeExceeded() {
-  VLOG(1) << "Reached maximum lifetime for current stream.";
-  reconnect_retry_backoff_.Reset();
-  RetryStartReceivingMessages();
 }
 
 }  // namespace remoting

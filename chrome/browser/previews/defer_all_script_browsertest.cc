@@ -96,6 +96,7 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 
     https_url_ = https_server_->GetURL("/defer_all_script_test.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
+    client_redirect_url_ = https_server_->GetURL("/client_redirect_base.html");
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -162,6 +163,8 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 
   virtual const GURL& https_url() const { return https_url_; }
 
+  const GURL& client_redirect_url() const { return client_redirect_url_; }
+
   std::string GetScriptLog() {
     std::string script_log;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
@@ -185,6 +188,7 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   GURL https_url_;
+  GURL client_redirect_url_;
 
   DISALLOW_COPY_AND_ASSIGN(DeferAllScriptBrowserTest);
 };
@@ -318,4 +322,33 @@ IN_PROC_BROWSER_TEST_F(
   test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kpreviews_likelyName, 1);
   test_ukm_recorder.ExpectEntryMetric(entry, UkmEntry::kdefer_all_scriptName,
                                       true);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    DeferAllScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptClientRedirectLoopStopped)) {
+  GURL url = https_url();
+
+  // Whitelist DeferAllScript for any path for the url's host.
+  SetDeferAllScriptHintWithPageWithPattern(url, "*");
+
+  base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  // The client_redirect_url (/client_redirect_base.html) performs a client
+  // redirect to "/client_redirect_loop_with_defer_all_script.html" which
+  // peforms a client redirect back to the initial client_redirect_url if
+  // and only if script execution is deferred. This emulates the navigation
+  // pattern seen in crbug.com/987062
+  ui_test_utils::NavigateToURL(browser(), client_redirect_url());
+
+  RetryForHistogramUntilCountReached(
+      &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
+      1);
+
+  // Client redirect loop is broken on 2nd pass around the loop so expect 3
+  // previews before previews turned off to stop loop.
+  histogram_tester.ExpectTotalCount(
+      "Navigation.ClientRedirectCycle.RedirectToReferrer", 2);
+  histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
 }

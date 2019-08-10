@@ -6,7 +6,6 @@
 
 #include <dlfcn.h>
 #include <gdk/gdk.h>
-#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <locale.h>
 #include <stddef.h>
@@ -26,10 +25,15 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/linux_ui/linux_ui.h"
+
+#if defined(USE_X11)
+#include <gdk/gdkx.h>
+
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
+#endif
 
 namespace {
 
@@ -98,12 +102,6 @@ std::string GetDesktopName(base::Environment* env) {
 #endif
 }
 
-guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator) {
-  // The second parameter is false because accelerator keys are expressed in
-  // terms of the non-shift-modified key.
-  return XKeysymForWindowsKeyCode(accelerator.key_code(), false);
-}
-
 GdkModifierType GetGdkModifierForAccelerator(
     const ui::Accelerator& accelerator) {
   int event_flag = accelerator.modifiers();
@@ -140,13 +138,15 @@ void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
     return;
 
   gtk_widget_realize(dialog);
+#if defined(USE_X11)
   GdkWindow* gdk_window = gtk_widget_get_window(dialog);
-
-  // TODO(erg): Check to make sure we're using X11 if wayland or some other
-  // display server ever happens. Otherwise, this will crash.
   XSetTransientForHint(GDK_WINDOW_XDISPLAY(gdk_window),
                        GDK_WINDOW_XID(gdk_window),
                        parent->GetHost()->GetAcceleratedWidget());
+#else
+  // TODO(https://crbug.com/992239): Provide a wayland implementation.
+  NOTIMPLEMENTED();
+#endif
 
   // We also set the |parent| as a property of |dialog|, so that we can unlink
   // the two later.
@@ -608,5 +608,13 @@ std::string GetGtkSettingsStringProperty(GtkSettings* settings,
   g_value_unset(&layout);
   return prop_value;
 }
+
+#if defined(USE_X11)
+guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator) {
+  // The second parameter is false because accelerator keys are expressed in
+  // terms of the non-shift-modified key.
+  return XKeysymForWindowsKeyCode(accelerator.key_code(), false);
+}
+#endif
 
 }  // namespace libgtkui

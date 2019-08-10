@@ -4,8 +4,6 @@
 # found in the LICENSE file.
 """Script to check validity of StoryExpectations."""
 
-import argparse
-import json
 import logging
 import os
 
@@ -41,41 +39,7 @@ def validate_story_names(benchmarks, test_expectations):
   assert not unused_patterns, unused_patterns
 
 
-def GetDisabledStories(benchmarks, raw_expectations_data):
-  # Creates a dictionary of the format:
-  # {
-  #   'benchmark_name1' : {
-  #     'story_1': [
-  #       {'conditions': conditions, 'reason': reason},
-  #       ...
-  #     ],
-  #     ...
-  #   },
-  #   ...
-  # }
-  disables = {}
-  for benchmark in benchmarks:
-    name = benchmark.Name()
-    disables[name] = {}
-    b = benchmark()
-    b.AugmentExpectationsWithParser(raw_expectations_data)
-    expectations = b.expectations.AsDict()['stories']
-    for story in expectations:
-      for conditions, reason in  expectations[story]:
-        if not disables[name].get(story):
-          disables[name][story] = []
-          conditions_str = [str(a) for a in conditions]
-        disables[name][story].append((conditions_str, reason))
-  return disables
-
-
-def main(args):
-  parser = argparse.ArgumentParser(
-      description=('Tests if disabled stories exist.'))
-  parser.add_argument(
-      '--list', action='store_true', default=False,
-      help=('Prints list of disabled stories.'))
-  options = parser.parse_args(args)
+def main():
   benchmarks = benchmark_finders.GetAllBenchmarks()
   with open(path_util.GetExpectationsPath()) as fp:
     raw_expectations_data = fp.read()
@@ -84,9 +48,5 @@ def main(args):
   if ret:
     logging.error(msg)
     return ret
-  if options.list:
-    stories = GetDisabledStories(benchmarks, raw_expectations_data)
-    print json.dumps(stories, sort_keys=True, indent=4, separators=(',', ': '))
-  else:
-    validate_story_names(benchmarks, test_expectations)
+  validate_story_names(benchmarks, test_expectations)
   return 0

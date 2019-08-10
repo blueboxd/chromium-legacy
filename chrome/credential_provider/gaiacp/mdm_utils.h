@@ -30,6 +30,9 @@ extern const wchar_t kRegMdmSupportsMultiUser[];
 // Allow sign in using normal consumer accounts.
 extern const wchar_t kRegMdmAllowConsumerAccounts[];
 
+// Password lsa store key prefix.
+extern const wchar_t kUserPasswordLsaStoreKeyPrefix[];
+
 // Class used in tests to force either a successful on unsuccessful enrollment
 // to google MDM.
 class GoogleMdmEnrollmentStatusForTesting {
@@ -74,6 +77,9 @@ GURL MdmEscrowServiceUrl();
 
 // Enrolls the machine to with the Google MDM server if not already.
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties);
+
+// Constructs the password lsa store key for the given |sid|.
+base::string16 GetUserPasswordLsaStoreKey(const base::string16& sid);
 
 }  // namespace credential_provider
 

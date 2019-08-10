@@ -163,7 +163,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
     private void getDelegate(
             boolean installIfNecessary, Callback<AutofillAssistantActionHandler> callback) {
         if (mDelegate == null) {
-            mDelegate = createDelegate(mModuleEntryProvider.getModuleEntryIfInstalled(mContext));
+            mDelegate = createDelegate(mModuleEntryProvider.getModuleEntryIfInstalled());
         }
         if (mDelegate != null || !installIfNecessary) {
             callback.onResult(mDelegate);
@@ -176,7 +176,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
             callback.onResult(null);
             return;
         }
-        mModuleEntryProvider.getModuleEntry(mContext, tab, (entry) -> {
+        mModuleEntryProvider.getModuleEntry(tab, (entry) -> {
             mDelegate = createDelegate(entry);
             callback.onResult(mDelegate);
         });

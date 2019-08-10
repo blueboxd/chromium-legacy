@@ -22,19 +22,10 @@ class OtaActivator;
 // pointer back to the client.
 class CellularSetupImpl : public CellularSetupBase {
  public:
-  class Factory {
-   public:
-    static std::unique_ptr<CellularSetupBase> Create();
-    static void SetFactoryForTesting(Factory* test_factory);
-    virtual ~Factory();
-    virtual std::unique_ptr<CellularSetupBase> BuildInstance() = 0;
-  };
-
+  CellularSetupImpl();
   ~CellularSetupImpl() override;
 
  private:
-  CellularSetupImpl();
-
   // mojom::CellularSetup:
   void StartActivation(mojom::ActivationDelegatePtr delegate,
                        StartActivationCallback callback) override;

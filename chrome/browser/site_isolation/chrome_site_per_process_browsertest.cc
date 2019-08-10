@@ -1775,3 +1775,59 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   destroyed_watcher.Wait();
   EXPECT_EQ(first_web_contents, tab_strip_model->GetActiveWebContents());
 }
+
+// Test mouse down activation notification with browser verification.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       UserActivationBrowserVerificationSameOriginSite) {
+  if (!base::FeatureList::IsEnabled(features::kUserActivationV2))
+    return;
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kBrowserVerifiedUserActivation);
+
+  // Start on a page a.com with same-origin iframe on a.com and cross-origin
+  // iframe b.com.
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a(b))"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::RenderFrameHost* frame_a =
+      ChildFrameAt(web_contents->GetMainFrame(), 0);
+  content::RenderFrameHost* frame_b = ChildFrameAt(frame_a, 0);
+
+  // Activate subframe a. Using frame_b's bound to find a point in subframe a.
+  gfx::Rect bounds = frame_b->GetView()->GetViewBounds();
+  content::SimulateMouseClickAt(web_contents, 0 /* modifiers */,
+                                blink::WebMouseEvent::Button::kLeft,
+                                gfx::Point(bounds.x() - 5, bounds.y() - 5));
+
+  // Add a popup observer.
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
+
+  // Try opening popups from frame_b and root frame.
+  GURL popup_url(embedded_test_server()->GetURL("popup.com", "/"));
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      frame_b, content::JsReplace("window.w = window.open($1 + 'title1.html');",
+                                  popup_url)));
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      web_contents,
+      content::JsReplace("window.w = window.open($1 + 'title2.html');",
+                         popup_url)));
+
+  // Wait and check that only one popup has opened.
+  popup_observer.Wait();
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(embedded_test_server()->GetURL("popup.com", "/title2.html"),
+            popup->GetLastCommittedURL());
+  EXPECT_NE(popup, web_contents);
+
+  // Confirm that only the root_frame opened the popup.
+  EXPECT_EQ(true, content::EvalJs(web_contents, "!!window.w"));
+
+  EXPECT_EQ(false, content::EvalJs(frame_b, "!!window.w"));
+}

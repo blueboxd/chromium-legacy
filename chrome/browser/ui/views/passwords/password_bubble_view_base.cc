@@ -48,32 +48,21 @@ void PasswordBubbleViewBase::ShowBubble(content::WebContents* web_contents,
   DCHECK(bubble);
   DCHECK(bubble == g_manage_passwords_bubble_);
 
-  if (anchor_view) {
-    views::Button* highlighted_button;
-    if (base::FeatureList::IsEnabled(
-            autofill::features::kAutofillEnableToolbarStatusChip)) {
-      highlighted_button =
-          browser_view->toolbar()->toolbar_page_action_container()->GetIconView(
-              PageActionIconType::kManagePasswords);
-    } else {
-      highlighted_button =
-          browser_view->toolbar_button_provider()
-              ->GetOmniboxPageActionIconContainerView()
-              ->GetPageActionIconView(PageActionIconType::kManagePasswords);
-    }
-    g_manage_passwords_bubble_->SetHighlightedButton(highlighted_button);
+  views::Button* highlighted_button;
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableToolbarStatusChip)) {
+    highlighted_button =
+        browser_view->toolbar()->toolbar_page_action_container()->GetIconView(
+            PageActionIconType::kManagePasswords);
   } else {
-    g_manage_passwords_bubble_->set_parent_window(
-        web_contents->GetNativeView());
+    highlighted_button =
+        browser_view->toolbar_button_provider()
+            ->GetOmniboxPageActionIconContainerView()
+            ->GetPageActionIconView(PageActionIconType::kManagePasswords);
   }
+  g_manage_passwords_bubble_->SetHighlightedButton(highlighted_button);
 
   views::BubbleDialogDelegateView::CreateBubble(g_manage_passwords_bubble_);
-
-  // Adjust for fullscreen after creation as it relies on the content size.
-  if (!anchor_view) {
-    g_manage_passwords_bubble_->AdjustForFullscreen(
-        browser_view->GetBoundsInScreen());
-  }
 
   g_manage_passwords_bubble_->ShowForReason(reason);
 }
@@ -133,7 +122,7 @@ PasswordBubbleViewBase::PasswordBubbleViewBase(
     content::WebContents* web_contents,
     views::View* anchor_view,
     DisplayReason reason)
-    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, web_contents),
       model_(PasswordsModelDelegateFromWebContents(web_contents),
              reason == AUTOMATIC ? ManagePasswordsBubbleModel::AUTOMATIC
                                  : ManagePasswordsBubbleModel::USER_ACTION),

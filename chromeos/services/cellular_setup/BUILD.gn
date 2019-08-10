@@ -10,8 +10,6 @@ static_library("cellular_setup") {
     "cellular_setup_base.h",
     "cellular_setup_impl.cc",
     "cellular_setup_impl.h",
-    "cellular_setup_service.cc",
-    "cellular_setup_service.h",
     "ota_activator.cc",
     "ota_activator.h",
     "ota_activator_impl.cc",
@@ -24,8 +22,7 @@ static_library("cellular_setup") {
     "//chromeos/network",
     "//chromeos/services/cellular_setup/public/mojom",
     "//dbus",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
+    "//url",
   ]
 }
 
@@ -61,7 +58,6 @@ source_set("unit_tests") {
     "//chromeos/dbus/shill",
     "//chromeos/network:test_support",
     "//chromeos/services/cellular_setup/public/cpp:test_support",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

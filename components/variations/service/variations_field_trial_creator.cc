@@ -444,6 +444,7 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
     const char* kDisableFeatures,
     const std::set<std::string>& unforceable_field_trials,
     const std::vector<std::string>& variation_ids,
+    const std::vector<base::FeatureList::FeatureOverrideInfo>& extra_overrides,
     std::unique_ptr<const base::FieldTrial::EntropyProvider>
         low_entropy_provider,
     std::unique_ptr<base::FeatureList> feature_list,
@@ -507,6 +508,13 @@ bool VariationsFieldTrialCreator::SetupFieldTrials(
   feature_list->InitializeFromCommandLine(
       command_line->GetSwitchValueASCII(kEnableFeatures),
       command_line->GetSwitchValueASCII(kDisableFeatures));
+
+  // This needs to happen here: After the InitializeFromCommandLine() call,
+  // because the explicit cmdline --disable-features and --enable-features
+  // should take precedence over these extra overrides. Before the call to
+  // SetInstance(), because overrides cannot be registered after the FeatureList
+  // instance is set.
+  feature_list->RegisterExtraFeatureOverrides(extra_overrides);
 
   bool used_testing_config = false;
 #if BUILDFLAG(FIELDTRIAL_TESTING_ENABLED)

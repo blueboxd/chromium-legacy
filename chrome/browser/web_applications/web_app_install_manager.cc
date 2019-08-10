@@ -145,15 +145,6 @@ void WebAppInstallManager::Shutdown() {
   web_contents_.reset();
 }
 
-void WebAppInstallManager::InstallWebAppForTesting(
-    std::unique_ptr<WebApplicationInfo> web_application_info,
-    OnceInstallCallback callback) {
-  InstallWebAppFromInfo(std::move(web_application_info),
-                        /*no_network_install=*/false,
-                        /*install_source=*/WebappInstallSource::DEVTOOLS,
-                        std::move(callback));
-}
-
 void WebAppInstallManager::SetUrlLoaderForTesting(
     std::unique_ptr<WebAppUrlLoader> url_loader) {
   url_loader_ = std::move(url_loader);

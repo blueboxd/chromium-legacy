@@ -18,25 +18,11 @@
 
 namespace blink {
 
-namespace {
-
-LocalFrame* GetFrameForCurrentContext() {
-  v8::Local<v8::Context> context =
-      v8::Isolate::GetCurrent()->GetCurrentContext();
-  if (context.IsEmpty())
-    return nullptr;
-
-  return ToLocalFrameIfNotDetached(context);
-}
-
-}  // namespace
-
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
+    LocalFrame* frame,
     const SourceStoppedCallback& stop_callback,
     std::unique_ptr<media::VideoCapturerSource> source)
-    // TODO(crbug.com/704136): Replace the use of this function by
-    // passing the LocalFrame instance explicitly.
-    : frame_(GetFrameForCurrentContext()), source_(std::move(source)) {
+    : frame_(frame), source_(std::move(source)) {
   media::VideoCaptureFormats preferred_formats = source_->GetPreferredFormats();
   if (!preferred_formats.empty())
     capture_params_.requested_format = preferred_formats.front();

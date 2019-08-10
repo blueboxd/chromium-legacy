@@ -58,6 +58,7 @@ void WorkerScriptFetchInitiator::Start(
     int worker_process_id,
     const GURL& script_url,
     const url::Origin& request_initiator,
+    const net::NetworkIsolationKey& trusted_network_isolation_key,
     network::mojom::CredentialsMode credentials_mode,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
@@ -118,6 +119,8 @@ void WorkerScriptFetchInitiator::Start(
   resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = script_url;
   resource_request->site_for_cookies = script_url;
+  resource_request->trusted_network_isolation_key =
+      trusted_network_isolation_key;
   resource_request->request_initiator = request_initiator;
   resource_request->referrer = sanitized_referrer.url,
   resource_request->referrer_policy = Referrer::ReferrerPolicyForUrlRequest(

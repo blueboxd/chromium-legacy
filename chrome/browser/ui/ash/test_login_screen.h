@@ -49,6 +49,8 @@ class TestLoginScreen : public ash::LoginScreen {
   void SetAllowLoginAsGuest(bool allow_guest) override;
   std::unique_ptr<ash::ScopedGuestButtonBlocker> GetScopedGuestButtonBlocker()
       override;
+  void RequestSecurityTokenPin(ash::SecurityTokenPinRequest request) override;
+  void ClearSecurityTokenPinRequest() override;
 
  private:
   TestLoginScreenModel test_screen_model_;

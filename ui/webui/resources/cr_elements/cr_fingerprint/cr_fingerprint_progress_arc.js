@@ -337,5 +337,10 @@ Polymer({
     target.style.left = left + 'px';
     target.style.top = top + 'px';
   },
+
+  /** @public */
+  isComplete: function() {
+    return this.isComplete_;
+  },
 });
 })();

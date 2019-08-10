@@ -115,9 +115,7 @@ NET_ERROR(CONTEXT_SHUT_DOWN, -26)
 // checks and 'Cross-Origin-Resource-Policy', for instance).
 NET_ERROR(BLOCKED_BY_RESPONSE, -27)
 
-// The request failed after the response was received, based on client-side
-// heuristics that point to the possiblility of a cross-site scripting attack.
-NET_ERROR(BLOCKED_BY_XSS_AUDITOR, -28)
+// Error -28 was removed (BLOCKED_BY_XSS_AUDITOR).
 
 // The request was blocked by system policy disallowing some or all cleartext
 // requests. Used for NetworkSecurityPolicy on Android.

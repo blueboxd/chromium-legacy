@@ -128,7 +128,14 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
   // appropriate to be the default match, mark it as such and give it a high
   // enough score to beat url-what-you-typed.
   size_t default_match_index;
-  if (!HistoryProvider::PreventInlineAutocomplete(input) &&
+
+  // None of the built in site URLs contain whitespaces so we can safely prevent
+  // autocompletion when the input has a trailing whitespace in order to avoid
+  // autocompleting e.g. 'chrome://s ettings' when the input is 'chrome://s '.
+  bool input_allowed_to_have_default_match =
+      !input.prevent_inline_autocomplete() &&
+      (input.text().empty() || !base::IsUnicodeWhitespace(input.text().back()));
+  if (input_allowed_to_have_default_match &&
       HasMatchThatShouldBeDefault(&default_match_index)) {
     matches_[default_match_index].relevance = 1250;
     matches_[default_match_index].allowed_to_be_default_match = true;

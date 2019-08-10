@@ -10,6 +10,8 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"
@@ -449,12 +451,19 @@ int UnifiedSystemTrayView::GetVisibleFeaturePodCount() const {
 
 // static
 std::unique_ptr<views::Background> UnifiedSystemTrayView::CreateBackground() {
+  SkColor bg_color = gfx::kPlaceholderColor;
+  if (app_list_features::IsBackgroundBlurEnabled()) {
+    bg_color = AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
+        AshColorProvider::BaseLayerType::kTransparentWithBlur,
+        kUnifiedMenuBackgroundColorWithBlur);
+  } else {
+    bg_color = AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
+        AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+        kUnifiedMenuBackgroundColor);
+  }
   return views::CreateBackgroundFromPainter(
-      views::Painter::CreateSolidRoundRectPainter(
-          app_list_features::IsBackgroundBlurEnabled()
-              ? kUnifiedMenuBackgroundColorWithBlur
-              : kUnifiedMenuBackgroundColor,
-          kUnifiedTrayCornerRadius));
+      views::Painter::CreateSolidRoundRectPainter(bg_color,
+                                                  kUnifiedTrayCornerRadius));
 }
 
 void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {

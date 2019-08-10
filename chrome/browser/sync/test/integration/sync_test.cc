@@ -469,6 +469,13 @@ ProfileSyncService* SyncTest::GetSyncService(int index) {
       GetProfile(index));
 }
 
+syncer::UserSelectableTypeSet SyncTest::GetRegisteredSelectableTypes(
+    int index) {
+  return GetSyncService(index)
+      ->GetUserSettings()
+      ->GetRegisteredSelectableTypes();
+}
+
 std::vector<ProfileSyncService*> SyncTest::GetSyncServices() {
   std::vector<ProfileSyncService*> services;
   for (int i = 0; i < num_clients(); ++i) {
@@ -744,17 +751,17 @@ void SyncTest::SetupSyncInternal(SetupSyncMode setup_mode) {
 
     if (encryption_passphrase_provided) {
       CHECK(client->SetupSyncWithEncryptionPassphraseNoWaitForCompletion(
-          syncer::UserSelectableTypeSet::All(),
+          GetRegisteredSelectableTypes(client_index),
           encryption_passphrase_it->second))
           << "SetupSync() failed.";
     } else if (decryption_passphrase_provided) {
       CHECK(client->SetupSyncWithDecryptionPassphraseNoWaitForCompletion(
-          syncer::UserSelectableTypeSet::All(),
+          GetRegisteredSelectableTypes(client_index),
           decryption_passphrase_it->second))
           << "SetupSync() failed.";
     } else {
       CHECK(client->SetupSyncNoWaitForCompletion(
-          syncer::UserSelectableTypeSet::All()))
+          GetRegisteredSelectableTypes(client_index)))
           << "SetupSync() failed.";
     }
 

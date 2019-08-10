@@ -5,15 +5,21 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_FILTER_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_FILTER_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "components/optimization_guide/bloom_filter.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
 namespace optimization_guide {
 
-// OptimizationFilter is a simple filter for keeping track of a set of strings
-// that are represented by a Bloom filter. This class has a 1:1 mapping with an
+typedef std::vector<std::unique_ptr<re2::RE2>> RegexpList;
+
+// OptimizationFilter represents a filter with two underlying implementations: a
+// Bloom filter and a set of regexps. This class has a 1:1 mapping with an
 // OptimizationFilter protobuf message where this is the logical implementation
 // of the proto data.
 //
@@ -21,10 +27,15 @@ namespace optimization_guide {
 // components/blacklist/.
 class OptimizationFilter {
  public:
-  explicit OptimizationFilter(std::unique_ptr<BloomFilter> bloom_filter);
+  explicit OptimizationFilter(std::unique_ptr<BloomFilter> bloom_filter,
+                              std::unique_ptr<RegexpList> regexps);
 
-  virtual ~OptimizationFilter();
+  ~OptimizationFilter();
 
+  // Returns true if the given url is matched by this filter.
+  bool Matches(const GURL& url) const;
+
+ private:
   // Returns whether this filter contains a host suffix for the host part
   // of |url|. It will check at most 5 host suffixes and it may ignore simple
   // top level domain matches (such as "com" or "co.in").
@@ -36,12 +47,14 @@ class OptimizationFilter {
   //   "www.company.co.in"
   //   "company.co.in"
   // This method will return true if any of those suffixes are present.
-  //
-  // Virtual for testing.
-  virtual bool ContainsHostSuffix(const GURL& url) const;
+  bool ContainsHostSuffix(const GURL& url) const;
 
- private:
+  // Returns whether this filter contains a regexp that matches the given url.
+  bool MatchesRegexp(const GURL& url) const;
+
   std::unique_ptr<BloomFilter> bloom_filter_;
+
+  std::unique_ptr<RegexpList> regexps_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

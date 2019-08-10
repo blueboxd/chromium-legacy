@@ -9,7 +9,9 @@
 #include "base/logging.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/scheduler/task_queue.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
@@ -28,6 +30,9 @@ Task::Task(TaskQueue* task_queue,
 void Task::Trace(Visitor* visitor) {
   visitor->Trace(task_queue_);
   visitor->Trace(callback_);
+  visitor->Trace(result_value_);
+  visitor->Trace(result_promise_);
+  visitor->Trace(exception_);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -40,11 +45,22 @@ AtomicString Task::status() const {
   return TaskStatusToString(status_);
 }
 
-void Task::cancel() {
+void Task::cancel(ScriptState* script_state) {
   if (!IsPending())
     return;
   CancelPendingTask();
   SetTaskStatus(Status::kCanceled);
+  ResolveOrRejectPromiseIfNeeded(script_state);
+}
+
+ScriptPromise Task::result(ScriptState* script_state) {
+  if (!result_promise_) {
+    result_promise_ = MakeGarbageCollected<TaskResultPromise>(
+        ExecutionContext::From(script_state), this,
+        TaskResultPromise::kFinished);
+    ResolveOrRejectPromiseIfNeeded(script_state);
+  }
+  return result_promise_->Promise(script_state->World());
 }
 
 void Task::SetTaskHandle(TaskHandle&& task_handle) {
@@ -64,9 +80,66 @@ void Task::CancelPendingTask() {
 
 void Task::Invoke() {
   DCHECK(IsPending());
+  DCHECK(callback_);
+
+  ScriptState* script_state =
+      callback_->CallbackRelevantScriptStateOrReportError("Task", "Invoke");
+  if (!script_state || !script_state->ContextIsValid())
+    return;
+
   SetTaskStatus(Status::kRunning);
-  callback_->InvokeAndReportException(nullptr, arguments_);
+  InvokeInternal(script_state);
   SetTaskStatus(Status::kCompleted);
+
+  ResolveOrRejectPromiseIfNeeded(script_state);
+  callback_.Release();
+}
+
+void Task::InvokeInternal(ScriptState* script_state) {
+  ScriptState::Scope scope(script_state);
+  v8::TryCatch try_catch(script_state->GetIsolate());
+  try_catch.SetVerbose(true);
+
+  ScriptValue result;
+  if (!callback_->Invoke(nullptr, arguments_).To(&result)) {
+    if (try_catch.HasCaught()) {
+      exception_.Set(script_state->GetIsolate(), try_catch.Exception());
+    }
+    return;
+  }
+  result_value_.Set(script_state->GetIsolate(), result.V8Value());
+}
+
+void Task::ResolveOrRejectPromiseIfNeeded(ScriptState* script_state) {
+  // Lazily resolove or reject the Promise - we don't do anything unless the
+  // result property has been accessed.
+  if (!result_promise_)
+    return;
+
+  if (!script_state->ContextIsValid())
+    return;
+  ScriptState::Scope scope(script_state);
+
+  if (!exception_.IsEmpty()) {
+    result_promise_->Reject(ScriptValue::From(
+        script_state, exception_.NewLocal(script_state->GetIsolate())));
+    return;
+  }
+
+  // TODO(shaseley): Once we have continuation built, consider resolving this
+  // promise async with continuation timing.
+  if (status_ == Status::kCompleted) {
+    result_promise_->Resolve(ScriptValue::From(
+        script_state, result_value_.NewLocal(script_state->GetIsolate())));
+    return;
+  }
+
+  if (status_ == Status::kCanceled) {
+    result_promise_->Reject(ScriptValue::From(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError)));
+    return;
+  }
 }
 
 void Task::SetTaskStatus(Status status) {
@@ -122,7 +195,7 @@ bool Task::IsValidStatusChange(Status from, Status to) {
           return false;
       }
     }
-    // Canceled and Finished are both end states.
+    // Canceled and Completed are both end states.
     case Status::kCanceled:
     case Status::kCompleted:
       return false;

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "device/gamepad/abstract_haptic_gamepad.h"
 #include "device/gamepad/gamepad_id_list.h"
@@ -56,7 +57,7 @@ namespace device {
 // strong and weak effect magnitudes. When a vibration effect is played on a
 // composite device, the effect is split so that each component receives one
 // channel of the dual-rumble effect.
-class NintendoController : public AbstractHapticGamepad {
+class NintendoController final : public AbstractHapticGamepad {
  public:
   struct SwitchCalibrationData {
     SwitchCalibrationData();
@@ -181,6 +182,7 @@ class NintendoController : public AbstractHapticGamepad {
   void DoShutdown() override;
   void SetVibration(double strong_magnitude, double weak_magnitude) override;
   double GetMaxEffectDurationMillis() override;
+  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
 
   NintendoController(int source_id,
                      mojom::HidDeviceInfoPtr device_info,
@@ -402,7 +404,7 @@ class NintendoController : public AbstractHapticGamepad {
   // becomes ready.
   base::OnceClosure device_ready_closure_;
 
-  base::WeakPtrFactory<NintendoController> weak_factory_;
+  base::WeakPtrFactory<NintendoController> weak_factory_{this};
 };
 
 }  // namespace device

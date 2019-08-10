@@ -9,7 +9,7 @@ suite('cr-icon-button-focus-tests', function() {
     PolymerTest.clearBody();
     button = document.createElement('cr-icon-button');
     document.body.appendChild(button);
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
   });
 
   test('focus shows ripple', () => {

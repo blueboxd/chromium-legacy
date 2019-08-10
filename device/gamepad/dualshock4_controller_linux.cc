@@ -19,4 +19,8 @@ size_t Dualshock4ControllerLinux::WriteOutputReport(void* report,
   return bytes_written < 0 ? 0 : static_cast<size_t>(bytes_written);
 }
 
+base::WeakPtr<AbstractHapticGamepad> Dualshock4ControllerLinux::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 }  // namespace device

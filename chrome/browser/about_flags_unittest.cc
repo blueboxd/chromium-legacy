@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/base_paths.h"
 #include "base/feature_list.h"
@@ -28,8 +30,8 @@ namespace about_flags {
 
 namespace {
 
-typedef base::HistogramBase::Sample Sample;
-typedef std::map<std::string, Sample> SwitchToIdMap;
+using Sample = base::HistogramBase::Sample;
+using SwitchToIdMap = std::map<std::string, Sample>;
 
 // Get all associated switches corresponding to defined about_flags.cc entries.
 std::set<std::string> GetAllSwitchesAndFeaturesForTesting() {
@@ -68,6 +70,34 @@ std::set<std::string> GetAllSwitchesAndFeaturesForTesting() {
   return result;
 }
 
+enum class FlagFile { kFlagMetadata, kFlagNeverExpire };
+
+std::string FlagFileName(FlagFile file) {
+  switch (file) {
+    case FlagFile::kFlagMetadata:
+      return "flag-metadata.json";
+    case FlagFile::kFlagNeverExpire:
+      return "flag-never-expire-list.json";
+  }
+}
+
+base::Value FileContents(FlagFile file) {
+  std::string filename = FlagFileName(file);
+
+  base::FilePath metadata_path;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &metadata_path);
+  JSONFileValueDeserializer deserializer(
+      metadata_path.AppendASCII("chrome").AppendASCII("browser").AppendASCII(
+          filename));
+  int error_code;
+  std::string error_message;
+  std::unique_ptr<base::Value> json =
+      deserializer.Deserialize(&error_code, &error_message);
+  DCHECK(json) << "Failed to load " << filename << ": " << error_code << " "
+               << error_message;
+  return std::move(*json);
+}
+
 struct FlagMetadataEntry {
   std::vector<std::string> owners;
   int expiry_milestone;
@@ -76,20 +106,10 @@ struct FlagMetadataEntry {
 using FlagMetadataMap = std::map<std::string, FlagMetadataEntry>;
 
 FlagMetadataMap LoadFlagMetadata() {
-  FlagMetadataMap metadata;
-  base::FilePath metadata_path;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &metadata_path);
-  JSONFileValueDeserializer deserializer(
-      metadata_path.AppendASCII("chrome").AppendASCII("browser").AppendASCII(
-          "flag-metadata.json"));
-  int error_code;
-  std::string error_message;
-  std::unique_ptr<base::Value> metadata_json =
-      deserializer.Deserialize(&error_code, &error_message);
-  DCHECK(metadata_json) << "Failed to load flag metadata: " << error_code << " "
-                        << error_message;
+  base::Value metadata_json = FileContents(FlagFile::kFlagMetadata);
 
-  for (const auto& entry : metadata_json->GetList()) {
+  FlagMetadataMap metadata;
+  for (const auto& entry : metadata_json.GetList()) {
     std::string name = entry.FindKey("name")->GetString();
     std::vector<std::string> owners;
     if (const base::Value* e = entry.FindKey("owners")) {
@@ -104,20 +124,10 @@ FlagMetadataMap LoadFlagMetadata() {
 }
 
 std::vector<std::string> LoadFlagNeverExpireList() {
-  base::FilePath list_path;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &list_path);
-  JSONFileValueDeserializer deserializer(
-      list_path.AppendASCII("chrome").AppendASCII("browser").AppendASCII(
-          "flag-never-expire-list.json"));
-  int error_code;
-  std::string error_message;
-  std::unique_ptr<base::Value> list_json =
-      deserializer.Deserialize(&error_code, &error_message);
-  DCHECK(list_json) << "Failed to load flag never expire list: " << error_code
-                    << " " << error_message;
+  base::Value list_json = FileContents(FlagFile::kFlagNeverExpire);
 
   std::vector<std::string> result;
-  for (const auto& entry : list_json->GetList()) {
+  for (const auto& entry : list_json.GetList()) {
     result.push_back(entry.GetString());
   }
   return result;
@@ -189,6 +199,69 @@ TEST(AboutFlagsTest, EveryFlagHasNonEmptyOwners) {
 
   EXPECT_EQ(0u, sad_flags.size())
       << "Flags missing owners: " << base::JoinString(sad_flags, "\n  ");
+}
+
+namespace {
+
+void EnsureNamesAreAlphabetical(
+    const std::vector<std::string>& normalized_names,
+    const std::vector<std::string>& names,
+    FlagFile file) {
+  if (normalized_names.size() < 2)
+    return;
+
+  for (size_t i = 1; i < normalized_names.size(); ++i) {
+    if (i == normalized_names.size() - 1) {
+      // The last item on the list has less context.
+      EXPECT_TRUE(normalized_names[i - 1] < normalized_names[i])
+          << "Correct alphabetical order does not place '" << names[i]
+          << "' after '" << names[i - 1] << "' in " << FlagFileName(file);
+    } else {
+      EXPECT_TRUE(normalized_names[i - 1] < normalized_names[i] &&
+                  normalized_names[i] < normalized_names[i + 1])
+          << "Correct alphabetical order does not place '" << names[i]
+          << "' between '" << names[i - 1] << "' and '" << names[i + 1]
+          << "' in " << FlagFileName(file);
+    }
+  }
+}
+
+std::string NormalizeName(const std::string& name) {
+  std::string normalized_name = base::ToLowerASCII(name);
+  std::replace(normalized_name.begin(), normalized_name.end(), '_', '-');
+
+  return normalized_name;
+}
+
+}  // namespace
+
+// For some bizarre reason, far too many people see a file filled with
+// alphabetically-ordered items and think "hey, let me drop this new item into a
+// random location!" Prohibit such behavior in the flags files.
+TEST(AboutFlagsTest, FlagsListedInAlphabeticalOrder) {
+  base::Value metadata_json = FileContents(FlagFile::kFlagMetadata);
+
+  std::vector<std::string> normalized_names;
+  std::vector<std::string> names;
+  for (const auto& entry : metadata_json.GetList()) {
+    normalized_names.push_back(
+        NormalizeName(entry.FindKey("name")->GetString()));
+    names.push_back(entry.FindKey("name")->GetString());
+  }
+
+  EnsureNamesAreAlphabetical(normalized_names, names, FlagFile::kFlagMetadata);
+
+  base::Value expiration_json = FileContents(FlagFile::kFlagNeverExpire);
+
+  normalized_names.clear();
+  names.clear();
+  for (const auto& entry : expiration_json.GetList()) {
+    normalized_names.push_back(NormalizeName(entry.GetString()));
+    names.push_back(entry.GetString());
+  }
+
+  EnsureNamesAreAlphabetical(normalized_names, names,
+                             FlagFile::kFlagNeverExpire);
 }
 
 class AboutFlagsHistogramTest : public ::testing::Test {

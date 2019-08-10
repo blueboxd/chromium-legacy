@@ -81,13 +81,6 @@ class TracingUmaTracker {
 
 int TracingUmaTracker::next_id_ = 1;
 
-enum class HitTestResultsMatch {
-  kDoNotMatch = 0,
-  kMatch = 1,
-  kHitTestResultChanged = 2,
-  kMaxValue = kHitTestResultChanged,
-};
-
 RenderWidgetTargetResult::RenderWidgetTargetResult() = default;
 
 RenderWidgetTargetResult::RenderWidgetTargetResult(
@@ -489,36 +482,8 @@ void RenderWidgetTargeter::FoundTarget(
       request->GetExpectedFrameSinkId().is_valid()) {
     static const char* kResultsMatchHistogramName =
         "Event.VizHitTestSurfaceLayer.ResultsMatch";
-    bool results_match =
-        target->GetFrameSinkId() == request->GetExpectedFrameSinkId();
-    HitTestResultsMatch match_result =
-        HitTestResultsMatch::kHitTestResultChanged;
-    if (results_match) {
-      match_result = HitTestResultsMatch::kMatch;
-    } else {
-      // If the results do not match, it is possible that the hit test data
-      // changed during verification. We do synchronous hit test again to make
-      // sure the result is reliable.
-      RenderWidgetTargetResult result;
-      if (request->IsWebInputEventRequest()) {
-        result = delegate_->FindTargetSynchronously(request->GetRootView(),
-                                                    request->GetEvent());
-      } else {
-        result = delegate_->FindTargetSynchronouslyAtPoint(
-            request->GetRootView(), request->GetLocation());
-      }
-
-      if (!result.should_query_view && result.view &&
-          request->GetExpectedFrameSinkId() == result.view->GetFrameSinkId()) {
-        // If the result did not change, it is likely that viz hit test finds
-        // the wrong target.
-        match_result = HitTestResultsMatch::kDoNotMatch;
-      } else {
-        // Hit test data changed, so the result is no longer reliable.
-        match_result = HitTestResultsMatch::kHitTestResultChanged;
-      }
-    }
-    UMA_HISTOGRAM_ENUMERATION(kResultsMatchHistogramName, match_result,
+    HitTestResultsMatch bucket = GetHitTestResultsMatchBucket(target, request);
+    UMA_HISTOGRAM_ENUMERATION(kResultsMatchHistogramName, bucket,
                               HitTestResultsMatch::kMaxValue);
     FlushEventQueue(true);
     return;
@@ -573,6 +538,49 @@ void RenderWidgetTargeter::AsyncHitTestTimedOut(
     FoundTarget(last_request_target.get(), last_target_location, false,
                 &request);
   }
+}
+
+RenderWidgetTargeter::HitTestResultsMatch
+RenderWidgetTargeter::GetHitTestResultsMatchBucket(
+    RenderWidgetHostViewBase* target,
+    TargetingRequest* request) const {
+  if (target->GetFrameSinkId() == request->GetExpectedFrameSinkId())
+    return HitTestResultsMatch::kMatch;
+
+  // If the target was not active, i.e. it had not submitted its hit test
+  // data during HitTestAggregator::AppendRegion, the viz hit test data may
+  // be outdated upon hit testing and verification.
+  bool target_was_active = true;
+  const auto& display_hit_test_query_map =
+      GetHostFrameSinkManager()->display_hit_test_query();
+  const auto iter =
+      display_hit_test_query_map.find(request->GetRootView()->GetFrameSinkId());
+  if (iter != display_hit_test_query_map.end()) {
+    // This happens when the root frame sink id is invalidated. e.g. when
+    // the window is closed.
+    const auto* hit_test_query = iter->second.get();
+    target_was_active =
+        hit_test_query->ContainsActiveFrameSinkId(target->GetFrameSinkId());
+  }
+  if (!target_was_active)
+    return HitTestResultsMatch::kHitTestDataOutdated;
+
+  // If the results do not match, it is possible that the hit test data
+  // changed during verification. We do synchronous hit test again to make
+  // sure the result is reliable.
+  RenderWidgetTargetResult result =
+      request->IsWebInputEventRequest()
+          ? delegate_->FindTargetSynchronously(request->GetRootView(),
+                                               request->GetEvent())
+          : delegate_->FindTargetSynchronouslyAtPoint(request->GetRootView(),
+                                                      request->GetLocation());
+  if (result.should_query_view || !result.view ||
+      request->GetExpectedFrameSinkId() != result.view->GetFrameSinkId()) {
+    // Hit test data changed, so the result is no longer reliable.
+    return HitTestResultsMatch::kHitTestResultChanged;
+  }
+
+  return HitTestResultsMatch::kDoNotMatch;
 }
 
 }  // namespace content

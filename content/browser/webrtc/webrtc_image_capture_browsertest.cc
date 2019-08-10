@@ -118,7 +118,7 @@ class WebRtcImageCaptureBrowserTestBase
 #endif
 
     GURL url(embedded_test_server()->GetURL(kImageCaptureHtmlFile));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
 
     if (!IsWebcamAvailableOnSystem(shell()->web_contents())) {
       DVLOG(1) << "No video device; skipping test...";

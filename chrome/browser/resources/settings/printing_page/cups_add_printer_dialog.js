@@ -387,6 +387,12 @@ Polymer({
       value: '',
     },
 
+    /** @private */
+    addPrinterInProgress_: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * The error text to be displayed on the dialog.
      * @private
@@ -431,6 +437,7 @@ Polymer({
    * @private
    * */
   onPrinterAddedFailed_: function(result) {
+    this.addPrinterInProgress_ = false;
     this.errorText_ = settings.printing.getErrorText(
         /** @type {PrinterSetupResult} */ (result));
   },
@@ -548,6 +555,7 @@ Polymer({
 
   /** @private */
   addPrinter_: function() {
+    this.addPrinterInProgress_ = true;
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .addCupsPrinter(this.activePrinter)
         .then(
@@ -563,8 +571,9 @@ Polymer({
    * @private
    */
   canAddPrinter_: function(ppdManufacturer, ppdModel, printerPPDPath) {
-    return settings.printing.isPPDInfoValid(
-        ppdManufacturer, ppdModel, printerPPDPath);
+    return !this.addPrinterInProgress_ &&
+        settings.printing.isPPDInfoValid(
+            ppdManufacturer, ppdModel, printerPPDPath);
   },
 });
 

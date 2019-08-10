@@ -949,8 +949,11 @@ PhysicalOffset PaintLayer::ComputeOffsetFromAncestor(
 PaintLayer* PaintLayer::CompositingContainer() const {
   if (IsReplacedNormalFlowStacking())
     return Parent();
-  if (!GetLayoutObject().StyleRef().IsStacked())
-    return IsSelfPaintingLayer() ? Parent() : ContainingLayer();
+  if (!GetLayoutObject().StyleRef().IsStacked()) {
+    if (IsSelfPaintingLayer() || GetLayoutObject().IsColumnSpanAll())
+      return Parent();
+    return ContainingLayer();
+  }
   return AncestorStackingContext();
 }
 

@@ -19,10 +19,15 @@ namespace media_message_center {
 class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaControlsProgressView
     : public views::View {
  public:
-  MediaControlsProgressView();
+  explicit MediaControlsProgressView(
+      base::RepeatingCallback<void(double)> seek_callback);
   ~MediaControlsProgressView() override;
 
   void UpdateProgress(const media_session::MediaPosition& media_position);
+
+  // views::View:
+  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
   const views::ProgressBar* progress_bar_for_testing() const;
   const base::string16& progress_time_for_testing() const;
@@ -33,12 +38,16 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaControlsProgressView
   void SetProgressTime(const base::string16& time);
   void SetDuration(const base::string16& duration);
 
+  void HandleSeeking(const gfx::Point& location_in_bar);
+
   views::ProgressBar* progress_bar_;
   views::Label* progress_time_;
   views::Label* duration_;
 
   // Timer to continually update the progress.
   base::RepeatingTimer update_progress_timer_;
+
+  const base::RepeatingCallback<void(double)> seek_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaControlsProgressView);
 };

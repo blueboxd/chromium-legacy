@@ -60,7 +60,7 @@ const RawPrepopulatedPage kRawPrepopulatedPages[] = {
     {
         IDS_NTP_DEFAULT_SEARCH_URL,
         IDS_NTP_DEFAULT_SEARCH_TITLE,
-        IDS_ONBOARDING_WELCOME_SEARCH,
+        IDS_WELCOME_SEARCH,
         SkColorSetRGB(63, 132, 197),
     },
 #endif

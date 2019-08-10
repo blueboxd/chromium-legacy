@@ -21,18 +21,6 @@ void AppListPage::OnHidden() {}
 
 void AppListPage::OnWillBeHidden() {}
 
-void AppListPage::OnAnimationStarted(ash::AppListState from_state,
-                                     ash::AppListState to_state) {
-  gfx::Rect from_rect = GetPageBoundsForState(from_state);
-  gfx::Rect to_rect = GetPageBoundsForState(to_state);
-  if (from_rect == to_rect)
-    return;
-
-  SetBoundsRect(from_rect);
-  auto settings = contents_view()->CreateTransitionAnimationSettings(layer());
-  SetBoundsRect(to_rect);
-}
-
 void AppListPage::OnAnimationUpdated(double progress,
                                      ash::AppListState from_state,
                                      ash::AppListState to_state) {}

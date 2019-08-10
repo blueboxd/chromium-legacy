@@ -273,6 +273,17 @@ class Generator(generator.Generator):
         headers.update(typemap.get("public_headers", []))
     return sorted(headers)
 
+  def _ReferencesAnyHandleOrInterfaceType(self):
+    """Returns whether this module uses interfaces directly or indirectly.
+
+    When false, the generated headers do not need to include interface_ptr.h
+    and similar.
+    """
+    if len(self.module.interfaces) > 0:
+      return True
+    return any(map(mojom.ContainsHandlesOrInterfaces,
+                   self.module.structs + self.module.unions))
+
   def _GetDirectlyUsedKinds(self):
     for struct in self.module.structs + self.module.unions:
       for field in struct.fields:
@@ -310,6 +321,7 @@ class Generator(generator.Generator):
       "structs": self.module.structs,
       "support_lazy_serialization": self.support_lazy_serialization,
       "unions": self.module.unions,
+      "uses_interfaces": self._ReferencesAnyHandleOrInterfaceType(),
       "variant": self.variant,
     }
 

@@ -40,6 +40,9 @@ typedef NS_ENUM(NSUInteger, PaymentsTextCellType) {
 // The trailing image to display.
 @property(nonatomic, nullable, strong) UIImage* trailingImage;
 
+// The tint color for the trailing image.
+@property(nonatomic, nullable, strong) UIColor* trailingImageTintColor;
+
 // The accessory type for the represented cell.
 @property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
 

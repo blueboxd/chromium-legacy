@@ -29,12 +29,25 @@ namespace {
 // //tools/metrics/histograms/enums.xml, and should always reflect it (do not
 // change one without changing the other). Entries should be never modified
 // or deleted. Only additions possible.
+enum class FindAndConnectToHostResult {
+  kFoundAndConnectedToHost = 0,
+  kCanceledBluetoothDisabled = 1,
+  kCanceledUserEnteredPassword = 2,
+  kSecureChannelConnectionAttemptFailure = 3,
+  kTimedOut = 4,
+  kMaxValue = kTimedOut
+};
+
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other). Entries should be never modified
+// or deleted. Only additions possible.
 enum class GetRemoteStatusResultFailureReason {
-  kTimedOutBluetoothDisabled = 0,
-  kTimedOutCouldNotEstablishAuthenticatedChannel = 1,
+  kCanceledBluetoothDisabled = 0,
+  kDeprecatedTimedOutCouldNotEstablishAuthenticatedChannel = 1,
   kTimedOutDidNotReceiveRemoteStatusUpdate = 2,
-  kUserEnteredPasswordWhileBluetoothDisabled = 3,
-  kUserEnteredPasswordWhileConnecting = 4,
+  kDeprecatedUserEnteredPasswordWhileBluetoothDisabled = 3,
+  kCanceledUserEnteredPassword = 4,
   kAuthenticatedChannelDropped = 5,
   kMaxValue = kAuthenticatedChannelDropped
 };
@@ -112,6 +125,15 @@ std::string GetHistogramScreenLockTypeName(
                                                               : "SignIn";
 }
 
+void RecordFindAndConnectToHostResult(
+    ProximityAuthSystem::ScreenlockType screenlock_type,
+    FindAndConnectToHostResult result) {
+  base::UmaHistogramEnumeration(
+      "SmartLock.FindAndConnectToHostResult." +
+          GetHistogramScreenLockTypeName(screenlock_type),
+      result);
+}
+
 void RecordGetRemoteStatusResultSuccess(
     ProximityAuthSystem::ScreenlockType screenlock_type,
     bool success = true) {
@@ -182,10 +204,8 @@ UnlockManagerImpl::~UnlockManagerImpl() {
 bool UnlockManagerImpl::IsUnlockAllowed() {
   return (remote_screenlock_state_ &&
           *remote_screenlock_state_ == RemoteScreenlockState::UNLOCKED &&
-          life_cycle_ &&
-          life_cycle_->GetState() ==
-              RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED &&
-          proximity_monitor_ && proximity_monitor_->IsUnlockAllowed() &&
+          is_bluetooth_connection_to_phone_active_ && proximity_monitor_ &&
+          proximity_monitor_->IsUnlockAllowed() &&
           (screenlock_type_ != ProximityAuthSystem::SIGN_IN ||
            (GetMessenger() && GetMessenger()->SupportsSignIn())));
 }
@@ -204,6 +224,7 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
   if (life_cycle_) {
     life_cycle_->AddObserver(this);
 
+    is_bluetooth_connection_to_phone_active_ = false;
     show_lock_screen_time_ = base::DefaultClock::GetInstance()->Now();
     has_user_been_shown_first_status_ = false;
 
@@ -211,6 +232,9 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
       SetIsPerformingInitialScan(true /* is_performing_initial_scan */);
       AttemptToStartRemoteDeviceLifecycle();
     } else {
+      RecordFindAndConnectToHostResult(
+          screenlock_type_,
+          FindAndConnectToHostResult::kCanceledBluetoothDisabled);
       SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
     }
   } else {
@@ -238,16 +262,53 @@ void UnlockManagerImpl::OnLifeCycleStateChanged(
     }
     GetMessenger()->AddObserver(this);
 
+    is_bluetooth_connection_to_phone_active_ = true;
     attempt_get_remote_status_start_time_ =
         base::DefaultClock::GetInstance()->Now();
-  } else if (proximity_monitor_) {
-    proximity_monitor_->RemoveObserver(this);
-    proximity_monitor_->Stop();
-    proximity_monitor_.reset();
+
+    PA_LOG(VERBOSE) << "Successfully connected to host; waiting for remote "
+                       "status update.";
+
+    if (is_performing_initial_scan_) {
+      RecordFindAndConnectToHostResult(
+          screenlock_type_,
+          FindAndConnectToHostResult::kFoundAndConnectedToHost);
+    }
+  } else {
+    is_bluetooth_connection_to_phone_active_ = false;
+
+    if (proximity_monitor_) {
+      proximity_monitor_->RemoveObserver(this);
+      proximity_monitor_->Stop();
+      proximity_monitor_.reset();
+    }
   }
 
-  if (new_state == RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
-    SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
+  // Note: though the name is AUTHENTICATION_FAILED, this state actually
+  // encompasses any connection failure in
+  // |secure_channel::mojom::ConnectionAttemptFailureReason| beside Bluetooth
+  // becoming disabled. See https://crbug.com/991644 for more.
+  if (new_state == RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED) {
+    PA_LOG(ERROR) << "Connection attempt to host failed.";
+
+    if (is_performing_initial_scan_) {
+      RecordFindAndConnectToHostResult(
+          screenlock_type_,
+          FindAndConnectToHostResult::kSecureChannelConnectionAttemptFailure);
+      SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
+    }
+  }
+
+  if (new_state == RemoteDeviceLifeCycle::State::FINDING_CONNECTION &&
+      old_state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
+    PA_LOG(ERROR) << "Secure channel dropped for unknown reason; potentially "
+                     "due to Bluetooth being disabled.";
+
+    if (is_performing_initial_scan_) {
+      OnDisconnected();
+      SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
+    }
+  }
 
   UpdateLockScreen();
 }
@@ -337,7 +398,7 @@ void UnlockManagerImpl::OnDisconnected() {
         screenlock_type_,
         SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
             kAuthenticatedChannelDropped);
-  } else {
+  } else if (is_performing_initial_scan_) {
     RecordGetRemoteStatusResultFailure(
         screenlock_type_,
         GetRemoteStatusResultFailureReason::kAuthenticatedChannelDropped);
@@ -408,13 +469,32 @@ bool UnlockManagerImpl::IsBluetoothPresentAndPowered() const {
 void UnlockManagerImpl::OnBluetoothAdapterPresentAndPoweredChanged() {
   DCHECK(!IsBluetoothAdapterRecoveringFromSuspend());
 
-  if (!IsBluetoothPresentAndPowered()) {
+  if (IsBluetoothPresentAndPowered()) {
+    if (!is_performing_initial_scan_)
+      SetIsPerformingInitialScan(true /* is_performing_initial_scan */);
+
+    return;
+  }
+
+  if (is_performing_initial_scan_) {
+    if (is_bluetooth_connection_to_phone_active_ &&
+        !has_received_first_remote_status_) {
+      RecordGetRemoteStatusResultFailure(
+          screenlock_type_,
+          GetRemoteStatusResultFailureReason::kCanceledBluetoothDisabled);
+    } else {
+      RecordFindAndConnectToHostResult(
+          screenlock_type_,
+          FindAndConnectToHostResult::kCanceledBluetoothDisabled);
+    }
+
     SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
     return;
   }
 
-  if (!is_performing_initial_scan_)
-    SetIsPerformingInitialScan(true /* is_performing_initial_scan */);
+  // If Bluetooth is off but no initial scan is active, still ensure that the
+  // lock screen UI reflects that Bluetooth is off.
+  UpdateLockScreen();
 }
 
 bool UnlockManagerImpl::IsBluetoothAdapterRecoveringFromSuspend() const {
@@ -484,19 +564,28 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
 void UnlockManagerImpl::CancelConnectionAttempt() {
   PA_LOG(VERBOSE) << "User entered password.";
 
-  if (!has_received_first_remote_status_) {
-    if (IsBluetoothPresentAndPowered()) {
-      RecordGetRemoteStatusResultFailure(
-          screenlock_type_, GetRemoteStatusResultFailureReason::
-                                kUserEnteredPasswordWhileConnecting);
-    } else {
-      RecordGetRemoteStatusResultFailure(
-          screenlock_type_, GetRemoteStatusResultFailureReason::
-                                kUserEnteredPasswordWhileBluetoothDisabled);
-    }
-  }
+  bluetooth_suspension_recovery_timer_->Stop();
 
-  SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
+  // Note: There is no need to record metrics here if Bluetooth isn't present
+  // and powered; that has already been handled at this point in
+  // OnBluetoothAdapterPresentAndPoweredChanged().
+  if (!IsBluetoothPresentAndPowered())
+    return;
+
+  if (is_performing_initial_scan_) {
+    if (is_bluetooth_connection_to_phone_active_ &&
+        !has_received_first_remote_status_) {
+      RecordGetRemoteStatusResultFailure(
+          screenlock_type_,
+          GetRemoteStatusResultFailureReason::kCanceledUserEnteredPassword);
+    } else {
+      RecordFindAndConnectToHostResult(
+          screenlock_type_,
+          FindAndConnectToHostResult::kCanceledUserEnteredPassword);
+    }
+
+    SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
+  }
 }
 
 std::unique_ptr<ProximityMonitor> UnlockManagerImpl::CreateProximityMonitor(
@@ -654,25 +743,24 @@ void UnlockManagerImpl::SetIsPerformingInitialScan(
 }
 
 void UnlockManagerImpl::OnInitialScanTimeout() {
-  if (IsBluetoothPresentAndPowered()) {
-    if (life_cycle_ &&
-        life_cycle_->GetState() ==
-            RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
-      RecordGetRemoteStatusResultFailure(
-          screenlock_type_, GetRemoteStatusResultFailureReason::
-                                kTimedOutDidNotReceiveRemoteStatusUpdate);
-    } else {
-      RecordGetRemoteStatusResultFailure(
-          screenlock_type_, GetRemoteStatusResultFailureReason::
-                                kTimedOutCouldNotEstablishAuthenticatedChannel);
-    }
-  } else {
+  // Note: There is no need to record metrics here if Bluetooth isn't present
+  // and powered; that has already been handled at this point in
+  // OnBluetoothAdapterPresentAndPoweredChanged().
+  if (!IsBluetoothPresentAndPowered())
+    return;
+
+  if (is_bluetooth_connection_to_phone_active_) {
+    PA_LOG(ERROR) << "Successfully connected to host, but it did not provide "
+                     "remote status update.";
     RecordGetRemoteStatusResultFailure(
-        screenlock_type_,
-        GetRemoteStatusResultFailureReason::kTimedOutBluetoothDisabled);
+        screenlock_type_, GetRemoteStatusResultFailureReason::
+                              kTimedOutDidNotReceiveRemoteStatusUpdate);
+  } else {
+    PA_LOG(INFO) << "Initial scan for host returned no result.";
+    RecordFindAndConnectToHostResult(screenlock_type_,
+                                     FindAndConnectToHostResult::kTimedOut);
   }
 
-  PA_LOG(INFO) << "Failed to connect to host within allotted time.";
   SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
 }
 

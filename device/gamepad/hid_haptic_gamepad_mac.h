@@ -5,15 +5,16 @@
 #ifndef DEVICE_GAMEPAD_HID_HAPTIC_GAMEPAD_MAC_H_
 #define DEVICE_GAMEPAD_HID_HAPTIC_GAMEPAD_MAC_H_
 
-#include "device/gamepad/hid_haptic_gamepad_base.h"
-
 #include <memory>
 
 #include <IOKit/hid/IOHIDManager.h>
 
+#include "base/memory/weak_ptr.h"
+#include "device/gamepad/hid_haptic_gamepad_base.h"
+
 namespace device {
 
-class HidHapticGamepadMac : public HidHapticGamepadBase {
+class HidHapticGamepadMac final : public HidHapticGamepadBase {
  public:
   HidHapticGamepadMac(IOHIDDeviceRef device_ref, const HapticReportData& data);
   ~HidHapticGamepadMac() override;
@@ -22,12 +23,16 @@ class HidHapticGamepadMac : public HidHapticGamepadBase {
                                                      uint16_t product_id,
                                                      IOHIDDeviceRef device_ref);
 
+  // AbstractHapticGamepad implementation.
   void DoShutdown() override;
+  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override;
 
+  // HidHapticGamepadBase implementation.
   size_t WriteOutputReport(void* report, size_t report_length) override;
 
  private:
   IOHIDDeviceRef device_ref_;
+  base::WeakPtrFactory<HidHapticGamepadMac> weak_factory_{this};
 };
 
 }  // namespace device

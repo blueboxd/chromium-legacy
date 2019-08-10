@@ -118,6 +118,10 @@ class WebUIDataSource {
       const std::string& data) = 0;
   virtual void DisableDenyXFrameOptions() = 0;
 
+  // Replace i18n template strings in JS files. Needed for Web UIs that are
+  // using Polymer 3.
+  virtual void EnableReplaceI18nInJS() = 0;
+
   // The |source_name| this WebUIDataSource was created with.
   virtual std::string GetSource() = 0;
 };

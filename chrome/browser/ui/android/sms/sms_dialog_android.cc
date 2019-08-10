@@ -7,17 +7,24 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/SmsReceiverDialog_jni.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"
+#include "url/origin.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-SmsDialogAndroid::SmsDialogAndroid() {
+SmsDialogAndroid::SmsDialogAndroid(const url::Origin& origin) {
+  JNIEnv* env = AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> origin_string =
+      base::android::ConvertUTF16ToJavaString(
+          env, url_formatter::FormatOriginForSecurityDisplay(
+                   origin, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
   java_dialog_.Reset(Java_SmsReceiverDialog_create(
-      AttachCurrentThread(), reinterpret_cast<intptr_t>(this)));
+      env, reinterpret_cast<intptr_t>(this), origin_string));
 }
 
 SmsDialogAndroid::~SmsDialogAndroid() {

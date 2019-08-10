@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/login_types.h"
 #include "base/callback_forward.h"
 
 class AccountId;
@@ -83,6 +84,13 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   // Returns scoped object to temporarily disable Browse as Guest button.
   virtual std::unique_ptr<ScopedGuestButtonBlocker>
   GetScopedGuestButtonBlocker() = 0;
+
+  // Called to request the user to enter the PIN of the security token (e.g.,
+  // the smart card).
+  virtual void RequestSecurityTokenPin(SecurityTokenPinRequest request) = 0;
+
+  // Called to close the UI previously opened with RequestSecurityTokenPin().
+  virtual void ClearSecurityTokenPinRequest() = 0;
 
  protected:
   LoginScreen();

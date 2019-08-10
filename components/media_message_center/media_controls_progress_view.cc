@@ -7,6 +7,7 @@
 #include "base/i18n/time_formatting.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/gfx/font_list.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
@@ -18,19 +19,21 @@ namespace media_message_center {
 
 namespace {
 
-constexpr int kProgressBarAndTimeSpacing = 5;
 constexpr int kProgressTimeFontSize = 12;
 constexpr gfx::Size kTimeSpacingSize = gfx::Size(150, 10);
 constexpr gfx::Insets kProgressViewInsets = gfx::Insets(15, 25, 0, 25);
+constexpr gfx::Insets kProgressBarInsets = gfx::Insets(5, 0, 5, 0);
 
 }  // namespace
 
-MediaControlsProgressView::MediaControlsProgressView() {
+MediaControlsProgressView::MediaControlsProgressView(
+    base::RepeatingCallback<void(double)> seek_callback)
+    : seek_callback_(std::move(seek_callback)) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, kProgressViewInsets,
-      kProgressBarAndTimeSpacing));
+      views::BoxLayout::Orientation::kVertical, kProgressViewInsets));
 
   progress_bar_ = AddChildView(std::make_unique<views::ProgressBar>(5, false));
+  progress_bar_->SetBorder(views::CreateEmptyBorder(kProgressBarInsets));
 
   // Font list for text views.
   gfx::Font default_font;
@@ -82,8 +85,7 @@ void MediaControlsProgressView::UpdateProgress(
   base::TimeDelta current_position = media_position.GetPosition();
   base::TimeDelta duration = media_position.duration();
 
-  double progress = media_position.GetPosition().InSecondsF() /
-                    media_position.duration().InSecondsF();
+  double progress = current_position.InSecondsF() / duration.InSecondsF();
   SetBarProgress(progress);
 
   // Time formatting can't yet represent durations greater than 24 hours in
@@ -124,16 +126,30 @@ void MediaControlsProgressView::UpdateProgress(
   }
 }
 
-void MediaControlsProgressView::SetBarProgress(double progress) {
-  progress_bar_->SetValue(progress);
+bool MediaControlsProgressView::OnMousePressed(const ui::MouseEvent& event) {
+  gfx::Point location_in_bar(event.location());
+  ConvertPointToTarget(this, this->progress_bar_, &location_in_bar);
+
+  if (!event.IsOnlyLeftMouseButton() ||
+      !progress_bar_->GetLocalBounds().Contains(location_in_bar)) {
+    return false;
+  }
+
+  HandleSeeking(location_in_bar);
+  return true;
 }
 
-void MediaControlsProgressView::SetProgressTime(const base::string16& time) {
-  progress_time_->SetText(time);
-}
+void MediaControlsProgressView::OnGestureEvent(ui::GestureEvent* event) {
+  gfx::Point location_in_bar(event->location());
+  ConvertPointToTarget(this, this->progress_bar_, &location_in_bar);
 
-void MediaControlsProgressView::SetDuration(const base::string16& duration) {
-  duration_->SetText(duration);
+  if (event->type() != ui::ET_GESTURE_TAP ||
+      !progress_bar_->GetLocalBounds().Contains(location_in_bar)) {
+    return;
+  }
+
+  HandleSeeking(location_in_bar);
+  event->SetHandled();
 }
 
 const views::ProgressBar* MediaControlsProgressView::progress_bar_for_testing()
@@ -148,6 +164,25 @@ const base::string16& MediaControlsProgressView::progress_time_for_testing()
 
 const base::string16& MediaControlsProgressView::duration_for_testing() const {
   return duration_->GetText();
+}
+
+void MediaControlsProgressView::SetBarProgress(double progress) {
+  progress_bar_->SetValue(progress);
+}
+
+void MediaControlsProgressView::SetProgressTime(const base::string16& time) {
+  progress_time_->SetText(time);
+}
+
+void MediaControlsProgressView::SetDuration(const base::string16& duration) {
+  duration_->SetText(duration);
+}
+
+void MediaControlsProgressView::HandleSeeking(
+    const gfx::Point& location_in_bar) {
+  double seek_to_progress =
+      static_cast<double>(location_in_bar.x()) / progress_bar_->width();
+  seek_callback_.Run(seek_to_progress);
 }
 
 }  // namespace media_message_center

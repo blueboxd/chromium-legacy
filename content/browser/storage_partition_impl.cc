@@ -806,7 +806,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->relative_partition_path_ = relative_partition_path;
 
   // All of the clients have to be created and registered with the
-  // QuotaManager prior to the QuotaManger being used. We do them
+  // QuotaManager prior to the QuotaManager being used. We do them
   // all together here prior to handing out a reference to anything
   // that utilizes the QuotaManager.
   partition->quota_manager_ = new storage::QuotaManager(

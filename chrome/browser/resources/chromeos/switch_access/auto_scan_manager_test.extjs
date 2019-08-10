@@ -136,25 +136,25 @@ TEST_F('SwitchAccessAutoScanManagerTest', 'RestartIfRunningWhenOff', function() 
   );
 });
 
-TEST_F('SwitchAccessAutoScanManagerTest', 'SetScanTime', function() {
+TEST_F('SwitchAccessAutoScanManagerTest', 'SetDefaultScanTime', function() {
   this.runWithLoadedTree('data:text/html;charset=utf-8,',
       function(desktop) {
         assertFalse(this.autoScanManager.isRunning());
         assertEquals(UNDEFINED_INTERVAL_DELAY, intervalDelay);
 
-        this.autoScanManager.setScanTime(2);
+        this.autoScanManager.setDefaultScanTime(2);
         assertFalse(this.autoScanManager.isRunning());
-        assertEquals(2, this.autoScanManager.scanTime_);
+        assertEquals(2, this.autoScanManager.defaultScanTime_);
         assertEquals(UNDEFINED_INTERVAL_DELAY, intervalDelay);
 
         this.autoScanManager.setEnabled(true);
         assertTrue(this.autoScanManager.isRunning());
-        assertEquals(2, this.autoScanManager.scanTime_);
+        assertEquals(2, this.autoScanManager.defaultScanTime_);
         assertEquals(2, intervalDelay);
 
-        this.autoScanManager.setScanTime(5);
+        this.autoScanManager.setDefaultScanTime(5);
         assertTrue(this.autoScanManager.isRunning());
-        assertEquals(5, this.autoScanManager.scanTime_);
+        assertEquals(5, this.autoScanManager.defaultScanTime_);
         assertEquals(5, intervalDelay);
       }
   );

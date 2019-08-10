@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
@@ -51,7 +52,7 @@ constexpr base::TimeDelta kPendingTaskDuration =
     base::TimeDelta::FromMillisecondsD(kDurationMillis);
 
 // An implementation of HidHapticGamepadBase that records its output reports.
-class FakeHidHapticGamepad : public HidHapticGamepadBase {
+class FakeHidHapticGamepad final : public HidHapticGamepadBase {
  public:
   FakeHidHapticGamepad(const HidHapticGamepadBase::HapticReportData& data)
       : HidHapticGamepadBase(data) {}
@@ -66,7 +67,12 @@ class FakeHidHapticGamepad : public HidHapticGamepadBase {
     return report_length;
   }
 
+  base::WeakPtr<AbstractHapticGamepad> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
   std::vector<std::vector<uint8_t>> output_reports_;
+  base::WeakPtrFactory<FakeHidHapticGamepad> weak_factory_{this};
 };
 
 // Main test fixture

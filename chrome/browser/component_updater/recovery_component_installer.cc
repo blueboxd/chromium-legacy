@@ -232,18 +232,18 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
   base::Process process = base::Process::Open(pid);
 #endif
   // This task joins a process, hence .WithBaseSyncPrimitives().
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&WaitForElevatedInstallToComplete,
-                     base::Passed(&process)));
+  base::PostTask(FROM_HERE,
+                 {base::ThreadPool(), base::WithBaseSyncPrimitives(),
+                  base::TaskPriority::BEST_EFFORT,
+                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                 base::BindOnce(&WaitForElevatedInstallToComplete,
+                                base::Passed(&process)));
 }
 
 void ElevatedInstallRecoveryComponent(const base::FilePath& installer_path) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&DoElevatedInstallRecoveryComponent, installer_path));
 }
@@ -346,10 +346,9 @@ void WaitForInstallToComplete(base::Process process,
     if (installer_exit_code == EXIT_CODE_ELEVATION_NEEDED) {
       RecordRecoveryComponentUMAEvent(RCE_ELEVATION_NEEDED);
 
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&SetPrefsForElevatedRecoveryInstall, installer_folder,
-                         prefs));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(&SetPrefsForElevatedRecoveryInstall,
+                                    installer_folder, prefs));
     } else if (installer_exit_code == EXIT_CODE_RECOVERY_SUCCEEDED) {
       RecordRecoveryComponentUMAEvent(RCE_SUCCEEDED);
     } else if (installer_exit_code == EXIT_CODE_RECOVERY_SKIPPED) {
@@ -375,9 +374,10 @@ bool RecoveryComponentInstaller::RunInstallCommand(
 
   // Let worker pool thread wait for us so we don't block Chrome shutdown.
   // This task joins a process, hence .WithBaseSyncPrimitives().
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::WithBaseSyncPrimitives(),
+       base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&WaitForInstallToComplete, base::Passed(&process),
                      installer_folder, prefs_));
@@ -470,7 +470,7 @@ bool RecoveryComponentInstaller::DoInstall(
 
   current_version_ = version;
   if (prefs_) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&RecoveryUpdateVersionHelper, version, prefs_));
   }
@@ -495,17 +495,15 @@ void RegisterRecoveryComponent(ComponentUpdateService* cus,
 #if defined(GOOGLE_CHROME_BUILD)
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (SimulatingElevatedRecovery()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&SimulateElevatedRecoveryHelper, prefs));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&SimulateElevatedRecoveryHelper, prefs));
   }
 
   // We delay execute the registration because we are not required in
   // the critical path during browser startup.
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&RecoveryRegisterHelper, cus, prefs),
-      base::TimeDelta::FromSeconds(6));
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                        base::BindOnce(&RecoveryRegisterHelper, cus, prefs),
+                        base::TimeDelta::FromSeconds(6));
 #endif
 #endif
 }

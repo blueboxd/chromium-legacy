@@ -626,20 +626,42 @@ bool FrameTreeNode::ClearUserActivation() {
   return true;
 }
 
+bool FrameTreeNode::VerifyUserActivation() {
+  if (!base::FeatureList::IsEnabled(features::kBrowserVerifiedUserActivation))
+    return true;
+  return render_manager_.current_frame_host()
+      ->GetRenderWidgetHost()
+      ->ConsumePendingUserActivationIfAllowed();
+}
+
 bool FrameTreeNode::UpdateUserActivationState(
     blink::UserActivationUpdateType update_type) {
-  render_manager_.UpdateUserActivationState(update_type);
+  bool update_result = false;
   switch (update_type) {
     case blink::UserActivationUpdateType::kConsumeTransientActivation:
-      return ConsumeTransientUserActivation();
-
+      update_result = ConsumeTransientUserActivation();
+      break;
     case blink::UserActivationUpdateType::kNotifyActivation:
-      return NotifyUserActivation();
-
+      update_result = NotifyUserActivation();
+      break;
+    case blink::UserActivationUpdateType::
+        kNotifyActivationPendingBrowserVerification:
+      if (VerifyUserActivation()) {
+        update_result = NotifyUserActivation();
+        update_type = blink::UserActivationUpdateType::kNotifyActivation;
+      } else {
+        // TODO(crbug.com/848778): We need to decide what to do when user
+        // activation verification failed. NOTREACHED here will make all
+        // unrelated tests that inject event to renderer fail.
+        return false;
+      }
+      break;
     case blink::UserActivationUpdateType::kClearActivation:
-      return ClearUserActivation();
+      update_result = ClearUserActivation();
+      break;
   }
-  NOTREACHED() << "Invalid update_type.";
+  render_manager_.UpdateUserActivationState(update_type);
+  return update_result;
 }
 
 void FrameTreeNode::OnSetHasReceivedUserGestureBeforeNavigation(bool value) {

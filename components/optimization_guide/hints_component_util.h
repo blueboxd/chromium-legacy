@@ -62,9 +62,10 @@ enum class OptimizationFilterStatus {
   kFailedServerBlacklistBadConfig,
   kFailedServerBlacklistTooBig,
   kFailedServerBlacklistDuplicateConfig,
+  kInvalidRegexp,
 
   // Insert new values before this line.
-  kMaxValue = kFailedServerBlacklistDuplicateConfig,
+  kMaxValue = kInvalidRegexp,
 };
 
 // Records the OptimizationFilterStatus to UMA.

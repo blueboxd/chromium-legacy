@@ -37,6 +37,7 @@ class MODULES_EXPORT MediaStreamVideoCapturerSource
       base::RepeatingCallback<std::unique_ptr<media::VideoCapturerSource>(
           const base::UnguessableToken& session_id)>;
   MediaStreamVideoCapturerSource(
+      LocalFrame* frame,
       const SourceStoppedCallback& stop_callback,
       std::unique_ptr<media::VideoCapturerSource> source);
   MediaStreamVideoCapturerSource(

@@ -146,7 +146,8 @@ std::unique_ptr<BluetoothChooser> WebContentsDelegate::RunBluetoothChooser(
   return nullptr;
 }
 
-std::unique_ptr<SmsDialog> WebContentsDelegate::CreateSmsDialog() {
+std::unique_ptr<SmsDialog> WebContentsDelegate::CreateSmsDialog(
+    const url::Origin&) {
   return nullptr;
 }
 

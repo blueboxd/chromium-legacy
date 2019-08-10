@@ -12,8 +12,8 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "services/service_manager/public/cpp/binder_map.h"
 #include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/native_widget_types.h"
@@ -30,7 +30,8 @@ class DateTimeChooserAndroid : public blink::mojom::DateTimeChooser,
   explicit DateTimeChooserAndroid(WebContentsImpl* web_contents);
   ~DateTimeChooserAndroid() override;
 
-  void OnDateTimeChooserRequest(blink::mojom::DateTimeChooserRequest request);
+  void OnDateTimeChooserReceiver(
+      mojo::PendingReceiver<blink::mojom::DateTimeChooser> receiver);
 
   // blink::mojom::DateTimeChooser implementation:
   // Shows the dialog. |value| is the date/time value converted to a
@@ -57,9 +58,9 @@ class DateTimeChooserAndroid : public blink::mojom::DateTimeChooser,
 
   base::android::ScopedJavaGlobalRef<jobject> j_date_time_chooser_;
 
-  mojo::Binding<blink::mojom::DateTimeChooser> date_time_chooser_binding_;
+  mojo::Receiver<blink::mojom::DateTimeChooser> date_time_chooser_receiver_;
 
-  service_manager::BinderRegistry registry_;
+  service_manager::BinderMap binders_;
 
   DISALLOW_COPY_AND_ASSIGN(DateTimeChooserAndroid);
 };

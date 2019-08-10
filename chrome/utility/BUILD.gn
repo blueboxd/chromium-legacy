@@ -95,8 +95,6 @@ static_library("utility") {
       "importer/nss_decryptor_win.h",
       "importer/profile_import_impl.cc",
       "importer/profile_import_impl.h",
-      "importer/profile_import_service.cc",
-      "importer/profile_import_service.h",
       "importer/safari_importer.h",
       "importer/safari_importer.mm",
     ]
@@ -137,10 +135,7 @@ static_library("utility") {
       libs = [ "esent.lib" ]
       ldflags += [ "/DELAYLOAD:esent.dll" ]
 
-      deps += [
-        "//chrome/services/util_win:lib",
-        "//chrome/services/wifi_util_win:lib",
-      ]
+      deps += [ "//chrome/services/util_win:lib" ]
     }
 
     if (is_win || is_mac) {
@@ -217,22 +212,6 @@ static_library("utility") {
     deps += [
       "//chrome/services/isolated_xr_device:lib",
       "//device/vr/public/mojom",
-    ]
-  }
-}
-
-if (!is_android) {
-  source_set("profile_import_manifest") {
-    sources = [
-      "importer/profile_import_manifest.cc",
-      "importer/profile_import_manifest.h",
-    ]
-
-    deps = [
-      "//base",
-      "//chrome:strings",
-      "//chrome/common/importer:interfaces",
-      "//services/service_manager/public/cpp",
     ]
   }
 }

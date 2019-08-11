@@ -3137,7 +3137,11 @@ void PaintPropertyTreeBuilder::
   int page_count = ceilf(view->DocumentRect().Height() / page_height);
   context_.fragments.resize(page_count);
 
-  context_.fragments[0].fixed_position.paint_offset.top -= view->ScrollTop();
+  if (auto* scrollable_area = view->GetScrollableArea()) {
+    context_.fragments[0].fixed_position.paint_offset.top -=
+        LayoutUnit(scrollable_area->ScrollPosition().Y());
+  }
+
   for (int page = 1; page < page_count; page++) {
     context_.fragments[page] = context_.fragments[page - 1];
     context_.fragments[page].fixed_position.paint_offset.top += page_height;
@@ -3155,7 +3159,10 @@ void PaintPropertyTreeBuilder::
   context_.repeating_table_section_bounding_box =
       BoundingBoxInPaginationContainer(object_, *view->Layer());
   // Convert the bounding box into the scrolling contents space.
-  context_.repeating_table_section_bounding_box.offset.top += view->ScrollTop();
+  if (auto* scrollable_area = view->GetScrollableArea()) {
+    context_.repeating_table_section_bounding_box.offset.top +=
+        LayoutUnit(scrollable_area->ScrollPosition().Y());
+  }
 
   auto page_height = view->PageLogicalHeight();
   const auto& bounding_box = context_.repeating_table_section_bounding_box;

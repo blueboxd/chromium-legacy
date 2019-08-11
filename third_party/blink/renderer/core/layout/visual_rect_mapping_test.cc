@@ -119,7 +119,10 @@ TEST_P(VisualRectMappingTest, LayoutText) {
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto* text = GetLayoutObjectByElementId("text")->SlowFirstChild();
 
-  container->SetScrollTop(LayoutUnit(50));
+  auto* scrollable_area =
+      To<Element>(container->GetNode())->GetScrollableArea();
+  scrollable_area->ScrollToAbsolutePosition(
+      FloatPoint(scrollable_area->ScrollPosition().X(), 50));
   UpdateAllLifecyclePhasesForTest();
 
   PhysicalRect original_rect(0, 60, 20, 80);
@@ -156,7 +159,10 @@ TEST_P(VisualRectMappingTest, LayoutTextContainerFlippedWritingMode) {
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   auto* text = GetLayoutObjectByElementId("text")->SlowFirstChild();
 
-  container->SetScrollTop(LayoutUnit(50));
+  auto* scrollable_area =
+      To<Element>(container->GetNode())->GetScrollableArea();
+  scrollable_area->ScrollToAbsolutePosition(
+      FloatPoint(scrollable_area->ScrollPosition().X(), 50));
   UpdateAllLifecyclePhasesForTest();
 
   // All results are the same as VisualRectMappingTest.LayoutText because all
@@ -191,7 +197,10 @@ TEST_P(VisualRectMappingTest, LayoutInline) {
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   LayoutObject* leaf = container->LastChild();
 
-  container->SetScrollTop(LayoutUnit(50));
+  auto* scrollable_area =
+      To<Element>(container->GetNode())->GetScrollableArea();
+  scrollable_area->ScrollToAbsolutePosition(
+      FloatPoint(scrollable_area->ScrollPosition().X(), 50));
   UpdateAllLifecyclePhasesForTest();
 
   PhysicalRect original_rect(0, 60, 20, 80);
@@ -228,7 +237,10 @@ TEST_P(VisualRectMappingTest, LayoutInlineContainerFlippedWritingMode) {
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
   LayoutObject* leaf = container->LastChild();
 
-  container->SetScrollTop(LayoutUnit(50));
+  auto* scrollable_area =
+      To<Element>(container->GetNode())->GetScrollableArea();
+  scrollable_area->ScrollToAbsolutePosition(
+      FloatPoint(scrollable_area->ScrollPosition().X(), 50));
   UpdateAllLifecyclePhasesForTest();
 
   // All results are the same as VisualRectMappingTest.LayoutInline because all
@@ -442,10 +454,11 @@ TEST_P(VisualRectMappingTest, ContainerOverflowScroll) {
   )HTML");
 
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
-  EXPECT_EQ(LayoutUnit(), container->ScrollTop());
-  EXPECT_EQ(LayoutUnit(), container->ScrollLeft());
-  container->SetScrollTop(LayoutUnit(7));
-  container->SetScrollLeft(LayoutUnit(8));
+  auto* scrollable_area =
+      To<Element>(container->GetNode())->GetScrollableArea();
+  EXPECT_EQ(0, scrollable_area->ScrollPosition().Y());
+  EXPECT_EQ(0, scrollable_area->ScrollPosition().X());
+  scrollable_area->ScrollToAbsolutePosition(FloatPoint(8, 7));
   UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
@@ -500,14 +513,15 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   )HTML");
 
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
-  EXPECT_EQ(LayoutUnit(), container->ScrollTop());
+  auto* scrollable_area =
+      To<Element>(container->GetNode())->GetScrollableArea();
+  EXPECT_EQ(0, scrollable_area->ScrollPosition().Y());
   // The initial scroll offset is to the left-most because of flipped blocks
   // writing mode.
   // 150 = total_layout_overflow(100 + 100) - width(50)
-  EXPECT_EQ(LayoutUnit(150), container->ScrollLeft());
-  container->SetScrollTop(LayoutUnit(7));
+  EXPECT_EQ(150, scrollable_area->ScrollPosition().X());
   // Scroll to the right by 8 pixels.
-  container->SetScrollLeft(LayoutUnit(142));
+  scrollable_area->ScrollToAbsolutePosition(FloatPoint(142, 7));
   UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
@@ -572,10 +586,11 @@ TEST_P(VisualRectMappingTest, ContainerOverflowHidden) {
   )HTML");
 
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
-  EXPECT_EQ(LayoutUnit(), container->ScrollTop());
-  EXPECT_EQ(LayoutUnit(), container->ScrollLeft());
-  container->SetScrollTop(LayoutUnit(27));
-  container->SetScrollLeft(LayoutUnit(28));
+  auto* scrollable_area =
+      To<Element>(container->GetNode())->GetScrollableArea();
+  EXPECT_EQ(0, scrollable_area->ScrollPosition().Y());
+  EXPECT_EQ(0, scrollable_area->ScrollPosition().X());
+  scrollable_area->ScrollToAbsolutePosition(FloatPoint(28, 27));
   UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
@@ -605,13 +620,14 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
   )HTML");
 
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
-  EXPECT_EQ(LayoutUnit(), container->ScrollTop());
+  auto* scrollable_area =
+      To<Element>(container->GetNode())->GetScrollableArea();
+  EXPECT_EQ(0, scrollable_area->ScrollPosition().Y());
   // The initial scroll offset is to the left-most because of flipped blocks
   // writing mode.
   // 150 = total_layout_overflow(100 + 100) - width(50)
-  EXPECT_EQ(LayoutUnit(150), container->ScrollLeft());
-  container->SetScrollTop(LayoutUnit(7));
-  container->SetScrollLeft(LayoutUnit(82));  // Scroll to the right by 8 pixels.
+  EXPECT_EQ(150, scrollable_area->ScrollPosition().X());
+  scrollable_area->ScrollToAbsolutePosition(FloatPoint(82, 7));
   UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
@@ -644,14 +660,15 @@ TEST_P(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode) {
   )HTML");
 
   auto* container = To<LayoutBlock>(GetLayoutObjectByElementId("container"));
-  EXPECT_EQ(LayoutUnit(), container->ScrollTop());
+  auto* scrollable_area =
+      To<Element>(container->GetNode())->GetScrollableArea();
+  EXPECT_EQ(0, scrollable_area->ScrollPosition().Y());
   // The initial scroll offset is to the left-most because of flipped blocks
   // writing mode.
   // 150 = total_layout_overflow(100 + 100) - width(50)
-  EXPECT_EQ(LayoutUnit(150), container->ScrollLeft());
-  container->SetScrollTop(LayoutUnit(7));
-  container->SetScrollLeft(
-      LayoutUnit(142));  // Scroll to the right by 8 pixels.
+  EXPECT_EQ(150, scrollable_area->ScrollPosition().X());
+  // Scroll to the right by 8 pixels.
+  scrollable_area->ScrollToAbsolutePosition(FloatPoint(142, 7));
   UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
@@ -694,8 +711,9 @@ TEST_P(VisualRectMappingTest,
   )HTML");
 
   auto* scroller = To<LayoutBlock>(GetLayoutObjectByElementId("scroller"));
-  scroller->SetScrollTop(LayoutUnit(77));
-  scroller->SetScrollLeft(LayoutUnit(88));
+  To<Element>(scroller->GetNode())
+      ->GetScrollableArea()
+      ->ScrollToAbsolutePosition(FloatPoint(88, 77));
   UpdateAllLifecyclePhasesForTest();
 
   auto* normal_flow =

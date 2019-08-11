@@ -17,6 +17,10 @@ blink_modules_sources("exported") {
   ]
 
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
+
+  deps = [
+    "//ui/accessibility:ax_enums_mojo_blink",
+  ]
 }
 
 static_library("test_support") {

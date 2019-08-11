@@ -59,7 +59,7 @@ Ephemeral, anonymous users that are logged into an incognito session. The user
 cryptohome is mounted on tmpfs, and none of the data from the user session is
 persisted after the guest session ends.
 
-To test guest session state, use `GaiaSessionMixin` - this will set up
+To test guest session state, use `GuestSessionMixin` - this will set up
 appropriate guest session flags.
 
 Testing guest user login is more complicated, as guest login required Chrome

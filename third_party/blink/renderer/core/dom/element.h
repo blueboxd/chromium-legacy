@@ -324,6 +324,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual void scrollBy(const ScrollToOptions*);
   void scrollTo(double x, double y);
   virtual void scrollTo(const ScrollToOptions*);
+  // This will return the |GetScrollableArea| of correspond LayoutBox. For
+  // LayoutTextControlSingleLine, it will return its |InnerEditorElement|'s.
+  virtual PaintLayerScrollableArea* GetScrollableArea() const;
 
   IntRect BoundsInViewport() const;
   // Returns an intersection rectangle of the bounds rectangle and the visual

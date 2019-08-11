@@ -601,18 +601,6 @@ LayoutUnit LayoutBox::ScrollHeight() const {
   return std::max(ClientHeight(), LayoutOverflowRect().MaxY() - BorderTop());
 }
 
-LayoutUnit LayoutBox::ScrollLeft() const {
-  return HasOverflowClip()
-             ? LayoutUnit(GetScrollableArea()->ScrollPosition().X())
-             : LayoutUnit();
-}
-
-LayoutUnit LayoutBox::ScrollTop() const {
-  return HasOverflowClip()
-             ? LayoutUnit(GetScrollableArea()->ScrollPosition().Y())
-             : LayoutUnit();
-}
-
 int LayoutBox::PixelSnappedScrollWidth() const {
   return SnapSizeToPixel(ScrollWidth(), Location().X() + ClientLeft());
 }
@@ -624,46 +612,6 @@ int LayoutBox::PixelSnappedScrollHeight() const {
   // For objects with visible overflow, this matches IE.
   // FIXME: Need to work right with writing modes.
   return SnapSizeToPixel(ScrollHeight(), Location().Y() + ClientTop());
-}
-
-void LayoutBox::SetScrollLeft(LayoutUnit new_left) {
-  // This doesn't hit in any tests, but since the equivalent code in
-  // setScrollTop does, presumably this code does as well.
-  DisableCompositingQueryAsserts disabler;
-
-  if (!HasOverflowClip())
-    return;
-
-  PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
-  FloatPoint new_position(new_left.ToFloat(),
-                          scrollable_area->ScrollPosition().Y());
-  scrollable_area->ScrollToAbsolutePosition(new_position, kScrollBehaviorAuto);
-}
-
-void LayoutBox::SetScrollTop(LayoutUnit new_top) {
-  // Hits in
-  // compositing/overflow/do-not-assert-on-invisible-composited-layers.html
-  DisableCompositingQueryAsserts disabler;
-
-  if (!HasOverflowClip())
-    return;
-
-  PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
-  FloatPoint new_position(scrollable_area->ScrollPosition().X(),
-                          new_top.ToFloat());
-  scrollable_area->ScrollToAbsolutePosition(new_position, kScrollBehaviorAuto);
-}
-
-void LayoutBox::ScrollToPosition(const FloatPoint& position,
-                                 ScrollBehavior scroll_behavior) {
-  // This doesn't hit in any tests, but since the equivalent code in
-  // setScrollTop does, presumably this code does as well.
-  DisableCompositingQueryAsserts disabler;
-
-  if (!HasOverflowClip())
-    return;
-
-  GetScrollableArea()->ScrollToAbsolutePosition(position, scroll_behavior);
 }
 
 PhysicalRect LayoutBox::ScrollRectToVisibleRecursive(

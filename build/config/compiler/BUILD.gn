@@ -1097,8 +1097,7 @@ config("compiler_deterministic") {
   }
 
   # Makes builds independent of absolute file path.
-  if (symbol_level != 0 && is_clang &&
-      strip_absolute_paths_from_debug_symbols) {
+  if (symbol_level != 0 && is_clang && strip_absolute_paths_from_debug_symbols) {
     # If debug option is given, clang includes $cwd in debug info by default.
     # For such build, this flag generates reproducible obj files even we use
     # different build directory like "out/feature_a" and "out/feature_b" if
@@ -1518,9 +1517,6 @@ config("default_warnings") {
             # smarter on clang trunk. (And having a -Wno-error flag instead of
             # -Wno-return-stack-address on pinned clang won't fly either.)
             "-Wno-error=return-stack-address",
-
-            # TODO(https://crbug.com/992640): Same, but for -Wdangling-field.
-            "-Wno-error=dangling-field",
           ]
         }
       }

@@ -346,6 +346,8 @@ blink_core_sources("layout") {
     "ng/inline/ng_inline_break_token.h",
     "ng/inline/ng_inline_child_layout_context.cc",
     "ng/inline/ng_inline_child_layout_context.h",
+    "ng/inline/ng_inline_cursor.cc",
+    "ng/inline/ng_inline_cursor.h",
     "ng/inline/ng_inline_fragment_traversal.cc",
     "ng/inline/ng_inline_fragment_traversal.h",
     "ng/inline/ng_inline_item.cc",

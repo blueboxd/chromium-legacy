@@ -299,28 +299,6 @@ LayoutUnit LayoutTextControlSingleLine::ScrollHeight() const {
   return LayoutBlockFlow::ScrollHeight();
 }
 
-LayoutUnit LayoutTextControlSingleLine::ScrollLeft() const {
-  if (InnerEditorElement())
-    return LayoutUnit(InnerEditorElement()->scrollLeft());
-  return LayoutBlockFlow::ScrollLeft();
-}
-
-LayoutUnit LayoutTextControlSingleLine::ScrollTop() const {
-  if (InnerEditorElement())
-    return LayoutUnit(InnerEditorElement()->scrollTop());
-  return LayoutBlockFlow::ScrollTop();
-}
-
-void LayoutTextControlSingleLine::SetScrollLeft(LayoutUnit new_left) {
-  if (InnerEditorElement())
-    InnerEditorElement()->setScrollLeft(new_left);
-}
-
-void LayoutTextControlSingleLine::SetScrollTop(LayoutUnit new_top) {
-  if (InnerEditorElement())
-    InnerEditorElement()->setScrollTop(new_top);
-}
-
 HTMLInputElement* LayoutTextControlSingleLine::InputElement() const {
   return ToHTMLInputElement(GetNode());
 }

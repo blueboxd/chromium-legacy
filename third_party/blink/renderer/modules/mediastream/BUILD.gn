@@ -89,6 +89,9 @@ blink_modules_sources("mediastream") {
     "webmediaplayer_ms_compositor.cc",
     "webmediaplayer_ms_compositor.h",
   ]
+  deps = [
+    "//media/capture/mojom:image_capture_blink",
+  ]
 }
 
 jumbo_source_set("test_support") {

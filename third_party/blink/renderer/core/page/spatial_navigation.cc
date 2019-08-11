@@ -263,7 +263,7 @@ bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
     case SpatialNavigationDirection::kRight:
       // TODO(bokan, https://crbug.com/952326): Fix this DCHECK.
       //  DCHECK_GT(container->GetLayoutBox()->ScrollWidth(),
-      //            container->GetLayoutBox()->ScrollLeft() +
+      //            container->GetScrollableArea()->ScrollPosition().X() +
       //                container->GetLayoutBox()->ClientWidth());
       dx = pixels_per_line_step;
       break;
@@ -273,7 +273,7 @@ bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
     case SpatialNavigationDirection::kDown:
       // TODO(bokan, https://crbug.com/952326): Fix this DCHECK.
       //  DCHECK_GT(container->GetLayoutBox()->ScrollHeight(),
-      //            container->GetLayoutBox()->ScrollTop() +
+      //            container->GetScrollableArea()->ScrollPosition().Y() +
       //                container->GetLayoutBox()->ClientHeight());
       dy = pixels_per_line_step;
       break;
@@ -358,26 +358,33 @@ bool CanScrollInDirection(const Node* container,
   if (!IsScrollableNode(container))
     return false;
 
+  const Element* container_element = DynamicTo<Element>(container);
+  if (!container_element)
+    return false;
+  auto* scrollable_area = container_element->GetScrollableArea();
+  if (!scrollable_area)
+    return false;
+
   DCHECK(container->GetLayoutObject());
   switch (direction) {
     case SpatialNavigationDirection::kLeft:
       return (container->GetLayoutObject()->Style()->OverflowX() !=
                   EOverflow::kHidden &&
-              container->GetLayoutBox()->ScrollLeft() > 0);
+              scrollable_area->ScrollPosition().X() > 0);
     case SpatialNavigationDirection::kUp:
       return (container->GetLayoutObject()->Style()->OverflowY() !=
                   EOverflow::kHidden &&
-              container->GetLayoutBox()->ScrollTop() > 0);
+              scrollable_area->ScrollPosition().Y() > 0);
     case SpatialNavigationDirection::kRight:
       return (container->GetLayoutObject()->Style()->OverflowX() !=
                   EOverflow::kHidden &&
-              container->GetLayoutBox()->ScrollLeft() +
+              LayoutUnit(scrollable_area->ScrollPosition().X()) +
                       container->GetLayoutBox()->ClientWidth() <
                   container->GetLayoutBox()->ScrollWidth());
     case SpatialNavigationDirection::kDown:
       return (container->GetLayoutObject()->Style()->OverflowY() !=
                   EOverflow::kHidden &&
-              container->GetLayoutBox()->ScrollTop() +
+              LayoutUnit(scrollable_area->ScrollPosition().Y()) +
                       container->GetLayoutBox()->ClientHeight() <
                   container->GetLayoutBox()->ScrollHeight());
     default:

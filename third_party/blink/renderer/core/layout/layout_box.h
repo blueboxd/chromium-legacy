@@ -681,21 +681,19 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // scrollWidth/scrollHeight will be the same as clientWidth/clientHeight
   // unless the object has overflow:hidden/scroll/auto specified and also has
-  // overflow. scrollLeft/Top return the current scroll position. These methods
-  // are virtual so that objects like textareas can scroll shadow content (but
-  // pretend that they are the objects that are scrolling).
-  virtual LayoutUnit ScrollLeft() const;
-  virtual LayoutUnit ScrollTop() const;
+  // overflow. These methods are virtual so that objects like textareas can
+  // scroll shadow content (but pretend that they are the objects that are
+  // scrolling).
+
+  // Replaced ScrollLeft/Top by using Element::GetScrollableArea to return the
+  // correct ScrollableArea.
+  // TODO(cathiechen): We should do the same with ScrollWidth|Height .
   virtual LayoutUnit ScrollWidth() const;
   virtual LayoutUnit ScrollHeight() const;
   // TODO(crbug.com/962299): This is incorrect in some cases.
   int PixelSnappedScrollWidth() const;
   int PixelSnappedScrollHeight() const;
-  virtual void SetScrollLeft(LayoutUnit);
-  virtual void SetScrollTop(LayoutUnit);
 
-  void ScrollToPosition(const FloatPoint&,
-                        ScrollBehavior = kScrollBehaviorInstant);
   void ScrollByRecursively(const ScrollOffset& delta);
   // If makeVisibleInVisualViewport is set, the visual viewport will be scrolled
   // if required to make the rect visible.

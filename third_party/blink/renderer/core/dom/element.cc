@@ -973,6 +973,13 @@ int Element::clientHeight() {
   return 0;
 }
 
+PaintLayerScrollableArea* Element::GetScrollableArea() const {
+  LayoutBox* box = GetLayoutBox();
+  if (!box || !box->HasOverflowClip())
+    return nullptr;
+  return box->GetScrollableArea();
+}
+
 double Element::scrollLeft() {
   if (!InActiveDocument())
     return 0;
@@ -985,8 +992,10 @@ double Element::scrollLeft() {
     return 0;
   }
 
-  if (LayoutBox* box = GetLayoutBox()) {
-    return AdjustForAbsoluteZoom::AdjustScroll(box->ScrollLeft(), *box);
+  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+    DCHECK(GetLayoutBox());
+    return AdjustForAbsoluteZoom::AdjustScroll(
+        scrollable_area->ScrollPosition().X(), *GetLayoutBox());
   }
 
   return 0;
@@ -1004,8 +1013,10 @@ double Element::scrollTop() {
     return 0;
   }
 
-  if (LayoutBox* box = GetLayoutBox()) {
-    return AdjustForAbsoluteZoom::AdjustScroll(box->ScrollTop(), *box);
+  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+    DCHECK(GetLayoutBox());
+    return AdjustForAbsoluteZoom::AdjustScroll(
+        scrollable_area->ScrollPosition().Y(), *GetLayoutBox());
   }
 
   return 0;
@@ -1025,13 +1036,11 @@ void Element::setScrollLeft(double new_left) {
       options->setLeft(new_left);
       window->scrollTo(options);
     }
-  } else {
+  } else if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
     LayoutBox* box = GetLayoutBox();
-    if (!box)
-      return;
-
+    DCHECK(box);
     FloatPoint end_point(new_left * box->Style()->EffectiveZoom(),
-                         box->ScrollTop().ToFloat());
+                         scrollable_area->ScrollPosition().Y());
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndPosition(
             gfx::ScrollOffset(end_point), true, false);
@@ -1039,7 +1048,11 @@ void Element::setScrollLeft(double new_left) {
                     .GetSnapCoordinator()
                     ->GetSnapPosition(*box, *strategy)
                     .value_or(end_point);
-    box->SetScrollLeft(LayoutUnit::FromFloatRound(end_point.X()));
+
+    FloatPoint new_position(end_point.X(),
+                            scrollable_area->ScrollPosition().Y());
+    scrollable_area->ScrollToAbsolutePosition(new_position,
+                                              kScrollBehaviorAuto);
   }
 }
 
@@ -1057,12 +1070,10 @@ void Element::setScrollTop(double new_top) {
       options->setTop(new_top);
       window->scrollTo(options);
     }
-  } else {
+  } else if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
     LayoutBox* box = GetLayoutBox();
-    if (!box)
-      return;
-
-    FloatPoint end_point(box->ScrollLeft().ToFloat(),
+    DCHECK(box);
+    FloatPoint end_point(scrollable_area->ScrollPosition().X(),
                          new_top * box->Style()->EffectiveZoom());
     std::unique_ptr<cc::SnapSelectionStrategy> strategy =
         cc::SnapSelectionStrategy::CreateForEndPosition(
@@ -1071,7 +1082,10 @@ void Element::setScrollTop(double new_top) {
                     .GetSnapCoordinator()
                     ->GetSnapPosition(*box, *strategy)
                     .value_or(end_point);
-    box->SetScrollTop(LayoutUnit::FromFloatRound(end_point.Y()));
+    FloatPoint new_position(scrollable_area->ScrollPosition().X(),
+                            end_point.Y());
+    scrollable_area->ScrollToAbsolutePosition(new_position,
+                                              kScrollBehaviorAuto);
   }
 }
 
@@ -1177,10 +1191,11 @@ void Element::ScrollLayoutBoxBy(const ScrollToOptions* scroll_to_options) {
   ScrollBehavior scroll_behavior = kScrollBehaviorAuto;
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
-  LayoutBox* box = GetLayoutBox();
-  if (box) {
-    gfx::ScrollOffset current_position(box->ScrollLeft().ToFloat(),
-                                       box->ScrollTop().ToFloat());
+  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+    LayoutBox* box = GetLayoutBox();
+    DCHECK(box);
+    gfx::ScrollOffset current_position(scrollable_area->ScrollPosition().X(),
+                                       scrollable_area->ScrollPosition().Y());
     displacement.Scale(box->Style()->EffectiveZoom());
     gfx::ScrollOffset new_offset(current_position + displacement);
     FloatPoint new_position(new_offset.x(), new_offset.y());
@@ -1192,7 +1207,7 @@ void Element::ScrollLayoutBoxBy(const ScrollToOptions* scroll_to_options) {
                        .GetSnapCoordinator()
                        ->GetSnapPosition(*box, *strategy)
                        .value_or(new_position);
-    box->ScrollToPosition(new_position, scroll_behavior);
+    scrollable_area->ScrollToAbsolutePosition(new_position, scroll_behavior);
   }
 }
 
@@ -1201,10 +1216,11 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options->behavior(),
                                            scroll_behavior);
 
-  LayoutBox* box = GetLayoutBox();
-  if (box) {
-    FloatPoint new_position(box->ScrollLeft().ToFloat(),
-                            box->ScrollTop().ToFloat());
+  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+    LayoutBox* box = GetLayoutBox();
+    DCHECK(box);
+    FloatPoint new_position(scrollable_area->ScrollPosition().X(),
+                            scrollable_area->ScrollPosition().Y());
     if (scroll_to_options->hasLeft()) {
       new_position.SetX(
           ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
@@ -1224,7 +1240,7 @@ void Element::ScrollLayoutBoxTo(const ScrollToOptions* scroll_to_options) {
                        .GetSnapCoordinator()
                        ->GetSnapPosition(*box, *strategy)
                        .value_or(new_position);
-    box->ScrollToPosition(new_position, scroll_behavior);
+    scrollable_area->ScrollToAbsolutePosition(new_position, scroll_behavior);
   }
 }
 

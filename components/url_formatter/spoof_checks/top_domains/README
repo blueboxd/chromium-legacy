@@ -1,15 +1,14 @@
-* alexa_domains.list
+* domains.list
 
-  The Alexa top 10k domains, one per line, constructed by running
-  make_alexa_top_list.py.  Used as an input to make_top_domain_gperf.
-  It's derived from
-   src/tools/perf/page_sets/alexa1-10000-urls.json with make_alexa_top_list.py
+  A top domain list, one per line. Used as an input to
+  make_top_domain_skeletons. See http://go/chrome-top-domains-update for update
+  instructions.
 
-* alexa_domains.skeletons
+* domains.skeletons
 
   The checked-in output of make_top_domain_skeletons.  Processed during the
-  build to generate alexa_domains-trie-inc.cc, which is used by
-  url_formatter.cc.  This must be regenerated as follows if ICU is updated,
+  build to generate domains-trie-inc.cc, which is used by
+  idn_spoof_checker.cc.  This must be regenerated as follows if ICU is updated,
   since skeletons can differ across ICU versions:
 
   $ ninja -C $build_outdir make_top_domain_skeletons
@@ -20,5 +19,5 @@
   top domain list. Manually edited to match what's in IDNToUnicode test.
 
 * test_domains.skeletons
-  Generated output of test_domains.list along with alexa_domains.skeletons
+  Generated output of test_domains.list along with domains.skeletons
   by make_top_domain_skeletons.

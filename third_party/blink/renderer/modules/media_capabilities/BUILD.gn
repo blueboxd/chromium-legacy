@@ -15,6 +15,9 @@ blink_modules_sources("media_capabilities") {
     "worker_navigator_media_capabilities.cc",
     "worker_navigator_media_capabilities.h",
   ]
+  deps = [
+    "//third_party/blink/renderer/modules/mediarecorder",
+  ]
 }
 
 fuzzable_proto_library("fuzzer_media_configuration_proto") {

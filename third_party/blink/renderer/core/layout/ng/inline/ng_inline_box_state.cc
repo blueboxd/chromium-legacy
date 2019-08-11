@@ -618,13 +618,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
 
   for (unsigned i = fragment_start; i < fragment_end; i++) {
     NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];
-    if (child.layout_result) {
-      box.AddChild(child.layout_result->PhysicalFragment(),
-                   child.offset - offset);
-      child.layout_result.reset();
-    } else if (child.fragment) {
-      box.AddChild(std::move(child.fragment), child.offset - offset);
-    } else if (child.out_of_flow_positioned_box) {
+    if (child.out_of_flow_positioned_box) {
       DCHECK(item->GetLayoutObject()->IsLayoutInline());
       NGBlockNode oof_box(ToLayoutBox(child.out_of_flow_positioned_box));
 
@@ -636,6 +630,22 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
       box.AddOutOfFlowChildCandidate(oof_box, static_offset,
                                      child.container_direction);
       child.out_of_flow_positioned_box = nullptr;
+      continue;
+    }
+
+    if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+      // |NGFragmentItems| has a flat list of all descendants, except OOF
+      // objects. Still creates |NGPhysicalBoxFragment|, but don't add children
+      // to it and keep them in the flat list.
+      continue;
+    }
+
+    if (child.layout_result) {
+      box.AddChild(child.layout_result->PhysicalFragment(),
+                   child.offset - offset);
+      child.layout_result.reset();
+    } else if (child.fragment) {
+      box.AddChild(std::move(child.fragment), child.offset - offset);
     }
   }
 

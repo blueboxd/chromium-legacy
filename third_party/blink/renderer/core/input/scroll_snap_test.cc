@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/scroll_manager.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
@@ -136,8 +137,8 @@ void ScrollSnapTest::ScrollEnd(double x, double y, bool is_in_inertial_phase) {
 
 void ScrollSnapTest::SetInitialScrollOffset(double x, double y) {
   Element* scroller = GetDocument().getElementById("scroller");
-  scroller->GetLayoutBox()->SetScrollLeft(LayoutUnit::FromFloatRound(x));
-  scroller->GetLayoutBox()->SetScrollTop(LayoutUnit::FromFloatRound(y));
+  scroller->GetScrollableArea()->ScrollToAbsolutePosition(FloatPoint(x, y),
+                                                          kScrollBehaviorAuto);
   ASSERT_EQ(scroller->scrollLeft(), x);
   ASSERT_EQ(scroller->scrollTop(), y);
 }

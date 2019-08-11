@@ -311,6 +311,8 @@ class CORE_EXPORT HTMLInputElement
 
   void ChildrenChanged(const ChildrenChange&) override;
 
+  PaintLayerScrollableArea* GetScrollableArea() const final;
+
  protected:
   void DefaultEventHandler(Event&) override;
   void CreateShadowSubtree();

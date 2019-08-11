@@ -153,7 +153,9 @@ TEST_F(MapCoordinatesTest, OverflowClip) {
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutObject* overflow = GetLayoutObjectByElementId("overflow");
-  ToLayoutBox(overflow)->ScrollToPosition(FloatPoint(32, 54));
+  To<Element>(overflow->GetNode())
+      ->GetScrollableArea()
+      ->ScrollToAbsolutePosition(FloatPoint(32, 54));
 
   PhysicalOffset mapped_point =
       MapLocalToAncestor(target, ToLayoutBoxModelObject(target->Parent()),
@@ -1720,7 +1722,9 @@ TEST_F(MapCoordinatesTest, IgnoreScrollOffset) {
       PhysicalOffset(0, 10),
       MapLocalToAncestor(box, scroller, PhysicalOffset(), kIgnoreScrollOffset));
 
-  scroller->ScrollToPosition(FloatPoint(0, 50));
+  To<Element>(scroller->GetNode())
+      ->GetScrollableArea()
+      ->ScrollToAbsolutePosition(FloatPoint(0, 50));
 
   EXPECT_EQ(PhysicalOffset(0, -40),
             MapLocalToAncestor(box, scroller, PhysicalOffset()));
@@ -1756,7 +1760,9 @@ TEST_F(MapCoordinatesTest, IgnoreScrollOffsetForInline) {
       PhysicalOffset(0, 10),
       MapLocalToAncestor(box, scroller, PhysicalOffset(), kIgnoreScrollOffset));
 
-  scroller->ScrollToPosition(FloatPoint(0, 50));
+  To<Element>(scroller->GetNode())
+      ->GetScrollableArea()
+      ->ScrollToAbsolutePosition(FloatPoint(0, 50));
 
   EXPECT_EQ(PhysicalOffset(0, 10),
             MapLocalToAncestor(box, scroller, PhysicalOffset()));
@@ -1783,6 +1789,7 @@ TEST_F(MapCoordinatesTest, IgnoreScrollOffsetWithWritingModes) {
 
   LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
   LayoutBox* box = ToLayoutBox(GetLayoutObjectByElementId("box"));
+  auto* scroll_element = To<Element>(scroller->GetNode());
 
   EXPECT_EQ(PhysicalOffset(90, 10),
             MapLocalToAncestor(box, scroller, PhysicalOffset()));
@@ -1790,7 +1797,8 @@ TEST_F(MapCoordinatesTest, IgnoreScrollOffsetWithWritingModes) {
       PhysicalOffset(1990, 10),
       MapLocalToAncestor(box, scroller, PhysicalOffset(), kIgnoreScrollOffset));
 
-  scroller->ScrollToPosition(FloatPoint(0, 50));
+  scroll_element->GetScrollableArea()->ScrollToAbsolutePosition(
+      FloatPoint(0, 50));
 
   EXPECT_EQ(PhysicalOffset(1990, -40),
             MapLocalToAncestor(box, scroller, PhysicalOffset()));
@@ -1798,7 +1806,8 @@ TEST_F(MapCoordinatesTest, IgnoreScrollOffsetWithWritingModes) {
       PhysicalOffset(1990, 10),
       MapLocalToAncestor(box, scroller, PhysicalOffset(), kIgnoreScrollOffset));
 
-  scroller->ScrollToPosition(FloatPoint(1900, 50));
+  scroll_element->GetScrollableArea()->ScrollToAbsolutePosition(
+      FloatPoint(1900, 50));
 
   EXPECT_EQ(PhysicalOffset(90, -40),
             MapLocalToAncestor(box, scroller, PhysicalOffset()));
@@ -1837,7 +1846,10 @@ TEST_F(MapCoordinatesTest,
       PhysicalOffset(1990, 10),
       MapLocalToAncestor(box, scroller, PhysicalOffset(), kIgnoreScrollOffset));
 
-  scroller->ScrollToPosition(FloatPoint(0, 0));
+  To<Element>(scroller->GetNode())
+      ->GetScrollableArea()
+      ->ScrollToAbsolutePosition(FloatPoint(0, 0));
+
   // The box is now on the right of the scrollbar therefore there is nothing
   // between the box and the right border of the content.
   EXPECT_EQ(PhysicalOffset(1990, 10),

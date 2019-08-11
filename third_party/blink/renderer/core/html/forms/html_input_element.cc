@@ -1987,4 +1987,13 @@ void HTMLInputElement::ChildrenChanged(const ChildrenChange& change) {
   ContainerNode::ChildrenChanged(change);
 }
 
+PaintLayerScrollableArea* HTMLInputElement::GetScrollableArea() const {
+  // If it's LayoutTextControlSingleLine, return InnerEditorElement's scrollable
+  // area.
+  if (IsTextField() && InnerEditorElement())
+    return InnerEditorElement()->GetScrollableArea();
+
+  return Element::GetScrollableArea();
+}
+
 }  // namespace blink

@@ -23,8 +23,8 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_memory_controller.h"
+#include "storage/browser/blob/blob_storage_constants.h"
 #include "storage/browser/blob/blob_storage_registry.h"
-#include "storage/common/blob_storage/blob_storage_constants.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 class GURL;

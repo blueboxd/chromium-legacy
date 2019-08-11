@@ -29,7 +29,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "storage/common/blob_storage/blob_storage_constants.h"
+#include "storage/browser/blob/blob_storage_constants.h"
 
 namespace base {
 class TaskRunner;

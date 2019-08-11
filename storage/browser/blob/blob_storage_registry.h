@@ -17,7 +17,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/unguessable_token.h"
-#include "storage/common/blob_storage/blob_storage_constants.h"
+#include "storage/browser/blob/blob_storage_constants.h"
 
 class GURL;
 

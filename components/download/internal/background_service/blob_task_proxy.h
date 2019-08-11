@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "storage/common/blob_storage/blob_storage_constants.h"
+#include "storage/browser/blob/blob_storage_constants.h"
 
 namespace storage {
 class BlobDataHandle;

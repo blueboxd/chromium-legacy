@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_COMMON_BLOB_STORAGE_BLOB_STORAGE_CONSTANTS_H_
-#define STORAGE_COMMON_BLOB_STORAGE_BLOB_STORAGE_CONSTANTS_H_
+#ifndef STORAGE_BROWSER_BLOB_BLOB_STORAGE_CONSTANTS_H_
+#define STORAGE_BROWSER_BLOB_BLOB_STORAGE_CONSTANTS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -35,7 +35,7 @@ constexpr const char kBlobFileTransportByFileTriggerSwitch[] =
     "blob-transport-by-file-trigger";
 
 // All sizes are in bytes.
-struct COMPONENT_EXPORT(STORAGE_COMMON) BlobStorageLimits {
+struct COMPONENT_EXPORT(STORAGE_BROWSER) BlobStorageLimits {
   BlobStorageLimits();
   ~BlobStorageLimits();
   BlobStorageLimits(const BlobStorageLimits&);
@@ -150,14 +150,14 @@ enum class BlobStatus {
 using BlobStatusCallback = base::OnceCallback<void(BlobStatus)>;
 
 // Returns if the status is an error code.
-COMPONENT_EXPORT(STORAGE_COMMON) bool BlobStatusIsError(BlobStatus status);
+COMPONENT_EXPORT(STORAGE_BROWSER) bool BlobStatusIsError(BlobStatus status);
 
-COMPONENT_EXPORT(STORAGE_COMMON) bool BlobStatusIsPending(BlobStatus status);
+COMPONENT_EXPORT(STORAGE_BROWSER) bool BlobStatusIsPending(BlobStatus status);
 
 // Returns if the status is a bad enough error to flag the IPC as bad. This is
 // only INVALID_CONSTRUCTION_ARGUMENTS.
-COMPONENT_EXPORT(STORAGE_COMMON) bool BlobStatusIsBadIPC(BlobStatus status);
+COMPONENT_EXPORT(STORAGE_BROWSER) bool BlobStatusIsBadIPC(BlobStatus status);
 
 }  // namespace storage
 
-#endif  // STORAGE_COMMON_BLOB_STORAGE_BLOB_STORAGE_CONSTANTS_H_
+#endif  // STORAGE_BROWSER_BLOB_BLOB_STORAGE_CONSTANTS_H_

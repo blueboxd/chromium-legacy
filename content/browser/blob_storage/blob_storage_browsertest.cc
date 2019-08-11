@@ -19,8 +19,8 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "storage/browser/blob/blob_memory_controller.h"
+#include "storage/browser/blob/blob_storage_constants.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/common/blob_storage/blob_storage_constants.h"
 
 namespace content {
 namespace {

@@ -145,7 +145,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3e7fa79f2c79bc7e873c0cde3de3254f00136577',
+  'skia_revision': '9c23a9e790b2f29b2cf204e67dbc67a363d0ce74',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -284,7 +284,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '05984adaf39cf75e8b3a7c3db1e406708bb48350',
+  'quiche_revision': '4ff606217c21e4498176a096566278466a758aa5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.

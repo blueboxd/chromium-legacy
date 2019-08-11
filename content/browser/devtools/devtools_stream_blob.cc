@@ -15,8 +15,8 @@
 #include "net/base/io_buffer.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_reader.h"
+#include "storage/browser/blob/blob_storage_constants.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/common/blob_storage/blob_storage_constants.h"
 
 namespace content {
 

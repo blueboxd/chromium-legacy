@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_COMMON_BLOB_STORAGE_BLOB_HANDLE_H_
-#define STORAGE_COMMON_BLOB_STORAGE_BLOB_HANDLE_H_
+#ifndef STORAGE_BROWSER_BLOB_BLOB_HANDLE_H_
+#define STORAGE_BROWSER_BLOB_BLOB_HANDLE_H_
 
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
@@ -12,7 +12,7 @@
 namespace storage {
 
 // Refcounted wrapper around a mojom::BlobPtr.
-class COMPONENT_EXPORT(STORAGE_COMMON) BlobHandle
+class COMPONENT_EXPORT(STORAGE_BROWSER) BlobHandle
     : public base::RefCounted<BlobHandle> {
  public:
   explicit BlobHandle(blink::mojom::BlobPtr blob);
@@ -34,4 +34,4 @@ class COMPONENT_EXPORT(STORAGE_COMMON) BlobHandle
 
 }  // namespace storage
 
-#endif  // STORAGE_COMMON_BLOB_STORAGE_BLOB_HANDLE_H_
+#endif  // STORAGE_BROWSER_BLOB_BLOB_HANDLE_H_

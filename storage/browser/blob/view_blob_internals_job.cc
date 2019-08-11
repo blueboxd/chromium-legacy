@@ -25,10 +25,10 @@
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_entry.h"
+#include "storage/browser/blob/blob_storage_constants.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_storage_registry.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
-#include "storage/common/blob_storage/blob_storage_constants.h"
 
 namespace {
 using storage::BlobStatus;

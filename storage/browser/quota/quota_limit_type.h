@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef STORAGE_COMMON_QUOTA_QUOTA_LIMIT_TYPE_H_
-#define STORAGE_COMMON_QUOTA_QUOTA_LIMIT_TYPE_H_
+#ifndef STORAGE_BROWSER_QUOTA_QUOTA_LIMIT_TYPE_H_
+#define STORAGE_BROWSER_QUOTA_QUOTA_LIMIT_TYPE_H_
 
 namespace storage {
 
@@ -16,4 +16,4 @@ enum QuotaLimitType {
 
 }  // namespace storage
 
-#endif  // STORAGE_COMMON_QUOTA_QUOTA_LIMIT_TYPE_H_
+#endif  // STORAGE_BROWSER_QUOTA_QUOTA_LIMIT_TYPE_H_

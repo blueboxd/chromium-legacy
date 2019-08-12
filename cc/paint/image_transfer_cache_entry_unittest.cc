@@ -37,6 +37,9 @@
 namespace cc {
 namespace {
 
+constexpr SkYUVColorSpace kJpegYUVColorSpace =
+    SkYUVColorSpace::kJPEG_SkYUVColorSpace;
+
 void MarkTextureAsReleased(SkImage::ReleaseContext context) {
   auto* released = static_cast<bool*>(context);
   DCHECK(!*released);
@@ -206,8 +209,8 @@ TEST_P(ImageTransferCacheEntryTest, HardwareDecodedNoMipsAtCreation) {
   auto entry(std::make_unique<ServiceImageTransferCacheEntry>());
   EXPECT_TRUE(entry->BuildFromHardwareDecodedImage(
       gr_context(), std::move(plane_images),
-      GetParam() /* plane_images_format */, 0u /* buffer_byte_size */,
-      false /* needs_mips */));
+      GetParam() /* plane_images_format */, kJpegYUVColorSpace,
+      0u /* buffer_byte_size */, false /* needs_mips */));
 
   // We didn't request generating mipmap chains, so the textures we created
   // above should stay alive until after the cache entry is deleted.
@@ -238,8 +241,8 @@ TEST_P(ImageTransferCacheEntryTest, HardwareDecodedMipsAtCreation) {
   auto entry(std::make_unique<ServiceImageTransferCacheEntry>());
   EXPECT_TRUE(entry->BuildFromHardwareDecodedImage(
       gr_context(), std::move(plane_images),
-      GetParam() /* plane_images_format */, 0u /* buffer_byte_size */,
-      true /* needs_mips */));
+      GetParam() /* plane_images_format */, kJpegYUVColorSpace,
+      0u /* buffer_byte_size */, true /* needs_mips */));
 
   // We requested generating mipmap chains at creation time, so the textures we
   // created above should be released by now.
@@ -275,8 +278,8 @@ TEST_P(ImageTransferCacheEntryTest, HardwareDecodedMipsAfterCreation) {
   auto entry(std::make_unique<ServiceImageTransferCacheEntry>());
   EXPECT_TRUE(entry->BuildFromHardwareDecodedImage(
       gr_context(), std::move(plane_images),
-      GetParam() /* plane_images_format */, 0u /* buffer_byte_size */,
-      false /* needs_mips */));
+      GetParam() /* plane_images_format */, kJpegYUVColorSpace,
+      0u /* buffer_byte_size */, false /* needs_mips */));
 
   // We didn't request generating mip chains, so the textures we created above
   // should stay alive for now.

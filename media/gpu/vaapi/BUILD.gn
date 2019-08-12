@@ -97,6 +97,10 @@ source_set("vaapi") {
     "//ui/gfx/geometry",
   ]
 
+  public_deps = [
+    "//skia",
+  ]
+
   if (is_chromeos) {
     sources += [
       "vaapi_jpeg_encode_accelerator.cc",

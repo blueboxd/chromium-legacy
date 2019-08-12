@@ -547,6 +547,11 @@ bool ScopedTaskEnvironment::MainThreadIsIdle() const {
 void ScopedTaskEnvironment::RunUntilIdle() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
 
+  if (threading_mode_ == ThreadingMode::MAIN_THREAD_ONLY) {
+    RunLoop(RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+    return;
+  }
+
   // TODO(gab): This can be heavily simplified to essentially:
   //     bool HasMainThreadTasks() {
   //      if (message_loop_)
@@ -635,7 +640,7 @@ void ScopedTaskEnvironment::FastForwardBy(TimeDelta delta) {
   DCHECK(mock_time_domain_);
   DCHECK_GE(delta, TimeDelta());
 
-  const bool could_run_tasks = task_tracker_->AllowRunTasks();
+  const bool could_run_tasks = task_tracker_ && task_tracker_->AllowRunTasks();
 
   const TimeTicks fast_forward_until = mock_time_domain_->NowTicks() + delta;
   do {
@@ -643,7 +648,7 @@ void ScopedTaskEnvironment::FastForwardBy(TimeDelta delta) {
   } while (mock_time_domain_->FastForwardToNextTaskOrCap(fast_forward_until) !=
            MockTimeDomain::NextTaskSource::kNone);
 
-  if (!could_run_tasks)
+  if (task_tracker_ && !could_run_tasks)
     task_tracker_->DisallowRunTasks();
 }
 

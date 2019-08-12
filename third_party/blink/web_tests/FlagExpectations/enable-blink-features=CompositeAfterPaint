@@ -2,8 +2,6 @@
 # See: https://docs.google.com/document/d/1QCM912Dr6u38DqyQqd7pxQxDy8FFOoWMMDq7uAXqKdA/view
 Bug(none) http/tests/devtools/tracing/ [ Skip ]
 
-Bug(none) virtual/disable-blink-gen-property-trees/ [ Skip ]
-
 Bug(none) virtual/gpu/fast/canvas/ [ Skip ]
 Bug(none) virtual/layout_ng/ [ Skip ]
 Bug(none) virtual/layout_ng_experimental/ [ Skip ]

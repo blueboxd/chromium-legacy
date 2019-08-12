@@ -10,12 +10,12 @@
 
 #include <memory>
 
-
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/config/gpu_info.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace gfx {
 class NativePixmapDmaBuf;
@@ -77,6 +77,10 @@ class VaapiImageDecoder {
 
   // Returns the type of image supported by this decoder.
   virtual gpu::ImageDecodeAcceleratorType GetType() const = 0;
+
+  // Returns the type of mapping needed to convert the NativePixmapDmaBuf
+  // returned by ExportAsNativePixmapDmaBuf() from YUV to RGB.
+  virtual SkYUVColorSpace GetYUVColorSpace() const = 0;
 
   // Returns the image profile supported by this decoder.
   virtual gpu::ImageDecodeAcceleratorSupportedProfile GetSupportedProfile()

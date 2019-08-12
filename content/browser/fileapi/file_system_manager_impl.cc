@@ -38,7 +38,6 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/common/fileapi/file_system_info.h"
-#include "storage/common/fileapi/file_system_type_converters.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "third_party/blink/public/common/features.h"
@@ -58,6 +57,68 @@ namespace {
 void RevokeFilePermission(int child_id, const base::FilePath& path) {
   ChildProcessSecurityPolicyImpl::GetInstance()->RevokeAllPermissionsForFile(
       child_id, path);
+}
+
+storage::FileSystemType ToStorageFileSystemType(
+    blink::mojom::FileSystemType type) {
+  switch (type) {
+    case blink::mojom::FileSystemType::kTemporary:
+      return storage::FileSystemType::kFileSystemTypeTemporary;
+    case blink::mojom::FileSystemType::kPersistent:
+      return storage::FileSystemType::kFileSystemTypePersistent;
+    case blink::mojom::FileSystemType::kIsolated:
+      return storage::FileSystemType::kFileSystemTypeIsolated;
+    case blink::mojom::FileSystemType::kExternal:
+      return storage::FileSystemType::kFileSystemTypeExternal;
+  }
+  NOTREACHED();
+  return storage::FileSystemType::kFileSystemTypeTemporary;
+}
+
+blink::mojom::FileSystemType ToMojoFileSystemType(
+    storage::FileSystemType type) {
+  switch (type) {
+    case storage::FileSystemType::kFileSystemTypeTemporary:
+      return blink::mojom::FileSystemType::kTemporary;
+    case storage::FileSystemType::kFileSystemTypePersistent:
+      return blink::mojom::FileSystemType::kPersistent;
+    case storage::FileSystemType::kFileSystemTypeIsolated:
+      return blink::mojom::FileSystemType::kIsolated;
+    case storage::FileSystemType::kFileSystemTypeExternal:
+      return blink::mojom::FileSystemType::kExternal;
+    // Internal enum types
+    case storage::FileSystemType::kFileSystemTypeUnknown:
+    case storage::FileSystemType::kFileSystemInternalTypeEnumStart:
+    case storage::FileSystemType::kFileSystemTypeTest:
+    case storage::FileSystemType::kFileSystemTypeNativeLocal:
+    case storage::FileSystemType::kFileSystemTypeRestrictedNativeLocal:
+    case storage::FileSystemType::kFileSystemTypeDragged:
+    case storage::FileSystemType::kFileSystemTypeNativeMedia:
+    case storage::FileSystemType::kFileSystemTypeDeviceMedia:
+    case storage::FileSystemType::kFileSystemTypeDrive:
+    case storage::FileSystemType::kFileSystemTypeSyncable:
+    case storage::FileSystemType::kFileSystemTypeSyncableForInternalSync:
+    case storage::FileSystemType::kFileSystemTypeNativeForPlatformApp:
+    case storage::FileSystemType::kFileSystemTypeForTransientFile:
+    case storage::FileSystemType::kFileSystemTypePluginPrivate:
+    case storage::FileSystemType::kFileSystemTypeCloudDevice:
+    case storage::FileSystemType::kFileSystemTypeProvided:
+    case storage::FileSystemType::kFileSystemTypeDeviceMediaAsFileStorage:
+    case storage::FileSystemType::kFileSystemTypeArcContent:
+    case storage::FileSystemType::kFileSystemTypeArcDocumentsProvider:
+    case storage::FileSystemType::kFileSystemTypeDriveFs:
+    case storage::FileSystemType::kFileSystemInternalTypeEnumEnd:
+      NOTREACHED();
+      return blink::mojom::FileSystemType::kTemporary;
+  }
+  NOTREACHED();
+  return blink::mojom::FileSystemType::kTemporary;
+}
+
+blink::mojom::FileSystemInfoPtr ToMojoFileSystemInfo(
+    const storage::FileSystemInfo& info) {
+  return blink::mojom::FileSystemInfo::New(
+      info.name, info.root_url, ToMojoFileSystemType(info.mount_type));
 }
 
 }  // namespace
@@ -160,8 +221,7 @@ void FileSystemManagerImpl::Open(const url::Origin& origin,
     RecordAction(base::UserMetricsAction("OpenFileSystemPersistent"));
   }
   context_->OpenFileSystem(
-      origin.GetURL(),
-      mojo::ConvertTo<storage::FileSystemType>(file_system_type),
+      origin.GetURL(), ToStorageFileSystemType(file_system_type),
       storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(&FileSystemManagerImpl::DidOpenFileSystem, GetWeakPtr(),
                      std::move(callback)));
@@ -705,8 +765,7 @@ void FileSystemManagerImpl::DidResolveURL(
   base::FilePath normalized_path(
       storage::VirtualPath::GetNormalizedFilePath(file_path));
   std::move(callback).Run(
-      mojo::ConvertTo<blink::mojom::FileSystemInfoPtr>(info),
-      std::move(normalized_path),
+      ToMojoFileSystemInfo(info), std::move(normalized_path),
       type == storage::FileSystemContext::RESOLVED_ENTRY_DIRECTORY, result);
   // For ResolveURL we do not create a new operation, so no unregister here.
 }

@@ -302,6 +302,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   // If |in_memory| is true, the |relative_partition_path| is (ab)used as a way
   // of distinguishing different in-memory partitions, but nothing is persisted
   // on to disk.
+  //
+  // Initialize() must be called on the StoragePartitionImpl before using it.
   static std::unique_ptr<StoragePartitionImpl> Create(
       BrowserContext* context,
       bool in_memory,
@@ -310,7 +312,17 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   StoragePartitionImpl(BrowserContext* browser_context,
                        const base::FilePath& partition_path,
+                       bool is_in_memory,
+                       const base::FilePath& relative_partition_path,
+                       const std::string& partition_domain,
                        storage::SpecialStoragePolicy* special_storage_policy);
+
+  // This must be called before calling any members of the StoragePartitionImpl
+  // except for GetPath and browser_context().
+  // The purpose of the Create, Initialize sequence is that code that
+  // initializes members of the StoragePartitionImpl and gets a pointer to it
+  // can query properties of the StoragePartitionImpl (notably GetPath()).
+  void Initialize();
 
   // We will never have both remove_origin be populated and a cookie_matcher.
   void ClearDataImpl(
@@ -337,11 +349,24 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::URLLoaderFactory*
   GetURLLoaderFactoryForBrowserProcessInternal(bool corb_enabled);
 
-  // |is_in_memory_| and |relative_partition_path_| are cached from
-  // |StoragePartitionImpl::Create()| in order to re-create |NetworkContext|.
-  bool is_in_memory_;
-  base::FilePath relative_partition_path_;
-  base::FilePath partition_path_;
+  // Raw pointer that should always be valid. The BrowserContext owns the
+  // StoragePartitionImplMap which then owns StoragePartitionImpl. When the
+  // BrowserContext is destroyed, |this| will be destroyed too.
+  BrowserContext* browser_context_;
+
+  const base::FilePath partition_path_;
+
+  // |is_in_memory_|, |relative_partition_path_| and |partition_domain_| are
+  // cached from |StoragePartitionImpl::Create()| in order to re-create
+  // |NetworkContext|.
+  const bool is_in_memory_;
+  const base::FilePath relative_partition_path_;
+  const std::string partition_domain_;
+
+  // Until a StoragePartitionImpl is initialized using Initialize(), only
+  // querying its path abd BrowserContext is allowed.
+  bool initialized_ = false;
+
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
@@ -409,11 +434,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::CookieManagerPtr cookie_manager_for_browser_process_;
   network::mojom::OriginPolicyManagerPtr
       origin_policy_manager_for_browser_process_;
-
-  // Raw pointer that should always be valid. The BrowserContext owns the
-  // StoragePartitionImplMap which then owns StoragePartitionImpl. When the
-  // BrowserContext is destroyed, |this| will be destroyed too.
-  BrowserContext* browser_context_;
 
   // See comments for site_for_service_worker().
   GURL site_for_service_worker_;

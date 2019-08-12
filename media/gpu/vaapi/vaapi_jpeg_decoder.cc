@@ -318,6 +318,10 @@ gpu::ImageDecodeAcceleratorType VaapiJpegDecoder::GetType() const {
   return gpu::ImageDecodeAcceleratorType::kJpeg;
 }
 
+SkYUVColorSpace VaapiJpegDecoder::GetYUVColorSpace() const {
+  return SkYUVColorSpace::kJPEG_SkYUVColorSpace;
+}
+
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(
     uint32_t preferred_image_fourcc,
     VaapiImageDecodeStatus* status) {

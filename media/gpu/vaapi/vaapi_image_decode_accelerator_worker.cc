@@ -111,6 +111,7 @@ void DecodeTask(
   result->visible_size = exported_pixmap->pixmap->GetBufferSize();
   result->buffer_format = exported_pixmap->pixmap->GetBufferFormat();
   result->buffer_byte_size = exported_pixmap->byte_size;
+  result->yuv_color_space = decoder->GetYUVColorSpace();
   std::move(scoped_decode_callback).Run(std::move(result));
 }
 

@@ -570,6 +570,7 @@ source_set("builtin_service_manifests") {
   if (is_chromeos) {
     deps += [
       "//ash/public/cpp:manifest",
+      "//chromeos/services/ime/public/cpp:manifest",
       "//chromeos/services/network_config/public/cpp:manifest",
       "//chromeos/services/secure_channel/public/cpp:manifest",
     ]

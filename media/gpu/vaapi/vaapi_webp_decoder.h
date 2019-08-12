@@ -19,6 +19,7 @@ class VaapiWebPDecoder : public VaapiImageDecoder {
 
   // VaapiImageDecoder implementation.
   gpu::ImageDecodeAcceleratorType GetType() const override;
+  SkYUVColorSpace GetYUVColorSpace() const override;
 
  private:
   // VaapiImageDecoder implementation.

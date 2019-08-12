@@ -350,6 +350,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
                                    relative_partition_path, partition_domain));
   StoragePartitionImpl* partition = partition_ptr.get();
   partitions_[partition_config] = std::move(partition_ptr);
+  partition->Initialize();
 
   // Arm the serviceworker cookie change observation API.
   partition->GetCookieStoreContext()->ListenToCookieChanges(

@@ -502,9 +502,8 @@ const char* ExponentialWeightsEnsemble::GetPredictorName() const {
 
 void ExponentialWeightsEnsemble::Train(unsigned int target,
                                        unsigned int condition) {
-  for (auto& predictor_weight : predictors_)
-    predictor_weight.first->Train(target, condition);
-
+  // Update predictor weights. Do this before training the constituent
+  // predictors to avoid biasing towards fast-adjusting predictors.
   for (auto& predictor_weight : predictors_) {
     const auto& ranks = predictor_weight.first->Rank(condition);
 
@@ -531,6 +530,10 @@ void ExponentialWeightsEnsemble::Train(unsigned int target,
   for (auto& predictor_weight : predictors_) {
     predictor_weight.second /= total_weight;
   }
+
+  // Train constituent predictors.
+  for (auto& predictor_weight : predictors_)
+    predictor_weight.first->Train(target, condition);
 }
 
 std::map<unsigned int, float> ExponentialWeightsEnsemble::Rank(

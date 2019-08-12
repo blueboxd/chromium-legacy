@@ -404,6 +404,7 @@
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/network_config/network_config_service.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"

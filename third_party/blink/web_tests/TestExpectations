@@ -164,7 +164,6 @@ crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
 crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-antialiased.html [ Failure ]
 
 crbug.com/619103 paint/invalidation/background/background-resize-width.html [ Failure Pass ]
-crbug.com/619103 virtual/disable-blink-gen-property-trees/paint/invalidation/background/background-resize-width.html [ Failure Pass ]
 
 crbug.com/784956 fast/history/frameset-repeated-name.html [ Pass Failure ]
 
@@ -276,24 +275,6 @@ crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Fail
 Bug(none) http/tests/devtools/layers/layer-sticky-position-constraint-get.js [ Skip ]
 Bug(none) inspector-protocol/layers/get-layers.js [ Skip ]
 
-# Before we fully launch BlinkGenPropertyTrees, run visual/disable-blink-gen-property-trees/ on Linux.
-crbug.com/836884 [ Win ] virtual/disable-blink-gen-property-trees/ [ Skip ]
-crbug.com/836884 [ Mac ] virtual/disable-blink-gen-property-trees/ [ Skip ]
-crbug.com/836884 [ Fuchsia ] virtual/disable-blink-gen-property-trees/ [ Skip ]
-
-# Failures in non-BlinkGenPropertyTree mode.
-# TODO(wangxianzhu): Remove them when we remove non-BlinkGenPropertyTree code.
-crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/3d-cube.html [ Failure ]
-crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/composited-canvas-with-overflowing-object-fit.html [ Failure ]
-crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
-crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/gestures/gesture-tapHighlight-with-filter.html [ Failure ]
-crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
-crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
-crbug.com/836884 virtual/disable-blink-gen-property-trees/compositing/video/video-controls-layer-creation-squashing.html [ Failure ]
-
-# Broken pre-BGPT after removing tiled masks code.
-crbug.com/979679 virtual/disable-blink-gen-property-trees/compositing/masks/broken-mask.html [ Failure ]
-
 # These fail when device_scale_factor is changed, but only for anti-aliasing:
 crbug.com/968791 virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Failure ]
 crbug.com/968791 virtual/scalefactor200/css3/filters/filterRegions.html [ Failure ]
@@ -356,7 +337,6 @@ crbug.com/836886 virtual/prefer_compositing_to_lcd_text/compositing/overflow/sca
 crbug.com/836886 compositing/overflow/scaled-overflow.html [ Failure ]
 # Flaky subpixel AA difference (not necessarily incorrect, but flaky)
 crbug.com/921105 virtual/threaded/animations/skew-notsequential-compositor.html [ Failure Pass ]
-crbug.com/921105 virtual/disable-blink-gen-property-trees/animations/skew-notsequential-compositor.html [ Skip ]
 
 crbug.com/946532 external/wpt/css/css-backgrounds/background-clip/clip-text-dynamic-2.html [ Failure ]
 
@@ -787,14 +767,6 @@ crbug.com/591099 paint/invalidation/compositing/float-under-composited-inline.ht
 crbug.com/591099 paint/invalidation/compositing/stacked-float-under-composited-inline.html [ Failure ]
 crbug.com/591099 paint/invalidation/selection/selection-clear.html [ Failure ]
 crbug.com/591099 virtual/composite-after-paint/paint/background/scrolling-background-with-negative-z-child.html [ Failure Crash ]
-crbug.com/591099 virtual/disable-blink-gen-property-trees/paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
-crbug.com/591099 virtual/disable-blink-gen-property-trees/paint/invalidation/text-match-document-change.html [ Failure ]
-crbug.com/591099 virtual/disable-blink-gen-property-trees/paint/invalidation/compositing/composited-float-under-composited-inline-individual.html [ Failure ]
-crbug.com/591099 virtual/disable-blink-gen-property-trees/paint/invalidation/compositing/composited-float-under-composited-inline.html [ Failure ]
-crbug.com/591099 virtual/disable-blink-gen-property-trees/paint/invalidation/compositing/float-under-composited-inline.html [ Failure ]
-crbug.com/591099 virtual/disable-blink-gen-property-trees/paint/invalidation/compositing/stacked-float-under-composited-inline.html [ Failure ]
-crbug.com/591099 virtual/disable-blink-gen-property-trees/paint/invalidation/flexbox/scrollbars-changed.html [ Failure ]
-crbug.com/591099 virtual/disable-blink-gen-property-trees/paint/invalidation/selection/selection-clear.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/border-radius-clipped-layer.html [ Failure ]
 crbug.com/591099 editing/selection/paint-hyphen.html [ Failure Pass ]
@@ -2156,15 +2128,12 @@ crbug.com/989123 external/wpt/css/css-typed-om/the-stylepropertymap/computed/get
 ## Next 10 can be viewed in this run, by clicking on "Did not pass 11183":
 ## https://test-results.appspot.com/data/layout_results/linux-blink-rel/1237/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
 crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-transform-responsive.html [ Timeout ]
-crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-transform-responsive.html [ Skip ]
 crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
-crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-translate-responsive.html [ Skip ]
 crbug.com/891427 fast/replaced/replaced-breaking.html [ Failure ]
 crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
 crbug.com/891427 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
 ## Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/216317
 crbug.com/891427 virtual/threaded/animations/timing/animation-duration-infinite.html [ Failure ]
-crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/timing/animation-duration-infinite.html [ Skip ]
 crbug.com/891427 fast/overflow/transformed-frame-scrollIntoView.html [ Crash ]
 
 ### Flaky on trybots:
@@ -5984,11 +5953,8 @@ crbug.com/922951 virtual/mouseevent_fractional/fast/events/synthetic-events/tap-
 crbug.com/922951 virtual/prefer_compositing_to_lcd_text/scrollbars/resize-scales-with-dpi-150.html [ Skip ]
 crbug.com/922951 virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html [ Skip ]
 crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Skip ]
-crbug.com/922951 virtual/disable-blink-gen-property-trees/animations/direction-and-fill/fill-mode-iteration-count-non-integer.html [ Skip ]
 crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Skip ]
-crbug.com/922951 virtual/disable-blink-gen-property-trees/animations/direction-and-fill/fill-mode-missing-from-to-keyframes.html [ Skip ]
 crbug.com/922951 virtual/threaded/animations/direction-and-fill/fill-mode.html [ Skip ]
-crbug.com/922951 virtual/disable-blink-gen-property-trees/animations/direction-and-fill/fill-mode.html [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/timeline-layout-reason.js [ Skip ]
 crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Skip ]
@@ -6097,7 +6063,6 @@ crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-
 crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure ]
 crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function.html [ Failure Pass ]
 crbug.com/937858 [ Debug ] external/wpt/ambient-light/AmbientLightSensor.https.html [ Pass Failure ]
-crbug.com/937902 [ Linux Debug ] virtual/disable-blink-gen-property-trees/compositing/overflow/overflow-scroll-with-local-background.html [ Pass Failure ]
 
 # Sheriff 2019-03-05
 crbug.com/938200 http/tests/devtools/network/network-blocked-reason.js [ Timeout Pass ]
@@ -6525,9 +6490,6 @@ crbug.com/988074 [ Linux ] virtual/omt-worker-fetch/http/tests/security/cors-rfc
 crbug.com/981522 [ Linux ] external/wpt/svg/animations/correct-events-for-short-animations-with-syncbases.html [ Pass Failure Timeout ]
 crbug.com/991243 [ Linux ] external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
 crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Pass Timeout ]
-
-# Sheriff 2019-08-08
-crbug.com/992148 [ Linux ] virtual/disable-blink-gen-property-trees/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
 
 # Expected failure for experimental Scheduling API when running without the
 # BlinkSchedulerDisableAntiStarvationForPriorities feature.

@@ -16,7 +16,6 @@
 #include "cc/paint/paint_op_writer.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -326,10 +325,10 @@ bool ServiceImageTransferCacheEntry::BuildFromHardwareDecodedImage(
     GrContext* context,
     std::vector<sk_sp<SkImage>> plane_images,
     YUVDecodeFormat plane_images_format,
+    SkYUVColorSpace yuv_color_space,
     size_t buffer_byte_size,
     bool needs_mips) {
   context_ = context;
-  yuv_color_space_ = SkYUVColorSpace::kJPEG_SkYUVColorSpace;
 
   // 1) Generate mipmap chains if requested.
   if (needs_mips) {
@@ -344,13 +343,14 @@ bool ServiceImageTransferCacheEntry::BuildFromHardwareDecodedImage(
   }
   plane_images_ = std::move(plane_images);
   plane_images_format_ = plane_images_format;
+  yuv_color_space_ = yuv_color_space;
 
   // 2) Create a SkImage backed by |plane_images|.
   // TODO(andrescj): support embedded color profiles for hardware decodes and
   // pass the color space to MakeYUVImageFromUploadedPlanes.
-  image_ = MakeYUVImageFromUploadedPlanes(
-      context_, plane_images_, plane_images_format_, yuv_color_space_,
-      SkColorSpace::MakeSRGB());
+  image_ = MakeYUVImageFromUploadedPlanes(context_, plane_images_,
+                                          plane_images_format_, yuv_color_space,
+                                          SkColorSpace::MakeSRGB());
   if (!image_)
     return false;
 
@@ -454,9 +454,9 @@ bool ServiceImageTransferCacheEntry::Deserialize(
       // unit tests.
       plane_images_.push_back(std::move(plane));
     }
-
+    DCHECK(yuv_color_space_.has_value());
     image_ = MakeYUVImageFromUploadedPlanes(
-        context_, plane_images_, plane_images_format_, yuv_color_space_,
+        context_, plane_images_, plane_images_format_, yuv_color_space_.value(),
         decoded_color_space);
     return !!image_;
   }
@@ -570,7 +570,7 @@ void ServiceImageTransferCacheEntry::EnsureMips() {
 
   if (is_yuv()) {
     DCHECK(image_);
-    DCHECK_LE(yuv_color_space_, SkYUVColorSpace::kLastEnum_SkYUVColorSpace);
+    DCHECK(yuv_color_space_.has_value());
     DCHECK_NE(YUVDecodeFormat::kUnknown, plane_images_format_);
     DCHECK_EQ(NumberOfPlanesForYUVDecodeFormat(plane_images_format_),
               plane_images_.size());
@@ -590,7 +590,7 @@ void ServiceImageTransferCacheEntry::EnsureMips() {
     }
     mipped_planes.clear();
     image_ = MakeYUVImageFromUploadedPlanes(
-        context_, plane_images_, plane_images_format_, yuv_color_space_,
+        context_, plane_images_, plane_images_format_, yuv_color_space_.value(),
         image_->refColorSpace() /* image_color_space */);
     has_mips_ = true;
     return;

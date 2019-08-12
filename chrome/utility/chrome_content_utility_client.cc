@@ -43,6 +43,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/assistant/buildflags.h"  // nogncheck
+#include "chromeos/services/ime/ime_service.h"
+#include "chromeos/services/ime/public/mojom/constants.mojom.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_service.h"  // nogncheck
@@ -169,13 +171,17 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 #endif
 
 #if defined(OS_CHROMEOS)
+  if (service_name == chromeos::ime::mojom::kServiceName)
+    return std::make_unique<chromeos::ime::ImeService>(std::move(request));
+
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   if (service_name == chromeos::assistant::mojom::kAudioDecoderServiceName) {
     return std::make_unique<chromeos::assistant::AssistantAudioDecoderService>(
         std::move(request));
   }
 #endif
-#endif
+
+#endif  // defined(OS_CHROMEOS)
   return nullptr;
 }
 

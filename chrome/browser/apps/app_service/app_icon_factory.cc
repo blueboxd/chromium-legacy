@@ -283,9 +283,8 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
         break;
 
       case apps::mojom::IconCompression::kUncompressed: {
-        extensions::ImageLoader::Get(context)->LoadImageAsync(
-            extension, std::move(ext_resource),
-            gfx::Size(size_hint_in_dip, size_hint_in_dip),
+        extensions::ImageLoader::Get(context)->LoadImageAtEveryScaleFactorAsync(
+            extension, gfx::Size(size_hint_in_dip, size_hint_in_dip),
             base::BindOnce(&RunCallbackWithUncompressedImage, size_hint_in_dip,
                            default_icon_resource, is_placeholder_icon,
                            icon_effects, std::move(callback)));

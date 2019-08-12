@@ -84,6 +84,10 @@ gpu::ImageDecodeAcceleratorType VaapiWebPDecoder::GetType() const {
   return gpu::ImageDecodeAcceleratorType::kWebP;
 }
 
+SkYUVColorSpace VaapiWebPDecoder::GetYUVColorSpace() const {
+  return SkYUVColorSpace::kRec601_SkYUVColorSpace;
+}
+
 VaapiImageDecodeStatus VaapiWebPDecoder::AllocateVASurfaceAndSubmitVABuffers(
     base::span<const uint8_t> encoded_image) {
   DCHECK(vaapi_wrapper_);

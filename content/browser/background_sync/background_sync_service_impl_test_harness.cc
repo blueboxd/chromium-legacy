@@ -144,6 +144,7 @@ void BackgroundSyncServiceImplTestHarness::CreateStoragePartition() {
   storage_partition_impl_ = StoragePartitionImpl::Create(
       embedded_worker_helper_->browser_context(), /* in_memory= */ true,
       base::FilePath(), /* partition_domain= */ "");
+  storage_partition_impl_->Initialize();
   embedded_worker_helper_->context_wrapper()->set_storage_partition(
       storage_partition_impl_.get());
 }

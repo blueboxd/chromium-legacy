@@ -62,11 +62,6 @@
 #include "chrome/services/printing/public/mojom/printing_service.mojom.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/services/ime/ime_service.h"
-#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
-#endif
-
 namespace {
 
 auto RunFilePatcher(mojo::PendingReceiver<patch::mojom::FilePatcher> receiver) {
@@ -140,13 +135,6 @@ auto RunPrintingService(
 }
 #endif
 
-#if defined(OS_CHROMEOS)
-auto RunImeService(
-    mojo::PendingReceiver<chromeos::ime::mojom::ImeService> receiver) {
-  return std::make_unique<chromeos::ime::ImeService>(std::move(receiver));
-}
-#endif
-
 }  // namespace
 
 mojo::ServiceFactory* GetElevatedMainThreadServiceFactory() {
@@ -201,10 +189,6 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
     RunPrintingService,
-#endif
-
-#if defined(OS_CHROMEOS)
-    RunImeService,
 #endif
   };
   // clang-format on

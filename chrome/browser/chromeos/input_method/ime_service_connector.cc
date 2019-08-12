@@ -10,9 +10,9 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "chromeos/services/ime/constants.h"
-#include "chromeos/services/ime/public/cpp/buildflags.h"
-#include "chromeos/strings/grit/chromeos_strings.h"
-#include "content/public/browser/service_process_host.h"
+#include "chromeos/services/ime/public/mojom/constants.mojom.h"
+#include "content/public/browser/system_connector.h"
+
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -24,12 +24,6 @@ namespace chromeos {
 namespace input_method {
 
 namespace {
-
-#if BUILDFLAG(ENABLE_CROS_IME_DECODER)
-constexpr auto kImeServiceSandboxType = service_manager::SANDBOX_TYPE_IME;
-#else
-constexpr auto kImeServiceSandboxType = service_manager::SANDBOX_TYPE_UTILITY;
-#endif
 
 constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
     net::DefineNetworkTrafficAnnotation("ime_url_downloader", R"(
@@ -71,7 +65,10 @@ bool IsDownloadURLValid(const GURL& url) {
 }  // namespace
 
 ImeServiceConnector::ImeServiceConnector(Profile* profile)
-    : profile_(profile), url_loader_factory_(profile->GetURLLoaderFactory()) {}
+    : profile_(profile),
+      url_loader_factory_(profile->GetURLLoaderFactory()),
+      instance_id_(base::Token::CreateRandom()),
+      access_(this) {}
 
 ImeServiceConnector::~ImeServiceConnector() = default;
 
@@ -113,21 +110,27 @@ void ImeServiceConnector::DownloadImeFileTo(
 
 void ImeServiceConnector::SetupImeService(
     mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
-  if (!remote_service_) {
-    content::ServiceProcessHost::Launch(
-        remote_service_.BindNewPipeAndPassReceiver(),
-        content::ServiceProcessHost::Options()
-            .WithDisplayName(IDS_IME_SERVICE_DISPLAY_NAME)
-            .WithSandboxType(kImeServiceSandboxType)
-            .Pass());
-    remote_service_.reset_on_disconnect();
+  auto* connector = content::GetSystemConnector();
+  auto per_id_filter = service_manager::ServiceFilter::ByNameWithId(
+      chromeos::ime::mojom::kServiceName, instance_id_);
 
-    platform_access_receiver_.reset();
-    remote_service_->SetPlatformAccessProvider(
-        platform_access_receiver_.BindNewPipeAndPassRemote());
+  // Connect to the ChromeOS IME service.
+  if (!access_client_.is_bound()) {
+    // Connect service as a PlatformAccessClient interface.
+    connector->Connect(per_id_filter,
+                       access_client_.BindNewPipeAndPassReceiver());
+
+    access_client_->SetPlatformAccessProvider(
+        access_.BindNewPipeAndPassRemote());
   }
 
-  remote_service_->BindInputEngineManager(std::move(receiver));
+  // Connect to the same service as a InputEngineManager interface.
+  connector->Connect(per_id_filter, std::move(receiver));
+}
+
+void ImeServiceConnector::OnPlatformAccessConnectionLost() {
+  // Reset the access_client_
+  access_client_.reset();
 }
 
 void ImeServiceConnector::OnFileDownloadComplete(

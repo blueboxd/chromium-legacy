@@ -48,6 +48,20 @@ scoped_refptr<storage::FileSystemContext> GetFileSystemContextFromRenderId(
   return storage_partition->GetFileSystemContext();
 }
 
+storage::FileSystemType PepperFileSystemTypeToFileSystemType(
+    PP_FileSystemType type) {
+  switch (type) {
+    case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
+      return storage::kFileSystemTypeTemporary;
+    case PP_FILESYSTEMTYPE_LOCALPERSISTENT:
+      return storage::kFileSystemTypePersistent;
+    case PP_FILESYSTEMTYPE_EXTERNAL:
+      return storage::kFileSystemTypeExternal;
+    default:
+      return storage::kFileSystemTypeUnknown;
+  }
+}
+
 }  // namespace
 
 PepperFileSystemBrowserHost::PepperFileSystemBrowserHost(BrowserPpapiHost* host,

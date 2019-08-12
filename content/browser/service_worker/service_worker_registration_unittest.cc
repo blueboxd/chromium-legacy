@@ -183,6 +183,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
     storage_partition_impl_ = StoragePartitionImpl::Create(
         helper_->browser_context(), /* in_memory= */ true, base::FilePath(),
         /* partition_domain= */ "");
+    storage_partition_impl_->Initialize();
     helper_->context_wrapper()->set_storage_partition(
         storage_partition_impl_.get());
 

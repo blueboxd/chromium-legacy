@@ -13,6 +13,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/manifest.h"
+#include "chromeos/services/ime/public/cpp/manifest.h"
 #include "chromeos/services/network_config/public/cpp/manifest.h"
 #include "chromeos/services/secure_channel/public/cpp/manifest.h"
 #endif
@@ -41,6 +42,7 @@ GetChromeBuiltinServiceManifests() {
 #endif
 #if defined(OS_CHROMEOS)
       ash::GetManifest(),
+      chromeos::ime::GetManifest(),
       chromeos::network_config::GetManifest(),
       chromeos::secure_channel::GetManifest(),
 #endif

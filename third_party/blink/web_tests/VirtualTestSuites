@@ -136,29 +136,6 @@
              "--force-raster-color-profile=color-spin-gamma24"]
   },
   {
-    "prefix": "disable-blink-gen-property-trees",
-    "base": "animations",
-    "args": ["--disable-blink-features=BlinkGenPropertyTrees",
-             "--enable-threaded-compositing",
-             "--disable-composited-antialiasing"]
-  },
-  {
-    "prefix": "disable-blink-gen-property-trees",
-    "base": "transitions",
-    "args": ["--disable-blink-features=BlinkGenPropertyTrees",
-             "--enable-threaded-compositing"]
-  },
-  {
-    "prefix": "disable-blink-gen-property-trees",
-    "base": "compositing",
-    "args": ["--disable-blink-features=BlinkGenPropertyTrees"]
-  },
-  {
-    "prefix": "disable-blink-gen-property-trees",
-    "base": "paint",
-    "args": ["--disable-blink-features=BlinkGenPropertyTrees"]
-  },
-  {
     "prefix": "stable",
     "base": "webexposed",
     "args": ["--stable-release-mode"]

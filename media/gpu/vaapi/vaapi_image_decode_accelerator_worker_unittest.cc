@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/containers/span.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -24,6 +25,7 @@
 #include "media/gpu/vaapi/vaapi_image_decode_accelerator_worker.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
@@ -92,6 +94,17 @@ class MockVaapiImageDecoder : public VaapiImageDecoder {
   ~MockVaapiImageDecoder() override = default;
 
   gpu::ImageDecodeAcceleratorType GetType() const override { return type_; }
+  SkYUVColorSpace GetYUVColorSpace() const override {
+    switch (type_) {
+      case gpu::ImageDecodeAcceleratorType::kJpeg:
+        return SkYUVColorSpace::kJPEG_SkYUVColorSpace;
+      case gpu::ImageDecodeAcceleratorType::kWebP:
+        return SkYUVColorSpace::kRec601_SkYUVColorSpace;
+      case gpu::ImageDecodeAcceleratorType::kUnknown:
+        NOTREACHED();
+        return SkYUVColorSpace::kIdentity_SkYUVColorSpace;
+    }
+  }
 
   gpu::ImageDecodeAcceleratorSupportedProfile GetSupportedProfile()
       const override {

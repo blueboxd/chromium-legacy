@@ -19,6 +19,7 @@
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/gpu_gles2_export.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class GrContext;
@@ -74,6 +75,7 @@ class GPU_GLES2_EXPORT ServiceTransferCache
       GrContext* context,
       std::vector<sk_sp<SkImage>> plane_images,
       cc::YUVDecodeFormat plane_images_format,
+      SkYUVColorSpace yuv_color_space,
       size_t buffer_byte_size,
       bool needs_mips);
 

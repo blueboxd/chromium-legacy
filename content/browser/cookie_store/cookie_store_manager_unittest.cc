@@ -262,9 +262,11 @@ class CookieStoreManagerTest
                                       base::BindOnce([](bool success) {
                                         CHECK(success) << "Initialize failed";
                                       }));
-    storage_partition_impl_ = base::WrapUnique(
-        new StoragePartitionImpl(worker_test_helper_->browser_context(),
-                                 user_data_directory_.GetPath(), nullptr));
+    storage_partition_impl_ = StoragePartitionImpl::Create(
+        worker_test_helper_->browser_context(), true /* in_memory */,
+        base::FilePath() /* relative_partition_path */,
+        std::string() /* partition_domain */);
+    storage_partition_impl_->Initialize();
     ::network::mojom::NetworkContext* network_context =
         storage_partition_impl_->GetNetworkContext();
     cookie_store_context_->ListenToCookieChanges(

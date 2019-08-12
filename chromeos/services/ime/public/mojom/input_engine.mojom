@@ -116,12 +116,9 @@ interface PlatformAccessProvider {
                         (mojo_base.mojom.FilePath file_path);
 };
 
-// The main interface to the IME service.
-interface ImeService {
-  // Injects a remote PlatformAccessProvider interface that the service can use
-  // to request privileged operations from the client (i.e. the browser).
+// A client on the input engine side that requires access to the IME-specific
+// resources on the platform.
+interface PlatformAccessClient {
+  // Set a platform access provider.
   SetPlatformAccessProvider(pending_remote<PlatformAccessProvider> provider);
-
-  // Binds an InputEngineManager interface.
-  BindInputEngineManager(pending_receiver<InputEngineManager> receiver);
 };

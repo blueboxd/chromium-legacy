@@ -82,6 +82,8 @@ specific_include_rules = {
     "+third_party/blink/public/mojom",
   ],
   "builtin_service_manifests\.cc": [
+    "+chrome/services/printing/public",
+    "+chromeos/services/ime",
     "+chromeos/services/network_config",
     "+chromeos/services/secure_channel",
     "+components/mirroring/service",

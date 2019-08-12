@@ -2014,7 +2014,9 @@ TEST_F(RenderWidgetHostTest, RendererHangRecordsMetrics) {
   tester.ExpectUniqueSample("Renderer.Hung.Duration", 17000, 1);
 }
 
-TEST_F(RenderWidgetHostTest, PendingUserActivationTimeout) {
+// TODO(https://crbug.com/992784): Flakily fails the final
+// ConsumePendingUserActivationIfAllowed expectation, after RunLoopFor().
+TEST_F(RenderWidgetHostTest, DISABLED_PendingUserActivationTimeout) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeature(
       features::kBrowserVerifiedUserActivation);

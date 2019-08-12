@@ -20,6 +20,7 @@
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gtest_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/mock_log.h"
 #include "base/test/test_timeouts.h"
@@ -309,12 +310,6 @@ TEST_F(ScopedTaskEnvironmentTest,
        SupportsSequenceLocalStorageOnMainThreadWithMockTime) {
   SupportsSequenceLocalStorageOnMainThreadTest(
       ScopedTaskEnvironment::TimeSource::MOCK_TIME);
-}
-
-TEST_F(ScopedTaskEnvironmentTest, SingleThreadShouldNotInitializeThreadPool) {
-  ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY);
-  EXPECT_THAT(ThreadPoolInstance::Get(), IsNull());
 }
 
 // Verify that the right MessagePump is instantiated under each MainThreadType.
@@ -1117,6 +1112,50 @@ TEST_F(ScopedTaskEnvironmentTest, TimeSourceMockTimeAlsoMocksNow) {
   scoped_task_environment.FastForwardBy(kDelay);
   EXPECT_EQ(TimeTicks::Now(), start_ticks + kDelay);
   EXPECT_EQ(Time::Now(), start_time + kDelay);
+}
+
+TEST_F(ScopedTaskEnvironmentTest, SingleThread) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY);
+  EXPECT_THAT(ThreadPoolInstance::Get(), IsNull());
+
+  bool ran = false;
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() { ran = true; }));
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(ran);
+
+  EXPECT_DCHECK_DEATH(PostTask(FROM_HERE, {ThreadPool()}, DoNothing()));
+}
+
+// Verify that traits other than ThreadingMode can be applied to
+// ScopedTaskEnvironment.
+TEST_F(ScopedTaskEnvironmentTest, SingleThreadMockTime) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      ScopedTaskEnvironment::TimeSource::MOCK_TIME);
+
+  const TimeTicks start_time = TimeTicks::Now();
+
+  constexpr TimeDelta kDelay = TimeDelta::FromSeconds(100);
+
+  int counter = 0;
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() { counter += 1; }), kDelay);
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindLambdaForTesting([&]() { counter += 2; }));
+
+  int expected_value = 0;
+  EXPECT_EQ(expected_value, counter);
+
+  scoped_task_environment.RunUntilIdle();
+  expected_value += 2;
+  EXPECT_EQ(expected_value, counter);
+
+  scoped_task_environment.FastForwardUntilNoTasksRemain();
+  expected_value += 1;
+  EXPECT_EQ(expected_value, counter);
+  EXPECT_EQ(TimeTicks::Now(), start_time + kDelay);
 }
 
 }  // namespace test

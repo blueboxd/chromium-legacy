@@ -11,6 +11,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,6 +29,9 @@ class LeakDetectionRequestFactoryImplTest : public testing::Test {
 
   signin::IdentityTestEnvironment& identity_env() { return identity_test_env_; }
   MockLeakDetectionDelegateInterface& delegate() { return delegate_; }
+  const scoped_refptr<network::SharedURLLoaderFactory>& url_loader_factory() {
+    return url_loader_factory_;
+  }
   LeakDetectionRequestFactoryImpl& request_factory() {
     return request_factory_;
   }
@@ -36,6 +40,8 @@ class LeakDetectionRequestFactoryImplTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_env_;
   signin::IdentityTestEnvironment identity_test_env_;
   StrictMock<MockLeakDetectionDelegateInterface> delegate_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_ =
+      base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
   LeakDetectionRequestFactoryImpl request_factory_;
 };
 
@@ -46,8 +52,7 @@ TEST_F(LeakDetectionRequestFactoryImplTest, DisabledFeature) {
   feature_list.InitAndDisableFeature(features::kLeakDetection);
 
   EXPECT_FALSE(request_factory().TryCreateLeakCheck(
-      &delegate(), identity_env().identity_manager(),
-      /*url_loader_factory=*/nullptr));
+      &delegate(), identity_env().identity_manager(), url_loader_factory()));
 }
 
 TEST_F(LeakDetectionRequestFactoryImplTest, SignedOut) {
@@ -56,8 +61,7 @@ TEST_F(LeakDetectionRequestFactoryImplTest, SignedOut) {
 
   EXPECT_CALL(delegate(), OnError(LeakDetectionError::kNotSignIn));
   EXPECT_FALSE(request_factory().TryCreateLeakCheck(
-      &delegate(), identity_env().identity_manager(),
-      /*url_loader_factory=*/nullptr));
+      &delegate(), identity_env().identity_manager(), url_loader_factory()));
 }
 
 TEST_F(LeakDetectionRequestFactoryImplTest, SignedIn) {
@@ -68,8 +72,7 @@ TEST_F(LeakDetectionRequestFactoryImplTest, SignedIn) {
   identity_env().SetCookieAccounts({{info.email, info.account_id}});
   identity_env().SetRefreshTokenForAccount(info.account_id);
   EXPECT_TRUE(request_factory().TryCreateLeakCheck(
-      &delegate(), identity_env().identity_manager(),
-      /*url_loader_factory=*/nullptr));
+      &delegate(), identity_env().identity_manager(), url_loader_factory()));
 }
 
 TEST_F(LeakDetectionRequestFactoryImplTest, SignedInAndSyncing) {
@@ -78,8 +81,7 @@ TEST_F(LeakDetectionRequestFactoryImplTest, SignedInAndSyncing) {
 
   identity_env().SetPrimaryAccount(kTestAccount);
   EXPECT_TRUE(request_factory().TryCreateLeakCheck(
-      &delegate(), identity_env().identity_manager(),
-      /*url_loader_factory=*/nullptr));
+      &delegate(), identity_env().identity_manager(), url_loader_factory()));
 }
 
 }  // namespace password_manager

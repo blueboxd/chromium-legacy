@@ -128,3 +128,9 @@
 # A frozen page failed to execute Javascript.
 # See https://crbug.com/991194
 -WebContentsImplBrowserTest.SetPageFrozen
+
+# Check failed: popup_ || pepper_fullscreen_ in RenderWidget::OnClose()
+# https://crbug.com/992891
+-WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkerScripts/1
+-WebContentsSplitCacheBrowserTestEnabled.SplitCacheDedicatedWorkerScripts/0
+

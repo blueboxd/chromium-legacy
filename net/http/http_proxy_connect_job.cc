@@ -187,7 +187,8 @@ HttpProxyConnectJob::HttpProxyConnectJob(
                          GetDestination().ToString()),
                     common_connect_job_params->http_auth_cache,
                     common_connect_job_params->http_auth_handler_factory,
-                    host_resolver())
+                    host_resolver(),
+                    HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS)
               : nullptr) {}
 
 HttpProxyConnectJob::~HttpProxyConnectJob() {}

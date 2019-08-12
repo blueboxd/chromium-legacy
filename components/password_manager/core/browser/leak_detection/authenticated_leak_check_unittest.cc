@@ -10,6 +10,7 @@
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_delegate.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,9 +27,10 @@ constexpr char kExampleCom[] = "https://example.com";
 class AuthenticatedLeakCheckTest : public testing::Test {
  public:
   AuthenticatedLeakCheckTest()
-      : leak_check_(&delegate_,
-                    identity_test_env_.identity_manager(),
-                    /*url_loader_factory=*/nullptr) {}
+      : leak_check_(
+            &delegate_,
+            identity_test_env_.identity_manager(),
+            base::MakeRefCounted<network::TestSharedURLLoaderFactory>()) {}
   ~AuthenticatedLeakCheckTest() override = default;
 
   signin::IdentityTestEnvironment& identity_env() { return identity_test_env_; }

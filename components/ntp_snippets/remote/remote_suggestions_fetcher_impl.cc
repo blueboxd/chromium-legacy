@@ -257,7 +257,6 @@ void RemoteSuggestionsFetcherImpl::FetchSnippetsAuthenticated(
       fetch_url_, builder.is_interactive_request());
 
   builder.SetUrl(url).SetAuthentication(
-      identity_manager_->GetPrimaryAccountId(),
       base::StringPrintf(kAuthorizationRequestHeaderFormat,
                          oauth_access_token.c_str()));
   StartRequest(std::move(builder), std::move(callback),

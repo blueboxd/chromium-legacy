@@ -11,11 +11,16 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "remoting/host/security_key/fake_security_key_ipc_server.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 namespace {
 const int kTestConnectionId = 1;

@@ -11,7 +11,7 @@ namespace gpu {
 
 class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
     : public GpuWatchdogThread,
-      public base::MessageLoopCurrent::TaskObserver {
+      public base::TaskObserver {
  public:
   static std::unique_ptr<GpuWatchdogThreadImplV2> Create(
       bool start_backgrounded);
@@ -37,7 +37,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // Implements gl::ProgressReporter.
   void ReportProgress() override;
 
-  // Implements MessageLoopCurrent::TaskObserver.
+  // Implements TaskObserver.
   void WillProcessTask(const base::PendingTask& pending_task) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 

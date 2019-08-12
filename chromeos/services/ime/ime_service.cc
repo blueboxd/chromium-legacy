@@ -10,6 +10,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
+#include "base/location.h"
+#include "base/sequenced_task_runner.h"
 #include "build/buildflag.h"
 #include "chromeos/services/ime/constants.h"
 #include "chromeos/services/ime/public/cpp/buildflags.h"
@@ -120,16 +123,23 @@ const char* ImeService::GetImeUserHomeDir() {
   return kUserInputMethodsDirPath;
 }
 
+void ImeService::RunInMainSequence(ImeSequencedTask task, int task_id) {
+  // Always run tasks on current SequencedTaskRunner.
+  // It's necessary for making any call on a bound Mojo Remote.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(task, task_id));
+}
+
 int ImeService::SimpleDownloadToFile(const char* url,
                                      const char* file_path,
                                      SimpleDownloadCallback callback) {
   if (!platform_access_.is_bound()) {
     callback(SIMPLE_DOWNLOAD_ERROR_ABORTED, "");
+    LOG(ERROR) << "Failed to download due to missing binding.";
   } else {
     GURL download_url(url);
     // |file_path| must be relative.
     base::FilePath relative_file_path(file_path);
-
     platform_access_->DownloadImeFileTo(
         download_url, relative_file_path,
         base::BindOnce(&ImeService::SimpleDownloadFinished,

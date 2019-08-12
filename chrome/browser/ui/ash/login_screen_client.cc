@@ -143,11 +143,11 @@ void LoginScreenClient::AuthenticateUserWithChallengeResponse(
   }
 }
 
-bool LoginScreenClient::ValidateParentAccessCode(
-    const AccountId& account_id,
-    const std::string& access_code) {
+bool LoginScreenClient::ValidateParentAccessCode(const AccountId& account_id,
+                                                 const std::string& access_code,
+                                                 base::Time validation_time) {
   return chromeos::parent_access::ParentAccessService::Get()
-      .ValidateParentAccessCode(account_id, access_code);
+      .ValidateParentAccessCode(account_id, access_code, validation_time);
 }
 
 void LoginScreenClient::HardlockPod(const AccountId& account_id) {

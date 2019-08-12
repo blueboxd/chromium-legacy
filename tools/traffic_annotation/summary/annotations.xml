@@ -25,7 +25,7 @@ Refer to README.md for content description and update process.
  <item id="bidirectional_stream" hash_code="108665132" type="0" content_hash_code="130038340" os_list="linux,windows" file_path="net/http/bidirectional_stream.cc"/>
  <item id="blink_extension_resource_loader" hash_code="84165821" type="0" content_hash_code="3695143" os_list="linux,windows" file_path="content/renderer/loader/web_url_loader_impl.cc"/>
  <item id="blink_resource_loader" hash_code="101845102" type="0" content_hash_code="75331172" os_list="linux,windows" file_path="content/renderer/loader/web_url_loader_impl.cc"/>
- <item id="blob_read" hash_code="112303907" type="0" content_hash_code="135449692" os_list="linux,windows" file_path="storage/browser/blob/blob_url_request_job_factory.cc"/>
+ <item id="blob_read" hash_code="112303907" type="0" deprecated="2019-08-09" content_hash_code="135449692" file_path=""/>
  <item id="blob_reader" hash_code="5154306" type="0" deprecated="2018-06-14" content_hash_code="39702178" file_path=""/>
  <item id="bluetooth_socket" hash_code="94099818" type="0" content_hash_code="30932349" os_list="linux,windows" file_path="device/bluetooth/bluetooth_socket_net.cc"/>
  <item id="brandcode_config" hash_code="109679553" type="0" content_hash_code="128843792" os_list="linux,windows" file_path="chrome/browser/profile_resetter/brandcode_config_fetcher.cc"/>
@@ -145,6 +145,7 @@ Refer to README.md for content description and update process.
  <item id="lib_address_input" hash_code="50816767" type="0" content_hash_code="57977576" os_list="linux,windows" file_path="third_party/libaddressinput/chromium/chrome_metadata_source.cc"/>
  <item id="logo_service" hash_code="35473769" type="0" content_hash_code="20271299" os_list="linux,windows" file_path="components/search_provider_logos/logo_service_impl.cc"/>
  <item id="logo_tracker" hash_code="36859107" type="0" deprecated="2018-12-07" content_hash_code="67588075" file_path=""/>
+ <item id="lookup_single_password_leak" hash_code="16927377" type="0" content_hash_code="12158296" os_list="linux,windows" file_path="components/password_manager/core/browser/leak_detection/leak_detection_request.cc"/>
  <item id="metrics_report_ukm" hash_code="727478" type="0" content_hash_code="102972932" os_list="linux,windows" file_path="components/metrics/net/net_metrics_log_uploader.cc"/>
  <item id="metrics_report_uma" hash_code="727528" type="0" content_hash_code="10176197" os_list="linux,windows" file_path="components/metrics/net/net_metrics_log_uploader.cc"/>
  <item id="mirroring_get_setup_info" hash_code="78447809" type="0" content_hash_code="112561099" os_list="linux,windows" file_path="components/mirroring/service/session_monitor.cc"/>

@@ -34,7 +34,7 @@
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -255,8 +255,8 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
   }
 
   if (extension->from_bookmark()) {
-    web_app::WebAppTabHelperBase* tab_helper =
-        web_app::WebAppTabHelperBase::FromWebContents(contents);
+    web_app::WebAppTabHelper* tab_helper =
+        web_app::WebAppTabHelper::FromWebContents(contents);
     DCHECK(tab_helper);
     tab_helper->SetAppId(extension->id());
   }
@@ -422,8 +422,8 @@ WebContents* ShowApplicationWindow(const AppLaunchParams& params,
   extensions::HostedAppBrowserController::SetAppPrefsForWebContents(
       browser->app_controller(), web_contents);
   if (extension && extension->from_bookmark()) {
-    web_app::WebAppTabHelperBase* tab_helper =
-        web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+    web_app::WebAppTabHelper* tab_helper =
+        web_app::WebAppTabHelper::FromWebContents(web_contents);
     DCHECK(tab_helper);
     tab_helper->SetAppId(extension->id());
   }

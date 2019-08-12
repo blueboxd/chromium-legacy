@@ -31,7 +31,6 @@
 #include "base/template_util.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
-#include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
 #include "third_party/blink/renderer/platform/wtf/construct_traits.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"  // For default Vector template parameters.
@@ -974,11 +973,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
 // store iterators in another heap object.
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
-class Vector
-    : private VectorBuffer<T, INLINE_CAPACITY, Allocator>,
-      public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator>,
-                                   (INLINE_CAPACITY == 0) &&
-                                       Allocator::kIsGarbageCollected> {
+class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator> {
   USE_ALLOCATOR(Vector, Allocator);
   using Base = VectorBuffer<T, INLINE_CAPACITY, Allocator>;
   using TypeOperations = VectorTypeOperations<T, Allocator>;
@@ -1262,12 +1257,12 @@ class Vector
     return Allocator::template MaxElementCountInBackingStore<T>();
   }
 
-  void Finalize() {
-    static_assert(!Allocator::kIsGarbageCollected || INLINE_CAPACITY,
-                  "GarbageCollected collections without inline capacity cannot "
-                  "be finalized.");
-    if (!INLINE_CAPACITY && LIKELY(!Base::Buffer())) {
-      return;
+  // For design of the destructor, please refer to
+  // [here](https://docs.google.com/document/d/1AoGTvb3tNLx2tD1hNqAfLRLmyM59GM0O-7rCHTT_7_U/)
+  ~Vector() {
+    if (!INLINE_CAPACITY) {
+      if (LIKELY(!Base::Buffer()))
+        return;
     }
     ANNOTATE_DELETE_BUFFER(begin(), capacity(), size_);
     if (LIKELY(size_) &&
@@ -1276,10 +1271,20 @@ class Vector
       size_ = 0;  // Partial protection against use-after-free.
     }
 
-    // For garbage collected vector HeapAllocator::BackingFree() will bail out
-    // during sweeping.
+    // If this is called during sweeping, the backing should not be touched.
+    // Other collections have an early return here if IsSweepForbidden(), but
+    // adding that resulted in performance regression for shadow dom benchmarks
+    // (crbug.com/866084) because of the additional access to TLS. The check has
+    // been removed but the same check exists in HeapAllocator::BackingFree() so
+    // things should be fine as long as VectorBase does not touch the backing.
+
     Base::Destruct();
   }
+
+  // This method will be referenced when creating an on-heap HeapVector with
+  // inline capacity and elements requiring destruction. However usage of such a
+  // type is banned with a static assert.
+  void FinalizeGarbageCollectedObject() { NOTREACHED(); }
 
   template <typename VisitorDispatcher, typename A = Allocator>
   std::enable_if_t<A::kIsGarbageCollected> Trace(VisitorDispatcher);

@@ -1921,6 +1921,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
       *base::CommandLine::ForCurrentProcess(), is_quic_force_disabled,
       params_->quic_user_agent_id, &session_params);
 
+  session_params.allow_default_credentials = params_->allow_default_credentials;
+
   session_params.http_09_on_non_default_ports_enabled =
       params_->http_09_on_non_default_ports_enabled;
   session_params.disable_idle_sockets_close_on_memory_pressure =
@@ -1930,7 +1932,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
   builder.SetCreateHttpTransactionFactoryCallback(
       base::BindOnce([](net::HttpNetworkSession* session)
-                         -> std::unique_ptr<net::HttpTransactionFactory> {
+                        -> std::unique_ptr<net::HttpTransactionFactory> {
         return std::make_unique<ThrottlingNetworkTransactionFactory>(session);
       }));
 

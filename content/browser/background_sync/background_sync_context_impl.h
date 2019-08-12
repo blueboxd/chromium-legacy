@@ -83,7 +83,8 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
 
   void set_background_sync_manager_for_testing(
       std::unique_ptr<BackgroundSyncManager> manager);
-  void set_wakeup_delta_for_testing(base::TimeDelta wakeup_delta);
+  void set_wakeup_delta_for_testing(blink::mojom::BackgroundSyncType sync_type,
+                                    base::TimeDelta wakeup_delta);
 
  private:
   friend class OneShotBackgroundSyncServiceImplTest;
@@ -130,7 +131,8 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   // Only accessed on the IO thread.
   std::unique_ptr<BackgroundSyncManager> background_sync_manager_;
 
-  base::TimeDelta test_wakeup_delta_ = base::TimeDelta::Max();
+  std::map<blink::mojom::BackgroundSyncType, base::TimeDelta>
+      test_wakeup_delta_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncContextImpl);
 };

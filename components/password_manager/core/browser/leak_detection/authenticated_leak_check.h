@@ -10,6 +10,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_request.h"
+#include "url/gurl.h"
 
 class GoogleServiceAuthError;
 
@@ -26,6 +28,7 @@ class IdentityManager;
 namespace password_manager {
 
 class LeakDetectionDelegateInterface;
+struct SingleLookupResponse;
 
 // Performs a leak-check for {username, password} for Chrome signed-in users.
 class AuthenticatedLeakCheck : public LeakDetectionCheck {
@@ -55,6 +58,12 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
   void OnAccessTokenRequestCompleted(GoogleServiceAuthError error,
                                      signin::AccessTokenInfo access_token_info);
 
+  // Called when the single leak lookup request is done. |response| is null in
+  // case of an invalid server response, or contains a valid
+  // SingleLookupResponse instance otherwise.
+  void OnLookupSingleLeakResponse(
+      std::unique_ptr<SingleLookupResponse> response);
+
   // Delegate for the instance. Should outlive |this|.
   LeakDetectionDelegateInterface* delegate_;
   // Identity manager for the profile.
@@ -64,6 +73,15 @@ class AuthenticatedLeakCheck : public LeakDetectionCheck {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   // Actual request for the needed token.
   std::unique_ptr<signin::AccessTokenFetcher> token_fetcher_;
+  // Class used to initiate a request to the identity leak lookup endpoint. This
+  // is only instantiated if a valid |access_token_| could be obtained.
+  std::unique_ptr<LeakDetectionRequest> request_;
+  // |url| passed to Start().
+  GURL url_;
+  // |username| passed to Start().
+  std::string username_;
+  // |password| passed to Start().
+  std::string password_;
   // The token to be used for request.
   std::string access_token_;
 };

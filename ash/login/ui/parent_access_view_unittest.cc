@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/test/bind_test_util.h"
+#include "base/time/time.h"
 #include "components/account_id/account_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -92,7 +93,9 @@ class ParentAccessViewTest : public LoginTestBase {
     callbacks.on_finished = base::BindRepeating(
         &ParentAccessViewTest::OnFinished, base::Unretained(this));
 
-    view_ = new ParentAccessView(account_id_, callbacks, reason);
+    validation_time_ = base::Time::Now();
+    view_ =
+        new ParentAccessView(account_id_, callbacks, reason, validation_time_);
     SetWidget(CreateWidgetWithContent(view_));
   }
 
@@ -104,6 +107,9 @@ class ParentAccessViewTest : public LoginTestBase {
 
   // Number of times the view was dismissed after successful validation.
   int successful_validation_ = 0;
+
+  // Time that will be used on the code validation.
+  base::Time validation_time_;
 
   ParentAccessView* view_ = nullptr;  // Owned by test widget view hierarchy.
 
@@ -161,7 +167,8 @@ TEST_F(ParentAccessViewTest, SubmitButton) {
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345"))
+  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345",
+                                                        validation_time_))
       .Times(1);
 
   SimulateButtonPress(test_api.submit_button());
@@ -182,7 +189,8 @@ TEST_F(ParentAccessViewTest, Numpad) {
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345"))
+  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345",
+                                                        validation_time_))
       .Times(1);
 
   SimulateButtonPress(test_api.submit_button());
@@ -205,7 +213,8 @@ TEST_F(ParentAccessViewTest, SubmitWithEnter) {
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345"))
+  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345",
+                                                        validation_time_))
       .Times(1);
 
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, ui::EF_NONE);
@@ -242,7 +251,8 @@ TEST_F(ParentAccessViewTest, PressEnterOnIncompleteCode) {
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012349"))
+  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012349",
+                                                        validation_time_))
       .Times(1);
 
   // Now the code should be submitted with enter key.
@@ -291,7 +301,8 @@ TEST_F(ParentAccessViewTest, Backspace) {
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "111123"))
+  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "111123",
+                                                        validation_time_))
       .Times(1);
 
   SimulateButtonPress(test_api.submit_button());
@@ -315,7 +326,8 @@ TEST_F(ParentAccessViewTest, PinKeyboard) {
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345"))
+  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345",
+                                                        validation_time_))
       .Times(1);
 
   SimulateButtonPress(test_api.submit_button());
@@ -353,7 +365,8 @@ TEST_F(ParentAccessViewTest, ErrorState) {
 
   // Error should be shown after unsuccessful validation.
   login_client_->set_validate_parent_access_code_result(false);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345"))
+  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012345",
+                                                        validation_time_))
       .Times(1);
 
   SimulateButtonPress(test_api.submit_button());
@@ -372,7 +385,8 @@ TEST_F(ParentAccessViewTest, ErrorState) {
   EXPECT_EQ(ParentAccessView::State::kNormal, test_api.state());
 
   login_client_->set_validate_parent_access_code_result(true);
-  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012346"))
+  EXPECT_CALL(*login_client_, ValidateParentAccessCode_(account_id_, "012346",
+                                                        validation_time_))
       .Times(1);
 
   SimulateButtonPress(test_api.submit_button());

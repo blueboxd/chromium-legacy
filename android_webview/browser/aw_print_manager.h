@@ -5,6 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_PRINT_MANAGER_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_PRINT_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/printing/browser/print_manager.h"
 #include "components/printing/common/print_messages.h"
@@ -21,7 +23,7 @@ class AwPrintManager : public printing::PrintManager,
   // The returned pointer is owned by |contents|.
   static AwPrintManager* CreateForWebContents(
       content::WebContents* contents,
-      const printing::PrintSettings& settings,
+      std::unique_ptr<printing::PrintSettings> settings,
       int file_descriptor,
       PdfWritingDoneCallback callback);
 
@@ -36,7 +38,7 @@ class AwPrintManager : public printing::PrintManager,
   friend class content::WebContentsUserData<AwPrintManager>;
 
   AwPrintManager(content::WebContents* contents,
-                 const printing::PrintSettings& settings,
+                 std::unique_ptr<printing::PrintSettings> settings,
                  int file_descriptor,
                  PdfWritingDoneCallback callback);
 
@@ -50,7 +52,7 @@ class AwPrintManager : public printing::PrintManager,
                        const PrintHostMsg_ScriptedPrint_Params& params,
                        IPC::Message* reply_msg) override;
 
-  printing::PrintSettings settings_;
+  const std::unique_ptr<printing::PrintSettings> settings_;
 
   // The file descriptor into which the PDF of the document will be written.
   int fd_;

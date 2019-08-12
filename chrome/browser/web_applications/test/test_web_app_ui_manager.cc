@@ -51,6 +51,11 @@ bool TestWebAppUiManager::CanAddAppToQuickLaunchBar() const {
 
 void TestWebAppUiManager::AddAppToQuickLaunchBar(const AppId& app_id) {}
 
+bool TestWebAppUiManager::IsInAppWindow(
+    content::WebContents* web_contents) const {
+  return false;
+}
+
 bool TestWebAppUiManager::CanReparentAppTabToWindow(
     const AppId& app_id,
     bool shortcut_created) const {

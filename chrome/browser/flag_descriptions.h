@@ -1973,6 +1973,9 @@ extern const char kFileManagerPiexWasmDescription[];
 extern const char kFileManagerTouchModeName[];
 extern const char kFileManagerTouchModeDescription[];
 
+extern const char kFilesNGName[];
+extern const char kFilesNGDescription[];
+
 extern const char kFirstRunUiTransitionsName[];
 extern const char kFirstRunUiTransitionsDescription[];
 
@@ -2127,6 +2130,9 @@ extern const char kDirectManipulationStylusDescription[];
 
 extern const char kAnimatedAvatarButtonName[];
 extern const char kAnimatedAvatarButtonDescription[];
+
+extern const char kClickToCallContextMenuForSelectedTextName[];
+extern const char kClickToCallContextMenuForSelectedTextDescription[];
 
 extern const char kClickToCallUIName[];
 extern const char kClickToCallUIDescription[];

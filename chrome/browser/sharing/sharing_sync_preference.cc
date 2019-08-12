@@ -5,7 +5,6 @@
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 
 #include "base/base64.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/value_conversions.h"
@@ -28,50 +27,6 @@ const char kDeviceLastUpdated[] = "device_last_updated";
 const char kRegistrationAuthorizedEntity[] = "registration_authorized_entity";
 const char kRegistrationFcmToken[] = "registration_fcm_token";
 const char kRegistrationTimestamp[] = "registration_timestamp";
-
-base::Time GetTimestamp(const base::Value& value, base::StringPiece key) {
-  if (!value.is_dict())
-    return base::Time();
-  base::Time timestamp;
-  auto* timestamp_value = value.FindKey(key);
-  if (!timestamp_value || !base::GetValueAsTime(*timestamp_value, &timestamp))
-    return base::Time();
-  return timestamp;
-}
-
-bool ShouldUseLocalVapidKey(const base::Value& local_value,
-                            const base::Value& server_value) {
-  auto local_timestamp = GetTimestamp(local_value, kVapidCreationTimestamp);
-  bool has_local_timestamp = !local_timestamp.is_null();
-  if (!has_local_timestamp)
-    return false;
-
-  auto server_timestamp = GetTimestamp(server_value, kVapidCreationTimestamp);
-  bool has_server_timestamp = !server_timestamp.is_null();
-  if (!has_server_timestamp)
-    return true;
-
-  // Use older VAPID key if two versions exist to reduce the number of FCM
-  // registration invalidations as only new devices would encounter this.
-  return local_timestamp < server_timestamp;
-}
-
-bool ShouldUseLocalDeviceData(const base::Value& local_value,
-                              const base::Value& server_value) {
-  auto local_timestamp = GetTimestamp(local_value, kDeviceLastUpdated);
-  bool has_local_timestamp = !local_timestamp.is_null();
-  if (!has_local_timestamp)
-    return false;
-
-  auto server_timestamp = GetTimestamp(server_value, kDeviceLastUpdated);
-  bool has_server_timestamp = !server_timestamp.is_null();
-  if (!has_server_timestamp)
-    return true;
-
-  // Use newer device data if two versions exist. We guarantee that only the
-  // same device updates its own data, so clock diff issues should be minimal.
-  return local_timestamp > server_timestamp;
-}
 
 }  // namespace
 
@@ -104,39 +59,6 @@ void SharingSyncPreference::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       prefs::kSharingVapidKey, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(prefs::kSharingFCMRegistration);
-}
-
-// static
-std::unique_ptr<base::Value> SharingSyncPreference::MaybeMergeVapidKey(
-    const base::Value& local_value,
-    const base::Value& server_value) {
-  return ShouldUseLocalVapidKey(local_value, server_value)
-             ? base::Value::ToUniquePtrValue(local_value.Clone())
-             : nullptr;
-}
-
-// static
-std::unique_ptr<base::Value> SharingSyncPreference::MaybeMergeSyncedDevices(
-    const base::Value& local_value,
-    const base::Value& server_value) {
-  if (!local_value.is_dict() || !server_value.is_dict())
-    return nullptr;
-
-  base::Value local_overrides(base::Value::Type::DICTIONARY);
-  for (const auto& it : local_value.DictItems()) {
-    const std::string& device_guid = it.first;
-    const base::Value& local = it.second;
-    const base::Value* server = server_value.FindKey(device_guid);
-    if (!server || ShouldUseLocalDeviceData(local, *server))
-      local_overrides.SetKey(device_guid, local.Clone());
-  }
-
-  if (local_overrides.DictEmpty())
-    return nullptr;
-
-  base::Value result = server_value.Clone();
-  result.MergeDictionary(&local_overrides);
-  return base::Value::ToUniquePtrValue(std::move(result));
 }
 
 base::Optional<std::vector<uint8_t>> SharingSyncPreference::GetVapidKey()

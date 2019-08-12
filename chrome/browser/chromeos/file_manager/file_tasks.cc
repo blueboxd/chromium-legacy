@@ -396,7 +396,7 @@ bool ExecuteFileTask(Profile* profile,
         OpenFilesWithBrowser(profile, file_urls, task.action_id);
     if (result && done) {
       std::move(done).Run(
-          extensions::api::file_manager_private::TASK_RESULT_OPENED);
+          extensions::api::file_manager_private::TASK_RESULT_OPENED, "");
     }
     return result;
   }
@@ -438,7 +438,7 @@ bool ExecuteFileTask(Profile* profile,
     }
     if (!done.is_null())
       std::move(done).Run(
-          extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+          extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
     return true;
   }
   NOTREACHED();

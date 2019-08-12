@@ -76,17 +76,24 @@ CrostiniImpl.VALID_DRIVE_FS_ROOT_TYPES_FOR_SHARE = new Map([
 CrostiniImpl.UMA_ROOT_TYPE_OTHER = 'Other';
 
 /**
- * Initialize Volume Manager.
- * @param {!VolumeManager} volumeManager
+ * Initialize enabled settings.
+ * Must be done after loadTimeData is available.
  */
-CrostiniImpl.prototype.init = function(volumeManager) {
-  this.volumeManager_ = volumeManager;
+CrostiniImpl.prototype.initEnabled = function() {
   this.enabled_[CrostiniImpl.DEFAULT_VM] =
       loadTimeData.getBoolean('CROSTINI_ENABLED');
   this.enabled_[CrostiniImpl.PLUGIN_VM] =
       loadTimeData.getBoolean('PLUGIN_VM_ENABLED');
   this.rootAccessAllowed_[CrostiniImpl.DEFAULT_VM] =
       loadTimeData.getBoolean('CROSTINI_ROOT_ACCESS_ALLOWED');
+};
+
+/**
+ * Initialize Volume Manager.
+ * @param {!VolumeManager} volumeManager
+ */
+CrostiniImpl.prototype.initVolumeManager = function(volumeManager) {
+  this.volumeManager_ = volumeManager;
 };
 
 /**

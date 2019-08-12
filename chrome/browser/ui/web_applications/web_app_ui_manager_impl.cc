@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -107,6 +108,12 @@ void WebAppUiManagerImpl::AddAppToQuickLaunchBar(const AppId& app_id) {
     controller->UpdateV1AppState(app_id);
   }
 #endif  // defined(OS_CHROMEOS)
+}
+
+bool WebAppUiManagerImpl::IsInAppWindow(
+    content::WebContents* web_contents) const {
+  return AppBrowserController::IsForWebAppBrowser(
+      chrome::FindBrowserWithWebContents(web_contents));
 }
 
 bool WebAppUiManagerImpl::CanReparentAppTabToWindow(

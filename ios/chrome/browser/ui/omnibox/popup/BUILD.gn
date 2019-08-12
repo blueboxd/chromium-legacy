@@ -140,6 +140,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "omnibox_popup_row_cell_unittest.mm",
     "omnibox_popup_view_controller_unittest.mm",
   ]
   deps = [

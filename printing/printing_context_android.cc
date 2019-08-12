@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/android/jni_android.h"
@@ -126,14 +128,14 @@ void PrintingContextAndroid::AskUserForSettingsReply(
   // TODO(thestig): See if the call to set_device_name() can be removed.
   fd_ = Java_PrintingContext_getFileDescriptor(env, j_printing_context_);
   DCHECK(is_file_descriptor_valid());
-  settings_.set_device_name(base::NumberToString16(fd_));
+  settings_->set_device_name(base::NumberToString16(fd_));
 
   ScopedJavaLocalRef<jintArray> intArr =
       Java_PrintingContext_getPages(env, j_printing_context_);
   if (!intArr.is_null()) {
     PageRanges range_vector;
     GetPageRanges(env, intArr, &range_vector);
-    settings_.set_ranges(range_vector);
+    settings_->set_ranges(range_vector);
   }
 
   int dpi = Java_PrintingContext_getDpi(env, j_printing_context_);
@@ -141,7 +143,7 @@ void PrintingContextAndroid::AskUserForSettingsReply(
   int height = Java_PrintingContext_getHeight(env, j_printing_context_);
   width = ConvertUnit(width, kMilsPerInch, dpi);
   height = ConvertUnit(height, kMilsPerInch, dpi);
-  SetSizes(&settings_, dpi, width, height);
+  SetSizes(settings_.get(), dpi, width, height);
 
   std::move(callback_).Run(OK);
 }
@@ -166,9 +168,9 @@ PrintingContext::Result PrintingContextAndroid::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   ResetSettings();
-  settings_.set_dpi(kDefaultPdfDpi);
+  settings_->set_dpi(kDefaultPdfDpi);
   gfx::Size physical_size = GetPdfPaperSizeDeviceUnits();
-  SetSizes(&settings_, kDefaultPdfDpi, physical_size.width(),
+  SetSizes(settings_.get(), kDefaultPdfDpi, physical_size.width(),
            physical_size.height());
   return OK;
 }
@@ -185,13 +187,13 @@ gfx::Size PrintingContextAndroid::GetPdfPaperSizeDeviceUnits() {
     LOG(WARNING) << "ulocdata_getPaperSize failed, using 8.5 x 11, error: "
                  << error;
     width =
-        static_cast<int>(kLetterWidthInch * settings_.device_units_per_inch());
-    height =
-        static_cast<int>(kLetterHeightInch * settings_.device_units_per_inch());
+        static_cast<int>(kLetterWidthInch * settings_->device_units_per_inch());
+    height = static_cast<int>(kLetterHeightInch *
+                              settings_->device_units_per_inch());
   } else {
     // ulocdata_getPaperSize returns the width and height in mm.
     // Convert this to pixels based on the dpi.
-    float multiplier = settings_.device_units_per_inch() / kMicronsPerMil;
+    float multiplier = settings_->device_units_per_inch() / kMicronsPerMil;
     width *= multiplier;
     height *= multiplier;
   }

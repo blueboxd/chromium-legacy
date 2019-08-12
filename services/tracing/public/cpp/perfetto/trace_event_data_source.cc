@@ -544,10 +544,9 @@ ThreadLocalEventSink* TraceEventDataSource::CreateThreadLocalEventSink(
     // otherwise lead to deadlocks in chromium, because a stalled mojo IPC
     // thread could prevent CommitRequest messages from reaching the perfetto
     // service.
-    auto smb_exhausted_policy =
-        perfetto::SharedMemoryArbiter::BufferExhaustedPolicy::kDrop;
+    auto buffer_exhausted_policy = perfetto::BufferExhaustedPolicy::kDrop;
     trace_writer = startup_writer_registry_->CreateUnboundTraceWriter(
-        smb_exhausted_policy);
+        buffer_exhausted_policy);
   } else if (producer_) {
     trace_writer = std::make_unique<perfetto::StartupTraceWriter>(
         producer_->CreateTraceWriter(target_buffer_));

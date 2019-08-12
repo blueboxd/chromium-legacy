@@ -213,11 +213,11 @@ void PrintDialogGtk::UseDefaultSettings() {
   gtk_settings_ = gtk_print_settings_copy(GetLastUsedSettings().settings());
   page_setup_ = gtk_page_setup_new();
 
-  PrintSettings settings;
-  InitPrintSettings(&settings);
+  InitPrintSettings(std::make_unique<PrintSettings>());
 }
 
-void PrintDialogGtk::UpdateSettings(printing::PrintSettings* settings) {
+void PrintDialogGtk::UpdateSettings(
+    std::unique_ptr<printing::PrintSettings> settings) {
   if (!gtk_settings_)
     gtk_settings_ = gtk_print_settings_copy(GetLastUsedSettings().settings());
 
@@ -305,7 +305,7 @@ void PrintDialogGtk::UpdateSettings(printing::PrintSettings* settings) {
       gtk_settings_, settings->landscape() ? GTK_PAGE_ORIENTATION_LANDSCAPE
                                            : GTK_PAGE_ORIENTATION_PORTRAIT);
 
-  InitPrintSettings(settings);
+  InitPrintSettings(std::move(settings));
 }
 
 void PrintDialogGtk::ShowDialog(
@@ -463,12 +463,12 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
           break;
       }
 
-      PrintSettings settings;
-      settings.set_is_modifiable(context_->settings().is_modifiable());
-      settings.set_ranges(ranges_vector);
-      settings.set_selection_only(print_selection_only);
-      InitPrintSettingsGtk(gtk_settings_, page_setup_, &settings);
-      context_->InitWithSettings(settings);
+      auto settings = std::make_unique<PrintSettings>();
+      settings->set_is_modifiable(context_->settings().is_modifiable());
+      settings->set_ranges(ranges_vector);
+      settings->set_selection_only(print_selection_only);
+      InitPrintSettingsGtk(gtk_settings_, page_setup_, settings.get());
+      context_->InitWithSettings(std::move(settings));
       std::move(callback_).Run(PrintingContextLinux::OK);
       return;
     }
@@ -528,9 +528,10 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job,
   Release();
 }
 
-void PrintDialogGtk::InitPrintSettings(PrintSettings* settings) {
-  InitPrintSettingsGtk(gtk_settings_, page_setup_, settings);
-  context_->InitWithSettings(*settings);
+void PrintDialogGtk::InitPrintSettings(
+    std::unique_ptr<PrintSettings> settings) {
+  InitPrintSettingsGtk(gtk_settings_, page_setup_, settings.get());
+  context_->InitWithSettings(std::move(settings));
 }
 
 void PrintDialogGtk::OnWindowDestroying(aura::Window* window) {

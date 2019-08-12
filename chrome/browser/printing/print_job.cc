@@ -61,20 +61,20 @@ void PrintJob::Initialize(std::unique_ptr<PrinterQuery> query,
   DCHECK(!document_);
   worker_ = query->DetachWorker();
   worker_->SetPrintJob(this);
-  const PrintSettings& settings = query->settings();
-
-  auto new_doc =
-      base::MakeRefCounted<PrintedDocument>(settings, name, query->cookie());
-  new_doc->set_page_count(page_count);
-  UpdatePrintedDocument(new_doc);
+  std::unique_ptr<PrintSettings> settings = query->ExtractSettings();
 
 #if defined(OS_WIN)
-  pdf_page_mapping_ = PageRange::GetPages(settings.ranges());
+  pdf_page_mapping_ = PageRange::GetPages(settings->ranges());
   if (pdf_page_mapping_.empty()) {
     for (int i = 0; i < page_count; i++)
       pdf_page_mapping_.push_back(i);
   }
 #endif
+
+  auto new_doc = base::MakeRefCounted<PrintedDocument>(std::move(settings),
+                                                       name, query->cookie());
+  new_doc->set_page_count(page_count);
+  UpdatePrintedDocument(new_doc);
 
   // Don't forget to register to our own messages.
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,

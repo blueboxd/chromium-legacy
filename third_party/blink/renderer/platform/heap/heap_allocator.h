@@ -473,8 +473,6 @@ class HeapHashMap : public HashMap<KeyArg,
   DISALLOW_NEW();
 
   static void CheckType() {
-    static_assert(std::is_trivially_destructible<HeapHashMap>::value,
-                  "HeapHashMap must be trivially destructible.");
     static_assert(
         IsAllowedInContainer<KeyArg>::value,
         "Not allowed to directly nest type. Use Member<> indirection instead.");
@@ -484,7 +482,7 @@ class HeapHashMap : public HashMap<KeyArg,
     static_assert(
         WTF::IsTraceable<KeyArg>::value || WTF::IsTraceable<MappedArg>::value,
         "For hash maps without traceable elements, use HashMap<> "
-        "instead of HeapHashMap<>.");
+        "instead of HeapHashMap<>");
   }
 
  public:
@@ -506,14 +504,12 @@ class HeapHashSet
   DISALLOW_NEW();
 
   static void CheckType() {
-    static_assert(std::is_trivially_destructible<HeapHashSet>::value,
-                  "HeapHashSet must be trivially destructible.");
     static_assert(
         IsAllowedInContainer<ValueArg>::value,
         "Not allowed to directly nest type. Use Member<> indirection instead.");
     static_assert(WTF::IsTraceable<ValueArg>::value,
                   "For hash sets without traceable elements, use HashSet<> "
-                  "instead of HeapHashSet<>.");
+                  "instead of HeapHashSet<>");
   }
 
  public:
@@ -542,7 +538,7 @@ class HeapLinkedHashSet
         "Not allowed to directly nest type. Use Member<> indirection instead.");
     static_assert(WTF::IsTraceable<ValueArg>::value,
                   "For sets without traceable elements, use LinkedHashSet<> "
-                  "instead of HeapLinkedHashSet<>.");
+                  "instead of HeapLinkedHashSet<>");
   }
 
  public:
@@ -568,14 +564,12 @@ class HeapListHashSet
   DISALLOW_NEW();
 
   static void CheckType() {
-    static_assert(std::is_trivially_destructible<HeapListHashSet>::value,
-                  "HeapListHashSet must be trivially destructible.");
     static_assert(
         IsAllowedInContainer<ValueArg>::value,
         "Not allowed to directly nest type. Use Member<> indirection instead.");
     static_assert(WTF::IsTraceable<ValueArg>::value,
                   "For sets without traceable elements, use ListHashSet<> "
-                  "instead of HeapListHashSet<>.");
+                  "instead of HeapListHashSet<>");
   }
 
  public:
@@ -596,14 +590,12 @@ class HeapHashCountedSet
   DISALLOW_NEW();
 
   static void CheckType() {
-    static_assert(std::is_trivially_destructible<HeapHashCountedSet>::value,
-                  "HeapHashCountedSet must be trivially destructible.");
     static_assert(
         IsAllowedInContainer<Value>::value,
         "Not allowed to directly nest type. Use Member<> indirection instead.");
     static_assert(WTF::IsTraceable<Value>::value,
                   "For counted sets without traceable elements, use "
-                  "HashCountedSet<> instead of HeapHashCountedSet<>.");
+                  "HashCountedSet<> instead of HeapHashCountedSet<>");
   }
 
  public:
@@ -622,14 +614,11 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
 
   static void CheckType() {
     static_assert(
-        std::is_trivially_destructible<HeapVector>::value || inlineCapacity,
-        "HeapVector must be trivially destructible.");
-    static_assert(
         IsAllowedInContainer<T>::value,
         "Not allowed to directly nest type. Use Member<> indirection instead.");
     static_assert(WTF::IsTraceable<T>::value,
                   "For vectors without traceable elements, use Vector<> "
-                  "instead of HeapVector<>.");
+                  "instead of HeapVector<>");
   }
 
  public:
@@ -672,9 +661,6 @@ class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
   DISALLOW_NEW();
 
   static void CheckType() {
-    static_assert(
-        std::is_trivially_destructible<HeapDeque>::value || inlineCapacity,
-        "HeapDeque must be trivially destructible.");
     static_assert(
         IsAllowedInContainer<T>::value,
         "Not allowed to directly nest type. Use Member<> indirection instead.");

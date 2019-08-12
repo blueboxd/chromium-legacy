@@ -24,7 +24,7 @@ void TestPrintJob::Initialize(std::unique_ptr<PrinterQuery> query,
   std::unique_ptr<PrintJobWorker> worker = query->DetachWorker();
 
   scoped_refptr<PrintedDocument> new_doc =
-      base::MakeRefCounted<PrintedDocument>(query->settings(), name,
+      base::MakeRefCounted<PrintedDocument>(query->ExtractSettings(), name,
                                             query->cookie());
 
   new_doc->set_page_count(page_count);

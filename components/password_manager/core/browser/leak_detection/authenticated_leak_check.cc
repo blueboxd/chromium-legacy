@@ -4,9 +4,13 @@
 
 #include "components/password_manager/core/browser/leak_detection/authenticated_leak_check.h"
 
+#include <memory>
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
+#include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -61,6 +65,9 @@ bool AuthenticatedLeakCheck::HasAccountForRequest(
 void AuthenticatedLeakCheck::Start(const GURL& url,
                                    base::StringPiece16 username,
                                    base::StringPiece16 password) {
+  url_ = url;
+  username_ = base::UTF16ToUTF8(username);
+  password_ = base::UTF16ToUTF8(password);
   token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
       GetAccountForRequest(identity_manager_),
       /*consumer_name=*/"leak_detection_service", {kAPIScope},
@@ -73,14 +80,32 @@ void AuthenticatedLeakCheck::OnAccessTokenRequestCompleted(
     GoogleServiceAuthError error,
     signin::AccessTokenInfo access_token_info) {
   token_fetcher_.reset();
-  if (error.state() == GoogleServiceAuthError::NONE) {
-    // The fetcher successfully obtained an access token.
-    access_token_ = std::move(access_token_info.token);
-    DVLOG(0) << "Token=" << access_token_;
-  } else {
+  if (error.state() != GoogleServiceAuthError::NONE) {
     DLOG(ERROR) << "Token request error: " << error.error_message();
     delegate_->OnError(LeakDetectionError::kTokenRequestFailure);
+    return;
   }
+
+  // The fetcher successfully obtained an access token.
+  access_token_ = std::move(access_token_info.token);
+  DVLOG(0) << "Token=" << access_token_;
+
+  request_ = std::make_unique<LeakDetectionRequest>();
+  request_->LookupSingleLeak(
+      url_loader_factory_.get(), access_token_, username_, password_,
+      base::BindOnce(&AuthenticatedLeakCheck::OnLookupSingleLeakResponse,
+                     base::Unretained(this)));
+}
+
+void AuthenticatedLeakCheck::OnLookupSingleLeakResponse(
+    std::unique_ptr<SingleLookupResponse> response) {
+  if (!response) {
+    delegate_->OnError(LeakDetectionError::kInvalidServerResponse);
+    return;
+  }
+
+  delegate_->OnLeakDetectionDone(ParseLookupSingleLeakResponse(*response), url_,
+                                 base::UTF8ToUTF16(username_));
 }
 
 }  // namespace password_manager

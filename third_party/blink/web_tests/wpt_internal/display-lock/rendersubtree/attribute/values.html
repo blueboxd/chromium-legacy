@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Tests rendersubtree attribute values</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<script>
+test(() => {
+  const element = document.createElement("div");
+  element.setAttribute("rendersubtree", "visible");
+  assert_equals(element.getAttribute("rendersubtree"), "visible");
+  assert_equals(element.renderSubtree, "visible");
+
+  element.setAttribute("rendersubtree", "invisible");
+  assert_equals(element.getAttribute("rendersubtree"), "invisible");
+  assert_equals(element.renderSubtree, "invisible");
+
+  element.setAttribute("rendersubtree", "invisible-activatable");
+  assert_equals(element.getAttribute("rendersubtree"), "invisible-activatable");
+  assert_equals(element.renderSubtree, "invisible-activatable");
+}, "Valid values on the attribute are saved and reflected as is");
+
+test(() => {
+  const element = document.createElement("div");
+  element.setAttribute("rendersubtree", "not-visible");
+  assert_equals(element.renderSubtree, "visible");
+
+  element.setAttribute("rendersubtree", "");
+  assert_equals(element.renderSubtree, "visible");
+
+  element.setAttribute("rendersubtree", "invisibleactivatable");
+  assert_equals(element.renderSubtree, "visible");
+}, "Invalid values on the attribute are reflected as visible on the renderSubtree property");
+
+test(() => {
+  const element = document.createElement("div");
+  element.setAttribute("rendersubtree", "not-visible");
+  assert_equals(element.getAttribute("rendersubtree"), "not-visible");
+
+  element.setAttribute("rendersubtree", "");
+  assert_equals(element.getAttribute("rendersubtree"), "");
+
+  element.setAttribute("rendersubtree", "invisibleactivatable");
+  assert_equals(element.getAttribute("rendersubtree"), "invisibleactivatable");
+}, "Invalid values on the attribute are saved as-is in the rendersubtree attribute");
+
+test(() => {
+  const element = document.createElement("div");
+  element.renderSubtree =  "visible";
+  assert_equals(element.getAttribute("rendersubtree"), "visible");
+  assert_equals(element.renderSubtree, "visible");
+
+  element.renderSubtree =  "invisible";
+  assert_equals(element.getAttribute("rendersubtree"), "invisible");
+  assert_equals(element.renderSubtree, "invisible");
+
+  element.renderSubtree =  "invisible-activatable";
+  assert_equals(element.getAttribute("rendersubtree"), "invisible-activatable");
+  assert_equals(element.renderSubtree, "invisible-activatable");
+}, "Valid values on the property are saved and reflected as is");
+
+test(() => {
+  const element = document.createElement("div");
+  element.renderSubtree =  "not-visible";
+  assert_equals(element.renderSubtree, "visible");
+
+  element.renderSubtree =  "";
+  assert_equals(element.renderSubtree, "visible");
+
+  element.renderSubtree =  "invisibleactivatable";
+  assert_equals(element.renderSubtree, "visible");
+}, "Invalid values on the property are reflected as visible on the renderSubtree property");
+
+test(() => {
+  const element = document.createElement("div");
+  element.renderSubtree =  "not-visible";
+  assert_equals(element.getAttribute("rendersubtree"), "not-visible");
+
+  element.renderSubtree =  "";
+  assert_equals(element.getAttribute("rendersubtree"), "");
+
+  element.renderSubtree =  "invisibleactivatable";
+  assert_equals(element.getAttribute("rendersubtree"), "invisibleactivatable");
+}, "Invalid values on the property are saved as-is in the rendersubtree attribute");
+</script>

@@ -43,8 +43,8 @@ class FileManagerPrivateInternalExecuteTaskFunction
   ResponseAction Run() override;
 
  private:
-  void OnTaskExecuted(
-      extensions::api::file_manager_private::TaskResult success);
+  void OnTaskExecuted(extensions::api::file_manager_private::TaskResult success,
+                      std::string failure_reason);
 
   const ChromeExtensionFunctionDetails chrome_details_;
 };

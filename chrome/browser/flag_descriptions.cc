@@ -3297,6 +3297,10 @@ const char kFileManagerTouchModeName[] = "Files App. touch mode";
 const char kFileManagerTouchModeDescription[] =
     "Touchscreen-specific interactions of the Files app.";
 
+const char kFilesNGName[] = "Enable Files App. NG.";
+const char kFilesNGDescription[] =
+    "Enable the next generation UI style of the file manager.";
+
 const char kFirstRunUiTransitionsName[] =
     "Animated transitions in the first-run tutorial";
 const char kFirstRunUiTransitionsDescription[] =
@@ -3530,6 +3534,12 @@ const char kAnimatedAvatarButtonName[] = "Animated avatar button";
 const char kAnimatedAvatarButtonDescription[] =
     "If enabled, Chrome will animate a pill with identity information around "
     "the avatar button on start-up and on sign-in.";
+
+const char kClickToCallContextMenuForSelectedTextName[] =
+    "Enable click to call feature on desktop when a phone number is selected";
+const char kClickToCallContextMenuForSelectedTextDescription[] =
+    "Enables click to call feature to be shown in context menu when the user "
+    "right clicks after selecting a phone number.";
 
 const char kClickToCallUIName[] =
     "Enable click to call feature signals to be handled on desktop";

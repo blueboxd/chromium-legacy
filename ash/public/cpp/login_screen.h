@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/login_types.h"
 #include "base/callback_forward.h"
+#include "base/time/time.h"
 
 class AccountId;
 
@@ -68,14 +69,19 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   // |reason| contains information about why the parent access view is
   // necessary, it is used to modify the view appearance by changing the title
   // and description strings and background color. The parent access widget is a
-  // modal and already contains a dimmer, use |extra_dimmer| when another modal
-  // needs to instantiate it. Note: this is intended for children only. If a non
-  // child account id is provided, the validation will necessarily fail.
+  // modal and already contains a dimmer, however when another modal is the
+  // parent of the widget, the dimmer will be placed behind the two windows.
+  // |extra_dimmer| will create an extra dimmer between the two.
+  // |validation_time| is the time that will be used to validate the code, if
+  // null the system's time will be used. Note: this is intended for children
+  // only. If a non child account id is provided, the validation will
+  // necessarily fail.
   virtual void ShowParentAccessWidget(
       const AccountId& child_account_id,
       base::RepeatingCallback<void(bool success)> callback,
       ParentAccessRequestReason reason,
-      bool extra_dimmer = false) = 0;
+      bool extra_dimmer,
+      base::Time validation_time) = 0;
 
   // Sets if the guest button on the login shelf can be shown. Even if set to
   // true the button may still not be visible.

@@ -110,10 +110,6 @@ class BASE_EXPORT MessageLoopCurrent {
   // instance should replace its TaskRunner.
   void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner);
 
-  // This alias is deprecated. Use base::TaskObserver instead.
-  // TODO(yutak): Replace all the use sites with base::TaskObserver.
-  using TaskObserver = base::TaskObserver;
-
   // Forwards to MessageLoop::(Add|Remove)TaskObserver.
   // DEPRECATED(https://crbug.com/825327): only owners of the MessageLoop
   // instance should add task observers on it.

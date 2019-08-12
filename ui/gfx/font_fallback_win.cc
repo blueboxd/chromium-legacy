@@ -15,7 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

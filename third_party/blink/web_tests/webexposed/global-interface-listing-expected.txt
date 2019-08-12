@@ -2019,6 +2019,7 @@ interface Element : Node
     getter part
     getter prefix
     getter previousElementSibling
+    getter renderSubtree
     getter role
     getter scrollHeight
     getter scrollLeft
@@ -2141,6 +2142,7 @@ interface Element : Node
     setter onwebkitfullscreenerror
     setter outerHTML
     setter part
+    setter renderSubtree
     setter role
     setter scrollLeft
     setter scrollTop

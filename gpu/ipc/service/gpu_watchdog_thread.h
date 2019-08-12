@@ -9,9 +9,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_observer.h"
+#include "base/task/task_observer.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -99,13 +99,12 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
  private:
   // An object of this type intercepts the reception and completion of all tasks
   // on the watched thread and checks whether the watchdog is armed.
-  class GpuWatchdogTaskObserver
-      : public base::MessageLoopCurrent::TaskObserver {
+  class GpuWatchdogTaskObserver : public base::TaskObserver {
    public:
     explicit GpuWatchdogTaskObserver(GpuWatchdogThreadImplV1* watchdog);
     ~GpuWatchdogTaskObserver() override;
 
-    // Implements MessageLoopCurrent::TaskObserver.
+    // Implements TaskObserver.
     void WillProcessTask(const base::PendingTask& pending_task) override;
     void DidProcessTask(const base::PendingTask& pending_task) override;
 

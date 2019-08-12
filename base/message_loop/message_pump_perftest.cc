@@ -37,8 +37,8 @@ class JavaHandlerThreadForTest : public android::JavaHandlerThread {
   explicit JavaHandlerThreadForTest(const char* name)
       : android::JavaHandlerThread(name, base::ThreadPriority::NORMAL) {}
 
-  using android::JavaHandlerThread::task_environment;
-  using android::JavaHandlerThread::TaskEnvironment;
+  using android::JavaHandlerThread::state;
+  using android::JavaHandlerThread::State;
 };
 #endif
 
@@ -102,8 +102,8 @@ class ScheduleWorkTest : public testing::Test {
       std::unique_ptr<MessageLoop> message_loop =
           MessageLoop::CreateUnbound(target_type);
       message_loop_ = message_loop.get();
-      options.task_environment =
-          new internal::MessageLoopTaskEnvironment(std::move(message_loop));
+      options.delegate =
+          new internal::MessageLoopThreadDelegate(std::move(message_loop));
       target_->StartWithOptions(options);
 
       // Without this, it's possible for the scheduling threads to start and run
@@ -195,7 +195,7 @@ class ScheduleWorkTest : public testing::Test {
 #if defined(OS_ANDROID)
     if (java_thread_) {
       return static_cast<sequence_manager::internal::SequenceManagerImpl*>(
-          java_thread_->task_environment()->sequence_manager.get());
+          java_thread_->state()->sequence_manager.get());
     }
 #endif
     return MessageLoopCurrent::Get()->GetCurrentSequenceManagerImpl();

@@ -7,6 +7,7 @@
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 #container {
@@ -25,7 +26,7 @@ This text should be visible.
 <script>
 promise_test(async () => {
   const container = document.getElementById("container");
-  await container.displayLock.acquire({ timeout: Infinity });
+  await setInvisible(container);
 
   assert_equals(document.body.innerText, "This text should be visible.");
   assert_equals(document.getElementById("inner").innerText, "");

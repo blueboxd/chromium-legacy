@@ -1775,7 +1775,7 @@ test("content_unittests") {
     "../browser/renderer_host/web_database_host_impl_unittest.cc",
     "../browser/resolve_proxy_msg_helper_unittest.cc",
     "../browser/sandbox_mac_unittest.mm",
-    "../browser/scheduler/browser_io_task_environment_unittest.cc",
+    "../browser/scheduler/browser_io_thread_delegate_unittest.cc",
     "../browser/scheduler/browser_task_executor_unittest.cc",
     "../browser/scheduler/browser_task_queues_unittest.cc",
     "../browser/scheduler/browser_ui_thread_scheduler_unittest.cc",

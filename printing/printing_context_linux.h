@@ -5,6 +5,7 @@
 #ifndef PRINTING_PRINTING_CONTEXT_LINUX_H_
 #define PRINTING_PRINTING_CONTEXT_LINUX_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -33,7 +34,7 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   void PrintDocument(const MetafilePlayer& metafile);
 
   // Initializes with predefined settings.
-  void InitWithSettings(const PrintSettings& settings);
+  void InitWithSettings(std::unique_ptr<PrintSettings> settings);
 
   // PrintingContext implementation.
   void AskUserForSettings(int max_pages,

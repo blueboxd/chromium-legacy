@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="pass-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 #container {
@@ -33,11 +34,11 @@ function finishTest(status_string) {
 
 function runTest() {
   const container = document.getElementById("container");
-  container.displayLock.acquire({ timeout: Infinity }).then(() => {
+  setInvisible(container).then(() => {
     // Update, then disconnect the element, and commit.
     const update_promise = container.displayLock.update();
     container.remove();
-    const commit_promise = container.displayLock.commit();
+    const commit_promise = setVisible(container);
 
     // The update promise should reject and commit one should succeed.
     Promise.all([

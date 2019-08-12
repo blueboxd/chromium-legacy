@@ -66,6 +66,7 @@ class BackgroundSyncLauncherTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::MainThreadType::UI) {}
 
   void SetUpBrowserContext(const std::vector<GURL>& urls,
+                           blink::mojom::BackgroundSyncType sync_type,
                            const std::map<GURL, int>& wakeup_deltas = {}) {
     DCHECK(!urls.empty());
 
@@ -80,7 +81,7 @@ class BackgroundSyncLauncherTest : public testing::Test {
       static_cast<StoragePartitionImpl*>(storage_partition)
           ->GetBackgroundSyncContext()
           ->set_wakeup_delta_for_testing(
-              base::TimeDelta::FromMilliseconds(iter->second));
+              sync_type, base::TimeDelta::FromMilliseconds(iter->second));
     }
   }
 
@@ -151,7 +152,7 @@ TEST_F(BackgroundSyncLauncherTest, CorrectSoonestWakeupDeltaIsPicked) {
   // Add two storage partitions. Verify that we set the soonest wake up delta
   // to base::TimeDelta::Max(). This will cause cancellation of the wakeup
   // task.
-  SetUpBrowserContext(urls);
+  SetUpBrowserContext(urls, blink::mojom::BackgroundSyncType::ONE_SHOT);
   EXPECT_TRUE(GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::ONE_SHOT)
                   .is_max());
 
@@ -161,17 +162,51 @@ TEST_F(BackgroundSyncLauncherTest, CorrectSoonestWakeupDeltaIsPicked) {
   std::map<GURL, int> wakeup_deltas;
   for (const auto& url : urls)
     wakeup_deltas[url] = delta_ms += 1000;
-  SetUpBrowserContext(urls, wakeup_deltas);
+  SetUpBrowserContext(urls, blink::mojom::BackgroundSyncType::ONE_SHOT,
+                      wakeup_deltas);
 
   EXPECT_EQ(GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::ONE_SHOT)
                 .InMilliseconds(),
             1000);
 }
 
+// Tests that we pick the correct wake up delta for the correct Background Sync
+// wake up task, across all storage partitions.
+TEST_F(BackgroundSyncLauncherTest, SoonestWakeupDeltaIsPickedForTheRightTask) {
+  std::vector<GURL> urls = {GURL(kUrl_1), GURL(kUrl_2)};
+
+  // Add two storage partitions with wakeup_deltas, both of the same sync type.
+  // Verify that we pick the smaller of the two.
+  int delta_ms = 0;
+  std::map<GURL, int> wakeup_deltas;
+  for (const auto& url : urls)
+    wakeup_deltas[url] = delta_ms += 1000;
+  SetUpBrowserContext(urls, blink::mojom::BackgroundSyncType::ONE_SHOT,
+                      wakeup_deltas);
+
+  EXPECT_EQ(GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::ONE_SHOT)
+                .InMilliseconds(),
+            1000);
+  EXPECT_TRUE(GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::PERIODIC)
+                  .is_max());
+
+  // Add some more wakeup_deltas now for Periodic Background Sync.
+  wakeup_deltas.clear();
+  wakeup_deltas[GURL(kUrl_1)] = 500;
+  SetUpBrowserContext(urls, blink::mojom::BackgroundSyncType::PERIODIC,
+                      wakeup_deltas);
+  EXPECT_EQ(GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::ONE_SHOT)
+                .InMilliseconds(),
+            1000);
+  EXPECT_EQ(GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::PERIODIC)
+                .InMilliseconds(),
+            500);
+}
+
 #if defined(OS_ANDROID)
 TEST_F(BackgroundSyncLauncherTest, FireBackgroundSyncEvents) {
   std::vector<GURL> urls = {GURL(kUrl_1), GURL(kUrl_2)};
-  SetUpBrowserContext(urls);
+  SetUpBrowserContext(urls, blink::mojom::BackgroundSyncType::ONE_SHOT);
 
   ASSERT_NO_FATAL_FAILURE(FireBackgroundSyncEventsForAllPartitions());
   EXPECT_EQ(NumInvocationsOfFireBackgroundSyncEvents(), 2);

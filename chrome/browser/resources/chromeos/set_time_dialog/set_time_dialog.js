@@ -216,6 +216,27 @@ Polymer({
   },
 
   /**
+   * @return {!number} Seconds since epoch representing the date on the dialog
+   *     inputs.
+   * @private
+   */
+  getInputTimeSinceEpoch_: function() {
+    const now = this.getInputTime_();
+
+    if (this.isTimezoneVisible_) {
+      // Add timezone offset to get real time. This is only necessary when the
+      // timezone was updated, which is only possible when the dropdown is
+      // visible.
+      const timezoneDelta = getTimezoneDelta(
+          /** @type {string} */ (loadTimeData.getValue('currentTimezoneId')),
+          this.selectedTimezone_);
+      now.setMilliseconds(now.getMilliseconds() + timezoneDelta);
+    }
+
+    return Math.floor(now / 1000);
+  },
+
+  /**
    * Sets the current timezone.
    * @param {string} timezoneId The timezone ID to select.
    * @private
@@ -265,20 +286,7 @@ Polymer({
    * @private
    */
   applyTime_: function() {
-    const now = this.getInputTime_();
-
-    if (this.isTimezoneVisible_) {
-      // Add timezone offset to get real time. This is only necessary when the
-      // timezone was updated, which is only possible when the dropdown is
-      // visible.
-      const timezoneDelta = getTimezoneDelta(
-          /** @type {string} */ (loadTimeData.getValue('currentTimezoneId')),
-          this.selectedTimezone_);
-      now.setMilliseconds(now.getMilliseconds() + timezoneDelta);
-    }
-
-    const seconds = Math.floor(now / 1000);
-    this.browserProxy_.setTimeInSeconds(seconds);
+    this.browserProxy_.setTimeInSeconds(this.getInputTimeSinceEpoch_());
   },
 
   /**
@@ -317,7 +325,7 @@ Polymer({
    * @private
    */
   onDoneClick_: function() {
-    this.browserProxy_.doneClicked();
+    this.browserProxy_.doneClicked(this.getInputTimeSinceEpoch_());
   },
 
   /** @private */

@@ -57,6 +57,11 @@ bool TestAppRegistrar::WasExternalAppUninstalledByUser(
   return base::Contains(user_uninstalled_external_apps_, app_id);
 }
 
+bool TestAppRegistrar::WasInstalledByUser(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 std::map<AppId, GURL> TestAppRegistrar::GetExternallyInstalledApps(
     ExternalInstallSource install_source) const {
   std::map<AppId, GURL> apps;

@@ -6,6 +6,7 @@
 #define ASH_LOGIN_MOCK_LOGIN_SCREEN_CLIENT_H_
 
 #include "ash/public/cpp/login_screen_client.h"
+#include "base/time/time.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -29,9 +30,10 @@ class MockLoginScreenClient : public LoginScreenClient {
   MOCK_METHOD2(AuthenticateUserWithChallengeResponse_,
                void(const AccountId& account_id,
                     base::OnceCallback<void(bool)>& callback));
-  MOCK_METHOD2(ValidateParentAccessCode_,
+  MOCK_METHOD3(ValidateParentAccessCode_,
                bool(const AccountId& account_id,
-                    const std::string& access_code));
+                    const std::string& access_code,
+                    base::Time validation_time));
 
   // Set the result that should be passed to |callback| in
   // |AuthenticateUserWithPasswordOrPin| or
@@ -76,7 +78,8 @@ class MockLoginScreenClient : public LoginScreenClient {
       const AccountId& account_id,
       base::OnceCallback<void(bool)> callback) override;
   bool ValidateParentAccessCode(const AccountId& account_id,
-                                const std::string& code) override;
+                                const std::string& code,
+                                base::Time validation_time) override;
   MOCK_METHOD1(AuthenticateUserWithEasyUnlock,
                void(const AccountId& account_id));
   MOCK_METHOD1(HardlockPod, void(const AccountId& account_id));

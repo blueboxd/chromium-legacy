@@ -49,7 +49,7 @@ function setUp() {
 
   // Create and initialize Crostini.
   crostini = createCrostiniForTest();
-  crostini.init(volumeManager);
+  crostini.initVolumeManager(volumeManager);
 }
 
 /**
@@ -66,13 +66,13 @@ function setDriveFsEnabled(enabled) {
 function testInitCrostiniPluginVmEnabled() {
   window.loadTimeData.data['CROSTINI_ENABLED'] = true;
   window.loadTimeData.data['PLUGIN_VM_ENABLED'] = true;
-  crostini.init(volumeManager);
+  crostini.initEnabled();
   assertTrue(crostini.isEnabled('termina'));
   assertTrue(crostini.isEnabled('PvmDefault'));
 
   window.loadTimeData.data['CROSTINI_ENABLED'] = false;
   window.loadTimeData.data['PLUGIN_VM_ENABLED'] = false;
-  crostini.init(volumeManager);
+  crostini.initEnabled();
   assertFalse(crostini.isEnabled('termina'));
   assertFalse(crostini.isEnabled('PvmDefault'));
 }
@@ -82,11 +82,11 @@ function testInitCrostiniPluginVmEnabled() {
  */
 function testInitCrostiniRootAccessAllowed() {
   window.loadTimeData.data['CROSTINI_ROOT_ACCESS_ALLOWED'] = true;
-  crostini.init(volumeManager);
+  crostini.initEnabled();
   assertTrue(crostini.isRootAccessAllowed('termina'));
 
   window.loadTimeData.data['CROSTINI_ROOT_ACCESS_ALLOWED'] = false;
-  crostini.init(volumeManager);
+  crostini.initEnabled();
   assertFalse(crostini.isRootAccessAllowed('termina'));
 }
 

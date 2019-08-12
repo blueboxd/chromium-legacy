@@ -105,11 +105,12 @@ class MockAudioInputStream : public media::AudioInputStream {
 };
 
 // Parameter: use audio processing.
-class InputControllerTest : public ::testing::TestWithParam<bool> {
+template <base::test::ScopedTaskEnvironment::TimeSource TimeSource =
+              base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME>
+class TimeSourceInputControllerTest : public ::testing::TestWithParam<bool> {
  public:
-  InputControllerTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+  TimeSourceInputControllerTest()
+      : task_environment_(TimeSource),
         audio_manager_(std::make_unique<media::FakeAudioManager>(
             std::make_unique<media::TestAudioThread>(false),
             &log_factory_)),
@@ -125,7 +126,7 @@ class InputControllerTest : public ::testing::TestWithParam<bool> {
 #endif
   }
 
-  ~InputControllerTest() override {
+  ~TimeSourceInputControllerTest() override {
     audio_manager_->Shutdown();
     task_environment_.RunUntilIdle();
   }
@@ -165,8 +166,12 @@ class InputControllerTest : public ::testing::TestWithParam<bool> {
   mojo::Remote<mojom::AudioProcessorControls> remote_controls_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InputControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(TimeSourceInputControllerTest);
 };
+
+using SystemTimeInputControllerTest = TimeSourceInputControllerTest<
+    base::test::ScopedTaskEnvironment::TimeSource::SYSTEM_TIME>;
+using InputControllerTest = TimeSourceInputControllerTest<>;
 
 TEST_P(InputControllerTest, CreateAndCloseWithoutRecording) {
   EXPECT_CALL(event_handler_, OnCreated(_));
@@ -179,7 +184,10 @@ TEST_P(InputControllerTest, CreateAndCloseWithoutRecording) {
 }
 
 // Test a normal call sequence of create, record and close.
-TEST_P(InputControllerTest, CreateRecordAndClose) {
+// Note: Must use system time as MOCK_TIME does not support the threads created
+// by the FakeAudioInputStream. The callbacks to sync_writer_.Write() are on
+// that thread, and thus we must use SYSTEM_TIME.
+TEST_P(SystemTimeInputControllerTest, CreateRecordAndClose) {
   EXPECT_CALL(event_handler_, OnCreated(_));
   CreateAudioController();
   ASSERT_TRUE(controller_.get());
@@ -272,8 +280,12 @@ TEST_P(InputControllerTest, TestOnmutedCallbackInitiallyMuted) {
 
 #if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
 INSTANTIATE_TEST_SUITE_P(, InputControllerTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, SystemTimeInputControllerTest, ::testing::Bool());
 #else
 INSTANTIATE_TEST_SUITE_P(, InputControllerTest, testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(,
+                         SystemTimeInputControllerTest,
+                         ::testing::Values(false));
 #endif
 
 }  // namespace audio

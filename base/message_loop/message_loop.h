@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/pending_task.h"
@@ -25,11 +24,12 @@
 namespace base {
 
 namespace internal {
-class MessageLoopTaskEnvironment;
+class MessageLoopThreadDelegate;
 }  // namespace internal
 
 class MessageLoopImpl;
 class MessagePump;
+class TaskObserver;
 
 namespace sequence_manager {
 class TaskQueue;
@@ -123,9 +123,6 @@ class BASE_EXPORT MessageLoop {
   // Gets the TaskRunner associated with this message loop.
   scoped_refptr<SingleThreadTaskRunner> task_runner() const;
 
-  // TODO(yutak): Replace all the use sites with base::TaskObserver.
-  using TaskObserver = MessageLoopCurrent::TaskObserver;
-
   // These functions can only be called on the same thread that |this| is
   // running on.
   // These functions must not be called from a TaskObserver callback.
@@ -175,7 +172,7 @@ class BASE_EXPORT MessageLoop {
   friend class MessageLoopTypedTest;
   friend class ScheduleWorkTest;
   friend class Thread;
-  friend class internal::MessageLoopTaskEnvironment;
+  friend class internal::MessageLoopThreadDelegate;
   friend class sequence_manager::internal::SequenceManagerImpl;
   FRIEND_TEST_ALL_PREFIXES(MessageLoopTest, DeleteUnboundLoop);
 

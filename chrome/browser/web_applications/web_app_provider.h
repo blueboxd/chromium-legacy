@@ -35,7 +35,6 @@ class SystemWebAppManager;
 class WebAppAudioFocusIdMap;
 class WebAppInstallManager;
 class WebAppPolicyManager;
-class WebAppTabHelperBase;
 class WebAppUiManager;
 
 // Forward declarations for new extension-independent subsystems.
@@ -71,6 +70,7 @@ class WebAppProvider : public WebAppProviderBase {
   PendingAppManager& pending_app_manager() override;
   WebAppPolicyManager& policy_manager() override;
   WebAppUiManager& ui_manager() override;
+  WebAppAudioFocusIdMap& audio_focus_id_map() override;
 
   WebAppDatabaseFactory& database_factory() { return *database_factory_; }
   WebAppSyncManager& sync_manager() { return *sync_manager_; }
@@ -80,8 +80,6 @@ class WebAppProvider : public WebAppProviderBase {
   void Shutdown() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-  static WebAppTabHelperBase* CreateTabHelper(
-      content::WebContents* web_contents);
 
   // Signals when app registry becomes ready.
   const base::OneShotEvent& on_registry_ready() const {

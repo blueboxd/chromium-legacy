@@ -220,11 +220,6 @@ if (is_android || is_chromeos) {
     # Move Trichrome assets to the shared library APK. This will be removed
     # once P builds are no longer supported. https://crbug.com/943637
     trichrome_shared_assets = android_sdk_release == "q"
-
-    # Whether Developer UIs should be split into a separate DFM.
-    # TODO(huangs): Move this flag to its own buildflags.gni file once we
-    # determine where the file should go.
-    dfmify_dev_ui = false
   }
 
   if (notouch_build && defined(extra_keymappings)) {

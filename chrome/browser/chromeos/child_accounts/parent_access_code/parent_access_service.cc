@@ -9,8 +9,6 @@
 
 #include "base/logging.h"
 #include "base/no_destructor.h"
-#include "base/time/clock.h"
-#include "base/time/default_clock.h"
 #include "base/timer/timer.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -63,19 +61,19 @@ bool ParentAccessService::IsApprovalRequired(SupervisedAction action) {
   }
 }
 
-ParentAccessService::ParentAccessService()
-    : clock_(base::DefaultClock::GetInstance()) {}
+ParentAccessService::ParentAccessService() = default;
 
 ParentAccessService::~ParentAccessService() = default;
 
 bool ParentAccessService::ValidateParentAccessCode(
     const AccountId& account_id,
-    const std::string& access_code) {
+    const std::string& access_code,
+    base::Time validation_time) {
   bool validation_result = false;
   for (const auto& map_entry : config_source_.config_map()) {
     if (!account_id.is_valid() || account_id == map_entry.first) {
       for (const auto& validator : map_entry.second) {
-        if (validator->Validate(access_code, clock_->Now())) {
+        if (validator->Validate(access_code, validation_time)) {
           validation_result = true;
           break;
         }
@@ -101,10 +99,6 @@ void ParentAccessService::AddObserver(Observer* observer) {
 
 void ParentAccessService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void ParentAccessService::SetClockForTesting(base::Clock* clock) {
-  clock_ = clock;
 }
 
 }  // namespace parent_access

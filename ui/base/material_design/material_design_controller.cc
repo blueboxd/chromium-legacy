@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"

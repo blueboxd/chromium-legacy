@@ -128,6 +128,12 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
       return;
     }
 
+    double seconds;
+    if (!args->GetDouble(0, &seconds)) {
+      NOTREACHED();
+      return;
+    }
+
     AccountId account_id;
     bool is_user_logged_in = user_manager::UserManager::Get()->IsUserLoggedIn();
     if (is_user_logged_in) {
@@ -139,7 +145,8 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
         base::BindRepeating(&SetTimeMessageHandler::OnParentAccessValidation,
                             weak_factory_.GetWeakPtr()),
         ash::ParentAccessRequestReason::kChangeTime,
-        !is_user_logged_in /* extra_dimmer */);
+        !is_user_logged_in /* extra_dimmer */,
+        base::Time::FromDoubleT(seconds));
   }
 
   void OnParentAccessValidation(bool success) {

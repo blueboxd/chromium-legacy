@@ -63,8 +63,9 @@ void MockLoginScreenClient::AuthenticateUserWithChallengeResponse(
 
 bool MockLoginScreenClient::ValidateParentAccessCode(
     const AccountId& account_id,
-    const std::string& code) {
-  ValidateParentAccessCode_(account_id, code);
+    const std::string& code,
+    base::Time validation_time) {
+  ValidateParentAccessCode_(account_id, code, validation_time);
   return validate_parent_access_code_result_;
 }
 

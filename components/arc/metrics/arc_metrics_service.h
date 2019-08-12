@@ -52,20 +52,10 @@ class ArcMetricsService : public KeyedService,
                           public mojom::MetricsHost,
                           public ui::GamepadObserver {
  public:
-  // Delegate for handling window focus observation that is used to track ARC
-  // app usage metrics.
-  class ArcWindowDelegate {
-   public:
-    virtual ~ArcWindowDelegate() = default;
-    // Returns whether |window| is an ARC window.
-    virtual bool IsArcAppWindow(const aura::Window* window) const = 0;
-    virtual void RegisterActivationChangeObserver() = 0;
-    virtual void UnregisterActivationChangeObserver() = 0;
-  };
+  using WindowMatcher = base::RepeatingCallback<bool(const aura::Window*)>;
 
-  // Sets the fake ArcWindowDelegate for testing.
-  void SetArcWindowDelegateForTesting(
-      std::unique_ptr<ArcWindowDelegate> delegate);
+  // Sets the fake WindowMatcher for testing.
+  void SetWindowMatcherForTesting(WindowMatcher window_matcher);
 
   // Sets Clock for testing.
   void SetClockForTesting(base::Clock* clock);
@@ -172,7 +162,10 @@ class ArcMetricsService : public KeyedService,
   THREAD_CHECKER(thread_checker_);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
-  std::unique_ptr<ArcWindowDelegate> arc_window_delegate_;
+
+  // A function to determine if a window is an ARC window, which can be
+  // replaced in tests.
+  WindowMatcher window_matcher_;
 
   ProcessObserver process_observer_;
   base::RepeatingTimer request_process_list_timer_;

@@ -1927,6 +1927,24 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
                name == html_names::kInvisibleAttr &&
                params.old_value != params.new_value) {
       InvisibleAttributeChanged(params.old_value, params.new_value);
+    } else if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+               name == html_names::kRendersubtreeAttr &&
+               params.old_value != params.new_value) {
+      const bool should_be_invisible =
+          EqualIgnoringASCIICase(params.new_value, "invisible");
+      const bool should_be_invisible_activatable =
+          EqualIgnoringASCIICase(params.new_value, "invisible-activatable");
+      if (should_be_invisible || should_be_invisible_activatable) {
+        // Getting locked.
+        EnsureDisplayLockContext().SetActivatable(
+            should_be_invisible_activatable);
+        if (!GetDisplayLockContext()->IsLocked())
+          GetDisplayLockContext()->StartAcquire();
+      } else {
+        // Getting unlocked.
+        if (EnsureDisplayLockContext().IsLocked())
+          GetDisplayLockContext()->StartCommit();
+      }
     }
   }
 
@@ -4127,6 +4145,11 @@ DisplayLockContext* Element::GetDisplayLockContext() const {
     return nullptr;
   return HasRareData() ? GetElementRareData()->GetDisplayLockContext()
                        : nullptr;
+}
+
+DisplayLockContext& Element::EnsureDisplayLockContext() {
+  return *EnsureElementRareData().EnsureDisplayLockContext(
+      this, GetExecutionContext());
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()

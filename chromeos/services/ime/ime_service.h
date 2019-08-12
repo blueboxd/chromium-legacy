@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "chromeos/services/ime/input_engine.h"
 #include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
@@ -61,6 +62,7 @@ class ImeService : public service_manager::Service,
                            const char* file_path,
                            SimpleDownloadCallback callback) override;
   ImeCrosDownloader* GetDownloader() override;
+  void RunInMainSequence(ImeSequencedTask task, int task_id) override;
 
   // Adds a mojom::InputEngineManager receiver to this object.
   void AddInputEngineManagerReceiver(

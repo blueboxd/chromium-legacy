@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_handle.h"
@@ -175,11 +177,12 @@ TEST_F(PrintingContextTest, Base) {
   if (IsTestCaseDisabled())
     return;
 
-  PrintSettings settings;
-  settings.set_device_name(GetDefaultPrinter());
+  auto settings = std::make_unique<PrintSettings>();
+  settings->set_device_name(GetDefaultPrinter());
   // Initialize it.
   PrintingContextWin context(this);
-  EXPECT_EQ(PrintingContext::OK, context.InitWithSettingsForTest(settings));
+  EXPECT_EQ(PrintingContext::OK,
+            context.InitWithSettingsForTest(std::move(settings)));
 
   // The print may lie to use and may not support world transformation.
   // Verify right now.

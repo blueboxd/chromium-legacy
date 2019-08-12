@@ -1,7 +1,0 @@
-per-file empty_OWNERS=*
-*
-
-# Comment.
- # Comment preceded by space.
-joe@chromium.org # Comment after email address.
-set noparent

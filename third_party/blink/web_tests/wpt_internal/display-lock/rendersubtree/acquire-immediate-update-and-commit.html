@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="pass-container-with-child-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 #container {
@@ -33,7 +34,7 @@ function finishTest(status_string) {
 
 function runTest() {
   const container = document.getElementById("container");
-  container.displayLock.acquire({ timeout: Infinity });
+  setInvisible(container);
 
   const child = document.createElement("div");
   child.id = "child";

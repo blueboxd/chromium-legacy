@@ -13,7 +13,7 @@
 #import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 

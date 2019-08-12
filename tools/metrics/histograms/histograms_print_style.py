@@ -17,6 +17,7 @@ import pretty_print_xml
 # { tag_name: [attribute_name, ...] }
 ATTRIBUTE_ORDER = {
     'affected-histogram': ['name'],
+    'component': [],
     'details': [],
     'enum': ['name'],
     'enums': [],
@@ -63,7 +64,7 @@ TAGS_THAT_HAVE_EXTRA_NEWLINE = {
 }
 
 # Tags that we allow to be squished into a single line for brevity.
-TAGS_THAT_ALLOW_SINGLE_LINE = ['summary', 'int', 'owner']
+TAGS_THAT_ALLOW_SINGLE_LINE = ['summary', 'int', 'owner', 'component']
 
 LOWERCASE_NAME_FN = lambda n: n.get('name').lower()
 

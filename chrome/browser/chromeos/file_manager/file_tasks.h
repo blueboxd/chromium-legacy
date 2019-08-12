@@ -240,10 +240,10 @@ std::string TaskDescriptorToId(const TaskDescriptor& task_descriptor);
 // "task_id" looks like.
 bool ParseTaskID(const std::string& task_id, TaskDescriptor* task);
 
-// The callback is used for ExecuteFileTask(). Will be called with true if
-// the file task execution is successful, or false if unsuccessful.
+// The callback is used for ExecuteFileTask().
 typedef base::OnceCallback<void(
-    extensions::api::file_manager_private::TaskResult result)>
+    extensions::api::file_manager_private::TaskResult result,
+    std::string error_message)>
     FileTaskFinishedCallback;
 
 // Executes file handler task for each element of |file_urls|.

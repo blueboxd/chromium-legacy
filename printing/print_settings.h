@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
@@ -59,7 +60,6 @@ class PRINTING_EXPORT PrintSettings {
   };
 
   PrintSettings();
-  PrintSettings(const PrintSettings& other);
   ~PrintSettings();
 
   // Reinitialize the settings to the default values.
@@ -295,6 +295,8 @@ class PRINTING_EXPORT PrintSettings {
   // PIN code entered by the user.
   std::string pin_value_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(PrintSettings);
 };
 
 }  // namespace printing

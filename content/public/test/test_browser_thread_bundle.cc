@@ -13,7 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/after_startup_task_utils.h"
-#include "content/browser/scheduler/browser_io_task_environment.h"
+#include "content/browser/scheduler/browser_io_thread_delegate.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -91,14 +91,14 @@ void TestBrowserThreadBundle::Init() {
       sequence_manager(), GetTimeDomain());
   auto default_ui_task_runner =
       browser_ui_thread_scheduler->GetHandle()->GetDefaultTaskRunner();
-  auto browser_io_task_environment =
+  auto browser_io_thread_delegate =
       real_io_thread_
-          ? std::make_unique<BrowserIOTaskEnvironment>()
-          : BrowserIOTaskEnvironment::CreateForTesting(sequence_manager());
-  browser_io_task_environment->SetAllowBlockingForTesting();
+          ? std::make_unique<BrowserIOThreadDelegate>()
+          : BrowserIOThreadDelegate::CreateForTesting(sequence_manager());
+  browser_io_thread_delegate->SetAllowBlockingForTesting();
 
   BrowserTaskExecutor::CreateForTesting(std::move(browser_ui_thread_scheduler),
-                                        std::move(browser_io_task_environment));
+                                        std::move(browser_io_thread_delegate));
   DeferredInitFromSubclass(std::move(default_ui_task_runner));
 
   if (HasIOMainLoop()) {

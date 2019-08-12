@@ -1765,7 +1765,16 @@ void CrostiniManager::OnStartTerminaVm(
     return;
   }
 
-  // Any pending backup or restore callbacks can be marked as failed.
+  // If the vm is already marked "running" run the callback.
+  if (response->status() == vm_tools::concierge::VM_STATUS_RUNNING) {
+    running_vms_[vm_name] =
+        VmInfo{VmState::STARTED, std::move(response->vm_info())};
+    std::move(callback).Run(/*success=*/true);
+    return;
+  }
+
+  // Any pending callbacks must exist from a previously running VM, and should
+  // be marked as failed.
   InvokeAndErasePendingCallbacks(
       &export_lxd_container_callbacks_, vm_name,
       CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STARTED);
@@ -1780,14 +1789,6 @@ void CrostiniManager::OnStartTerminaVm(
     running_vms_.erase(vm_name);
     running_containers_.erase(vm_name);
     std::move(callback).Run(/*success=*/false);
-    return;
-  }
-
-  // If the vm is already marked "running" run the callback.
-  if (response->status() == vm_tools::concierge::VM_STATUS_RUNNING) {
-    running_vms_[vm_name] =
-        VmInfo{VmState::STARTED, std::move(response->vm_info())};
-    std::move(callback).Run(/*success=*/true);
     return;
   }
 

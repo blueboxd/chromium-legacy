@@ -5,6 +5,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="pass-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <div id="log"></div>
 <div id="host"><div id="slotted"></div></div>
@@ -24,7 +25,7 @@ function runTest() {
   locked.style = "contain: style layout";
   locked.innerHTML = "<slot></slot>";
   locked.getBoundingClientRect();
-  locked.displayLock.acquire({timeout: Infinity});
+  setInvisible(locked);
 
   // Slotted will be recalced, because style dirtiness propagated
   // to the DOM ancestor (host) instead of flat-tree (<slot>), and
@@ -34,7 +35,7 @@ function runTest() {
   host.getBoundingClientRect();
 
   // Check that everything is OK after we commit.
-  locked.displayLock.commit().then(() => {
+  setVisible(locked).then(() => {
     locked.remove();
     finishTest("PASS");
   });

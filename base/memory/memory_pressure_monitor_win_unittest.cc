@@ -9,8 +9,13 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 namespace base {
 namespace win {

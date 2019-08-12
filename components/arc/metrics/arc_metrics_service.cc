@@ -69,36 +69,6 @@ inline int GetDayId(const base::Clock* clock) {
   return clock->Now().LocalMidnight().since_origin().InDays();
 }
 
-class ArcWindowDelegateImpl : public ArcMetricsService::ArcWindowDelegate {
- public:
-  explicit ArcWindowDelegateImpl(ArcMetricsService* service)
-      : service_(service) {}
-
-  ~ArcWindowDelegateImpl() override = default;
-
-  bool IsArcAppWindow(const aura::Window* window) const override {
-    return arc::IsArcAppWindow(window);
-  }
-
-  void RegisterActivationChangeObserver() override {
-    // If WMHelper doesn't exist, do nothing. This occurs in tests.
-    if (exo::WMHelper::HasInstance())
-      exo::WMHelper::GetInstance()->AddActivationObserver(service_);
-  }
-
-  void UnregisterActivationChangeObserver() override {
-    // If WMHelper is already destroyed, do nothing.
-    // TODO(crbug.com/748380): Fix shutdown order.
-    if (exo::WMHelper::HasInstance())
-      exo::WMHelper::GetInstance()->RemoveActivationObserver(service_);
-  }
-
- private:
-  ArcMetricsService* const service_;  // Owned by ArcMetricsService
-
-  DISALLOW_COPY_AND_ASSIGN(ArcWindowDelegateImpl);
-};
-
 // Singleton factory for ArcMetricsService.
 class ArcMetricsServiceFactory
     : public internal::ArcBrowserContextKeyedServiceFactoryBase<
@@ -140,7 +110,7 @@ BrowserContextKeyedServiceFactory* ArcMetricsService::GetFactory() {
 ArcMetricsService::ArcMetricsService(content::BrowserContext* context,
                                      ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
-      arc_window_delegate_(std::make_unique<ArcWindowDelegateImpl>(this)),
+      window_matcher_(base::BindRepeating(arc::IsArcAppWindow)),
       process_observer_(this),
       pref_service_(user_prefs::UserPrefs::Get(context)),
       clock_(base::DefaultClock::GetInstance()),
@@ -149,7 +119,9 @@ ArcMetricsService::ArcMetricsService(content::BrowserContext* context,
       weak_ptr_factory_(this) {
   arc_bridge_service_->metrics()->SetHost(this);
   arc_bridge_service_->process()->AddObserver(&process_observer_);
-  arc_window_delegate_->RegisterActivationChangeObserver();
+  // If WMHelper doesn't exist, do nothing. This occurs in tests.
+  if (exo::WMHelper::HasInstance())
+    exo::WMHelper::GetInstance()->AddActivationObserver(this);
   session_manager::SessionManager::Get()->AddObserver(this);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
   ui::GamepadProviderOzone::GetInstance()->AddGamepadObserver(this);
@@ -177,14 +149,17 @@ ArcMetricsService::~ArcMetricsService() {
   ui::GamepadProviderOzone::GetInstance()->RemoveGamepadObserver(this);
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   session_manager::SessionManager::Get()->RemoveObserver(this);
-  arc_window_delegate_->UnregisterActivationChangeObserver();
+  // If WMHelper is already destroyed, do nothing.
+  // TODO(crbug.com/748380): Fix shutdown order.
+  if (exo::WMHelper::HasInstance())
+    exo::WMHelper::GetInstance()->RemoveActivationObserver(this);
   arc_bridge_service_->process()->RemoveObserver(&process_observer_);
   arc_bridge_service_->metrics()->SetHost(nullptr);
 }
 
-void ArcMetricsService::SetArcWindowDelegateForTesting(
-    std::unique_ptr<ArcWindowDelegate> delegate) {
-  arc_window_delegate_ = std::move(delegate);
+void ArcMetricsService::SetWindowMatcherForTesting(
+    WindowMatcher window_matcher) {
+  window_matcher_ = window_matcher;
 }
 
 void ArcMetricsService::SetClockForTesting(base::Clock* clock) {
@@ -327,7 +302,7 @@ void ArcMetricsService::OnWindowActivated(
     aura::Window* gained_active,
     aura::Window* lost_active) {
   UpdateEngagementTime();
-  was_arc_window_active_ = arc_window_delegate_->IsArcAppWindow(gained_active);
+  was_arc_window_active_ = window_matcher_.Run(gained_active);
   if (!was_arc_window_active_) {
     gamepad_interaction_recorded_ = false;
     return;

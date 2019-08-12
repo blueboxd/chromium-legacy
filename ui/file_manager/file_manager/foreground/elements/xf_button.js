@@ -30,7 +30,7 @@ class PanelButton extends HTMLElement {
    */
   static html_() {
     return `<style>
-              cr-icon-button {
+              cr-icon-button, cr-button {
                 margin-inline-start: 0px;
               }
 
@@ -44,8 +44,7 @@ class PanelButton extends HTMLElement {
                   nPg==') no-repeat center;
               }
 
-              :host([data-category='cancel']),
-              :host([data-category='dismiss']) {
+              :host([data-category='cancel']) {
                 background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR\
                   0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczNnB4JyBoZWlnaHQ\
                   9JzM2cHgnIHZpZXdCb3g9JzAgMCAzNiAzNic+CiAgICA8ZyBzdHJva2U9JyM\
@@ -90,12 +89,25 @@ class PanelButton extends HTMLElement {
               :host([data-category='collapse']) {
                   animation: setcollapse 200ms forwards;
               }
+
               :host {
-                  width: 36px;
-                  position: relative;
+                position: relative;
+              }
+
+              :host(:not([data-category='dismiss'])) {
+                width: 36px;
+              }
+
+              :host([data-category='dismiss']) #icon {
+                display: none;
+              }
+
+              :host(:not([data-category='dismiss'])) #dismiss {
+                display: none;
               }
             </style>
-            <cr-icon-button></cr-icon-button>`;
+            <cr-button id='dismiss'>$i18n{DRIVE_WELCOME_DISMISS}</cr-button>
+            <cr-icon-button id='icon'></cr-icon-button>`;
   }
 }
 

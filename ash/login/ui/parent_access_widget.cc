@@ -19,7 +19,8 @@ namespace ash {
 ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
                                        const OnExitCallback& callback,
                                        ParentAccessRequestReason reason,
-                                       bool use_extra_dimmer)
+                                       bool extra_dimmer,
+                                       base::Time validation_time)
     : callback_(callback) {
   views::Widget::InitParams widget_params;
   // Using window frameless to be able to get focus on the view input fields,
@@ -41,9 +42,10 @@ ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
   ParentAccessView::Callbacks callbacks;
   callbacks.on_finished = base::BindRepeating(&ParentAccessWidget::OnExit,
                                               weak_factory_.GetWeakPtr());
-  widget_params.delegate = new ParentAccessView(account_id, callbacks, reason);
+  widget_params.delegate =
+      new ParentAccessView(account_id, callbacks, reason, validation_time);
 
-  if (use_extra_dimmer) {
+  if (extra_dimmer) {
     dimmer_ = std::make_unique<WindowDimmer>(widget_params.parent);
     dimmer_->window()->Show();
   }

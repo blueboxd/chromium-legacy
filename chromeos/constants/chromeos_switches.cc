@@ -426,6 +426,10 @@ const char kOobeSkipToLogin[] = "oobe-skip-to-login";
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[] = "oobe-timer-interval";
 
+// Url addrress of SAML provider for a SAML public session.
+// TODO: Remove when https://crbug.com/984021 is fixed.
+const char kPublicAccountsSamlUrl[] = "public-accounts-saml-url";
+
 // If set to "true", the profile requires policy during restart (policy load
 // must succeed, otherwise session restart should fail).
 const char kProfileRequiresPolicy[] = "profile-requires-policy";

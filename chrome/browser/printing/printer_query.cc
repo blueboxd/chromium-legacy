@@ -37,13 +37,13 @@ PrinterQuery::~PrinterQuery() {
 }
 
 void PrinterQuery::GetSettingsDone(base::OnceClosure callback,
-                                   const PrintSettings& new_settings,
+                                   std::unique_ptr<PrintSettings> new_settings,
                                    PrintingContext::Result result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   is_print_dialog_box_shown_ = false;
   last_status_ = result;
   if (result != PrintingContext::FAILED) {
-    settings_ = new_settings;
+    settings_ = std::move(new_settings);
     cookie_ = PrintSettings::NewCookie();
   } else {
     // Failure.
@@ -53,14 +53,15 @@ void PrinterQuery::GetSettingsDone(base::OnceClosure callback,
   std::move(callback).Run();
 }
 
-void PrinterQuery::PostSettingsDoneToIO(base::OnceClosure callback,
-                                        const PrintSettings& new_settings,
-                                        PrintingContext::Result result) {
+void PrinterQuery::PostSettingsDoneToIO(
+    base::OnceClosure callback,
+    std::unique_ptr<PrintSettings> new_settings,
+    PrintingContext::Result result) {
   // |this| is owned by |callback|, so |base::Unretained()| is safe.
   base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&PrinterQuery::GetSettingsDone, base::Unretained(this),
-                     std::move(callback), new_settings, result));
+                     std::move(callback), std::move(new_settings), result));
 }
 
 std::unique_ptr<PrintJobWorker> PrinterQuery::DetachWorker() {
@@ -71,7 +72,15 @@ std::unique_ptr<PrintJobWorker> PrinterQuery::DetachWorker() {
 }
 
 const PrintSettings& PrinterQuery::settings() const {
-  return settings_;
+  return *settings_;
+}
+
+std::unique_ptr<PrintSettings> PrinterQuery::ExtractSettings() {
+  return std::move(settings_);
+}
+
+void PrinterQuery::SetSettingsForTest(std::unique_ptr<PrintSettings> settings) {
+  settings_ = std::move(settings);
 }
 
 int PrinterQuery::cookie() const {

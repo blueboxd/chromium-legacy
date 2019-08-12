@@ -25,11 +25,13 @@ ORIGINAL_XML = """
        Removed 1/2019.
    </obsolete>
  </histogram>
- <histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
+ <histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
   <summary>Foo</summary>
   <obsolete>Obsolete 1</obsolete>
   <obsolete>Obsolete 2</obsolete>
   <enums>This shouldn't be here</enums>
+  <component>Component</component>
+  <component>Other&gt;Component</component>
  </histogram>
 </histograms>
 <enums>This shouldn't be here</enums>
@@ -45,11 +47,13 @@ PRETTY_XML = """
 
 <histograms>
 
-<histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
+<histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
   <obsolete>
     Obsolete 1
   </obsolete>
   <summary>Foo</summary>
+  <component>Component</component>
+  <component>Other&gt;Component</component>
 </histogram>
 
 <histogram name="Test.Histogram" units="microseconds">

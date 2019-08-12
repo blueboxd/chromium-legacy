@@ -131,7 +131,7 @@ void PrintingContextMac::AskUserForSettings(int max_pages,
     NSInteger selection = [panel runModalWithPrintInfo:printInfo];
     if (selection == NSOKButton) {
       print_info_.reset([[panel printInfo] retain]);
-      settings_.set_ranges(GetPageRangesFromPrintInfo());
+      settings_->set_ranges(GetPageRangesFromPrintInfo());
       InitPrintSettingsFromPrintInfo();
       std::move(block_callback).Run(OK);
     } else {
@@ -154,7 +154,7 @@ gfx::Size PrintingContextMac::GetPdfPaperSizeDeviceUnits() {
   // Device units are in points. Units per inch is 72.
   gfx::Size physical_size_device_units((paper_rect.right - paper_rect.left),
                                        (paper_rect.bottom - paper_rect.top));
-  DCHECK(settings_.device_units_per_inch() == kPointsPerInch);
+  DCHECK(settings_->device_units_per_inch() == kPointsPerInch);
   return physical_size_device_units;
 }
 
@@ -162,7 +162,7 @@ PrintingContext::Result PrintingContextMac::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   print_info_.reset([[NSPrintInfo sharedPrintInfo] copy]);
-  settings_.set_ranges(GetPageRangesFromPrintInfo());
+  settings_->set_ranges(GetPageRangesFromPrintInfo());
   InitPrintSettingsFromPrintInfo();
 
   return OK;
@@ -184,17 +184,17 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
       return OnError();
   } else {
     // Don't need this for preview.
-    if (!SetPrinter(base::UTF16ToUTF8(settings_.device_name())) ||
-        !SetCopiesInPrintSettings(settings_.copies()) ||
-        !SetCollateInPrintSettings(settings_.collate()) ||
-        !SetDuplexModeInPrintSettings(settings_.duplex_mode()) ||
-        !SetOutputColor(settings_.color())) {
+    if (!SetPrinter(base::UTF16ToUTF8(settings_->device_name())) ||
+        !SetCopiesInPrintSettings(settings_->copies()) ||
+        !SetCollateInPrintSettings(settings_->collate()) ||
+        !SetDuplexModeInPrintSettings(settings_->duplex_mode()) ||
+        !SetOutputColor(settings_->color())) {
       return OnError();
     }
   }
 
   if (!UpdatePageFormatWithPaperInfo() ||
-      !SetOrientationIsLandscape(settings_.landscape())) {
+      !SetOrientationIsLandscape(settings_->landscape())) {
     return OnError();
   }
 
@@ -221,7 +221,7 @@ void PrintingContextMac::InitPrintSettingsFromPrintInfo() {
   PMPrinter printer;
   PMSessionGetCurrentPrinter(print_session, &printer);
   PrintSettingsInitializerMac::InitPrintSettings(printer, page_format,
-                                                 &settings_);
+                                                 settings_.get());
 }
 
 bool PrintingContextMac::SetPrinter(const std::string& device_name) {
@@ -272,7 +272,7 @@ bool PrintingContextMac::UpdatePageFormatWithPaperInfo() {
   base::ScopedCFTypeRef<CFStringRef> paper_name;
   PMPaperMargins margins = {0};
 
-  const PrintSettings::RequestedMedia& media = settings_.requested_media();
+  const PrintSettings::RequestedMedia& media = settings_->requested_media();
   if (media.IsDefault()) {
     PMPaper default_paper;
     if (PMGetPageFormatPaper(default_page_format, &default_paper) != noErr ||

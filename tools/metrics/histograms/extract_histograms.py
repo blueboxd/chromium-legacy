@@ -96,7 +96,7 @@ def _JoinChildNodes(tag):
                  if c.nodeType != xml.dom.minidom.Node.COMMENT_NODE).strip()
 
 
-def _NormalizeString(s):
+def NormalizeString(s):
   r"""Replaces all whitespace sequences with a single space.
 
   The function properly handles multi-line strings and XML escaped characters.
@@ -125,7 +125,7 @@ def _NormalizeAllAttributeValues(node):
   """
   if node.nodeType == xml.dom.minidom.Node.ELEMENT_NODE:
     for a in node.attributes.keys():
-      node.attributes[a].value = _NormalizeString(node.attributes[a].value)
+      node.attributes[a].value = NormalizeString(node.attributes[a].value)
 
   for c in node.childNodes:
     _NormalizeAllAttributeValues(c)
@@ -247,7 +247,7 @@ def ExtractEnumsFromXmlTree(tree):
 
     summary_nodes = enum.getElementsByTagName('summary')
     if summary_nodes:
-      enum_dict['summary'] = _NormalizeString(_JoinChildNodes(summary_nodes[0]))
+      enum_dict['summary'] = NormalizeString(_JoinChildNodes(summary_nodes[0]))
 
     enums[name] = enum_dict
 
@@ -273,7 +273,7 @@ def _ExtractOwners(histogram):
   has_owner = False
 
   for owner_node in histogram.getElementsByTagName('owner'):
-    owner_text = _NormalizeString(_JoinChildNodes(owner_node))
+    owner_text = NormalizeString(_JoinChildNodes(owner_node))
     is_email = email_pattern.match(owner_text)
 
     if owner_text and (is_email or OWNER_PLACEHOLDER in owner_text):
@@ -352,7 +352,7 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
     # Find <summary> tag.
     summary_nodes = histogram.getElementsByTagName('summary')
     if summary_nodes:
-      histogram_entry['summary'] = _NormalizeString(
+      histogram_entry['summary'] = NormalizeString(
           _JoinChildNodes(summary_nodes[0]))
     else:
       histogram_entry['summary'] = 'TBD'
@@ -380,7 +380,7 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
     # Find <details> tag.
     details_nodes = histogram.getElementsByTagName('details')
     if details_nodes:
-      histogram_entry['details'] = _NormalizeString(
+      histogram_entry['details'] = NormalizeString(
           _JoinChildNodes(details_nodes[0]))
 
     # Handle enum types.

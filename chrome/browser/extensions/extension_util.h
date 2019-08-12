@@ -17,7 +17,6 @@ class DictionaryValue;
 
 namespace content {
 class BrowserContext;
-class WebContents;
 }
 
 namespace gfx {
@@ -117,10 +116,6 @@ const Extension* GetInstalledPwaForUrl(
 // Finds the first PWA with the active tab's url in its scope, returns nullptr
 // if there are none or the tab's is not secure.
 const Extension* GetPwaForSecureActiveTab(Browser* browser);
-
-// Returns true if the |web_contents| belongs to a browser that is a windowed
-// app.
-bool IsWebContentsInAppWindow(content::WebContents* web_contents);
 
 }  // namespace util
 }  // namespace extensions

@@ -135,7 +135,7 @@ TEST_F(JsonRequestTest, MAYBE_BuildRequestAuthenticated) {
   params.interactive_request = false;
   builder.SetParams(params)
       .SetUrl(GURL("http://valid-url.test"))
-      .SetAuthentication("0BFUSGAIA", "headerstuff")
+      .SetAuthentication("headerstuff")
       .SetUserClassForTesting("ACTIVE_NTP_USER")
       .Build();
 

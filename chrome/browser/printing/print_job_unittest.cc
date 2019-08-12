@@ -39,7 +39,7 @@ class TestQuery : public PrinterQuery {
                      content::ChildProcessHost::kInvalidUniqueID) {}
 
   void GetSettingsDone(base::OnceClosure callback,
-                       const PrintSettings& new_settings,
+                       std::unique_ptr<PrintSettings> new_settings,
                        PrintingContext::Result result) override {
     FAIL();
   }
@@ -57,16 +57,12 @@ class TestQuery : public PrinterQuery {
     auto worker = std::make_unique<TestPrintJobWorker>();
     EXPECT_TRUE(worker->Start());
     worker->printing_context()->UseDefaultSettings();
-    settings_ = worker->printing_context()->settings();
+    SetSettingsForTest(worker->printing_context()->TakeAndResetSettings());
 
     return std::move(worker);
   }
 
-  const PrintSettings& settings() const override { return settings_; }
-
  private:
-  PrintSettings settings_;
-
   DISALLOW_COPY_AND_ASSIGN(TestQuery);
 };
 

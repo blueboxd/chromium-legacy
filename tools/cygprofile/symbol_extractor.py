@@ -97,7 +97,9 @@ def _FromObjdumpLine(line):
   if not m:
     return None
 
-  assert m.group('assert_scope') in set(['g', 'l']), line
+  # A symbol can be (g)lobal, (l)ocal, or neither (a space). Per objdump's
+  # manpage, "A symbol can be neither local or global for a variety of reasons".
+  assert m.group('assert_scope') in set(['g', 'l', ' ']), line
   assert m.group('assert_weak_or_strong') in set(['w', ' ']), line
   assert m.group('assert_tab') == '\t', line
   assert m.group('assert_4spaces') == ' ' * 4, line

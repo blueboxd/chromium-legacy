@@ -9,6 +9,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,6 +40,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   ~MockPasswordManagerClient() override = default;
 
   MOCK_CONST_METHOD0(IsIncognito, bool());
+  MOCK_CONST_METHOD0(GetPrefs, PrefService*());
 };
 
 class MockLeakDetectionCheck : public LeakDetectionCheck {
@@ -62,12 +67,19 @@ class LeakDetectionDelegateTest : public testing::Test {
         testing::StrictMock<MockLeakDetectionRequestFactory>>();
     mock_factory_ = mock_factory.get();
     delegate_.set_leak_factory(std::move(mock_factory));
+    prefs_ = std::make_unique<TestingPrefServiceSimple>();
+    prefs_->registry()->RegisterBooleanPref(
+        password_manager::prefs::kPasswordLeakDetectionEnabled, true);
+    ON_CALL(client_, GetPrefs()).WillByDefault(Return(prefs_.get()));
   }
   ~LeakDetectionDelegateTest() override = default;
 
   MockPasswordManagerClient& client() { return client_; }
   MockLeakDetectionRequestFactory& factory() { return *mock_factory_; }
   LeakDetectionDelegate& delegate() { return delegate_; }
+
+ protected:
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
 
  private:
   MockPasswordManagerClient client_;
@@ -78,6 +90,17 @@ class LeakDetectionDelegateTest : public testing::Test {
 TEST_F(LeakDetectionDelegateTest, InIncognito) {
   const autofill::PasswordForm form = CreateTestForm();
   EXPECT_CALL(client(), IsIncognito).WillOnce(Return(true));
+  EXPECT_CALL(factory(), TryCreateLeakCheck).Times(0);
+  delegate().StartLeakCheck(form);
+
+  EXPECT_FALSE(delegate().leak_check());
+}
+
+TEST_F(LeakDetectionDelegateTest, PrefIsFalse) {
+  const autofill::PasswordForm form = CreateTestForm();
+  prefs_->SetBoolean(password_manager::prefs::kPasswordLeakDetectionEnabled,
+                     false);
+
   EXPECT_CALL(factory(), TryCreateLeakCheck).Times(0);
   delegate().StartLeakCheck(form);
 

@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_local.h"
 #include "net/base/network_change_notifier.h"

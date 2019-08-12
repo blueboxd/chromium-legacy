@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
+#include "base/time/time.h"
 
 class AccountId;
 
@@ -64,12 +65,14 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
 
   // Validates parent access code for the user identified by |account_id|. When
   // |account_id| is empty it tries to validate the access code for any child
-  // that is signed in the device. Returns validation result.
-  // Note: This should only be used for child user, it will always return false
-  // when a non-child id is used.
+  // that is signed in the device. Returns validation result. |validation_time|
+  // is the time that will be used to validate the code, validation will succeed
+  // if the code was valid this given time. Note: This should only be used for
+  // child user, it will always return false when a non-child id is used.
   // TODO(crbug.com/965479): move this to a more appropriate place.
   virtual bool ValidateParentAccessCode(const AccountId& account_id,
-                                        const std::string& access_code) = 0;
+                                        const std::string& access_code,
+                                        base::Time validation_time) = 0;
 
   // Request to hard lock the user pod.
   // |account_id|:    The account id of the user in the user pod.

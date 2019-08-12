@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/stl_util.h"
 #include "base/win/windows_version.h"
 

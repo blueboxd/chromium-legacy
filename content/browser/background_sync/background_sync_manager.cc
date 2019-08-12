@@ -600,7 +600,8 @@ BackgroundSyncManager::BackgroundSyncManager(
       devtools_context_(std::move(devtools_context)),
       parameters_(std::make_unique<BackgroundSyncParameters>()),
       disabled_(false),
-      num_firing_registrations_(0),
+      num_firing_registrations_one_shot_(0),
+      num_firing_registrations_periodic_(0),
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(devtools_context_);
@@ -1460,6 +1461,22 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
   return AreOptionConditionsMet();
 }
 
+int BackgroundSyncManager::GetNumFiringRegistrations(
+    BackgroundSyncType sync_type) {
+  if (sync_type == BackgroundSyncType::ONE_SHOT)
+    return num_firing_registrations_one_shot_;
+  return num_firing_registrations_periodic_;
+}
+
+void BackgroundSyncManager::UpdateNumFiringRegistrationsBy(
+    BackgroundSyncType sync_type,
+    int to_add) {
+  if (sync_type == BackgroundSyncType::ONE_SHOT)
+    num_firing_registrations_one_shot_ += to_add;
+  else
+    num_firing_registrations_periodic_ += to_add;
+}
+
 base::TimeDelta BackgroundSyncManager::GetSoonestWakeupDelta(
     BackgroundSyncType sync_type,
     base::Time last_browser_wakeup_time) {
@@ -1493,7 +1510,7 @@ base::TimeDelta BackgroundSyncManager::GetSoonestWakeupDelta(
 
   // If the browser is closed while firing events, the browser needs a task to
   // wake it back up and try again.
-  if (num_firing_registrations_ > 0 &&
+  if (GetNumFiringRegistrations(sync_type) > 0 &&
       soonest_wakeup_delta > parameters_->min_sync_recovery_time) {
     soonest_wakeup_delta = parameters_->min_sync_recovery_time;
   }
@@ -1851,12 +1868,12 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
     return;
   }
 
-  num_firing_registrations_ += 1;
+  auto sync_type = registration_info->sync_type;
+  UpdateNumFiringRegistrationsBy(sync_type, 1);
 
   const bool last_chance =
       registration->num_attempts() == registration->max_attempts() - 1;
 
-  auto sync_type = registration_info->sync_type;
   HasMainFrameProviderHost(
       url::Origin::Create(service_worker_registration->scope().GetOrigin()),
       base::BindOnce(&BackgroundSyncMetrics::RecordEventStarted, sync_type));
@@ -1944,7 +1961,7 @@ void BackgroundSyncManager::EventCompleteImpl(
     return;
   }
 
-  num_firing_registrations_ -= 1;
+  UpdateNumFiringRegistrationsBy(registration_info->sync_type, -1);
 
   BackgroundSyncRegistration* registration =
       LookupActiveRegistration(*registration_info);
@@ -2080,11 +2097,13 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
       registration_info->service_worker_registration_id,
       base::BindOnce(&BackgroundSyncManager::EventCompleteDidStore,
                      weak_ptr_factory_.GetWeakPtr(),
+                     registration_info->sync_type,
                      registration_info->service_worker_registration_id,
                      std::move(callback)));
 }
 
 void BackgroundSyncManager::EventCompleteDidStore(
+    blink::mojom::BackgroundSyncType sync_type,
     int64_t service_worker_id,
     base::OnceClosure callback,
     blink::ServiceWorkerStatusCode status_code) {
@@ -2104,8 +2123,7 @@ void BackgroundSyncManager::EventCompleteDidStore(
   }
 
   // Fire any ready events and call RunInBackground if anything is waiting.
-  FireReadyEvents(BackgroundSyncType::ONE_SHOT, base::DoNothing::Once());
-  FireReadyEvents(BackgroundSyncType::PERIODIC, base::DoNothing::Once());
+  FireReadyEvents(sync_type, base::DoNothing::Once());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }

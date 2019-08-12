@@ -68,6 +68,9 @@ typedef void (*ImeCrosDownloadCallback)(int request_id, int status_code);
 // A simple downloading callback.
 typedef void (*SimpleDownloadCallback)(int status_code, const char* file_path);
 
+// A function pointer of a sequenced task.
+typedef void (*ImeSequencedTask)(int task_id);
+
 // Based on RequestPriority defined at
 // https://cs.chromium.org/chromium/src/net/base/request_priority.h?rcl=f9c935b73381772d508eebba1e216c437139d475
 enum DownloadPriority {
@@ -165,6 +168,10 @@ class ImeCrosPlatform {
   virtual int SimpleDownloadToFile(const char* url,
                                    const char* file_path,
                                    SimpleDownloadCallback callback) = 0;
+
+  // This is used for decoder to run some Mojo-specific operation which is
+  // required to run in the thread creating its remote.
+  virtual void RunInMainSequence(ImeSequencedTask task, int task_id) = 0;
 
   // TODO(https://crbug.com/837156): Provide Logger for main entry.
 };

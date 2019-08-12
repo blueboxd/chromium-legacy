@@ -15,6 +15,7 @@
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="resources/utils.js"></script>
 
 <script>
 async_test((t) => {
@@ -22,7 +23,7 @@ async_test((t) => {
     const container = document.getElementById("container");
     t.step(() => assert_false(container.displayLock.locked, "initial context is unlocked"));
 
-    const acquire_promise = container.displayLock.acquire({ timeout: Infinity });
+    const acquire_promise = setInvisible(container);
     t.step(() => assert_true(container.displayLock.locked, "context before acquire finishes is locked"));
 
     await acquire_promise;
@@ -34,7 +35,7 @@ async_test((t) => {
     await update_promise;
     t.step(() => assert_true(container.displayLock.locked, "context after update is locked"));
 
-    const commit_promise = container.displayLock.commit();
+    const commit_promise = setVisible(container);
     t.step(() => assert_false(container.displayLock.locked, "context during commit is unlocked"));
 
     await commit_promise;

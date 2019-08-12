@@ -39,7 +39,7 @@ class AwPdfExporter {
   void InitPdfSettings(JNIEnv* env,
                        const base::android::JavaRef<jobject>& obj,
                        const printing::PageRanges& page_ranges,
-                       printing::PrintSettings& settings);
+                       printing::PrintSettings* settings);
   void DidExportPdf(int page_count);
 
   JavaObjectWeakGlobalRef java_ref_;

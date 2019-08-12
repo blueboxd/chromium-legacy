@@ -380,7 +380,7 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
 }
 
 - (NSString*)accessibilityValue {
-  return self.detailTruncatingLabel.hidden
+  return self.suggestion.hasAnswer
              ? self.detailAnswerLabel.attributedText.string
              : self.detailTruncatingLabel.attributedText.string;
 }

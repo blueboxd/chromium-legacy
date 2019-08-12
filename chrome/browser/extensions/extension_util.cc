@@ -21,7 +21,6 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
@@ -364,13 +363,6 @@ const Extension* GetPwaForSecureActiveTab(Browser* browser) {
   return GetInstalledPwaForUrl(
       web_contents->GetBrowserContext(),
       web_contents->GetMainFrame()->GetLastCommittedURL());
-}
-
-bool IsWebContentsInAppWindow(content::WebContents* web_contents) {
-  // TODO(loyso): Unify this check as a util (including
-  // MaybeCreateHostedAppController).
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  return browser && browser->app_controller();
 }
 
 }  // namespace util

@@ -15,7 +15,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

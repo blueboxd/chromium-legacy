@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="delayed-acquire-removes-painted-output-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 #container {
@@ -41,7 +42,7 @@
 <script>
 function runTest() {
   const container = document.getElementById("container");
-  container.displayLock.acquire({ timeout: Infinity, size: [150, 150] }).then(takeScreenshot);
+  setInvisible(container).then(takeScreenshot);
 }
 
 window.onload = () => {

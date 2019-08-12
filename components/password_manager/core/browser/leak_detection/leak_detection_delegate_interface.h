@@ -14,6 +14,8 @@ enum class LeakDetectionError {
   kNotSignIn = 0,
   // Error obtaining a token.
   kTokenRequestFailure = 1,
+  // Error obtaining a valid server response.
+  kInvalidServerResponse = 2,
   // TODO(crbug.com/986298): add more errors.
 };
 

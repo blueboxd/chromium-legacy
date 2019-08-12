@@ -176,7 +176,7 @@ class FileBrowserHandlerExecutor {
       const scoped_refptr<const Extension>& handler_extension,
       const std::vector<FileSystemURL>& file_urls);
 
-  void ExecuteDoneOnUIThread(bool success);
+  void ExecuteDoneOnUIThread(bool success, std::string failure_reason);
   void ExecuteAfterSetupFileAccess(
       std::unique_ptr<FileDefinitionList> file_list);
   void ExecuteFileActionsOnUIThread(
@@ -303,13 +303,16 @@ void FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess(
                      std::move(file_definition_list)));
 }
 
-void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {
+void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(
+    bool success,
+    std::string failure_reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (done_) {
     std::move(done_).Run(
         success
             ? extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT
-            : extensions::api::file_manager_private::TASK_RESULT_FAILED);
+            : extensions::api::file_manager_private::TASK_RESULT_FAILED,
+        failure_reason);
   }
   delete this;
 }
@@ -320,14 +323,14 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (file_definition_list->empty() || entry_definition_list->empty()) {
-    ExecuteDoneOnUIThread(false);
+    ExecuteDoneOnUIThread(false, "File list empty");
     return;
   }
 
   int handler_pid = ExtractProcessFromExtensionId(profile_, extension_->id());
   if (handler_pid <= 0 &&
       !extensions::BackgroundInfo::HasLazyBackgroundPage(extension_.get())) {
-    ExecuteDoneOnUIThread(false);
+    ExecuteDoneOnUIThread(false, "No app running or with background page");
     return;
   }
 
@@ -340,7 +343,7 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
     const extensions::LazyContextId context_id(profile_, extension_->id());
     extensions::LazyContextTaskQueue* queue = context_id.GetTaskQueue();
     if (!queue->ShouldEnqueueTask(profile_, extension_.get())) {
-      ExecuteDoneOnUIThread(false);
+      ExecuteDoneOnUIThread(false, "Could not queue task for app");
       return;
     }
     queue->AddPendingTask(
@@ -363,13 +366,13 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
                         : handler_pid_in;
 
   if (handler_pid <= 0) {
-    ExecuteDoneOnUIThread(false);
+    ExecuteDoneOnUIThread(false, "No app available");
     return;
   }
 
   extensions::EventRouter* router = extensions::EventRouter::Get(profile_);
   if (!router) {
-    ExecuteDoneOnUIThread(false);
+    ExecuteDoneOnUIThread(false, "Could not send task to app");
     return;
   }
 
@@ -391,7 +394,7 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
       "fileBrowserHandler.onExecute", std::move(event_args), profile_);
   router->DispatchEventToExtension(extension_->id(), std::move(event));
 
-  ExecuteDoneOnUIThread(true);
+  ExecuteDoneOnUIThread(true, "");
 }
 
 void FileBrowserHandlerExecutor::SetupHandlerHostFileAccessPermissions(

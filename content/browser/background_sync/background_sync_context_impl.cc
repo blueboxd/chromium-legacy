@@ -25,7 +25,11 @@ namespace content {
 
 BackgroundSyncContextImpl::BackgroundSyncContextImpl()
     : base::RefCountedDeleteOnSequence<BackgroundSyncContextImpl>(
-          base::CreateSingleThreadTaskRunner({BrowserThread::IO})) {}
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO})),
+      test_wakeup_delta_(
+          {{blink::mojom::BackgroundSyncType::ONE_SHOT, base::TimeDelta::Max()},
+           {blink::mojom::BackgroundSyncType::PERIODIC,
+            base::TimeDelta::Max()}}) {}
 
 BackgroundSyncContextImpl::~BackgroundSyncContextImpl() {
   // The destructor must run on the IO thread because it implicitly accesses
@@ -136,8 +140,9 @@ void BackgroundSyncContextImpl::set_background_sync_manager_for_testing(
 }
 
 void BackgroundSyncContextImpl::set_wakeup_delta_for_testing(
+    blink::mojom::BackgroundSyncType sync_type,
     base::TimeDelta wakeup_delta) {
-  test_wakeup_delta_ = wakeup_delta;
+  test_wakeup_delta_[sync_type] = wakeup_delta;
 }
 
 void BackgroundSyncContextImpl::GetSoonestWakeupDelta(
@@ -170,8 +175,9 @@ base::TimeDelta BackgroundSyncContextImpl::GetSoonestWakeupDeltaOnIOThread(
     base::Time last_browser_wakeup_for_periodic_sync) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!test_wakeup_delta_.is_max())
-    return test_wakeup_delta_;
+  auto test_wakeup_delta = test_wakeup_delta_[sync_type];
+  if (!test_wakeup_delta.is_max())
+    return test_wakeup_delta;
   if (!background_sync_manager_)
     return base::TimeDelta::Max();
 

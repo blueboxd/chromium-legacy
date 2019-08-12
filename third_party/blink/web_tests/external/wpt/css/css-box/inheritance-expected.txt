@@ -21,5 +21,7 @@ PASS Property padding-right has initial value 0px
 PASS Property padding-right does not inherit
 PASS Property padding-top has initial value 0px
 PASS Property padding-top does not inherit
+PASS Property visibility has initial value visible
+PASS Property visibility inherits
 Harness: the test ran to completion.
 

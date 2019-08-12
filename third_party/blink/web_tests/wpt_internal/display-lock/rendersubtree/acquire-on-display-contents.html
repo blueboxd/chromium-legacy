@@ -7,18 +7,17 @@
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="resources/utils.js"></script>
 
 <body></body>
 <script>
-const REJECTION_MESSAGE = "Element has unsupported display type (display: contents).";
-
 async_test(async (t) => {
   let div = document.createElement("div");
   div.style = "display: contents; contain: style layout;";
   document.body.appendChild(div);
-  await div.displayLock.acquire({ timeout: Infinity }).then(
-    null, (e) => {
-      t.step(() => assert_equals(e.message, REJECTION_MESSAGE));
+  await setInvisible(div).then(() => {
+      // TODO(rakina): Change this once we support non-contained locking.
+      t.step(() => assert_false(div.displayLock.locked));
       t.done();
     });
 }, "Elements with display:contents can't be locked");
@@ -27,9 +26,9 @@ async_test(async (t) => {
   let slot = document.createElement("slot");
   slot.style = "contain: style layout;";
   document.body.appendChild(slot);
-  await slot.displayLock.acquire({ timeout: Infinity }).then(
-   null, (e) => {
-      t.step(() => assert_equals(e.message, REJECTION_MESSAGE));
+  await setInvisible(slot).then(() => {
+      // TODO(rakina): Change this once we support non-contained locking.
+      t.step(() => assert_false(slot.displayLock.locked));
       t.done();
     });
 }, "<slot> can't be locked");
@@ -38,8 +37,9 @@ async_test(async (t) => {
   let slot = document.createElement("slot");
   slot.style = "display: block; contain: style layout;";
   document.body.appendChild(slot);
-  await slot.displayLock.acquire({ timeout: Infinity }).then(
-   () => {
+  await setInvisible(slot).then(() => {
+    // TODO(rakina): Change this once we support non-contained locking.
+    t.step(() => assert_true(slot.displayLock.locked));
     t.done();
   });
 }, "<slot> with changed display type can be locked");

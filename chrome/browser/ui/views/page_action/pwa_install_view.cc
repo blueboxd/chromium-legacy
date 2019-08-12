@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/views/extensions/pwa_confirmation_bubble_view.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -48,7 +48,7 @@ bool PwaInstallView::Update() {
     show_install_button = true;
 
   auto* web_app_tab_helper =
-      web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+      web_app::WebAppTabHelper::FromWebContents(web_contents);
   if (web_app_tab_helper && web_app_tab_helper->HasAssociatedApp())
     show_install_button = false;
 

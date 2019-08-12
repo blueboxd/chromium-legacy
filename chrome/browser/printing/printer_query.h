@@ -41,8 +41,9 @@ class PrinterQuery {
   // TODO(thestig): Do |worker_| and |callback_| need locks?
   virtual std::unique_ptr<PrintJobWorker> DetachWorker();
 
-  // Virtual so that tests can override.
-  virtual const PrintSettings& settings() const;
+  const PrintSettings& settings() const;
+
+  std::unique_ptr<PrintSettings> ExtractSettings();
 
   // Initializes the printing context. It is fine to call this function multiple
   // times to reinitialize the settings. |web_contents_observer| can be queried
@@ -84,19 +85,21 @@ class PrinterQuery {
  protected:
   // Virtual so that tests can override.
   virtual void GetSettingsDone(base::OnceClosure callback,
-                               const PrintSettings& new_settings,
+                               std::unique_ptr<PrintSettings> new_settings,
                                PrintingContext::Result result);
 
   void PostSettingsDoneToIO(base::OnceClosure callback,
-                            const PrintSettings& new_settings,
+                            std::unique_ptr<PrintSettings> new_settings,
                             PrintingContext::Result result);
+
+  void SetSettingsForTest(std::unique_ptr<PrintSettings> settings);
 
  private:
   // Lazy create the worker thread. There is one worker thread per print job.
   void StartWorker();
 
   // Cache of the print context settings for access in the UI thread.
-  PrintSettings settings_;
+  std::unique_ptr<PrintSettings> settings_;
 
   // Is the Print... dialog box currently shown.
   bool is_print_dialog_box_shown_ = false;

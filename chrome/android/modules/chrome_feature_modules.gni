@@ -5,6 +5,7 @@
 import("//build/config/android/config.gni")
 import(
     "//chrome/android/features/autofill_assistant/autofill_assistant_module.gni")
+import("//chrome/android/features/dev_ui/dev_ui_module.gni")
 import("//chrome/android/features/tab_ui/tab_ui_module.gni")
 import("//chrome/android/modules/buildflags.gni")
 import("//chrome/android/modules/test_dummy/test_dummy_module.gni")
@@ -15,9 +16,6 @@ if (enable_vr) {
 }
 if (enable_arcore) {
   import("//chrome/android/features/ar/ar_module.gni")
-}
-if (dfmify_dev_ui) {
-  import("//chrome/android/features/dev_ui/dev_ui_module.gni")
 }
 
 # Mapping that controls package IDs assigned to modules. The package IDs have to

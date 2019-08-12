@@ -42,6 +42,8 @@ class WebAppUiManager {
   virtual bool CanAddAppToQuickLaunchBar() const = 0;
   virtual void AddAppToQuickLaunchBar(const AppId& app_id) = 0;
 
+  virtual bool IsInAppWindow(content::WebContents* web_contents) const = 0;
+
   virtual bool CanReparentAppTabToWindow(const AppId& app_id,
                                          bool shortcut_created) const = 0;
   virtual void ReparentAppTabToWindow(content::WebContents* contents,

@@ -53,6 +53,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableFileManagerPiexWasm;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableMessagesWebPush;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFilesNG;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMojoDBusRelay;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMyFilesVolume;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

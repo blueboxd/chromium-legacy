@@ -47,7 +47,9 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer
   // Should only be called while a tracing session is active and a
   // SharedMemoryArbiter exists.
   std::unique_ptr<perfetto::TraceWriter> CreateTraceWriter(
-      perfetto::BufferID target_buffer) override;
+      perfetto::BufferID target_buffer,
+      perfetto::BufferExhaustedPolicy =
+          perfetto::BufferExhaustedPolicy::kDefault) override;
 
   // Informs the PerfettoProducer a new Data Source was added. This instance
   // will also be found in |data_sources| having just be inserted before this

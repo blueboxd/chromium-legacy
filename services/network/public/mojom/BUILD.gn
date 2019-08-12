@@ -74,6 +74,7 @@ mojom("websocket_mojom") {
 mojom("mojom") {
   sources = [
     "cookie_manager.mojom",
+    "default_credentials.mojom",
     "cors.mojom",
     "cors_origin_pattern.mojom",
     "digitally_signed.mojom",

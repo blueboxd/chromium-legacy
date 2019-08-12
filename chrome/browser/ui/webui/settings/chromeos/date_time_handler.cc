@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
@@ -165,7 +166,8 @@ void DateTimeHandler::HandleShowParentAccessForTimeZone(
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
       base::BindRepeating(&DateTimeHandler::OnParentAccessValidation,
                           weak_ptr_factory_.GetWeakPtr()),
-      ash::ParentAccessRequestReason::kChangeTimezone);
+      ash::ParentAccessRequestReason::kChangeTimezone, false /* extra_dimmer */,
+      base::Time());
 }
 
 void DateTimeHandler::OnParentAccessValidation(bool success) {

@@ -210,6 +210,9 @@ struct ASH_PUBLIC_EXPORT PublicAccountInfo {
 
   // A list of available keyboard layouts.
   std::vector<InputMethodItem> keyboard_layouts;
+
+  // Whether public account uses SAML authentication.
+  bool using_saml = false;
 };
 
 // Info about a user in login/lock screen.

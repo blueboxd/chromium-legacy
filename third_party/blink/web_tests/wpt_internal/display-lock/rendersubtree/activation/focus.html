@@ -4,6 +4,7 @@
 <title>Display Locking: focus via tab navigation</title>
 <link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
+<script src="../resources/utils.js"></script>
 
 <div id="container" style ="contain:style layout">
   <div id="focusable" tabIndex="0">
@@ -16,7 +17,7 @@
 
 <script>
 promise_test(() => {
-  const acquirePromise = container.displayLock.acquire({ timeout: Infinity, activatable: true });
+  const acquirePromise = setInvisibleActivatable(container);
   return new Promise((resolve, reject) => {
     const eventPromise = new Promise((resolve, reject) => {
       container.onbeforeactivate = (e) => {

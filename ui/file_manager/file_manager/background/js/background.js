@@ -108,13 +108,14 @@ function FileBrowserBackgroundImpl() {
   this.initializationPromise_.then(strings => {
     this.stringData = strings;
     this.initContextMenu_();
+    this.crostini.initEnabled();
 
     volumeManagerFactory.getInstance().then(volumeManager => {
       volumeManager.addEventListener(
           VolumeManagerCommon.VOLUME_ALREADY_MOUNTED,
           this.handleViewEvent_.bind(this));
 
-      this.crostini.init(volumeManager);
+      this.crostini.initVolumeManager(volumeManager);
       this.crostini.listen();
     });
 

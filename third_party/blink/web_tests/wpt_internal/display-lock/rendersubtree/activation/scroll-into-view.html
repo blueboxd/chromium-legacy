@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="scroll-into-view-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 .spacer {
@@ -32,7 +33,7 @@
 <script>
 function runTest() {
   const container = document.getElementById("container");
-  container.displayLock.acquire({ timeout: Infinity, activatable: true }).then(() => {
+  setInvisibleActivatable(container).then(() => {
     document.getElementById("target").scrollIntoView();
     requestAnimationFrame(takeScreenshot);
   });

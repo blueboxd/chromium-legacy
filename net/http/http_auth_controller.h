@@ -15,6 +15,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
@@ -74,11 +75,16 @@ class NET_EXPORT_PRIVATE HttpAuthController
   // * |host_resolver| is used for determining the canonical hostname given a
   //       possibly non-canonical host name. Name canonicalization is used for
   //       NTLM and Negotiate HTTP authentication schemes.
-  HttpAuthController(HttpAuth::Target target,
-                     const GURL& auth_url,
-                     HttpAuthCache* http_auth_cache,
-                     HttpAuthHandlerFactory* http_auth_handler_factory,
-                     HostResolver* host_resolver);
+  //
+  // * |allow_default_credentials| is used for determining if the current
+  //       context allows ambient authentication using default credentials.
+  HttpAuthController(
+      HttpAuth::Target target,
+      const GURL& auth_url,
+      HttpAuthCache* http_auth_cache,
+      HttpAuthHandlerFactory* http_auth_handler_factory,
+      HostResolver* host_resolver,
+      HttpAuthPreferences::DefaultCredentials allow_default_credentials);
 
   // Generate an authentication token for |target| if necessary. The return
   // value is a net error code. |OK| will be returned both in the case that
@@ -212,6 +218,13 @@ class NET_EXPORT_PRIVATE HttpAuthController
   // makes sure we use the embedded identity only once for the transaction,
   // preventing an infinite auth restart loop.
   bool embedded_identity_used_;
+
+  // If the current context allows ambient authentication using default
+  // credentials.
+  // TODO(https://crbug.com/458508): Refactor |allow_default_credentials_|
+  // to be passed along with the other |HttpAuthPreferences|, rather then being
+  // passed directly to |HttpAuthController|.
+  HttpAuthPreferences::DefaultCredentials allow_default_credentials_;
 
   // True if default credentials have already been tried for this transaction
   // in response to an HTTP authentication challenge.

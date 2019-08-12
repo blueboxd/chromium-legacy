@@ -258,11 +258,12 @@ crbug.com/882663 inspector-protocol/css [ Skip ]
 
 # Display locking failures
 crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
+# Skip some tests for rendersubtree
+crbug.com/991095 wpt_internal/display-lock/rendersubtree/containment [ Skip ]
+crbug.com/991095 wpt_internal/display-lock/rendersubtree/sizing [ Skip ]
 
 # virtual-scroller failures
 crbug.com/986574 wpt_internal/virtual-scroller/ [ Failure ]
-# Skip tests for rendersubtree for now.
-crbug.com/991095 wpt_internal/display-lock/rendersubtree/ [ Skip ]
 
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
@@ -789,7 +790,7 @@ crbug.com/591099 [ Fuchsia ] fast/layers/opacity-transforms.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/lists/003.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/lists/scrolled-marker-paint.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/table/border-collapsing/004.html [ Failure ]
-crbug.com/591099 [ Fuchsia ] fast/text/international/003.html [ Failure ]
+crbug.com/591099 [ Fuchsia ] fast/text/international/003.html [ Failure Timeout ]
 crbug.com/591099 [ Fuchsia ] fast/text/international/bidi-LDB-2-HTML.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/text/international/bidi-LDB-2-formatting-characters.html [ Failure ]
 crbug.com/591099 [ Fuchsia ] fast/text/international/bidi-neutral-directionality-paragraph-start.html [ Failure ]
@@ -6027,6 +6028,7 @@ crbug.com/849284 [ Win ] http/tests/devtools/editor/text-editor-ctrl-d-2.js [ Fa
 # Sheriff 2019-02-22
 crbug.com/934636 http/tests/security/cross-origin-indexeddb-allowed.html [ Crash Pass ]
 crbug.com/934818 virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
+crbug.com/934818 http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
 
 # Sheriff 2019-02-25
 crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function-invalid.html [ Failure Pass ]

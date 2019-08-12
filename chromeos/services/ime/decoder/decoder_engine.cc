@@ -6,7 +6,9 @@
 
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "build/buildflag.h"
+#include "chromeos/services/ime/constants.h"
 #include "chromeos/services/ime/public/cpp/buildflags.h"
 
 namespace chromeos {
@@ -60,37 +62,43 @@ class ClientDelegate : public ImeClientDelegate {
 }  // namespace
 
 DecoderEngine::DecoderEngine(ImeCrosPlatform* platform) : platform_(platform) {
-  // TODO(https://crbug.com/837156): Connect utility services for InputEngine
-  // via connector(). Eg. take advantage of the file and network services to
-  // download relevant language models required by the decocers to the device.
+  if (!TryLoadDecoder()) {
+    LOG(ERROR) << "DecoderEngine INIT FAILED!";
+  }
+}
+
+DecoderEngine::~DecoderEngine() {}
+
+bool DecoderEngine::TryLoadDecoder() {
+  if (engine_main_entry_)
+    return true;
 
   // Load the decoder library.
-  base::NativeLibraryLoadError load_error;
   base::FilePath lib_path(base::GetNativeLibraryName(kDecoderLibName));
   library_ = base::ScopedNativeLibrary(lib_path);
 
   if (!library_.is_valid()) {
-    LOG(ERROR) << "Failed to load a decoder shared library, error: "
-               << library_.GetError()->ToString();
-    return;
+    LOG(ERROR) << "Failed to load decoder shared library from: " << lib_path
+               << ", error: " << library_.GetError()->ToString();
+    return false;
   }
+
+  // Prepare the decoder data directory before initialization.
+  base::FilePath data_dir(platform_->GetImeUserHomeDir());
+  base::CreateDirectory(data_dir.Append(kLanguageDataDirName));
 
   ImeMainEntryCreateFn createMainEntryFn =
       reinterpret_cast<ImeMainEntryCreateFn>(
           library_.GetFunctionPointer(IME_MAIN_ENTRY_CREATE_FN_NAME));
-
   engine_main_entry_ = createMainEntryFn(platform_);
-  LOG(ERROR) << "Loaded SO main_entry in DecoderEngine!";
+  return true;
 }
-
-DecoderEngine::~DecoderEngine() {}
 
 bool DecoderEngine::BindRequest(
     const std::string& ime_spec,
     mojo::PendingReceiver<mojom::InputChannel> receiver,
     mojo::PendingRemote<mojom::InputChannel> remote,
     const std::vector<uint8_t>& extra) {
-  // If the shared library supports this ime_spec.
   if (IsImeSupportedByDecoder(ime_spec)) {
     // Activates an IME engine via the shared library. Passing a
     // |ClientDelegate| for engine instance created by the shared library to
@@ -105,7 +113,7 @@ bool DecoderEngine::BindRequest(
     return false;
   }
 
-  // Otherwise, try the rule-based engine for this ime_spec.
+  // Otherwise, try the rule-based engine.
   return InputEngine::BindRequest(ime_spec, std::move(receiver),
                                   std::move(remote), extra);
 }
@@ -117,10 +125,13 @@ bool DecoderEngine::IsImeSupportedByDecoder(const std::string& ime_spec) {
 
 void DecoderEngine::ProcessMessage(const std::vector<uint8_t>& message,
                                    ProcessMessageCallback callback) {
+  // TODO(https://crbug.com/837156): Set a default protobuf message.
   std::vector<uint8_t> result;
 
-  // TODO(https://crbug.com/837156): Implement the functions below by calling
-  // the corresponding functions of the shared library loaded.
+  // Handle message via corresponding functions of loaded decoder.
+  if (engine_main_entry_)
+    engine_main_entry_->Process(message.data(), message.size());
+
   std::move(callback).Run(result);
 }
 

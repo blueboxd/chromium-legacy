@@ -524,9 +524,9 @@ TEST_F(ThreadTest, FlushForTesting) {
 
 namespace {
 
-class SequenceManagerTaskEnvironment : public Thread::TaskEnvironment {
+class SequenceManagerThreadDelegate : public Thread::Delegate {
  public:
-  SequenceManagerTaskEnvironment()
+  SequenceManagerThreadDelegate()
       : sequence_manager_(
             base::sequence_manager::CreateUnboundSequenceManager()),
         task_queue_(
@@ -536,7 +536,9 @@ class SequenceManagerTaskEnvironment : public Thread::TaskEnvironment {
     sequence_manager_->SetDefaultTaskRunner(GetDefaultTaskRunner());
   }
 
-  ~SequenceManagerTaskEnvironment() override {}
+  ~SequenceManagerThreadDelegate() override {}
+
+  // Thread::Delegate:
 
   scoped_refptr<base::SingleThreadTaskRunner> GetDefaultTaskRunner() override {
     return task_queue_->task_runner();
@@ -552,20 +554,20 @@ class SequenceManagerTaskEnvironment : public Thread::TaskEnvironment {
   std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager_;
   scoped_refptr<base::sequence_manager::TaskQueue> task_queue_;
 
-  DISALLOW_COPY_AND_ASSIGN(SequenceManagerTaskEnvironment);
+  DISALLOW_COPY_AND_ASSIGN(SequenceManagerThreadDelegate);
 };
 
 }  // namespace
 
-TEST_F(ThreadTest, ProvidedTaskEnvironment) {
-  Thread thread("TaskEnvironment");
+TEST_F(ThreadTest, ProvidedThreadDelegate) {
+  Thread thread("ThreadDelegate");
   base::Thread::Options options;
-  options.task_environment = new SequenceManagerTaskEnvironment();
+  options.delegate = new SequenceManagerThreadDelegate();
   thread.StartWithOptions(options);
 
   base::WaitableEvent event;
 
-  options.task_environment->GetDefaultTaskRunner()->PostTask(
+  options.delegate->GetDefaultTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
   event.Wait();

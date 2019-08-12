@@ -4,6 +4,7 @@
 <title>Display Locking: focus on skipped element</title>
 <link rel="author" title="Rakina Zata Amni" href="mailto:rakina@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
+<script src="../resources/utils.js"></script>
 
 <!--
 Focus on a div that has updated style/layout.
@@ -19,7 +20,7 @@ Focus on a div that has updated style/layout.
 
 <script>
 promise_test((t) => {
-  const acquirePromise = container.displayLock.acquire({ timeout: Infinity, activatable: true });
+  const acquirePromise = setInvisibleActivatable(container);
   return new Promise((resolve, reject) => {
     acquirePromise.then(() => {
       focusableA.style = "display: none;";

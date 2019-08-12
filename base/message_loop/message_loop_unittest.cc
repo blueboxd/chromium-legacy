@@ -22,6 +22,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/task_observer.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
@@ -206,7 +207,7 @@ class TaskList {
   std::vector<TaskItem> task_list_;
 };
 
-class DummyTaskObserver : public MessageLoop::TaskObserver {
+class DummyTaskObserver : public TaskObserver {
  public:
   explicit DummyTaskObserver(int num_tasks)
       : num_tasks_started_(0), num_tasks_processed_(0), num_tasks_(num_tasks) {}

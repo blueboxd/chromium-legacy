@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -82,14 +83,15 @@ TEST_F(EmfPrintingTest, Enumerate) {
   if (IsTestCaseDisabled())
     return;
 
-  PrintSettings settings;
+  auto settings = std::make_unique<PrintSettings>();
 
   // My test case is a HP Color LaserJet 4550 PCL.
-  settings.set_device_name(L"UnitTest Printer");
+  settings->set_device_name(L"UnitTest Printer");
 
   // Initialize it.
   PrintingContextWin context(this);
-  EXPECT_EQ(PrintingContext::OK, context.InitWithSettingsForTest(settings));
+  EXPECT_EQ(PrintingContext::OK,
+            context.InitWithSettingsForTest(std::move(settings)));
 
   base::FilePath emf_file;
   EXPECT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &emf_file));

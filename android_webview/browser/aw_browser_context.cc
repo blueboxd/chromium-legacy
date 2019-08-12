@@ -222,8 +222,9 @@ void AwBrowserContext::CreateUserPrefService() {
 
   user_pref_service_ = pref_service_factory.Create(pref_registry);
 
-  // TODO(amalova): Do not call this method for non-default profile.
-  MigrateLocalStatePrefs();
+  if (IsDefaultBrowserContext()) {
+    MigrateLocalStatePrefs();
+  }
 
   user_prefs::UserPrefs::Set(this, user_pref_service_.get());
 }
@@ -447,7 +448,8 @@ base::android::ScopedJavaLocalRef<jobject>
 AwBrowserContext::GetJavaBrowserContext() {
   if (!obj_) {
     JNIEnv* env = base::android::AttachCurrentThread();
-    obj_ = Java_AwBrowserContext_create(env, reinterpret_cast<intptr_t>(this));
+    obj_ = Java_AwBrowserContext_create(env, reinterpret_cast<intptr_t>(this),
+                                        IsDefaultBrowserContext());
   }
   return base::android::ScopedJavaLocalRef<jobject>(obj_);
 }

@@ -14,7 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner.h"

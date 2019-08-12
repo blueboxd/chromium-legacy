@@ -137,7 +137,7 @@ def FindDependencies(target_paths, options):
   # have Telemetry.
   dependencies |= FindPythonDependencies(os.path.realpath(
       os.path.join(path_util.GetTelemetryDir(),
-                   'telemetry', 'benchmark_runner.py')))
+                   'telemetry', 'command_line', 'parser.py')))
   dependencies |= FindPythonDependencies(os.path.realpath(
       os.path.join(path_util.GetTelemetryDir(),
                    'telemetry', 'testing', 'run_tests.py')))

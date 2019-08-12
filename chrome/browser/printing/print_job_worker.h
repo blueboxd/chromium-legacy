@@ -32,7 +32,8 @@ class PrintedPage;
 class PrintJobWorker {
  public:
   using SettingsCallback =
-      base::OnceCallback<void(const PrintSettings&, PrintingContext::Result)>;
+      base::OnceCallback<void(std::unique_ptr<PrintSettings>,
+                              PrintingContext::Result)>;
 
   PrintJobWorker(int render_process_id, int render_frame_id);
   virtual ~PrintJobWorker();

@@ -11,6 +11,7 @@
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="resources/utils.js"></script>
 
 <script>
 let container = document.createElement("div");
@@ -25,7 +26,7 @@ async_test((t) => {
     t.step(() => assert_not_equals(document.activeElement, slotted));
     t.step(() => assert_not_equals(shadowRoot.activeElement, slotted));
 
-    const acquire_promise = container.displayLock.acquire({ timeout: Infinity });
+    const acquire_promise = setInvisible(container);
     await acquire_promise;
 
     t.step(() => assert_not_equals(document.activeElement, slotted));

@@ -24,6 +24,13 @@ class URLSecurityManager;
 // them accessible from the IO thread.
 class NET_EXPORT HttpAuthPreferences {
  public:
+  // |DefaultCredentials| influences the behavior of codepaths that use
+  // IdentitySource::IDENT_SRC_DEFAULT_CREDENTIALS in |HttpAuthController|
+  enum DefaultCredentials {
+    DISALLOW_DEFAULT_CREDENTIALS = 0,
+    ALLOW_DEFAULT_CREDENTIALS = 1,
+  };
+
   HttpAuthPreferences();
   virtual ~HttpAuthPreferences();
 

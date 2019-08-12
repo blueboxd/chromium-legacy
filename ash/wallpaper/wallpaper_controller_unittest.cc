@@ -23,11 +23,11 @@
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/task_observer.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time_override.h"
@@ -189,12 +189,12 @@ void WaitUntilCustomWallpapersDeleted(const AccountId& account_id) {
 }
 
 // Monitors if any task is processed by the message loop.
-class TaskObserver : public base::MessageLoop::TaskObserver {
+class TaskObserver : public base::TaskObserver {
  public:
   TaskObserver() : processed_(false) {}
   ~TaskObserver() override = default;
 
-  // MessageLoop::TaskObserver:
+  // TaskObserver:
   void WillProcessTask(const base::PendingTask& pending_task) override {}
   void DidProcessTask(const base::PendingTask& pending_task) override {
     processed_ = true;

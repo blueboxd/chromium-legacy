@@ -11,7 +11,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/task/task_executor.h"
 #include "build/build_config.h"
-#include "content/browser/scheduler/browser_io_task_environment.h"
+#include "content/browser/scheduler/browser_io_thread_delegate.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -77,7 +77,7 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   // As Create but with the user provided objects.
   static void CreateForTesting(
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
-      std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment);
+      std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate);
 
   // This must be called after the FeatureList has been initialized in order
   // for scheduling experiments to function.
@@ -152,7 +152,7 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
 
   static void CreateInternal(
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
-      std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment);
+      std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate);
 
   // For GetProxyTaskRunnerForThread().
   FRIEND_TEST_ALL_PREFIXES(BrowserTaskExecutorTest,
@@ -164,7 +164,7 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
 
   explicit BrowserTaskExecutor(
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
-      std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment);
+      std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate);
   ~BrowserTaskExecutor() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
@@ -173,8 +173,8 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler_;
   scoped_refptr<BrowserUIThreadScheduler::Handle> browser_ui_thread_handle_;
 
-  std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment_;
-  scoped_refptr<BrowserIOTaskEnvironment::Handle> browser_io_thread_handle_;
+  std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate_;
+  scoped_refptr<BrowserIOThreadDelegate::Handle> browser_io_thread_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserTaskExecutor);
 };

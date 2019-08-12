@@ -9,7 +9,7 @@ import media_router_config
 
 sys.path.insert(1, media_router_config.TELEMETRY_DIR)
 
-from telemetry import benchmark_runner
+from core import benchmark_runner
 
 def main():
   return benchmark_runner.main(media_router_config.Config(['benchmarks']))

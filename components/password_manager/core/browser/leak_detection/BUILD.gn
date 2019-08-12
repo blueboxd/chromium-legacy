@@ -30,9 +30,15 @@ jumbo_source_set("leak_detection") {
     "encryption_utils.cc",
     "encryption_utils.h",
     "leak_detection_check.h",
+    "leak_detection_request.cc",
+    "leak_detection_request.h",
     "leak_detection_request_factory.h",
     "leak_detection_request_factory_impl.cc",
     "leak_detection_request_factory_impl.h",
+    "leak_detection_request_utils.cc",
+    "leak_detection_request_utils.h",
+    "single_lookup_response.cc",
+    "single_lookup_response.h",
   ]
 
   public_deps = [
@@ -70,14 +76,18 @@ jumbo_source_set("unit_tests") {
     "authenticated_leak_check_unittest.cc",
     "encryption_utils_unittest.cc",
     "leak_detection_request_factory_impl_unittest.cc",
+    "leak_detection_request_unittest.cc",
+    "leak_detection_request_utils_unittest.cc",
   ]
 
   deps = [
     ":leak_detection",
+    ":proto",
     ":test_support",
     "//base/test:test_support",
     "//components/password_manager/core/common",
     "//components/signin/public/identity_manager:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

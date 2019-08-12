@@ -8,6 +8,7 @@
 #include <unicode/ulocdata.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/values.h"
@@ -44,12 +45,12 @@ PrintingContext::Result PrintingContextNoSystemDialog::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   ResetSettings();
-  settings_.set_dpi(kDefaultPdfDpi);
+  settings_->set_dpi(kDefaultPdfDpi);
   gfx::Size physical_size = GetPdfPaperSizeDeviceUnits();
   // Assume full page is printable for now.
   gfx::Rect printable_area(0, 0, physical_size.width(), physical_size.height());
-  DCHECK_EQ(settings_.device_units_per_inch(), kDefaultPdfDpi);
-  settings_.SetPrinterPrintableArea(physical_size, printable_area, true);
+  DCHECK_EQ(settings_->device_units_per_inch(), kDefaultPdfDpi);
+  settings_->SetPrinterPrintableArea(physical_size, printable_area, true);
   return OK;
 }
 
@@ -64,13 +65,13 @@ gfx::Size PrintingContextNoSystemDialog::GetPdfPaperSizeDeviceUnits() {
     LOG(WARNING) << "ulocdata_getPaperSize failed, using 8.5 x 11, error: "
                  << error;
     width =
-        static_cast<int>(kLetterWidthInch * settings_.device_units_per_inch());
-    height =
-        static_cast<int>(kLetterHeightInch * settings_.device_units_per_inch());
+        static_cast<int>(kLetterWidthInch * settings_->device_units_per_inch());
+    height = static_cast<int>(kLetterHeightInch *
+                              settings_->device_units_per_inch());
   } else {
     // ulocdata_getPaperSize returns the width and height in mm.
     // Convert this to pixels based on the dpi.
-    float multiplier = settings_.device_units_per_inch() / kMicronsPerMil;
+    float multiplier = settings_->device_units_per_inch() / kMicronsPerMil;
     width *= multiplier;
     height *= multiplier;
   }
@@ -83,7 +84,7 @@ PrintingContext::Result PrintingContextNoSystemDialog::UpdatePrinterSettings(
     int page_count) {
   DCHECK(!show_system_dialog);
 
-  if (settings_.dpi() == 0)
+  if (settings_->dpi() == 0)
     UseDefaultSettings();
 
   return OK;

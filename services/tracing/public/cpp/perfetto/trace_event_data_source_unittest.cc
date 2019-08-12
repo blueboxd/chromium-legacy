@@ -59,7 +59,9 @@ class MockProducerClient : public ProducerClient {
   }
 
   std::unique_ptr<perfetto::TraceWriter> CreateTraceWriter(
-      perfetto::BufferID target_buffer) override;
+      perfetto::BufferID target_buffer,
+      perfetto::BufferExhaustedPolicy =
+          perfetto::BufferExhaustedPolicy::kDefault) override;
 
   void FlushPacketIfPossible() {
     // GetNewBuffer() in ScatteredStreamWriterNullDelegate doesn't
@@ -194,7 +196,8 @@ class MockTraceWriter : public perfetto::TraceWriter {
 };
 
 std::unique_ptr<perfetto::TraceWriter> MockProducerClient::CreateTraceWriter(
-    perfetto::BufferID target_buffer) {
+    perfetto::BufferID target_buffer,
+    perfetto::BufferExhaustedPolicy) {
   // We attempt to destroy TraceWriters on thread shutdown in
   // ThreadLocalStorage::Slot, by posting them to the ProducerClient taskrunner,
   // but there's no guarantee that this will succeed if that taskrunner is also

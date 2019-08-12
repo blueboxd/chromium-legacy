@@ -178,15 +178,15 @@ PrintingContext::Result PrintingContextChromeos::UseDefaultSettings() {
 
   ResetSettings();
 
-  std::string device_name = base::UTF16ToUTF8(settings_.device_name());
+  std::string device_name = base::UTF16ToUTF8(settings_->device_name());
   if (device_name.empty())
     return OnError();
 
   // TODO(skau): https://crbug.com/613779. See UpdatePrinterSettings for more
   // info.
-  if (settings_.dpi() == 0) {
+  if (settings_->dpi() == 0) {
     DVLOG(1) << "Using Default DPI";
-    settings_.set_dpi(kDefaultPdfDpi);
+    settings_->set_dpi(kDefaultPdfDpi);
   }
 
   // Retrieve device information and set it
@@ -202,9 +202,9 @@ PrintingContext::Result PrintingContextChromeos::UseDefaultSettings() {
   PrintSettings::RequestedMedia media;
   media.vendor_id = paper.vendor_id;
   media.size_microns = paper.size_um;
-  settings_.set_requested_media(media);
+  settings_->set_requested_media(media);
 
-  SetPrintableArea(&settings_, media, true /* flip landscape */);
+  SetPrintableArea(settings_.get(), media, true /* flip landscape */);
 
   return OK;
 }
@@ -220,13 +220,13 @@ gfx::Size PrintingContextChromeos::GetPdfPaperSizeDeviceUnits() {
     LOG(WARNING) << "ulocdata_getPaperSize failed, using 8.5 x 11, error: "
                  << error;
     width =
-        static_cast<int>(kLetterWidthInch * settings_.device_units_per_inch());
-    height =
-        static_cast<int>(kLetterHeightInch * settings_.device_units_per_inch());
+        static_cast<int>(kLetterWidthInch * settings_->device_units_per_inch());
+    height = static_cast<int>(kLetterHeightInch *
+                              settings_->device_units_per_inch());
   } else {
     // ulocdata_getPaperSize returns the width and height in mm.
     // Convert this to pixels based on the dpi.
-    float multiplier = settings_.device_units_per_inch() / kMicronsPerMil;
+    float multiplier = settings_->device_units_per_inch() / kMicronsPerMil;
     width *= multiplier;
     height *= multiplier;
   }
@@ -239,20 +239,20 @@ PrintingContext::Result PrintingContextChromeos::UpdatePrinterSettings(
     int page_count) {
   DCHECK(!show_system_dialog);
 
-  if (InitializeDevice(base::UTF16ToUTF8(settings_.device_name())) != OK)
+  if (InitializeDevice(base::UTF16ToUTF8(settings_->device_name())) != OK)
     return OnError();
 
   // TODO(skau): Convert to DCHECK when https://crbug.com/613779 is resolved
   // Print quality suffers when this is set to the resolution reported by the
   // printer but print quality is fine at this resolution. UseDefaultSettings
   // exhibits the same problem.
-  if (settings_.dpi() == 0) {
+  if (settings_->dpi() == 0) {
     DVLOG(1) << "Using Default DPI";
-    settings_.set_dpi(kDefaultPdfDpi);
+    settings_->set_dpi(kDefaultPdfDpi);
   }
 
   // compute paper size
-  PrintSettings::RequestedMedia media = settings_.requested_media();
+  PrintSettings::RequestedMedia media = settings_->requested_media();
 
   if (media.IsDefault()) {
     DCHECK(printer_);
@@ -260,13 +260,13 @@ PrintingContext::Result PrintingContextChromeos::UpdatePrinterSettings(
 
     media.vendor_id = paper.vendor_id;
     media.size_microns = paper.size_um;
-    settings_.set_requested_media(media);
+    settings_->set_requested_media(media);
   }
 
-  SetPrintableArea(&settings_, media, true);
-  cups_options_ = SettingsToCupsOptions(settings_);
-  send_user_info_ = settings_.send_user_info();
-  username_ = send_user_info_ ? settings_.username() : std::string();
+  SetPrintableArea(settings_.get(), media, true);
+  cups_options_ = SettingsToCupsOptions(*settings_);
+  send_user_info_ = settings_->send_user_info();
+  username_ = send_user_info_ ? settings_->username() : std::string();
 
   return OK;
 }

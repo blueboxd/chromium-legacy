@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/aw_print_manager.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
@@ -36,20 +38,24 @@ int SaveDataToFd(int fd,
 // static
 AwPrintManager* AwPrintManager::CreateForWebContents(
     content::WebContents* contents,
-    const printing::PrintSettings& settings,
+    std::unique_ptr<printing::PrintSettings> settings,
     int file_descriptor,
     PrintManager::PdfWritingDoneCallback callback) {
   AwPrintManager* print_manager = new AwPrintManager(
-      contents, settings, file_descriptor, std::move(callback));
+      contents, std::move(settings), file_descriptor, std::move(callback));
   contents->SetUserData(UserDataKey(), base::WrapUnique(print_manager));
   return print_manager;
 }
 
-AwPrintManager::AwPrintManager(content::WebContents* contents,
-                               const printing::PrintSettings& settings,
-                               int file_descriptor,
-                               PdfWritingDoneCallback callback)
-    : PrintManager(contents), settings_(settings), fd_(file_descriptor) {
+AwPrintManager::AwPrintManager(
+    content::WebContents* contents,
+    std::unique_ptr<printing::PrintSettings> settings,
+    int file_descriptor,
+    PdfWritingDoneCallback callback)
+    : PrintManager(contents),
+      settings_(std::move(settings)),
+      fd_(file_descriptor) {
+  DCHECK(settings_);
   pdf_writing_done_callback_ = std::move(callback);
   cookie_ = 1;  // Set a valid dummy cookie value.
 }
@@ -75,7 +81,7 @@ void AwPrintManager::OnGetDefaultPrintSettings(
   // Unlike the printing_message_filter, we do process this in UI thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PrintMsg_Print_Params params;
-  printing::RenderParamsFromPrintSettings(settings_, &params);
+  printing::RenderParamsFromPrintSettings(*settings_, &params);
   params.document_cookie = cookie_;
   PrintHostMsg_GetDefaultPrintSettings::WriteReplyParams(reply_msg, params);
   render_frame_host->Send(reply_msg);
@@ -87,9 +93,9 @@ void AwPrintManager::OnScriptedPrint(
     IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PrintMsg_PrintPages_Params params;
-  printing::RenderParamsFromPrintSettings(settings_, &params.params);
+  printing::RenderParamsFromPrintSettings(*settings_, &params.params);
   params.params.document_cookie = scripted_params.cookie;
-  params.pages = printing::PageRange::GetPages(settings_.ranges());
+  params.pages = printing::PageRange::GetPages(settings_->ranges());
   PrintHostMsg_ScriptedPrint::WriteReplyParams(reply_msg, params);
   render_frame_host->Send(reply_msg);
 }

@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="pass-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 .container {
@@ -44,11 +45,11 @@ async function runTest() {
   const inner = document.getElementById("inner");
 
   await Promise.all([
-    outer.displayLock.acquire({ timeout: Infinity }),
-    inner.displayLock.acquire({ timeout: Infinity })]);
+    setInvisible(outer),
+    setInvisible(inner)]);
   // Dirty the inner layout
   inner.appendChild(document.createElement("div"));
-  inner.displayLock.commit().then(
+  setVisible(inner).then(
     () => { finishTest("PASS"); },
     (e) => { finishTest("FAIL " + e.message); });
 }

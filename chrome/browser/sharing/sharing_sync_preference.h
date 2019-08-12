@@ -66,20 +66,6 @@ class SharingSyncPreference {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Returns a copy of |local_value| to sync if its timestamp is older than the
-  // one of |server_value|. Otherwise returns nullptr which means that we pick
-  // the |server_value| as is.
-  static std::unique_ptr<base::Value> MaybeMergeVapidKey(
-      const base::Value& local_value,
-      const base::Value& server_value);
-
-  // Returns a new dictionary with devices merged from both |local_value| and
-  // |server_value| based on their last modified timestamp. May return nullptr
-  // if we should just pick |server_value| as is.
-  static std::unique_ptr<base::Value> MaybeMergeSyncedDevices(
-      const base::Value& local_value,
-      const base::Value& server_value);
-
   // Returns VAPID key from preferences if present, otherwise returns
   // base::nullopt.
   // For more information on vapid keys, please see

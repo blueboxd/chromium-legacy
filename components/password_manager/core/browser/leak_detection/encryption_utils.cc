@@ -15,13 +15,6 @@
 
 namespace password_manager {
 
-namespace {
-
-// Prefix length in bits used for BucketizeUsername().
-constexpr size_t kPrefixLen = 24;
-
-}  // namespace
-
 std::string CanonicalizeUsername(base::StringPiece username) {
   std::string email_lower = base::ToLowerASCII(username);
   // |email_lower| might be an email address. Strip off the mail-address host,
@@ -45,9 +38,10 @@ std::string HashUsername(base::StringPiece canonicalized_username) {
 
 std::string BucketizeUsername(base::StringPiece canonicalized_username) {
   static_assert(
-      kPrefixLen % CHAR_BIT == 0,
-      "kPrefixLen must be a multiple of the number of bits in a char.");
-  return HashUsername(canonicalized_username).substr(0, kPrefixLen / CHAR_BIT);
+      kUsernameHashPrefixLength % CHAR_BIT == 0,
+      "The prefix length must be a multiple of the number of bits in a char.");
+  return HashUsername(canonicalized_username)
+      .substr(0, kUsernameHashPrefixLength / CHAR_BIT);
 }
 
 std::string ScryptHashUsernameAndPassword(base::StringPiece username,

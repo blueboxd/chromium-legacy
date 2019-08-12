@@ -7,6 +7,7 @@
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 div {
@@ -20,13 +21,13 @@ div {
 
 async_test((t) => {
   async function commit(target) {
-    target.displayLock.commit();
+    setVisible(target);
     t.done();
   }
 
   async function runTest() {
     const target = document.getElementById("target");
-    await target.displayLock.acquire({ timeout: Infinity, activatable: true });
+    await setInvisibleActivatable(target);
     t.step(() => assert_true(target.displayLock.locked));
 
     target.addEventListener("beforeactivate", () => commit(target));

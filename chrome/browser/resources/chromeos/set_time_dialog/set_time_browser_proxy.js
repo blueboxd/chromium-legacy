@@ -18,8 +18,12 @@ cr.define('settime', function() {
     /** Closes the dialog. */
     dialogClose() {}
 
-    /** Notifies C++ code that done button was clicked */
-    doneClicked() {}
+    /**
+     * Notifies C++ code that done button was clicked.
+     * @param {number} timeInSeconds Seconds since epoch representing the date
+     *     on the dialog inputs.
+     */
+    doneClicked(timeInSeconds) {}
   }
 
   /** @implements {settime.SetTimeBrowserProxy} */
@@ -45,8 +49,8 @@ cr.define('settime', function() {
     }
 
     /** @override */
-    doneClicked() {
-      chrome.send('doneClicked');
+    doneClicked(timeInSeconds) {
+      chrome.send('doneClicked', [timeInSeconds]);
     }
   }
 

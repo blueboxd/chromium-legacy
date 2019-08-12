@@ -40,7 +40,8 @@ namespace {
 bool shell_operations_allowed = true;
 
 void IgnoreFileTaskExecuteResult(
-    extensions::api::file_manager_private::TaskResult result) {}
+    extensions::api::file_manager_private::TaskResult result,
+    std::string failure_reason) {}
 
 // Executes the |task| for the file specified by |url|.
 void ExecuteFileTaskForUrl(Profile* profile,

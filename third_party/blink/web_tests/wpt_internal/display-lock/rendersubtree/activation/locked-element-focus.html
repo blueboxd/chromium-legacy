@@ -13,12 +13,13 @@
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="../resources/utils.js"></script>
 
 <script>
 async_test((t) => {
 
   async function focusNonActivatableTest() {
-    const acquire_promise = container.displayLock.acquire({ timeout: Infinity });
+    const acquire_promise = setInvisible(container);
     await acquire_promise;
     t.step(() => assert_not_equals(document.activeElement, focusable));
     focusable.focus();
@@ -28,7 +29,7 @@ async_test((t) => {
 
   async function focusActivatableTest() {
     t.step(() => assert_not_equals(document.activeElement, focusable));
-    const acquire_promise = container.displayLock.acquire({ timeout: Infinity, activatable: true });
+    const acquire_promise = setInvisibleActivatable(container);
     await acquire_promise;
     focusable.focus();
     t.step(() => assert_equals(document.activeElement, focusable));

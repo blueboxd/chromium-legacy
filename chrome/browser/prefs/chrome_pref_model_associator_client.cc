@@ -7,7 +7,6 @@
 #include <cstdint>
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
@@ -52,14 +51,6 @@ ChromePrefModelAssociatorClient::MaybeMergePreferenceValues(
       return nullptr;
     return std::make_unique<base::Value>(
         static_cast<int>(std::max(local_high_score, server_high_score)));
-  }
-
-  if (pref_name == prefs::kSharingVapidKey)
-    return SharingSyncPreference::MaybeMergeVapidKey(local_value, server_value);
-
-  if (pref_name == prefs::kSharingSyncedDevices) {
-    return SharingSyncPreference::MaybeMergeSyncedDevices(local_value,
-                                                          server_value);
   }
 
   return nullptr;

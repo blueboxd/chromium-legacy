@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="pass-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 .container {
@@ -44,8 +45,8 @@ function runTest() {
   const inner = document.getElementById("inner");
 
   Promise.all([
-    outer.displayLock.acquire({ timeout: Infinity }),
-    inner.displayLock.acquire({ timeout: Infinity })])
+    setInvisible(outer),
+    setInvisible(inner)])
   .then(() =>  {
     // Dirty the inner layout
     inner.appendChild(document.createElement("div"));

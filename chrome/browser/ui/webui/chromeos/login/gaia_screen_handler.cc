@@ -417,6 +417,24 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   screen_mode_ = GetGaiaScreenMode(context.email, context.use_offline);
   params.SetInteger("screenMode", screen_mode_);
 
+  if (!context.email.empty()) {
+    const AccountId account_id = GetAccountId(
+        context.email, std::string() /* id */, AccountType::UNKNOWN);
+    const user_manager::User* const user =
+        user_manager::UserManager::Get()->FindUser(account_id);
+    if (user && user->using_saml() &&
+        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kPublicAccountsSamlUrl)) {
+        std::string saml_url =
+            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                switches::kPublicAccountsSamlUrl);
+        params.SetBoolean("startsOnSamlPage", true);
+        params.SetString("frameUrl", saml_url);
+      }
+    }
+  }
+
   if (screen_mode_ == GAIA_SCREEN_MODE_AD && !authpolicy_login_helper_)
     authpolicy_login_helper_ = std::make_unique<AuthPolicyHelper>();
 

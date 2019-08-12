@@ -199,11 +199,12 @@ void LoginScreenController::AuthenticateUserWithChallengeResponse(
 
 bool LoginScreenController::ValidateParentAccessCode(
     const AccountId& account_id,
-    const std::string& code) {
+    const std::string& code,
+    base::Time validation_time) {
   if (!client_)
     return false;
 
-  return client_->ValidateParentAccessCode(account_id, code);
+  return client_->ValidateParentAccessCode(account_id, code, validation_time);
 }
 
 void LoginScreenController::HardlockPod(const AccountId& account_id) {
@@ -370,11 +371,12 @@ void LoginScreenController::ShowParentAccessButton(bool show) {
 
 void LoginScreenController::ShowParentAccessWidget(
     const AccountId& child_account_id,
-    base::RepeatingCallback<void(bool success)> callback,
+    OnParentAccessWidgetFinished callback,
     ParentAccessRequestReason reason,
-    bool extra_dimmer) {
+    bool extra_dimmer,
+    base::Time validation_time) {
   parent_access_widget_ = std::make_unique<ash::ParentAccessWidget>(
-      child_account_id, callback, reason, extra_dimmer);
+      child_account_id, callback, reason, extra_dimmer, validation_time);
 }
 
 void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {

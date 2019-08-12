@@ -114,6 +114,23 @@ BackgroundSyncLauncher::BackgroundSyncLauncher() {
 
 BackgroundSyncLauncher::~BackgroundSyncLauncher() = default;
 
+void BackgroundSyncLauncher::SetGlobalSoonestWakeupDelta(
+    blink::mojom::BackgroundSyncType sync_type,
+    base::TimeDelta set_to) {
+  if (sync_type == blink::mojom::BackgroundSyncType::ONE_SHOT)
+    soonest_wakeup_delta_one_shot_ = set_to;
+  else
+    soonest_wakeup_delta_periodic_ = set_to;
+}
+
+base::TimeDelta& BackgroundSyncLauncher::GetGlobalSoonestWakeupDelta(
+    blink::mojom::BackgroundSyncType sync_type) {
+  if (sync_type == blink::mojom::BackgroundSyncType::ONE_SHOT)
+    return soonest_wakeup_delta_one_shot_;
+  else
+    return soonest_wakeup_delta_periodic_;
+}
+
 void BackgroundSyncLauncher::GetSoonestWakeupDeltaImpl(
     blink::mojom::BackgroundSyncType sync_type,
     BrowserContext* browser_context,
@@ -123,9 +140,9 @@ void BackgroundSyncLauncher::GetSoonestWakeupDeltaImpl(
   base::RepeatingClosure done_closure = base::BarrierClosure(
       GetStoragePartitionCount(browser_context),
       base::BindOnce(&BackgroundSyncLauncher::SendSoonestWakeupDelta,
-                     base::Unretained(this), std::move(callback)));
+                     base::Unretained(this), sync_type, std::move(callback)));
 
-  soonest_wakeup_delta_ = base::TimeDelta::Max();
+  SetGlobalSoonestWakeupDelta(sync_type, base::TimeDelta::Max());
   BrowserContext::ForEachStoragePartition(
       browser_context,
       base::BindRepeating(
@@ -154,14 +171,15 @@ void BackgroundSyncLauncher::GetSoonestWakeupDeltaForStoragePartition(
                 std::min(*soonest_wakeup_delta, wakeup_delta);
             std::move(done_closure).Run();
           },
-          std::move(done_closure), &soonest_wakeup_delta_));
+          std::move(done_closure), &GetGlobalSoonestWakeupDelta(sync_type)));
 }
 
 void BackgroundSyncLauncher::SendSoonestWakeupDelta(
+    blink::mojom::BackgroundSyncType sync_type,
     base::OnceCallback<void(base::TimeDelta)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::move(callback).Run(soonest_wakeup_delta_);
+  std::move(callback).Run(GetGlobalSoonestWakeupDelta(sync_type));
 }
 
 }  // namespace content

@@ -15,8 +15,10 @@
 #include "content/public/browser/resource_context.h"
 #include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
+#include "net/http/http_auth_preferences.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/url_request_context_builder_mojo.h"
 
 namespace headless {
@@ -224,6 +226,11 @@ HeadlessRequestContextManager::CreateNetworkContextParams(bool is_system) {
   context_params->user_agent = user_agent_;
   context_params->accept_language = accept_language_;
   context_params->primary_network_context = is_system;
+
+  // TODO(https://crbug.com/458508): Allow
+  // context_params->allow_default_credentials to be controllable by a flag.
+  context_params->allow_default_credentials =
+    net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS;
 
   if (!user_data_path_.empty()) {
     context_params->enable_encrypted_cookies = cookie_encryption_enabled_;

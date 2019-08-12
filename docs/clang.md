@@ -98,7 +98,7 @@ You can then run `head out/gn/toolchain.ninja` and check that the first to
 lines set `cc` and `cxx` to your clang binary. If things look good, run `ninja
 -C out/gn` to build.
 
-If your clang revision is very different from the one currently used in chromium
-
-*   Check `tools/clang/scripts/update.py` to find chromium's clang revision
-*   You might have to tweak warning flags.
+Chromium tries to be buildable with its currently pinned clang, and with clang
+trunk. Set `llvm_force_head_revision = true` in your args.gn if the clang you're
+trying to build with is closer to clang trunk than to Chromium's pinned clang
+(which `tools/clang/scripts/update.py --print-revision` prints).

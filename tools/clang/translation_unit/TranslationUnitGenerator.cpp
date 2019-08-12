@@ -168,11 +168,20 @@ void IncludeFinderPPCallbacks::InclusionDirective(
     return;
 
   assert(!current_files_.top().empty());
+#ifdef LLVM_FORCE_HEAD_REVISION
   const clang::DirectoryEntry* const search_path_entry = getValueOrNull(
       source_manager_->getFileManager().getDirectory(search_path));
   const clang::DirectoryEntry* const current_file_parent_entry =
       (*source_manager_->getFileManager().getFile(current_files_.top().c_str()))
           ->getDir();
+#else
+  const clang::DirectoryEntry* const search_path_entry =
+      source_manager_->getFileManager().getDirectory(search_path);
+  const clang::DirectoryEntry* const current_file_parent_entry =
+      source_manager_->getFileManager()
+          .getFile(current_files_.top().c_str())
+          ->getDir();
+#endif
 
   // If the include file was found relatively to the current file's parent
   // directory or a search path, we need to normalize it. This is necessary

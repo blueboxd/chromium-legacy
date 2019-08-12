@@ -60,9 +60,9 @@ class RunLoop;
 // Thread object (including ~Thread()).
 class BASE_EXPORT Thread : PlatformThread::Delegate {
  public:
-  class BASE_EXPORT TaskEnvironment {
+  class BASE_EXPORT Delegate {
    public:
-    virtual ~TaskEnvironment() {}
+    virtual ~Delegate() {}
 
     virtual scoped_refptr<SingleThreadTaskRunner> GetDefaultTaskRunner() = 0;
 
@@ -85,10 +85,10 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
     // This is ignored if message_pump_factory.is_null() is false.
     MessagePumpType message_pump_type = MessagePumpType::DEFAULT;
 
-    // An unbound TaskEnvironment that will be bound to the thread. Ownership
-    // of |task_environment| will be transferred to the thread.
+    // An unbound Delegate that will be bound to the thread. Ownership
+    // of |delegate| will be transferred to the thread.
     // TODO(alexclarke): This should be a std::unique_ptr
-    TaskEnvironment* task_environment = nullptr;
+    Delegate* delegate = nullptr;
 
     // Specifies timer slack for thread message loop.
     TimerSlack timer_slack = TIMER_SLACK_NONE;
@@ -97,7 +97,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
     // on the thread. If message_pump_factory.is_null(), then a MessagePump
     // appropriate for |message_pump_type| is created. Setting this forces the
     // MessagePumpType to TYPE_CUSTOM. This is not compatible with a non-null
-    // |task_environment|.
+    // |delegate|.
     MessagePumpFactory message_pump_factory;
 
     // Specifies the maximum stack size that the thread is allowed to use.
@@ -138,7 +138,7 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // init_com_with_mta(false) and then StartWithOptions() with any message loop
   // type other than TYPE_UI.
   void init_com_with_mta(bool use_mta) {
-    DCHECK(!task_environment_);
+    DCHECK(!delegate_);
     com_status_ = use_mta ? MTA : STA;
   }
 #endif
@@ -231,9 +231,8 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
     // Start().
     DCHECK(owning_sequence_checker_.CalledOnValidSequence() ||
            (id_event_.IsSignaled() && id_ == PlatformThread::CurrentId()) ||
-           task_environment_);
-    return task_environment_ ? task_environment_->GetDefaultTaskRunner()
-                             : nullptr;
+           delegate_);
+    return delegate_ ? delegate_->GetDefaultTaskRunner() : nullptr;
   }
 
   // Returns the name of this thread (for display in debugger too).
@@ -310,9 +309,9 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Protects |id_| which must only be read while it's signaled.
   mutable WaitableEvent id_event_;
 
-  // The thread's TaskEnvironment and RunLoop are valid only while the thread is
+  // The thread's Delegate and RunLoop are valid only while the thread is
   // alive. Set by the created thread.
-  std::unique_ptr<TaskEnvironment> task_environment_;
+  std::unique_ptr<Delegate> delegate_;
   RunLoop* run_loop_ = nullptr;
 
   // Stores Options::timer_slack_ until the sequence manager has been bound to
@@ -334,14 +333,13 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
 namespace internal {
 
-class BASE_EXPORT MessageLoopTaskEnvironment : public Thread::TaskEnvironment {
+class BASE_EXPORT MessageLoopThreadDelegate : public Thread::Delegate {
  public:
-  explicit MessageLoopTaskEnvironment(
-      std::unique_ptr<MessageLoop> message_loop);
+  explicit MessageLoopThreadDelegate(std::unique_ptr<MessageLoop> message_loop);
 
-  ~MessageLoopTaskEnvironment() override;
+  ~MessageLoopThreadDelegate() override;
 
-  // Thread::TaskEnvironment:
+  // Thread::Delegate:
   scoped_refptr<SingleThreadTaskRunner> GetDefaultTaskRunner() override;
   void BindToCurrentThread(TimerSlack timer_slack) override;
 

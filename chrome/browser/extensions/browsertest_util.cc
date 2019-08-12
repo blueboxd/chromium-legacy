@@ -23,7 +23,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -112,8 +112,8 @@ Browser* LaunchBrowserForAppInTab(Profile* profile,
           AppLaunchSource::kSourceTest));
   DCHECK(web_contents);
 
-  web_app::WebAppTabHelperBase* tab_helper =
-      web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+  web_app::WebAppTabHelper* tab_helper =
+      web_app::WebAppTabHelper::FromWebContents(web_contents);
   DCHECK(tab_helper);
   DCHECK_EQ(extension_app->id(), tab_helper->app_id());
 

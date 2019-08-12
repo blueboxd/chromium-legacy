@@ -229,9 +229,7 @@ std::unique_ptr<JsonRequest> JsonRequest::Builder::Build() const {
 }
 
 JsonRequest::Builder& JsonRequest::Builder::SetAuthentication(
-    const std::string& account_id,
     const std::string& auth_header) {
-  obfuscated_gaia_id_ = account_id;
   auth_header_ = auth_header;
   return *this;
 }

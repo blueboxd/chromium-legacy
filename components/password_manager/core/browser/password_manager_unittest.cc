@@ -310,6 +310,8 @@ class PasswordManagerTest : public testing::Test {
     prefs_->registry()->RegisterIntegerPref(
         prefs::kPasswordManagerOnboardingState,
         static_cast<int>(OnboardingState::kDoNotShow));
+    prefs_->registry()->RegisterBooleanPref(
+        prefs::kPasswordLeakDetectionEnabled, true);
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(prefs_.get()));
 
     // When waiting for predictions is on, it makes tests more complicated.

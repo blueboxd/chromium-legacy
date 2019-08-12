@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/time/time.h"
 #include "components/account_id/account_id.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -84,10 +85,13 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   // device, when it is empty. |callbacks| will be called when user performs
   // certain actions. |reason| contains information about why the parent access
   // view is necessary, it is used to modify the view appearance by changing the
-  // title and description strings and background color.
+  // title and description strings and background color. |validation_time| is
+  // the time that will be used to validate the code, if null the system's
+  // current time will be used.
   ParentAccessView(const AccountId& account_id,
                    const Callbacks& callbacks,
-                   ParentAccessRequestReason reason);
+                   ParentAccessRequestReason reason,
+                   base::Time validation_time);
   ~ParentAccessView() override;
 
   // views::View:
@@ -139,6 +143,10 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   // Indicates what action will be authorized with parent access code.
   // The appearance of the view depends on |request_reason_|.
   const ParentAccessRequestReason request_reason_;
+
+  // Time used to validate the code. When this is null, the current system time
+  // is used.
+  const base::Time validation_time_;
 
   State state_ = State::kNormal;
 

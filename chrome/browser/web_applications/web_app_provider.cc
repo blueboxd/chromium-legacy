@@ -17,7 +17,6 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
 #include "chrome/browser/web_applications/external_web_app_manager.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/pending_app_manager_impl.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_manager.h"
-#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/web_contents.h"
@@ -99,6 +97,11 @@ WebAppPolicyManager& WebAppProvider::policy_manager() {
 WebAppUiManager& WebAppProvider::ui_manager() {
   CheckIsConnected();
   return *ui_manager_;
+}
+
+WebAppAudioFocusIdMap& WebAppProvider::audio_focus_id_map() {
+  CheckIsConnected();
+  return *audio_focus_id_map_;
 }
 
 SystemWebAppManager& WebAppProvider::system_web_app_manager() {
@@ -187,30 +190,6 @@ void WebAppProvider::RegisterProfilePrefs(
   WebAppPolicyManager::RegisterProfilePrefs(registry);
   SystemWebAppManager::RegisterProfilePrefs(registry);
   RegisterInstallBounceMetricProfilePrefs(registry);
-}
-
-// static
-WebAppTabHelperBase* WebAppProvider::CreateTabHelper(
-    content::WebContents* web_contents) {
-  WebAppProvider* provider = WebAppProvider::GetForWebContents(web_contents);
-  if (!provider)
-    return nullptr;
-
-  WebAppTabHelperBase* tab_helper =
-      WebAppTabHelperBase::FromWebContents(web_contents);
-  // Do nothing if already exists.
-  if (tab_helper)
-    return tab_helper;
-
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-    tab_helper = WebAppTabHelper::CreateForWebContents(web_contents);
-  } else {
-    tab_helper =
-        extensions::BookmarkAppTabHelper::CreateForWebContents(web_contents);
-  }
-
-  tab_helper->Init(provider->audio_focus_id_map_.get());
-  return tab_helper;
 }
 
 }  // namespace web_app

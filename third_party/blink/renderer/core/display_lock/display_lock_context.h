@@ -103,6 +103,13 @@ class CORE_EXPORT DisplayLockContext final
   ScriptPromise commit(ScriptState*);
   ScriptPromise updateAndCommit(ScriptState*);
 
+  void SetActivatable(bool activatable);
+
+  // Acquire the lock, should only be called when unlocked.
+  void StartAcquire();
+  // Initiate a commit.
+  void StartCommit();
+
   enum LifecycleTarget { kSelf, kChildren };
 
   // Lifecycle observation / state functions.
@@ -217,8 +224,6 @@ class CORE_EXPORT DisplayLockContext final
     UntracedMember<DisplayLockContext> context_;
   };
 
-  // Initiate a commit.
-  void StartCommit();
   // Initiate an update.
   void StartUpdateIfNeeded();
 

@@ -11,13 +11,13 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager.h"
+#include "base/task/task_observer.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -72,12 +72,12 @@ void DeferredQuitRunLoop(const base::Closure& quit_task,
 }
 
 // Monitors if any task is processed by the message loop.
-class TaskObserver : public base::MessageLoop::TaskObserver {
+class TaskObserver : public base::TaskObserver {
  public:
   TaskObserver() : processed_(false) {}
   ~TaskObserver() override {}
 
-  // MessageLoop::TaskObserver overrides.
+  // TaskObserver overrides.
   void WillProcessTask(const base::PendingTask& pending_task) override {}
   void DidProcessTask(const base::PendingTask& pending_task) override {
     processed_ = true;

@@ -3855,7 +3855,12 @@ TEST_F(PasswordAutofillAgentTest, AutofillsAfterUserGesture) {
   fill_data_.password_field.value = ASCIIToUTF16(kBobPassword);
 
   SimulateOnFillPasswordForm(fill_data_);
-  CheckTextFieldsSuggestedState(kAliceUsername, true, kBobPassword, true);
+  CheckTextFieldsStateForElements(
+      username_element_, kAliceUsername,
+      /* username_autofilled */ true, password_element_, kBobPassword,
+      /* password_autofilled */ true, /* check_suggested_username */ false,
+      /* check_suggested_username */ true);
+  /// CheckTextFieldsSuggestedState(kAliceUsername, true, kBobPassword, true);
 }
 
 TEST_F(PasswordAutofillAgentTest, RestoresAfterJavaScriptModification) {

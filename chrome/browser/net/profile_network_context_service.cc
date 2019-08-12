@@ -45,6 +45,7 @@
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/base/features.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
@@ -424,6 +425,28 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;
+
+  // Allow/disallow ambient authentication with default credentials based on the
+  // profile type.
+  // TODO(https://crbug.com/458508): Allow this behavior to be controllable by
+  // policy.
+  if (profile_->IsGuestSession()) {
+    network_context_params->allow_default_credentials =
+        base::FeatureList::IsEnabled(
+            features::kEnableAmbientAuthenticationInGuestSession)
+            ? net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS
+            : net::HttpAuthPreferences::DISALLOW_DEFAULT_CREDENTIALS;
+  } else if (profile_->IsIncognitoProfile()) {
+    network_context_params->allow_default_credentials =
+        base::FeatureList::IsEnabled(
+            features::kEnableAmbientAuthenticationInIncognito)
+            ? net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS
+            : net::HttpAuthPreferences::DISALLOW_DEFAULT_CREDENTIALS;
+  } else {
+    network_context_params->allow_default_credentials =
+        net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS;
+  }
+
   network_context_params->cookie_manager_params =
       CreateCookieManagerParams(profile_, *cookie_settings_);
 

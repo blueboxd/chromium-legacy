@@ -2,18 +2,63 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Functions for extracting email addresses from OWNERS files."""
+"""Functions for extracting emails and components from OWNERS files."""
 
 import extract_histograms
 import os
 import re
 
 _EMAIL_PATTERN = r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$'
+_OWNERS = 'OWNERS'
+# Three '..' are used because calling dirname() yields the path to this
+# module's directory, histograms, and the directory above tools, which may or
+# may not be src depending on the machine running the code, is up three
+# directory levels from the histograms directory.
+_DIR_ABOVE_TOOLS = [os.path.dirname(__file__), '..', '..', '..']
 _SRC = 'src/'
 
 
 class Error(Exception):
   pass
+
+
+def _AddTextNodeWithNewLineAndIndent(histogram, node_to_insert_before):
+  """Creates and adds a DOM Text Node before the given node in the histogram.
+
+  Args:
+    histogram: The histogram node in which to insert a text node.
+    node_to_insert_before: A node before which to add the text node.
+  """
+  histogram.insertBefore(
+      histogram.ownerDocument.createTextNode('\n  '),
+      node_to_insert_before)
+
+
+def _IsEmailOrPlaceholder(is_first_owner, owner_tag_text, histogram_name):
+  """Returns true if |owner_tag_text| is an email or the placeholder text.
+
+  Also, verifies that a histogram's first owner tag contains either an email
+  address, e.g. 'ali@chromium.org' or the placeholder text.
+
+  Args:
+    is_first_owner: True if a histogram's first owner tag is being checked.
+    owner_tag_text: The text of the owner tag being checked, e.g.
+      'julie@google.com' or 'src/ios/net/cookies/OWNERS'.
+    histogram_name: The string name of the histogram.
+
+  Raises:
+    Error: Raised if (A) the text is from the first owner tag and (B) the text
+      is not a primary owner.
+  """
+  is_email_or_placeholder = (re.match(_EMAIL_PATTERN, owner_tag_text) or
+      owner_tag_text == extract_histograms.OWNER_PLACEHOLDER)
+
+  if is_first_owner and not is_email_or_placeholder:
+    raise Error('The histogram {} must have a valid first owner, i.e. an '
+                'individual\'s email address.'
+                .format(histogram_name))
+
+  return is_email_or_placeholder
 
 
 def _IsWellFormattedFilePath(path):
@@ -22,7 +67,39 @@ def _IsWellFormattedFilePath(path):
   Args:
     path: The path to an OWNERS file, e.g. 'src/gin/OWNERS'.
   """
-  return path.startswith(_SRC) and path.endswith('OWNERS')
+  return path.startswith(_SRC) and path.endswith(_OWNERS)
+
+
+def _GetHigherLevelOwnersFilePath(path):
+  """Returns a path to an OWNERS file at a higher level than the given path.
+
+  Returns an empty string if an OWNERS file path in a higher level directory
+  cannot be found.
+
+  Suppose the given path is //stuff/chromium/src/jam/tea/milk/OWNERS. The
+  path //stuff/chromium/src/jam/tea/OWNERS will then be generated, and if it
+  exists, it will be returned. If not, the path //stuff/chromium/src/jam/OWNERS
+  will be generated, and if it exists, it will be returned.
+
+  Args:
+    path: The path to an OWNERS file.
+  """
+  # The highest directory that is searched for component information is one
+  # directory lower than the directory above tools. Depending on the machine
+  # running this code, the directory above tools may or may not be src.
+  path_to_limiting_dir = os.path.abspath(os.path.join(*_DIR_ABOVE_TOOLS))
+  limiting_dir = path_to_limiting_dir.split(os.sep)[-1]
+  owners_file_limit = (os.sep).join([limiting_dir, _OWNERS])
+  if path.endswith(owners_file_limit):
+    return ''
+
+  parent_directory = os.path.dirname(os.path.dirname(path))
+  parent_owners_file_path = os.path.join(parent_directory, _OWNERS)
+
+  if (os.path.exists(parent_owners_file_path) and
+    os.path.isfile(parent_owners_file_path)):
+    return parent_owners_file_path
+  return _GetHigherLevelOwnersFilePath(parent_owners_file_path)
 
 
 def _GetOwnersFilePath(path):
@@ -35,16 +112,12 @@ def _GetOwnersFilePath(path):
     Error: Raised if the given path is not well-formatted.
   """
   if _IsWellFormattedFilePath(path):
-    # Three '..' are used because calling dirname() yields the path to this
-    # module's directory, histograms, and the directory above tools is up three
-    # directory levels from the histograms directory.
-    path_to_dir_above_tools = [os.path.dirname(__file__), '..', '..', '..']
-
     # _SRC is removed because the file system on the machine running the code
-    # may not have an src directory.
+    # may not have a(n) src directory.
     path_without_src = path[len(_SRC):]
+
     return os.path.abspath(
-        os.path.join(*(path_to_dir_above_tools + path_without_src.split('/'))))
+        os.path.join(*(_DIR_ABOVE_TOOLS + path_without_src.split(os.sep))))
   else:
     raise Error('The given path {} is not well-formatted.'
                 'Well-formatted paths begin with "src/" and end with "OWNERS"'
@@ -99,6 +172,37 @@ def _ExtractEmailAddressesFromOWNERS(path, depth=0):
   return extracted_emails
 
 
+def _ExtractComponentFromOWNERS(path):
+  """Returns the string component associated with the file at the given path.
+
+  Examples are 'Blink>Storage>FileAPI' and 'UI'.
+
+  Returns an empty string if no component can be extracted from the OWNERS file
+  located at path or OWNERS files in higher level directories.
+
+  Args:
+    path: The path to an OWNERS file, e.g. 'src/storage/OWNERS'.
+  """
+  with open(path, 'r') as owners_file:
+    for line in [line.lstrip()
+                 for line in owners_file.read().splitlines() if line]:
+      if line.startswith('# COMPONENT: '):
+        # A typical line is '# COMPONENT: UI>Browser>Bubbles''. The colon is
+        # always followed by exactly one space. And the symbol >, if present,
+        # is never preceded or followed by any spaces.
+        words = line.split(': ')
+        if len(words) == 2:
+          return words[1].rstrip()
+        raise Error('The component info in {} is poorly formatted.'
+                    .format(path))
+
+    higher_level_owners_file_path = _GetHigherLevelOwnersFilePath(path)
+    if higher_level_owners_file_path:
+      return _ExtractComponentFromOWNERS(higher_level_owners_file_path)
+
+  return ''
+
+
 def _MakeOwners(document, path, emails_with_dom_elements):
   """Makes DOM Elements for owners and returns the elements.
 
@@ -140,8 +244,8 @@ def _MakeOwners(document, path, emails_with_dom_elements):
   return owner_elements
 
 
-def _UpdateHistogram(histogram, owner_to_replace, owners_to_add):
-  """Updates the histogram by replacing owner_to_replace with owners_to_add.
+def _UpdateHistogramOwners(histogram, owner_to_replace, owners_to_add):
+  """Replaces |owner_to_replace| with |owners_to_add| for the given histogram.
 
   Args:
     histogram: The DOM Element to update.
@@ -152,29 +256,45 @@ def _UpdateHistogram(histogram, owner_to_replace, owners_to_add):
   """
   node_after_owners_file = owner_to_replace.nextSibling
   replacement_done = False
-  new_line_plus_indent = '\n  '
 
   for owner_to_add in owners_to_add:
     if not replacement_done:
       histogram.replaceChild(owner_to_add, owner_to_replace)
       replacement_done = True
     else:
-      histogram.insertBefore(
-          histogram.ownerDocument.createTextNode(new_line_plus_indent),
-          node_after_owners_file)
+      _AddTextNodeWithNewLineAndIndent(histogram, node_after_owners_file)
       histogram.insertBefore(owner_to_add, node_after_owners_file)
+
+
+def _AddHistogramComponent(histogram, component):
+  """Makes a DOM Element for the component and adds it to the given histogram.
+
+  Args:
+    histogram: The DOM Element to update.
+    component: A string component to add, e.g. 'Internals>Network' or 'Build'.
+  """
+  node_to_insert_before = histogram.lastChild
+  _AddTextNodeWithNewLineAndIndent(histogram, node_to_insert_before)
+
+  document = histogram.ownerDocument
+  component_element = document.createElement('component')
+  component_element.appendChild(document.createTextNode(component))
+  histogram.insertBefore(component_element, node_to_insert_before)
 
 
 def ExpandHistogramsOWNERS(histograms):
   """Updates the given DOM Element's descendants, if necessary.
 
-  The owner nodes associated with a single histogram need to be updated when
-  the text of an owner node is the path to an OWNERS file rather than an email
-  address, e.g. <owner>src/base/android/OWNERS</owner> instead of
-  <owner>joy@chromium.org</owner>.
+  When a histogram has an owner node whose text is an OWNERS file path rather
+  than an email address, e.g. <owner>src/base/android/OWNERS</owner> instead of
+  <owner>joy@chromium.org</owner>, then (A) the histogram's owners need to be
+  updated and (B) a component may be added.
 
   If the text of an owner node is an OWNERS file path, then this node is
-  replaced by owner nodes for the emails derived from the OWNERS file.
+  replaced by owner nodes for the emails derived from the OWNERS file. If a
+  component, e.g. UI>GFX, can be derived from the OWNERS file or an OWNERS file
+  in a higher-level directory, then a component tag will be added to the
+  histogram, e.g. <component>UI&gt;GFX</component>.
 
   Args:
     histograms: The DOM Element whose descendants may be updated.
@@ -187,33 +307,37 @@ def ExpandHistogramsOWNERS(histograms):
   for histogram in histograms.getElementsByTagName('histogram'):
     owners = histogram.getElementsByTagName('owner')
 
-    # owner is a DOM Element with a single child, which is a DOM Text node.
+    # owner is a DOM Element with a single child, which is a DOM Text Node.
     emails_with_dom_elements = set([
         owner.childNodes[0].data
         for owner in owners
         if email_pattern.match(owner.childNodes[0].data)])
 
+    # component is a DOM Element with a single child, which is a DOM Text Node.
+    components_with_dom_elements = set([
+      extract_histograms.NormalizeString(component.childNodes[0].data)
+      for component in histogram.getElementsByTagName('component')])
+
     for index in range(len(owners)):
       owner = owners[index]
       owner_text = owner.childNodes[0].data
-      is_email = email_pattern.match(owner_text)
 
-      is_primary_owner = (is_email or
-          owner_text == extract_histograms.OWNER_PLACEHOLDER)
-      if index == 0 and not is_primary_owner:
-        raise Error('The histogram {} must have a primary owner, i.e. an '
-                    'individual\'s email address.'
-                    .format(histogram.getAttribute('name')))
+      name = histogram.getAttribute('name')
+      if _IsEmailOrPlaceholder(index == 0, owner_text, name):
+        continue
 
-      if not is_primary_owner:
-        path = _GetOwnersFilePath(owner_text)
-        if os.path.exists(path) and os.path.isfile(path):
-          owners_to_add = _MakeOwners(
-              owner.ownerDocument, path, emails_with_dom_elements)
-          if owners_to_add:
-            _UpdateHistogram(histogram, owner, owners_to_add)
-          else:
-            raise Error('No email addresses could be derived from {}.'
-                        .format(path))
-        else:
-          raise Error('The path {} does not exist.'.format(path))
+      path = _GetOwnersFilePath(owner_text)
+      if not os.path.exists(path) or not os.path.isfile(path):
+        raise Error('The file at {} does not exist.'.format(path))
+
+      owners_to_add = _MakeOwners(
+        owner.ownerDocument, path, emails_with_dom_elements)
+      if not owners_to_add:
+        raise Error('No emails could be derived from {}.'.format(path))
+
+      _UpdateHistogramOwners(histogram, owner, owners_to_add)
+
+      component = _ExtractComponentFromOWNERS(path)
+      if component and component not in components_with_dom_elements:
+        components_with_dom_elements.add(component)
+        _AddHistogramComponent(histogram, component)

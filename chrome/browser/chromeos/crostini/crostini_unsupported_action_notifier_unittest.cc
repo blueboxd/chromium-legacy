@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_unsupported_action_notifier.h"
 
 #include <memory>
+#include <string>
 #include <tuple>
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -14,16 +15,23 @@ namespace crostini {
 
 using ::testing::_;
 using ::testing::Bool;
-using ::testing::Exactly;
-using ::testing::InSequence;
+using ::testing::Combine;
 using ::testing::NiceMock;
 using ::testing::Return;
+using ::testing::Truly;
+
+using chromeos::input_method::InputMethodDescriptor;
 
 class MockDelegate : public CrostiniUnsupportedActionNotifier::Delegate {
  public:
   MOCK_METHOD(bool, IsInTabletMode, (), (override));
   MOCK_METHOD(bool, IsFocusedWindowCrostini, (), (override));
   MOCK_METHOD(void, ShowToast, (const ash::ToastData& toast_data), (override));
+  MOCK_METHOD(std::string,
+              GetLocalizedDisplayName,
+              (const InputMethodDescriptor& descriptor),
+              (override));
+  MOCK_METHOD(InputMethodDescriptor, GetCurrentInputMethod, (), (override));
   MOCK_METHOD(void,
               AddFocusObserver,
               (aura::client::FocusChangeObserver * observer),
@@ -40,10 +48,29 @@ class MockDelegate : public CrostiniUnsupportedActionNotifier::Delegate {
               RemoveTabletModeObserver,
               (ash::TabletModeObserver * observer),
               (override));
+  MOCK_METHOD(void,
+              AddInputMethodObserver,
+              (chromeos::input_method::InputMethodManager::Observer * observer),
+              (override));
+  MOCK_METHOD(void,
+              RemoveInputMethodObserver,
+              (chromeos::input_method::InputMethodManager::Observer * observer),
+              (override));
 };
 
+namespace {
+constexpr char supported_ime_id[] =
+    "_comp_ime_jkghodnilhceideoidjikpgommlajknkxkb:am:phonetic:arm";
+constexpr char unsupported_ime_id[] =
+    "_comp_ime_jkghodnilhceideoidjikpgommlajknkvkd_ethi";
+const InputMethodDescriptor
+    supported(supported_ime_id, {}, {}, {}, {}, {}, {}, {});
+const InputMethodDescriptor
+    unsupported(unsupported_ime_id, {}, {}, {}, {}, {}, {}, {});
+}  // namespace
+
 class CrostiniUnsupportedActionNotifierTest
-    : public testing::TestWithParam<std::tuple<bool, bool>> {
+    : public testing::TestWithParam<std::tuple<bool, bool, bool>> {
  public:
   CrostiniUnsupportedActionNotifierTest()
       : notifier(std::make_unique<NiceMock<MockDelegate>>()) {}
@@ -57,42 +84,76 @@ class CrostiniUnsupportedActionNotifierTest
     // RTTI so have to use a static cast.
     return static_cast<NiceMock<MockDelegate>&>(*ptr);
   }
+
   bool is_tablet_mode() const { return std::get<0>(GetParam()); }
   bool is_crostini_focused() const { return std::get<1>(GetParam()); }
+  bool is_ime_unsupported() const { return std::get<2>(GetParam()); }
+  InputMethodDescriptor ime_descriptor() const {
+    return is_ime_unsupported() ? unsupported : supported;
+  }
 
+  static bool IsIMEToast(const ash::ToastData& data) {
+    return data.id.compare(0, 3, "IME") == 0;
+  }
+
+  static bool IsVKToast(const ash::ToastData& data) {
+    return data.id.compare(0, 2, "VK") == 0;
+  }
+
+  void SetExpectations(bool show_tablet_toast, bool show_ime_toast) {
+    int num_tablet_toasts = show_tablet_toast ? 1 : 0;
+    int num_ime_toasts = show_ime_toast ? 1 : 0;
+
+    EXPECT_CALL(get_delegate(), IsInTabletMode)
+        .WillRepeatedly(Return(is_tablet_mode()));
+    EXPECT_CALL(get_delegate(), IsFocusedWindowCrostini)
+        .WillRepeatedly(Return(is_crostini_focused()));
+    EXPECT_CALL(get_delegate(), GetCurrentInputMethod)
+        .WillRepeatedly(Return(ime_descriptor()));
+    ON_CALL(get_delegate(), GetLocalizedDisplayName).WillByDefault(Return(""));
+
+    EXPECT_CALL(get_delegate(), ShowToast(Truly(IsVKToast)))
+        .Times(num_tablet_toasts);
+    EXPECT_CALL(get_delegate(), ShowToast(Truly(IsIMEToast)))
+        .Times(num_ime_toasts);
+  }
   CrostiniUnsupportedActionNotifier notifier;
 };
 
 TEST_P(CrostiniUnsupportedActionNotifierTest,
-       ToastShownOnceOnlyWhenEnteringTabletModeWhileCrostiniAppFocused) {
-  EXPECT_CALL(get_delegate(), IsInTabletMode)
-      .WillRepeatedly(Return(is_tablet_mode()));
-  EXPECT_CALL(get_delegate(), IsFocusedWindowCrostini)
-      .WillRepeatedly(Return(is_crostini_focused()));
-  EXPECT_CALL(get_delegate(), ShowToast(_))
-      .Times((is_tablet_mode() && is_crostini_focused()) ? 1 : 0);
+       ToastShownOnceOnlyWhenEnteringTabletMode) {
+  bool show_tablet_toast = is_tablet_mode() && is_crostini_focused();
+  bool show_ime_toast = false;
+  SetExpectations(show_tablet_toast, show_ime_toast);
 
-  notifier.OnTabletModeStarted();
   notifier.OnTabletModeStarted();
   notifier.OnTabletModeStarted();
 }
 
 TEST_P(CrostiniUnsupportedActionNotifierTest,
-       ToastShownOnceOnlyWhenFocusingCrostiniWhileInTabletMode) {
-  EXPECT_CALL(get_delegate(), IsInTabletMode)
-      .WillRepeatedly(Return(is_tablet_mode()));
-  EXPECT_CALL(get_delegate(), IsFocusedWindowCrostini)
-      .WillRepeatedly(Return(is_crostini_focused()));
-  EXPECT_CALL(get_delegate(), ShowToast(_))
-      .Times((is_tablet_mode() && is_crostini_focused()) ? 1 : 0);
+       ToastShownOnceOnlyWhenChangingIME) {
+  bool show_tablet_toast = false;
+  bool show_ime_toast = is_ime_unsupported() && is_crostini_focused();
 
-  notifier.OnWindowFocused(nullptr, nullptr);
-  notifier.OnWindowFocused(nullptr, nullptr);
-  notifier.OnWindowFocused(nullptr, nullptr);
+  SetExpectations(show_tablet_toast, show_ime_toast);
+
+  notifier.InputMethodChanged({}, {}, {});
+  notifier.InputMethodChanged({}, {}, {});
+}
+
+TEST_P(CrostiniUnsupportedActionNotifierTest,
+       ToastsShownOnceOnlyWhenFocusingCrostiniApp) {
+  bool show_tablet_toast = is_tablet_mode() && is_crostini_focused();
+  bool show_ime_toast = is_ime_unsupported() && is_crostini_focused();
+
+  SetExpectations(show_tablet_toast, show_ime_toast);
+
+  notifier.OnWindowFocused({}, {});
+  notifier.OnWindowFocused({}, {});
 }
 
 INSTANTIATE_TEST_CASE_P(CrostiniUnsupportedActionNotifierTestCombination,
                         CrostiniUnsupportedActionNotifierTest,
-                        ::testing::Combine(Bool(), Bool()));
+                        Combine(Bool(), Bool(), Bool()));
 
 }  // namespace crostini

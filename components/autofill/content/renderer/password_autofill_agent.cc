@@ -1433,7 +1433,7 @@ void PasswordAutofillAgent::FillUsingRendererIDs(
   }
 
   FillUserNameAndPassword(username_element, password_element, form_data,
-                          &field_data_manager_, logger.get());
+                          logger.get());
 }
 
 // mojom::PasswordAutofillAgent:
@@ -1472,7 +1472,7 @@ void PasswordAutofillAgent::FillPasswordForm(
             ? element
             : web_input_to_password_info_[element].password_field;
     FillUserNameAndPassword(username_element, password_element, form_data,
-                            &field_data_manager_, logger.get());
+                            logger.get());
   }
 }
 
@@ -1737,7 +1737,6 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     WebInputElement username_element,
     WebInputElement password_element,
     const PasswordFormFillData& fill_data,
-    FieldDataManager* field_data_manager,
     RendererSavePasswordProgressLogger* logger) {
   if (logger)
     logger->LogMessage(Logger::STRING_FILL_USERNAME_AND_PASSWORD_METHOD);
@@ -1838,43 +1837,23 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
       IsElementAutocompletable(username_element)) {
     if (!username.empty() && (username_element.Value().IsEmpty() ||
                               prefilled_placeholder_username)) {
-      username_element.SetSuggestedValue(WebString::FromUTF16(username));
-      gatekeeper_.RegisterElement(&username_element);
+      AutofillField(username, username_element);
       if (prefilled_placeholder_username) {
         LogPrefilledUsernameFillOutcome(
             PrefilledUsernameFillOutcome::
                 kPrefilledPlaceholderUsernameOverridden);
       }
     }
-    field_data_manager->UpdateFieldDataMap(
-        username_element, username,
-        FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
     username_element.SetAutofillState(WebAutofillState::kAutofilled);
     if (logger)
       logger->LogElementName(Logger::STRING_USERNAME_FILLED, username_element);
   }
 
-  // Wait to fill in the password until a user gesture occurs. This is to make
-  // sure that we do not fill in the DOM with a password until we believe the
-  // user is intentionally interacting with the page.
-  if (password_element.Value().Utf16() != password)
-    password_element.SetSuggestedValue(WebString::FromUTF16(password));
-  field_data_manager->UpdateFieldDataMap(
-      password_element, password, FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
-  gatekeeper_.RegisterElement(&password_element);
-  password_element.SetAutofillState(WebAutofillState::kAutofilled);
+  AutofillField(password, password_element);
 
   if (logger)
     logger->LogElementName(Logger::STRING_PASSWORD_FILLED, password_element);
 
-  if (!username.empty() && !username_element.IsNull()) {
-    autofilled_elements_cache_.emplace(
-        username_element.UniqueRendererFormControlId(),
-        WebString::FromUTF16(username));
-  }
-  autofilled_elements_cache_.emplace(
-      password_element.UniqueRendererFormControlId(),
-      WebString::FromUTF16(password));
   LogFirstFillingResult(fill_data, FillingResult::kSuccess);
   return true;
 }
@@ -2109,6 +2088,21 @@ void PasswordAutofillAgent::TryFixAutofilledForm(
     if (cached_value != element.SuggestedValue())
       element.SetSuggestedValue(cached_value);
   }
+}
+
+void PasswordAutofillAgent::AutofillField(const base::string16& value,
+                                          WebInputElement field) {
+  if (field.Value().Utf16() != value)
+    field.SetSuggestedValue(WebString::FromUTF16(value));
+  field.SetAutofillState(WebAutofillState::kAutofilled);
+  // Wait to fill until a user gesture occurs. This is to make sure that we do
+  // not fill in the DOM with a password until we believe the user is
+  // intentionally interacting with the page.
+  gatekeeper_.RegisterElement(&field);
+  field_data_manager_.UpdateFieldDataMap(
+      field, value, FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
+  autofilled_elements_cache_.emplace(field.UniqueRendererFormControlId(),
+                                     WebString::FromUTF16(value));
 }
 
 }  // namespace autofill

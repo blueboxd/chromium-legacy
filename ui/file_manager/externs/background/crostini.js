@@ -10,10 +10,16 @@
 function Crostini() {}
 
 /**
+ * Initialize enabled settings.
+ * Must be done after loadTimeData is available.
+ */
+Crostini.prototype.initEnabled = function() {};
+
+/**
  * Initialize Volume Manager.
  * @param {!VolumeManager} volumeManager
  */
-Crostini.prototype.init = function(volumeManager) {};
+Crostini.prototype.initVolumeManager = function(volumeManager) {};
 
 /**
  * Register for any shared path changes.

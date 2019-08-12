@@ -99,6 +99,11 @@ bool WebAppRegistrar::WasExternalAppUninstalledByUser(
   return false;
 }
 
+bool WebAppRegistrar::WasInstalledByUser(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 base::Optional<AppId> WebAppRegistrar::FindAppWithUrlInScope(
     const GURL& url) const {
   NOTIMPLEMENTED();

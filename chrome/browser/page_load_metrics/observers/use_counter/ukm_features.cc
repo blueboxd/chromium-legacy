@@ -117,6 +117,8 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kLazyLoadFrameLoadingAttributeEager,
           WebFeature::kLazyLoadImageLoadingAttributeLazy,
           WebFeature::kLazyLoadImageLoadingAttributeEager,
+          WebFeature::kRequestedFileSystemTemporary,
+          WebFeature::kRequestedFileSystemPersistent,
       }));
   return *opt_in_features;
 }

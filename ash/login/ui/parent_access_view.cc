@@ -458,8 +458,12 @@ ParentAccessView::Callbacks::~Callbacks() = default;
 
 ParentAccessView::ParentAccessView(const AccountId& account_id,
                                    const Callbacks& callbacks,
-                                   ParentAccessRequestReason reason)
-    : callbacks_(callbacks), account_id_(account_id), request_reason_(reason) {
+                                   ParentAccessRequestReason reason,
+                                   base::Time validation_time)
+    : callbacks_(callbacks),
+      account_id_(account_id),
+      request_reason_(reason),
+      validation_time_(validation_time) {
   DCHECK(callbacks.on_finished);
 
   // Main view contains all other views aligned vertically and centered.
@@ -714,7 +718,8 @@ void ParentAccessView::SubmitCode() {
 
   bool result =
       Shell::Get()->login_screen_controller()->ValidateParentAccessCode(
-          account_id_, *code);
+          account_id_, *code,
+          validation_time_.is_null() ? base::Time::Now() : validation_time_);
 
   if (result) {
     VLOG(1) << "Parent access code successfully validated";

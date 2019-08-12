@@ -56,6 +56,9 @@ class AppRegistrar {
   // considered external apps), then this will return true.
   virtual bool WasExternalAppUninstalledByUser(const AppId& app_id) const = 0;
 
+  // Returns true if the app was installed by user, false if default installed.
+  virtual bool WasInstalledByUser(const AppId& app_id) const = 0;
+
   // Returns the AppIds and URLs of apps externally installed from
   // |install_source|.
   virtual std::map<AppId, GURL> GetExternallyInstalledApps(

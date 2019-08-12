@@ -383,7 +383,8 @@ class CONTENT_EXPORT BackgroundSyncManager
       const url::Origin& origin,
       base::OnceClosure callback,
       base::TimeDelta delay);
-  void EventCompleteDidStore(int64_t service_worker_id,
+  void EventCompleteDidStore(blink::mojom::BackgroundSyncType sync_type,
+                             int64_t service_worker_id,
                              base::OnceClosure callback,
                              blink::ServiceWorkerStatusCode status_code);
 
@@ -424,6 +425,13 @@ class CONTENT_EXPORT BackgroundSyncManager
   blink::ServiceWorkerStatusCode CanEmulateSyncEvent(
       scoped_refptr<ServiceWorkerVersion> active_version);
 
+  // Read or update |num_firing_registrations_one_shot_| or
+  // |num_firing_registrations_periodic_| based on |sync_type|.
+  int GetNumFiringRegistrations(blink::mojom::BackgroundSyncType sync_type);
+  void UpdateNumFiringRegistrationsBy(
+      blink::mojom::BackgroundSyncType sync_type,
+      int to_add);
+
   // Map from service worker registration id to its Background Sync
   // registrations.
   std::map<int64_t, BackgroundSyncRegistrations> active_registrations_;
@@ -439,7 +447,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   bool disabled_;
 
   // The number of registrations currently in the firing state.
-  int num_firing_registrations_;
+  int num_firing_registrations_one_shot_;
+  int num_firing_registrations_periodic_;
 
   base::CancelableOnceClosure delayed_one_shot_sync_task_;
   base::CancelableOnceClosure delayed_periodic_sync_task_;

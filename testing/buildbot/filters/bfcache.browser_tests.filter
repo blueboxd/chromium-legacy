@@ -44,3 +44,11 @@
 -TabManagerTest.TabFreezeAndMakeVisible
 -TabManagerTest.TabFreezeAndUnfreeze
 -TabManagerTest.TabFreezeAndUrgentDiscard
+
+# An extension is non-idle because its option page is opened. When it is
+# navigated to about:blank, it should become idle again. This doesn't happen
+# with the BackForwardCache, because the old page is still there.
+-ExtensionCrxInstallerTest.InstallDelayedUntilNextUpdate
+
+# Very flaky. Can't reproduce locally, it always succeed.
+-SystemNetworkContextManagerMaxConnectionsPerProxyBrowsertest.MaxConnectionsPerProxy

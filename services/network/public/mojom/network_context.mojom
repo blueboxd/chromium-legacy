@@ -11,6 +11,7 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/address_list.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
+import "services/network/public/mojom/default_credentials.mojom";
 import "services/network/public/mojom/cors_origin_pattern.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
@@ -253,6 +254,11 @@ struct NetworkContextParams {
 
   // If true, idle sockets won't be closed when memory pressure happens.
   bool disable_idle_sockets_close_on_memory_pressure = false;
+
+  // Whether authentication APIs that support fallback to the default account
+  // on the system can be used without specifying an account.
+  DefaultCredentials allow_default_credentials =
+      DefaultCredentials.ALLOW_DEFAULT_CREDENTIALS;
 
   // SSL configuration. |initial_proxy_config| is the initial SSL configuration
   // to use. If nullptr, uses the default configuration. Updated SSL

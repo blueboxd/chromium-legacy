@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="acquire-in-breakable-div-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 #container {
@@ -28,7 +29,7 @@
 <script>
 async function runTest() {
   const container = document.getElementById("container");
-  await container.displayLock.acquire({ timeout: Infinity });
+  await setInvisible(container);
   takeScreenshot();
 }
 

@@ -6,7 +6,7 @@
 // Note: webview_event_manager.js is already included by saml_handler.js.
 
 /**
- * @fileoverview An UI component to authenciate to Chrome. The component hosts
+ * @fileoverview An UI component to authenticate to Chrome. The component hosts
  * IdP web pages in a webview. A client who is interested in monitoring
  * authentication events should subscribe itself via addEventListener(). After
  * initialization, call {@code load} to start the authentication flow.
@@ -109,6 +109,9 @@ cr.define('cr.login', function() {
     'email',
     'readOnlyEmail',
     'realm',
+    // If the authentication is done via external IdP, 'startsOnSamlPage'
+    // indicates whether the flow should start on the IdP page.
+    'startsOnSamlPage',
   ];
 
 
@@ -455,12 +458,17 @@ cr.define('cr.login', function() {
 
       this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
       this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
+
+      if (data.startsOnSamlPage) {
+        this.samlHandler_.startsOnSamlPage = true;
+      }
       // Don't block insecure content for desktop flow because it lands on
       // http. Otherwise, block insecure content as long as gaia is https.
       this.samlHandler_.blockInsecureContent = authMode != AuthMode.DESKTOP &&
           this.idpOrigin_.startsWith('https://');
       this.samlHandler_.extractSamlPasswordAttributes =
           data.extractSamlPasswordAttributes;
+
       this.needPassword = !('needPassword' in data) || data.needPassword;
 
       this.webview_.contextMenus.onShow.addListener(function(e) {

@@ -99,6 +99,7 @@ class Remote {
 
   // Shorthand form of |get()|. See above.
   typename Interface::Proxy_* operator->() const { return get(); }
+  typename Interface::Proxy_& operator*() const { return *get(); }
 
   // Indicates whether this Remote is bound and thus can issue Interface method
   // calls via the above accessors.

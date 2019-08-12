@@ -154,19 +154,13 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
                           ? options->timeout()
                           : kDefaultLockTimeoutMs;
 
-  if (IsLocked()) {
-    // If we're locked, the activatable flag might change the activation
-    // blocking lock count. If we're not locked, the activation blocking lock
-    // count will be updated when we changed the state.
-    state_.UpdateActivationBlockingCount(activatable_,
-                                         options && options->activatable());
-  }
-  activatable_ = options && options->activatable();
+  // We always reschedule a timeout task even if we're not starting a new
+  // acquire. The reason for this is that the last acquire dictates the timeout
+  // interval. Note that the following call cancels any existing timeout tasks.
+  RescheduleTimeoutTask(timeout_ms);
 
-  // If we're acquiring something that isn't currently locked, we need to recalc
-  // the layout size. Otherwise if we're re-acquiring, we only need to recalc if
-  // the locked size has changed.
-  bool should_recalc_layout_size = !IsLocked();
+  // We need to recalc if the locked size has changed.
+  bool should_recalc_layout_size = false;
   if (options && options->hasSize()) {
     auto parsed_size = ParseAndVerifySize(options->size());
     if (!parsed_size)
@@ -181,11 +175,6 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
     locked_content_logical_size_ = LayoutSize();
   }
 
-  // We always reschedule a timeout task even if we're not starting a new
-  // acquire. The reason for this is that the last acquire dictates the timeout
-  // interval. Note that the following call cancels any existing timeout tasks.
-  RescheduleTimeoutTask(timeout_ms);
-
   if (should_recalc_layout_size && ConnectedToView()) {
     if (auto* layout_object = element_->GetLayoutObject()) {
       layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
@@ -193,6 +182,8 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
     }
     ScheduleAnimation();
   }
+
+  SetActivatable(options && options->activatable());
 
   if (acquire_resolver_)
     return acquire_resolver_->Promise();
@@ -209,39 +200,60 @@ ScriptPromise DisplayLockContext::acquire(ScriptState* script_state,
   // property is false).
   FinishCommitResolver(kResolve);
 
+  StartAcquire();
+
+  // If we're not connected, resolve immediately.
+  if (!ConnectedToView())
+    return GetResolvedPromise(script_state);
+
+  MakeResolver(script_state, &acquire_resolver_);
+  return acquire_resolver_->Promise();
+}
+
+void DisplayLockContext::SetActivatable(bool activatable) {
+  if (IsLocked()) {
+    // If we're locked, the activatable flag might change the activation
+    // blocking lock count. If we're not locked, the activation blocking lock
+    // count will be updated when we changed the state.
+    state_.UpdateActivationBlockingCount(activatable_, activatable);
+  }
+  activatable_ = activatable;
+}
+
+void DisplayLockContext::StartAcquire() {
+  DCHECK(!IsLocked());
   update_budget_.reset();
   state_ = kLocked;
 
   // If we're already connected then we need to ensure that we update our style
   // to check for containment later, layout size based on the options, and
   // also clear the painted output.
-  if (ConnectedToView()) {
-    element_->SetNeedsStyleRecalc(
-        kLocalStyleChange,
-        StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
-    MakeResolver(script_state, &acquire_resolver_);
+  if (!ConnectedToView())
+    return;
+
+  element_->SetNeedsStyleRecalc(
+      kLocalStyleChange,
+      StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
+  ScheduleAnimation();
+
+  auto* layout_object = element_->GetLayoutObject();
+  if (!layout_object) {
     is_horizontal_writing_mode_ = true;
-    if (auto* layout_object = element_->GetLayoutObject()) {
-      is_horizontal_writing_mode_ = layout_object->IsHorizontalWritingMode();
-      // GraphicsLayer collection would normally skip layers if paint is blocked
-      // by display-locking (see: CollectDrawableLayersForLayerListRecursively
-      // in LocalFrameView). However, if we don't trigger this collection, then
-      // we might use the cached result instead. In order to ensure we skip the
-      // newly locked layers, we need to set |need_graphics_layer_collection_|
-      // before marking the layer for repaint.
-      needs_graphics_layer_collection_ = true;
-      MarkPaintLayerNeedsRepaint();
-    }
-    // TODO(vmpstr): This needs to be set after invalidation above, since we
-    // want the object to layout once. After the changes to separate self and
-    // child layout, this would no longer be required and we can set the
-    // container as locked earlier.
-    state_ = kLocked;
-    return acquire_resolver_->Promise();
+    return;
   }
 
-  // Otherwise (if we're not connected), resolve immediately.
-  return GetResolvedPromise(script_state);
+  layout_object->SetNeedsLayoutAndPrefWidthsRecalc(
+      layout_invalidation_reason::kDisplayLock);
+
+  is_horizontal_writing_mode_ = layout_object->IsHorizontalWritingMode();
+  // GraphicsLayer collection would normally skip layers if paint is blocked
+  // by display-locking (see: CollectDrawableLayersForLayerListRecursively
+  // in LocalFrameView). However, if we don't trigger this collection, then
+  // we might use the cached result instead. In order to ensure we skip the
+  // newly locked layers, we need to set |need_graphics_layer_collection_|
+  // before marking the layer for repaint.
+  needs_graphics_layer_collection_ = true;
+  MarkPaintLayerNeedsRepaint();
 }
 
 ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
@@ -517,6 +529,10 @@ void DisplayLockContext::CommitForActivation() {
   DCHECK(ConnectedToView());
   DCHECK(ShouldCommitForActivation());
   StartCommit();
+  // Since setting the attribute might trigger a commit if we are still locked,
+  // we set it after we start the commit.
+  if (element_->hasAttribute(html_names::kRendersubtreeAttr))
+    element_->setAttribute(html_names::kRendersubtreeAttr, "visible");
 }
 
 bool DisplayLockContext::ShouldCommitForActivation() const {
@@ -555,6 +571,7 @@ void DisplayLockContext::NotifyForcedUpdateScopeEnded() {
 }
 
 void DisplayLockContext::StartCommit() {
+  DCHECK(IsLocked());
   // Since we are starting a commit, cancel the timeout task.
   CancelTimeoutTask();
   if (CleanupAndRejectCommitIfNotConnected())

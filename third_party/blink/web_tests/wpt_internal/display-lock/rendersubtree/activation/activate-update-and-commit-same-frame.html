@@ -7,6 +7,7 @@
 
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="../resources/utils.js"></script>
 
 <style>
 .spacer {
@@ -35,7 +36,7 @@ async_test((t) => {
   async function runTest() {
     let container = document.getElementById("container");
 
-    let acquire_promise = container.displayLock.acquire({ timeout: Infinity, activatable: true });
+    let acquire_promise = setInvisibleActivatable(container);
     await acquire_promise;
 
     target.scrollIntoView();

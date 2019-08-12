@@ -92,6 +92,33 @@
             ]
         }
     ],
+    "AddToHomescreenMessaging": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "InstallApp",
+                    "params": {
+                        "include_no_download_required": "false"
+                    },
+                    "enable_features": [
+                        "AddToHomescreenMessaging"
+                    ]
+                },
+                {
+                    "name": "InstallAppNoDownloadRequired",
+                    "params": {
+                        "include_no_download_required": "true"
+                    },
+                    "enable_features": [
+                        "AddToHomescreenMessaging"
+                    ]
+                }
+            ]
+        }
+    ],
     "AllowClientHintsToThirdParty": [
         {
             "platforms": [

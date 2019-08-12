@@ -857,6 +857,8 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
       if (GetEnterpriseDomain(&domain))
         user_info.public_account_info->enterprise_domain = domain;
 
+      user_info.public_account_info->using_saml = user->using_saml();
+
       const std::vector<std::string>* public_session_recommended_locales =
           public_session_recommended_locales_.find(account_id) ==
                   public_session_recommended_locales_.end()

@@ -16,6 +16,10 @@ extern const base::Feature kClickToCallReceiver;
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 // Feature to allow click to call gets processed on desktop.
 extern const base::Feature kClickToCallUI;
+
+// Feature to show click to call in context menu when selected text is a phone
+// number.
+extern const base::Feature kClickToCallContextMenuForSelectedText;
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #endif  // CHROME_BROWSER_SHARING_CLICK_TO_CALL_FEATURE_H_

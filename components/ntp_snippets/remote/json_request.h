@@ -16,6 +16,7 @@
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/status.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
@@ -73,8 +74,7 @@ class JsonRequest {
     // Builds a Request object that contains all data to fetch new snippets.
     std::unique_ptr<JsonRequest> Build() const;
 
-    Builder& SetAuthentication(const std::string& account_id,
-                               const std::string& auth_header);
+    Builder& SetAuthentication(const std::string& auth_header);
     Builder& SetCreationTime(base::TimeTicks creation_time);
     // The language_histogram borrowed from the fetcher needs to stay alive
     // until the request body is built.
@@ -126,7 +126,6 @@ class JsonRequest {
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
     // Optional properties.
-    std::string obfuscated_gaia_id_;
     std::string user_class_;
     std::string display_capability_;
     const language::UrlLanguageHistogram* language_histogram_;

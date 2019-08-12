@@ -90,7 +90,8 @@ void LoginBigUserView::ShowParentAccessView() {
   DCHECK(IsChildAccountUser(auth_user_->current_user()));
   parent_access_ = new ParentAccessView(
       auth_user_->current_user().basic_user_info.account_id,
-      parent_access_callbacks_, ParentAccessRequestReason::kUnlockTimeLimits);
+      parent_access_callbacks_, ParentAccessRequestReason::kUnlockTimeLimits,
+      base::Time());
   RemoveChildView(auth_user_);
   AddChildView(parent_access_);
   RequestFocus();

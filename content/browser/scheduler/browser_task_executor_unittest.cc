@@ -18,7 +18,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/scheduler/browser_io_task_environment.h"
+#include "content/browser/scheduler/browser_io_thread_delegate.h"
 #include "content/browser/scheduler/browser_task_queues.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -179,7 +179,7 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
               QueueType::kDefault));
       BrowserTaskExecutor::CreateForTesting(
           std::move(browser_ui_thread_scheduler),
-          std::make_unique<BrowserIOTaskEnvironment>());
+          std::make_unique<BrowserIOThreadDelegate>());
     }
   };
 

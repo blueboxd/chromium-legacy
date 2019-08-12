@@ -392,13 +392,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // This function attempts to fill |username_element| and |password_element|
   // with values from |fill_data|. The |username_element| and |password_element|
   // will only have the suggestedValue set. If a match is found, return true and
-  // |field_data_manager| will be modified with the autofilled credentials and
-  // |FieldPropertiesFlags::AUTOFILLED| flag. Returns true if the password is
-  // filled.
+  // Returns true if the password is filled.
   bool FillUserNameAndPassword(blink::WebInputElement username_element,
                                blink::WebInputElement password_element,
                                const PasswordFormFillData& fill_data,
-                               FieldDataManager* field_data_manager,
                                RendererSavePasswordProgressLogger* logger);
 
   // Logs whether a username value that was prefilled by the website was
@@ -452,6 +449,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Tries to restore |control_elements| values with cached values.
   void TryFixAutofilledForm(
       std::vector<blink::WebFormControlElement>* control_elements) const;
+
+  // Autofills |field| with |value| and updates |gatekeeper_|,
+  // |field_data_manager_|, |autofilled_elements_cache_|. |field| should be
+  // non-null.
+  void AutofillField(const base::string16& value, blink::WebInputElement field);
 
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;

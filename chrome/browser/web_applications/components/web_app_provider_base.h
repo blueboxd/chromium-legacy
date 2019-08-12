@@ -17,6 +17,7 @@ class PendingAppManager;
 class InstallManager;
 class AppRegistrar;
 class WebAppPolicyManager;
+class WebAppAudioFocusIdMap;
 class WebAppUiManager;
 
 class WebAppProviderBase : public KeyedService {
@@ -38,6 +39,8 @@ class WebAppProviderBase : public KeyedService {
   virtual WebAppPolicyManager& policy_manager() = 0;
 
   virtual WebAppUiManager& ui_manager() = 0;
+
+  virtual WebAppAudioFocusIdMap& audio_focus_id_map() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppProviderBase);
 };

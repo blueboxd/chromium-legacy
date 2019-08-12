@@ -24272,6 +24272,8 @@ Called by update_net_error_codes.py.-->
   <int value="2993" label="ContactsManagerSelect"/>
   <int value="2994" label="V8MediaSession_SetPositionState_Method"/>
   <int value="2995" label="CSSValueOverflowOverlay"/>
+  <int value="2996" label="RequestedFileSystemTemporary"/>
+  <int value="2997" label="RequestedFileSystemPersistent"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34857,6 +34859,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1158993534" label="PrintScaling:enabled"/>
   <int value="-1156179600" label="OmniboxRichEntitySuggestions:enabled"/>
   <int value="-1155543191" label="CopylessPaste:disabled"/>
+  <int value="-1154819618" label="FilesNG:enabled"/>
   <int value="-1154343236" label="VrBrowsingTabsView:disabled"/>
   <int value="-1151766565" label="enable-fullscreen-tab-detaching"/>
   <int value="-1145905507" label="SendTabToSelfWhenSignedIn:disabled"/>
@@ -35246,6 +35249,8 @@ from previous Chrome versions.
   <int value="-619740638" label="ListAllDisplayModes:enabled"/>
   <int value="-617452890" label="media-router"/>
   <int value="-616818899" label="SameSiteByDefaultCookies:enabled"/>
+  <int value="-614223913"
+      label="ClickToCallContextMenuForSelectedText:enabled"/>
   <int value="-612633819" label="NotificationScrollBar:disabled"/>
   <int value="-612480090" label="FasterLocationReload:enabled"/>
   <int value="-610411643" label="enable-printer-app-search"/>
@@ -36840,6 +36845,7 @@ from previous Chrome versions.
   <int value="1689183477" label="enable-merge-key-char-events"/>
   <int value="1690837904" label="save-previous-document-resources"/>
   <int value="1691568199" label="AndroidSpellCheckerNonLowEnd:disabled"/>
+  <int value="1693094211" label="FilesNG:disabled"/>
   <int value="1694766748"
       label="AutofillRestrictUnownedFieldsToFormlessCheckout:enabled"/>
   <int value="1694798717" label="NewNetErrorPageUI:enabled"/>
@@ -36907,6 +36913,8 @@ from previous Chrome versions.
   <int value="1789517771" label="MacV2Sandbox:enabled"/>
   <int value="1789793147" label="HTTPSServerPreviewsUsingURLLoader:disabled"/>
   <int value="1792609232" label="NTPShortcuts:enabled"/>
+  <int value="1793023585"
+      label="ClickToCallContextMenuForSelectedText:disabled"/>
   <int value="1794057460" label="AutofillProfileClientValidation:enabled"/>
   <int value="1795186324" label="SyncPseudoUSSExtensionSettings:disabled"/>
   <int value="1798347197"

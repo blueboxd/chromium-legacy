@@ -78,6 +78,12 @@ void DOMWindowFileSystem::webkitRequestFileSystem(
     return;
   }
 
+  if (file_system_type == mojom::blink::FileSystemType::kTemporary) {
+    UseCounter::Count(document, WebFeature::kRequestedFileSystemTemporary);
+  } else if (file_system_type == mojom::blink::FileSystemType::kPersistent) {
+    UseCounter::Count(document, WebFeature::kRequestedFileSystemPersistent);
+  }
+
   auto success_callback_wrapper =
       AsyncCallbackHelper::SuccessCallback<DOMFileSystem>(success_callback);
 

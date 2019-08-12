@@ -7,6 +7,7 @@
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"

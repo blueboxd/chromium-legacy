@@ -2591,6 +2591,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"file-manager-piex-wasm", flag_descriptions::kFileManagerPiexWasmName,
      flag_descriptions::kFileManagerPiexWasmDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableFileManagerPiexWasm)},
+    {"files-ng", flag_descriptions::kFilesNGName,
+     flag_descriptions::kFilesNGDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesNG)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)
@@ -3619,6 +3622,12 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+    {"click-to-call-context-menu-selected-text",
+     flag_descriptions::kClickToCallContextMenuForSelectedTextName,
+     flag_descriptions::kClickToCallContextMenuForSelectedTextDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(kClickToCallContextMenuForSelectedText)},
+
     {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
      flag_descriptions::kClickToCallUIDescription, kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(kClickToCallUI)},

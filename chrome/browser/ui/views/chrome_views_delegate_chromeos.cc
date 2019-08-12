@@ -7,7 +7,7 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

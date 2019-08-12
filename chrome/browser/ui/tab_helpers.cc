@@ -141,7 +141,8 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "extensions/browser/view_type_utils.h"
 #endif
 
@@ -338,7 +339,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::TabHelper::CreateForWebContents(web_contents);
-  web_app::WebAppProvider::CreateTabHelper(web_contents);
+  if (web_app::AreWebAppsEnabled(profile))
+    web_app::WebAppTabHelper::CreateForWebContents(web_contents);
   if (SiteEngagementService::IsEnabled())
     web_app::WebAppMetrics::Get(profile);
 #endif

@@ -265,7 +265,8 @@ class QuicProxyClientSocketTest
         new HttpAuthController(
             HttpAuth::AUTH_PROXY,
             GURL("https://" + proxy_host_port_.ToString()), &http_auth_cache_,
-            http_auth_handler_factory_.get(), host_resolver_.get())));
+            http_auth_handler_factory_.get(), host_resolver_.get(),
+            HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS)));
 
     session_->StartReading();
   }

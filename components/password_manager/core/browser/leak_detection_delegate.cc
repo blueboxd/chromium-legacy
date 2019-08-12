@@ -10,6 +10,8 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory_impl.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace password_manager {
@@ -25,6 +27,11 @@ LeakDetectionDelegate::~LeakDetectionDelegate() = default;
 void LeakDetectionDelegate::StartLeakCheck(const autofill::PasswordForm& form) {
   if (client_->IsIncognito())
     return;
+
+  if (!client_->GetPrefs()->GetBoolean(
+          password_manager::prefs::kPasswordLeakDetectionEnabled))
+    return;
+
   leak_check_ = leak_factory_->TryCreateLeakCheck(
       this, client_->GetIdentityManager(), client_->GetURLLoaderFactory());
   if (leak_check_)
@@ -52,6 +59,10 @@ void LeakDetectionDelegate::OnError(LeakDetectionError error) {
         break;
       case LeakDetectionError::kTokenRequestFailure:
         logger.LogMessage(Logger::STRING_LEAK_DETECTION_TOKEN_REQUEST_ERROR);
+        break;
+      case LeakDetectionError::kInvalidServerResponse:
+        logger.LogMessage(
+            Logger::STRING_LEAK_DETECTION_INVALID_SERVER_RESPONSE_ERROR);
         break;
     }
   }

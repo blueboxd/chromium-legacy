@@ -27,6 +27,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth_cache.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/http/http_stream_factory.h"
 #include "net/net_buildflags.h"
 #include "net/quic/quic_stream_factory.h"
@@ -147,6 +148,10 @@ class NET_EXPORT HttpNetworkSession {
 
     // If true, idle sockets won't be closed when memory pressure happens.
     bool disable_idle_sockets_close_on_memory_pressure;
+
+    // If authentication APIs that support ambient authentication are allowed
+    // to use the default credentials.
+    HttpAuthPreferences::DefaultCredentials allow_default_credentials;
   };
 
   // Structure with pointers to the dependencies of the HttpNetworkSession.

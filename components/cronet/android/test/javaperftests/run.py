@@ -54,6 +54,7 @@ REPOSITORY_ROOT = os.path.abspath(os.path.join(
 
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools', 'perf'))
 from core import path_util  # pylint: disable=wrong-import-position
+from core import benchmark_runner  # pylint: disable=wrong-import-position
 sys.path.append(path_util.GetTelemetryDir())
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'build', 'android'))
 sys.path.append(os.path.join(
@@ -70,7 +71,6 @@ import lighttpd_server
 from pylib import constants
 from telemetry import android
 from telemetry import benchmark
-from telemetry import benchmark_runner
 from telemetry import story
 from telemetry.value import scalar
 from telemetry.web_perf import timeline_based_measurement

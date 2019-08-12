@@ -6,6 +6,7 @@
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="lock-iframe-and-change-size-ref.html">
 <script src="/common/reftest-wait.js"></script>
+<script src="resources/utils.js"></script>
 
 <style>
 iframe {
@@ -16,7 +17,7 @@ iframe {
 
 <script>
 async function runTest() {
-  await document.getElementById("frame").displayLock.acquire({ timeout: Infinity });
+  await setInvisible(document.getElementById("frame"));
   document.getElementById("frame").height = 300;
   requestAnimationFrame(takeScreenshot);
 }

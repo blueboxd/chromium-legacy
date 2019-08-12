@@ -438,9 +438,16 @@ class RightPaneView : public NonAccessibleView,
       show_advanced_changed_by_user_ = true;
       Layout();
     } else if (sender == submit_button_) {
-      Shell::Get()->login_screen_controller()->LaunchPublicSession(
-          current_user_.basic_user_info.account_id,
-          selected_language_item_.value, selected_keyboard_item_.value);
+      // TODO(crbug.com/984021) change to LaunchSamlPublicSession which would
+      // take selected_language_item_.value, selected_keyboard_item_.value too.
+      if (current_user_.public_account_info->using_saml) {
+        Shell::Get()->login_screen_controller()->ShowGaiaSignin(
+            true /*can_close*/, current_user_.basic_user_info.account_id);
+      } else {
+        Shell::Get()->login_screen_controller()->LaunchPublicSession(
+            current_user_.basic_user_info.account_id,
+            selected_language_item_.value, selected_keyboard_item_.value);
+      }
     } else if (sender == language_selection_) {
       DCHECK(language_menu_view_);
       if (language_menu_view_->GetVisible()) {

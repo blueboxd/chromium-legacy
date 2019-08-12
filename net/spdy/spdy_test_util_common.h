@@ -25,6 +25,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_server_properties.h"
@@ -236,6 +237,7 @@ struct SpdySessionDependencies {
   bool http_09_on_non_default_ports_enabled;
   bool disable_idle_sockets_close_on_memory_pressure;
   bool enable_early_data;
+  HttpAuthPreferences::DefaultCredentials allow_default_credentials;
 };
 
 class SpdyURLRequestContext : public URLRequestContext {

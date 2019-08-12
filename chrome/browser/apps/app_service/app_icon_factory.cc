@@ -27,6 +27,7 @@
 #include "extensions/grit/extensions_browser_resources.h"
 #include "services/data_decoder/public/cpp/decode_image.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -116,7 +117,6 @@ void RunCallbackWithCompressedData(
 
 void RunCallbackWithCompressedDataFromExtension(
     const extensions::Extension* extension,
-    extensions::ExtensionResource ext_resource,
     int size_hint_in_dip,
     int default_icon_resource,
     bool is_placeholder_icon,
@@ -128,10 +128,21 @@ void RunCallbackWithCompressedDataFromExtension(
   // disk.
   //
   // For the kUncompressed case, RunCallbackWithUncompressedImage
-  // calls extensions::ImageLoader::LoadImageAsync, which already handles
-  // that distinction. We can't use LoadImageAsync here, because the
-  // caller has asked for compressed icons (i.e. PNG-formatted data), not
-  // uncompressed (i.e. a gfx::ImageSkia).
+  // calls extensions::ImageLoader::LoadImageAtEveryScaleFactorAsync, which
+  // already handles that distinction. We can't use
+  // LoadImageAtEveryScaleFactorAsync here, because the caller has asked for
+  // compressed icons (i.e. PNG-formatted data), not uncompressed
+  // (i.e. a gfx::ImageSkia).
+
+  const gfx::Size dip_size = gfx::Size(size_hint_in_dip, size_hint_in_dip);
+  float scale =
+      ui::GetScaleForScaleFactor(apps_util::GetPrimaryDisplayUIScaleFactor());
+  int size_hint_in_px = gfx::ScaleToFlooredSize(dip_size, scale).width();
+
+  extensions::ExtensionResource ext_resource =
+      extensions::IconsInfo::GetIconResource(extension, size_hint_in_px,
+                                             ExtensionIconSet::MATCH_BIGGER);
+
   if (extension && extension->location() == extensions::Manifest::COMPONENT) {
     int resource_id = 0;
     const extensions::ComponentExtensionResourceManager* manager =
@@ -274,10 +285,6 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
           ->extension_service()
           ->GetInstalledExtension(extension_id);
   if (extension) {
-    extensions::ExtensionResource ext_resource =
-        extensions::IconsInfo::GetIconResource(extension, size_hint_in_dip,
-                                               ExtensionIconSet::MATCH_BIGGER);
-
     switch (icon_compression) {
       case apps::mojom::IconCompression::kUnknown:
         break;
@@ -293,9 +300,8 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
 
       case apps::mojom::IconCompression::kCompressed: {
         RunCallbackWithCompressedDataFromExtension(
-            extension, std::move(ext_resource), size_hint_in_dip,
-            default_icon_resource, is_placeholder_icon, icon_effects,
-            std::move(callback));
+            extension, size_hint_in_dip, default_icon_resource,
+            is_placeholder_icon, icon_effects, std::move(callback));
         return;
       }
     }

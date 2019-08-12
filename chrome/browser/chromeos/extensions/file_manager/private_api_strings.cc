@@ -70,6 +70,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean("PLUGIN_VM_ENABLED",
                    plugin_vm::IsPluginVmEnabled(
                        Profile::FromBrowserContext(browser_context())));
+  dict->SetBoolean("FILES_NG_ENABLED",
+                   base::FeatureList::IsEnabled(chromeos::features::kFilesNG));
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
 
   return RespondNow(OneArgument(std::move(dict)));

@@ -192,6 +192,9 @@ if (is_win || is_android || is_chromeos) {
   }
 }
 
+assert(!(llvm_force_head_revision && use_goma),
+       "can't use goma with trunk clang")
+
 # default_include_dirs ---------------------------------------------------------
 #
 # This is a separate config so that third_party code (which would not use the
@@ -1049,6 +1052,16 @@ config("compiler_codegen") {
 
   if (is_nacl) {
     configs += [ "//build/config/nacl:compiler_codegen" ]
+  } else if (is_posix && !is_mac && !is_ios) {
+    if (current_cpu == "x86") {
+      if (is_clang) {
+        cflags += [
+          # Else building libyuv gives clang's register allocator issues,
+          # see llvm.org/PR15798 / crbug.com/233709
+          "-momit-leaf-frame-pointer",
+        ]
+      }
+    }
   }
 
   if (current_cpu == "arm64" && is_android) {
@@ -1097,7 +1110,8 @@ config("compiler_deterministic") {
   }
 
   # Makes builds independent of absolute file path.
-  if (symbol_level != 0 && is_clang && strip_absolute_paths_from_debug_symbols) {
+  if (symbol_level != 0 && is_clang &&
+      strip_absolute_paths_from_debug_symbols) {
     # If debug option is given, clang includes $cwd in debug info by default.
     # For such build, this flag generates reproducible obj files even we use
     # different build directory like "out/feature_a" and "out/feature_b" if
@@ -1504,12 +1518,12 @@ config("default_warnings") {
           # Ignore warnings about MSVC optimization pragmas.
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
           "-Wno-ignored-pragma-optimize",
-
-          # TODO(https://crbug.com/989932): Evaluate and possibly enable.
-          "-Wno-implicit-int-float-conversion",
         ]
         if (llvm_force_head_revision) {
           cflags += [
+            # TODO(https://crbug.com/989932): Evaluate and possibly enable.
+            "-Wno-implicit-int-float-conversion",
+
             # TODO(https://crbug.com/992458): Fix and re-enable. When rolling
             # past clang r368446, do *not* move this out of
             # llvm_force_head_revision -- we need to fix all instances before
@@ -1945,13 +1959,6 @@ config("default_stack_frames") {
   if (is_posix || is_fuchsia) {
     if (enable_frame_pointers) {
       cflags = [ "-fno-omit-frame-pointer" ]
-
-      # Omit frame pointers for leaf functions on x86, otherwise building libyuv
-      # gives clang's register allocator issues, see llvm.org/PR15798 /
-      # crbug.com/233709
-      if (is_clang && current_cpu == "x86" && !is_mac && !is_ios) {
-        cflags += [ "-momit-leaf-frame-pointer" ]
-      }
     } else {
       cflags = [ "-fomit-frame-pointer" ]
     }

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -60,8 +60,8 @@ content::WebContents* ShowWebApplicationWindow(
 
   SetWebAppPrefsForWebContents(web_contents);
 
-  web_app::WebAppTabHelperBase* tab_helper =
-      web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+  web_app::WebAppTabHelper* tab_helper =
+      web_app::WebAppTabHelper::FromWebContents(web_contents);
   DCHECK(tab_helper);
   tab_helper->SetAppId(app_id);
 

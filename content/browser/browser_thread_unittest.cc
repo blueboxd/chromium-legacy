@@ -23,7 +23,7 @@
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/scheduler/browser_io_task_environment.h"
+#include "content/browser/scheduler/browser_io_thread_delegate.h"
 #include "content/browser/scheduler/browser_task_executor.h"
 #include "content/browser/scheduler/browser_ui_thread_scheduler.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -40,9 +40,9 @@ using ::testing::Invoke;
 using StrictMockTask =
     testing::StrictMock<base::MockCallback<base::Callback<void()>>>;
 
-class SequenceManagerTaskEnvironment : public base::Thread::TaskEnvironment {
+class SequenceManagerThreadDelegate : public base::Thread::Delegate {
  public:
-  SequenceManagerTaskEnvironment() {
+  SequenceManagerThreadDelegate() {
     sequence_manager_ =
         base::sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
             base::sequence_manager::SequenceManager::Settings());
@@ -57,15 +57,15 @@ class SequenceManagerTaskEnvironment : public base::Thread::TaskEnvironment {
 
     BrowserTaskExecutor::CreateForTesting(
         std::move(browser_ui_thread_scheduler),
-        std::make_unique<BrowserIOTaskEnvironment>());
+        std::make_unique<BrowserIOThreadDelegate>());
     BrowserTaskExecutor::EnableAllQueues();
   }
 
-  ~SequenceManagerTaskEnvironment() override {
+  ~SequenceManagerThreadDelegate() override {
     BrowserTaskExecutor::ResetForTesting();
   }
 
-  // Thread::TaskEnvironment:
+  // Thread::Delegate:
   scoped_refptr<base::SingleThreadTaskRunner> GetDefaultTaskRunner() override {
     return default_task_runner_;
   }
@@ -80,7 +80,7 @@ class SequenceManagerTaskEnvironment : public base::Thread::TaskEnvironment {
   std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(SequenceManagerTaskEnvironment);
+  DISALLOW_COPY_AND_ASSIGN(SequenceManagerThreadDelegate);
 };
 
 }  // namespace
@@ -101,7 +101,7 @@ class BrowserThreadTest : public testing::Test {
   void SetUp() override {
     ui_thread_ = std::make_unique<BrowserProcessSubThread>(BrowserThread::UI);
     base::Thread::Options ui_options;
-    ui_options.task_environment = new SequenceManagerTaskEnvironment();
+    ui_options.delegate = new SequenceManagerThreadDelegate();
     ui_thread_->StartWithOptions(ui_options);
 
     io_thread_ = BrowserTaskExecutor::CreateIOThread();
@@ -312,7 +312,7 @@ class BrowserThreadWithCustomSchedulerTest : public testing::Test {
               QueueType::kDefault));
       BrowserTaskExecutor::CreateForTesting(
           std::move(browser_ui_thread_scheduler),
-          std::make_unique<BrowserIOTaskEnvironment>());
+          std::make_unique<BrowserIOThreadDelegate>());
 
       ui_thread_ = BrowserTaskExecutor::CreateIOThread();
       BrowserTaskExecutor::InitializeIOThread();

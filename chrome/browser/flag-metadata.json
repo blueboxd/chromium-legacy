@@ -393,6 +393,11 @@
     "owners": [ "dullweber" ],
     "expiry_milestone": 78
   },
+  {
+    "name": "click-to-call-context-menu-selected-text",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 80
+  },
 	{
     "name": "click-to-call-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
@@ -2004,6 +2009,11 @@
     "name": "file-manager-piex-wasm",
     "owners": [ "noel" ],
     "expiry_milestone": 79
+  },
+  {
+    "name": "files-ng",
+    "owners": [ "adanilo", "noel" ],
+    "expiry_milestone": 82
   },
   {
     "name": "fill-on-account-select",

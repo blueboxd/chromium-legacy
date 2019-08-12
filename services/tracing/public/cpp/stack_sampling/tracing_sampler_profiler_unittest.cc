@@ -92,7 +92,9 @@ class MockPerfettoProducer : public ProducerClient {
         task_runner_(std::move(task_runner)) {}
 
   std::unique_ptr<perfetto::TraceWriter> CreateTraceWriter(
-      perfetto::BufferID target_buffer) override {
+      perfetto::BufferID target_buffer,
+      perfetto::BufferExhaustedPolicy =
+          perfetto::BufferExhaustedPolicy::kDefault) override {
     auto packet_callback = base::BindRepeating(
         [](base::WeakPtr<MockPerfettoProducer> weak_self,
            scoped_refptr<base::SequencedTaskRunner> task_runner,

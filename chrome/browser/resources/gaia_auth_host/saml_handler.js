@@ -282,6 +282,15 @@ cr.define('cr.login', function() {
     }
 
     /**
+     * Sets the startsOnSamlPage attribute of the SAML handler.
+     * @param {boolean} value
+     */
+    set startsOnSamlPage(value) {
+      this.startsOnSamlPage_ = value;
+      this.reset();
+    }
+
+    /**
      * Removes the injected content script and unbinds all listeners from the
      * webview passed to the constructor. This SAMLHandler will be unusable
      * after this function returns.

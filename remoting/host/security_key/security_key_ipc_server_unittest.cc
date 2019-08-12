@@ -23,6 +23,10 @@
 #include "remoting/host/security_key/security_key_ipc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace {
 const int kTestConnectionId = 42;
 const int kInitialConnectTimeoutMs = 250;

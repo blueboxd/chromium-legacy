@@ -221,7 +221,7 @@ void PrintJobWorker::UpdatePrintSettingsFromPOD(
 
 void PrintJobWorker::GetSettingsDone(SettingsCallback callback,
                                      PrintingContext::Result result) {
-  std::move(callback).Run(printing_context_->settings(), result);
+  std::move(callback).Run(printing_context_->TakeAndResetSettings(), result);
 }
 
 void PrintJobWorker::GetSettingsWithUI(int document_page_count,

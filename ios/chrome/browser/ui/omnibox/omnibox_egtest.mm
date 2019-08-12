@@ -15,6 +15,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/earl_grey/hardware_keyboard_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -176,6 +177,62 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           SystemSelectionCalloutCopyButton()]
       assertWithMatcher:grey_nil()];
+}
+
+// Copies and pastes a URL, then performs an undo of the paste, and attempts to
+// perform a second undo.
+- (void)testCopyPasteUndo {
+  [self openPage1];
+
+  [ChromeEarlGreyUI focusOmnibox];
+  [self checkLocationBarEditState];
+
+  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"C");
+
+  // Edit menu takes a while to copy, and not waiting here will cause Page 2 to
+  // load before the copy happens, so Page 2 URL may be copied.
+  GREYCondition* copyCondition = [GREYCondition
+      conditionWithName:@"page1 URL copied condition"
+                  block:^BOOL {
+                    return [UIPasteboard.generalPasteboard.string
+                        hasSuffix:base::SysUTF8ToNSString(kPage1URL)];
+                  }];
+  // Wait for copy to happen or timeout after 5 seconds.
+  BOOL success = [copyCondition waitWithTimeout:5];
+  GREYAssertTrue(success, @"Copying page 1 URL failed");
+
+  // Defocus the omnibox.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    id<GREYMatcher> typingShield = grey_accessibilityID(@"Typing Shield");
+    [[EarlGrey selectElementWithMatcher:typingShield] performAction:grey_tap()];
+  } else {
+    [[EarlGrey selectElementWithMatcher:grey_buttonTitle(@"Cancel")]
+        performAction:grey_tap()];
+  }
+
+  [self openPage2];
+
+  [ChromeEarlGreyUI focusOmnibox];
+
+  // Attempt to paste.
+  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"V");
+
+  // Verify that paste happened.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxContainingText(kPage1URL)];
+
+  // Attempt to undo.
+  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"Z");
+
+  // Verify that undo happened.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxContainingText(kPage2URL)];
+
+  // Attempt to undo again. Nothing should happen. In the past this could lead
+  // to a crash.
+  chrome_test_util::SimulatePhysicalKeyboardEvent(UIKeyModifierCommand, @"Z");
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxContainingText(kPage2URL)];
 }
 
 #pragma mark - Helpers

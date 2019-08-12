@@ -68,11 +68,11 @@ QueueType GetQueueType(const base::TaskTraits& traits,
 
 BrowserTaskExecutor::BrowserTaskExecutor(
     std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
-    std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment)
+    std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate)
     : browser_ui_thread_scheduler_(std::move(browser_ui_thread_scheduler)),
       browser_ui_thread_handle_(browser_ui_thread_scheduler_->GetHandle()),
-      browser_io_task_environment_(std::move(browser_io_task_environment)),
-      browser_io_thread_handle_(browser_io_task_environment_->CreateHandle()) {}
+      browser_io_thread_delegate_(std::move(browser_io_thread_delegate)),
+      browser_io_thread_handle_(browser_io_thread_delegate_->CreateHandle()) {}
 
 BrowserTaskExecutor::~BrowserTaskExecutor() = default;
 
@@ -80,25 +80,25 @@ BrowserTaskExecutor::~BrowserTaskExecutor() = default;
 void BrowserTaskExecutor::Create() {
   DCHECK(!base::ThreadTaskRunnerHandle::IsSet());
   CreateInternal(std::make_unique<BrowserUIThreadScheduler>(),
-                 std::make_unique<BrowserIOTaskEnvironment>());
+                 std::make_unique<BrowserIOThreadDelegate>());
 }
 
 // static
 void BrowserTaskExecutor::CreateForTesting(
     std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
-    std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment) {
+    std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate) {
   CreateInternal(std::move(browser_ui_thread_scheduler),
-                 std::move(browser_io_task_environment));
+                 std::move(browser_io_thread_delegate));
 }
 
 // static
 void BrowserTaskExecutor::CreateInternal(
     std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
-    std::unique_ptr<BrowserIOTaskEnvironment> browser_io_task_environment) {
+    std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate) {
   DCHECK(!g_browser_task_executor);
   g_browser_task_executor =
       new BrowserTaskExecutor(std::move(browser_ui_thread_scheduler),
-                              std::move(browser_io_task_environment));
+                              std::move(browser_io_thread_delegate));
   base::RegisterTaskExecutor(BrowserTaskTraitsExtension::kExtensionId,
                              g_browser_task_executor);
   g_browser_task_executor->browser_ui_thread_handle_
@@ -127,7 +127,7 @@ void BrowserTaskExecutor::ResetForTesting() {
 void BrowserTaskExecutor::PostFeatureListSetup() {
   DCHECK(g_browser_task_executor);
   DCHECK(g_browser_task_executor->browser_ui_thread_scheduler_);
-  DCHECK(g_browser_task_executor->browser_io_task_environment_);
+  DCHECK(g_browser_task_executor->browser_io_thread_delegate_);
   g_browser_task_executor->browser_ui_thread_handle_
       ->PostFeatureListInitializationSetup();
   g_browser_task_executor->browser_io_thread_handle_
@@ -148,7 +148,7 @@ void BrowserTaskExecutor::Shutdown() {
   // we need to clean up, so BrowserTaskExecutor::ResetForTesting should be
   // called.
   g_browser_task_executor->browser_ui_thread_scheduler_.reset();
-  g_browser_task_executor->browser_io_task_environment_.reset();
+  g_browser_task_executor->browser_io_thread_delegate_.reset();
 }
 
 // static
@@ -267,20 +267,20 @@ void BrowserTaskExecutor::InitializeIOThread() {
 
 std::unique_ptr<BrowserProcessSubThread> BrowserTaskExecutor::CreateIOThread() {
   DCHECK(g_browser_task_executor);
-  DCHECK(g_browser_task_executor->browser_io_task_environment_);
+  DCHECK(g_browser_task_executor->browser_io_thread_delegate_);
   TRACE_EVENT0("startup", "BrowserTaskExecutor::CreateIOThread");
 
   auto io_thread = std::make_unique<BrowserProcessSubThread>(BrowserThread::IO);
 
-  if (g_browser_task_executor->browser_io_task_environment_
+  if (g_browser_task_executor->browser_io_thread_delegate_
           ->allow_blocking_for_testing()) {
     io_thread->AllowBlockingForTesting();
   }
 
   base::Thread::Options options;
   options.message_pump_type = base::MessagePumpType::IO;
-  options.task_environment =
-      g_browser_task_executor->browser_io_task_environment_.release();
+  options.delegate =
+      g_browser_task_executor->browser_io_thread_delegate_.release();
   // Up the priority of the |io_thread_| as some of its IPCs relate to
   // display tasks.
   if (base::FeatureList::IsEnabled(features::kBrowserUseDisplayThreadPriority))
